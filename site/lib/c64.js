@@ -111,6 +111,11 @@ globalThis.C64 = (function () {
   //             the drawing reads (kit/c64/frame.py trim)   F.colour  the 1024 colour nibbles
   //   F.charrom the 4 KB character ROM, when a band shows it: kit/c64/frame.py supplies it for
   //             its own checks, and a page never embeds it
+  //   F.ultimax the 4 KB an Ultimax cartridge (GAME held low, EXROM not: Commodore's MAX
+  //             Machine games) shows the video chip at $3000-$3FFF of every bank, the top of its
+  //             ROM ($F000-$FFFF to the processor); frame.py records it, and a page may embed
+  //             it, being the game's own. Where the character ROM shows the chip in this
+  //             configuration has not been measured: the rule above is kept for it
   // Modelled: character, bitmap and extended colour modes, multicolour, both scrolls, 24/25 rows
   // and 38/40 columns with the border flip-flops (so an opened border stays open), bad lines,
   // among them one that a write to $D011 starts late in its line (VSP: every row after it starts
@@ -147,6 +152,7 @@ globalThis.C64 = (function () {
     let start = F.mem;
     if (!start) { start = new Uint8Array(0x10000); for (const r of F.ram) start.set(bytes64(r.b), r.a); }
     const colour = F.colourMem || bytes64(F.colour), rom = F.charrom ? bytes64(F.charrom) : null;
+    const ult = F.ultimax ? bytes64(F.ultimax) : null;
     const K = F.keep || null;
     const px = K ? (K.px = K.px || new Uint8Array(W * H)) : new Uint8Array(W * H);
     const reads = K ? (K.reads = K.reads || new Uint8Array(0x10000)) : new Uint8Array(0x10000);
@@ -172,6 +178,7 @@ globalThis.C64 = (function () {
       const vmem = a => {                       // the video chip's view: 14 bits within its bank
         const bank = 3 - ((pra | ~ddra) & 3);
         a &= 0x3FFF;
+        if (ult && a >= 0x3000) return ult[a & 0xFFF];
         if ((bank & 1) === 0 && a >= 0x1000 && a < 0x2000) { romReads++; return rom ? rom[a & 0xFFF] : 0; }
         const x = bank << 14 | a;
         reads[x] = 1;

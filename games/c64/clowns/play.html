@@ -1,0 +1,206 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clowns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.cp-screen{display:block;width:100%;max-width:768px;image-rendering:pixelated;background:#000;cursor:none;touch-action:none}
+.cp-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px;font-size:15px}
+.cp-btn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 12px;cursor:pointer;color:var(--ink)}
+.cp-btn[aria-pressed=true]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.cp-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.cp-miss{font-size:14px;color:var(--coral)}
+@media (max-width:700px){:root{--gx:16px;--h1:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1982 · Commodore</p>
+  <h1>Clowns</h1>
+  <p class="sub">The whole game, ported to JavaScript routine by routine and run on the cartridge's own bytes, with the mouse as the paddle.</p>
+</header>
+<main class="wrap">
+<section id="play">
+  <p class="fig">01 · Play</p>
+  <h2 class="t">Play Clowns with the mouse as the paddle</h2>
+  <p class="lede">Move the mouse across the screen to slide the see-saw. Click, or press Space, for the paddle's button.</p>
+  <div class="plate">
+    <div class="cp-row">
+      <button class="cp-btn" id="cp-f1">F1 · one player</button>
+      <button class="cp-btn" id="cp-f3">F3 · two players</button>
+      <button class="cp-btn" id="cp-pause" aria-pressed="false">Pause</button>
+      <button class="cp-btn" id="cp-sound" aria-pressed="false">Sound</button>
+      <button class="cp-btn" id="cp-reset">Reset</button>
+      <span class="cp-out" id="cp-out"></span>
+    </div>
+    <canvas class="cp-screen" id="cp-screen" width="768" height="544"></canvas>
+    <p class="cap"><b>The game as the port runs it.</b> On the title screen, click or press F1 (or 1) for the menu, then F1 for one player or F3 (or 2) for two; both players turn the same mouse. The see-saw's raised end has to be under the falling clown. The keys 1 and 2 stand for F1 and F3, which a browser keeps for itself; the arrow keys move the see-saw too.</p>
+  </div>
+</section>
+
+<section id="port">
+  <p class="fig">02 · The port</p>
+  <h2 class="t">Every tick checked against the cartridge's own code</h2>
+  <p>Nothing on this page emulates a 6502. The game is written out in JavaScript, one function for each routine of the listing: the compiled program's procedures (the title, the menu, a game, a jump, the flight, the collisions and the bonuses) and the machine-code library under them (drawing the clown and testing its pixels, scrolling the balloons, the see-saw, the status line, the tunes and the effects). It runs on the game's own 64 KB, loaded from the bytes the Source code tab shows, and keeps every variable where the game keeps it.</p>
+  <p><code>test_play.js</code> runs the port beside the cartridge's own code on the kit's model of the C64, from the reset vector on, with the same input: the title's demonstration, a one-player game steered by a program that keeps the see-saw under the clown until the game is over, then a two-player game. At every tick, where the game restarts its timer (<code>$F717</code>), the two memories are compared, and so are colour RAM and every register written to the video chip and the SID. Left out are the compiled program's own workings, which the port passes as JavaScript values instead: the runtime's scratch bytes at <code>$02</code>-<code>$10</code> and the frames of its software stack from <code>$0244</code>.</p>
+  <p>The page keeps the C64's pace by keeping its clock. Each tick costs what it cost the game on the kit's machine, measured per loop: a tick of flight, of the run along a platform, of a tune, of the demonstration. The screen is drawn from the port's memory sixty times a second by the site's model of the video chip, with the cartridge's top 4 KB in the chip's view, as an Ultimax cartridge has it.</p>
+  <p id="cp-cost" class="cp-out"></p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/cl-port.js"></script>
+<script>
+'use strict';
+// The game's cycles per tick, by the loop the tick belongs to: medians measured on the kit's machine
+// while test_play.js ran (test_play.js --cost).
+const CL_COST = {"run":{"median":10012,"n":4679},"attract":{"median":10844,"n":1364},"key":{"median":10018,"n":310},"tune":{"median":10011,"n":16452},"fly":{"median":10284,"n":34224},"fall":{"median":10016,"n":1440},"delay":{"median":10011,"n":1530}};
+const $ = (id) => document.getElementById(id);
+const CLOCK = 985248, FRAME = 19656;
+if (!window.C64 || !window.ClownsPort) {
+  const p = document.createElement('p'); p.className = 'cp-miss';
+  p.textContent = 'The game runs from the game\'s bytes through the site\'s shared scripts; it works in the built site.';
+  $('cp-screen').replaceWith(p);
+} else C64.load('listing.json').then((D) => {
+  const rom = btoa(String.fromCharCode(...D.bytes(0xF000, 0x1000)));
+  let M, P, gen, vic, colour, sidRegs, sidQueue, pra, clock, keep, ticks;
+  const keys = new Set();                    // 4: F1, 5: F3, as the KERNAL numbers them
+  let button = false, paddle = 200, held = 0;
+  function boot() {
+    M = D.ram.slice(); vic = new Uint8Array(64); colour = new Uint8Array(1024); sidRegs = new Uint8Array(32);
+    sidQueue = []; pra = 0xFF; clock = 0; keep = {}; ticks = 0;
+    const io = {
+      read(a) {
+        if (a < 0xD400) return vic[a & 0x3F];
+        if (a < 0xD800) { const r = a & 0x1F; return r === 0x19 || r === 0x1A ? paddle : 0; }
+        if (a < 0xDC00) return colour[a - 0xD800] | 0xF0;
+        const r = a & 15;
+        if (r === 0) return pra;
+        if (r === 1) {
+          let v = 0xFF;
+          for (const k of keys) if (!(pra & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
+          if (button) v &= ~4;
+          return v;
+        }
+        return 0;
+      },
+      write(a, v) {
+        if (a < 0xD400) vic[a & 0x3F] = v;
+        else if (a < 0xD800) { sidRegs[a & 0x1F] = v; sidQueue.push(a & 0x1F, v); }
+        else if (a < 0xDC00) colour[a - 0xD800] = v & 15;
+        else if ((a & 15) === 0) pra = v;
+      },
+      paddle: () => paddle,
+    };
+    P = ClownsPort.create(M, io);
+    gen = P.program();
+  }
+  boot();
+
+  // ---- the screen: the port's memory through the site's model of the video chip
+  const cv = $('cp-screen');
+  function draw() {
+    C64.drawFrame(cv, { lines: 312, cycles: 63, vic: Array.from(vic.subarray(0, 47)), cia2: [3, 3], writes: [],
+      mem: M, colourMem: colour, ultimax: rom, keep }, 2);
+  }
+
+  // ---- input: the mouse is the paddle; the see-saw's middle follows the pointer
+  function aim(clientX) {
+    const r = cv.getBoundingClientRect(), sx = (clientX - r.left) / r.width * 384 - 8;   // sprite X
+    const saw = sx - 48;
+    paddle = Math.max(0, Math.min(255, Math.round(200 - Math.max(0, saw) / 1.25)));
+  }
+  cv.addEventListener('pointermove', (e) => aim(e.clientX));
+  cv.addEventListener('pointerdown', (e) => { aim(e.clientX); button = true; held = 6; e.preventDefault(); });
+  const press = (k) => { keys.add(k); setTimeout(() => keys.delete(k), 300); };
+  $('cp-f1').onclick = () => press(4);
+  $('cp-f3').onclick = () => press(5);
+  addEventListener('keydown', (e) => {
+    if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === '1' || e.key === 'F1') { press(4); e.preventDefault(); }
+    else if (e.key === '2' || e.key === 'F3') { press(5); e.preventDefault(); }
+    else if (e.key === ' ') { button = true; held = 6; e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { paddle = Math.min(255, paddle + 6); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { paddle = Math.max(0, paddle - 6); e.preventDefault(); }
+  });
+
+  // ---- sound: each tick's SID writes, streamed to the site's SID model
+  let host = null, soundOn = false;
+  function driver() {
+    const sid = new Uint8Array(25), queue = [];
+    const d = { sid, writes: [], playing: () => true, stop() {},
+      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 40) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
+      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
+    return d;
+  }
+  let pending = [];
+  $('cp-sound').onclick = async () => {
+    soundOn = !soundOn; $('cp-sound').setAttribute('aria-pressed', soundOn);
+    if (soundOn && !host && window.C64Sid) {
+      try {
+        host = await C64Sid.host({ driver, data: null, gain: 0.5, period: 10001 });
+        const all = []; for (let r = 0; r < 25; r++) all.push(r, sidRegs[r]);
+        host.send({ cmd: 'start', tune: { frames: [all] } });
+      } catch (e) { soundOn = false; $('cp-sound').setAttribute('aria-pressed', false); $('cp-out').textContent = 'No sound: ' + e.message; }
+    }
+    if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
+  };
+
+  // ---- the clock: each tick moves it on by what the game's tick of that loop costs
+  let paused = false, last = 0;
+  $('cp-pause').onclick = () => { paused = !paused; $('cp-pause').setAttribute('aria-pressed', paused); };
+  $('cp-reset').onclick = () => { boot(); };
+  document.addEventListener('visibilitychange', () => { last = 0; });
+  function frame(t) {
+    if (!paused) {
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      clock += dt * CLOCK;
+      let n = 0;
+      while (clock > 0 && n++ < 40) {
+        gen.next();
+        ticks++;
+        if (held && !--held) button = false;
+        const c = CL_COST[P.site] ? CL_COST[P.site].median : 10001;
+        clock -= c;
+        if (soundOn && host) { pending.push(sidQueue); }
+        sidQueue = [];
+      }
+      if (soundOn && host && pending.length) { host.send({ cmd: 'start', tune: { frames: pending } }); }
+      pending = [];
+    }
+    last = t;
+    draw();
+    $('cp-out').textContent = paused ? 'paused' : ticks + ' ticks';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  $('cp-cost').textContent = 'Cycles per tick: ' + Object.entries(CL_COST).map(([k, v]) => k + ' ' + v.median).join(', ') + '.';
+}).catch((e) => { console.error(e); $('cp-out').textContent = 'The game could not start: ' + e.message; });
+</script>

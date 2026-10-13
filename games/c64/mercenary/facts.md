@@ -197,14 +197,15 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
 - **A turned object costs about 1,125 cycles more a vertex.** `$A6AD`
   turns each model vertex of objects 0-15 by `$A728` once for each of its
   angles `$802A`, `$801A`, `$800A` + n that is not 0. In a 6502 simulator,
-  over the models at `$3B25`-`$3BF8` (the Dart, the car, the jet, the
-  diamond, the CHEESE) with random offsets, `$A61F` took 573 cycles a
+  over the models at `$3B25`-`$3BF8` (the Dart, the Hovercar, the Concord
+  111, the Hexapod, the CHEESE) with random offsets, `$A61F` took 573 cycles a
   vertex unturned and 1,697 turned by a heading; `$A728` with its `JSR`
   took 1,078-1,220 over all 63 angles. The game's code writes only the
   heading, when you leave a craft (`$98F8`); object 0's starts at `$20`,
   and a load puts back what was saved (`$8000`-`$803F`). So a craft you
   have left, drawn near, costs about 1,125 cycles more for each of its
-  vertices: 6 for the Dart and the CHEESE, 16 for the car and the jet.
+  vertices: 6 for the Dart and the CHEESE, 16 for the Hovercar and the
+  Concord 111.
 
 ## The main loop
 
@@ -524,7 +525,7 @@ Weapons and moving objects therefore run only on the surface.
   appear: CTRL + Q while falling puts it on the ground (Controls), where
   it never moves, cannot be boarded, and needs the Kitchen Sink to take
   (flags `$10`, fixed).
-  The attack ship is drawn with the Palyar diamond's model `$3BCC`
+  The attack ship is drawn with the Hexapod's model `$3BCC`
   (object 4's) for both sides' attacks, and the two missiles share
   `$3C5C`. Object 7 is the interstellar ship (room 5, behind the Pass).
   Object 63 is the Colony Craft, at height `$40FCC0` over 08-08 and drawn
@@ -628,29 +629,43 @@ Weapons and moving objects therefore run only on the surface.
   units a pass (67, 74, 82 ...).
 - **Every craft has a hard top**, where the truncated climb step reaches
   zero. Flat out with the nose straight up, the Dart stops at `$180000` (ALT
-  24000) and never reaches the Colony Craft (`$40`, ALT 64997); the Palyar
-  diamond at `$0E0000` (ALT 14000); the jet, the CHEESE and the Dart with the
-  Poweramp at `$690000`, which the panel prints `**000`, passing the Colony
-  Craft's height 212 (jet) or 317 passes after the nose comes up. (The
-  flight widget's port and the game's code in a 6502 simulator agree.)
+  24000) and never reaches the Colony Craft (`$40`, ALT 64997); the
+  Hexapod at `$0E0000` (ALT 14000); the Concord 111, the CHEESE and the Dart
+  with the Poweramp at `$690000`, which the panel prints `**000`, passing the
+  Colony Craft's height 212 (Concord 111) or 317 passes after the nose comes
+  up. (The flight widget's port and the game's code in a 6502 simulator
+  agree.)
 - **The records** (`$9DAD`), and the top speeds the SPEED readout shows
   with the throttle at its limit (+ held stops after 23 passes at 32512,
   where `$B4A7` refuses the next step), in the air and on the ground. The
   flight widget's port of the game's truncating float arithmetic gives
-  Zzap!64 13's table to the digit. The craft are named by their speeds, and
-  by where objects 2-7 start: object 2 on 12-13, 3 in hangar 7 under
-  `**-**`, 4 in hangar 3 (03-00), 5 in hangar 2 (09-05), 6 in room `$36`
-  beside hangar 4 (11-13), 7 in hangar 5 (03-15), each where Zzap!64 13 puts
+  Zzap!64 13's table to the digit. The craft are identified by their
+  speeds, and by where objects 2-7 start: object 2 on 12-13, 3 in hangar 7
+  under `**-**`, 4 in hangar 3 (03-00), 5 in hangar 2 (09-05), 6 in room
+  `$36` beside hangar 4 (11-13), 7 in hangar 5 (03-15), each where Zzap!64
+  13 puts that craft.
+  The game prints no name for objects 2-5. Their names are from the hire
+  tariff on the Central City map in Novagen's Targ Survival Kit (the scan
+  on the Mercenary Site's `msurvkit.htm`, seen on 11 October 2026), which
+  draws each craft and gives its "max basic speed": Hovercar 825, Sprintcar
+  3775, Hexapod 1637, Dominion Dart 4950, Concord 111 7400. By the drawn
+  shape against the model, and by speed, the Hovercar is object 2 (825,
+  Zzap!64 13's Car), the Concord 111 object 3 (7400, its Jet), the Hexapod
+  object 4 (1650 in the game, its Palyar Diamond) and the Sprintcar object
+  5 (3837 in the game, its Land Dart). The tariff also lists a
+  Casper-Hanley Eagle 8SE as "available soon", with no price, speed or
+  drawing. Its initials, with the 8 read as an E, spell CHEESE, the name
+  the game prints for object 6 (canned message 6), so it is taken to be
   that craft.
 
 | Record | Craft | Ceiling byte | Thrust | Top speed | Zzap!64 13 |
 |---|---|---|---|---|---|
 | 0 | the brother-in-law's new ship (object 0) | `$5A` | 0.906 | `**75` (11475) / 3837 | — |
 | 1 | Dominion Dart | `$0A` (`$5A` with the Poweramp) | 0.391 (doubled) | 4950 / 1650 (9900 / 3300) | 4950 / 1650 |
-| 2 | car (ground only) | — | 0.195 | 825 | 825 |
-| 3 | jet | `$5A` | 0.195 | 7400 / 825 | 7400 / 825 |
-| 4 | Palyar diamond | `$01` | 0.391 | 1650 / 1650 | 1650 / 1650 |
-| 5 | land Dart (ground only) | — | 0.906 | 3837 | 3837 |
+| 2 | Hovercar (ground only) | — | 0.195 | 825 | 825 |
+| 3 | Concord 111 | `$5A` | 0.195 | 7400 / 825 | 7400 / 825 |
+| 4 | Hexapod | `$01` | 0.391 | 1650 / 1650 | 1650 / 1650 |
+| 5 | Sprintcar (ground only) | — | 0.906 | 3837 | 3837 |
 | 6 | CHEESE | `$5A` | 0.781 | 9900 / 3300 | 9900 / 3300 |
 | 7 | interstellar ship | — | — | — | — |
 
@@ -875,7 +890,7 @@ Weapons and moving objects therefore run only on the surface.
   81 in 256, for unnamed squares; the named ones always) and by script 27.
   The Palyar and Mechanoid scripts differ only in the message
   (`$11B7`/`$11C3`): either way the attacker is object 15, drawn with the
-  Palyar diamond's model, with its missile, object 14. In the image the
+  Hexapod's model, with its missile, object 14. In the image the
   ship lies under 08-08 beside the crash site (X `$088937`, height
   `$FFB2E6`, 19,738 below the ground, Y `$08890A`), and nothing resets it:
   each attack starts where the last one left it.
@@ -1329,7 +1344,7 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
 - `$9ED6` adds to `$29`, `$2B`, `$2D` without keeping them to 10 bits.
 - A ground craft that becomes airborne loses 65536 units of height a pass
   (`$9F09`) and crashes when the top byte runs out with the middle byte not
-  0; from `$04:00:3F` the car lands safely.
+  0; from `$04:00:3F` the Hovercar lands safely.
 - Touchdowns with the pitch below 512 (reversing, nose up) are not levelled
   (`$A0C4`); upside-down touchdowns are safe. The Colony Craft's deck has no
   crash test, and a descent faster than 1024 a pass goes through it.

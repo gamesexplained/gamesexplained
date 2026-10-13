@@ -29,7 +29,8 @@ table cites it):
 - The Mercenary Site, http://mercenarysite.free.fr/, read directly:
   `mercsol.htm` (solutions, teleporter table, items; the page says most of
   it is based on the 16-bit versions), `msurvkit.htm` (Novagen's Targ
-  Survival Kit), `m1box.htm`, `mversions.htm` (**site**).
+  Survival Kit; the scan of its Central City map, on 11 October 2026, for
+  the hire tariff's craft names), `m1box.htm`, `mversions.htm` (**site**).
 - Andy Krouwel, "The Making of... Mercenary", Edge 153, draft on
   https://www.sockmonsters.com/TheMakingOfMercenary.html (**Edge**).
 - Wikipedia, "Mercenary (video game)",
@@ -83,7 +84,7 @@ table cites it):
 | **Objects** (Zzap 13, site): Antenna, Antigrav, Anti-Time Bomb, Photon Emitter, Sights, Metal Detector, Poweramp, Novadrive, Kitchen Sink, Cobweb, Cheese, Pass, keys, Coffin, Gold, Medical Supplies, Catering Provisions, Large Box, Useful Armament, Energy Crystal, Neutron Fuel, Winchester, Databank, Essential 12939 Supply, the Mechanoid leader | traced | 64 objects; names are canned messages (`$151F` on); 55 models at `$1700`-`$2098` and `$3B25`-`$3FFE`; each object's use is in `facts.md`, "Objects" |
 | **Metal Detector** colours the panel by a building's owner: red nobody, green Palyar, blue Mechanoid (Zzap 13) | traced | `$B542`: with object 26 carried, on the surface and low, the message window is blue for `$2B00` bit 6, red for bit 5, green otherwise |
 | **Kitchen Sink** lets you take almost anything, and with the Cobweb opens any door (Zzap 13, site) | traced | the Sink (47) skips the fixed and heavy checks (`$980B`); object 48, drawn as a cobweb, opens every lock (`$948E`) on its own, but taking it needs the Sink |
-| **Vehicles**: two ground vehicles and four flight craft, plus the interstellar one; speeds per craft (leaflet, manual; Zzap 13's C64 table: Dart 1650/4950, Palyar Diamond 1650/1650, Jet 825/7400, Cheese 3300/9900, Land Dart 3837, Car 825) | confirmed | eleven motion records at `$9DAD`: craft 2 and 5 on the ground only, 0, 1, 3, 4 and 6 flying, 7 interstellar; a port of the flying step that matches a 253-pass recording of the Dart gives every top speed in Zzap 13's table to the digit (`facts.md`, "Moving") |
+| **Vehicles**: two ground vehicles and four flight craft, plus the interstellar one; speeds per craft (leaflet, manual; Zzap 13's C64 table: Dart 1650/4950, Palyar Diamond 1650/1650, Jet 825/7400, Cheese 3300/9900, Land Dart 3837, Car 825; the Survival Kit's Central City map, hire tariff: Hovercar 825, Sprintcar 3775, Hexapod 1637, Dominion Dart 4950, Concord 111 7400, and a Casper-Hanley Eagle 8SE "available soon", whose initials spell CHEESE) | confirmed | eleven motion records at `$9DAD`: craft 2 and 5 on the ground only, 0, 1, 3, 4 and 6 flying, 7 interstellar; a port of the flying step that matches a 253-pass recording of the Dart gives every top speed in Zzap 13's table to the digit (`facts.md`, "Moving") |
 | **Take-off needs speed; landing too hard crashes** (leaflet, Zzap 11) | live (take-off), traced (landing) | the craft stays down below speed 128 (`$A024`); a touchdown crashes when the pass's height step is 256 or more, or the nose is more than 45° down (`$A0AF`); forward speed is not tested. Reverse thrust takes off with the nose level (live: SHIFT + 0, 9 units a pass) |
 | **The Brother-in-law's New Ship** shuttles between 00-00 and 00-15 at altitude 500 and speed 100 (Zzap 13) | traced (the altitude and the speed), differs (the course) | object 0 (`$85C5`) flies one way, south along column 00 (X `$006F41`), 256 units (1/256 square) each surface pass, wrapping from row 15 to row 0: a lap of 4,096 passes, 8.8 to 13.7 minutes. Its height, 32,769, reads ALT 00500 on the panel, and 256 units a pass is what SPEED shows as 0100 (`$B5A8`: the high byte as two figures). From 08-08 it is a dot above the horizon (`reference/npc-brother-in-law-ship-from-0808.png`, drawn by the game's code in a 6502 simulator); shooting it runs script 27 |
 | **Attacks**: ships attack after you destroy a side's buildings; a homing missile (manual, Zzap 13) | differs (the missile) | `$BEF8`, set by the squares' scripts and script 27: the attack ship (object 15) re-aims every 46 passes at 1/32 of the distance a pass, overshooting, and fires only when it hovers within 12,288 units, so it never catches a craft holding a straight course faster than about 383 units a pass; its missile (object 14) is aimed once at launch, at 1/16 of the distance a pass, and not steered (`facts.md`, "Weapons and attacks") |
@@ -120,8 +121,8 @@ Found in the code, not in the manual.
 - **The Dart cannot fly up to the Colony Craft**: flat out with the nose
   straight up its climb gives out at ALT 24000, against the Colony Craft's
   64997 (it can ride the 08-08 lift up to the deck with the player, in a
-  6502 simulator). With the Poweramp, and in the jet or the CHEESE, the top
-  is ALT 105000, which the panel prints `**000`.
+  6502 simulator). With the Poweramp, and in the Concord 111 or the CHEESE,
+  the top is ALT 105000, which the panel prints `**000`.
 - **Reverse thrust lifts a craft off the ground**, nose level, and level
   flight forward slowly sinks: the level pitch's sine is −0.003 (live).
 - **Roads** are drawn only from height 2048 up, and above `$200000` a fixed

@@ -2,7 +2,7 @@
 """Hold the page's two ports against the game's own code.
 
 music.html plays the music and effects through a port of the sound driver
-($0E23), and index.html and levels.html draw the Dreadnoughts with a port of
+($0E23), and how-it-works.html and levels.html draw the Dreadnoughts with a port of
 build_message ($2415), index_pieces ($2C66) and build_map ($2CB2). A port is a
 claim about the game, so this runs both sides and compares them:
 
@@ -37,8 +37,8 @@ while not os.path.isfile(os.path.join(ROOT, "kit", "c64", "cpu6502.js")):
     if parent == ROOT:
         sys.exit("test_ports.py must run from inside the repository")
     ROOT = parent
-# music.html carries the driver; index.html and levels.html each carry a copy of the map builder
-PAGES = ["music.html"] + [p for p in ("index.html", "levels.html") if os.path.isfile(os.path.join(HERE, p))]
+# music.html carries the driver; how-it-works.html and levels.html each carry a copy of the map builder
+PAGES = ["music.html"] + [p for p in ("how-it-works.html", "levels.html") if os.path.isfile(os.path.join(HERE, p))]
 
 JS = r"""'use strict';
 // Written out and run by test_ports.py; see there.

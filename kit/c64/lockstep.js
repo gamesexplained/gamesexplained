@@ -45,7 +45,8 @@
 //   counter reaches any of them or a wait's exit, outside its interrupts. Reaching another than the
 //   port's is a divergence of path, and the run stops with both named. The same place named twice
 //   running with nothing between (a start-up's last { cycles, at } and the main loop's first
-//   checkpoint) is one.
+//   checkpoint) is one. A { cp } yielded twice running is two arrivals: a game whose every pass
+//   reaches one address (a wait for a timer called from everywhere) yields it once a pass.
 // - waits: the raster waits' exits, the instruction after each loop that polls the raster. The
 //   game must leave on the port's line or the next. While it waits it passes the checkpoint before,
 //   which may head the loop (a port that names its time up to the wait).
@@ -191,7 +192,7 @@ class Lockstep {
     this.replaying = null;                         // the one running in the port
     this.irqCycles = 0; this.irqCount = 0;
     this.cycles0 = m.cpu.cycles;
-    this.passes = 0; this.syncs = 0; this.last = -1; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
+    this.passes = 0; this.syncs = 0; this.last = -1; this.lastAt = false; this.idle = 0; this.syncFrame = m.frames; this.since = 0;
     this.halted = null; this.stopped = false; this.saved = null; this.res = null;
     this.from = -1; this.c0 = m.cpu.cycles; this.ic0 = 0; this.in0 = 0; this.polls = 0; this.estimate = 0;
   }
@@ -441,13 +442,14 @@ class Lockstep {
     if (y.cycles !== undefined) this.estimate += y.cycles;
     // the place just reached, named again with nothing run between (a start-up's last { cycles, at }
     // and the main loop's first checkpoint, say): one place
-    if (a === this.last && this.at === a && this.matched && this.since === 1) return;
+    if (a === this.last && this.at === a && this.matched && this.since === 1 && this.lastAt) return;
     const at = this.toStop();
     if (at !== a) {
       return this.diverge(at < 0 ? this.lost('checkpoint ' + hex(a))
         : 'the game went to ' + hex(at) + (this.waits.has(at) ? ' (a raster wait\'s exit)' : '') + ', the port to ' + hex(a), { game: at, port: a });
     }
     this.sync(a, false);
+    this.lastAt = y.cp === undefined;                 // named by { cycles, at }: may be named again as a { cp }
     if (a === this.passAt) this.passStart();
     this.frameInput();
   }

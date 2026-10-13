@@ -498,7 +498,9 @@ function createDriver(data) {
   const TUNES = 12;
   return {
     sid, get writes() { return writes; },
-    init(t) { M.set(pristine); sid.fill(0); writes = []; P.start_tune({ a: 0, x: 0, y: 4 + 7 * (t % TUNES) }); P.music_frame({ a: 0, x: 0, y: 0 }); },   // as play_tune does: start, then one step
+    // as the game does: silence at start-up sets the master volume ($D418, $1F), which no tune
+    // routine writes; then start_tune and one step, as play_tune does
+    init(t) { M.set(pristine); sid.fill(0); writes = []; P.silence({ a: 0, x: 0xFF, y: 0 }); P.start_tune({ a: 0, x: 0, y: 4 + 7 * (t % TUNES) }); P.music_frame({ a: 0, x: 0, y: 0 }); },
     play() { writes = []; P.music_frame({ a: 0, x: 0, y: 0 }); },
     stop() { P.silence({ a: 0, x: 0, y: 0 }); },
     playing() { return M[0xA4] !== 0; },

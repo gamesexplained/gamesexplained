@@ -70,6 +70,11 @@ class Apply(unittest.TestCase):
         _, problems = r2000.parse_annotations('$C000 clears the screen\n$C100-$C1FF Byte\n$C2FF-$C200 byte\nC000 x\n')
         self.assertEqual([n for n, _ in problems], [1, 2, 3, 4])
 
+    def test_a_type_without_a_range(self):
+        # `$C100 byte` once named a label "byte" in the Gauntlet run, and the next such line failed
+        _, problems = r2000.parse_annotations('$C100 byte\n$C101 Word\n$C102 byte_count : a label of its own\n')
+        self.assertEqual([n for n, _ in problems], [1, 2])
+
     def test_only_what_succeeds_is_logged(self):
         sent = []
 

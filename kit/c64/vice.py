@@ -270,12 +270,21 @@ def step_pass(rpc, timeout=5.0):
     return None
 
 
+FRAME_ADVANCE_MAX = 1000       # the most frames vice_frame_advance takes in one request
+
+
 def frames(rpc, n=1):
-    """Run exactly n frames from a stopped machine and stop again (needs the frame-advance- checks)."""
-    result = ask(rpc, "vice_frame_advance", {"frames": n})
-    if not isinstance(result, dict) or result.get("status") != "ok" or result.get("frames") != n:
-        raise ViceError(f"frame advance did not complete {n} frames: {result}")
-    return result
+    """Run exactly n frames from a stopped machine and stop again (needs the frame-advance- checks).
+    A count above FRAME_ADVANCE_MAX goes as several requests; the last one's result is returned,
+    with "frames" the whole count."""
+    left, result = n, None
+    while left > 0 or result is None:
+        step = min(left, FRAME_ADVANCE_MAX) if left > 0 else n
+        result = ask(rpc, "vice_frame_advance", {"frames": step})
+        if not isinstance(result, dict) or result.get("status") != "ok" or result.get("frames") != step:
+            raise ViceError(f"frame advance did not complete {n} frames: {result}")
+        left -= step
+    return dict(result, frames=n)
 
 
 def arm(rpc, a, end=None, ignore=0, condition=None, stop=True, exec=None, load=False, store=False):

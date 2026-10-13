@@ -13,6 +13,16 @@ class FrameAdvanceTests(unittest.TestCase):
         self.assertEqual(vice.frames(rpc, 120), result)
         rpc.assert_called_once_with("tools/call", {"name": "vice_frame_advance", "arguments": {"frames": 120}})
 
+    def test_a_long_count_goes_in_requests_of_1000(self):
+        asked = []
+
+        def rpc(method, params):
+            k = params["arguments"]["frames"]
+            asked.append(k)
+            return {"result": {"content": [{"text": json.dumps({"status": "ok", "frames": k})}]}}
+        self.assertEqual(vice.frames(rpc, 2500)["frames"], 2500)
+        self.assertEqual(asked, [1000, 1000, 500])
+
     def test_rejection_or_partial_advance_raises(self):
         replies = [
             {"error": "frames must be between 1 and 1000"},

@@ -1,0 +1,2498 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: vehicles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+/* objects */
+.obj-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px;align-items:start}
+.obj-filter{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.obj-filter button{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 9px;cursor:pointer}
+.obj-filter button:hover{border-color:var(--violet)}
+.obj-filter button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+.obj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;max-height:560px;overflow-y:auto;padding:2px}
+.obj-cell{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:6px;padding:4px 4px 3px;cursor:pointer;text-align:center;min-width:0}
+.obj-cell:hover{border-color:var(--violet)}
+.obj-cell:focus-visible{outline:2px solid var(--violet);outline-offset:1px}
+.obj-cell[aria-selected="true"]{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet)}
+.obj-cell svg{display:block;width:100%;height:auto}
+.obj-cell span{display:block;font-family:var(--fm);font-size:10px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obj-detail{position:sticky;top:70px;min-width:0}
+.obj-big{display:block;width:100%;height:auto;background:#000;border-radius:6px;cursor:grab;touch-action:none}
+.obj-big:active{cursor:grabbing}
+.obj-detail h3{font-size:20px;margin:12px 0 2px}
+.obj-kind{font-family:var(--fm);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0}
+.obj-detail p{margin:8px 0;font-size:15px}
+.obj-chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.obj-chips span{font-family:var(--fm);font-size:11px;border:1px solid var(--line);border-radius:10px;padding:1px 8px;color:var(--ink-soft)}
+.obj-facts{border-collapse:collapse;width:100%;font-size:13.5px}
+.obj-facts th,.obj-facts td{border-bottom:1px solid var(--line-soft);padding:5px 6px;text-align:left;vertical-align:top}
+.obj-facts th{font-family:var(--fm);font-size:11px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);white-space:nowrap}
+.obj-note{grid-column:1/-1;font-size:14px;color:var(--ink-mute)}
+@media(max-width:760px){.obj-wrap{grid-template-columns:1fr}.obj-detail{position:static;order:-1}.obj-grid{max-height:340px}}
+.obj-flyp{margin:12px 0 10px}
+.obj-fly{font-family:var(--fm);font-size:12.5px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:7px;padding:7px 12px;cursor:pointer}
+.obj-fly:hover{background:var(--accent);border-color:var(--accent)}
+.obj-fly:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.obj-facts code a{color:inherit}
+/* flight */
+.flight-plate{outline:none}
+.flight-plate:focus-visible{box-shadow:0 0 0 3px var(--hl),var(--plate-shadow)}
+.flight-crafts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+.flight-btn{font-family:var(--fm);font-size:12.5px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.flight-btn:hover{border-color:var(--accent)}
+.flight-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.flight-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.flight-btn.flight-primary{background:var(--ink);border-color:var(--ink);color:#fff;min-width:74px}
+.flight-btn.flight-held{background:var(--amber);border-color:var(--amber);color:#fff}
+.flight-btn:disabled{opacity:.45;cursor:default}
+.flight-main{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:22px;align-items:start}
+.flight-view{min-width:0}
+.flight-panelcv{display:block;width:100%;max-width:600px;height:auto;image-rendering:pixelated;border-radius:4px;background:#fff;border:1px solid var(--line-soft)}
+.flight-chartwrap{position:relative;margin-top:14px}
+.flight-chart{display:block;width:100%;height:250px;touch-action:pan-y}
+.flight-tip{position:absolute;top:0;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-family:var(--fm);font-size:12px;line-height:1.5;color:var(--ink-soft);box-shadow:var(--plate-shadow);white-space:nowrap}
+.flight-tip b{color:var(--ink);font-weight:500}
+.flight-tip i{display:inline-block;width:12px;height:2px;vertical-align:3px;margin-right:6px;border-radius:1px}
+.flight-side{min-width:0}
+.flight-dial{display:block;width:150px;height:150px;margin:0 auto 6px}
+.flight-dial-ring{fill:var(--surface-2);stroke:var(--line);stroke-width:1}
+.flight-dial-crash{fill:var(--coral);fill-opacity:.14;stroke:none}
+.flight-dial-horizon{stroke:var(--ink-mute);stroke-width:1}
+.flight-dial-lbl{font-family:var(--fm);font-size:8px;fill:var(--coral);text-anchor:middle}
+.flight-dial-nose{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.flight-dial-tip{fill:var(--ink)}
+.flight-stats{margin:0;font-family:var(--fm);font-size:12px;line-height:1.45;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px}
+.flight-stats dt{color:var(--ink-mute);white-space:nowrap}
+.flight-stats dd{margin:0;color:var(--ink);overflow-wrap:anywhere}
+.flight-stats dd.flight-warn{color:var(--coral);font-weight:500}
+.flight-stats dd.flight-good{color:var(--green);font-weight:500}
+.flight-controls{display:flex;flex-wrap:wrap;gap:18px 28px;margin-top:18px;align-items:flex-start}
+.flight-group{min-width:0}
+.flight-grow{flex:1 1 380px}
+.flight-label{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 6px}
+.flight-label:not(:first-child){margin-top:12px}
+.flight-stick{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,40px);gap:5px}
+.flight-stick .flight-btn{padding:0;font-size:15px}
+.flight-stick .flight-btn small{display:block;font-size:9px;letter-spacing:.02em;margin-top:1px}
+.flight-keys{display:flex;flex-wrap:wrap;gap:5px}
+.flight-keys .flight-btn{min-width:36px;padding:7px 8px;text-align:center}
+.flight-run{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flight-run+.flight-run{margin-top:8px}
+.flight-rates{display:inline-flex;gap:4px;margin-left:6px}
+.flight-rates .flight-btn{padding:7px 9px}
+.flight-rec{margin-top:18px;font-family:var(--fm);font-size:12px;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:flex-end}
+.flight-rec-title{color:var(--ink-mute);margin-right:4px;align-self:center}
+.flight-field{display:flex;flex-direction:column;align-items:center}
+.flight-field span{white-space:nowrap}
+.flight-field .flight-bytes{color:var(--ink);background:var(--surface-2);border-radius:4px;padding:1px 5px}
+.flight-field .flight-bytes.flight-changed{background:var(--hl)}
+.flight-field .flight-fname{font-size:10px;color:var(--ink-mute)}
+.flight-log{list-style:none;margin:14px 0 0;padding:10px 12px;background:var(--surface-2);border-radius:6px;font-family:var(--fm);font-size:12px;line-height:1.6;color:var(--ink-soft);max-height:150px;overflow-y:auto}
+.flight-log:empty{display:none}
+.flight-log li b{color:var(--ink);font-weight:500}
+.flight-log li.flight-bad b{color:var(--coral)}
+.flight-log li.flight-ok b{color:var(--green)}
+.flight-tablewrap{overflow-x:auto}
+.flight-table{border-collapse:collapse;font-family:var(--fm);font-size:12.5px;width:100%;font-variant-numeric:tabular-nums}
+.flight-table th,.flight-table td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.flight-table th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
+.flight-table .flight-n{text-align:right}
+.flight-table .flight-raw{display:block;color:var(--ink-mute);font-size:10.5px}
+.flight-table .flight-dim{color:var(--ink-mute)}
+.flight-table .flight-match{color:var(--green)}
+.flight-table .flight-miss{color:var(--coral)}
+.flight-table td.flight-span{color:var(--ink-soft)}
+@media (max-width:760px){
+  .flight-main{grid-template-columns:1fr}
+  .flight-side{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;align-items:start}
+  .flight-dial{width:120px;height:120px;margin:0}
+  .flight-chart{height:220px}
+}
+@media (max-width:480px){
+  .flight-side{grid-template-columns:1fr}
+  .flight-dial{margin:0 auto}
+}
+.flight-table tr.flight-on td{background:var(--hl)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Eight craft to board, and one flying step that nearly all of them share: the models, the sixteen bytes that set each craft's handling, and top speeds that match Zzap!64's table to the digit.</p>
+</header>
+<main class="wrap">
+<section id="objects">
+  <p class="fig">01 · Models</p>
+  <h2 class="t">All eight craft</h2>
+  <p class="lede">Objects 0 to 7 are the craft B can board. The other 56 objects are on the <a href="objects.html">Objects</a> tab.</p>
+  <div class="plate">
+    <div class="obj-wrap">
+      <div class="obj-filter" id="obj-filter" role="group" aria-label="Show"></div>
+      <div class="obj-grid" id="obj-grid" data-kinds="craft" data-first="1" role="listbox" aria-label="Craft"><p class="obj-note">This catalogue reads the game from <code>listing.json</code>, so it needs the built site.</p></div>
+      <div class="obj-detail" id="obj-detail" aria-live="polite"></div>
+    </div>
+    <p class="cap">Every model drawn from its bytes, through the pointers at <code>$2800</code>/<code>$2840</code>: the last vertex number, then three signed bytes a vertex (X, height, Y) in steps of 16 units, then the edges (<code>$97AB</code>-<code>$97F9</code>). There are no faces, so every edge shows. Where each object starts, its room and its flags are the game's tables at the start (<code>$2480</code>-<code>$25FF</code>, <code>$2880</code>-<code>$29FF</code>). Drag the large view to turn it.</p>
+  </div>
+</section>
+
+<section id="flight-records">
+  <p class="fig">02 · The craft</p>
+  <h2 class="t">All vehicle stats</h2>
+  <p class="lede">Each craft's handling is sixteen bytes at <code>$9DAD</code>, copied to <code>$BEA0</code> when you board and after every airborne pass.</p>
+  <div class="plate">
+    <div class="flight-tablewrap"><table class="flight-table" id="flight-rectable">
+      <thead><tr><th>Record</th><th>Craft</th><th>Routine</th><th>Turn kept</th><th>Turn step</th><th>Pitch step</th><th>Bank</th><th>Climb</th><th>Speed kept</th><th>Ceiling</th><th>Thrust</th></tr></thead>
+      <tbody><tr><td colspan="11">The table is read from the game's bytes in listing.json, which the built site serves.</td></tr></tbody>
+    </table></div>
+    <p class="cap">Decoded from the bytes at <code>$9DAD</code> by the loader <code>$9D99</code>: each float is a mantissa byte m and an exponent byte, worth (1 + m/256) × 2^e, e being the exponent byte's top six bits (signed) and bit 0 the sign. Byte 12 (<code>$10</code> in records 0-7) is read by nothing. The Dart and CHEESE are named by the game's own messages and the new ship by the script that runs when it is shot. The game prints no name for the Hovercar, Concord 111, Hexapod or Sprintcar. Those four names are from the hire tariff on the Central City map in Novagen's Targ Survival Kit, matched to the objects by shape and top speed. Zzap!64 13's table calls the same four the Car, Jet, Palyar Diamond and Land Dart, and gives where each one starts. The tariff also lists a Casper-Hanley Eagle 8SE, "available soon". Read the initials, with the 8 as an E: it is the CHEESE.</p>
+  </div>
+</section>
+
+<section id="flight-fly">
+  <p class="fig">03 · Flying</p>
+  <h2 class="t">The flight model</h2>
+  <p class="lede">Every craft but the interstellar ship runs the same flying step once a pass, with its handling read from a 16-byte record: take-off needs speed, the climb fades above the craft's ceiling, and a touchdown crashes only on a steep drop or a steep nose.</p>
+  <div class="plate flight-plate" id="flight-widget" tabindex="0" aria-label="Flight model: pick a craft, press throttle keys and move the stick">
+    <div class="flight-crafts" id="flight-crafts" role="group" aria-label="Craft"></div>
+    <div class="flight-main">
+      <div class="flight-view">
+        <canvas id="flight-panel" class="flight-panelcv" width="600" height="72" role="img" aria-label="The game's LOC, ALT and SPEED readouts"></canvas>
+        <div class="flight-chartwrap" id="flight-chartwrap">
+          <canvas id="flight-chart" class="flight-chart" role="img" aria-label="Speed and height, pass by pass"></canvas>
+          <div class="flight-tip" id="flight-tip" hidden></div>
+        </div>
+      </div>
+      <div class="flight-side">
+        <svg class="flight-dial" id="flight-dial" viewBox="-60 -60 120 120" role="img" aria-label="Pitch">
+          <circle class="flight-dial-ring" r="50"></circle>
+          <path class="flight-dial-crash" id="flight-dial-crash"></path>
+          <line class="flight-dial-horizon" x1="-54" y1="0" x2="54" y2="0"></line>
+          <text class="flight-dial-lbl" x="0" y="34">crash</text>
+          <g id="flight-dial-nose"><line class="flight-dial-nose" x1="-30" y1="0" x2="44" y2="0"></line><path class="flight-dial-tip" d="M44,0 L36,-5 L36,5 Z"></path></g>
+        </svg>
+        <dl class="flight-stats" id="flight-stats"></dl>
+      </div>
+    </div>
+    <div class="flight-controls">
+      <div class="flight-group">
+        <p class="flight-label">Stick</p>
+        <div class="flight-stick" id="flight-stick" role="group" aria-label="Stick"></div>
+      </div>
+      <div class="flight-group flight-grow">
+        <p class="flight-label">Throttle keys</p>
+        <div class="flight-keys" id="flight-keys" role="group" aria-label="Throttle keys"></div>
+        <p class="flight-label">Run</p>
+        <div class="flight-run">
+          <button type="button" class="flight-btn flight-primary" id="flight-go">Run</button>
+          <button type="button" class="flight-btn" id="flight-step">One pass</button>
+          <button type="button" class="flight-btn" id="flight-reset">Start again</button>
+          <span class="flight-rates" id="flight-rates" role="group" aria-label="Passes a second"></span>
+        </div>
+        <div class="flight-run">
+          <button type="button" class="flight-btn" id="flight-replay">The recorded take-off</button>
+          <button type="button" class="flight-btn" id="flight-climb">Climb flat out</button>
+        </div>
+      </div>
+    </div>
+    <div class="flight-rec" id="flight-rec" aria-label="The motion record in use"></div>
+    <ol class="flight-log" id="flight-log" aria-live="polite"></ol>
+    <p class="cap">The flying step (<code>$9F17</code>-<code>$A13C</code>), the ground routine (<code>$9EFD</code>) and the throttle keys (<code>$B47E</code>, <code>$B499</code>), ported from the listing with the game's two-byte floats and its sine table, and the readouts drawn with the panel's own glyphs from <code>$7800</code> (<code>$B53D</code>). Checked against the Dart recorded in the emulator (all 253 passes match in speed, throttle, pitch, height, X, Y and the motion record) and against the original code in a 6502 simulator (1.2 million random passes identical). Keys work when the plate has focus: arrows for the stick, digits, SHIFT + digit, SPACE, + and -.</p>
+  </div>
+  <p>The throttle keys set a target, and the speed chases it: each pass the speed becomes (speed + throttle × thrust) × kept. On the ground a craft slower than 128 has its nose held level. Faster, it takes the level pitch's sine, -0.003, sinks below height 64 and lands again, every pass, until the stick lifts the nose. In the air the height changes by speed × sine of the pitch × the record's climb factor; climbing above the ceiling byte, that factor's power of two is replaced by the ceiling minus the height's top byte. A touchdown crashes when that pass's height step is 256 or more, or the nose is more than 45 degrees down.</p>
+  <p>Two things follow from the arithmetic. Every craft has a hard ceiling: above its ceiling byte the climb shrinks until the truncated step is zero. Flat out with the nose straight up, the Dart stops at ALT 24000, well short of the Colony Craft's 64997; with the Poweramp, as in the Concord 111 or the CHEESE, the top is ALT 105000, which the panel prints <code>**000</code>. And the sine table is sampled half a step off, so the level pitch's sine is −0.003, not 0. Level flight sinks slowly, a fast craft on the ground lands again every pass, and in reverse a craft climbs: SHIFT + 0 lifts the Dart off the ground with its nose level, 9 units a pass. The emulator shows the same heights, 67, 74, 82 and on.</p>
+</section>
+
+<section id="flight-top">
+  <p class="fig">04 · Top speeds</p>
+  <h2 class="t">Top speeds: Zzap! 64's table</h2>
+  <p class="lede">With key 0 and then + held until the game refuses it, the port's top speeds are the figures Zzap! 64 printed in May 1986.</p>
+  <div class="plate">
+    <div class="flight-tablewrap"><table class="flight-table" id="flight-toptable">
+      <thead><tr><th>Craft</th><th>Starts at</th><th class="flight-n">Air, the port</th><th class="flight-n">Zzap!64</th><th class="flight-n">Ground, the port</th><th class="flight-n">Zzap!64</th></tr></thead>
+      <tbody><tr><td colspan="6">The speeds are computed by the port, which reads the game's bytes from listing.json, served by the built site.</td></tr></tbody>
+    </table></div>
+    <p class="cap">SPEED as the panel prints it (<code>$B5A8</code>): the speed's whole part, high byte as two digits and low byte × 25/64 as two more. Zzap! 64's figures are green where the port gives the same. Holding + multiplies the throttle by 1.03 a pass and stops after 23 passes at 32512, where the next step would reach 2^15 (<code>$B4A7</code>). On the ground every craft lands each pass and takes record 8's speed kept, 0.25. Zzap! 64 13 (May 1986), pages 61-62.</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+window.MERC_GAME = window.C64 ? C64.load('listing.json') : Promise.reject(new Error('no C64'));
+window.MERC_GAME.catch(() => {});
+</script>
+<script>
+/* rooms */
+// The underground: Mercenary's 174 rooms, parsed from the game's own bytes and drawn the way
+// the game draws them. Core (window.MercRooms, shared with rooms-levels.js) plus the How it
+// works widget (#rooms-view). Every table is read at run time from the image that
+// C64.load('listing.json') rebuilds (window.MERC_GAME); nothing is embedded.
+(function (root) {
+  'use strict';
+
+  // ---- Where things are (all in listing.json) ----------------------------------------------
+  const AD = {
+    ROOM_LO: 0x2300, ROOM_HI: 0x23C0,       // room n's record, n = $01-$AE
+    LOG: 0x5800, EXP: 0x5900,               // 256 log2(1 + i/256), 256 (2^(i/256) - 1)
+    SIN_M: 0x5A00, SIN_E: 0x5B00,           // sin((i + 0.5) 90/256 degrees) as floats
+    OUTLINE: 0x928A, OUTLINE_OFS: 0x932B,   // door outlines, offset per door type
+    BOX_FROM: 0x933A, BOX_TO: 0x9346,       // the box's 12 edges, read at +1..+12
+    OCT_MAP: 0xBBD0, CORNER_X: 0xBBD8, CORNER_Y: 0xBBE0,
+    CLIP_BITS: 0xBBE8, CLIP_START: 0xBBF8, CLIP_END: 0xBC18,
+    LIFT_X: 0xB4B6, LIFT_Y: 0xB4BE,         // lift n's square, n = 1-8
+    OBJ_ROOM: 0x2940, OBJ_FLAGS: 0x29C0,
+    MSG_LO: 0x20A0, MSG_HI: 0x20E0, DICT_LO: 0x2120, DICT_HI: 0x2210, SCRIPTS: 0x0800,
+  };
+  const FIRST = 0x01, LAST = 0xAE, SCALE = 0x18;   // $21: the focal exponent byte, 2^6 = 64
+  const CX = 80, CY = 68;                          // $8E, $8F underground
+
+  const h2 = n => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  const h4 = n => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+
+  // ---- 6502 arithmetic, for porting the game's routines step by step -----------------------
+  function adc(a, b, c) { const r = a + b + c; return [r & 255, r > 255 ? 1 : 0, ((a ^ r) & (b ^ r) & 0x80) ? 1 : 0]; }
+  function sbc(a, b, c) { const r = a - b - (1 - c); return [r & 255, r >= 0 ? 1 : 0, ((a ^ b) & (a ^ r) & 0x80) ? 1 : 0]; }
+
+  // ---- The game's floats ----------------------------------------------------------------------
+  // Two bytes [m, e]: e's bits 2-7 are a signed power of two, bit 0 the sign; the value is
+  // +-(1 + m/256) 2^power. Each function below is the routine named beside it, step for step
+  // (the tests run both on random operands and compare every byte).
+  function floats(ram) {
+    const L = ram.subarray(AD.LOG, AD.LOG + 256), X2 = ram.subarray(AD.EXP, AD.EXP + 256);
+    const SM = ram.subarray(AD.SIN_M, AD.SIN_M + 256), SE = ram.subarray(AD.SIN_E, AD.SIN_E + 256);
+    const sat = r => (r & 0x80) ? [0, (r & 1) | 0x78] : [0, (r & 1) | 0x84];   // fp_saturate $831A
+    // a x b by logarithms: fp_mul $82FA (check = true) or the same code inline (no overflow test)
+    function mul(a, b, check) {
+      const [s, c] = adc(L[a[0]], L[b[0]], 0);
+      const e = c ? (a[1] + 4) & 255 : a[1];
+      const [r, , v] = adc(e, b[1], 0);
+      if (v && check) return sat(r);
+      return [X2[s], r & 0xFD];
+    }
+    // a / b: fp_div $8334 (check = true) or inline
+    function div(a, b, check) {
+      const [d, c] = sbc(L[a[0]], L[b[0]], 1);
+      let e = a[1] | 2;
+      if (!c) e = (e - 4) & 255;
+      const [r, , v] = sbc(e, b[1], 1);
+      if (v && check) return sat(r);
+      return [X2[d], r & 0xFD];
+    }
+    // renormalise after a subtraction: fp_normalise $83D5
+    function norm(a, ey) {
+      let n = 0, c;
+      do { c = a >> 7; a = (a << 1) & 255; n = (n - 1) & 255; } while (!c);
+      const [r, , v] = adc((n << 2) & 255, ey, 0);
+      return v ? [0, 0x84] : [a, r];
+    }
+    // x (the X, Y operand) + f (the $08, $09 operand): fp_add $838B
+    function add(x, f) {
+      const [xm, xe] = x, [fm, fe] = f;
+      const big = () => (xe & 0x80) ? [fm, fe] : [xm, xe];                   // $836C
+      let [a, c, v] = sbc(xe, fe, 1);
+      if (v) return big();
+      const diff = a;
+      [a, c, v] = adc(diff, 1, c);
+      if (v) return big();
+      const unlike = diff & 1;
+      const tail = (lm, sm, ey) => {                                          // $83C2 / $83D1
+        if (!unlike) { const r = lm + sm; return r > 255 ? [(r & 255) >> 1, (ey + 4) & 255] : [r, ey]; }
+        const r = lm - sm;
+        return r >= 0 ? [r, ey] : norm(r & 255, ey);
+      };
+      if (a & 0x80) {                                                         // $83F5: f is larger
+        if (a < 0xE0) return [fm, fe];
+        const d = 8 - ((a >> 2) & 7);
+        return tail(fm, (256 + xm) >> d, fe);
+      }
+      const d = a >> 2;
+      if (d === 0) {                                                          // $8359: same power
+        if (!unlike) { const r = xm + fm; return [(r >> 1) & 255, (xe + 4) & 255]; }
+        const r = xm - fm;
+        if (r === 0) { const [q, , w] = sbc(xe, 0x24, 1); return w ? [0, (q & 1) | 0x84] : [0, q]; }
+        return r > 0 ? norm(r, xe) : norm((-r) & 255, fe);
+      }
+      if (d >= 9) return [xm, xe];
+      return tail(xm, (256 + fm) >> d, xe);
+    }
+    // signed 24-bit integer to a float, truncating: int24_to_fp $8510
+    function fromInt(v) {
+      v = ((v % 0x1000000) + 0x1000000) % 0x1000000;
+      const sign = v >> 23;
+      const n = sign ? (0x1000000 - v) & 0xFFFFFF : v;
+      let a, low, x;
+      if (n >> 16) { a = n >> 16; low = (n >> 8) & 255; x = 24; }
+      else if (n >> 8) { a = n >> 8; low = n & 255; x = 16; }
+      else if (n) { a = n; low = 0; x = 8; }
+      else return [0, 0xE0];
+      let c;
+      do { x--; const lo7 = low >> 7; low = (low << 1) & 255; c = a >> 7; a = ((a << 1) | lo7) & 255; } while (!c);
+      return [a, ((x << 2) | sign) & 255];
+    }
+    // float to a signed byte, halves away from zero; null when it does not fit: fp_to_int8 $8477
+    function toByte(f) {
+      const [m, e] = f;
+      let a, c;
+      if (e & 0x80) { a = 0; c = e >= 0xFC ? 1 : 0; }
+      else {
+        const n = e >> 2;
+        if (n >= 7) return null;
+        const full = 256 + m, sh = 8 - n;
+        a = full >> sh; c = (full >> (sh - 1)) & 1;
+      }
+      a += c;
+      if (a & 0x80) return null;
+      if (e & 1) a = (256 - a) & 255;
+      return a;
+    }
+    // float to a signed 16-bit integer: the magnitude truncated, a negative value as its ones'
+    // complement (-trunc - 1); null from e = 15 up: fp_to_int16 $84A7
+    function toInt16(f) {
+      const [m, e] = f;
+      if (e & 0x80) return (e & 1) ? -1 : 0;
+      const n = e >> 2;
+      if (n >= 15) return null;
+      const mag = (((256 + m) << 7) >> (15 - n)) & 0xFFFF;
+      return (e & 1) ? -mag - 1 : mag;
+    }
+    // the line routines' slope byte from a ratio below 1: $9B1E then fp_to_int16 (truncates)
+    function slopeByte(f) { return toInt16([f[0], (f[1] + 0x20) & 0xFC]) & 255; }
+    // sine and cosine of a 10-bit angle (lo, hi): fp_sin10 $841F, fp_cos10 $841E
+    function sin10(lo, hi) { const x = (hi & 1) ? lo ^ 0xFF : lo; return [SM[x], SE[x] | ((hi >> 1) & 1)]; }
+    function cos10(lo, hi) { return sin10(lo, (hi + 1) & 255); }
+    const value = f => (f[1] & 1 ? -1 : 1) * (1 + f[0] / 256) * Math.pow(2, ((f[1] >> 2) ^ 32) - 32);
+    const neg = f => [f[0], f[1] ^ 1];
+    return { mul, div, add, norm, fromInt, toByte, toInt16, slopeByte, sin10, cos10, value, neg };
+  }
+
+  // ---- Text: the message decoder of work/merc-text.js ($8E1E), the parts a room name needs ----
+  function text(ram) {
+    function ch(c) {
+      c &= 0x7F;
+      if (c < 10) return String(c);
+      if (c < 16) return '*+,-./'[c - 10];
+      if (c === 0x6D) return '?';
+      if (c === 0x6E) return '!';
+      if (c === 0x6F) return "'";
+      return String.fromCharCode(c);
+    }
+    function word(n) {
+      let a = ((ram[AD.DICT_LO + n] | ram[AD.DICT_HI + n] << 8) + 1) & 0xFFFF, s = '';
+      for (let i = 0; i < 40; i++) { const c = ram[a++]; s += ch(c); if (c & 0x80) break; }
+      return s;
+    }
+    function decode(a) {
+      let s = '';
+      for (let guard = 0; guard < 200; guard++) {
+        const t = ram[a];
+        if (t === 0) break;
+        if (t === 0xFF) { let b = a + 1, w = ''; for (let i = 0; i < 60; i++) { const c = ram[b++]; w += ch(c); if (c & 0x80) break; } s += ' ' + w; a = b; continue; }
+        if (t === 0xEF) { s += ' '; a++; continue; }
+        if (t >= 0xF0) { s += t >= 0xF8 ? ' [figure]' : ' [word]'; a++; continue; }
+        s += (t < 8 ? '' : ' ') + word(t); a++;
+      }
+      return s.replace(/\s+/g, ' ').trim();
+    }
+    const canned = n => decode(((ram[AD.MSG_LO + n] | ram[AD.MSG_HI + n] << 8) + 1) & 0xFFFF);
+    // The first line a script prints: its first op 1 (print) or op 20 (canned message), passing
+    // over the calls (the waits), variable and figure settings before it.
+    const LEN = { 2: 1, 4: 3, 13: 6, 14: 6, 15: 3, 16: 2, 17: 2, 25: 4, 28: 1, 30: 2, 32: 2 };
+    function scriptTitle(n) {
+      let a = ram[AD.SCRIPTS + 2 * n] | ram[AD.SCRIPTS + 2 * n + 1] << 8;
+      for (let i = 0; i < 12; i++) {
+        const op = ram[a] & 0x3F;
+        if (op === 1) return { text: decode(a + 1), at: a };
+        if (op === 20) return { text: canned(ram[a + 1]), at: a, canned: ram[a + 1] };
+        if (!LEN[op]) return null;
+        a += LEN[op];
+      }
+      return null;
+    }
+    return { canned, scriptTitle, word, decode };
+  }
+
+  // ---- Rooms --------------------------------------------------------------------------------
+  // A record ($90F6-$9287): byte 0 X size (bit 7 booth), 1 height (bits 0-2) and n (bits 3-7),
+  // 2 Y size (bit 7: n is a script, else a canned message), 3 and 4 colours; doors of 4 bytes
+  // (type, destination, X, Y) until a 0, or $80 for a dark room; a booth then holds (room, door)
+  // pairs at bytes 10-13, room $72 eight of them at bytes 10-25.
+  const KIND = ['', '', 'plain', 'triangle', 'up arrow', 'down arrow', 'cross', 'diagonal', '',
+    'key 17', 'key 18', 'key 19', 'key 20', 'key 21', 'key 22', 'key 23'];
+  function parseRoom(ram, n) {
+    const a = ram[AD.ROOM_LO + n] | ram[AD.ROOM_HI + n] << 8, b = i => ram[a + i];
+    const r = {
+      n, a, xs: b(0) & 0x7F, booth: !!(b(0) & 0x80), h: b(1) & 7, num: b(1) >> 3,
+      ys: b(2) & 0x7F, script: !!(b(2) & 0x80), c10: b(3), c11: b(4), doors: [], dark: false,
+    };
+    let y = 5;
+    for (;;) {
+      const t = b(y);
+      if (t === 0 || t === 0x80) { r.dark = t === 0x80; r.endAt = a + y; y++; break; }
+      r.doors.push({ i: r.doors.length, a: a + y, t, type: t & 15, wallX: !!(t & 0x80), arr: (t >> 4) & 7, dest: b(y + 1), x: b(y + 2), y: b(y + 3) });
+      y += 4;
+    }
+    r.len = y;
+    if (r.booth) {
+      r.pairs = [];
+      for (let k = 0; k < (n === 0x72 ? 8 : 2); k++) r.pairs.push({ room: b(10 + 2 * k), arr: (b(11 + 2 * k) >> 4) & 7, a: a + 10 + 2 * k });
+      r.len = Math.max(r.len, 10 + 2 * r.pairs.length);
+    }
+    return r;
+  }
+
+  function build(ram) {
+    const F = floats(ram), T = text(ram);
+    const rooms = [null];
+    for (let n = FIRST; n <= LAST; n++) rooms.push(parseRoom(ram, n));
+    const lifts = [null];
+    for (let k = 1; k <= 8; k++) lifts.push({ x: ram[AD.LIFT_X + k], y: ram[AD.LIFT_Y + k] });
+    // what each room holds at the start ($2940)
+    const objects = rooms.map(() => []);
+    for (let o = 0; o < 64; o++) { const rm = ram[AD.OBJ_ROOM + o]; if (rm >= FIRST && rm <= LAST) objects[rm].push(o); }
+    // names, as Benson prints them
+    for (let n = FIRST; n <= LAST; n++) {
+      const r = rooms[n];
+      if (!r.num) r.name = null;
+      else if (r.script) { const t = T.scriptTitle(r.num); r.name = t ? t.text : null; r.nameFrom = 'script ' + r.num; }
+      else { r.name = T.canned(r.num); r.nameFrom = 'canned message ' + r.num; }
+    }
+    const G = { ram, F, T, rooms, lifts, objects, dark: T.canned(1), locked: T.canned(0),
+      tables: {
+        outline: i => ram[AD.OUTLINE + i], outlineOfs: t => ram[AD.OUTLINE_OFS + t],
+        boxFrom: i => ram[AD.BOX_FROM + 1 + i], boxTo: i => ram[AD.BOX_TO + 1 + i],
+        octMap: i => ram[AD.OCT_MAP + i], cornerX: i => ram[AD.CORNER_X + i], cornerY: i => ram[AD.CORNER_Y + i],
+        clipBits: i => ram[AD.CLIP_BITS + i], clipStart: i => ram[AD.CLIP_START + i], clipEnd: i => ram[AD.CLIP_END + i],
+      } };
+    G.complexes = complexes(G);
+    return G;
+  }
+
+  // Where a door can lead: its destination, or for a booth's door 0, which is relinked on
+  // entry, any room the booth's pairs name.
+  function targets(G, r, d) {
+    if (r.booth && d.i === 0) return r.pairs.map(p => ({ room: p.room, arr: p.arr }));
+    return [{ room: d.dest, arr: d.arr }];
+  }
+
+  // ---- The room's model: build_room $9162, room_add_door $922F ------------------------------
+  // 64 vertex slots of 24-bit X, height, Y (world units, 256 to a size unit); the box's corners
+  // come from the sizes, each door adds its outline's points and joins them in order.
+  function model(G, r) {
+    const T = G.tables, X = new Int32Array(64), H = new Int32Array(64), Y = new Int32Array(64);
+    const edges = [], owner = [];
+    for (let i = 0; i < 12; i++) { edges.push([T.boxFrom(i), T.boxTo(i)]); owner.push(-1); }
+    for (const i of [0, 1, 4, 5]) X[i] = r.xs << 8;
+    for (const i of [0, 1, 2, 3]) H[i] = r.h << 8;
+    for (const i of [0, 3, 4, 7]) Y[i] = r.ys << 8;
+    let last = 7;
+    for (const d of r.doors) {
+      let k = T.outlineOfs(d.type);
+      const first = last + 1;
+      for (let guard = 0; guard < 16; guard++) {
+        const along = T.outline(k);
+        if (along === 0xFF) break;
+        last++;
+        if (last > 63) throw new Error('room ' + h2(r.n) + ': more than 64 vertices');
+        if (d.wallX) { X[last] = d.x << 8; Y[last] = (d.y << 8) | along; }
+        else { X[last] = (d.x << 8) | along; Y[last] = d.y << 8; }
+        H[last] = T.outline(k + 1);
+        k += 2;
+      }
+      for (let v = first; v < last; v++) { edges.push([v, v + 1]); owner.push(d.i); }
+    }
+    return { X, H, Y, last, edges, owner };
+  }
+
+  // ---- Projection: vertex_rel $A5CE and the heading-only project_vertex_level $A979 ----------
+  // eye: {x, y, h} 24-bit, head 10-bit (lo, hi as $2C, $2D), mirror ($F1). Returns per vertex
+  // the clip flags (bit 7 behind, 0 x off, 1 y off), screen x/y, projected floats, view floats.
+  function project(G, M, eye) {
+    const F = G.F, sinH = F.sin10(eye.head & 255, eye.head >> 8), cosH = F.cos10(eye.head & 255, eye.head >> 8);
+    const V = [];
+    const rel = (v, p) => F.fromInt(((v - p) % 0x1000000 + 0x1000000) % 0x1000000);
+    for (let i = 0; i <= M.last; i++) {
+      const X = rel(M.X[i], eye.x), Hh = rel(M.H[i], eye.h), Y = rel(M.Y[i], eye.y);
+      const z0 = F.add(F.mul(X, sinH), F.mul(Y, cosH));
+      const vz = F.neg(z0);
+      let clip = (vz[1] & 1) ? 0x80 : 0, sx, sy, px, py;
+      const xs = F.add(F.mul(X, cosH), F.neg(F.mul(Y, sinH)));
+      const vx = [xs[0], xs[1] ^ (eye.mirror ? 1 : 0)];
+      if (!clip) {
+        px = F.div(vx, vz);
+        const [r, , v] = adc(px[1], SCALE, 0);
+        const b = v ? null : F.toByte([px[0], r]);
+        if (b === null) clip = 1;
+        else { sx = (b + CX) & 255; if (sx >= 160) clip = 1; }
+      }
+      const h1 = F.neg(Hh);
+      const [e4, , v4] = adc(h1[1], 4, 0);
+      const vy = [h1[0], v4 ? h1[1] : e4];
+      if (!(clip & 0x80)) {
+        py = F.div(vy, vz);
+        const [r, , v] = adc(py[1], SCALE, 0);
+        const b = v ? null : F.toByte([py[0], r]);
+        if (b === null) clip |= 2;
+        else { sy = (b + CY) & 255; if (sy >= 136) clip |= 2; }
+      }
+      V.push({ clip, sx, sy, px, py, vx, vy, vz });
+    }
+    return V;
+  }
+
+  // ---- One edge: draw_edge $99DD, edge_end_behind $9B2C, edge_clip_start $9C36 ---------------
+  // plot(x, y) receives every pixel the game's line routine ($AC61 + 47n) would set.
+  const CLIPWIN = F => ({ left: F.fromInt(-CX), right: F.fromInt(159 - CX), top: F.fromInt(-CY), bottom: F.fromInt(135 - CY) });
+  function drawEdge(G, V, i, j, plot) {
+    const F = G.F, T = G.tables;
+    let s = i, e = j;
+    const ci = V[i].clip, cj = V[j].clip;
+    if (ci !== 0) {
+      if (ci & 0x80) { if (cj & 0x80) return; s = j; e = i; }
+      else if (cj === 0) { s = j; e = i; }
+      else if (!(cj & 0x80) && ((V[i].vz[1] ^ 0x80) < (V[j].vz[1] ^ 0x80))) { s = j; e = i; }
+    }
+    const S = V[s], E = V[e];
+    let dx, dy, oct = 0, slope;
+    if (!(E.clip & 0x80)) {                         // both in front: from the projected points
+      dx = F.add(E.px, F.neg(S.px)); oct = (dx[1] << 1) & 2;
+      dy = F.add(E.py, F.neg(S.py)); oct |= dy[1] & 1;
+    } else {                                         // end behind: the way the line heads
+      const k = F.neg(F.div(E.vz, S.vz));
+      dx = F.add(E.vx, F.mul(k, S.vx)); oct = ((dx[1] ^ S.vz[1]) << 1) & 2;
+      dy = F.add(E.vy, F.mul(k, S.vy)); oct |= (dy[1] ^ S.vz[1]) & 1;
+    }
+    slope = F.div(dy, dx);                            // dY/dX, kept for the clipping
+    let ratio = slope;
+    if (!(slope[1] & 0x80)) { oct |= 4; ratio = F.div(dx, dy); }
+    const step = (ratio[1] & 0x80) ? F.slopeByte(ratio) : 0xFF;
+    const rt = T.octMap(oct);
+    let x1, y1;
+    if (E.clip) { x1 = T.cornerX(rt); y1 = T.cornerY(rt); } else { x1 = E.sx; y1 = E.sy; }
+    let x0 = S.sx, y0 = S.sy;
+    if (S.clip) {                                    // start off screen: enter by an edge
+      const region = c => (((c.px[1] << 3) & 8) | ((c.py[1] << 2) & 4));
+      const edges = T.clipStart((T.clipBits(region(S) | S.clip) | rt) >> 1);
+      if (!edges) return;
+      if (!(E.clip & 0x80)) {
+        const idx = (T.clipBits(region(E) | E.clip) | rt) >> 1;
+        if (!(idx >= 32 ? 1 : T.clipEnd(idx))) return;
+      }
+      const W = CLIPWIN(F), sc = w => [w[0], (w[1] - SCALE) & 255];
+      const cross = (w, a, b, byDiv, centre, lim) => {
+        let f = F.add(F.neg(a), sc(w));
+        f = byDiv ? F.div(f, slope, true) : F.mul(slope, f, true);
+        f = F.add(b, f);
+        const [r, , v] = adc(f[1], SCALE, 0);
+        if (v) return null;
+        const q = F.toByte([f[0], r]);
+        if (q === null) return null;
+        const t = (q + centre) & 255;
+        return t < lim ? t : null;
+      };
+      let t;
+      if ((edges & 1) && (t = cross(W.right, S.px, S.py, false, CY, 136)) !== null) { x0 = 159; y0 = t; }
+      else if ((edges & 2) && (t = cross(W.bottom, S.py, S.px, true, CX, 160)) !== null) { x0 = t; y0 = 135; }
+      else if ((edges & 4) && (t = cross(W.left, S.px, S.py, false, CY, 136)) !== null) { x0 = 0; y0 = t; }
+      else if ((edges & 8) && (t = cross(W.top, S.py, S.px, true, CX, 160)) !== null) { x0 = t; y0 = 0; }
+      else return;
+    }
+    line(rt, x0, y0, x1, y1, step, plot);
+  }
+
+  // The eight line routines: plot, stop when the major axis reaches the end, else step it, add
+  // or subtract the slope (with the carry the end test left) and step the minor axis on a carry
+  // or borrow, stopping if that leaves the view. [major dx, dy, minor dx, dy, add?]
+  const OCT = [[1, 0, 0, 1, 1], [0, 1, 1, 0, 1], [0, 1, -1, 0, 1], [-1, 0, 0, 1, 0],
+               [-1, 0, 0, -1, 0], [0, -1, -1, 0, 1], [0, -1, 1, 0, 0], [1, 0, 0, -1, 1]];
+  function line(rt, x, y, x1, y1, slope, plot) {
+    const [mx, my, nx, ny, add] = OCT[rt], xMajor = mx !== 0;
+    let err = 0x80;
+    for (let guard = 0; guard < 512; guard++) {
+      if (x < 160 && y < 136) plot(x, y);
+      const p = xMajor ? x : y, q = xMajor ? x1 : y1;
+      if (p === q) return;
+      const c = p >= q ? 1 : 0;                      // the carry CPX/CPY left
+      x = (x + mx) & 255; y = (y + my) & 255;
+      let minor;
+      if (add) { const r = err + slope + c; err = r & 255; minor = r > 255; }
+      else { const r = err - slope - (1 - c); err = r & 255; minor = r < 0; }
+      if (minor) {
+        x = (x + nx) & 255; y = (y + ny) & 255;
+        if (nx && (x === 160 || x === 255)) return;
+        if (ny && (y === 136 || y === 255)) return;
+      }
+    }
+  }
+
+  // ---- Objects: object_loop $9706, draw_object $9728, model_vertex_rel $A61F -----------------
+  // The objects in the room (list_room_objects $9374: $2940 = the room), each a model at
+  // $2800/$2840: last vertex, three signed bytes a vertex in 16s, then the edges.
+  const OBJ = { XL: 0x2880, XM: 0x2480, XH: 0x2540, HL: 0x28C0, HM: 0x24C0, HH: 0x2580, YL: 0x2900, YM: 0x2500, YH: 0x25C0,
+    MLO: 0x2800, MHI: 0x2840, ANG_XH: 0x800A, ANG_HY: 0x801A, ANG_HEAD: 0x802A, SIN64: 0x8457 };
+  function sin64(ram, a) { a &= 0x3F; const v = ram[OBJ.SIN64 + (a & 0x1F)]; return a >= 0x20 ? (-v) & 255 : v; }
+  // smul8_q7 $82D3: sign(a y) * (|a| * (2|y| mod 256) >> 8)
+  function smul8(a, y) {
+    const sign = (a ^ y) & 0x80, ya = y & 0x80 ? (256 - y) & 255 : y, aa = a & 0x80 ? (256 - a) & 255 : a;
+    const p = (aa * ((ya << 1) & 255)) >> 8;
+    return sign ? (256 - p) & 255 : p;
+  }
+  // rotate_pair $A728: (X, Y) by angle A (64 a turn)
+  function rot(ram, x, y, ang) {
+    const s = sin64(ram, ang), c = sin64(ram, ang + 16);
+    return [(smul8(c, x) - smul8(s, y)) & 255, (smul8(c, y) + smul8(s, x)) & 255];
+  }
+  function roomObjects(G, n) {
+    const out = [];
+    for (let o = 0x3F; o >= 0; o--) if (G.ram[AD.OBJ_ROOM + o] === n) out.push(o);
+    return out;
+  }
+  function drawObject(G, st, o, plot) {
+    const ram = G.ram, F = G.F;
+    const pos = (l, m, h) => ram[h + o] << 16 | ram[m + o] << 8 | ram[l + o];
+    const rel = (v, p) => ((v - p) % 0x1000000 + 0x1000000) % 0x1000000;
+    let rx = rel(pos(OBJ.XL, OBJ.XM, OBJ.XH), st.x), rh = rel(pos(OBJ.HL, OBJ.HM, OBJ.HH), st.h), ry = rel(pos(OBJ.YL, OBJ.YM, OBJ.YH), st.y);
+    const near = v => { const a = v & 0x800000 ? 0x1000000 - v : v; return (a >> 8) < 0x100; };   // within_box, one square
+    if (!(near(rx) && near(rh) && near(ry))) return false;   // far objects are dots: never underground
+    rx = (rx - 0x800) & 0xFFFFFF; rh = (rh - 0x800) & 0xFFFFFF; ry = (ry - 0x800) & 0xFFFFFF;
+    const m = ram[OBJ.MLO + o] | ram[OBJ.MHI + o] << 8, last = ram[m];
+    const M = { X: [], H: [], Y: [], last };
+    let k = m + 1;
+    for (let i = 0; i <= last; i++, k += 3) {
+      let x = ram[k], h = ram[k + 1], y = ram[k + 2];
+      if (o < 16) {                                          // orient_vertex $A6AD
+        let a = ram[OBJ.ANG_HEAD + o]; if (a) [y, x] = rot(ram, y, x, a);
+        a = ram[OBJ.ANG_HY + o]; if (a) [h, y] = rot(ram, h, y, a);
+        a = ram[OBJ.ANG_XH + o]; if (a) [x, h] = rot(ram, x, h, a);
+      }
+      M.X.push((rx + ((x ^ 0x80) << 4)) & 0xFFFFFF); M.H.push((rh + ((h ^ 0x80) << 4)) & 0xFFFFFF); M.Y.push((ry + ((y ^ 0x80) << 4)) & 0xFFFFFF);
+    }
+    // project relative to the eye at 0: the model's points are offsets already
+    const V = project(G, M, { x: 0, y: 0, h: 0, head: st.head, mirror: st.mirror });
+    const n = ram[k];
+    if (n < 0x80) for (let e = 0; e <= n; e++) { const b = ram[k + 1 + e]; drawEdge(G, V, b >> 4, b & 15, plot); }
+    else for (let e = 0; e <= (n & 0x7F); e++) drawEdge(G, V, ram[k + 1 + 2 * e], ram[k + 2 + 2 * e], plot);
+    return true;
+  }
+
+  // ---- A whole view: frame_start's fill ($B197, all $AA), draw_building $96E7 (ORA), then the
+  // objects (AND, $ADFC). Returns 160 x 136 pixel pairs (0 = %00, 2 = %10, 3 = %11) and, for each
+  // pixel, what drew it: a door's number, -1 the box, 100 + n object n, -2 nothing.
+  function render(G, st, opts) {
+    const r = G.rooms[st.room], M = model(G, r);
+    const V = project(G, M, st);
+    const pix = new Uint8Array(160 * 136).fill(2), who = new Int16Array(160 * 136).fill(-2);
+    for (let k = M.edges.length - 1; k >= 0; k--) {
+      const [a, b] = M.edges[k], d = M.owner[k];
+      drawEdge(G, V, a, b, (x, y) => { const o = y * 160 + x; pix[o] |= 1; if (who[o] < d || who[o] === -2) who[o] = d; });
+    }
+    const objs = opts && opts.objects === false ? [] : roomObjects(G, st.room);
+    for (const o of objs.slice().reverse()) drawObject(G, st, o, (x, y) => { const q = y * 160 + x; pix[q] = 0; who[q] = 100 + o; });
+    return { pix, who, M, V, objects: objs };
+  }
+
+  // The four colours of a room's view: %00 $C2 (white), %01 blue (ORA #$60, $BB4C), %10 byte 3
+  // ($C4 -> $A5, the matrix's low nibble), %11 byte 4 ($C5 -> $A6, colour RAM); a dark room
+  // unlit sets $C2, $C4 and $C5 to 0 ($91FE).
+  function colours(G, st) {
+    const r = G.rooms[st.room];
+    if (r.dark && !st.lit) return [0, 6, 0, 0];
+    return [1, 6, r.c10 & 15, r.c11 & 15];
+  }
+
+  function paint(ctx, pix, cols, PAL, sx = 2, sy = 1) {
+    const img = ctx.createImageData(160 * sx, 136 * sy), rgb = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    for (let y = 0; y < 136 * sy; y++) for (let x = 0; x < 160 * sx; x++) {
+      const c = rgb[cols[pix[(y / sy | 0) * 160 + (x / sx | 0)]]], o = (y * 160 * sx + x) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  // ---- Moving: keep_in_room $939E, enter_room $90F6, walk_step $A1ED, door_check $9437 --------
+  // Positions here are the low 16 bits (middle:low); underground the high bytes are 0 ($9167).
+  // keep_in_room: $20 from each wall; returns how many walls were touched.
+  function keep(G, st) {
+    const r = G.rooms[st.room];
+    let touched = 0;
+    const lim = (v, size) => {
+      if (v & 0x8000 || v < 0x20) { touched++; return 0x20; }            // $93A4: negative or < 0.$20
+      const max = ((size - 1) << 8) | 0xDF;
+      if (((v >> 8) + 1) > size || (((v >> 8) + 1) === size && (v & 255) >= 0xDF)) { touched++; return max; }
+      return v;
+    };
+    st.x = lim(st.x & 0xFFFF, r.xs); st.y = lim(st.y & 0xFFFF, r.ys);
+    return touched;
+  }
+  const clamp = (G, st) => { keep(G, st); return st; };
+  // Arrive in room n by its door k ($9148): the middle bytes are the bytes at 4k+7 and 4k+8 of
+  // its record, the low bytes $80 along the wall and 0 across it by bit 7 of the byte at 4k+5,
+  // then keep_in_room. (Room $45's door 0 names door 6 of room $96, which has four: the game
+  // reads on into room $97's record, and so does this.) A booth first relinks its door 0 ($9119).
+  function enter(G, st, n, k, random) {
+    const r = G.rooms[n], from = st.room, links = Object.assign({}, st.links || {}), ram = G.ram;
+    let mirror = st.mirror || 0, flash = 0;
+    if (r.booth) {
+      let p;
+      if (n === 0x72) p = r.pairs[Math.floor((random || Math.random)() * 8)];
+      else if (from !== r.pairs[0].room) p = r.pairs[0];
+      else if (from !== r.pairs[1].room) p = r.pairs[1];
+      // Coming from the room both pairs name, $9125 skips the relink, the flash and the mirror.
+      if (p) {
+        links[n] = { room: p.room, arr: p.arr };
+        flash = 10;
+        if (n === 0x7F) { mirror ^= 1; flash = 0x1F; }
+      }
+    }
+    const t = ram[r.a + 4 * k + 5];
+    const out = { room: n, head: st.head, h: st.h, mirror, lit: st.lit, keys: st.keys, links, flash, from, via: k, guard: 2,
+      x: (ram[r.a + 4 * k + 7] << 8) | ((t & 0x80) ^ 0x80), y: (ram[r.a + 4 * k + 8] << 8) | (t & 0x80) };
+    if (!r.doors[k]) out.missing = k;
+    return clamp(G, out);
+  }
+  // One pass of walking: $AA/$AB is the float 80 (set by the start-up's LDA #$40, LDA #$18 at
+  // $724D, $7251), its sign flipped going forward; Y += int(step cos h), X += int(step sin h)
+  // through fp_mul and fp_to_int16.
+  function walkStep(G, st, forward) {
+    const F = G.F, h = st.head & 0x3FF, step = [G.ram[0x724E], G.ram[0x7252] ^ (forward ? 1 : 0)];
+    const dy = F.toInt16(F.mul(F.cos10(h & 255, h >> 8), step, true));   // X, Y = cos h; $08, $09 = step
+    const dx = F.toInt16(F.mul(F.sin10(h & 255, h >> 8), step, true));
+    st.y = (st.y + dy) & 0xFFFF; st.x = (st.x + dx) & 0xFFFF;
+    if (st.guard) st.guard--;
+    return st;
+  }
+  // Turning on foot: the stick adds or takes $AC a pass (16, the start-up's LDA #$10 at $7249),
+  // left adds; the mirror swaps the stick's left and right ($A165).
+  function turn(G, st, left) {
+    const d = G.ram[0x724A] * (left ? 1 : -1) * (st.mirror ? -1 : 1);
+    st.head = (st.head + d) & 0x3FF; return st;
+  }
+  // door_check $9437: the door the player is passing through, if any (keys not tested here: the
+  // result says which object the door wants). Needs the player against the wall (after keep).
+  function doorTest(G, st) {
+    const r = G.rooms[st.room], ram = G.ram;
+    const xlo = st.x & 255, xm = st.x >> 8, ylo = st.y & 255, ym = st.y >> 8;
+    for (let k = 0, y = r.a + 5; ; k++, y += 4) {
+      const t = ram[y];
+      if (!((t << 1) & 255)) return null;
+      if ((((xlo + (t & 0x80)) >> 8) + xm & 255) !== ram[y + 2]) continue;
+      if (!((((ylo - 0x40) & 255) ^ t) & 0x80)) continue;
+      if ((((ylo + ((t & 0x80) ^ 0x80)) >> 8) + ym & 255) !== ram[y + 3]) continue;
+      if ((((xlo - 0x28) & 255) ^ t) & 0x80) continue;
+      const q = ((st.head >> 8) + 2 + ((st.head >> 7) & 1)) & 255;
+      if ((q & 1) !== (t >> 7)) continue;
+      return { k, dest: ram[y + 1], arr: (t >> 4) & 7, key: (t & 15) >= 8 ? 8 + (t & 15) : 0 };
+    }
+  }
+  // Where a door leads now: its record, or for a booth's door 0 the last relink.
+  function destination(G, st, d) {
+    const r = G.rooms[st.room];
+    if (r.booth && d.i === 0 && st.links && st.links[r.n]) return st.links[r.n];
+    return { room: d.dest, arr: d.arr };
+  }
+  // The heading that faces a door's wall head-on, out of the room (the door test $947F wants the
+  // heading within 45 degrees of the crossing axis).
+  function facing(r, d) {
+    if (d.wallX) return d.x === 0 ? 256 : 768;
+    return d.y === 0 ? 0 : 512;
+  }
+  // Take the lift down to hangar k: door 0's placement, then middle bytes 8 and 8 ($A2EB);
+  // the ride ends at height 128 ($A302).
+  function lift(G, k, head) {
+    const st = enter(G, { room: 0, head: head || 512, h: 0x80, links: {} }, k, 0);
+    st.x = 0x0800 | (st.x & 255); st.y = 0x0800 | (st.y & 255); st.flash = 0; st.from = 0;
+    return st;
+  }
+
+  // ---- Complexes and floor plans ------------------------------------------------------------
+  // Rooms joined by doors that are not booths make a complex. Placing each room so that its
+  // doors meet the doors they lead to gives a floor plan; where two paths disagree the first
+  // placement is kept and the disagreement is counted.
+  function complexes(G) {
+    const seen = new Map(), out = [];
+    const starts = [1, 3, 4, 5, 6, 7, 8, 0x9A, 0x88];
+    for (const s of starts) {
+      if (seen.has(s)) continue;
+      const pos = new Map([[s, [0, 0]]]), q = [s], off = [];
+      while (q.length) {
+        const n = q.shift(), r = G.rooms[n], [ox, oy] = pos.get(n);
+        if (r.booth) continue;
+        for (const d of r.doors) {
+          if (!d.dest || G.rooms[d.dest].booth) continue;
+          const D = G.rooms[d.dest], back = D.doors[d.arr];
+          if (!back) { off.push({ from: n, door: d.i, why: 'no door ' + d.arr + ' in ' + h2(d.dest) }); continue; }
+          const p = [ox + d.x - back.x, oy + d.y - back.y];
+          if (!pos.has(d.dest)) { pos.set(d.dest, p); q.push(d.dest); }
+          else { const o = pos.get(d.dest); if (o[0] !== p[0] || o[1] !== p[1]) off.push({ from: n, door: d.i, to: d.dest, dx: p[0] - o[0], dy: p[1] - o[1] }); }
+        }
+      }
+      for (const n of pos.keys()) seen.set(n, out.length);
+      out.push({ start: s, rooms: [...pos.keys()].sort((a, b) => a - b), pos, off });
+    }
+    // the Colony Craft's floors stand on top of one another through booths $86 and $87
+    return out;
+  }
+
+  // ---- Labels ---------------------------------------------------------------------------------
+  const HEADING = h => ['north', 'north-west', 'west', 'south-west', 'south', 'south-east', 'east', 'north-east'][((h + 64) >> 7) & 7];
+  // An object's label: its name when the game has one for it (canned message n, printed on
+  // taking it when $29C0 bit 3 is set, and the Mechanoid, 12, whom the scripts name), else what
+  // the code makes of it: the seven keys (17-23) open the key-shaped doors, type = object - 8.
+  function objectLabel(G, o) {
+    if ((G.ram[AD.OBJ_FLAGS + o] & 8) || o === 12) return G.T.canned(o);
+    if (o >= 17 && o <= 23) return 'key ' + o;
+    return 'object ' + o;
+  }
+  function roomLabel(G, n) {
+    if (n === 0) return 'outside';
+    const r = G.rooms[n];
+    return h2(n) + (r.name ? ' ' + r.name : r.booth ? ' (booth)' : '');
+  }
+
+  // ---- The viewer ---------------------------------------------------------------------------
+  // host: an element to fill. opts.picker: a room list; opts.start: the first standpoint.
+  function viewer(host, G, opts) {
+    opts = opts || {};
+    const PAL = root.C64.PAL, ram = G.ram;
+    const START = () => Object.assign({ room: 8, x: 0x0820, y: 0x0880, h: 0x80, head: 512, mirror: 0, links: {}, lit: false, keys: false, guard: 0 }, opts.start || {});
+    host.innerHTML = `
+      <div class="rooms-screen">
+        <canvas class="rooms-canvas" width="320" height="136" tabindex="0" aria-label="The view in the room: arrow keys walk and turn, click a door to go through it"></canvas>
+        <div class="rooms-msg" aria-live="polite"></div>
+      </div>
+      <div class="rooms-where"></div>
+      <div class="rooms-bar">
+        <button type="button" data-k="left" title="Turn left (hold)">&#8630; Left</button>
+        <button type="button" data-k="fwd" title="Walk forward (hold)">&#8593; Forward</button>
+        <button type="button" data-k="back" title="Walk back (hold)">&#8595; Back</button>
+        <button type="button" data-k="right" title="Turn right (hold)">Right &#8631;</button>
+        <label title="Object 16: dark rooms are lit while it is carried or lies in the room"><input type="checkbox" data-o="lit"> Photon Emitter</label>
+        <label title="Objects 17-23: each opens the doors of its shape"><input type="checkbox" data-o="keys"> Keys</label>
+        ${opts.picker ? '<select class="rooms-pick" aria-label="Go to room"></select>' : ''}
+        <button type="button" data-k="restart">Start again</button>
+      </div>
+      <div class="rooms-doors"></div>
+      <div class="rooms-rec"></div>`;
+    const cv = host.querySelector('canvas'), ctx = root.C64.canvas(cv, 320, 136);
+    cv.style.width = '100%'; cv.style.height = 'auto';
+    const msg = host.querySelector('.rooms-msg'), where = host.querySelector('.rooms-where');
+    const doorsEl = host.querySelector('.rooms-doors'), recEl = host.querySelector('.rooms-rec');
+    const pick = host.querySelector('.rooms-pick');
+    let st = START(), view = null, hover = -1, flashT = null, note = '', listeners = [];
+
+    if (pick) pick.innerHTML = G.rooms.slice(1).map(r => `<option value="${r.n}">${roomLabel(G, r.n)}${r.dark ? ' (dark)' : ''}</option>`).join('');
+
+    function said(r) {                          // what Benson prints for this room ($F7, $AEE4)
+      if (r.num && !r.script) return r.name;    // the room's canned message replaces "dark"
+      if (r.dark && !st.lit) return G.dark;
+      return r.name || '';
+    }
+    function paintNow(cols) {
+      paint(ctx, view.pix, cols || colours(G, st), PAL);
+      if (hover >= 0) {
+        ctx.fillStyle = '#ffffff';
+        for (let o = 0; o < view.who.length; o++) if (view.who[o] === hover) ctx.fillRect((o % 160) * 2, (o / 160 | 0), 2, 1);
+      }
+    }
+    function draw() {
+      const r = G.rooms[st.room];
+      view = render(G, st);
+      clearInterval(flashT);
+      if (st.flash) {                           // the booth's flash: %10 takes $BB7E + $F0 a pass
+        let f = st.flash; st.flash = 0;
+        const cols = colours(G, st);
+        flashT = setInterval(() => {
+          if (--f <= 0) { clearInterval(flashT); paintNow(); return; }
+          const c = cols.slice(); c[2] = ram[0xBB7E + f] & 15; paintNow(c);
+        }, 70);
+      } else paintNow();
+      msg.textContent = note || said(r) || ' ';
+      msg.classList.toggle('rooms-quiet', !note && !said(r));
+      note = '';
+      const fx = v => (v / 256).toFixed(2);
+      const here = view.objects.map(o => objectLabel(G, o) + ' (' + o + ')');
+      where.innerHTML = `Room <code>${h2(r.n)}</code>, record <code>${h4(r.a)}</code> · X ${fx(st.x)} Y ${fx(st.y)} of ${r.xs} × ${r.ys} · facing ${HEADING(st.head)} (${st.head})${st.mirror ? ' · mirrored' : ''}${here.length ? ' · here: ' + here.join(', ') : ''}`;
+      doorList(r); record(r);
+      if (pick) pick.value = String(st.room);
+      listeners.forEach(f => f(st));
+    }
+    function doorList(r) {
+      doorsEl.innerHTML = r.doors.map(d => {
+        const t = destination(G, st, d), key = d.type >= 8 ? d.type + 8 : 0;
+        return `<button type="button" data-door="${d.i}" class="rooms-door${key ? ' rooms-keyed' : ''}"><span class="rooms-dk">${KIND[d.type] || 'type ' + d.type}</span> ${roomLabel(G, t.room)}${r.booth && d.i === 0 ? ' <span class="rooms-sub">(relinked)</span>' : ''}</button>`;
+      }).join('') || '<span class="rooms-sub">No doors.</span>';
+    }
+    function record(r) {
+      const b = i => ram[r.a + i].toString(16).toUpperCase().padStart(2, '0');
+      const bytes = (i, n) => Array.from({ length: n }, (_, k) => b(i + k)).join(' ');
+      const sw = c => `<span class="rooms-sw" style="background:${PAL[c & 15]}"></span>`;
+      const rows = [
+        [`<code>${h4(r.a)}</code>`, bytes(0, 3), `${r.xs} × ${r.ys} units, ${r.h} high${r.booth ? '; bit 7: transporter booth' : ''}; ${r.num ? (r.script ? 'bit 7 of byte 2: script ' + r.num + ' on entry' : 'canned message ' + r.num) : 'n = 0: no name'}`],
+        [`<code>${h4(r.a + 3)}</code>`, bytes(3, 2), `${sw(r.c10)} ${r.c10 & 15} fills the view (%10), ${sw(r.c11)} ${r.c11 & 15} draws the lines (%11)`],
+        ...r.doors.map(d => [`<code>${h4(d.a)}</code>`, bytes(d.a - r.a, 4),
+          `door ${d.i}: ${KIND[d.type] || 'type ' + d.type}${d.type >= 8 ? ' (needs object ' + (d.type + 8) + ')' : ''}, in a wall of constant ${d.wallX ? 'X' : 'Y'} at ${d.x}, ${d.y}; to ${d.dest ? h2(d.dest) : 'room 0, outside'}, arriving by its door ${d.arr}`]),
+        [`<code>${h4(r.endAt)}</code>`, b(r.endAt - r.a), r.dark ? '$80: dark, unless the Photon Emitter is carried or here' : '0: end of the doors'],
+      ];
+      if (r.booth) rows.push([`<code>${h4(r.pairs[0].a)}</code>`, bytes(10, 2 * r.pairs.length),
+        `${r.pairs.length} links for door 0 (room, door): ${r.pairs.map(p => h2(p.room) + '/' + p.arr).join(', ')}; ${r.n === 0x72 ? 'one at random' : 'the room you did not come from'}`]);
+      recEl.innerHTML = `<table class="rooms-tbl"><thead><tr><th>At</th><th>Bytes</th><th>Room ${h2(r.n)}</th></tr></thead><tbody>` +
+        rows.map(x => `<tr><td>${x[0]}</td><td class="rooms-b">${x[1]}</td><td>${x[2]}</td></tr>`).join('') + '</tbody></table>';
+    }
+    function go(s) { st = s; hover = -1; draw(); }
+    // Through door k as the door test would let the player through, facing it head-on.
+    function through(k) {
+      const r = G.rooms[st.room], d = r.doors[k];
+      if (!d) return;
+      const t = destination(G, st, d);
+      if (d.type >= 8 && !st.keys) { note = G.locked + ': the door wants object ' + (d.type + 8) + ' carried.'; draw(); return; }
+      const onWall = d.wallX ? (d.x === 0 || d.x === r.xs) && d.y < r.ys : (d.y === 0 || d.y === r.ys) && d.x < r.xs;
+      if (!onWall) { note = 'The door test never finds this door: it is recorded at ' + d.x + ', ' + d.y + ', off the walls of a room ' + r.xs + ' by ' + r.ys + '.'; draw(); return; }
+      if (t.room === 0) { note = 'Room 0 is outside: the player drops from beside the Colony Craft.'; draw(); return; }
+      go(enter(G, Object.assign({}, st, { head: facing(r, d) }), t.room, t.arr));
+    }
+    // One main-loop pass of the stick: turn or walk, keep inside, then the door test.
+    function pass(k) {
+      const s = Object.assign({}, st);
+      if (k === 'left' || k === 'right') turn(G, s, k === 'left');
+      else walkStep(G, s, k === 'fwd');
+      const touched = keep(G, s);
+      if (touched && !s.guard) {
+        const d = doorTest(G, s);
+        if (d) {
+          if (d.key && !s.keys) { note = G.locked + ': the door wants object ' + d.key + ' carried.'; st = s; draw(); return false; }
+          if (d.dest === 0) { note = 'Room 0 is outside: the player drops from beside the Colony Craft.'; st = s; draw(); return false; }
+          const t = destination(G, s, G.rooms[s.room].doors[d.k]);
+          go(enter(G, s, t.room, t.arr)); return false;
+        }
+      }
+      st = s; draw(); return true;
+    }
+    let rep = null;
+    const stop = () => { clearInterval(rep); rep = null; };
+    host.querySelector('.rooms-bar').addEventListener('pointerdown', ev => {
+      const b = ev.target.closest('button[data-k]'); if (!b) return;
+      const k = b.dataset.k;
+      if (k === 'restart') { const s = START(); s.lit = st.lit; s.keys = st.keys; go(s); return; }
+      stop(); pass(k);
+      rep = setInterval(() => { if (!pass(k)) stop(); }, 60);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(e => host.querySelector('.rooms-bar').addEventListener(e, stop));
+    host.querySelector('.rooms-bar').addEventListener('keydown', ev => {      // Enter/Space on a focused button
+      const b = ev.target.closest('button[data-k]');
+      if (b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if (b.dataset.k === 'restart') go(START()); else for (let i = 0; i < 4; i++) if (!pass(b.dataset.k)) break; }
+    });
+    host.querySelectorAll('input[data-o]').forEach(inp => inp.addEventListener('change', () => { st[inp.dataset.o] = inp.checked; draw(); }));
+    cv.addEventListener('keydown', ev => {
+      const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'fwd', ArrowDown: 'back' }[ev.key];
+      if (k) { ev.preventDefault(); pass(k); }
+    });
+    if (pick) pick.addEventListener('change', () => show(+pick.value));
+    doorsEl.addEventListener('click', ev => { const b = ev.target.closest('button[data-door]'); if (b) through(+b.dataset.door); });
+    doorsEl.addEventListener('mouseover', ev => { const b = ev.target.closest('button[data-door]'); const h = b ? +b.dataset.door : -1; if (h !== hover) { hover = h; paintNow(); } });
+    doorsEl.addEventListener('focusin', ev => { const b = ev.target.closest('button[data-door]'); if (b) { hover = +b.dataset.door; paintNow(); } });
+    doorsEl.addEventListener('mouseleave', () => { hover = -1; paintNow(); });
+    cv.addEventListener('click', ev => {         // a door under the pointer: go through it
+      const rc = cv.getBoundingClientRect();
+      const x = Math.floor((ev.clientX - rc.left) / rc.width * 160), y = Math.floor((ev.clientY - rc.top) / rc.height * 136);
+      let best = -1, bd = 1e9;
+      for (let dy = -5; dy <= 5; dy++) for (let dx = -3; dx <= 3; dx++) {
+        const X = x + dx, Y = y + dy;
+        if (X < 0 || X >= 160 || Y < 0 || Y >= 136) continue;
+        const w = view.who[Y * 160 + X], dd = 4 * dx * dx + dy * dy;
+        if (w >= 0 && dd < bd) { bd = dd; best = w; }
+      }
+      if (best >= 0) through(best);
+    });
+    cv.addEventListener('mousemove', ev => {
+      const rc = cv.getBoundingClientRect();
+      const x = Math.floor((ev.clientX - rc.left) / rc.width * 160), y = Math.floor((ev.clientY - rc.top) / rc.height * 136);
+      let h = -1;
+      for (let dy = -5; dy <= 5 && h < 0; dy++) for (let dx = -3; dx <= 3 && h < 0; dx++) {
+        const X = x + dx, Y = y + dy;
+        if (X >= 0 && X < 160 && Y >= 0 && Y < 136 && view.who[Y * 160 + X] >= 0) h = view.who[Y * 160 + X];
+      }
+      let ob = -1;
+      for (let dy = -2; dy <= 2 && ob < 0; dy++) for (let dx = -1; dx <= 1 && ob < 0; dx++) {
+        const X = x + dx, Y = y + dy;
+        if (X >= 0 && X < 160 && Y >= 0 && Y < 136 && view.who[Y * 160 + X] >= 100) ob = view.who[Y * 160 + X] - 100;
+      }
+      cv.title = ob >= 0 ? objectLabel(G, ob) + ' (object ' + ob + ')' : h >= 0 ? 'Door ' + h + ': click to go through' : '';
+      cv.style.cursor = h >= 0 ? 'pointer' : '';
+      if (h !== hover) { hover = h; paintNow(); }
+    });
+    // Show room n: a hangar as the lift leaves you, any other room in the middle of the floor,
+    // facing its first door.
+    function show(n) {
+      const r = G.rooms[n];
+      let s;
+      if (n >= 1 && n <= 8) s = lift(G, n, st.head);
+      else { s = { room: n, x: r.xs << 7, y: r.ys << 7, h: 0x80, head: r.doors.length ? facing(r, r.doors[0]) : 0, guard: 0 }; keep(G, s); }
+      go(Object.assign(s, { lit: st.lit, keys: st.keys, links: st.links, mirror: st.mirror }));
+    }
+    draw();
+    return { show, get state() { return st; }, on: f => listeners.push(f), G };
+  }
+
+  root.MercRooms = { AD, h2, h4, KIND, HEADING, floats, text, parseRoom, build, targets, model, project, drawEdge, line,
+    render, colours, paint, keep, clamp, enter, walkStep, turn, doorTest, destination, facing, lift, complexes,
+    objectLabel, roomLabel, viewer, CX, CY, SCALE };
+
+  // ---- The How it works widget (#rooms-view) ----------------------------------------------------
+  if (typeof document === 'undefined') return;
+  if (root.MERC_GAME) root.MERC_GAME.catch(() => {});    // handled at once; each widget reports its own failure
+  function start() {
+    const host = document.getElementById('rooms-view');
+    if (!host) return;
+    const fail = () => { host.innerHTML = '<p class="rooms-note">This viewer reads the game from <code>listing.json</code>, so it needs the built site.</p>'; };
+    if (!root.MERC_GAME) { fail(); return; }
+    root.MERC_GAME.then(game => { viewer(host, build(game.ram), { start: { head: 768 } }); }).catch(fail);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* objects */
+// The 64 objects: every model drawn from its bytes, with where it starts and what its flags
+// and the code make of it. Names are canned message n where the game prints one ($29C0 bit 3,
+// and the Mechanoid); the rest are described by their shapes. The page names the kinds its catalogue
+// holds in data-kinds on the grid (Vehicles: the craft; Objects: the rest), and none named means all 64.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  if (!$('objects') || !window.MERC_GAME) return;
+  const KINDS = [['craft', 'Craft'], ['moving', 'Moved by the game'], ['take', 'Things to take'], ['key', 'Keys'],
+    ['room', 'Furniture and fittings'], ['sign', 'Signs'], ['out', 'Out of doors']];
+  // [kind, label, what the code does with it]
+  const O = {
+    0: ['craft', "The brother-in-law's new ship", 'Hovers 32,769 units up and moves south along column 00 by 1/256 of a square every surface pass, wrapping from row 15 back to row 0 (<code>$85C5</code>). Shooting it starts script 27. Top speed 11,475 in the air.'],
+    1: ['craft', 'Dominion Dart', 'Stands at the crash site, where script 0 offers it for sale for 5,000 credits. Top speed 4,950 in the air, 9,900 with the Poweramp.'],
+    2: ['craft', 'Hovercar', 'Ground only, top speed 825. Parked at Jordan Airport.'],
+    3: ['craft', 'Concord 111', 'Starts in hangar 7, under the lift at <code>**-**</code>, far outside the city. Top speed 7,400.'],
+    4: ['craft', 'Hexapod', 'Starts in hangar 3, under 03-00. Top speed 1,650, and its climb gives out at ALT 14000.'],
+    5: ['craft', 'Sprintcar', 'Ground only, top speed 3,837. Starts in hangar 2, under 09-05.'],
+    6: ['craft', 'CHEESE', 'A flying wedge of cheese, top speed 9,900. Starts in the room beside hangar 4, under 11-13. The Survival Kit’s hire tariff lists it as the Casper-Hanley Eagle 8SE, "available soon": the initials, with the 8 as an E, spell its name.'],
+    7: ['craft', 'Interstellar ship', 'The escape. Starts in the dark hangar 5, under 03-15, which the lift reaches only with the Pass. Script 7 asks for the Novadrive before it will launch.'],
+    8: ['moving', 'Your missile', 'Fired from a craft on the surface, it flies along the view at 4,096 units a pass for 16 passes (<code>$886A</code>).'],
+    9: ['moving', 'Object 9', 'One of the objects the game moves (8 to 15, <code>$8690</code>), drawn as a Dart and out of play at the start. What it is used for is unknown.'],
+    10: ['moving', 'The wreck', 'Out of play until the crash landing puts it at the crash site, under your feet.'],
+    11: ['moving', 'Object 11', 'One of the objects the game moves (8 to 15), drawn as a Dart and out of play at the start. What it is used for is unknown.'],
+    12: ['moving', 'MECHANOID', 'Stands in the Mechanoid briefing room. Taking it runs script 12, THE MECHANOID DEMANDS THAT YOU PUT HIM DOWN. The Interview room asks for it.'],
+    13: ['moving', 'Object 13', 'One of the objects the game moves (8 to 15), drawn as a Dart and out of play at the start. What it is used for is unknown.'],
+    14: ['moving', "The attacker's missile", 'Aimed at you once when it is launched, and not steered after.'],
+    15: ['moving', 'The attack ship', 'Homes in on you by 1/32 of the distance every pass. Hitting it prints ENEMY SHIP DESTROYED.'],
+    16: ['take', 'PHOTON EMITTER', 'Carried, or lying in the room, it lights the 20 dark rooms (<code>$941A</code>, <code>$9425</code>).'],
+    24: ['take', 'ANTI TIME BOMB', 'Carried, it turns a hit on a destroyed building into its repair (<code>$87AF</code>, <code>$8816</code>).'],
+    25: ['take', 'NOVADRIVE', 'The interstellar ship will not launch without it: NOVADRIVE REQUIRED (script 7).'],
+    26: ['take', 'METAL DETECTOR', 'Carried on the surface, low down, the message window takes the colour of the square’s owner: blue for the Mechanoids, green for the Palyars, red for nobody (<code>$B542</code>).'],
+    27: ['take', 'ANTIGRAV', 'Carried, it lets T take heavy objects (<code>$9817</code>).'],
+    28: ['take', 'POWERAMP', 'Carried in the Dominion Dart, it doubles the thrust and raises the ceiling (<code>$9F8A</code>, <code>$A050</code>).'],
+    29: ['take', 'NEUTRON FUEL', 'Heavy. The Engine room and the Mechanoid fuel stores ask for it (scripts 3 and 20).'],
+    30: ['take', 'ANTENNA', 'With it in the Communication room, or carried there, the radio works (script 2).'],
+    31: ['take', 'ENERGY CRYSTAL', 'The Power room and the Mechanoid power room ask for it (scripts 14 and 22).'],
+    32: ['take', 'COFFIN', 'A coffin.'],
+    33: ['room', 'Board on a tripod', 'In the Conference room. No name: canned message 33 is a copy of 34’s, LARGE BOX.'],
+    34: ['take', 'LARGE BOX', 'The Stores and the Mechanoid stores ask for it (scripts 15 and 23).'],
+    35: ['take', 'USEFUL ARMAMENT', 'A gun, drawn flat.'],
+    36: ['room', 'Kitchen cabinet', 'In the Kitchen, beside the Kitchen Sink.'],
+    37: ['room', 'Falling graph', 'On the wall of the Exchequer: a line that falls out of its frame.'],
+    38: ['take', 'GOLD', 'The Exchequer asks for it (script 5).'],
+    39: ['room', 'Sofa', 'With the lamp and the fireplace.'],
+    40: ['take', 'SIGHTS', 'Carried, it turns on the gun sight, sprite 0 (<code>$9374</code>).'],
+    41: ['take', 'MEDICAL SUPPLIES', 'The Infirmary asks for them (script 9).'],
+    42: ['take', 'ESSENTIAL 12939 SUPPLY', 'A crate with PEPSI drawn on its side. The Conference room asks for it (script 4).'],
+    43: ['take', 'WINCHESTER', 'A bottle. The Laboratory and the Mechanoid laboratory ask for it (scripts 17 and 25).'],
+    44: ['take', 'CATERING PROVISIONS', 'The Kitchen asks for them (script 6).'],
+    45: ['take', 'DATABANK', 'The Control room asks for it (script 18).'],
+    46: ['take', 'PASS', 'Without it the lift at 03-15 answers PASS HOLDERS ONLY (<code>$B434</code>).'],
+    47: ['take', 'KITCHEN SINK', 'Carried, it lets T take fixed and heavy objects too (<code>$980B</code>).'],
+    48: ['take', 'Cobweb', 'Fixed, so it takes the Kitchen Sink to lift it. Carried, no door is locked (<code>$948E</code>). The game never names it.'],
+    49: ['room', 'Standard lamp', 'With the sofa and the fireplace.'],
+    50: ['out', 'Mast', 'A guyed mast 2,032 units tall, out in the wasteland at −34-11. What it is for is unknown.'],
+    51: ['room', 'Fireplace', 'With the sofa and the lamp.'],
+    52: ['room', 'Radio console', 'Fills a wall of the Communication room. With the Antenna there, it answers.'],
+    53: ['room', 'Table', 'In the Palyar briefing room.'],
+    54: ['room', 'Chair', 'In the Palyar briefing room, with the table.'],
+    55: ['room', 'Bed', 'In the Infirmary.'],
+    56: ['out', 'Pyramid', 'Out in the wasteland at −75-−39, 2,752 units a side. Carried, it lets D drop an object in mid-air (<code>$98FE</code>).'],
+    57: ['sign', 'Skull and crossbones', 'Marks the door from room $90 into the mirror booth.'],
+    58: ['sign', 'Skull and crossbones', 'Marks the door into dark hangar 5.'],
+    59: ['sign', 'Skull and crossbones', 'Marks the door into the prison.'],
+    60: ['sign', 'Skull and crossbones', 'Marks the door that drops you out of the Colony Craft.'],
+    61: ['out', 'Lift cage', 'The lift to hangar 6, at 81-35, where no building can be drawn. The cage covers the patch where E works.'],
+    62: ['out', 'Lift cage', 'The lift to hangar 7, at <code>**-**</code>.'],
+    63: ['out', 'The Colony Craft', 'Hangs over 08-08 at ALT 64997. Its model is a box 4,080 units across and 1,024 high.'],
+  };
+  const KEYS = { 17: 'triangle', 18: 'trapezoid', 19: 'pentagon', 20: 'house', 21: 'upside-down trapezoid', 22: 'hexagon', 23: 'bevelled' };
+  for (const k in KEYS) O[k] = ['key', 'Key ' + k, 'Opens the doors drawn with the ' + KEYS[k] + ' outline, door type ' + (k - 8) + ' (<code>$9493</code>).' + (k == 23 ? ' Among them hangar 8’s three doors, in the Colony Craft.' : '')];
+
+  // window.MercRooms is set by a script further down the page: wait for the whole document
+  const parsed = new Promise(r => (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', r) : r()));
+  Promise.all([window.MERC_GAME, parsed]).then(([G]) => {
+    const ram = G.ram, NS = 'http://www.w3.org/2000/svg';
+    const R = window.MercRooms, RG = R ? R.build(ram) : null;
+    const hex = (n, w) => n.toString(16).toUpperCase().padStart(w || 2, '0');
+    const s8 = b => (b > 127 ? b - 256 : b);
+    const s24 = v => (v >= 0x800000 ? v - 0x1000000 : v);
+    function model(o) {
+      const at = ram[0x2800 + o] | ram[0x2840 + o] << 8, n = ram[at] + 1, V = [], E = [];
+      let q = at + 1;
+      for (let i = 0; i < n; i++, q += 3) V.push([s8(ram[q]), s8(ram[q + 1]), s8(ram[q + 2])]);
+      const e = ram[q++];
+      if (e < 0x80) for (let i = 0; i <= e; i++, q++) E.push([ram[q] >> 4, ram[q] & 15]);
+      else for (let i = 0; i <= (e & 0x7F); i++, q += 2) E.push([ram[q], ram[q + 1]]);
+      return { at, V, E: E.filter(([a, b]) => V[a] && V[b]) };
+    }
+    const obj = [];
+    for (let o = 0; o < 64; o++) {
+      const m = model(o), ax = k => m.V.map(v => v[k]);
+      const size = [0, 1, 2].map(k => (Math.max(...ax(k)) - Math.min(...ax(k))) * 16);
+      obj.push({ o, m, size, room: ram[0x2940 + o], flags: ram[0x29C0 + o],
+        x: ram[0x2540 + o] << 16 | ram[0x2480 + o] << 8 | ram[0x2880 + o],
+        h: ram[0x2580 + o] << 16 | ram[0x24C0 + o] << 8 | ram[0x28C0 + o],
+        y: ram[0x25C0 + o] << 16 | ram[0x2500 + o] << 8 | ram[0x2900 + o], info: O[o] });
+    }
+    const shared = {};
+    obj.forEach(b => (shared[b.m.at] = shared[b.m.at] || []).push(b.o));
+
+    // a view from above and to one side: turn by yaw about the vertical, tilt by pitch
+    function proj(m, yaw, pitch, W, H, pad) {
+      const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+      const P = m.V.map(([x, h, y]) => { const u = x * cy - y * sy, d = x * sy + y * cy; return [u, -h * cp + d * sp]; });
+      return P;
+    }
+    function fit(P, W, H, pad, box) {
+      const xs = P.map(p => p[0]), ys = P.map(p => p[1]);
+      const b = box || { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+      const k = Math.min((W - 2 * pad) / ((b.x1 - b.x0) || 1), (H - 2 * pad) / ((b.y1 - b.y0) || 1));
+      const ox = W / 2 - (b.x0 + b.x1) / 2 * k, oy = H / 2 - (b.y0 + b.y1) / 2 * k;
+      return P.map(([x, y]) => [ox + x * k, oy + y * k]);
+    }
+    const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    function thumb(b) {
+      const W = 80, H = 60, P = fit(proj(b.m, 0.6, 0.45), W, H, 5);
+      let d = '';
+      for (const [a, c] of b.m.E) d += 'M' + P[a][0].toFixed(1) + ' ' + P[a][1].toFixed(1) + 'L' + P[c][0].toFixed(1) + ' ' + P[c][1].toFixed(1);
+      return '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true"><path d="' + d + '" fill="none" stroke="' + css('--ink') + '" stroke-width="1" stroke-linecap="round"/></svg>';
+    }
+
+    // where it starts
+    const sq = v => { const q = s24(v) >> 16; return q > 99 || q < -99 ? '**' : (q < 0 ? '−' : '') + String(Math.abs(q)).padStart(2, '0'); };
+    function where(b) {
+      if (b.room === 0xFF) return 'Out of play (room <code>$FF</code>)';
+      if (b.room === 0) {
+        let t = 'On the surface at LOC ' + sq(b.x) + '-' + sq(b.y);
+        const h = s24(b.h);
+        if (h > 0) t += ', ' + h.toLocaleString('en-GB') + ' units up';
+        return t;
+      }
+      return 'Room <code><a href="levels.html#room-' + hex(b.room) + '" title="Stand in it on the Maps tab">$' + hex(b.room) + '</a></code>' + (RG ? (() => { const l = R.roomLabel(RG, b.room).replace(/^\S+\s?/, ''); return l ? ', ' + l.replace(/^\((.*)\)$/, '$1') : ''; })() : '');
+    }
+    function chips(b) {
+      const f = b.flags, c = [];
+      if (f & 0x10) c.push('fixed: needs the Kitchen Sink');
+      if (f & 0x20) c.push('heavy: needs the Antigrav or the Sink');
+      if (f & 0x08) c.push('named when taken');
+      if (f & 0x04) c.push('taking or boarding it starts a script');
+      if (b.o < 8) c.push('B boards it');
+      return c.map(t => '<span>' + t + '</span>').join('');
+    }
+
+    // the picker
+    const grid = $('obj-grid'), det = $('obj-detail'), filt = $('obj-filter');
+    const only = (grid.dataset.kinds || '').split(/\s+/).filter(Boolean);
+    const shown = b => !only.length || only.includes(b.info[0]);
+    grid.innerHTML = '';
+    let kind = 'all', cur = (obj.find(shown) || obj[1]).o;
+    const cells = obj.map(b => {
+      const d = document.createElement('div');
+      d.className = 'obj-cell'; d.setAttribute('role', 'option'); d.tabIndex = -1; d.dataset.o = b.o;
+      d.innerHTML = thumb(b) + '<span>' + b.o + ' ' + b.info[1] + '</span>';
+      d.title = b.o + ': ' + b.info[1];
+      d.addEventListener('click', () => pick(b.o, true));
+      d.hidden = !shown(b);
+      grid.appendChild(d);
+      return d;
+    });
+    grid.addEventListener('keydown', e => {
+      const vis = cells.filter(c => !c.hidden), i = vis.findIndex(c => +c.dataset.o === cur);
+      const cols = Math.max(1, Math.round(grid.clientWidth / (vis[0] ? vis[0].offsetWidth + 6 : 80)));
+      const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
+      if (step === undefined) return;
+      e.preventDefault();
+      const n = vis[Math.max(0, Math.min(vis.length - 1, i + step))];
+      if (n) pick(+n.dataset.o, true);
+    });
+    const kinds = KINDS.filter(([k]) => obj.some(b => shown(b) && b.info[0] === k));
+    if (kinds.length < 2) filt.remove();      // one kind: nothing to choose between
+    else [['all', 'All ' + obj.filter(shown).length], ...kinds].forEach(([k, label]) => {
+      const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = label;
+      bt.setAttribute('aria-pressed', k === 'all' ? 'true' : 'false');
+      bt.addEventListener('click', () => {
+        kind = k; filt.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === bt ? 'true' : 'false'));
+        cells.forEach((c, o) => { c.hidden = !shown(obj[o]) || (k !== 'all' && obj[o].info[0] !== k); });
+        const first = cells.find(c => !c.hidden); if (first && cells[cur].hidden) pick(+first.dataset.o, false);
+      });
+      filt.appendChild(bt);
+    });
+
+    // the detail: a large turning view and the facts
+    let yaw = 0.6, pitch = 0.45, spin = true, raf = 0, bigBox = null;
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function drawBig() {
+      const cv = $('obj-big'); if (!cv) return;
+      const g = cv.getContext('2d'), W = cv.width, H = cv.height, b = obj[cur];
+      g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+      const P = fit(proj(b.m, yaw, pitch), W, H, 22, bigBox);
+      g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.lineCap = 'round'; g.beginPath();
+      for (const [a, c] of b.m.E) { g.moveTo(P[a][0], P[a][1]); g.lineTo(P[c][0], P[c][1]); }
+      g.stroke();
+    }
+    // one frame box for every angle, so the model turns without the scale breathing
+    function boxFor(m) {
+      const r = Math.max(...m.V.map(([x, , y]) => Math.hypot(x, y)), 1), hs = m.V.map(v => v[1]);
+      const h0 = Math.min(...hs), h1 = Math.max(...hs), cp = Math.cos(pitch), sp = Math.sin(pitch);
+      return { x0: -r, x1: r, y0: -h1 * cp - r * sp, y1: -h0 * cp + r * sp };
+    }
+    let visible = true;
+    function loop() { raf = 0; if (!spin || reduce || !visible) return; yaw += 0.012; drawBig(); raf = requestAnimationFrame(loop); }
+    const go = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    function pick(o, focus) {
+      cur = o;
+      cells.forEach(c => c.setAttribute('aria-selected', +c.dataset.o === o ? 'true' : 'false'));
+      if (focus) { cells[o].focus({ preventScroll: true }); cells[o].scrollIntoView({ block: 'nearest' }); }
+      grid.setAttribute('aria-activedescendant', '');
+      const b = obj[o], [k, name, what] = b.info, m = b.m;
+      const others = shared[m.at].filter(x => x !== o);
+      const kindName = (KINDS.find(x => x[0] === k) || [0, ''])[1];
+      det.innerHTML = '<canvas id="obj-big" class="obj-big" width="520" height="340" role="img" aria-label="' + name.replace(/"/g, '') + ', a wire model; drag to turn it"></canvas>' +
+        '<p class="obj-kind">Object ' + o + ' · ' + kindName + '</p><h3>' + name + '</h3><p>' + what + '</p>' +
+        '<div class="obj-chips">' + chips(b) + '</div>' +
+        (o < 7 && $('flight-widget') ? '<p class="obj-flyp"><button type="button" class="obj-fly" id="obj-fly">Fly it in the flight model</button></p>' : '') +
+        '<table class="obj-facts"><tbody>' +
+        '<tr><th>Starts</th><td>' + where(b) + '</td></tr>' +
+        '<tr><th>Size</th><td>' + b.size[0].toLocaleString('en-GB') + ' × ' + b.size[2].toLocaleString('en-GB') + ' units, ' + b.size[1].toLocaleString('en-GB') + ' high</td></tr>' +
+        '<tr><th>Model</th><td><code><a href="source.html#' + hex(m.at, 4) + '">$' + hex(m.at, 4) + '</a></code>, ' + m.V.length + ' points, ' + m.E.length + ' edges' + (others.length ? '; also drawn for ' + others.map(x => 'object ' + x).join(', ') : '') + '</td></tr>' +
+        '<tr><th>Flags</th><td><code>$' + hex(b.flags) + '</code> at <code>$' + hex(0x29C0 + o, 4) + '</code></td></tr>' +
+        '</tbody></table>';
+      bigBox = boxFor(m);
+      const cv = $('obj-big'), fly = $('obj-fly');
+      // the flight model further down the page takes the craft by its object number
+      if (fly) fly.addEventListener('click', () => document.dispatchEvent(new CustomEvent('merc:fly', { detail: { n: o } })));
+      let drag = null;
+      cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, yaw, pitch }; spin = false; cv.setPointerCapture(e.pointerId); });
+      cv.addEventListener('pointermove', e => {
+        if (!drag) return;
+        yaw = drag.yaw + (e.clientX - drag.x) * 0.01;
+        pitch = Math.max(-0.2, Math.min(1.5, drag.pitch + (e.clientY - drag.y) * 0.01));
+        bigBox = boxFor(m); drawBig();
+      });
+      const end = () => { drag = null; };
+      cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+      drawBig(); go();
+    }
+    if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) go(); }).observe(det);
+    pick(+(grid.dataset.first || cur), false);
+    // for the page's other widgets (the keys table): show object o here
+    window.MercObjects = { show(o) {
+      if (!obj[o] || !shown(obj[o])) return;
+      const all = filt.querySelector('button'); if (cells[o].hidden && all) all.click();
+      pick(o, false); cells[o].scrollIntoView({ block: 'nearest' });
+      det.closest('section').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    } };
+  }, () => {});
+})();
+</script>
+<script>
+/* flight */
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------------------------------
+  // The port. Every routine below is the game's own, transcribed instruction by instruction from
+  // the listing, working on a copy of the game's memory (M) so that each variable sits at its
+  // own address: speed $26/$27, pitch $2A/$2B, height $75-$77, the motion record $BEA0-$BEAF ...
+  // X, Y and C are the 6502's registers where a routine hands its result back in them.
+  // Tested bit for bit against the original code in a 6502 simulator (work/tests/test-flight-*.js).
+  // ---------------------------------------------------------------------------------------------
+  function makeFlight(ram) {
+    const M = new Uint8Array(0x10000);
+    M.set(ram);
+    let X = 0, Y = 0, C = 0;
+    const LOG = 0x5800, EXP = 0x5900, SIN_M = 0x5A00, SIN_E = 0x5B00, BCD = 0x803A;
+
+    // $82FA fp_mul: (X, Y) x ($08, $09) -> X = $08, Y = $09, by adding logarithms.
+    function fp_mul() {
+      let a = M[LOG + X];
+      X = M[0x08];
+      let s = a + M[LOG + X];
+      a = s & 255;
+      const c = s >> 8;
+      X = a;
+      a = Y;
+      if (c) a = (a + 3 + 1) & 255;           // ADC #$03 with the carry set, then CLC
+      const b = M[0x09];
+      s = a + b;
+      const r = s & 255;
+      if ((~(a ^ b)) & (a ^ r) & 0x80) {       // BVS fp_saturate ($831A)
+        Y = (r & 0x80) ? ((r & 1) | 0x78) : ((r & 1) | 0x84);
+        X = 0; M[0x08] = 0; M[0x09] = Y;
+        return;
+      }
+      Y = r & 0xFD; M[0x09] = Y;
+      X = M[EXP + X]; M[0x08] = X;
+    }
+
+    // $838B fp_add: (X, Y) + ($08, $09) -> X = $08, Y = $09.
+    function fp_add() {
+      let a = Y, b = M[0x09];
+      let r = a - b;
+      let c = r >= 0 ? 1 : 0;
+      let v = (a ^ b) & (a ^ r) & 0x80;
+      a = r & 255;
+      if (v) return add_836C();
+      M[0x18] = a;                              // fadd_expdiff
+      r = a + 1 + c;
+      v = (~(a ^ 1)) & (a ^ r) & 0x80;
+      a = r & 255;
+      if (v) return add_836C();
+      if (a & 0x80) return add_83F5(a);
+      a >>= 2;
+      if (a === 0) return add_8359();
+      if (a >= 9) { M[0x08] = X; M[0x09] = Y; return; }   // b_83CC
+      // $83A1-$83B9: the smaller mantissa, its leading 1 restored, shifted right d = a times
+      M[0x06] = (0x80 | (M[0x08] >> 1)) >> (a - 1);
+      a = X;
+      if (M[0x18] & 1) return add_83D1(a);
+      return add_83C2(a, 0);
+    }
+    function add_83C2(a, c) {                   // like signs: add
+      const r = a + M[0x06] + c;
+      a = r & 255;
+      if (r > 255) { a >>= 1; Y = (Y + 4) & 255; }
+      X = a; M[0x08] = X; M[0x09] = Y;
+    }
+    function add_83D1(a) {                      // unlike signs: subtract (carry set)
+      const r = a - M[0x06];
+      a = r & 255;
+      if (r >= 0) { X = a; M[0x08] = X; M[0x09] = Y; return; }
+      fp_normalise(a);
+    }
+    function fp_normalise(a) {                  // $83D5
+      M[0x06] = Y;
+      let y = 0, c;
+      do { c = (a >> 7) & 1; a = (a << 1) & 255; y = (y - 1) & 255; } while (!c);
+      X = a;
+      a = (y << 2) & 255;
+      const b = M[0x06], r = (a + b) & 255;
+      if ((~(a ^ b)) & (a ^ r) & 0x80) { X = 0; Y = 0x84; M[0x08] = 0; M[0x09] = 0x84; return; }
+      Y = r; M[0x08] = X; M[0x09] = Y;
+    }
+    function add_8359() {                       // equal exponents
+      if (M[0x18] & 1) return add_8373();
+      const r = X + M[0x08];
+      let a = ((r & 255) >> 1) | ((r >> 8) << 7);
+      Y = (Y + 4) & 255;
+      X = a; M[0x08] = a; M[0x09] = Y;
+    }
+    function add_8373() {                       // equal exponents, unlike signs
+      const r = X - M[0x08];
+      let a = r & 255;
+      if (a === 0) {                            // x - x: 2^(e - 9)
+        const y0 = Y, rr = (y0 - 0x24) & 255;
+        if ((y0 ^ 0x24) & (y0 ^ rr) & 0x80) Y = (rr & 1) | 0x84; else Y = rr;
+        X = 0; M[0x08] = 0; M[0x09] = Y;
+        return;
+      }
+      if (r >= 0) return fp_normalise(a);
+      Y = M[0x09];
+      a = ((a ^ 0xFF) + 1) & 255;
+      fp_normalise(a);
+    }
+    function add_836C() {                       // the exponents are too far apart to subtract
+      if (!(Y & 0x80)) { M[0x08] = X; M[0x09] = Y; return; }
+      X = M[0x08]; Y = M[0x09];
+    }
+    function add_83F5(a) {                      // ($08, $09) is the larger
+      if (a < 0xE0) { X = M[0x08]; Y = M[0x09]; return; }
+      const op = (a >> 2) & 7;
+      M[0x06] = (0x80 | (X >> 1)) >> (7 - op);
+      Y = M[0x09];
+      a = M[0x08];
+      if (M[0x18] & 1) return add_83D1(a);
+      return add_83C2(a, 0);
+    }
+
+    // $84A7 fp_to_int16: (X, Y) -> X = high, Y = low. Truncates; negatives come out as the
+    // ones' complement. Carry set (X, Y untouched) from 32768 up.
+    function fp_to_int16() {
+      if (Y & 0x80) {
+        if (Y & 1) { X = 0xFF; Y = 0xFF; } else { X = 0; Y = 0; }
+        C = 0; return;
+      }
+      const e = Y >> 2;
+      if (e >= 15) { C = 1; return; }
+      const v = ((256 + X) << 7) >> (15 - e);
+      const neg = Y & 1;
+      X = (v >> 8) & 255; Y = v & 255;
+      if (neg) { X ^= 255; Y ^= 255; }
+      C = 0;
+    }
+
+    // $841F fp_sin10 and $841E fp_cos10: a 10-bit angle (Y high, X low), 1024 a turn.
+    function fp_sin10() {
+      let idx = X;
+      if (Y & 1) idx ^= 0xFF;
+      const s = (Y >> 1) & 1;
+      Y = M[SIN_E + idx] | s;
+      X = M[SIN_M + idx];
+    }
+    function fp_cos10() { Y = (Y + 1) & 255; fp_sin10(); }
+
+    // $A544 view_trig, the part the flight step reads: pitch sine $36/$37 and cosine $38/$39,
+    // heading sine $3C/$3D and cosine $3E/$3F, from the angles at the start of the pass.
+    function view_trig() {
+      X = M[0x2A]; Y = M[0x2B]; fp_cos10(); M[0x38] = X; M[0x39] = Y;
+      X = M[0x2A]; Y = M[0x2B]; fp_sin10(); M[0x36] = X; M[0x37] = Y;
+      X = M[0x2C]; Y = M[0x2D]; fp_sin10(); M[0x3C] = X; M[0x3D] = Y;
+      X = M[0x2C]; Y = M[0x2D]; fp_cos10(); M[0x3E] = X; M[0x3F] = Y;
+    }
+
+    // $9D99 load_motion_record: record A (16 bytes at $9DAD + 16A) into $BEA0-$BEAF.
+    function load_motion_record(a) {
+      const x = (a << 4) & 255;
+      for (let i = 0; i < 16; i++) M[0xBEA0 + i] = M[0x9DAD + x + i];
+    }
+
+    // $B47E key_speed_digit: a key number (bit 6 SHIFT) through the table $BC50.
+    function key_speed_digit(key) {
+      const val = M[0xBC50 + (key & 0x3F)];
+      if (!val) return false;
+      M[0xED] = ((val << 1) | ((key >> 6) & 1)) & 255;
+      M[0xEC] = 0;
+      return true;
+    }
+    // $B499 key_speed_trim: + ($08/$00) and - ($F8/$FC), every pass while held.
+    function key_speed_trim(x, y) {
+      M[0x08] = x; M[0x09] = y;
+      X = M[0xEC]; Y = M[0xED];
+      fp_mul();
+      if ((Y & 0xFC) === 0x3C) return false;
+      M[0xEC] = X; M[0xED] = Y;
+      return true;
+    }
+
+    // $A13D colony_pad_test: true (carry set) unless over the Colony Craft's pad.
+    function colony_pad_test() {
+      if (M[0x74] !== 8 || M[0x7A] !== 8) return true;
+      if (((M[0x73] - 0x68) & 255) >= 0x10) return true;
+      if (((M[0x79] - 0x68) & 255) >= 0x10) return true;
+      return M[0x76] < 0xFC;
+    }
+
+    // What the last pass did, for the widget's log.
+    let ev = null;
+
+    // $9F17 motion_flight, one pass. The stick is $80: bit 0 up, 1 down, 2 left, 3 right, 0 = pushed.
+    function motion_flight() {
+      if (M[0xCA]) return 'lift';                // a lift ride: not modelled
+      X = M[0x22]; Y = M[0x23]; M[0x08] = X; M[0x09] = Y;
+      X = M[0xBEA2]; Y = M[0xBEA3];
+      fp_mul();
+      M[0x22] = X; M[0x23] = Y;
+      if (!(M[0x80] & 0x04)) { X = M[0xBEA4]; Y = M[0xBEA5]; fp_add(); M[0x22] = X; M[0x23] = Y; }
+      if (!(M[0x80] & 0x08)) { X = M[0xBEA4]; Y = (M[0xBEA5] + 1) & 255; fp_add(); M[0x22] = X; M[0x23] = Y; }
+      if (!(M[0x80] & 0x01)) {
+        const r = M[0x2A] + M[0xBEA6];
+        M[0x2A] = r & 255; M[0x2B] = (M[0x2B] + (r >> 8)) & 3;
+      }
+      if (!(M[0x80] & 0x02)) {
+        const r = M[0x2A] - M[0xBEA6];
+        M[0x2A] = r & 255; M[0x2B] = (M[0x2B] - (r < 0 ? 1 : 0)) & 3;
+      }
+      // $9F86: speed = (speed + throttle x thrust) x kept; the Poweramp doubles the throttle
+      X = M[0xEC]; let a = M[0xED];
+      if ((M[0x29DC] & 0x80) && M[0xA9] === 1) a = (a + 4) & 255;
+      M[0x08] = X; M[0x09] = a;
+      X = M[0xBEAE]; Y = M[0xBEAF]; fp_mul();
+      X = M[0x26]; Y = M[0x27]; fp_add();
+      Y = M[0xBEAB]; X = M[0xBEAA]; fp_mul();
+      M[0x26] = X; M[0x27] = Y;
+      // $9FB9: Y += speed x cos pitch x cos heading; $9FE8: X += speed x cos pitch x sin heading
+      X = M[0x38]; Y = M[0x39]; M[0x08] = X; M[0x09] = Y;
+      X = M[0x3E]; Y = M[0x3F]; fp_mul();
+      X = M[0x26]; Y = M[0x27]; fp_mul();
+      fp_to_int16(); add24(0x78);
+      X = M[0x38]; Y = M[0x39]; M[0x08] = X; M[0x09] = Y;
+      X = M[0x3C]; Y = M[0x3D]; fp_mul();
+      X = M[0x26]; Y = M[0x27]; fp_mul();
+      fp_to_int16(); add24(0x72);
+      // $A017: on the ground below speed 128 the pitch is held level and the height kept
+      if (M[0x7F]) {
+        if (!(M[0xFA] && colony_pad_test())) {
+          if (((M[0x27] ^ 0x80) & 255) < 0x9C) {
+            M[0x2A] = 0; M[0x2B] = 2;
+            ev.held = true;
+            return craft_turn();
+          }
+        }
+      }
+      return craft_climb();
+    }
+    function add24(base) {                      // $9FD2 / $A001: X high, Y low, sign-extended
+      let r = M[base] + Y; M[base] = r & 255; let c = r >> 8;
+      const ext = (X & 0x80) ? 0xFF : 0;
+      r = X + M[base + 1] + c; M[base + 1] = r & 255; c = r >> 8;
+      M[base + 2] = (ext + M[base + 2] + c) & 255;
+    }
+    function craft_climb() {                    // $A037
+      X = M[0x36]; Y = M[0x37]; M[0x08] = X; M[0x09] = Y;
+      X = M[0x26]; Y = M[0x27]; fp_mul();       // speed x sin pitch
+      let a = Y;
+      Y = M[0xBEA9];
+      ev.climbExp = Y; ev.ceilingHit = false;
+      if (!(a & 1)) {                           // climbing: the ceiling
+        a = M[0xBEAD];
+        if ((M[0x29DC] & 0x80) && M[0xA9] === 1) a = 0x5A;
+        let r = (a - M[0x77]) & 255;
+        if (r & 0x80) {
+          ev.ceilingHit = true;
+          r = (r << 1) & 255;
+          if (!(r & 0x80)) Y = 0x88;
+          else { r = (r << 1) & 255; Y = r; if (!(r & 0x80)) Y = 0x88; }
+          ev.climbExp = Y;
+        }
+      }
+      X = M[0xBEA8]; fp_mul();                  // x the climb factor
+      fp_to_int16();
+      ev.hStep = ((X << 8) | Y) << 16 >> 16;    // as the game adds it (ones' complement for negatives)
+      let r = Y + M[0x75]; M[0x75] = r & 255; let c = r >> 8;
+      const ext = (X & 0x80) ? 0xFF : 0;
+      r = X + M[0x76] + c; M[0x76] = r & 255; c = r >> 8;
+      M[0x77] = (ext + M[0x77] + c) & 255;
+      const h = M[0x77];
+      if (h & 0x80) return craft_touchdown_test();
+      if (h !== 0) return craft_colony_deck();
+      if (M[0x76] !== 0) return craft_airborne();
+      if (M[0x75] >= 0x40) return craft_airborne();
+      return craft_touchdown_test();
+    }
+    function craft_touchdown_test() {           // $A09A
+      let crash = false;
+      ev.touch = true;
+      ev.pitch = ((M[0x2B] & 3) << 8) | M[0x2A];
+      if (((M[0x09] ^ 0x80) & 255) >= 0xA0) { crash = true; ev.why = 'step'; }
+      else {
+        const p = (((M[0x2B] & 3) << 8) | M[0x2A]) >> 2;
+        if (p >= 0xA0) { crash = true; ev.why = 'nose'; }
+      }
+      M[0x76] = 0; M[0x77] = 0;                 // $A0AF craft_land
+      return land_tail(crash);
+    }
+    function land_tail(crash) {                 // $A0B6
+      M[0x28] = 0; M[0x29] = 0;
+      M[0x7F] = 0x3F; M[0x75] = 0x3F;
+      if (M[0x2B] & 0x02) {                     // pitch 512-1023: levelled, ground handling
+        M[0x2B] = 2; M[0x2A] = 0;
+        for (let x = 9; x >= 0; x--) M[0xBEA2 + x] = M[0x9E2F + x];
+        ev.ground = true;
+      }
+      if (!crash) return craft_turn();
+      leave_craft();
+      M[0xF9] = 2;
+      ev.crash = true;
+      return 'crash';
+    }
+    function craft_colony_deck() {              // $A0E2
+      if (M[0x77] !== 0x40) return craft_airborne();
+      if (colony_pad_test()) return craft_airborne();
+      M[0x76] = 0xFF; M[0xFA] = 0xFF;
+      ev.deck = true;
+      return land_tail(false);
+    }
+    function craft_airborne() {                 // $A0F7
+      M[0x7F] = 0; M[0xFA] = 0;
+      load_motion_record(M[0xA9]);
+      return craft_turn();
+    }
+    function craft_turn() {                     // $A102
+      X = M[0x22]; Y = M[0x23]; fp_to_int16();
+      let c = (X >> 7) & 1;
+      let r = Y + M[0x2C] + c; M[0x2C] = r & 255; c = r >> 8;
+      M[0x2D] = (X + M[0x2D] + c) & 255;
+      if (M[0x7F]) return 'ok';
+      X = M[0x22];
+      let a = M[0xBEA7];
+      if (!(a & 0x80)) a = (a + M[0x23]) & 255;
+      Y = a; fp_to_int16();
+      M[0x28] = Y; M[0x29] = X;
+      return 'ok';                              // spin_step ($A12B) turns only the building
+    }
+    function leave_craft() {                    // $98C8, what it does to the flight state
+      if (M[0xA9] & 0x80) return;
+      if (!M[0x7F]) return;
+      M[0x2A] = 0; M[0x28] = 0; M[0x29] = 0;
+      M[0xED] = 0x88; M[0x27] = 0x88;           // $9950 stop_craft
+      M[0x2B] = 2; M[0xA9] = 0x80;
+    }
+    // $9EFD motion_ground (records 2 and 5)
+    function motion_ground() {
+      M[0xBEA6] = 0;
+      M[0x75] = 0x3F;
+      const r = motion_flight();
+      if (M[0x7F]) return r;
+      M[0x77] = (M[0x77] - 1) & 255;
+      if (!(M[0x77] & 0x80)) return r;
+      M[0x77] = 0;
+      M[0xFA] = 0;                              // $9ECE crash_landing
+      M[0x76] = 0;
+      return land_tail(true);
+    }
+
+    // One main-loop pass as far as flying goes: the view's sines and cosines ($A544), the keys
+    // ($B2FE: a new digit acts once, + and - every pass while held), then JMP ($BEA0).
+    // input: { stick: 4-bit $80 value, key: key number for a new key or -1, trim: '+', '-' or null }
+    function pass(input) {
+      ev = { held: false, touch: false, crash: false, ground: false, deck: false, hStep: null, why: null,
+             climbExp: null, ceilingHit: false, refused: false, key: false, pitch: null };
+      if (M[0xA9] & 0x80) return { result: 'out', ev };
+      view_trig();
+      if (input.trim === '+') ev.refused = !key_speed_trim(0x08, 0x00);
+      else if (input.trim === '-') ev.refused = !key_speed_trim(0xF8, 0xFC);
+      else if (input.key >= 0) ev.key = key_speed_digit(input.key);
+      M[0x80] = input.stick & 0x0F;
+      const handler = M[0xBEA0] | (M[0xBEA1] << 8);
+      let result;
+      if (handler === 0x9F17) result = motion_flight();
+      else if (handler === 0x9EFD) result = motion_ground();
+      else result = 'other';
+      return { result, ev };
+    }
+
+    // Boarding craft n on the ground ($9866-$98A9 and stop_craft $9950), placed as in the
+    // recorded trace: the Dart's pad at 08-08, heading north.
+    function board(n, poweramp) {
+      M[0xA9] = n;
+      M[0x29DC] = poweramp ? 0x80 : 0x00;
+      load_motion_record(n);
+      M[0xED] = 0x88; M[0xEC] = 0x00;           // throttle 2^-30
+      M[0x26] = 0x90; M[0x27] = 0x80;           // speed as the trace starts
+      M[0x22] = 0x00; M[0x23] = 0x88;           // turn rate 2^-30
+      M[0x28] = 0; M[0x29] = 0; M[0x2A] = 0; M[0x2B] = 2; M[0x2C] = 0; M[0x2D] = 0;
+      M[0x72] = 0xDB; M[0x73] = 0x96; M[0x74] = 0x08;
+      M[0x75] = 0x3F; M[0x76] = 0x00; M[0x77] = 0x00;
+      M[0x78] = 0x6E; M[0x79] = 0x8B; M[0x7A] = 0x08;
+      M[0x7F] = 0x3F; M[0xFA] = 0; M[0xCA] = 0; M[0xF9] = 0; M[0x80] = 0x0F;
+    }
+
+    // The panel's SPEED ($B5A8), ALT ($B56D) and LOC ($B61D) as the screen codes it stores in
+    // row 19 of the matrix: figures 0-9 are glyphs $00-$09, $0A is '*', $8B '+', $8D '-', and
+    // bit 7 gives the reversed figures LOC uses for negative coordinates.
+    const GLYPH = '0123456789*+,-./';
+    function two_digits(x, rev) { const b = M[BCD + x]; return [(b >> 4) | rev, (b & 15) | rev]; }  // $B662
+    const text = codes => codes.map(c => (c & 0x7F) === 0x0B ? '+' : (c & 0x7F) === 0x0D ? '-' : GLYPH[c & 15]).join('');
+    function speed_readout() {
+      const e = M[0x27];
+      X = M[0x26]; Y = e & 0xFE;
+      fp_to_int16();
+      const hi = X, lo = Y;
+      let t = ((lo >> 3) + lo) >> 1;
+      t = (t + lo) >> 2;
+      const codes = [(e & 1) ? 0x8D : 0x8B].concat(two_digits(hi, 0), two_digits(t, 0));
+      return { codes, text: text(codes), hi, lo, lowDigits: t, value: hi * 100 + t };
+    }
+    function loc_coordinate(x) {                // $B64C
+      const rev = x & 0x80;
+      if (rev) x = ((x ^ 0xFF) + 1) & 255;
+      return two_digits(x, rev);
+    }
+    function loc_readout() {
+      const codes = loc_coordinate(M[0x74]).concat([0x8D], loc_coordinate(M[0x7A]));
+      return { codes, text: text(codes) };
+    }
+    function alt_next(x, y) {                   // $B62F alt_next_digit
+      let fe = x, a = y, c;
+      c = fe & 1; fe >>= 1; a = (a >> 1) | (c << 7);
+      c = fe & 1; fe >>= 1; a = (a >> 1) | (c << 7);
+      let s = y + a; let yy = s & 255; c = s >> 8;
+      s = x + fe + c; c = s >> 8;
+      const lowBit = s & 1;
+      a = ((s & 255) >> 1) | (c << 7);
+      yy = (yy >> 1) | (lowBit << 7);
+      return [a, a & 0x0F, yy];
+    }
+    function alt_readout() {
+      const [a1, x1, y1] = alt_next(M[0x76], M[0x75]);
+      const [a2, , y2] = alt_next(x1, y1);
+      let s = y2 + (y2 >> 2);
+      const d3 = (((s & 255) >> 1) | ((s >> 8) << 7)) >> 4;
+      const d1 = a1 >> 4, d2 = a2;
+      const codes = two_digits(M[0x77], 0).concat([d1, d2, d3]);
+      return { codes, text: text(codes), value: M[0x77] * 1000 + d1 * 100 + d2 * 10 + d3 };
+    }
+
+    // Helpers for the widget.
+    function fl(m, e) {                         // a game float as a JS number
+      let ex = (e >> 2) & 63; if (ex >= 32) ex -= 64;
+      return ((e & 1) ? -1 : 1) * (1 + m / 256) * Math.pow(2, ex);
+    }
+    function state() {
+      return {
+        v: fl(M[0x26], M[0x27]), vm: M[0x26], ve: M[0x27],
+        T: fl(M[0xEC], M[0xED]), Tm: M[0xEC], Te: M[0xED],
+        pitch: ((M[0x2B] & 3) << 8) | M[0x2A], head: ((M[0x2D] & 3) << 8) | M[0x2C],
+        roll: ((M[0x29] << 8) | M[0x28]) << 16 >> 16,
+        turn: fl(M[0x22], M[0x23]),
+        h: M[0x75] | (M[0x76] << 8) | (M[0x77] << 16),
+        x: M[0x72] | (M[0x73] << 8) | (M[0x74] << 16),
+        y: M[0x78] | (M[0x79] << 8) | (M[0x7A] << 16),
+        onGround: M[0x7F], onDeck: M[0xFA], vehicle: M[0xA9],
+        rec: Array.from(M.subarray(0xBEA0, 0xBEB0)),
+        grounded: M[0xBEA2] === M[0x9E2F] && M[0xBEA3] === M[0x9E30] && M[0xBEAA] === M[0x9E37] && M[0xBEAB] === M[0x9E38],
+      };
+    }
+
+    return { M, pass, board, state, speed_readout, alt_readout, loc_readout, fl, load_motion_record,
+             key_speed_digit, key_speed_trim, view_trig,
+             // the arithmetic, register style, for the tests
+             reg: { fp_mul, fp_add, fp_to_int16, fp_sin10, fp_cos10,
+                    set(x, y) { X = x; Y = y; }, get() { return [X, Y, C]; } } };
+  }
+
+  if (typeof window === 'undefined' && typeof module === 'object' && module.exports) {
+    module.exports = { makeFlight };
+    return;
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The widget
+  // ---------------------------------------------------------------------------------------------
+  const $ = id => document.getElementById(id);
+  const root = $('flight-widget');
+  if (!root) return;
+  const NEED_SITE = 'This part runs the game’s own bytes from listing.json, which the built site serves: open the page from the site, not from disk.';
+  function noSite() {
+    const p = document.createElement('p');
+    p.className = 'flight-label';
+    p.textContent = NEED_SITE;
+    root.insertBefore(p, root.firstChild);
+  }
+  const game = window.MERC_GAME;
+  if (!game || typeof game.then !== 'function') { noSite(); return; }
+  game.then(start, noSite);
+
+  const CRAFTS = [
+    { n: 0, amp: false, label: '0 New ship', name: 'the brother-in-law’s new ship' },
+    { n: 1, amp: false, label: '1 Dart', name: 'Dominion Dart' },
+    { n: 1, amp: true, label: '1 Dart + Poweramp', name: 'Dominion Dart with the Poweramp' },
+    { n: 2, amp: false, label: '2 Hovercar', name: 'Hovercar (ground only)' },
+    { n: 3, amp: false, label: '3 Concord 111', name: 'Concord 111' },
+    { n: 4, amp: false, label: '4 Hexapod', name: 'Hexapod' },
+    { n: 5, amp: false, label: '5 Sprintcar', name: 'Sprintcar (ground only)' },
+    { n: 6, amp: false, label: '6 CHEESE', name: 'CHEESE' },
+  ];
+  // key numbers (row x 8 + column, as $B281 forms them) for the throttle keys
+  const KEYS = [['1', 56], ['2', 59], ['3', 8], ['4', 11], ['5', 16], ['6', 19], ['7', 24], ['8', 27], ['9', 32], ['0', 35], ['SPACE', 60]];
+  const RATES = [[5, '5/s'], [25, '25/s'], [250, '250/s'], [0, 'max']];
+  const FIELDS = [[0, 2, 'routine'], [2, 2, 'turn kept'], [4, 2, 'turn step'], [6, 1, 'pitch'], [7, 1, 'bank'],
+    [8, 2, 'climb'], [10, 2, 'speed kept'], [12, 1, 'unread'], [13, 1, 'ceiling'], [14, 2, 'thrust']];
+
+  // The site links <code>$XXXX</code> to the Source tab once, at load (site.js); content this
+  // script adds later gets the same treatment here.
+  function linkCodes(el) {
+    if (!el || document.body.dataset.nolink) return;
+    el.querySelectorAll('code').forEach(c => {
+      if (c.closest('a') || c.closest('pre') || c.children.length) return;
+      const t = c.textContent, m = /^\$([0-9A-Fa-f]{4})$/.exec(t.trim());
+      if (!m) return;
+      const a = document.createElement('a'); a.href = 'source.html#' + m[1].toUpperCase(); a.textContent = t;
+      c.textContent = ''; c.appendChild(a);
+    });
+  }
+  const hex2 = n => n.toString(16).toUpperCase().padStart(2, '0');
+  const hex4 = n => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+  const fmtInt = n => Math.round(n).toLocaleString('en-GB');
+  function fl(m, e) { let ex = (e >> 2) & 63; if (ex >= 32) ex -= 64; return ((e & 1) ? -1 : 1) * (1 + m / 256) * Math.pow(2, ex); }
+  function fmtFloat(m, e) {
+    let ex = (e >> 2) & 63; if (ex >= 32) ex -= 64;
+    const v = fl(m, e);
+    if (ex < -7) return (e & 1 ? '-' : '') + (m ? (1 + m / 256).toFixed(2) + ' × ' : '') + '2^' + ex;
+    const a = Math.abs(v);
+    return a >= 100 ? String(Math.round(v)) : String(+v.toFixed(a >= 1 ? 2 : 3));
+  }
+  function fmtSpeed(v) {
+    const a = Math.abs(v);
+    if (a < 1) return (v < 0 ? '-' : '') + '0 (' + (a < 1e-3 ? 'about 2^' + Math.round(Math.log2(a)) : a.toFixed(3)) + ')';
+    return a >= 100 ? fmtInt(v) : String(+v.toFixed(2));
+  }
+  function nose(p) {
+    const deg = (512 - p) * 360 / 1024;
+    if (Math.abs(deg) < 0.2) return 'level';
+    const up = deg > 0, d = Math.abs(deg);
+    if (d > 90) return (up ? 'over the top, ' : 'past straight down, ') + Math.round(180 - d) + '° from level, upside down';
+    return 'nose ' + (d < 10 ? d.toFixed(1) : Math.round(d)) + '° ' + (up ? 'up' : 'down');
+  }
+
+  function start(G) {
+    const ram = G.ram;
+    const charset = ram.subarray(0x7800, 0x8000);
+    const css = getComputedStyle(root);
+    const tok = (name, dflt) => (css.getPropertyValue(name) || '').trim() || dflt;
+    const COL = { speed: tok('--accent', '#1f5fa8'), alt: tok('--amber', '#c25a00'), ink: tok('--ink', '#2f3136'),
+      mute: tok('--ink-mute', '#80838a'), soft: tok('--ink-soft', '#55585f'), line: tok('--line-soft', '#e0ded8'),
+      surface: tok('--surface', '#ffffff'), coral: tok('--coral', '#d04a3a'), green: tok('--green', '#2a8a4a'),
+      font: tok('--fm', 'monospace') };
+
+    buildRecordTable(ram);
+    buildTopTable(ram);
+
+    // ---- state ----
+    let F = null, craft = CRAFTS[1], passNo = 0, running = false, rate = 5, carry = 0, lastT = 0, raf = 0;
+    let latched = 0x0F, arrowBits = 0, shift = false, trimHeld = null, pendingKey = -1, script = null;
+    let last = null, lastEv = null, logN = 0, prevCeil = false, prevStep = null, crashed = null, onDeck = false;
+    let ownRec = null, lastKeyName = '', refusedLogged = false, rollingLogged = false;
+    const CAP = 6000;
+    const hist = { pass: new Float64Array(CAP), spd: new Float64Array(CAP), alt: new Float64Array(CAP), n: 0, stride: 1, next: 0 };
+
+    // ---- controls ----
+    const craftBar = $('flight-crafts');
+    const craftBtns = CRAFTS.map(c => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flight-btn'; b.textContent = c.label;
+      b.addEventListener('click', () => { craft = c; stopScript(); reset(); });
+      craftBar.appendChild(b);
+      return b;
+    });
+    // the catalogue above asks for a craft by its object number (its Fly it button)
+    document.addEventListener('merc:fly', ev => {
+      const c = CRAFTS.find(x => x.n === ev.detail.n && !x.amp);
+      if (!c) return;
+      craft = c; stopScript(); reset();
+      const w = $('flight-widget');
+      (w.closest('section') || w).scrollIntoView({ block: 'start', behavior: 'smooth' });
+      w.focus({ preventScroll: true });
+    });
+    const stickEl = $('flight-stick');
+    const STICK = [[0x01 | 0x04, '◤', 'forward and left'], [0x01, '▲', 'forward', 'nose down'], [0x01 | 0x08, '◥', 'forward and right'],
+      [0x04, '◀', 'left'], [0, '●', 'centre', 'level'], [0x08, '▶', 'right'],
+      [0x02 | 0x04, '◣', 'back and left'], [0x02, '▼', 'back', 'nose up'], [0x02 | 0x08, '◢', 'back and right']];
+    const stickBtns = STICK.map(([bits, glyph, label, small]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flight-btn';
+      b.setAttribute('aria-label', 'stick ' + label);
+      b.innerHTML = glyph + (small ? '<small>' + small + '</small>' : '');
+      b.addEventListener('click', () => { stopScript(); latched = 0x0F & ~bits; paintStick(); if (!running && passNo === 0 && !crashed) run(); });
+      stickEl.appendChild(b);
+      return [bits, b];
+    });
+    const keysEl = $('flight-keys');
+    KEYS.forEach(([name, num]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flight-btn'; b.textContent = name;
+      b.addEventListener('click', () => { stopScript(); pressKey(num, name); });
+      keysEl.appendChild(b);
+    });
+    const shiftBtn = document.createElement('button');
+    shiftBtn.type = 'button'; shiftBtn.className = 'flight-btn'; shiftBtn.textContent = 'SHIFT';
+    shiftBtn.setAttribute('aria-pressed', 'false');
+    shiftBtn.title = 'SHIFT with a digit reverses the thrust';
+    shiftBtn.addEventListener('click', () => { shift = !shift; shiftBtn.setAttribute('aria-pressed', String(shift)); });
+    keysEl.appendChild(shiftBtn);
+    function holdButton(label, which, title) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flight-btn'; b.textContent = label; b.title = title;
+      const on = e => { e.preventDefault(); stopScript(); trimHeld = which; b.classList.add('flight-held'); if (!running && passNo === 0 && !crashed) run(); };
+      const off = () => { if (trimHeld === which) trimHeld = null; b.classList.remove('flight-held'); };
+      b.addEventListener('pointerdown', on);
+      ['pointerup', 'pointerleave', 'pointercancel', 'blur'].forEach(ev => b.addEventListener(ev, off));
+      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { on(e); } });
+      b.addEventListener('keyup', e => { if (e.key === 'Enter' || e.key === ' ') off(); });
+      keysEl.appendChild(b);
+      return b;
+    }
+    holdButton('+', '+', 'Hold: the throttle x 1.03 each pass');
+    holdButton('−', '-', 'Hold: the throttle x 0.98 each pass');
+
+    const goBtn = $('flight-go');
+    goBtn.addEventListener('click', () => { running ? pause() : run(); });
+    $('flight-step').addEventListener('click', () => { pause(); doPass(); render(); });
+    $('flight-reset').addEventListener('click', () => { stopScript(); reset(); });
+    const ratesEl = $('flight-rates');
+    const rateBtns = RATES.map(([r, label]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'flight-btn'; b.textContent = label;
+      b.addEventListener('click', () => { rate = r; paintRates(); });
+      ratesEl.appendChild(b);
+      return [r, b];
+    });
+    const replayBtn = $('flight-replay'), climbBtn = $('flight-climb');
+    replayBtn.addEventListener('click', () => { craft = CRAFTS[1]; reset(); script = replayScript(); rate = 25; paintRates(); run(); });
+    climbBtn.addEventListener('click', () => { reset(); script = climbScript(); rate = 0; paintRates(); run(); });
+
+    // keyboard, while the plate has focus
+    const ARROWS = { ArrowUp: 0x01, ArrowDown: 0x02, ArrowLeft: 0x04, ArrowRight: 0x08 };
+    root.addEventListener('keydown', e => {
+      if (e.target !== root && e.target.closest && e.target.closest('button') && (e.key === 'Enter' || e.key === ' ')) return;
+      if (ARROWS[e.key]) { e.preventDefault(); stopScript(); arrowBits |= ARROWS[e.key]; paintStick(); return; }
+      const m = /^Digit(\d)$/.exec(e.code || '');
+      if (m) { e.preventDefault(); stopScript(); const k = KEYS.find(k => k[0] === m[1]); pressKey(k[1] | (e.shiftKey ? 0x40 : 0), (e.shiftKey ? 'SHIFT + ' : '') + k[0], true); return; }
+      if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); stopScript(); pressKey(60, 'SPACE'); return; }
+      if (e.key === '+' || e.key === '=') { e.preventDefault(); stopScript(); trimHeld = '+'; return; }
+      if (e.key === '-' || e.key === '_') { e.preventDefault(); stopScript(); trimHeld = '-'; return; }
+    });
+    root.addEventListener('keyup', e => {
+      if (ARROWS[e.key]) { arrowBits &= ~ARROWS[e.key]; paintStick(); }
+      if (e.key === '+' || e.key === '=' || e.key === '-' || e.key === '_') trimHeld = null;
+    });
+    root.addEventListener('blur', () => { arrowBits = 0; trimHeld = null; paintStick(); }, true);
+
+    function pressKey(num, name, raw) {
+      pendingKey = raw ? num : (num | (shift && num !== 60 ? 0x40 : 0));
+      lastKeyName = raw ? name : ((shift && num !== 60 ? 'SHIFT + ' : '') + name);
+      if (!running && passNo === 0 && !crashed) run();
+      else if (!running) log(lastKeyName + ' pressed: it acts on the next pass.');
+    }
+    const stickValue = () => (latched & ~arrowBits) & 0x0F;
+    function paintStick() {
+      const v = stickValue(), pushed = 0x0F & ~v;
+      stickBtns.forEach(([bits, b]) => b.setAttribute('aria-pressed', String(bits === pushed)));
+    }
+    function paintRates() { rateBtns.forEach(([r, b]) => b.setAttribute('aria-pressed', String(r === rate))); }
+    function paintCraft() {
+      craftBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(CRAFTS[i] === craft)));
+      climbBtn.disabled = craft.n === 2 || craft.n === 5;
+      // the craft's rows in the two tables below: its record, and its top speeds
+      document.querySelectorAll('#flight-rectable tbody tr[data-n], #flight-toptable tbody tr[data-n]').forEach(tr =>
+        tr.classList.toggle('flight-on', +tr.dataset.n === craft.n && (tr.dataset.amp === undefined || (tr.dataset.amp === '1') === craft.amp)));
+    }
+
+    // ---- running ----
+    function run() {
+      if (crashed) reset();
+      running = true; goBtn.textContent = 'Pause'; lastT = 0; carry = 0;
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+    function pause() { running = false; goBtn.textContent = 'Run'; }
+    function stopScript() { if (script) { script = null; } }
+    function frame(t) {
+      raf = 0;
+      if (!running) return;
+      const dt = lastT ? Math.min(250, t - lastT) : 0;
+      lastT = t;
+      let n;
+      if (rate === 0) n = 2000;
+      else { carry += dt * rate / 1000; n = Math.floor(carry); carry -= n; }
+      const t0 = performance.now();
+      for (let i = 0; i < n && running; i++) {
+        doPass();
+        if (rate === 0 && (i & 63) === 63 && performance.now() - t0 > 12) break;
+      }
+      render();
+      if (running) raf = requestAnimationFrame(frame);
+    }
+
+    function reset() {
+      pause();
+      F = makeFlight(ram);
+      F.board(craft.n, craft.amp);
+      ownRec = Array.from(F.M.subarray(0xBEA0, 0xBEB0));
+      passNo = 0; pendingKey = -1; trimHeld = null; crashed = null; onDeck = false;
+      latched = 0x0F; arrowBits = 0; prevCeil = false; prevStep = null; refusedLogged = false; rollingLogged = false;
+      hist.n = 0; hist.stride = 1; hist.next = 0;
+      last = F.state(); lastEv = null;
+      $('flight-log').textContent = ''; logN = 0;
+      record();
+      paintCraft(); paintStick(); paintRates();
+      log('Boarded ' + craft.name + ': record ' + craft.n + ' copied to <code>$BEA0</code>, speed and throttle stopped (<code>$9950</code>), on the ground at 08-08, facing north.');
+      render();
+    }
+
+    function log(html, cls) {
+      const li = document.createElement('li');
+      if (cls) li.className = cls;
+      li.innerHTML = '<b>pass ' + passNo + '</b> · ' + html;
+      const ol = $('flight-log');
+      linkCodes(li);
+      ol.insertBefore(li, ol.firstChild);
+      if (++logN > 80) ol.removeChild(ol.lastChild);
+    }
+
+    function doPass() {
+      if (crashed || !F) { pause(); return; }
+      let input;
+      if (script) {
+        input = script.next(last, lastEv);
+        if (!input) { script = null; pause(); return; }
+      } else {
+        input = { stick: stickValue(), key: pendingKey, trim: trimHeld };
+      }
+      const keyName = script ? input.name || '' : lastKeyName;
+      pendingKey = -1;
+      const before = last;
+      const r = F.pass(input);
+      passNo++;
+      const s = F.state(), ev = r.ev;
+      last = s; lastEv = ev;
+      // events for the log
+      if (input.key >= 0 && ev.key) {
+        refusedLogged = false;
+        const T = s.T;
+        log((keyName ? 'Key ' + keyName + ': ' : '') + 'throttle <code>$EC</code>/<code>$ED</code> = ' + hex2(s.Tm) + ' ' + hex2(s.Te) + ', ' +
+          (Math.abs(T) < 1 ? '2^-31, a stop' : (T < 0 ? '-' : '') + '2^' + Math.round(Math.log2(Math.abs(T))) + ' = ' + fmtInt(T)) + '.');
+      }
+      if (input.trim && ev.refused && !refusedLogged) {
+        refusedLogged = true;
+        log('+ refused: the next step would reach 2^15, so the throttle stays at ' + fmtInt(s.T) + ' (<code>$B4A7</code>).');
+      }
+      if (before.onGround && !s.onGround) {
+        log('Airborne at height ' + fmtInt(s.h) + '. The craft’s own record is loaded again (<code>$A0FF</code>).' +
+          (s.v < 0 && before.pitch === 512 ? ' The nose was level: reversing, the negative speed times the level sine, -0.003, climbs.' : ''), 'flight-ok');
+        rollingLogged = false;
+      }
+      if (ev.crash) {
+        const why = ev.why === 'nose' ? nose(ev.pitch) + ' (pitch ' + ev.pitch + '; 640-1023 crashes)'
+          : ev.why === 'step' ? 'this pass’s height step was ' + fmtInt(Math.abs(ev.hStep)) + ', 256 or more'
+          : 'the ground craft left the ground and fell (<code>$9F09</code>)';
+        crashed = why;
+        log('Crash: ' + why + '. The player is thrown out (<code>$98C8</code>).', 'flight-bad');
+        pause();
+      } else if (ev.deck) {
+        if (!onDeck) log('Landed on the Colony Craft’s deck (<code>$A0E2</code>), with no crash test.', 'flight-ok');
+        onDeck = true;
+      } else if (ev.touch && !before.onGround) {
+        log('Touchdown at pitch ' + ev.pitch + ' with a height step of ' + ev.hStep + ': landed.' +
+          (ev.ground ? ' Record 8’s ground handling (<code>$9E2F</code>) replaces bytes 2-11.' : ' The pitch was below 512, so it is not levelled and the ground handling is not loaded (<code>$A0C4</code>).'), 'flight-ok');
+      } else if (ev.touch && before.onGround && !rollingLogged) {
+        rollingLogged = true;
+        log('Speed ' + fmtInt(Math.abs(s.v)) + ' is 128 or more, so the height step runs: the level pitch’s sine is -0.003, the craft sinks to ' + fmtInt(63 + ev.hStep) +
+          ' and lands again, every pass.');
+      }
+      if (!s.onGround) { onDeck = false; }
+      const ceil = (F.M[0x29DC] & 0x80) && s.vehicle === 1 ? 0x5A : F.M[0x9DAD + (s.vehicle & 7) * 16 + 13];
+      const above = !s.onGround && (s.h >> 16) > ceil && (s.h >> 16) < 0x80;
+      if (above && !prevCeil && s.vehicle !== 2 && s.vehicle !== 5) {
+        const amp = ceil === 0x5A && s.vehicle === 1;
+        log('Above the ceiling byte <code>$' + hex2(ceil) + '</code>' + (amp ? ' (the Poweramp’s)' : '') +
+          ': climbing, the climb factor’s power of two is now ' + ceil + ' minus the height’s top byte (<code>$A05D</code>).');
+      }
+      prevCeil = above;
+      if (!s.onGround && ev.ceilingHit && ev.hStep === 0 && prevStep !== 0) {
+        log('The climb step rounds down to 0: at this speed the craft can climb no higher than height ' + fmtInt(s.h) + '.');
+      }
+      if (!s.onGround) prevStep = ev.hStep;
+      if (script && script.after) script.after(s, ev);
+      record();
+    }
+
+    function record() {
+      if (passNo < hist.next && passNo !== 0) return;
+      if (hist.n === CAP) {
+        hover = -1; tip.hidden = true;
+        let j = 0;
+        for (let i = 0; i < CAP; i += 2, j++) { hist.pass[j] = hist.pass[i]; hist.spd[j] = hist.spd[i]; hist.alt[j] = hist.alt[i]; }
+        hist.n = j; hist.stride *= 2;
+      }
+      const i = hist.n++;
+      hist.pass[i] = passNo;
+      hist.spd[i] = F.speed_readout().value * (F.M[0x27] & 1 ? -1 : 1);
+      hist.alt[i] = F.alt_readout().value;
+      hist.next = passNo + hist.stride;
+    }
+
+    // ---- the two presets ----
+    function replayScript() {
+      let p = 0;
+      log('Replaying the recorded input: key 0 on the first pass, the stick back on passes 154-193, then centred.');
+      return {
+        next() {
+          if (p >= 253) { log('End of the recording: 253 passes, the same number the emulator recorded (<code>$855C</code>).'); return null; }
+          const q = p++;
+          return { stick: q >= 153 && q < 193 ? 0x0D : 0x0F, key: q === 0 ? 35 : -1, trim: null, name: '0' };
+        },
+      };
+    }
+    function climbScript() {
+      let phase = 0, count = 0, flat = 0, lastH = -1, reported = false;
+      const deck = 0x40FF3F;
+      log('Flat out: key 0, + held until refused, 20 passes to gather speed, the stick back until the nose points straight up, then centred.');
+      return {
+        next(s, ev) {
+          if (phase === 0) { phase = 1; return { stick: 15, key: 35, trim: null, name: '0' }; }
+          if (phase === 1) {
+            if (!(ev && ev.refused)) return { stick: 15, key: -1, trim: '+' };
+            phase = 2; count = 0;
+          }
+          if (phase === 2) { if (count++ < 20) return { stick: 15, key: -1, trim: null }; phase = 3; }
+          if (phase === 3) {
+            if (s.onGround || s.pitch > 262) return { stick: 0x0D, key: -1, trim: null };
+            phase = 4;
+            log('Nose straight up (pitch ' + s.pitch + '). Running at full speed until the height stops changing.');
+          }
+          if (phase === 4) {
+            if (!reported && s.h >= deck) { reported = true; log('Past the Colony Craft’s height, ALT 64997.', 'flight-ok'); }
+            if (s.h === lastH) flat++; else flat = 0;
+            lastH = s.h;
+            if (flat > 2000 || passNo > 250000) {
+              log('Levelled off at height ' + fmtInt(s.h) + ' ($' + s.h.toString(16).toUpperCase().padStart(6, '0') + ', ALT ' + F.alt_readout().text + ')' +
+                (reported ? '.' : ', short of the Colony Craft’s ALT 64997.'), reported ? 'flight-ok' : 'flight-bad');
+              return null;
+            }
+            return { stick: 15, key: -1, trim: null };
+          }
+          return null;
+        },
+      };
+    }
+
+    // ---- drawing ----
+    const panelCv = $('flight-panel'), pctx = panelCv.getContext('2d');
+    const PS = 3, COL0 = 7, COLS = 25;
+    panelCv.width = COLS * 8 * PS; panelCv.height = 3 * 8 * PS;
+    let panelKey = '';
+    function drawPanel() {
+      const loc = F.loc_readout().codes, alt = F.alt_readout().codes, spd = F.speed_readout().codes;
+      const key = loc.concat(alt, spd).join(',');
+      if (key === panelKey) return;
+      panelKey = key;
+      for (let row = 18; row <= 20; row++) {
+        for (let col = COL0; col < COL0 + COLS; col++) {
+          let code = ram[0x5C00 + row * 40 + col], colour = 0;
+          if (row === 19) {
+            if (col >= 8 && col <= 12) { colour = ram[0xBBC4]; code = loc[col - 8]; }
+            else if (col >= 17 && col <= 21) { colour = ram[0xBBC5]; code = alt[col - 17]; }
+            else if (col >= 26 && col <= 30) { colour = ram[0xBBC6]; code = spd[col - 26]; }
+          }
+          C64.drawGlyph(pctx, charset, code, (col - COL0) * 8 * PS, (row - 18) * 8 * PS, PS, C64.PAL[colour & 15], C64.PAL[1]);
+        }
+      }
+      panelCv.setAttribute('aria-label', 'LOC ' + F.loc_readout().text + ', ALT ' + F.alt_readout().text + ', SPEED ' + F.speed_readout().text);
+    }
+
+    // the pitch dial: forward is to the right, the crash sector is pitch 640-1023
+    (function crashSector() {
+      const a0 = (512 - 640) * Math.PI / 512, a1 = (512 - 1024) * Math.PI / 512, r = 50;
+      const x0 = r * Math.cos(a0), y0 = -r * Math.sin(a0), x1 = r * Math.cos(a1), y1 = -r * Math.sin(a1);
+      $('flight-dial-crash').setAttribute('d', 'M0,0 L' + x0.toFixed(2) + ',' + y0.toFixed(2) + ' A50,50 0 0,1 ' + x1.toFixed(2) + ',' + y1.toFixed(2) + ' Z');
+    })();
+    function drawDial(p) {
+      const deg = (512 - p) * 360 / 1024;
+      $('flight-dial-nose').setAttribute('transform', 'rotate(' + (-deg).toFixed(2) + ')');
+      $('flight-dial').setAttribute('aria-label', 'Pitch ' + p + ', ' + nose(p));
+    }
+
+    const chart = $('flight-chart'), cctx = chart.getContext('2d'), tip = $('flight-tip');
+    let hover = -1, geom = null;
+    function niceStep(max) {
+      const raw = max / 3, p = Math.pow(10, Math.floor(Math.log10(raw)));
+      const f = raw / p;
+      return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+    }
+    function drawChart() {
+      const dpr = window.devicePixelRatio || 1;
+      const W = chart.clientWidth, Hh = chart.clientHeight;
+      if (!W || !Hh) return;
+      if (chart.width !== Math.round(W * dpr) || chart.height !== Math.round(Hh * dpr)) { chart.width = Math.round(W * dpr); chart.height = Math.round(Hh * dpr); }
+      const c = cctx;
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.clearRect(0, 0, W, Hh);
+      const L = 58, R = 14, T = 16, B = 24, gap = 26;
+      const plotH = Hh - T - B - gap;
+      const hS = Math.round(plotH * 0.4), hA = plotH - hS;
+      const n = hist.n;
+      const xmax = Math.max(50, passNo);
+      const X = p => L + (W - L - R) * p / xmax;
+      // speed range (signed), height range
+      let smin = 0, smax = 0, amax = 0;
+      for (let i = 0; i < n; i++) { const v = hist.spd[i]; if (v < smin) smin = v; if (v > smax) smax = v; if (hist.alt[i] > amax) amax = hist.alt[i]; }
+      const refs = [];
+      const flying = craft.n !== 2 && craft.n !== 5;
+      if (flying) {
+        const c0 = (craft.amp ? 0x5A : F.M[0x9DAD + craft.n * 16 + 13]);
+        const ceilAlt = (c0 + 1) * 1000;
+        if (amax > ceilAlt * 0.45) refs.push([ceilAlt, 'ceiling byte $' + hex2(c0) + ': above ALT ' + fmtInt(ceilAlt) + ' the climb is cut']);
+        if (amax > 6500) refs.push([64997, 'the Colony Craft’s deck, ALT 64997']);
+      }
+      let top = Math.max(amax, 10);
+      refs.forEach(r => { if (r[0] > top) top = r[0]; });
+      const aStep = niceStep(top * 1.08), aTop = Math.ceil(top * 1.08 / aStep) * aStep;
+      const sAbs = Math.max(Math.abs(smin), smax, 10);
+      const sStep = niceStep(sAbs * 1.08);
+      const sTop = smax > 0 || smin === 0 ? Math.ceil(Math.max(smax, 10) * 1.08 / sStep) * sStep : 0;
+      const sBot = smin < 0 ? -Math.ceil(-smin * 1.08 / sStep) * sStep : 0;
+      const panels = [
+        { y0: T, h: hS, lo: sBot, hi: sTop, step: sStep, data: hist.spd, col: COL.speed, title: 'SPEED', cur: F.speed_readout().value * (F.M[0x27] & 1 ? -1 : 1) },
+        { y0: T + hS + gap, h: hA, lo: 0, hi: aTop, step: aStep, data: hist.alt, col: COL.alt, title: 'ALT', cur: F.alt_readout().value, refs },
+      ];
+      c.font = '11px ' + COL.font;
+      c.textBaseline = 'middle';
+      const refLabels = [];
+      for (const P of panels) {
+        const Y = v => P.y0 + P.h - (v - P.lo) / (P.hi - P.lo) * P.h;
+        P.Y = Y;
+        c.lineWidth = 1;
+        for (let v = P.lo; v <= P.hi + 1e-9; v += P.step) {
+          const y = Math.round(Y(v)) + 0.5;
+          c.strokeStyle = COL.line; c.beginPath(); c.moveTo(L, y); c.lineTo(W - R, y); c.stroke();
+          c.fillStyle = COL.mute; c.textAlign = 'right'; c.fillText(fmtInt(v), L - 8, y);
+        }
+        c.fillStyle = COL.soft; c.textAlign = 'left'; c.textBaseline = 'bottom';
+        c.fillText(P.title, L, P.y0 - 3);
+        c.textBaseline = 'middle';
+        if (P.refs) for (const [v, label] of P.refs) {
+          const y = Math.round(Y(v)) + 0.5;
+          c.strokeStyle = COL.mute; c.beginPath(); c.moveTo(L, y); c.lineTo(W - R, y); c.stroke();
+          refLabels.push([label, y, P]);
+        }
+        c.strokeStyle = P.col; c.lineWidth = 2; c.lineJoin = 'round'; c.lineCap = 'round';
+        c.beginPath();
+        for (let i = 0; i < n; i++) { const x = X(hist.pass[i]), y = Y(P.data[i]); i ? c.lineTo(x, y) : c.moveTo(x, y); }
+        if (n) c.lineTo(X(passNo), Y(P.cur));
+        c.stroke();
+        c.fillStyle = P.col; c.strokeStyle = COL.surface; c.lineWidth = 2;
+        c.beginPath(); c.arc(X(passNo), Y(P.cur), 4, 0, 2 * Math.PI); c.fill(); c.stroke();
+      }
+      // the reference lines' labels: above or below the line, whichever side the data crosses
+      // less and clear of the other label, with a halo of the plate's colour
+      c.textAlign = 'right'; c.textBaseline = 'bottom';
+      const placed = [];
+      for (const [label, y, P] of refLabels) {
+        const w = c.measureText(label).width, x0 = W - R - w - 2, x1 = W - R;
+        const boxes = [[y - 15, y - 2], [y + 2, y + 15]];
+        const score = boxes.map(([t, b]) => {
+          let hits = 0;
+          for (let i = 0; i < n; i++) { const x = X(hist.pass[i]); if (x < x0 || x > x1) continue; const yy = P.Y(P.data[i]); if (yy >= t && yy <= b) hits++; }
+          if (placed.some(([pt, pb]) => pt < b && pb > t)) hits += 1e6;
+          return hits;
+        });
+        const k = score[1] < score[0] ? 1 : 0;
+        placed.push(boxes[k]);
+        c.lineWidth = 3; c.lineJoin = 'round'; c.strokeStyle = COL.surface;
+        c.strokeText(label, x1, boxes[k][1]);
+        c.fillStyle = COL.soft; c.fillText(label, x1, boxes[k][1]);
+      }
+      c.textBaseline = 'middle';
+      // pass axis
+      const xs = niceStep(xmax);
+      c.fillStyle = COL.mute; c.textAlign = 'center'; c.textBaseline = 'top';
+      for (let v = 0; v <= xmax + 1e-9; v += xs) c.fillText(fmtInt(v), X(v), Hh - B + 6);
+      c.textAlign = 'right'; c.fillText('pass', L - 8, Hh - B + 6);
+      geom = { L, R, W, X, xmax, panels };
+      if (hover >= 0 && hover < n) {
+        const x = Math.round(X(hist.pass[hover])) + 0.5;
+        c.strokeStyle = COL.mute; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(x, T); c.lineTo(x, Hh - B); c.stroke();
+        for (const P of panels) {
+          c.fillStyle = P.col; c.strokeStyle = COL.surface; c.lineWidth = 2;
+          c.beginPath(); c.arc(x, P.Y(P.data[hover]), 4, 0, 2 * Math.PI); c.fill(); c.stroke();
+        }
+      }
+    }
+    function hoverAt(clientX) {
+      if (!geom || !hist.n) return;
+      const r = chart.getBoundingClientRect();
+      const x = clientX - r.left;
+      const p = (x - geom.L) / (geom.W - geom.L - geom.R) * geom.xmax;
+      let lo = 0, hi = hist.n - 1;
+      while (lo < hi) { const mid = (lo + hi) >> 1; if (hist.pass[mid] < p) lo = mid + 1; else hi = mid; }
+      if (lo > 0 && Math.abs(hist.pass[lo - 1] - p) < Math.abs(hist.pass[lo] - p)) lo--;
+      hover = lo;
+      drawChart();
+      tip.hidden = false;
+      tip.textContent = '';
+      const rows = [['pass', fmtInt(hist.pass[lo]), null], ['SPEED', fmtInt(hist.spd[lo]), COL.speed], ['ALT', fmtInt(hist.alt[lo]), COL.alt]];
+      rows.forEach(([name, val, col], k) => {
+        const line = document.createElement('div');
+        if (col) { const i = document.createElement('i'); i.style.background = col; line.appendChild(i); }
+        const b = document.createElement('b'); b.textContent = val; line.appendChild(b);
+        line.appendChild(document.createTextNode(' ' + name));
+        tip.appendChild(line);
+      });
+      const tx = geom.X(hist.pass[lo]);
+      tip.style.left = Math.max(0, Math.min(tx + 12, r.width - tip.offsetWidth)) + 'px';
+      tip.style.top = '18px';
+    }
+    chart.addEventListener('pointermove', e => hoverAt(e.clientX));
+    chart.addEventListener('pointerdown', e => hoverAt(e.clientX));
+    chart.addEventListener('pointerleave', () => { hover = -1; tip.hidden = true; drawChart(); });
+    window.addEventListener('resize', () => drawChart());
+
+    function stat(dt, dd, cls) { return '<dt>' + dt + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + dd + '</dd>'; }
+    function render() {
+      if (!F) return;
+      const s = last, ev = lastEv;
+      drawPanel();
+      drawDial(s.pitch);
+      drawChart();
+      let state, cls = '';
+      if (crashed) { state = 'crashed: ' + crashed; cls = 'flight-warn'; }
+      else if (s.onDeck) { state = 'on the Colony Craft’s deck'; cls = 'flight-good'; }
+      else if (s.onGround) {
+        if (!ev || ev.held) state = 'on the ground; below speed 128 the nose is held level';
+        else state = 'on the ground, landing again every pass; the stick back lifts it';
+      } else { state = 'airborne'; cls = 'flight-good'; }
+      const recNow = s.rec, isGround = s.grounded;
+      const kExp = ev && ev.climbExp !== null ? ev.climbExp : s.rec[9];
+      const climb = fmtFloat(s.rec[8], kExp);
+      let html = '';
+      html += stat('pass', fmtInt(passNo));
+      html += stat('state', state, cls);
+      html += stat('throttle', fmtSpeed(s.T) + (Math.abs(s.T) >= 32512 && Math.abs(s.T) < 32768 ? ' (the limit)' : ''));
+      html += stat('speed', fmtSpeed(s.v));
+      html += stat('pitch', s.pitch + ', ' + nose(s.pitch));
+      html += stat('heading', s.head + ', ' + ['north', 'west', 'south', 'east'][((s.head + 128) >> 8) & 3]);
+      html += stat('height', fmtInt(s.h));
+      html += stat('height step', ev && ev.hStep !== null ? (ev.hStep > 0 ? '+' : '') + fmtInt(ev.hStep) : (ev && ev.held ? 'none (held)' : '—'));
+      html += stat('climb factor', climb + (ev && ev.ceilingHit ? ' (above the ceiling)' : ''), ev && ev.ceilingHit ? 'flight-warn' : '');
+      html += stat('record', isGround ? '8’s ground handling' : craft.n + '’s own');
+      $('flight-stats').innerHTML = html;
+      // the motion record in use
+      let rec = '<span class="flight-rec-title"><code>$BEA0</code></span>';
+      for (const [o, len, name] of FIELDS) {
+        const bytes = recNow.slice(o, o + len), changed = bytes.some((b, i) => b !== ownRec[o + i]);
+        rec += '<span class="flight-field"><span class="flight-bytes' + (changed ? ' flight-changed' : '') + '">' + bytes.map(hex2).join(' ') +
+          '</span><span class="flight-fname">' + name + '</span></span>';
+      }
+      $('flight-rec').innerHTML = rec;
+      linkCodes($('flight-rec'));
+    }
+
+    reset();
+  }
+
+  // ---- the records table ----
+  function buildRecordTable(ram) {
+    const NAMES = [
+      ['the brother-in-law’s new ship', 'object 0; named when shot (script 27)'],
+      ['Dominion Dart', 'object 1; named by the opening’s offer'],
+      ['Hovercar', 'object 2, ground only; the Survival Kit’s name'],
+      ['Concord 111', 'object 3; the Survival Kit’s name'],
+      ['Hexapod', 'object 4; the Survival Kit’s name'],
+      ['Sprintcar', 'object 5, ground only; the Survival Kit’s name'],
+      ['CHEESE', 'object 6; its name, canned message 6; the Survival Kit’s Casper-Hanley Eagle 8SE'],
+      ['interstellar ship', 'object 7; script 7 tests it'],
+      ['ground handling', 'bytes 2-11, copied at a landing'],
+      ['falling', 'after a hit or a fall'],
+      ['the opening’s descent', 'the crash landing at the start'],
+    ];
+    const tb = document.querySelector('#flight-rectable tbody');
+    if (!tb) return;
+    let html = '';
+    const f2 = (m, e) => { let ex = (e >> 2) & 63; if (ex >= 32) ex -= 64; const v = ((e & 1) ? -1 : 1) * (1 + m / 256) * Math.pow(2, ex);
+      if (ex < -7) return (m ? (1 + m / 256).toFixed(2) + ' × ' : '') + '2^' + ex; return String(+v.toFixed(3)); };
+    const cell = (txt, raw, cls) => '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + txt + (raw !== undefined ? '<span class="flight-raw">' + raw + '</span>' : '') + '</td>';
+    for (let n = 0; n <= 10; n++) {
+      const a = 0x9DAD + 16 * n, b = ram.subarray(a, a + 16);
+      const h = b[0] | (b[1] << 8);
+      const [name, note] = NAMES[n];
+      html += '<tr data-n="' + n + '"><td><code>' + hex4(a) + '</code><span class="flight-raw">record ' + n + '</span></td><td>' + name + '<span class="flight-raw">' + note + '</span></td>';
+      html += n === 8 ? cell('<code>$9F17</code>', 'kept from the craft', 'flight-dim') : '<td><code>' + hex4(h) + '</code></td>';
+      if (n >= 9) {
+        const t = n === 9
+          ? 'height -' + fmtInt(b[2] * 256) + ' a pass (byte 2, <code>$9EBE</code>); roll +' + b[3] + ', pitch +' + b[4] + ', heading +' + b[5] + ' (<code>$9ED6</code>)'
+          : 'drops by the steps at <code>$9E9E</code>, then ' + fmtInt(b[2] * 256) + ' a pass; roll +' + b[3] + ' a pass';
+        html += '<td colspan="8" class="flight-span">' + t + '</td></tr>';
+        continue;
+      }
+      const dim = n === 7 ? 'flight-dim' : '';
+      html += cell(f2(b[2], b[3]), hex2(b[2]) + ' ' + hex2(b[3]), dim);
+      html += cell(f2(b[4], b[5]), hex2(b[4]) + ' ' + hex2(b[5]), dim);
+      html += cell(String(b[6]), hex2(b[6]), dim);
+      html += cell(b[7] & 0x80 ? 'none' : '×' + Math.pow(2, b[7] / 4), hex2(b[7]), dim);
+      html += cell(f2(b[8], b[9]), hex2(b[8]) + ' ' + hex2(b[9]), dim);
+      html += cell(f2(b[10], b[11]), hex2(b[10]) + ' ' + hex2(b[11]), dim);
+      if (n === 8) { html += cell('not copied', undefined, 'flight-dim') + cell('not copied', undefined, 'flight-dim') + '</tr>'; continue; }
+      html += cell('$' + hex2(b[13]) + (n === 1 ? ', $5A with the Poweramp' : ''), n === 2 || n === 5 ? 'ground only' : undefined, dim);
+      html += cell(f2(b[14], b[15]), hex2(b[14]) + ' ' + hex2(b[15]), dim);
+      html += '</tr>';
+    }
+    tb.innerHTML = html;
+    linkCodes(tb);
+  }
+
+  // ---- the top speeds, computed by the port ----
+  function buildTopTable(ram) {
+    const tb = document.querySelector('#flight-toptable tbody');
+    if (!tb) return;
+    const ZZAP = { '1': ['08,08', 4950, 1650], '1+': ['', 9900, 3300], '2': ['12,13', null, 825], '3': ['**,**', 7400, 825],
+      '4': ['03,00', 1650, 1650], '5': ['09,05', null, 3837], '6': ['11,13', 9900, 3300] };
+    const ROWS = [[0, false, 'the brother-in-law’s new ship'], [1, false, 'Dominion Dart'], [1, true, 'Dart with the Poweramp'],
+      [2, false, 'Hovercar'], [3, false, 'Concord 111'], [4, false, 'Hexapod'], [5, false, 'Sprintcar'], [6, false, 'CHEESE']];
+    function top(n, amp, air) {
+      const f = makeFlight(ram), M = f.M;
+      f.board(n, amp);
+      if (air) { M[0x7F] = 0; M[0x77] = 8; }
+      f.pass({ stick: 15, key: 35, trim: null });
+      for (let i = 0; i < 60 && !f.pass({ stick: 15, key: -1, trim: '+' }).ev.refused; i++);
+      for (let i = 0; i < 400; i++) f.pass({ stick: 15, key: -1, trim: null });
+      return f.speed_readout();
+    }
+    function square(x, y) {
+      const d = v => { if (v & 0x80) v = 256 - v; const b = ram[0x803A + v]; return '0123456789*'[b >> 4] + '0123456789*'[b & 15]; };
+      return d(x) + '-' + d(y);
+    }
+    function hangarOf(room) {
+      // the hangar (rooms 1-8) whose rooms, joined by doors other than the booths $72-$87, include this one
+      for (let h = 1; h <= 8; h++) {
+        const seen = new Set([h]), q = [h];
+        while (q.length) {
+          const r = q.shift();
+          let p = (ram[0x2300 + r] | (ram[0x23C0 + r] << 8)) + 5;
+          for (let k = 0; k < 40 && ram[p] !== 0 && ram[p] !== 0x80; k++, p += 4) {
+            const dst = ram[p + 1];
+            if (dst && dst <= 0xAE && !(dst >= 0x72 && dst <= 0x87) && !seen.has(dst)) { seen.add(dst); q.push(dst); }
+          }
+        }
+        if (seen.has(room)) return h;
+      }
+      return 0;
+    }
+    function startsAt(n) {
+      const room = ram[0x2940 + n];
+      if (room === 0) return square(ram[0x2540 + n], ram[0x25C0 + n]) + (n === 0 ? ', moving along column 00' : '');
+      const h = room <= 8 ? room : hangarOf(room);
+      const lift = h ? square(ram[0xB4B6 + h], ram[0xB4BE + h]) : '?';
+      return (room <= 8 ? 'hangar ' + room : 'room $' + hex2(room) + ', off hangar ' + h) + ', lift ' + lift;
+    }
+    let html = '';
+    for (const [n, amp, name] of ROWS) {
+      const flies = n !== 2 && n !== 5;
+      const g = top(n, amp, false), a = flies ? top(n, amp, true) : null;
+      const z = ZZAP[n + (amp ? '+' : '')] || ['', null, null];
+      const zcell = (v, port) => v === null ? '<td class="flight-n flight-dim">—</td>' :
+        '<td class="flight-n ' + (port && +port.text.slice(1) === v ? 'flight-match' : '') + '">' + v + '</td>';
+      const pcell = r => r ? '<td class="flight-n">' + r.text.slice(1) + (r.hi > 99 ? '<span class="flight-raw">' + r.hi + ' and ' + r.lowDigits + ': ** for 100 up</span>' : '') + '</td>' : '<td class="flight-n flight-dim">ground only</td>';
+      html += '<tr data-n="' + n + '" data-amp="' + (amp ? 1 : 0) + '"><td>' + name + '</td><td>' + (amp ? 'carrying object 28' : startsAt(n)) + (z[0] ? '<span class="flight-raw">Zzap!64: ' + z[0] + '</span>' : '') + '</td>' +
+        pcell(a) + zcell(z[1], a) + pcell(g) + zcell(z[2], g) + '</tr>';
+    }
+    tb.innerHTML = html;
+  }
+})();
+</script>

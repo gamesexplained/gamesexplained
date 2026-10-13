@@ -154,6 +154,20 @@ controlled by an existing Playwright Core 1.59.1 client. No browser package
 was downloaded in that run. This establishes the tested configuration;
 `verify-footprint` still does not scan browser state.
 
+On Windows 11 with the kit under WSL2, where WSL had no browser, the
+Microsoft Edge that Windows ships did the page check on 12 October 2026
+without installing anything: the site served from WSL with
+`python3 -m http.server -d _site <port>`, which Windows reaches as
+`http://localhost:<port>/`, and `msedge.exe --headless=new --disable-gpu
+--no-first-run --user-data-dir=<a new folder in the session's temporary
+space> --window-size=1100,7200 --virtual-time-budget=8000
+--enable-logging=stderr --screenshot=<file.png> <url>` run from Windows.
+The page's console messages come out on stderr as `CONSOLE` lines among
+Edge's own. A screenshot of a URL with a `#fragment` came out blank, so
+take the whole page in one tall window and crop it. Edge was not driven
+(no clicks); the profile went to the folder given, and whether Edge wrote
+anywhere else was not checked.
+
 The launcher uses `pkill` to stop the process whose command names this
 clone's exact profile. The recorded host test is Linux; verify containment
 before using this launcher on another host OS.

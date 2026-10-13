@@ -136,9 +136,9 @@ section table{margin:6px 0 18px}
   <h3>What moves</h3>
   <table>
     <tr><th>Traffic</th><th>Where it goes</th></tr>
-    <tr><td>44 cars: the game's car (object 2) and its land Dart (object 5)</td><td>Along the roads of the game's road table, keeping left, from one place to another at up to the car's own top speed: SPEED 825 on the panel, which shows 100/256 of the units a pass, so 2,112 units a pass. They slow for corners, queue behind the car in front, stop when you stand in the road, and pull in to the kerb when they arrive.</td></tr>
-    <tr><td>14 craft: Darts, Palyar diamonds, jets and CHEESEs</td><td>From a stand at the airbase (08-08) or Jordan Airport (12-13), or from a lift, to another one. They roll and take off from the runways, rise out of the lifts and sink back into them, and cruise at a third to a half of the craft's top speed in the game's table.</td></tr>
-    <tr><td>4 Palyar diamonds</td><td>Drop from the Colony Craft's deck, fly a short way below it and dock again.</td></tr>
+    <tr><td>44 cars: the game's Hovercar (object 2) and its Sprintcar (object 5)</td><td>Along the roads of the game's road table, keeping left, from one place to another at up to the Hovercar's own top speed: SPEED 825 on the panel, which shows 100/256 of the units a pass, so 2,112 units a pass. They slow for corners, queue behind the car in front, stop when you stand in the road, and pull in to the kerb when they arrive.</td></tr>
+    <tr><td>14 craft: Darts, Hexapods, Concord 111s and CHEESEs</td><td>From a stand at the airbase (08-08) or Jordan Airport (12-13), or from a lift, to another one. They roll and take off from the runways, rise out of the lifts and sink back into them, and cruise at a third to a half of the craft's top speed in the game's table.</td></tr>
+    <tr><td>4 Hexapods</td><td>Drop from the Colony Craft's deck, fly a short way below it and dock again.</td></tr>
     <tr><td>1 Palyar Dart</td><td>Flies in formation with the brother-in-law's new ship, 700 units to its west, down column 00. Shoot his ship and the escort breaks away and joins the traffic.</td></tr>
   </table>
   <p>Cars head for the Coach and Horses (15-02), for the other named places, or anywhere on the road network. Every so often it is match day: most of the cars that set off then drive to Bosher Stadium (08-07) and park there until the game is over.</p>
@@ -150,7 +150,7 @@ section table{margin:6px 0 18px}
     <li>The hit test is the game's <code>missile_hit_test</code> ($8833), run on the borrowed slot.</li>
     <li>The two reprisals are event scripts in the game's own byte code, twelve bytes each: a call to the landmarks' YOU HAVE JUST DESTROYED ($0CC1), a line printed from words in the game's dictionary, then a jump into the landmarks' scripts at $0CC4 or $0CCC, which print the attack line and set <code>$BEF8</code>. They sit at $BC90, in bytes nothing reads, and entries 30 and 31 of the script table point at them while the mod is on.</li>
     <li>The mod keeps its own random numbers, so the game's generator at $ADEF runs the same sequence with the mod on or off. The traffic is not in saved positions: a save is the game's own 1,904 bytes.</li>
-    <li>The owners are the mod's choice. The game names no owner for any craft; the mod gives the diamonds and the Darts to the Palyars and the jets and the CHEESE to the Mechanoids, and each car the owner of the square it starts on, or either side on a square that is nobody's.</li>
+    <li>The owners are the mod's choice. The game names no owner for any craft; the mod gives the Hexapods and the Darts to the Palyars and the Concord 111s and the CHEESE to the Mechanoids, and each car the owner of the square it starts on, or either side on a square that is nobody's.</li>
     <li>The traffic costs the game no time. On a C64 the extra drawing would slow every pass; the port leaves it out of its clock.</li>
   </ul>
 </section>
@@ -3212,7 +3212,7 @@ function install_motion(P) {
     return P.spin_step();
   };
 
-  // $9EFD motion_ground: the car and the land Dart (records 2 and 5). No pitching ($BEA6 = 0), the
+  // $9EFD motion_ground: the Hovercar and the Sprintcar (records 2 and 5). No pitching ($BEA6 = 0), the
   // eye at $3F, then the flight model; off the ground ($7F = 0) the height's top byte drops by one
   // a pass, and below 0 it is a crash landing.
   P.motion_ground = function* (r = {}) {
@@ -6756,7 +6756,7 @@ function makeDisplay(opts) {
       const c = centre(s);
       const fac = owner(s) || (rnd() < 0.5 ? 'P' : 'M');
       const car = { kind: 'car', model: fac === 'M' && rnd() < 0.35 ? MODEL.landDart : MODEL.car, fac, x: c.x, y: c.y, h: 0,
-        // up to the car's own top speed: SPEED 825 on the panel, which shows 100/256 of the units a
+        // up to the Hovercar's own top speed: SPEED 825 on the panel, which shows 100/256 of the units a
         // pass ($B5A8), so 2,112 units a pass
         head: 0, speed: 900 + Math.floor(rnd() * 1213), route: null, at: s, park: Math.floor(rnd() * 200), id: i };
       V.push(car);

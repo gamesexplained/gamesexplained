@@ -111,6 +111,15 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   7, `$0B`, `$0C`, `$18`; the jump 5 answers the sweeps `$0A` and `$10`.
   `$0F` and `$10` strike behind the fighter (`$11A8`). The spinning kick
   `$11` is taken only from a held turn round `$12` (`$29B4`).
+- **Animations the game plays itself**, numbered with the moves (`$7720`):
+  `$17` the bow at the start of every exchange (frames `$1A`, `$21`; both
+  fighters, `$1A22`, `$1A77`; the clock skips while fighter 0 is in it,
+  `$1AC3`); `$19` the bow at the end of a bout, facing the screen (frames
+  `$35`-`$38`; `$1E23`, played by `$1E32` for the winner and `$1E44` for
+  both); the falls `$16` (`$29`-`$2C`), `$1A` (`$25`-`$28`) and `$1B`
+  (`$2D`-`$2F`) given by the hit test (`$2CA8`); `$15` (frames `$04`,
+  `$18`), played backwards when a held spinning kick ends (`$2A5D`).
+  Animations `$01`-`$1B` are the fighters', `$1C`-`$1F` the bull's.
 - **Keyboard** (F7 in the attract mode, `$C6`): player 1 Q W E / A D /
   Z X C with fire S or left SHIFT (`$28B2`-`$2930`); player 2 P @ * / L ; /
   , . / with fire : or right SHIFT (`$2931`-`$29B3`). The first held

@@ -70,8 +70,26 @@ class Machine:
         return self.j("vice_cycles_stopwatch", {"action": "read"})["cycles"]
 
     def vic(self):
+        """The raster line and the registers $D000-$D02E. vice_vicii_get_state reports them,
+        except with an Ultimax cartridge attached: there v3.13.2 gave the RAM's power-on pattern
+        for every register and line 256 throughout, while the chip read through the io bank was
+        right (Clowns, 11 October 2026). When the two disagree about the line, the chip's own
+        registers decide."""
         v = self.j("vice_vicii_get_state")
+        io = self.read(0xD000, 47, "io")
+        line = (io[0x11] & 0x80) << 1 | io[0x12]
+        if v["raster_line"] != line:
+            return line, list(io)
         return v["raster_line"], v["registers"][:47]
+
+    def ultimax(self):
+        """The 4 KB the video chip reads at $3000-$3FFF of every bank when an Ultimax cartridge
+        (GAME held low, EXROM not: Commodore's MAX Machine games) is attached, or None: the
+        cartridge's ROM at $F000-$FFFF, which the processor then sees in place of the KERNAL."""
+        cpu = self.read(0xF000, 0x1000, "cpu")
+        if cpu == self.read(0xF000, 0x1000, "cart") and cpu != self.read(0xF000, 0x1000, "rom"):
+            return cpu
+        return None
 
 
 # registers that change by themselves (the raster, the light pen, the interrupt latch, the
@@ -109,6 +127,7 @@ def capture(out, shot=None):
         cia0 = list(m.read(0xDD00, 3, "io"))
         cpu0 = list(m.read(0, 2, "cpu"))
         charrom = m.read(0xD000, 0x1000, "rom")      # for this machine's own checks; trim drops it
+        ultimax = m.ultimax()                        # the cartridge's, which a page may embed
         ranges = [(0xD000, 0xD3FF, "vic"), (0xDD00, 0xDDFF, "cia2")] + \
                  [(b * 0x4000 + s * 0x400 + 0x3F8, b * 0x4000 + s * 0x400 + 0x3FF, "pointers")
                   for b in range(4) for s in range(16)]
@@ -198,6 +217,8 @@ def capture(out, shot=None):
                     "ram_bytes_changed_during_frame": sum(1 for a in range(0x10000) if ram0[a] != ram1[a]),
                     "colour_cells_changed_during_frame": sum(1 for a, b in zip(colour0, colour1) if a != b)},
     }
+    if ultimax:
+        frame["ultimax"] = base64.b64encode(ultimax).decode()
     with open(out, "w") as f:
         json.dump(frame, f, separators=(",", ":"))
     return frame

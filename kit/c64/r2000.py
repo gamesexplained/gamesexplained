@@ -214,6 +214,11 @@ def parse_annotations(text):
             problems.append((n, "not `$ADDR name : comment`, `$ADDR name`, `$ADDR : comment` or `$ADDR-$END type`"))
             continue
         address = int(m.group(1), 16)
+        if m.group(2) and m.group(2).lower() in DATA_TYPES and not m.group(3):
+            # `$C100 byte` would name a label "byte": a type takes the range form, `$C100-$C100 byte`
+            problems.append((n, f"{m.group(2)!r} is a data type: write `${m.group(1)}-${m.group(1)} {m.group(2)}` to type "
+                                f"one address, or give the label a name of its own"))
+            continue
         if m.group(2):
             calls.append((n, {"name": "r2000_set_label_name", "arguments": {"address": address, "name": m.group(2)}}))
         if m.group(3):

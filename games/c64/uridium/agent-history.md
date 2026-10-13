@@ -113,3 +113,11 @@ The sound sections moved to their own page, `music.html`. For the piece
 sheet, the map port records where it lays each piece; replaying those
 placements rebuilds all 16 maps exactly, and that is in `test_ports.py`
 too.
+
+## The Overview tab (12 October 2026)
+
+At the contributor's request the opening section, "The game", became its
+own Overview tab (`index.html`), and the rest of How it works moved to
+`how-it-works.html`, renumbered from 01. The page sources in `work/page/`
+were renamed to match, and `test_ports.py` now reads the map builder from
+`how-it-works.html`.
