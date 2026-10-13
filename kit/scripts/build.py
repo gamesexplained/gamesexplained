@@ -21,7 +21,8 @@ Those are the default tabs. A game that wants others lists all of its tabs, in
 order, in game.json's "tabs" as [file, label] pairs; every authored page it
 names is copied through, and a page in the folder that no tab names is left out
 with a warning (about-layout.html, the game's own About template, aside).
-Every tab but Source lists its sections in the left margin (pagenav).
+Every tab but Source lists its sections in the left margin (pagenav), and every
+tab but the last ends with a link to the one after it (next_tab).
 Plus a home page with the catalogue and the games most recently added or changed
 (from git history), a page for each platform with games, <platform>/index.html
 (from site/platform.html: its catalogue alone, the page the platform in a game's
@@ -270,9 +271,17 @@ def tier_name(t):
     return TIER_NAMES.get(t, t)
 
 
+def tab_order(game, present):
+    """The game's tabs as the bar shows them, in order: (file, label) for each one it has."""
+    return [(f, n) for f, n in game.get("tabs", TABS) if f in present]
+
+
+def tab_href(f):
+    return "./" if f == "index.html" else f
+
+
 def tabbar(game, present, lib):
-    tabs = "".join(f'<a class="tab" href="{"./" if f == "index.html" else f}">{n}</a>'
-                   for f, n in game.get("tabs", TABS) if f in present)
+    tabs = "".join(f'<a class="tab" href="{tab_href(f)}">{n}</a>' for f, n in tab_order(game, present))
     tier = game.get("tier", "none")
     custom_tabs = "tabs" in game
     inner_class = "in many-tabs" if custom_tabs else "in"
@@ -370,6 +379,19 @@ def edit_footer(game, tab, f=None):
             f'<p class="acts"><a class="btn" href="{html.escape(edit)}">Edit this page on GitHub</a>'
             f'<a href="{html.escape(hist)}">History</a><a href="{html.escape(tree)}">All the files for this game</a></p>'
             f'</div></footer>')
+
+
+def next_tab(game, present, tab):
+    """The link at the end of a tab to the one after it in the bar, a sign there is more to read
+    than the page the reader landed on. The last tab has none."""
+    order = tab_order(game, present)
+    files = [f for f, _ in order]
+    if tab not in files or files.index(tab) + 1 == len(files):
+        return ""
+    f, n = order[files.index(tab) + 1]
+    return (f'<nav class="nexttab" aria-label="Next tab"><a href="{tab_href(f)}" rel="next">'
+            f'<span class="nx-k">Next</span><span class="nx-t">{html.escape(n, quote=False)}</span>'
+            f'<span class="nx-ar" aria-hidden="true">\u2192</span></a></nav>')
 
 
 def at_end(page, foot):
@@ -755,16 +777,18 @@ def check_tabs(gdir, game):
                  "list every tab, this one included, in game.json's \"tabs\"")
 
 
-def authored_page(gdir, game, f, nav, ban, src=None):
+def authored_page(gdir, game, f, nav, ban, src=None, present=None):
     """One authored tab as the site serves it: the template's placeholders filled from game.json
-    (new_game.py fills only the .md files), the tab bar, the banner, the edit footer and the
-    section list added. src is the page's source, read from the game folder when not given;
-    the page editor, kit/scripts/edit.py, passes a copy with its blocks tagged."""
+    (new_game.py fills only the .md files), the tab bar, the banner, the link to the next tab,
+    the edit footer and the section list added. src is the page's source, read from the game
+    folder when not given; the page editor, kit/scripts/edit.py, passes a copy with its blocks
+    tagged. present is the game's tabs (present_tabs), worked out when not given."""
     plat = game["platform"]
     head = dict(title=html.escape(game.get("title", game["slug"])), platform=PLATFORM_NAMES.get(plat, plat),
                 year=game.get("year") or "", publisher=html.escape(game.get("publisher") or ""))
     page = drop_platform(fill(read(os.path.join(gdir, f)) if src is None else src, **head), plat)
-    return pagenav(at_end(under_title(inject(page, nav, LIB), ban), edit_footer(game, f)))
+    nxt = next_tab(game, present_tabs(gdir, game) if present is None else present, f)
+    return pagenav(at_end(under_title(inject(page, nav, LIB), ban), nxt + edit_footer(game, f)))
 
 
 def drop_platform(page, plat):
@@ -865,7 +889,7 @@ def part_card(p):
     return out
 
 
-def part_sources(gdir, game, P, out, nav, ban, common, cheats):
+def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
     """One Source page per part that has a listing, each with the part's own facts, then the
     game's. Addresses in a part's facts link into its own page; the game's facts and cheats
     name addresses in several parts, so they link to none. In either, an address written with
@@ -905,7 +929,8 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{LIB}/site.js"></script>\n'
-        src = at_end(src, edit_footer(game, "source.html", f"parts/{p['id']}/facts.md"))
+        src = at_end(src, next_tab(game, present, "source.html")
+                     + edit_footer(game, "source.html", f"parts/{p['id']}/facts.md"))
         for name in ([page, "source.html"] if p is shown[0] else [page]):
             open(os.path.join(out, name), "w").write(src)
         dst = os.path.join(out, "parts", p["id"])
@@ -1014,11 +1039,11 @@ def build_game(gdir, out_root):
                   platform_map=PLATFORM_MAPS.get(plat, "C64Map"), platform_scripts=platform_scripts,
                   platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
     for f in authored(gdir, game):
-        open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
+        open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban, present=present))
     # source: one page, or one for each part of a game of several; none for a game with no listing
     cheats = read(os.path.join(gdir, "cheats.md"))
     if P and not bare:
-        part_sources(gdir, game, P, out, nav, ban, common, cheats)
+        part_sources(gdir, game, P, out, nav, ban, common, cheats, present)
     elif not bare:
         facts = markdown(read(os.path.join(gdir, "facts.md")))
         if cheats.strip():
@@ -1027,7 +1052,8 @@ def build_game(gdir, out_root):
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{lib}/site.js"></script>\n'
-        open(os.path.join(out, "source.html"), "w").write(at_end(src, edit_footer(game, "source.html")))
+        open(os.path.join(out, "source.html"), "w").write(at_end(src, next_tab(game, present, "source.html")
+                                                                  + edit_footer(game, "source.html")))
     # about
     cred = [c for c in (game.get("credits") or []) if (c.get("by") or c.get("name", "")).strip()]   # the game's makers; agents live in "model"
     site_contributor_items = "".join(
@@ -1076,7 +1102,8 @@ def build_game(gdir, out_root):
                  orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare), shift=1,
                                             parts=part_pages(P)))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
-    open(os.path.join(out, "about.html"), "w").write(pagenav(at_end(about, edit_footer(game, "about.html"))))
+    about = at_end(about, next_tab(game, present, "about.html") + edit_footer(game, "about.html"))
+    open(os.path.join(out, "about.html"), "w").write(pagenav(about))
     for f in ("listing.json", "symbols.json"):
         if os.path.exists(os.path.join(gdir, f)):
             shutil.copy(os.path.join(gdir, f), out)
