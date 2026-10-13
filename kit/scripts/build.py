@@ -404,15 +404,35 @@ def accuracy_section(game, gdir):
     rows = accuracy_table(game, gdir)
     if not rows:
         return ""
-    trs = "".join(f'<tr class="{kind}"><th>{html.escape(step)}</th><td>{html.escape(by)}</td><td>{html.escape(what)}'
-                  + (f'<br><span class="mute">{html.escape(note)}</span>' if note else "") + "</td></tr>"
-                  for step, by, what, note, kind in rows)
+    keep = lambda by: ", ".join(f'<span class="nw">{html.escape(b)}</span>' for b in by.split(", "))   # wrap between models only
+    trs = "".join(f'<tr class="{kind}"><th>{html.escape(step)}</th><td>{keep(by)}</td><td>{html.escape(what)}'
+                  + (f'<br><span class="mute">{html.escape(note)}</span>' if note else "") + "</td>"
+                  + f'<td class="rib">{ribbon_html(*rib)}</td></tr>'
+                  for step, by, what, note, kind, rib in rows)
     return ('<h2 id="ledger">How the listing was checked</h2>\n'
             '<p class="mute">Every step that measured the Source tab\u2019s comments or made them more accurate, '
             'in the order it happened, with the models that did it. <a href="../../accuracy.html">Accuracy of the '
             'Source</a> explains each step and what the row above makes of them.</p>\n'
-            f'<div class="tablewrap"><table class="accuracy"><tr><th>Step</th><th>By</th><th>What it found</th></tr>'
-            f'{trs}</table></div>')
+            f'<div class="tablewrap"><table class="accuracy"><tr><th>Step</th><th>By</th><th>What it found</th>'
+            f'<th>Of the listing</th></tr>{trs}</table></div>\n{RIBBON_KEY}')
+
+
+# The bar on each ledger row (accuracy.ribbon): the whole listing, left to right, and what the step
+# found in the part of it that it reached. The key under the table names the colours.
+RIBBON_KEY = ('<p class="ribkey mute"><span><i class="r-wrong"></i>likely wrong</span> '
+              '<span><i class="r-maybe"></i>the sample\u2019s range</span> '
+              '<span><i class="r-right"></i>right, or likely right</span> '
+              '<span><i class="r-fixed"></i>corrected</span> '
+              '<span><i class="r-done"></i>described</span> '
+              '<span><i></i>not reached by the step</span></p>')
+
+
+def ribbon_html(segments, said):
+    """One ledger row's bar, from accuracy.ribbon; nothing for a step that reaches no share of the listing."""
+    if not segments:
+        return ""
+    bits = "".join(f'<i class="r-{k}" style="width:{100 * share:.2f}%"></i>' for k, share in segments if share > 0)
+    return f'<span class="ribbon" role="img" title="{html.escape(said)}" aria-label="{html.escape(said)}">{bits}</span>'
 
 
 def banner_body(game, cons, tier, repo):

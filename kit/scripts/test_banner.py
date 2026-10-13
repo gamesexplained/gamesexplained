@@ -4,6 +4,7 @@ a maintainer's check rather than that it is incomplete at 100 % (#142). At Silve
 Source tab says how accurate the listing's comments are (accuracy.py), and the banner leaves it out."""
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -69,6 +70,22 @@ class Banner(unittest.TestCase):
         self.assertIn('<p class="srcnote ok"><b>Audited &amp; low error rate.</b>', note("silver", start + [first, audit, after]))
         self.assertEqual(note("silver"), "")                                  # made before the record
         self.assertEqual(note("bronze", start + [first]), "")                 # Bronze says it is unfinished
+
+    def test_the_about_ledger_ends_each_row_with_a_bar(self):
+        m = ["old-hand"]
+        rows = [{"step": "research", "web": True, "models": m}, {"step": "annotate", "models": m},
+                {"step": "sample", "size": 60, "wrong": 7, "fixed": 7, "models": m},
+                {"step": "audit", "checked": 600, "of": 600, "fixed": 70, "models": m}]
+        with tempfile.TemporaryDirectory() as tmp:
+            s = build.accuracy_section(dict(platform="c64", slug="made-up", tier="silver", coverage_percent=100,
+                                            accuracy=rows), tmp)
+        self.assertIn("<th>Of the listing</th>", s)
+        self.assertIn('<tr class="research-yes"><th>Research</th>', s)
+        self.assertEqual(s.count('<td class="rib">'), 4)
+        self.assertIn('<td class="rib"></td></tr>', s)                       # research reaches no share of it
+        self.assertIn('<span class="ribbon" role="img" title="Checked 600 of 600 comments (100 %): 70 corrected, 530 right"', s)
+        self.assertIn('<i class="r-fixed" style="width:11.67%"></i><i class="r-right" style="width:88.33%"></i>', s)
+        self.assertIn('<p class="ribkey mute">', s)
 
 
 if __name__ == "__main__":

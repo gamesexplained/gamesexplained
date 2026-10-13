@@ -34,7 +34,8 @@ A game at Silver or above needs a research row and an annotate row, and one crea
 SAMPLE_SINCE needs at least one sample too: Silver asks that the listing be measured, not
 that it be within the mark. An older Silver game with no sample shows "Not measured". A
 sample is within the mark when it holds at least 60 comments and at most one in 30 of them is
-wrong (2 in 60). The About tab shows the rows as a table, and its Status table sums them up;
+wrong (2 in 60). The About tab shows the rows as a table, each ending with a bar of the whole
+listing (ribbon()), and its Status table sums them up;
 the page calls the listing checked ("Audited & low error rate") only when the last sample came
 after a full audit and is within the mark. At Silver and above the Source tab says the same in
 a line under its title (build.py); the banner under the game's title leaves it out.
@@ -225,14 +226,51 @@ def corrected(sample):
     return f" {f} of them {'was' if f == 1 else 'were'} then corrected." if f else " None of them was corrected."
 
 
+def ribbon(row, coverage, total):
+    """What one step reached of the listing and what it found there, as the bar on its row:
+    (segments, sentence), each segment (kind, share of the whole), the shares summing to at most
+    1; the rest of the bar is what the step did not reach. Empty for a step that measures no
+    share of the listing (research, an old maintainer's check) or whose numbers nobody counted.
+    coverage is the program's described share for the last annotate row and None for any other;
+    total is how many comments the listing holds, for a step that does not say."""
+    pc = lambda x: f"{100 * x:.0f} %"
+    step = row["step"]
+    if step == "annotate" and coverage is not None:
+        c = min(max(coverage / 100, 0), 1)
+        return [("done", c)], f"{coverage:g} % of the program described"
+    if step == "sample":
+        lo, hi = wilson(row["wrong"], row["size"])
+        return ([("wrong", lo), ("maybe", hi - lo), ("right", 1 - hi)],
+                f"{100 * lo:.0f} to {pc(hi)} of the listing likely wrong, at least {pc(1 - hi)} likely right")
+    if step == "audit":
+        of = row.get("of") or total
+        if not of:
+            return [], ""
+        checked, fixed = row.get("checked"), row.get("fixed")
+        if checked is not None and fixed is not None:
+            return ([("fixed", fixed / of), ("right", (checked - fixed) / of)],
+                    f"Checked {checked:,} of {of:,} comments ({pc(checked / of)}): {fixed:,} corrected, "
+                    f"{checked - fixed:,} right")
+        if checked is not None:
+            return [("right", checked / of)], f"Checked {checked:,} of {of:,} comments ({pc(checked / of)}); how many it corrected is not recorded"
+        if fixed is not None:
+            return [("fixed", fixed / of)], f"Corrected {fixed:,} of {of:,} comments; how many it checked is not recorded"
+        return [], ""
+    if step == "play" and "fixed" in row and total:
+        return [("fixed", row["fixed"] / total)], f"Corrected {row['fixed']:,} of the listing’s {total:,} comments"
+    return [], ""
+
+
 def table(game, gdir):
-    """The About tab's rows, as (step, by, what it found, note, kind) strings; empty for a game with
-    no record. The last annotate row carries the coverage and how many comments the listing holds.
-    kind is the step and how it came out ("sample-good", "audit-part"), a class the page colours."""
+    """The About tab's rows, as (step, by, what it found, note, kind, ribbon) strings; empty for a game
+    with no record. The last annotate row carries the coverage and how many comments the listing holds.
+    kind is the step and how it came out ("sample-good", "audit-part"), a class the page colours;
+    ribbon is the bar the row ends with (ribbon())."""
     st = status(game)
     if st is None:
         return []
     rows, out, seen = game["accuracy"], [], {}
+    total = comments(gdir)
     checks = sum(1 for r in rows if r["step"] == "check")
     last_annotate = max((n for n, r in enumerate(rows) if r["step"] == "annotate"), default=None)
     for n, r in enumerate(rows):
@@ -251,7 +289,7 @@ def table(game, gdir):
             label, what = "Annotation", "Wrote the listing’s comments."
             if n == last_annotate:
                 what += (f" {game.get('coverage_percent') or 0:g} % of the program is described, "
-                         f"in {comments(gdir):,} comments.")
+                         f"in {total:,} comments.")
         elif step == "sample":
             lo, hi = wilson(r["wrong"], r["size"])
             label = f"Sample {seen[step]}"
@@ -282,7 +320,8 @@ def table(game, gdir):
                 whole = f"part of the {r['of']:,} comments" if "of" in r else "part of the listing"
             fixed = f"corrected {r['fixed']:,}" if "fixed" in r else "corrected a number not recorded"
             what = f"Checked {whole} and {fixed}."
-        out.append((label, by, what, r.get("note", ""), kind))
+        cover = (game.get("coverage_percent") or 0) if n == last_annotate else None
+        out.append((label, by, what, r.get("note", ""), kind, ribbon(r, cover, total)))
     return out
 
 
