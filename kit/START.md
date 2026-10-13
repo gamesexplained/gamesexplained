@@ -74,11 +74,11 @@ step needs something only they have.
    the first sample, and the page goes up saying its listing has not
    been audited until a later run does it (`kit/skills/core/60-verify`).
 
-   **A model for checking, only if they name one.** Do not ask for it. A
-   contributor may say, in the message that starts the run, which model
-   should check the listing: "check and audit with <model id>", or
-   "audits in Codex". If they do, `60-verify` runs every sample and audit on
-   that model, and says how to reach it; if they do not, it uses the
+   **A model for the checker, only if they name one.** Do not ask for it.
+   A contributor may say, in the message that starts the run, which model
+   the checker should run on: "use <model id> as the checker", or "run
+   the checker in Codex". If they do, `60-verify` runs every checker, for
+   samples and audits alike, on that model, and says how to reach it; if they do not, it uses the
    strongest model the session has. Either way the answer holds for the
    whole run.
 
