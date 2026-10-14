@@ -29,7 +29,7 @@ LEDGER = [{"step": "annotate", "models": ["m"]},
 def embedded(page):
     """{url: listing} for each data-listing tag on a built page."""
     return {u: json.loads(j) for u, j in
-            re.findall(r'<script type="application/json" data-listing="([^"]+)">(.*?)</script>', page, re.S)}
+            re.findall(r'<script type="application/json" data-listing="([^"]+)"(?: data-fields="[^"]*")?>(.*?)</script>', page, re.S)}
 
 
 def listed_game(root, parts=False, publish=False):
