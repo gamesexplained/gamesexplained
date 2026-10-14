@@ -3831,6 +3831,12 @@
    "kind": "auto"
   },
   {
+   "address": 4818,
+   "name": "bubble_frames",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 4822,
    "name": "object_collisions",
    "type": "Jump",
@@ -15096,7 +15102,7 @@
   {
    "address": 4627,
    "type": "line",
-   "text": "Cleared each frame by player_control; panel_lower reads it to choose its branch. (The attract block uses the same byte as the timer between the opening scene's fuzzy poses.)"
+   "text": "Set by world 2's levels while Clyde swims (level 2.1's level_player, $A355) and cleared by player_control at $2C5D whenever the level's player routine returns to $2C34, that is when he is not in the level's special state $122B; panel_lower shows sprites 1-3 of the panel only while it is set. (The attract block uses the same byte as the timer between the opening scene's fuzzy poses.)"
   },
   {
    "address": 4628,
@@ -15796,7 +15802,12 @@
   {
    "address": 4815,
    "type": "line",
-   "text": "The band sprite routines' addresses that level_band_routines chooses from, by the level's band table."
+   "text": "The low bytes of the three band sprite routines ($C0FE, $C061 and $C0B0, with the JSR operands' fixed high byte $C0) that level_band_routines chooses from by the level's band table, whose entries are 0-2."
+  },
+  {
+   "address": 4818,
+   "type": "line",
+   "text": "Four sprite frames, $88 $87 $86 $85, that no engine code reads: level 2.1's level_fire ($A41F) shows them in turn on shot sprite 2, the bubbles Clyde breathes out while he swims."
   },
   {
    "address": 4822,
@@ -16691,7 +16702,7 @@
   {
    "address": 11232,
    "type": "line",
-   "text": "Clyde's movement, once a frame. Reads the joystick. Down with fire opens the weapons tablet when he is on the ground and nothing blocks it ($1235, $123F, a jump in progress): the scroll stops and tablet_open runs on following frames. Finds his screen cell and calls the level's player routine (operand at $2C32). Up starts a jump ($122C, sound effect request 4). Left and right move him one pixel unless a character at or above the level's first solid character ($8B96) is in the way; walking right past his limit ($2E5B) starts the landscape scrolling at one pixel a frame instead, until the level's end. Then the jump: rising through jump_steps, falling when there is no solid character below his feet, and landing on the row's height from $2E5E with sound effect request 5. The level's routine at $2D76 is called while $122B is set."
+   "text": "Clyde's movement, once a frame. Reads the joystick. Down with fire opens the weapons tablet when he is on the ground and nothing blocks it ($1235, $123F, a jump in progress): the scroll stops and tablet_open runs on following frames. Finds his screen cell and calls the level's player routine (operand at $2C32). Up starts a jump ($122C, sound effect request 4). Left and right move him one pixel unless a solid character is in the way: one below the level's first_clear ($8B96), the first character he can pass through; walking right past his limit ($2E5B) starts the landscape scrolling at one pixel a frame instead, until the level's end. Then the jump: rising through jump_steps, falling when there is no solid character below his feet, and landing on the row's height from $2E5E with sound effect request 5. The level's routine at $2D76 is called while $122B is set."
   },
   {
    "address": 11313,
@@ -16886,7 +16897,7 @@
   {
    "address": 12591,
    "type": "line",
-   "text": "Finds the screen character under shot X (as player_find_cell does for Clyde) and sets $129A,X when it is solid (at or above the level's $8B96)."
+   "text": "Finds the screen character under shot X (as player_find_cell does for Clyde) and sets $129A,X when it is solid (below the level's first_clear, $8B96)."
   },
   {
    "address": 12682,
