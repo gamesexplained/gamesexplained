@@ -237,8 +237,9 @@ while its notes wait is the one they play), about how an answer is
 matched (INSTR after the input routine has made the first letter a
 capital, so `pom` and `horn` alone fail and `Olive` is a password), and
 about the order of a DATA table's items. All 41 were corrected, with
-two more Part 1 comments that said the same (the buffers PROCsp empties,
-the Witch's sound), 43 in all, and the notes and the page with them.
+one more Part 1 comment that said the same (the buffers PROCsp empties),
+42 in all, and Part 1's Witch's sound a second time, and the notes and
+the page with them.
 
 A second sample was then drawn, 60 of the 189 comments (35 from Part 1
 and 25 from Part 2, with the seed 2026101402), and checked by a fresh

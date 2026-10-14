@@ -6,7 +6,7 @@ Tier: **Silver** (game.json). Coverage is 100 % in both parts
 ## The listing: over the mark after the audit
 
 The run's sample (seed 20261014) found 10 of 60 comments wrong in a
-detail. Every comment was then audited, 189 of 189, and 43 were
+detail. Every comment was then audited, 189 of 189, and 42 were
 corrected. A second sample (seed 2026101402) found 4 of 60 wrong, over the
 mark of 2 in 60 (`kit/skills/core/60-verify`), and all four were comments
 the audit had rewritten (`facts.md`, "The listing's error rate"). All
