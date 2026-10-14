@@ -6369,6 +6369,12 @@
    "kind": "user"
   },
   {
+   "address": 11034,
+   "name": "feet_offsets",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 11038,
    "name": "tablet_swap_step",
    "type": "Jump",
@@ -8014,7 +8020,7 @@
   },
   {
    "address": 14653,
-   "name": "raster_ready_creatures",
+   "name": "raster_ready_marker",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8484,6 +8490,12 @@
    "address": 15705,
    "name": "player_carried",
    "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 15757,
+   "name": "oar_shape",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -10978,13 +10990,13 @@
   },
   {
    "address": 49710,
-   "name": "obj_lifetime",
+   "name": "obj_wake_delay",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 49725,
-   "name": "obj_alive",
+   "name": "obj_awake",
    "type": "Field",
    "kind": "user"
   },
@@ -15694,7 +15706,7 @@
   {
    "address": 4797,
    "type": "line",
-   "text": "The first background colour ($D021) of each of the six raster bands ($12BD-$12C2), copied from the level's tables by level_colours_next."
+   "text": "Multicolour 1 ($D022) of each of the six raster bands ($12BD-$12C2), copied from the level's table at $8B97 by level_colours_next. A value with bit 7 set leaves the register as the band above set it."
   },
   {
    "address": 4798,
@@ -15724,7 +15736,7 @@
   {
    "address": 4803,
    "type": "line",
-   "text": "The second colour register of each band ($12C3-$12C8), from the level's tables."
+   "text": "Multicolour 2 ($D023) of each band ($12C3-$12C8), from the level's table at $8BBB; bit 7 set leaves it unchanged."
   },
   {
    "address": 4804,
@@ -15754,7 +15766,7 @@
   {
    "address": 4809,
    "type": "line",
-   "text": "The third colour register of each band ($12C9-$12CE)."
+   "text": "The background colour ($D021) of each band ($12C9-$12CE), from the level's table at $8BDF; bit 7 set leaves it unchanged."
   },
   {
    "address": 4810,
@@ -16024,7 +16036,7 @@
   {
    "address": 7411,
    "type": "line",
-   "text": "Moves the 15 objects left with the scrolling. For each object that is dying (state 5) or active ($023C), it counts down $C22E (setting $C23D when it runs out), then subtracts the scroll speed ($1DE5, or nothing for objects whose $C39C bit 7 is clear and that move on their own) from the object's horizontal position $C25F (two bytes per object), flipping the object's bit in the position high bits $C25D/$C25C on a borrow."
+   "text": "Moves the 15 objects left with the scrolling. For each object that is dying (state 5) or active ($023C), it counts a sleeping object's wake delay (obj_wake_delay) down, waking it (obj_awake) when the count passes zero; then subtracts the scroll speed ($1DE5, or nothing for objects whose $C39C bit 7 is clear and that move on their own) from the object's horizontal position $C25F (two bytes per object), flipping the object's bit in the position high bits $C25D/$C25C on a borrow."
   },
   {
    "address": 7500,
@@ -16154,7 +16166,7 @@
   {
    "address": 8134,
    "type": "line",
-   "text": "Spawns the level's objects as the landscape scrolls. $1FC2 counts the scroll distance to the next spawn record; when it reaches zero (or was $FF) the record at $1FC3/$1FC4 is read. Each record is 17 bytes. Byte 0: the object slot (low nibble) and the x movement it takes when it dies (high nibble, $C2D9). Bytes 1 and 2: its x and y movement scripts (bits 0-5, through the level's tables at $8E2F/$8E4F and $8E6F/$8E8F), their top bits together choosing a delay from $8ECF for $C351. Byte 3: its type (bits 0-5), which gives its animation script ($8D5A/$8D92, the first byte its first sprite frame in $C16A) and animation speed ($8DCA), and two flags ($C3BA). Byte 4: its colour, a fixed colour below $10, otherwise a colour cycle (list address from $8E02/$8E11, delay from $8E20). Bytes 5 and 6: its position. Byte 7: what a hit does ($C1D4), which also decides whether its movements and animation run freely or only when it is hit; bit 6 makes its sprite double height ($C006). Byte 8: multicolour (bit 0, $C000) and behind the landscape (bit 1, $C003), scroll flags ($C39C), a linked group (bits 4-6, $C3AB) and bit 7 ($C1E3). Byte 9: hit points ($8EAF) and a lifetime ($8EBF). Byte 10: score value (low nibble, $C17A) and the y movement it takes when it dies. Byte 11: its death type and death colour cycle ($C441). Bytes 12-14: the x movement, y movement and type a hit can switch it to ($C2F7, $C306, $C315); or, with $FF, byte 13 names a flag in $B96B that stops it spawning once set (an item already taken); or, with $FE, it rides on the object in slot byte 13 at the offsets byte 14 gives ($C450). Byte 15: hits needed to trigger its behaviour ($8EDF) and $C0FF. Byte 16: the distance to the next record. The slot's other tables are cleared, the object is made active, its ninth x bit set ($C25B: objects enter at the right) and the pointer moves on 17 bytes."
+   "text": "Spawns the level's objects as the landscape scrolls. $1FC2 counts the scroll distance to the next spawn record; when it reaches zero (or was $FF) the record at $1FC3/$1FC4 is read. Each record is 17 bytes. Byte 0: the object slot (low nibble) and the x movement it takes when it dies (high nibble, $C2D9). Bytes 1 and 2: its x and y movement scripts (bits 0-5, through the level's tables at $8E2F/$8E4F and $8E6F/$8E8F), their top bits together choosing a delay from $8ECF for $C351. Byte 3: its type (bits 0-5), which gives its animation script ($8D5A/$8D92, the first byte its first sprite frame in $C16A) and animation speed ($8DCA), and two flags ($C3BA). Byte 4: its colour, a fixed colour below $10, otherwise a colour cycle (list address from $8E02/$8E11, delay from $8E20). Bytes 5 and 6: its position. Byte 7: what a hit does ($C1D4), which also decides whether its movements and animation run freely or only when it is hit; bit 6 makes its sprite double height ($C006). Byte 8: multicolour (bit 0, $C000) and behind the landscape (bit 1, $C003), scroll flags ($C39C), a linked group (bits 4-6, $C3AB) and bit 7 ($C1E3). Byte 9: hit points ($8EAF, low nibble) and a wake delay ($8EBF, high nibble; obj_wake_delay). Byte 10: score value (low nibble, $C17A) and the y movement it takes when it dies. Byte 11: its death type and death colour cycle ($C441). Bytes 12-14: the x movement, y movement and type a hit can switch it to ($C2F7, $C306, $C315); or, with $FF, byte 13 names a flag in $B96B that stops it spawning once set (an item already taken); or, with $FE, it rides on the object in slot byte 13 at the offsets byte 14 gives ($C450). Byte 15: hits needed to trigger its behaviour ($8EDF) and $C0FF. Byte 16: the distance to the next record. The slot's other tables are cleared, the object is made active, its ninth x bit set ($C25B: objects enter at the right) and the pointer moves on 17 bytes."
   },
   {
    "address": 8164,
@@ -16249,7 +16261,7 @@
   {
    "address": 8999,
    "type": "line",
-   "text": "Raster line 0: chains to raster_vsp_prepare at line $2F, runs $C00D (the sprite multiplexer's first band) and sets the first band's background colours ($D021-$D023 from $12C9, $12BD, $12C3, each only when not negative)."
+   "text": "Raster line 0: chains to raster_vsp_prepare at line $2F, runs $C00D (the sprite multiplexer's first band) and sets the first band's colours: $D023 from $12C3, $D022 from $12BD and $D021 from $12C9, each only when bit 7 is clear."
   },
   {
    "address": 9041,
@@ -16534,7 +16546,7 @@
   {
    "address": 9885,
    "type": "line",
-   "text": "Copies the next six band colours of each of the three registers from the level's tables at $8B97, $8BBB and $8BDF (from index $1276) into $12BD-$12CE: a change of sky colours, triggered by a map column command."
+   "text": "Copies the next six band colours of each of the three registers from the level's tables at $8B97 (multicolour 1), $8BBB (multicolour 2) and $8BDF (background), from index $1276, into $12BD-$12CE: a change of sky colours, triggered by a map column command."
   },
   {
    "address": 9918,
@@ -16649,7 +16661,12 @@
   {
    "address": 11030,
    "type": "line",
-   "text": "Columns added to Clyde's screen column when his sprite's position high bit is set ($1D, $1D, $1D, $20 by the low bits of his x position); the four bytes after it are not read."
+   "text": "Columns added to Clyde's screen column when his sprite's position high bit is set ($1D, $1D, $1D, $20 by the low bits of his x position). The engine reads only these four; the four after them are a second table that level 1.1's own code reads."
+  },
+  {
+   "address": 11034,
+   "type": "line",
+   "text": "Four offsets from Clyde's screen cell ($8A/$8B) to the characters under his feet: $28, $29 and $2A one row down, $51 two rows down. No engine code reads them; level 1.1's level_player ($A312) tests the characters there for water."
   },
   {
    "address": 11038,
@@ -17129,7 +17146,7 @@
   {
    "address": 13923,
    "type": "line",
-   "text": "The Get Ready screen, before each level and after each lost life. Blanks the screen, resets the scroll, the panel ($B7C0, $B840, $B8D1) and the sprites, fills six rows from $45B8 with the level's backdrop character ($8D55), swaps the Get Ready characters in (memory_swap 6, $CF82, swap 3), prints \"GET  READY\" and the stage's name (print_big string 1 from the level's data), the level's lines (print_at strings 0 and 3) and \"COLLECT THE FOLLOWING CREATURES\" / \"FOR MAGIC POTIONS\", and draws the music icon. Then sets the level section $1274 up from the level's section tables: the scroll position ($8C29), the Get Ready strip ($8C35, $8C3B), the three potion creatures' sprites ($8C41, $8C47), sky colours and band routines ($8C4D, $8C59, $8C53), Clyde's start ($8C5F, $8C65 into $1A9B and $1AA0) and the spawn list ($8C6B, $8C71, $8C77). Turns the music option off, starts the Get Ready tune (at $B97F, all voices) with the volume at 15, and installs the screen's raster chain ($389B)."
+   "text": "The Get Ready screen, before each level and after each lost life. Blanks the screen, resets the scroll, the panel ($B7C0, $B840, $B8D1) and the sprites, fills six rows from $45B8 with the level's backdrop character ($8D55), swaps the Get Ready characters in (memory_swap 6, $CF82, swap 3), prints \"GET  READY\" and the stage's name (print_big string 1 from the level's data), the level's lines (print_at strings 0 and 3) and \"COLLECT THE FOLLOWING CREATURES\" / \"FOR MAGIC POTIONS\", and draws the music icon. Then sets the level section $1274 up from the level's section tables: the scroll position ($8C29), the Get Ready strip ($8C35, $8C3B), the strip marker's position ($8C41, $8C47), sky colours and band routines ($8C4D, $8C59, $8C53), Clyde's start ($8C5F, $8C65 into $1A9B and $1AA0) and the spawn list ($8C6B, $8C71, $8C77). Turns the music option off, starts the Get Ready tune (at $B97F, all voices) with the volume at 15, and installs the screen's raster chain ($389B)."
   },
   {
    "address": 14247,
@@ -17144,7 +17161,7 @@
   {
    "address": 14491,
    "type": "line",
-   "text": "The Get Ready screen's first raster routine (line $FA): steps the volume fade, sets the character set and 38-column mode, animates the potion creatures' sprites when the strip has stopped ($1216: shapes from $C904, $C90C and $C914 into $4340, rotated by rotate_bytes, colours from $BF1F), counts the half-second flash of the screen ($C8, $1211), scrolls the strip (get_ready_strip) and chains to $3925 (or $3612)."
+   "text": "The Get Ready screen's first raster routine (line $FA): steps the volume fade, sets the character set and 38-column mode, and once the strip has stopped ($1216) draws ready_columns_1-3 into sprite blocks 13-15 ($4340, $4380, $43C0; block 13 is the strip marker) and rotates them every fourth frame (rotate_bytes list 2), with sprite colours from $BF1F. Counts the half-second flash of the screen ($C8, $1211), scrolls the strip (get_ready_strip) and chains to $3925 (or $3612)."
   },
   {
    "address": 14505,
@@ -17164,17 +17181,17 @@
   {
    "address": 14653,
    "type": "line",
-   "text": "Raster routine: a second colour bar, then places the three potion creatures' sprites (x from the operand at $394F, y from $395E, pointer $0D) and chains to $39A2 at line $69."
+   "text": "Raster routine: a second colour bar, then places sprites 0, 1 and 2 one pixel apart (x from the operand at $394F, y from $395E), all showing block 13, single colour: the marker on the Get Ready strip, into which raster_ready_top draws ready_columns once the strip has stopped. Chains to $39A2 at line $69."
   },
   {
    "address": 14671,
    "type": "line",
-   "text": "Operand of the LDX at $394E: the potion creatures' first x position, from the level's table at $8C41."
+   "text": "Operand of the LDX at $394E: the strip marker's first x position, from the level's table at $8C41."
   },
   {
    "address": 14686,
    "type": "line",
-   "text": "Operand of the LDA at $395D: the potion creatures' y position, from the level's table at $8C47."
+   "text": "Operand of the LDA at $395D: the strip marker's y position, from the level's table at $8C47."
   },
   {
    "address": 14716,
@@ -17304,7 +17321,17 @@
   {
    "address": 15735,
    "type": "line",
-   "text": "Tables read by the levels' own code while Clyde is carried (in level 1-1 at $A4E9-$A4F5), indexed by his facing ($122D): $3D77 gives his sprite pointer ($1287), $3D79 whether he keeps it, $3D7B the shot type ($128D). The rest of the 35 bytes to $3D99 are not read by any code found."
+   "text": "Tables read by the levels' own code while Clyde is carried (in level 1.1, level_anim at $A494-$A4F5), indexed by his facing ($122D): $3D77 his sprite frame ($86, $87) for $1287, $3D79 the raft's frame ($8A, $88), $3D7B the oar's frame ($8B, $8C) for shot sprite 1 ($128D). Then, by paddle stroke ($1258, 0-3), the addresses of the oar's nine-row shapes copied into those blocks: $3D7D/$3D81 facing right, $3D85/$3D89 facing left. The first left-facing shape is in the engine itself, at $3D8D."
+  },
+  {
+   "address": 15757,
+   "type": "line",
+   "text": "The first left-facing oar shape (nine bytes, one sprite column), reached through $3D85/$3D89 rather than by name; the other seven shapes are in the level ($6140-$617E)."
+  },
+  {
+   "address": 15766,
+   "type": "line",
+   "text": "Four bytes ($00 $00 $01 $01) after the oar shape that no code found in the engine or level 1.1 reads."
   },
   {
    "address": 15770,
@@ -18554,12 +18581,12 @@
   {
    "address": 49710,
    "type": "line",
-   "text": "Each object's lifetime from the level's table at $8EBF, counted down as the landscape scrolls (objects_scroll); $FE or more never runs out."
+   "text": "Each object's wake delay, from the level's table at $8EBF by its record's byte 9 (object_spawn). An object spawned with a delay starts asleep (obj_awake clear) and objects_scroll counts the delay down once a frame, waking it when the count passes zero. $FE wakes it only when the scroll passes the level's end (scroll_column at $2705); $FF never."
   },
   {
    "address": 49725,
    "type": "line",
-   "text": "1 while the object's lifetime lasts; objects_scroll clears it when obj_lifetime runs out, which stops its movement and animation."
+   "text": "Nonzero once the object is awake: set at once by object_spawn when its wake delay is 0, else by objects_scroll or scroll_column. A sleeping object neither moves nor animates (move_objects, animate_objects), cannot be hit (object_collisions) and its colour cycle waits (object_colours)."
   },
   {
    "address": 49740,
