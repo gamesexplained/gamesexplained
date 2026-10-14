@@ -4,8 +4,8 @@
 The client is the C64's (kit/c64/r2000.py): the disassembler and its protocol are the same
 for every machine, and so are the annotation log, --apply and --replay. This module is what
 symbols_export.py and coverage.py load for a BBC game, and it reads a session in the BBC's
-vocabulary: regenerator2000's PETSCII text is the BBC's ASCII, and a block typed as C64
-screencodes comes back as bytes, said aloud. The MOS's calls and vectors that the game
+vocabulary: regenerator2000's PETSCII text is the BBC's ASCII, and its screencode text, which
+means nothing on the BBC, is a BBC BASIC program (kit/bbc/basic.py). The MOS's calls and vectors that the game
 refers to are named after the MOS (kit/bbc/mos.py), where the C64's client names the
 KERNAL's.
 

@@ -64,8 +64,12 @@ run `check-emulator` and `frame.py test`, and change `JSBEEB_VERSION` in
 modes 0 to 6, and on a screen scrolled by the CRTC, and compares jsbeeb's
 picture with the site's drawing of the same memory (`site/lib/bbc.js`) at
 every pixel. On 13 October 2026, on the build above, nothing differed in
-any of the nine pictures, about 8 s in all. Mode 7, teletext, is not
-drawn by the site. The check resets the machine, so run it on a server of
+any of the nine pictures, about 8 s in all. Mode 7, teletext, is drawn
+by the site with its letters in the page's own font; the same check fills
+three screens with random control codes and characters and compares every
+mosaic, space and blank cell with jsbeeb's at a point inside each block,
+and the colours of every letter. On 14 October 2026 none of the 3,000
+cells differed. The check resets the machine, so run it on a server of
 its own (`tools.py --platform bbc jsbeeb --port 6848`).
 
 ## Why jsbeeb, and beebjit beside it

@@ -1,6 +1,6 @@
 ---
 name: bbc-reference
-description: BBC Micro Model B facts for reverse engineering, memory map, paged ROMs, SHEILA, the screen modes, the VIAs and keyboard, interrupts and events, timing, sound, the MOS calls, disc and tape loading, and the mistakes that bite. Consult this instead of recalling from training.
+description: BBC Micro Model B facts for reverse engineering, memory map, paged ROMs, SHEILA, the screen modes, the VIAs and keyboard, interrupts and events, timing, sound, the MOS calls, disc and tape loading, games written in BBC BASIC, and the mistakes that bite. Consult this instead of recalling from training.
 ---
 
 # BBC Micro reference for reverse engineering
@@ -739,6 +739,21 @@ other way: go by the first byte, not the number.
   reverse, and the machine wins.**
 - **The MOS's pitch numbers** are its own: `SOUND` pitch 89 wrote N = 278
   (live), which is 449.6 Hz by the formula above.
+- **SOUND's channel number** is four hex digits, &HSFN, the channel in the
+  lowest. Measured on 14 October 2026 in jsbeeb with MOS 1.20 and BASIC II,
+  from the bytes the chip was sent:
+  - F, flush: `SOUND1,-15,100,100:SOUND&11,-15,200,100` played only the
+    second note, at once and for its whole length; without the 1, both
+    played, one after the other.
+  - S, synchronise: a note with S = 1 waits for a note on one other channel
+    that also has S = 1, and the two start together. `SOUND&0111,-15,100,20`
+    on its own never played; `SOUND&0101,-15,60,20:SOUND&0102,-15,150,20`
+    started both at the same moment.
+  - The queue: six `SOUND` statements to one channel returned at once, and
+    the seventh waited for the first note to end (notes of 20: `TIME` read
+    1 to 8 centiseconds after each of the six, 100 after the seventh). BASIC
+    waits only for the channel it is sounding, so a program that flushes
+    one channel and not another runs ahead on the one it flushes.
 - **OSWORD 7** is SOUND: an 8-byte block of four two-byte values, low
   byte first: channel, amplitude (−15 to 0, or an envelope 1-16), pitch,
   duration. `SOUND 1,-15,200,20` is `01 00 F1 FF C8 00 14 00`. **OSWORD
@@ -993,6 +1008,86 @@ What a loader may do that the steps above do not show:
   taken over (BRKV, IRQ1V, EVNTV); BREAK made to clear memory (OSBYTE
   &C8) or caught (the intercept at &0287); the DFS's workspace and NMI
   routine overwritten once loading is over.
+
+## A game written in BASIC
+
+Many BBC games are BBC BASIC programs, whole or with some machine code
+they `CALL`. `LOAD "name"` puts a program at PAGE and runs nothing;
+`CHAIN "name"` loads it and runs it. The program is then the code to
+read: a block from PAGE to TOP typed `BASIC` is listed line by line as
+LIST prints it (`kit/bbc/basic.py` has the layout of a line and what
+LIST does with it), and `python3 kit/bbc/basic.py list <snapshot>`
+prints a snapshot's program with each line's address. A hand-over taken
+after `LOAD` and before `RUN` holds the file as it was saved; a game
+that changes its own program while it runs is rare, and comparing the
+two shows it.
+
+BASIC II keeps its pointers in zero page and its variables above the
+program. Read on the kit's machine on 14 October 2026:
+
+| Address | Holds |
+|---|---|
+| &00-&01 | LOMEM: where the variables start, TOP unless the program moved it |
+| &02-&03 | VARTOP: the end of the variables |
+| &06-&07 | HIMEM: the top of BASIC's memory, the start of the screen in the mode |
+| &12-&13 | TOP: the byte after the program's end mark (&0D &FF) |
+| &18 | PAGE's high byte: &19 on the kit's machine, the DFS's workspace being below it |
+| &0400-&0403 | `@%`, the print format |
+| &0404-&046B | `A%` to `Z%`, four bytes each, low byte first. `RUN` and `CLEAR` leave them, so they carry values from one program to the next |
+| &0480-&04FF | the first variable of each initial, two bytes per character at &0480 + 2 × (its code − &40); `CLEAR` and `RUN` zero them |
+
+Each variable is a link to the next with the same initial (0 at the
+end), the rest of its name, &00, then its value: four bytes for an
+integer (a name ending `%`), five for a real (an exponent biased by &80,
+then the mantissa high byte first with its top bit replaced by the sign:
+7 is `83 60 00 00 00`), four for a string (its address, the space it was
+given, its length). All of this is working state, not the program: the
+listing covers PAGE to TOP, and coverage counts nothing above it.
+
+A program saved on a machine with a lower PAGE (one with no disc
+interface) can test PAGE in its first line and move itself down before
+it runs; its first lines, read before anything else, say whether it
+does.
+
+A BASIC game is driven from one wait for a key to the next. A program
+waiting for a key is in the MOS's OSRDCH loop, so run to its idle address
+(&E581 on the Model B's MOS 1.20, &E7E6 on the Master: jsbeeb's
+`idleAddress`, src/models.js) to stop at each wait. BASIC's text pointer,
+&0B-&0C, then points into the line being run: the last line that starts
+at or before it is the one waiting, which for a wait inside a procedure
+is the procedure's line, not its caller's. `basic.variable(m.read, name)`
+(`kit/bbc/basic.py`) reads a variable there, an array too, which is how
+a port of one of the program's routines is held to the game: compare the
+routine's variables at each wait.
+
+What a BASIC game leans on without saying so, measured on 14 October 2026
+in jsbeeb with BASIC II: the limits, the errors and `LEFT$` by short
+programs typed at the prompt, the two DEF rules in a game's own lines.
+
+- **The nesting limits.** 20 REPEATs open at once (the 21st stops with
+  `Too many REPEATs`, ERR 44), 26 GOSUBs (`Too many GOSUBs`, ERR 37) and
+  10 FORs (`Too many FORs`, ERR 35). REPEATs and GOSUBs opened inside
+  procedures count against the same limits, so a game whose rooms call
+  one another and never return reaches one of them in the end. &24 holds
+  the number of REPEATs open and &25 the number of GOSUBs, read as counts
+  at a game's waits. A procedure calling itself has no limit but memory:
+  1,946 deep in a three-line program before `No room`.
+- **`No room`** is the one error `ON ERROR` does not catch: BASIC prints
+  it and stops at the prompt (ERR 0).
+- **`ON ERROR RUN`** starts the program again from its first line with no
+  message, and `RUN` clears every variable but `@%` and `A%`-`Z%`. A game
+  that restarts itself this way looks, to a player, as if it chose to.
+- **A DEF met while running** is passed over as a REM is. A procedure
+  whose path does not end in ENDPROC runs on to the next line, and when
+  that line is another procedure's DEF, BASIC runs that procedure's body
+  as its own.
+- **The first DEF wins.** BASIC looks for a procedure from PAGE down the
+  first time it is called, and its list of procedures found points to
+  the first DEF of that name; a second one later in the program is never
+  used.
+- **`LEFT$` with a negative length** gives the whole string:
+  `LEFT$("AB",-1)` is `AB`, `LEFT$("AB",0)` and `LEFT$("",-1)` are empty.
+  A count that falls below zero then leaves a string whole.
 
 ## Master 128 and B+ notes
 

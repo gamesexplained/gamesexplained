@@ -91,7 +91,7 @@ An address is a number or a string: `"&2000"`, `"$2000"`, `"0x2000"` and
 | Discs, tapes | `disc` (`path` or `ref`, `drive`), `tape` (`path`) | below |
 | Snapshots | `save` (`path`), `load` (`path`), `keep` and `back` (`name`) | below |
 | Screen | `screenshot` (`path`, `full`) | the last whole frame as a PNG, without the border; `full` is all 1024 by 625 of jsbeeb's frame |
-| Text out | `output` | the characters sent through the MOS's write vector since the last call, and the screen's text pieced together from them |
+| Text out | `output` | the characters sent through the MOS's write vector since the last call, the screen's text pieced together from them, and every byte sent as `codes` |
 | Sound | `sound` (`action` start or stop, `path`) | every write to the SN76489 with the cycle it landed on |
 | What ran | `codemap` (`action` start, read, zap or stop) | `[address, length, count]` for each address an instruction started at |
 | Quit | `quit` | the server exits |
@@ -245,8 +245,10 @@ m.keep(); ...; m.back()                          # a whole state in memory, 1.2 
 - `output` returns each character the program sent through WRCHV, the
   MOS's write vector, since the last call (jsbeeb watches for the routine
   the vector points to), with where on the screen it went, and the text
-  pieced together from them. A game that writes to the screen memory
-  itself prints nothing here: read its screen with `screenshot`.
+  pieced together from them, and `codes`, every byte as it went to the
+  vector, control codes and top-bit bytes included, which the text
+  leaves out. A game that writes to the screen memory itself prints
+  nothing here: read its screen with `screenshot`.
 - `sound` with `start`, then `stop`, records every byte written to the
   SN76489 with the CPU cycle it landed on, in the format
   `kit-sn76489-writes` (`clock` is the CPU's 2,000,000 cycles a second). That

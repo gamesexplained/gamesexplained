@@ -71,6 +71,14 @@ await session.boot(30);
 session.drainOutput();
 const cpu = session._machine.processor;
 const typist = session._machine.typist;
+// The bytes sent through WRCHV, as they were sent: `output`'s text leaves out what has no
+// printable form (a control code, a teletext code), so it returns these as well. Kept to the
+// last million, so that a long run nobody reads does not fill the server's memory.
+const vduCodes = [];
+session._machine.onVduChar((c) => {
+    vduCodes.push(c);
+    if (vduCodes.length > 2000000) vduCodes.splice(0, vduCodes.length - 1000000);
+});
 const elapsed = () => session.elapsedCycles;
 
 // ---- the run: slices, the reason it stopped ----------------------------------------------
@@ -802,7 +810,7 @@ function screenshot(args) {
 // What the machine printed through the MOS since the last call, and where on the screen.
 function output() {
     const o = session.drainOutput();
-    return { text: o.elements.map((e) => e.text).join(""), screen: o.screenText };
+    return { text: o.elements.map((e) => e.text).join(""), screen: o.screenText, codes: vduCodes.splice(0) };
 }
 
 // Every write to the SN76489, with the CPU cycle it reached the chip on.

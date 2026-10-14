@@ -3,7 +3,8 @@
 
 The project names its machine, so the disassembler comments the MOS and the chips as the BBC's;
 the BBC's text, ASCII in symbols.json, travels as regenerator2000's PETSCII text and comes back
-as ASCII; and a block typed as C64 screen codes comes back as bytes. Made in a temporary folder
+as ASCII; and a BASIC program travels as its screencode text, the C64's screen codes having no
+meaning on the BBC, and comes back as BASIC. Made in a temporary folder
 from a snapshot written here: no emulator and no disassembler.
 """
 import base64
@@ -29,11 +30,12 @@ class Project(unittest.TestCase):
             json.dump({"slug": "demo", "platform": "bbc"}, f)
         with open(os.path.join(self.game, "symbols.json"), "w") as f:
             json.dump({"blocks": [{"start": 0x2000, "end": 0x2001, "type": "Code"},
-                                  {"start": 0x2002, "end": 0x2009, "type": "ASCII"}],
+                                  {"start": 0x2002, "end": 0x2009, "type": "ASCII"},
+                                  {"start": 0x200A, "end": 0x200F, "type": "BASIC"}],
                        "symbols": [{"address": 0x2000, "name": "start", "type": "Subroutine", "kind": "user"}],
                        "comments": [{"address": 0x2000, "type": "line", "text": "hi"}]}, f)
         ram = bytearray(0x20000)
-        ram[0x2000:0x200A] = b"\x60\xeaHELLO\r\x00\x00"
+        ram[0x2000:0x2010] = b"\x60\xeaHELLO\r\x00\x00\x0d\x00\x0a\x05\xe0\x0d"
         typed = {"__typedArray": True, "type": "Uint8Array", "encoding": "deflate",
                  "data": base64.b64encode(zlib.compress(bytes(ram))).decode()}
         self.snap = os.path.join(self.game, "work", "s.json.gz")
@@ -50,15 +52,16 @@ class Project(unittest.TestCase):
         image = gzip.decompress(base64.b64decode(body["raw_data_base64"]))
         self.assertEqual(len(image), 0x10000)
         self.assertEqual(image[0x2002:0x2007], b"HELLO", "the image is the snapshot's")
-        self.assertEqual({b["start"]: b["type_"] for b in body["blocks"]}[0x2002], "PetsciiText")
+        kinds = {b["start"]: b["type_"] for b in body["blocks"]}
+        self.assertEqual((kinds[0x2002], kinds[0x200A]), ("PetsciiText", "ScreencodeText"))
         blocks, syms, comments = project.read_file(out)
         back = {b["start"]: b["type"] for b in blocks}
-        self.assertEqual((back[0x2002], back[0x2000], back[0]), ("ASCII", "Code", "Undefined"))
+        self.assertEqual((back[0x2002], back[0x200A], back[0x2000], back[0]), ("ASCII", "BASIC", "Code", "Undefined"))
         self.assertEqual((syms[0]["name"], comments[0]["text"]), ("start", "hi"))
 
-    def test_screencodes_come_back_as_bytes(self):
+    def test_screencodes_come_back_as_basic(self):
         b = project.from_project({"start": 1, "end": 2, "type": "Screencode Text"}, "test")
-        self.assertEqual(b["type"], "Byte")
+        self.assertEqual(b["type"], "BASIC")
 
 
 if __name__ == "__main__":
