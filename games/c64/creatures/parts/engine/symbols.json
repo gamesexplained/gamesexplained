@@ -14122,7 +14122,7 @@
   {
    "address": 1496,
    "type": "line",
-   "text": "Music commands that each store A into one voice setting: $05D8 transpose ($08F9), $05DC note release point ($08AE, or $08A5 above 99), $05EA waveform choice ($08AB, or the voice whose notes drive the filter, $0896, above 98), $05F8 pulse sweep limits ($08F3 high nibble, $08F6 low nibble), $0607 vibrato period ($092F), $060B filter resonance and routing ($095C), $060F filter start ($08B6), $0613 adds A to the volume and filter mode ($095D)."
+   "text": "Music commands that each store A into one voice setting: $05D8 transpose (music_transpose, $08F9); $05DC, for values below 100, the attack waveform's length in frames (music_attack_len, $08AE, which the player compares with the note's age), and for 100 and more the release point less 100 (music_release, $08A5); $05EA, for values below 99, the attack waveform (music_attack_wave, $08AB), and for 99 and more, less 100, the voice whose notes drive the filter (music_filter_voice, $0896); $05F8 pulse sweep limits ($08F3 high nibble, $08F6 low nibble), $0607 vibrato period ($092F), $060B filter resonance and routing ($095C), $060F filter start ($08B6), $0613 adds A to the volume and filter mode ($095D)."
   },
   {
    "address": 1563,
@@ -14857,7 +14857,7 @@
   {
    "address": 3280,
    "type": "line",
-   "text": "Starts sound effect Y on channel X: copies its 20-byte definition (sfx_defs) into the channel's state, gates the SID voice off, sets attack, decay, sustain and release, and the starting frequencies of both parameter sets."
+   "text": "Starts effect definition Y (an entry of sfx_effects) on channel X: copies its 20-byte definition (sfx_defs) into the channel's state, gates the SID voice off, sets attack, decay, sustain and release, and the starting frequencies of both parameter sets."
   },
   {
    "address": 3305,
@@ -14907,12 +14907,12 @@
   {
    "address": 4128,
    "type": "line",
-   "text": "Starts at most one requested sound effect per call: the first of the three channels whose request flag ($1260-$1262) is set has its flag cleared and the effect number in $1263-$1265 started by sfx_start. When the in-game music is on, the third channel's check at $1041 is overwritten with RTS (sound_set_music_mode), so effects then use two channels."
+   "text": "Starts at most one requested sound effect per call: the first of the three channels whose request flag ($1260-$1262) is set has its flag cleared and the effect definition in $1263-$1265 started by sfx_start. When the in-game music is on, the third channel's check at $1041 is overwritten with RTS (sound_set_music_mode), so effects then use two channels."
   },
   {
    "address": 4180,
    "type": "line",
-   "text": "Requests sound effect X (0-28). Looks up its channel ($FF86,X), priority ($FFA3,X) and effect definition ($FFC0,X); if the priority is at least the channel's current one ($125D,Y), it takes the channel: stores the priority, the effect number in $1263,Y and sets the request flag $1260,Y for sfx_play_pending."
+   "text": "Requests sound effect X (0-28). Looks up its channel ($FF86,X), priority ($FFA3,X) and effect definition (sfx_effects, $FFC0,X); if the priority is at least the channel's current one ($125D,Y), it takes the channel: stores the priority, the definition number in $1263,Y and sets the request flag $1260,Y for sfx_play_pending."
   },
   {
    "address": 4206,
@@ -15392,7 +15392,7 @@
   {
    "address": 4707,
    "type": "line",
-   "text": "The effect number requested on the first channel ($1263-$1265), set by sfx_request."
+   "text": "The effect definition requested on the first channel ($1263-$1265), looked up in sfx_effects by sfx_request and passed to sfx_start in Y."
   },
   {
    "address": 4708,
@@ -15637,12 +15637,12 @@
   {
    "address": 4768,
    "type": "line",
-   "text": "Clyde's lives as player_hurt and player_dead see them; stage_start sets it and timer_tick clears it when time runs out."
+   "text": "Clyde's spare hit: stage_start sets it to 1 as each life starts (after every Get Ready screen). While it is set, a touch costs it instead of a life: player_dead skips the death leap and calls player_dying_wait each frame, which after about 40 frames takes it to 0 and starts a spell of invulnerability; the next touch kills (seen live). In water (world 1's water characters, or swimming in world 2) a touch kills whatever. timer_tick clears it when time runs out, and level 3's broom and spikes clear it."
   },
   {
    "address": 4769,
    "type": "line",
-   "text": "The dying countdown player_dying_wait counts down ($27 from stage_start)."
+   "text": "The countdown player_dying_wait runs while Clyde uses up his spare hit ($27, set by stage_start as each life starts, after every Get Ready screen): while it is 38 or more the object that hit him is destroyed, and when it goes below zero the knock ends."
   },
   {
    "address": 4770,
@@ -15962,7 +15962,7 @@
   {
    "address": 6776,
    "type": "line",
-   "text": "Sets up play after the opening: selects the music mode from $12B4, for the first two stages calls $CF9D and the level's $A9E2, calls $3102, sets the player's start position and sprite colours, sets the sprite pointers of both screens, and starts the level's tune (address at $8D56/$8D57) when the music option $12B4 is on."
+   "text": "Sets up play after the opening: selects the music mode from $12B4 (sound_set_music_mode); for stages 1 and 2 (world 1) calls world1_ranges and the level's $A9E2; gives weapon_setup its stage-start weapon; sets Clyde's start position and colour and the sprite multicolours; sets Clyde's sprite pointer (sprite 0, $0F at $47F8 and $4BF8, both screens); on stages 4 to 6 (world 2) writes $32 to $A301 and calls the level's $A302, which sets up the oxygen bar; turns all sprites on ($2A0F), sets the fire branch for play ($1E21) and the dying countdown $1288; and, when the music option $12B4 is on, starts the level's tune (address at $8D56/$8D57) and calls music_hooks_ingame."
   },
   {
    "address": 6804,
@@ -17302,7 +17302,7 @@
   {
    "address": 15581,
    "type": "line",
-   "text": "Clyde touched something deadly. Nothing happens while the invulnerability timer $129F runs (unless $1215 is set) or while the weapons tablet is closing ($24F0 = 0). Otherwise it counts the death in $1214 and $1254, stops Clyde and the scroll ($1270, $22FB, $1DE5) when not in a torture chamber ($126C), starts the dying animation ($AEEF) and, unless this was Clyde's last life ($12A0) or the object is marked by $AC7E as one that survives, destroys the object that hit him ($AC7D)."
+   "text": "Clyde touched something deadly. Nothing happens while the invulnerability timer $129F runs, unless the hit is the time-out ($1215 set) or water ($1271 clear by the level's player routine), or while the weapons tablet is closing ($24F0 = 0). Otherwise it counts the death in $1214 and $1254, stops Clyde and the scroll ($1270, $22FB, $1DE5) when not in a torture chamber ($126C), starts the dying animation ($AEEF) and, unless Clyde still has his spare hit ($12A0 = 1, when player_dying_wait does it instead) or the hit was the time-out ($AC7E negative), destroys the object that hit him ($AC7D)."
   },
   {
    "address": 15648,
@@ -17522,7 +17522,7 @@
   {
    "address": 20481,
    "type": "line",
-   "text": "Rows 1 to 6 of character 0, the cell at the end of the loading screen's progress bar: kernal_open_file clears them and puts in the leftmost pixel of character $21's rows (its loop at $1537 runs once, bit $80), fast_loader refills them from character $21 when the bar loses a cell ($BDCD) and clears a column of pixels at a time with low_bit_masks ($BDDD). The rest are characters 1 to 7."
+   "text": "Rows 1 to 7 of character 0, characters 1 to 7 and row 0 of character 8 (64 bytes). Character 0 is the partly filled cell at the end of the loading screen's progress bar: kernal_open_file clears its rows 1 to 6 and ORs in character $21's pixels for bits $80 down to the stage's load_bar_marker (the loop at $1537 runs for X from 7 down to the marker, 3 to 6 times for markers 5 to 2); fast_loader refills them from character $21 when the bar loses a cell ($BDCD) and clears a column of pixels at a time with low_bit_masks ($BDDD)."
   },
   {
    "address": 20744,
@@ -17592,7 +17592,7 @@
   {
    "address": 44145,
    "type": "line",
-   "text": "Counts down the dying countdown $12A1 each frame. While it is 38 or more the object that killed Clyde keeps being destroyed ($AC7D); when it runs out, Clyde's dying flags $1214 and $1254 are cleared, $12A0 decremented and a spell of invulnerability started ($CEEB)."
+   "text": "Runs each frame while Clyde, touched with his spare hit in hand ($12A0, player_dead), is knocked: counts down $12A1. While it is 38 or more the object that hit him keeps being destroyed ($AC7D); when it goes below zero, his dying flags $1214 and $1254 are cleared, the spare hit $12A0 is used up and a spell of invulnerability started ($CEEB)."
   },
   {
    "address": 44157,
@@ -17622,7 +17622,7 @@
   {
    "address": 44214,
    "type": "line",
-   "text": "Runs each frame while Clyde is dying ($1214). While $1254 counts up the death leap (jump_steps, 29 steps) he rises and falls; once it stops he lies still while $1288 counts down, flickering between his front-facing frames $4E and $4F below 25, and fire skips the wait once it is under 125. When the leap ends on solid ground, or he falls below death_floor, the leap finishes: a speech bubble is drawn into sprites $50/$51 (death_bubble), \"GULP!\" when he has fallen into the water characters listed at $A300 (world 1) or with $122B set (worlds 2), otherwise \"EEEK!\" or \"OUCH!\" by the frame counter $1219, the death tune plays and his shots are replaced by the bubble's two sprites."
+   "text": "Runs each frame while Clyde is dying ($1214). While $1254 counts up the death leap (jump_steps, 29 steps) he rises and falls; once it stops he lies still while $1288 counts down, flickering between his front-facing frames $4E and $4F below 25, and fire skips the wait once it is under 125. When the leap ends on solid ground, or he falls below death_floor, the leap finishes: a speech bubble is drawn into sprites $50/$51 (death_bubble), \"GULP!\" when he has fallen into the water characters listed at $A300 (world 1) or with $122B set (world 2), otherwise \"EEEK!\" or \"OUCH!\" by the frame counter $1219, the death tune plays and his shots are replaced by the bubble's two sprites. With his spare hit $12A0 still set there is no leap: unless he is in water, each frame goes from $AD24 to player_dying_wait, and the touch costs the spare hit instead of a life."
   },
   {
    "address": 44285,
@@ -20102,7 +20102,7 @@
   {
    "address": 65280,
    "type": "line",
-   "text": "Nothing reads these bytes. The label comes from the fast loader's store at $BD96, whose operand had reached $FF00 when the snapshot was taken; nothing refers to $FF00-$FF6F."
+   "text": "Nothing reads these bytes. The label comes from the operand of the fast loader's receiving STA at $BD96, which is $FF00 as the file brought it: $BD96 is the source copy_loader copies to $4800, and the copy that runs moves its own operand ($4897/$4898). Nothing refers to $FF00-$FF6F."
   },
   {
    "address": 65392,

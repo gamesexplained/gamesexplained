@@ -4409,7 +4409,7 @@
   {
    "address": 32928,
    "type": "line",
-   "text": "Set to 9 by the hanging monster's last hit: hit_flashes counts it down, showing burst_frames, and leaves it at $FF."
+   "text": "Set to 9 by the hanging monster's last hit: hit_flashes counts it down, showing its burst from burst_frames, and stops when it reaches 0, where it stays."
   },
   {
    "address": 32929,
@@ -4419,7 +4419,7 @@
   {
    "address": 32930,
    "type": "line",
-   "text": "Raised by hit_flashes when the hanging monster's burst ends: shot_tests stops testing it and its hoppers."
+   "text": "Meant to be raised by hit_flashes when the hanging monster's burst ends, and never raised: the INC at $955F needs hanger_dying to go below zero, and hit_flashes stops at 0. It stays 0, as the file has it, so shot_tests always runs the tests of the hanging monster and its hoppers, which pass over them once they are blank."
   },
   {
    "address": 32931,
@@ -4849,7 +4849,7 @@
   {
    "address": 35035,
    "type": "line",
-   "text": "$0F, the byte before burst_frames: hit_flashes reads the hanging monster's burst from here with its count 9 down to 0, so its burst ends on two blank frames."
+   "text": "$0F, the byte before burst_frames. Nothing reads it: hit_flashes reads the hanging monster's burst at $88DB plus hanger_dying, but only while that is 9 down to 1, from $88E4 ($F8) down to burst_frames' blank $0F at $88DC."
   },
   {
    "address": 35036,
@@ -5584,7 +5584,7 @@
   {
    "address": 38206,
    "type": "line",
-   "text": "Each frame, for the hanging monster and its hoppers. While hanger_dying, every fourth frame the monster (object 5) takes the next frame of its burst, from burst_lead with the count 9 down to 0, in light red, and at the end hanger_dead is set and hanger_dying left at $FF, which stops this routine for good. Otherwise its flash after a hit (hanger_flash_colours), each hopper's flash (hopper_flash_colours) and, every third frame, each hopper's burst (burst_frames, from hopper_burst_step)."
+   "text": "Each frame, for the hanging monster and its hoppers. While hanger_dying is set, the routine runs only every fourth frame, and then the monster (object 5) first takes the next frame of its burst, $88DB plus the count from 9 down to 1 ($F8 to $FF, then blank $0F), in light red; at 0 the count stays, so the INC of hanger_dead at $955F is never reached. Then its flash after a hit (hanger_flash_colours), each hopper's flash (hopper_flash_colours) and, every third frame, each hopper's burst (burst_frames, from hopper_burst_step)."
   },
   {
    "address": 38301,
@@ -5659,7 +5659,7 @@
   {
    "address": 38662,
    "type": "line",
-   "text": "Tests the ball (object 0), from shot_tests. It leaves the box choice (the operand at $97AB) as the last test set it: the shot's while the hanging monster is alive (hopper_tests set 1), but once hanger_dead is set no test in shot_tests runs before it and the choice is touch_tests' 0, Clyde's own box. Were object 0's frame 0, it would run on into touch_handler; the chamber never gives it that frame."
+   "text": "Tests the ball (object 0), from shot_tests. It leaves the box choice (the operand at $97AB) as the last test set it, which is always the shot's: hanger_test and hopper_tests set it to 1 earlier in shot_tests, since hanger_dead is never raised and shot_tests always runs them. Were object 0's frame 0, it would run on into touch_handler; the chamber never gives it that frame."
   },
   {
    "address": 38667,
@@ -5669,7 +5669,7 @@
   {
    "address": 38671,
    "type": "line",
-   "text": "The tests for Clyde's shot X (0 or 2, shot sprites 1 and 2), when it is not blank. Until hanger_dead: the hanging monster (hanger_hit) and the hoppers (hopper_hit). Until baller_dead: the ball monster (baller_hit) and, unless object 0 is the ball, the flyers (flyer_hit). Once the ball monster is dead, or object 0 is the ball: the ball (ball_hit, ball_test)."
+   "text": "The tests for Clyde's shot X (0 or 2, shot sprites 1 and 2), when it is not blank. Unless hanger_dead is set, which never happens: the hanging monster (hanger_hit) and the hoppers (hopper_hit). Until baller_dead: the ball monster (baller_hit) and, unless object 0 is the ball, the flyers (flyer_hit). Once the ball monster is dead, or object 0 is the ball: the ball (ball_hit, ball_test)."
   },
   {
    "address": 38774,
