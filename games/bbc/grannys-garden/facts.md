@@ -89,8 +89,10 @@ finished (`orientation.md`).
   each key (`work/scripts/answer_trace.py`).
 - The space bar is read by PROCsp, after `*FX15,0`: `REPEAT UNTIL GET=32`.
 - Both parts turn the keyboard's auto-repeat off (`*FX11,0`, line 150).
-- The key S at the end of every way the game can end RUNs the part again
-  (PROCkey).
+- The key S at the end of every way the story can end (the Witch, a child
+  found, the call for an adult) RUNs the part again (PROCkey). The restarts
+  on Too many REPEATs or GOSUBs go through `ON ERROR RUN` instead, with no
+  key.
 - Part 1's magic trees are the one question asked with INPUT (line 340).
 
 ## Graphics
@@ -125,7 +127,10 @@ finished (`orientation.md`).
   returns. BASIC II allows 20 REPEATs and 26 GOSUBs *(live, measured on the
   kit's machine)*, and both parts set `ON ERROR RUN`, so the 20th visit to
   the hallway and the 27th journey on the map start the part again at
-  `Ready to start?` *(live)*. In Part 1 the stairs, once the snake is dead,
+  `Ready to start?` *(live)*. A guess at the trees rejected for its form
+  (a letter alone, say) leaves the trees' own REPEAT open for the rest of
+  the game, since lines 440-450 run on into the kingdom, and then it is
+  the 19th visit *(live, audit of Part 1)*. In Part 1 the stairs, once the snake is dead,
   leave two GOSUBs open each trip, and on that route Too many GOSUBs comes
   first, at the 15th visit to the hallway *(live,
   `work/reports/checker/t8.json`)*.

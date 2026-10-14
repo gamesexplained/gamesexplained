@@ -115,7 +115,8 @@ adult, loads Part 2 by hand.
   the 27th GOSUB stop with `Too many REPEATs` and `Too many GOSUBs`).
   Both parts set `ON ERROR RUN`, so the error starts the part again at
   `Ready to start?`: in Part 1 the 20th time the player is in the hallway
-  (`p1-wander`), in Part 2 the 27th journey on the map (`p2-wander`).
+  (`p1-wander`; the 19th after a guess at the trees rejected for its form),
+  in Part 2 the 27th journey on the map (`p2-wander`).
 
 ## Files to memory
 

@@ -85,7 +85,8 @@ stopped at `Ready to start?`. The routes named are in
   green one too, whatever else has been done; `reen` finds Esther (lines
   1480-1580, *live*).
 - The stairs (PROCstairs): the snake calls the Witch when try reaches 3. The
-  trees leave try at 1, so two misses are allowed. The stick thrown is an
+  trees leave try at 1, so one wrong throw is allowed and the second brings
+  the Witch *(live, audit of Part 1)*. The stick thrown is an
   evil magic wand and brings the Witch; the apple kills the snake and shows
   the note `Esther is in the house hidden well from you. Look again and you
   may find that one broom is now two.` With neither, the Witch comes at
@@ -94,7 +95,10 @@ stopped at `Ready to start?`. The routes named are in
 - Every visit to the hallway opens a REPEAT that is never closed (line
   1280), and PROCi's own REPEAT is open while it waits: the first visit
   shows two open, the 19th twenty, and the 20th stops with Too many REPEATs,
-  which ON ERROR turns into a restart *(live, `p1-wander`)*.
+  which ON ERROR turns into a restart *(live, `p1-wander`)*. After a guess
+  at the trees rejected for its form, PROCtr's REPEAT (line 300) is open
+  too, since lines 440-450 run on into PROCkn, and the 19th visit stops
+  *(live, audit of Part 1)*.
 - Once the snake is dead, each trip up the stairs ends in a GOSUB to line
   1710, which GOSUBs to line 1700, which goes back to the hallway: two
   GOSUBs open a trip. After 14 trips 26 are open, and the stick's question
@@ -134,7 +138,8 @@ reply.
   (the PROC table in play points there, *live*).
 - Line 3270, `PRINT ERR:PRINT ERL`, after PROCsnd2's ENDPROC.
 - Line 3090, a RETURN after the tall tree's GOTO loop.
-- Line 260's END: every ending is PROCkey, which RUNs the program.
+- Line 260's END: every ending RUNs the program, through PROCkey or through
+  `ON ERROR RUN`; `No room` stops it.
 - Lines 3280-3320, the relocation, which line 100 no longer reaches.
 
 ## Memory

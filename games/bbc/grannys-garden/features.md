@@ -73,13 +73,15 @@ Found in the code, then played.
 - **The game restarts itself after 20 hallways or 26 journeys.** Rooms are
   entered by calling on, never by returning; BASIC II's limits of 20
   REPEATs and 26 GOSUBs end the run with an error, and ON ERROR RUN starts
-  the part again (`orientation.md`). **live**
+  the part again (`orientation.md`). After a guess at the trees rejected
+  for its form it is 19 hallways. **live**
 - **The BREAK key's definition never happens.** Part 2's line 140,
   `ONERRORRUN:*K.10OLD|MRUN|M`, makes everything after ON ERROR the
   error handler, which RUNs before it reaches `*KEY`. The soft-key buffer
   at &0B00 is empty in play. **live**
-- **The snake allows two misses, not three.** Line 1620 calls the witch
-  when `try` reaches 3; the tree puzzle has left `try` at 1. **confirmed**
+- **The second wrong throw at the snake brings the witch.** Line 1620
+  calls her when `try` reaches 3, and the tree puzzle has left `try` at 1,
+  so only one wrong throw is forgiven. **live**
 - **The stick is a trap and the snake optional.** The green broomstick is
   in the cupboard on the second visit whatever else has been done
   (lines 1500-1550); the stairs only give the hint. **live**

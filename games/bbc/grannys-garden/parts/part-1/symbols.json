@@ -641,7 +641,7 @@
   {
    "address": 3602,
    "type": "line",
-   "text": "Line 110, `CLEAR:?&E04=244`: forgets the variables and writes the REM token over line 100's first byte, so that the RUN which ends the relocation does not test PAGE again. In this copy the byte is 244 already."
+   "text": "Line 110, `CLEAR:?&E04=244`: forgets the variables and writes the REM token over line 100's first byte, so that later RUNs (ON ERROR RUN, PROCkey) do not test PAGE again; the RUN which ends the relocation has made its test already, at line 100, before it reaches this line. In this copy the byte is 244 already."
   },
   {
    "address": 3617,
@@ -651,7 +651,7 @@
   {
    "address": 3671,
    "type": "line",
-   "text": "Line 140, `ON ERROR RUN`: every error the program does not trap starts Part 1 again from line 100. That is how the game gets out of BASIC's Too many REPEATs, met at the 20th visit to the hallway, and Too many GOSUBs, met first on some routes: each trip up the stairs once the snake is dead leaves two GOSUBs open (lines 1610 and 1710). `No room` cannot be trapped and stops the program."
+   "text": "Line 140, `ON ERROR RUN`: every error the program does not trap starts Part 1 again from line 100. That is how the game gets out of BASIC's Too many REPEATs, met at the 20th visit to the hallway (the 19th after a malformed tree guess, which leaves PROCtr's REPEAT at line 300 open), and Too many GOSUBs, met first on some routes: each trip up the stairs once the snake is dead leaves two GOSUBs open (lines 1610 and 1710). `No room` cannot be trapped and stops the program."
   },
   {
    "address": 3678,
@@ -681,7 +681,7 @@
   {
    "address": 4781,
    "type": "line",
-   "text": "Line 260, the whole of Part 1: a pause (PROCp(6)), the magic trees (PROCtr) and the Kingdom of the Mountains (PROCkn). Each way the kingdom can end is PROCkey, which RUNs the program again, so END is never reached."
+   "text": "Line 260, the whole of Part 1: a pause (PROCp(6)), the magic trees (PROCtr) and the Kingdom of the Mountains (PROCkn). Every way the kingdom can end RUNs the program again, through PROCkey or through ON ERROR RUN after Too many REPEATs or GOSUBs (`No room` stops it), so END is never reached."
   },
   {
    "address": 4802,
@@ -691,7 +691,7 @@
   {
    "address": 5096,
    "type": "line",
-   "text": "PROCtx, one guess at the tree (lines 310-430). The first time it says `There is a magic tree here.`; it asks `Which one do you think it is?` with INPUT, the only INPUT in Part 1, and sets try=1. The answer is lowercased (PROClcase). More than two characters gets `Please try again.` (line 440); a first character below A, a digit say, gets `Please put the letter first.` (line 450); a letter outside a-d or a second character outside 1-3 gets `Please try again.` too. The letter and digit become a column and a row through the tables at lines 2350 and 2360, and that tree flashes (lines 400-410). A wrong tree gets `There is not enough magic in that tree` and PROCtx calls itself, so it returns only when the guess is right."
+   "text": "PROCtx, one guess at the tree (lines 310-430). Each time it says `There is a magic tree here.`, and the first time (try=0) waits for the space bar after it; it asks `Which one do you think it is?` with INPUT, the only INPUT in Part 1, and sets try=1. The answer is lowercased (PROClcase). More than two characters gets `Please try again.` (line 440); a first character below A, a digit say, gets `Please put the letter first.` (line 450); a letter outside a-d or a second character outside 1-3 gets `Please try again.` too. The letter and digit become a column and a row through the tables at lines 2350 and 2360, and that tree flashes (lines 400-410). A wrong tree gets `There is not enough magic in that tree` and PROCtx calls itself, so it returns only when the guess is right."
   },
   {
    "address": 5613,
@@ -786,7 +786,7 @@
   {
    "address": 9407,
    "type": "line",
-   "text": "PROCup: the cursor to the bottom row, then eight line feeds with a pause between, so the picture scrolls up off the screen."
+   "text": "PROCup: the cursor to the bottom row, then eight line feeds with a pause between, so the screen scrolls up eight rows: the raven at the top goes off it, and at line 2810 the toadstool drawn below the raven comes up to the top and stays."
   },
   {
    "address": 9452,
@@ -796,7 +796,7 @@
   {
    "address": 9827,
    "type": "line",
-   "text": "PROCcot, the woodcutter's house (lines 1110-1190); lines 1110-1140 draw it: a cyan sky over the roof, walls, windows and the door, with f$ for the solid runs."
+   "text": "PROCcot, the woodcutter's house (lines 1110-1190); lines 1110-1140 draw it on black: a yellow roof and a chimney over white walls with two magenta windows, the word FIG in cyan letters on the wall, red flowers along its foot and an apple tree with red apples at the right, with f$ for the solid runs."
   },
   {
    "address": 10327,
@@ -811,7 +811,7 @@
   {
    "address": 11261,
    "type": "line",
-   "text": "PROChall (lines 1250-1330), the hallway: the frame (PROCw), the stick if it has not been taken (line 1340), the four doors, and `Where do you wish to go?`, matched by INSTR: `itch` the kitchen, `ack` the backroom, `upb` the cupboard, `rs` the stairs; anything else `Sorry. I don't understand.` Each room ends by calling PROChall again, and this REPEAT is never closed, so each visit leaves one more REPEAT open: the 20th visit to the hallway stops with Too many REPEATs, unless the GOSUBs the stairs leave open reach their limit first, and ON ERROR starts Part 1 again (orientation.md)."
+   "text": "PROChall (lines 1250-1330), the hallway: the frame (PROCw), the stick if it has not been taken (line 1340), the four doors, and `Where do you wish to go?`, matched by INSTR: `itch` the kitchen, `ack` the backroom, `upb` the cupboard, `rs` the stairs; anything else `Sorry. I don't understand.` Each room ends by calling PROChall again, and this REPEAT is never closed, so each visit leaves one more REPEAT open: the 20th visit to the hallway stops with Too many REPEATs (the 19th after a malformed tree guess, which leaves PROCtr's REPEAT at line 300 open), unless the GOSUBs the stairs leave open reach their limit first, and ON ERROR starts Part 1 again (orientation.md)."
   },
   {
    "address": 11727,
@@ -841,7 +841,7 @@
   {
    "address": 13475,
    "type": "line",
-   "text": "PROCstairs, the snake on the stairs (lines 1590-1660). If snake% (killed) it says so and goes to the top (line 1710). Otherwise: when try reaches 3 the snake calls the Witch; with neither the apple nor the stick there is nothing to throw (line 1720). `What can you throw at the snake?` With the stick, an answer with `ic` in it: the stick was an evil magic wand, and the Witch. With the apple, `pl`: the snake is killed (line 1670). Otherwise `You don't have one.` or `That will not work.`, try+1, and the snake again. try is 1 from the trees, so the snake allows two misses."
+   "text": "PROCstairs, the snake on the stairs (lines 1590-1660). If snake% (killed) it says so and goes to the top (line 1710). Otherwise: when try reaches 3 the snake calls the Witch; with neither the apple nor the stick there is nothing to throw (line 1720). `What can you throw at the snake?` With the stick, an answer with `ic` in it: the stick was an evil magic wand, and the Witch. With the apple, `pl`: the snake is killed (line 1670). Otherwise `You don't have one.` or `That will not work.`, try+1, and the snake again. try is 1 from the trees, so the second miss brings the Witch."
   },
   {
    "address": 14227,
@@ -886,7 +886,7 @@
   {
    "address": 15950,
    "type": "line",
-   "text": "PROCworm(w,z) (lines 1840-1870): a cyan sky on rows 15-19 and green grass on rows 20-24, then the worm frame by frame (PROCwm), up from row 8 to row z when w=1, back down from z+1 to 8 when w=2. In the wood z is 5, so it comes only half out."
+   "text": "PROCworm(w,z) (lines 1840-1870): a cyan sky on rows 15-19 and green grass on rows 20-24, then the worm frame by frame (PROCwm), up from row 8 to row z when w=1, back down from z+1 to 8 when w=2. In the wood z is 5, so only its head comes out."
   },
   {
    "address": 16183,
@@ -901,7 +901,7 @@
   {
    "address": 16941,
    "type": "line",
-   "text": "PROCbee: the bee drawn at each row from 0 to 13, the window cleared between, so it flies down the screen (line 2080 draws it)."
+   "text": "PROCbee: the bee drawn at each row from 0 to 13, the window cleared between, so it flies down the screen, then once more at row 14, where the loop leaves y, and VDU 30,11 scrolls the screen down a row, so it stays on rows 15-24 (line 2080 draws it)."
   },
   {
    "address": 16989,
@@ -916,7 +916,7 @@
   {
    "address": 17816,
    "type": "line",
-   "text": "PROCrav1 (lines 2140-2150), the raven arriving: A$, B$ and C$, the bird's pieces, from the 45 values at line 2420 (each plus 160, through line 2220), printed four times down the screen; every row starts with code 152, conceal, so nothing shows until PROCn uncovers the rows three at a time, top to bottom."
+   "text": "PROCrav1 (lines 2140-2150), the raven arriving: A$, B$ and C$, a small bird with its wings down, level and up, from the 45 values at line 2420 (each plus 160, through line 2220), printed four times down the screen; every row starts with code 152, conceal, so nothing shows until PROCn uncovers one of them at a time, two rows and then one, top to bottom, hiding each again after its pause, so the bird flaps down the screen."
   },
   {
    "address": 18042,
@@ -941,12 +941,12 @@
   {
    "address": 18405,
    "type": "line",
-   "text": "PROCwitch (lines 2240-2320), the Witch; lines 2240-2280 draw her, black on a white background, with w$ and v$ as runs of graphics. With on% FALSE her eyes are shown once, with no sound."
+   "text": "PROCwitch (lines 2240-2320), the Witch; lines 2240-2280 draw her, a magenta hat, green hair and a cyan face on a black background, with w$ and v$ as runs of graphics. With on% FALSE her eye is shown once, with no sound."
   },
   {
    "address": 18879,
    "type": "line",
-   "text": "Lines 2290-2300, the Witch with sound: three times, ENVELOPE 1 rising through five pitches on channel 1 and a note on channel 2 while her eyes change colour, then her mouth opening and closing (PROCP)."
+   "text": "Lines 2290-2300, the Witch with sound: three times, five notes on channel 1, all at pitch 1, under ENVELOPE 1 redefined before each to climb faster (Q=10 to 90 a step), and a note on channel 2 while her eye's pupil moves to and fro, then her mouth opening and closing (PROCP)."
   },
   {
    "address": 19199,
@@ -956,7 +956,7 @@
   {
    "address": 19494,
    "type": "line",
-   "text": "Lines 2330-2340, DATA: the 59 values of one magic tree, read by PROCtr (line 280), each plus 160: graphics characters, and -150 and -152 for line feed and backspace."
+   "text": "Lines 2330-2340, DATA: the 59 values of one magic tree, read by PROCtr (line 280), each plus 160: graphics characters, -150 and -152 for line feed and backspace, and -11 for 149, magenta graphics, before the trunk."
   },
   {
    "address": 19737,
@@ -1016,7 +1016,7 @@
   {
    "address": 20623,
    "type": "line",
-   "text": "PROCkey (lines 2470-2480), the end of every way the game can end: `(Key S to start again)`, then GET until S or s, and RUN. The REPEAT its UNTIL closes is opened by the caller (`REPEAT:PROCkey`)."
+   "text": "PROCkey (lines 2470-2480), the end of every way the story can end, the Witch, Esther, Tom and the call for an adult (the restarts on Too many REPEATs or GOSUBs go through ON ERROR RUN instead): `(Key S to start again)`, then GET until S or s, and RUN. The REPEAT its UNTIL closes is opened by the caller (`REPEAT:PROCkey`)."
   },
   {
    "address": 20704,
@@ -1066,7 +1066,7 @@
   {
    "address": 24893,
    "type": "line",
-   "text": "Lines 3040-3090, the very tall tree, stage 5: the toadstool's `Come on. Let's find Tom.` until the spider is called; line 3090 is a RETURN nothing reaches."
+   "text": "Lines 3040-3090, the very tall tree, stage 5: the toadstool's `Come on. Let's find Tom.` until the spider is called, except after the bee, which starts the stage again (line 2790's GOSUB 3040, bee being 1 since the dog); line 3090 is a RETURN nothing reaches."
   },
   {
    "address": 25220,
