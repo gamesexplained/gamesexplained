@@ -61,17 +61,20 @@ from accuracy import status as listing_status, table as accuracy_table, SILVER_U
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
-PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"}
+PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "bbc": "BBC Micro", "nes": "NES"}
 # The footprint widget and the extra script it needs, per platform: a page loads only
 # its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
-PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap"}
-PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"]}
 # The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
 # sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
 # (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
-PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000)}
+# The BBC Micro's MOS and I/O fill $C000-$FFFF; below them, its 32 KB of RAM and the 16 KB
+# sideways bank paged in at $8000, which may be RAM holding the game (kit/skills/bbc/bbc-reference).
+PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
-PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM"}
+PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
+                "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it"}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
 _warned = set()
@@ -1251,7 +1254,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js")
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js")
 
 
 def lib_versions(out_root):

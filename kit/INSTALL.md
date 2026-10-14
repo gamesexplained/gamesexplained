@@ -11,6 +11,7 @@ platform's own notes:
 |---|---|
 | Commodore 64 | `kit/c64/INSTALL.md` |
 | ZX Spectrum | `kit/spectrum/INSTALL.md` |
+| BBC Micro | `kit/bbc/INSTALL.md` |
 
 What "an emulator with an agent interface" has to be able to do, phase
 by phase, and the test for each, is `kit/EMULATOR.md`. Read it before

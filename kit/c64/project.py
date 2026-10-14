@@ -9,14 +9,13 @@ platform, so a project type is translated on the way in and out.
 
   read_file(path)                    -> (blocks, symbols, comments)
   write(gdir, snapshot, out=None)    -> path written
+  project(sym, ram, settings=None)   -> the file's contents, for another machine's
+                                        project.py (kit/bbc/project.py) to write
 
 Usage:
   project.py --roundtrip <snapshot.vsf>   self-check in a temp dir
 """
 import base64, gzip, json, os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from snapshot import read  # the one .vsf reader  # noqa: E402
 
 PROJECT_BLOCK_TYPES = {
     "Code": "Code", "DataByte": "Byte", "DataWord": "Word", "Address": "Address",
@@ -74,18 +73,32 @@ def write(gdir, snapshot, out=None):
     gdir is a game's folder or, for a game of several loads, a part's (kit/scripts/parts.py)."""
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
     from parts import seed
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from snapshot import read  # the one .vsf reader, imported here so that project() can be loaded alone
     game, sym = seed(gdir)
     if out is None:
         out = os.path.join(gdir, "work", f"{game['slug']}.regen2000proj")
     bank = (game.get("part") or {}).get("bank")      # a cartridge bank's part: its image is the bank's
     ram = read(snapshot) if bank is None else read(snapshot, bank=bank)
+    body = project(sym, ram)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w") as f:
+        json.dump(body, f, indent=1, sort_keys=True)
+    print(f"wrote {out}: {len(body['blocks'])} blocks, {len(body['labels'])} labelled addresses, "
+          f"{len(body['user_line_comments'])} line comments")
+    return out
+
+
+def project(sym, ram, settings=None):
+    """A .regen2000proj's contents from a symbol map and a 64 KB image. `settings` is the
+    disassembler's own block, which names the machine when it is not a C64."""
     labels = {}
     for s in sym["symbols"]:
         if s.get("kind", "user") != "user":
             continue  # the disassembler regenerates auto symbols itself
         labels.setdefault(str(s["address"]), []).append(
             {"name": s["name"], "label_type": s["type"], "kind": "User"})
-    project = {
+    body = {
         "version": 1, "origin": 0,
         "raw_data_base64": base64.b64encode(gzip.compress(ram, mtime=0)).decode(),
         "blocks": project_blocks(sym["blocks"]),
@@ -93,12 +106,9 @@ def write(gdir, snapshot, out=None):
         "user_line_comments": {str(c["address"]): c["text"] for c in sym["comments"] if c["type"] == "line"},
         "user_side_comments": {str(c["address"]): c["text"] for c in sym["comments"] if c["type"] == "side"},
     }
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, "w") as f:
-        json.dump(project, f, indent=1, sort_keys=True)
-    print(f"wrote {out}: {len(project['blocks'])} blocks, {len(labels)} labelled addresses, "
-          f"{len(project['user_line_comments'])} line comments")
-    return out
+    if settings:
+        body["settings"] = settings
+    return body
 
 
 # --- self-check -----------------------------------------------------------

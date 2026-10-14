@@ -311,10 +311,10 @@ nine agents at once have used up a contributor's session limit in
 minutes. Split only large, separable work (a game of several parts, or
 more code than one context holds once you have annotated the core
 yourself), with at most four agents, as `kit/skills/core/50-coverage`
-says, and only as far as the contributor's answer about their usage limit
-allows (`kit/START.md`). Judgement does not parallelise; independent
-checking does, which is why `60-verify` gives its sample to agents that
-wrote none of it. When you spawn agents:
+says, and only when the contributor said, in the message that started
+the run, that it may use several (`kit/START.md`). Judgement does not
+parallelise; independent checking does, which is why `60-verify` gives
+its sample to agents that wrote none of it. When you spawn agents:
 force the model explicitly; give each a disjoint address range and say so
 in the prompt; give each its own output file; brief them cold with the
 facts established so far and the rules above; spot-check one substantive

@@ -35,6 +35,10 @@ addresses, the last row that holds the instruction deciding:
 
 with "registers" for code under the I/O area that banks the chips in.
 
+An address where only the chips answer (the platform's "io_only" ranges:
+on the BBC Micro, $FC00-$FEFF) has one meaning, and an operand there
+always gets the register's name, whatever code holds it.
+
 A game whose cartridge switches banks has a part for each bank
 (kit/scripts/parts.py), built from the bank's own image (on the C64, its
 work/bank.crt), and the data in it that the ledger does not count is named
@@ -215,6 +219,7 @@ def io_meaning(game):
     from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
     plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
     hidden = [(hexint(r[0]), hexint(r[1])) for r in plat.get("hidden", [])]
+    only = [(hexint(r[0]), hexint(r[1])) for r in plat.get("io_only", [])]     # no RAM beneath
     rows = []
     for r in game.get("io", []):
         if len(r) != 4 or r[2] not in ("ram", "registers"):
@@ -225,6 +230,8 @@ def io_meaning(game):
         return any(lo <= a <= hi for lo, hi in hidden)
 
     def chips(target, at):
+        if any(lo <= target <= hi for lo, hi in only):
+            return True
         if not two(target):
             return False
         for lo, hi, registers in reversed(rows):
