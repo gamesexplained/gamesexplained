@@ -15647,7 +15647,7 @@
   {
    "address": 4770,
    "type": "line",
-   "text": "The stage number: 1 is level 1.1, then each level and torture chamber in turn up to 10, the ending; game_new and game_end set it and stage_next ($14B2) adds one. It picks the file to load and the stage's settings."
+   "text": "The stage number: 1 is level 1.1, then each level and torture chamber in turn up to 10, the ending; game_new and game_end set it, the ending sets it to $FF so that the game starts again from stage 0, and stage_next ($14B2) adds one. It picks the file to load and the stage's settings."
   },
   {
    "address": 4771,
@@ -15857,7 +15857,7 @@
   {
    "address": 5328,
    "type": "line",
-   "text": "What stage_next was given in X: 1 after the last life, 0 for anything else (a completed stage, a quit, a new start). It survives the load: loader_hand_over ($BE31, run at $4931 in the copy) adds a life and enters the stage when it is 0, and enters the attract block at $E503, where the high-score check runs, when it is 1."
+   "text": "What stage_next was given in X: 1 after the last life and when the ending finishes ($7E72), 0 for anything else (a completed stage, a quit, a new start). It survives the load: loader_hand_over ($BE31, run at $4931 in the copy) adds a life and enters the stage when it is 0, and enters the attract block at $E503, where the high-score check runs, when it is 1."
   },
   {
    "address": 5329,
@@ -16992,7 +16992,7 @@
   {
    "address": 13241,
    "type": "line",
-   "text": "Low bytes of the addresses of print_at's 22 strings: 1 \"COLLECT THE FOLLOWING CREATURES\", 2 \"FOR MAGIC POTIONS\", 12 \"LOADING:\", 13 \"INSERT SIDE B AND\", 14 \"PRESS FIRE TO START\", 15-21 the title's lines (\"CLYDE RADCLIFFE EXTERMINATES ALL\" to \"COPYRIGHT THALAMUS 1990\"); 0 and 3 point into the level's data at $8C87 and $8CB0, and 4-11 are unused zeros."
+   "text": "Low bytes of the addresses of print_at's 22 strings: 1 \"COLLECT THE FOLLOWING CREATURES\", 2 \"FOR MAGIC POTIONS\", 12 \"LOADING:\", 13 \"INSERT SIDE B AND\", 14 \"PRESS FIRE TO START\", 15-21 the title's lines (\"CLYDE RADCLIFFE EXTERMINATES ALL\" to \"COPYRIGHT THALAMUS 1990\"); 0 and 3 point into the level's data at $8C87 and $8CB0, and 4-11 are zeros, of which the ending points 4-7 at its story and its cheat hint."
   },
   {
    "address": 13263,
@@ -17047,7 +17047,7 @@
   {
    "address": 13475,
    "type": "line",
-   "text": "Low bytes of the addresses of print_big's 19 strings: 0 \"GET  READY\", 4 \"TODAYS TOP HEROS\", 15 \"LOADING   . \", 16 \"GAME OVER\", 17 \"YOU'RE IN THE TOP 8\", 18 \"....\", others in the level's data ($8C7D, $ABF3, $ABF5) or the high-score area ($C9E0, $C9E8); 5-12 are unused."
+   "text": "Low bytes of the addresses of print_big's 19 strings: 0 \"GET  READY\", 4 \"TODAYS TOP HEROS\", 15 \"LOADING   . \", 16 \"GAME OVER\", 17 \"YOU'RE IN THE TOP 8\", 18 \"....\", others in the level's data ($8C7D, $ABF3, $ABF5) or the high-score area ($C9E0, $C9E8); 5-12 are zeros, and the ending points 5 and 6 at its \"GAME COMPLETE\" and \"THE END\"."
   },
   {
    "address": 13494,
@@ -18217,7 +18217,7 @@
   {
    "address": 48627,
    "type": "line",
-   "text": "Runs once the stage's file is in. Stage 0 (the file 1@) swaps it to $E000 (memory_swap 7) and goes on to load stage 1 ($14B2). Stage 2 swaps the shop block, which arrived at $9A00, with level 1.1's bytes that loading_screen parked at $E000 (memory_swap 8). Then it sets CIA 1's port directions, the sound mode, releases the keyboard, waits for raster line 0, blanks the screen, sets multicolour text and the black border, and swaps the drive code out and the sprites in (memory_swaps 5 and 0). With end_flag 0 the lives go up by one and the stage starts: a torture chamber (part digit \"3\") at $8051 after setting $CFED and the objects' $C24C to 2 and the panel's weapon icon, the ending (stage 10) at $7D6A, a level at $E500. With end_flag 1 (the reload after the last life) it enters at $E503."
+   "text": "Runs once the stage's file is in. Stage 0 (the file 1@) swaps it to $E000 (memory_swap 7) and goes on to load stage 1 ($14B2). Stage 2 swaps the shop block, which arrived at $9A00, with level 1.1's bytes that loading_screen parked at $E000 (memory_swap 8). Then it sets CIA 1's port directions, the sound mode, releases the keyboard, waits for raster line 0, blanks the screen, sets multicolour text and the black border, and swaps the drive code out and the sprites in (memory_swaps 5 and 0). With end_flag 0 the lives go up by one and the stage starts: a torture chamber (part digit \"3\") at $8051 after setting $CFED and the objects' $C24C to 2 and the panel's weapon icon, the ending (stage 10) at $7D6A, a level at $E500. With end_flag 1 (the reload after the last life, or after the ending) it enters at $E503."
   },
   {
    "address": 48640,
@@ -18307,12 +18307,12 @@
   {
    "address": 48988,
    "type": "line",
-   "text": "The first page each stage's file loads to: $58 for a level's first part, $87 for its second, $6A for the ending."
+   "text": "The first page each stage's file loads to: $58 for every file except the levels' second parts (stages 2, 5 and 8), which load from $87."
   },
   {
    "address": 48999,
    "type": "line",
-   "text": "The page after each stage's file ends: $AC, $9A for the second parts, $8D for the ending."
+   "text": "The page after each stage's file ends: $6A for stage 0's file, $9A for levels 2.2 and 3.2 (stages 5 and 8), $8D for the ending and $AC for the rest, level 1.2 included: its file also carries the witch's shop at $9A00-$ABFF."
   },
   {
    "address": 49010,

@@ -57,7 +57,7 @@ Sources:
 | Poke 7328,208: unlimited lives in the main game (C64-Wiki, not tested) | open | |
 | Pokes 33734, 33952 and 33505 to 173: unlimited lives in torture chambers 1, 2 and 3 (C64-Wiki, not tested) | open | |
 | The high-score table is not saved to disk (C64-Wiki review) | open | |
-| An ending sequence | open | |
+| An ending sequence | live | file `CJ` (part `ending`): a text screen, then three animated scenes; `reference/ending-text.png`, `reference/ending-village.png`, `reference/ending-rave.png`, `reference/ending-hearts.png` |
 
 ## Beyond the documentation
 
@@ -67,6 +67,11 @@ Found in the code, not in the manual.
   loads.
 - Side B holds a file `1@` beside the stages; the game loads it after a
   game over, before stage 1.1.
+- The ending's text screen adds "WHY NOT USE THE CHEAT MODE NEXT TIME"
+  only when the game was finished without the cheat (part `ending`,
+  $7DE6, which tests for the cheat's NOPs at $1CA0).
+- After the ending the game reloads from stage 0 and goes to the
+  high-score check, as after the last life (`ending_exit`, $7E6B).
 
 ## Open questions
 
