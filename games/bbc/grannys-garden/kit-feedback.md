@@ -46,9 +46,13 @@ time, operating system and tool versions.
   envelopes, each larger), and the run accepted it on reading the line.
   Part 2's checker recorded the chip and showed that reading wrong as well:
   the five notes are queued at once and play the envelope as it stands
-  while they play. A skill would say: when a correction says what a
-  statement does to the screen or the sound, settle it by running the
-  statement, not by reading it. No other game folder shows it yet.
+  while they play. The second sample, after the audit, found 4 of 60
+  wrong, and all four were comments the audit had rewritten: 4 of the 15
+  rewritten comments it drew, against none of the 45 it had left alone.
+  A skill would say: when a correction says what a statement does to the
+  screen or the sound, settle it by running the statement, not by
+  reading it; and after an audit, give the rewritten comments to a fresh
+  checker before the next sample. No other game folder shows it yet.
 
 ## Maintainer asks
 
