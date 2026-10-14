@@ -3,3 +3,128 @@
 Narrative of how the analysis went, including wrong turns, for the next
 agent's benefit. This is the only file that narrates; `facts.md` and
 `features.md` state current truth only.
+
+## 13 October 2026: images, tools and the route
+
+The two G64 sides came from the C64 Preservation Project's collection
+(`orientation.md`). VICE v3.13.2 (Linux release) passed all 57 emulator
+checks. `apt-get install` failed until `apt-get update` had run.
+
+Side A boots to the title, which loads `GAME`; the game asks for side B
+and loads one file per stage. Playing to every stage was not practical,
+so each part was reached from the part before by setting the stage
+number `$12A2` to one less than the stage's own, X to 0, and the program
+counter to `stage_next` (`$14AF`). A first attempt that jumped to `$14AB`
+with X set took the attract block's path and fell out to BASIC. After a
+snapshot load the first file request sometimes failed into the "insert
+side B" prompt; a fire press retried it. The route stopped in the witch's
+shop after every level file, and pressing fire blind there bought
+weapons: a script that finds EXIT by its screen codes and selects it
+replaced the image comparison that had missed it.
+
+VICE hung more than once while routes jumped into the loader (at `$496A`
+after a skipped range, at KERNAL `$ED5D`); `tools.py stop vice` and
+`tools.py vice` cleared it each time. The stage-1 route jammed at `$4800`
+until it went through stage 0 (`1@`) as the game does. A store checkpoint
+on a file's last byte fired early, because the engine writes `$ABFF`
+itself at `$335A`; arming it only once the loader at `$4800` had started
+fixed the hand-over snapshots.
+
+## The parts and the engine
+
+Comparing the stages' snapshots showed the engine resident at
+`$0334-$3FFF` and `$A400-$FFFF`, so it became a part of its own and every
+load lies over it. The attract and shop blocks share `$E000-$F1FF` and
+are swapped with `$9A00-$ABFF`. An early comparison that called side B's
+`1@` block and `LB`'s block "99 % the same" had compared one block with
+itself; they are different code and became two parts.
+
+Code maps needed `--under-rom`, or the code at `$A305` and `$E000` up was
+dropped. The first trace of the title was dumped after the game had
+overwritten it (440 overlaps), and was redone at the first loader call.
+The tracer also walked into zero page and into the KERNAL's serial
+routines from the loader's `JSR`s; those ranges were set back to
+undefined and described at the call sites.
+
+Two disassembler sessions started at the same moment took the same port
+(3001, later 3003), and the second failed with "Address already in use";
+started one after another, each part got its own. A scratch script
+named `typing.py` in the working folder shadowed Python's module of that
+name, and every later script that imported PIL failed until it was
+renamed.
+
+## Annotation
+
+One agent annotated all fifteen parts, the engine first. Many first
+readings were wrong and were corrected against the bytes before export:
+what were called "collision groups" are sprite attribute bitmaps, a
+"kind" is a sprite frame, an "explosion" a colour cycle, two "animation"
+bytes the x and y movement scripts; an object's "lifetime" is a wake
+delay and its "alive" flag an awake flag; three "potion creature" sprites
+on the Get Ready screen are a marker; the raster chain starts at line
+`$F9`, not `$36`; a "first sprite multicolour" was `$D026`, the second.
+The death tune is at `$BC2B`, not `$2BBC`. Tables whose ends were
+guessed were measured instead (the colour lists, the title's fades),
+and two claims that "nothing refers to" a byte turned out to have
+readers.
+
+Level files carry tables in fixed formats, so their spawn records and
+scripts were described by a generator from the bytes. Its first comments
+read "takes 1 frames" and printed hit points one too high; the template
+was fixed. Comments it wrote where no label stood counted for nothing in
+the ledger, and needed labels of their own.
+
+The listing's report of loaded data that no label reaches had never run:
+it compared a listing's snapshot with a hand-over only when the two were
+different files, and every part's listing was built from its hand-over.
+Run by hand against the play snapshots, it found about 60 KB outside the
+count at 100 %: sprite blocks reached only through pointers, the panel's
+shapes, characters and leftovers. Labelling them took most of a session.
+A label of my own on `tile_addr_hi` had also reached a kilobyte, through
+the strings at `$B0C0` and the tablet's shapes at `$B100`, and counted
+them under the tile table's description. `listing.py` now runs the
+report on the hand-over itself (`kit-feedback.md`).
+
+## Verify
+
+Every part has a `facts.md`. The sample of 80 comments (seed 20261014),
+checked by an agent that wrote none of them, found 11 wrong, 13.8 %; the
+eleven and the 123 other comments that shared their beliefs were
+rewritten (`facts.md`, "The listing's error rate"). Writing the facts
+caught more of my own: a variable "nothing else sets" that `stage_start`
+sets every life; the broom does not itself kill; second stages share all
+the tunes; the shop tune lives in the engine at `$F300`.
+
+Live tests: Clyde's spare hit (`$12A0`), the pause, the music toggle, the
+title cheat's grey fuzzies, the reset that wipes the game. The C64-Wiki's
+`POKE 7328,208` hangs the game at the first lost life (`features.md`).
+A first test of the spare hit entered `player_hurt` by setting the
+program counter and left Clyde stuck dying; it was replaced by walking
+him into level 1.1's creatures.
+
+## The minisite
+
+The creature gallery is a port of the engine's animation routine,
+checked frame by frame against the engine in the simulator over every
+script (`test_gallery.js`). It passed while two creatures on the page,
+world 2's swelling ball and level 2.1's end creature, were wrong: the
+test started every object animating, and those objects' spawn records
+start them stopped, a shot giving each one step. The test now also
+runs those objects stopped, as their records start them, and shoots them. Building the gallery also
+found three scripts whose last bytes no label reached, so the listing
+left them out; `listing.py` now names such short holes.
+
+The chamber widgets show recorded frames. The capture script loaded
+three chamber snapshots all named `play.vsf`; VICE refuses a second file
+under a name it has loaded, the script went on, and all three captures
+were the same machine. Chamber 3's first capture, from a route that had
+skipped chamber 2's exit, drew a broken panel: the chamber flips eight
+engine branches, which the skipped exit restores. The chamber's own Get
+Ready snapshot gave a clean one. The first box for the gunner was drawn
+on empty floor at the left; he stands at the bottom right.
+
+The copy pass corrected the draft: a rescue pays two potion creatures of
+each kind, six in all, not six of each; the shop comes before every
+stage after the first; Clyde's surname is Radcliff. The music player is
+a port of the game's driver, checked write by write against the engine
+(`test_music.js`).

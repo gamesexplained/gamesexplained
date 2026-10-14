@@ -9,31 +9,36 @@ time, operating system and tool versions.
 
 - `kit/skills/core/10-orient`: "Code that is the same at the same address in every part is resident: make it a part of its own": the engine became a part of its own, and every stage's load lies over it.
 - `kit/skills/core/10-orient`: "A load can also lie over a part that has ranges of its own and write some of them again": the attract and shop blocks lie over the engine's $E000-$F1FF, and the second level of each world over the first level's $8700-$99FF.
+- `kit/skills/core/70-minisite`: "A widget that runs a mechanic is a claim too": the creature gallery and the music player are ports, and both are checked against the engine's own code in the simulator (`test_gallery.js`, `test_music.js`) rather than by eye.
+- `kit/skills/core/50-coverage`: "A data span also stops at the fixed edges of the memory map": a run of untracked bytes at $8000 was a table crossing that edge, and got a second label there rather than a range left bare.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/scripts/listing.py`: a listing built from the hand-over snapshot itself now lists the loaded data no label reaches, as one built from a play snapshot does. It compared the snapshot with a hand-over only when the two were different files, so a build from `work/entry.vsf` printed nothing; this game's parts reached 100 % with about 60 KB of their data outside the count and the listing, found late in coverage by running the comparison against each part's play snapshot by hand. With the change, the picture, which has no play snapshot, and eight bytes of the engine that play rewrites came up in four stretches that comparison had not shown; each `part.json` now says what they are. Other games build their listings from `work/entry.vsf` too (games/c64/armalyte, games/c64/commando, games/c64/mayhem-in-monsterland). Test: `kit/scripts/test_listing_handover.py`.
+- `kit/skills/core/50-coverage`: "Data the ledger cannot see" says what that list holds for a listing built from the hand-over, and that `--entry` with the play snapshot narrows it; games/c64/mercenary's feedback describes the same case.
+- `kit/scripts/listing.py`: a run of fewer than eight untracked bytes between two data records is named at build time. Such a hole is usually a table's or a script's last bytes past its label's reach, and nothing reported it: the coverage report names only stretches of eight bytes or more, and the ledger counts neither the bytes nor their absence. Here they were the last bytes of three animation scripts the gallery reads; the committed listings of other games hold 79 such holes (games/c64/chiller 18, games/c64/gauntlet 7). Test: `kit/scripts/test_listing_data_gaps.py`.
+- `kit/scripts/listing.py`: the warning that a part's snapshot does not hold the part beneath now asks to widen `"ranges"` only when three or more instructions in a row differ, as when a load replaces code. Code that rewrites itself changes operands and single instructions, and every part of this game printed the warning for 109 to 160 bytes of the engine's self-modified operands and flipped branches, so the one part where a load does replace code read as more of the same. Those differences are now one line saying so. Test: `kit/scripts/test_parts.py`.
+- `kit/skills/core/70-minisite`: "Start each case where the game starts it, and feed it what the page feeds it", from games/c64/uridium's candidate on its sound test and this game's gallery; lesson `kit/lessons/2026-10-14-creatures.md`.
+
+## What the run met
+
+- VICE's `snapshot_load` refuses a second file under a name it has already loaded ("a different snapshot with the name 'play'"). `kit/c64/vice.py` raises on it; a capture script of my own that called the server directly went on after the refusal and recorded the same machine three times. Copying each snapshot to a name of its own fixed it.
+- Two disassembler sessions started at the same moment took the same port, and the second failed with "Address already in use". Started one after another, each part got its own.
+- A scratch script named `typing.py` in the working folder shadowed Python's own module, and every later script that imported PIL failed.
+- Routes that jumped to the game's stage loader from a play snapshot sometimes hung in the KERNAL; restarting VICE (`tools.py stop vice`, then `tools.py vice`) cleared it. A route that skips a torture chamber's exit leaves the engine branches the chamber flips (`orientation.md`); a capture of the next chamber from such a route drew a broken panel, and the chamber's own Get Ready snapshot did not.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+- `kit/skills/core/50-coverage`, a long reach that takes in the next table: a label of my own on a table of tile addresses reached 1024 bytes, through a block of strings and the weapons tablet's shapes after it, so all of them counted as explained under the tile table's description. It was found while reading the listing for the page, not by any report. The rule under "Know how far a description reaches" would add: after labelling the last table in a typed block, check where the next label is, and give each table after it a label of its own. Only this game shows it so far.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+The hand-over check in `listing.py`, fixed here: with it, the data outside the count would have shown up part by part as each was annotated, rather than at the end, when every part had to be labelled, exported and listed again.
+
+## Operating system and tools
+
+Linux x86_64 (Ubuntu 24.04 container, no display); VICE vice-mcp v3.13.2 (all 57 `check-emulator` checks passed); regenerator2000 0.9.20; node 22; Chromium from Playwright for the browser check.
