@@ -10,8 +10,14 @@ site/lib/c64.js draws it (C64.renderFrame), line by line with the state in force
 checks that drawing against the emulator's own picture of the same frame.
 
 Usage:
-  frame.py capture <out.json>            the next whole frame of the machine as it stands, and
-                                         the emulator's picture of it beside it (<out>.png)
+  frame.py capture <out.json> [--watch $lo-$hi ...]   the next whole frame of the machine as it
+                                         stands, and the emulator's picture of it beside it
+                                         (<out>.png). Writes to RAM are recorded only to the sprite
+                                         pointers: --watch adds a range the game rewrites while the
+                                         beam draws (a character set changed under a split, then
+                                         changed back), which ram_bytes_changed_during_frame cannot
+                                         see. compare shows the need: characters drawn wrong in a
+                                         band of lines
   frame.py compare <frame.json> [<shot.png>]   draw it with site/lib/c64.js and count the
                                          pixels that differ from the picture, line by line;
                                          writes <frame>-diff.png
@@ -86,9 +92,13 @@ class Machine:
     def ultimax(self):
         """The 4 KB the video chip reads at $3000-$3FFF of every bank when an Ultimax cartridge
         (GAME held low, EXROM not: Commodore's MAX Machine games) is attached, or None: the
-        cartridge's ROM at $F000-$FFFF, which the processor then sees in place of the KERNAL."""
+        cartridge's ROM at $F000-$FFFF, which the processor then sees in place of the KERNAL.
+        With no cartridge VICE's cart bank reads what the processor sees, so a game that banks the
+        KERNAL out ($01 = $35) shows its own RAM there in both: that is RAM, not a cartridge (it
+        drew a game's sprites at $7B00 from its RAM at $FB00, 14 October 2026)."""
         cpu = self.read(0xF000, 0x1000, "cpu")
-        if cpu == self.read(0xF000, 0x1000, "cart") and cpu != self.read(0xF000, 0x1000, "rom"):
+        if cpu == self.read(0xF000, 0x1000, "cart") and cpu != self.read(0xF000, 0x1000, "rom") \
+                and cpu != self.read(0xF000, 0x1000, "ram"):
             return cpu
         return None
 
@@ -105,8 +115,9 @@ def io_visible(port):
     return bool(eff & 4 and eff & 3)
 
 
-def capture(out, shot=None):
-    """Record the next whole frame. Returns the frame as a dict and writes it to out."""
+def capture(out, shot=None, watch=()):
+    """Record the next whole frame. Returns the frame as a dict and writes it to out. watch: more
+    (lo, hi) ranges of RAM whose writes are recorded, as the sprite pointers' are."""
     m = Machine()
     std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
     lines, cycles = STANDARDS.get(std, STANDARDS["PAL"])
@@ -131,7 +142,7 @@ def capture(out, shot=None):
         ultimax = m.ultimax()                        # the cartridge's, which a page may embed
         ranges = [(0xD000, 0xD3FF, "vic"), (0xDD00, 0xDDFF, "cia2")] + \
                  [(b * 0x4000 + s * 0x400 + 0x3F8, b * 0x4000 + s * 0x400 + 0x3FF, "pointers")
-                  for b in range(4) for s in range(16)]
+                  for b in range(4) for s in range(16)] + [(lo, hi, "ram") for lo, hi in watch]
         for lo, hi, what in ranges:
             n = m.j("vice_checkpoint_add", {"start": f"${lo:04X}", "end": f"${hi:04X}",
                                              "store": True, "exec": False, "stop": True})["checkpoint_num"]
@@ -952,7 +963,9 @@ if __name__ == "__main__":
     elif argv[0] == "trim":
         trim(argv[1], argv[2])
     elif argv[0] == "capture":
-        f = capture(argv[1], os.path.splitext(argv[1])[0] + ".png")
+        watch = [tuple(int(x.strip().lstrip("$"), 16) for x in w.split("-"))
+                 for i, w in enumerate(argv) if i and argv[i - 1] == "--watch"]
+        f = capture(argv[1], os.path.splitext(argv[1])[0] + ".png", watch)
         c = f["capture"]
         print(f"wrote {argv[1]}: {len(f['writes'])} writes; the beam's position known "
               + ("to the cycle" if not c['phase_cycles_uncertain'] else f"to within {c['phase_cycles_uncertain'] + 1} cycles")

@@ -147,3 +147,21 @@ comments on them were wrong: `$12BE`-`$12C2` said background colour and
 are multicolour 1, and the next two runs of five said only "second" and
 "third" colour. The raster routines that write them (`raster_band2` and
 the others) confirm it, and the 15 comments were corrected.
+
+The witch's shop widget came next. The run's two shop snapshots, 
+`shop-screen.vsf` and `shop-entry.vsf`, both held the Get Ready screen after
+it; the shop itself was reached from level 1.1's play snapshot with side
+B attached and fire at the disk prompt, in a freshly started VICE,
+stopping at `shop_start` (`$E500`). The two frames recorded there first
+drew wrong in `frame.py compare`: the witch's sprites were drawn from
+the wrong memory, because `frame.py` took the RAM under a banked-out
+KERNAL for an Ultimax cartridge, and the digits between lines `$5A` and
+`$CA` were the wrong way round, because the shop inverts them mid-frame
+and the capture held only the end state. Both were fixed in the kit
+(`kit-feedback.md`), and the frames then matched to the pixel. The
+page's message box, run on the shop's own code, first differed from the
+emulator's record by two frames in which a big box was half drawn: the
+record was read at the end of the emulator's frame, while the main
+loop's box step, which starts at line `$F4`, was still running. Read
+where each pass of `shop_loop` ends, the record matched the page run for
+run.
