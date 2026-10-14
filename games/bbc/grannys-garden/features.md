@@ -55,9 +55,12 @@ Found in the code, then played.
 - **Only six of the twelve magic trees can be the one.** Line 290 picks
   the column as `RND(3)*9+4` and the row as `RND(2)*6`: columns b, c and
   d and rows 1 and 2. Column a and row 3 never hold it. **live**
-- **T at "Ready to start?" fixes the tree at a1**, a tree that is
+- **Secret: T at "Ready to start?" fixes the tree at a1**, a tree that is
   otherwise never magic (lines 230 and 290). The prompt comes back; then
-  Y starts. **live**
+  Y starts. It has a flag (`t%`) and a test of its own, so it was put
+  there on purpose, and nothing on the screen, in a review or in a guide
+  found online mentions it: a secret, as the How it works page heads it.
+  **live**
 - **An answer ending in f turns the music off** (line 220 in Part 1, 210
   in Part 2): `Yf` starts with no tune under the title and none of the
   witch's sounds; Part 2's ending still plays the theme (line 2580).
