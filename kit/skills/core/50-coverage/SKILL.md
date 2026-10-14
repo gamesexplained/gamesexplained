@@ -261,8 +261,9 @@ extension is the platform's snapshot form, from `PLATFORM_DEFAULTS`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
 out. When the listing is built from the hand-over itself (the start-up
-code exists nowhere else), give it the play snapshot as the second image:
-`--entry work/<play>.<ext>`. Before calling 100 %, go through that list and say what each stretch
+code exists nowhere else), the list holds every untracked stretch in it;
+give it the play snapshot as the second image, `--entry work/<play>.<ext>`,
+to leave out what play overwrites. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One

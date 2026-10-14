@@ -29,7 +29,7 @@ in order:
    | sweep | `kit/skills/core/40-sweep` | register census and string sweep |
    | annotate and measure | `kit/skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
-   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
+   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `discoveries.html` (Discoveries), `listing.json` (Source code), `levels.html` (Maps / levels) for a game with more than one level, optional `play.html` |
    | retrospective | `kit/skills/core/80-retro` | the skill text that helped, named; fixes to the kit; `kit-feedback.md`; `game.json` complete |
 
    A Bronze run stops after `40-sweep`. It exports the symbol map and

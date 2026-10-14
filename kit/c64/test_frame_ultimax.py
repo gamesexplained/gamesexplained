@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """An Ultimax cartridge in kit/c64/frame.py and site/lib/c64.js: the raster line read from the chip
-when the emulator's state call gives the RAM instead, and the cartridge ROM the video chip sees
-at $3000-$3FFF (F.ultimax). No emulator; the drawing needs node or JavaScriptCore, and fails
+when the emulator's state call gives the RAM instead, the cartridge told from RAM under a banked-out
+KERNAL, and the cartridge ROM the video chip sees at $3000-$3FFF (F.ultimax). No emulator; the drawing needs node or JavaScriptCore, and fails
 rather than skips without one when KIT_REQUIRE_TOOLS is set."""
 import base64, json, os, shutil, sys, tempfile, unittest
 
@@ -36,6 +36,28 @@ class RasterTests(unittest.TestCase):
     def test_state_that_agrees_is_kept(self):
         line, regs = FakeMachine(256, 256).vic()
         self.assertEqual((line, regs[0]), (256, 255))
+
+
+class Banks(frame.Machine):
+    """$F000-$FFFF as the processor, the cartridge port, the KERNAL ROM and the RAM read it."""
+    def __init__(self, cpu, cart, rom, ram):
+        self.banks = {"cpu": cpu, "cart": cart, "rom": rom, "ram": ram}
+
+    def read(self, a, n, bank="ram"):
+        assert (a, n) == (0xF000, 0x1000)
+        return bytes([self.banks[bank]]) * n
+
+
+class DetectTests(unittest.TestCase):
+    def test_cartridge(self):
+        self.assertIsNotNone(Banks(cpu=7, cart=7, rom=1, ram=2).ultimax())
+
+    def test_kernal_in(self):
+        self.assertIsNone(Banks(cpu=1, cart=1, rom=1, ram=2).ultimax())
+
+    def test_kernal_banked_out(self):
+        # no cartridge, $01 = $35: VICE's cart bank reads what the processor sees, the RAM
+        self.assertIsNone(Banks(cpu=2, cart=2, rom=1, ram=2).ultimax())
 
 
 def runtime():
