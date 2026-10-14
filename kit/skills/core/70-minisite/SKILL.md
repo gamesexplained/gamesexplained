@@ -249,6 +249,18 @@ its music or its maps can put that first instead.
   page's own inputs and returned 29 where the routine returns 285. A sweep
   of 789 cases found it in one run; reading the two implementations side by
   side had not.
+  **Start each case where the game starts it, and feed it what the page
+  feeds it.** Every value the test sets before it calls the routine, a
+  flag, a timer, the frame a request arrives on, is a case of its own
+  choosing, and the port is checked only for that choice. List what the
+  routine reads that the test sets, and take each from where the game sets
+  it (the object's spawn record, the routine that resets it) and from where
+  the page sends it (its own button data). One sound driver's port matched
+  the game on 99,762 calls while every effect button on its page stayed
+  silent: the test asked a frame after the mode change, and the page on the
+  same frame. One animation port matched the engine on every script while
+  the page ran two creatures that stand still until shot: the test started
+  every object running, and their spawn records start them stopped.
 - **Draw from the memory the game draws from.** A renderer fed from the
   listing reads the hand-over image, and a game that swaps character
   shapes per area or per level has different glyphs there than in play:
