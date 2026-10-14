@@ -26,6 +26,7 @@ time, operating system and tool versions.
 - Two disassembler sessions started at the same moment took the same port, and the second failed with "Address already in use". Started one after another, each part got its own.
 - A scratch script named `typing.py` in the working folder shadowed Python's own module, and every later script that imported PIL failed.
 - Routes that jumped to the game's stage loader from a play snapshot sometimes hung in the KERNAL; restarting VICE (`tools.py stop vice`, then `tools.py vice`) cleared it. A route that skips a torture chamber's exit leaves the engine branches the chamber flips (`orientation.md`); a capture of the next chamber from such a route drew a broken panel, and the chamber's own Get Ready snapshot did not.
+- Skipping chamber 1's exit the same way left the engine settings it puts back, and every stage after it ran its main loop at one pass every two frames, so its spawn records fell behind the landscape. Nothing looked wrong on the screen; it showed only when a run counted the records read against the scrolling (`orientation.md`).
 
 ## Candidates
 
@@ -33,7 +34,7 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
-None.
+- **Give `accuracy` a row for comments a widget's check corrects.** The stage maps' check against the emulator compared the game's band colours at every spawn record with the map's, and so showed that five of the engine's comments on those colours (`$12BE`-`$12C2`) named the wrong VIC register and ten more (`$12C4`-`$12CE`) named none. The run corrected all 15, but `game.json`'s `accuracy` has no step for it: `play` is a port of the whole game for the Play tab, and the other steps are research, annotation, samples, audits and maintainers' checks, so the ledger does not show the fix. Letting `play` cover any port a page checks against the game, or adding a step for it with `fixed`, in `kit/scripts/accuracy.py` and `kit/skills/core/60-verify`, would let a run record it.
 
 ## What cost the most time
 

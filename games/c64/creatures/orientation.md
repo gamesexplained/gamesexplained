@@ -80,6 +80,16 @@ $2D98, $2DFE and $31C1 hold $B0 where the game has $90, and $2DDD, $2E47
 and $AD1D hold $90 where it has $B0. Live tests from those snapshots poke
 the game's values first.
 
+The snapshots of `level-2-1` and every part after it also come from a
+route without chamber 1's exit, `torture_leave` (torture-1 `$938A`),
+which puts back the engine settings the chamber changes: the panel
+sprites' y, `$126C`, `$24F0`, `$7FFF`, `$12DE`, `$12E6`, `$12EA` and the
+operands at `$2E5C`, `$2E5D` and `$3045`. From those snapshots the main
+loop made one pass every two frames (1,980 passes in 4,163 frames on
+level 2.1), so the spawn records fell behind the scrolling landscape;
+with `torture_leave`'s writes made first it made one a frame. The map
+runs (`test_maps.json`) make them first.
+
 ## Steady state
 
 During play the ROMs are banked out ($01 = $35). `stage_start` points the

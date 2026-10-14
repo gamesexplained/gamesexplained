@@ -179,6 +179,23 @@ Each part's facts give its own map.
   it to `$FF`, one turn of the script. World 2's swelling balls (type 10)
   and level 2.1's end creature (type 36) are spawned this way, so each
   shot moves their scripts on a byte.
+- A stage's spawn records, 17 bytes each from `$9000` in its level
+  file, are read in order by engine `object_spawn` (`$1FC6`), each once
+  the landscape has scrolled the distance in byte 16 of the record
+  before. Its counter (`$1FC2`) goes down by the scroll speed once a pass
+  of the main loop, and the interrupt scrolls the landscape once a frame,
+  so the two keep step while a pass takes a frame. A record read when the
+  stage has scrolled S pixels finds the screen's left edge at map pixel
+  S - 312, so its creature, at sprite x 256 + byte 5, comes in at map
+  pixel S + byte 5 - 80. A column of the map whose top byte has bit 7
+  set is a command and takes no room on the screen (engine
+  `scroll_column`, `$26ED`); with bit 6 too it brings in the next set of
+  band colours (`level_colours_next`, `$269D`). *Live*, 14 October 2026,
+  in a run of each of the six stages with the landscape kept scrolling
+  (below): every record was read with the left edge at S - 312, within a
+  pixel once the opening run was over and up to seven pixels behind
+  during it, with the band colours of the map's set for the column at
+  the right edge.
 - The shop sells eight weapons in three grades and clues for the next
   chamber (part `shop`); the weapons tablet chooses among the weapons
   bought (engine `weapons_tablet`).
@@ -278,6 +295,15 @@ All in VICE 3.9 through `kit/c64/vice.py`, from the snapshots named in
   the death when the jack reaches the top (part `torture-1`).
 - Level 2.1's swimming and oxygen, level 3.1's broomstick
   (`reference/play-2-1-swimming.png`, `reference/play-3-1-broom.png`).
+- Each stage's map: a run of each of the six stages from its Get Ready
+  snapshot, with Clyde kept alive (RTS at engine `$3CDD`), the timer
+  stopped (RTS at `$B71E`) and the landscape scrolling on every pass (the
+  BNE at `$1B18` made two NOPs), stopped at every record `object_spawn`
+  reads: all 699 records, read in order, where the map puts them (above),
+  and 61 screens taken on the way holding the map's characters
+  (`test_maps.js`, `test_maps.json`). The runs from world 2 and 3 first
+  made the writes chamber 1's exit makes, and level 3.2's switched its
+  spikes off (`orientation.md`).
 - The ending's text and its three scenes, and its return to the
   high-score check (part `ending`).
 - A VICE reset from chamber 1 stopping at engine `memory_wipe`.

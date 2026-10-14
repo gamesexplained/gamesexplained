@@ -128,3 +128,22 @@ each kind, six in all, not six of each; the shop comes before every
 stage after the first; Clyde's surname is Radcliff. The music player is
 a port of the game's driver, checked write by write against the engine
 (`test_music.js`).
+
+The stage maps on the Maps tab came after the first draft. Matching the
+emulator's screen to the map on level 1.1 put a record's creature at map
+pixel S + byte 5 - 80, and a run of level 1.1 with the landscape forced
+to scroll read all 114 records where the map put them. The same run of
+level 2.1 read 49 of its 96: the main loop was making one pass every two
+frames. Clearing `$126C` and the objects did not help; the snapshots of
+world 2 and 3 had been made from a route that skipped chamber 1's exit,
+`torture_leave`, and with its writes made first the stage ran a pass a
+frame and read every record. The live facts taken from those snapshots
+were screenshots, which the pass rate does not change. Level 3.2's run
+lost Clyde on the spikes, which jump into engine `player_hurt` past the
+RTS that kept him alive elsewhere; that run switched the spikes off. The
+six runs are the fixture of `test_maps.js`. The band colours the runs logged at
+every record matched the map's sets, and showed that the engine's
+comments on them were wrong: `$12BE`-`$12C2` said background colour and
+are multicolour 1, and the next two runs of five said only "second" and
+"third" colour. The raster routines that write them (`raster_band2` and
+the others) confirm it, and the 15 comments were corrected.
