@@ -15107,7 +15107,7 @@
   {
    "address": 4628,
    "type": "line",
-   "text": "Clyde is dying: player_hurt adds one, and while it is set game_frame runs player_dead instead of the controls, the tablet stays shut and game_frame_music holds the music; player_dying_wait clears it."
+   "text": "Clyde is dying: player_hurt adds one. While it is set game_frame leaves out player_control, the fire button and the tablet (only shots_check runs), and game_frame_music runs player_dead in place of the collision tests, does not start the end tune and stops the timer; player_dying_wait clears it."
   },
   {
    "address": 4629,
@@ -15357,7 +15357,7 @@
   {
    "address": 4698,
    "type": "line",
-   "text": "The music is held: set by timer_tick around the hurry-up tune; game_frame_music skips the player while it is set. On the high-score page fuzzies_raster counts its phases with it."
+   "text": "The hurry-up tune is playing: set by timer_tick when it switches the music on at 15 seconds left. While it is set game_frame_music does not start the end tune and stops the music player while the game is paused. On the high-score page fuzzies_raster counts its phases with it."
   },
   {
    "address": 4699,
@@ -15987,7 +15987,7 @@
   {
    "address": 6906,
    "type": "line",
-   "text": "The in-game frame loop. Waits for the frame flag $120D, then (unless $123D freezes the game) runs the slow tick $26ED, the scroll, the player ($1F83 or $1E0E and $B3C0 while dying, $2F0A), the level's own routine (hook at $1BA6, while $122B is set), the enemies ($31CA, $2E82, $2A14) and the object updates ($C45F, $C764, $C826), then the sound effects. Continues at $1BD2."
+   "text": "The in-game frame loop, one pass a frame. Waits for the frame flag $120D and takes one off; while the game is paused ($123D) it goes straight to the sound ($1BC2). Otherwise it runs scroll_column for a coarse scroll request ($120E). While the landscape scrolls ($1270 clear) and before the level's end ($1216) it takes the scroll speed off the spawn countdown $1FC2 (unless that is 0 or $FE). It stores the pixels scrolled this frame in $22FB (0 while the landscape stands: the BNE at $1B18 lands inside the BIT at $1B35, on an LDA #0) and, when they are not 0, moves Clyde's two shot sprites left with the landscape and runs objects_scroll. Unless the frame skips the objects ($1210): with the weapons tablet closing ($124C) tablet_close, while it is up ($124A negative) weapons_tablet and every third frame tablet_icon_colours, then shots_check and panel_anim; otherwise invulnerable_frame, and while Clyde is dying ($1214) only shots_check, when shot sprite 1 shows frame $50 or above; else player_control, the level's hook (level_hook_call, while the special state $122B is set) or player_fire, player_animate and panel_anim. Then move_objects, animate_objects and object_colours, unless $1210, and the sound effects (sfx_play_pending, sfx_update), which a dying Clyde's frames skip once $1254 is 0. Continues at game_frame_music."
   },
   {
    "address": 7077,
@@ -16002,7 +16002,7 @@
   {
    "address": 7122,
    "type": "line",
-   "text": "Second part of the frame. With the music option on, starts the level's end tune once the scroll position comes within three of the level's length ($8B95), unless already started ($1217), and runs the music player (music_frame) except while $125A or $123D hold it. Then, unless the game is frozen ($123D) or skipping a frame ($1210): $3C2C, the level's routine ($ACB6 in a torture chamber, $1214) or the two player-shot updates ($3DFC with X = 0 and 2), the sprite multiplexer's sort ($1FC6), the status panel ($B71E), pending score ($B840 when $B808 is set) and the panel colours ($1D8B)."
+   "text": "Second part of the frame. With the music option on ($12B4) it runs music_frame each frame, except while the game is paused with the hurry-up tune's $125A set. It starts the end tune (end_tune_addr, music_play) once, setting $1217, when the scroll position $1273 comes within three columns of the level's length ($8B95), unless Clyde is dying or $125A is set. Then, while Clyde is dying ($1214), player_dead; otherwise, unless paused ($123D, to panel_colours_slow) or skipping objects ($1210, to game_frame_end), player_collisions, then player_dead if that killed him, else shot_collisions for both shots (X = 0 and 2) unless the level's special state $122B is set. Then object_spawn, timer_tick (unless Clyde is dying or $1215 is set), score_draw and potions_draw when their flags say the panel changed, and panel_colours_slow."
   },
   {
    "address": 7270,
