@@ -159,9 +159,18 @@ its music or its maps can put that first instead.
   browser" below. A widget the next game could use as it is belongs
   there, not in the page. One that grew inside a page moves there with a
   test that the page still gives the same result.
+- Name the pieces of the listing a page draws from, so the build embeds
+  them and the reader's browser does not fetch the whole listing:
+  `<script type="application/json" data-listing="listing.json">["charset",
+  "$4000-$43FF"]</script>`, a label standing for its record and those
+  after it up to the next label. The loaders read that tag before they
+  fetch (`kit/scripts/build.py`, `embed_listings`).
 - The build publishes the authored pages, `listing.json`, `symbols.json`
-  and `reference/`, and nothing else from the game folder. A link to any
-  other file would build and then fail in the reader's browser, so
+  and `reference/`, and nothing else from the game folder; for a game
+  whose `game.json` has `"publish_source": false`, neither JSON file, and
+  its pages get the pieces they name cut to addresses, types, labels and
+  bytes. A link to any other file would build and then fail in the
+  reader's browser, so
   `build.py` stops on one. It reads every `src=` and `href=` in the page,
   the comments of an inlined script included, so a comment that names a
   file should not put it in an attribute.

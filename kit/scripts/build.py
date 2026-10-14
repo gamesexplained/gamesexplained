@@ -8,6 +8,14 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+A page that draws from the listing names the pieces it reads in a tag the
+build fills in: <script type="application/json" data-listing="URL">, URL the
+listing as the page would fetch it (listing.json, parts/<id>/listing.json),
+holding a list of labels, each standing for its record and those up to the
+next label, or "$C000-$C3FF" ranges. The build replaces the list with those
+records of the game folder's listing (embed_listings), and C64.load, BBC.load
+and Spectrum.load take a listing from the page before they fetch one. So the
+page carries the bytes it uses, from the listing as it was built.
 A game with no listing at all, at tier none, builds with no Source tab, no
 footprint on About and no memory strip or size in the catalogue; at any other
 tier the build stops and says how to make the listing.
@@ -20,10 +28,10 @@ marked as varying with the part.
 A game whose maintainers withhold its annotated listing sets "publish_source":
 false in game.json. Its Source tab is one page with the line on the comments
 and a sentence saying the annotations are not published; no tab links an
-address into it, About's footprint opens nothing, and the site's copy of each
-listing.json keeps only the records' addresses, types, labels and bytes, which
-the game's pages load, with no symbols.json. The repository keeps the whole
-listing.
+address into it, About's footprint opens nothing, and the site serves no
+listing.json and no symbols.json. Its pages carry only the pieces they name,
+each record cut to its address, type, label and bytes. The repository keeps
+the whole listing.
 Those are the default tabs. A game that wants others lists all of its tabs, in
 order, in game.json's "tabs" as [file, label] pairs; every authored page it
 names is copied through, and a page in the folder that no tab names is left out
@@ -401,8 +409,8 @@ def source_note(game):
 def withheld(game):
     """True for a game whose maintainers chose not to publish its annotated listing, game.json's
     "publish_source": false. Its Source tab keeps the line on the comments (source_note) and
-    says no more; no address links into it, and the site's copy of each listing.json keeps only
-    what the game's own pages draw from (public_listing)."""
+    says no more; no address links into it, and the site serves none of its listings: its pages
+    carry only the pieces they name, without comments or text (embed_listings)."""
     return game.get("publish_source", True) is False
 
 
@@ -425,14 +433,51 @@ def withheld_source(game, out, nav, ban, common, present):
     open(os.path.join(out, "source.html"), "w").write(src)
 
 
-def public_listing(src, dst):
-    """The copy of a withheld game's listing.json the site serves: every record's address, type,
-    label and bytes, which the game's pages load (C64.load, BBC.load), and no comment or text."""
-    L = json.load(open(src))
-    keep = ("a", "t", "l", "b")
-    out = {k: v for k, v in L.items() if k not in ("records", "index")}
-    out["records"] = [{k: r[k] for k in keep if k in r} for r in L["records"]]
-    json.dump(out, open(dst, "w"), separators=(",", ":"))
+LISTING_TAG = re.compile(r'(<script type="application/json" data-listing="([^"]+)">)(.*?)(</script>)', re.S)
+RANGE = re.compile(r"^\$([0-9A-Fa-f]{1,4})-\$([0-9A-Fa-f]{1,4})$")
+
+
+def listing_pieces(L, want, where):
+    """The records of listing L that the pieces in want name: a label, its record and those after
+    it up to the next labelled one; or "$C000-$C3FF", every record with a byte in the range."""
+    recs, keep = L["records"], set()
+    starts = [i for i, r in enumerate(recs) if r.get("l")] + [len(recs)]
+    at = {recs[i]["l"]: n for n, i in enumerate(starts[:-1])}
+    for w in want:
+        m = RANGE.match(w) if isinstance(w, str) else None
+        if m:
+            lo, hi = int(m.group(1), 16), int(m.group(2), 16)
+            keep.update(i for i, r in enumerate(recs) if r["a"] <= hi and r["a"] + max(len(r.get("b") or []), 1) > lo)
+        elif w in at:
+            keep.update(range(starts[at[w]], starts[at[w] + 1]))
+        else:
+            sys.exit(f"{where} names {w!r}, which is neither a label of its listing nor a range like \"$C000-$C3FF\"")
+    return [recs[i] for i in sorted(keep)]
+
+
+def embed_listings(page, gdir, game, where):
+    """The page with each <script type="application/json" data-listing="URL"> tag's list of pieces
+    replaced by those records of the listing at URL in the game folder. A withheld game's records
+    keep only their address, type, label and bytes (withheld)."""
+    def one(m):
+        url = m.group(2)
+        try:
+            want = json.loads(m.group(3))
+        except ValueError:
+            want = None
+        if not isinstance(want, list):
+            sys.exit(f"{where}: the data-listing tag for {url} must hold a list of labels or ranges")
+        path = os.path.join(gdir, url)
+        if not os.path.isfile(path):
+            sys.exit(f"{where}: the data-listing tag names {url}, and the game folder has no such listing")
+        L = json.load(open(path))
+        recs = listing_pieces(L, want, f"{where} ({url})")
+        if withheld(game):
+            recs = [{k: r[k] for k in ("a", "t", "l", "b") if k in r} for r in recs]
+        out = {k: v for k, v in L.items() if k not in ("records", "index")}
+        out["records"] = recs
+        return m.group(1) + json.dumps(out, separators=(",", ":")).replace("</", "<\\/") + m.group(4)
+    return LISTING_TAG.sub(one, page)
 
 
 def listing_row(game):
@@ -952,6 +997,7 @@ def authored_page(gdir, game, f, nav, ban, src=None, present=None):
     head = dict(title=html.escape(game.get("title", game["slug"])), platform=PLATFORM_NAMES.get(plat, plat),
                 year=game.get("year") or "", publisher=html.escape(game.get("publisher") or ""))
     page = drop_platform(fill(read(os.path.join(gdir, f)) if src is None else src, **head), plat)
+    page = embed_listings(page, gdir, game, os.path.join(os.path.relpath(gdir, ROOT), f))
     nxt = next_tab(game, present_tabs(gdir, game) if present is None else present, f)
     return pagenav(at_end(under_title(inject(page, nav, LIB), ban), nxt + edit_footer(game, f)))
 
@@ -1213,10 +1259,6 @@ def build_game(gdir, out_root):
     hidden = withheld(game) and not bare
     if hidden:
         withheld_source(game, out, nav, ban, common, present)
-        for p in P:
-            if listed(p):
-                os.makedirs(os.path.join(out, "parts", p["id"]), exist_ok=True)
-                public_listing(os.path.join(p["dir"], "listing.json"), os.path.join(out, "parts", p["id"], "listing.json"))
     elif P and not bare:
         part_sources(gdir, game, P, out, nav, ban, common, cheats, present)
     elif not bare:
@@ -1285,9 +1327,7 @@ def build_game(gdir, out_root):
     about = under_title(drop_platform(about, plat), ban)
     about = at_end(about, next_tab(game, present, "about.html") + edit_footer(game, "about.html"))
     open(os.path.join(out, "about.html"), "w").write(pagenav(about))
-    if hidden and not P:
-        public_listing(os.path.join(gdir, "listing.json"), os.path.join(out, "listing.json"))
-    elif not hidden:
+    if not hidden:
         for f in ("listing.json", "symbols.json"):
             if os.path.exists(os.path.join(gdir, f)):
                 shutil.copy(os.path.join(gdir, f), out)

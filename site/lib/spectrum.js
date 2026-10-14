@@ -8,10 +8,20 @@ globalThis.Spectrum = (function () {
                '#000000', '#0000ff', '#ff0000', '#ff00ff', '#00ff00', '#00ffff', '#ffff00', '#ffffff'];
   const BITMAP = 0x4000, ATTRS = 0x5800;
 
+  // A listing the build embedded in the page (kit/scripts/build.py, embed_listings): the pieces of
+  // it the page names, in <script type="application/json" data-listing="url">. Before the build
+  // fills it in the tag holds only the list of pieces, and the listing is fetched instead.
+  function embedded(url) {
+    if (typeof document === 'undefined') return null;
+    for (const s of document.querySelectorAll('script[type="application/json"][data-listing]'))
+      if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
+    return null;
+  }
   // Rebuild the 64 KB image from listing.json records; the $0000-$3FFF ROM is not the game and
   // stays zero. Bytes no record covers have has[a] false.
   async function load(url) {
-    const L = await fetch(url || 'listing.json').then(r => r.json());
+    url = url || 'listing.json';
+    const L = embedded(url) || await fetch(url).then(r => r.json());
     const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
     for (const r of L.records) {
       if (!r.b) continue;

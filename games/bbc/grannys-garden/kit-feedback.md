@@ -25,7 +25,8 @@ time, operating system and tool versions.
 - `site/lib/sn76489.js` and `kit/bbc/test_sn76489.js` (new): a player for a recording of the SN76489's writes, its model held to jsbeeb's chip. Why: a BBC game's tunes had no player.
 - `kit/skills/bbc/bbc-reference`: SOUND's channel digits (flush, synchronise, the queue), BASIC II's zero page and variables, its nesting limits, `No room`, `ON ERROR RUN`, DEF met while running, the first DEF winning, `LEFT$` with a negative length, and how to drive a BASIC game from wait to wait. All measured.
 - `kit/skills/bbc/tool-jsbeeb`, `kit/skills/bbc/tool-regen2000`: `output`'s codes; a BASIC program typed as screencode.
-- `kit/scripts/build.py`, `site/lib/memmap.js`, `site/lib/site.css`, `kit/scripts/test_build_withheld.py` (new): `"publish_source": false` in `game.json` keeps the Source tab's line on the comments and replaces the listing with a sentence saying the annotations are not published; the site's copy of each `listing.json` keeps only the addresses, types, labels and bytes the other tabs load, and nothing links into the listing. Why: the contributor asked for it, for a game whose publisher still enforces its copyright.
+- `kit/scripts/build.py`, `site/lib/memmap.js`, `site/lib/site.css`, `kit/scripts/test_build_withheld.py` (new): `"publish_source": false` in `game.json` keeps the Source tab's line on the comments and replaces the listing with a sentence saying the annotations are not published; the site serves none of the game's `listing.json` or `symbols.json`, and nothing links into the listing. Why: the contributor asked for it, for a game whose publisher still enforces its copyright.
+- `kit/scripts/build.py`, `site/lib/c64.js`, `site/lib/bbc.js`, `site/lib/spectrum.js`, `kit/skills/core/70-minisite`, `kit/scripts/test_build_embed.py` and `kit/scripts/test_embedded_listing.js` (new): a page names the pieces of a listing it draws from in a `data-listing` tag, the build puts those records in the page, cut to addresses, types, labels and bytes for a withheld game, and the loaders read them before fetching. Why: the contributor asked that pages carry only what they draw, and that a withheld game's listing stay off the site; this game's How it works carries 935 bytes of DATA where it fetched 44,451 bytes of listing, and `games/c64/wizball`'s How it works fetches its whole 1.7 MB `listing.json` to draw from it.
 - `kit/skills/bbc/bbc-reference`: `*FX15,0` empties the sound queues too, and an envelope is read while its note plays. Both measured in the audit, and both behind wrong comments.
 - `kit/lessons/2026-10-14-grannys-garden.md`: record the chip, type DELETE first, and run a BASIC line before describing what it does.
 
@@ -66,11 +67,12 @@ time, operating system and tool versions.
   software, withholds Granny's Garden because 4Mation still enforces its
   copyright.
   The contributor asked for `game.json`'s `publish_source: false`, which
-  this branch adds, and set it for this game: the Source tab no longer
-  shows the listing. What is left to decide: whether a withheld game's
-  program bytes stay in the site's copies of `listing.json`, which the
-  other tabs load, and in the repository's. Where: `AGENTS.md`, "No
-  binaries, ever", and `kit/scripts/build.py`.
+  this branch adds, and set it for this game: the Source tab does not
+  show the listing, the site serves no `listing.json`, and the pages carry
+  only the DATA they draw. The contributor decided that the repository
+  keeps the whole listing and the site publishes none of it. What is left
+  to decide: whether `AGENTS.md` says so, for the next BASIC game. Where:
+  `AGENTS.md`, "No binaries, ever".
 - **Report a page's links that land inside a record of a BASIC listing.**
   `build.py --addresses` reports a `$` link that lands on no record. In a
   BASIC listing every address is inside some line, so a wrong address
