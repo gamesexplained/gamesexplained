@@ -74,9 +74,10 @@ rolling to the right and back (`ball_roll`, `$923E`).
 `rescue_screen` (`$9E69`): WELL DONE on a dot-matrix sign whose dots are
 little pictures of Clyde's face, the story in flowing colours ("CLYDE HAS
 SAVED CHIP FROM BEING SLICED IN TWO ..."), and the reward:
-`potion_award` (`$9FE0`) counts a digit from 6 down to 0, adding the
-worth of Clyde's last pickup (1, or 5 for a double-height creature) to
-each kind in turn. `torture_exit` (`$9FBC`) loads the next stage.
+`potion_award` (`$9FE0`) counts a digit from 6 down to 0, and at each of
+the six steps adds the worth of Clyde's last pickup (1, or 5 for a
+double-height creature) to one kind (`award_kinds`: 1, 1, 2, 2, 3, 3) and
+to the total, through engine `potion_add`. `torture_exit` (`$9FBC`) loads the next stage.
 
 ## The clues
 

@@ -103,6 +103,13 @@ Found in the code, not in the manual.
   high-score check, as after the last life (`ending_exit`, $7E6B).
 - The cheat lasts one game: the title's set-up writes DEC $B7BF back over
   the NOPs (attract block, $E771).
+- A rescue pays six potion creatures, two of each kind, at the worth of
+  the last pickup: thirty in all when the last potion creature collected
+  before the chamber was double height (traced: chamber `potion_award`
+  adds through engine `potion_add`, whose amount only a pickup writes).
+- Some creatures animate only when shot, a script byte a hit: world 2's
+  swelling balls and level 2.1's end creature (traced: engine
+  `object_spawn` at $20EE, `hit_response_3`).
 
 ## Open questions
 

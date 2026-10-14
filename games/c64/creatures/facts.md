@@ -165,8 +165,20 @@ Each part's facts give its own map.
 - The Magic Potion Creatures, collected in the levels, are the shop's
   money: three kinds, counted at engine `$B8A0-$B8A2` with the total at
   `potions_total` (`$B89F`) (engine `player_hit_object`, `potion_add`).
-  Each chamber's rescue pays six more, one at a time (chamber
-  `potion_award`).
+  Each chamber's rescue pays six more, two of each kind, one at a time
+  (chamber `potion_award`, torture-1 `$9FE0`), through the same
+  `potion_add`, whose ADC operand (engine `$B8B4`) only a pickup writes
+  (engine `player_hit_object`, `$3C80`): 1, or 5 for a creature on a
+  double-height sprite. When the last potion creature collected before a
+  chamber was double height, the rescue pays ten of each kind, thirty in
+  all. Levels 1.2, 2.2 and 3.2 each have one double-height potion
+  creature in plain view (records 97, 41 and 55).
+- An object whose spawn record's hit response (byte 7) has both low
+  bits set animates only when shot: engine `object_spawn` clears its
+  `obj_anim_on` (`$20EE`), and each hit (`hit_response_3`, `$BEE6`) sets
+  it to `$FF`, one turn of the script. World 2's swelling balls (type 10)
+  and level 2.1's end creature (type 36) are spawned this way, so each
+  shot moves their scripts on a byte.
 - The shop sells eight weapons in three grades and clues for the next
   chamber (part `shop`); the weapons tablet chooses among the weapons
   bought (engine `weapons_tablet`).
