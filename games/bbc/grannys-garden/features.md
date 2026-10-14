@@ -59,7 +59,7 @@ Found in the code, then played.
   otherwise never magic (lines 230 and 290). The prompt comes back; then
   Y starts. It has a flag (`t%`) and a test of its own, so it was put
   there on purpose, and nothing on the screen, in a review or in a guide
-  found online mentions it: a secret, as the How it works page heads it.
+  found online mentions it: a secret, as the Discoveries tab heads it.
   **live**
 - **An answer ending in f turns the music off** (line 220 in Part 1, 210
   in Part 2): `Yf` starts with no tune under the title and none of the

@@ -743,7 +743,7 @@ def pagenav(page):
     nav = ('<nav class="pagenav" id="pagenav" aria-label="On this page"><div class="in">'
            '<p class="hd">On this page</p><ol>' + "".join(items) + "</ol>"
            '<a class="top" href="#">↑ Back to the top</a></div></nav>')
-    m = re.search(r'<nav class="gametabs">.*?</nav>', page, re.S)
+    m = re.search(r'<nav class="gametabs"[^>]*>.*?</nav>', page, re.S)   # data-nolink="1" on a game with no listing to link
     return page[:m.end()] + "\n" + nav + page[m.end():] if m else nav + "\n" + page
 
 

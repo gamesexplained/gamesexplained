@@ -16,7 +16,7 @@ the listing checked only when a sample after an audit is within the mark.
 
 ## For Gold
 
-- A human pass over the How it works page, section by section
+- A human pass over the How it works and Discoveries pages, section by section
   (`kit/style.md`), and `copy` and `tier` set from it (`AGENTS.md`,
   Definition of done).
 

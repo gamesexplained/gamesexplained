@@ -75,6 +75,8 @@ class Withheld(unittest.TestCase):
             for f in ("index.html", "about.html", "source.html"):
                 h = (out / f).read_text()
                 self.assertIn('<nav class="gametabs" data-nolink="1">', h, f)
+                if f != "source.html":   # the one tab with no section list
+                    self.assertLess(h.index('class="gametabs"'), h.index('class="pagenav"'), f)
                 self.assertEqual(links(out / f), [], f)
             about = (out / "about.html").read_text()
             self.assertIn(build.WITHHELD, about)

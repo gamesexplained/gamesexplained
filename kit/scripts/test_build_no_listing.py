@@ -66,6 +66,7 @@ class NoListing(unittest.TestCase):
             for f in ("index.html", "about.html"):
                 h = (out / f).read_text()
                 self.assertIn('<nav class="gametabs" data-nolink="1">', h, f)
+                self.assertLess(h.index('class="gametabs"'), h.index('class="pagenav"'), f)   # the section list follows the tabs, after the page's <meta charset>
                 self.assertNotIn("source.html", h, f)
                 self.assertEqual(links(out / f), [], f)   # nor does site.js link the address there
             about = (out / "about.html").read_text()

@@ -121,3 +121,17 @@ Witch's notes queued at once), and one was a detail the rewrite kept
 (`You are at the` on every journey). A correction is written fast, from
 the finding, and is checked by nobody unless something checks it.
 
+## 14 October 2026, the Discoveries tab
+
+**Discoveries.** The kit gave secrets, quirks and bugs a tab of their own
+(`kit/skills/core/70-minisite`, "Discoveries"), and the contributor asked
+for this game to have one. The secret and the five bugs moved from How it
+works to `discoveries.html`, the secret first and the bug that stops Part 1
+of this disc next, with links each way where a discovery rests on a
+mechanic How it works explains. The restarts and the six trees that can
+never be magic stayed on How it works: each is how the program is built,
+and the page's standfirst names the restarts. Moving the
+secret showed its standfirst calling a1 the top tree on the left; the
+trees' screen labels its rows 3, 2 and 1 from the top, and `magicTree`
+gives M = 12 the name a1, so it is the bottom tree on the left, and the
+page says so.
