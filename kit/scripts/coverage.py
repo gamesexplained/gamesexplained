@@ -4,9 +4,10 @@
 Same metric for every game, so tiers are comparable.
 
 DENOMINATOR: bytes the game uses. A byte counts if it lies in a block typed
-as code, or in the span of any symbol (the disassembler mints a symbol for
-every referenced address), or in an "extra" region declared in game.json
-(authored data nothing references by address, such as a charset). Runtime
+as code or as a program in BASIC, or in the span of any symbol (the
+disassembler mints a symbol for every referenced address), or in an "extra"
+region declared in game.json (authored data nothing references by address,
+such as a charset). Runtime
 state is excluded: stack, screen RAM, I/O, and anything else listed under
 "exclude" in game.json. Platform defaults apply when game.json says nothing;
 a range under "include" is given back from them (the RAM under I/O, in a

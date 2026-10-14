@@ -11,7 +11,10 @@ builds it (kit/c64/project.py); this adds what is the BBC's:
     entry points and vectors no label; kit/bbc/mos.py names them in the export. Without the
     setting the session names the same addresses after the C64's KERNAL, with nothing to say so;
   * regenerator2000 has no ASCII text type, so the BBC's text, "ASCII" in symbols.json, is
-    its PETSCII text in the project, and comes back as ASCII.
+    its PETSCII text in the project, and comes back as ASCII;
+  * nor has it a BASIC type, so a program in BBC BASIC, "BASIC" in symbols.json, is its
+    screencode text in the project, the C64's screen codes having no meaning on the BBC, and
+    comes back as BASIC (kit/bbc/basic.py lists it).
 
 A `.regen2000proj` embeds the memory image, so it is never committed: symbols_import.py
 rebuilds it locally from symbols.json and the contributor's own snapshot.
@@ -45,19 +48,16 @@ _snapshot = _load("bbc_snapshot", os.path.join(HERE, "snapshot.py"))
 
 def to_project(b):
     """A symbols.json block as the C64's project code takes it."""
-    return dict(b, type="PETSCII") if b["type"] == "ASCII" else b
+    return dict(b, type={"ASCII": "PETSCII", "BASIC": "Screencode"}.get(b["type"], b["type"]))
 
 
 def from_project(b, where):
-    """A project's block in the BBC's vocabulary: its text is ASCII, and a screencode block
-    (the C64's character codes) has no meaning here, so it comes back as bytes, said aloud."""
+    """A project's block in the BBC's vocabulary: its PETSCII text is ASCII, and its screencode
+    text (the C64's character codes, which mean nothing here) is a BASIC program."""
     if b["type"] in ("PETSCII", "PETSCII Text"):
         return dict(b, type="ASCII")
     if b["type"] in ("Screencode", "Screencode Text"):
-        print(f"{where}: ${b['start']:04X}-${b['end']:04X} is typed as C64 screencodes, which mean nothing on the BBC; "
-              "exported as bytes. Type text as PETSCII text in regenerator2000: the BBC's listing reads it as ASCII",
-              file=sys.stderr)
-        return dict(b, type="Byte")
+        return dict(b, type="BASIC")
     return b
 
 

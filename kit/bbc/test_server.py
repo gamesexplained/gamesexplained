@@ -3,7 +3,7 @@
 
 `node --check` reads kit/bbc/jsbeeb_server.mjs without running it, so this needs Node and not
 jsbeeb: the server's behaviour is checked against the machine by `tools.py --platform bbc
-check-emulator`, which needs jsbeeb installed and is run by hand, as no CI runner has it.
+check-emulator`, which needs a jsbeeb server and is run by hand, as CI does not start one.
 With KIT_REQUIRE_TOOLS set, a missing Node fails instead of skipping.
 """
 import os

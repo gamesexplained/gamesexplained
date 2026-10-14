@@ -39,12 +39,20 @@ tool result`. `kit/bbc/r2000.py` stops on such an answer and says so.
 
 - **Text is ASCII, typed as PETSCII.** regenerator2000 has no ASCII type.
   Type the BBC's text `petscii`: the session shows it as text, and
-  `symbols.json` and the listing call it ASCII. `screencode` is the C64's
-  character order and means nothing here; the export turns a block typed
-  that way into bytes and says so. A game that prints through OSWRCH keeps
+  `symbols.json` and the listing call it ASCII. A game that prints through OSWRCH keeps
   its strings in ASCII, often ending in `&0D`; Mode 7's screen is ASCII
   too, with the teletext codes 128 to 159 between the words. A string in
   an alphabet of the game's own is typed `byte`, its text in the comment.
+- **A BASIC program is typed as screencode.** `screencode` is the C64's
+  character order and means nothing on the BBC, so the kit gives it to
+  BBC BASIC: type PAGE to TOP `screencode` and `symbols.json` and the
+  listing call it BASIC, one line of the program to an item, as LIST
+  prints it (`kit/bbc/basic.py`). The session itself shows the bytes as
+  C64 screen codes, which read as nonsense: read the program with
+  `python3 kit/bbc/basic.py list <snapshot>` beside it. A label goes on a
+  line's first byte, its `&0D`; the label names the line, and its comment
+  says what the line does. Machine code in the same file is typed `code`
+  as usual.
 - **The MOS's names come from the export.** In BBC mode the session shows
   `JSR $FFF4 ; OSBYTE - ...` and gives the MOS's entry points and vectors
   no label of their own, not even an automatic one, though a vector's

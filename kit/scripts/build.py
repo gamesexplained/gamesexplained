@@ -8,6 +8,15 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+A page that draws from the listing names the pieces it reads in a tag the
+build fills in: <script type="application/json" data-listing="URL">, URL the
+listing as the page would fetch it (listing.json, parts/<id>/listing.json),
+holding a list of labels, each standing for its record and those up to the
+next label, or "$C000-$C3FF" ranges. The build replaces the list with those
+records of the game folder's listing, each cut to its address, type, label and
+bytes (embed_listings), and C64.load, BBC.load and Spectrum.load take a listing
+from the page before they fetch one. So the page carries the bytes it uses,
+from the listing as it was built.
 A game with no listing at all, at tier none, builds with no Source tab, no
 footprint on About and no memory strip or size in the catalogue; at any other
 tier the build stops and says how to make the listing.
@@ -17,6 +26,12 @@ parts above each listing, and a control beside it, step from one to the next.
 parts/<id>/ carries each part's listing and symbols. About draws one footprint,
 as for any game: the part the others are loaded over, with what they load
 marked as varying with the part.
+A game whose maintainers withhold its annotated listing sets "publish_source":
+false in game.json. Its Source tab is one page with the line on the comments
+and a sentence saying the annotations are not published; no tab links an
+address into it, About's footprint opens nothing, and the site serves no
+listing.json and no symbols.json. Its pages carry only the pieces they name.
+The repository keeps the whole listing.
 Those are the default tabs. A game that wants others lists all of its tabs, in
 order, in game.json's "tabs" as [file, label] pairs; every authored page it
 names is copied through, and a page in the folder that no tab names is left out
@@ -332,8 +347,9 @@ def tabbar(game, present, lib):
     inner_class = "in many-tabs" if custom_tabs else "in"
     tabs = f'<span class="tab-list">{tabs}</span>' if custom_tabs else tabs
     plat = game.get("platform")
-    # a game with no listing has no Source page, so site.js links none of its addresses
-    nolink = "" if "source.html" in present else ' data-nolink="1"'
+    # a game with no listing has no Source page, and a withheld one shows none of it, so site.js
+    # links none of their addresses
+    nolink = "" if "source.html" in present and not withheld(game) else ' data-nolink="1"'
     return (f'<nav class="gametabs"{nolink}><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
             f'<a href="{lib}/../{plat}/">{html.escape(PLATFORM_NAMES.get(plat, plat))}</a> / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
@@ -388,6 +404,78 @@ def source_note(game):
     return (f'<p class="srcnote {"ok" if st["checked"] else "bad"}"><b>{html.escape(st["lead"])}</b> '
             f'{html.escape(st["note"])} See <a href="about.html#ledger">every step on the About tab</a>, '
             f'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>')
+
+
+def withheld(game):
+    """True for a game whose maintainers chose not to publish its annotated listing, game.json's
+    "publish_source": false. Its Source tab keeps the line on the comments (source_note) and
+    says no more; no address links into it, and the site serves none of its listings: its pages
+    carry only the pieces they name (embed_listings)."""
+    return game.get("publish_source", True) is False
+
+
+WITHHELD = "The annotations for this game are not published."
+
+
+def withheld_source(game, out, nav, ban, common, present):
+    """The Source tab of a game whose listing is withheld: its title, the banner, the line on the
+    comments and one sentence, with none of the listing, the facts or the part pages."""
+    tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
+    head = tpl[:tpl.index('<div class="facts">')]
+    body = ('<div class="facts">\n'
+            f'  <p class="eyebrow">{common["year"]} · {common["publisher"]}</p>\n'
+            f'  <h1 style="margin-top:0">{common["title"]}: the source</h1>\n'
+            f'  {source_note(game)}\n'
+            f'  <p class="withheld">{WITHHELD}</p>\n'
+            '</div>\n')
+    src = under_title(head + body, ban) + f'<script src="{LIB}/site.js"></script>\n'
+    src = at_end(src, next_tab(game, present, "source.html") + edit_footer(game, "source.html", "game.json"))
+    open(os.path.join(out, "source.html"), "w").write(src)
+
+
+LISTING_TAG = re.compile(r'(<script type="application/json" data-listing="([^"]+)">)(.*?)(</script>)', re.S)
+RANGE = re.compile(r"^\$([0-9A-Fa-f]{1,4})-\$([0-9A-Fa-f]{1,4})$")
+
+
+def listing_pieces(L, want, where):
+    """The records of listing L that the pieces in want name: a label, its record and those after
+    it up to the next labelled one; or "$C000-$C3FF", every record with a byte in the range."""
+    recs, keep = L["records"], set()
+    starts = [i for i, r in enumerate(recs) if r.get("l")] + [len(recs)]
+    at = {recs[i]["l"]: n for n, i in enumerate(starts[:-1])}
+    for w in want:
+        m = RANGE.match(w) if isinstance(w, str) else None
+        if m:
+            lo, hi = int(m.group(1), 16), int(m.group(2), 16)
+            keep.update(i for i, r in enumerate(recs) if r["a"] <= hi and r["a"] + max(len(r.get("b") or []), 1) > lo)
+        elif w in at:
+            keep.update(range(starts[at[w]], starts[at[w] + 1]))
+        else:
+            sys.exit(f"{where} names {w!r}, which is neither a label of its listing nor a range like \"$C000-$C3FF\"")
+    return [recs[i] for i in sorted(keep)]
+
+
+def embed_listings(page, gdir, where):
+    """The page with each <script type="application/json" data-listing="URL"> tag's list of pieces
+    replaced by those records of the listing at URL in the game folder, each cut to the address,
+    type, label and bytes the loaders read: the comments are the Source tab's."""
+    def one(m):
+        url = m.group(2)
+        try:
+            want = json.loads(m.group(3))
+        except ValueError:
+            want = None
+        if not isinstance(want, list):
+            sys.exit(f"{where}: the data-listing tag for {url} must hold a list of labels or ranges")
+        path = os.path.join(gdir, url)
+        if not os.path.isfile(path):
+            sys.exit(f"{where}: the data-listing tag names {url}, and the game folder has no such listing")
+        L = json.load(open(path))
+        recs = [{k: r[k] for k in ("a", "t", "l", "b") if k in r} for r in listing_pieces(L, want, f"{where} ({url})")]
+        out = {k: v for k, v in L.items() if k not in ("records", "index")}
+        out["records"] = recs
+        return m.group(1) + json.dumps(out, separators=(",", ":")).replace("</", "<\\/") + m.group(4)
+    return LISTING_TAG.sub(one, page)
 
 
 def listing_row(game):
@@ -907,6 +995,7 @@ def authored_page(gdir, game, f, nav, ban, src=None, present=None):
     head = dict(title=html.escape(game.get("title", game["slug"])), platform=PLATFORM_NAMES.get(plat, plat),
                 year=game.get("year") or "", publisher=html.escape(game.get("publisher") or ""))
     page = drop_platform(fill(read(os.path.join(gdir, f)) if src is None else src, **head), plat)
+    page = embed_listings(page, gdir, os.path.join(os.path.relpath(gdir, ROOT), f))
     nxt = next_tab(game, present_tabs(gdir, game) if present is None else present, f)
     return pagenav(at_end(under_title(inject(page, nav, LIB), ban), nxt + edit_footer(game, f)))
 
@@ -1061,7 +1150,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
                 shutil.copy(os.path.join(p["dir"], f), dst)
 
 
-def game_footprint(P, out):
+def game_footprint(P, out, hidden=False):
     """The one map of a game of several parts, for the About tab and the catalogue: the part
     the others are loaded over (the first that lies over none), with the addresses the other
     parts own as one band, "varies with the part loaded". Which part holds what is the Source
@@ -1071,7 +1160,7 @@ def game_footprint(P, out):
     shown = [p for p in P if listed(p)]
     root = next((p for p in shown if not p["over"]), shown[0])
     runs, t, symbols, span = footprint(root["dir"], load_game(root["dir"]))
-    doc = {"runs": runs, "totals": t, "symbols": symbols, "source": part_page(root)}
+    doc = {"runs": runs, "totals": t, "symbols": symbols, "source": False if hidden else part_page(root)}
     if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
         doc.update(base=span[0], size=span[1] - span[0])
     json.dump(doc, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
@@ -1098,7 +1187,8 @@ def game_footprint(P, out):
     if cart:    # the map is the RAM; a bank switched in hides some of it, and is not drawn
         said += (f"The cartridge's banks, switched in at {span_text(cart)} one at a time, are not on this map, "
                  "though the RAM beneath them is. ")
-    said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
+    if not hidden:
+        said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
     return totals, f'<p class="mute" style="margin-top:12px">{said}</p>', span
 
 
@@ -1161,9 +1251,13 @@ def build_game(gdir, out_root):
                   platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
     for f in authored(gdir, game):
         open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban, present=present))
-    # source: one page, or one for each part of a game of several; none for a game with no listing
+    # source: one page, or one for each part of a game of several; none for a game with no listing,
+    # and for a game whose listing is withheld, one page that says so
     cheats = read(os.path.join(gdir, "cheats.md"))
-    if P and not bare:
+    hidden = withheld(game) and not bare
+    if hidden:
+        withheld_source(game, out, nav, ban, common, present)
+    elif P and not bare:
         part_sources(gdir, game, P, out, nav, ban, common, cheats, present)
     elif not bare:
         facts = markdown(read(os.path.join(gdir, "facts.md")))
@@ -1193,10 +1287,12 @@ def build_game(gdir, out_root):
     if bare:   # no byte described, so no map: the catalogue leaves out its strip and size too
         totals, foot, span = None, "", (0, 0x10000)
     elif P:
-        totals, foot, span = game_footprint(P, out)
+        totals, foot, span = game_footprint(P, out, hidden)
     else:
         runs, totals, symbols, span = footprint(gdir, game)
         memmap = {"runs": runs, "totals": totals, "symbols": symbols}
+        if hidden:   # nothing to open: memmap.js leaves the map unclickable
+            memmap["source"] = False
         if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
             memmap.update(base=span[0], size=span[1] - span[0])
         json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
@@ -1214,23 +1310,25 @@ def build_game(gdir, out_root):
     tpl = read(about_template)
     if bare:   # no map: the template's Footprint section goes, from its marker to the one that closes it
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
-    about = fill(tpl, **common, footprint=foot, data_links="" if bare else data_links(P), map_row=(span[1] - span[0]) // 128,
+    data = "" if bare else WITHHELD if hidden else data_links(P)
+    about = fill(tpl, **common, footprint=foot, data_links=data, map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov, listing_row=listing_row(game),
                  accuracy=accuracy_section(game, gdir),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
-                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare), shift=1, parts=part_pages(P),
-                                         urls=True)),
-                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare), shift=1,
-                                            parts=part_pages(P)))).replace("<!-- tabs -->", nav)
+                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare or hidden), shift=1,
+                                         parts={} if hidden else part_pages(P), urls=True)),
+                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare or hidden), shift=1,
+                                            parts={} if hidden else part_pages(P)))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
     about = at_end(about, next_tab(game, present, "about.html") + edit_footer(game, "about.html"))
     open(os.path.join(out, "about.html"), "w").write(pagenav(about))
-    for f in ("listing.json", "symbols.json"):
-        if os.path.exists(os.path.join(gdir, f)):
-            shutil.copy(os.path.join(gdir, f), out)
+    if not hidden:
+        for f in ("listing.json", "symbols.json"):
+            if os.path.exists(os.path.join(gdir, f)):
+                shutil.copy(os.path.join(gdir, f), out)
     ref = os.path.join(gdir, "reference")
     if os.path.isdir(ref):
         shutil.copytree(ref, os.path.join(out, "reference"), dirs_exist_ok=True)

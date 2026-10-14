@@ -9,10 +9,16 @@ it through OSWRCH, and Mode 7's screen holds it as it is, with the teletext cont
   decode(ram, a)                     -> (mnemonic, mode, nbytes) or None
   operand(a, m, mode, bs, names, regs, chips) -> (text, target)
   text_decode(kind, byte)            -> str
+  text_items(kind, ram, start, end)  -> (texts, starts) or None
+      for BASIC, whose items are longer than a byte: a program line each (basic.pieces)
   TEXT_TYPES                         the block types this machine can hold
 
-regenerator2000 has no ASCII block of its own: a BBC project types text as its PETSCII
-text, and kit/bbc/project.py and kit/bbc/r2000.py translate it to "ASCII" on the way out
+A program in BBC BASIC, as LOAD or CHAIN leaves it at PAGE, is the text type `BASIC`, read by
+`basic.py` beside this file and listed a line at a time as BASIC's own LIST prints it.
+
+regenerator2000 has no ASCII block of its own, and no BASIC: a BBC project types text as its
+PETSCII text and a BASIC program as its screencode text, and kit/bbc/project.py and
+kit/bbc/r2000.py translate them to "ASCII" and "BASIC" on the way out
 (kit/skills/bbc/tool-regen2000).
 
 A Master's 65C12 adds instructions the shared table lacks (BRA, PHX, STZ and others): a
@@ -24,8 +30,10 @@ CPU = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 if CPU not in sys.path:
     sys.path.append(CPU)
 from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode, operand  # noqa: E402,F401  the 6502, shared
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import basic  # noqa: E402
 
-TEXT_TYPES = ("ASCII",)
+TEXT_TYPES = ("ASCII", "BASIC")
 
 
 def ascii_char(c):
@@ -38,7 +46,15 @@ def text_decode(kind, byte):
     """One byte of text, in the block type `kind`."""
     if kind == "ASCII":
         return ascii_char(byte)
-    sys.exit(f"kit/bbc/cpu.py: no text type {kind!r} (the BBC's text is ASCII)")
+    if kind == "BASIC":
+        return basic.byte_text(byte)
+    sys.exit(f"kit/bbc/cpu.py: no text type {kind!r} (the BBC's text is ASCII, or a BASIC program)")
+
+
+def text_items(kind, ram, start, end):
+    if kind == "BASIC":
+        return basic.pieces(ram, start, end)
+    return None
 
 
 if __name__ == "__main__":

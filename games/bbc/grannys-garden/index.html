@@ -1,0 +1,698 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Granny's Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.gg-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.gg-pair img,.gg-shot{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.gg-tv{width:100%;display:block;background:#000;border-radius:4px;image-rendering:pixelated}
+.gg-stack{position:relative}
+.gg-stack canvas+canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.gg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.gg-bar button,.gg-btn{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
+.gg-bar button:hover,.gg-btn:hover{border-color:var(--ink-mute)}
+.gg-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.gg-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
+.gg-bar select{font:inherit;font-size:14px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:var(--surface)}
+.gg-bar label{flex-wrap:wrap;max-width:100%}.gg-bar select{max-width:100%;min-width:0}
+.gg-table code{white-space:normal}
+.gg-out{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:1.6em;white-space:pre-wrap}
+.gg-out b{color:var(--ink)}
+.gg-miss{font-size:14px;color:var(--amber)}
+.gg-steps{display:flex;flex-wrap:wrap;gap:3px;margin-top:14px}
+.gg-steps span{font-family:var(--fm);font-size:11px;min-width:30px;text-align:center;padding:2px 3px;border-radius:3px;background:var(--surface-2);color:var(--ink-soft);cursor:default}
+.gg-steps span.rest{background:transparent;color:var(--ink-mute);min-width:10px}
+.gg-steps span.now{background:#2e7d32;color:#fff}
+.gg-sentences{font-family:var(--fm);font-size:14px;background:#000;color:#fff;border-radius:4px;padding:10px 14px;margin-top:10px;min-height:7.5em;line-height:1.7}
+.gg-sentences .r{color:#ff5050}.gg-sentences .g{color:#40ff40}.gg-sentences .c{color:#40ffff}.gg-sentences .y{color:#ffff40}.gg-sentences .m{color:#ff60ff}
+.gg-field{font-family:var(--fm);font-size:22px;background:#000;color:#40ffff;border-radius:4px;padding:10px 14px;margin-top:12px;letter-spacing:.12em;outline:2px solid transparent;cursor:text;min-height:2.2em;white-space:pre}
+.gg-field:focus{outline-color:#2e7d32}
+.gg-field .edge{color:#555}
+.gg-kv{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-family:var(--fm);font-size:13px;margin-top:10px}
+.gg-kv dt{color:var(--ink-mute)}.gg-kv dd{margin:0;color:var(--ink)}
+.gg-table{border-collapse:collapse;font-size:14px;margin:14px 0;width:100%}
+.gg-table th,.gg-table td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.gg-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.gg-table tr.now td{background:var(--hl)}
+.gg-chart{width:100%;height:260px;display:block}
+.gg-meter{display:grid;grid-template-columns:7.5em 1fr 3.2em;gap:6px 10px;align-items:center;font-size:14px;margin-top:12px}
+.gg-meter .track{height:14px;background:var(--surface-2);border-radius:7px;overflow:hidden;border:1px solid var(--line-soft)}
+.gg-meter .fill{height:100%;background:var(--violet)}
+.gg-meter .fill.full{background:var(--coral)}
+.gg-inspect{font-family:var(--fm);font-size:13px;margin-top:10px;min-height:3.2em;color:var(--ink-soft)}
+.gg-inspect b{color:var(--ink)}
+@media (max-width:760px){:root{--gx:18px;--pp:14px}.gg-pair{grid-template-columns:1fr}.gg-field{font-size:14px;letter-spacing:.02em;padding:10px 8px}}
+.gg-field{overflow-x:auto}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1983 · 4Mation Educational Resources</p>
+  <h1>Granny's Garden</h1>
+  <p class="sub">A school adventure in two BBC BASIC programs, every picture typed into PRINT statements as teletext codes. Its rooms are entered and never left, so after enough wandering BASIC stops with an error, and the game quietly starts again.</p>
+</header>
+<main class="wrap">
+
+<section data-part="">
+  <p class="fig">01 · The game</p>
+  <h2 class="t">The game</h2>
+  <p class="lede">A wicked witch has locked away the King and Queen of the Mountains and hidden their six children, and the player, helped by the King and Queen's blue raven, has to find them.</p>
+  <div class="gg-pair">
+    <div class="plate"><img src="reference/p1-02-title.png" alt="The title screen: Granny's Garden in double-height letters over a garden of flowers"><p class="cap">The title. Every picture in the game is Mode 7 teletext: letters, and characters of six blocks, in seven colours.</p></div>
+    <div class="plate"><img src="reference/p1-08-the-woodcutters-house.png" alt="The woodcutter's house, with the letters F, I and G drawn into its walls and windows"><p class="cap">The woodcutter's house, where Esther is hidden. The secret word is on the wall.</p></div>
+  </div>
+  <p>The player starts in Granny's garden, finds the magic tree that leads to the Kingdom of the Mountains, and is asked a question at every turn: which way to go, what to take, which creature to call. Answers are typed. Many wrong choices bring the Witch, who sends the player home to start again.</p>
+  <p>The game is two programs on one disc. The first finds Esther in the woodcutter's house and Tom in the Giant's garden; the second finds Clare and Anna in the City of the Dragons, and Jessica and Daniel in the Land of Mystery. Each search but the last ends with a password, and the password, typed into the next run, is the only thing that carries a player on from one search to the next.</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">02 · The theme</p>
+  <h2 class="t">Music: the theme's top line runs ahead of the tune</h2>
+  <p class="lede">The theme plays each note on three channels at once, in octaves. The top channel is told to drop whatever it is playing and start the new note at once, so it races ahead of the other two.</p>
+  <div class="plate"><div id="snd"></div>
+    <div id="steps" class="gg-steps"></div>
+    <p class="cap">A recording of every byte the machine sent the sound chip while each tune played, replayed through the page's model of the SN76489. Each bar on the roll is a note: blue is <code>SOUND 3</code>, orange <code>SOUND 2</code>, red <code>SOUND 1</code>. Under the player are the theme's 103 steps as the program reads them from its DATA at <code>$6578</code>, a pitch and a length; the step sounding on channel 2 lights up as it plays. The lowest note is 295 Hz, which a phone's speaker plays.</p>
+  </div>
+  <p>PROCsnd1 reads a pitch <var>n</var> and, unless <var>n</var> is 0, a length <var>t</var>. Each step is three <code>SOUND</code> statements: channel 2 at the pitch (<var>n</var>+5)×4, channel 3 an octave higher, both at full volume, and channel 1 two octaves higher and a little softer. A step with <var>n</var> = 0 is a rest of no length at all, which leaves a gap of about 10 ms between notes. The length is divided by 1.5, and <code>SOUND</code> drops the fraction, so a length of 4 plays for 2 twentieths of a second, 9 for 6 and 14 for 9.</p>
+  <p>Channel 1's notes are given as <code>SOUND &amp;00011</code>. The channel number is read as hex digits, and the second from the right, here a 1, tells the operating system to flush the channel: drop the notes waiting and play this one now. BASIC waits only when a channel's queue is full, five notes behind the one playing, and channel 1's never fills. So while channels 2 and 3 play from their queues, channel 1 plays each note the moment its <code>SOUND</code> statement runs, up to 1.2 seconds early, cut off by the next. The orange and blue bars on the roll are in step with each other; the red ones lead them, and the first four are cut to 20 or 30 ms while BASIC fills the other queues. Channel 1's last note ends a second before the tune does.</p>
+  <p>The kingdom's tune, fifteen random notes, has the opposite trouble. Its channel 1 is <code>SOUND &amp;00111</code>, and the third digit asks for each note to wait for a note on another channel that also asks to wait. None does, so channel 1 waits for good, and only two parts of that tune are ever heard. In the recording channel 1's volume register is never written with anything but silence. Channel 2 is flushed, as the theme's channel 1 is, and ends five seconds before channel 3.</p>
+  <p>The third button plays the Witch: three rounds of five notes on channel 1, all at the same pitch, with ENVELOPE 1 redefined before each note with larger steps, and a note on channel 2 after each round. In the first round BASIC queues the five notes in a few hundredths of a second (in the later rounds the last few wait for room in the queue), and the operating system reads an envelope while its note is playing, so the first note's steps grow as the definitions change under it, and the notes after it play whichever definition is in force while they play, for most of them a round's last, the same warble.</p>
+</section>
+
+<section data-part="part-2">
+  <p class="fig">03 · A screen, rebuilt</p>
+  <h2 class="t">The City of the Dragons, drawn from its 1,000 bytes</h2>
+  <p class="lede">A Mode 7 screen is one byte a character: 40 by 25, about a kilobyte, and the teletext chip draws the colours from codes among the characters.</p>
+  <div class="gg-pair">
+    <div class="plate"><div class="gg-stack"><canvas id="city" class="gg-tv"></canvas><canvas id="cityover"></canvas></div>
+      <div class="gg-bar"><label><input type="checkbox" id="citycodes"> Show the control codes</label></div>
+      <div id="cityinfo" class="gg-inspect">Point at a cell to see its byte.</div></div>
+    <div class="plate"><img src="reference/p2-05-the-city-of-the-dragons.png" alt="The emulator's picture of the City of the Dragons"><p class="cap">The emulator's picture of the same moment.</p></div>
+  </div>
+  <p class="cap">Left, the page's own drawing of the 1,000 bytes jsbeeb showed at this moment, with <code>BBC.drawTeletext</code> from the site's library. The block graphics are drawn exactly, as checked against jsbeeb on 3,000 cells; the letters are in the page's font, as the teletext chip's own letters are in its ROM. The screen had scrolled two rows when this was taken, so its first byte is at &amp;7C50.</p>
+  <p>Nothing on this screen was drawn with a graphics command. Each row is a PRINT of a string, and starts with two codes: a colour, then 157, New Background, which makes that colour the background for the rest of the row, cyan for the sky's three rows and white for the snow below them. The rest of the row is characters from 160 to 255, each drawn as six blocks, two across and three down, in the graphics colour last set. Each change of colour takes a cell of its own, which shows as the background, so the castle, the river and the pagoda are drawn around the cells their colours need. The black stripe down the left is the first code of every row. Ticking the box shows each control code where it sits.</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">04 · The magic trees</p>
+  <h2 class="t">Only six of the twelve trees can be magic</h2>
+  <p class="lede">The first question in the game is which of twelve trees is magic. The program picks it with two random numbers, and half of the trees can never be the one.</p>
+  <div class="gg-pair">
+    <div class="plate"><div class="gg-stack"><canvas id="trees" class="gg-tv"></canvas><canvas id="treesover"></canvas></div>
+      <div class="gg-bar"><button id="roll">Pick a magic tree</button><button id="rollT">Pick it after T</button></div>
+      <div id="treeout" class="gg-out"></div></div>
+    <div class="plate"><canvas id="tree" class="gg-tv"></canvas>
+      <div class="gg-bar"><button id="treestep">Next value</button><button id="treeplay">Print it</button><button id="treereset">Start again</button></div>
+      <div id="treedata" class="gg-steps"></div>
+      <div id="treeinfo" class="gg-out"></div></div>
+  </div>
+  <p class="cap">Left, the trees as jsbeeb showed them, redrawn by the page; the six that can be magic are outlined. Right, one tree printed from the 59 numbers of the DATA at <code>$4C26</code>, read from the listing.</p>
+  <p>Line 290 picks the magic tree's column as RND(3)×9+4 and its row as RND(2)×6. RND(3) is 1, 2 or 3, which gives the columns b, c and d; RND(2) is 1 or 2, the middle and bottom rows. Column a and the top row are never picked.</p>
+  <p>All twelve trees are the same 59 numbers. Each is added to 160 to make a character: most are graphics, and −150 and −152 become 10 and 8, the codes that move the cursor down a line and back a character, so one string draws the whole tree when it is printed.</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">05 · Ready to start?</p>
+  <h2 class="t">Secret: answer T before Y, and the magic tree is always a1</h2>
+  <p class="lede">The game's first question, <code>Ready to start?</code>, takes one more answer than yes. Type <code>T</code>, then <code>Y</code>, and the magic tree is the top tree on the left, one the game never picks otherwise.</p>
+  <p>Line 220 asks the question until the answer begins with Y, and line 230, in the same loop, sets a flag, <var>t%</var>, when it begins with T. The question comes back with nothing said. Line 290 then picks the tree as usual and, if <var>t%</var> is set, puts it at column 4, row 12: a1. The second button above, <b>Pick it after T</b>, picks it that way. The flag is cleared each time the program starts again, so it holds for one game.</p>
+  <p>The flag has a variable of its own and a test of its own, so it was put there on purpose. Nothing on the screen mentions it, and neither does any review or guide to the game found online. The teacher's booklet that came with the game, which has not been found, may say what it was for.</p>
+</section>
+
+<section data-part="">
+  <p class="fig">06 · Typing an answer</p>
+  <h2 class="t">Most answers are recognised by a few letters inside them</h2>
+  <p class="lede">The game seldom compares an answer with a whole word. It looks for a short piece of one, so <code>Stars</code> reaches the stairs and <code>Riverbank</code> is a password.</p>
+  <div class="plate">
+    <div class="gg-bar"><label>Question <select id="ansq"></select></label><button id="ansclear">Clear</button><button id="ansbug">Type DELETE, X, DELETE, Y</button></div>
+    <div id="ansfield" class="gg-field" tabindex="0"></div>
+    <dl id="ansstate" class="gg-kv"></dl>
+    <div id="ansout" class="gg-out"></div>
+    <p class="cap">Click the black box and type. This is PROCi, the game's own input routine (Part 1 line 1020, <code>$24EC</code>), ported to the page key for key; the box is as wide as the field on the screen. Checked against the game in jsbeeb on 35 sequences of letters, DELETEs and other keys, 236 keys in all: after every key the port's answer, count and cursor matched the game's own <var>in$</var>, <var>l</var> and <var>x</var>, and its field matched the screen.</p>
+  </div>
+  <p>Every answer goes through PROCi. PROCi takes letters, DELETE and RETURN and ignores any other key, shows the first letter as a capital and the rest in lower case, and builds the answer the same way. Then the program looks for pieces of words in the answer with INSTR: <code>no</code>, <code>ky</code> and <code>iv</code> for snow, sky and river, <code>itch</code>, <code>ack</code>, <code>upb</code> and <code>rs</code> for the four doors of the hallway. The pieces never include a first letter, so the capital never gets in their way.</p>
+  <p>A field keeps one letter fewer than it shows. When the cursor reaches the end, PROCi takes the next key as DELETE, whatever it is, RETURN included. At <code>Ready to start?</code> the field shows four letters, and an answer ending in f starts the game without music. <code>Yf</code> does; <code>Yesf</code> loses its f to the RETURN, and a second RETURN starts the game with the music on.</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">07 · DELETE</p>
+  <h2 class="t">Bug: one DELETE too many and the answer no longer matches the screen</h2>
+  <p class="lede">A DELETE pressed when the answer is empty still counts, and PROCi's count of letters falls one behind the screen. From then on each DELETE takes a letter too many off the answer, or none at all.</p>
+  <div class="plate"><table class="gg-table"><tr><th>Keys at <code>Ready to start?</code></th><th>On the screen</th><th>The answer</th><th>What happens</th></tr>
+    <tr><td><code>X</code> DELETE <code>Y</code> RETURN</td><td>Y</td><td>Y</td><td>the game starts</td></tr>
+    <tr><td>DELETE <code>X</code> DELETE <code>Y</code> RETURN</td><td>Y</td><td>XY</td><td><code>Ready to start?</code> again</td></tr>
+    <tr><td>DELETE <code>s n o x</code> DELETE <code>w</code></td><td>Snow</td><td>Snw</td><td></td></tr></table>
+    <p class="cap">Typed in jsbeeb on 14 October 2026 at the first question of Part 1, the answer read from the game's variable <var>in$</var>. The button above the black box types the second row.</p></div>
+  <p>PROCi keeps the number of letters in <var>l</var>, and a DELETE does <var>l</var>=<var>l</var>−1 and <code>in$=LEFT$(in$,l)</code>. A DELETE in an empty field still counts, so <var>l</var> becomes −1, and stays one less than the letters on the screen. Each later DELETE cuts the answer to <var>l</var> letters, one fewer than the screen keeps; when <var>l</var> is below zero it cuts nothing, because BBC BASIC's <code>LEFT$</code> with a negative length gives back the whole string (tried on its own: <code>LEFT$("AB",-1)</code> is <code>AB</code>). A child who presses DELETE once too often and then corrects a mistake sees the right word on the screen while the game reads another: <code>Snow</code>, typed that way at the password, is <code>Snw</code>, which holds no <code>no</code>.</p>
+</section>
+
+<section data-part="part-2">
+  <p class="fig">08 · The baby dragons</p>
+  <h2 class="t">Taming the baby dragons</h2>
+  <p class="lede">Four baby dragons guard Clare in their cave. Each likes some foods and hates others, and the player throws food until each one has come out alone and been given a magic collar.</p>
+  <div class="plate">
+    <canvas id="drag" class="gg-tv"></canvas>
+    <div class="gg-bar"><button data-f="B">Buns</button><button data-f="L">Lollies</button><button data-f="O">Oranges</button><button data-f="C">Chips</button><button id="dragreset">Start again</button></div>
+    <div id="dragsay" class="gg-sentences"></div>
+    <div id="dragout" class="gg-out"></div>
+    <p class="cap">The game's own rule (Part 2 lines 1110-1230, <code>$2E44</code>) and its own words: the foods' effects come from the DATA at <code>$32F8</code> and the sentences from <code>$3334</code>, read from the listing. The dragons are cut from the game's picture of all four, and a dragon in the cave is drawn faint. Checked against the game in jsbeeb on 30 games of random throws, 208 in all: before every throw the port's counters and its <var>c()</var> and <var>e()</var> matched the game's, and each game ended the same way, in the Witch, four collars or neither.</p>
+  </div>
+  <p>A throw adds the food's effect to each dragon, and keeps each dragon between in (0) and out (1). The table is in line 1270: buns bring the red dragon out and send the yellow one in, lollies the green out and the red in, oranges the blue out and the green in, chips the yellow out and the blue in. When exactly one dragon is out and has no collar, it gets one. A fourth throw of any food brings the Witch, so every food can be thrown three times.</p>
+  <p>Buns, lollies, oranges and chips, in that order, collar all four in four throws, and so does any order that keeps that round, such as chips, buns, lollies and oranges. The sentences come from a table of their own, in which each dragon <q>loves</q>, <q>hates</q> or <q>sometimes eats</q> each food, and they match the effects.</p>
+</section>
+
+<section data-part="part-2">
+  <p class="fig">09 · The Land of Mystery</p>
+  <h2 class="t">Every road is known by the sum of its two ends</h2>
+  <p class="lede">The Land of Mystery is five places and the roads between them. What happens on a road depends only on the sum of the numbers of the two places at its ends.</p>
+  <div class="gg-pair">
+    <div class="plate"><canvas id="map" class="gg-tv"></canvas>
+      <div class="gg-bar" id="mapbtns"></div>
+      <div id="mapout" class="gg-out"></div></div>
+    <div class="plate"><table class="gg-table" id="maptable"><tr><th>Sum</th><th>Roads</th><th>On the road</th></tr></table>
+      <p class="cap">PROCw, Part 2 lines 1640-1750 (<code>$3F11</code>). The places are numbered forest 1, cottage 2, lake 3, castle 4 and hill 5.</p></div>
+  </div>
+  <p>PROCw adds the number of the place the player is at to the number of the place they ask for. A sum of 6 is a road that does not exist, and 5 brings the Witch; 4, 8 and 9 meet the dwarf, the troll and the beast. The player starts at 10, which no place is, and the program allows only the forest and the cottage from there. The map's buttons make journeys by the same rule.</p>
+  <p>Each journey is an <code>ON np GOSUB</code> to the place, and no place ever returns from it: it calls PROCw again for the next journey. That is the second of the ways the game starts itself again (section 12).</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">10 · The Giant's garden</p>
+  <h2 class="t">Bug: call the bee in the wood and Tom can never be found</h2>
+  <p class="lede">In the Giant's garden each creature helps at one stage of the way to Tom. The bee is the only one that can get past the Giant's dog, and if it was called in the wood before, it will not.</p>
+  <div class="plate"><table class="gg-table">
+    <tr><th>Stage</th><th>Who helps</th><th>What the bee does there</th></tr>
+    <tr><td>1, the pond</td><td>the butterfly</td><td>tries to fly the player over, who is far too heavy</td></tr>
+    <tr><td>2, the wood</td><td>the snail</td><td>stings the nut trees, and a nut hurts it (<code>be=1</code>)</td></tr>
+    <tr><td>3, the flower bed</td><td>the worm</td><td>a hurt bee brings the Witch</td></tr>
+    <tr><td>4, the Giant's dog</td><td>the bee, unhurt</td><td>hurt: <q>Have you forgotten what happened? A nut made my nose bleed.</q> and the Witch</td></tr>
+    <tr><td>5, the tall tree</td><td>the spider</td><td></td></tr></table>
+    <p class="cap">The stages are in Part 1 lines 2840-3060 (<code>$5CAB</code>). The route that calls the bee in the wood was played to the dog in jsbeeb.</p></div>
+  <p>Calling the bee in the wood sets <var>be</var> to 1 for the rest of the run. At the dog, only an unhurt bee chases the dog away, and every other creature brings the Witch, so a player who tried the bee in the wood can no longer reach Tom. The bee says it must go to the doctor, and the toadstool says <q>You will have to try again.</q>, as it does after any creature that cannot help in the wood. Nothing says that the bee is needed later, and the dog is two stages on.</p>
+</section>
+
+<section data-part="part-2">
+  <p class="fig">11 · Lost without being told</p>
+  <h2 class="t">Bug: the Land of Mystery can be lost without the game saying so</h2>
+  <p class="lede">The Land of Mystery has one key, one cake and one chance at the castle door. Three choices use one up, and the player can then walk the map for good without being able to finish.</p>
+  <div class="plate"><table class="gg-table">
+    <tr><th>The choice</th><th>What it costs</th><th></th></tr>
+    <tr><td>Asking the lake its name before taking its water</td><td>The lake eats the key for its name, and wants the key again for water. There is one key, so there is no water, the forest's fire cannot be put out, and the castle door needs the key.</td><td>played</td></tr>
+    <tr><td>Answering N to <q>Are you ready to explore?</q> inside the castle</td><td>The keeper took the cake at the door. Outside again, he asks for another, and there is only one.</td><td>played</td></tr>
+    <tr><td>Answering N to <q>Do you want to go in?</q> at the tower in the forest</td><td>Once the fire is out, a visit to the forest brings the Witch.</td><td>traced</td></tr></table>
+    <p class="cap">Part 2: the lake at lines 2180-2330 (<code>$5353</code>), the castle at lines 1760-1800 and its keeper at lines 2470-2520, the forest and its tower at lines 2100-2160. The first two were played in jsbeeb; the third is read from the code.</p></div>
+  <p>The castle was meant to let a friend back in. Its flag <var>fed%</var>, which would say the keeper has been given the cake, is set FALSE at line 180 and never set TRUE, so the keeper's welcome for a returning friend, at line 2500, is never shown.</p>
+</section>
+
+<section data-part="part-2">
+  <p class="fig">12 · The giant</p>
+  <h2 class="t">Bug: answer the giant "maybe" and the hill turns into the forest</h2>
+  <div class="gg-pair">
+    <div class="plate"><img src="reference/p2-16-the-hill-and-the-giant.png" alt="The hill, and the giant asking: Shall I eat you?"><p class="cap">The giant on the hill asks <q>Shall I eat you?</q></p></div>
+    <div class="plate"><img src="reference/p2-28-the-giant-runs-into-the-forest.png" alt="The hill's picture with the forest's words under it"><p class="cap">After <code>Maybe</code>, then <code>Y</code>: the forest's words under the hill's picture. Played in jsbeeb on 14 October 2026.</p></div>
+  </div>
+  <p>PROCgiant asks again when the answer is neither yes nor no, by calling itself. When the inner call ends at Y, it returns to the end of the outer call's last line, line 2090, and BASIC carries on to line 2100. That line is <code>DEF PROCfor</code>, the forest, and BASIC passes over a DEF it meets on the way as though it were a REM, so it runs the forest's lines inside PROCgiant: the words about the creepy forest appear under the hill, no stone is offered, and the map then says the player is at the hill.</p>
+</section>
+
+<section data-part="">
+  <p class="fig">13 · Starting again</p>
+  <h2 class="t">The 20th visit to the hallway starts the game again</h2>
+  <p class="lede">The rooms of the house and the places on the map are entered and never left. Each visit leaves something open on BASIC's stack, and after enough of them BASIC stops with an error, which the program turns into a fresh start.</p>
+  <div class="plate">
+    <div class="gg-bar"><label>Visits to the hallway <input type="range" id="hall" min="1" max="20" value="1"></label><span id="hallv" class="gg-out"></span></div>
+    <div class="gg-meter"><span>REPEATs open</span><div class="track"><div class="fill" id="rep"></div></div><span id="repv"></span></div>
+    <div class="gg-bar"><label>Journeys on the map <input type="range" id="jour" min="1" max="27" value="1"></label><span id="jourv" class="gg-out"></span></div>
+    <div class="gg-meter"><span>GOSUBs open</span><div class="track"><div class="fill" id="gos"></div></div><span id="gosv"></span></div>
+    <p class="cap">The counts at each visit and each journey, read from BASIC's own counters (&amp;24 for REPEATs, &amp;25 for GOSUBs) in jsbeeb, on routes that go in and out of the backroom and back and forth across the map.</p>
+  </div>
+  <p>The hallway is a REPEAT loop that asks <q>Where do you wish to go?</q>, and every room ends by calling the hallway again, so a REPEAT is left open each time. BBC BASIC allows 20 at once. At the 20th visit the hallway's twenty are open, and the REPEAT in the input routine is one too many. On the map each journey is a GOSUB that never returns, and BASIC allows 26. Both programs start with <code>ON ERROR RUN</code>, so the 20th visit to the hallway and the 27th journey stop with Too many REPEATs or Too many GOSUBs, and RUN starts the program from the top, back at <code>Ready to start?</code>, with no message. Hearing the lake's name leaves one GOSUB more open, so after it the 26th journey is the last. The stairs leave two GOSUBs open each trip once the snake is dead, so a player who keeps climbing them meets the GOSUB limit first, at the 15th visit to the hallway. A guess at the trees that the game rejects for its form, a letter alone say, leaves the trees' own REPEAT open for the rest of the game, because lines 440-450 run on into the kingdom, and then the 19th visit is the last.</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">14 · Memory</p>
+  <h2 class="t">Bug: on this disc, Part 1 runs out of memory before Tom</h2>
+  <p class="lede">Each program was written to move itself down to &amp;0E00 when it is loaded higher, as a disc system's workspace makes it. On this disc that test is turned off, and Part 1, left at &amp;1900, stops with <code>No room</code> before the end.</p>
+  <div class="plate"><canvas id="mem" class="gg-chart"></canvas>
+    <p class="cap">The bytes free between BASIC's variables and its stack at each of the game's waits, in jsbeeb, on the way to Tom. At &amp;0E00 the run reaches Tom with about 2,200 bytes to spare. Loaded at &amp;1900, as the disc puts it, the same answers stop at the pond with <code>No room at line 2670</code>.</p></div>
+  <p>The first line of each program was a test, <code>IF PAGE&lt;&gt;&amp;E00 GOTO 3280</code> (2590 in Part 2). The lines it goes to select the tape filing system, copy the program down to &amp;0E00 four bytes at a time and run it there, which gives it 2,816 bytes more. The second line then writes a REM over the first, so that the program, running at &amp;0E00, does not test again. Both files on this disc were saved after such a run: their first lines are REMs, and <code>CHAIN</code> runs each program where the disc system loads it, at &amp;1900.</p>
+  <p>Part 1 has about 1,000 bytes there when it starts, and its variables and BASIC's stack need about 1,600 more as it goes. It stops at the pond, or on the stairs by the route through the house, and <code>No room</code> is the one error <code>ON ERROR</code> cannot catch, so the game ends at BASIC's prompt. Part 2 is smaller and runs to its end either way. Typing <code>LOAD"GRAN1"</code> and then <code>GOTO3280</code> runs the program's own move and gets round it. Whether this is 4Mation's own disc is unknown; no other copy was compared.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<!-- the DATA the widgets below read, which the build fills in from each part's listing -->
+<script type="application/json" data-listing="parts/part-1/listing.json">["tune_data", "tree_data"]</script>
+<script type="application/json" data-listing="parts/part-2/listing.json">["food_data", "dragon_sentences"]</script>
+<script src="../../lib/bbc.js"></script>
+<script src="../../lib/sn76489.js"></script>
+<script>
+/* data */
+// The screens, each the 1,000 bytes jsbeeb showed at an input wait on 14 October 2026 (work/scripts/capture.py),
+// read from &7C00 round the 1K from where the CRTC started the screen, base64.
+const SCREENS = {
+"city": "lp0gICAgICAgICAgICAgIJfgICAgICAgICAgICAgICAgICAgICAgIJadICAgICAgl+D0ICAgICD4//98sCAgICAgICAgIOAgICAgICAgICCWnSAgICCX4P7///2wIOD+///////0sCAgICAg4P7/tCAglfj9sCAgIJ2Wq/8/oSAgleD1liOV+rAgICAgIOCWr///v5XgIJbvp5Xq65arpyCdIJaiICAgleD+//Qg+P/9sCAgIOD+9Jaip5Xg/vQgICAg6u8gICAgnSAgICAgIJWi6uuiIKG3taEgICAgt7UgICAgILe1ICDg+P5+fn5+IJ2V4P50ICAgIOrvICCVv7UgICAgIL+1ICAgICC/9fj+v6ehICAgICCdIJW3tSAg4Pj+/iAgIP39/f39/f39/f39/f39/f+noSAgICAgICAgnSCVv/X4/r+noZSir/3wsCAgICAgICAgICAgICAgICAgkri55qQgIJ2V/f3/p6EgICAgICCUo6vv/fQgICAgICAgICAgICAgkqK69uapICCdICAgICAgICAgICAgICAglKL//SAgIJH09PT09PT0NCAgleK1ICAgnSAgICAgICAgICAgICCR4JT4/6cgkeD+///////////0ICCVoyAgIJ0gICAgICAgICCRsCCU4Pj+v6GRqf7///////////////+8oSAgICCdIJGwICCsICCU8Pj8/6+nkaEgIJPqrL3urL3urL3urL3uICAgICAgnZGioyCU8Pz+/7+noZH0ICAgIJbg//////////////////UgICAgIJ0gIJT4//+/p6EgICAgICAgIJb4/////////////////////bAgICCdIJT6//+nkfiwkuS2vO2Wouz//////////////////////////aYgnZTo//+lkTAgkqil57r1oSAglff39/f39/f39/f39/f39/f3tSAgIJ2U////ka6tIJKu4bLsuPQgICCT9/f39/f39/f39/f39/f3tSAgICCdlO////WwIJKov7KotKn2ICAgkai3o6O3o6O3o6Ojt6OjPSAgICAgnZSi/////fCSp6GVarcgkqsgIJHi9fDw9fDwtSAgIPXw8PcgICAgIJ0glKLv//////zwlev0kfj/9JT4/v////////////////+nICAgICCdICAglKv//////////////////////////////////7+hICAgICAgnSAgICCUom////////8gU1BBQ0UgQkFSIP///////6eR8PQgICAgIJ0gICAgICCUq+////////////////////////+/o5Hg/v///bAgIA==",
+"trees": "ICAgkiAgIOD+/bAgICAgIOD+/bAgICAgIOD+/bAgICAgIOD+/bAgICAgIJIgIPj/////9CAgIPj/////9CAgIPj/////9CAgIPj/////9CCNMyCSIP7////////9IP7////////9IP7////////9IP7////////9jTMgkiCiq+///7+noSCiq+///7+noSCiq+///7+noSCiq+///7+noSAgICAgICCV6rUgICAgICCV6rUgICAgICCV6rUgICAgICCV6rUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgkiAgIOD+/bAgICAgIOD+/bAgICAgIOD+/bAgICAgIOD+/bAgICAgIJIgIPj/////9CAgIPj/////9CAgIPj/////9CAgIPj/////9CCNMiCSIP7////////9IP7////////9IP7////////9IP7////////9jTIgkiCiq+///7+noSCiq+///7+noSCiq+///7+noSCiq+///7+noSAgICAgICCV6rUgICAgICCV6rUgICAgICCV6rUgICAgICCV6rUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgkiAgIOD+/bAgICAgIOD+/bAgICAgIOD+/bAgICAgIOD+/bAgICAgIJIgIPj/////9CAgIPj/////9CAgIPj/////9CAgIPj/////9CCNMSCSIP7////////9IP7////////9IP7////////9IP7////////9jTEgkiCiq+///7+noSCiq+///7+noSCiq+///7+noSCiq+///7+noSAgICAgICCV6rUgICAgICCV6rUgICAgICCV6rUgICAgICCV6rUgICAgICAgICAgjYdhICAgICAgICBiICAgICAgICBjICAgICAgICBkICAgICAgICAgII2HYSAgICAgICAgYiAgICAgICAgYyAgICAgICAgZCAgICAgICAgjYZUaGVyZSBpcyBhIG1hZ2ljIHRyZWUgaGVyZS4gICAgICAgICAgII2GVGhlcmUgaXMgYSBtYWdpYyB0cmVlIGhlcmUuICAgICAgICAgII2GV2hpY2ggb25lIGRvIHlvdSB0aGluayBpdCBpcz8gICAgICAgICCNhldoaWNoIG9uZSBkbyB5b3UgdGhpbmsgaXQgaXM/ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA==",
+"house": "niAgICAgkeCwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIJ4gICAgIJf/k7CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsCAgICAgICCeICAgIJfq/5P///////////////////////////////+0ICAgICAgniAgICCX//+T//////////////////////////////////QgICAgIJ4gICCX6v//k///////////////////////////////////9CAgICCeIJPg+P////////////////////////////////////+Sk//1ICAgniCT/5f///////////+W//+X//////////////////+S//+T//8gIJ4gIJf//////////////5aVo6Oj/5f///////////+S//+Rkv8gICCeIJfq/5b/o6OVo6P/l/+WlfDw8P+X//+W////l/+S/5GS/////yAgniCX6v+W/6yVrKys/5eW//+X////////lpf//////5L//5GS/yAgIJ4gl+r/lpXw8PDw8P+X/////////////5aX////////kv//l/8gICCeIJf//5aX////////////kZf///////+Wl5b/l/////+Sl///tSAgniCX////kZf/kZf///+Rl5KX/5GX////lpf/lpf/kZf/lZf//7UgIJ4gl////5KX/5KX////kpeSl/+Sl////5b///+X/5KX/5WX//+1ICCeII2DVGhpcyBpcyB0aGUgd29vZGN1dHRlcidzIGhvdXNlLiAgICAgniCNg1RoaXMgaXMgdGhlIHdvb2RjdXR0ZXIncyBob3VzZS4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKHNwYWNlIGJhcikgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA==",
+"dragons": "kfjt+O2wIOAgIJL47fjtsCDgICCW+O347bAg4CAgk/jt+O2wIOAgIJGr//+//7ShqbCSq///v/+0oamwlqv//7//tKGpsJOr//+//7ShqbAgkamtoer/sCC6IJKpraHq/7AguiCWqa2h6v+wILogk6mtoer/sCC6keQg4Pj///+i5JLkIOD4////ouSW5CDg+P///6Lkk+Qg4Pj///+i5JGhqaGr////4KaSoamhq////+CmlqGpoav////gppOhqaGr////4KYgICAgkf///yDpICAgIJL///8g6SAgICCW////IOkgICAgk////yDpICCR+Pz///+4oSAgkvj8////uKEgIJb4/P///7ihICCT+Pz///+4oSAgkav///8/ISAgIJKr////PyEgICCWq////z8hICAgk6v///8/ISAgIJE48vP/ICAgICCSOPLz/yAgICAgljjy8/8gICAgIJM48vP/ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgjYZUaGVzZSBmb3VyIGJhYnkgZHJhZ29ucyBoYXZlIGJlZW4gICAgII2GVGhlc2UgZm91ciBiYWJ5IGRyYWdvbnMgaGF2ZSBiZWVuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgjYZsZWZ0IGJlaGluZCB0byBndWFyZCCDQ2xhcmUuICAgICAgICAgII2GbGVmdCBiZWhpbmQgdG8gZ3VhcmQgg0NsYXJlLiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgjYdZb3Ugd2lsbCBoYXZlIHRvIHRhbWUgdGhlbS4gICAgICAgICAgII2HWW91IHdpbGwgaGF2ZSB0byB0YW1lIHRoZW0uICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAghiAgICAgICAgICAgKHNwYWNlIGJhcikgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA==",
+"map": "nZ0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICCXnZ2cIENvdHRhZ2UgICAgICAgICAgICAgICAgICAgICAgICAgICAgl52dnJX9/Pz8MCAgICAgICCBiFiJICAgICAgICAgIIdGb3Jlc3QgIJednZyT9/vr87WWJCEhISQkMDAkISQwMDAwJCEhISQwICCS/7UgICCXnZ2cICAgIJYkICAgICAgICAgICAgICAgICAgICAgkv+1lWqS/7Ugl52dnCCWKCAgICEwICAgICAgICAgICAgICAgIDAkIZVqICAgIGogIJednZwglmIgICAgICEkMIdMYWtlICCWMCQkJCEgICAgICAyICAgICCXnZ2cIJYkICAgICAgICiU6P7//fCWJCEgICAgICAgICAoICAgICAgl52dnJayICAgICAgICAglKvv/7+nICAgICAgICAgICCWsiAgICAgIJednZyWJCAgICAgICAgICAgMCQgICEwICCHQ2FzdGxlliQgICAgICCXnZ2clqIwICAgICAwMDAkISAgICAgICQwMDAgIJf9tZaisCAgICAgl52dnCCWJCAgIDAhICAgICAgICAgICAgICCX/f39t7WWICggICAgIJednZwgh0hpbGwgICAgICAgICAgluDg4KiiICAgICAg4eDgoSAgICCXnZ2cIJL4//2wICAgIJZgqKioqKIgICAgICAgICAgICAgICAgICAgl52dnJKur6+vr6SWoqKiICAgICAgICAgICAgICAgICAgICAgICAgIJednSAgICAgICAgICCUTEFORCBPRiBNWVNURVJZICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgII2HWW91IGFyZSB3aGVyZSB0aGWBcmVkIGNyb3Nzh2lzLiAgICAgICCNh1lvdSBhcmUgd2hlcmUgdGhlgXJlZCBjcm9zc4dpcy4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgII2HWW91IG11c3QgZGVjaWRlIHdoaWNoIHBhdGggdG8gdGFrZS4gICCNh1lvdSBtdXN0IGRlY2lkZSB3aGljaCBwYXRoIHRvIHRha2UuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIIEgICAgICAgICAgIChzcGFjZSBiYXIpICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=="
+};
+// Every byte the MOS wrote to the sound chip while each tune played (work/scripts/sound.py), as
+// BBCSound.pack gives it: cycles since the last write, then the byte.
+const TUNES = {"theme":{"clock":2000000,"start":0,"end":33156799,"w":[552909,144,610,133,100,13,516,176,578,168,100,26,516,211,642,201,100,6,36978,211,610,204,100,11,252,223,18888,223,292,223,19888,211,642,207,100,4,39228,211,610,204,100,11,252,223,18890,223,292,223,19850,211,642,201,100,5,19118,159,538,139,100,23,482,191,508,164,100,47,18232,144,570,128,100,10,466,176,538,174,100,19,18414,211,614,204,100,11,252,223,18878,223,292,223,19858,211,642,207,100,4,39266,211,610,204,100,11,252,223,18884,223,292,223,19948,211,642,198,100,4,179062,223,20026,223,292,223,239762,159,538,139,100,23,482,191,508,164,100,47,18110,144,572,132,100,11,466,176,538,165,100,22,38406,211,610,204,100,11,252,223,18900,223,292,223,19886,211,646,194,100,4,99154,159,814,139,100,23,482,191,510,164,100,47,17876,144,570,128,100,10,466,176,538,174,100,19,38410,211,610,204,100,11,252,223,18892,223,292,223,20008,211,642,198,100,4,179354,223,19718,223,568,223,299318,159,538,139,100,23,482,191,508,164,100,47,18230,144,570,143,100,8,466,176,538,171,100,17,38408,211,610,204,100,11,252,223,18896,223,292,223,19950,211,642,194,100,4,99154,159,816,139,100,23,482,191,508,164,100,47,17818,144,570,135,100,8,746,176,540,172,100,16,38132,211,610,204,100,11,252,223,18888,223,292,223,20036,211,674,203,100,3,178926,223,20056,223,292,223,299706,159,538,139,100,23,482,191,508,164,100,47,18154,144,570,143,100,8,466,176,538,171,100,17,38406,211,610,204,100,11,252,223,18892,223,292,223,19996,211,674,196,100,3,98970,159,814,139,100,23,482,191,508,164,100,47,17928,144,570,135,100,8,466,176,538,172,100,16,38410,211,610,204,100,11,252,223,18892,223,292,223,19966,211,674,196,100,3,499020,159,814,139,100,23,482,191,508,164,100,47,17906,144,600,136,100,7,470,176,568,174,100,14,38348,211,614,204,100,11,252,223,18886,223,292,223,19982,211,642,194,100,4,99154,159,538,139,100,23,482,191,508,164,100,47,18064,144,600,139,100,6,466,176,568,164,100,13,38350,211,610,204,100,11,252,223,18894,223,292,223,20026,211,642,198,100,4,178930,223,20086,223,292,223,599794,159,538,139,100,23,482,191,508,164,100,47,18070,144,604,139,100,6,466,176,568,164,100,13,38346,211,610,204,100,11,252,223,18888,223,292,223,19902,211,646,194,100,4,579156,223,20058,223,568,223,199458,159,538,139,100,23,482,191,510,164,100,47,18056,144,570,135,100,8,466,176,538,172,100,16,38404,211,610,204,100,11,252,223,18896,223,292,223,20016,211,674,203,100,3,179018,223,20032,223,292,223,299632,159,538,139,100,23,482,191,508,164,100,47,18178,144,570,143,100,8,466,176,538,171,100,17,38408,211,610,204,100,11,252,223,18894,223,292,223,19970,211,674,196,100,3,98966,159,820,139,100,23,482,191,508,164,100,47,17950,144,570,135,100,8,466,176,540,172,100,16,38412,211,610,204,100,11,252,223,18890,223,292,223,20002,211,642,207,100,4,499024,159,814,139,100,23,482,191,508,164,100,47,17898,144,600,136,100,7,466,176,568,174,100,14,38350,211,610,204,100,11,252,223,18894,223,292,223,19890,211,642,207,100,4,99154,159,814,139,100,23,482,191,508,164,100,47,17878,144,600,139,100,6,466,176,568,164,100,13,38354,211,610,204,100,11,252,223,18890,223,292,223,19996,211,642,198,100,4,179114,223,19902,223,292,223,599792,159,538,139,100,23,482,191,508,164,100,47,18102,144,570,128,100,10,470,176,538,174,100,19,38408,211,614,204,100,11,252,223,18882,223,292,223,20060,211,642,194,100,4,578950,223,20062,223,568,223,199402,159,538,139,100,23,482,191,508,164,100,47,18164,144,570,128,100,10,466,176,538,174,100,19,38402,211,610,204,100,11,252,223,18900,223,292,223,19998,211,642,207,100,4,179114,223,19902,223,292,223,299688,159,538,139,100,23,482,191,508,164,100,47,18204,144,572,143,100,8,466,176,538,171,100,17,38404,211,610,204,100,11,252,223,18894,223,292,223,19922,211,646,198,100,4,99154,159,814,139,100,23,482,191,510,164,100,47,17842,144,570,135,100,8,746,176,538,172,100,16,38132,211,610,204,100,11,252,223,18890,223,292,223,19936,211,642,194,100,4,179022,223,20216,223,568,223,299318,159,538,139,100,23,482,191,508,164,100,47,18140,144,570,128,100,10,466,176,538,174,100,19,38408,211,610,204,100,11,252,223,18894,223,292,223,19976,211,642,198,100,4,99030,159,816,139,100,23,482,191,508,164,100,47,17918,144,570,143,100,8,466,176,540,171,100,17,38410,211,610,204,100,11,252,223,18890,223,292,223,19888,211,642,207,100,4,179206,223,20052,223,292,223,299696,159,538,139,100,23,482,191,508,164,100,47,18066,144,570,135,100,8,466,176,538,172,100,16,38404,211,610,204,100,11,252,223,18896,223,292,223,20002,211,642,201,100,5,98966,159,818,139,100,23,482,191,508,164,100,47,17952,144,570,143,100,8,466,176,538,171,100,17,18854,211,610,204,100,11,252,223,18446,223,292,223,39978,211,642,201,100,6,499002,159,818,139,100,23,482,191,508,164,100,47,17944,144,570,128,100,10,470,176,538,174,100,19,18892,211,614,204,100,11,252,223,18398,223,292,223,39960,211,642,201,100,6,99150,159,818,139,100,23,482,191,508,164,100,47,17812,144,570,132,100,11,742,176,538,165,100,22,38140,211,610,204,100,11,252,223,18892,223,292,223,19940,211,642,207,100,4,579422,223,19718,223,572,223,199440,159,538,139,100,23,482,191,508,164,100,47,18106,144,572,133,100,13,466,176,536,168,100,26,38408,211,610,204,100,11,252,223,18888,223,292,223,19912,211,646,201,100,5,179176,223,20062,223,568,223,299402,159,538,139,100,23,482,191,510,164,100,47,18078,144,568,133,100,13,466,176,536,168,100,26,19022,211,610,204,100,11,252,223,18282,223,292,223,39902,211,642,207,100,4,99168,159,814,139,100,23,482,191,508,164,100,47,17860,144,570,128,100,10,466,176,538,174,100,19,38412,211,610,204,100,11,252,223,18880,223,292,223,19990,211,642,198,100,4,178992,223,20062,223,568,223,299516,159,540,139,100,23,482,191,508,164,100,47,18078,144,570,132,100,11,466,176,540,165,100,22,38406,211,610,204,100,11,252,223,18888,223,292,223,19978,211,642,194,100,4,99082,159,814,139,100,23,482,191,508,164,100,47,17872,144,570,128,100,10,466,176,538,174,100,19,38412,211,610,204,100,11,252,223,18880,223,292,223,20056,211,642,198,100,4,178992,223,20062,223,568,223,299332,159,814,139,100,23,482,191,508,164,100,47,17920,144,570,143,100,8,466,176,538,171,100,17,38410,211,610,204,100,11,252,223,18886,223,292,223,20030,211,642,194,100,4,98948,159,538,139,100,23,482,191,508,164,100,47,18230,144,570,135,100,8,470,176,538,172,100,16,38408,211,614,204,100,11,252,223,18882,223,292,223,20036,211,674,203,100,3,178992,223,20062,223,568,223,299332,159,814,139,100,23,482,191,508,164,100,47,17906,144,570,143,100,8,466,176,538,171,100,17,38406,211,610,204,100,11,252,223,18890,223,292,223,20042,211,674,196,100,3,98984,159,814,139,100,23,482,191,508,164,100,47,17874,144,572,135,100,8,466,176,538,172,100,16,38408,211,610,204,100,11,252,223,18884,223,292,223,20058,211,676,203,100,3,179014,223,20062,223,568,223,299332,159,538,139,100,23,482,191,510,164,100,47,18138,144,600,136,100,7,466,176,568,174,100,14,38346,211,610,204,100,11,252,223,18886,223,292,223,19966,211,642,194,100,4,99092,159,538,139,100,23,482,191,508,164,100,47,18152,144,600,139,100,6,466,176,568,164,100,13,38352,211,610,204,100,11,252,223,18884,223,292,223,19922,211,674,196,100,3,179084,223,20058,223,572,223,299388,159,540,139,100,23,482,191,508,164,100,47,18146,144,600,136,100,7,466,176,572,174,100,14,38348,211,610,204,100,11,252,223,18882,223,292,223,20052,211,674,204,100,2,99042,159,538,139,100,23,482,191,508,164,100,47,18080,144,570,135,100,8,466,176,538,172,100,16,38416,211,610,204,100,11,252,223,18884,223,292,223,20056,211,674,194,100,3,178992,223,20058,223,572,223,299332,159,538,139,100,23,482,191,508,164,100,47,18164,144,600,139,100,6,466,176,568,164,100,13,38360,211,610,204,100,11,252,223,18872,223,292,223,19914,211,674,196,100,3,99036,159,538,139,100,23,482,191,508,164,100,47,18226,144,602,139,100,5,470,176,570,163,100,11,38346,211,614,204,100,11,252,223,18880,223,292,223,19964,211,642,207,100,4,579148,223,20062,223,568,223,499376,159,538,139,100,23,482,191,508,164,100,47,18086,144,600,134,100,6,466,176,568,169,100,12,38348,211,610,204,100,11,252,223,18888,223,292,223,20026,211,642,198,100,4,98942,159,538,139,100,23,482,191,508,164,100,47,18238,144,604,139,100,6,466,176,568,164,100,13,38350,211,610,204,100,11,252,223,18880,223,292,223,20028,211,646,194,100,4,579028,223,20058,223,568,223,199406,159,538,139,100,23,482,191,510,164,100,47,18110,144,570,128,100,10,466,176,538,174,100,19,38406,211,610,204,100,11,252,223,18896,223,292,223,19908,211,642,198,100,4,179478,223,19718,223,572,223,299374,159,538,139,100,23,482,191,508,164,100,47,18152,144,570,143,100,8,466,176,538,171,100,17,38404,211,610,204,100,11,252,223,18896,223,292,223,19896,211,642,207,100,4,99154,159,816,139,100,23,482,191,508,164,100,47,17874,144,570,135,100,8,466,176,540,172,100,16,38408,211,610,204,100,11,252,223,18890,223,292,223,20006,211,642,201,100,5,179056,223,20052,223,292,223,299700,159,538,139,100,23,482,191,508,164,100,47,18096,144,570,143,100,8,466,176,538,171,100,17,38406,211,610,204,100,11,252,223,18896,223,292,223,20026,211,642,207,100,4,99030,159,814,139,100,23,482,191,508,164,100,47,17866,144,570,128,100,10,466,176,538,174,100,19,38414,211,610,204,100,11,252,223,18890,223,292,223,20024,211,642,207,100,4,498950,159,814,139,100,23,482,191,508,164,100,47,17950,144,570,132,100,11,470,176,538,165,100,22,38408,211,614,204,100,11,252,223,18884,223,292,223,19928,211,642,207,100,4,99154,159,814,139,100,23,482,191,508,164,100,47,17844,144,570,128,100,10,742,176,538,174,100,19,877990,159,538,139,100,23,482,191,508,164,100,47,18234,144,572,128,100,10,466,176,538,174,100,19,878258,159,538,139,100,23,482,191,786,164,100,47,17956,144,610,128,100,10,466,176,858,174,100,19,57896,223,20042,223,292,223,1899530,159,318,191,19690,159,292,159,330,191,292,191,5787246,159,284,130,100,63,228,191,284,161,100,63,228,223,284,192,100,63,228,255,162,224]},"kingdom":{"clock":2000000,"start":0,"end":31826082,"w":[3590124,178,610,174,100,14,500,223,176,223,18598,144,642,136,100,7,514,223,176,223,18438,223,176,223,20028,178,610,163,100,11,500,223,176,223,18410,223,176,223,20042,178,578,172,100,16,500,223,176,223,18428,223,176,223,20024,178,612,174,100,14,500,223,176,223,18412,223,176,223,19824,223,176,223,20038,178,610,163,100,11,500,223,176,223,18404,223,176,223,20018,178,838,223,176,223,18788,223,176,223,20028,178,610,169,100,12,500,223,176,223,18488,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19722,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19886,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19702,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19902,223,176,223,19836,223,176,223,19702,223,176,223,19796,223,176,223,19890,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19706,223,176,223,19980,223,176,223,19702,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19906,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19702,223,176,223,20080,144,602,139,100,5,300,223,176,223,18530,223,176,223,20446,178,610,164,100,13,500,223,176,223,18010,223,176,223,19964,223,176,223,19718,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19718,223,176,223,19980,223,176,223,19706,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19672,223,176,223,19886,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19706,223,176,223,19964,223,176,223,19718,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19702,223,176,223,19780,223,176,223,19890,223,176,223,19810,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19706,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19796,223,176,223,19702,223,176,223,19964,223,176,223,19702,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19852,223,176,223,19702,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19926,191,216,223,176,223,19590,191,292,191,216,223,176,223,19248,223,176,223,19732,223,176,223,19854,223,176,223,19916,223,176,223,19842,223,176,223,19732,223,176,223,19838,223,176,223,19932,223,176,223,19654,223,176,223,19916,223,176,223,19838,223,176,223,19732,223,176,223,20006,144,848,135,100,8,252,223,176,223,18426,223,176,223,20304,178,884,174,100,14,500,223,176,223,18066,223,176,223,19776,223,176,223,19762,223,176,223,19792,223,176,223,19928,223,176,223,19866,223,176,223,19702,223,176,223,19886,223,176,223,19904,223,176,223,19776,223,176,223,19742,223,176,223,19866,223,176,223,19908,223,176,223,19792,223,176,223,19742,223,176,223,19866,223,176,223,19888,223,176,223,19700,223,176,223,19904,223,176,223,19776,223,176,223,19928,223,176,223,19680,223,176,223,19908,223,176,223,19792,223,176,223,19742,223,176,223,19866,223,176,223,19888,223,176,223,19886,223,176,223,19778,223,176,223,19776,223,176,223,19742,223,176,223,19866,223,176,223,19908,223,176,223,19792,223,176,223,19742,223,176,223,19866,223,176,223,19888,223,176,223,19886,223,176,223,19718,223,176,223,19776,223,176,223,19928,223,176,223,19866,223,176,223,19722,223,176,223,19792,223,176,223,19928,223,176,223,19680,223,176,223,19888,223,176,223,19886,223,176,223,19718,223,176,223,19962,223,176,223,19742,223,176,223,19866,223,176,223,19724,223,176,223,19976,223,176,223,19742,223,176,223,19866,223,176,223,19702,223,176,223,19886,223,176,223,19904,223,176,223,19776,223,176,223,19742,223,176,223,19866,223,176,223,19908,223,176,223,19792,223,176,223,19742,223,176,223,19866,223,176,223,19888,223,176,223,19702,223,176,223,19902,223,176,223,19776,223,176,223,19928,223,176,223,19680,223,176,223,19908,223,176,223,19792,223,176,223,19928,223,176,223,19680,223,176,223,19888,223,176,223,19986,144,600,136,100,7,300,223,452,223,18322,223,176,223,20054,223,176,223,19866,178,610,175,100,9,448,223,176,223,18468,223,176,223,19930,223,176,223,19664,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19702,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19906,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19886,223,176,223,19796,223,176,223,19706,223,176,223,19964,223,176,223,19718,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19890,223,176,223,19796,223,176,223,19704,223,176,223,19962,223,176,223,19718,223,176,223,19964,223,176,223,19718,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19886,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19656,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19886,223,176,223,19796,223,176,223,19702,223,176,223,19964,223,176,223,19722,223,176,223,19782,223,176,223,19900,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19886,223,176,223,19816,191,216,223,176,223,19570,191,292,191,216,223,176,223,19272,223,176,223,19908,223,176,223,19678,223,176,223,19892,223,176,223,19862,223,176,223,19708,223,176,223,19882,223,176,223,19892,223,176,223,19862,223,176,223,19708,223,176,223,19862,223,176,223,19908,223,176,223,19678,223,176,223,19892,223,176,223,19866,223,176,223,19708,223,176,223,19878,223,176,223,19892,223,176,223,19678,223,176,223,19892,223,176,223,19862,223,176,223,19724,223,176,223,19866,223,176,223,19892,223,176,223,19862,223,176,223,19708,223,176,223,19878,223,176,223,19892,223,176,223,19678,223,176,223,19892,223,176,223,19866,223,176,223,19872,144,602,139,100,5,252,223,176,223,18690,223,176,223,20610,178,610,163,100,11,776,223,176,223,17632,223,176,223,19852,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19706,223,176,223,19964,223,176,223,19702,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19810,223,176,223,19886,223,176,223,19780,223,176,223,19704,223,176,223,19978,223,176,223,19722,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19718,223,176,223,19964,223,176,223,19702,223,176,223,19782,223,176,223,19900,223,176,223,19856,223,176,223,19890,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19886,223,176,223,19896,144,596,223,176,223,19004,223,176,223,20142,178,610,173,100,11,500,223,452,223,18100,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19706,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19718,223,176,223,19964,223,176,223,19702,223,176,223,19782,223,176,223,19904,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19706,223,176,223,19964,223,176,223,19718,223,176,223,19852,223,176,223,19886,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19722,223,176,223,19964,223,176,223,19702,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19702,223,176,223,19964,223,176,223,19718,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19702,223,176,223,19964,223,176,223,19722,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19702,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19672,223,176,223,19886,223,176,223,19780,223,176,223,19890,223,176,223,19896,144,600,134,100,6,300,223,176,223,18668,223,176,223,20176,178,610,169,100,10,500,223,176,223,18414,223,176,223,19780,223,176,223,19722,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19702,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19702,223,176,223,19964,223,176,223,19706,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19852,223,176,223,19702,223,176,223,19964,223,176,223,19702,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19722,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19718,223,176,223,19964,223,176,223,19702,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19702,223,176,223,19964,223,176,223,19722,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19706,223,176,223,19964,223,176,223,19818,144,876,139,100,6,300,223,176,223,18428,223,176,223,20054,223,176,223,19944,178,610,163,100,11,448,223,452,223,18100,223,176,223,19796,223,176,223,19886,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19780,223,176,223,19718,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19886,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19706,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19706,223,176,223,19980,223,176,223,19702,223,176,223,19994,223,176,223,19702,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19702,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19906,223,176,223,19836,223,176,223,19902,223,176,223,19780,223,176,223,19702,223,176,223,19980,223,176,223,19702,223,176,223,19796,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19706,223,176,223,20000,191,216,223,176,223,19566,191,292,191,216,223,176,223,19272,223,176,223,19724,223,176,223,19862,223,176,223,19892,223,176,223,19682,223,176,223,19892,223,176,223,19878,223,176,223,19708,223,176,223,19862,223,176,223,19892,223,176,223,19678,223,176,223,20058,144,600,136,100,7,252,223,176,223,18640,223,176,223,20152,178,614,169,100,10,500,223,176,223,18438,223,176,223,19848,223,176,223,19796,223,176,223,19906,223,176,223,19780,223,176,223,19702,223,176,223,19964,223,176,223,19718,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19704,223,176,223,19962,223,176,223,19718,223,176,223,19856,223,176,223,19890,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19720,223,176,223,19962,223,176,223,19702,223,176,223,19964,223,176,223,19722,223,176,223,19796,223,176,223,19886,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19706,223,176,223,19964,223,176,223,19718,223,176,223,19798,223,176,223,19884,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19718,223,176,223,19980,223,176,223,19702,223,176,223,19780,223,176,223,19890,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19706,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19906,223,176,223,19852,223,176,223,19702,223,176,223,19780,223,176,223,19886,223,176,223,19796,223,176,223,19902,223,176,223,19780,223,176,223,19890,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19702,223,176,223,19964,223,176,223,19702,223,176,223,19796,223,176,223,19906,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,19902,223,176,223,19796,223,176,223,19702,223,176,223,19964,223,176,223,19706,223,176,223,19980,223,176,223,19718,223,176,223,19780,223,176,223,19886,223,176,223,19780,223,176,223,20002,144,882,129,100,5,300,223,176,223,18328,223,176,223,19804,223,176,223,19826,223,176,223,19824,223,176,223,19842,223,176,223,19820,223,176,223,19812,223,176,223,19822,223,176,223,19826,223,176,223,19840,223,176,223,19824,223,176,223,19808,223,176,223,19826,223,176,223,19818,223,176,223,19844,223,176,223,19820,223,176,223,19812,223,176,223,19822,223,176,223,19826,223,176,223,19838,223,176,223,19826,223,176,223,19806,223,176,223,19828,223,176,223,19818,223,176,223,19844,223,176,223,19820,223,176,223,19810,223,176,223,19824,223,176,223,19826,223,176,223,19836,223,176,223,19828,223,176,223,19804,223,176,223,19830,223,176,223,19824,223,176,223,19838,223,176,223,19820,223,176,223,19814,223,176,223,19818,223,176,223,19830,223,176,223,19840,223,176,223,19820,223,176,223,19810,223,176,223,19824,223,176,223,19820,223,176,223,19844,223,176,223,19822,223,176,223,19810,223,176,223,19824,223,176,223,19824,223,176,223,19840,223,176,223,19844,191,216,223,176,223,19622,191,292,191,216,223,176,223,19218,223,176,223,19822,223,176,223,19840,223,176,223,19808,223,176,223,19826,223,176,223,19822,223,176,223,19830,223,176,223,19834,223,176,223,19810,223,176,223,19822,223,176,223,19826,223,176,223,19822,223,176,223,19990,144,602,139,100,5,252,223,176,223,18704,223,176,223,19824,223,176,223,19824,223,176,223,19824,223,176,223,19840,223,176,223,19810,223,176,223,19820,223,176,223,19826,223,176,223,19822,223,176,223,19846,223,176,223,19804,223,176,223,19826,223,176,223,19820,223,176,223,19828,223,176,223,19836,223,176,223,19862,223,176,223,20048,223,176,223,19552,223,176,223,19820,223,176,223,19842,223,176,223,19806,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19840,223,176,223,19808,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19844,223,176,223,19806,223,176,223,19822,223,176,223,19822,223,176,223,19826,223,176,223,19838,223,176,223,19808,223,176,223,19826,223,176,223,19824,223,176,223,19820,223,176,223,19844,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19824,223,176,223,19842,223,176,223,19812,223,176,223,19816,223,176,223,19842,223,176,223,19808,223,176,223,19842,223,176,223,19804,223,176,223,19828,223,176,223,19822,223,176,223,19826,223,176,223,19836,223,176,223,19810,223,176,223,19822,223,176,223,19828,223,176,223,19820,223,176,223,19844,223,176,223,19806,223,176,223,19824,223,176,223,19826,223,176,223,19824,223,176,223,19838,223,176,223,19810,223,176,223,19824,223,176,223,19826,223,176,223,19820,223,176,223,19990,144,602,128,100,6,252,223,176,223,18708,223,176,223,19824,223,176,223,19820,223,176,223,19828,223,176,223,19836,223,176,223,19808,223,176,223,19822,223,176,223,19828,223,176,223,19824,223,176,223,19838,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19828,223,176,223,19838,223,176,223,19808,223,176,223,19824,223,176,223,19826,223,176,223,19820,223,176,223,19842,223,176,223,19806,223,176,223,19828,223,176,223,19822,223,176,223,19824,223,176,223,19840,223,176,223,19812,223,176,223,19820,223,176,223,19826,223,176,223,19822,223,176,223,19842,223,176,223,19806,223,176,223,20042,223,176,223,19882,223,176,223,19550,223,176,223,19840,223,176,223,19808,223,176,223,19822,223,176,223,19824,223,176,223,19824,223,176,223,19842,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19824,223,176,223,19842,223,176,223,19808,223,176,223,19822,223,176,223,19824,223,176,223,19824,223,176,223,19842,223,176,223,19806,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19838,223,176,223,19810,223,176,223,19822,223,176,223,19824,223,176,223,19824,223,176,223,19840,223,176,223,19808,223,176,223,19826,223,176,223,19822,223,176,223,19828,223,176,223,19836,223,176,223,19814,223,176,223,19818,223,176,223,19826,223,176,223,19822,223,176,223,19842,223,176,223,19806,223,176,223,19828,223,176,223,19820,223,176,223,19826,223,176,223,19838,223,176,223,19808,223,176,223,19824,223,176,223,19824,223,176,223,19824,223,176,223,19842,223,176,223,19804,223,176,223,19828,223,176,223,19820,223,176,223,19828,223,176,223,19838,223,176,223,19810,223,176,223,19820,223,176,223,19830,223,176,223,19820,223,176,223,19846,223,176,223,19802,223,176,223,19826,223,176,223,19822,223,176,223,19828,223,176,223,19984,144,602,134,100,5,252,223,176,223,18706,223,176,223,19826,223,176,223,19824,223,176,223,19822,223,176,223,19842,223,176,223,19804,223,176,223,19826,223,176,223,19822,223,176,223,19830,223,176,223,19836,223,176,223,19810,223,176,223,19824,223,176,223,19824,223,176,223,19822,223,176,223,19840,223,176,223,19808,223,176,223,19830,223,176,223,19820,223,176,223,19824,223,176,223,19840,223,176,223,19808,223,176,223,19824,223,176,223,20056,223,176,223,19866,223,176,223,19564,223,176,223,19810,223,176,223,19822,223,176,223,19824,223,176,223,19826,223,176,223,19838,223,176,223,19810,223,176,223,19820,223,176,223,19828,223,176,223,19822,223,176,223,19842,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19828,223,176,223,19836,223,176,223,19808,223,176,223,19824,223,176,223,19826,223,176,223,19820,223,176,223,19844,223,176,223,19804,223,176,223,19828,223,176,223,19822,223,176,223,19824,223,176,223,19840,223,176,223,19810,223,176,223,19822,223,176,223,19824,223,176,223,19822,223,176,223,19844,223,176,223,19804,223,176,223,19828,223,176,223,19826,223,176,223,19824,223,176,223,19834,223,176,223,19812,223,176,223,19822,223,176,223,19826,223,176,223,19820,223,176,223,19846,223,176,223,19802,223,176,223,19826,223,176,223,19824,223,176,223,19826,223,176,223,19836,223,176,223,19812,223,176,223,19820,223,176,223,19832,223,176,223,19818,223,176,223,19844,223,176,223,19804,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19836,223,176,223,19810,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19840,223,176,223,19810,223,176,223,19824,223,176,223,19822,223,176,223,19824,223,176,223,19838,223,176,223,19816,223,176,223,19818,223,176,223,19824,223,176,223,19822,223,176,223,19844,223,176,223,19806,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19986,144,604,139,100,5,252,223,176,223,18706,223,176,223,19822,223,176,223,19826,223,176,223,19820,223,176,223,19846,223,176,223,19804,223,176,223,19824,223,176,223,19832,223,176,223,20056,223,176,223,19878,223,176,223,19532,223,176,223,19820,223,176,223,19826,223,176,223,19824,223,176,223,19842,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19824,223,176,223,19840,223,176,223,19810,223,176,223,19824,223,176,223,19824,223,176,223,19822,223,176,223,19844,223,176,223,19804,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19838,223,176,223,19812,223,176,223,19820,223,176,223,19826,223,176,223,19828,223,176,223,19836,223,176,223,19808,223,176,223,19824,223,176,223,19824,223,176,223,19842,223,176,223,19822,223,176,223,19808,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19842,223,176,223,19804,223,176,223,19826,223,176,223,19826,223,176,223,19826,223,176,223,19838,223,176,223,19808,223,176,223,19820,223,176,223,19826,223,176,223,19822,223,176,223,19842,223,176,223,19810,223,176,223,19824,223,176,223,19820,223,176,223,19828,223,176,223,19836,223,176,223,19812,223,176,223,19820,223,176,223,19828,223,176,223,19822,223,176,223,19988,144,642,134,100,5,252,223,176,223,18670,223,176,223,19822,223,176,223,19820,223,176,223,19830,223,176,223,19834,223,176,223,19812,223,176,223,19820,223,176,223,19826,223,176,223,19824,223,176,223,19844,223,176,223,19804,223,176,223,19824,223,176,223,19824,223,176,223,19824,223,176,223,19838,223,176,223,19810,223,176,223,19822,223,176,223,19830,223,176,223,19820,223,176,223,19844,223,176,223,19802,223,176,223,19826,223,176,223,19826,223,176,223,19824,223,176,223,19840,223,176,223,19808,223,176,223,19822,223,176,223,19828,223,176,223,19820,223,176,223,20056,223,176,223,19868,223,176,223,19548,223,176,223,19822,223,176,223,19828,223,176,223,19838,223,176,223,19810,223,176,223,19822,223,176,223,19828,223,176,223,19818,223,176,223,19844,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19836,223,176,223,19810,223,176,223,19824,223,176,223,19826,223,176,223,19820,223,176,223,19844,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19838,223,176,223,19810,223,176,223,19820,223,176,223,19830,223,176,223,19820,223,176,223,19840,223,176,223,19806,223,176,223,19832,223,176,223,19820,223,176,223,19824,223,176,223,19838,223,176,223,19808,223,176,223,19826,223,176,223,19824,223,176,223,19822,223,176,223,19840,223,176,223,19806,223,176,223,19826,223,176,223,19822,223,176,223,19830,223,176,223,19834,223,176,223,19816,223,176,223,19816,223,176,223,19830,223,176,223,19818,223,176,223,19844,223,176,223,19806,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19840,223,176,223,19810,223,176,223,19820,223,176,223,19830,223,176,223,19818,223,176,223,19840,223,176,223,19806,223,176,223,19826,223,176,223,19826,223,176,223,19824,223,176,223,19840,223,176,223,19808,223,176,223,19822,223,176,223,19828,223,176,223,19820,223,176,223,19844,223,176,223,19804,223,176,223,19826,223,176,223,19820,223,176,223,19830,223,176,223,19834,223,176,223,19812,223,176,223,19820,223,176,223,19830,223,176,223,19820,223,176,223,19842,223,176,223,19806,223,176,223,19828,223,176,223,19818,223,176,223,19828,223,176,223,19838,223,176,223,20036,223,176,223,19870,223,176,223,19556,223,176,223,19818,223,176,223,19842,223,176,223,19808,223,176,223,19822,223,176,223,19824,223,176,223,19826,223,176,223,19838,223,176,223,19808,223,176,223,19824,223,176,223,19826,223,176,223,19824,223,176,223,19840,223,176,223,19806,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19838,223,176,223,19808,223,176,223,19828,223,176,223,19822,223,176,223,19820,223,176,223,19842,223,176,223,19806,223,176,223,19828,223,176,223,19822,223,176,223,19824,223,176,223,19840,223,176,223,19810,223,176,223,19824,223,176,223,19824,223,176,223,19820,223,176,223,19846,159,234,223,176,223,19598,159,292,159,234,223,176,223,19226,223,176,223,19818,223,176,223,19830,223,176,223,19818,223,176,223,19828,223,176,223,19822,223,176,223,19824,223,176,223,19822,223,176,223,19828,223,176,223,19822,223,176,223,19826,223,176,223,19822,223,176,223,19824,223,176,223,19824,223,176,223,19828,223,176,223,19820,223,176,223,19830,223,176,223,19818,223,176,223,19824,223,176,223,19824,223,176,223,19824,223,176,223,19822,223,176,223,19828,223,176,223,19822,223,176,223,19826,223,176,223,19826,223,176,223,19820,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19822,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19822,223,176,223,19828,223,176,223,19822,223,176,223,19824,223,176,223,19820,223,176,223,19826,223,176,223,19822,223,176,223,19828,223,176,223,19822,223,176,223,19826,223,176,223,19842,223,176,223,20054,223,176,223,19574,223,176,223,19824,223,176,223,19824,223,176,223,19830,223,176,223,19816,223,176,223,19828,223,176,223,19822,223,176,223,19824,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19824,223,176,223,19822,223,176,223,19828,223,176,223,19820,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19824,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19820,223,176,223,19826,223,176,223,19824,223,176,223,19824,223,176,223,19822,223,176,223,19840,223,176,223,19810,223,176,223,19826,223,176,223,19822,223,176,223,19826,223,176,223,19820,223,176,223,19826,223,176,223,19824,223,176,223,19826,223,176,223,19890,223,176,223,19762,223,176,223,19816,223,176,223,19828,223,176,223,19822,223,176,223,19828,223,176,223,19818,223,176,223,19216,159,284,130,100,63,780,223,176,223,354,191,284,161,100,63,228,223,284,192,100,63,228,255,162,224]},"witch":{"clock":2000000,"start":0,"end":27949522,"w":[515372,194,100,62,812,206,100,53,18400,222,298,205,100,34,19878,206,100,16,19624,221,392,201,100,4,20074,166,100,49,600,168,100,13,318,220,718,200,100,4,17476,190,422,171,100,3,608,199,100,4,19022,166,100,40,302,219,414,206,100,16,18832,189,360,160,100,11,302,218,392,201,100,4,18766,188,412,174,100,10,550,203,100,50,19092,171,100,10,318,217,358,205,100,13,18856,187,446,168,100,13,598,202,100,13,18936,186,422,171,100,3,302,216,386,199,100,13,18756,166,100,40,302,215,414,206,100,16,18850,185,360,160,100,11,580,201,100,4,19140,174,100,10,318,214,362,203,100,50,18822,184,388,171,100,10,302,213,358,205,100,13,18756,183,446,168,100,13,598,202,100,13,19060,171,100,3,302,212,386,199,100,13,18828,182,364,166,100,40,602,206,100,16,18810,181,360,160,100,11,318,211,392,201,100,4,19030,174,100,10,302,210,362,203,100,50,18834,180,388,171,100,10,546,205,100,13,19202,168,100,13,302,209,410,202,100,13,18770,179,422,171,100,3,302,208,386,199,100,13,18678,178,364,166,100,40,618,206,100,16,19062,160,100,11,604,201,100,4,18952,177,412,174,100,10,574,203,100,50,18810,176,388,171,100,10,546,205,100,13,19216,168,100,13,598,202,100,13,19184,171,100,3,590,199,100,13,19156,166,100,40,602,206,100,16,19166,160,100,11,580,201,100,4,19272,174,100,10,550,203,100,50,19242,171,100,10,546,205,100,13,19298,168,100,13,318,209,410,202,100,13,19044,171,100,3,574,199,100,13,19172,166,100,40,602,206,100,16,19206,160,100,11,580,201,100,4,18980,177,412,174,100,10,550,203,100,50,19092,171,100,10,562,205,100,13,19302,168,100,13,598,202,100,13,19172,171,100,3,574,199,100,13,19168,166,100,40,302,210,414,206,100,16,19098,160,100,11,580,201,100,4,19256,174,100,10,566,203,100,50,19208,171,100,10,546,205,100,13,18986,178,446,168,100,13,598,202,100,13,19058,171,100,3,574,199,100,13,19186,166,100,40,602,206,100,16,19176,160,100,11,596,201,100,4,19256,174,100,10,302,211,362,203,100,50,19112,171,100,10,546,205,100,13,19312,168,100,13,598,202,100,13,19194,171,100,3,574,199,100,13,18904,179,364,166,100,40,618,206,100,16,19062,160,100,11,580,201,100,4,19274,174,100,10,550,203,100,50,19224,171,100,10,546,205,100,13,19328,168,100,13,302,212,410,202,100,13,19052,171,100,3,590,199,100,13,19150,166,100,40,602,206,100,16,19194,160,100,11,580,201,100,4,18970,180,412,174,100,10,550,203,100,50,19132,171,100,10,546,205,100,13,19292,168,100,13,614,202,100,13,19168,171,100,3,574,199,100,13,19162,166,100,40,302,213,414,206,100,16,19082,160,100,11,580,201,100,4,19290,174,100,10,550,203,100,50,19210,171,100,10,562,205,100,13,18964,181,446,168,100,13,598,202,100,13,19068,171,100,3,574,199,100,13,19162,166,100,40,602,206,100,16,19210,160,100,11,580,201,100,4,19258,174,100,10,318,214,362,203,100,50,19094,171,100,10,546,205,100,13,19314,168,100,13,598,202,100,13,19178,171,100,3,574,199,100,13,18932,182,364,166,100,40,602,206,100,16,19220,160,100,11,596,201,100,4,19512,174,100,10,550,203,100,50,19090,171,100,10,546,205,100,13,19034,168,100,13,302,215,410,202,100,13,19086,171,100,3,574,199,100,13,19148,166,100,40,618,206,100,16,19180,160,100,11,580,201,100,4,18972,183,412,174,100,10,550,203,100,50,19114,171,100,10,546,205,100,13,19326,168,100,13,598,202,100,13,19168,171,100,3,590,199,100,13,19144,166,100,40,302,216,414,206,100,16,19086,160,100,11,580,201,100,4,19270,174,100,10,550,203,100,50,19382,171,100,10,546,205,100,13,18822,184,446,168,100,13,614,202,100,13,19052,171,100,3,574,199,100,13,19166,166,100,40,602,206,100,16,19192,160,100,11,580,201,100,4,19290,174,100,10,302,217,362,203,100,50,19096,171,100,10,838,194,100,62,270,216,394,206,100,16,18256,168,100,13,302,215,392,201,100,4,19084,171,100,3,550,203,100,50,18938,185,364,166,100,40,302,214,358,205,100,13,18926,191,360,160,100,11,302,213,410,202,100,13,19096,174,100,10,590,199,100,13,18714,212,414,206,100,16,19764,201,100,4,19620,211,362,203,100,50,19540,210,358,205,100,13,19854,202,100,13,19590,209,386,199,100,13,19508,208,414,206,100,16,19768,201,100,4,19896,203,100,50,19912,205,100,13,19906,202,100,13,19880,199,100,13,19926,206,100,16,19880,201,100,4,19884,203,100,50,19880,205,100,13,19950,202,100,13,19606,209,386,199,100,13,19812,206,100,16,19898,201,100,4,19856,203,100,50,19892,205,100,13,19952,202,100,13,19878,199,100,13,19944,206,100,16,19582,210,392,201,100,4,19756,203,100,50,19896,205,100,13,19956,202,100,13,19888,199,100,13,19916,206,100,16,19872,201,100,4,19874,203,100,50,19650,211,358,205,100,13,19854,202,100,13,19860,199,100,13,19930,206,100,16,19876,201,100,4,19872,203,100,50,19912,205,100,13,19936,202,100,13,19604,212,386,199,100,13,19948,206,100,16,19738,201,100,4,20068,203,100,50,19704,205,100,13,20068,202,100,13,19758,199,100,13,20050,206,100,16,19496,213,392,201,100,4,19738,203,100,50,19894,205,100,13,19956,202,100,13,19878,199,100,13,20118,206,100,16,19962,201,100,4,19870,203,100,50,19376,214,634,205,100,13,19560,202,100,13,19892,199,100,13,19912,206,100,16,19882,201,100,4,19864,203,100,50,19900,205,100,13,19968,202,100,13,19588,215,386,199,100,13,19810,206,100,16,19880,201,100,4,19870,203,100,50,19912,205,100,13,19934,202,100,13,19880,199,100,13,19924,206,100,16,19604,216,392,201,100,4,19768,203,100,50,19884,205,100,13,19950,202,100,13,19876,199,100,13,19928,206,100,16,19892,201,100,4,19856,203,100,50,19652,217,358,205,100,13,19838,202,100,13,19878,199,100,13,19946,206,100,16,19854,201,100,4,19876,203,100,50,19896,205,100,13,19952,202,100,13,19772,218,386,199,100,13,19648,206,100,16,19870,201,100,4,19874,203,100,50,19898,205,100,13,20192,194,100,62,270,217,394,206,100,16,18876,201,100,4,19622,216,362,203,100,50,19784,205,100,13,19656,215,410,202,100,13,19502,214,386,199,100,13,19802,206,100,16,19598,213,392,201,100,4,19510,212,362,203,100,50,19778,205,100,13,19676,211,410,202,100,13,19704,195,100,13,39668,210,414,202,100,22,39532,209,638,195,100,8,39754,207,100,2,39414,208,298,206,100,43,39886,202,100,42,39808,199,100,41,40098,202,100,22,39842,195,100,8,39976,207,100,2,39800,206,100,43,39810,202,100,42,40260,199,100,41,39584,202,100,22,39598,209,360,195,100,8,39992,207,100,2,39780,206,100,43,39866,202,100,42,39780,199,100,41,40082,202,100,22,39858,195,100,8,39980,207,100,2,39614,210,298,206,100,43,39846,202,100,42,39780,199,100,41,40102,202,100,22,39842,195,100,8,39992,207,100,2,39598,206,100,43,40032,202,100,42,39614,211,298,199,100,41,39898,202,100,22,39858,195,100,8,40164,207,100,2,39596,206,100,43,40046,202,100,42,39752,199,100,41,40374,202,100,22,39284,212,360,195,100,8,39976,207,100,2,39616,206,100,43,40030,202,100,42,39810,199,100,41,40082,202,100,22,39846,195,100,8,20074,194,100,62,824,202,100,22,38396,211,390,194,100,6,39638,210,520,202,100,1,39500,199,100,18,39824,209,394,207,100,17,39682,198,100,17,39638,208,414,206,100,16,39758,201,100,4,39926,203,100,50,39882,205,100,13,39964,199,100,13,39886,192,100,13,39938,206,100,16,39746,201,100,4,39886,203,100,50,39902,205,100,13,39694,209,424,199,100,13,39696,192,100,13,39954,206,100,16,39920,201,100,4,39902,203,100,50,39882,205,100,13,39948,199,100,13,39902,192,100,13,39638,210,414,206,100,16,39746,201,100,4,39886,203,100,50,39886,205,100,13,39964,199,100,13,39696,192,100,13,40140,206,100,16,39734,201,100,4,39638,211,362,203,100,50,39898,205,100,13,39948,199,100,13,39716,192,100,13,39938,206,100,16,39916,201,100,4,39902,203,100,50,39886,205,100,13,39654,212,424,199,100,13,39756,192,100,13,39938,206,100,16,39936,201,100,4,39886,203,100,50,39898,205,100,13,39948,199,100,13,39700,192,100,13,39654,213,414,206,100,16,39916,201,100,4,39988,194,100,62,270,212,394,206,100,16,19108,166,100,49,600,168,100,13,18734,211,392,201,100,4,19446,190,422,171,100,3,19788,203,100,50,19604,189,364,166,100,40,19584,210,358,205,100,13,19722,160,100,11,20030,199,100,13,19526,188,426,171,100,10,19568,209,358,192,100,13,19748,166,100,10,19664,208,414,206,100,16,19422,187,446,168,100,13,19810,201,100,4,19562,186,422,171,100,3,19796,203,100,50,19812,166,100,40,19960,205,100,13,19592,185,360,160,100,11,19944,199,100,13,19496,184,426,171,100,10,19782,192,100,13,19836,166,100,10,20018,206,100,16,19556,183,446,168,100,13,19776,201,100,4,19870,171,100,3,19902,203,100,50,19590,182,364,166,100,40,19874,205,100,13,19558,181,360,160,100,11,19606,209,424,199,100,13,19722,171,100,10,19896,192,100,13,19610,180,360,166,100,10,19888,206,100,16,19536,179,446,168,100,13,19794,201,100,4,19870,171,100,3,19934,203,100,50,19556,178,364,166,100,40,19844,205,100,13,19838,160,100,11,20026,199,100,13,19544,177,426,171,100,10,19764,192,100,13,19592,176,360,166,100,10,19608,210,414,206,100,16,19764,168,100,13,19928,201,100,4,19862,171,100,3,19880,203,100,50,19832,166,100,40,19964,205,100,13,19848,160,100,11,20018,199,100,13,19832,171,100,10,19902,192,100,13,19830,166,100,10,20060,206,100,16,19826,168,100,13,19920,201,100,4,19856,171,100,3,19664,211,362,203,100,50,19734,166,100,40,19946,205,100,13,19596,177,360,160,100,11,19914,199,100,13,19830,171,100,10,19936,192,100,13,19798,166,100,10,20028,206,100,16,19860,168,100,13,19912,201,100,4,19880,171,100,3,19892,203,100,50,20040,166,100,40,20032,205,100,13,19930,160,100,11,19380,212,700,199,100,13,19412,171,100,10,19902,192,100,13,19586,178,360,166,100,10,19908,206,100,16,20016,168,100,13,19766,201,100,4,19902,171,100,3,19868,203,100,50,19830,166,100,40,19998,205,100,13,19798,160,100,11,20036,199,100,13,19832,171,100,10,19900,192,100,13,19846,166,100,10,19712,213,414,206,100,16,19748,168,100,13,19914,201,100,4,19550,179,422,171,100,3,20220,194,100,62,270,212,394,206,100,16,18632,191,364,166,100,40,19686,211,392,201,100,4,39390,203,100,50,39650,210,358,205,100,13,39856,199,100,13,39602,209,358,192,100,13,39528,208,414,206,100,16,39776,201,100,4,39884,203,100,50,39870,205,100,13,39980,199,100,13,39820,192,100,13,39956,206,100,16,39874,201,100,4,39874,203,100,50,39912,205,100,13,39646,209,424,199,100,13,39716,192,100,13,39956,206,100,16,39878,201,100,4,39888,203,100,50,39880,205,100,13,39964,199,100,13,39834,192,100,13,39656,210,414,206,100,16,39934,201,100,4,39700,203,100,50,39894,205,100,13,39966,199,100,13,39832,192,100,13,39974,206,100,16,40230,201,100,4,39254,211,638,203,100,50,39504,205,100,13,39966,199,100,13,39850,192,100,13,39940,206,100,16,39880,201,100,4,39868,203,100,50,39898,205,100,13,39670,212,424,199,100,13,39708,192,100,13,39954,206,100,16,39880,201,100,4,39870,203,100,50,39910,205,100,13,39950,199,100,13,39836,192,100,13,39656,213,414,206,100,16,39762,201,100,4,40158,194,100,62,270,212,394,206,100,16,38602,211,392,201,100,4,39756,203,100,50,39652,210,358,205,100,13,39814,195,100,13,59674,209,386,202,100,12,59636,208,682,195,100,30,59660,202,100,14,59980,194,100,7,59876,199,100,3,59948,196,100,3,59904,194,100,3,59650,195,100,30,60144,202,100,14,59940,194,100,7,59580,199,100,3,59636,209,724,196,100,3,59736,194,100,3,59908,195,100,30,59812,202,100,14,59956,194,100,7,59564,199,100,3,60262,196,100,3,59922,194,100,3,59284,210,408,195,100,30,59958,202,100,14,59940,194,100,7,59580,199,100,3,60262,196,100,3,59560,194,100,3,60000,195,100,30,60126,202,100,14,59338,211,732,194,100,7,59710,199,100,3,59932,196,100,3,39820,194,100,62,270,210,386,195,100,30,59188,207,100,10,59334,209,732,192,100,4,59110,208,576,202,100,58,59832,194,100,56,60008,206,100,53,59894,202,100,22,59834,195,100,8,60158,207,100,2,59588,206,100,43,59690,192,100,42,60154,197,100,40,60094,202,100,22,59294,209,638,195,100,8,59806,207,100,2,59772,206,100,43,59988,192,100,42,59800,197,100,40,60078,202,100,22,59834,195,100,8,59988,207,100,2,59294,210,576,206,100,43,59820,192,100,42,59784,197,100,40,60094,202,100,22,59834,195,100,8,59974,207,100,2,59772,206,100,43,59864,192,100,42,59494,211,604,197,100,40,59910,202,100,22,59818,195,100,8,59990,207,100,2,59756,206,100,43,20216,194,100,62,270,210,394,202,100,22,58898,194,100,6,59352,209,520,202,100,1,59728,199,100,18,59522,208,628,202,100,17,59536,206,100,16,120184,201,100,4,59846,203,100,50,59828,205,100,13,60068,195,100,13,59896,202,100,12,59914,206,100,16,59846,201,100,4,59338,209,638,203,100,50,59516,205,100,13,60182,195,100,13,59856,202,100,12,59898,206,100,16,59862,201,100,4,60046,203,100,50,59812,205,100,13,59338,210,660,195,100,13,59528,202,100,12,60228,206,100,16,59862,201,100,4,59846,203,100,50,59554,205,100,13,59928,195,100,13,60354,202,100,12,59338,211,414,206,100,16,59976,201,100,4,59862,203,100,50,59812,205,100,13,20222,194,100,62,270,210,394,206,100,16,18802,166,100,49,600,168,100,13,39012,201,100,4,19554,190,422,171,100,3,39544,209,362,203,100,50,19474,189,364,166,100,40,39600,208,358,205,100,13,19736,160,100,11,39976,195,100,13,19564,188,386,169,100,10,39912,202,100,12,19774,162,100,10,40016,206,100,16,19516,187,446,168,100,13,39798,201,100,4,19548,186,422,171,100,3,39796,203,100,50,19854,166,100,40,39948,205,100,13,19582,185,360,160,100,11,39910,195,100,13,19532,184,386,169,100,10,39854,202,100,12,19830,162,100,10,39998,206,100,16,19534,183,446,168,100,13,39796,201,100,4,19876,171,100,3,39646,209,362,203,100,50,19478,182,364,166,100,40,39876,205,100,13,19552,181,360,160,100,11,39878,195,100,13,19836,169,100,10,39968,202,100,12,19562,180,388,162,100,10,39878,206,100,16,19546,179,446,168,100,13,39784,201,100,4,19868,171,100,3,39936,203,100,50,19550,178,364,166,100,40,39848,205,100,13,19840,160,100,11,39718,210,384,195,100,13,19446,177,386,169,100,10,39854,202,100,12,19578,176,388,162,100,10,39866,206,100,16,19872,168,100,13,39936,201,100,4,19858,171,100,3,39980,203,100,50,20008,166,100,40,39964,205,100,13,19558,160,100,11,39994,195,100,13,19848,169,100,10,39948,202,100,12,19836,162,100,10,39728,211,414,206,100,16,19718,168,100,13,39908,201,100,4,19872,171,100,3,39906,203,100,50,19838,166,100,40,39954,205,100,13,19736,191,360,160,100,11,838,194,100,62,270,210,394,206,100,16,57990,201,100,4,59618,209,362,203,100,50,59544,208,358,205,100,13,59806,195,100,13,59946,202,100,12,59908,206,100,16,59856,201,100,4,59868,203,100,50,59900,205,100,13,59940,195,100,13,59886,202,100,12,59930,206,100,16,59874,201,100,4,59626,209,362,203,100,50,59794,205,100,13,59918,195,100,13,59894,202,100,12,59932,206,100,16,59878,201,100,4,59882,203,100,50,60160,205,100,13,59378,210,664,195,100,13,59508,202,100,12,59928,206,100,16,59898,201,100,4,59852,203,100,50,59892,205,100,13,59928,195,100,13,59904,202,100,12,59642,211,414,206,100,16,59744,201,100,4,59874,203,100,50,59894,205,100,13,20198,194,100,62,270,210,394,206,100,16,58872,201,100,4,59624,209,362,203,100,50,59538,208,358,205,100,13,59812,195,100,13,59966,202,100,12,59888,206,100,16,59856,201,100,4,59866,203,100,50,59900,205,100,13,59940,195,100,13,59886,202,100,12,59928,206,100,16,59880,201,100,4,59622,209,362,203,100,50,59796,205,100,13,60086,195,100,13,60008,202,100,12,59750,206,100,16,59772,201,100,4,59892,203,100,50,59874,205,100,13,59658,210,384,195,100,13,59788,202,100,12,59930,206,100,16,59890,201,100,4,59858,203,100,50,59892,205,100,13,59928,195,100,13,59902,202,100,12,59764,211,414,206,100,16,59632,201,100,4,59866,203,100,50,59900,205,100,13,20186,194,100,62,270,210,394,206,100,16,58882,201,100,4,59618,209,362,203,100,50,59538,208,358,205,100,13,59816,195,100,13,59938,202,100,12,59916,206,100,16,59852,201,100,4,59872,203,100,50,59938,205,100,13,59900,195,100,13,59884,202,100,12,60348,206,100,16,59460,201,100,4,59620,209,362,203,100,50,59800,205,100,13,59908,195,100,13,59906,202,100,12,59924,206,100,16,59882,201,100,4,59882,203,100,50,59884,205,100,13,59654,210,384,195,100,13,59788,202,100,12,59924,206,100,16,59898,201,100,4,59854,203,100,50,59896,205,100,13,59924,195,100,13,59904,202,100,12,59640,211,414,206,100,16,59752,201,100,4,59868,203,100,50,59896,205,100,13,20194,194,100,62,270,210,394,206,100,16,58876,201,100,4,59620,209,362,203,100,50,59542,208,358,205,100,13,59808,195,100,13,59946,202,100,12,59922,206,100,16,60120,201,100,4,59592,203,100,50,59898,205,100,13,59940,195,100,13,59886,202,100,12,59928,206,100,16,59880,201,100,4,59620,209,362,203,100,50,59800,205,100,13,59910,195,100,13,59902,202,100,12,59924,206,100,16,59880,201,100,4,59884,203,100,50,59882,205,100,13,59658,210,384,195,100,13,59788,202,100,12,58190,159,284,130,100,63,228,191,284,161,100,63,994,206,100,16,330,223,284,192,100,63,228,255,162,224]}};
+// The free bytes, VARTOP to BASIC's stack (&02-&05), at each wait on the way to Tom (work/shots/p1-tom.json
+// at &0E00, p1-1900-tom.json at &1900, where the next answer stopped with No room).
+const FREE_E00 = [3821,3568,3573,3384,3344,3322,3322,3292,3292,3073,2993,2971,2941,2811,2811,2775,2789,2624,2354,2390,2368,2334,2298,2334,2312,2334,2334,2298,2334,2312,2273,2273,2194,2230,2208,2203,2168,2187];
+const FREE_1900 = [1005,752,757,568,528,506,506,476,476,257,177,155,125];
+// end of data
+</script>
+<script>
+/* ports */
+const hx = n => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+
+// READ, as BBC BASIC does it, over the program's own bytes: from the line at addr, the items of each DATA
+// statement in turn, on to the next line's when one runs out. A line is &0D, its number (two bytes, high
+// first), its length from the &0D, and its text; an item ends at a comma or at the line's end, its leading
+// spaces dropped, and a quoted item loses its quotes. Each item is { v, a }, a the address of its first
+// character, as the Source tab shows it.
+function dataReader(ram, addr) {
+  let next = addr, p = null, end = 0;
+  function line() {
+    for (;;) {
+      const a = next;
+      if (ram[a] !== 0x0D || ram[a + 1] & 0x80) throw new Error('out of DATA at ' + hx(a));
+      end = a + ram[a + 3]; next = end; p = a + 4;
+      while (ram[p] === 0x20) p++;
+      if (ram[p] === 0xDC) { p++; return; }
+    }
+  }
+  return { read() {
+    if (p === null) line();
+    while (p < end && ram[p] === 0x20) p++;
+    const at = p; let v = '';
+    if (ram[p] === 0x22) { p++; while (p < end && ram[p] !== 0x22) v += String.fromCharCode(ram[p++]); p++; }
+    else while (p < end && ram[p] !== 0x2C) v += String.fromCharCode(ram[p++]);
+    if (p < end && ram[p] === 0x2C) p++; else p = null;
+    return { v, a: at };
+  } };
+}
+
+// PROCsnd1's reading of its DATA (Part 1 lines 3200-3210): 103 steps of a pitch n and, when n > 0, a
+// length t (t = 1 when n is 0). SOUND gets t / 1.5 and keeps its whole part, in twentieths of a second, and
+// channel 2's pitch is (n + 5) * 4.
+function themeSteps(ram, addr) {
+  const r = dataReader(ram, addr), out = [];
+  for (let e = 1; e <= 103; e++) {
+    const n = r.read(), t = +n.v > 0 ? r.read() : { v: '1', a: null };
+    out.push({ n: +n.v, t: +t.v, a: n.a, len: Math.floor(+t.v / 1.5), pitch: (+n.v + 5) * 4 });
+  }
+  return out;
+}
+
+// The magic tree's string, PROCtr (Part 1 line 280): the 59 values from the DATA at line 2330, each plus
+// 160, so that -150 and -152 are 10 and 8, line feed and backspace.
+function treeString(ram, addr) {
+  const r = dataReader(ram, addr), out = [];
+  for (let w = 1; w <= 59; w++) { const d = r.read(); out.push({ code: 160 + +d.v, a: d.a }); }
+  return out;
+}
+
+// PRINT of a string on the Mode 7 screen, as the MOS's VDU drivers do it for the codes the game's strings
+// hold: 10 moves the cursor down a row, 8 back a column, and any code from 128 up is stored at the
+// cursor, which moves on. screen is 1,000 bytes; [x, y] is TAB(x, y).
+function vduPrint(screen, x, y, codes) {
+  for (const c of codes) {
+    if (c === 10) y++;
+    else if (c === 8) x--;
+    else { screen[y * 40 + x] = c; x++; }
+  }
+  return [x, y];
+}
+
+// PROCtr's choice of the magic tree (line 290): L = RND(3) * 9 + 4, M = RND(2) * 6, or with T at Ready to
+// start? L = 4 and M = 12. rnd(n) is BASIC's RND(n), 1 to n. Returns the tree's name, as the letters and
+// digits of lines 2350 and 2360 name it.
+function magicTree(rnd, t) {
+  let L = rnd(3) * 9 + 4, M = rnd(2) * 6;
+  if (t) { L = 4; M = 12; }
+  return { L, M, name: 'abcd'[[4, 13, 22, 31].indexOf(L)] + '321'[[0, 6, 12].indexOf(M)] };
+}
+
+// PROCi(col, x, y, len), the input routine (Part 1 lines 1020-1090, Part 2 lines 460-530), key by key: a
+// is the code GET returns. The letters go to the screen from column x + 1, the first a capital and the
+// rest lower case, and to in$ the same way; DELETE (127) takes one off, and a key when the cursor has
+// reached column len is taken as DELETE whatever it was. l counts the letters, and a DELETE in an empty
+// field still counts: in$ = LEFT$(in$, l) with l below 0 is the whole of in$, as BBC BASIC gives it.
+function answerField(x, len) {
+  const s = { x, xx: x, X: x + 1, l: 0, in: '', cells: {}, done: false };
+  const left = (str, n) => n < 0 ? str : str.slice(0, n);
+  s.key = a => {
+    if (s.done) return;
+    if (s.x === len) a = 127;
+    if (a === 127 && s.xx > s.x - 1) s.x = s.xx + 1;
+    if (a > 96 && a < 123) a -= 32;
+    let inp = '';
+    if (a > 64 && a < 91 && s.X === s.x + 1) { inp = String.fromCharCode(a); s.cells[s.x + 1] = inp; s.x++; }
+    else if (a > 64 && a < 91) { inp = String.fromCharCode(a + 32); s.cells[s.x + 1] = inp; s.x++; }
+    if (a === 127) { s.x--; s.cells[s.x + 1] = ' '; s.l--; s.in = left(s.in, s.l); }
+    if (a > 64 && a < 91) s.in += inp; else s.l--;
+    s.l++;
+    if (a === 13) s.done = true;
+  };
+  s.shown = () => { let t = ''; for (let c = s.xx + 1; c <= len; c++) t += s.cells[c] || ' '; return t; };
+  return s;
+}
+
+// The baby dragons, Part 2 lines 1110-1230. foods: the DATA at line 1270 as READ gives it, a letter and
+// its effect on the red, green, blue and yellow dragon, five times (buns twice, so that READ never runs
+// out); words: lines 1280-1290, w$(1-5, 1-4), the red dragon's liking for each food, the foods' names, then
+// the green, blue and yellow dragons' likings. throw(z) takes the letter as PROCi spells it.
+function dragonsGame(foods, words) {
+  const g = { c: [0, 0, 0, 0], e: [0, 0, 0, 0], n: { B: 0, L: 0, O: 0, C: 0 }, witch: false, won: false };
+  g.throw = z => {
+    let t = 0, y, C;
+    do { [y, ...C] = foods[t]; t++; } while (!(z === y || t > 4));
+    if (t > 4) return { again: true };
+    g.n[y]++;
+    if (g.n.C > 3 || g.n.B > 3 || g.n.O > 3 || g.n.L > 3) { g.witch = true; return { witch: true }; }
+    let c = 0, m = -1;
+    for (let a = 0; a < 4; a++) {
+      g.c[a] += C[a];
+      if (g.c[a] > 1) g.c[a] = 1; else if (g.c[a] < 0) g.c[a] = 0;
+      c += g.c[a];
+      if (g.c[a] === 1) m = a;
+    }
+    const say = [0, 1, 2, 3].map(r => r === 0 ? [words[0][t - 1], words[1][t - 1]] : [words[r + 1][t - 1], ' them.']);
+    let collar = -1;
+    if (c === 1 && g.e[m] === 0) { g.e[m] = 1; collar = m; }
+    if (g.e[0] + g.e[1] + g.e[2] + g.e[3] === 4) g.won = true;
+    return { out: g.c.slice(), say, collar };
+  };
+  return g;
+}
+
+// The roads of the Land of Mystery, PROCw (Part 2 lines 1670-1740): op is where the player is (10 at the
+// start), np where they ask to go (0 for no place recognised). Lines 1680 and 1690 are tested one after
+// the other, so asking for the lake at the lake (3 + 3 = 6) prints both messages, the second over the first.
+function road(op, np) {
+  const said = [];
+  if (np + op === 6 || (op === 10 && np > 2)) said.push('You cannot go straight there.');
+  if (np === op) said.push('You are already there !');
+  if (np === 0 || said.length) return { refused: said.concat('Please try again.').join(' ') };
+  const s = np + op;
+  return { sum: s, meet: s === 4 ? 'the dwarf' : s === 8 ? 'the troll' : s === 9 ? 'the beast' : s === 5 ? 'the Witch' : '' };
+}
+// end of ports
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const missing = (el, what) => { el.insertAdjacentHTML('beforeend', `<p class="gg-miss">${what} needs the site's ${typeof BBC === 'undefined' ? 'bbc.js' : 'listing'}, which loads only in the built site.</p>`); };
+const part = id => BBC.load('parts/' + id + '/listing.json');
+const S = {};
+if (typeof BBC !== 'undefined') for (const k in SCREENS) S[k] = b64(SCREENS[k]);
+const CODE = { 129: 'red text', 130: 'green text', 131: 'yellow text', 132: 'blue text', 133: 'magenta text', 134: 'cyan text',
+  135: 'white text', 136: 'flash', 137: 'steady', 140: 'normal height', 141: 'double height', 145: 'red graphics',
+  146: 'green graphics', 147: 'yellow graphics', 148: 'blue graphics', 149: 'magenta graphics', 150: 'cyan graphics',
+  151: 'white graphics', 152: 'conceal', 153: 'contiguous graphics', 154: 'separated graphics', 156: 'black background',
+  157: 'new background', 158: 'hold graphics', 159: 'release graphics' };
+const COLOUR = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+
+// ---- 02 the tunes
+(function () {
+  const el = $('snd');
+  if (typeof BBCSound === 'undefined' || typeof BBC === 'undefined') { missing(el, 'The player'); return; }
+  let steps = null, cells = [];
+  const tunes = [{ name: 'The theme', log: TUNES.theme }, { name: "The kingdom's tune", log: TUNES.kingdom }, { name: 'The Witch', log: TUNES.witch }];
+  const ch2 = BBCSound.notes(TUNES.theme).filter(n => n.ch === 1);
+  let lit = -1;
+  BBCSound.mount(el, { tunes, onTime(t, i) {
+    if (!steps) return;
+    let k = -1;
+    if (t != null && i === 0) for (let j = 0; j < ch2.length; j++) if (ch2[j].t <= t) k = j;
+    const want = k < 0 ? -1 : steps.sounding[k];
+    if (want === lit) return;
+    if (lit >= 0) cells[lit].classList.remove('now');
+    if (want >= 0) cells[want].classList.add('now');
+    lit = want;
+  } });
+  part('part-1').then(P => {
+    const st = themeSteps(P.ram, P.sym('tune_data'));
+    steps = { sounding: st.map((s, i) => s.n > 0 ? i : -1).filter(i => i >= 0) };
+    const box = $('steps');
+    cells = st.map(s => {
+      const c = document.createElement('span');
+      if (s.n === 0) { c.className = 'rest'; c.textContent = '·'; c.title = `${hx(s.a)}: 0, a rest of no length`; }
+      else { c.textContent = s.n + '/' + s.t; c.title = `${hx(s.a)}: pitch ${s.n}, length ${s.t}: SOUND 2 at ${s.pitch} for ${s.len} twentieths`; }
+      box.appendChild(c);
+      return c;
+    });
+  }).catch(() => missing($('steps'), 'The theme\'s DATA'));
+})();
+
+// ---- 03 the City of the Dragons
+(function () {
+  const cv = $('city'), over = $('cityover');
+  if (typeof BBC === 'undefined') { missing(cv.parentNode, 'This picture'); return; }
+  const grid = BBC.drawTeletext(cv, S.city);
+  over.width = cv.width; over.height = cv.height;
+  const g = over.getContext('2d');
+  function codes() {
+    g.clearRect(0, 0, over.width, over.height);
+    if (!$('citycodes').checked) return;
+    g.font = 'bold 9px "IBM Plex Mono", monospace'; g.textBaseline = 'middle'; g.textAlign = 'center';
+    for (let y = 0; y < 25; y++) for (let x = 0; x < 40; x++) {
+      const c = S.city[y * 40 + x];
+      if (c < 128 || c > 159) continue;
+      g.fillStyle = 'rgba(0,0,0,.75)'; g.fillRect(x * 16 + 1, y * 20 + 4, 14, 12);
+      g.fillStyle = '#fff'; g.fillText(c.toString(16).toUpperCase(), x * 16 + 8, y * 20 + 10);
+    }
+  }
+  $('citycodes').onchange = codes;
+  cv.parentNode.onmousemove = e => {
+    const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * 40), y = Math.floor((e.clientY - r.top) / r.height * 25);
+    if (x < 0 || x > 39 || y < 0 || y > 24) return;
+    const b = S.city[y * 40 + x], c = grid[y][x];
+    const what = b >= 128 && b < 160 ? `<b>${CODE[b] || 'no effect'}</b> (a control code, shown as ${c.ch === 32 ? 'a space' : 'the held block'})`
+      : c.mosaic ? `<b>a block graphic</b>, blocks ${BBC.sixels(c.ch).map((v, i) => v ? i + 1 : '').join('') || 'none'}` : `<b>the character ${BBC.ttChar(c.ch)}</b>`;
+    const how = b >= 128 && b < 160 && !c.mosaic ? `The cell shows the background, ${COLOUR[c.bg]}.` : `In ${COLOUR[c.fg]} on ${COLOUR[c.bg]}${c.half ? ', double height' : ''}${c.sep ? ', separated' : ''}.`;
+    $('cityinfo').innerHTML = `row ${y}, column ${x}: byte ${b} (&amp;${b.toString(16).toUpperCase()}) is ${what}.<br>${how}`;
+  };
+})();
+
+// ---- 04 the trees
+(function () {
+  const cv = $('trees'), over = $('treesover');
+  if (typeof BBC === 'undefined') { missing(cv.parentNode, 'The trees'); return; }
+  BBC.drawTeletext(cv, S.trees);
+  over.width = cv.width; over.height = cv.height;
+  const g = over.getContext('2d');
+  // a tree printed at TAB(L + 3, M) spans columns L + 1 to L + 8 and rows M to M + 4
+  const box = (L, M, colour, w) => { g.strokeStyle = colour; g.lineWidth = w; g.strokeRect((L + 1) * 16 - 3, M * 20 - 2, 8 * 16 + 6, 5 * 20 + 4); };
+  const possible = () => { for (const L of [13, 22, 31]) for (const M of [6, 12]) box(L, M, 'rgba(255,255,255,.55)', 2); };
+  g.clearRect(0, 0, over.width, over.height); possible();
+  const rnd = n => 1 + Math.floor(Math.random() * n);
+  const pick = t => {
+    const m = magicTree(rnd, t);
+    g.clearRect(0, 0, over.width, over.height); possible(); box(m.L, m.M, '#ffd400', 6);
+    $('treeout').innerHTML = `L = ${m.L}, M = ${m.M}: the magic tree is <b>${m.name}</b>.` + (t ? ' T fixes it at a1.' : '');
+  };
+  $('roll').onclick = () => pick(false);
+  $('rollT').onclick = () => pick(true);
+
+  const tc = $('tree');
+  part('part-1').then(P => {
+    const tr = treeString(P.ram, P.sym('tree_data'));
+    const strip = $('treedata');
+    const chips = tr.map(t => { const c = document.createElement('span'); c.textContent = t.code - 160; strip.appendChild(c); return c; });
+    let n = 0, timer = 0;
+    const off = document.createElement('canvas');
+    function draw() {
+      const scr = new Uint8Array(1000).fill(32);
+      for (let h = 1; h <= 4; h++) scr[(h - 1) * 40 + 3] = 146;          // line 280: green graphics at column 3
+      const [x, y] = vduPrint(scr, 7, 0, tr.slice(0, n).map(t => t.code));
+      BBC.drawTeletext(off, scr);
+      tc.width = 13 * 16; tc.height = 7 * 20;
+      const c = tc.getContext('2d');
+      c.drawImage(off, 3 * 16, 0, 13 * 16, 7 * 20, 0, 0, 13 * 16, 7 * 20);
+      c.strokeStyle = '#ffd400'; c.lineWidth = 2; c.strokeRect((x - 3) * 16 + 1, y * 20 + 1, 14, 18);
+      chips.forEach((ch, i) => ch.classList.toggle('now', i === n - 1));
+      const t = tr[n - 1];
+      $('treeinfo').innerHTML = n ? `value ${n} of 59 at ${hx(t.a)}: ${t.code - 160}, so ${t.code === 10 ? 'a line feed' : t.code === 8 ? 'a backspace' : 'character ' + t.code}. The cursor is at column ${x}, row ${y}.` : 'The cursor is at column 7, row 0, where PROCtr prints the first tree.';
+    }
+    $('treestep').onclick = () => { clearInterval(timer); if (n < 59) n++; draw(); };
+    $('treeplay').onclick = () => { clearInterval(timer); if (n >= 59) n = 0; timer = setInterval(() => { n++; draw(); if (n >= 59) clearInterval(timer); }, 90); };
+    $('treereset').onclick = () => { clearInterval(timer); n = 0; draw(); };
+    draw();
+  }).catch(() => missing(tc.parentNode, 'The tree'));
+})();
+
+// ---- 05 answers
+(function () {
+  const Q = [
+    { q: 'Ready to start? (Part 1 line 220)', f: [17, 21], judge: s => (s[0] === 'Y' ? 'begins with Y: the game starts' : 'does not begin with Y: the question is asked again') + (s[0] === 'T' ? '; T fixes the magic tree at a1' : '') + (s.slice(-1) === 'f' ? '; it ends in f: no music' : '') },
+    { q: 'What is your password? (Part 1 line 740)', f: [3, 9], frag: ['no', 'ky', 'iv'], names: ['snow, Z=1', 'sky, Z=2', 'river, Z=3'], last: true },
+    { q: 'Where do you wish to go? (the hallway, Part 1 line 1280)', f: [3, 36], frag: ['itch', 'ack', 'upb', 'rs'], names: ['the kitchen', 'the backroom', 'the cupboard', 'the stairs'] },
+    { q: 'Which one do you want to call? (the Giant\'s garden, Part 1 line 3160)', f: [12, 30], frag: ['rm', 'ee', 'na', 'pi', 'ut'], names: ['the worm', 'the bee', 'the snail', 'the spider', 'the butterfly'], last: true },
+    { q: 'Where do you wish to go? (the map, Part 2 line 1660)', f: [14, 22], frag: ['or', 'ot', 'ak', 'as', 'il'], names: ['the forest', 'the cottage', 'the lake', 'the castle', 'the hill'], last: true },
+  ];
+  const sel = $('ansq');
+  Q.forEach((q, i) => sel.insertAdjacentHTML('beforeend', `<option value="${i}">${q.q}</option>`));
+  let f, q;
+  function reset() { q = Q[+sel.value]; f = answerField(q.f[0], q.f[1]); show(); }
+  function verdict(s) {
+    if (q.judge) return q.judge(s);
+    let hit = -1;
+    q.frag.forEach((p, i) => { if (s.includes(p) && (q.last || hit < 0)) hit = i; });
+    return hit < 0 ? 'no piece found: Please try again, or the like' : `<b>${q.frag[hit]}</b> is in it: ${q.names[hit]}` + (q.last ? ' (when several pieces are in it, the last in the list wins)' : ' (the first door in this order wins)');
+  }
+  function show() {
+    $('ansfield').innerHTML = '<span class="edge">▌</span>' + f.shown().replace(/&/g, '&amp;').replace(/</g, '&lt;') + '<span class="edge">▐</span>';
+    $('ansstate').innerHTML = `<dt>in$</dt><dd>"${f.in}"</dd><dt>l</dt><dd>${f.l}</dd><dt>field</dt><dd>PROCi(…,${q.f[0]},…,${q.f[1]}): ${q.f[1] - q.f[0]} letters shown, ${q.f[1] - q.f[0] - 1} kept, since a key after the last, RETURN included, is a DELETE</dd>`;
+    $('ansout').innerHTML = f.done ? 'RETURN: ' + verdict(f.in) : (f.in ? 'So far: ' + verdict(f.in) : 'Type an answer, then RETURN.');
+  }
+  sel.onchange = () => { reset(); $('ansfield').focus(); };
+  $('ansclear').onclick = () => { reset(); $('ansfield').focus(); };
+  $('ansbug').onclick = () => { sel.value = '0'; reset(); for (const k of [127, 88, 127, 89]) f.key(k); show(); $('ansfield').focus(); };
+  $('ansfield').onkeydown = e => {
+    let a = null;
+    if (e.key === 'Backspace' || e.key === 'Delete') a = 127;
+    else if (e.key === 'Enter') a = 13;
+    else if (e.key.length === 1) a = e.key.charCodeAt(0);
+    if (a === null) return;
+    e.preventDefault();
+    if (f.done) reset();
+    f.key(a); show();
+  };
+  reset();
+})();
+
+// ---- 07 the dragons
+(function () {
+  const cv = $('drag');
+  if (typeof BBC === 'undefined') { missing(cv.parentNode, 'The dragons'); return; }
+  const CLS = ['r', 'g', 'c', 'y'], NAME = ['red', 'green', 'blue', 'yellow'];
+  // the game's picture of the four, rows 0-8 of its screen; each dragon is ten columns, its colour code first
+  const off = document.createElement('canvas');
+  BBC.drawTeletext(off, S.dragons);
+  function draw(out) {
+    cv.width = 640; cv.height = 9 * 20;
+    const c = cv.getContext('2d');
+    c.fillStyle = '#000'; c.fillRect(0, 0, 640, 180);
+    for (let d = 0; d < 4; d++) { c.globalAlpha = out[d] ? 1 : 0.16; c.drawImage(off, d * 160, 0, 160, 180, d * 160, 0, 160, 180); }
+    c.globalAlpha = 1;
+  }
+  part('part-2').then(P => {
+    const r = dataReader(P.ram, P.sym('food_data'));
+    const foods = [];
+    for (let i = 0; i < 5; i++) { const y = r.read().v; foods.push([y, +r.read().v, +r.read().v, +r.read().v, +r.read().v]); }
+    const w = dataReader(P.ram, P.sym('dragon_sentences'));
+    const words = [];
+    for (let d = 0; d < 5; d++) { words.push([]); for (let b = 0; b < 4; b++) words[d].push(w.read().v.replace(/[\x80-\x9f]/g, '')); }
+    let game;
+    const reset = () => { game = dragonsGame(foods, words); draw([0, 0, 0, 0]); $('dragsay').innerHTML = 'Which food do you want to throw to the dragons?'; status(); };
+    function status(extra) {
+      const left = ['B', 'L', 'O', 'C'].map(k => `${{ B: 'buns', L: 'lollies', O: 'oranges', C: 'chips' }[k]} ${3 - game.n[k]}`).join(', ');
+      $('dragout').innerHTML = (extra ? extra + '\n' : '') + `Left: ${left}. Collars: ${game.e.map((v, i) => v ? NAME[i] : '').filter(Boolean).join(', ') || 'none'}.`;
+    }
+    document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => {
+      if (game.witch || game.won) reset();
+      const res = game.throw(b.dataset.f);
+      if (res.witch) { draw([0, 0, 0, 0]); $('dragsay').innerHTML = '<span class="r">The Witch is coming!</span>'; status('A fourth throw of one food: the Witch (line 1180).'); return; }
+      draw(res.out);
+      $('dragsay').innerHTML = res.say.map((s, i) => `The <span class="${CLS[i]}">${NAME[i]} dragon</span> ${s[0]} <span class="m">${s[1].trim()}</span>`).join('<br>')
+        + (res.collar >= 0 ? `<br><span class="m">You can put a magic collar on the</span> <span class="${CLS[res.collar]}">${NAME[res.collar]}</span> <span class="m">dragon.</span>` : '');
+      status(game.won ? 'All four dragons now have magic collars.' : '');
+    });
+    $('dragreset').onclick = reset;
+    reset();
+  }).catch(e => missing(cv.parentNode, 'The dragons'));
+})();
+
+// ---- 08 the map
+(function () {
+  const cv = $('map');
+  if (typeof BBC === 'undefined') { missing(cv.parentNode, 'The map'); return; }
+  BBC.drawTeletext(cv, S.map, { phase: 0 });
+  const P = ['forest', 'cottage', 'lake', 'castle', 'hill'];
+  const rows = [[3, 'forest and cottage', 'nothing'], [4, 'forest and lake', 'the dwarf, who wants a stone from the hill'],
+    [5, 'forest and castle, cottage and lake', '<q>That was not a good idea.</q> and the Witch'], [6, 'forest and hill, cottage and castle', '<q>You cannot go straight there.</q>'],
+    [7, 'cottage and hill, lake and castle', 'nothing'], [8, 'lake and hill', 'the troll, who asks what trees grow in the forest'], [9, 'castle and hill', 'the beast, who asks his brother\'s name']];
+  const tb = $('maptable');
+  rows.forEach(r => tb.insertAdjacentHTML('beforeend', `<tr data-s="${r[0]}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`));
+  let op = 10;
+  const say = t => { $('mapout').innerHTML = t; };
+  P.forEach((p, i) => {
+    const b = document.createElement('button'); b.textContent = p[0].toUpperCase() + p.slice(1);
+    b.onclick = () => {
+      const r = road(op, i + 1);
+      tb.querySelectorAll('tr').forEach(tr => tr.classList.toggle('now', +tr.dataset.s === r.sum || (r.refused && op + i + 1 === 6 && +tr.dataset.s === 6)));
+      if (r.refused) { say(`From ${op === 10 ? 'the start (10)' : P[op - 1] + ' (' + op + ')'} to ${p} (${i + 1}): <b>${r.refused}</b>`); return; }
+      say(`From ${op === 10 ? 'the start (10)' : P[op - 1] + ' (' + op + ')'} to ${p} (${i + 1}): the sum is ${r.sum}` + (r.meet ? `, and the road meets <b>${r.meet}</b>.` : ', and nothing happens on the way.') + (r.meet === 'the Witch' ? ' The game would send you home; the map starts again.' : ''));
+      op = r.meet === 'the Witch' ? 10 : i + 1;
+    };
+    $('mapbtns').appendChild(b);
+  });
+  const rb = document.createElement('button'); rb.textContent = 'Start again'; rb.onclick = () => { op = 10; say('At the start, 10.'); tb.querySelectorAll('tr').forEach(tr => tr.classList.remove('now')); };
+  $('mapbtns').appendChild(rb);
+  say('At the start, 10. Pick a place to go.');
+})();
+
+// ---- 12 the restarts
+(function () {
+  const show = () => {
+    const v = +$('hall').value, j = +$('jour').value;
+    const rep = v < 20 ? v + 1 : 21, gos = j - 1;
+    $('hallv').textContent = v < 20 ? `visit ${v}: ${rep} open at "Where do you wish to go?"` : 'visit 20: PROCi opens the 21st: Too many REPEATs, and Ready to start?';
+    $('rep').style.width = Math.min(100, rep / 20 * 100) + '%'; $('rep').classList.toggle('full', v >= 20); $('repv').textContent = Math.min(rep, 20) + '/20';
+    $('jourv').textContent = j < 27 ? `journey ${j}: ${gos} open at the map` : 'journey 27: the 27th GOSUB: Too many GOSUBs, and Ready to start?';
+    $('gos').style.width = Math.min(100, (j < 27 ? gos : 26) / 26 * 100) + '%'; $('gos').classList.toggle('full', j >= 27); $('gosv').textContent = (j < 27 ? gos : 26) + '/26';
+  };
+  $('hall').oninput = show; $('jour').oninput = show; show();
+})();
+
+// ---- 13 memory
+(function () {
+  const cv = $('mem'), W = cv.clientWidth || 800, H = 260, dpr = devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = H * dpr;
+  const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  const n = FREE_E00.length, X = i => 46 + i / (n - 1) * (W - 60), Y = v => H - 30 - v / 4000 * (H - 50);
+  g.font = '12px "IBM Plex Mono", monospace'; g.fillStyle = '#80838a'; g.strokeStyle = '#e0ded8';
+  for (const v of [0, 1000, 2000, 3000, 4000]) { g.beginPath(); g.moveTo(46, Y(v)); g.lineTo(W - 10, Y(v)); g.stroke(); g.fillText(v, 4, Y(v) + 4); }
+  g.fillText('waits for the space bar or an answer, from Ready to start? to Tom', 46, H - 8);
+  const line = (a, colour) => { g.strokeStyle = colour; g.lineWidth = 2.5; g.beginPath(); a.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); g.stroke(); };
+  line(FREE_E00, '#4a5bd6'); line(FREE_1900, '#d04a3a');
+  g.fillStyle = '#d04a3a'; g.beginPath(); g.arc(X(FREE_1900.length - 1), Y(FREE_1900.at(-1)), 5, 0, 7); g.fill();
+  g.fillText('at &1900: No room at line 2670, at the pond', X(FREE_1900.length - 1) + 10, Y(FREE_1900.at(-1)) - 6);
+  g.fillStyle = '#4a5bd6'; g.fillText('at &0E00: to Tom', X(n - 1) - 120, Y(FREE_E00.at(-1)) - 10);
+})();
+</script>

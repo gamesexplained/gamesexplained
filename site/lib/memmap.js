@@ -71,7 +71,8 @@ globalThis.makeMemMap = function (LABELS) {
     el.appendChild(legend);
     const tip = document.createElement('div');
     tip.style.cssText = 'font-family:var(--fm);font-size:12px;color:var(--ink-mute);min-height:1.6em;margin-top:8px';
-    tip.textContent = 'Hover for the address; click to open it in the source.';
+    const src = M.source === false ? null : (opts.source || M.source || 'source.html');   // false: the listing is withheld
+    tip.textContent = src ? 'Hover for the address; click to open it in the source.' : 'Hover for the address.';
     el.appendChild(tip);
     const at = a => { for (const r of M.runs) if (a >= r[0] && a < r[0] + r[1]) return r; return null; };
     const symAt = a => { let best = null; for (const [sa, n] of M.symbols) { if (sa <= a) best = [sa, n]; else break; } return best; };
@@ -80,9 +81,9 @@ globalThis.makeMemMap = function (LABELS) {
       const a = addrOf(e), r = at(a), sy = symAt(a);
       const what = r ? (LABELS[r[2]] + (r[3] ? ' · ' + r[3] : '')) : 'unused';
       tip.textContent = `${hex(a)} · ${what}${sy && r && r[2] !== 'unused' && a - sy[0] < 1024 ? ' · ' + sy[1] + (a !== sy[0] ? '+' + (a - sy[0]) : '') : ''}`;
-      cv.style.cursor = r && r[2] !== 'unused' ? 'pointer' : 'default';
+      cv.style.cursor = src && r && r[2] !== 'unused' ? 'pointer' : 'default';
     });
-    cv.addEventListener('click', e => { const a = addrOf(e); if (at(a)) location.href = (opts.source || M.source || 'source.html') + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
+    cv.addEventListener('click', e => { const a = addrOf(e); if (src && at(a)) location.href = src + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
     return M;
   }
   // The strip: the same addresses left to right in one row, each column the colour of whatever
