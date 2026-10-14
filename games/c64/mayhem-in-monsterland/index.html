@@ -61,15 +61,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .mim-form{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .mim-form input,.mim-form select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
 .mim-form input{width:8.5em}
-.mim-keys{display:flex;gap:8px;margin:0 0 14px}
-.mim-keys .mim-btn{font-size:18px;padding:8px 18px}
-.mim-seq{display:grid;grid-template-columns:repeat(25,1fr);gap:3px;margin:6px 0 0}
-.mim-seq span{font-family:var(--fm);font-size:12px;text-align:center;padding:4px 0;border-radius:3px;background:var(--line-soft);color:var(--ink-mute)}
-.mim-seq span.mim-done{background:var(--green);color:#fff}
-.mim-seq span.mim-next{outline:2px solid var(--ink)}
-.mim-imgs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.mim-imgs img{width:100%;height:auto;image-rendering:pixelated;border-radius:4px;display:block}
-.mim-list li{margin:0 0 .7em}
 .mim-h3{font-size:19px;margin:30px 0 12px}
 .mim-bar{margin:0 0 12px;justify-content:space-between}
 .mim-pick{flex:1 1 240px;margin:0}
@@ -94,7 +85,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .mim-frames button.mim-on{border-color:var(--ink)}
 .mim-frames canvas{width:72px;height:63px;image-rendering:pixelated;border-radius:3px}
 .mim-sw{display:inline-block;width:.9em;height:.9em;border-radius:2px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
-@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}.mim-may{grid-template-columns:1fr}.mim-frames canvas{width:48px;height:42px}.mim-star{grid-template-columns:1fr}.mim-imgs{grid-template-columns:1fr}.mim-seq{grid-template-columns:repeat(13,1fr)}}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}.mim-may{grid-template-columns:1fr}.mim-frames canvas{width:48px;height:42px}.mim-star{grid-template-columns:1fr}}
 .mim-groups{display:grid;grid-template-columns:max-content 1fr;gap:8px 14px;align-items:baseline;margin:0 0 14px}
 .mim-glab{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
 .mim-gbtn{display:flex;flex-wrap:wrap;gap:6px}
@@ -150,7 +141,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1993 · Apex Computer Productions</p>
   <h1>Mayhem in Monsterland</h1>
-  <p class="sub">A platform game that scrolls its whole screen by making the video chip start reading the screen late, so the characters never have to be moved. Each land is stored twice in one file, sad and happy, and turning it happy swaps the two in memory.</p>
+  <p class="sub">A platform game that scrolls its whole screen by making the video chip start reading the screen late, so the characters never have to be moved. Each land is stored twice in one file, sad and happy, and turning it happy swaps the two in memory. What the game hides, its cheat and its bugs included, is on <a href="discoveries.html">Discoveries</a>.</p>
 </header>
 <main class="wrap">
 
@@ -419,83 +410,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>SUPER STAR BONUS</td><td class="mim-n">1,000,000 once (event 15)</td><td>the count reads 000: every star in the land collected (<code>$F29D</code>)</td></tr>
     <tr><td>SKID BONUS</td><td class="mim-n">1,000 a character of skid</td><td>always</td></tr>
   </table></div>
-</section>
-
-<section data-part="jellyland">
-  <p class="fig">11 · The cheat</p>
-  <h2 class="t">Secret: 25 keys on the title screen give infinite lives</h2>
-  <p class="lede">Typing a sequence of 25 digits from 1 to 5 on the title screen stops the game from taking lives away. Nothing on the screen asks for it.</p>
-  <div class="plate" id="mim-cheat" tabindex="0" aria-label="Type the cheat with the buttons or the keys 1 to 5">
-    <div class="mim-keys" id="mim-cheatkeys"></div>
-    <div class="mim-seq" id="mim-cheatseq"></div>
-    <p class="mim-out" id="mim-cheatout"></p>
-    <div class="mim-row"><button type="button" class="mim-btn" id="mim-cheatnext">Press the next key for me</button><button type="button" class="mim-btn" id="mim-cheatreset">Start again</button></div>
-    <p class="cap">The buttons, or the keys 1 to 5 while this panel has the focus, run a port of the title's key check <code>$9EF9</code>, one frame with the key down and one with it up. The port was run beside the game's code in a 6502 simulator, with the keyboard answered from the keys held, over 400 runs of 600 frames: sequences typed with wrong keys, keys held for several frames and two keys at once. It agreed on every frame. In the emulator, the 25th key wrote the <code>RTS</code> and a stage whose clock ran out then left the lives at 03, where the same stage without the cheat lost one; the first 24 keys were set from the code there rather than typed.</p>
-  </div>
-  <p>The title screen runs from Jellyland's file, and each frame it calls <code>$9EF9</code>, which reads the keys 1 to 5 and compares each new press with the next entry of the sequence at <code>$9EE0</code>: 2 1 5 4 3 5 1 4 3 2 5 2 3 1 4 4 1 2 5 3 2 4 3 5 1. A correct key moves the position on; a wrong one sets it back to the start, and does not count as the first key of a new attempt. After the 25th, the routine writes <code>$60</code>, an <code>RTS</code>, over the first byte of the engine's <code data-part="engine">$BDC1</code>, the routine that takes a life off. The only sign is the top-score line on the title, whose three sprites change colour (<code>$93A7</code>).</p>
-  <p>The cheat lasts until the title screen starts again, which puts the original byte back (<code>$A58B</code>). The game can still end: Q in the pause sets the lives to <code>$FF</code> directly (<code data-part="engine">$1EB4</code>), and that is game over.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">12 · The extra life</p>
-  <h2 class="t">Bug: a million reached through the time bonus earns no extra life</h2>
-  <p class="lede">The game gives an extra life each time the score passes a million. One award can pass a million without it: the 100,000 points of the SUPER TIME BONUS, when the score already has a 9 in its hundred-thousands.</p>
-  <div class="plate" id="mim-score2"></div>
-  <p><code>$350B</code> gives the life in two places. At <code>$3530</code> it gives one before adding anything when the award's own digit is the millions, which only the 1,000,000 award is. At <code>$355A</code>, inside the loop that carries into the digits above, it gives one when the hundred-thousands digit rolls over from 9 to 0. Every award below 100,000 that passes a million goes through that loop, and so does the life.</p>
-  <p>The 100,000 award is the exception, because the hundred-thousands is its own digit. When that digit overflows, <code>$3541</code>-<code>$3548</code> take ten off it in place, and the carry loop starts one digit up, at the millions. The test at <code>$355A</code> watches for the hundred-thousands rolling over, and the loop never visits it. The score reaches its next million and the lives stay as they were.</p>
-  <p>Only one award in the game is worth 100,000: the SUPER TIME BONUS of the stage-complete screen (<code>$BEAA</code>), paid when the clock reads 000 as that screen opens. No monster in the five lands carries event 14. No way to that screen with the clock at 000 was found. The clock stops the moment Mayhem crosses the finish line: it ticks only while the stage-complete flag <code>$1BC6</code> is clear (<code>$2016</code>), and the finish sets that flag earlier in the same pass (<code>$2B4C</code>). A clock that does reach 000 costs the life first (<code>$383F</code>). So the bonus, and the bug with it, looks out of a player's reach.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">13 · Lives</p>
-  <h2 class="t">Bug: losing a life at 10 lives leaves 00</h2>
-  <p class="lede">The lives counter is two decimal digits. Taking a life from 10 leaves 00, the last life, so the counter drops by ten at once. The same happens at 20, 30 and every other multiple of ten.</p>
-  <div class="plate">
-    <div class="mim-panel" id="mim-lives"></div>
-    <div class="mim-row"><button type="button" class="mim-btn" id="mim-lose">Lose a life (<code>$BDC1</code>)</button><button type="button" class="mim-btn" id="mim-gain">Gain a life (<code>$3866</code>)</button><button type="button" class="mim-btn" id="mim-ten">Set 10</button><button type="button" class="mim-btn" id="mim-three">Set 03</button></div>
-    <p class="mim-out" id="mim-livesout"></p>
-    <p class="cap">The buttons run ports of the two routines. Run beside the game's code in a 6502 simulator, from every pair of digits with the tens 0 to 10 and the units 0 to 9 and from the game-over value, both ports left the same digits as the game: 224 cases.</p>
-  </div>
-  <p><code>$BDC1</code> subtracts one from the units. When the units are 0 it subtracts one from the tens instead and leaves the units at 0, where it should have set them to 9 (<code>$BDCC</code>-<code>$BDD1</code>). 10 becomes 00. The game ends only when a life is lost at 00, which turns the tens into <code>$FF</code> (<code>$3BAC</code>), so 00 is one more life and not game over. From 10, the second death ends the game, where it should have taken the eleventh.</p>
-  <p>Ten lives is within reach. A new game starts with 03, and every land the loader brings in adds one more (<code>$CC55</code> calls the same <code>$3866</code> as the extra-life awards), so a player who loses none arrives at Rockland with 07. Extra-life bonuses and every million points add the rest.</p>
-</section>
-
-<section data-part="cherryland">
-  <p class="fig">14 · The loading screens</p>
-  <h2 class="t">Bug: Cherryland's loading screen gives Rockland's star quota as 338, not 348</h2>
-  <p class="lede">While a land loads, the screen shows its name and its two quotas. The quotas on the screen come from the land before.</p>
-  <div class="plate">
-    <div class="mim-wide"><table class="mim-tbl">
-      <tr><th>Land loading</th><th>Its quotas as the loading screen gives them</th><th>Printed from</th><th>Dust<br><code>$903E</code>-<code>$9040</code></th><th>Star count starts at<br><code>$9041</code>-<code>$9043</code></th><th>Finish opens at<br><code>$904A</code>-<code>$904C</code></th><th>Stars to collect</th></tr>
-      <tr><td>Jellyland</td><td class="mim-n">dust 10, stars 113</td><td>the engine, <code data-part="engine">$D77D</code></td><td class="mim-n">00 01 00</td><td class="mim-n">01 05 03</td><td class="mim-n">00 04 00</td><td class="mim-n">153 - 40 = 113</td></tr>
-      <tr><td>Pipeland</td><td class="mim-n">dust 11, stars 231</td><td>Jellyland's file</td><td class="mim-n">00 01 01</td><td class="mim-n">03 03 01</td><td class="mim-n">01 00 00</td><td class="mim-n">331 - 100 = 231</td></tr>
-      <tr><td>Spottyland</td><td class="mim-n">dust 15, stars 159</td><td>Pipeland's file</td><td class="mim-n">00 01 05</td><td class="mim-n">02 01 04</td><td class="mim-n">00 05 05</td><td class="mim-n">214 - 55 = 159</td></tr>
-      <tr><td>Cherryland</td><td class="mim-n">dust 10, stars 250</td><td>Spottyland's file</td><td class="mim-n">00 01 00</td><td class="mim-n">03 00 00</td><td class="mim-n">00 05 00</td><td class="mim-n">300 - 50 = 250</td></tr>
-      <tr><td>Rockland</td><td class="mim-n">dust 8, stars <b>338</b></td><td>Cherryland's file, <code>$9185</code></td><td class="mim-n">00 00 08</td><td class="mim-n">03 07 08</td><td class="mim-n">00 03 00</td><td class="mim-n">378 - 30 = <b>348</b></td></tr>
-      <tr><td>The ending</td><td class="mim-n">"GAME COMPLETE"</td><td>Rockland's file</td><td class="mim-n">-</td><td class="mim-n">-</td><td class="mim-n">-</td><td class="mim-n">-</td></tr>
-    </table></div>
-    <p class="cap">The quota lines are text in each file at <code>$916F</code> and <code>$9185</code>. The other columns are the bytes the engine counts with, in each land's own file: three decimal digits each, one to a byte, as the panel shows them.</p>
-  </div>
-  <p>The star count on the panel does not start at zero. When the land turns happy, the engine loads the counter from <code>$9041</code>-<code>$9043</code> (<code data-part="engine">$3BC6</code>), every star Mayhem collects takes one off it (<code data-part="engine">$36ED</code>), and the finish line opens when it has come down to the number in <code>$904A</code>-<code>$904C</code> (<code data-part="engine">$374F</code>-<code data-part="engine">$3753</code>). The stars a player must collect are the difference between the two, and that difference is what the loading screen calls the star quota.</p>
-  <p>The loader (<code data-part="engine">$CBAD</code>) prints the loading screen before it loads the land, so the quota lines cannot come from the land's own file: they are in the file of the land before it, at <code>$916F</code> and <code>$9185</code>, and a new game first copies Jellyland's lines into place from the engine (<code data-part="engine">$D76E</code>). The lines are text typed into each file, separate from the numbers the game counts with. Four of the five agree. Cherryland's says 338 for Rockland, which counts its stars from 378 down to 30, a quota of 348.</p>
-  <p>Rockland's file carries lines for a land that does not exist: its loading line says "GAME COMPLETE", shown while the ending loads, and its quota lines say 12 and 365, which no screen prints.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">15 · More from the code</p>
-  <h2 class="t">Things a player who finished it would not know</h2>
-  <ul class="mim-list">
-    <li><b>The first touch is free.</b> Touching a monster the first time costs no life: it sets a flag and starts a grace count of <code>$64</code> while Mayhem flickers (<code>$B61D</code>). The count goes down only on every other call (<code>$EF4A</code>-<code>$EF4E</code>), so the grace lasts about 200 calls. The second touch costs the life (<code>$B5E4</code>). An extra life, the power-up or one of the bonuses clears the flag again (<code>$387D</code>).</li>
-    <li><b>Some monsters cannot be jumped on.</b> A monster's kind below <code>$F7</code> is its strength, and a stomp takes off more the further Mayhem fell (<code>$342E</code>). Kinds <code>$FB</code> and <code>$F7</code> cannot be stomped at all (<code>$B59D</code>), <code>$FC</code> and <code>$FA</code> always hurt, and <code>$F8</code> hurts when walked into but dies to a stomp (<code>$B5B1</code>); a charge with the lightning power-up kills them (<code>$B5B9</code>).</li>
-    <li><b>Monsters that come back pay nothing.</b> A defeated monster's record is marked (<code>$CB02</code>); if the same monster appears again it is removed without its item (<code>$C962</code>). The marks are cleared when a land starts (<code>$E595</code>).</li>
-    <li><b>The ending goes back to the title by loading Jellyland.</b> Fire on the last screen of the ending takes the same road as game over: the engine reloads Jellyland from the disk, and Jellyland's file holds the title screen (<code>$CE66</code>, <code>$CBA5</code>, <code>$F45E</code>). There is no score screen.</li>
-    <li><b>A copy of the cheat in Pipeland.</b> Pipeland's file has Jellyland's title code at <code data-part="pipeland">$9EC4</code>-<code data-part="pipeland">$9F3D</code>, the cheat's key check included, left over from the buffer the files were built in. Nothing calls it there.</li>
-    <li><b>Poking for lives.</b> The German C64-Wiki gives <code>$BE15</code> as a poke for unlimited lives and <code>$37FD</code> for extra time. In this release the first lands in the lightning's timer and the second on the counter that stops the clock (<code>$37FD</code> is <code>DEC $1BAA</code>); the lives routine is at <code>$BDC1</code>. The wiki's invincibility poke at <code>$B61D</code> does hit its mark, the grace flag above.</li>
-  </ul>
+  <p>Each million the score passes gives an extra life, but the 100,000 of the SUPER TIME BONUS can carry the score past one without it (<a href="discoveries.html#extra-life">Discoveries</a>).</p>
 </section>
 
 <section data-part="intro">
-  <p class="fig">16 · The intro</p>
+  <p class="fig">11 · The intro</p>
   <h2 class="t">The intro fades each dinosaur from colour to grey</h2>
   <p class="lede">Side 1 plays an intro before the game: the Mayhem TV ident, the Apex logo, and a roll call of ten characters, each followed by a page of credits. Each page below is drawn by this page from the intro's own bytes, by its own routines ported to JavaScript.</p>
   <div class="plate">
@@ -533,7 +452,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="intro">
-  <p class="fig">17 · The intro's landscape</p>
+  <p class="fig">12 · The intro's landscape</p>
   <h2 class="t">The intro's landscape scrolls at three speeds without moving a character</h2>
   <p class="lede">Behind the dinosaurs the clouds, the mountains and the ground move at different speeds. The landscape is drawn once, and nothing on the screen moves: the intro shifts the pixels inside the characters.</p>
   <div class="plate">
@@ -550,18 +469,6 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>16-18, ground</td><td class="mimi-n">$DD-$E5</td><td><code>$85F5</code>, <code>$85C6</code></td><td>2, 4 or 6 pixels a frame, faster lower down</td></tr>
   </table></div>
   <p>The routines run from the raster interrupts that also set the sky and ground colours, and stop when the dinosaur arrives. The clouds and the mountains take turns, one on odd frames and one on even. A page's set-up takes two frames, and the main loop does not count frames while it runs, so both of them are even: the mountains move twice and the clouds not at all.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">18 · The protection</p>
-  <h2 class="t">The answers to the code sheet are in the game</h2>
-  <p class="lede">After the intro, the game asks for a code from the printed sheet that came in the box.</p>
-  <div class="plate">
-    <div class="mim-imgs"><img src="reference/protection-screen.png" alt="The protection screen, asking for the code at a square of the sheet" width="384" height="272"></div>
-    <p class="cap">The protection screen, a screenshot from the emulator.</p>
-  </div>
-  <p>The protection screen gives a square of the sheet, such as F27, and wants the five colours printed there, typed as digits from 1 for blue to 5 for yellow. The answers are in the game, exclusive-ORed with <code>$45</code>: a table of 47 squares at <code>$4A00</code>-<code>$4B77</code>, and the five keys this boot expects, copied to <code data-part="">$017B</code> on the stack page (<code>$4594</code>-<code>$45A2</code> compares them). Three wrong codes send the game to <code>$C000</code>, which clears memory from <code>$040A</code> upward without end.</p>
-  <p>The same file still carries some of the tools it was made with. Next to the answer table, the copy loaded from disk holds a small program the game never runs (<code>$4800</code>-<code>$49E1</code>): a link that let another computer write and read the Commodore's memory and start code over a cable in the user port, signed "DOWNLOAD BY JAZ" (<code>$49F0</code>). Beside it, a routine at <code>$4B7B</code> saved memory from <code>$0200</code> to <code data-part="">$A8FF</code> to the disk drive under the name GAME, which is exactly the span of the file on the disk, and the first bytes of that file are BASIC's input line, still reading <code>SYS 5632</code>: the command that started the link at <code data-part="">$1600</code>. The game clears this screen memory before play, so none of it is ever seen. Andy Roberts recalls working on Mayhem with an Amiga-based cross-development system, and a 1990 Commodore Format feature on Apex describes John Rowlands sending his code from another computer to the C64 through a "Programmer's Development System". Whether this link belonged to either, and who Jaz was, could not be found.</p>
 </section>
 
 </main>
@@ -1372,60 +1279,6 @@ function scoreWidget(el, opts) {
 }
 const SCORECAP = 'The button runs a port of <code>$350B</code>, with the lives starting at 03. Run beside the game\'s code in a 6502 simulator on the play snapshot, the port left the same score and lives, and gave the same extra lives, in 27,648 cases: 432 scores (every digit at 0, 8 and 9, all nines, and 400 at random, weighted to 9) with each of the 16 awards and four multipliers.';
 scoreWidget($('mim-score1'), { score: '000012340', event: 1, cap: SCORECAP });
-scoreWidget($('mim-score2'), {
-  score: '000900000', event: 14,
-  cases: [['900,000 + 100,000', '000900000', 14], ['990,000 + 10,000', '000990000', 10], ['900,000 + 1,000,000', '000900000', 15]],
-  cap: 'The three buttons are the cases run on the game\'s own code in the simulator, which gave the same results: 03 lives after the first, 04 after the other two. ' + SCORECAP,
-});
-
-// ---- 09: the lives counter
-(function () {
-  const st = { lives: [0, 3] };
-  const show = (msg) => {
-    const over = st.lives[0] === 0xFF;
-    $('mim-lives').innerHTML = over ? '<b>GAME OVER</b>' : '1UP x<b>' + st.lives[0] + st.lives[1] + '</b>';
-    $('mim-livesout').textContent = msg || '';
-    $('mim-lose').disabled = over; $('mim-gain').disabled = over;
-  };
-  $('mim-lose').addEventListener('click', () => {
-    const b = '' + st.lives[0] + st.lives[1];
-    MIM_PORTS.lifeLose(st);
-    show(st.lives[0] === 0xFF ? 'A life lost at 00: the tens became $FF, which $3BAC reads as game over.' : b + ' less one leaves ' + st.lives[0] + st.lives[1] + '.');
-  });
-  $('mim-gain').addEventListener('click', () => { MIM_PORTS.lifeAdd(st); show(''); });
-  $('mim-ten').addEventListener('click', () => { st.lives = [1, 0]; show(''); });
-  $('mim-three').addEventListener('click', () => { st.lives = [0, 3]; show(''); });
-  show('');
-})();
-
-// ---- 07: the title's cheat
-(function () {
-  const plate = $('mim-cheat'), seq = $('mim-cheatseq'), keys = $('mim-cheatkeys');
-  const st = { pos: 0, held: 0, armed: false };
-  MIM_PORTS.SEQ.forEach((k) => { const s = document.createElement('span'); s.textContent = k; seq.appendChild(s); });
-  for (let k = 1; k <= 5; k++) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'mim-btn'; b.textContent = k;
-    b.addEventListener('click', () => press(k)); keys.appendChild(b);
-  }
-  let last = '';
-  function show() {
-    [...seq.children].forEach((s, i) => { s.classList.toggle('mim-done', st.armed || i < st.pos); s.classList.toggle('mim-next', !st.armed && i === st.pos); });
-    $('mim-cheatout').textContent = st.armed
-      ? 'Cheat on: $BDC1 now begins with RTS ($60), so losing a life takes none.'
-      : (last ? last + ' ' : '') + st.pos + ' of 25 keys right (the position byte, $9F18).';
-  }
-  function press(k) {
-    const before = st.pos, was = st.armed;
-    MIM_PORTS.cheatFrame(st, new Set([k]));   // a frame with the key down
-    MIM_PORTS.cheatFrame(st, new Set());      // and one with it up
-    last = st.armed && !was ? '' : st.pos > before || (st.armed && was) ? 'Key ' + k + ': right.' : 'Key ' + k + ': wrong, back to the start.';
-    show();
-  }
-  plate.addEventListener('keydown', (e) => { if (e.key >= '1' && e.key <= '5') { e.preventDefault(); press(+e.key); } });
-  $('mim-cheatnext').addEventListener('click', () => { if (!st.armed) press(MIM_PORTS.SEQ[st.pos]); });
-  $('mim-cheatreset').addEventListener('click', () => { st.pos = 0; st.held = 0; st.armed = false; last = ''; show(); });
-  show();
-})();
 
 // ---- 03: the graphics: characters, Mayhem, monsters (data from work/graphics/gfx.js; checked by
 // work/graphics/check.js against the recorded frame)
