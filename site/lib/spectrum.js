@@ -17,11 +17,20 @@ globalThis.Spectrum = (function () {
       if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
     return null;
   }
+  // Text a widget writes into a canvas stays in the font it was drawn in. A fetched listing
+  // usually arrived after the page's fonts had loaded; an embedded one is in hand at once, so it
+  // is handed over when they have, or after three seconds if they never do.
+  function fontsIn() {
+    if (typeof document === 'undefined' || !document.fonts || !document.body) return Promise.resolve();
+    void document.body.offsetHeight;          // lays the page out, which asks for its fonts
+    return Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 3000))]);
+  }
   // Rebuild the 64 KB image from listing.json records; the $0000-$3FFF ROM is not the game and
   // stays zero. Bytes no record covers have has[a] false.
   async function load(url) {
     url = url || 'listing.json';
-    const L = embedded(url) || await fetch(url).then(r => r.json());
+    let L = embedded(url);
+    if (L) await fontsIn(); else L = await fetch(url).then(r => r.json());
     const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
     for (const r of L.records) {
       if (!r.b) continue;

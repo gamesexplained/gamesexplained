@@ -35,12 +35,20 @@ globalThis.BBC = (function () {
       if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
     return null;
   }
+  // Text a widget writes into a canvas stays in the font it was drawn in. A fetched listing
+  // usually arrived after the page's fonts had loaded; an embedded one is in hand at once, so it
+  // is handed over when they have, or after three seconds if they never do.
+  function fontsIn() {
+    if (typeof document === 'undefined' || !document.fonts || !document.body) return Promise.resolve();
+    void document.body.offsetHeight;          // lays the page out, which asks for its fonts
+    return Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 3000))]);
+  }
   // Rebuild a 64 KB image from listing.json records. Bytes the game does not use stay 0 and has[a] is false.
   async function load(url) {
     url = url || 'listing.json';
     if (!listings.has(url)) {
       const E = embedded(url);
-      listings.set(url, E ? Promise.resolve(E) : fetch(url).then(r => r.json()).catch(e => { listings.delete(url); throw e; }));
+      listings.set(url, E ? fontsIn().then(() => E) : fetch(url).then(r => r.json()).catch(e => { listings.delete(url); throw e; }));
     }
     const L = await listings.get(url);
     const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);

@@ -1,6 +1,7 @@
 // Test of C64.load, BBC.load and Spectrum.load in site/lib/: a listing the build embedded in the
 // page, in <script type="application/json" data-listing="url">, is read from the page and never
-// fetched; a tag the build has not filled in, still the list of pieces, is passed over and the
+// fetched, and handed over once the page's fonts have loaded, so text a widget draws into a canvas
+// is in them; a tag the build has not filled in, still the list of pieces, is passed over and the
 // listing fetched, as is a listing the page does not carry.
 //   node kit/scripts/test_embedded_listing.js
 const path = require('path');
@@ -11,7 +12,10 @@ globalThis.fetch = async (u) => {
   return { json: async () => ({ records: [{ a: 0x2000, l: 'fetched', b: [9] }] }) };
 };
 const tag = (url, body) => ({ getAttribute: k => k === 'data-listing' ? url : null, textContent: JSON.stringify(body) });
+let fontsLoaded;
 globalThis.document = {
+  body: { offsetHeight: 0 },
+  fonts: { ready: new Promise(r => { fontsLoaded = r; }) },
   querySelectorAll: () => [
     tag('parts/one/listing.json', { schema: 1, records: [{ a: 0x1000, t: 'data', l: 'tune', b: [1, 2, 3] }] }),
     tag('parts/two/listing.json', ['tune']),
@@ -23,6 +27,13 @@ let failed = 0;
 const check = (ok, what) => { if (!ok) { failed++; console.log('FAIL ' + what); } };
 
 (async () => {
+  const early = [];
+  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum]]) M.load('parts/one/listing.json').then(() => early.push(name));
+  await new Promise(r => setTimeout(r, 50));
+  check(early.length === 0, `${early.join(', ')}.load handed over an embedded listing before the page's fonts loaded`);
+  fontsLoaded();
+  await new Promise(r => setTimeout(r, 0));
+  check(early.length === 3, 'C64, BBC and Spectrum.load: an embedded listing once the fonts are in');
   for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum]]) {
     fetched.length = 0;
     const one = await M.load('parts/one/listing.json');
@@ -35,6 +46,6 @@ const check = (ok, what) => { if (!ok) { failed++; console.log('FAIL ' + what); 
     await M.load('elsewhere/listing.json');
     check(fetched.length === 2, `${name}.load did not fetch a listing the page lacks`);
   }
-  console.log(failed ? `${failed} failed` : 'C64, BBC and Spectrum.load: an embedded listing is read from the page: ok');
+  console.log(failed ? `${failed} failed` : 'C64, BBC and Spectrum.load: an embedded listing is read from the page, once its fonts are in: ok');
   process.exit(failed ? 1 : 0);
 })();
