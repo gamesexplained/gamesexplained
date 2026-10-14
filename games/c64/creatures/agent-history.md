@@ -180,3 +180,11 @@ two cycles late instead of one early, and was left out. The emulator's
 own snapshot of the hand-over has no text font at `$D000`, so the text
 screen was checked only on the page, whose memory comes from the
 listings.
+
+On 14 October 2026 the kit moved secrets, quirks and bugs to a
+Discoveries tab of their own (`70-minisite`, "Discoveries"). The five
+`Secret:` sections of How it works and the rescue's from Maps moved to
+`discoveries.html`, with three findings that had sat inside other
+sections: the witch's line for no lives, her unread message 4 with the
+five sound effects nothing asks for, and the ending's border stripe in
+`frame_music`. The sections they came from link to them.
