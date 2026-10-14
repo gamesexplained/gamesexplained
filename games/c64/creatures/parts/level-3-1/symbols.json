@@ -815,6 +815,12 @@
    "kind": "user"
   },
   {
+   "address": 36826,
+   "name": "pad_8FDA",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 36862,
    "name": "anim_55",
    "type": "UserDefined",
@@ -1045,6 +1051,42 @@
   {
    "address": 40039,
    "name": "y_move_20",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40066,
+   "name": "level_tune",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40094,
+   "name": "level_tune_voice_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40449,
+   "name": "level_tune_sections",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40738,
+   "name": "end_tune",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40933,
+   "name": "end_tune_sections",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40947,
+   "name": "scratch_lh",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1833,6 +1875,12 @@
    "name": "x_move_2",
    "type": "UserDefined",
    "kind": "user"
+  },
+  {
+   "address": 43769,
+   "name": "pad_AAF9",
+   "type": "UserDefined",
+   "kind": "user"
   }
  ],
  "comments": [
@@ -1844,7 +1892,7 @@
   {
    "address": 23160,
    "type": "line",
-   "text": "Character $4F of the level's character set, and the seven after it. The label is the engine's: wipe_char_set, called by the attract sequence, redefines character $4F here for a screen wipe; no code of the level calls it."
+   "text": "Character $4F of the level's character set, and the characters after it. The label is the engine's: wipe_char_set, called by the attract sequence, redefines character $4F here for a screen wipe; no code of the level calls it."
   },
   {
    "address": 23304,
@@ -1889,7 +1937,7 @@
   {
    "address": 23456,
    "type": "line",
-   "text": "Characters $74-$77, a torch on the castle wall (level 3.1's map has five from column 152, level 3.2's 26): level_frame copies one of two 32-byte frames over them every third frame, torch_frame_a and torch_frame_b in turn, so the flames flicker."
+   "text": "Characters $74-$77, a torch on the castle wall (level 3.1's map has five from column 152, level 3.2's 26): level_frame copies one of two 32-byte frames over them every third frame, torch_frame_a and torch_frame_b in turn, so the flames flicker. The characters after them follow."
   },
   {
    "address": 23856,
@@ -2034,7 +2082,7 @@
   {
    "address": 32849,
    "type": "line",
-   "text": "Bytes of tile 4. The label is the engine's: once a torture chamber's file is in, the engine's $BE5C jumps to $8051, where every chamber starts its code."
+   "text": "Tile 4 from its ninth byte, and tiles 5-15. The label is the engine's: once a torture chamber's file is in, the engine's $BE5C jumps to $8051, where every chamber starts its code."
   },
   {
    "address": 33033,
@@ -2450,6 +2498,11 @@
    "address": 36824,
    "type": "line",
    "text": "Movement script x 8: one pass takes 1 frames and ends 1 pixels left of where it began, then starts again."
+  },
+  {
+   "address": 36826,
+   "type": "line",
+   "text": "36 zeros that nothing reads, between x script 8 and type 55's animation script at $8FFE. Level 3.2's file has 36 bytes of $66 here."
   },
   {
    "address": 36862,
@@ -3089,7 +3142,7 @@
   {
    "address": 39006,
    "type": "line",
-   "text": "170 bytes after the spawn list's end mark ($FE in record 125's last byte, $985D), laid out as ten 17-byte spawn records: object_spawn stops at the first $FE, so nothing reads them. Level 3.2's file has the same bytes here."
+   "text": "170 bytes after the spawn list's end mark ($FE in record 125's last byte, $985D), laid out as ten 17-byte spawn records: object_spawn stops at the first $FE, so nothing reads them. They are level 3.2's spawn records 126-135 byte for byte, at the same addresses in its file, where its list runs on to $9907."
   },
   {
    "address": 39176,
@@ -3250,6 +3303,36 @@
    "address": 40039,
    "type": "line",
    "text": "Movement script y 20: one pass takes 24 frames and ends where it began (going as far as 16 down), then starts again; it plays sound effect $19."
+  },
+  {
+   "address": 40066,
+   "type": "line",
+   "text": "The level's tune (tune_addr), in the music driver's format: a header of two voice offsets ($0F and $18, from the first voice), the three voices from $9C86, $9C95 and $9C9E, and the three sections the third voice calls, to $9F21. The first voice is fifteen bytes and the second nine, each ending at once with the end command ($1E); the third holds the rest of the tune. Level 3.2 plays the same tune: its tune_addr also names $9C82, which its file does not load over."
+  },
+  {
+   "address": 40094,
+   "type": "line",
+   "text": "level_tune's third voice, to its end command at $9E00."
+  },
+  {
+   "address": 40449,
+   "type": "line",
+   "text": "The three sections level_tune's third voice calls (music command $23), $9E01, $9EBC and $9EDD, each ending in a return ($24), the last at $9F21."
+  },
+  {
+   "address": 40738,
+   "type": "line",
+   "text": "The tune game_frame_music starts near the level's end (end_tune_addr), in the music driver's format: two voice offsets ($09 and $12), three voices from $9F26, $9F2F and $9F38 (the first two nine bytes each, ending at once; the third to $9FE4) and two sections, $9FE5 and $9FEC, to $9FF2. Level 3.2's end_tune_addr names it too."
+  },
+  {
+   "address": 40933,
+   "type": "line",
+   "text": "The two sections end_tune's third voice calls, $9FE5 and $9FEC, each ending in a return ($24), the last at $9FF2."
+  },
+  {
+   "address": 40947,
+   "type": "line",
+   "text": "Eight zeros, then \"S0:LH\" in PETSCII ($9FFB-$9FFF): the drive command that scratches the file LH, the name level 3.2's file loads under. Nothing in the game reads it."
   },
   {
    "address": 40960,
@@ -3920,6 +4003,11 @@
    "address": 43753,
    "type": "line",
    "text": "Movement script x 2: one pass takes 15 frames and ends 27 pixels right of where it began, then stops ($FE)."
+  },
+  {
+   "address": 43769,
+   "type": "line",
+   "text": "263 zeros that nothing reads, to the end of the file at $ABFF."
   }
  ]
 }
