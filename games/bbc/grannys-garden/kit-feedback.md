@@ -57,28 +57,8 @@ time, operating system and tool versions.
 
 ## Maintainer asks
 
-- **Decide whether a BASIC game's listing may carry the whole program.**
-  For a game written in BASIC, `listing.json` is the program: its records
-  hold every byte, and the Source tab prints every line as LIST would, so
-  the game can be typed back in from the page. `AGENTS.md` allows a
-  listing to carry the game's bytes, and says a page never carries enough
-  of the game to rebuild it; for a machine-code game the two agree, for a
-  BASIC one they do not. Flax Cottage, an archive of BBC educational
-  software, withholds Granny's Garden because 4Mation still enforces its
-  copyright.
-  The contributor asked for `game.json`'s `publish_source: false`, which
-  this branch adds, and set it for this game: the Source tab does not
-  show the listing, the site serves no `listing.json`, and the pages carry
-  only the DATA they draw. The contributor decided that the repository
-  keeps the whole listing and the site publishes none of it. What is left
-  to decide: whether `AGENTS.md` says so, for the next BASIC game. Where:
-  `AGENTS.md`, "No binaries, ever".
-- **Report a page's links that land inside a record of a BASIC listing.**
-  `build.py --addresses` reports a `$` link that lands on no record. In a
-  BASIC listing every address is inside some line, so a wrong address
-  lands on the wrong line and nothing is reported (Candidates, above).
-  What to change: for a record of type BASIC, report a link that is not
-  the record's first byte. Where: `kit/scripts/build.py`.
+- #355: Decide whether a BASIC game's listing may carry the whole program. The contributor decided, on 14 October 2026, that the repository keeps it and the site publishes none of it (`"publish_source": false`); what is left is whether `AGENTS.md` says so.
+- #356: Report a page's links that land inside a record of a BASIC listing.
 
 ## What cost the most time
 
