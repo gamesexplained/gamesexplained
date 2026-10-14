@@ -21,4 +21,8 @@ Tier: Silver. Coverage is 100 % over all fifteen parts, and the sample of
   reaches them, with the hidden prizes and their groups shown.
 - Clyde's own animations (walking, jumping, swimming, the broom) beside
   the creature gallery.
-- The witch's shop as a widget: the weapons, their grades and prices.
+- The weapons tablet in the shop widget: the page runs the shop's
+  messages but not the tablet, so the weapons, their grades and prices
+  are a table.
+- The ending's sound from its own driver calls, with the fade at the
+  end: the widget plays the music player's port of the tune instead.

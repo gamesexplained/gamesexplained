@@ -165,3 +165,18 @@ record was read at the end of the emulator's frame, while the main
 loop's box step, which starts at line `$F4`, was still running. Read
 where each pass of `shop_loop` ends, the record matched the page run for
 run.
+
+The ending widget runs the ending's code from the listings in a small
+machine on the page. Its first frames drew the text screen and the
+scenes, and the scenes' 2,452 passes matched the emulator's record from
+the first run, but the colour splits came early: 33 cycles on the
+shack's ground line, 52 pixels wrong. The page's 6502 had every cycle,
+where the video chip takes the bad lines' and the sprites' from the
+processor. With `kit/c64/machine.js`'s model of those cycles copied in,
+the shack's frames matched VICE's pictures to the pixel and the
+village's but for 4 pixels where the cliff's colours come in. Making the
+interrupt wait for an instruction's last cycle but one moved that split
+two cycles late instead of one early, and was left out. The emulator's
+own snapshot of the hand-over has no text font at `$D000`, so the text
+screen was checked only on the page, whose memory comes from the
+listings.

@@ -46,6 +46,18 @@ from the code in `work/entry.vsf`, stopped at `$7D6A`.
 - *Live*, 14 October 2026: `reference/ending-village.png`,
   `reference/ending-rave.png`, `reference/ending-hearts.png`, and the
   return to the high-score check.
+- *Live*, 14 October 2026, from `work/entry.vsf` with fire on the text
+  screen: the scenes' loops made 1,060 passes in the village, 499 in the
+  rave and 893 for the pair, one a frame, about 21, 10 and 18 seconds.
+- The raster interrupt comes through the KERNAL's entry at `$FF48`, since
+  the ending keeps the ROM in (`$01` = `$36`): it pushes A, X and Y and
+  leaves A 0 and X the stack pointer. `raster_irq` (`$81AC`) saves the
+  registers as it finds them, drops the ROM's three pushes (`$81C7`) and
+  puts its own back, so the interrupted code gets 0 in A and the stack
+  pointer in X. In the page's run of the ending, which matches the
+  emulator's pass for pass (`test_end.js`), every interrupt came in a
+  wait loop that loads A again and uses neither X nor Y, so nothing is
+  lost.
 
 ## What nothing uses
 

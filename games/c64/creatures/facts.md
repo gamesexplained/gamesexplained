@@ -306,4 +306,10 @@ All in VICE 3.9 through `kit/c64/vice.py`, from the snapshots named in
   spikes off (`orientation.md`).
 - The ending's text and its three scenes, and its return to the
   high-score check (part `ending`).
+- The witch's shop before level 1.2, entered with 5 lives: the greeting,
+  its boxes and four presses of INFORMATION, read at every pass of
+  `shop_loop` (part `shop`, `test_shop.js`, `test_shop.json`).
+- The ending from its hand-over with fire on the text screen: every pass
+  of the scenes' frame loops, 2,452, and five whole frames with VICE's
+  pictures of them (part `ending`, `test_end.js`, `test_end.json`).
 - A VICE reset from chamber 1 stopping at engine `memory_wipe`.
