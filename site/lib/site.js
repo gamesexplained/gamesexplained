@@ -132,12 +132,43 @@
       });
       if(added){ collect(); spy(); }
     }
+    // A section off the screen is neither laid out nor painted (section.cv in site.css), so a long page
+    // scrolls at the cost of what is in sight, whatever the rest of it draws. Off the screen it stands at
+    // the height it had, taken here once the page, its pictures and its fonts have loaded and its own
+    // script has stopped writing to it, and again when the width or the list of sections changes, so the
+    // scroll bar, a jump to a section and the list above keep their places. Only where a browser can let
+    // a section's shadows and tooltips reach past its edge (overflow-clip-margin), and not in the page
+    // editor, which measures and moves blocks.
+    var cvT=0, wide=0;
+    function cv(on){
+      if(!on){ [].forEach.call(document.querySelectorAll('section.cv'),function(s){ s.classList.remove('cv'); }); return; }
+      var ss=outline().filter(function(e){ return e.el.tagName==='SECTION'; }).map(function(e){ return e.el; });
+      var hs=ss.map(function(s){   // all measured before any is skipped
+        var c=getComputedStyle(s);
+        return s.getBoundingClientRect().height-['paddingTop','paddingBottom','borderTopWidth','borderBottomWidth'].reduce(function(n,k){ return n+parseFloat(c[k]); },0);
+      });
+      ss.forEach(function(s,i){ s.style.setProperty('--cv-h',Math.max(0,hs[i])+'px'); s.classList.add('cv'); });
+      wide=innerWidth;
+    }
+    function again(){   // whole for a frame, so the browser forgets the heights it kept, then measured afresh
+      clearTimeout(cvT);
+      cvT=setTimeout(function(){ cv(false); requestAnimationFrame(function(){ requestAnimationFrame(function(){ cv(true); }); }); },300);
+    }
     var H2=document.getElementsByTagName('h2'), SEC=document.getElementsByTagName('section'), count=-1, soon=0;
-    function watch(){ soon=0; var n=H2.length+SEC.length; if(n!==count){ count=n; grow(); } }
+    function watch(){ soon=0; var n=H2.length+SEC.length; if(n!==count){ count=n; grow(); if(wide) again(); } }
     new MutationObserver(function(){ if(!soon) soon=setTimeout(watch,200); }).observe(document.body,{childList:true,subtree:true});
     addEventListener('scroll',function(){ if(!busy){ busy=true; requestAnimationFrame(spy); } },{passive:true});
-    addEventListener('resize',function(){ measure(); cur=-2; spy(); });
+    addEventListener('resize',function(){ measure(); cur=-2; spy(); if(wide&&innerWidth!==wide) again(); });
     collect(); watch(); measure(); spy();
+    if(window.CSS&&CSS.supports('content-visibility','auto')&&CSS.supports('overflow-clip-margin','1px')){
+      var quiet=0, give=0, still=new MutationObserver(function(){ clearTimeout(quiet); quiet=setTimeout(begin,400); });
+      var begin=function(){ still.disconnect(); clearTimeout(quiet); clearTimeout(give); if(!wide&&!document.getElementById('ge-meta')) cv(true); };
+      var start=function(){ (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
+        still.observe(document.querySelector('main')||document.body,{childList:true,attributes:true,characterData:true,subtree:true});
+        quiet=setTimeout(begin,400); give=setTimeout(begin,2000);   // a page that never stops writing starts anyway
+      }); };
+      if(document.readyState==='complete') start(); else addEventListener('load',start);
+    }
   })();
   if(document.body.dataset.nolink||document.querySelector('.gametabs[data-nolink]')) return;   /* a game with no listing has no Source page */
   document.querySelectorAll('code').forEach(function(c){

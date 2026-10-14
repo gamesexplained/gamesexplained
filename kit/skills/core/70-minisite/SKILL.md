@@ -194,7 +194,11 @@ its music or its maps can put that first instead.
   heading that begins `Bug:`, `Secret:`, `Music:` or `Sound:` is tagged
   in that list, and nothing else is: the prefix is the only way to get a
   tag. Head the section about the tunes `Music:` and the one about sound
-  effects `Sound:`.
+  effects `Sound:`. A section off the screen is skipped, not laid out or
+  painted (`section.cv` in `site.css`), which makes each section a box
+  its contents stay inside: nothing in it can be `position: fixed`, and
+  nothing it shows, a tooltip or a pop-up, can reach more than 200px past
+  its edges.
 - Embed the data a widget needs in the page: extracted character set,
   level data, tables, tune bytes, the pictures a viewer shows. That is
   not what "No binaries" (`AGENTS.md`) forbids, which is files holding
