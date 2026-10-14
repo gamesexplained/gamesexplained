@@ -6,7 +6,10 @@ loader and event manager, the shop and town and the five events, are at
 
 ## For Gold
 
-- A human pass over every section of every page (`kit/START.md`).
+- A human pass over every section of every page (`kit/START.md`). The
+  first pass (October 2026) rewrote the Overview, added the Controls tab
+  and Rodney's lines, and linked and restyled every tab; the steward's
+  own read of each section is still to come.
 
 ## Open questions
 
@@ -23,3 +26,10 @@ loader and event manager, the shop and town and the five events, are at
 - High Jump: whether sprite 7 is meant as a shadow; what the scale value
   `$51`/`$52` does on screen.
 - Boot: how the protected track 2 was mastered (only the check is known).
+- Rodney's line SECRET PATH IN DOWNHILL JAM! (`$23BE`): whether the Jam's
+  course has a secret path, and where, is not established.
+- High Jump: whether pressing fire a little before the top of a pass gains
+  the half-foot bonus.
+- The reception has one review. Zzap!64's full review (issue 33), and the
+  C64 reviews in CCI, C&VG, ACE, and Commodore User, wait on sources this
+  session could not read.

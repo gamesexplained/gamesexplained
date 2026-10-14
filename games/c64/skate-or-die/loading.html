@@ -27,14 +27,14 @@
 <section id="protection">
   <p class="fig">03 · The disk check</p>
   <h2 class="t">A track that a copier cannot write</h2>
-  <p>Track 2 of the disk holds no sectors at all. It holds one sync mark, a run of filler bytes, then 512 pairs of the bytes <code>$CC $AD</code> followed by twelve particular bytes. The loader unpacks a 182-byte program, sends it to the drive one byte at a time, and runs it there. The drive program moves the head to track 2, changes the speed at which it reads bits, and looks for that exact pattern, three tries at most. The loader then asks the drive for the result and for a byte of the program itself, to be sure the program was not replaced. If either answer is wrong, it fills its own memory with <code>$FF</code> and resets the machine.</p>
-  <p>The check is the last thing the encrypted loader does before it changes the drive for good. It resets the drive, has it read four sectors of track 1, and jumps into them. That is EA's disk server: it stays in the drive's memory for the whole game and answers three-byte commands, a command, a track and a sector, sent over the serial lines. The C64 never holds a copy of it.</p>
+  <p>Track 2 of the disk holds no sectors at all. The track holds one sync mark, a run of filler bytes, then 512 pairs of the bytes <code>$CC $AD</code> followed by twelve particular bytes. The loader unpacks a 182-byte program, sends it to the drive one byte at a time, and runs it there. The drive program moves the head to track 2, changes the speed at which it reads bits, and looks for that exact pattern, three tries at most. The loader then asks the drive for the result and for a byte of the program itself, to be sure the program was not replaced. If either answer is wrong, it fills its own memory with <code>$FF</code> and resets the machine.</p>
+  <p>The check is the last thing the encrypted loader does before it changes the drive for good. The loader resets the drive, has it read four sectors of track 1, and jumps into them. That is EA's disk server: it stays in the drive's memory for the whole game and answers three-byte commands, a command, a track, and a sector, sent over the serial lines. The C64 never holds a copy of it.</p>
 </section>
 <section id="stage3" data-part="boot">
   <p class="fig">04 · The hand-over</p>
   <h2 class="t">Wiping the loader behind it</h2>
-  <p>The loader's own receive routine XORs every byte with <code>$A5</code> and turns the background up a shade with each page, which is the stepping colour behind the logo. It reads six sectors of track 3 to <code>$2000</code>, copies a wiper to <code>$EF00</code>, and the wiper clears the encrypted loader from memory before it returns into the new code.</p>
-  <p>That code, stage 3 (<code>$2000</code>), is 52 bytes. It copies the resident disk loader up to <code>$F230</code>, where it stays for the rest of the game, loads file 0, the title, and jumps to it. Every later load in the game goes through that resident loader and the server in the drive (<a href="town.html">The town</a>).</p>
+  <p>The loader's own receive routine XORs every byte with <code>$A5</code> and turns the background up a shade with each page, which is the stepping colour behind the logo. The loader reads six sectors of track 3 to <code>$2000</code>, copies a wiper to <code>$EF00</code>, and the wiper clears the encrypted loader from memory before it returns into the new code.</p>
+  <p>That code, stage 3 (<code>$2000</code>), is 52 bytes. Stage 3 copies the resident disk loader up to <code>$F230</code>, where it stays for the rest of the game, loads file 0, the title, and jumps to it. Every later load in the game goes through that resident loader and the server in the drive (<a href="town.html">The town</a>).</p>
 </section>
 <section id="title" data-part="title">
   <p class="fig">05 · The title</p>
@@ -42,15 +42,15 @@
   <p>The title program unpacks its picture first (<code>$4160</code>), so it is on screen while the samples for the music load behind it. The picture is a multicolour bitmap, packed on the disk with a simple run-length scheme (<code>$4338</code>): a byte below 128 is followed by that many plus one literal bytes, a byte of 128 or more by one byte to repeat.</p>
   <div class="plate">
     <canvas id="pic" class="scr" style="max-width:640px"></canvas>
-    <p class="cap">The title picture drawn from the title's memory: the bitmap at <code>$A000</code>, the screen colours at <code>$8800</code> and the colour-RAM copy at <code>$8400</code>, as <code>$41CD</code> shows them.</p>
+    <p class="cap">The title picture drawn from the title's memory: the bitmap at <code>$A000</code>, the screen colours at <code>$8800</code>, and the colour-RAM copy at <code>$8400</code>, as <code>$41CD</code> shows them.</p>
   </div>
-  <p>Nothing on the screen moves; only colours change. Each frame the raster interrupt (<code>$4093</code>) plays the music, then uses a frame counter to step four colour effects: ELECTRONIC ARTS flips between white and yellow every 32 frames, white and greys roll down the three credit lines, a highlight sweeps across the EA logo, and the words SKATE, OR and DIE! swap their colour with their shadow one after another (<code>$423E</code>, <code>$42BC</code>), 16 frames apart.</p>
+  <p>Nothing on the screen moves; only colours change. Each frame the raster interrupt (<code>$4093</code>) plays the music, then uses a frame counter to step four colour effects: ELECTRONIC ARTS flips between white and yellow every 32 frames, white and greys roll down the three credit lines, a highlight sweeps across the EA logo, and the words SKATE, OR, and DIE! swap their colour with their shadow one after another (<code>$423E</code>, <code>$42BC</code>), 16 frames apart.</p>
 </section>
 <section id="exit" data-part="title">
   <p class="fig">06 · Leaving the title</p>
   <h2 class="t">The shop starts on an interrupt</h2>
   <p>The title waits for fire on either joystick (<code>$4022</code>); the space bar works too, because the keyboard row it sits on is the one left selected. On fire, the music stops, the shop is loaded to <span data-part="shop"><code>$0880</code></span>, and the NMI vector is pointed at <span data-part="shop"><code>$0880</code></span>. The title then restarts the timer that drove the samples and spins in a loop. The next tick of that timer raises an NMI, and the NMI is how the shop starts.</p>
-  <p>The title leaves a 0 at <code>$FDFF</code>. The shop reads it, and anything but <code>$55</code> makes it load the event manager that runs the town and the events. Rob Hubbard's music, with its sampled guitars played through the volume register, is on <a href="music.html">Music and sound</a>.</p>
+  <p>The title leaves a 0 at <code>$FDFF</code>. The shop reads it, and anything but <code>$55</code> makes it load the <a href="town.html#loading">event manager</a> that runs the town and the events. <a href="music.html#title">Rob Hubbard</a>'s music, with its sampled guitars played through the volume register, is on <a href="music.html">Music and sound</a>.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
