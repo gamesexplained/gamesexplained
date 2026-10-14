@@ -42,8 +42,6 @@ Source tab calls the listing checked only after that.
 - A Play tab: the game is BASIC from end to end, so a faithful port is
   smaller work than for a machine-code game, and the page's teletext
   renderer and sound player already draw and play it.
-- A Maps / levels tab with every picture in both parts drawn from its
-  bytes, beside the PRINT statements that make it.
 - The tape release (£10 against the disc's £12, Acorn User, November 1983):
   whether it is the same two programs, and whether its relocation test is
   intact.
