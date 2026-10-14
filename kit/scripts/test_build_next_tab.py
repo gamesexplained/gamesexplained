@@ -21,7 +21,8 @@ def target(h):
 class NextTab(unittest.TestCase):
     def test_the_tab_after_in_the_bar(self):
         every = {f for f, _ in build.TABS}
-        self.assertEqual(target(build.next_tab({}, every, "index.html")), ("source.html", "Source code"))
+        self.assertEqual(target(build.next_tab({}, every, "index.html")), ("discoveries.html", "Discoveries"))
+        self.assertEqual(target(build.next_tab({}, every, "discoveries.html")), ("source.html", "Source code"))
         self.assertEqual(target(build.next_tab({}, every, "play.html")), ("about.html", "About"))
         self.assertEqual(build.next_tab({}, every, "about.html"), "")
 

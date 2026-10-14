@@ -1,6 +1,6 @@
 ---
 name: 70-minisite
-description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; the Maps / levels tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the Discoveries tab of secrets, quirks and bugs; the listing behind the Source code tab; the Maps / levels tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
@@ -11,16 +11,17 @@ the writing is the spine but anything that explains the game can live
 game itself). If you can build it, build it.
 
 Every game is a small site with the same tabs in the same order: **How it
-works** (`index.html`, authored), **Source code** (`source.html`, generated
-from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
-(`levels.html`, authored, for every game with more than one level, map,
-room, stage or screen),
-**Play** (`play.html`, authored, only when a JavaScript version exists),
-**About** (generated from `game.json`, `features.md`, `orientation.md`, git).
-`kit/scripts/build.py` assembles them; you write the authored ones. A game
-that needs other tabs lists all of its tabs, in order, as `[file, label]`
-pairs in `game.json`'s `"tabs"`; the build publishes the pages named there
-and warns about any other `.html` in the folder.
+works** (`index.html`, authored), **Discoveries** (`discoveries.html`,
+authored, the secrets, quirks and bugs), **Source code** (`source.html`,
+generated from `listing.json` plus `facts.md` and `cheats.md`), **Maps /
+levels** (`levels.html`, authored, for every game with more than one
+level, map, room, stage or screen), **Play** (`play.html`, authored, only
+when a JavaScript version exists), **About** (generated from `game.json`,
+`features.md`, `orientation.md`, git). `kit/scripts/build.py` assembles
+them; you write the authored ones. A game that needs other tabs lists all
+of its tabs, in order, as `[file, label]` pairs in `game.json`'s
+`"tabs"`; the build publishes the pages named there and warns about any
+other `.html` in the folder.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
@@ -114,17 +115,9 @@ address links into the Source tab, and the house style in `kit/style.md`.
    sound below about 100 Hz that laptop and phone speakers barely play
    it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
    the model (`C64Sid.engine()` in node) and measure the output.
-- **Secrets, quirks and bugs.** The best part. Things a player who
-   finished the game would not know, each verified live, with the
-   evidence beside it. One kind deserves a special look: a state the code
-   accepts but the programmer never meant anyone to reach (the open
-   questions `50-coverage` notes and `60-verify`, "What a test lets
-   through", settles). It is classic tool-assisted-speedrun material,
-   invisible in play and plain in the listing. Landing while climbing, and
-   being paid more for it, is one. When you find one, do not stop at the
-   poke: prove a player could get there (`60-verify`, reachability), and
-   build the section around a stepper the reader can walk through. It is
-   one kind of interesting fact among several, not the point of the page.
+- **Secrets, quirks and bugs.** These have a tab of their own,
+   Discoveries (below). A section here whose mechanic leads to one links
+   to it.
 
 ## The order
 
@@ -189,14 +182,14 @@ its music or its maps can put that first instead.
   players, table explorers.
 - Keep every section a top-level `<section>` with the template's label
   line (`<p class="fig">01 · label</p>`) and an `<h2>` heading, on the
-  Maps / levels and Play pages too. The build lists each page's sections
-  in its left margin by their headings (any further `<h2>` gets an entry
-  of its own, and so does a section or heading the page's script adds),
-  so the headings are what a reader scans to choose where to go. A
-  heading that begins `Bug:`, `Secret:`, `Music:` or `Sound:` is tagged
-  in that list, and nothing else is: the prefix is the only way to get a
-  tag. Head the section about the tunes `Music:` and the one about sound
-  effects `Sound:`.
+  Discoveries, Maps / levels and Play pages too. The build lists each
+  page's sections in its left margin by their headings (any further
+  `<h2>` gets an entry of its own, and so does a section or heading the
+  page's script adds), so the headings are what a reader scans to choose
+  where to go. A heading that begins `Bug:`, `Secret:`, `Music:` or
+  `Sound:` is tagged in that list, and nothing else is: the prefix is the
+  only way to get a tag. Head the section about the tunes `Music:` and the
+  one about sound effects `Sound:`.
 - Embed the data a widget needs in the page: extracted character set,
   level data, tables, tune bytes, the pictures a viewer shows. That is
   not what "No binaries" (`AGENTS.md`) forbids, which is files holding
@@ -367,6 +360,27 @@ a sentence or two, with the rest of the copy: leave it neither empty nor
 for the contributor. The home page shows it on the game's card unless
 `game.json` has a `blurb`, and the Gold pass may rewrite it.
 
+## Discoveries
+
+Secrets, quirks and bugs are the best part of the minisite: things a
+player who finished the game would not know, each verified live, with the
+evidence beside it, one section each. Head each one `Secret:` or `Bug:`
+with the finding in the heading, so the section list tags it, and put the
+best first. Where a discovery rests on a mechanic the How it works page
+explains, link to that section rather than explaining it again.
+
+One kind deserves a special look: a state the code accepts but the
+programmer never meant anyone to reach (the open questions `50-coverage`
+notes and `60-verify`, "What a test lets through", settles). It is classic
+tool-assisted-speedrun material, invisible in play and plain in the
+listing. Landing while climbing, and being paid more for it, is one. When
+you find one, do not stop at the poke: prove a player could get there
+(`60-verify`, reachability), and build the section around a stepper the
+reader can walk through. It is one kind of discovery among several.
+
+When the run found none, leave the tab out and say so in
+`agent-history.md`.
+
 ## Maps / levels
 
 A game with more than one level, map, room, stage or screen gets this
@@ -440,7 +454,8 @@ see it, which makes it the best test that the data is understood.
 ## Outputs
 
 `index.html` opening cleanly from disk, loaded in a browser with every
-widget exercised, its best thing high on the page; `levels.html` with
+widget exercised, its best thing high on the page; `discoveries.html`
+with every secret, quirk and bug; `levels.html` with
 every level, map or room drawn, or the line in `agent-history.md` saying
 why the game has none; `listing.json` built and passing
 `check_listing.py`; `game.json` with `copy` set; `build.py` producing the

@@ -3,6 +3,7 @@
 
 For every games/<platform>/<slug>/game.json:
   index.html   copied through, tab bar injected  (How it works)
+  discoveries.html copied through if authored    (Discoveries)
   source.html  from site/source.html + facts.md + cheats.md   (Source code)
   levels.html  copied through if authored          (Maps / levels)
   play.html    copied through if authored          (Play)
@@ -90,8 +91,8 @@ PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
 PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
                 "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it"}
-TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
-        ("play.html", "Play"), ("about.html", "About")]
+TABS = [("index.html", "How it works"), ("discoveries.html", "Discoveries"), ("source.html", "Source code"),
+        ("levels.html", "Maps / levels"), ("play.html", "Play"), ("about.html", "About")]
 _warned = set()
 
 
