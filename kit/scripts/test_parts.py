@@ -160,6 +160,19 @@ class Parts(unittest.TestCase):
             self.assertNotIn('code bytes of engine', run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'street',
                                                           g / 'street.vsf').stdout)
 
+    def test_code_beneath_that_rewrites_itself_is_told_from_code_replaced(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            other = dict(ENGINE)
+            other[0x1000] = [0x20, 0x00, 0x40, 0xAD, 0x11, 0x10, 0x60]       # an operand the engine rewrites
+            out = run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'street', snapshot(g / 'odd.vsf', other, STREET)).stdout
+            self.assertIn('none of them an instruction\'s first byte and none in a row', out)
+            self.assertNotIn('widen', out)
+            other[0x1000] = [0xA2, 0x00, 0x40, 0xA2, 0x11, 0x10, 0xEA]       # three instructions in a row: another load's
+            out = run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'street', snapshot(g / 'odd.vsf', other, STREET)).stdout
+            self.assertIn('three or more instructions in a row at $1000', out)
+            self.assertIn('widen "ranges"', out)
+
     def test_code_beneath_that_this_load_replaces_is_not_reported(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)
