@@ -754,6 +754,15 @@ other way: go by the first byte, not the number.
     1 to 8 centiseconds after each of the six, 100 after the seventh). BASIC
     waits only for the channel it is sounding, so a program that flushes
     one channel and not another runs ahead on the one it flushes.
+- **An envelope is read while its note plays.** Redefining an envelope
+  changes every note playing or queued with it. Five `ENVELOPE 1`
+  statements, each followed by a `SOUND` that uses envelope 1, all ran in
+  a few hundredths of a second: the first note's pitch steps changed as
+  each definition landed, and each note after it played the definition in
+  force while it played (measured on 14 October 2026 in jsbeeb with MOS 1.20 and BASIC II, from
+  the bytes the chip was sent). A program's `ENVELOPE` before each
+  `SOUND` gives each note its own envelope only if BASIC waits for the
+  queue between them.
 - **OSWORD 7** is SOUND: an 8-byte block of four two-byte values, low
   byte first: channel, amplitude (−15 to 0, or an envelope 1-16), pitch,
   duration. `SOUND 1,-15,200,20` is `01 00 F1 FF C8 00 14 00`. **OSWORD
@@ -847,7 +856,8 @@ appendix A), with the ones checked further marked:
 | &09, &0A | the flash periods |
 | &0B, &0C | the keyboard's auto-repeat delay and rate |
 | &0D, &0E | disable, enable event X |
-| &0F, &15 | flush buffers, flush buffer X |
+| &0F | flush buffers: X = 0 every buffer, the sound queues with the rest, so a note that is playing stops (live: the chip was silenced at the call); X non-zero, the current input buffer only |
+| &15 | flush buffer X |
 | &10, &11 | the number of ADC channels to convert; start a conversion on channel X |
 | &13 | wait for the next vsync |
 | &76 | set the keyboard lights from the lock states |

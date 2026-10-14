@@ -21,3 +21,15 @@
   variables showed what the screen hides. When a page ports an input
   routine, hold it to the game on the keys at the edges: DELETE in an
   empty field, a key when the field is full, RETURN at once.
+- **Run a BASIC line before saying what it does.** An audit of every
+  comment in Granny's Garden found 41 of 189 wrong in a detail, and most
+  described what a line says rather than what the machine does with it:
+  a flash code a later PRINT overwrites, an envelope redefined before
+  each of five notes that BASIC has queued before the first ends, so each
+  plays the definition that stands while it plays, `*FX15,0` emptying the sound
+  queues as well as the keyboard's, and INSTR fragments that miss because
+  the input routine capitalised the answer's first letter. Each was found
+  by running the line, in the game or in a bare machine, and reading the
+  screen memory, the chip's writes or BASIC's variables. When a comment
+  says what a BASIC line shows, plays or accepts, run it and read the
+  result before writing it.

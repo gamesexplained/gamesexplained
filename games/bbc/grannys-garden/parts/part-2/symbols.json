@@ -599,7 +599,7 @@
   {
    "address": 3602,
    "type": "line",
-   "text": "Line 110, `CLEAR:?&E04=244`: forgets the variables and writes the REM token over line 100's first byte, so that the RUN which ends the relocation does not test PAGE again. In this copy the byte is 244 already."
+   "text": "Line 110, `CLEAR:?&E04=244`: forgets the variables and writes the REM token over line 100's first byte, so that later RUNs (ON ERROR's at line 140 and PROCkey's at line 870) do not test PAGE again; the RUN which ends the relocation has made its test already, at line 100, before it reaches this line. In this copy the byte is 244 already."
   },
   {
    "address": 3617,
@@ -609,7 +609,7 @@
   {
    "address": 3671,
    "type": "line",
-   "text": "Line 140, `ON ERROR RUN:*K.10OLD|MRUN|M`. Everything after ON ERROR on its line is the error handler, so the `*KEY10` that would make BREAK type OLD and RUN is never executed: on an error the handler RUNs first. Played on 14 October 2026: the soft-key buffer at &0B00 is empty in play. As in Part 1, the error handler is how the game gets out of Too many GOSUBs, after 26 journeys on the map."
+   "text": "Line 140, `ON ERROR RUN:*K.10OLD|MRUN|M`. Everything after ON ERROR on its line is the error handler, so the `*KEY10` that would make BREAK type OLD and RUN is never executed: on an error the handler RUNs first. Played on 14 October 2026: the soft-key buffer at &0B00 is empty in play. As in Part 1, the error handler is how the game gets out of Too many GOSUBs, after 26 journeys on the map, or 25 once the lake has told its name (GOSUB2340 never returns either)."
   },
   {
    "address": 3694,
@@ -629,12 +629,12 @@
   {
    "address": 3864,
    "type": "line",
-   "text": "Lines 180-190: Part 2's flags and shared sentences. For the Land of Mystery: jess% and dan% (found), fed% (never set TRUE anywhere), water%, name% (the lake's name heard), key%, keytake%, cake%, caketake%, fire% (TRUE, burning), stone (0, 1 carried, 2 given to the dwarf), giant%, beast%; np=10, where the player is to begin with, which is no place. f$, w$ and v$ are runs of solid graphics for the pictures; q3$, d1$-d3$, h$, k$, l$, w1$ and c1$ are sentences."
+   "text": "Lines 180-190: Part 2's flags and shared sentences. For the Land of Mystery: jess% and dan% (found), fed% (never set TRUE anywhere), water%, name% (the lake's name heard), key%, keytake%, cake%, caketake%, fire% (TRUE, burning), stone (0, 1 carried, 2 given to the dwarf), giant%, beast%; np=10, where the player is to begin with, which is no place. f$, w$ and v$ are runs of solid graphics for the pictures; q3$, d1$-d3$, l$, w1$ and c1$ are sentences or parts of them; h$ (`The`) and k$ (`dragon`) are set and never read."
   },
   {
    "address": 4218,
    "type": "line",
-   "text": "Line 200: place$(1-5) from line 770, forest, cottage, lake, castle and hill: the names the map's prompt says."
+   "text": "Line 200: place$(1-5) from line 770, forest, cottage, lake, castle and hill: the names line 1650 prints after `You are at the`."
   },
   {
    "address": 4259,
@@ -654,7 +654,7 @@
   {
    "address": 4570,
    "type": "line",
-   "text": "Lines 250-290, the password, which Part 2 cannot do without: up to seven letters, matched by INSTR against `ky` and `iv` (line 750), so only sky (Z=2) and river (Z=3) are taken; snow, or anything else, gets `Please try again.` (line 300) and the question again. The children found so far are listed and the next named; sky leads to the City of the Dragons (PROCdragon), river to the Land of Mystery (PROCmap)."
+   "text": "Lines 250-290, the password, which Part 2 cannot do without: up to seven letters, matched by INSTR against `ky` and `iv` (line 750), so sky (Z=2) and river (Z=3) are taken, and so is any answer with ky or iv after its first letter (`Olive` gives Z=3); snow, or any other answer, gets `Please try again.` (line 300) and the question again. The children found so far are listed and the next named; Z=2 leads to the City of the Dragons (PROCdragon), Z=3 to the Land of Mystery (PROCmap)."
   },
   {
    "address": 4915,
@@ -679,7 +679,7 @@
   {
    "address": 5065,
    "type": "line",
-   "text": "PROCsp (lines 340-350), wait for the space bar: *FX15,0 empties the input buffers, then `(space bar)` at column 12 and a loop until GET returns 32."
+   "text": "PROCsp (lines 340-350), wait for the space bar: *FX15,0 empties every buffer, the keyboard's and the sound queues alike, so a note still playing stops; then `(space bar)` at column 12 and a loop until GET returns 32."
   },
   {
    "address": 5112,
@@ -694,7 +694,7 @@
   {
    "address": 5239,
    "type": "line",
-   "text": "PROCb(t,b,k1,k2) (lines 410-440), as Part 1's: from where the cursor is, the control code k1, and k2 after it if k2>0, at the start of b-t+2 rows one under the other; t and b set only the count."
+   "text": "PROCb(t,b,k1,k2) (lines 410-440), as Part 1's: from where the cursor is, the control code k1, and k2 after it if k2>0, at that column on b-t+2 rows one under the other; t and b set only the count."
   },
   {
    "address": 5318,
@@ -709,7 +709,7 @@
   {
    "address": 5753,
    "type": "line",
-   "text": "PROCrav1 (lines 540-550), the raven arriving, as Part 1's: the bird's pieces from the DATA at line 760, printed four times down the screen behind conceal codes and uncovered three rows at a time (PROCt)."
+   "text": "PROCrav1 (lines 540-550), the raven arriving, as Part 1's: the bird's pieces from the DATA at line 760, printed four times down the screen behind conceal codes (152) and shown by PROCt a band at a time, two rows and then the row below, each hidden again before the next, so one small bird flaps its way down the screen."
   },
   {
    "address": 5979,
@@ -734,12 +734,12 @@
   {
    "address": 6342,
    "type": "line",
-   "text": "PROCwitch (lines 640-720), the Witch, as in Part 1; lines 640-680 draw her, and with on% FALSE her eyes are shown once, with no sound."
+   "text": "PROCwitch (lines 640-720), the Witch, as in Part 1; lines 640-680 draw her, in profile with one eye, and with on% FALSE the eye is shown once, with no sound."
   },
   {
    "address": 6793,
    "type": "line",
-   "text": "Lines 690-700, the Witch with sound: three times, ENVELOPE 1 rising through five pitches on channel 1 and a note on channel 2 while her eyes change, then her mouth opening and closing. The pauses are Part 2's PROCp, by the clock."
+   "text": "Lines 690-700, the Witch with sound: three times, five notes on channel 1, all at pitch 1, with ENVELOPE 1 redefined before each (Q=10 to 90 a step), and a note on channel 2, while her eye changes, then her mouth opening and closing. The five notes are queued at once, and each plays the envelope as it stands while the note plays, not as it was when queued: the first note's steps grow as BASIC redefines it, and later notes play the latest definition (recorded). The pauses are Part 2's PROCp, by the clock."
   },
   {
    "address": 7113,
@@ -754,7 +754,7 @@
   {
    "address": 7433,
    "type": "line",
-   "text": "Line 740, DATA: each child or pair of children, their password and their dragon's colour, the colour code first (&81 red, &82 green, &86 cyan for blue, &83 yellow). The blue dragon is drawn cyan too (line 1310)."
+   "text": "Line 740, DATA: each child or pair of children, their password (blank for Jessica and Daniel), and the colour of the baby dragon with the same number, the colour code first (&81 red, &82 green, &86 cyan for blue, &83 yellow). The blue dragon is drawn cyan too (line 1310)."
   },
   {
    "address": 7537,
@@ -804,7 +804,7 @@
   {
    "address": 8598,
    "type": "line",
-   "text": "PROCfind(col,c2,c3) (lines 840-850): `Well done! You have found`, name$(Z) flashing, and `Remember this password:` with ps$(Z). Only Clare and Anna are found by it, with the password river."
+   "text": "PROCfind(col,c2,c3) (lines 840-850): `Well done! You have found`, name$(Z), steady, since PROCh prints it from column 10 over the flash codes put at column 13, and `Remember this password:` with ps$(Z). Only Clare and Anna are found by it, with the password river."
   },
   {
    "address": 8803,
@@ -814,7 +814,7 @@
   {
    "address": 8882,
    "type": "line",
-   "text": "PROCsnd1 (lines 880-900), the theme tune, Part 1's: 103 steps from line 910, a pitch n and a length t (t=1 when n is 0), each length divided by 1.5, played on three channels at A+96, A and A+48, where A=(n+5)*4."
+   "text": "PROCsnd1 (lines 880-900), the theme tune, Part 1's: 103 steps from line 910, a pitch n and a length t (t=1 when n is 0), each length divided by 1.5, played at A+96 on channel 1, given as &00011 so that each note starts at once and the channel runs ahead of the other two, and at A and A+48 on channels 2 and 3, silent when n is 0, where A=(n+5)*4."
   },
   {
    "address": 9005,
@@ -859,12 +859,12 @@
   {
    "address": 13108,
    "type": "line",
-   "text": "Lines 1280-1290, DATA: w$(1-5,1-4), read by food: the red dragon's verb (loves, hates, sometimes eats), the food's name with its colour code, then the green, blue and yellow dragons' verbs."
+   "text": "Lines 1280-1290, DATA: w$(1-5,1-4), five groups of four, one item for each food in the order B, L, O, C: the red dragon's verbs (loves, hates, sometimes eats), the foods' names after the colour code &85, then the green, blue and yellow dragons' verbs."
   },
   {
    "address": 13360,
    "type": "line",
-   "text": "PROCdrag(a) (lines 1300-1370): baby dragon a at column a*10 in its colour, 145 red, 146 green, 150 cyan (the blue dragon) or 147 yellow, with its collar if e(a)=1, in a window over the top ten rows. The first statement, col=col+144, is overwritten before col is used; line 1340 changes nothing for a of 0-3."
+   "text": "PROCdrag(a) (lines 1300-1370): baby dragon a at column a*10 in its colour, 145 red, 146 green, 150 cyan (the blue dragon) or 147 yellow, with its collar if e(a)=1, in a window over rows 0-10. The first statement, col=col+144, is overwritten before col is used; line 1340 changes nothing for a of 0-3."
   },
   {
    "address": 13688,
@@ -894,7 +894,7 @@
   {
    "address": 14858,
    "type": "line",
-   "text": "PROCkeeper(s): the window and background for the Keeper of the Gates, then s times his face (PROCkp) and a sneeze (PROCk)."
+   "text": "PROCkeeper(s): a magenta strip on row 12 for the Keeper of the Gates to stand on and a window over rows 0-11, then s times his face (PROCkp) and a sneeze (PROCk)."
   },
   {
    "address": 14986,
@@ -929,7 +929,7 @@
   {
    "address": 16145,
    "type": "line",
-   "text": "PROCw (lines 1640-1750), every journey: op=np, the map, `You are at the` place, and `Where do you wish to go?`, matched by INSTR (the last match wins). The places are numbered forest 1, cottage 2, lake 3, castle 4, hill 5, and the sum of where the player is and where they go picks the road: 6 has none (forest and hill, cottage and castle), and from the start (op=10) only the forest and the cottage are open; 4 meets the dwarf, 8 the troll, 9 the beast, and 5 (forest and castle, cottage and lake) is `not a good idea` and brings the Witch. Then ON np GOSUB. The GOSUB never returns, so the 27th journey stops with Too many GOSUBs and ON ERROR starts Part 2 again."
+   "text": "PROCw (lines 1640-1750), every journey: op=np, the map, `You are at the` place, and `Where do you wish to go?`, matched by INSTR (the last match wins). The places are numbered forest 1, cottage 2, lake 3, castle 4, hill 5, and the sum of where the player is and where they go picks the road: 6 has none (forest and hill, cottage and castle), and from the start (op=10) only the forest and the cottage are open; 4 meets the dwarf, 8 the troll, 9 the beast, and 5 (forest and castle, cottage and lake) is `not a good idea` and brings the Witch. Then ON np GOSUB. The GOSUB never returns, so the 27th journey, or the 26th once the lake has told its name (GOSUB2340 never returns either), stops with Too many GOSUBs and ON ERROR starts Part 2 again."
   },
   {
    "address": 16646,
@@ -989,7 +989,7 @@
   {
    "address": 21331,
    "type": "line",
-   "text": "PROClake (lines 2180-2270), the lake, Redhorn. With water already taken, `This is my lake.` and back. Otherwise `Have you come for water?` N asks whether to hear its name (PROCname) the first time; Y wants the key first (PROCeatkey), then gives water (water%) and offers its name. Line 2200's test (water and the key both held) cannot be met, as the water costs the key, and line 2270 is never reached: it needs the name heard first, which costs the key, and line 2260's PROCeatkey then never returns."
+   "text": "PROClake (lines 2180-2270), the lake, Redhorn. With water already taken, `This is my lake.` and back. Otherwise `Have you come for water?` N asks whether to hear its name (PROCname) on every visit until it has been heard; Y wants the key first (PROCeatkey), then gives water (water%) and offers its name. Line 2200's test (water and the key both held) cannot be met, as the water costs the key, and line 2270 is never reached: it needs the name heard first, which costs the key, and line 2260's PROCeatkey then never returns."
   },
   {
    "address": 21851,
@@ -999,27 +999,27 @@
   {
    "address": 22085,
    "type": "line",
-   "text": "PROCname (lines 2310-2340): `Do you want to know my name?` With water already taken, Y tells it, `Redhorn`. Without, Y asks for the key first (PROCeatkey) and then tells it: the key is gone and no water given, and there is no other key, so the castle door and the fire are out of reach for good (played on 14 October 2026). PROCnext, named after the first GOSUB, is defined nowhere, and line 2340 ends in PROCw, so it is never called."
+   "text": "PROCname (lines 2310-2340): `Do you want to know my name?` With water already taken, Y tells it, `Redhorn`. Without, Y asks for the key first (PROCeatkey) and tells it only once the key is handed over: the key is gone and no water given, and there is no other key, so the castle door and the fire are out of reach for good (played on 14 October 2026). PROCnext, named after the first GOSUB, is defined nowhere, and line 2340 ends in PROCw, so it is never called."
   },
   {
    "address": 22298,
    "type": "line",
-   "text": "PROCtroll (lines 2350-2380), on the road between the lake and the hill, each way and each time: `what sort of trees grow in the forest`, passed by any answer with `pom` in it; otherwise np=op and back to the map."
+   "text": "PROCtroll (lines 2350-2380), on the road between the lake and the hill, each way and each time: `what sort of trees grow in the forest`, passed by any answer with `pom` in it after its first letter, which PROCi makes a capital (`Pompom` passes, `pom` does not); otherwise np=op and back to the map."
   },
   {
    "address": 22738,
    "type": "line",
-   "text": "PROCdwarf (lines 2390-2410), on the path between the forest and the lake: nothing once paid (stone=2); without a stone, `bring me a stone from the hill` and back; with one, thanks, and stone=2."
+   "text": "PROCdwarf (lines 2390-2410), on the path between the forest and the lake: nothing while stone=2 (paid, and no stone taken from the hill since); without a stone, `bring me a stone from the hill` and back; with one, thanks, and stone=2."
   },
   {
    "address": 23180,
    "type": "line",
-   "text": "PROCwi(k1,k2): a clear screen and the frame the troll, the dwarf and the beast are drawn in, a window of columns 12-31, rows 1-11."
+   "text": "PROCwi(k1,k2): a clear screen and the frame the troll, the dwarf and the beast are drawn in: k1, and k2 after it, at column 12 of rows 1-10, a black background (156) at column 29, and a window of columns 13-31, rows 1-11, for the picture."
   },
   {
    "address": 23269,
    "type": "line",
-   "text": "PROCbeast (lines 2430-2460), on the road between the castle and the hill: `Hello again.` once passed; otherwise `My brother lives in water. What is his name?`, passed by any answer with `horn` in it (Redhorn, the lake); otherwise np=op and back."
+   "text": "PROCbeast (lines 2430-2460), on the road between the castle and the hill: `Hello again.` once passed; otherwise `My brother lives in water. What is his name?`, passed by any answer with `horn` in it after its first letter, which PROCi makes a capital (Redhorn, the lake; `horn` alone does not pass); otherwise np=op and back."
   },
   {
    "address": 23815,
@@ -1034,12 +1034,12 @@
   {
    "address": 24505,
    "type": "line",
-   "text": "PROCdream (lines 2550-2560), the dream: the keeper four times with the screen's start moved (VDU 23,0,13), the scroll, Anna's picture over and over with each baby dragon, the land, and Jessica across the screen in changing colours."
+   "text": "PROCdream (lines 2550-2560), the dream: the keeper four times with the screen's start moved (VDU 23,0,13), the scroll, Anna's picture over and over with each baby dragon, the land, and Jessica, always magenta, drawn down the screen at seven columns from left to right, each column's rows given a new background colour."
   },
   {
    "address": 24691,
    "type": "line",
-   "text": "PROCfin (lines 2570-2580), the end: `That's the end of the adventure. I hope you enjoyed it.`, `THANK YOU` with all six children, the theme tune, played whatever on% holds, `And Granny says it's time for tea.`, and PROCkey."
+   "text": "PROCfin (lines 2570-2580), the end: `That's the end of the adventure. I hope you enjoyed it.`, `T H A N K Y O U` (a colour code before each letter) with all six children, the theme tune, played whatever on% holds, `And Granny says it's time for tea.`, and PROCkey."
   },
   {
    "address": 24977,

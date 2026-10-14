@@ -74,7 +74,8 @@ Found in the code, then played.
   entered by calling on, never by returning; BASIC II's limits of 20
   REPEATs and 26 GOSUBs end the run with an error, and ON ERROR RUN starts
   the part again (`orientation.md`). After a guess at the trees rejected
-  for its form it is 19 hallways. **live**
+  for its form it is 19 hallways, and once the lake has told its name 25
+  journeys. **live**
 - **The BREAK key's definition never happens.** Part 2's line 140,
   `ONERRORRUN:*K.10OLD|MRUN|M`, makes everything after ON ERROR the
   error handler, which RUNs before it reaches `*KEY`. The soft-key buffer
@@ -98,8 +99,9 @@ Found in the code, then played.
   another in (Part 2 line 1270); a collar goes on when exactly one dragon
   is out; four of any one food brings the witch. **live**
 - **The beast's question is "Redhorn"**, the lake's name, which the lake
-  only tells the player who gives it the key; any answer with "horn" in
-  it passes. **live**
+  only tells the player who gives it the key; any answer with "horn"
+  after its first letter passes, and "horn" alone does not, because the
+  input routine makes the first letter a capital. **live**
 - **A bee hurt in the wood cannot pass the dog.** Called in the wood, the
   bee stings the nut trees and a nut makes its nose bleed (be=1); on the
   dog's path it refuses and the Witch comes, and no other creature gets

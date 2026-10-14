@@ -3,16 +3,14 @@
 Tier: **Silver** (game.json). Coverage is 100 % in both parts
 (`coverage.py games/bbc/grannys-garden`: 44,451 of 44,451 bytes).
 
-## The listing: an audit is recommended
+## The listing: the second sample
 
-The run's sample (seed 20261014) drew 60 of the 189 comments, from both
-parts, and a checker found 10 of them wrong in a detail: 17 %, a 95 %
-interval of about 9 % to 28 %. That is over the mark of 2 in 60
-(`kit/skills/core/60-verify`). All ten were corrected, with the other
-comments that said the same, but a sample this far over the mark says
-more are wrong than it found. The next step is a full audit of every
-comment by fresh checkers, then a second sample, as `60-verify` says; the
-Source tab calls the listing checked only after that.
+The run's sample (seed 20261014) found 10 of 60 comments wrong in a
+detail, over the mark of 2 in 60 (`kit/skills/core/60-verify`). Every
+comment was then audited, 189 of 189, and 43 were corrected (`facts.md`,
+"The listing's error rate"). Next, a second sample with a new seed, on a
+checker that took no part in the audit; the Source tab calls the listing
+checked only if that sample is within the mark.
 
 ## For Gold
 

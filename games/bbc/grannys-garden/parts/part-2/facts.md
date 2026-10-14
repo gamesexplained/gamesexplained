@@ -22,8 +22,10 @@ start?`. The routes named are in `work/scripts/routes.py`.
 ## The password
 
 - Part 2 starts with the password, PROCi(7,15,18,23), seven letters,
-  matched against `ky` and `iv` only (line 750): sky gives Z=2, river Z=3.
-  `snow`, or anything else, is told `Please try again.` (lines 250-300).
+  matched by INSTR against `ky` and `iv` (line 750): sky gives Z=2, river
+  Z=3, and so does any answer with either after its first letter (`Olive`
+  gives Z=3, *live*). `snow`, or any other answer, is told `Please try
+  again.` (lines 250-300).
 - Z=2 goes to the City of the Dragons, Z=3 to the Land of Mystery (line 290).
 
 ## The City of the Dragons
@@ -77,6 +79,16 @@ start?`. The routes named are in `work/scripts/routes.py`.
   1600).
 - Each journey is an `ON np GOSUB` that never returns; the 27th stops with
   Too many GOSUBs, and ON ERROR starts the part again *(live, `p2-wander`)*.
+  Once the lake has told its name it is the 26th, as the GOSUB 2340 that
+  tells it never returns either *(live, audit)*.
+- The troll's and the beast's answers are matched with INSTR against `pom`
+  and `horn`, and PROCi makes an answer's first letter a capital, so
+  `pom` and `horn` alone are refused and `Pompom` and `Redhorn` pass
+  *(live, audit)*.
+- The lake asks `Do you want to know my name?` on every visit until the
+  name is heard (line 2230), and the hill offers a stone whenever the
+  player carries none, so the dwarf, once paid, takes another if one is
+  brought (lines 2040, 2390-2410).
 - What each place gives: the cottage a key (K; it is offered on every visit
   until it is taken) and the Witch's cake (inside, once); the hill a stone,
   after the giant, who comes on every visit until he is answered Y; the lake water,
@@ -87,7 +99,8 @@ start?`. The routes named are in `work/scripts/routes.py`.
 ## Ways the Land of Mystery cannot be won
 
 Each leaves the player able to wander the map but not to finish; the only
-ways out are the Witch (S to start again) and the 27th journey's restart.
+ways out are the Witch (S to start again) and the restart when the
+journeys reach BASIC's limit.
 
 - **The lake asked its name before its water.** Its name needs the key
   first (line 2320, PROCeatkey), the key is eaten, no water is given, and
@@ -125,6 +138,13 @@ ways out are the Witch (S to start again) and the 27th journey's restart.
   The soft-key buffer at &0B00 is empty in play *(live)*.
 - With music off (on%), the end still plays the theme: PROCfin's PROCsnd1
   (line 2580) is not tested against on%.
+- **Clare and Anna's names do not flash.** PROCfind puts flash codes at
+  column 13 of rows 14 and 15 and then prints the name from column 10, so
+  the name's second letter lands on them; Part 1's prints from column 15,
+  and its names flash *(live, screen memory)*.
+- The end's `THANKYOU` has a colour code before each letter, so it shows
+  as `T H A N K Y O U`, evenly spaced, with no gap between the words
+  *(live)*.
 
 ## Things nothing reaches
 

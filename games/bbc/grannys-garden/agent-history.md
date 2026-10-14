@@ -80,3 +80,34 @@ trees' outlines were two columns off. A pass of every claim against the
 code and the listing corrected them before the page was published. The
 answer box and the dragons were then held to the game in jsbeeb, by
 reading BASIC's variables after every key and before every throw.
+
+## After the pull request was opened
+
+**The Secret, the Solution and the Maps.** The contributor asked for the
+T-then-Y trees to be headed as a Secret, and for a solution and maps. Both
+tabs are drawn from one play-through, recorded in jsbeeb as the 1,000
+bytes of screen at every wait for a key (`work/scripts/solution.py`).
+`make_solution.py` stops if a question it lists is not on the screen where
+its answer was typed, and the test beside the pages holds the answers and
+every place and road to the recording.
+
+**The listing withheld.** The contributor asked for the Source tab to say
+the annotations are not published, since 4Mation still enforces its
+copyright. `game.json`'s `publish_source: false` does it (`build.py`).
+
+**The audit.** The contributor asked for a full audit, to learn what goes
+wrong in annotating BBC BASIC. Two fresh checkers took a part each, one
+after the other; Part 2's was told the kinds of error Part 1's had found.
+16 of 98 and 25 of 91 were wrong in a detail, and every one held when
+read against the program. Most were claims about what a line does when
+it runs, written from what the line says: a flash code that a later PRINT
+overwrites, codes said to go at the start of a row that go at the
+cursor's column, an envelope redefined before each of five notes that are
+all queued before the first has finished, `*FX15,0` taken to empty only
+the keyboard's buffer, fragments matched by INSTR that miss because the
+input routine has made the first letter a capital. Part 1's audit had
+itself corrected the Witch's sound to a reading of the code; Part 2's
+checker recorded it and found that reading wrong too, so the Part 1
+comment was corrected again. The first sample's brief had listed its 60
+comments under "What is established"; the second sample's brief gives
+only the file.

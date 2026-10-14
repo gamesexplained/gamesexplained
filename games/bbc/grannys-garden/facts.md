@@ -70,8 +70,9 @@ finished (`orientation.md`).
 
 - Only the keyboard: no ADVAL, so no joystick, in either part.
 - Answers are typed into PROCi, each part's own input routine (Part 1 line
-  1020, Part 2 line 460). It flushes the keyboard buffer first (`*FX15,0`),
-  takes letters, DELETE and RETURN and nothing else, shows the first letter
+  1020, Part 2 line 460). It empties every buffer first (`*FX15,0`), the
+  sound queues as well as the keyboard's, so a note still playing stops
+  *(live, in a bare machine)*; then it takes letters, DELETE and RETURN and nothing else, shows the first letter
   as a capital and the rest in lower case, and builds the answer the same
   way. When the cursor reaches the field's end column, the next key,
   whatever it is, is taken as DELETE, so a field set up as PROCi(col,x,y,len)
@@ -103,11 +104,13 @@ finished (`orientation.md`).
   shared runs (`f$`, five &FF blocks; `w$` and `v$`, fourteen and seven).
 - PROCh prints every sentence in double height: CHR$141, a colour code and
   the text, on two rows.
-- PROCb sets a colour or background at the start of a run of rows; 157 (New
+- PROCb sets a colour or background down a run of rows, at the cursor's
+  column, which is most often a row's first; 157 (New
   Background) is how the pictures get their coloured skies and grounds.
 - Some things move by changing a control code in place rather than
   redrawing: the toadstool's mouth and eyes (Part 1 PROCmth, PROCeye), the
-  raven (PROCrav1, its rows uncovered with 152, conceal), the castle
+  raven (PROCrav1, its rows hidden with 152, conceal, and shown a band at
+  a time), the castle
   keeper's eyes (Part 2 PROCI).
 - Part 2 moves the whole screen sideways by writing the CRTC's register 13,
   the low byte of the screen's start address, with VDU 23,0,13,q (the big
@@ -127,7 +130,9 @@ finished (`orientation.md`).
   returns. BASIC II allows 20 REPEATs and 26 GOSUBs *(live, measured on the
   kit's machine)*, and both parts set `ON ERROR RUN`, so the 20th visit to
   the hallway and the 27th journey on the map start the part again at
-  `Ready to start?` *(live)*. A guess at the trees rejected for its form
+  `Ready to start?` *(live)*. Hearing the lake's name leaves one GOSUB
+  more open, since GOSUB 2340 never returns either, and after it the 26th
+  journey is the last *(live, audit of Part 2)*. A guess at the trees rejected for its form
   (a letter alone, say) leaves the trees' own REPEAT open for the rest of
   the game, since lines 440-450 run on into the kingdom, and then it is
   the 19th visit *(live, audit of Part 1)*. In Part 1 the stairs, once the snake is dead,
@@ -177,9 +182,15 @@ places.
   plays *(live: the recording, and the three statements in a bare
   machine)*. Channel 2's `&012` flushes, so it runs ahead of channel 3 and
   ends 5 seconds before it.
-- **The Witch's sound**: three times, ENVELOPE 1 redefined with five rising
-  values (Q = 10 to 90) and a note on channel 1 for each, then a note on
-  channel 2 (Part 1 line 2290, Part 2 line 690).
+- **The Witch's sound**: three times, five notes on channel 1 at pitch 1,
+  with ENVELOPE 1 redefined before each with larger steps (Q = 10 to 90),
+  then a note on channel 2 (Part 1 line 2290, Part 2 line 690). BASIC
+  queues the five in a few hundredths of a second, and the MOS reads an
+  envelope while its note plays, so the first note's steps grow (10, 30,
+  50 and then 90 quarter-semitones in the recording) as the definitions
+  change under it, and each later note plays the definition in force while
+  it plays, for most of them a round's last, a warble of six steps *(live,
+  the recording)*.
 - An answer ending in `f` at `Ready to start?` sets on% FALSE, which turns
   all three off, except the theme at Part 2's end (PROCfin, line 2580),
   which is played whatever on% holds.
@@ -207,6 +218,25 @@ that said the same: the hallway, a room's frame, the worm's picture and
 Part 2's PROCb (the rows), the key on the ground (the visits), and the
 theme's channel 1 (the flush digit). The doubtful one was reworded.
 
+Then every comment was audited, 189 of 189, by two fresh checkers on the
+same model, one part each and one after the other, each told the kinds of
+error the sample had found. Part 1's checker marked 16 of its 98 comments
+wrong in a detail and Part 2's 25 of its 91; each of the 41 was read
+against the program, and all held. Besides the sample's kinds, they were
+wrong about what a picture shows when it runs (the raven, never seen
+whole; the Witch's one eye; Jessica, always magenta; Clare and Anna's
+names, which do not flash), about every way a part ends or restarts (the
+lake's name leaves a GOSUB open, so the 26th journey can be the last),
+about first visits taken for every visit and the reverse (the lake's
+question, the dwarf's stone), about what a sound statement does as it
+plays (`*FX15,0` empties the sound queues too; an envelope redefined
+while its notes wait is the one they play), about how an answer is
+matched (INSTR after the input routine has made the first letter a
+capital, so `pom` and `horn` alone fail and `Olive` is a password), and
+about the order of a DATA table's items. All 41 were corrected, with
+two more Part 1 comments that said the same (the buffers PROCsp empties,
+the Witch's sound), 43 in all, and the notes and the page with them.
+
 ## Live tests
 
 - Both parts played to their ends at &0E00, and Part 2 at &1900; Part 1 at
@@ -216,6 +246,12 @@ theme's channel 1 (the flush digit). The doubtful one was reworded.
 - The REPEAT and GOSUB limits, in a bare machine: the 21st REPEAT and the
   27th GOSUB stop.
 - The soft-key buffer at &0B00, read in Part 2's play: empty.
+- In the audit: `*FX15,0` while a note plays, in a bare machine, silences
+  the chip; the Witch's sound recorded in play and in a bare machine; the
+  lake's name heard after five journeys, then the 26th journey restarts
+  Part 2; `pom`, `horn` and `Olive` typed at the troll, the beast and the
+  password; the screens of the raven, the Witch, the keeper, PROCfind and
+  the dream read from screen memory.
 - BASIC's PROC table, read in play: PROCp at Part 1 line 870 and Part 2
   line 320.
 - 1,000 turns of an empty FOR loop: 50 centiseconds.
