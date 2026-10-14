@@ -10,7 +10,7 @@ as the tokeniser writes it after &8D and decoded back.
 The check against the machine itself is `python3 kit/bbc/basic.py test [--port N] [snapshot
 ...]`: it compares the keyword table with the BASIC ROM jsbeeb ships, puts the same program
 in the machine, LISTs it and compares every line, and does the same for the program in each
-snapshot given. It needs jsbeeb, which no CI runner has, so it is run by hand after any change
+snapshot given. It needs a jsbeeb server, which CI does not start, so it is run by hand after any change
 to basic.py, on a server of its own (`tools.py --platform bbc jsbeeb --port 6848`).
 """
 import os

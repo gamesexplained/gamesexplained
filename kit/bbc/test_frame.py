@@ -10,7 +10,7 @@ mosaics and the capitals among them, hold, and double height.
 
 The drawing is checked against the machine, and only there: `python3 kit/bbc/frame.py test`
 paints a test pattern in jsbeeb in every mode from 0 to 6 and compares jsbeeb's picture with
-bbc.js's pixel by pixel, and mode 7 cell by cell. That needs jsbeeb, which no CI runner has, so it is run by hand after
+bbc.js's pixel by pixel, and mode 7 cell by cell. That needs a jsbeeb server, which CI does not start, so it is run by hand after
 any change to site/lib/bbc.js. Node is needed here; with KIT_REQUIRE_TOOLS set, a missing
 Node fails instead of skipping.
 """
