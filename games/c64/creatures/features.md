@@ -51,7 +51,7 @@ Sources:
 | Hidden extras (C64-Wiki) | open | |
 | Parallax scrolling (C64-Wiki) | open | |
 | Stage timer and lives in the status panel | live | `reference/play-1-1.png` |
-| Cheat: once the title music stops and the high-score table shows, holding CTRL and 2 turns Clyde grey and gives infinite lives (C64-Wiki, marked not tested) | open | |
+| Cheat: once the title music stops and the high-score table shows, holding CTRL and 2 gives infinite lives (C64-Wiki, marked not tested). Live: the high-score fuzzies turn grey (the wiki says Clyde) and the instruction that takes a life becomes three NOPs (title_cheat_step) | live | `reference/cheat-grey-fuzzies.png` |
 | Poke 15596,60: invulnerability (C64-Wiki, not tested) | open | |
 | Poke 44183,173: unlimited shields (C64-Wiki, not tested) | open | |
 | Poke 7328,208: unlimited lives in the main game (C64-Wiki, not tested) | open | |
