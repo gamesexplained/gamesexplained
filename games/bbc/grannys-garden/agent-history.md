@@ -111,3 +111,13 @@ checker recorded it and found that reading wrong too, so the Part 1
 comment was corrected again. The first sample's brief had listed its 60
 comments under "What is established"; the second sample's brief gives
 only the file.
+
+**The second sample.** 4 of 60 wrong, and every one was in a comment the
+audit had rewritten: 4 of the 15 rewritten comments the sample drew,
+against none of the 45 it had left alone. Two of the four were details
+the rewrite added (the raven's poses in order, a colour code before every
+letter), one was a detail it added that held in one round of three (the
+Witch's notes queued at once), and one was a detail the rewrite kept
+(`You are at the` on every journey). A correction is written fast, from
+the finding, and is checked by nobody unless something checks it.
+

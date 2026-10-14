@@ -184,8 +184,11 @@ places.
   ends 5 seconds before it.
 - **The Witch's sound**: three times, five notes on channel 1 at pitch 1,
   with ENVELOPE 1 redefined before each with larger steps (Q = 10 to 90),
-  then a note on channel 2 (Part 1 line 2290, Part 2 line 690). BASIC
-  queues the five in a few hundredths of a second, and the MOS reads an
+  then a note on channel 2 (Part 1 line 2290, Part 2 line 690). In the
+  first round BASIC queues the five in a few hundredths of a second; in
+  the second and third the queue still holds earlier notes, and the last
+  two or three SOUNDs each wait about a second for room *(live, in a bare
+  machine)*. The MOS reads an
   envelope while its note plays, so the first note's steps grow (10, 30,
   50 and then 90 quarter-semitones in the recording) as the definitions
   change under it, and each later note plays the definition in force while
@@ -236,6 +239,19 @@ capital, so `pom` and `horn` alone fail and `Olive` is a password), and
 about the order of a DATA table's items. All 41 were corrected, with
 two more Part 1 comments that said the same (the buffers PROCsp empties,
 the Witch's sound), 43 in all, and the notes and the page with them.
+
+A second sample was then drawn, 60 of the 189 comments (35 from Part 1
+and 25 from Part 2, with the seed 2026101402), and checked by a fresh
+checker on the same model that had taken no part in the audit. It marked
+4 wrong in a detail, and each held: 7 %, between 3 % and 16 % at 95 %
+confidence, over the mark of 2 in 60. All four were comments the audit
+had rewritten, 4 of the 15 such comments in the sample, while none of the
+45 it had left alone was wrong: the raven's three poses in the wrong
+order, the Witch's notes queued at once in every round (only in the
+first), `You are at the` on every journey (not the first), and the end's
+`THANKYOU` given a colour code before every letter (the first is Flash,
+and the word flashes). All four were corrected, with the notes that said
+the same.
 
 ## Live tests
 

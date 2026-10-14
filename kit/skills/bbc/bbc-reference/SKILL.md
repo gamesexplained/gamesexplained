@@ -761,8 +761,8 @@ other way: go by the first byte, not the number.
   each definition landed, and each note after it played the definition in
   force while it played (measured on 14 October 2026 in jsbeeb with MOS 1.20 and BASIC II, from
   the bytes the chip was sent). A program's `ENVELOPE` before each
-  `SOUND` gives each note its own envelope only if BASIC waits for the
-  queue between them.
+  `SOUND` gives each note its own envelope only if each note has ended
+  before the next `ENVELOPE` runs.
 - **OSWORD 7** is SOUND: an 8-byte block of four two-byte values, low
   byte first: channel, amplitude (−15 to 0, or an envelope 1-16), pitch,
   duration. `SOUND 1,-15,200,20` is `01 00 F1 FF C8 00 14 00`. **OSWORD

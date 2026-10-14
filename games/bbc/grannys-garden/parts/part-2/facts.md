@@ -142,9 +142,10 @@ journeys reach BASIC's limit.
   column 13 of rows 14 and 15 and then prints the name from column 10, so
   the name's second letter lands on them; Part 1's prints from column 15,
   and its names flash *(live, screen memory)*.
-- The end's `THANKYOU` has a colour code before each letter, so it shows
-  as `T H A N K Y O U`, evenly spaced, with no gap between the words
-  *(live)*.
+- The end's `THANKYOU` has a control code before each letter, Flash
+  before the T and a colour before each of the others, so it shows as
+  `T H A N K Y O U`, evenly spaced, with no gap between the words, and
+  flashing *(live)*.
 
 ## Things nothing reaches
 
