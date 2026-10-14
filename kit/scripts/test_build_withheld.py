@@ -18,7 +18,7 @@ from test_build_no_listing import new_game, site, links  # noqa: E402
 
 LISTING = {"schema": 1,
            "records": [{"a": 0xC000, "t": "code", "l": "start", "c": "The start: clears A and returns.",
-                        "b": [0xA9, 0x00, 0x60], "d": "LDA #$00"},
+                        "s": "A is the flag", "x": [0xC010], "b": [0xA9, 0x00, 0x60], "d": "LDA #$00"},
                        {"a": 0xC003, "t": "data", "l": "table", "c": "The table the start never reads.",
                         "b": [1, 2]}],
            "index": [{"a": 0xC000, "n": "start", "k": "routine", "len": 3, "c": True}]}
@@ -86,7 +86,7 @@ class Withheld(unittest.TestCase):
             url = "parts/engine/listing.json" if parts else "listing.json"
             self.assertEqual(embedded(page)[url]["records"],
                              [{"a": 0xC000, "t": "code", "l": "start", "b": [0xA9, 0x00, 0x60]}])
-            for gone in ("clears A", "LDA #$00", '"index"'):
+            for gone in ("clears A", "A is the flag", "LDA #$00", '"index"'):
                 self.assertNotIn(gone, page)
             self.assertEqual(build.broken_links(str(out_root)), [])
 

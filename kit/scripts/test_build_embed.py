@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """A page that names pieces of a listing in a <script type="application/json" data-listing="URL">
-tag gets those records of the game folder's listing in place of the list, each cut to its address,
-type, label and bytes: a label stands for its record and those after it up to the next label, a
-range "$C000-$C3FF" for every record with a byte in it. The listing.json the Source tab reads is still served. A piece the listing
+tag gets those records of the game folder's listing in place of the list, without their comments:
+a label stands for its record and those after it up to the next label, a range "$C000-$C3FF" for
+every record with a byte in it. The listing.json the Source tab reads is still served. A piece the listing
 does not have, or a URL the game folder has no listing at, stops the build."""
 from pathlib import Path
 import json
@@ -16,7 +16,7 @@ from test_build_no_listing import site  # noqa: E402
 from test_build_withheld import LISTING, listed_game, embedded  # noqa: E402
 
 GAP = {"a": 0xC005, "t": "gap", "b": []}
-START, TABLE = ({k: r[k] for k in ("a", "t", "l", "b")} for r in LISTING["records"])
+START, TABLE = ({k: v for k, v in r.items() if k not in ("c", "s", "x")} for r in LISTING["records"])
 MORE = {"a": 0xC100, "t": "data", "l": "more", "b": [7]}
 
 

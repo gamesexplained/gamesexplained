@@ -164,8 +164,9 @@ its music or its maps can put that first instead.
   `<script type="application/json" data-listing="listing.json">["charset",
   "$4000-$43FF"]</script>`, a label standing for its record and those
   after it up to the next label. The build puts those records in the page
-  with their addresses, types, labels and bytes, and the loaders read
-  them before they fetch (`kit/scripts/build.py`, `embed_listings`).
+  without their comments, and the loaders read them before they fetch
+  (`kit/scripts/build.py`, `embed_listings`). A page that reads all of
+  memory names `"$0000-$FFFF"`.
 - The build publishes the authored pages, `listing.json`, `symbols.json`
   and `reference/`, and nothing else from the game folder; for a game
   whose `game.json` has `"publish_source": false`, neither JSON file. A
