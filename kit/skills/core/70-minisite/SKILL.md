@@ -259,7 +259,7 @@ its music or its maps can put that first instead.
   the game on 99,762 calls while every effect button on its page stayed
   silent: the test asked a frame after the mode change, and the page on the
   same frame. One animation port matched the engine on every script while
-  the page ran two creatures that stand still until shot: the test started
+  the page ran two enemies that stand still until shot: the test started
   every object running, and their spawn records start them stopped.
 - **Draw from the memory the game draws from.** A renderer fed from the
   listing reads the hand-over image, and a game that swaps character
