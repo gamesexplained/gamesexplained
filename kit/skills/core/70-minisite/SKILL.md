@@ -1,6 +1,6 @@
 ---
 name: 70-minisite
-description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; the Maps / levels tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
@@ -13,7 +13,8 @@ game itself). If you can build it, build it.
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Source code** (`source.html`, generated
 from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
-(`levels.html`, authored, only when the game has level data worth a page),
+(`levels.html`, authored, for every game with more than one level, map,
+room, stage or screen),
 **Play** (`play.html`, authored, only when a JavaScript version exists),
 **About** (generated from `game.json`, `features.md`, `orientation.md`, git).
 `kit/scripts/build.py` assembles them; you write the authored ones. A game
@@ -80,9 +81,10 @@ address links into the Source tab, and the house style in `kit/style.md`.
    graphics, sprites, both), how they move, how they collide.
 - **Controls.** What the game reads and how, including anything the
    manual never mentioned.
-- **Levels and data.** Where the level lives, what format, a browser for
-   it. If placement is procedural, show the rule and let the reader roll
-   it.
+- **Levels and data.** Where the level lives and what format, shown on
+   one level, with a link to the Maps / levels tab, where every level is
+   drawn (below). If placement is procedural, show the rule and let the
+   reader roll it.
 - **Enemy movement and AI.** The actual decision rule, steppable.
 - **Progression and difficulty.** The tables, as tables, and what they
    do to play.
@@ -365,12 +367,21 @@ a sentence or two, with the rest of the copy: leave it neither empty nor
 for the contributor. The home page shows it on the game's card unless
 `game.json` has a `blurb`, and the Gold pass may rewrite it.
 
-## Maps / levels, when there is one
+## Maps / levels
 
-Render the level data the How it works page only excerpts: every maze, screen or
-room as a picture drawn from the extracted bytes, with the per-level
-parameter tables beside them. Reuse the page's renderers. Omit the page
-rather than pad it.
+A game with more than one level, map, room, stage or screen gets this
+tab: a shooter's stages, a platformer's rooms, an adventure's map, a
+puzzle game's boards, the bonus stages between levels. Draw every one
+of them as a picture from the extracted bytes, with the per-level
+parameter tables beside them, and reuse the How it works page's
+renderers. A scrolling level is drawn whole, or scrolled at the game's
+speed. The How it works page keeps the format, shown on one level, and
+links here for the rest, so the levels are never a run of sections on
+that page.
+
+Leave the tab out only when every level is the same screen (one arena,
+or one board whose contents a table changes), and say why in
+`agent-history.md`.
 
 ## Play
 
@@ -429,6 +440,8 @@ see it, which makes it the best test that the data is understood.
 ## Outputs
 
 `index.html` opening cleanly from disk, loaded in a browser with every
-widget exercised, its best thing high on the page; `listing.json` built
-and passing `check_listing.py`; `game.json` with `copy` set; `build.py`
-producing the minisite without errors.
+widget exercised, its best thing high on the page; `levels.html` with
+every level, map or room drawn, or the line in `agent-history.md` saying
+why the game has none; `listing.json` built and passing
+`check_listing.py`; `game.json` with `copy` set; `build.py` producing the
+minisite without errors.
