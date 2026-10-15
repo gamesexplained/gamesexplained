@@ -44,7 +44,7 @@ platform-neutral Sunracer Owner's Guide.
 
 | Feature | Status | Where |
 |---|---|---|
-| Filled, clipped 3D polygons, up to about sixteen objects [S19] | differs | `reference/starbase.png`; the draw list keeps at most 14 of the 20 object slots in view, drawn farthest first (engine `build_draw_list`, `$3E2C`) |
+| Filled, clipped 3D polygons, up to about sixteen objects [S19] | differs | `reference/starbase.png`; the draw list keeps at most 14 of the 20 object slots in view, drawn farthest first (engine `build_draw_list`, `$3E2C`); each model's faces in the fixed three-pass order of `draw_polygons` (`$7ED6`), which the Ships section's port matches on all 20 models (`test_ships.js`) |
 | Keys W/X pitch, A/D turn, C/Z roll, S stops rotation [S12] | live | A, D, W and S were used to line up on Hiathra; rotation builds while a key is held and S stops it |
 | + and - change speed; CF readout shows the set speed [S6][S12] | traced | `key_slower` `$13DE`, `key_faster` `$13F3`, a step at a time from -`$46` to `$46`; `draw_speed` (`$31B2`) prints CF and the set speed, NF and the actual speed |
 | Cruise and Newtonian flight, Ctrl-E toggles [S6] | traced | `key_flight_mode` (`$1408`) toggles `$0D02`; F7, which gives the same code, does too. Cruise steers the velocity toward the set speed (`cruise_thrust`, `$7540`); Newtonian thrusts only while a speed key is held (`apply_thrust`, `$74D3`) |
@@ -59,8 +59,8 @@ platform-neutral Sunracer Owner's Guide.
 | Shooting a station gets docking refused [S6] | traced | a base hit by the player sets `$0783` (`damage`, `$6EA0`), and `arrival_message` (station `$A584`) refuses docking while it is set; the next day clears it |
 | Hazards: asteroids, black holes, ion storms, nebulae, antimatter shard fields [S6][S16] | traced | `hazard_hit` (`$6CC5`): planets and the black hole do 255; a sector's ion storms (map type `$64`) flash and now and then strike the ship (`sector_hazard`, `$24B3`); the shard type `$1B` destroys what it touches (`hit_shard`) |
 | Malir gates and wormholes: enter at 21 m/s or more, stay inside the rings [S6] | differs | 20 or more, lined up with the gate's axis (`gate_contact`, `$6C54`); the trip ends when the ship leaves the rearmost ring (`wormhole_rings`, `$72C1`), and the gate's entry says how many rings must be passed |
-| Other ships hail, taunt and use ten tactics [S6][S16] | traced | `target_status` (`$1DDF`) prints a hail every 256 passes; ten tactics from `$0C86`, chosen by `ai_tactic` (`$375F`) |
-| G surrenders, J jettisons all cargo [S12] | traced | `key_surrender` (`$392A`): pirates ask the bounty plus 50, others the cargo; `key_jettison` (`$13D4`) empties the hold |
+| Other ships hail, taunt and use ten tactics [S6][S16] | traced | `target_status` (`$1DDF`) prints a hail every 256 passes; ten tactics from `$0C86`, chosen by `ai_tactic` (`$375F`); a 2,000-pass fight run on the engine's main loop changes tactic and fires only on passes 17 apart (`test_combat.js`) |
+| G surrenders, J jettisons all cargo [S12] | traced | `key_surrender` (`$392A`): the Imperium asks the bounty plus 50, others the cargo; `key_jettison` (`$13D4`) empties the hold |
 | F1 pauses [S12] | traced | F1 gives ESC (`key_chars`, `$0FEF`), and `key_escape` (`$1438`) waits for a key with the hum off |
 | Ctrl-S saves, in space only [S12][S4] | traced | `key_save` (`$154E`) asks "Save game? Y/N" and writes `$0403`-`$0801` as `SAVED` (`save_file`, `$1783`); it is a flight key, and the base and Navigation read their own |
 | Death ends the game with no restart [S21] | traced | `player_destroyed` (`$1B90`) loads `END` and its `game_over`, which prints the death text and loads `TITLE`; O there loads the last save |
@@ -95,7 +95,7 @@ platform-neutral Sunracer Owner's Guide.
 |---|---|---|
 | Buy and sell cargo; prices differ by system; some goods spoil [S6][S9] | differs | prices differ by base, each map with its own (`cargo_price`, station `$B027`), and hold all day; kinds that spoil (`cargo_spoils`, engine `$0D08`) can turn to spoiled cargo on a HELM step (`helm_hazard_check`, `$2A15`) |
 | Contraband is confiscated at starbases [S6] | traced | at every base but the outposts and stations, one visit in two (one in eight with forged papers), kinds 0-3 are taken (station `$A62E`); the check itself was seen at Hiathra |
-| Reputation with the Imperium, the Merchant Guild, the pirates, the Manchi; repute as a pilot [S6][S15] | traced | three standings, -2 to 2 (`$072E`-`$0730`), set the factions' attitude (`faction_attitude`, `$387E`); the rank count (`$072A`, `$072B`) grows with kills and surrenders. Which standing is which faction is not traced |
+| Reputation with the Imperium, the Merchant Guild, the pirates, the Manchi; repute as a pilot [S6][S15] | traced | four standings, -2 to 2, one for each faction by its number (`$072E` pirates, `$072F` the Guild, `$0730` the Imperium, `$0731` the Manchi: the beam's weapon count, `$FE`, read as hostile, which `change_standing`, `$3C90`, leaves alone), set the factions' attitude (`faction_attitude`, `$387E`); the rank count (`$072A`, `$072B`) grows with kills and surrenders |
 | Docking at the Manchi homeworld ends the game [S20b] | traced | the docking routine (`$7094`) jumps to `$1532`, which loads `WON`, when the current system (`$071D`) is 9, the Manchi system on side 2's `q9`: docking at any base there wins; the ending was seen by calling it (`reference/ending-1.png`) |
 
 ### HIVE!

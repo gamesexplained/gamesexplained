@@ -12,7 +12,7 @@ comes from. The flight overlay at `$A500`-`$BCFF` and the models at
 |---|---|
 | `$0002`-`$00D5` | zero page: the keyboard buffer (`$03`-`$15`), the frame counter `$16`, the sound's voice state (`$1D`-`$2D`), the drawing window and pointers (`$38`-`$7C`), scratch (`$80`-`$99`), the model header copy (`$9A`-`$BD`), the AI's working values (`$D0`-`$D5`) |
 | `$0400`-`$0402` | `sr_start`, a jump to `sr_init` (`$0DE7`) |
-| `$0403`-`$0801` | the game state, the bytes `SAVED` holds: the six ship slots' records, the twenty object slots, the player (name `$0711`, system `$071D`, sector `$071E`/`$071F`, clock `$0720`-`$0725`, bounty `$0726`, credits `$0728`, rank `$072A`, standings `$072E`-`$0730`, missiles `$0732`-`$0734`, the ship's fittings `$0735`-`$073C`, items `$073D`-`$0751`, cargo `$0767`-`$0777`), the rumours (`$0784`) and the 32 plot flags (`$078E`) |
+| `$0403`-`$0801` | the game state, the bytes `SAVED` holds: the six ship slots' records, the twenty object slots, the player (name `$0711`, system `$071D`, sector `$071E`/`$071F`, clock `$0720`-`$0725`, bounty `$0726`, credits `$0728`, rank `$072A`, standings `$072E`-`$0731`, missiles `$0732`-`$0734`, the ship's fittings `$0735`-`$073C`, items `$073D`-`$0751`, cargo `$0767`-`$0777`), the rumours (`$0784`) and the 32 plot flags (`$078E`) |
 | `$07BC`-`$0831` | `file_names`, the loader's names, `TITLE` to `TALK` |
 | `$08D5`-`$0D1F` | the 35 object types' tables (`type_flags` to `type_rank`), the ten tactics' tables, the weapon and flight-mode bytes |
 | `$0DE7`-`$3FFF` | `SR`'s code: the main loop, the interrupt, the keyboard, the sound, the loader and disk-block reader, the object slots, the clock, the beam, navigation, the cockpit's instruments and TAC, the ships' AI |
@@ -51,7 +51,8 @@ stretch that needs a chip or the KERNAL.
   (`update_cockpit`) every seventh pass (`$135D`), the message line's
   timer every 16th, and every 256th the target's hail, the clock line
   and a chance of a new ship (`pick_ship_with_chance` with the danger
-  level divided by 8; ships farther than `$0B49` are removed).
+  level divided by 8; ships farther than `$0B49`, a log of the
+  distance, about 2,500 units, are removed).
 - `wait_ticks` (`$A317`) waits A ticks of 76 × 256 turns of a delay
   loop, about a tenth of a second each.
 
@@ -106,6 +107,15 @@ flown (`$0838`) only the first 25 entries count, up to V.
   (`engine_damage`, `$75EE`).
 - The player's thrust is the engine's (`$073B`) times 8 / (8 + the
   cargo slots in use) (`frame_update`).
+- *Measured*, 15 October 2026, on the engine in `kit/c64/cpu6502.js`
+  (`test_combat.js`): one pass of `turn_objects` (`$7634`) with a rate
+  of 1 turns the player 1/1024 of a turn (keys reach 70, 24.6 degrees a
+  pass; `joy_rates`, `$24A3`, reach 10) and a computer ship its type's
+  step from `type_turn` (`$0BE2`): 5.99/1024 for the Wasp, Dart and
+  Hunter, 2.99 for the Cruiser, Vulture, Corsair and Scow, 2 for the
+  Titan and Tanker. One pass of `apply_thrust` from a standstill toward
+  speed 70 adds the type's thrust rounded to 1/256 of a unit: 5/256 for
+  a Dart, 4/256 for a Cruiser, 3/256 for a Titan.
 - `speed_of` (`$7C21`) is the velocity's length × 16, the number the
   CF readout shows. Docking wants under 21, a Malir gate 20 or more.
 - `draw_speed` (`$31B2`) prints "CF" or "NF" and the speed; in
@@ -129,21 +139,32 @@ flown (`$0838`) only the first 25 entries count, up to V.
 - `damage` (`$6EA0`): the shields cut the damage first
   (`shield_reduce`, `$6F88`): a hit from behind meets the aft shield,
   the low nybble of `type_shields`, from in front the fore shield, the
-  high nybble, each step halving it; a plasma torpedo counts one step
-  less. A hit of 10 or more knocks out a random system one time in
+  high nybble, each step halving it; a beam of power 1-3 and a plasma
+  torpedo count one step less, and a power-4 beam is not reduced
+  (`beam_hit`, `$2222`, passes A = 1 or `$FF`). A hit of 10 or more knocks out a random system one time in
   five instead of reaching the armour (`$6F4B`, "Laser hit" and the
   rest, `$6FE5`). Armour below zero destroys the ship. A base hit by
   the player sets `$0783`, read on docking.
 - `ram` (`$6BC3`): damage is the relative speed's length × 8, low byte
   only, taken by both; then `bounce` (`$6D08`) treats it as an elastic
   collision with the two radii as the masses.
+- Hit boxes: `trace_beam` tests each step of a beam against a box of
+  the target type's radius (`type_radius`, `$0A1D`) plus 2 each way
+  round its centre, and `check_collisions` (`$6AB3`) boxes of the two
+  radii added; neither looks at the model. Flying along the axes, the
+  Cruiser's nose and the Corsair's reach 16 units against a box of 13,
+  the Vulture's wings 16, and the Titan 28.8 against 24 (the models as
+  `test_ships.js` holds them to `draw_model`). *Simulated* (the fight in
+  `test_combat.js`): the Cruiser and the Hunter, both Imperial, rammed
+  each other seven times between passes 1456 and 1615.
 - `hazard_hit` (`$6CC5`): planets and the black hole do 255.
-- `kill_reward` (`$1ABF`): a destroyed ship pays 32 × its type's rank
-  value (`type_rank`) in credits, with "Bounty awarded for kill:"; a
-  ship of faction 1 or 2 also adds (rank value + 2) × 16 to the bounty
-  on the player.
-- `key_surrender` (`$392A`): pirates (faction 2) ask the bounty plus
-  50 credits; any other faction asks for the cargo; a faction hostile
+- `kill_reward` (`$1ABF`): a destroyed pirate (faction 0) pays 32 ×
+  its type's rank value (`type_rank`) plus a random 0-255 in credits,
+  and a Manchi ship (faction 3) 32 × its rank value, with "Bounty
+  awarded for kill:"; a Guild or Imperial ship (faction 1 or 2) pays
+  nothing and adds (rank value + 2) × 16 to the bounty on the player.
+- `key_surrender` (`$392A`): the Imperium (faction 2) asks the bounty
+  plus 50 credits; any other faction asks for the cargo; a faction hostile
   to the player refuses, and others ignore it one time in five.
   `merchant_surrender` (`$3A2D`) is the other way round: a merchant
   under a quarter of its armour may offer its cargo.
@@ -154,17 +175,42 @@ flown (`$0838`) only the first 25 entries count, up to V.
 
 ## The ships' minds
 
-- `ship_ai` (`$3689`) runs every 16th call; each ship reconsiders its
-  target, attitude and tactic every third of those. Ten tactics
+- `ship_ai` (`$3689`) runs every 17th call (`ai_tick` counts 16 down
+  to -1); each ship reconsiders its target, attitude and tactic every
+  third of those. *Simulated*, 15 October 2026: the engine's own main
+  loop run in `kit/c64/cpu6502.js` changed tactics only on passes 17
+  apart (`test_combat.js`). Ten tactics
   (`tactic_names`, `$0CAE`): cruise, follow, pursue, close, swerve,
   stand, circle, flee, elude, ram, each with a steering mode, an angle,
   a speed and a speed rule (`$0C86`-`$0CA4`).
 - `faction_attitude` (`$387E`): four computer factions stand to each
   other by `faction_table` (`$38B1`); to the player by the player's
-  standing, -2 to 2 (`$072E`-`$0730`). A type-`$0C` ship (Hunter) is
-  hostile while the player has a bounty.
-- `ai_fire` (`$38C1`): a fighting ship close enough fires three times
-  in ten, a missile three times in ten of those.
+  standing with that faction, -2 to 2 (`$072E` + faction: pirates,
+  Guild, Imperium). For the Manchi, faction 3, that is `$0731`, the
+  weapon count whose `$FE` keeps the beam from running out: always
+  hostile, and `change_standing` (`$3C90`) leaves faction 3 alone. A type-`$0C` ship (Hunter) is unfriendly while
+  the player has a bounty, and otherwise takes the Imperium's standing;
+  the `LDA #0` at `$3899` is overwritten by the next instruction.
+- `ai_fight_score` (`$3BE0`), called with A = 0 by `ai_attitude`
+  (`$3739`): -4, plus the ship's hit points counted in eighths of its
+  type's full count, plus 1 (1 to 9), plus its rank value less the
+  target's, halved by an arithmetic shift, plus 1 when its faction is
+  hostile (`$FE`) to the target's, plus 2 when the target's `$0439` is
+  set, minus 2 when its own is, minus 1 for faction 1, plus 2 for
+  faction 2, and exactly 2 for faction 3. Negative: AI state `$FF` and
+  tactic 7 (flee); otherwise `$FE`.
+- `ai_fire` (`$38C1`): a fighting or fleeing ship whose target is under
+  `$08A4` away (a log: about 400 units, the reach of a beam in
+  `trace_beam`, `$2189`, 50 steps of 8) fires three times in ten, a
+  missile three times in ten of those. A computer ship's beam is aimed
+  straight at its target and is drawn only when it hits it (`fire_beam`,
+  `$20EC`).
+- `steer_toward` (`$3D69`): the two angles to the target are in 1024ths
+  of a turn; the tactic's offset (`tactic_angle`, `$0C90`) is taken off
+  the size of the first, so a circling ship (192) keeps its target 67.5
+  degrees off the nose and an eluding one (255) about 90; each angle
+  divided by the type's turning step gives the steps of turn and pitch
+  the ship then makes one a pass (`turn_ship`, `$76DD`).
 - `pick_ship` (`$2C8C`): a random number spent across the system's five
   class weights picks a class, and `ship_class_types` (`$2D24`) one of
   its four types: one time in four any of them, otherwise a random

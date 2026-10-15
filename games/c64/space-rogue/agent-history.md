@@ -88,3 +88,30 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   unpack over the first, as the game does.
 - The Ja-Karn paragraph first said each map names up to two gates; the
   `$5630` records allow four. Rewritten from the records.
+
+## 15 October 2026, ships, combat and flight
+
+- Asked for a ship browser and a breakdown of the combat, the minds of
+  the computer ships, the player's flight and the use of three
+  dimensions. The model drawer was ported first and held to the engine's
+  own `draw_model` (`test_ships.js`); the two models built into `MAIN`
+  decoded as zeros until `decode` took memory by address.
+- Reading the minds against the code corrected six comments and facts
+  lines: `ship_ai` runs every 17th call, not 16th; a circling ship keeps
+  its target 67.5 degrees off, not 90; the Hunter takes the Imperium's
+  standing, not none; only pirates and Manchi pay for a kill; the
+  distances are logarithms, about 333, 400 and 2,500 units. Two more
+  came out while writing the copy: `beam_hit` passes A, not X, so a beam
+  counts one step of the shields less, as a plasma torpedo does, and
+  `turn_ship`'s step is in 1024ths of a turn, measured on the engine.
+- The first fight recorded, a Cruiser and a Hunter against a Corsair and
+  a Dart, ended with both survivors flying more than 2,500 units away and
+  removed by `frame_update` with no ship destroyed. Ten more line-ups
+  were run; the Manchi ones attacked the Sunracer, and two stopped when
+  `END` was loaded for its destruction. The Imperium against a Wasp and a
+  Vulture, 2,000 passes, kills both Manchi and leaves the player alive,
+  and is the one on the page.
+- The recording's first hooks read the wrong registers: `fill_slot` has
+  the type in `$94`, not X, and the tactic changes were counted on the
+  pass after the one that made them. Both showed as failures of the
+  test's own checks before the page was written.

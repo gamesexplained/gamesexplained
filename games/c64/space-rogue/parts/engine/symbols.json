@@ -16070,12 +16070,12 @@
   {
    "address": 1838,
    "type": "line",
-   "text": "The player's standing with factions 0-2 ($072E-$0730), -2 to 2"
+   "text": "The player's standing with factions 0-2 ($072E-$0730), -2 to 2; faction_attitude reads $072E + faction, so for the Manchi (faction 3) it reads $0731, the beam's $FE: hostile"
   },
   {
    "address": 1841,
    "type": "line",
-   "text": "The count read for weapon $0CFE at $0731 + weapon: $FE here for the beam, which never runs out, then the missiles carried, SM-1 (type 9) at $0732, Nova (type 10) at $0733 and plasma torpedoes (type 11) at $0734"
+   "text": "The count read for weapon $0CFE at $0731 + weapon: $FE here for the beam, which never runs out, then the missiles carried, SM-1 (type 9) at $0732, Nova (type 10) at $0733 and plasma torpedoes (type 11) at $0734; faction_attitude reads the same $FE as the player's standing with the Manchi (faction 3), hostile, and change_standing ($3C90) leaves faction 3 alone"
   },
   {
    "address": 1842,
@@ -16530,7 +16530,7 @@
   {
    "address": 3216,
    "type": "line",
-   "text": "Each tactic's angle offset added when steering (90 degrees to circle)"
+   "text": "Each tactic's angle offset in 1024ths of a turn, which steer_toward takes off the size of the first angle so that the target is kept that far off the nose: 127 (about 45 degrees) for follow and flee, 63 (22) for close, 192 (67.5) for circle, 255 (90) for elude"
   },
   {
    "address": 3226,
@@ -16985,7 +16985,7 @@
   {
    "address": 4665,
    "type": "line",
-   "text": "The main loop's first call. Counts down $0836; fires the beam ($20EC) when auto fire ($0CFF) is on, the player's target ($0445) is a ship slot (0-5) and $0D00 has counted down to zero; every seventh pass with $3A clear runs $3102. Every 256th pass: $1DDF, then the clock line ($923E with $044B), then, with fewer than three ships in slots 1-5 (in use, $0403 clear), it may add one: $2C8A picks a type from $077C divided by 8 (none if negative), skipped when $A2C5 is negative with two ships already present; $1D4A/$1D6A when $08F9 for that type is clear, then $1E73 and $1949 create it, and ships whose distance ($7947) is $0B49 or more are removed ($1A5F with A=$FF). Every 16th pass: counts $0D29 down to clear the message line ($A178), counts $0D00 down, and computes $0C04/$0C05 from $073B/$073C and a value from $2EDB and $B451"
+   "text": "The main loop's first call. Counts down $0836; fires the beam ($20EC) when auto fire ($0CFF) is on, the player's target ($0445) is a ship slot (0-5) and $0D00 has counted down to zero; every seventh pass with $3A clear runs $3102. Every 256th pass: $1DDF, then the clock line ($923E with $044B), then, with fewer than three ships in slots 1-5 (in use, $0403 clear), it may add one: $2C8A picks a type from $077C divided by 8 (none if negative), skipped when $A2C5 is negative with two ships already present; $1D4A/$1D6A when $08F9 for that type is clear, then $1E73 and $1949 create it, and ships whose distance ($7947, a log) is $0B49 or more (about 2,500 units) are removed ($1A5F with A=$FF). Every 16th pass: counts $0D29 down to clear the message line ($A178), counts $0D00 down, and computes $0C04/$0C05 from $073B/$073C and a value from $2EDB and $B451"
   },
   {
    "address": 4957,
@@ -17535,7 +17535,7 @@
   {
    "address": 8738,
    "type": "line",
-   "text": "The beam from slot $B2 hits slot $B3 with power $B4: draws it ($2279); effect 12 when the player fired; effect 1 and $0835 = $FF when the player is hit, effect 0 when one computer ship hits another. The damage is the table entry at $2414 for the power's low three bits, halved once for each step of the player's beam heat ($0D00); power 4 hits with X = $FF, the others with 1. Ends in $6EA0 with the shooter in X and the victim in Y"
+   "text": "The beam from slot $B2 hits slot $B3 with power $B4: draws it ($2279); effect 12 when the player fired; effect 1 and $0835 = $FF when the player is hit, effect 0 when one computer ship hits another. The damage is the table entry at $2414 for the power's low three bits, halved once for each step of the player's beam heat ($0D00); power 4 passes A = $FF, so the shields do not reduce it, the others A = 1, so the shields count one step less. Ends in $6EA0 with the shooter in X and the victim in Y"
   },
   {
    "address": 8825,
@@ -18170,7 +18170,7 @@
   {
    "address": 13961,
    "type": "line",
-   "text": "The computer ships' minds, every 16th call (counter $3808): for each ship in slots 5-1 whose AI state ($041B) is not 0: works out the distance to its target ($7947, kept in $D0-$D4); every third time round (counter $3809), for a ship whose $0403 is clear, a ship without a target looks for one ($3701), one with a target reconsiders its attitude ($3739) and tactic ($375F). Every time, a ship with a target sets its speed ($37A8), steers ($3CAB) and may fire ($38C1). Then $3A2D"
+   "text": "The computer ships' minds, every 17th call (counter $3808, 16 down to -1): for each ship in slots 5-1 whose AI state ($041B) is not 0: works out the distance to its target ($7947, kept in $D0-$D4); every third time round (counter $3809), for a ship whose $0403 is clear, a ship without a target looks for one ($3701), one with a target reconsiders its attitude ($3739) and tactic ($375F). Every time, a ship with a target sets its speed ($37A8), steers ($3CAB) and may fire ($38C1). Then $3A2D"
   },
   {
    "address": 14081,
@@ -18185,7 +18185,7 @@
   {
    "address": 14175,
    "type": "line",
-   "text": "For a ship that is fighting ($041B = $FE): beyond $0861 in distance the tactic is 2 (pursue). Otherwise one in ten (a random number of $E6 or more) changes tactic: from cruise or pursue to the type's own tactic ($0C38), from any other to one of seven drawn from ai_tactic_choices"
+   "text": "For a ship that is fighting ($041B = $FE): beyond $0861 in distance (a log: about 333 units) the tactic is 2 (pursue). Otherwise one in ten (a random number of $E6 or more) changes tactic: from cruise or pursue to the type's own tactic ($0C38), from any other to one of seven drawn from ai_tactic_choices"
   },
   {
    "address": 14248,
@@ -18195,12 +18195,12 @@
   {
    "address": 14311,
    "type": "line",
-   "text": "Speed rule 2: 5 when the target is behind (negative $D4 or $D2/$D3 below $FF7D), otherwise the tactic's speed while far ($D0/$D1 over $0861) and $4B while close"
+   "text": "Speed rule 2: 5 when the target is more than about 45 degrees off the nose (negative $D4 or $D2/$D3 below $FF7D), otherwise the tactic's speed while far ($D0/$D1, a log, over $0861: about 333 units) and $4B while close"
   },
   {
    "address": 14344,
    "type": "line",
-   "text": "Counts ship_ai's calls from 16 down to the next pass"
+   "text": "Counts ship_ai's calls from 16 down; the minds run when it passes zero, on every 17th call"
   },
   {
    "address": 14345,
@@ -18220,7 +18220,7 @@
   {
    "address": 14462,
    "type": "line",
-   "text": "How faction A stands to faction X: from the player (X = 4) it is the player's standing with that faction ($072E+A), except that a type-$0C ship (in Y) is hostile ($FF) while the player has a bounty ($0726/$0727) and neutral otherwise; a negative faction gives 0. Between two computer factions it is faction_table entry A*4+X. $FE is hostile, $FF unfriendly, 0 neutral, 1 friendly, 2 allied"
+   "text": "How faction A stands to faction X: from the player (X = 4) it is the player's standing with that faction ($072E+A), except that a type-$0C ship (in Y) is unfriendly ($FF) while the player has a bounty ($0726/$0727), and otherwise takes the standing like any other ship (the LDA #0 at $3899 is overwritten by the next instruction); a negative faction gives 0. Between two computer factions it is faction_table entry A*4+X. $FE is hostile, $FF unfriendly, 0 neutral, 1 friendly, 2 allied"
   },
   {
    "address": 14513,
@@ -18230,12 +18230,12 @@
   {
    "address": 14529,
    "type": "line",
-   "text": "A fighting ship ($041B negative, $0403 clear) within $08A4 of its target fires three times in ten (a random number below $4D). The flag $BD is set when the value $7947 left in $D2-$D4 has a positive top byte and a low word at or above $FFCB as a signed comparison. Then three times in ten a missile of its type's kind ($0C5F + 8; none with a damaged launcher, $0409 bit 0, or a type without missiles), a type 11 missile only with $BD set; otherwise the beam ($20EC), with $BD set or when its type's beam value ($0C52) has bit 7 set"
+   "text": "A fighting or fleeing ship ($041B negative, $0403 clear) whose distance to its target is below $08A4 as a log (about 400 units, a beam's reach in trace_beam) fires three times in ten (a random number below $4D). The flag $BD is set when the value $7947 left in $D2-$D4 has a positive top byte and a low word at or above $FFCB as a signed comparison: the target within about 30 degrees of the nose. Then three times in ten a missile of its type's kind ($0C5F + 8; none with a damaged launcher, $0409 bit 0, or a type without missiles), a type 11 missile only with $BD set; otherwise the beam ($20EC), with $BD set or when its type's beam value ($0C52) has bit 7 set"
   },
   {
    "address": 14634,
    "type": "line",
-   "text": "Key G, surrender. Clears the view and shows the surrender text ($CF88). It counts only with exactly one ship fighting the player and the first time ($0832): then the rank count $072B gains $072A. A faction hostile to the player refuses ($CF81); one time in five any other ignores it ($CF7F). Pirates (faction 2) ask for the bounty ($0726/$0727) plus 50 credits ($CF87, Y/N $3BA1): paid, the bounty is cleared ($CF86) and every ship leaves; too little money, $CF85. Any other faction asks for the cargo ($CF84): yes with an empty hold gives $CF83, otherwise the hold is emptied ($CF82) and the ships leave. Refusing gives $CF80"
+   "text": "Key G, surrender. Clears the view and shows the surrender text ($CF88). It counts only with exactly one ship fighting the player and the first time ($0832): then the rank count $072B gains $072A. A faction hostile to the player refuses ($CF81); one time in five any other ignores it ($CF7F). The Imperium (faction 2) asks for the bounty ($0726/$0727) plus 50 credits ($CF87, Y/N $3BA1): paid, the bounty is cleared ($CF86) and every ship leaves; too little money, $CF85. Any other faction asks for the cargo ($CF84): yes with an empty hold gives $CF83, otherwise the hold is emptied ($CF82) and the ships leave. Refusing gives $CF80"
   },
   {
    "address": 14893,
@@ -18280,7 +18280,7 @@
   {
    "address": 15721,
    "type": "line",
-   "text": "Turns ship X toward the direction at ($74): rotates it into the ship's frame ($9160 with the ship's orientation), finds its two angles ($983B into $6F-$73), adds the tactic's offset ($0C90, 90 degrees for circle and so on) to the first, and sets the turn rate ($0516) and the pitch rate ($0508) from the two angles less the type's turning limit ($0BE2), clamped ($B447, $B5C5, $B771)"
+   "text": "Turns ship X toward the direction at ($74): rotates it into the ship's frame ($9160 with the ship's orientation), finds its two angles in 1024ths of a turn ($983B into $6F-$73), takes the tactic's offset (A, from $0C90) off the size of the first, so that the ship settles with the target that far to one side, and divides each angle by the type's turning step (its log less $0BE2's), clamped to a signed byte ($B447, $B5C5, $B771): the steps for the turn rate ($0516) and, its sign turned, the pitch rate ($0508)"
   },
   {
    "address": 15885,
@@ -18810,7 +18810,7 @@
   {
    "address": 30429,
    "type": "line",
-   "text": "Turns computer ship X: its type's turning step ($0BE2 log word, in radians) is used on each axis whose rate is nonzero, with the rate's sign, and the rate counted one step toward zero; the angles turn the ship's orientation ($044B block, turn_by_rates)"
+   "text": "Turns computer ship X: its type's turning step ($0BE2, a log word in 1024ths of a turn) is used on each axis whose rate is nonzero, with the rate's sign, and the rate counted one step toward zero; the angles turn the ship's orientation ($044B block, turn_by_rates)"
   },
   {
    "address": 30578,
@@ -18845,7 +18845,7 @@
   {
    "address": 31047,
    "type": "line",
-   "text": "For slot X and slot Y: the vector from X to Y in log form at $0896, its length in $80/$81 (also $5F/$60), made a unit vector, and its dot product with Y's third orientation row ($045D block) in $5F-$61. Y is saved into the operand at $797D for that last step"
+   "text": "For slot X and slot Y: the vector from X to Y in log form at $0896, its length in log form in $80/$81 (also $5F/$60), made a unit vector, and its dot product with Y's third orientation row ($045D block) in $5F-$61. Y is saved into the operand at $797D for that last step"
   },
   {
    "address": 31100,
