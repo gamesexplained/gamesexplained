@@ -26,3 +26,22 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - A first try to catch the intro's entry compared the 16 bytes at `$6800`
   on every stop there and missed it; a checkpoint on the title's own
   `JMP $6800` after its `INTRO` load (`$2F71`) caught it.
+
+## 15 October 2026, annotating the title, the intro and the ending
+
+- The hang noted at orient was first put down to the interrupt's raster
+  setup. That routine clears bit 8 correctly (`setup_irq`, `AND #$7F`);
+  the bit is set afterwards by `bitmap_mode`'s `LDA $D011 / ORA #$20 /
+  STA $D011`, which writes the beam's line bit 8 into the compare.
+- `parts/title/work/prompt.vsf` was described as the "Old or New Game?"
+  prompt. It is the title's lift-off, mid-climb: the prompt belongs to
+  `INTRO`, which the title loads only after a key. `orientation.md` is
+  corrected.
+- The title, the intro and the ending carry the same library at three
+  addresses (the title without the wipes and scrolls); a relocation-aware
+  compare mapped the intro's
+  annotations onto the other two, which were then reworded for each.
+- The second sound in the effect player, silent in the intro and the
+  ending, is the title's engine roar: the title sets its mask and raises
+  its target note at every step of the lift-off.
+

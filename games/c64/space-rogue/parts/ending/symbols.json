@@ -16,6 +16,51 @@
     53248,
     57343,
     "I/O and colour RAM"
+   ],
+   [
+    1024,
+    16383,
+    "SR, the game's resident code, left in memory: it loaded WON and jumped to it, and the ending never returns to it (story_end loads TITLE over it); colours_to_ram stages colours at $0C00-$0FFF"
+   ],
+   [
+    16384,
+    26623,
+    "the $4000 display buffer: the bitmap, the screen matrix at $6000 and the colours at $6400, filled by unpack_picture and the text"
+   ],
+   [
+    32256,
+    33791,
+    "MAIN's bytes past WON, left from the game (MAIN $6400-$A4FF; WON loads over $6800-$7DFF and the pictures over $8400-$ACFF); the ending never reads them"
+   ],
+   [
+    44288,
+    49151,
+    "left from the game: SEG0 or SEG1 past F3.PAC (the overlay at $A500-$BCFF), SPB at $BD00-$BEFF and the disk text buffer at $BF00; the ending never reads them"
+   ],
+   [
+    49152,
+    59391,
+    "the $C000 display buffer: the bitmap (under the I/O from $D000), the screen matrix at $E000 and the colours at $E400"
+   ],
+   [
+    59392,
+    60159,
+    "left from flight: the model heap and INIT ($E900-$EAFF), which the ending never reads"
+   ],
+   [
+    60360,
+    60415,
+    "EXTERN's bytes between the two halves of the line table, which build_line_table writes over EXTERN at $EB00-$EBC7 and $EC00-$ECC7"
+   ],
+   [
+    60616,
+    61951,
+    "the rest of EXTERN past the line table, left from the game"
+   ],
+   [
+    62976,
+    65529,
+    "left from the game: the text cache from side 2 ($F600-$F9FF) and the per-frame work buffers ($FA00 on); the ending never reads them"
    ]
   ],
   "extra": []
@@ -3451,7 +3496,7 @@
   {
    "address": 28642,
    "type": "line",
-   "text": "Turns the multicolour bitmap on ($D011 bit 5, $D016 bit 4), with the bitmap at the start of the VIC's bank and the screen matrix $2000 into it ($D018 = $80), and the background black"
+   "text": "Turns the multicolour bitmap on ($D011 bit 5, $D016 bit 4), with the bitmap at the start of the VIC's bank and the screen matrix $2000 into it ($D018 = $80), and the background black. Its read-modify-write of $D011 also writes back bit 7, which reads as bit 8 of the beam's line and writes bit 8 of the raster compare: run while the beam is on line 256 or later, it moves the interrupt from line $50 to $150 (336), which no frame reaches, and the interrupt stops for good"
   },
   {
    "address": 28683,

@@ -118,10 +118,12 @@ platform-neutral Sunracer Owner's Guide.
 
 Found in the code, not in the manual.
 
-- On a PAL machine the interrupt can stop for good: the game's raster
-  compare routine copies the beam's current bit 8 into the compare.
-  Two clean boots out of two hung at "Old or New Game?", and it recurs
-  in play (`orientation.md`).
+- The raster interrupt can stop for good, more often on a PAL machine:
+  `bitmap_mode` turns the bitmap on with a read-modify-write of `$D011`,
+  whose bit 7 reads as bit 8 of the beam's line and writes bit 8 of the
+  raster compare. Run while the beam is on line 256 or later, it moves the
+  interrupt from line `$50` to `$150`, which no frame reaches. Two clean
+  boots out of two hung at "Old or New Game?" (`orientation.md`).
 - `END` on side 2 is `INIT` from side 1 under another name, loaded to put
   back the bytes a base overwrites.
 

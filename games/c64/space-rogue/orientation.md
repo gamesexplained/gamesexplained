@@ -50,19 +50,21 @@ none failed.
    `SYS 49152`. They load `TITLE` to `$2000` and jump there
    (`work/intro-entry.vsf`, copied to `parts/title/work/entry.vsf`, is
    the stop on `$2000`).
-3. The title loads its pictures and the ship program and plays: the Origin
-   logo, the Space Rogue logo appearing over a star field, the Sunracer.
-   Space skips it to "Old or New Game?".
+3. The title loads its pictures and `SHIP`, the animation's shapes, and
+   plays, over and over: the Sunracer lifts off from a planet under a star
+   field and climbs away with the Space Rogue logo behind it, then the
+   credits page with the Origin logo. Any key puts up the credits, loads
+   `INTRO` to `$6800` and jumps there (`parts/intro/work/entry.vsf`);
+   `INTRO` asks "Old or New Game?".
 4. **On a PAL machine the prompt can hang** (two clean boots out of two):
-   the interrupt stops and the screen freezes. It is the game's own bug,
-   the raster compare routine copying the beam's current bit 8 into the
-   compare (`facts.md`). To go on, with the machine paused, set `$01` to
+   the interrupt stops and the screen freezes. It is the game's own bug:
+   `bitmap_mode` writes `$D011` back with the beam's current line bit 8,
+   which lands in the raster compare (`features.md`). To go on, with the machine paused, set `$01` to
    `$35`, clear bit 7 of `$D011`, put `$01` back and resume
    (`work/scripts/sr.py`, `unstall`). The same hang recurs in play; the
    same fix clears it every time.
-5. `N`, then a name (`PILOT`) and Return. The title loads `INTRO` to
-   `$6800` and jumps there (`parts/intro/work/entry.vsf`). Space pages
-   through the story (`parts/intro/work/story.vsf`).
+5. `N`, then a name (`PILOT`) and Return. Space pages through the story
+   (`parts/intro/work/story.vsf`).
 6. The intro loads `SR` to `$0400` and jumps there
    (`parts/engine/work/entry.vsf`). The engine asks for side 2 ("Insert
    DATA disk"): attach `work/side2.g64` and press Space.
@@ -83,8 +85,8 @@ that leave the rest of memory as it was.
 
 | Part | Loads | Snapshots (`parts/<id>/work/`) | Route |
 |---|---|---|---|
-| title | `TITLE` $2000, `SPACE` $B700, `ROGUE` $AC00, `SHIP` $6800, `CREDITS` $3000 | `entry.vsf` (stop on $2000), `prompt.vsf` ("Old or New Game?") | steps 1-4 |
-| intro | `INTRO` $6800, `FONT` $F200, `SPACE` $B700, `I1.PAC` $8400, `I2.PAC` $9200, `I3.PAC` $A100 | `entry.vsf` (stop on $6800), `story.vsf` (the first page) | step 5 |
+| title | `TITLE` $2000, `SPACE` $B700, `ROGUE` $AC00, `SHIP` $6800, `CREDITS` $3000 | `entry.vsf` (stop on $2000), `prompt.vsf` (the lift-off, the ship climbing over the logo) | steps 1-3 |
+| intro | `INTRO` $6800, `FONT` $F200, `SPACE` $B700, `I1.PAC` $8400, `I2.PAC` $9200, `I3.PAC` $A100 | `entry.vsf` (stop on $6800), `story.vsf` (the first page) | steps 3-5 |
 | engine | `SR` $0400, then `INIT` $E900, `MAIN` $6400, `EXTERN` $EB00, `SPB` $BD00, `FONT` $F200 | `entry.vsf` (stop on $0400), `play-flight.vsf` | step 6 |
 | flight, over engine | `SEG0` $A500, `END` $E900, a model at $E400 per object met (`STA`, `HUN`, ...), `PIT.PAC` $4000, and in navigation `NAV.PAC` and `NAV.TIL` $4000 and the system's `Qn` $5100 | `entry.vsf`, `play-flight.vsf`, `nav.vsf`, `approach.vsf` | step 7 |
 | station, over engine | `SEG1` $A500, `SEG1A` $E400, `LAND.PAC` $4000, the base's `Lnn` $5100, `TALK` $5700, `LAND.TIL` $4000 | `entry.vsf` (the docking message), `walk.vsf` (the hangar at Hiathra) | below |
