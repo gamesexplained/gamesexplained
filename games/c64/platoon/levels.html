@@ -49,9 +49,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <div class="plate"><canvas id="tmap"></canvas><p class="cap">Drawn by square kind, not with the game's characters: open tunnel pale, water marked with waves, edges grey, rock dark. Windows are numbered in the order of the table at <code>$1390</code>, whose last four entries point at room pictures instead.</p></div>
 </section>
 
-<section id="maze"><p class="fig">03 · Section three</p><h2 class="t">The 120 rooms of the last jungle</h2>
+<section id="maze"><p class="fig">03 · Section three</p><h2 class="t">The map of the last jungle</h2>
 <p>The rooms sit on a grid ten wide and twelve high, numbered across from 0 (<a href="source-load4.html#3591"><code>$3591</code></a>). Each room has a kind from 1 to 16; kind 0 is outside the maze. The kind picks one of ten maps of 30 by 25 characters (<code>$3609</code>, <code>$361A</code>) and a list of trees, huts and other shapes drawn over it (<code>$36D1</code>), so rooms of the same kind look alike.</p>
-<div class="plate"><canvas id="rgrid"></canvas><p class="cap">Press a room to draw it below. S marks the starting room, 105; B marks the rooms of kind 16, where the room test at <code>$33E7</code> handles the edges apart from the others.</p>
+<div class="plate"><canvas id="rgrid"></canvas><p class="cap">The whole maze, every room drawn at its place on the grid with its number; the soldier starts in room 105 (START), and the three rooms of kind 16 (BUNKER) are Barnes's, whose edges the room test at <code>$33E7</code> handles apart from the others. Empty squares are outside the maze. Press a room to draw it larger below.</p>
 <div class="row"><span class="lab" id="rlab"></span></div>
 <canvas id="room" style="margin-top:12px"></canvas></div>
 </section>
@@ -103,38 +103,52 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       }
     }
     // section three: the grid of rooms, then one room drawn
-    const j = J.ram, gs = 40, g = C.canvas($('rgrid'), 10 * gs, 12 * gs);
-    g.font = '13px IBM Plex Mono, monospace'; g.textAlign = 'center';
-    for (let i = 0; i < 120; i++) {
-      const k = j[0x3591 + i], x = (i % 10) * gs, y = Math.floor(i / 10) * gs;
-      g.fillStyle = k ? (k === 16 ? '#c25a00' : '#2a8a4a') : '#e9e7e1'; g.fillRect(x + 1, y + 1, gs - 2, gs - 2);
-      g.fillStyle = k ? '#ffffff' : '#80838a';
-      g.fillText(i === 105 ? 'S' : k === 16 ? 'B' : k ? String(k) : '', x + gs / 2, y + gs / 2 + 5);
-    }
-    const rc = C.canvas($('room'), 30 * 16, 25 * 16), set = j.subarray(0xA800, 0xB000), rcols = [P[0], P[9], P[8]];
-    function drawRoom(i) {
-      const k = j[0x3591 + i], scr = new Uint8Array(30 * 25);
-      $('rlab').textContent = 'Room ' + i + (k ? ', kind ' + k : ', outside the maze');
-      rc.fillStyle = P[0]; rc.fillRect(0, 0, 480, 400);
-      if (!k) return;
+    const j = J.ram, set = j.subarray(0xA800, 0xB000), rcols = [P[0], P[9], P[8]];
+    function roomScreen(k) {
+      const scr = new Uint8Array(30 * 25);
       const mi = j[0x3609 + k], src = j[0x361A + 2 * mi] | j[0x361B + 2 * mi] << 8;
       for (let a = 0; a < 750; a++) scr[a] = j[src + a];
-      // the room's shapes: shape number, then a screen address in the 40-column screen at $4400
+      // the kind's shapes: shape number, then a screen address in the 40-column screen at $4400
       let l = j[0x36D1 + 2 * k] | j[0x36D2 + 2 * k] << 8;
       for (let n = 0; n < 40 && j[l] !== 0xFF; n++, l += 3) {
         const sh = j[0x37A0 + 2 * j[l]] | j[0x37A1 + 2 * j[l]] << 8;
-        let at = (j[l + 1] | j[l + 2] << 8) - 0x4400, row = 0, col = 0;
+        const at = (j[l + 1] | j[l + 2] << 8) - 0x4400; let row = 0, col = 0;
         for (let q = sh; j[q] !== 0xFF && q < sh + 400; q++) {
           if (j[q] === 0xFE) { row++; col = 0; continue; }
           const p = at + 40 * row + col++, r = Math.floor(p / 40), c = p % 40;
           if (r >= 0 && r < 25 && c < 30) scr[30 * r + c] = j[q];
         }
       }
-      for (let a = 0; a < 750; a++) glyph(rc, set, scr[a], (a % 30) * 16, Math.floor(a / 30) * 16, j[0x3C93 + scr[a]], rcols, 2);
+      return scr;
     }
+    function paint(ctx, k, ox, oy, s) {
+      const scr = roomScreen(k);
+      for (let a = 0; a < 750; a++) glyph(ctx, set, scr[a], ox + (a % 30) * 8 * s, oy + Math.floor(a / 30) * 8 * s, j[0x3C93 + scr[a]], rcols, s);
+    }
+    // the whole maze: every room at its place on the 10 x 12 grid
+    const RW = 240, RH = 200, GAP = 4, g = C.canvas($('rgrid'), 10 * (RW + GAP), 12 * (RH + GAP));
+    $('rgrid').style.width = '100%';
+    g.fillStyle = '#e9e7e1'; g.fillRect(0, 0, 10 * (RW + GAP), 12 * (RH + GAP));
+    g.font = 'bold 28px IBM Plex Mono, monospace'; g.textAlign = 'left';
+    for (let i = 0; i < 120; i++) {
+      const k = j[0x3591 + i], x = (i % 10) * (RW + GAP), y = Math.floor(i / 10) * (RH + GAP);
+      if (!k) continue;
+      paint(g, k, x, y, 1);
+      const tag = i === 105 ? 'START' : k === 16 ? 'BUNKER' : '';
+      g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(x, y, tag ? 170 : 70, 36);
+      g.fillStyle = '#ffffff'; g.fillText(i + (tag ? ' ' + tag : ''), x + 6, y + 27);
+    }
+    const rc = C.canvas($('room'), 30 * 16, 25 * 16);
+    function drawRoom(i) {
+      const k = j[0x3591 + i];
+      $('rlab').textContent = 'Room ' + i + (k ? ', kind ' + k : ', outside the maze');
+      rc.fillStyle = P[0]; rc.fillRect(0, 0, 480, 400);
+      if (k) paint(rc, k, 0, 0, 2);
+    }
+    const gs = RW + GAP;
     $('rgrid').addEventListener('click', e => {
       const b = $('rgrid').getBoundingClientRect(), sx = 10 * gs / b.width;
-      drawRoom(Math.floor((e.clientY - b.top) * sx / gs) * 10 + Math.floor((e.clientX - b.left) * sx / gs));
+      drawRoom(Math.floor((e.clientY - b.top) * sx / (RH + GAP)) * 10 + Math.floor((e.clientX - b.left) * sx / gs));
     });
     drawRoom(105);
   });
