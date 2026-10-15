@@ -11,17 +11,18 @@ the writing is the spine but anything that explains the game can live
 game itself). If you can build it, build it.
 
 Every game is a small site with the same tabs in the same order: **How it
-works** (`index.html`, authored), **Discoveries** (`discoveries.html`,
-authored, the secrets, quirks and bugs), **Source code** (`source.html`,
-generated from `listing.json` plus `facts.md` and `cheats.md`), **Maps /
-levels** (`levels.html`, authored, for every game with more than one
-level, map, room, stage or screen), **Play** (`play.html`, authored, only
-when a JavaScript version exists), **About** (generated from `game.json`,
+works** (`index.html`, authored), **Play** (`play.html`, authored, only
+when a JavaScript version exists), **Discoveries** (`discoveries.html`,
+authored, the secrets, quirks and bugs), **Maps / levels** (`levels.html`,
+authored, for every game with more than one level, map, room, stage or
+screen), **Source code** (`source.html`, generated from `listing.json`
+plus `facts.md` and `cheats.md`), **About** (generated from `game.json`,
 `features.md`, `orientation.md`, git). `kit/scripts/build.py` assembles
 them; you write the authored ones. A game that needs other tabs lists all
-of its tabs, in order, as `[file, label]` pairs in `game.json`'s
-`"tabs"`; the build publishes the pages named there and warns about any
-other `.html` in the folder.
+of its tabs as `[file, label]` pairs in `game.json`'s `"tabs"`; the build
+publishes the pages named there and warns about any other `.html` in the
+folder. The bar always opens with How it works, Play and Discoveries and
+closes with Source code and About; the list orders the tabs between.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.

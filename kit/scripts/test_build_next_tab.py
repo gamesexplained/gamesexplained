@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The link at the end of a tab to the next one: it names the tab after it in the bar, skips a tab
-the game does not have, sits above the edit footer, and the last tab has none."""
+the game does not have, sits above the edit footer, and the last tab has none. And the bar's order:
+How it works, Play and Discoveries first, Source code and About last, whatever a game's own list says."""
 from pathlib import Path
 import json
 import re
@@ -21,9 +22,11 @@ def target(h):
 class NextTab(unittest.TestCase):
     def test_the_tab_after_in_the_bar(self):
         every = {f for f, _ in build.TABS}
-        self.assertEqual(target(build.next_tab({}, every, "index.html")), ("discoveries.html", "Discoveries"))
-        self.assertEqual(target(build.next_tab({}, every, "discoveries.html")), ("source.html", "Source code"))
-        self.assertEqual(target(build.next_tab({}, every, "play.html")), ("about.html", "About"))
+        self.assertEqual(target(build.next_tab({}, every, "index.html")), ("play.html", "Play"))
+        self.assertEqual(target(build.next_tab({}, every, "play.html")), ("discoveries.html", "Discoveries"))
+        self.assertEqual(target(build.next_tab({}, every, "discoveries.html")), ("levels.html", "Maps / levels"))
+        self.assertEqual(target(build.next_tab({}, every, "levels.html")), ("source.html", "Source code"))
+        self.assertEqual(target(build.next_tab({}, every, "source.html")), ("about.html", "About"))
         self.assertEqual(build.next_tab({}, every, "about.html"), "")
 
     def test_a_tab_the_game_does_not_have_is_skipped(self):
@@ -34,9 +37,19 @@ class NextTab(unittest.TestCase):
         game = {"tabs": [["index.html", "Overview"], ["source.html", "Source code"], ["levels.html", "Maps & rooms"],
                          ["about.html", "About"]]}
         present = {"index.html", "source.html", "levels.html", "about.html"}
-        self.assertEqual(target(build.next_tab(game, present, "source.html")), ("levels.html", "Maps &amp; rooms"))
-        self.assertEqual(target(build.next_tab(game, present, "index.html")), ("source.html", "Source code"))
+        self.assertEqual(target(build.next_tab(game, present, "index.html")), ("levels.html", "Maps &amp; rooms"))
+        self.assertEqual(target(build.next_tab(game, present, "levels.html")), ("source.html", "Source code"))
+        self.assertEqual(target(build.next_tab(game, present, "source.html")), ("about.html", "About"))
         self.assertEqual(build.next_tab(game, present, "about.html"), "")
+
+    def test_a_games_own_tabs_lead_with_how_it_works_play_and_discoveries(self):
+        game = {"tabs": [["index.html", "Overview"], ["source.html", "Source code"], ["levels.html", "Maps"],
+                         ["music.html", "Music"], ["mechanics.html", "How it works"], ["discoveries.html", "Discoveries"],
+                         ["play.html", "Play"], ["about.html", "About"], ["solution.html", "Solution"]]}
+        present = {f for f, _ in game["tabs"]}
+        self.assertEqual([f for f, _ in build.tab_order(game, present)],
+                         ["index.html", "mechanics.html", "play.html", "discoveries.html", "levels.html", "music.html",
+                          "solution.html", "source.html", "about.html"])
 
     def test_built_above_the_edit_footer_and_not_on_the_last_tab(self):
         self.shot, build.shot_html = build.shot_html, lambda *a, **k: ""   # the fixture has no title screen

@@ -3,10 +3,10 @@
 
 For every games/<platform>/<slug>/game.json:
   index.html   copied through, tab bar injected  (How it works)
-  discoveries.html copied through if authored    (Discoveries)
-  source.html  from site/source.html + facts.md + cheats.md   (Source code)
-  levels.html  copied through if authored          (Maps / levels)
   play.html    copied through if authored          (Play)
+  discoveries.html copied through if authored    (Discoveries)
+  levels.html  copied through if authored          (Maps / levels)
+  source.html  from site/source.html + facts.md + cheats.md   (Source code)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
 A page that draws from the listing names the pieces it reads in a tag the
@@ -34,10 +34,14 @@ and a sentence saying the annotations are not published; no tab links an
 address into it, About's footprint opens nothing, and the site serves no
 listing.json and no symbols.json. Its pages carry only the pieces they name,
 and no fields but those. The repository keeps the whole listing.
-Those are the default tabs. A game that wants others lists all of its tabs, in
-order, in game.json's "tabs" as [file, label] pairs; every authored page it
-names is copied through, and a page in the folder that no tab names is left out
-with a warning (about-layout.html, the game's own About template, aside).
+Those are the default tabs, in the order the bar shows them. A game that wants
+others lists all of its tabs in game.json's "tabs" as [file, label] pairs; every
+authored page it names is copied through, and a page in the folder that no tab
+names is left out with a warning (about-layout.html, the game's own About
+template, aside). Whatever the list's order, the bar starts with How it works
+(index.html, then any other tab labelled How it works), Play and Discoveries,
+and ends with Source code and About; the game's other tabs sit between them in
+the order it lists them (tab_order).
 Every tab but Source lists its sections in the left margin (pagenav), and every
 tab but the last ends with a link to the one after it (next_tab).
 Plus a home page with the catalogue and the games most recently added or changed
@@ -92,8 +96,8 @@ PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
 PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
                 "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it"}
-TABS = [("index.html", "How it works"), ("discoveries.html", "Discoveries"), ("source.html", "Source code"),
-        ("levels.html", "Maps / levels"), ("play.html", "Play"), ("about.html", "About")]
+TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
+        ("levels.html", "Maps / levels"), ("source.html", "Source code"), ("about.html", "About")]
 _warned = set()
 
 
@@ -333,9 +337,20 @@ def tier_name(t):
     return TIER_NAMES.get(t, t)
 
 
+def tab_place(f, n):
+    """Where a tab sits in the bar, whatever order game.json's "tabs" lists it in: How it works
+    (index.html, then a tab of the game's own of that name), Play and Discoveries lead, Source code
+    and About close it, and every other tab (4) keeps the game's order between them."""
+    if f == "index.html":
+        return 0
+    if n == "How it works":
+        return 1
+    return {"play.html": 2, "discoveries.html": 3, "source.html": 5, "about.html": 6}.get(f, 4)
+
+
 def tab_order(game, present):
     """The game's tabs as the bar shows them, in order: (file, label) for each one it has."""
-    return [(f, n) for f, n in game.get("tabs", TABS) if f in present]
+    return sorted(((f, n) for f, n in game.get("tabs", TABS) if f in present), key=lambda t: tab_place(*t))
 
 
 def tab_href(f):
