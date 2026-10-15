@@ -5,9 +5,10 @@ Tier: Bronze (2026-10-08). Coverage 3.0 % of the play snapshot's ledger.
 For Silver:
 
 - 50-coverage: the burn-down from 3 %. The directory in bank 0 is
-  decoded in `facts.md` (2026-10-15, static); next trace who calls
-  `cart_copy` with each entry, label the directory, and confirm which
-  of the five sets is which stage. Then the main loop at `wait_frame`, the
+  decoded in `facts.md` (2026-10-15, static); `facts.md`, "Loading a
+  stage", names `stage_load`, `stage_sets`, and `unpack` statically:
+  confirm them in VICE, add them to `symbols.json`, decode the packed
+  format, and find who copies the $C000 entries. Then the main loop at `wait_frame`, the
   two raster handlers and `nmi_frame`.
 - Treat the cartridge's banks as `kit/skills/c64/c64-reference`,
   "Bank-switched cartridges", says: make the play snapshot's analysis a

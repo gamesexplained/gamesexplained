@@ -18,7 +18,7 @@ alphabet). No version string found.
 |---|---|
 | Cartridge copy routines | `cart_copy` $011F and `cart_copy_six` $0100, in the stack page |
 | Cartridge directory | bank 0 from $8009, 8 bytes an entry, read by `cart_copy` |
-| Cartridge directory format | 8 bytes: bank ($80 + n, written to $DE00), flags, source, destination, length - 1 (low, high). Flag bit 6 copies with $01 = $37 so writes reach I/O (colour RAM); clear, $01 = $00 so writes reach RAM. Bit 5 is set on seven entries but `cart_copy` never tests it (meaning unknown). Read statically from the cartridge, 2026-10-15 |
+| Cartridge directory format | 8 bytes: bank ($80 + n, written to $DE00), flags, source, destination, length - 1 (low, high). Flag bit 6 copies with $01 = $37 so writes reach I/O (colour RAM); clear, $01 = $00 so writes reach RAM. Bit 5 marks a packed entry: `cart_copy` ignores it, but `stage_load` ($0A9B) stops at it and unpacks it (see below). Read statically from the cartridge, 2026-10-15 |
 | Ocean bank register | $DE00, written by `cart_copy` ($80 selects bank 0) and from $0502-$0B52 and $4F66-$5238 |
 | Game code copied from bank 3 | $8000-$9FFF (8,004 of 8,192 bytes match bank 3 in play) |
 | Screen during the stage card | $CC00 (video bank $C000, $D018 = $31) *live* |
@@ -84,7 +84,7 @@ reach the other voices: an absence of named writes says nothing.
 
 ## Cartridge directory
 
-All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), inferred to be the five stages; the callers of entries 6-31 are not traced.
+All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start, entries 8-10 from $51E7-$51F3 just before the hand-over, entries 18/19, 21/22, 24/25, 27/28, and 30/31 from `stage_load`. Who copies the $C000 entries (17, 20, 23, 26, 29) and entries 11-16 is not traced.
 
 | # | X | Bank | Flags | Source | Destination | Bytes |
 |---|---|---|---|---|---|---|
@@ -120,3 +120,17 @@ All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartri
 | 29 | $E8 | 6 | $00 | $9838 | $C000-$C6A7 | 1704 |
 | 30 | $F0 | 0 | $00 | $9CCA | $BD76-$BF21 | 428 |
 | 31 | $F8 | 14 | $20 | $971A | $0C01-$14B6 | 2230 |
+
+## Loading a stage
+
+Read statically from the cartridge, 2026-10-15; not yet run in the emulator.
+
+| Thing | Where | What |
+|---|---|---|
+| `stage` | $08E7 | 0-4. Zeroed at $8023 when a game starts, incremented at $81B1 (both in the copy of bank 3), compared with 5 at bank 1 $809C |
+| `stage_start` | $0AFF | $01 = $37, bank 0 in, X = `stage_sets`[stage], `jsr stage_load`, then entries 6 and 7 |
+| `stage_sets` | bank 0 $8127 | $88, $A0, $B8, $D0, $E8: the directory offset before each stage's set |
+| `stage_load` | $0A9B | refreshes the stack-page routines ($8194), then copies entry X+8, X+16, ... until one has flag bit 5; for that one it reads a 5-byte header just before the source (one byte pushed, $EC/$ED, $EA/$EB) and jumps to `unpack` |
+| `unpack` | bank 0 $8DA2, run from the cartridge | reads the packed data backwards (`$8E80` decrements the read pointer and stops at $EC/$ED) and writes backwards, either literal bytes or copies of bytes already written (`$8E30`-`$8E5E`); its exact format is not decoded |
+
+The packed entries all start at $8005 or later in banks 14 and 15, which leaves room for the 5-byte header before them.
