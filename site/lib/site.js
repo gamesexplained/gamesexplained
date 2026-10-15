@@ -80,7 +80,7 @@
       ['platform','All platforms',Object.keys(plats).map(function(k){ return [k,plats[k]]; }),function(c){ return c.dataset.platform; }],
       ['tier','All tiers',TIERS.map(function(t){ return [t[0],t[1]]; }),function(c){ return c.dataset.tier; }],
       ['era','Any year',ERAS.map(function(e){ return [e[0],e[0]]; }),era]];
-    var st={q:'',sort:'tier',view:'cards',f:{platform:'',tier:'',era:''}};
+    var st={q:'',sort:'tier',view:'cards',f:{platform:'',tier:'',era:''},open:{}};
     try{ var v=localStorage.getItem('ge-view'); if(v==='list') st.view=v; }catch(e){}
     function ok(c,skip){
       if(st.q){ var w=st.q.split(/\s+/); for(var i=0;i<w.length;i++) if(c.dataset.q.indexOf(w[i])<0) return false; }
@@ -129,13 +129,23 @@
         var n=g[1].length;
         sec.innerHTML='<h3>'+esc(t?t[1]:g[0])+'<span class="n">'+n+(n===1?' game':' games')+'</span>'+(t&&t[2]?'<small>'+esc(t[2])+'</small>':'')+'</h3>';
         var grid=document.createElement('div'); grid.className='tiles';
-        g[1].forEach(function(c){ grid.appendChild(c); });
+        g[1].forEach(function(c){ c.classList.remove('hidden'); grid.appendChild(c); });
         sec.appendChild(grid); cat.appendChild(sec);
+        // one row a group, and a button for the rest, until the reader searches or filters
+        var narrow=st.q||st.f.platform||st.f.tier||st.f.era;
+        if(narrow||st.open[g[0]]) return;
+        var cols=st.view==='list'?5:getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+        if(n<=cols) return;
+        g[1].forEach(function(c,i){ if(i>=cols) c.classList.add('hidden'); });
+        var more=document.createElement('button'); more.type='button'; more.className='showall';
+        more.textContent='Show all '+n+' '+(t?t[1]+' ':'')+'games';
+        more.onclick=function(){ st.open[g[0]]=true; g[1].forEach(function(c){ c.classList.remove('hidden'); }); more.remove(); };
+        sec.appendChild(more);
       });
     }
     finder.hidden=false;
     q.addEventListener('input',function(){ st.q=q.value.trim().toLowerCase(); draw(); });
-    sort.addEventListener('change',function(){ st.sort=sort.value; draw(); });
+    sort.addEventListener('change',function(){ st.sort=sort.value; st.open={}; draw(); });
     facets.addEventListener('change',function(e){ var k=e.target.dataset.k; if(k){ st.f[k]=e.target.value; draw(); } });
     facets.addEventListener('click',function(e){ if(e.target.classList.contains('clear')){ st.f={platform:'',tier:'',era:''}; st.q=''; q.value=''; draw(); } });
     more.addEventListener('click',function(){ facets.hidden=!facets.hidden; more.setAttribute('aria-expanded',String(!facets.hidden)); });
