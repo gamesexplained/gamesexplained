@@ -179,7 +179,10 @@ Hard to read: `kit: a run corrects the install notes in place, not with a row or
   annotations, and a page carries the data its widgets need, embedded in
   the page: a character set, a level, a tune, the pictures a viewer shows
   (`kit/skills/core/70-minisite`). What a page never carries is the
-  program, or enough of the game to rebuild it. The machine's ROMs are
+  program, or enough of the game to rebuild it. A Play tab is a port:
+  the game's logic written again in JavaScript and checked against the
+  game's own code, never that code run on a model of the machine, however
+  faithful (`kit/skills/core/70-minisite`, "Play"). The machine's ROMs are
   never committed either, with one exception: when a mechanic depends on
   data the game reads from a ROM, a page may carry that excerpt (the
   bytes the game reads, or the values it computes from them) and names

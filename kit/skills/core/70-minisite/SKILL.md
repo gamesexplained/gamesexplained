@@ -426,6 +426,18 @@ or one board whose contents a table changes), and say why in
 A behavioural port of the full game in JavaScript, built from the
 documented mechanics and the extracted data, not a transpile.
 
+**The Play tab is always a port.** Never put the game's own code on the
+page to run on a model of the machine, even when that would be quicker
+and play exactly like the original. A port runs only if every routine in
+it was understood, and the lockstep shows it does what the original does,
+so it is new work that rests on the listing. The original code on an
+emulator is the original product shipped again, and it plays the same
+whether the listing is right or wrong. The maintainers have ruled on
+this: do not offer the choice to the contributor. The game's own code
+runs only in the tests, as the game the port is checked against (and a
+music driver on a 6502 core inside `createDriver` counts as a port, as
+"The sound" above says).
+
 This is a first-class part of the minisite, not an extra: a reader who
 can play the game while reading how it works understands it better than
 one who only reads. The page's mechanic widgets are usually the seed.

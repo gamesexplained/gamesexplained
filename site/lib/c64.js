@@ -124,7 +124,9 @@ globalThis.C64 = (function () {
   //   F.vic     the 47 registers $D000-$D02E        F.cia2    [$DD00, $DD02]
   //   F.writes  [[line, cycle, address, value], ...] in the order they happened: a register,
   //             $DD00 or $DD02, RAM (a sprite pointer; on a Play page any byte the chip
-  //             reads), or colour RAM as $1D800 plus its index; cycle 1 is the one in which the
+  //             reads), RAM under the chips, $D000-$DFFF, as $20000 plus its address (which a
+  //             game that shows bank 3 can draw in), or colour RAM as $1D800 plus its index;
+  //             cycle 1 is the one in which the
   //             raster line steps, and a write in cycle c shows from the picture's 8-pixel
   //             column c - 13
   //   F.ram     RAM as the frame began, as base64 regions [{a, b}]: all 64 KB, or the bytes
@@ -342,6 +344,7 @@ globalThis.C64 = (function () {
             if (a >= 0xD000 && a <= 0xD02E) R[a - 0xD000] = v;
             else if (a === 0xDD00) pra = v;
             else if (a === 0xDD02) ddra = v;
+            else if (a >= 0x20000) mem[a - 0x20000] = v;
             else if (a >= 0x1D800) col[a - 0x1D800] = v;
             else mem[a] = v;
           }
@@ -384,9 +387,14 @@ globalThis.C64 = (function () {
     const live = words(M), was = words(seen), liveC = words(colour), wasC = words(seenC);
     if (!live || !liveC) throw new Error('videoMemory needs memory that starts on a multiple of 4 bytes');
     let k = 0, last = -1, watch = null;
-    // each byte of word x that differs, logged at [line, cycle] as address to + its index and taken as seen
+    // each byte of word x that differs, logged at [line, cycle] as address to + its index and taken as
+    // seen; RAM under the chips as $20000 plus its address, so that renderFrame does not take a byte
+    // a game draws at $D000-$D02E, $DD00 or $DD02 in bank 3 for a write to the chip's register
     function log(a, b, x, writes, line, cycle, to) {
-      for (let j = x * 4; j < x * 4 + 4; j++) if (a[j] !== b[j]) { b[j] = a[j]; writes.push([line, cycle, to + j, a[j]]); }
+      for (let j = x * 4; j < x * 4 + 4; j++) if (a[j] !== b[j]) {
+        b[j] = a[j];
+        writes.push([line, cycle, to === 0 && j >= 0xD000 && j < 0xE000 ? 0x20000 + j : to + j, a[j]]);
+      }
     }
     function at(t, writes, bank) {
       const t0 = last;

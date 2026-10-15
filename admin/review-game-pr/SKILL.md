@@ -56,6 +56,10 @@ else (not this skill's), and breaks its lines down by area.
    "Maintainer asks", and any `kit-ask` issue it filed) and flag any that
    is urgent – measured by things that are broken, or where subsequent runs
    could be saved significant time by shipping the improvement.
+7. **A Play tab is a port.** A `play.html` must run the game's logic
+   ported to JavaScript, never the game's own code on a model of the
+   machine (`kit/skills/core/70-minisite`, "Play"). A Play tab that loads a
+   6502 or Z80 core for anything but a music driver goes back.
 
 For an update to a game, the same checks apply where the pull request
 touches what they look at.

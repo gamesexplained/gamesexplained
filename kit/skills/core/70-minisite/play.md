@@ -3,7 +3,8 @@
 Read this when you build a Play tab (`70-minisite`, "Play"). The port is
 checked against the game itself, not against a reading of it, in one of
 two ways: by the game's own demonstration, or by running the game's code
-beside the port.
+beside the port. The game's code runs only there, in the tests: the page
+runs the port (`SKILL.md`, "Play").
 
 ## A demonstration is the test
 
@@ -41,7 +42,11 @@ and reads whole lines through `CHRIN` needs neither:
 `kit/c64/kernal_lines.js` runs it a typed line at a time on the
 simulator, with the KERNAL's line routines as hooks, and the test
 compares the two sides at each line the game reads, with the same jiffy
-clock handed to both. Each file's header is its manual.
+clock handed to both. A C64 game that loads from disk as it plays needs
+the drive: `kit/c64/c64run.js` runs it from where its boot program hands
+over, through every load, with the KERNAL's disk routines as hooks, on
+the files `kit/c64/disk.py pack` reads off its images in `work/`. Each
+file's header is its manual.
 
 - **Port routine by routine, on the game's own memory.** One function per
   listing label, reading and writing the game's variables where the game

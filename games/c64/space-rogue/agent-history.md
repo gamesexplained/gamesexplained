@@ -141,3 +141,32 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   down: they put a model's +y at the bottom of the screen, where the
   model's top is its +y side (the Sunracer's hull stands on its wings at
   y = 0). Both now put +y up; Aaron saw it first.
+
+## 15 October 2026, Play
+
+- Aaron asked for the whole game, playable. The first Play tab ran the
+  game's own code: every file of both sides and the 256 sectors of side
+  2 that no file holds, on a model of the C64 with a stand-in for the
+  KERNAL routines the game calls (the listings' `JSR $FF..` gave the
+  list: `SETLFS`, `SETNAM`, `LOAD`, `SAVE`, `OPEN`, `CLOSE`, `CHKIN`,
+  `CHRIN`, `CLALL`, `READST` and `SETMSG`). Matched against the
+  listings, about 40 % of what that page carried was in none of them:
+  most base and sector maps, most ship models, the packed cockpit,
+  navigation and landing pictures, and 231 of the 256 conversation
+  sectors. Aaron ruled that a Play tab is always a port; the page was
+  dropped, and its runner became the game a port is checked against
+  (`kit/c64/c64run.js`).
+- The model hung at "Old or New Game?" exactly as VICE did:
+  `bitmap_mode`'s raster hang (Discoveries). The runner's `rasterFix`
+  clears the compare's bit 8, as the orient run did by hand; it fires
+  again in the ending.
+- The cockpit first drew with its border and panels missing: the game
+  draws bitmaps in bank 3 over `$D000`-`$D02E`, and `C64.videoMemory`
+  logged those writes as writes to the video chip. It now logs RAM under
+  the chips as `$20000` plus the address, and `renderFrame` draws it as
+  memory; the cockpit then matched `reference/cockpit.png` outside the
+  3D view.
+- A new game on the runner goes from the story to `SEG0` and `PIT.PAC`
+  with no base loaded, as `init_game` says (flight facts), where
+  `orientation.md` step 7 and `features.md` describe a walk-around
+  start aboard the derelict. Not settled; left for a run in VICE.
