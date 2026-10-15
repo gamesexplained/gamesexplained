@@ -268,8 +268,11 @@ flown (`$0838`) only the first 25 entries count, up to V.
 - `sound_play` (`$1091`) starts one of 14 effects from the tables at
   `$11AD`-`$122B`: voice, frequency and step, envelope, waveform,
   length, gate-off point and repeats. `sound_step` (`$10D2`) runs each
-  voice every frame. With voice 1 idle it plays the engine hum, a pulse
-  whose pitch follows the set speed, unless `$1D` or `$1E` masks it.
+  voice every frame. With voice 1 idle it plays the engine hum: a
+  triangle wave at the set speed (`slot_speed`, `$0415`) times 8 in the
+  SID's units, under 33 Hz at full speed, with the test bit pulsed and
+  the gate turned on and off on alternate frames, unless `$1D` or `$1E`
+  masks it.
 - There is no music in `SR` or `MAIN`.
 
 ## Data tables
