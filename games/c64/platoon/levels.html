@@ -43,7 +43,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <p>The whole map of the first section: 20 rows of 90 blocks from <a href="source-load1.html#A000"><code>$A000</code></a>, each block 8 by 6 characters from <a href="source-load1.html#8000"><code>$8000</code></a>. The screen shows five blocks across and three down at a time. The top three rows are drawn with the character set and colours the game swaps in when the soldier climbs up to them (<code>$BAB6</code>), the rest with the jungle's (<code>$BAFD</code>).</p>
 <p>The jungle is six levels, each one scene high. Ladders join each level to the one below at the same place: pressing down on a ladder's foothold (<a href="source-load1.html#0EA7"><code>$0EA7</code></a>) takes the soldier down a level, and pressing up at its top (<a href="source-load1.html#0DE2"><code>$0DE2</code></a>) takes him back. The six huts on the top level have doors, and going up through one leads to the inside of that hut on the sixth level (<a href="source-load1.html#29B6"><code>$29B6</code></a>), where the searches and the trapdoor are.</p>
 <div class="plate"><div style="overflow-x:auto" id="jscroll"><div style="position:relative;width:max-content"><canvas id="jmap"></canvas><canvas id="jroute" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></div></div>
-<p class="cap"><button id="jplay" type="button">▶ Play the route</button> <span id="jstep" aria-live="polite"></span><br>The route is the shortest walk between the jobs, worked out from the ladders and hut doors in the map data. It takes the first of the two places the explosives can appear, and after the bridge blows it keeps off the bridge. Tree trunks stop the soldier walking (<a href="source-load1.html#0F17"><code>$0F17</code></a>, <a href="source-load1.html#0FAA"><code>$0FAA</code></a>), so the route goes round them by ladder. Before the bridge blows it stays short of the far side, where the patrol that ends the game waits. A hut door drops the soldier straight into that hut, so those jumps are drawn as long lines.</p><p class="cap" id="jcap"><label><input type="checkbox" id="jjoin" checked> Join the levels</label>: hides most of the treetops between levels, so each ladder runs straight from one level into the next. The two block rows below the huts are left out: the lowest scene starts at the huts, so they are never on screen. Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
+<p class="cap"><button id="jplay" type="button">▶ Play the route</button> <span id="jstep" aria-live="polite"></span><br>The route is the shortest walk between the jobs, worked out from the ladders and hut doors in the map data. After the bridge blows it keeps off the bridge. Tree trunks stop the soldier walking (<a href="source-load1.html#0F17"><code>$0F17</code></a>, <a href="source-load1.html#0FAA"><code>$0FAA</code></a>), so the route goes round them by ladder. Before the bridge blows it stays short of the far side, where the patrol that ends the game waits. A hut door drops the soldier straight into that hut, so those jumps are drawn as long lines.</p><p class="cap" id="jcap"><label><input type="checkbox" id="jjoin" checked> Join the levels</label>: the insides of the huts are drawn at the top, above the village they open from. Joining hides most of the treetops between levels, so each ladder runs straight from one level into the next. The two block rows below the huts are left out: the lowest scene starts at the huts, so they are never on screen. Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start (<a href="source-load1.html#0544"><code>$0544</code></a>), ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
 </section>
 
 <section id="tunnels"><p class="fig">02 · Section two</p><h2 class="t">The tunnel map</h2>
@@ -81,11 +81,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     function drawJungle(joined) {
     // joined: hide the top block row of levels 2 to 5 (rows 3, 6, 9 and 12) so each ladder runs straight into the level below
     // rows 18 and 19 are never on screen: the lowest scene starts at row 15
-    const hide = joined ? [3, 6, 9, 12] : [], rows = [...Array(18).keys()].filter(r => !hide.includes(r));
+    const hide = joined ? [3, 6, 9, 12] : [], rows = [15, 16, 17, ...Array(15).keys()].filter(r => !hide.includes(r));
     // joined also drops the top three character rows of each joined level's first row, more treetop
     const cut = r => joined && [4, 7, 10, 13].includes(r) ? 3 : 0;
     const top = []; let acc = 0; rows.forEach(r => { top[r] = acc - cut(r) * 8; acc += 48 - cut(r) * 8; });
-    const Yr = r => top[rows.find(q => q >= r)];
+    const Yr = r => top[r] !== undefined ? top[r] : top[r + 1];
     const ctx = C.canvas($('jmap'), 90 * 64, acc);
     ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 90 * 64, acc);
     const cols = [P[0], P[9], P[13]];
@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     }
     // landmarks: map positions name the scene's left block; the soldier stands two blocks in
     const NAMES = {0: 'flour', 1: 'stool', 2: 'table', 3: 'rice', 11: 'empty', 17: 'map', 18: 'torch', 19: 'water', 20: 'rubbish', 21: 'provisions', 23: 'booby trap'};
-    const marks = [[0x0114, 0, '▶', 'start'], [0x0150, 0, '■', 'bridge'], [0x0466, 0, '■', 'explosives'], [0x046C, 0, '■', 'explosives'], [0x057B, 0, '▼', 'trapdoor'], [0x0580, 0, '■', 'villager']];
+    const marks = [[0x0114, 0, '▶', 'start'], [0x0150, 0, '■', 'bridge'], [0x0469, 7, '■', 'explosives'], [0x057B, 0, '▼', 'trapdoor'], [0x0580, 0, '■', 'villager']];
     const huts = [];
     for (let i = 0; i < 19; i++) {
       const msg = m[0xCD96 + i], pos = 0x0500 | m[0xCD4A + i], x = ((pos % 90) + 2) * 64 + m[0xCD70 + i] * 8;
@@ -116,7 +116,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, hgt); ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, hgt - 1);
       ctx.fillStyle = '#000000'; lines.forEach((l, i) => ctx.fillText(l, x + 4, y + 13 + 15 * i));
     }
-    marks.forEach(([pos, col, t, name]) => tag(((pos % 90) + 2) * 64, Math.max(0, Yr(Math.floor(pos / 90)) + cut(Math.floor(pos / 90)) * 8 - 20), [t + ' ' + name]));
+    marks.forEach(([pos, col, t, name]) => tag(((pos % 90) + 2) * 64 + col * 8, Math.max(0, Yr(Math.floor(pos / 90)) + cut(Math.floor(pos / 90)) * 8 - 20), [t + ' ' + name]));
     huts.forEach(h => tag(h.x, Yr(h.r) + 50, h.lines));
     jy = k => Yr(3 * k + 2) + 22;
     C.canvas($('jroute'), 90 * 64, acc);
@@ -160,7 +160,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     }
     const hut = i => doorAt[i];
     const legs = [
-      [[1, col(0x0114)], [4, col(0x0466)], 'Climb down to level 5 and pick up the explosives', false],
+      [[1, col(0x0114)], [4, col(0x0469) + 1], 'Climb down to level 5 and pick up the explosives', false],
       [null, [1, col(0x0153)], 'Climb back up to the bridge and set the explosives', false],
       [null, [1, col(0x0153) + 5], 'Run clear of the bridge, towards the village side, before it blows', false],
       [null, [0, hut(0)], 'Climb to the village and enter hut A', true],
