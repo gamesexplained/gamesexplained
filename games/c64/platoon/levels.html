@@ -42,7 +42,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="jungle"><p class="fig">01 · Section one</p><h2 class="t">The jungle and the village</h2>
 <p>The whole map of the first section: 20 rows of 90 blocks from <a href="source-load1.html#A000"><code>$A000</code></a>, each block 8 by 6 characters from <a href="source-load1.html#8000"><code>$8000</code></a>. The screen shows five blocks across and three down at a time. The top three rows are drawn with the character set and colours the game swaps in when the soldier climbs up to them (<code>$BAB6</code>), the rest with the jungle's (<code>$BAFD</code>).</p>
 <p>The jungle is six levels, each one scene high. Ladders join each level to the one below at the same place: pressing down on a ladder's foothold (<a href="source-load1.html#0EA7"><code>$0EA7</code></a>) takes the soldier down a level, and pressing up at its top (<a href="source-load1.html#0DE2"><code>$0DE2</code></a>) takes him back. The six huts on the top level have doors, and going up through one leads to the inside of that hut on the sixth level (<a href="source-load1.html#29B6"><code>$29B6</code></a>), where the searches and the trapdoor are.</p>
-<div class="plate"><div style="overflow-x:auto" id="jscroll"><canvas id="jmap"></canvas></div><p class="cap" id="jcap">Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
+<div class="plate"><div style="overflow-x:auto" id="jscroll"><canvas id="jmap"></canvas></div><p class="cap" id="jcap"><label><input type="checkbox" id="jjoin" checked> Join the levels</label>: hides the treetop row at the top of levels 2 to 5, so each ladder runs straight from one level into the next. Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
 </section>
 
 <section id="tunnels"><p class="fig">02 · Section two</p><h2 class="t">The tunnel map</h2>
@@ -75,16 +75,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   }
   Promise.all(['load1', 'load3', 'load4'].map(p => C.load('parts/' + p + '/listing.json'))).then(([A, T, J]) => {
     // section one: rows of 90 block numbers, each block 8 x 6 characters
-    const m = A.ram, ctx = C.canvas($('jmap'), 90 * 64, 20 * 48);
-    ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 90 * 64, 20 * 48);
+    const m = A.ram;
+    function drawJungle(joined) {
+    // joined: hide the top block row of levels 2 to 5 (rows 3, 6, 9 and 12) so each ladder runs straight into the level below
+    const hide = joined ? [3, 6, 9, 12] : [], rows = [...Array(20).keys()].filter(r => !hide.includes(r));
+    const Yr = r => { let i = rows.findIndex(q => q >= r); return i * 48; };
+    const ctx = C.canvas($('jmap'), 90 * 64, rows.length * 48);
+    ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 90 * 64, rows.length * 48);
     const cols = [P[0], P[9], P[13]];
-    for (let r = 0; r < 20; r++) {
+    for (const r of rows) {
       const set = m.subarray(r < 3 ? 0xD800 : 0xD000, (r < 3 ? 0xD800 : 0xD000) + 2048), ct = r < 3 ? 0xAE00 : 0xAF00;
       for (let c = 0; c < 90; c++) {
         const blk = 0x8000 + 48 * m[0xA000 + 90 * r + c];
         for (let y = 0; y < 6; y++) for (let x = 0; x < 8; x++) {
           const ch = m[blk + 8 * y + x];
-          glyph(ctx, set, ch, (c * 8 + x) * 8, (r * 6 + y) * 8, m[ct + ch], cols, 1);
+          glyph(ctx, set, ch, (c * 8 + x) * 8, Yr(r) + y * 8, m[ct + ch], cols, 1);
         }
       }
     }
@@ -104,8 +109,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, hgt); ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, hgt - 1);
       ctx.fillStyle = '#000000'; lines.forEach((l, i) => ctx.fillText(l, x + 4, y + 13 + 15 * i));
     }
-    marks.forEach(([pos, col, t, name]) => tag(((pos % 90) + 2) * 64, Math.floor(pos / 90) * 48 - 20, [t + ' ' + name]));
-    huts.forEach(h => tag(h.x, h.r * 48 + 50, h.lines));
+    marks.forEach(([pos, col, t, name]) => tag(((pos % 90) + 2) * 64, Yr(Math.floor(pos / 90)) - 20, [t + ' ' + name]));
+    huts.forEach(h => tag(h.x, Yr(h.r) + 50, h.lines));
+    }
+    drawJungle(true);
+    $('jjoin').addEventListener('change', e => drawJungle(e.target.checked));
+
     // section two: 13 windows of 19 x 19 squares
     const t = T.ram, n = 9, sz = 6, gap = 14, per = 5;
     const tc = C.canvas($('tmap'), per * (19 * sz + gap), Math.ceil(n / per) * (19 * sz + gap + 14));
