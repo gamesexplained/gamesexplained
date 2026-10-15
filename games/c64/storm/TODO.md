@@ -30,9 +30,9 @@ comments that repeated them.
 
 ## Ideas
 
-- A Play tab: the game is one load with no hardware sprites, and the
-  page's 6502 already draws rooms, moves monsters and runs the energy
-  code.
+- A choice of steering on the Play tab: an arrow key that turns the
+  character to face its way, then walks, for players who find the
+  rotational controls hard on a keyboard.
 - Two players on the monster widget, with the monsters choosing the
   nearer of them as `move_monster` does.
 - The low-energy warnings and the death's border flash, from their own
