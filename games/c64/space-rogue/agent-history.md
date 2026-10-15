@@ -115,3 +115,25 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the type in `$94`, not X, and the tactic changes were counted on the
   pass after the one that made them. Both showed as failures of the
   test's own checks before the page was written.
+
+## 15 October 2026, Ships and combat
+
+- Asked to give the ships and the 3D a page of their own and to let the
+  reader build a fight. Encounters, Ships, Combat and Flight moved to
+  `ships.html`; the recorded fight gave way to a builder whose fights
+  the page runs on the engine's own loop, in a 6502 of its own (`sr-sim`)
+  held to `kit/c64/cpu6502.js` opcode by opcode.
+- The bytes a fight reads were found by running about 520 random
+  line-ups with every byte unknown and noting each first read; the page
+  embeds the labelled blocks they fall in. The second display buffer,
+  `$4000`-`$63FF`, is in no listing and only the beam's drawing reads
+  it, so the page starts it empty and the test fills it with random
+  bytes for the kit's fights.
+- The builder first took ten ships. `create_object` has five slots for
+  ships and missiles together, so the sixth and later were never made;
+  seen in a browser run, where the legend listed five.
+- With the Manchi box ticked, the page's fights left the Sunracer alone:
+  the set-up counted `$0731` as written even when it kept the snapshot's
+  `$FE`, so the measuring runs never saw it read, and the page, which
+  does not carry it, had 0 there. The page now sets `$FE` itself, and a fight's end counts enemies of the Sunracer,
+  so a Manchi ship on its own fights until the Sunracer is destroyed.

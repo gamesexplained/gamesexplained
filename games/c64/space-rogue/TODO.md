@@ -27,10 +27,10 @@ pages' ports against the game's code found three more, also corrected
 
 ## Ideas
 
-- A player-flown version of the Combat replay: the same engine loop
-  in the page, with the keys of the Controls table, would need the
-  engine and the flight segment's maths in the page, which the
-  minisite rules allow only as game data a widget needs.
+- A player-flown fight on Ships and combat: the page already runs the
+  engine's loop on the bytes it carries, with no key pressed; feeding
+  the keys of the Controls table to `do_key` (`$0E02`) would let the
+  reader fly the Sunracer in it.
 - The flight engine's 3D maths, which works in logarithms
   (`parts/engine/facts.md`), as a widget that runs one projection step
   by step.

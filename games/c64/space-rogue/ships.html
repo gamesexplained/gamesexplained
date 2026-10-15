@@ -1,0 +1,1192 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Rogue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.pick{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px}
+.pick select{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 8px;border-radius:6px;font:inherit}
+.pick .step{flex:none;display:flex;align-items:center;justify-content:center;width:30px;border:1px solid var(--line);border-radius:6px;color:var(--ink-soft);background:var(--surface);text-decoration:none;font-size:16px;line-height:1;cursor:pointer}
+.pick .step:hover{color:var(--ink);border-color:var(--ink-mute);text-decoration:none}
+.pick .step.off{opacity:.35;cursor:default}
+.pick select:focus-visible,.pick .step:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+a{color:var(--link)}
+a:hover{color:var(--link-hover)}
+p{margin:0 0 1em}
+table{border-collapse:collapse;font-size:15px;margin:0 0 1.2em;width:100%}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.sr-scroll{overflow-x:auto}
+.sr-scroll table{min-width:620px}
+.sr-bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 12px;font-size:14px;color:var(--ink-soft)}
+.sr-bar label{display:flex;align-items:center;gap:8px}
+.sr-bar input[type=range]{width:240px;max-width:60vw}
+.sr-btn{font:inherit;font-size:12.5px;font-family:var(--fm);border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink-soft);padding:4px 9px;cursor:pointer}
+.sr-btn:hover{color:var(--ink);border-color:var(--ink-mute)}
+.sr-btn[aria-pressed=true]{color:var(--ink);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.sr-mono{font-family:var(--fm);font-size:12.5px;color:var(--ink)}
+.sr-view{background:#000;border-radius:6px;overflow:hidden;line-height:0}
+.sr-view canvas{display:block;width:100%;margin:0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.sr-info{font-size:14px;color:var(--ink-soft);min-height:3.2em;margin:10px 0 0}
+.sr-info b{color:var(--ink)}
+.sr-need{font-size:14px;color:var(--coral);margin:0 0 10px}
+.sr-two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.sr-odds td.sr-pc{font-family:var(--fm);font-size:12.5px;white-space:nowrap;width:5em}
+.sr-odds td.sr-barcell{width:55%}
+.sr-odds i{display:block;height:12px;background:var(--accent);border-radius:2px;min-width:1px}
+.sr-h3{font-size:19px;margin:30px 0 8px}
+.sr-drag canvas{cursor:grab;touch-action:pan-y}
+.sr-drag canvas:active{cursor:grabbing}
+.sr-stats{font-size:14px;margin:0}
+.sr-stats th{width:36%;font-size:11px;line-height:1.5}
+.sr-sky{background:#141720;border-radius:6px;overflow:hidden;line-height:0}
+.sr-sky canvas{display:block;width:100%}
+.sr-legend{font-size:13.5px;margin:12px 0 0}
+.sr-legend td{white-space:nowrap}
+.sr-legend .hp{display:inline-block;width:64px;height:7px;background:var(--line-soft);border-radius:2px;vertical-align:middle;margin-right:7px;overflow:hidden}
+.sr-legend .hp b{display:block;height:100%;background:var(--green)}
+.sr-dim{color:var(--ink-mute);font-size:12px}
+.sr-log{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.sr-log .sr-btn{font-size:11.5px;padding:3px 8px}
+.sr-grid td{font-size:14px}
+.sr-btn:disabled{opacity:.4;cursor:default}
+.sr-btn .sw,.sr-legend .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px}
+.sr-go{color:var(--surface);background:var(--accent);border-color:var(--accent);font-weight:500;padding:5px 16px}
+.sr-go:hover{color:var(--surface);background:var(--link-hover)}
+.sr-chip b{font-weight:400;margin-left:4px;color:var(--ink-mute)}
+.sr-add,.sr-fleet{gap:6px 8px}
+.sr-add .sr-dim,.sr-fleet .sr-dim{min-width:6.5em}
+@media (max-width:760px){:root{--gx:20px;--pp:16px}.sr-two{grid-template-columns:1fr}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1989 · Origin Systems</p>
+  <h1>Space Rogue</h1>
+  <p class="sub">Every computer pilot in the Far Arm flies by the same few rules, and the engine runs them for each ship only once in 17 passes. Put any of the nine ships in a fight below and the page runs the game's own code on them, in 3D.</p>
+</header>
+<main class="wrap">
+
+<section data-part="engine" id="encounters">
+  <p class="fig">01 · Encounters</p>
+  <h2 class="t">What the ship meets depends on the system and the player's rank</h2>
+  <p class="lede">Each system's map carries a danger level and five weights, one for each class of ship. When an encounter comes, the weights choose the class and the player's rank chooses the ship within it.</p>
+  <div class="plate">
+    <div class="pick" id="sr-enc-pick"><button class="step" data-d="-1" aria-label="Previous system">‹</button><select id="sr-enc" aria-label="System"></select><button class="step" data-d="1" aria-label="Next system">›</button></div>
+    <div class="sr-bar"><label>Player's rank <input type="range" id="sr-rank" min="0" max="5" value="0" aria-label="The player's rank"></label><span class="sr-mono" id="sr-rank-v"></span></div>
+    <p class="sr-need" id="sr-enc-need" hidden></p>
+    <table class="sr-odds" id="sr-odds"></table>
+    <p class="cap">The chance of each ship once one is drawn, worked out by the page's port of <code>pick_ship</code> (<code>$2C8C</code>) over every roll it can make, from <code>ship_class_types</code> (<code>$2D24</code>). A test, <code>test_odds.js</code>, runs the engine's own routine on every roll for every system and rank and counts the same.</p>
+  </div>
+  <p>A roll from 0 to 99 is spent across the weights from the last class to the first. A second roll from 0 to 15 picks one of the class's four entries directly if it comes out under 4; otherwise a roll from 0 to the Sunracer's rank value, halved and kept to 3 at most, picks it. The rank value is the player's rank plus 2 (<code>$175B</code>), and the rank rises from 0 to 5 with kills and surrenders (<code>$1B2B</code>), so a Dart becomes a Corsair, a Cruiser a Titan and a Wasp a Vulture more often as the player's repute grows.</p>
+  <p>Whether an encounter happens at all is decided before this, on each step of HELM travel, from the hours the step takes and the danger level (<code>encounter_roll</code>, <code>$2C1E</code>), and in flight every 256th pass with an eighth of the danger level (<code>frame_update</code>, <code>$1239</code>). Ja-Karn, the Manchi system, has danger 85 and sends nothing but Wasps and Vultures.</p>
+</section>
+
+<section data-part="engine" id="ships">
+  <p class="fig">02 · Ships</p>
+  <h2 class="t">Each model carries its own drawing order</h2>
+  <p class="lede">The flight engine draws every ship, base and planet from fourteen model files and the two models built into <code>MAIN</code>, the Sunracer and the missile. A ship is seven to eleven flat faces, and the drawer never sorts them: each face names the plane that decides whether it is drawn before the others or after. Drag the ship to turn it.</p>
+  <div class="plate">
+    <div class="pick" id="sr-shp-pick"><button class="step" data-d="-1" aria-label="Previous model">‹</button><select id="sr-shp" aria-label="Model"></select><button class="step" data-d="1" aria-label="Next model">›</button></div>
+    <div class="sr-bar">
+      <button class="sr-btn" id="sr-shp-spin" aria-pressed="true">Spin</button>
+      <button class="sr-btn" id="sr-shp-faces" aria-pressed="false">Draw face by face</button>
+      <button class="sr-btn" id="sr-shp-box" aria-pressed="false">Show the hit box</button>
+    </div>
+    <p class="sr-need" id="sr-shp-need" hidden></p>
+    <div class="sr-two">
+      <div><div class="sr-view sr-drag"><canvas id="sr-shp-cv" width="288" height="144" aria-label="The model, drawn as the engine draws it"></canvas></div><p class="sr-info" id="sr-shp-info"></p></div>
+      <table class="sr-stats" id="sr-shp-tab"></table>
+    </div>
+    <p class="cap">Drawn by the page's port of <code>draw_model</code> (<code>$7C61</code>) at the engine's multicolour resolution: the points built from the model's axis vectors, the faces taken in the three passes of <code>draw_polygons</code> (<code>$7ED6</code>), and each filled with <code>set_colour</code>'s patterns (<code>$8F80</code>). A test, <code>test_ships.js</code>, runs the engine's own <code>draw_model</code> on all 20 models from about 6,000 eyes and gets the same faces in the same order with the same colours, and runs <code>set_colour</code> on every colour code. The figures beside it are the type tables at <code>$08D5</code>-<code>$0CB0</code>; the Sunracer's are the fittings <code>copy_ship_stats</code> (<code>$1737</code>) copies in, as the listing's snapshot holds them, early in a game.</p>
+  </div>
+  <p>A model file opens with five instructions that put the address of its header where the drawer looks and jump to the drawer (<code>draw_model</code>, <code>$7C61</code>), so the engine draws an object by calling its model like a routine. The header holds five counts and the addresses of fifteen tables. Every point is either the model's centre or another point, plus or minus one of a short list of axis vectors, and the vectors are stored as logarithms. Scaling a model to its type's size is then one addition to each logarithm (<code>prepare_model</code>, <code>$7C9B</code>), which is how the planetoid, the planets and the station share one model file, <code>PLA</code>.</p>
+  <p>Instead of sorting, each face carries a plane entry that names one of the model's normals and a side of it. Before drawing, <code>face_signs</code> (<code>$7E66</code>) works out which side of each normal's plane the eye is on. The first pass draws the faces on the far side of their plane from the eye, the second the faces that name no plane, the third the faces on the eye's side. A face turned away from the eye takes its back colour, and a back colour of <code>$FF</code> leaves it out. Draw face by face to watch the order.</p>
+  <p>A colour is a fill pattern from <code>$F1C8</code>: a pattern for the even rows and one for the odd rows, making the four bit pairs solid or six checkerboards of two of them. Two of the bit pairs take their colour from the screen matrix, and the face rewrites one nybble of the matrix byte, or both, in every 4-by-8 cell it touches. A face drawn later can change the colour of an earlier face's pixels in the cells they share, and the drawer leaves those clashes on screen.</p>
+  <p>Beams and collisions never look at the model. <code>trace_beam</code> (<code>$2189</code>) tests each point along the beam against a box round the target's centre, its type's radius plus 2 units each way, and <code>check_collisions</code> (<code>$6AB3</code>) tests boxes of the two radii added. Show the hit box: the fighters fit inside theirs, but the Cruiser's nose, the Vulture's wings and most of the Titan stick out, so a beam can cross a Vulture's wing tip on the screen and do no damage.</p>
+  <div class="sr-scroll"><table id="sr-shp-all"></table></div>
+</section>
+
+<section data-part="engine" id="combat">
+  <p class="fig">03 · Combat</p>
+  <h2 class="t">The computer pilots think on one pass in 17</h2>
+  <p class="lede">Every computer ship flies by the same rules: find the ship its faction likes least, decide whether to fight it or run, pick one of ten tactics and steer to hold the target at that tactic's angle off the nose. Put up to five ships in a fight, the most the engine has room for, press Fight, and the page runs the engine's own code on them. Drag to look round it.</p>
+  <div class="plate">
+    <div class="sr-bar sr-add" id="sr-cmb-add" role="group" aria-label="Add a ship to the fight"></div>
+    <div class="sr-bar sr-fleet" id="sr-cmb-fleet" aria-label="The ships in the fight: click one to take it out"></div>
+    <div class="sr-bar">
+      <button class="sr-btn sr-go" id="sr-cmb-go">Fight</button>
+      <button class="sr-btn" id="sr-cmb-clear">Clear</button>
+      <button class="sr-btn" id="sr-cmb-seed">New random numbers</button>
+      <label><input type="checkbox" id="sr-cmb-manchi"> The Manchi attack the Sunracer</label>
+    </div>
+    <p class="sr-info" id="sr-cmb-status"></p>
+    <div class="sr-bar">
+      <button class="sr-btn" id="sr-cmb-play" aria-pressed="false">Play</button>
+      <label>Pass <input type="range" id="sr-cmb-at" min="0" max="0" value="0" aria-label="The pass shown"></label>
+      <span class="sr-mono" id="sr-cmb-pass"></span>
+    </div>
+    <div class="sr-bar" id="sr-cmb-cam" role="group" aria-label="View">
+      <button class="sr-btn" data-cam="0" aria-pressed="true">Three-quarter</button>
+      <button class="sr-btn" data-cam="1" aria-pressed="false">From above</button>
+      <button class="sr-btn" data-cam="2" aria-pressed="false">From the side</button>
+      <button class="sr-btn" id="sr-cmb-trails" aria-pressed="true">Trails</button>
+    </div>
+    <p class="sr-need" id="sr-cmb-need" hidden></p>
+    <div class="sr-sky sr-drag"><canvas id="sr-cmb-cv" width="960" height="540" aria-label="The fight in 3D: the ships, their trails, their beams and missiles"></canvas></div>
+    <div class="sr-scroll"><table class="sr-legend" id="sr-cmb-ships"></table></div>
+    <div class="sr-log" id="sr-cmb-log"></div>
+    <p class="cap">The page runs the engine's main loop (<code>$0DED</code>) on the engine's own bytes from the listing, in a 6502 of its own: each pass runs everything the loop calls before the drawing, with nothing pressed and the Sunracer sitting still. The ships are made with <code>create_object</code> (<code>$1949</code>) where the builder puts them, each faction a group on a ring 600 units across, ahead of the Sunracer. The danger level is 0, so that no other ship arrives, and the Sunracer is neutral to the pirates and the Imperium. The random numbers go on from where the listing's snapshot left them until New random numbers seeds them with <code>random_seed</code> (<code>$A2DC</code>), as a new day in the game does. A fight stops when none of the ships left is an enemy of another or of the Sunracer, when the Sunracer is destroyed, or after 6,000 passes. A test, <code>test_combat.js</code>, holds the page's 6502 to the kit's simulator opcode by opcode, then runs the fight this section opens with and four others in both, the page's on only the bytes this page carries, and gets the same positions, headings, hit points, tactics and targets every 8 passes, the same launches, hits, rams and kills, and the same memory at the end. The models are drawn three times their size, so that the fighters show; the grid is the Sunracer's level, 100 units a square, and the lines drop each ship to it.</p>
+  </div>
+  <h3 class="sr-h3">Choosing a target</h3>
+  <p>Once in 17 passes <code>ship_ai</code> (<code>$3689</code>) runs for every computer ship; on every third of those runs a ship without a target looks for one and a ship with a target reconsiders it. The search (<code>ai_find_enemy</code>, <code>$3811</code>) takes the ship whose faction its own faction likes least, hostile before unfriendly, and a ship that finds no enemy takes the target of a ship its faction is allied to. How the four factions stand to one another is a table of sixteen bytes (<code>faction_table</code>, <code>$38B1</code>):</p>
+  <div class="sr-scroll"><table class="sr-grid" id="sr-cmb-fac"></table></div>
+  <p>So two pirate ships, or two Guild ships, never fight each other, and a fight of ships of one faction is over before it starts, unless they are Manchi ships set to attack the Sunracer. Toward the player each faction takes the player's standing with it, from <code>$072E</code>, which the player's kills move between −2 and 2. The Manchi's entry is the byte after the Imperium's, which is also the count of the beam weapon, <code>$FE</code>, so the Manchi are always hostile (<a href="discoveries.html#manchi">Discoveries</a>). The page sets the count to 0 for its fights, which makes the Manchi neutral to the Sunracer. Tick The Manchi attack the Sunracer to leave the count alone: in the opening fight the Wasp and the Vulture, both Manchi ships, then shoot at the Sunracer between their attacks on the Imperial ships, and a Manchi ship on its own destroys it.</p>
+  <h3 class="sr-h3">Fight or flee</h3>
+  <p>With a target chosen, <code>ai_fight_score</code> (<code>$3BE0</code>) adds up a score, and a negative score sends the ship running (tactic flee):</p>
+  <div class="sr-scroll"><table>
+    <tr><th>Term</th><th>Adds</th></tr>
+    <tr><td>to start</td><td>−4</td></tr>
+    <tr><td>the ship's hit points, counted in eighths of its type's full count</td><td>1 for under an eighth, up to 9 at full strength</td></tr>
+    <tr><td>the ship's rank value less the target's, halved and rounded down</td><td>−5 to 4</td></tr>
+    <tr><td>the factions are hostile, not only unfriendly</td><td>+1</td></tr>
+    <tr><td>the target is busy with an attacker it remembers (<code>$0439</code>)</td><td>+2</td></tr>
+    <tr><td>this ship is busy with one</td><td>−2</td></tr>
+    <tr><td>a Guild ship</td><td>−1</td></tr>
+    <tr><td>an Imperial ship</td><td>+2</td></tr>
+    <tr><td>a Manchi ship</td><td>the score is 2, whatever the rest</td></tr>
+  </table></div>
+  <p>So the Manchi never run, and an Imperial ship's 2 keeps it fighting until it is nearly destroyed; a pirate or a merchant gives up sooner, and the sooner the higher its target's rank. A ship that is fighting and more than about 333 units from its target (<code>$0861</code>, a logarithm) pursues it; nearer, it changes tactic one time in ten that it reconsiders (<code>ai_tactic</code>, <code>$375F</code>): from cruising or pursuing to its type's own tactic, from any other to one of seven at random.</p>
+  <h3 class="sr-h3">Ten tactics</h3>
+  <p>A tactic is four numbers: how to steer, the angle to keep the target off the nose, a speed and a rule for the speed. The angle makes the moves: a ship closing in keeps its target 22 degrees off the nose, a circling ship 67.5 degrees, and an eluding one about 90.</p>
+  <div class="sr-scroll"><table id="sr-cmb-tac"></table></div>
+  <p><code>steer_toward</code> (<code>$3D69</code>) turns the target's direction into two angles in the ship's own frame, one across and one up or down, takes the tactic's angle off the first and divides each by the type's turning step. The quotients are how many steps the ship will turn and pitch, one step a pass on each, and the ship steers again only when it has stopped turning (<code>ai_steer</code>, <code>$3CAB</code>). Steering never rolls a computer ship. Its roll comes only from random spins: the swerve tactic, a hit, or one time in eight that it has nothing to chase (<code>random_rates</code>, <code>$3CDC</code>).</p>
+  <h3 class="sr-h3">Firing</h3>
+  <p>A ship that is fighting or fleeing fires when its target is under 400 units away (<code>$08A4</code>), the reach of a beam: 50 steps of 8 units in <code>trace_beam</code>. On each pass it thinks, it fires three times in ten, and three times in ten of those it launches a missile instead of firing the beam (<code>ai_fire</code>, <code>$38C1</code>). Ships and missiles share five slots (<code>create_object</code>, <code>$1949</code>), so in a fight of five ships no missile is launched until a ship has been destroyed. The fighters, the Wasp, the Dart and the Hunter, fire the beam only with the target within about 30 degrees of the nose; the larger ships, whose beam entries have the top bit set, fire it in any direction. The TAC prints ranges at four times these units, in metres (<code>tac_range</code>, <code>$33F8</code>), so a beam reaches 1,600 m.</p>
+  <div class="sr-scroll"><table>
+    <tr><th>Beam power</th><th>Damage a hit</th><th>Ships</th></tr>
+    <tr><td>1</td><td>10</td><td>Dart and Scow</td></tr>
+    <tr><td>2</td><td>15</td><td>Wasp, Corsair and Tanker</td></tr>
+    <tr><td>3</td><td>20</td><td>Cruiser and Vulture</td></tr>
+    <tr><td>4</td><td>20, which the shields do not reduce</td><td>Titan and Hunter</td></tr>
+  </table></div>
+  <p>The shields halve a hit once for each step of strength, the fore shield for a hit from in front and the aft shield for one from behind (<code>shield_reduce</code>, <code>$6F88</code>). A beam, and a plasma torpedo, gets through one step of them (<code>beam_hit</code>, <code>$2222</code>), so a fore shield of 3 halves a power-3 beam twice, to 5, and an SM-1 missile's 100 three times, to 12. A hit of 10 or more, after the shields, knocks out one of the ship's systems one time in five, and that hit takes nothing off the hit points (<code>damage</code>, <code>$6EA0</code>). Ships that touch ram each other: each takes eight times their relative speed, of which only the low byte counts, and they bounce apart as in an elastic collision (<code>ram</code>, <code>$6BC3</code>). Ships on the same side ram each other too: in the opening fight the Cruiser and the Hunter, which start side by side, collide on pass 256.</p>
+</section>
+
+<section data-part="engine" id="flight">
+  <p class="fig">04 · Flight</p>
+  <h2 class="t">From the keyboard the Sunracer turns over eleven times faster than a fighter</h2>
+  <p class="lede">Each press of a turn key adds a 1024th of a turn to the Sunracer's turn rate, up to 70, and the ship turns by its rates on every pass until S stops it. A computer ship turns by its type's fixed step, 2.11 degrees a pass for the nimblest.</p>
+  <div class="sr-scroll"><table>
+    <tr><th>Ship</th><th>Turn a pass</th><th>Set by</th></tr>
+    <tr><td>Sunracer, keys</td><td>0.35° for each step, up to 24.6°</td><td>the turn, pitch and roll rates (<code>$0516</code>, <code>$0508</code>, <code>$050F</code>), each held between −70 and 70</td></tr>
+    <tr><td>Sunracer, joystick</td><td>up to 3.5°</td><td>the stick's eased position, through <code>joy_rates</code> (<code>$24A3</code>): rates from −10 to 10</td></tr>
+    <tr><td>missiles</td><td>2.81°</td><td>the type's step, 8/1024 of a turn</td></tr>
+    <tr><td>Wasp, Dart and Hunter</td><td>2.11°</td><td>5.99/1024</td></tr>
+    <tr><td>Cruiser, Vulture, Corsair and Scow</td><td>1.05°</td><td>2.99/1024</td></tr>
+    <tr><td>Titan and Tanker</td><td>0.70°</td><td>2/1024</td></tr>
+  </table></div>
+  <p><code>test_combat.js</code> runs <code>turn_objects</code> (<code>$7634</code>) on the engine with a rate of 1 and measures the turn: a 1024th of a turn for the Sunracer, and each type's step for the computer ships. A computer ship turns one step a pass on each of its axes while it has steps left (<code>turn_ship</code>, <code>$76DD</code>); the Sunracer turns its rates' worth on every pass (<code>turn_by_rates</code>, <code>$9037</code>).</p>
+  <p>Speed works two ways. The computer ships always fly in cruise, and so does the Sunracer until the player switches. In cruise a ship has a set speed, and <code>cruise_thrust</code> (<code>$7540</code>) moves its velocity toward the nose's direction at that speed by at most the type's thrust each pass: a Dart from a standstill reaches speed 70 in 224 passes, a Titan in 374. Speed 70 is 4.4 units a pass, and the readout shows 16 times the velocity's length (<code>speed_of</code>, <code>$7C21</code>). Newtonian flight, CTRL-E or F7, is the player's alone: the velocity changes only while + or − is held, by the thrust along the nose, so the ship keeps drifting the way it was going whichever way it turns, up to a speed of 70 (<code>apply_thrust</code>, <code>$74D3</code>). The Sunracer's thrust is its engine's, times 8 over 8 plus the cargo slots in use.</p>
+  <p>Space is a cube. Each object's position is three 24-bit numbers, a whole part of 16 bits and a fraction of 8, and its heading is three rows of three logarithms, the ship's axes as seen from outside (<code>slot_orient</code>, <code>$044B</code>). Steering uses all three axes: a ship pitches toward a target above it as readily as it turns toward one beside it. The planets, the stars and the black hole pull every ship toward them, the pull's strength from the type's scale, and the planetoids do not pull (<code>gravity</code>, <code>$787B</code>). A ship more than about 2,500 units from the Sunracer is removed on the next 256th pass (<code>frame_update</code>, <code>$1239</code>), which is how a fight that drifts away ends. In the fight on this page, the ships spread <span id="sr-cmb-span">over a few hundred units on every axis</span>.</p>
+</section>
+
+</main>
+<script type="application/json" data-listing="parts/engine/listing.json">["$003A-$003A", "$0041-$0044", "$0056-$005B", "$005E-$005E", "$0403-$0544", "$05F9-$0620", "$0635-$0648", "$065D-$0665", "$072E-$0730", "$073B-$073C", "$0767-$076E", "$0777-$0777", "$0832-$0832", "$0836-$0836", "$083C-$086D", "$08D5-$0D08", "$0D25-$0D25", "$0D29-$0D2E", "$0D3C-$0D3C", "$0D64-$0D67", "$0DA8-$0DE6", "$0DED-$0E21", "$1091-$10D1", "$11AD-$12AB", "$12E3-$135C", "$135E-$135E", "$145C-$14CA", "$14E5-$14F7", "$1949-$196E", "$1971-$1ABE", "$1B90-$1B95", "$1BB2-$1BED", "$1C95-$1D69", "$1DDF-$1DE6", "$1EAD-$1ED0", "$1EE1-$2020", "$20EC-$217D", "$2188-$225F", "$2265-$2295", "$22BC-$23F8", "$2410-$2418", "$24F6-$2541", "$2C8A-$2C9C", "$2CA5-$2CA7", "$2D24-$2D37", "$2E11-$2E70", "$2EDB-$2EF4", "$3689-$38AD", "$38B1-$3929", "$3A2D-$3A75", "$3BE0-$3C8F", "$3CAB-$3D0D", "$3D16-$3E2B", "$6773-$6BA9", "$6BC3-$6BD4", "$6BE3-$6C53", "$6C7E-$6CC4", "$6CF6-$6E03", "$6E1D-$7032", "$74A3-$753E", "$7540-$7771", "$787B-$78A6", "$78E3-$78EB", "$7947-$798E", "$7C21-$7C60", "$8288-$8291", "$8293-$8637", "$8C9C-$8E16", "$8F80-$8FBC", "$8FCA-$91AF", "$91FA-$9623", "$9669-$97E2", "$983B-$98C1", "$98ED-$9943", "$9981-$99A7", "$99BE-$99DD", "$9ADC-$9AF9", "$9B9B-$9BC9", "$9D66-$9DED", "$9E4C-$9E74", "$9E9C-$9EBE", "$A047-$A066", "$A0C1-$A14B", "$A178-$A18B", "$A210-$A223", "$A298-$A2F5", "$A4EB-$A500", "$EB49-$EBFF", "$EC49-$ECC7", "$ECEA-$EE07", "$EE2A-$EF47", "$EF6A-$F087", "$F0AA-$F5FF"]</script>
+<script type="application/json" data-listing="parts/flight/listing.json">["$A500-$BCFF"]</script>
+<!-- The fourteen model files, MSC to GAT, as the game loads them (the disk file less its two-byte header, up to the size word at byte $2F), in base64 -->
+<script type="application/json" id="sr-models">{"MSC":"qQuFeqkAhXtMAAAACAIEBwgxAIMAMwB7AIsAnQDBAMUAzADTANoA6ADhAP0AAQEDAQIDnOYAnOYApAb/nOYApAQAnOYApAX/nOYAOgYApAUAnOYAOgYAnOYApAUApAYApAX/pAX/pAT/pAUApAX/pAT/nOYApAQApAMA/////wABAv8CAwQABQYHAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAAAAAAAQICAAECAwECAv////8AAABKTE8STE8AAwMDAwMDAwMAAQIAAwIDAQIBAAAEBwEHBQIGBwECAAMEAA==","PSC":"qQuFeqkAhXtMAAAADgIHCQkxAJIAMwCEAKAAsgD6AAEBCgETARwBLgElAUoBTwFRAQMEpAUAnOYAnOYAnOYAnOYApAb/nOYApAUAnOYA9wYAnOYAnOYApAQAnOYAnOYApAP/pAP/nOYApAMApAP/nOYAnOYApAQAnOYAnOYA9wMAOgX//wAAAAD/AAD/////////Av6AAAH9A/wEBwj6+wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQABAAEAAAAAAAECAAAAAQIDBAUGAQL//////0RE//8SR0RCQgAAVlEEAwMDAwMDAwMBBAIDAQMFAQUEAgUDAgQFAwYIBAkHCgwLCgsNAAECAwQFAA==","ICR":"qQuFeqkAhXtMAAAAEgMICwkxAJcANACFAKkAxAAMARQBHwEqATUBSwFAAXMBeQF7AQYIC1IF/1IFAKQGAFIFAFIFAKQGAFIFAJzmAJzmAJzmAJzmAKQGAJzmAJzmAKQHAJzmAOgEAJzmAJzmAJzmAFIFAFIEAOgCAJzmAJzmAOgDAJzmAP8AAf8DBAAAAwMGCggMCg4OEP4A+gIB+gP6A/r7/Pv8BwgCCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAECAAABAAAAAAAAAgMCAwUAAQIDBAUGBwYHBf///////zIyMjL/NzI0NAAAAAAAABIEBAQEBAQDAwMDBAYHCQgKDA0LCgsHBgwICQ0HCw0JCgYIDAYBAAgDBAYBAggFBA4PERAAAQIDBAUGAA==","MCR":"qQuFeqkAhXtMAAAAEgMHCQsxAKkANACXALsA1gAVARwBJQEuATcBSQFAAWgBbQFvAQMEAZzmAJzmAKQG/6QF/6QE/6QGAKQGAJzmAJzmAJzmAKQEAJzmAKQEAJzmAJzmADoG/6QE/+gEADoGAKQE/+gEAJzmAKQCAKQFAJzmAJzmAKQF/6QD/6QC/6QGAJzmAKQDAJzmAP//AQED/wUG/wgJ/wsL/w4ODwABAgMC/AUHBAYHgAMICQT29gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIAAQAEBQAAAAAAAgYAAQIDBAUGBgZMTP//////AP8AAE9KTEwAABIEBAMDAwMEAwQDBwYFBAgJCgAEAwABAgADAQACBAEDBAILDQwODxEQAgMEBQYFAA==","PCR":"qQuFeqkAhXtMAAAADQMHCAoxAJsANACOAKgAwwACAQkBEQEZASEBMQEpAUsBUAFSAQADBJzmAJzmAKQG/1IG/1IF/1IGAFIGAFIF/1IGAOgE/5zmAKQGAOgEAJzmAKQGAOgDAJzmAJzmAOgE/+gEAJzmAOgEAOgEAJzmAH0EAMgE/8gD/5zmAOgDAOgCAP////////8DBAMJCQsAAQIDBPsFBgcICQUJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAQEBAgAAAAAAAQIEAAECAwQFBgT//////0JC/0JEREcAAAASAwMDAwQDAwQBAgABAAMEAAIDAAQBAwQCAwcFBAYICQoMCwABAgMEBQA=","TIT":"qQuFeqkAhXtMAAAAEwMICwgxAI8ANAB8AKIAvQAFAQ0BGAEjAS4BRAE5AWkBbgFwAQMEEn0GAJzmAJzmAJzmAJzmAH0G/5zmAJUEAJzmAJUDACsDAJzmACsEAJzmAJzmAJzmACsEAJzmAH0FAJzmAJzmAJzmAJUDAJzmAP8AAAAA/wAGBggACgoMAw4DEP//gAAC/gH9/AX8AwT7BPr5BvkHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEAAAACAgIAAAAAAAIDBwAAAAABAgMEBQYHBAQE//////////////8yNDQ3ADI0NwASEgMDAwMEAwMDBAQEBQEEBQQCAwEFAwUCAwIEAQ4PEhASEQ4SEA4QEQ8HCQgGDAoLDQABAgMEBQA=","SCO":"qQuFeqkAhXtMAAAAEwMICgoxAKEANACOALQAzwAXAR8BKQEzAT0BUQFHAXoBgAGCAQAFB6QF/5zmAKQGAKQGAJzmAJzmAOgE/1IFAKQGAOgFAJzmAJzmAJzmAJzmAFIHAFIE/5zmAKQG/1IFAJzmAJzmAJzmAJzmAFIF/1IE/1IDAKQGAJzmAFIEAJzmAP8AAAL/BAQG/wgACgIM//8PDxEA/AH8AvwD/AUG+gcGBwcICQYJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAgABAQIAAAAAAAAAAAEEAAECAwQFBgcBBP//////////AP8/Ojw8AAA/PzoSBAYEBAQEAwMFBAQFBwYAAgMJCAEAAQUEBgcDAgAEBgIFCAkHAQgFBwkDCgsODQwPEBIRAAECAwQFBgA=","FRE":"qQuFeqkAhXtMAAAADwMICgkxAJQANACFAKMAvgAGAQ4BGAEiASwBQAE2AWUBawFtAQAGCKQE/5zmADoGAKQFAJzmAJzmAJzmAJzmAPcG/5zmAKQEAJzmAKQEAJzmAKQE/6QEAJzmAJzmAKQDAKQCAJzmAKQEAJzmAJzmAJzmAKQDAJzmAP8AAAEAAQIDAQAEAAsLDQACAwMBAQEBBPsFBggHCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAEAAgICAAAAAAAAAAABAAABAgMEBQYHAQT//////////wD/Pzo8PAAAPz86EgQFBAQEAwMDAwQCAwcGBAUIAQAAAQMCBgcFBAIGBAADCAcBCAMFBwgICgkLDA4NAAECAwQFBgA=","HUN":"qQuFeqkAhXtMAAAAEAQJCg0xALoANQCqAMoA7gA/AUgBUQFbAWUBeQFvAZgBnQGfAQABAgOkBf+kBP+kBgCc5gCc5gCkBv+c5gCkBQCc5gCkBgCc5gCc5gCkBv86Bv9SBgCc5gA6BwCc5gCkBwCc5gCc5gCkBP+kA/+c5gCc5gCkBACc5gCkBQCc5gCc5gCkA/+kAwCc5gCkAwCkAv+kBf+kBACc5gCc5gD/AAAC//8FBQf/CQkL/w0NAAIDAgEEBQYFBwgJCAoLDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIAAQADAgAAAAAAAQQBBAABAgMEBQYHCAH//////zQ0NDT/EgA3NzI0NDQ0UQQDAwMDAwMDAwMAAQMCAQQDAQAEAwQCAAIEAQYKAAkFAwwIAgcLDQ4PAAECAwQFAA==","PLA":"qQuFeqkAhXtMAAAADAYUFAYxAHkANwBtAIUAuwBvAYMBlwGrAb8B5wHTASMCNwI5AgABBAYIC5zmAJzmAKQGAJzmAHsGAMkF/2kG/8kEAMkF/7cF/y0G/8kF/7cFAC0G/8kF/2kGAMkEAMkF//8AAAAAAP8GBgYGBgABAgMEBYD8/f7/+wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMEBAQCAgIFBQUBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIDBAUGBwgJCgsMDQ4PEBESE///////////////////////////pqGyq7S3tKuhpgC3pqGyoLKrtLcDAwMDAwMDAwMDAwMDAwMDAwMDAwEAAgIAAwMABAQABQUAAQcGCAgGCQkGCgoGCwsGBwEHCAEIBQUICQUJBAQJCgQKAwMKCwMLAgILBwIHAQABAgMEBQYHCAkKCwwNDg8QERITFAA=","CAR":"qQuFeqkAhXtMAAAAGwMMDwwxALsANACgANYA8QBdAWkBeAGHAZYBtAGlAfAB/AH/AQALB6QF/6QG/5zmAKQGAJzmAJzmAJzmAKQHAJzmAJzmAJzmAFIEAOgEAJzmAJzmAJzmAKQGAJzmAJzmAJzmAKQFAAACAJzmAJzmAJzmAFIFAJzmAJzmACEG/1IEAJzmAFIE/1IEAJzmAOgEAFIEAP8AAAEAAQIDAAgICgAADf8PDxH/ExMV/xcXGQACAwMBAQEB/AUGBQUGBQkHCAcKBwgHCwcIBwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAICAAEAAQABAAAAAAAAAAICAgICAgAAAAABAgMEBQYHCAkKCwAAAP///////////////////1FQPDz7+wBQVlb7PwAAAAQEBAQEBAQEBAQEBAQEBAIDBwYEBQEAAAEDAgYHBQQBBQcDAgYEAAoLDg0ADAkICAkLCg0ODAAJDA4LCg0ACA8REhATFRYUFxkaGAABAgMEBQYHCAkKCwYGAA==","OUT":"qQuFeqkAhXtMAAAAFAQMDgwxALUANQChAMkA7QBZAWUBcwGBAY8BqwGdAeMB/wEEAgQABgKkBf+kBf86BP+kBgCc5gCc5gCc5gCkBgCc5gCc5gCc5gA6BQA6Bv86BgCc5gA6BgA6BgCc5gA6BACc5gA6A/86AwCc5gCc5gCc5gCc5gA6BAAAAQCc5gAAAf9tAgCc5gCc5gCc5gCc5gBSAgD/AAEAAAECA/////8FDAwODBAQEgACAQEDAwMD+wQF/AYH+AcJCvUKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQMBAwACAAIBAwEDCQgLCgkICwoAAAAAAAAAAQIDBAUGBwgJCgsLC///////////////////Pz88PDw8Pz/7+1FRAAEEBAQEBAQEBAQEBAQEBAgAAQkLCgIDCAsDAAoJAQIICQUECwcGCggEBwsKBgUJAAQFAQIGBwMAAwcEAQUGAgwNDw4QERMSAwcLAQUABAAECAIGAwcBBQkCBgMHAgYKAAQBBQcHBwcA","STA":"qQuFeqkAhXtMAAAAEgQODggxAI8ANQB9AKEAxQBDAVEBXwFtAXsBlwGJAccB1wHbAQQICRGkBv+kBv+kA/+kBwCc5gCc5gCc5gCkBwCc5gCc5gCc5gCkBQCc5gCc5gCkBACkBf+kBf+kA/+kBgCc5gCc5gCc5gCkBgCc5gD/AAAC//8FBQcFBgcIAAECA/8AAgEC/QUHBgcEBAQEBAQEBAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIBAQIDAwMDAvz8/Pz8AAAAAPPz8/PzAAECAwQFBgcICQoLDA3///////////////////M3NDTxNAA3N/M3NDTxAwMDAwQEBAQEAwMDAwQEAQAEAgMEAwEEAAIAAQMCBQYKCQcLDAgIDAoGBQkLBxENDhEQDxEOEBEPDQ0PEA4FBgcICQAJCgsMDQABAgMEBgUFAA==","GAT":"qQuFeqkAhXtMAAAADAMICAYxAHYANABqAIIAnQDlAO0A9QD9AAUBFQENATkBQQFDAQYCBKQF/5zmAKQG/6QE/6QFAKQG/6QEAKQFAKQG/6QFAJzmAKQG/6QEAKQF/6QG/6QE/6QF/6QG/////////////////wABAgMEBf38+4D//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAAEAAgEA/wECAwQFBgcAAQIDBAUGBz8AAAA/PxISOjw8PDo6//8EBAQEBAQGBgECCAcFCwoEAAEHBgIDCQgABgsFAwQKCQAFBAMCAQYHCAkKCwABAgMEBQYHCAA="}</script>
+<script src="../../lib/c64.js"></script>
+<script>
+/* sr-odds */
+// pick_ship ($2C8C), given that a ship comes (its first roll, under the chance in $96, passed):
+// a number from 0 to 99 is spent across the five class weights from the last ($0781, Wasps and
+// Vultures) to the first ($077D, Hunters), so class c comes w[c] times in 100. Then a number from
+// 0 to 15 picks the class's entry if it is under 4; otherwise a number from 0 to R, the
+// Sunracer's rank value ($0C79, the player's rank plus 2), halved and kept to 3 at most, does.
+// classTypes holds ship_class_types ($2D24), four types a class. Returns the chance of each type,
+// as counts out of 100 * 16 * (R + 1), and that total.
+function shipOdds(w, R, classTypes) {
+  const count = {}, total = 100 * 16 * (R + 1);
+  for (let r2 = 0; r2 < 100; r2++) {
+    let a = r2, c = -1;
+    for (let y = 4; y >= 0; y--) { a -= w[y]; if (a < 0) { c = y; break; } }
+    if (c < 0) { count.none = (count.none || 0) + 16 * (R + 1); continue; }
+    for (let r3 = 0; r3 < 16; r3++) {
+      if (r3 < 4) { const t = classTypes[4 * c + r3]; count[t] = (count[t] || 0) + (R + 1); continue; }
+      for (let r4 = 0; r4 <= R; r4++) {
+        const t = classTypes[4 * c + Math.min(r4 >> 1, 3)];
+        count[t] = (count[t] || 0) + 1;
+      }
+    }
+  }
+  return { count, total };
+}
+// end of sr-odds
+</script>
+<script>
+/* sr-ships */
+// The engine's 3D models, decoded and drawn the way draw_model ($7C61) draws them. A model is a
+// prologue that points $7A/$7B at its 36-byte header and jumps to draw_model, the header (five
+// counts and fifteen table pointers), then the tables. The page builds the points from the axis
+// vectors (place_points, $7DAB), makes a normal from each of the first polygons' first three
+// corners (prepare_model, $7C9B), signs each normal against the eye (face_signs, $7E66), takes the
+// polygons in the three passes of draw_polygons ($7ED6) with the colour draw_polygon ($7F36) picks,
+// and fills them in the multicolour bitmap with set_colour's patterns ($8F80): a pattern for even
+// rows and one for odd, and a nybble of the screen matrix rewritten in every cell a span touches.
+const SRShips = (function () {
+  const s8 = v => v << 24 >> 24;
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const NAMES = ['reflist', 'axisidx', 'axes', 'parents', 'refpts', 'normals', 'normref', 'planes',
+                 'polynorm', 'backcol', 'frontcol', 'vertlists', 'vertcounts', 'groups', 'groupsizes'];
+
+  // The model at start in mem, which is memory by address, or a disk file (whose pointers are
+  // offsets from its first byte, start 0, until load_model, $1C95, adds the load address). scale is
+  // the type's drawing scale, the log word type_scale ($0A63) gives prepare_model in $5F/$60.
+  function decode(mem, start, scale) {
+    const at = a => mem[a], word = a => at(a) | at(a + 1) << 8;
+    const h = at(start + 1) | at(start + 5) << 8;        // the prologue's LDA #lo / LDA #hi
+    const n = { points: at(h + 1), refs: at(h + 2), normals: at(h + 3), polys: at(h + 4), axes: at(h + 5) };
+    const t = {};
+    NAMES.forEach((k, i) => { t[k] = word(h + 6 + 2 * i); });
+    // prepare_model: the scale less $06A4 (log2 of 100) added to each component's log whose whole
+    // part is -10 or more; vec_times_rows ($9108) then leaves out a component below 2^-7
+    const add = scale - 0x06A4;
+    const axes = [];
+    for (let i = 0; i < n.axes; i++) {
+      const v = [];
+      for (let c = 0; c < 3; c++) {
+        const a = t.axes + 9 * i + 3 * c;
+        let lw = at(a) | at(a + 1) << 8;
+        if (((at(a + 1) - 0xF6) & 0x80) === 0) lw = (lw + add) & 0xFFFF;
+        const whole = s8(lw >> 8);
+        v.push(whole < -7 ? 0 : (at(a + 2) & 0x80 ? -1 : 1) * 2 ** (whole + (lw & 0xFF) / 256));
+      }
+      axes.push(v);
+    }
+    // place_points: each point is its parent (or the origin) plus or minus one axis vector
+    const points = [];
+    for (let i = 0; i < n.points; i++) {
+      const par = at(t.parents + i), ix = at(t.axisidx + i);
+      const from = par & 0x80 ? [0, 0, 0] : points[par];
+      if (ix & 0x80) { const v = axes[(-ix) & 0x7F]; points.push(sub(from, v)); }
+      else { const v = axes[ix]; points.push([from[0] + v[0], from[1] + v[1], from[2] + v[2]]); }
+    }
+    const polys = [];
+    for (let i = 0, o = 0; i < n.polys; i++) {
+      const count = at(t.vertcounts + i), verts = [];
+      for (let k = 0; k < count; k++) verts.push(at(t.vertlists + o + k));
+      o += count;
+      polys.push({ verts, norm: at(t.polynorm + i), plane: s8(at(t.planes + i)),
+                   front: at(t.frontcol + i), back: at(t.backcol + i) });
+    }
+    // the normals, from the first n.normals polygons: (P0 - P1) x (P2 - P1)
+    const normals = [];
+    for (let i = 0; i < n.normals; i++) {
+      const v = polys[i].verts.map(k => points[k]);
+      normals.push(cross(sub(v[0], v[1]), sub(v[2], v[1])));
+    }
+    const refs = [];
+    for (let j = 0; j < n.refs; j++) refs.push(at(t.reflist + j));
+    const normref = [];
+    for (let i = 0; i < n.normals; i++) normref.push(at(t.normref + i));
+    return { n, t, axes, points, polys, normals, refs, normref };
+  }
+
+  // face_signs: each normal against the eye (in the model's own frame), from its reference point;
+  // true where the eye is on the normal's side (the dot product's sign byte clear)
+  function signs(m, eye) {
+    return m.normals.map((N, i) => dot(N, sub(eye, m.points[m.refs[m.normref[i]]])) >= 0);
+  }
+
+  // draw_polygons' three passes. A polygon's plane entry names a normal: positive n, the polygon is
+  // on the normal's side of that face's plane; negative, on the other side; zero, on neither. Pass 1
+  // draws those on the far side of their plane from the eye, pass 2 those with no plane, pass 3 the
+  // rest. Each gets its front colour when its own normal faces the eye, else its back colour, and
+  // $FF in the one it gets leaves it undrawn. front: a draw-data colour table in place of the
+  // model's own (the planets' and type 10's, type_drawdata at $0999).
+  function order(m, eye, front) {
+    const s = signs(m, eye), list = [];
+    const put = (i, pass) => {
+      const p = m.polys[i], code = s[p.norm] ? (front ? front[i] : p.front) : p.back;
+      if (code !== 0xFF) list.push({ i, code, pass, facing: s[p.norm] });
+    };
+    m.polys.forEach((p, i) => { const e = p.plane;
+      if (e > 0 ? !s[e] : e < 0 ? s[-e] : false) put(i, 1); });
+    m.polys.forEach((p, i) => { if (p.plane === 0) put(i, 2); });
+    m.polys.forEach((p, i) => { const e = p.plane;
+      if (e > 0 ? s[e] : e < 0 ? !s[-e] : false) put(i, 3); });
+    return { list, signs: s };
+  }
+
+  // set_colour ($8F80): a code below $13 takes a colour from the palette at $F1E6 and its matrix
+  // entry from $8FCA; any other its low three bits plus one, and its matrix entry from its top five.
+  // flash: the value set_flash_colour writes at $9002, $80 or $70 by the buffer being drawn
+  function colour(ram, code, flash) {
+    const c = code < 0x13 ? ram[0xF1E6 + code] : (code & 7) + 1;
+    const cell = code < 0x13 ? ram[0x8FCA + code] : code >> 3;
+    return { even: ram[0xF1C8 + c], odd: ram[0xF1D2 + c], mask: ram[0x8FDD + cell],
+             value: cell === 5 ? (flash === undefined ? ram[0x9002] : flash) : ram[0x8FFD + cell] };
+  }
+
+  // The bitmap: W multicolour pixels by H rows, a screen matrix byte for every 4 by 8 cell, which
+  // the engine's view clear leaves at $CC ($B981), the background black and the colour RAM white.
+  function canvas(W, H) {
+    return { W, H, bits: new Uint8Array(W * H), cells: new Uint8Array((W >> 2) * Math.ceil(H / 8)).fill(0xCC) };
+  }
+  // One polygon filled with a colour (from colour()): pts are its corners on the bitmap, x in
+  // multicolour pixels, y in rows. A pixel is filled when its centre is inside.
+  function fill(bm, pts, col) {
+    const { W, H, bits, cells } = bm, cw = W >> 2;
+    let y0 = Infinity, y1 = -Infinity;
+    for (const p of pts) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+    const ya = Math.max(0, Math.ceil(y0 - 0.5)), yb = Math.min(H - 1, Math.floor(y1 - 0.5));
+    for (let y = ya; y <= yb; y++) {
+      const yc = y + 0.5, xs = [];
+      for (let k = 0; k < pts.length; k++) {
+        const a = pts[k], b = pts[(k + 1) % pts.length];
+        if ((a[1] <= yc) !== (b[1] <= yc)) xs.push(a[0] + (yc - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+      }
+      xs.sort((p, q) => p - q);
+      const pat = y & 1 ? col.odd : col.even;
+      for (let k = 0; k + 1 < xs.length; k += 2) {
+        const xa = Math.max(0, Math.ceil(xs[k] - 0.5)), xb = Math.min(W - 1, Math.ceil(xs[k + 1] - 0.5) - 1);
+        if (xb < xa) continue;
+        for (let x = xa; x <= xb; x++) bits[y * W + x] = (pat >> (6 - 2 * (x & 3))) & 3;
+        for (let c = xa >> 2; c <= xb >> 2; c++) { const o = (y >> 3) * cw + c; cells[o] = (cells[o] & col.mask) | col.value; }
+      }
+    }
+  }
+  // The bitmap's colours, as palette indexes: 00 black, 01 the cell's high nybble, 10 its low, 11 white
+  function pixels(bm) {
+    const { W, H, bits, cells } = bm, cw = W >> 2, px = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const b = bits[y * W + x], m = cells[(y >> 3) * cw + (x >> 2)];
+        px[y * W + x] = b === 0 ? 0 : b === 1 ? m >> 4 : b === 2 ? m & 15 : 1;
+      }
+    return px;
+  }
+
+  // A view of the model: R a rotation (three rows, the view's axes in the model's frame), the eye
+  // dist away along R's third row (the engine's third row points back toward the viewer, and its
+  // screen y runs down), and project's scales: x by $0D64, y by $0D66, a ratio of 2^(49/256).
+  function view(m, R, W, H, opts) {
+    opts = opts || {};
+    const r = opts.radius || Math.max(...m.points.map(p => Math.hypot(...p)), 1e-6);
+    const dist = (opts.far || 4) * r, eye = R[2].map(v => v * dist);
+    const fy = (opts.zoom || 0.42) * H * Math.sqrt(dist * dist - r * r) / r, fx = fy * 2 ** (49 / 256) / 2;
+    const proj = m.points.map(p => {
+      const d = sub(p, eye), x = dot(R[0], d), y = dot(R[1], d), z = dot(R[2], d);
+      return [W / 2 + fx * x / -z, H / 2 + fy * y / -z];
+    });
+    return { eye, proj };
+  }
+  function render(m, R, W, H, opts) {
+    opts = opts || {};
+    const v = view(m, R, W, H, opts), o = order(m, v.eye, opts.front), bm = canvas(W, H);
+    const upto = opts.upto === undefined ? o.list.length : opts.upto;
+    for (let k = 0; k < upto && k < o.list.length; k++) {
+      const e = o.list[k];
+      fill(bm, m.polys[e.i].verts.map(j => v.proj[j]), colour(opts.ram, e.code, opts.flash));
+    }
+    return { px: pixels(bm), list: o.list, signs: o.signs, eye: v.eye };
+  }
+
+  // A type's entries in the engine's tables. turn: the step turn_ship ($76DD) turns a computer ship
+  // on each axis each pass, in 1024ths of a turn (type_turn, $0BE2, a log word); gain: the most
+  // cruise_thrust ($7540) adds to its speed in a pass, in units a pass, the log word type_thrust
+  // ($0C04) made a number with eight bits of fraction, as the velocity holds it.
+  function stats(ram, t) {
+    const word = a => ram[a] | ram[a + 1] << 8, log = a => 2 ** (s8(ram[a + 1]) + ram[a] / 256);
+    let name = '';
+    for (let a = word(0x0B12 + 2 * t); ram[a]; a++) name += String.fromCharCode(ram[a]);
+    const o = { name, flags: ram[0x08D5 + t], radius: word(0x0A1D + 2 * t), armour: word(0x0AA9 + 2 * t), contact: ram[0x0AEF + t] };
+    if (t < 17) o.turn = log(0x0BE2 + 2 * t);
+    if (t > 12) return o;
+    const beam = ram[0x0C52 + t], mis = ram[0x0C5F + t], sh = ram[0x0C6C + t];
+    return Object.assign(o, { gain: Math.round(log(0x0C04 + 2 * t) * 256) / 256, faction: s8(ram[0x0C1E + t]), ecm: ram[0x0C2B + t],
+      tactic: ram[0x0C38 + t], systems: ram[0x0C45 + t], beam: beam & 7, turret: beam >> 7, missile: mis ? mis + 8 : 0,
+      fore: sh >> 4, aft: sh & 15, rank: ram[0x0C79 + t] });
+  }
+  return { decode, signs, order, colour, canvas, fill, pixels, view, render, stats };
+})();
+// end of sr-ships
+</script>
+<script>
+/* sr-sim */
+// SRSim runs the flight engine's own main loop in the page: a fight between ships the reader picks,
+// on the engine's bytes from the listing (engine, with the flight part's $A500-$BD00 maths).
+//
+// SRSim.cpu(m, o) is a 6502 for the engine: the documented opcodes but BRK, the NMOS flags, decimal mode
+// included, and the memory map the engine keeps in flight, the port at $35: RAM everywhere but the
+// chips at $D000-$DFFF, whose writes it drops and whose reads stop the run. An undocumented opcode,
+// a BRK, the port at $00-$01 and a byte the page does not carry stop it too: o.known marks the bytes
+// the page has (a byte the run writes is known from then on); o.miss(a) is called for any other, and
+// the run stops unless it returns. test_combat.js holds it to the kit's simulator, kit/c64/cpu6502.js,
+// opcode by opcode and on whole fights. Its hooks are o.hooks, { address: fn(cpu) }, run when the
+// program counter reaches the address, as the kit's are: fn may set registers, cpu.pc or call
+// cpu.rts().
+//
+// SRSim.fight(ram, known, models, lineup, opts) sets a fight up as test_combat.js does and gives
+// { pass(), passes, tracks, events, over, end }. ram is the engine listing's 64 KB with the flight
+// part's maths in, known which of its bytes the page has, models the page's model files by name
+// (sr-models, base64). lineup is [[type, x, y, z], ...] in the engine's units. opts.manchi sets the
+// Sunracer's beam count, $0731, which is also its standing with the Manchi, to $FE, as the game
+// keeps it: hostile; without it the count is set to 0, neutral, and the Manchi leave the Sunracer
+// alone. opts.seed, [x, y],
+// seeds the random numbers with the engine's random_seed ($A2DC) first; without it they go on from
+// where the listing's snapshot left them. Each pass() runs one
+// pass of the loop ($0DED to frame_skip3, $0E08) with no key pressed and the drawing skipped, records
+// the events, and every opts.every passes (8) a sample of every ship and missile. end names why the
+// fight stopped, when it has: the last enemies gone, the Sunracer counted, opts.passes reached, or the engine loading a
+// file (the Sunracer destroyed loads END).
+const SRSim = (function () {
+  'use strict';
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 4, '0');
+  // the documented opcodes but BRK: 1 for each, the rest stop the run
+  const OK = new Uint8Array(256);
+  ('01 05 06 08 09 0A 0D 0E 10 11 15 16 18 19 1D 1E 20 21 24 25 26 28 29 2A 2C 2D 2E 30 31 35 36 38 39 3D 3E ' +
+   '40 41 45 46 48 49 4A 4C 4D 4E 50 51 55 56 58 59 5D 5E 60 61 65 66 68 69 6A 6C 6D 6E 70 71 75 76 78 79 7D 7E ' +
+   '81 84 85 86 88 8A 8C 8D 8E 90 91 94 95 96 98 99 9A 9D A0 A1 A2 A4 A5 A6 A8 A9 AA AC AD AE B0 B1 B4 B5 B6 B8 B9 ' +
+   'BA BC BD BE C0 C1 C4 C5 C6 C8 C9 CA CC CD CE D0 D1 D5 D6 D8 D9 DD DE E0 E1 E4 E5 E6 E8 E9 EA EC ED EE F0 F1 F5 ' +
+   'F6 F8 F9 FD FE').split(' ').forEach(h => { OK[parseInt(h, 16)] = 1; });
+
+  function cpu(m, o) {
+    o = o || {};
+    const kn = o.known || null, hooks = o.hooks || {}, hk = new Uint8Array(65536);
+    const miss = o.miss || (ad => { throw new Error('the fight reached ' + hex(ad) + ', a byte this page does not carry'); });
+    for (const k in hooks) hk[+k] = 1;
+    let a = 0, x = 0, y = 0, s = 0xFF, pc = 0, n = 0, v = 0, d = 0, i = 1, z = 0, c = 0, steps = 0;
+    const C = {};
+    function rd(ad) {
+      if ((ad & 0xF000) === 0xD000) throw new Error('a read of the chips at ' + hex(ad) + ' from ' + hex(pc));
+      if (ad < 2) throw new Error('a read of the port at ' + hex(ad) + ' from ' + hex(pc));
+      if (kn && !kn[ad]) { miss(ad); kn[ad] = 1; }
+      return m[ad];
+    }
+    function wr(ad, b) {
+      if ((ad & 0xF000) === 0xD000) return;                      // the sound and the border: nothing reads them back
+      if (ad < 2) throw new Error('a write to the port at ' + hex(ad) + ' from ' + hex(pc));
+      m[ad] = b; if (kn) kn[ad] = 1;
+    }
+    const push = b => { wr(0x100 | s, b); s = (s - 1) & 255; };
+    const pull = () => { s = (s + 1) & 255; return rd(0x100 | s); };
+    const getP = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x20 | (d ? 8 : 0) | (i ? 4 : 0) | (z ? 2 : 0) | (c ? 1 : 0);
+    const setP = p => { n = p >> 7 & 1; v = p >> 6 & 1; d = p >> 3 & 1; i = p >> 2 & 1; z = p >> 1 & 1; c = p & 1; };
+    const nz = r => { n = r >> 7; z = r === 0 ? 1 : 0; return r; };
+    function adc(b) {
+      const t = a + b + c;
+      if (d) {                                                  // Bruce Clark, "Decimal Mode", appendix A
+        z = (t & 255) === 0 ? 1 : 0;
+        let al = (a & 15) + (b & 15) + c;
+        if (al >= 10) al = ((al + 6) & 15) + 16;
+        let r = (a & 0xF0) + (b & 0xF0) + al;
+        n = r >> 7 & 1; v = ((a ^ r) & (b ^ r) & 0x80) ? 1 : 0;
+        if (r >= 0xA0) r += 0x60;
+        c = r >= 0x100 ? 1 : 0; a = r & 255;
+        return;
+      }
+      v = ((a ^ t) & (b ^ t) & 0x80) ? 1 : 0; c = t > 255 ? 1 : 0; a = nz(t & 255);
+    }
+    function sbc(b) {
+      const t = a - b - (1 - c);
+      v = ((a ^ b) & (a ^ t) & 0x80) ? 1 : 0;
+      if (d) {
+        let al = (a & 15) - (b & 15) + c - 1;
+        if (al < 0) al = ((al - 6) & 15) - 16;
+        let r = (a & 0xF0) - (b & 0xF0) + al;
+        if (r < 0) r -= 0x60;
+        c = t >= 0 ? 1 : 0; nz(t & 255); a = r & 255;
+        return;
+      }
+      c = t >= 0 ? 1 : 0; a = nz(t & 255);
+    }
+    const cmp = (r, b) => { const t = r - b; c = t >= 0 ? 1 : 0; nz(t & 255); };
+    function step() {
+      if (hk[pc]) { const p0 = pc; hooks[pc](C); if (C.stop) return; if (pc !== p0) return; }
+      const op = rd(pc);
+      if (!OK[op]) throw new Error('opcode ' + hex(op, 2) + ' at ' + hex(pc));
+      steps++;
+      const mode = op & 0x1F;
+      let ea = 0, len = 2;
+      // the effective address, by the opcode's low five bits
+      switch (mode) {
+        case 0x01: case 0x03: { const p = (rd((pc + 1) & 0xFFFF) + x) & 255; ea = rd(p) | rd((p + 1) & 255) << 8; break; }
+        case 0x04: case 0x05: case 0x06: case 0x07: ea = rd((pc + 1) & 0xFFFF); break;
+        case 0x0C: case 0x0D: case 0x0E: case 0x0F: ea = rd((pc + 1) & 0xFFFF) | rd((pc + 2) & 0xFFFF) << 8; len = 3; break;
+        case 0x11: case 0x13: { const p = rd((pc + 1) & 0xFFFF); ea = ((rd(p) | rd((p + 1) & 255) << 8) + y) & 0xFFFF; break; }
+        case 0x14: case 0x15: ea = (rd((pc + 1) & 0xFFFF) + x) & 255; break;
+        case 0x16: case 0x17: ea = (rd((pc + 1) & 0xFFFF) + (op === 0x96 || op === 0xB6 ? y : x)) & 255; break;
+        case 0x19: case 0x1B: ea = ((rd((pc + 1) & 0xFFFF) | rd((pc + 2) & 0xFFFF) << 8) + y) & 0xFFFF; len = 3; break;
+        case 0x1C: case 0x1D: ea = ((rd((pc + 1) & 0xFFFF) | rd((pc + 2) & 0xFFFF) << 8) + x) & 0xFFFF; len = 3; break;
+        case 0x1E: case 0x1F: ea = ((rd((pc + 1) & 0xFFFF) | rd((pc + 2) & 0xFFFF) << 8) + (op === 0xBE ? y : x)) & 0xFFFF; len = 3; break;
+        case 0x09: case 0x0B: case 0x00: case 0x02: ea = (pc + 1) & 0xFFFF; break;           // immediate (and the odd ones below)
+        default: len = 1;
+      }
+      switch (op) {
+        case 0x09: case 0x05: case 0x15: case 0x0D: case 0x1D: case 0x19: case 0x01: case 0x11: a = nz(a | rd(ea)); break;
+        case 0x29: case 0x25: case 0x35: case 0x2D: case 0x3D: case 0x39: case 0x21: case 0x31: a = nz(a & rd(ea)); break;
+        case 0x49: case 0x45: case 0x55: case 0x4D: case 0x5D: case 0x59: case 0x41: case 0x51: a = nz(a ^ rd(ea)); break;
+        case 0x69: case 0x65: case 0x75: case 0x6D: case 0x7D: case 0x79: case 0x61: case 0x71: adc(rd(ea)); break;
+        case 0xE9: case 0xE5: case 0xF5: case 0xED: case 0xFD: case 0xF9: case 0xE1: case 0xF1: sbc(rd(ea)); break;
+        case 0xC9: case 0xC5: case 0xD5: case 0xCD: case 0xDD: case 0xD9: case 0xC1: case 0xD1: cmp(a, rd(ea)); break;
+        case 0xA9: case 0xA5: case 0xB5: case 0xAD: case 0xBD: case 0xB9: case 0xA1: case 0xB1: a = nz(rd(ea)); break;
+        case 0x85: case 0x95: case 0x8D: case 0x9D: case 0x99: case 0x81: case 0x91: wr(ea, a); break;
+        case 0xA2: case 0xA6: case 0xB6: case 0xAE: case 0xBE: x = nz(rd(ea)); break;
+        case 0xA0: case 0xA4: case 0xB4: case 0xAC: case 0xBC: y = nz(rd(ea)); break;
+        case 0x86: case 0x96: case 0x8E: wr(ea, x); break;
+        case 0x84: case 0x94: case 0x8C: wr(ea, y); break;
+        case 0xE0: case 0xE4: case 0xEC: cmp(x, rd(ea)); break;
+        case 0xC0: case 0xC4: case 0xCC: cmp(y, rd(ea)); break;
+        case 0x24: case 0x2C: { const t = rd(ea); n = t >> 7; v = t >> 6 & 1; z = (a & t) === 0 ? 1 : 0; break; }
+        case 0x06: case 0x16: case 0x0E: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
+        case 0x26: case 0x36: case 0x2E: case 0x3E: { const t = rd(ea), r = ((t << 1) | c) & 255; c = t >> 7; wr(ea, nz(r)); break; }
+        case 0x46: case 0x56: case 0x4E: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
+        case 0x66: case 0x76: case 0x6E: case 0x7E: { const t = rd(ea), r = (t >> 1) | (c << 7); c = t & 1; wr(ea, nz(r)); break; }
+        case 0xC6: case 0xD6: case 0xCE: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
+        case 0xE6: case 0xF6: case 0xEE: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
+        case 0x0A: c = a >> 7; a = nz((a << 1) & 255); break;
+        case 0x2A: { const r = ((a << 1) | c) & 255; c = a >> 7; a = nz(r); break; }
+        case 0x4A: c = a & 1; a = nz(a >> 1); break;
+        case 0x6A: { const r = (a >> 1) | (c << 7); c = a & 1; a = nz(r); break; }
+        case 0xAA: x = nz(a); break; case 0xA8: y = nz(a); break; case 0x8A: a = nz(x); break; case 0x98: a = nz(y); break;
+        case 0xBA: x = nz(s); break; case 0x9A: s = x; break;
+        case 0xE8: x = nz((x + 1) & 255); break; case 0xCA: x = nz((x - 1) & 255); break;
+        case 0xC8: y = nz((y + 1) & 255); break; case 0x88: y = nz((y - 1) & 255); break;
+        case 0x18: c = 0; break; case 0x38: c = 1; break; case 0x58: i = 0; break; case 0x78: i = 1; break;
+        case 0xB8: v = 0; break; case 0xD8: d = 0; break; case 0xF8: d = 1; break; case 0xEA: break;
+        case 0x48: push(a); break; case 0x68: a = nz(pull()); break;
+        case 0x08: push(getP() | 0x10); break; case 0x28: setP(pull()); break;
+        case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
+          const f = op < 0x40 ? n : op < 0x80 ? v : op < 0xC0 ? c : z, b = rd((pc + 1) & 0xFFFF);
+          pc = (pc + 2 + ((op & 0x20 ? f : !f) ? (b < 128 ? b : b - 256) : 0)) & 0xFFFF; return; }
+        case 0x4C: pc = ea; return;
+        case 0x6C: { const lo = rd(ea), hi = rd((ea & 0xFF00) | ((ea + 1) & 255)); pc = lo | hi << 8; return; }
+        case 0x20: { const r = (pc + 2) & 0xFFFF, to = rd((pc + 1) & 0xFFFF) | rd(r) << 8; push(r >> 8); push(r & 255); pc = to; return; }
+        case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
+        case 0x40: { setP(pull()); const lo = pull(); pc = pull() << 8 | lo; return; }
+        default: throw new Error('opcode ' + hex(op, 2) + ' at ' + hex(pc));
+      }
+      pc = (pc + len) & 0xFFFF;
+    }
+    Object.defineProperties(C, Object.getOwnPropertyDescriptors({
+      m, step, stop: false,
+      get a() { return a; }, set a(q) { a = q & 255; }, get x() { return x; }, set x(q) { x = q & 255; },
+      get y() { return y; }, set y(q) { y = q & 255; }, get sp() { return s; }, set sp(q) { s = q & 255; },
+      get pc() { return pc; }, set pc(q) { pc = q & 0xFFFF; }, get p() { return getP(); }, set p(q) { setP(q); },
+      get steps() { return steps; },
+      rts() { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; },
+      // enter a routine as cpu6502's call does: the registers given set, the stack reset and the
+      // return address of the sentinel $FFFF pushed; call runs it until it returns there
+      enter(entry, r) {
+        r = r || {}; if (r.a !== undefined) a = r.a & 255; if (r.x !== undefined) x = r.x & 255; if (r.y !== undefined) y = r.y & 255;
+        s = 0xFF; push(0xFF); push(0xFE); pc = entry;
+      },
+      call(entry, r) { C.enter(entry, r); C.run(0xFFFF, 5e7); },
+      // run until the program counter reaches until (before its hook), or a hook stops it
+      run(until, max) {
+        C.stop = false; let k = 0;
+        while (pc !== until && !C.stop) { step(); if (++k > (max || 5e6)) throw new Error('a runaway at ' + hex(pc)); }
+      },
+    }));
+    return C;
+  }
+
+  function fight(ram, known, models, lineup, opts) {
+    opts = opts || {};
+    const EVERY = opts.every || 8, CAP = opts.passes || 6000;
+    const m = new Uint8Array(ram), kn = known ? new Uint8Array(known) : null;
+    const rd24 = q => { let r = m[q] | m[q + 1] << 8 | m[q + 2] << 16; if (r & 0x800000) r -= 1 << 24; return r; };
+    const logv = q => { const w = m[q + 1] << 24 >> 24; if (w < -10) return 0; const r = 2 ** (w + m[q] / 256); return m[q + 2] & 0x80 ? -r : r; };
+    const b64 = t => { const s = atob(t), u = new Uint8Array(s.length); for (let k = 0; k < s.length; k++) u[k] = s.charCodeAt(k); return u; };
+    const F = { passes: 0, every: EVERY, lineup, tracks: [], events: [], over: -1, end: '', player: null };
+    const gen = new Array(20).fill(0);
+    let launcher = -1;
+    const hooks = {
+      // load_file as load_model calls it: the model's bytes from the page, then on past the call
+      0x1CBB: c => {
+        const at = c.x | c.y << 8, name = String.fromCharCode(m[at], m[at + 1], m[at + 2]).toUpperCase(), b = b64(models[name]);
+        const to = m[0x80] | m[0x81] << 8;
+        m.set(b, to); if (kn) kn.fill(1, to, to + b.length);
+        c.pc = 0x1CBE;
+      },
+      // load_file from anywhere else: the engine leaving flight. Slot 0 freed is player_destroyed ($1B90)
+      0x1765: c => { const r = m[0x100 | ((c.sp + 1) & 255)] | m[0x100 | ((c.sp + 2) & 255)] << 8;
+        F.end = r - 2 === 0x14E5 || r - 2 === 0x1B90 ? 'destroyed' : 'load ' + hex(r - 2); c.stop = true; },
+      0x0E02: c => { c.pc = 0x0E05; },                                       // do_key: no key
+      0x1EAD: c => { launcher = c.y; },                                      // launch_missile
+      0x1971: c => {                                                         // fill_slot: slot Y, the type in $94
+        gen[c.y]++;
+        if (m[0x94] >= 9 && m[0x94] <= 11) F.events.push([F.passes, 'launch', launcher, c.y, m[0x94]]);
+      },
+      0x2222: c => { F.events.push([F.passes, 'beam', c.y, c.x, c.a & 7]); },                  // beam_hit
+      0x6BCD: () => { F.events.push([F.passes, 'ram', m[0xB2], m[0xB3]]); },                  // ram, past the cooldowns
+      0x6EA0: c => { F.events.push([F.passes, 'damage', c.x << 24 >> 24, c.y, m[0x80]]); },   // damage
+      0x1A5F: c => { F.events.push([F.passes, 'destroyed', c.y, m[0x060D + c.y], c.a]); },    // destroy_object: A the killer
+    };
+    const C = cpu(m, { known: kn, hooks, miss: opts.miss });
+    for (let k = 1; k < 20; k++) m[0x05F9 + k] = 0;                         // slot_in_use
+    C.call(0x1D4A);                                                          // reset_models
+    m[0x077C] = 0;                                                           // danger: nothing arrives
+    m[0x072E] = 0; m[0x0730] = 0;                                            // neutral to the pirates and the Imperium
+    m[0x0731] = opts.manchi ? 0xFE : 0;                                      // the beam's count, $FE in the game: hostile; emptied, neutral
+    m[0x0726] = m[0x0727] = 0;                                               // no bounty
+    m[0x0415] = 0; m.fill(0, 0x0545, 0x054E);                                // the Sunracer still
+    if (kn) { kn[0x077C] = kn[0x072E] = kn[0x0730] = kn[0x0731] = kn[0x0726] = kn[0x0727] = kn[0x0415] = 1; kn.fill(1, 0x0545, 0x054E); }
+    if (opts.seed) C.call(0xA2DC, { x: opts.seed[0], y: opts.seed[1] });  // random_seed, as a new day seeds it
+    for (const [type, ...p] of lineup) {
+      p.forEach((q, k) => { const r = Math.round(q * 256) & 0xFFFFFF; m[0x6B + 3 * k] = r & 255; m[0x6C + 3 * k] = r >> 8 & 255; m[0x6D + 3 * k] = r >> 16; });
+      m[0x74] = 0x6B; m[0x75] = 0x00;
+      if (kn) kn.fill(1, 0x6B, 0x76);
+      C.call(0x1949, { x: type });                                           // create_object
+    }
+    F.player = [0, 1, 2].map(k => rd24(0x065D + 3 * k) / 256);
+    C.enter(0x0DED);
+    const open = {};
+    // a sample of every ship and missile: x, y and z to a quarter unit; for a ship, then its heading,
+    // the first two orientation rows to a 127th and the third their cross product, its hit points,
+    // tactic, AI state and target
+    function sample() {
+      for (let k = 0; k < 20; k++) {
+        const key = k + ':' + gen[k], t = m[0x060D + k];
+        if (!m[0x05F9 + k] || t > 12) { delete open[k]; continue; }
+        let tr = open[k];
+        if (!tr || tr.key !== key) { tr = open[k] = { key, slot: k, type: t, from: F.passes / EVERY, samples: [] }; F.tracks.push(tr); }
+        const s = { p: [0, 1, 2].map(q => Math.round(rd24(0x065D + 9 * k + 3 * q) / 64) / 4) };
+        if (t < 9 || t > 11) {
+          const o = 0x044B + 27 * k;
+          const [a, b] = [0, 1].map(r => [0, 1, 2].map(q => Math.max(-127, Math.min(127, Math.round(127 * logv(o + 9 * r + 3 * q)))) / 127));
+          s.r = [a, b, [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]];
+          s.arm = m[0x051D + 2 * k] | m[0x051E + 2 * k] << 8; s.tac = m[0x043F + k]; s.st = m[0x041B + k]; s.tg = m[0x0445 + k];
+        }
+        tr.samples.push(s);
+      }
+    }
+    // enemies left: two ships whose factions' entries in faction_table ($38B1) are hostile or
+    // unfriendly, either way round, a ship of a faction the player's standing with ($072E) makes
+    // hostile or unfriendly to the Sunracer, or a missile in flight
+    function enemies() {
+      const f = [];
+      for (let k = 1; k < 20; k++) if (m[0x05F9 + k]) {
+        const t = m[0x060D + k];
+        if (t >= 9 && t <= 11) return true;
+        if (t <= 12) f.push(m[0x0C1E + t]);
+      }
+      for (const p of f) if (m[0x072E + p] >= 0xFE) return true;
+      for (const p of f) for (const q of f) if (m[0x38B1 + 4 * p + q] >= 0xFE) return true;
+      return false;
+    }
+    sample();
+    F.pass = function () {
+      if (F.end) return false;
+      C.run(0x0E08);                                                         // to frame_skip3: the drawing skipped
+      if (F.end) return false;
+      F.passes++; C.pc = 0x0DED;
+      if (F.passes % EVERY === 0) sample();
+      if (F.over < 0 && !enemies()) F.over = F.passes;
+      if (F.over >= 0 && F.passes >= F.over + 64) F.end = 'over';
+      else if (F.passes >= CAP) F.end = 'time';
+      return !F.end;
+    };
+    F.m = m; F.known = kn; F.cpu = C;
+    return F;
+  }
+  // Where the builder puts the ships: each faction's group on a ring of 300 units round a point 700
+  // units ahead of the Sunracer, the groups a little above and below its level by turns, and in a
+  // group a ship 70 units across from the last, a row of three, the next row 50 units higher
+  function place(ram, types) {
+    const fac = t => ram[0x0C1E + t];
+    const groups = [...new Set(types.map(fac))], count = {};
+    return types.map(t => {
+      const g = groups.indexOf(fac(t)), k = count[g] = (count[g] || 0) + 1;
+      const ring = groups.length > 1 ? 300 : 0, a = 2 * Math.PI * g / groups.length;
+      const across = 70 * ((k - 1) % 3 - 1), up = 50 * Math.floor((k - 1) / 3) + (g % 2 ? 40 : -40);
+      return [t, Math.round(ring * Math.sin(a) + across * Math.cos(a)), up, Math.round(-700 + ring * Math.cos(a) - across * Math.sin(a))];
+    });
+  }
+  return { cpu, fight, place };
+})();
+// end of sr-sim
+</script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const RGB = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+  const hx = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+  const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const MODELS = JSON.parse($('sr-models').textContent);
+  const NEED = 'This widget draws from the game\'s bytes with the site\'s shared script, ../../lib/c64.js: open the page from the built site.';
+  const NEEDS = ['sr-enc-need', 'sr-shp-need', 'sr-cmb-need'];
+  const need = (id, msg) => { const p = $(id); p.textContent = msg || NEED; p.hidden = false; };
+  function pressed(group, btn) { group.querySelectorAll('[aria-pressed]').forEach(b => { if (b.parentNode === group && b.dataset[Object.keys(btn.dataset)[0]] !== undefined) b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); }); }
+  function picker(pickId, selId, names, onPick) {
+    const sel = $(selId), pick = $(pickId);
+    names.forEach((n, i) => sel.add(new Option(n, i)));
+    const go = i => { sel.value = i; pick.querySelector('[data-d="-1"]').classList.toggle('off', i === 0);
+      pick.querySelector('[data-d="1"]').classList.toggle('off', i === names.length - 1); onPick(i); };
+    sel.addEventListener('change', () => go(+sel.value));
+    pick.querySelectorAll('.step').forEach(b => b.addEventListener('click', () => { const i = +sel.value + +b.dataset.d; if (i >= 0 && i < names.length) go(i); }));
+    go(0);
+  }
+  if (!window.C64) { NEEDS.forEach(id => need(id)); return; }
+  Promise.all(['parts/engine/listing.json', 'parts/flight/listing.json'].map(u => C64.load(u))).then(start,
+    () => NEEDS.forEach(id => need(id, 'The listings this widget reads come with the built site: open the page from there.')));
+
+  function start([E, FL]) {
+    encounters(E); ships(E); fight(E, FL);
+  }
+
+  // ---- 01 encounters
+  function encounters(E) {
+    const SYSTEMS = [['Karonus', 40, [10, 10, 45, 30, 5]], ['Deneb', 53, [10, 10, 45, 30, 5]], ['Gryphon', 38, [10, 20, 40, 25, 5]],
+      ['Arcturus', 30, [10, 5, 45, 35, 5]], ['Nar\'see', 45, [10, 20, 40, 20, 10]], ['Bassruti', 45, [10, 30, 35, 10, 15]],
+      ['Sigure', 30, [10, 25, 30, 10, 25]], ['Zed N27', 30, [10, 20, 35, 10, 25]], ['Ja-Karn', 85, [0, 0, 0, 0, 100]]];
+    const TYPES = { 1: 'Wasp', 2: 'Dart', 3: 'Cruiser', 4: 'Vulture', 5: 'Corsair', 6: 'Titan', 7: 'Scow', 8: 'Tanker', 12: 'Hunter' };
+    const classTypes = Array.from(E.ram.subarray(0x2D24, 0x2D38));
+    let sys = 0;
+    function draw() {
+      const rank = +$('sr-rank').value, R = rank + 2, { count, total } = shipOdds(SYSTEMS[sys][2], R, classTypes);
+      $('sr-rank-v').textContent = rank + ', rank value ' + R + '; danger ' + SYSTEMS[sys][1];
+      const rows = Object.keys(count).filter(k => k !== 'none').map(k => [TYPES[k] || 'type ' + k, count[k] / total])
+        .sort((a, b) => b[1] - a[1]);
+      $('sr-odds').innerHTML = rows.map(([n, p]) => '<tr><td>' + n + '</td><td class="sr-pc">' + (100 * p).toFixed(1) +
+        ' %</td><td class="sr-barcell"><i style="width:' + (100 * p).toFixed(1) + '%"></i></td></tr>').join('');
+    }
+    picker('sr-enc-pick', 'sr-enc', SYSTEMS.map(s => s[0]), i => { sys = i; draw(); });
+    $('sr-rank').addEventListener('input', draw);
+  }
+
+
+  // The model of type t, as draw_model would find it: a model file (from sr-models, the page's copy
+  // of it, its pointers still offsets) or the missile and the Sunracer built into MAIN
+  function shipModel(ram, t) {
+    const word = a => ram[a] | ram[a + 1] << 8, k = ram[0x093E + t], scale = word(0x0A63 + 2 * t);
+    if (k === 0xFF) return SRShips.decode(ram, word(0x08F8 + 2 * t), scale);
+    const name = String.fromCharCode(...ram.subarray(0x0961 + 4 * k, 0x0964 + 4 * k));
+    return Object.assign(SRShips.decode(fromB64(MODELS[name]), 0, scale), { file: name });
+  }
+  const shipName = (ram, t) => t === 0 ? 'Sunracer' : t === 9 ? 'SM-1' : t === 10 ? 'Nova' : t === 11 ? 'plasma torpedo' : SRShips.stats(ram, t).name;
+  const tacticName = (ram, i) => String.fromCharCode(...ram.subarray(0x0CAE + 8 * i, 0x0CB6 + 8 * i)).trim();
+  const FACTION = ['Pirates', 'Merchant Guild', 'Imperium', 'Manchi', 'the player'];
+  const SHIPS = [1, 2, 3, 4, 5, 6, 7, 8, 12];
+  const degrees = v => { const d = v * 360 / 1024; return d.toFixed(d < 10 ? 2 : 1) + '°'; };
+  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const unit3 = a => { const l = Math.hypot(...a) || 1; return a.map(v => v / l); };
+  // A face's colour as the eye takes it in: the average of the eight pixels of its two row patterns,
+  // in a cell whose matrix byte held the view's $CC before the face rewrote its nybble
+  function faceRGB(ram, code) {
+    const c = SRShips.colour(ram, code, 0x80), cell = (0xCC & c.mask) | c.value, sum = [0, 0, 0];
+    for (const pat of [c.even, c.odd])
+      for (let k = 0; k < 4; k++) {
+        const b = pat >> (6 - 2 * k) & 3, col = RGB[b === 0 ? 0 : b === 1 ? cell >> 4 : b === 2 ? cell & 15 : 1];
+        for (let i = 0; i < 3; i++) sum[i] += col[i];
+      }
+    return 'rgb(' + sum.map(v => v / 8 | 0).join(',') + ')';
+  }
+  // drags on a canvas turn a view: f(dx, dy) in CSS pixels
+  function dragger(cv, f) {
+    let at = null;
+    cv.addEventListener('pointerdown', e => { at = [e.clientX, e.clientY]; cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener('pointermove', e => { if (!at) return; f(e.clientX - at[0], e.clientY - at[1]); at = [e.clientX, e.clientY]; });
+    const end = () => { at = null; };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  }
+  function onScreen(el, f) {
+    if (!window.IntersectionObserver) { f(true); return; }
+    new IntersectionObserver(es => f(es[es.length - 1].isIntersecting)).observe(el);
+  }
+
+  // ---- 02 the ships
+  function ships(E) {
+    const ram = E.ram, W = 144, H = 144;
+    const cv = $('sr-shp-cv'), ctx = cv.getContext('2d'), img = ctx.createImageData(2 * W, H);
+    const LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 9, 10, 17, 18, 19, 20];
+    const MISSILE = { 9: 'SM-1', 10: 'Nova', 11: 'plasma torpedo' };
+    const SYSTEMS = ['launcher', 'beam', 'engine', 'aft shield', 'fore shield', 'ECM'];
+    let t = 0, M = null, front = null, yaw = Math.PI - 0.7, pitch = -0.45, spin = true, faces = -1, box = false;
+    let raf = 0, steps = 0, visible = false;
+    // the view's axes in the model's frame: x right, y down, z toward the eye (the engine's way round)
+    function rot() {
+      const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+      return [[cy, 0, -sy], [-sp * sy, cp, -sp * cy], [cp * sy, sp, cp * cy]];
+    }
+    const hull = m => Math.max(...m.points.map(p => Math.hypot(...p)), 1e-6);
+    const extent = m => Math.max(...m.points.map(p => Math.max(...p.map(Math.abs))));
+    function draw() {
+      const R = rot(), s = SRShips.stats(ram, t), h = s.radius + 2;
+      const r = box ? Math.max(hull(M), h * Math.sqrt(3)) : hull(M);
+      const out = SRShips.render(M, R, W, H, { ram, front, radius: r, zoom: 0.6, upto: faces < 0 ? undefined : faces });
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < W; x++) {
+          const c = RGB[out.px[y * W + x]], o = (y * 2 * W + 2 * x) * 4;
+          for (const k of [0, 4]) { img.data[o + k] = c[0]; img.data[o + k + 1] = c[1]; img.data[o + k + 2] = c[2]; img.data[o + k + 3] = 255; }
+        }
+      ctx.putImageData(img, 0, 0);
+      if (box) {
+        const P = [];
+        for (let i = 0; i < 8; i++) P.push([i & 1 ? h : -h, i & 2 ? h : -h, i & 4 ? h : -h]);
+        const pr = SRShips.view({ points: P }, R, W, H, { radius: r, zoom: 0.6 }).proj;
+        ctx.strokeStyle = PAL[7]; ctx.lineWidth = 1; ctx.beginPath();
+        for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b)) { ctx.moveTo(2 * pr[i][0], pr[i][1]); ctx.lineTo(2 * pr[i | b][0], pr[i | b][1]); }
+        ctx.stroke();
+      }
+      const n = out.list.length;
+      if (faces >= 0 && faces > 0) {
+        const e = out.list[Math.min(faces, n) - 1];
+        $('sr-shp-info').innerHTML = 'Face <b>' + Math.min(faces, n) + '</b> of ' + n + ': face ' + e.i + ' in pass ' + e.pass + ', its ' + (e.facing ? 'front' : 'back') + ' colour, code ' + hx(e.code) + '.';
+      } else if (faces === 0) $('sr-shp-info').innerHTML = 'Nothing drawn yet: ' + n + ' faces to draw from here.';
+      else $('sr-shp-info').innerHTML = (M.file ? 'The file <b>' + M.file + '</b>: ' : 'Built into <code>MAIN</code>: ') + M.n.points + ' points from ' + M.n.axes + ' axis vectors, ' + M.n.polys +
+        ' faces, ' + n + ' drawn from here' + (box ? '; the hit box is ' + h + ' units each way, the hull reaches ' + +extent(M).toFixed(1) : '') + '.';
+    }
+    function loop() {
+      raf = 0;
+      if (!visible) return;
+      if (spin) yaw += 0.012;
+      if (faces >= 0 && ++steps % 24 === 0) { faces++; if (faces > M.n.polys + 2) { faces = -1; $('sr-shp-faces').setAttribute('aria-pressed', 'false'); } }
+      draw();
+      if (spin || faces >= 0) raf = requestAnimationFrame(loop);
+    }
+    const kick = () => { if (!raf && visible) raf = requestAnimationFrame(loop); };
+    function setSpin(on) { spin = on; $('sr-shp-spin').setAttribute('aria-pressed', on ? 'true' : 'false'); kick(); }
+    function stats() {
+      const s = SRShips.stats(ram, t), rows = [];
+      if (t <= 8 || t === 12) {
+        rows.push(['Faction', FACTION[s.faction]], ['Hit points', s.armour], ['Shields', 'fore ' + s.fore + ', aft ' + s.aft]);
+        rows.push(['Beam', s.beam ? 'power ' + s.beam + ', ' + ram[0x2414 + s.beam] + ' a hit' + (t === 0 ? '' : s.turret ? ', in any direction' : ', within 30° of the nose') : 'none']);
+        if (t) rows.push(['Missile', s.missile ? MISSILE[s.missile] + ', ' + ram[0x0AEF + s.missile] + ' on contact' : 'none']);
+        rows.push(['ECM', s.ecm ? s.ecm + '% of the missiles fired at it swerve' : 'none']);
+        rows.push(['Turning', t ? degrees(s.turn) + ' a pass' : '0.35° a pass for each step of a key, up to 24.6°']);
+        rows.push(['Thrust', 'speed 70 from a standstill in ' + Math.ceil(70 / 16 / s.gain) + ' passes' + (t ? '' : ', from the engine and the cargo')]);
+        if (t) {
+          rows.push(['Own tactic', tacticName(ram, s.tactic)]);
+          rows.push(['Destroyed by the player', s.faction === 0 ? 32 * s.rank + ' credits and up to 255 more' : s.faction === 3 ? 32 * s.rank + ' credits' : 'no pay, and ' + (s.rank + 2) * 16 + ' on the bounty']);
+        }
+        rows.push(['A hit can knock out', SYSTEMS.filter((n, i) => s.systems >> i & 1).join(', ')]);
+      } else if (t <= 11) {
+        rows.push(['On contact', s.contact + ' damage'], ['Lifetime', s.armour + ' passes'], ['Launched at', 'speed 75'],
+                  ['Turning', degrees(s.turn) + ' a pass'], ['Thrust', +(s.gain * 256).toFixed(0) + '/256 units a pass each pass']);
+      } else rows.push(['Hit points', s.armour.toLocaleString('en-GB')]);
+      rows.push(['Hit box', s.radius + 2 + ' units each way from the centre']);
+      $('sr-shp-tab').innerHTML = rows.map(([k, v]) => '<tr><th>' + k + '</th><td>' + v + '</td></tr>').join('');
+    }
+    picker('sr-shp-pick', 'sr-shp', LIST.map(u => u === 0 ? 'Sunracer, the player\'s ship' : u === 9 ? 'SM-1 missile' : u === 10 ? 'Nova missile' : shipName(ram, u)), i => {
+      t = LIST[i]; M = shipModel(ram, t);
+      const dd = ram[0x0999 + 2 * t] | ram[0x099A + 2 * t] << 8;
+      front = dd ? Array.from(ram.subarray(dd, dd + M.n.polys)) : null;
+      if (faces >= 0) { faces = -1; $('sr-shp-faces').setAttribute('aria-pressed', 'false'); }
+      stats(); draw();
+    });
+    $('sr-shp-spin').addEventListener('click', () => setSpin(!spin));
+    $('sr-shp-faces').addEventListener('click', () => {
+      const on = faces < 0;
+      faces = on ? 0 : -1; steps = 0;
+      $('sr-shp-faces').setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on) setSpin(false);
+      draw(); kick();
+    });
+    $('sr-shp-box').addEventListener('click', () => { box = !box; $('sr-shp-box').setAttribute('aria-pressed', box ? 'true' : 'false'); draw(); });
+    dragger(cv, (dx, dy) => { setSpin(false); yaw -= dx * 0.012; pitch = Math.max(-1.45, Math.min(1.45, pitch - dy * 0.012)); draw(); });
+    onScreen(cv, v => { visible = v; kick(); });
+    // every ship's figures in one table
+    $('sr-shp-all').innerHTML = '<tr><th>Ship</th><th>Faction</th><th>Hit points</th><th>Shields</th><th>Beam</th><th>Missile</th><th>ECM</th><th>Turn a pass</th><th>To speed 70</th><th>Own tactic</th><th>Rank value</th></tr>' +
+      SHIPS.map(u => { const s = SRShips.stats(ram, u);
+        return '<tr><td>' + s.name + '</td><td>' + FACTION[s.faction] + '</td><td>' + s.armour + '</td><td>' + s.fore + ' / ' + s.aft + '</td><td>' + (s.beam ? s.beam + (s.turret ? ', any way' : ', ahead') : '') +
+          '</td><td>' + (s.missile ? MISSILE[s.missile] : '') + '</td><td>' + (s.ecm ? s.ecm + '%' : '') + '</td><td>' + degrees(s.turn) + '</td><td>' + Math.ceil(70 / 16 / s.gain) +
+          ' passes</td><td>' + tacticName(ram, s.tactic) + '</td><td>' + s.rank + '</td></tr>'; }).join('');
+  }
+
+  // ---- 03 the fight: ships the reader picks, run by SRSim on the engine's own code, and the replay
+  function fight(E, FL) {
+    // the engine's bytes with the flight part's maths in, and which of them the page carries; the
+    // second display buffer ($4000-$63FF), which no listing holds, starts empty: no fight depends on
+    // what is in it, as test_combat.js checks by filling it with random bytes for the kit's fights
+    const ram = new Uint8Array(E.ram), has = new Uint8Array(E.has);
+    ram.set(FL.ram.subarray(0xA500, 0xBD00), 0xA500); has.set(FL.has.subarray(0xA500, 0xBD00), 0xA500);
+    has.fill(1, 0x4000, 0x6400);
+    const cv = $('sr-cmb-cv'), ctx = cv.getContext('2d'), CW = cv.width, CH = cv.height, K = 3, UP = [0, -1, 0];
+    const COL = ['#e8665c', '#edf171', '#8f9cff', '#7ee07a', '#ffffff'];       // by faction, the player last
+    const ATT = { 0xFE: 'hostile', 0xFF: 'unfriendly', 0: 'neutral', 1: 'friendly', 2: 'allied' };
+    const STATE = { 0: '', 1: 'looking for a target', 2: 'state 2', 3: 'flying at its target', 0xFE: 'fighting', 0xFF: 'fleeing' };
+    const CAMS = [[-0.8, 0.42, 1.5], [-Math.PI / 2, 1.45, 1.7], [-Math.PI / 2, 0.03, 1.8]];   // azimuth, elevation, distance in sizes
+    const MAX = 5, START = [3, 12, 1, 4];                                    // the opening fight: Cruiser and Hunter, Wasp and Vulture
+    const isShip = t => t < 9 || t > 11;
+    const faction = t => t === 0 ? 4 : SRShips.stats(ram, t).faction;
+    const at$ = n => n.toLocaleString('en-GB');
+    const models = {}, colours = {};
+    function model(t) {
+      if (!models[t]) { models[t] = shipModel(ram, t); colours[t] = models[t].polys.map(p => [faceRGB(ram, p.front), faceRGB(ram, p.back)]); }
+      return models[t];
+    }
+    let fleet = START.slice(), manchi = false, seed = null, F = null, job = 0, logN = -1, touched = false;
+    let cam = 0, az = CAMS[0][0], el = CAMS[0][1], pass = 0, playing = false, trails = true, raf = 0, visible = false;
+    let lo = [-400, -100, -1100], hi = [400, 100, -100];                       // the box the camera frames
+
+    // the builder: a button for each ship, the fight's ships as chips that take a ship out
+    const swatch = t => '<i class="sw" style="background:' + COL[faction(t)] + '"></i>';
+    $('sr-cmb-add').innerHTML = '<span class="sr-dim">Add</span>' + SHIPS.map(t => '<button class="sr-btn" data-t="' + t + '">' + swatch(t) + shipName(ram, t) + '</button>').join('');
+    function showFleet() {
+      $('sr-cmb-fleet').innerHTML = '<span class="sr-dim">In the fight</span>' + (fleet.length ? fleet.map((t, i) => '<button class="sr-btn sr-chip" data-i="' + i + '" aria-label="Take the ' +
+        shipName(ram, t) + ' out">' + swatch(t) + shipName(ram, t) + ' <b aria-hidden="true">×</b></button>').join('') : '<span>no ships yet</span>');
+      $('sr-cmb-add').querySelectorAll('button').forEach(b => { b.disabled = fleet.length >= MAX; });
+      $('sr-cmb-go').disabled = !fleet.length;
+    }
+    $('sr-cmb-add').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b && fleet.length < MAX) { fleet.push(+b.dataset.t); showFleet(); } });
+    $('sr-cmb-fleet').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) { fleet.splice(+b.dataset.i, 1); showFleet(); } });
+    $('sr-cmb-clear').addEventListener('click', () => { fleet = []; showFleet(); });
+    $('sr-cmb-manchi').addEventListener('change', e => { manchi = e.target.checked; });
+    $('sr-cmb-seed').addEventListener('click', () => { seed = [Math.random() * 256 | 0, Math.random() * 256 | 0]; go(true); });
+    $('sr-cmb-go').addEventListener('click', () => go(true));
+
+    // a fight: the engine runs a slice of passes at a time, ahead of the replay, which follows it
+    function go(play) {
+      if (!fleet.length) return;
+      const my = ++job;
+      touched = touched || play;
+      try { F = SRSim.fight(ram, has, MODELS, SRSim.place(ram, fleet), { manchi, seed, passes: 6000 }); }
+      catch (e) { F = null; $('sr-cmb-status').textContent = 'The engine stopped before the fight began: ' + e.message + '.'; draw(); return; }
+      F.error = ''; logN = -1; pass = 0;
+      tracks(); fit(true); status(); draw();
+      setPlay(!!play);
+      (function slice() {
+        if (my !== job) return;
+        const t0 = performance.now();
+        try { while (performance.now() - t0 < 12 && F.pass()) ; }
+        catch (e) { F.error = e.message; F.end = 'error'; }
+        tracks(); status();
+        if (F.end) {
+          log(); spread();
+          if (!touched) { pass = Math.min(600, top()); fit(true); draw(); }
+          return;
+        }
+        if (!playing) { $('sr-cmb-at').max = top(); $('sr-cmb-pass').textContent = 'pass ' + at$(Math.round(pass)) + ' of ' + at$(top()) + ' so far'; }
+        setTimeout(slice, 0);
+      })();
+    }
+    const top = () => F ? Math.floor(F.passes / F.every) * F.every : 0;      // the last pass sampled
+    function tracks() {
+      for (const tr of F.tracks) {
+        if (tr.name === undefined) {
+          tr.ship = isShip(tr.type); tr.name = shipName(ram, tr.type); tr.start = tr.from * F.every;
+          tr.faction = tr.ship ? faction(tr.type) : -1; tr.full = tr.ship ? SRShips.stats(ram, tr.type).armour : 0;
+          if (tr.ship) model(tr.type);
+        }
+        tr.end = (tr.from + tr.samples.length - 1) * F.every;
+      }
+    }
+    function status() {
+      const p = F.passes, rnd = seed ? ' The random numbers were seeded with ' + hx(seed[0]) + ' and ' + hx(seed[1]) + '.' : '';
+      let t;
+      if (!F.end) t = 'The engine is running: pass ' + at$(p) + '.';
+      else if (F.end === 'over') t = 'Over on pass ' + at$(F.over) + ': none of the ships left is an enemy of another, or of the Sunracer.';
+      else if (F.end === 'time') t = 'Stopped after ' + at$(p) + ' passes, with enemies still flying.';
+      else if (F.end === 'destroyed') t = 'The Sunracer was destroyed on pass ' + at$(p) + '. Here the game loads END, the ending.';
+      else if (F.end === 'error') t = 'Stopped on pass ' + at$(p) + ': ' + F.error + '.';
+      else t = 'Stopped on pass ' + at$(p) + ': the engine went to ' + F.end + ', which the page does not follow.';
+      $('sr-cmb-status').textContent = t + rnd;
+    }
+    // where a track is at pass p: its position and rows, between its samples
+    function at(tr, p) {
+      if (p < tr.start || p > tr.end) return null;
+      const j = (p - tr.start) / F.every, i = Math.min(Math.floor(j), tr.samples.length - 1), f = j - i;
+      const a = tr.samples[i], b = tr.samples[Math.min(i + 1, tr.samples.length - 1)];
+      const o = { p: a.p.map((v, k) => v + (b.p[k] - v) * f), s: a };
+      if (a.r) o.r = a.r.map((row, k) => unit3(row.map((v, c) => v + (b.r[k][c] - v) * f)));
+      return o;
+    }
+    const inSlot = (slot, p) => F.tracks.find(tr => tr.slot === slot && p >= tr.start && p <= tr.end + F.every - 1);
+    const nameIn = (slot, p) => { const tr = inSlot(slot, p); return tr ? (tr.ship ? 'the ' + tr.name : 'a missile') : 'slot ' + slot; };
+    // the box of everything up to pass p, which the camera eases toward while the replay plays
+    function fit(snap) {
+      const l = [Infinity, Infinity, Infinity], h = [-Infinity, -Infinity, -Infinity];
+      for (const tr of F.tracks) {
+        if (tr.start > pass) continue;
+        const n = Math.min(tr.samples.length, Math.floor((pass - tr.start) / F.every) + 1);
+        for (let i = 0; i < n; i++) { const q = tr.samples[i].p; for (let k = 0; k < 3; k++) { if (q[k] < l[k]) l[k] = q[k]; if (q[k] > h[k]) h[k] = q[k]; } }
+      }
+      const f = snap ? 1 : 0.06;
+      for (let k = 0; k < 3; k++) { lo[k] += (l[k] - lo[k]) * f; hi[k] += (h[k] - hi[k]) * f; }
+    }
+    function spread() {
+      const l = [Infinity, Infinity, Infinity], h = [-Infinity, -Infinity, -Infinity];
+      F.tracks.filter(tr => tr.ship && tr.type).forEach(tr => tr.samples.forEach(s => s.p.forEach((v, k) => { l[k] = Math.min(l[k], v); h[k] = Math.max(h[k], v); })));
+      const span = h.map((v, k) => at$(Math.round((v - l[k]) / 10) * 10));
+      $('sr-cmb-span').textContent = span[0] + ' units from side to side, ' + span[1] + ' up and down and ' + span[2] + ' from front to back';
+    }
+    function camera() {
+      const C = lo.map((v, k) => (v + hi[k]) / 2), size = Math.max(300, ...hi.map((v, k) => v - lo[k])), dist = size * CAMS[cam][2];
+      const ce = Math.cos(el), P = [C[0] + dist * ce * Math.sin(az), C[1] - dist * Math.sin(el), C[2] + dist * ce * Math.cos(az)];
+      const f = unit3(sub3(C, P)), r = unit3(cross3(UP, f));
+      return { P, f, r, u: cross3(f, r), F: CW * 1.35, size };
+    }
+    function proj(c, p) {
+      const d = sub3(p, c.P), z = dot3(d, c.f);
+      return z < 1 ? null : [CW / 2 + c.F * dot3(d, c.r) / z, CH / 2 - c.F * dot3(d, c.u) / z, z];
+    }
+    function line(c, a, b) { const A = proj(c, a), B = proj(c, b); if (A && B) { ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); } }
+    function draw() {
+      ctx.fillStyle = '#141720'; ctx.fillRect(0, 0, CW, CH);
+      if (!F) return;
+      const c = camera(), p = pass, step = c.size > 2400 ? 500 : 100;
+      // the grid on the Sunracer's level, y = 0
+      const g0 = [Math.floor(lo[0] / step) * step - step, Math.floor(lo[2] / step) * step - step], g1 = [Math.ceil(hi[0] / step) * step + step, Math.ceil(hi[2] / step) * step + step];
+      ctx.strokeStyle = 'rgba(140,150,175,.18)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = g0[0]; x <= g1[0]; x += step) line(c, [x, 0, g0[1]], [x, 0, g1[1]]);
+      for (let z = g0[1]; z <= g1[1]; z += step) line(c, [g0[0], 0, z], [g1[0], 0, z]);
+      ctx.stroke();
+      const now = F.tracks.map(tr => ({ tr, o: at(tr, p) })).filter(x => x.o);
+      // trails and the lines down to the grid
+      if (trails) for (const { tr } of now) {
+        ctx.strokeStyle = tr.ship ? COL[tr.faction] : '#c8c8c8'; ctx.globalAlpha = tr.ship ? 0.5 : 0.35; ctx.beginPath();
+        let first = true;
+        for (let q = tr.start; q <= p; q += F.every) { const P = proj(c, at(tr, q).p); if (!P) { first = true; continue; } if (first) ctx.moveTo(P[0], P[1]); else ctx.lineTo(P[0], P[1]); first = false; }
+        const P = proj(c, at(tr, p).p); if (P && !first) ctx.lineTo(P[0], P[1]);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.45; ctx.setLineDash([3, 4]);
+      for (const { tr, o } of now) if (tr.ship) { ctx.strokeStyle = COL[tr.faction]; ctx.beginPath(); line(c, o.p, [o.p[0], 0, o.p[2]]); ctx.stroke(); }
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      // beams, for a few passes after each hit
+      for (const e of F.events) if (e[1] === 'beam' && p >= e[0] && p < e[0] + 10) {
+        const a = inSlot(e[2], e[0]), b = inSlot(e[3], e[0]); if (!a || !b) continue;
+        const A = at(a, Math.min(p, a.end)), B = at(b, Math.min(p, b.end)); if (!A || !B) continue;
+        ctx.strokeStyle = COL[a.faction]; ctx.globalAlpha = 1 - (p - e[0]) / 10; ctx.lineWidth = 2; ctx.beginPath(); line(c, A.p, B.p); ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      // the ships, far to near, each drawn by the engine's three passes from the camera's eye
+      const items = now.map(x => ({ ...x, P: proj(c, x.o.p) })).filter(x => x.P).sort((a, b) => b.P[2] - a.P[2]);
+      for (const { tr, o, P } of items) {
+        if (!tr.ship) { ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(P[0], P[1], 2.2, 0, 7); ctx.fill(); continue; }
+        const m = models[tr.type], d = sub3(c.P, o.p), eye = o.r.map(row => dot3(row, d) / K);
+        const pts = m.points.map(v => proj(c, [0, 1, 2].map(k => o.p[k] + K * (v[0] * o.r[0][k] + v[1] * o.r[1][k] + v[2] * o.r[2][k]))));
+        if (pts.some(q => !q)) continue;
+        for (const f of SRShips.order(m, eye).list) {
+          ctx.fillStyle = colours[tr.type][f.i][f.facing ? 0 : 1]; ctx.beginPath();
+          m.polys[f.i].verts.forEach((v, k) => k ? ctx.lineTo(pts[v][0], pts[v][1]) : ctx.moveTo(pts[v][0], pts[v][1]));
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.fillStyle = COL[tr.faction]; ctx.font = '12px "IBM Plex Mono", monospace'; ctx.fillText(tr.name, P[0] + 12, P[1] - 10);
+      }
+      // hits flash, kills burst
+      for (const e of F.events) {
+        if (e[1] === 'damage' && p >= e[0] && p < e[0] + 8) {
+          const b = inSlot(e[3], e[0]), B = b && at(b, Math.min(p, b.end)), Q = B && proj(c, B.p);
+          if (Q) { ctx.strokeStyle = '#ffffff'; ctx.globalAlpha = 1 - (p - e[0]) / 8; ctx.beginPath(); ctx.arc(Q[0], Q[1], 10 + 2 * (p - e[0]), 0, 7); ctx.stroke(); }
+        }
+        if (e[1] === 'destroyed' && e[4] !== 0xFF && p >= e[0] && p < e[0] + 60) {
+          const b = inSlot(e[2], e[0]), B = b && at(b, b.end), Q = B && proj(c, B.p);
+          if (Q) { ctx.strokeStyle = PAL[7]; ctx.globalAlpha = 1 - (p - e[0]) / 60; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(Q[0], Q[1], 4 + 1.2 * (p - e[0]), 0, 7); ctx.stroke(); ctx.lineWidth = 1; }
+        }
+      }
+      ctx.globalAlpha = 1;
+      $('sr-cmb-at').max = top(); $('sr-cmb-at').value = Math.round(p);
+      $('sr-cmb-pass').textContent = 'pass ' + at$(Math.round(p)) + ' of ' + at$(top()) + (F.end ? '' : ' so far');
+      legend(p);
+      if (F.events.length !== logN && (F.end || F.events.length - logN > 8)) log();
+    }
+    function legend(p) {
+      $('sr-cmb-ships').innerHTML = '<tr><th>Ship</th><th>Hit points</th><th>Tactic</th><th>Doing</th><th>Target</th></tr>' +
+        F.tracks.filter(tr => tr.ship && tr.start <= p).map(tr => {
+          const o = at(tr, Math.min(p, tr.end)), s = o.s, gone = tr.end < top() && p > tr.end;
+          const kill = F.events.find(e => e[1] === 'destroyed' && e[2] === tr.slot && e[0] >= tr.end && e[0] <= tr.end + F.every);
+          const hp = Math.max(0, s.arm << 16 >> 16);
+          const how = !kill ? 'gone on pass ' + tr.end : kill[4] === 0xFF ? 'too far from the Sunracer, removed on pass ' + kill[0] : 'destroyed by ' + nameIn(kill[4], kill[0]) + ' on pass ' + kill[0];
+          return '<tr><td><i class="sw" style="background:' + COL[tr.faction] + '"></i>' + tr.name + ' <span class="sr-dim">' + FACTION[tr.faction] + '</span></td><td><span class="hp"><b style="width:' +
+            Math.min(100, 100 * hp / tr.full).toFixed(0) + '%"></b></span>' + (gone && kill && kill[4] !== 0xFF ? 0 : hp) + '</td>' +
+            (gone ? '<td colspan="3">' + how + '</td>' :
+            '<td>' + (tr.type === 0 ? '' : tacticName(ram, s.tac) || s.tac) + '</td><td>' + (STATE[s.st] === undefined ? 'state ' + s.st : STATE[s.st]) + '</td><td>' + (s.tg < 20 ? nameIn(s.tg, p) : '') + '</td>') + '</tr>';
+        }).join('');
+    }
+    // the log: launches, missile hits, the first beam hit of each ship on each other, rams and kills
+    function log() {
+      logN = F.events.length;
+      const out = [], seen = new Set();
+      for (const e of F.events) {
+        const [p, kind] = e;
+        if (p > top()) break;
+        if (kind === 'launch') { const tr = inSlot(e[2], p), o = tr && at(tr, Math.min(p, tr.end)), tg = o ? o.s.tg : 0xFF;
+          out.push([p, nameIn(e[2], p) + ' launches ' + (e[4] === 11 ? 'a plasma torpedo' : e[4] === 10 ? 'a Nova' : 'an SM-1') + (tg < 20 ? ' at ' + nameIn(tg, p) : '')]); }
+        else if (kind === 'damage' && inSlot(e[2], p) && !inSlot(e[2], p).ship) out.push([p, 'a missile hits ' + nameIn(e[3], p) + ' for ' + e[4]]);
+        else if (kind === 'beam' && !seen.has(e[2] + ':' + e[3])) { seen.add(e[2] + ':' + e[3]); out.push([p, nameIn(e[2], p) + '\'s beam hits ' + nameIn(e[3], p) + ' for the first time']); }
+        else if (kind === 'ram') {
+          const last = out[out.length - 1], pair = nameIn(e[2], p) + ' and ' + nameIn(e[3], p);
+          if (last && last.pair === pair && p - last.to < 200) { last.to = p; last.n++; last[1] = pair + ' collide ' + last.n + ' times, to pass ' + p; }
+          else out.push(Object.assign([p, pair + ' collide'], { pair, to: p, n: 1 }));
+        } else if (kind === 'destroyed' && e[4] !== 0xFF && (e[3] < 9 || e[3] > 11)) out.push([p, nameIn(e[4], p) + ' destroys ' + nameIn(e[2], p)]);
+      }
+      out.forEach(l => { l[1] = l[1].charAt(0).toUpperCase() + l[1].slice(1); });
+      $('sr-cmb-log').innerHTML = out.map(([p, s]) => '<button class="sr-btn" data-p="' + p + '">' + p + ' · ' + esc(s) + '</button>').join('');
+    }
+    $('sr-cmb-log').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (b && F) { touched = true; pass = Math.max(0, +b.dataset.p - 24); fit(true); draw(); } });
+    // the two tables the text reads from: the factions' standings and the tactics
+    $('sr-cmb-fac').innerHTML = '<tr><th>How each stands to</th>' + FACTION.slice(0, 4).map(n => '<th>' + n + '</th>').join('') + '<th>The player</th></tr>' +
+      [0, 1, 2, 3].map(a => '<tr><th>' + FACTION[a] + '</th>' + [0, 1, 2, 3].map(x => '<td>' + ATT[ram[0x38B1 + 4 * a + x]] + '</td>').join('') +
+        '<td>' + (a < 3 ? 'the standing, <code>' + hx(0x072E + a, 4) + '</code>' : 'hostile, always') + '</td></tr>').join('');
+    const STEER = { '-1': 'keeps its heading', 0: 'toward the target', 1: 'away from the target', 2: 'to the target\'s heading', 3: 'random spins' };
+    const RULE = { '-1': 'the target\'s', 0: 'its own', 1: 'the average of its own and the target\'s', 2: '5 with the target behind, its own when far, 75 when near' };
+    $('sr-cmb-tac').innerHTML = '<tr><th>Tactic</th><th>Steers</th><th>Target off the nose</th><th>Speed</th><th>Speed rule</th><th>Own tactic of</th></tr>' +
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => {
+        const own = SHIPS.filter(u => ram[0x0C38 + u] === i).map(u => shipName(ram, u)).concat(i === 2 ? ['the SM-1 and Nova'] : []);
+        return '<tr><td>' + tacticName(ram, i) + '</td><td>' + STEER[ram[0x0C86 + i] << 24 >> 24] + '</td><td>' + (ram[0x0C90 + i] ? degrees(ram[0x0C90 + i]) : '') + '</td><td>' + ram[0x0C9A + i] +
+          '</td><td>' + RULE[ram[0x0CA4 + i] << 24 >> 24] + '</td><td>' + own.join(', ') + '</td></tr>'; }).join('');
+    function loop() {
+      raf = 0;
+      if (!visible || !playing || !F) return;
+      pass = Math.min(top(), pass + 2);
+      if (F.end && pass >= top()) setPlay(false);
+      fit(false); draw();
+      if (playing) raf = requestAnimationFrame(loop);
+    }
+    function setPlay(on) {
+      playing = on; $('sr-cmb-play').setAttribute('aria-pressed', on ? 'true' : 'false'); $('sr-cmb-play').textContent = on ? 'Pause' : 'Play';
+      if (on && F && F.end && pass >= top()) { pass = 0; fit(true); }
+      if (on && !raf && visible) raf = requestAnimationFrame(loop);
+    }
+    $('sr-cmb-play').addEventListener('click', () => { touched = true; if (F) setPlay(!playing); });
+    $('sr-cmb-at').addEventListener('input', () => { touched = true; if (!F) return; pass = Math.min(top(), +$('sr-cmb-at').value); fit(true); draw(); });
+    $('sr-cmb-trails').addEventListener('click', () => { trails = !trails; $('sr-cmb-trails').setAttribute('aria-pressed', trails ? 'true' : 'false'); draw(); });
+    $('sr-cmb-cam').querySelectorAll('[data-cam]').forEach(b => b.addEventListener('click', () => { cam = +b.dataset.cam; [az, el] = CAMS[cam]; pressed($('sr-cmb-cam'), b); draw(); }));
+    dragger(cv, (dx, dy) => { az -= dx * 0.008; el = Math.max(-1.45, Math.min(1.45, el + dy * 0.008)); draw(); });
+    // the opening fight runs when the section first comes into view
+    let begun = false;
+    onScreen(cv, v => { visible = v; if (v && !begun) { begun = true; go(false); } if (v && playing && !raf) raf = requestAnimationFrame(loop); });
+    showFleet(); draw();
+  }
+})();
+</script>

@@ -7,7 +7,7 @@ const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
 const g = game(__dirname);
-const { shipOdds } = g.run('index.html', 'sr-odds', 'shipOdds');
+const { shipOdds } = g.run('ships.html', 'sr-odds', 'shipOdds');
 const { huffmanCodes } = g.run('index.html', 'sr-huff', 'huffmanCodes');
 const E = g.listing('parts/engine/listing.json');
 const maps = JSON.parse(g.read('levels.html').match(/<script type="application\/json" id="sr-maps">([^<]*)<\/script>/)[1]);

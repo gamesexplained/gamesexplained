@@ -154,9 +154,9 @@ flown (`$0838`) only the first 25 entries count, up to V.
   radii added; neither looks at the model. Flying along the axes, the
   Cruiser's nose and the Corsair's reach 16 units against a box of 13,
   the Vulture's wings 16, and the Titan 28.8 against 24 (the models as
-  `test_ships.js` holds them to `draw_model`). *Simulated* (the fight in
-  `test_combat.js`): the Cruiser and the Hunter, both Imperial, rammed
-  each other seven times between passes 1456 and 1615.
+  `test_ships.js` holds them to `draw_model`). *Simulated* (the opening fight
+  on Ships and combat, in `test_combat.js`): the Cruiser and the Hunter,
+  both Imperial, start side by side and ram each other on pass 256.
 - `hazard_hit` (`$6CC5`): planets and the black hole do 255.
 - `kill_reward` (`$1ABF`): a destroyed pirate (faction 0) pays 32 ×
   its type's rank value (`type_rank`) plus a random 0-255 in credits,
@@ -168,6 +168,13 @@ flown (`$0838`) only the first 25 entries count, up to V.
   to the player refuses, and others ignore it one time in five.
   `merchant_surrender` (`$3A2D`) is the other way round: a merchant
   under a quarter of its armour may offer its cargo.
+- `create_object` (`$1949`): a ship or a missile (types below `$0D`)
+  takes a free slot from 5 down to 1, a station (`$0D`-`$10`) slot 6
+  alone, and anything else, explosion debris among it, one from 19 down
+  to 7; with none free it returns `$FF` and makes nothing. So five ships
+  leave no slot for a missile: *simulated*, 15 October 2026
+  (`test_combat.js`), each fight of five launched its first missile only
+  after a ship was destroyed.
 - `free_slot` (`$1A8A`): freeing slot 0, the player, is the end:
   `player_destroyed` (`$1B90`) loads `END` and jumps to `game_over` in
   it, which prints the death text and loads `TITLE` again. There is no

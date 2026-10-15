@@ -1,5 +1,5 @@
 'use strict';
-// Holds the ship browser's drawer (sr-ships on How it works) to the engine. For every type with a
+// Holds the ship browser's drawer (sr-ships on Ships and combat) to the engine. For every type with a
 // model, the model is loaded as the game loads it (load_model, $1C95, relocating the page's copy
 // of the file from sr-models, or the built-in missile and Sunracer in MAIN) and drawn by the
 // engine's own draw_model ($7C61) in the kit's 6502 simulator from 400 eyes all round it. The test
@@ -10,8 +10,8 @@ const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
 const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
 const g = game(__dirname);
-const { SRShips } = g.run('index.html', 'sr-ships', 'SRShips');
-const MODELS = JSON.parse(g.read('index.html').match(/<script type="application\/json" id="sr-models">([^<]*)<\/script>/)[1]);
+const { SRShips } = g.run('ships.html', 'sr-ships', 'SRShips');
+const MODELS = JSON.parse(g.read('ships.html').match(/<script type="application\/json" id="sr-models">([^<]*)<\/script>/)[1]);
 const ram = new Uint8Array(g.listing('parts/engine/listing.json').ram);
 ram.set(g.listing('parts/flight/listing.json').ram.subarray(0xA500, 0xBD00), 0xA500);   // SEG0's maths
 
