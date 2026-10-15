@@ -106,9 +106,10 @@ calls it; "Insert credit", then a key, gives combat drop 1
 (`work/scripts/forcehive.py`). The handler reloads `TALK` and `LAND.TIL`
 when the game ends.
 
-**Ending.** From `approach.vsf`, the same stop on `$3102`, `$071D` (the base
-being docked at) set to 9, the Manchi homeworld's number, and PC = `$7094`:
-the docking routine sees 9 and jumps to `$1532`, which loads `WON` from side
+**Ending.** From `approach.vsf`, the same stop on `$3102`, `$071D` (the
+current system, whose map is the file `Q` and that digit) set to 9, the
+Manchi system, and PC = `$7094`: the docking routine sees system 9 and jumps
+to `$1532`, which loads `WON` from side
 1 ("Insert BOOT disk..."; attach `work/side1.g64`, press Space) and jumps to
 `$6800` (`work/scripts/wonentry.py`). `WON` loads its three pictures
 through the KERNAL itself.
@@ -139,7 +140,7 @@ base loads `END` to put the same bytes back.
 ## The loader, in a paragraph
 
 There is no fast loader. `SR`'s `$1765` takes a file name in X/Y (each
-name is a zero-terminated string in the table at `$07C2`) and a
+name is a zero-terminated string in the table at `$07BC`, from `TITLE` to `TALK`) and a
 destination in `$80`/`$81`, swaps the KERNAL's zero page (`$90`-`$C4`)
 with a copy at `$0100`, banks the KERNAL in, and calls SETLFS 1,8,0,
 SETNAM and LOAD with secondary address 0, so the destination is the

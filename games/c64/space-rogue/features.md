@@ -96,7 +96,7 @@ platform-neutral Sunracer Owner's Guide.
 | Buy and sell cargo; prices differ by system; some goods spoil [S6][S9] | open | |
 | Contraband is confiscated at starbases [S6] | open | |
 | Reputation with the Imperium, the Merchant Guild, the pirates, the Manchi; repute as a pilot [S6][S15] | open | |
-| Docking at the Manchi homeworld ends the game [S20b] | traced | the docking routine jumps to `$1532` when the base is number 9, which loads `WON`; the ending was seen by calling it (`reference/ending-1.png`) |
+| Docking at the Manchi homeworld ends the game [S20b] | traced | the docking routine (`$7094`) jumps to `$1532`, which loads `WON`, when the current system (`$071D`) is 9, the Manchi system on side 2's `q9`: docking at any base there wins; the ending was seen by calling it (`reference/ending-1.png`) |
 
 ### HIVE!
 
