@@ -89,7 +89,7 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | Register | Meaning |
 |---|---|
 | `$D000`–`$D00F` | sprite 0–7 X, Y; `$D010` X high bits |
-| `$D011` | control 1: bit 4 screen on, bit 5 bitmap mode, bit 3 25/24 rows, bits 0–2 vertical scroll, bit 7 raster high bit |
+| `$D011` | control 1: bit 4 screen on, bit 5 bitmap mode, bit 3 25/24 rows, bits 0–2 vertical scroll, bit 7 raster high bit: read, bit 8 of the line being drawn; written, bit 8 of the raster compare. A read-modify-write that keeps bit 7 (`LDA $D011`, `ORA`, `STA $D011`) copies the beam's line into the compare: run on line 256 or later, it moves a raster interrupt set for line n to line 256 + n, which a PAL frame (lines 0–311) has only for n below 56 and an NTSC frame (0–262 on the 6567R8, 0–261 on the older 6567R56A) only for n below 7 or 6; past the frame the interrupt never comes again |
 | `$D012` | raster line |
 | `$D015` | sprite enable |
 | `$D016` | control 2: bit 4 multicolour, bit 3 40/38 columns, bits 0–2 horizontal scroll |
