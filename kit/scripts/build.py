@@ -1496,27 +1496,61 @@ def strip_html(g, root=""):
     return f'<div class="strip" data-strip="{root}{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
 
 
-def stamp_html(g):
-    t = g.get("tier", "none")
-    return f'<span class="stamp {html.escape(t)}">{html.escape(tier_name(t))}</span>'
+def featured_frames(g):
+    """game.json's "featured_frames": more pictures from the game folder for the featured box to fade
+    through after the title image. Each must be a file in the game folder, as title_image must."""
+    gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
+    out = []
+    for p in g.get("featured_frames") or []:
+        ok = isinstance(p, str) and p and not os.path.isabs(p) and os.path.normpath(p) == p and ".." not in p.split(os.sep)
+        if ok and os.path.isfile(os.path.join(gdir, p)):
+            out.append(p)
+        else:
+            warn(f"{g['platform']}/{g['slug']} featured_frames entry {p!r} is not a file in the game folder")
+    return out
 
 
 def featured_html(g):
     """One game, large: title screen, memory strip, the title and its opening line."""
     plat, slug = g["platform"], g["slug"]
     meta = " · ".join(x for x in (PLATFORM_NAMES.get(plat, plat), str(g.get("year") or ""), g.get("publisher") or "") if x)
-    return (f'<a class="show" href="{plat}/{slug}/">{shot_html(g)}{strip_html(g)}'
+    shot = shot_html(g)
+    frames = [f"{plat}/{slug}/{p}" for p in featured_frames(g)]
+    if frames and shot.startswith("<img"):
+        shot = shot.replace("<img ", f'<img data-frames="{html.escape(" ".join(frames), quote=True)}" ', 1)
+    return (f'<a class="show" href="{plat}/{slug}/">{shot}{strip_html(g)}'
             f'<span class="cap"><b>{html.escape(g.get("title", slug))}</b><span class="m">{html.escape(meta)}</span></span>'
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
 
+TIER_GROUPS = {"platinum": "gold", "gold": "gold", "silver-claimed": "silver", "silver": "silver", "bronze": "bronze"}
+
+
+def tier_group(g):
+    """The tier a card is coloured and grouped by: Platinum with Gold, a claimed Silver with Silver."""
+    return TIER_GROUPS.get(g.get("tier", "none"), "none")
+
+
+def tier_edge(g):
+    """The tier written up the card's left edge, in the tier's colour."""
+    t = g.get("tier", "none")
+    word = {"platinum": "Platinum", "silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
+    return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t))}">{html.escape(word)}</span>'
+
+
 def card_html(g, root=""):
-    """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier.
-    root is the way up to the site's top from the page the card is on."""
+    """Every game, small: the tier up the left edge, thumbnail, title, a line of facts, the memory
+    strip. root is the way up to the site's top from the page the card is on. The data- attributes
+    are what the home page's search, filters and sorts read (site.js)."""
     plat, slug = g["platform"], g["slug"]
     kb = "" if g["_totals"] is None else f' · {sum(g["_totals"][k] for k in PROGRAM) / 1024:.0f} KB'
-    return (f'<a class="tile" href="{root}{plat}/{slug}/" data-platform="{html.escape(plat)}">{shot_html(g, "thumb", root)}'
-            f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b>{stamp_html(g)}</span>'
+    words = " ".join(str(x) for x in (g.get("title", slug), g.get("publisher"), g.get("developer"),
+                                       PLATFORM_NAMES.get(plat, plat), g.get("year"), hook(g)) if x)
+    data = (f' data-platform="{html.escape(plat)}" data-platform-name="{html.escape(PLATFORM_NAMES.get(plat, plat))}"'
+            f' data-tier="{tier_group(g)}" data-year="{g.get("year") or ""}" data-added="{html.escape(g.get("created") or "")}"'
+            f' data-title="{html.escape(g.get("title", slug))}" data-q="{html.escape(words.lower())}"')
+    return (f'<a class="tile t-{tier_group(g)}" href="{root}{plat}/{slug}/"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}'
+            f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b></span>'
             f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")}{kb}</span>{strip_html(g, root)}</span></a>')
 
 
@@ -1531,23 +1565,6 @@ def platform_pages(games, out_root):
                  platform_name=name, cards="".join(card_html(g, "../") for g in gs), n_games=len(gs)))
 
 
-def platforms_html(games):
-    """Chips that filter the catalogue. A platform with no games yet is listed anyway,
-    pointing at Contribute, so the reader knows it is wanted."""
-    counts = {}
-    for g in games:
-        counts[g["platform"]] = counts.get(g["platform"], 0) + 1
-    order = list(PLATFORM_NAMES) + sorted(p for p in counts if p not in PLATFORM_NAMES)
-    items = [f'<a href="#" class="on" data-filter="">All <span class="n">{len(games)}</span></a>']
-    for p in order:
-        name = html.escape(PLATFORM_NAMES.get(p, p))
-        if counts.get(p):
-            items.append(f'<a href="#" data-filter="{html.escape(p)}">{name} <span class="n">{counts[p]}</span></a>')
-        else:
-            items.append(f'<a href="#contribute" class="empty" title="No games yet. Be the first.">{name} <span class="n">none yet</span></a>')
-    return '<nav class="platforms">' + "".join(items) + "</nav>"
-
-
 def featured_game(games):
     """The game the home page opens with: the one whose game.json says "featured": true,
     else the first at Gold or better, else the first there is."""
@@ -1560,7 +1577,7 @@ PUBLISHED = re.compile(r"(index|levels|play)\.html|(facts|cheats|features|orient
                        r"|parts/[^/]+/(facts\.md|(part|listing|symbols)\.json)")
 
 
-def recent_changes(games, n=4):
+def recent_changes(games, n=20):
     """The newest n changes to games, one row per game per day: {game, date, kind, who}.
 
     Walks main's first-parent line, so a merged pull request is one change. A change
@@ -1617,7 +1634,8 @@ def recent_changes(games, n=4):
 
 
 def recent_html(rows):
-    """One small card per change: title screen, the game (the card's link), who and when."""
+    """One card per change: the tier, title screen, the game (the card's link), who and when.
+    Four show at a time; site.js turns the row into a carousel that moves on by itself."""
     if not rows:
         return ""
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
@@ -1627,13 +1645,14 @@ def recent_html(rows):
         who = [person_html(nm, login) for nm, login in r["who"].values()]
         by = " by " + (", ".join(who[:-1]) + " and " + who[-1] if len(who) > 1 else who[0]) if who else ""
         m, d = (int(x) for x in r["date"].split("-")[1:])
-        cards.append(f'<div class="card">{shot_html(g, "thumb")}<span class="body">'
+        cards.append(f'<div class="card t-{tier_group(g)}">{tier_edge(g)}{shot_html(g, "thumb")}<span class="body">'
                      f'<a class="g" href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>'
                      f'<span class="v">{r["kind"]}{by}</span>'
                      f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time></span></div>')
     return (f'<div class="recent"><div class="cathead"><h2>New and updated</h2>'
             f'<a href="{html.escape(repo)}/commits/main/games">All changes</a></div>'
-            f'<div class="cards">{"".join(cards)}</div></div>')
+            f'<div class="cards" tabindex="0" aria-label="New and updated games">{"".join(cards)}</div>'
+            f'<div class="dots" aria-label="Pages"></div></div>')
 
 
 # --- the status page: which kits work on which computers, and the work needed
@@ -1954,7 +1973,7 @@ def main():
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
                 cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
-                recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
+                recent=recent_html(recent_changes(games)), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     platform_pages(games, out_root)
     open(os.path.join(out_root, "status.html"), "w").write(status_page(games))

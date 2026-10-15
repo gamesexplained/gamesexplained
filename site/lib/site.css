@@ -179,12 +179,6 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .cathead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin:26px 0 14px}
 .cathead h2{margin:0;font-size:18px;display:flex;align-items:baseline;gap:10px}
 .cathead h2 .n{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:400;letter-spacing:.08em;text-transform:uppercase}
-.platforms{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--fm);font-size:12.5px}
-.platforms a{color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none}
-.platforms a .n{color:var(--ink-mute);margin-left:4px;font-size:11px}
-.platforms a:hover,.site .platforms a:hover{border-color:var(--accent);color:var(--ink);text-decoration:none}
-.platforms a.on{color:var(--amber);border-color:var(--amber)}
-.platforms a.empty{border-style:dashed;color:var(--ink-mute)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:0 0 24px}
 .tile{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;text-decoration:none;box-shadow:var(--plate-shadow)}
 /* hover: the card lifts; no underline (.site a:hover would otherwise win) and no outline */
@@ -199,16 +193,24 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .tile b{font-weight:700;font-size:15px}
 .tile .strip{margin-top:4px}
 .tile .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.tile .stamp{flex:none}
-/* New and updated: the latest games added or changed, one quiet card each, above the catalogue.
-   The title's link covers the whole card; the author's link sits on top of it. */
+/* The tier up a card's left edge, in the tier's colour: gold, slate and bronze differ in lightness
+   as well as hue, so they part for a colour-blind reader too, and the word is always there. */
+.t-gold{--tc:#8f6a00}.t-silver{--tc:#68707c}.t-bronze{--tc:#8a4a1e}.t-none{--tc:#80838a}
+.tile,.recent .card{position:relative;overflow:hidden;padding-left:34px}
+.tier{position:absolute;left:0;top:0;bottom:0;width:22px;display:flex;align-items:center;justify-content:center;
+  writing-mode:vertical-rl;transform:rotate(180deg);background:var(--tc);color:#fff;font-family:var(--fm);font-size:10px;
+  font-weight:500;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+/* New and updated: the latest games added or changed, four cards at a time. site.js moves the row on
+   every few seconds and fills the dots. The title's link covers the whole card; the author's link sits on top. */
 .recent .cathead{margin:18px 0 10px}
 .recent .cathead>a{font-size:13.5px}
-.recent .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.recent .card{position:relative;display:grid;grid-template-columns:60px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px 8px 8px;
-  border:1px solid var(--line);border-radius:var(--r);transition:background .15s ease,border-color .15s ease}
-.recent .card:hover{background:var(--surface);border-color:#c9c6be}
-.recent .thumb{width:60px;border-radius:3px}
+.recent .cards{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 36px)/4);gap:12px;overflow-x:auto;
+  scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding:2px 2px 6px}
+.recent .cards::-webkit-scrollbar{display:none}
+.recent .card{display:flex;flex-direction:column;gap:8px;padding:8px 8px 10px 30px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--plate-shadow);scroll-snap-align:start;transition:transform .16s ease,border-color .16s ease}
+.recent .card:hover{border-color:#c9c6be;transform:translateY(-2px)}
+.recent .thumb{width:100%;border-radius:5px}
 .recent .body{display:flex;flex-direction:column;min-width:0;line-height:1.3}
 .recent a.g{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .recent a.g::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
@@ -218,9 +220,42 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .recent .v{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
 .recent .v a{position:relative;z-index:1}
 .recent time{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:3px}
-@media (max-width:900px){.recent .cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:700px){.recent .cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:6px}
-  .recent .card{flex:0 0 78%;scroll-snap-align:start}}
+.recent .dots{display:flex;justify-content:center;gap:6px;margin-top:8px;min-height:7px}
+.recent .dots button{width:7px;height:7px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer}
+.recent .dots button[aria-current=true]{width:18px;background:var(--ink)}
+@media (max-width:900px){.recent .cards{grid-auto-columns:calc((100% - 12px)/2)}}
+@media (prefers-reduced-motion:reduce){.recent .cards{scroll-behavior:auto}.recent .card{transition:none}.recent .card:hover{transform:none}}
+/* The finder: search, sort, view and filters, pinned while the catalogue scrolls (site.js) */
+.finder{position:sticky;top:0;z-index:5;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--line);margin:0 0 16px;display:grid;gap:10px}
+.finder .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.finder .search{flex:1 1 260px;position:relative;min-width:0}
+.finder input{width:100%;font:15px var(--fb);padding:9px 40px 9px 36px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink)}
+.finder input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.finder .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--ink-mute);stroke-width:2.2}
+.finder kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:11px var(--fm);color:var(--ink-mute);border:1px solid var(--line);border-radius:4px;padding:0 5px;background:var(--surface-2)}
+.finder select,.finder .seg button,.finder .more,.finder .clear{font:12.5px var(--fm);color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.finder .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.finder .seg button{border:0;border-radius:0}
+.finder .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.finder .facets{display:flex;gap:8px;flex-wrap:wrap}
+.finder[hidden],.finder .facets[hidden],.recent .dots[hidden]{display:none}
+.finder .clear{border-style:dashed}
+.catgroup{margin:0 0 22px;scroll-margin-top:120px}
+.catgroup>h3{margin:0 0 10px;font-size:22px;color:var(--tc,var(--ink))}
+.catgroup>h3 .n{font-family:var(--fm);font-size:13px;font-weight:400;color:var(--ink-mute);margin-left:6px}
+.catgroup>h3 small{display:block;font-size:14px;font-weight:400;color:var(--ink-mute);margin-top:2px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--ink-soft)}
+/* List view: one row a game, the opening line beside the title */
+.list .tiles{grid-template-columns:1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list .tile{grid-template-columns:56px minmax(0,1fr);border:0;border-top:1px solid var(--line-soft);border-radius:0;box-shadow:none;padding-top:6px;padding-bottom:6px}
+.list .tile:first-child{border-top:0}
+.list .tile:hover{transform:none;box-shadow:none;background:var(--surface-2)}
+.list .tile .thumb{width:56px}
+.list .tile .strip{display:none}
+/* the featured box's frames fade into one another (site.js) */
+.show .shots{position:relative;display:block}
+.show .shots img+img{position:absolute;inset:0}
+.show .shots img{transition:opacity 1.2s ease}
 .foot{margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid var(--line-soft);font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
 .foot .soc{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid var(--line-soft);border-radius:7px;background:var(--surface);color:var(--ink-mute);vertical-align:middle}
 .foot .soc:hover{color:var(--ink);border-color:var(--line)}

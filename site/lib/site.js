@@ -22,14 +22,137 @@
       function select(){ var r=document.createRange(); r.selectNodeContents(src); var s=getSelection(); s.removeAllRanges(); s.addRange(r); try{ if(document.execCommand('copy')) done(); }catch(e){} }
     });
   });
-  // platform chips on the home page: hide every card whose data-platform is not the chosen one
-  document.querySelectorAll('.platforms a[data-filter]').forEach(function(a){
-    a.addEventListener('click',function(ev){
-      ev.preventDefault(); var f=a.dataset.filter;
-      a.closest('.platforms').querySelectorAll('a').forEach(function(x){ x.classList.toggle('on',x===a); });
-      document.querySelectorAll('[data-platform]').forEach(function(el){ el.classList.toggle('hidden',!!f&&el.dataset.platform!==f); });
-    });
+  var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Home page, New and updated: four cards at a time, a dot a page; the row moves on every six seconds,
+  // and holds still while it is pointed at, touched or focused, or when the reader asks for less motion
+  document.querySelectorAll('.recent').forEach(function(box){
+    var row=box.querySelector('.cards'), dots=box.querySelector('.dots'), hold=false;
+    if(!row||!dots) return;
+    function pages(){ return Math.max(1,Math.ceil(row.scrollWidth/row.clientWidth-0.05)); }
+    function mark(){
+      var n=pages(), cur=Math.round(row.scrollLeft/row.clientWidth);
+      if(dots.children.length!==n){
+        dots.innerHTML='';
+        for(var i=0;i<n;i++)(function(i){
+          var d=document.createElement('button'); d.type='button'; d.setAttribute('aria-label','Page '+(i+1));
+          d.onclick=function(){ row.scrollTo({left:i*row.clientWidth}); }; dots.appendChild(d);
+        })(i);
+        dots.hidden=n<2;
+      }
+      [].forEach.call(dots.children,function(d,i){ d.setAttribute('aria-current',String(i===cur)); });
+    }
+    row.addEventListener('scroll',mark,{passive:true}); window.addEventListener('resize',mark); mark();
+    ['mouseenter','focusin','touchstart'].forEach(function(e){ box.addEventListener(e,function(){ hold=true; },{passive:true}); });
+    ['mouseleave','focusout'].forEach(function(e){ box.addEventListener(e,function(){ hold=false; }); });
+    if(!still) setInterval(function(){
+      if(hold||document.hidden) return;
+      var end=row.scrollLeft+row.clientWidth>=row.scrollWidth-4;
+      row.scrollTo({left:end?0:row.scrollLeft+row.clientWidth});
+    },6000);
   });
+  // Home page, the featured game: its title image, then each of game.json's featured_frames, faded in turn
+  document.querySelectorAll('.show img[data-frames]').forEach(function(a){
+    if(still) return;
+    var frames=[a.getAttribute('src')].concat(a.dataset.frames.split(' ')), i=0;
+    var wrap=document.createElement('span'); wrap.className='shots'; a.parentNode.insertBefore(wrap,a); wrap.appendChild(a);
+    var b=a.cloneNode(); b.removeAttribute('data-frames'); b.alt=''; b.style.opacity=0; wrap.appendChild(b);
+    frames.forEach(function(f){ new Image().src=f; });
+    var top=a;
+    setInterval(function(){
+      if(document.hidden) return;
+      i=(i+1)%frames.length; var back=top===a?b:a;
+      back.src=frames[i]; back.style.opacity=1; top.style.opacity=0; top=back;
+    },3500);
+  });
+  // Home page, the catalogue: search, filters, sorts that group, and a list view, all over the cards
+  // build.py wrote; without script every card is still there, best first
+  (function(){
+    var cat=document.getElementById('catalogue'), finder=document.getElementById('finder');
+    if(!cat||!finder) return;
+    var cards=[].slice.call(cat.querySelectorAll('.tile')), q=document.getElementById('q'), sort=document.getElementById('sort');
+    var facets=document.getElementById('facets'), count=document.getElementById('count'), more=document.getElementById('more');
+    var TIERS=[['gold','Gold','Checked and edited by a person.'],['silver','Silver','The whole program explained.'],
+               ['bronze','Bronze','A first look: the features and a sweep of the code.'],['none','No tier','']];
+    var ERAS=[['1970s and before',0,1979],['1980 to 1984',1980,1984],['1985 to 1989',1985,1989],['1990s and after',1990,9999]];
+    var era=function(c){ var y=+c.dataset.year; for(var i=0;i<ERAS.length;i++) if(y>=ERAS[i][1]&&y<=ERAS[i][2]) return ERAS[i][0]; return ''; };
+    var plats={}; cards.forEach(function(c){ plats[c.dataset.platform]=c.dataset.platformName; });
+    var FACETS=[
+      ['platform','All platforms',Object.keys(plats).map(function(k){ return [k,plats[k]]; }),function(c){ return c.dataset.platform; }],
+      ['tier','All tiers',TIERS.map(function(t){ return [t[0],t[1]]; }),function(c){ return c.dataset.tier; }],
+      ['era','Any year',ERAS.map(function(e){ return [e[0],e[0]]; }),era]];
+    var st={q:'',sort:'tier',view:'cards',f:{platform:'',tier:'',era:''}};
+    try{ var v=localStorage.getItem('ge-view'); if(v==='list') st.view=v; }catch(e){}
+    function ok(c,skip){
+      if(st.q){ var w=st.q.split(/\s+/); for(var i=0;i<w.length;i++) if(c.dataset.q.indexOf(w[i])<0) return false; }
+      for(var j=0;j<FACETS.length;j++){ var k=FACETS[j][0]; if(k!==skip&&st.f[k]&&FACETS[j][3](c)!==st.f[k]) return false; }
+      return true;
+    }
+    function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function drawFacets(){
+      var h='';
+      FACETS.forEach(function(F){
+        var pool=cards.filter(function(c){ return ok(c,F[0]); });
+        h+='<select data-k="'+F[0]+'" aria-label="'+F[1]+'"><option value="">'+F[1]+'</option>';
+        F[2].forEach(function(o){
+          var n=pool.filter(function(c){ return F[3](c)===o[0]; }).length;
+          if(n||st.f[F[0]]===o[0]) h+='<option value="'+esc(o[0])+'"'+(st.f[F[0]]===o[0]?' selected':'')+'>'+esc(o[1])+' ('+n+')</option>';
+        });
+        h+='</select>';
+      });
+      if(st.q||st.f.platform||st.f.tier||st.f.era) h+='<button type="button" class="clear">Clear</button>';
+      facets.innerHTML=h;
+    }
+    var bare=function(t){ return t.replace(/^The /,''); };
+    function groups(list){
+      var key, name, order;
+      if(st.sort==='az'){ list.sort(function(a,b){ return bare(a.dataset.title).localeCompare(bare(b.dataset.title)); });
+        key=function(c){ var l=bare(c.dataset.title).charAt(0).toUpperCase(); return /[A-Z]/.test(l)?l:'#'; }; }
+      else if(st.sort==='year'){ list.sort(function(a,b){ return a.dataset.year-b.dataset.year||a.dataset.title.localeCompare(b.dataset.title); });
+        key=function(c){ return c.dataset.year||'Year unknown'; }; }
+      else if(st.sort==='new'){ list.sort(function(a,b){ return b.dataset.added.localeCompare(a.dataset.added); });
+        key=function(c){ var d=c.dataset.added; return d?new Date(d+'T00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'Date unknown'; }; }
+      else key=function(c){ return c.dataset.tier; };   // build.py wrote them best first
+      var out=[], at={};
+      list.forEach(function(c){ var k=key(c); if(!(k in at)){ at[k]=out.length; out.push([k,[]]); } out[at[k]][1].push(c); });
+      return out;
+    }
+    function draw(){
+      drawFacets();
+      var list=cards.filter(function(c){ return ok(c); });
+      count.textContent=list.length===cards.length?cards.length+' games':list.length+' of '+cards.length+' games';
+      cat.classList.toggle('list',st.view==='list');
+      cat.innerHTML='';
+      if(!list.length){ cat.innerHTML='<div class="empty"><p><b>No games match.</b></p><p>Try fewer filters, or search for a publisher or a person.</p></div>'; return; }
+      groups(list).forEach(function(g){
+        var sec=document.createElement('div'), t=st.sort==='tier'?TIERS.filter(function(x){ return x[0]===g[0]; })[0]:null;
+        sec.className='catgroup'+(t?' t-'+g[0]:'');
+        var n=g[1].length;
+        sec.innerHTML='<h3>'+esc(t?t[1]:g[0])+'<span class="n">'+n+(n===1?' game':' games')+'</span>'+(t&&t[2]?'<small>'+esc(t[2])+'</small>':'')+'</h3>';
+        var grid=document.createElement('div'); grid.className='tiles';
+        g[1].forEach(function(c){ grid.appendChild(c); });
+        sec.appendChild(grid); cat.appendChild(sec);
+      });
+    }
+    finder.hidden=false;
+    q.addEventListener('input',function(){ st.q=q.value.trim().toLowerCase(); draw(); });
+    sort.addEventListener('change',function(){ st.sort=sort.value; draw(); });
+    facets.addEventListener('change',function(e){ var k=e.target.dataset.k; if(k){ st.f[k]=e.target.value; draw(); } });
+    facets.addEventListener('click',function(e){ if(e.target.classList.contains('clear')){ st.f={platform:'',tier:'',era:''}; st.q=''; q.value=''; draw(); } });
+    more.addEventListener('click',function(){ facets.hidden=!facets.hidden; more.setAttribute('aria-expanded',String(!facets.hidden)); });
+    finder.querySelectorAll('[data-view]').forEach(function(b){
+      b.setAttribute('aria-pressed',String(b.dataset.view===st.view));
+      b.addEventListener('click',function(){
+        st.view=b.dataset.view; try{ localStorage.setItem('ge-view',st.view); }catch(e){}
+        finder.querySelectorAll('[data-view]').forEach(function(x){ x.setAttribute('aria-pressed',String(x===b)); }); draw();
+      });
+    });
+    document.addEventListener('keydown',function(e){
+      var t=e.target.tagName;
+      if(e.key==='/'&&t!=='INPUT'&&t!=='TEXTAREA'&&t!=='SELECT'){ e.preventDefault(); q.focus(); }
+      if(e.key==='Escape'&&e.target===q){ q.value=''; st.q=''; draw(); }
+    });
+    draw();
+  })();
   // About page: a # beside each section heading, shown on hover, links straight to that section
   document.querySelectorAll('.about h2[id]').forEach(function(h){
     var a=document.createElement('a'); a.className='hash'; a.href='#'+h.id; a.textContent='#';
