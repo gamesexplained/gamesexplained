@@ -320,6 +320,46 @@ in the prompt; give each its own output file; brief them cold with the
 facts established so far and the rules above; spot-check one substantive
 claim per agent against the source before believing the report.
 
+## Another provider's model
+
+A contributor may name a model from another provider for the checker
+(`kit/START.md`). Reach it through that provider's command-line tool,
+signed in with the contributor's own subscription: no API key is
+needed. In a hosted container the tool and the sign-in last as long as
+the container, and a new container signs in again.
+
+### Codex in a Claude Code container
+
+1. **Install it.** It is OpenAI's Codex CLI, open source under
+   Apache-2.0, from npm: `npm i -g @openai/codex`. On the contributor's
+   own computer, use the Codex they have signed in already; installing
+   one there follows "The footprint principle" in `kit/INSTALL.md`.
+2. **Sign in.** Start `codex login --device-auth` in the background: it
+   prints a web address and a one-time code, then waits. Give the
+   contributor each in a code block of its own, so they can copy it; the
+   code lasts 15 minutes. If the page refuses it, they turn on device
+   code sign-in for Codex in their ChatGPT security settings, and you
+   start the login again. `codex login status` says when it has gone
+   through. The sign-in is saved in `~/.codex/auth.json`, the
+   contributor's credential: never print, copy or commit it.
+3. **Run each checker** with its brief on standard input:
+
+   ```
+   codex exec --ephemeral -s workspace-write -C <clone> -m <model id> \
+     -c model_reasoning_effort=<level> --json -o <reply file> - < <brief>
+   ```
+
+   `-m` forces the model, and that id goes in the step's `models`;
+   `codex debug models` lists the ids and efforts the account has. Set
+   the effort too: the default model's default was low on 14 October
+   2026. An unknown level fails with the list the server accepts, which
+   on that day was none, minimal, low, medium, high, xhigh and max.
+   `workspace-write` lets the checker write its verdicts in the clone,
+   and `-o` keeps its last reply. A prompt given as an argument needs
+   `</dev/null` after it, because `codex exec` also reads standard input
+   when that is not a terminal. Outside a git repository it needs
+   `--skip-git-repo-check`.
+
 ## Finishing
 
 The last skill of every run is `kit/skills/core/80-retro`: which skill text

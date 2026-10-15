@@ -1,0 +1,61 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skate or Die!: controls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/sod-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
+  <h1>Skate or Die!</h1>
+  <p class="sub">One joystick does everything: it steers the pointer in Rodney's shop, rolls the skater around the town, and means something different in each of the five events.</p>
+</header>
+<main class="wrap" data-part="highjump">
+<section id="sticks">
+  <p class="fig">01 · Joysticks and keys</p>
+  <h2 class="t">Either port, or the keyboard</h2>
+  <p>Everywhere but the two events for two skaters, the <a href="jam.html#event">Downhill Jam</a> and the <a href="joust.html#event">Pool Joust</a>, the game reads both joystick ports at once and combines them, so a stick in either port works (<code>$0D23</code>). One row of the keyboard shares its wires with joystick 1, so the keys on it steer too: SPACE fires, 1 is up, the left arrow is down, CTRL is left, and 2 is right. That is also why SPACE leaves the <a href="loading.html#exit">title screen</a>.</p>
+  <p>Two keys work in every event. The Commodore key turns the music off, or on again (<code>$1A24</code>), and the <a href="town.html#loading">event manager</a> keeps the choice from one event to the next. RUN/STOP abandons the event (<code>$1A08</code>); from <a href="highjump.html">High Jump</a> it goes back to <a href="town.html#shop">Rodney's skate shop</a>.</p>
+</section>
+<section id="shop" data-part="shop">
+  <p class="fig">02 · The shop and the town</p>
+  <h2 class="t">A pointer, then a skater with no brakes</h2>
+  <p>In the shop the stick moves a pointer over the picture, a step of two pixels across or two lines down at a time (<code>$1E4C</code>), and fire chooses what is under it. Names are typed on the keyboard, up to fifteen letters; RETURN accepts a name, and DEL rubs out a letter (<code>$1D5B</code>).</p>
+  <p>In the <a href="town.html#square">town square</a>, left and right turn the skater a step every two frames, pushing the stick forwards adds speed, and only pulling back slows the skater down. With the stick centred the skater keeps rolling.</p>
+</section>
+<section id="ramp" data-part="ramp">
+  <p class="fig">03 · Freestyle</p>
+  <h2 class="t">Pump with fire, lean for the trick</h2>
+  <p>On the platform, up and down choose where on the ramp the skater sets off, and fire pushes off (<code>$0D58</code>). Riding, the first fire press low in each half of the ramp is a <a href="freestyle.html#event">pump</a> that adds speed (<code>$1BAF</code>). Left or right on the way up, with or against the direction of travel, together with the number of pumps, <a href="freestyle.html#class">chooses the trick</a> (<code>$1C81</code>). In the air the stick spins the skater and fire starts a <a href="freestyle.html#air">grab</a>.</p>
+</section>
+<section id="highjump" data-part="highjump">
+  <p class="fig">04 · High Jump</p>
+  <h2 class="t">Waggle for speed, fire at the top</h2>
+  <p>Any newly pressed direction while the skater is low in the ramp <a href="highjump.html#pump">pumps</a> (<code>$16E3</code>): the faster the presses come, the faster the skater goes. Fire in the air above the right wall starts the <a href="highjump.html#fire">jump trick</a>, which adds half a foot and ends the attempt (<code>$0F4B</code>). Holding fire for twenty frames or more spins the skater (<code>$107D</code>).</p>
+</section>
+<section id="downhill" data-part="downhill">
+  <p class="fig">05 · Downhill Race</p>
+  <h2 class="t">Down to push, fire to jump, spin or duck</h2>
+  <p>In the <a href="race.html#event">Downhill Race</a>, down pushes, a step of speed every eight frames, and left and right turn. Fire with up jumps, fire with left or right spins, and fire with down ducks (<code>$2B41</code>). Before the start, any direction switches between REGULAR and GOOFY FOOT, and goofy swaps up with down and left with right (<code>$0998</code>).</p>
+</section>
+<section id="jam" data-part="jam">
+  <p class="fig">06 · Downhill Jam</p>
+  <h2 class="t">Twelve attacks from fire and a direction</h2>
+  <p>Each skater in the Jam has a port of their own: whoever presses fire first at the start takes the left-hand skater (<code>$325B</code>).</p>
+  <div class="tablewrap"><table class="t">
+    <tr><th>Stick</th><th>Effect</th><th>Code</th></tr>
+    <tr><td>Down</td><td>push, a step of speed every eight frames</td><td><code>$2F09</code></td></tr>
+    <tr><td>Up</td><td>brake</td><td><code>$306C</code></td></tr>
+    <tr><td>Left, right</td><td>lean, which turns the board</td><td><code>$2E51</code></td></tr>
+    <tr><td>Fire and up</td><td>jump, with a spin from fire and left or right in the air</td><td><code>$2F23</code></td></tr>
+    <tr><td>Fire and down</td><td>duck, while held</td><td><code>$3092</code></td></tr>
+    <tr><td>Fire and left, right or a diagonal</td><td>one of <a href="jam.html#fight">twelve attacks</a>, chosen by the stick and the way the skater faces</td><td><code>$30E3</code></td></tr>
+  </table></div>
+  <p class="cap">The controls of the Downhill Jam (<code>$2DC7</code>). GOOFY swaps up with down and left with right for the moves without fire, but not for the attacks.</p>
+</section>
+<section id="joust" data-part="joust">
+  <p class="fig">07 · Pool Joust</p>
+  <h2 class="t">Fire swings the pole</h2>
+  <p>In the <a href="joust.html#event">Pool Joust</a> the first skater plays on joystick 2 and the second on joystick 1, and whoever presses fire first in the introduction takes the left-hand skater (<code>$1C98</code>). Up and down move across the pool (<code>$1962</code>), and left or right below the coping choose the next trick, as on the <a href="freestyle.html#class">Freestyle ramp</a>. Fire drops in from the deck, <a href="joust.html#hit">swings the pole</a>, and gets up after a knock-off. On the <a href="joust.html#cpu">opponent screen</a>, up and down move the arrow over the three computer skaters (<code>$2086</code>).</p>
+</section>
+</main>
