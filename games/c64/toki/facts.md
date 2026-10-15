@@ -84,7 +84,7 @@ reach the other voices: an absence of named writes says nothing.
 
 ## Cartridge directory
 
-All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start, entries 8-10 from $51E7-$51F3 just before the hand-over, entries 18/19, 21/22, 24/25, 27/28, and 30/31 from `stage_load`. Who copies the $C000 entries (17, 20, 23, 26, 29) and entries 11-16 is not traced.
+All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start; entries 8-10 from $51E7-$51F3; entry 16 and entries 12-15 from `stage_load` at $523D and $5242, just before `jsr $0C05`; each stage's three entries from `stage_load`. Who copies entry 11 is not traced.
 
 | # | X | Bank | Flags | Source | Destination | Bytes |
 |---|---|---|---|---|---|---|
@@ -130,7 +130,23 @@ Read statically from the cartridge, 2026-10-15; not yet run in the emulator.
 | `stage` | $08E7 | 0-4. Zeroed at $8023 when a game starts, incremented at $81B1 (both in the copy of bank 3), compared with 5 at bank 1 $809C |
 | `stage_start` | $0AFF | $01 = $37, bank 0 in, X = `stage_sets`[stage], `jsr stage_load`, then entries 6 and 7 |
 | `stage_sets` | bank 0 $8127 | $88, $A0, $B8, $D0, $E8: the directory offset before each stage's set |
-| `stage_load` | $0A9B | refreshes the stack-page routines ($8194), then copies entry X+8, X+16, ... until one has flag bit 5; for that one it reads a 5-byte header just before the source (one byte pushed, $EC/$ED, $EA/$EB) and jumps to `unpack` |
+| `stage_load` | $0A9B | refreshes the stack-page routines ($8194), then copies entry X, X+8, X+16, ... (the `beq` at $0AA0 is always taken, since $8194 returns with Z set) until one has flag bit 5; for that one it reads a 5-byte header just before the source (one byte pushed, $EC/$ED, $EA/$EB) and jumps to `unpack` |
 | `unpack` | bank 0 $8DA2, run from the cartridge | reads the packed data backwards (`$8E80` decrements the read pointer and stops at $EC/$ED) and writes backwards, either literal bytes or copies of bytes already written (`$8E30`-`$8E5E`); its exact format is not decoded |
 
 The packed entries all start at $8005 or later in banks 14 and 15, which leaves room for the 5-byte header before them.
+
+## Packed entries
+
+The kit's 6502 simulator (`kit/c64/cpu6502.js`) ran `unpack` from bank 0 on each packed entry after the copy, with the zero page set as $0AB6-$0AFB sets it (2026-10-15). Each run returned cleanly. The header's $EC/$ED is where the unpacked data starts and $EA/$EB is one past its end; the packed bytes sit at the top of that range and are expanded downwards in place.
+
+| Entries | Packed | Unpacked to | Unpacked size |
+|---|---|---|---|
+| 12-15 (banks 12, 13, 15, 2: one stream, $0C01-$3731) | 11,057 | $0C01-$44BA | 14,522 |
+| 16 | 4,399 | $6501-$7CBC | 6,076 |
+| 19 (stage 1) | 2,695 | $0C01-$20DF | 5,343 |
+| 22 (stage 2) | 3,204 | $0C01-$2683 | 6,787 |
+| 25 (stage 3) | 3,306 | $0C01-$27CC | 7,116 |
+| 28 (stage 4) | 3,014 | $0C01-$2323 | 5,923 |
+| 31 (stage 5) | 2,230 | $0C01-$21BA | 5,562 |
+
+What the unpacked stage data holds is not read yet.
