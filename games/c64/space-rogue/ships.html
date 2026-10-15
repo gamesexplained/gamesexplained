@@ -120,23 +120,8 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
   <div class="sr-scroll"><table id="sr-shp-all"></table></div>
 </section>
 
-<section data-part="engine" id="encounters">
-  <p class="fig">02 · Encounters</p>
-  <h2 class="t">What the ship meets depends on the system and the player's rank</h2>
-  <p class="lede">Each system's map carries a danger level and five weights, one for each class of ship. When an encounter comes, the weights choose the class and the player's rank chooses the ship within it.</p>
-  <div class="plate">
-    <div class="pick" id="sr-enc-pick"><button class="step" data-d="-1" aria-label="Previous system">‹</button><select id="sr-enc" aria-label="System"></select><button class="step" data-d="1" aria-label="Next system">›</button></div>
-    <div class="sr-bar"><label>Player's rank <input type="range" id="sr-rank" min="0" max="5" value="0" aria-label="The player's rank"></label><span class="sr-mono" id="sr-rank-v"></span></div>
-    <p class="sr-need" id="sr-enc-need" hidden></p>
-    <table class="sr-odds" id="sr-odds"></table>
-    <p class="cap">The chance of each ship once one is drawn, worked out by the page's port of <code>pick_ship</code> (<code>$2C8C</code>) over every roll it can make, from <code>ship_class_types</code> (<code>$2D24</code>). A test, <code>test_odds.js</code>, runs the engine's own routine on every roll for every system and rank and counts the same.</p>
-  </div>
-  <p>A roll from 0 to 99 is spent across the weights from the last class to the first. A second roll from 0 to 15 picks one of the class's four entries directly if it comes out under 4; otherwise a roll from 0 to the Sunracer's rank value, halved and kept to 3 at most, picks it. The rank value is the player's rank plus 2 (<code>$175B</code>), and the rank rises from 0 to 5 with kills and surrenders (<code>$1B2B</code>), so a Dart becomes a Corsair, a Cruiser a Titan and a Wasp a Vulture more often as the player's repute grows.</p>
-  <p>Whether an encounter happens at all is decided before this, on each step of HELM travel, from the hours the step takes and the danger level (<code>encounter_roll</code>, <code>$2C1E</code>), and in flight every 256th pass with an eighth of the danger level (<code>frame_update</code>, <code>$1239</code>). Ja-Karn, the Manchi system, has danger 85 and sends nothing but Wasps and Vultures.</p>
-</section>
-
 <section data-part="engine" id="combat">
-  <p class="fig">03 · Combat</p>
+  <p class="fig">02 · Combat</p>
   <h2 class="t">The computer pilots think on one pass in 17</h2>
   <p class="lede">Every computer ship flies by the same rules: find the ship its faction likes least, decide whether to fight it or run, pick one of ten tactics and steer to hold the target at that tactic's angle off the nose. Put up to five ships in a fight, the most the engine has room for, press Fight, and the page runs the engine's own code on them. Drag to look round it.</p>
   <div class="plate">
@@ -199,6 +184,21 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
     <tr><td>4</td><td>20, which the shields do not reduce</td><td>Titan and Hunter</td></tr>
   </table></div>
   <p>The shields halve a hit once for each step of strength, the fore shield for a hit from in front and the aft shield for one from behind (<code>shield_reduce</code>, <code>$6F88</code>). A beam, and a plasma torpedo, gets through one step of them (<code>beam_hit</code>, <code>$2222</code>), so a fore shield of 3 halves a power-3 beam twice, to 5, and an SM-1 missile's 100 three times, to 12. A hit of 10 or more, after the shields, knocks out one of the ship's systems one time in five, and that hit takes nothing off the hit points (<code>damage</code>, <code>$6EA0</code>). Ships that touch ram each other: each takes eight times their relative speed, of which only the low byte counts, and they bounce apart as in an elastic collision (<code>ram</code>, <code>$6BC3</code>). Ships on the same side ram each other too: in the opening fight the Cruiser and the Hunter, which start side by side, collide on pass 256.</p>
+</section>
+
+<section data-part="engine" id="encounters">
+  <p class="fig">03 · Encounters</p>
+  <h2 class="t">What the ship meets depends on the system and the player's rank</h2>
+  <p class="lede">Each system's map carries a danger level and five weights, one for each class of ship. When an encounter comes, the weights choose the class and the player's rank chooses the ship within it.</p>
+  <div class="plate">
+    <div class="pick" id="sr-enc-pick"><button class="step" data-d="-1" aria-label="Previous system">‹</button><select id="sr-enc" aria-label="System"></select><button class="step" data-d="1" aria-label="Next system">›</button></div>
+    <div class="sr-bar"><label>Player's rank <input type="range" id="sr-rank" min="0" max="5" value="0" aria-label="The player's rank"></label><span class="sr-mono" id="sr-rank-v"></span></div>
+    <p class="sr-need" id="sr-enc-need" hidden></p>
+    <table class="sr-odds" id="sr-odds"></table>
+    <p class="cap">The chance of each ship once one is drawn, worked out by the page's port of <code>pick_ship</code> (<code>$2C8C</code>) over every roll it can make, from <code>ship_class_types</code> (<code>$2D24</code>). A test, <code>test_odds.js</code>, runs the engine's own routine on every roll for every system and rank and counts the same.</p>
+  </div>
+  <p>A roll from 0 to 99 is spent across the weights from the last class to the first. A second roll from 0 to 15 picks one of the class's four entries directly if it comes out under 4; otherwise a roll from 0 to the Sunracer's rank value, halved and kept to 3 at most, picks it. The rank value is the player's rank plus 2 (<code>$175B</code>), and the rank rises from 0 to 5 with kills and surrenders (<code>$1B2B</code>), so a Dart becomes a Corsair, a Cruiser a Titan and a Wasp a Vulture more often as the player's repute grows.</p>
+  <p>Whether an encounter happens at all is decided before this, on each step of HELM travel, from the hours the step takes and the danger level (<code>encounter_roll</code>, <code>$2C1E</code>), and in flight every 256th pass with an eighth of the danger level (<code>frame_update</code>, <code>$1239</code>). Ja-Karn, the Manchi system, has danger 85 and sends nothing but Wasps and Vultures.</p>
 </section>
 
 <section data-part="engine" id="flight">
@@ -751,7 +751,7 @@ const SRSim = (function () {
   const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const MODELS = JSON.parse($('sr-models').textContent);
   const NEED = 'This widget draws from the game\'s bytes with the site\'s shared script, ../../lib/c64.js: open the page from the built site.';
-  const NEEDS = ['sr-shp-need', 'sr-enc-need', 'sr-cmb-need'];
+  const NEEDS = ['sr-shp-need', 'sr-cmb-need', 'sr-enc-need'];
   const need = (id, msg) => { const p = $(id); p.textContent = msg || NEED; p.hidden = false; };
   function pressed(group, btn) { group.querySelectorAll('[aria-pressed]').forEach(b => { if (b.parentNode === group && b.dataset[Object.keys(btn.dataset)[0]] !== undefined) b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); }); }
   function picker(pickId, selId, names, onPick) {
@@ -768,7 +768,7 @@ const SRSim = (function () {
     () => NEEDS.forEach(id => need(id, 'The listings this widget reads come with the built site: open the page from there.')));
 
   function start([E, FL]) {
-    ships(E); encounters(E); fight(E, FL);
+    ships(E); fight(E, FL); encounters(E);
   }
 
 
@@ -913,27 +913,7 @@ const SRSim = (function () {
           ' passes</td><td>' + tacticName(ram, s.tactic) + '</td><td>' + s.rank + '</td></tr>'; }).join('');
   }
 
-  // ---- 02 encounters
-  function encounters(E) {
-    const SYSTEMS = [['Karonus', 40, [10, 10, 45, 30, 5]], ['Deneb', 53, [10, 10, 45, 30, 5]], ['Gryphon', 38, [10, 20, 40, 25, 5]],
-      ['Arcturus', 30, [10, 5, 45, 35, 5]], ['Nar\'see', 45, [10, 20, 40, 20, 10]], ['Bassruti', 45, [10, 30, 35, 10, 15]],
-      ['Sigure', 30, [10, 25, 30, 10, 25]], ['Zed N27', 30, [10, 20, 35, 10, 25]], ['Ja-Karn', 85, [0, 0, 0, 0, 100]]];
-    const TYPES = { 1: 'Wasp', 2: 'Dart', 3: 'Cruiser', 4: 'Vulture', 5: 'Corsair', 6: 'Titan', 7: 'Scow', 8: 'Tanker', 12: 'Hunter' };
-    const classTypes = Array.from(E.ram.subarray(0x2D24, 0x2D38));
-    let sys = 0;
-    function draw() {
-      const rank = +$('sr-rank').value, R = rank + 2, { count, total } = shipOdds(SYSTEMS[sys][2], R, classTypes);
-      $('sr-rank-v').textContent = rank + ', rank value ' + R + '; danger ' + SYSTEMS[sys][1];
-      const rows = Object.keys(count).filter(k => k !== 'none').map(k => [TYPES[k] || 'type ' + k, count[k] / total])
-        .sort((a, b) => b[1] - a[1]);
-      $('sr-odds').innerHTML = rows.map(([n, p]) => '<tr><td>' + n + '</td><td class="sr-pc">' + (100 * p).toFixed(1) +
-        ' %</td><td class="sr-barcell"><i style="width:' + (100 * p).toFixed(1) + '%"></i></td></tr>').join('');
-    }
-    picker('sr-enc-pick', 'sr-enc', SYSTEMS.map(s => s[0]), i => { sys = i; draw(); });
-    $('sr-rank').addEventListener('input', draw);
-  }
-
-  // ---- 03 the fight: ships the reader picks, run by SRSim on the engine's own code, and the replay
+  // ---- 02 the fight: ships the reader picks, run by SRSim on the engine's own code, and the replay
   function fight(E, FL) {
     // the engine's bytes with the flight part's maths in, and which of them the page carries; the
     // second display buffer ($4000-$63FF), which no listing holds, starts empty: no fight depends on
@@ -1197,6 +1177,26 @@ const SRSim = (function () {
     let begun = false;
     onScreen(cv, v => { visible = v; if (v && !begun) { begun = true; go(false); } if (v && playing && !raf) raf = requestAnimationFrame(loop); });
     showFleet(); draw();
+  }
+
+  // ---- 03 encounters
+  function encounters(E) {
+    const SYSTEMS = [['Karonus', 40, [10, 10, 45, 30, 5]], ['Deneb', 53, [10, 10, 45, 30, 5]], ['Gryphon', 38, [10, 20, 40, 25, 5]],
+      ['Arcturus', 30, [10, 5, 45, 35, 5]], ['Nar\'see', 45, [10, 20, 40, 20, 10]], ['Bassruti', 45, [10, 30, 35, 10, 15]],
+      ['Sigure', 30, [10, 25, 30, 10, 25]], ['Zed N27', 30, [10, 20, 35, 10, 25]], ['Ja-Karn', 85, [0, 0, 0, 0, 100]]];
+    const TYPES = { 1: 'Wasp', 2: 'Dart', 3: 'Cruiser', 4: 'Vulture', 5: 'Corsair', 6: 'Titan', 7: 'Scow', 8: 'Tanker', 12: 'Hunter' };
+    const classTypes = Array.from(E.ram.subarray(0x2D24, 0x2D38));
+    let sys = 0;
+    function draw() {
+      const rank = +$('sr-rank').value, R = rank + 2, { count, total } = shipOdds(SYSTEMS[sys][2], R, classTypes);
+      $('sr-rank-v').textContent = rank + ', rank value ' + R + '; danger ' + SYSTEMS[sys][1];
+      const rows = Object.keys(count).filter(k => k !== 'none').map(k => [TYPES[k] || 'type ' + k, count[k] / total])
+        .sort((a, b) => b[1] - a[1]);
+      $('sr-odds').innerHTML = rows.map(([n, p]) => '<tr><td>' + n + '</td><td class="sr-pc">' + (100 * p).toFixed(1) +
+        ' %</td><td class="sr-barcell"><i style="width:' + (100 * p).toFixed(1) + '%"></i></td></tr>').join('');
+    }
+    picker('sr-enc-pick', 'sr-enc', SYSTEMS.map(s => s[0]), i => { sys = i; draw(); });
+    $('sr-rank').addEventListener('input', draw);
   }
 })();
 </script>
