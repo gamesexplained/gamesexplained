@@ -41,7 +41,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="jungle"><p class="fig">01 · Section one</p><h2 class="t">The jungle and the village</h2>
 <p>The whole map of the first section: 20 rows of 90 blocks from <a href="source-load1.html#A000"><code>$A000</code></a>, each block 8 by 6 characters from <a href="source-load1.html#8000"><code>$8000</code></a>. The screen shows five blocks across and three down at a time. The top three rows are drawn with the character set and colours the game swaps in when the soldier climbs up to them (<code>$BAB6</code>), the rest with the jungle's (<code>$BAFD</code>).</p>
-<div class="plate"><div style="overflow-x:auto"><canvas id="jmap"></canvas></div><p class="cap" id="jcap">Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
+<p>The jungle is six levels, each one scene high. Ladders join each level to the one below at the same place: pressing down on a ladder's foothold (<a href="source-load1.html#0EA7"><code>$0EA7</code></a>) takes the soldier down a level, and pressing up at its top (<a href="source-load1.html#0DE2"><code>$0DE2</code></a>) takes him back. The six huts on the top level have doors, and going up through one leads to the inside of that hut on the sixth level (<a href="source-load1.html#29B6"><code>$29B6</code></a>), where the searches and the trapdoor are.</p>
+<div class="plate"><div style="overflow-x:auto"><canvas id="jnav"></canvas></div><p class="cap">The route map. Each line is a level, and each ladder is drawn as a rung between two levels. Hut doors (A to F) on the top level lead to the matching hut on the bottom line. Click anywhere to jump the picture below to that place.</p></div>
+<div class="plate"><div style="overflow-x:auto" id="jscroll"><canvas id="jmap"></canvas></div><p class="cap" id="jcap">Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
 </section>
 
 <section id="tunnels"><p class="fig">02 · Section two</p><h2 class="t">The tunnel map</h2>
@@ -88,7 +90,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       }
     }
     // landmarks: map positions name the scene's left block; the soldier stands two blocks in
-    const NAMES = {0: 'sack of flour', 1: 'stool', 2: 'table', 3: 'pot of rice', 11: 'empty', 17: 'map', 18: 'torch', 19: 'pot of water', 20: 'rubbish', 21: 'provisions', 23: 'booby trap'};
+    const NAMES = {0: 'flour', 1: 'stool', 2: 'table', 3: 'rice', 11: 'empty', 17: 'map', 18: 'torch', 19: 'water', 20: 'rubbish', 21: 'provisions', 23: 'booby trap'};
     const marks = [[0x0114, 0, '▶', 'start'], [0x0150, 0, '■', 'bridge'], [0x0466, 0, '■', 'explosives'], [0x046C, 0, '■', 'explosives'], [0x057B, 0, '▼', 'trapdoor'], [0x0580, 0, '■', 'villager']];
     const huts = [];
     for (let i = 0; i < 19; i++) {
@@ -105,6 +107,45 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     }
     marks.forEach(([pos, col, t, name]) => tag(((pos % 90) + 2) * 64, Math.floor(pos / 90) * 48 - 20, [t + ' ' + name]));
     huts.forEach(h => tag(h.x, h.r * 48 + 50, h.lines));
+    // route map: ladders read from the characters the controls test, per level of three block rows
+    const ch = (r, c, y) => { const b = 0x8000 + 48 * m[0xA000 + 90 * r + c]; return Array.from(m.subarray(b + 8 * y, b + 8 * y + 8)); };
+    const lad = [];
+    for (let k = 0; k < 5; k++) for (let c = 0; c < 90; c++)
+      if (ch(3 * k + 2, c, 5).includes(0x01) && ch(3 * k + 4, c, 5).includes(0x61)) lad.push([k, c]);
+    const doors = []; for (let c = 0; c < 90; c++) if (ch(2, c, 1).includes(0x7A)) doors.push(c);
+    const cw = 22, lh = 74, top = 22, nv = C.canvas($('jnav'), 90 * cw + 150, top + 6 * lh + 80);
+    const X = c => 150 + c * cw + cw / 2, Y = k => top + k * lh + 30;
+    nv.fillStyle = '#ffffff'; nv.fillRect(0, 0, 90 * cw + 150, top + 6 * lh + 80);
+    nv.font = '12px IBM Plex Mono, monospace'; nv.textAlign = 'left'; nv.fillStyle = '#000000';
+    ['Level 1, huts', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Inside the huts'].forEach((t, k) => nv.fillText(t, 4, Y(k) + 4));
+    for (let k = 0; k < 6; k++) { nv.fillStyle = '#000000'; nv.fillRect(X(0) - cw / 2, Y(k) - 1, 90 * cw, 3); }
+    lad.forEach(([k, c]) => {
+      nv.fillStyle = '#000000'; nv.fillRect(X(c) - 4, Y(k), 2, lh); nv.fillRect(X(c) + 2, Y(k), 2, lh);
+      for (let y = Y(k) + 8; y < Y(k + 1); y += 8) nv.fillRect(X(c) - 4, y, 8, 1);
+    });
+    nv.textAlign = 'center'; nv.font = 'bold 12px IBM Plex Mono, monospace';
+    function pin(c, k, t, below) {
+      const w = nv.measureText(t).width + 8, y = below ? Y(k) + 6 : Y(k) - 20;
+      nv.fillStyle = '#ffffff'; nv.fillRect(X(c) - w / 2, y, w, 15); nv.strokeStyle = '#000000'; nv.strokeRect(X(c) - w / 2 + .5, y + .5, w - 1, 14);
+      nv.fillStyle = '#000000'; nv.fillText(t, X(c), y + 11);
+    }
+    doors.forEach((c, i) => { pin(c, 0, 'door ' + 'ABCDEF'[i], true); pin(c, 5, 'hut ' + 'ABCDEF'[i], false); });
+    const lv = pos => Math.floor(pos / 270), at = pos => pos % 90 + 2;
+    pin(at(0x0114), lv(0x0114), '▶ start'); pin(at(0x0150), lv(0x0150), 'bridge');
+    pin(at(0x0466), lv(0x0466), 'explosives'); pin(at(0x046C), lv(0x046C), 'explosives');
+    nv.font = '11px IBM Plex Mono, monospace'; nv.textAlign = 'left';
+    huts.forEach(h => {
+      const c = h.x / 64, d = doors.reduce((a, b) => Math.abs(b - c) < Math.abs(a - c) ? b : a);
+      if (Math.abs(at(0x057B) - d) < 3) h.lines.push('▼ trapdoor');
+      nv.fillStyle = '#000000'; h.lines.forEach((l, i) => nv.fillText(l, X(d) - cw / 2, Y(5) + 16 + 12 * i));
+    });
+    $('jnav').style.cursor = 'pointer';
+    $('jnav').addEventListener('click', e => {
+      const r = $('jnav').getBoundingClientRect(), c = ((e.clientX - r.left) * (90 * cw + 150) / r.width - 150) / cw;
+      const k = Math.max(0, Math.min(5, Math.floor(((e.clientY - r.top) * (top + 6 * lh + 80) / r.height - top + 30) / lh)));
+      $('jscroll').scrollLeft = Math.max(0, (c - 4) * 64 * $('jmap').clientWidth / (90 * 64));
+      $('jmap').scrollIntoView({block: 'nearest'}); void k;
+    });
     // section two: 13 windows of 19 x 19 squares
     const t = T.ram, n = 9, sz = 6, gap = 14, per = 5;
     const tc = C.canvas($('tmap'), per * (19 * sz + gap), Math.ceil(n / per) * (19 * sz + gap + 14));
