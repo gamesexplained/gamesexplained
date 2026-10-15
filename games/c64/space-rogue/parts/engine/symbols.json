@@ -2740,9 +2740,9 @@
   },
   {
    "address": 3336,
-   "name": "f_0D08",
+   "name": "cargo_spoils",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 3360,
@@ -15070,7 +15070,7 @@
   {
    "address": 29,
    "type": "line",
-   "text": "The sound effects' gate mask: $FF normally, 0 while the disk is in use (open_for_io) so no voice is gated"
+   "text": "The sound's mask: $FF normally, 0 while the disk is in use (open_for_io, close_after_io). sound_step ANDs every frequency it writes for an effect with it, and the speed the engine hum's pitch comes from, so with 0 the voices fall silent; the gate writes are not masked"
   },
   {
    "address": 30,
@@ -15095,7 +15095,7 @@
   {
    "address": 40,
    "type": "line",
-   "text": "Each voice's frames left ($28-$2A); 0 means silent or about to start"
+   "text": "Each voice's effect frames left ($28-$2A); 0 once its effect is over, or for a moment before the next repeat starts. While voice 1's is 0, sound_step plays the engine hum on that voice"
   },
   {
    "address": 43,
@@ -15420,7 +15420,7 @@
   {
    "address": 122,
    "type": "line",
-   "text": "A model's header address (the model prologue stores it), or a menu's item list"
+   "text": "A model's header address (the model prologue stores it), or a menu's item list; elsewhere a vector pointer kept aside: explode's position, bounce's difference vector ($6C45), mat_orthonormal's matrix"
   },
   {
    "address": 123,
@@ -15625,27 +15625,27 @@
   {
    "address": 168,
    "type": "line",
-   "text": "Pointer to the reference points, linear (filled at preparation); elsewhere a slot (blow_up, the beam)"
+   "text": "Pointer to the reference points, linear (filled at preparation); elsewhere scratch: a slot (age_objects, blow_up, fire_beam, trace_beam), a HELM step's hours (step_hours, helm_step_time) and the count of names in a QUERY list (nav_query, query_name, query_end_list)"
   },
   {
    "address": 169,
    "type": "line",
-   "text": "High byte of the reference points pointer, or blow_up's victim"
+   "text": "High byte of the reference points pointer; elsewhere scratch: blow_up's victim, fire_beam's beam power, the day a HELM step started (helm_step_time) and QUERY's entry index (nav_query)"
   },
   {
    "address": 170,
    "type": "line",
-   "text": "Pointer to the normals (made at preparation); elsewhere blow_up's damage"
+   "text": "Pointer to the normals (made at preparation); elsewhere scratch: blow_up's damage, trace_beam's slot index, the hours left in a HELM step (helm_step_time) and helm_encounter's 20-tick wait"
   },
   {
    "address": 171,
    "type": "line",
-   "text": "High byte of the normals pointer"
+   "text": "High byte of the normals pointer; in HELM, set to stop the trip when the player presses a key, or fire after an encounter (helm_step_time, helm_encounter); the station's status_pages keep their menu column here"
   },
   {
    "address": 172,
    "type": "line",
-   "text": "Pointer to the reference point for each normal"
+   "text": "Pointer to the reference point for each normal; elsewhere trace_beam's count of its 50 steps, and the station's status_pages keep their menu row here"
   },
   {
    "address": 174,
@@ -15660,37 +15660,37 @@
   {
    "address": 178,
    "type": "line",
-   "text": "Pointer to each polygon's back colour; in collisions the first slot"
+   "text": "Pointer to each polygon's back colour; elsewhere the first slot in a collision, and the slot that fires in beam_hit and draw_beam"
   },
   {
    "address": 179,
    "type": "line",
-   "text": "High byte of the back colour pointer, or the collision's second slot"
+   "text": "High byte of the back colour pointer; elsewhere the collision's second slot, the beam's target slot (beam_hit, draw_beam), and in nav_helm the step's x and y offsets ANDed, nonzero for a diagonal step, which it passes to helm_step_time"
   },
   {
    "address": 180,
    "type": "line",
-   "text": "Pointer to each polygon's front colour; the beam's power"
+   "text": "Pointer to each polygon's front colour; elsewhere the beam's power (beam_hit, draw_beam), and in nav_helm helm_step_time's result, nonzero to stop the trip"
   },
   {
    "address": 181,
    "type": "line",
-   "text": "High byte of the front colour pointer"
+   "text": "High byte of the front colour pointer; elsewhere draw_beam's x distance from the shooter's point on screen ($FD00) to the target's, low byte"
   },
   {
    "address": 182,
    "type": "line",
-   "text": "Pointer to the polygons' vertex lists"
+   "text": "Pointer to the polygons' vertex lists; elsewhere draw_beam's x distance, high byte"
   },
   {
    "address": 183,
    "type": "line",
-   "text": "High byte of the vertex lists pointer, or ram's damage"
+   "text": "High byte of the vertex lists pointer; elsewhere ram's damage and draw_beam's y distance, low byte"
   },
   {
    "address": 184,
    "type": "line",
-   "text": "Pointer to the polygons' vertex counts; in collisions the first type"
+   "text": "Pointer to the polygons' vertex counts; elsewhere the first type in a collision, and draw_beam's y distance, high byte"
   },
   {
    "address": 185,
@@ -15705,27 +15705,27 @@
   {
    "address": 188,
    "type": "line",
-   "text": "Pointer to the face groups' sizes, zero-ended"
+   "text": "Pointer to the face groups' sizes, zero-ended; elsewhere scratch: frame_update's new ship's type and a slot counter, enter_sector's run count as it fills its type list"
   },
   {
    "address": 189,
    "type": "line",
-   "text": "High byte of the group sizes pointer; the AI's fire flag"
+   "text": "High byte of the group sizes pointer; elsewhere the AI's fire flag, load_slot_models' slot counter, enter_sector's place in the entry list and draw_chart_cursor's blink counter"
   },
   {
    "address": 198,
    "type": "line",
-   "text": "The first slot of a collision pair; the chart cursor's x in navigation; enter_sector's type list from here (21 bytes)"
+   "text": "The first slot of a collision pair; the chart cursor's x in navigation; enter_sector's type list from here (21 bytes); ai_speed's target slot"
   },
   {
    "address": 199,
    "type": "line",
-   "text": "The second slot of a collision pair; the chart cursor's y"
+   "text": "The second slot of a collision pair; the chart cursor's y; ai_speed's tactic speed"
   },
   {
    "address": 200,
    "type": "line",
-   "text": "The first ship's radius in check_collisions; in navigation nonzero once the ship has moved"
+   "text": "The first ship's radius in check_collisions; in navigation nonzero once the ship has moved; ai_speed's target speed"
   },
   {
    "address": 201,
@@ -16600,7 +16600,7 @@
   {
    "address": 3336,
    "type": "line",
-   "text": "The list helm_hazard_check walks, one byte per hold entry"
+   "text": "One byte per cargo kind: negative for the kinds that spoil, which helm_hazard_check turns into kind $14, spoiled cargo"
   },
   {
    "address": 3360,
@@ -16860,7 +16860,7 @@
   {
    "address": 4079,
    "type": "line",
-   "text": "The character each key gives, 88 entries in matrix order (row then column), ASCII with lower-case letters; $80 marks a key that gives nothing (the modifiers, RUN/STOP, C=). Entries from $102F are the C128's extra keys: the keypad digits and Enter, the cursor keys, ESC, TAB, LINE FEED and HELP"
+   "text": "The character each key gives, 88 entries: the C64's eight rows from row 7, bit 7 first, down to row 0, then the C128's three extra rows from $102F the same way. ASCII with lower-case letters; $80 marks a key that gives nothing (the modifiers, RUN/STOP, C=, F3, F5, and the C128's HELP, ALT and NO SCROLL). F1 gives $1B, ESC, and F7 $1F. The C128's keys are the keypad digits, Enter and full stop, its cursor keys, ESC, TAB and LINE FEED ($0A)"
   },
   {
    "address": 4096,
@@ -16915,12 +16915,12 @@
   {
    "address": 4513,
    "type": "line",
-   "text": "Per voice: the current frequency, low byte"
+   "text": "Per voice: the effect's frequency, low byte, before the mask: sound_step adds the step to it every frame and writes it to the SID ANDed with $1D. The engine hum writes voice 1's SID frequency directly and leaves this alone"
   },
   {
    "address": 4516,
    "type": "line",
-   "text": "Per voice: the current frequency, high byte"
+   "text": "Per voice: the effect's frequency, high byte, before the mask (see $11A1)"
   },
   {
    "address": 4519,
@@ -17055,7 +17055,7 @@
   {
    "address": 5128,
    "type": "line",
-   "text": "CTRL-E (and the C128's HELP key): toggles $0D02, which the speed keys and $2419 test: cruise or Newtonian flight"
+   "text": "CTRL-E, or F7 (character $1F): toggles $0D02, which the speed keys and $2419 test: cruise or Newtonian flight"
   },
   {
    "address": 5137,
@@ -17075,7 +17075,7 @@
   {
    "address": 5176,
    "type": "line",
-   "text": "ESC: waits for a key ($A431) with the engine hum off ($1E)"
+   "text": "ESC, which on a C64 is F1: waits for a key ($A431) with the engine hum off ($1E)"
   },
   {
    "address": 5186,
@@ -17090,7 +17090,7 @@
   {
    "address": 5212,
    "type": "line",
-   "text": "The 37 keys that are commands in flight, in the order of key_handlers: A 4 cursor-left, D 6 cursor-right, W 8 cursor-up, X 2 cursor-down, 5 S, 1 Z, 3 C, J, minus, plus, ESC, CTRL-E, HELP, V, T, CTRL-T, I, L, 0, space, R, full stop, N, CTRL-S, G, Return"
+   "text": "The 37 keys that are commands in flight, in the order of key_handlers: 4 A cursor-left, 6 D cursor-right, 8 W cursor-up, 2 X cursor-down, 5 S, 1 Z, 3 C, J, minus, plus, ESC (F1), CTRL-E, $1F (F7), V, T, CTRL-T, I, L, 0, space, R, full stop, N, CTRL-S, G, Return"
   },
   {
    "address": 5249,
@@ -17570,12 +17570,12 @@
   {
    "address": 9241,
    "type": "line",
-   "text": "Called by do_key before the keys: reads the joystick. Fire fires the selected weapon. Up and down change the player's speed ($0415) by one, held at $46 and -$45, and refuse to cross zero in one push (a push from zero needs $0D01 clear); in Newtonian flight ($0D02) neither changes the speed. The direction pushed is kept in $0D01 (1, $FF or 0). Then, while $0D03 is set (no key pressed since the stick was used), the stick's smoothed position ($A3B1) sets the pitch ($0508) and turn ($0516) rates directly through joy_rates"
+   "text": "Called by do_key before the keys: reads the joysticks. Fire on the joystick in port 2 fires the selected weapon. Up and down on the joystick in port 1 change the player's speed ($0415) by one, held at $46 and -$45, and refuse to cross zero in one push (a push from zero needs $0D01 clear); in Newtonian flight ($0D02) neither changes the speed. The direction pushed is kept in $0D01 (1, $FF or 0). Then, while $0D03 is set (no key pressed since a stick was used), the port 2 stick's smoothed position ($A3B1) sets the pitch ($0508) and turn ($0516) rates directly through joy_rates"
   },
   {
    "address": 9260,
    "type": "line",
-   "text": "The fire and speed part of joystick_flight: returns X = $FF after a push forward, 1 after a pull back, 0 otherwise"
+   "text": "The fire and speed part of joystick_flight: fire from port 2 (read_joystick2), up and down from port 1 (read_joystick1); returns X = $FF after a push forward, 1 after a pull back, 0 otherwise"
   },
   {
    "address": 9348,
@@ -17680,7 +17680,7 @@
   {
    "address": 10024,
    "type": "line",
-   "text": "HELM, the autopilot: flies the course in $FC00/$FC20 a sector at a time from the ship's chart position ($5510/$5530). When the course runs out it prints \"Ship has arrived at destination\" ($2847) and returns. Each step: draws the move ($30D7), marks that the ship moved ($C8), moves the ship's position, lets the time pass ($290F), recomputes the rest of the course ($2880), and stops when an encounter or a key ends it; recolours the menu when ships are near ($0D07)"
+   "text": "HELM, the autopilot: flies the course in $FC00/$FC20 a sector at a time from the ship's chart position ($5510/$5530). When the course runs out it prints \"Ship has arrived at destination\" ($2847) and returns. Each step: draws the move ($30D7), marks that the ship moved ($C8), moves the ship's position, lets the time pass ($290F), recomputes the rest of the course ($2880), and stops when ships are near after an encounter ($0D07, recolouring the menu) or when helm_step_time returns nonzero ($B4: a key, or fire after an encounter)"
   },
   {
    "address": 10119,
@@ -17715,7 +17715,7 @@
   {
    "address": 10641,
    "type": "line",
-   "text": "Checks for an encounter in the step's sector ($2C1E with the hours); when one comes, prints \"Under attack\" (with ships near, $0D07) or \"Space craft detected\", plays effect 4 and waits 20 frames or a key, setting $AB to stop the autopilot. Sets $0D04 to $FF first"
+   "text": "Checks for an encounter in the step's sector ($2C1E with the hours); when one comes, prints \"Under attack\" (with ships near, $0D07) or \"Space craft detected\", plays effect 4 and waits 20 ticks of wait_ticks (about two seconds); fire during the wait, or a key waiting after it, sets $AB to stop the autopilot. With ships near, nav_helm stops anyway ($277A). Sets $0D04 to $FF first"
   },
   {
    "address": 10698,
@@ -17730,7 +17730,7 @@
   {
    "address": 10773,
    "type": "line",
-   "text": "Per HELM step: a chance, A/2 in 100, quadrupled when the sector has a type-$64 map entry, that the first entry of the list at $0767 ($0777 entries) whose $0D08 is negative becomes $14"
+   "text": "Per HELM step, with A the step's hours: a random 0-100 ($A298, 101 outcomes) under A / 2, rounded down, and four times that when the sector has a map entry of type $64, spoils cargo: the hold is searched from its last slot ($0777 - 1) down, and the first slot holding a kind that spoils (cargo_spoils negative) becomes kind $14"
   },
   {
    "address": 10835,
@@ -17740,7 +17740,7 @@
   {
    "address": 10857,
    "type": "line",
-   "text": "QUERY: describes the sector under the chart cursor in the text buffer at $FA00 ($9DEE appends): the system's name from the map ($5505) and the coordinates, then \"FEATURES \" with a name for each of the sector's map entries that is a real object ($2BC0), and the sector kind's text (sector_kind_texts, a disk text when its high byte is $C0-$CF); then \"SHIPS \" with, for the ship's own sector, the objects it met there ($0D04-$0D06 after a HELM trip) or the ships present in slots 1-5 whose type's $0AEF is zero; \"none\" where a list is empty. Prints the buffer ($9AFA), then the first entry of the sector with a message ($55D0/$55D1 not $FF), and waits for a key"
+   "text": "QUERY: describes the sector under the chart cursor. Prints the system's name from the map ($5505) and the coordinates, then builds the rest in the text buffer at $FA00 ($9DEE appends): \"FEATURES \" with a name for each of the sector's map entries that is a real object ($2BC0), and the sector kind's text (sector_kind_texts, a disk text when its high byte is $C0-$CF); then \"SHIPS \" with, for the ship's own sector, the objects it met there ($0D04-$0D06 after a HELM trip) or the ships present in slots 1-5 whose type's $0AEF is zero; \"none\" where a list is empty. Prints the buffer ($9AFA). Then it searches the sector's entries from the last one back and prints the message of the first whose message word's high byte ($55D1 + 2 * entry) is not $FF, and waits for a key"
   },
   {
    "address": 11167,
@@ -17785,7 +17785,7 @@
   {
    "address": 11404,
    "type": "line",
-   "text": "A random number below 100 at or over the chance $96 gives no ship ($FF). Otherwise a second random number below 100 is spent across the system's five class weights ($077D-$0781) to choose a class, and a random number below 16 picks one of the class's four entries in ship_class_types ($2D24): mostly the first two, the third and fourth only when a random number below the player's rank value ($0C79, halved) reaches 4. Returns the type in A and its faction ($0C1E) in X"
+   "text": "A random number below 100 at or over the chance $96 gives no ship ($FF). Otherwise a second random number below 100 is spent across the system's five class weights ($077D-$0781) to choose a class, and a random number below 16 picks one of the class's four entries in ship_class_types ($2D24): mostly the first two, the third and fourth only when a random number from 0 to the player's rank value ($0C79), halved, reaches 4. Returns the type in A and its faction ($0C1E) in X"
   },
   {
    "address": 11474,
@@ -18240,7 +18240,7 @@
   {
    "address": 14893,
    "type": "line",
-   "text": "Checked after ship_ai: a badly damaged merchant offers its cargo. Only once per encounter ($0832), when the player's target is a ship of faction 1 targeting the player, with under a quarter of its type's hit points ($0AA9 word / 4), no other ship targeting it or the player. The chance, $43 in 100, is halved when the player has under a quarter of its own hit points and again when that faction is hostile to the player. Then the view shows the offer ($CF8D and a random cargo name, $2EF7 with 0-19, and \"?\") with AGREE or REFUSE ($3BA1): refused, $CF8C; agreed, $CF8B, and with room in the hold ($CF89 if full) one or two units of that cargo ($CF8A, cargo_add), its escorts and the ship leave, the standing with faction 1 may drop (one time in four), and $079A counts it when $079B is set"
+   "text": "Checked after ship_ai: a badly damaged merchant offers its cargo. Only once per encounter ($0832), when the player's target is a ship of faction 1 targeting the player, with under a quarter of its type's hit points ($0AA9 word / 4), no other ship targeting it or the player. The chance is a random 0-100 ($A298, 101 outcomes) under $43, halved when the player has under a quarter of its own hit points and again when that faction is hostile to the player. Then the view shows the offer ($CF8D and a random cargo name, $2EF7 with 0-19, and \"?\") with AGREE or REFUSE ($3BA1): refused, $CF8C; agreed, $CF8B, and with room in the hold ($CF89 if full) one or two units of that cargo ($CF8A, cargo_add), its escorts and the ship leave, the standing with faction 1 may drop (one time in four), and $079A counts it when $079B is set"
   },
   {
    "address": 15265,
@@ -18555,12 +18555,12 @@
   {
    "address": 28320,
    "type": "line",
-   "text": "Slot Y takes damage $80 from slot X (X = $FF for no attacker); A ($A0) is 0 normally, 1 for a type 11 missile (one step of the shields less), $FF for no shield reduction. Nothing for zero damage. A slot 6 and up is never damaged, but a base (type flag bit 0) hit by the player sets $0783, which the base code reads when you dock ($A5B1 in SEG1) and which is cleared when the day changes. A ship with $0403 set is simply freed. Otherwise the ship remembers its attacker in $0439, the damage is cut by the shields (shield_reduce), and a computer ship is sent spinning (random_rates) when a random number from 0 to the damage comes out 6 or more. A hit of 10 or more knocks out a system one time in five ($6F4B) instead of reaching the armour; any other hit comes off the armour word ($051D/$051E), and below zero the ship is destroyed (destroy_object) with the credit going to the attacker (or a missile's launcher, $0433)"
+   "text": "Slot Y takes damage $80 from slot X (X = $FF for no attacker); A ($A0) is 0 normally, 1 for a type 11 missile (one step of the shields less), $FF for no shield reduction. Nothing for zero damage. A slot 6 and up is never damaged, but a base (type flag bit 0) hit by the player sets $0783, which the base code reads when you dock ($A5B1 in SEG1) and which is cleared when the day changes. A ship with $0403 set is simply freed. Otherwise the ship may remember its attacker in $0439 ($6EDC: the player, a missile's launcher, or a ship that was aiming at it, unless the attacker is in slot 6 and up or is already its target), the damage is cut by the shields (shield_reduce), and a computer ship is sent spinning (random_rates) when a random number from 0 to the damage comes out 6 or more. A hit of 10 or more knocks out a system one time in five ($6F4B) instead of reaching the armour; any other hit comes off the armour word ($051D/$051E), and below zero the ship is destroyed (destroy_object) with the credit going to the attacker (or a missile's launcher, $0433)"
   },
   {
    "address": 28380,
    "type": "line",
-   "text": "Records the attacker in $0439 when it is the player, or a ship that was aiming at this one, and not already this ship's own target"
+   "text": "Records the attacker in $0439, the code above having left out an attacker in slot 6 and up or one that is already this ship's target: the player is recorded; a missile ($0403 set) whose launcher byte ($0433) is 0 or more records its launcher, whatever the missile was aimed at; any other ship is recorded only when it was aiming at this one ($0445)"
   },
   {
    "address": 28427,

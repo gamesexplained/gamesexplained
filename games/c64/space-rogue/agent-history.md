@@ -45,3 +45,19 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   ending, is the title's engine roar: the title sets its mask and raises
   its target note at every step of the lift-off.
 
+
+## 15 October 2026, verify
+
+- Writing facts.md found the flight keys read for the C128: `key_flight_mode`
+  was put down to the C128's HELP key, which gives nothing on a C64;
+  `key_chars` shows that F7 gives `$1F`, the code beside CTRL-E, and F1
+  gives ESC. The same reading found that the speed comes from the
+  joystick in port 1, the steering and fire from port 2.
+- The Codex sample marked 9 of 60 wrong. The pause routine had been read
+  as counting down from its caller's A, from the loop alone; the
+  `clear_key` call above the loop sets A to `$FF`, so every pause is the
+  same. The zero-page bytes the model drawer uses had been named for it
+  alone; listing every routine that touches each one showed 18 shared
+  with the beam, HELM, QUERY, the AI and the station.
+- `random_upto` (`$A298`) is inclusive, so a call with 100 gives 101
+  outcomes; three comments had counted 100.
