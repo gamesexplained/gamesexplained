@@ -16,6 +16,7 @@ time, operating system and tool versions.
 ## What was changed in the kit
 
 - `kit/skills/core/60-verify`, "What a test lets through": a value the start of a new game leaves alone is read at every test of it with what the last game can leave there. The other game is games/c64/wizball, whose shield timer survives a quit into the next game. Lesson `kit/lessons/2026-10-15-storm.md`.
+- `kit/skills/core/70-minisite/play.md`, "Draw a frame over its own memory" (after the Play tab): the page drew the last whole frame's registers over the memory of the frame being run, and the title's message, which `panel_band` moves a character in memory at line $FF, flickered a character ahead. The other game is games/c64/ghostbusters, whose Play tab drew the same way and whose car jumped while steered on the drive; both pages are fixed.
 
 ## What the run met
 

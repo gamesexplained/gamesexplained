@@ -137,6 +137,13 @@ clock handed to both. Each file's header is its manual.
   Run the page's runtime in node from the cold start before opening a
   browser: a game that stalls there (waiting for an interrupt the page
   never raises) stalls in the browser with nothing to say why.
+- **Draw a frame over its own memory.** The page draws the last whole
+  frame while the port runs the next, so keep a copy of the video chip's
+  bank and colour RAM as each frame begins and draw that frame's
+  registers and writes over the copy. Drawn over memory the game has
+  moved on since, anything split between a fine scroll register and a
+  character move in memory jumps a character for a frame and back (in
+  two games, a scrolling message and a car steered across a road).
 
 ## What the port finds in the listing
 

@@ -6,7 +6,7 @@
 // Port is StormPort. Its costs are COST below, which test_play.js --cost measures and writes.
 //   run(t)    runs the port until the clock reaches cycle t (a PAL frame is 19,656 cycles)
 //   joy       [port 1, port 2]: five bits each, 0 for pressed (up 1, down 2, left 4, right 8, fire 16)
-//   shown     the last whole frame, for C64.drawFrame: { vic, writes } (frame is its number)
+//   shown     the last whole frame, for C64.drawFrame: { vic, writes, mem, colour } (frame is its number)
 //   sound     each frame's SID writes, [register, value, ...], until the page takes them
 //   clock, frames, passes, vic, colour, sid, P
 //
@@ -28,7 +28,11 @@
 //
 // The screen. Each write to the video chip is kept with the line and cycle it came on: the main
 // program's at the clock, the interrupt handler's where VICE showed them in a frame of play
-// (index.html's ST_FRAME), so the colour and font changes fall where the game puts them.
+// (index.html's ST_FRAME), so the colour and font changes fall where the game puts them. Each frame
+// keeps the video chip's 16 KB and colour RAM as they stood when it began, and is drawn over those,
+// never over the memory of a later frame: panel_band moves the message line a character on at line
+// $FF, after the line is shown, and drawn over the moved text with its own fine scroll, the frame
+// showed the line a character ahead and the text jumped back and forth.
 globalThis.StormPlay = (function () {
   'use strict';
   const LINE = 63, LINES = 312, FRAME = LINE * LINES;
@@ -61,7 +65,14 @@ globalThis.StormPlay = (function () {
     const joy = [0x1F, 0x1F];
     const S = { clock: 0, frames: 0, passes: 0, shown: null, sound: [], joy, vic, colour, sid, M };
     let done = -1, latch = 0, inIrq = false, bandK = 0, owed = 0, irqOwed = 0, badFrame = false;
-    let cur = { frame: 0, vic: Array.from(vic.subarray(0, 47)), writes: [] }, curSound = [];
+    // two copies of the video chip's bank 0 and colour RAM, the frame being run's and the last whole one's
+    const mems = [new Uint8Array(65536), new Uint8Array(65536)], colours = [new Uint8Array(1024), new Uint8Array(1024)];
+    let side = 0;
+    const begin = (n) => {
+      side ^= 1; mems[side].set(M.subarray(0, 0x4000)); colours[side].set(colour);
+      return { frame: n, vic: Array.from(vic.subarray(0, 47)), writes: [], mem: mems[side], colour: colours[side] };
+    };
+    let cur = begin(0), curSound = [];
 
     const line = () => Math.floor((S.clock % FRAME) / LINE);
     const cmp = () => vic[0x12] | (vic[0x11] & 0x80) << 1;
@@ -122,7 +133,7 @@ globalThis.StormPlay = (function () {
 
     function newFrame(n) {
       S.shown = cur; S.frames = n;
-      cur = { frame: n, vic: Array.from(vic.subarray(0, 47)), writes: [] };
+      cur = begin(n);
       S.sound.push(curSound); curSound = [];
       if (S.sound.length > 100) S.sound.splice(0, S.sound.length - 100);
     }

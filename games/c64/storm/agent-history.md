@@ -135,3 +135,18 @@ passes of play steered by it are part of the lockstep. Checked in
 Chromium at 1,200 and 375 pixels: the title frame lines up with
 `reference/title.png` to the pixel, the guide's line starts at the
 player, and the arrow keys drive Storm in a two-player game.
+
+## The title scroller (15 October 2026)
+
+Aaron saw characters flicker at the left of the title's scrolling
+message before the text moved on. Drawn sixty times a second in node and
+followed from one drawing to the next, the message jumped right 6 pixels
+and back left 10 about once in four drawings. The page drew the last
+whole frame's registers over the memory of the frame being run, and
+`panel_band` (line $FF) moves the message line a character on when the
+fine scroll comes round, so the frame's own fine scroll was laid over
+text a character ahead. Each frame now keeps the video chip's 16 KB and
+colour RAM as they stood when it began and is drawn over them;
+`test_screen.js` holds the message to 0 or 2 pixels left a drawing. The
+Ghostbusters Play tab drew the same way, and its car jumped on the drive
+for the same reason.

@@ -4268,18 +4268,24 @@ else root.GB_GROUPS = (root.GB_GROUPS || []).concat([install]);
     const charRom = opts.charRom || null;               // { base, bytes }: the part of the ROM the game reads
     let t = 0, lastTrigger = -1, ciaT = 0, nmiDue = false, ackLine = 0, irqNow = false;
     const lineNow = () => Math.floor(t / LINE);
-    // frames for the display: registers as the frame began, and each write [line, cycle, address, value]
-    let frameIdx = 0, regs0 = vic.slice(0, 47), cia20 = [pra2, ddra2], writes = [];
+    // frames for the display: registers as the frame began, and each write [line, cycle, address, value];
+    // memory and colour RAM as the frame began too, from a ring of copies, so a frame is drawn over its
+    // own memory: the drive's road moves a character in memory and its fine scroll in $D016, and drawn
+    // over a later frame's road, the frame showed the car a character out for a frame
+    const mems = [0, 1, 2, 3, 4, 5].map(() => new Uint8Array(0x10000)), cols = mems.map(() => new Uint8Array(0x400));
+    let ring = 0;
+    const snap = () => { ring = (ring + 1) % mems.length; mems[ring].set(M); cols[ring].set(colour); return [mems[ring], cols[ring]]; };
+    let frameIdx = 0, regs0 = vic.slice(0, 47), cia20 = [pra2, ddra2], writes = [], [mem0, colour0] = snap();
     const done = [];
     const listeners = { frame: [], sid: [], pass: [], nmi: [] };
     function rollFrames() {
       const f = Math.floor(t / FRAME);
       while (frameIdx < f) {
-        const fr = { n: frameIdx, vic: regs0, cia2: cia20, writes };
+        const fr = { n: frameIdx, vic: regs0, cia2: cia20, writes, mem: mem0, colour: colour0 };
         done.push(fr); if (done.length > 4) done.shift();
         coll |= spriteCollisions(fr);
         frameIdx++;
-        regs0 = vic.slice(0, 47); cia20 = [pra2, ddra2]; writes = [];
+        regs0 = vic.slice(0, 47); cia20 = [pra2, ddra2]; writes = []; [mem0, colour0] = snap();
         for (const f of listeners.frame) f(frameIdx);
       }
     }
@@ -4552,7 +4558,7 @@ else root.GB_GROUPS = (root.GB_GROUPS || []).concat([install]);
         if (s.cia) { for (let n = 0; n < 2; n++) Object.assign(cia[n], JSON.parse(JSON.stringify(s.cia[n]))); pra2 = s.pra2; ddra2 = s.ddra2; }
         t = s.cpu.cycles; ciaT = s.lastCycles !== undefined ? s.lastCycles : t; nmiDue = !!s.nmiDue;
         lastTrigger = Math.floor(t / LINE) - 1; ackLine = lastTrigger; frameIdx = Math.floor(t / FRAME); target = null;
-        regs0 = vic.slice(0, 47); cia20 = [pra2, ddra2]; writes = []; done.length = 0; lastCp = null;
+        regs0 = vic.slice(0, 47); cia20 = [pra2, ddra2]; writes = []; [mem0, colour0] = snap(); done.length = 0; lastCp = null;
         if (P.sp !== undefined && s.cpu) P.sp = s.cpu.sp;
       },
       // the state a moment of play needs besides P.M (the page's level select)
@@ -5098,7 +5104,7 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   let img = null, keep = {};
   function draw() {
     const f = rt && rt.lastFrame(); if (!f) return;
-    const r = C64.renderFrame({ vic: Array.from(f.vic), cia2: f.cia2, writes: f.writes, mem: rt.M, colourMem: rt.colour, keep });
+    const r = C64.renderFrame({ vic: Array.from(f.vic), cia2: f.cia2, writes: f.writes, mem: f.mem, colourMem: f.colour, keep });
     if (cv.width !== r.w) { cv.width = r.w; cv.height = r.h; }
     if (!img) img = ctx.createImageData(r.w, r.h);
     const d = img.data, px = r.px;

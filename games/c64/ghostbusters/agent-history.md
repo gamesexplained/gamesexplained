@@ -59,3 +59,15 @@ frames. The old How it works text said eight shapes were mirrored "for walking l
 mirrored shapes are the proton stream's six and the two after them (`$4640`-`$483F`), and the
 men have their own left-facing frames, so the Graphics text says that instead. Item 4's shape,
 drawn for the first time, looks like the trap with its flaps raised.
+
+## 15 October 2026
+
+The Play tab's car jumped from side to side on the drive while it was
+steered. The page drew the last whole frame's registers, the fine scroll
+in `$D016` among them, over memory the next frame had already changed,
+and `road_scroll_left` and `road_scroll_right` move the road a character
+in memory every fourth step. Followed in Chromium over 900 drawings, the
+car moved by 6 and 10 pixels and turned back 132 times; drawn over the
+memory each frame began with, it moved in steps of 2 pixels and turned
+back 4 times, in a drive steered the other way 5 times. The same fault
+made the Storm title's message flicker.
