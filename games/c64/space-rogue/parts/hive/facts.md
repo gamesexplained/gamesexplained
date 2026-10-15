@@ -36,11 +36,15 @@ map entries are the station part's and the engine's.
 - `hive_caught` (`$5947`): the trooper is caught when two Manchi stand
   next to him at once, diagonals included. One alone does nothing.
 - `hive_raise_mound` (`$59BA`): at most five mounds. A new one rises
-  after a wait of 1 plus a random 0-90 passes, counted twice as fast
-  while there are none; a mound needs a free square of plain ground, not
-  the ship's hatch. The code computes 150 - 8 × level as well, but the
-  BCC at `$59E4` keeps it only when the subtraction goes below zero, so
-  for every level up to 18 the wait does not shorten.
+  when a timer runs out, counted down once a pass and twice while there
+  are none; a mound needs a free square of plain ground, not the ship's
+  hatch. The timer is set from the level: 150 - 8 × level, worked out in
+  one byte, is kept only when the subtraction goes below zero (the BCC
+  at `$59E4`), otherwise 1, and a random 0-90 is added with
+  `random_upto`'s carry, set only when that number is 90. Every level up
+  to 18 so waits 1 to 90 passes, or 92, where the code meant
+  150 - 8 × level more; from level 19 the wrapped result is kept, and at
+  level 32 (8 × 32 is 256) the pattern starts again.
 - `hive_breed` (`$5A74`): a mound keeps up to four Manchi, each with the
   mound's number in its action byte; a Manchi shot frees a place.
 - `hive_mood` (`$5976`): when any Manchi can see the trooper, all of
