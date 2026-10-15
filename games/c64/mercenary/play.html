@@ -52,6 +52,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-bar button,.pl-over button,.pl-mod button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
 .pl-bar button[aria-pressed="true"],.pl-mod button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .pl-bar button:hover,.pl-mod button:hover{border-color:var(--ink-mute)}
+.pl-bar button:disabled{opacity:.45;cursor:default;border-color:var(--line)}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
@@ -88,6 +89,7 @@ section table{margin:6px 0 18px}
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
+      <button type="button" data-act="skip" title="Run the intro at full speed to the crash landing, the frame where the game hands you control">Skip intro</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="smooth" aria-pressed="false" title="Draw the view at the screen's own frame rate, moving between the game's pictures">Smooth motion</button>
@@ -208,6 +210,7 @@ section table{margin:6px 0 18px}
   <h2 class="t">What differs from a C64</h2>
   <ul class="pl-list">
     <li><b>The disk.</b> There is no loading: the game starts at the countdown. Saves go to the browser's storage, one for each digit, in the game's own 1,904-byte format.</li>
+    <li><b>Skip intro.</b> The button runs the opening at full speed with no key held, and stops on the frame of the crash landing, where the game puts you on foot and the stick starts to walk. From there it is the game a player who watched the whole opening would have, byte for byte.</li>
     <li><b>The screen.</b> The video chip is drawn line by line from the registers the game writes and the line each write lands on, which is how the game splits the screen into the view, the panel and the message window. A register written in the middle of a line takes effect from the next line.</li>
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, a frame at a time.</li>
     <li><b>The interrupts.</b> They run between the steps of a pass, not inside them (section 02).</li>
@@ -6096,9 +6099,22 @@ function makeRuntime(P, opts) {
   // calls that follow then wait for real time to catch up)
   let target = null;
   function runFrame() { if (target === null) target = t; target += FRAME; if (t < target) runUntil(target); return done[done.length - 1]; }
+  // The opening: the start-up's starfield and planet until the main loop's first pass, then the
+  // descent, motion mode 10 ($A9). The descent ends in the crash landing, whose leave_craft ($98C8)
+  // puts the player on foot ($A9 = $80), and the next pass's read_controls ($85DB) walks: the game
+  // has handed over. skipOpening(n) lets go of the keys and the stick and runs up to n frames, as
+  // the page's loop would with nothing held, stopping after the first frame that ends with the
+  // opening over; it says whether it is.
+  const inOpening = () => passes === 0 || M[0xA9] === 0x0A;
+  function skipOpening(n) {
+    input.joy = 0x1F; input.keys = new Set();
+    while (inOpening() && n-- > 0) runFrame();
+    return !inOpening();
+  }
   return {
     P, M, vic, sid, colour, input,
     get t() { return t; }, get target() { return target; }, get frame() { return frameIdx; }, get passes() { return passes; },
+    get inOpening() { return inOpening(); }, skipOpening,
     runFrame, runUntil, lastFrame: () => done[done.length - 1],
     onPass: f => listeners.pass.push(f), onCheckpoint: f => listeners.cp.push(f), onSid: f => sidListeners.push(f),
   };
@@ -7141,7 +7157,7 @@ function makeDisplay(opts) {
   const ORIGINAL_7009 = [0x01, 0xFF, 0x20, 0x20, 0x4E, 0x4F, 0x56, 0x41, 0x44, 0x52, 0x49, 0x56, 0x45, 0x20,
     0x43, 0x4F, 0x55, 0x4E, 0x54, 0x44, 0x4F, 0x57, 0x4E, 0x20, 0xA0, 0x00];
 
-  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false, smooth = false;
+  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false, smooth = false, skipping = false;
   const INSTALL = window.MERC_INSTALL || [];
 
   // --- saving: the game's save file (1904 bytes) in the browser's storage, one slot a digit
@@ -7210,6 +7226,7 @@ function makeDisplay(opts) {
   let acc = 0, last = 0;
   function tick(now) {
     requestAnimationFrame(tick);
+    if (skipping && running && !paused) { skipSlice(now); return; }
     if (!running || paused) { last = now; return; }
     acc += Math.min(250, now - (last || now)); last = now;
     let n = 0;
@@ -7217,11 +7234,40 @@ function makeDisplay(opts) {
       while (acc >= FRAME_MS && n < 10) { rt.runFrame(); taps(); sound.frame(); acc -= FRAME_MS; n++; }
     } catch (e) { running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
     if (n === 10) acc = 0;
-    if (n) compose();
+    if (n) { compose(); skipButton(); }
     if (n || smooth) {
       try { present(viewTime()); }
       catch (e) { console.error(e); setSmooth(false); say('Smooth motion stopped: ' + e.message); }   // the view, never the game
     }
+  }
+
+  // --- skipping the intro: the clock runs as fast as the browser allows, a slice of frames each
+  // time it paints, to the frame where the game hands over (rt.skipOpening); then real time again,
+  // from the same moment, in the same state, as a player who watched the whole intro would reach
+  const SKIP_MS = 30;
+  const skipBtn = document.querySelector('#pl-bar [data-act="skip"]');
+  function skipButton() { const off = !!rt && !rt.inOpening; if (skipBtn.disabled !== off) skipBtn.disabled = off; }
+  function skip() {
+    if (!image || skipping) return;
+    if (!rt) start();
+    else if (!running) return;                     // the port stopped
+    if (!rt.inOpening) return;
+    paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+    tapList.length = 0;
+    sound.hold();
+    skipping = true;
+  }
+  function skipSlice(now) {
+    const t0 = performance.now();
+    let over = false;
+    try { do over = rt.skipOpening(25); while (!over && performance.now() - t0 < SKIP_MS); }
+    catch (e) { skipping = false; running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
+    compose(); present(viewTime());
+    const at = Math.round(rt.frame * FRAME_MS / 1000) + ' s';
+    if (!over) { say('Skipping the intro: ' + at + ' in…'); return; }
+    skipping = false; acc = 0; last = now;
+    sound.skip(); joy(); keysNow(); skipButton(); screen.focus();
+    say('The intro is over: the game hands you control here, ' + at + ' in.');
   }
 
   // --- input: the keyboard as the C64's, the arrows as the joystick in port 2 -----------------
@@ -7307,6 +7353,7 @@ function makeDisplay(opts) {
       return d;
     }
     function reset() { pending.clear(); sent = rt ? rt.frame : 0; }
+    const regs = () => Array.from(rt ? rt.sid.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : []);
     function attach() {
       if (!rt) return;
       reset();
@@ -7321,7 +7368,7 @@ function makeDisplay(opts) {
       if (want && !on) reset();
       on = want;
       if (on && !host) {
-        try { host = await C64Sid.host({ driver, data: null, gain: 0.5 }); host.send({ cmd: 'start', tune: { frames: [Array.from(rt ? rt.sid.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])] } }); }
+        try { host = await C64Sid.host({ driver, data: null, gain: 0.5 }); host.send({ cmd: 'start', tune: { frames: [regs()] } }); }
         catch (e) { on = false; say('No sound: ' + e.message); }
       }
       if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
@@ -7333,7 +7380,11 @@ function makeDisplay(opts) {
       for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
       if (frames.length) host.send({ cmd: 'start', tune: { frames } });
     }
-    return { attach, set, frame, get on() { return on; } };
+    // a skip: silent while the frames run; then the frames skipped dropped, and the chip's
+    // registers sent as they stand
+    function hold() { if (on && host) host.ctx.suspend(); }
+    function skip() { reset(); if (on && host) { host.send({ cmd: 'start', tune: { frames: [regs()] } }); host.ctx.resume(); } }
+    return { attach, set, frame, hold, skip, get on() { return on; } };
   })();
 
   // --- controls ---------------------------------------------------------------------------------
@@ -7357,7 +7408,8 @@ function makeDisplay(opts) {
     const b = e.target.closest('button'); if (!b) return;
     const act = b.dataset.act;
     if (act === 'pause') { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
-    else if (act === 'restart') { rt = null; boot(); sound.attach(); running = true; paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false'); screen.focus(); }
+    else if (act === 'restart') { rt = null; skipping = false; boot(); sound.attach(); running = true; paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false'); skipButton(); screen.focus(); }
+    else if (act === 'skip') skip();
     else if (act === 'render') { native = !native; b.setAttribute('aria-pressed', String(native)); if (!native) { cv.width = 1; } draw(); screen.focus(); }
     else if (act === 'smooth') { setSmooth(!smooth); draw(); screen.focus(); }
     else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); screen.focus(); }
