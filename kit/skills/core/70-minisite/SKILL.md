@@ -329,7 +329,10 @@ checklist mechanically, paragraph by paragraph:
    Three genuine items are fine; three arranged for a drumbeat are not.
 6. State it positively. A one-beat correction is fine when the reader would
    genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
-   but never "it's not X, it's Y" as the sentence's whole move.
+   but never "it's not X, it's Y" as the sentence's whole move. Search
+   for "no " as well: where "no X" is the one acting ("no gate leads to
+   it"), rewrite the sentence so a real thing acts, or say "there is no
+   X" (`kit/style.md`, the section on "no X" as the subject).
 7. Give every paragraph its purpose, in a line written to yourself
    (`kit/style.md`, "Paragraphs"). First check that purpose against the
    page's subtitle and the section's heading, and move the paragraph to the

@@ -22,6 +22,7 @@ time, operating system and tool versions.
 - `site/lib/sid.js`: the test bit set and cleared within one frame now resets the oscillator, as the chip does. The player lands a frame's writes at one instant, so the engine hum, which restarts its wave this way every frame, played as a steady tone. Test: `kit/c64/test_sid_test_bit.js`.
 - `kit/scripts/check_listing.py`: an instruction that starts in the part beneath and runs on into this part's range is not reported as untyped code. Its operand bytes belong to the other part's instruction, and typing them as code here would decode a false instruction. Test: `kit/scripts/test_check_listing_codemap.py`.
 - `kit/scripts/test_kit.py`: `-h` prints the usage and exits; it ran every test.
+- `kit/style.md`: a section on "no X" as the subject asks for a sentence where a real thing acts, or "there is no X", in place of an absence as the subject ("no gate leads to it"), with three of this game's lines as its examples (Aaron's review of the Discoveries page). `kit/skills/core/70-minisite`: step 6 of the rewrite pass searches for it. games/c64/the-sentinel ("No landscape is stored") and games/c64/storm ("no brooch can bring it back down") have the same shape.
 
 ## What the run met
 

@@ -88,6 +88,23 @@ villain needs the base", "how the game picks a walking frame". Then:
 
 The test is a human reading the page without noticing how it was made.
 
+### "No X" as the subject
+
+Do not make an absence the thing that acts. "No gate leads to it" and
+"no player is told" put "no X" where the subject goes, and the reader
+has to turn the sentence round to find what is true. If "no X" would be
+the actor, rewrite the sentence so that a real thing acts, or state the
+absence plainly. "There is no X" is fine: "There is no music in this
+game."
+
+Real examples:
+
+| Original | Improved to |
+|-|-|
+| Secret: no Malir gate leads to Ja-Karn | Secret: there is no Malir gate that leads to Ja-Karn |
+| Its map lists no gates, and no gate in the other eight leads to it | Its map does not list any gates, and none of the other eight systems have a gate leading to it |
+| What the code does that no player is told | What the code does that the game never tells the player |
+
 ### Section headings
 
 These are important as hooks for the reader – are they intrigued, do they get an immediate sense of what they can learn or play with?
