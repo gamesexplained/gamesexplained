@@ -28,6 +28,7 @@ that points at a part beneath, or into a bank, reads as that part names it now.
 
 Usage: check_listing.py [game dir ...]      default: every game, and every part of one
 """
+import bisect
 import concurrent.futures
 import glob, hashlib, json, os, subprocess, sys
 
@@ -50,6 +51,14 @@ def untyped_code(gdir, S):
     # in RAM (BASIC's CHRGET at $0073 runs during RUN) is the machine's, not untyped game code
     out = {a for lo, hi, *_ in (S.get("regions") or {}).get("exclude", []) for a in range(lo, hi + 1)}
     loose = span("code") - out - {a for b in S["blocks"] if b["type"] == "Code" for a in range(b["start"], b["end"] + 1)}
+    # an instruction that starts in what the ledger excludes (the part beneath) and runs on into this
+    # part's range: its operand is the other part's instruction, which this part cannot type as code
+    # without decoding a false instruction where it begins (Space Rogue's station, $A4FE-$A500)
+    starts = sorted(cm.get("starts") or [])
+    def spills(a):
+        i = bisect.bisect_right(starts, a) - 1
+        return i >= 0 and starts[i] in out and a - starts[i] < 3
+    loose = {a for a in loose if not spills(a)}
     ran = loose & span("ran")
     return sorted(ran), sorted(loose - ran)
 
