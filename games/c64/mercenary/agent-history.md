@@ -297,3 +297,20 @@ wait (`$AF7D`-`$85B0`, the flip and the sky and ground fill) runs 2.5 %
 short, and in one of the random sessions the lockstep found a single byte
 different at the start of pass 291, `$02C2` (vertex slot 2's Y' exponent,
 game `$15`, port `$14`), which this session did not explain.
+
+## 15 October 2026: Skip intro on the Play tab
+
+Asked for a button that skips the intro to the frame where it hands the
+player control. On the page's runtime, with nothing held, the start-up's
+starfield and planet end at frame 2,647 (the main loop's first pass), and
+the descent, motion mode 10, ends in the crash landing during pass 96:
+`leave_craft` (`$98C8`) sets `$A9` = `$80` at frame 3,676, as Benson
+finishes MANUAL CONTROL. The next pass's `read_controls` (frame 3,686)
+already walks; the crash's black flash (`$F9`, 104 frames) follows it. So
+the hand-over is the crash, not the main loop's first pass (the stick
+does nothing in the descent) and not the end of the flash. The button
+fast-forwards the runtime's own `runFrame` with the keys and stick let go,
+stopping after the 3,677th frame (73.4 s), the first to end on foot:
+about half a second in Chromium. `test_skip.js` holds it against the
+intro watched frame by frame, all of memory and the chips at the
+hand-over and 800 frames of walking after.

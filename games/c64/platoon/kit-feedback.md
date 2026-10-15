@@ -41,3 +41,15 @@ folder: `symbols_export.py <part>` then refused, and its message named
 No kit change would have saved much: the longest step, finding where the
 loader waits for a key, took one sample of the program counter, as
 `tool-vice-mcp` already says.
+
+## Silver run, 15 October 2026
+
+- `check_listing.py` failed on the byte after an `rts` or `rti`: the emulator's memory map
+  marks the processor's dummy fetch of that byte as run code, and the byte belongs to the
+  data or code after it. Fixed in this branch: `untyped_code` drops the byte after a typed
+  one-byte `rts` or `rti`. One more byte, `$E573` in load 4, is still marked as run with no
+  jump reaching it, and is excluded with that reason.
+- The ledger counted 100 % while whole stretches the code reads through pointers (tune data,
+  room maps, the rest of tables past a label's 64-byte reach) were left out of the listing.
+  Running each part's music driver on `cpu6502.js` with `reads`/`executed` found them; a
+  script in `50-coverage` that does this for any routine would catch it.

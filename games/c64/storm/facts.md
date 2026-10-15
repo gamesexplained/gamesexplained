@@ -266,6 +266,15 @@ after loading starts with those.
   the character and colour `draw_walls` left behind, those of the room's
   last wall record; rooms 37 and 81 mix two styles, and their border
   takes the second.
+- **The title tune can drop a block's colours.** The tune's driver runs
+  in `panel_band` while `title_mode` is set and keeps its pointers in
+  `$02-$05`; `$03`/`$04` is also where `cell_address` leaves the colour
+  RAM address of the block `put_block` is drawing. When the interrupt
+  falls in the middle of a block, the rest of the block's colours go
+  through the tune's pointer, to RAM the game does not use, and those
+  cells keep the colours they had. *Traced*: `test_play.js` hooks the
+  two colour stores (`$6481`, `$7C76`) and counted 8 such stores in
+  40,000 passes, every one with `title_mode` set.
 - **Unused**: sound effect 5; the flags `sfx_unused_1` and
   `sfx_unused_2`; `gen_phase`, `mon_phase` and `$812C-$812E` (written,
   never read); arpeggios `$C2`-`$C4`, `$C6` and `$C9`-`$CD`; the tune's

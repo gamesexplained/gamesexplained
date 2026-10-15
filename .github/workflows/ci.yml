@@ -91,7 +91,8 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
-  # Post each newly added game to Discord once the site carrying it is live.
+  # Post each newly added game to Discord once the site carrying it is live,
+  # and each update a merged pull request lands on a game already there.
   announce:
     needs: deploy
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -115,3 +116,11 @@ jobs:
             echo "Announcing $gj"
             curl -sSf -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK"
           done
+      # The summary is the pull request's title, minus its game prefix;
+      # kit/scripts/announce_updates.py holds the rules for staying silent.
+      - name: Post updated games to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          BEFORE: ${{ github.event.before }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 kit/scripts/announce_updates.py

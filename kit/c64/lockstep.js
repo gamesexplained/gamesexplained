@@ -20,7 +20,8 @@
 //                     calls a routine (the JSR, which is also where the call before returns to);
 //                     a pass starts at the machine's passAt
 //     { wait: line }  a wait for the raster to reach line: the game's loop polls $D012 and leaves
-//                     at one of the waits' exits
+//                     at one of the waits' exits (two waits with no checkpoint between are two stops
+//                     at the exit, as a routine that waits, called twice running, makes them)
 //     { cycles: n }   n cycles of the game's own work, as a page's clock counts them; with at: a,
 //                     the game is at a, and it is a checkpoint when a is listed
 //     anything else   a bare yield, one turn of a polling loop: one raster line passes
@@ -53,7 +54,8 @@
 // - irqs: { handler address: a function, or the name of one of P's }. The interrupts the game took
 //   run in the port in order, at the port's next yield of any kind: a replay can keep the order
 //   but not the place inside a stretch. So each runs on the memory the game's handler saw: the
-//   bytes it read are set to the values it read (the stack aside), and go back to the port's after
+//   bytes it read, its instructions' operands among them, are set to the values it read (the stack
+//   aside), and go back to the port's after
 //   unless it wrote them. Its reads of the raster ($D012, and $D011's bit 7) get the values the
 //   game's did, in turn (a read past those, the line the game's handler ended on), and the raster's
 //   interrupt bit is latched. At the next checkpoint or wait's exit, where the two stand at the same
@@ -116,7 +118,9 @@
 // While a lockstep runs it owns the machine: it hooks the checkpoints and wraps the machine's irq
 // and ioRead, and it puts them back when run returns.
 const { Machine, LINES, FRAME } = require('./machine.js');
-const { CPU } = require('./cpu6502.js');
+const { CPU, OPCODES } = require('./cpu6502.js');
+// each opcode's length in bytes, from its addressing mode
+const LENGTH = Uint8Array.from(OPCODES, ([, mode]) => mode === 'imp' || mode === 'acc' ? 1 : ['abs', 'abx', 'aby', 'ind'].includes(mode) ? 3 : 2);
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
@@ -307,8 +311,19 @@ class Lockstep {
         if (a < 0x100 ? a > 1 : c.wk[a >>> 8] === RAM_W) q.wrote.set(a, 0);
         return true;
       } });
+      // an instruction's operand is read too: a handler whose code the main program patches
+      // (an address stored into it) runs on the operand it fetched
+      const executed = new Proxy({}, { set(t, k) {
+        const a = +k;
+        if (c.rk[a >>> 8] !== RAM_R) return true;
+        for (let i = 1; i < LENGTH[c.m[a]]; i++) {
+          const b = (a + i) & 0xFFFF;
+          if (c.rk[b >>> 8] === RAM_R && !q.seen.has(b) && !q.wrote.has(b)) q.seen.set(b, c.m[b]);
+        }
+        return true;
+      } });
       ls.irq = q;
-      try { return irq.call(c, handler, Object.assign({}, opts, { reads, writes })); }
+      try { return irq.call(c, handler, Object.assign({}, opts, { reads, writes, executed })); }
       finally {
         ls.irq = null;
         for (const a of q.wrote.keys()) q.wrote.set(a, c.m[a]);
@@ -455,7 +470,7 @@ class Lockstep {
   }
   rasterWait(line, y) {
     if (!this.waits.size) throw this.annotate(new Error('Lockstep: the port waits for the raster, and no waits are given'));
-    this.through = this.last;
+    this.through = this.cps.has(this.last) ? this.last : -1;   // after a wait's exit, the same exit is the next stop
     let at;
     try { at = this.toStop(); } finally { this.through = -1; }
     const ln = this.m.line;

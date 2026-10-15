@@ -271,4 +271,54 @@ const input = (n, m) => {
   check('an interrupt with no handler', /no port handler for the interrupt at \$1130/.test(msg), true);
 }
 
+// 12. Two raster waits with no checkpoint between: the game calls its wait twice running (the JSR
+// at $1033 made a second JSR to it), and the port yields the wait twice; each is a stop at the exit.
+{
+  const st = JSON.parse(JSON.stringify(STATE)), ram = Buffer.from(st.ram, 'base64');
+  ram[0x1034] = ADDR.WAIT & 255; ram[0x1035] = ADDR.WAIT >> 8;
+  st.ram = ram.toString('base64');
+  const P = port(), M = P.M;
+  P.main_loop = function* () {
+    for (;;) {
+      yield { cp: 0x1027 }; M[0x2000] = (M[0x2000] + 1) & 255;
+      yield { cp: 0x102A }; P.scan();
+      yield { cp: 0x102D }; P.work();
+      yield { cp: 0x1030 }; yield* P.wait(); yield* P.wait();
+      yield { cp: 0x1036 }; yield* P.poll();
+    }
+  };
+  const r = new Lockstep(Object.assign({ machine: Machine.restore(st), port: P, program: p => p.main_loop() }, OPTS,
+    { checkpoints: [ADDR.MAIN, 0x102A, 0x102D, 0x1030, 0x1036], ignore: [0x200A] })).run({ passes: 20, onPass: input });
+  check('two waits running: 20 passes identical', r.ok && r.passes === 20, true);
+}
+
+// 13. A handler whose operand the main program patches: the interrupt falls in a delay loop before
+// the INC that moves the operand of its LDA on, so it loads with the operand as it was; the port's
+// stretch has moved it on before the replay, which must run on the operand the game's fetched.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x68, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0x58, 0x4C, 0x20, 0x10);   // set up, CLI, JMP $1020
+  put(0x1020, 0x20, 0x40, 0x10, 0x20, 0x50, 0x10, 0x4C, 0x20, 0x10);                     // JSR delay, JSR wait, JMP
+  put(0x1040, 0xA2, 0x00, 0xE8, 0xD0, 0xFD, 0xEE, 0x02, 0x11, 0x60);                     // 256 INX, INC $1102, RTS
+  put(0x1050, 0xAD, 0x12, 0xD0, 0xC9, 0x60, 0xD0, 0xF9, 0x60);                           // wait for line $60
+  put(0x1100, 0x48, 0xAD, 0x00, 0x20, 0x8D, 0x10, 0x21, 0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40);   // LDA $2000 (patched), STA $2110
+  for (let i = 0; i < 256; i++) ram[0x2000 + i] = (i * 7 + 3) & 255;
+  const M = new Uint8Array(65536), P = { M };
+  P.irq = function () { M[0x2110] = M[M[0x1102] | M[0x1103] << 8]; P.io.vicWrite(0x19, 0xFF); };
+  const program = function* () {
+    M[0xFFFE] = 0x00; M[0xFFFF] = 0x11;
+    P.io.vicWrite(0x12, 0x68); P.io.vicWrite(0x11, 0x1B); P.io.vicWrite(0x1A, 0x01);
+    yield { cycles: 34, at: 0x1020 };
+    for (;;) {
+      yield { cp: 0x1020 }; M[0x1102] = (M[0x1102] + 1) & 255;
+      yield { cp: 0x1023 }; yield { wait: 0x60 };
+    }
+  };
+  const m = new Machine({ ram, pc: 0x1000, passAt: 0x1020, port: { dir: 0x2F, data: 0x35 } });
+  const r = new Lockstep({ machine: m, port: P, program, checkpoints: [0x1020, 0x1023], waits: [0x1057], irqs: { 0x1100: 'irq' } }).run({ passes: 20 });
+  check('a patched operand in a handler: 20 passes identical', r.ok && r.passes === 20, true);
+}
+
 process.exit(fails ? 1 : 0);

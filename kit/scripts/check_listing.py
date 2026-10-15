@@ -59,6 +59,13 @@ def untyped_code(gdir, S):
         i = bisect.bisect_right(starts, a) - 1
         return i >= 0 and starts[i] in out and a - starts[i] < 3
     loose = {a for a in loose if not spills(a)}
+    # the processor fetches the byte after a one-byte RTS or RTI and drops it, and the emulator's
+    # memory map marks that fetch as code: such a byte is the next thing's, not untyped code
+    lp = os.path.join(gdir, "listing.json")
+    if os.path.isfile(lp):
+        ends = {r["a"] + 1 for r in json.load(open(lp))["records"]
+                if r.get("t") == "code" and r.get("b") in ([0x60], [0x40])}
+        loose -= ends
     ran = loose & span("ran")
     return sorted(ran), sorted(loose - ran)
 

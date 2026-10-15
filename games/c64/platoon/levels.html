@@ -1,0 +1,320 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">Commodore 64 · 1987 · Ocean</p><h1>Platoon: maps</h1><p class="sub">Every map of the game, drawn in the page from the bytes each section loads: the jungle and village scroll, the tunnel map, and the 120 rooms of the last jungle.</p></header>
+<main class="wrap" data-part="">
+
+<section id="jungle"><p class="fig">01 · Section one</p><h2 class="t">The jungle and the village</h2>
+<p>The whole map of the first section: 20 rows of 90 blocks from <a href="source-load1.html#A000"><code>$A000</code></a>, each block 8 by 6 characters from <a href="source-load1.html#8000"><code>$8000</code></a>. The screen shows five blocks across and three down at a time. The top three rows are drawn with the character set and colours the game swaps in when the soldier climbs up to them (<code>$BAB6</code>), the rest with the jungle's (<code>$BAFD</code>).</p>
+<p>The jungle is six levels, each one scene high. Ladders join each level to the one below at the same place: pressing down on a ladder's foothold (<a href="source-load1.html#0EA7"><code>$0EA7</code></a>) takes the soldier down a level, and pressing up at its top (<a href="source-load1.html#0DE2"><code>$0DE2</code></a>) takes him back. The six huts on the top level have doors, and going up through one leads to the inside of that hut on the sixth level (<a href="source-load1.html#29B6"><code>$29B6</code></a>), where the searches and the trapdoor are.</p>
+<div class="plate"><div style="overflow-x:auto" id="jscroll"><div style="position:relative;width:max-content"><canvas id="jmap"></canvas><canvas id="jroute" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></div></div>
+<p class="cap"><button id="jplay" type="button">▶ Play the route</button> <span id="jstep" aria-live="polite"></span><br>The route is the shortest walk between the jobs, worked out from the ladders and hut doors in the map data. After the bridge blows it keeps off the bridge. Tree trunks stop the soldier walking (<a href="source-load1.html#0F17"><code>$0F17</code></a>, <a href="source-load1.html#0FAA"><code>$0FAA</code></a>), so the route goes round them by ladder. Before the bridge blows it stays short of the far side, where the patrol that ends the game waits. A hut door drops the soldier straight into that hut, so those jumps are drawn as long lines.</p><p class="cap" id="jcap"><label><input type="checkbox" id="jjoin" checked> Join the levels</label>: the insides of the huts are drawn at the top, above the village they open from. Joining hides most of the treetops between levels, so each ladder runs straight from one level into the next. The two block rows below the huts are left out: the lowest scene starts at the huts, so they are never on screen. Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start (<a href="source-load1.html#0544"><code>$0544</code></a>), ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
+</section>
+
+<section id="tunnels"><p class="fig">02 · Section two</p><h2 class="t">The tunnel map</h2>
+<p>The map in the corner of the tunnel screen is nine windows of 19 by 19 characters from <a href="source-load3.html#9C20"><code>$9C20</code></a>, one shown at a time and swapped as the soldier nears an edge (<code>$146B</code>). Each character is a square: open tunnel (code 2), water (code 3), the walls' edges (codes 4 to 9), or rock.</p>
+<div class="plate"><canvas id="tmap"></canvas><p class="cap">Drawn by square kind, not with the game's characters: open tunnel pale, water marked with waves, edges grey, rock dark. Windows are numbered in the order of the table at <code>$1390</code>, whose last four entries point at room pictures instead.</p></div>
+</section>
+
+<section id="maze"><p class="fig">03 · Section three</p><h2 class="t">The map of the last jungle</h2>
+<p>The rooms sit on a grid ten wide and twelve high, numbered across from 0 (<a href="source-load4.html#3591"><code>$3591</code></a>). Each room has a kind from 1 to 16; kind 0 is outside the maze. The kind picks one of ten maps of 30 by 25 characters (<code>$3609</code>, <code>$361A</code>) and a list of trees, huts and other shapes drawn over it (<code>$36D1</code>), so rooms of the same kind look alike.</p>
+<div class="plate"><canvas id="rgrid"></canvas><p class="cap">The whole maze, every room drawn at its place on the grid with its number; the soldier starts in room 105 (START), and the three rooms of kind 16 (BUNKER) are Barnes's, whose edges the room test at <code>$33E7</code> handles apart from the others. Empty squares are outside the maze. The white line is the way to the bunker. Press a room to draw it larger below.</p>
+<p class="cap"><button id="mplay" type="button">▶ Play the way to the bunker</button> <span id="mstep" aria-live="polite"></span><br>Walking off a room's left or right edge leads to a neighbouring room, but which neighbour depends on the way the soldier has turned: each exit rotates the four directions (<a href="source-load4.html#344A"><code>$344A</code></a>, <a href="source-load4.html#34A0"><code>$34A0</code></a>), so the same edge can lead somewhere different on a later visit. The route is the shortest one through those rules, from START to the bunker, and says which edge to leave by in each room.</p>
+<div class="row"><span class="lab" id="rlab"></span></div>
+<canvas id="room" style="margin-top:12px"></canvas></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script type="application/json" data-listing="parts/load1/listing.json">["$8000-$9C7F", "$A000-$A707", "$AE00-$AFFF", "$CD4A-$CDA8", "$D000-$DFFF"]</script>
+<script type="application/json" data-listing="parts/load3/listing.json">["$1390-$13AF", "$9C20-$B1FF"]</script>
+<script type="application/json" data-listing="parts/load4/listing.json">["$3591-$3633", "$36D1-$3D92", "$8000-$9A6F", "$A800-$AFFF"]</script>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  const C = globalThis.C64, $ = id => document.getElementById(id);
+  if (!C) { $('jcap').textContent = 'These maps need the site\'s shared scripts: open the page from the built site.'; return; }
+  const P = C.PAL;
+  function glyph(ctx, set, code, x, y, colour, cols, s) {
+    if (colour & 8) C.drawGlyphMC(ctx, set, code, x, y, s, [cols[0], cols[1], cols[2], P[colour & 7]]);
+    else C.drawGlyph(ctx, set, code, x, y, s, P[colour & 15]);
+  }
+  Promise.all(['load1', 'load3', 'load4'].map(p => C.load('parts/' + p + '/listing.json'))).then(([A, T, J]) => {
+    // section one: rows of 90 block numbers, each block 8 x 6 characters
+    const m = A.ram;
+    let jy = null;
+    function drawJungle(joined) {
+    // joined: hide the top block row of levels 2 to 5 (rows 3, 6, 9 and 12) so each ladder runs straight into the level below
+    // rows 18 and 19 are never on screen: the lowest scene starts at row 15
+    const hide = joined ? [3, 6, 9, 12] : [], rows = [15, 16, 17, ...Array(15).keys()].filter(r => !hide.includes(r));
+    // joined also drops the top three character rows of each joined level's first row, more treetop
+    const cut = r => joined && [4, 7, 10, 13].includes(r) ? 3 : 0;
+    const top = []; let acc = 0; rows.forEach(r => { top[r] = acc - cut(r) * 8; acc += 48 - cut(r) * 8; });
+    const Yr = r => top[r] !== undefined ? top[r] : top[r + 1];
+    const ctx = C.canvas($('jmap'), 90 * 64, acc);
+    ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 90 * 64, acc);
+    const cols = [P[0], P[9], P[13]];
+    for (const r of rows) {
+      // the huts' insides (rows 15 to 17) are entered from the top level, so they keep its character set: nothing swaps it back on the way in ($29B6)
+      const vs = r < 3 || r >= 15, set = m.subarray(vs ? 0xD800 : 0xD000, (vs ? 0xD800 : 0xD000) + 2048), ct = vs ? 0xAE00 : 0xAF00;
+      for (let c = 0; c < 90; c++) {
+        const blk = 0x8000 + 48 * m[0xA000 + 90 * r + c];
+        for (let y = cut(r); y < 6; y++) for (let x = 0; x < 8; x++) {
+          const ch = m[blk + 8 * y + x];
+          glyph(ctx, set, ch, (c * 8 + x) * 8, Yr(r) + y * 8, m[ct + ch], cols, 1);
+        }
+      }
+    }
+    // landmarks: map positions name the scene's left block; the soldier stands two blocks in
+    const NAMES = {0: 'flour', 1: 'stool', 2: 'table', 3: 'rice', 11: 'empty', 17: 'map', 18: 'torch', 19: 'water', 20: 'rubbish', 21: 'provisions', 23: 'booby trap'};
+    const marks = [[0x0114, 0, '▶', 'start'], [0x0150, 0, '■', 'bridge'], [0x0469, 7, '■', 'explosives'], [0x057B, 0, '▼', 'trapdoor'], [0x0580, 0, '■', 'villager']];
+    const huts = [];
+    for (let i = 0; i < 19; i++) {
+      const msg = m[0xCD96 + i], pos = 0x0500 | m[0xCD4A + i], x = ((pos % 90) + 2) * 64 + m[0xCD70 + i] * 8;
+      const line = (msg === 0x17 ? '✕ ' : msg === 0x12 || msg === 0x11 ? '★ ' : '· ') + (NAMES[msg] || 'message ' + msg);
+      const h = huts.find(h => Math.abs(h.x - x) < 160);
+      if (h) { h.x = Math.min(h.x, x); h.lines.push(line); } else huts.push({x, r: Math.floor(pos / 90), lines: [line]});
+    }
+    ctx.font = 'bold 13px IBM Plex Mono, monospace'; ctx.textAlign = 'left';
+    function tag(x, y, lines) {
+      const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 8, hgt = 15 * lines.length + 3;
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, hgt); ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, hgt - 1);
+      ctx.fillStyle = '#000000'; lines.forEach((l, i) => ctx.fillText(l, x + 4, y + 13 + 15 * i));
+    }
+    jy = k => Yr(3 * k + 2) + 22;
+    // tags sit on the line the soldier walks, centred on where he stands
+    marks.forEach(([pos, col, t, name]) => { const x = ((pos % 90) + 2) * 64 + col * 8 + 32; ctx.font = 'bold 13px IBM Plex Mono, monospace'; tag(x - (ctx.measureText(t + ' ' + name).width + 8) / 2, jy(Math.floor(pos / 270)) - 44, [t + ' ' + name]); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#000000'; ctx.beginPath(); ctx.moveTo(x - 6, jy(Math.floor(pos / 270)) - 26); ctx.lineTo(x + 6, jy(Math.floor(pos / 270)) - 26); ctx.lineTo(x, jy(Math.floor(pos / 270)) - 16); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+    huts.forEach(h => tag(h.x, Yr(h.r) + 50, h.lines));
+    jy = k => Yr(3 * k + 2) + 22;
+    C.canvas($('jroute'), 90 * 64, acc);
+    }
+    drawJungle(true);
+    $('jjoin').addEventListener('change', e => drawJungle(e.target.checked));
+
+    // the route through the level: ladders are read from the characters the controls test
+    // (down: $01 under the feet, $0EA7; up: $61 at the head, $0DE2), hut doors from $7A ($0E14)
+    const chr = (r, c, y) => { const b = 0x8000 + 48 * m[0xA000 + 90 * r + c]; return Array.from(m.subarray(b + 8 * y, b + 8 * y + 8)); };
+    const ladder = new Set();
+    for (let k = 0; k < 5; k++) for (let c = 0; c < 90; c++)
+      if (chr(3 * k + 2, c, 5).includes(0x01) && chr(3 * k + 4, c, 5).includes(0x61)) ladder.add(k + ':' + c);
+    const doorAt = []; for (let c = 0; c < 90; c++) if (chr(2, c, 1).includes(0x7A)) doorAt.push(c);
+    // walls: a tree trunk between $2D (stops walking right, $0FAF) and $4C (stops walking left, $0F1C) on the path's character row;
+    // the soldier cannot pass one. Before the bridge blows, walking on to $015C sends the patrol that ends the game ($3B25)
+    const wall = new Set();
+    for (let k = 0; k < 6; k++) for (let c = 0; c < 90; c++) if (chr(3 * k + 2, c, 2).includes(0x4C)) wall.add(k + ':' + c);
+    const col = pos => pos % 90 + 2, bridge = col(0x0153);
+    function route(from, to, blown) {
+      // breadth-first over (level, block); level 5 is the huts' insides, entered only through their doors
+      const key = n => n[0] + ':' + n[1], prev = new Map([[key(from), null]]), q = [from];
+      while (q.length) {
+        const n = q.shift(), [k, c] = n;
+        if (k === to[0] && c === to[1]) break;
+        const next = [];
+        if (k < 5) for (const d of [-1, 1]) {
+          const c2 = c + d;
+          if (c2 < 0 || c2 > 89 || wall.has(k + ':' + c2) || (!blown && k === 1 && c2 >= col(0x015C)) || (blown && k === 1 && Math.abs(c2 - bridge) <= 1)) continue;
+          next.push([k, c2]);
+        }
+        if (k < 4 && ladder.has(k + ':' + c)) next.push([k + 1, c]);
+        if (k > 0 && k < 5 && ladder.has((k - 1) + ':' + c)) next.push([k - 1, c]);
+        if (k === 0 && doorAt.includes(c)) next.push([5, c]);
+        if (k === 5) next.push([0, c]);
+        for (const x of next) if (!prev.has(key(x))) { prev.set(key(x), n); q.push(x); }
+      }
+      if (!prev.has(key(to))) console.warn('no route', from, to);
+      const path = []; for (let n = to; n; n = prev.get(n[0] + ':' + n[1])) path.unshift(n);
+      return path;
+    }
+    const hut = i => doorAt[i];
+    const legs = [
+      [[1, col(0x0114)], [4, col(0x0469) + 1], 'Head down to level 5', 'Walk over the explosives to pick them up: YOU HAVE FOUND THE EXPLOSIVES.'],
+      [null, [1, col(0x0153)], 'Climb back up to the bridge', 'Walk on to the middle of the bridge. The explosives are set by themselves: THE EXPLOSIVES ARE SET RUN FOR IT !'],
+      [null, [1, col(0x0153) + 5], 'Run on, off the far end of the bridge', 'Keep clear while the bridge blows. Do not go back: the gap drops you into the river.'],
+      [null, [0, hut(0)], 'Climb up to the village', 'Push up at the door of the first hut to go in.'],
+      [null, [5, hut(0)], 'Inside the first hut', 'Push up to search. One spot here hides the torch, another a booby trap.'],
+      [null, [5, hut(2)], 'Push down at the door to leave, walk to the third hut and go in', 'Push up to search: HERE IS A MAP OF A TUNNEL SYSTEM.'],
+      [null, [5, hut(1)], 'Leave, and go into the second hut', 'Stand on the trapdoor: DO YOU WISH TO GO DOWN [Y/N]. Press Y to go down to the tunnels.']];
+    const steps = []; let at = legs[0][0];
+    legs.forEach(([f, t, text, stop], li) => { const p = route(f || at, t, li >= 3); p.forEach((n, i) => { if (i || !steps.length) steps.push({n, text}); }); steps[steps.length - 1].stop = stop; at = t; });
+    let playing = false, i = 0, raf = 0, held = -1;
+    function frame() {
+      const rc = $('jroute').getContext('2d'); rc.clearRect(0, 0, $('jroute').width, $('jroute').height);
+      const pt = s => [s.n[1] * 64 + 32, jy(s.n[0])], now = Math.floor(i), TRAIL = 14;
+      rc.lineWidth = 5; rc.lineCap = 'round';
+      for (let j = Math.max(1, now - TRAIL); j <= now; j++) {
+        const [x0, y0] = pt(steps[j - 1]), [x1, y1] = pt(steps[j]);
+        rc.strokeStyle = 'rgba(255,255,255,' + (1 - (now - j) / TRAIL).toFixed(2) + ')'; rc.beginPath(); rc.moveTo(x0, y0); rc.lineTo(x1, y1); rc.stroke();
+      }
+      const a = steps[now], b = steps[Math.min(steps.length - 1, now + 1)], f = i % 1;
+      const [ax, ay] = pt(a), [bx, by] = pt(b), x = ax + (bx - ax) * f, y = ay + (by - ay) * f;
+      rc.fillStyle = '#ffffff'; rc.strokeStyle = '#000000'; rc.lineWidth = 3; rc.beginPath(); rc.arc(x, y, 12, 0, 7); rc.fill(); rc.stroke();
+      const stopped = held === now && a.stop;
+      $('jstep').textContent = stopped ? '▶ In the game: ' + a.stop : a.text;
+      if (stopped) {
+        rc.font = 'bold 15px IBM Plex Mono, monospace'; const words = a.stop.split(' '), lines = [''];
+        words.forEach(w => { if ((lines[lines.length - 1] + ' ' + w).length > 34) lines.push(w); else lines[lines.length - 1] += (lines[lines.length - 1] ? ' ' : '') + w; });
+        const w = Math.max(...lines.map(l => rc.measureText(l).width)) + 16, h = lines.length * 19 + 10, bx0 = Math.min(Math.max(4, x - w / 2), $('jroute').width - w - 4), by0 = y > h + 30 ? y - h - 22 : y + 22;
+        rc.fillStyle = '#ffffff'; rc.fillRect(bx0, by0, w, h); rc.lineWidth = 2; rc.strokeRect(bx0, by0, w, h);
+        rc.fillStyle = '#000000'; rc.textAlign = 'left'; lines.forEach((l, k) => rc.fillText(l, bx0 + 8, by0 + 20 + 19 * k));
+      }
+      const sc = $('jscroll'); sc.scrollLeft = x * sc.scrollWidth / $('jroute').width - sc.clientWidth / 2;
+      if (playing) {
+        const nxt = i + (a.n[0] !== b.n[0] ? 0.04 : 0.12);
+        if (Math.floor(nxt) > now && steps[now + 1] && steps[now + 1].stop && held !== now + 1) { i = now + 1; held = i; playing = false; $('jplay').textContent = i >= steps.length - 1 ? '↻ Play again' : '▶ Next'; frame(); return; }
+        i = nxt; if (i >= steps.length - 1) { i = steps.length - 1; playing = false; $('jplay').textContent = '↻ Play again'; }
+        raf = requestAnimationFrame(frame);
+      }
+    }
+    $('jplay').addEventListener('click', () => {
+      if (playing) { playing = false; $('jplay').textContent = '▶ Resume'; return; }
+      if (i >= steps.length - 1) { i = 0; held = -1; }
+      playing = true; $('jplay').textContent = '❚❚ Pause'; cancelAnimationFrame(raf); frame();
+    });
+    $('jjoin').addEventListener('change', () => { if (!playing) frame(); });
+    // section two: 13 windows of 19 x 19 squares
+    const t = T.ram, n = 9, sz = 6, gap = 14, per = 5;
+    const tc = C.canvas($('tmap'), per * (19 * sz + gap), Math.ceil(n / per) * (19 * sz + gap + 14));
+    tc.font = '12px IBM Plex Mono, monospace';
+    for (let w = 0; w < n; w++) {
+      const base = t[0x1390 + 2 * w] | t[0x1391 + 2 * w] << 8;
+      const ox = (w % per) * (19 * sz + gap), oy = Math.floor(w / per) * (19 * sz + gap + 14) + 14;
+      tc.fillStyle = '#55585f'; tc.fillText('window ' + w, ox, oy - 3);
+      for (let y = 0; y < 19; y++) for (let x = 0; x < 19; x++) {
+        const v = t[base + 19 * y + x], px = ox + x * sz, py = oy + y * sz;
+        tc.fillStyle = v === 2 ? '#e9e7c8' : v === 3 ? '#4a7fd0' : v >= 4 && v <= 9 ? '#9a9a9a' : '#2f3136';
+        tc.fillRect(px, py, sz, sz);
+        if (v === 3) { tc.fillStyle = '#ffffff'; tc.fillRect(px + 1, py + 2, sz - 2, 1); }
+      }
+    }
+    // section three: the grid of rooms, then one room drawn
+    const j = J.ram, set = j.subarray(0xA800, 0xB000), rcols = [P[0], P[9], P[8]];
+    function roomScreen(k) {
+      const scr = new Uint8Array(30 * 25);
+      const mi = j[0x3609 + k], src = j[0x361A + 2 * mi] | j[0x361B + 2 * mi] << 8;
+      for (let a = 0; a < 750; a++) scr[a] = j[src + a];
+      // the kind's shapes: shape number, then a screen address in the 40-column screen at $4400
+      let l = j[0x36D1 + 2 * k] | j[0x36D2 + 2 * k] << 8;
+      for (let n = 0; n < 40 && j[l] !== 0xFF; n++, l += 3) {
+        const sh = j[0x37A0 + 2 * j[l]] | j[0x37A1 + 2 * j[l]] << 8;
+        const at = (j[l + 1] | j[l + 2] << 8) - 0x4400; let row = 0, col = 0;
+        for (let q = sh; j[q] !== 0xFF && q < sh + 400; q++) {
+          if (j[q] === 0xFE) { row++; col = 0; continue; }
+          const p = at + 40 * row + col++, r = Math.floor(p / 40), c = p % 40;
+          if (r >= 0 && r < 25 && c < 30) scr[30 * r + c] = j[q];
+        }
+      }
+      return scr;
+    }
+    function paint(ctx, k, ox, oy, s) {
+      const scr = roomScreen(k);
+      for (let a = 0; a < 750; a++) glyph(ctx, set, scr[a], ox + (a % 30) * 8 * s, oy + Math.floor(a / 30) * 8 * s, j[0x3C93 + scr[a]], rcols, s);
+    }
+    // the whole maze: every room at its place on the 10 x 12 grid
+    const RW = 240, RH = 200, GAP = 0, g = C.canvas($('rgrid'), 10 * (RW + GAP), 12 * (RH + GAP));
+    $('rgrid').style.width = '100%';
+    g.fillStyle = '#e9e7e1'; g.fillRect(0, 0, 10 * (RW + GAP), 12 * (RH + GAP));
+    g.font = 'bold 28px IBM Plex Mono, monospace'; g.textAlign = 'left';
+    for (let i = 0; i < 120; i++) {
+      const k = j[0x3591 + i], x = (i % 10) * (RW + GAP), y = Math.floor(i / 10) * (RH + GAP);
+      if (!k) continue;
+      paint(g, k, x, y, 1);
+      const tag = i === 105 ? 'START' : k === 16 ? 'BUNKER' : '';
+      g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(x, y, tag ? 170 : 70, 36);
+      g.fillStyle = '#ffffff'; g.fillText(i + (tag ? ' ' + tag : ''), x + 6, y + 27);
+    }
+    const rc = C.canvas($('room'), 30 * 16, 25 * 16);
+    function drawRoom(i) {
+      const k = j[0x3591 + i];
+      $('rlab').textContent = 'Room ' + i + (k ? ', kind ' + k : ', outside the maze');
+      rc.fillStyle = P[0]; rc.fillRect(0, 0, 480, 400);
+      if (k) paint(rc, k, 0, 0, 2);
+    }
+    const gs = RW + GAP;
+    $('rgrid').addEventListener('click', e => {
+      const b = $('rgrid').getBoundingClientRect(), sx = 10 * gs / b.width;
+      drawRoom(Math.floor((e.clientY - b.top) * sx / (RH + GAP)) * 10 + Math.floor((e.clientX - b.left) * sx / gs));
+    });
+    drawRoom(105);
+    // the way to the bunker: search over (room, the four exit steps), as $33E7 opens the edges by kind
+    const base = document.createElement('canvas'); base.width = $('rgrid').width; base.height = $('rgrid').height; base.getContext('2d').drawImage($('rgrid'), 0, 0);
+    const kind = r => j[0x3591 + r], O0 = [j[0x3630], j[0x3631], j[0x3632], j[0x3633]].map(v => v > 127 ? v - 256 : v);
+    const prevM = new Map(), K0 = 105 + ':' + O0; prevM.set(K0, null); const qm = [[105, O0]]; let goal = null;
+    while (qm.length) {
+      const [r, O] = qm.shift();
+      if (kind(r) === 16) { goal = [r, O]; break; }
+      const k = kind(r), mv = [];
+      if (k >= 7) mv.push(['left', r + O[2], [O[3], O[0], O[1], O[2]]]);
+      if (k < 7 || k >= 13) mv.push(['right', r + O[0], [O[1], O[2], O[3], O[0]]]);
+      for (const [d, nr, nO] of mv) { const key = nr + ':' + nO; if (nr >= 0 && nr < 120 && kind(nr) && !prevM.has(key)) { prevM.set(key, [r + ':' + O, d, r]); qm.push([nr, nO]); } }
+    }
+    const mpath = []; for (let key = goal[0] + ':' + goal[1]; prevM.get(key); key = prevM.get(key)[0]) mpath.unshift({from: prevM.get(key)[2], edge: prevM.get(key)[1], to: +key.split(':')[0]});
+    const mc = n => [(n % 10) * RW + RW / 2, Math.floor(n / 10) * RH + RH / 2];
+    let mi = 0, mt = 0, mplaying = false, mraf = 0;
+    function mframe() {
+      g.drawImage(base, 0, 0);
+      const leg = mpath[Math.min(mi, mpath.length - 1)], done = mi >= mpath.length;
+      for (let q = Math.max(0, mi - 4); q < Math.min(mi, mpath.length); q++) {
+        const [x0, y0] = mc(mpath[q].from), [x1, y1] = mc(mpath[q].to);
+        g.strokeStyle = 'rgba(255,255,255,' + (1 - (mi - q) / 5).toFixed(2) + ')'; g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+      }
+      const [ax, ay] = mc(done ? leg.to : leg.from), [bx, by] = mc(leg.to), f = done ? 0 : Math.max(0, mt - 1);
+      const x = ax + (bx - ax) * Math.min(1, f), y = ay + (by - ay) * Math.min(1, f);
+      g.fillStyle = '#ffffff'; g.strokeStyle = '#000000'; g.lineWidth = 5; g.beginPath(); g.arc(x, y, 22, 0, 7); g.fill(); g.stroke();
+      const say = done ? 'Room ' + leg.to + ': Barnes\'s bunker. Walk into its mouth and throw five grenades (fire) to finish him.' : 'Room ' + leg.from + ': walk off the ' + leg.edge.toUpperCase() + ' edge of the screen.';
+      $('mstep').textContent = say;
+      if (mt < 1 || done) {
+        g.font = 'bold 30px IBM Plex Mono, monospace'; g.textAlign = 'left';
+        const w = Math.min(g.measureText(say).width + 24, 900), bx0 = Math.min(Math.max(4, x - w / 2), 10 * RW - w - 4), by0 = y > 90 ? y - 80 : y + 34;
+        g.fillStyle = '#ffffff'; g.fillRect(bx0, by0, w, 44); g.lineWidth = 3; g.strokeRect(bx0, by0, w, 44); g.fillStyle = '#000000'; g.fillText(say.length > 52 ? say.slice(0, 50) + '…' : say, bx0 + 12, by0 + 32);
+      }
+      if (mplaying) {
+        mt += mt < 1 ? 0.012 : 0.03;
+        if (mt >= 2) { mt = 0; mi++; }
+        if (mi >= mpath.length) { mplaying = false; $('mplay').textContent = '↻ Play again'; mframe(); return; }
+        mraf = requestAnimationFrame(mframe);
+      }
+    }
+    $('mplay').addEventListener('click', () => {
+      if (mplaying) { mplaying = false; $('mplay').textContent = '▶ Resume'; return; }
+      if (mi >= mpath.length) { mi = 0; mt = 0; }
+      mplaying = true; $('mplay').textContent = '❚❚ Pause'; cancelAnimationFrame(mraf); mframe();
+    });
+  });
+})();
+</script>

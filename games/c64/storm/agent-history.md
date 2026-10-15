@@ -92,3 +92,46 @@ In Chromium, full-page screenshots drew nothing past the first screen
 its own, at desktop width and at 375 pixels. That found the spell
 stepper's reference picture showing over its canvas, and room 69's
 text one character short because its marker counted toward the 80.
+
+## The Play tab
+
+A follow-up asked for a Play tab, played with the arrow keys or WASD,
+with a live map under it and a guide to the nearest brooch. The port
+(`reference/storm-port.js`) is one function for each routine of the
+listing, run on the listing's 64 KB; the title tune's player is the one
+piece of 6502 code it runs. `test_play.js` holds it to the game's code in
+the kit's lockstep for 40,000 passes of the main loop, over games of one
+player and of two, driven by an autopilot that follows the guide.
+
+The lockstep needed two fixes on the way (`kit-feedback.md`): a routine
+that waits for the raster, called twice running, made two stops at the
+same exit, which the checker read as one; and the interrupt handler's
+replay ran on operands the main program had patched since, because only
+its data reads were set back to what the game's handler saw. Past those,
+the one difference left was a race of the game's own on the title, the
+tune's driver sharing `$03`/`$04` with `cell_address` (`facts.md`,
+"Bugs and oddities"); the test takes those cells from the game.
+
+The page's pace began as a fit of each routine's cost to the stretches
+between checkpoints (`play.md`). It was replaced by measuring each
+routine on the game's code, from its entry to its RTS with the
+interrupts taken out, which came within half a per cent once three
+things were added: bad lines on both clocks (the kit's machine with `dma`, and
+the page's own), costs for `put_block`, `compose` and `restore_bg` by
+the block's width and height, and `panel_band`'s cost on the frames it
+moves the message line apart from the others. `test_pace.js` compares
+the frames a pass takes on the kit's machine and on the page, with the
+same pilots: the two leave the same frames after a few passes (a mean
+cost lands a pass a frame early or late near a raster wait, and the
+interrupts then differ), so it holds the average over the passes of
+play, leaving out the title, whose answer comes by the frame. Over
+24,000 frames the page was 0.45 % slower with one player and 0.41 % with
+two.
+
+The map and the guide read the game's memory as it runs: `room_map`,
+`exit_bits`, the room's object lists and the players' records. The
+guide's search is the one `test_play.js`'s autopilot follows, so 40,000
+passes of play steered by it are part of the lockstep. Checked in
+Chromium at 1,200 and 375 pixels: the title frame lines up with
+`reference/title.png` to the pixel, the guide's line starts at the
+player, and the arrow keys drive Storm in a two-player game.

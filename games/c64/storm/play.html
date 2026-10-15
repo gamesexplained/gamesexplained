@@ -1,0 +1,371 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.st-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.st-stack{position:relative}
+.st-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent;pointer-events:none}
+.st-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 20px}
+.st-fig{margin:0}
+.st-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.st-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:12px 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.st-row label{display:flex;gap:6px;align-items:center}
+.st-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.st-btn:hover{border-color:var(--ink-mute)}
+.st-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.st-out{font-family:var(--fm);font-size:13px;color:var(--ink);margin:10px 0 0;min-height:1.5em;line-height:1.55}
+.st-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.st-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:12px 0 18px}
+.st-tbl th,.st-tbl td{text-align:left;vertical-align:top;padding:6px 10px;border-bottom:1px solid var(--line-soft)}
+.st-tbl th{font-weight:700;color:var(--ink-soft)}
+.st-wide{overflow-x:auto}
+.st-form{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.st-form input,.st-form select,.st-row select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.st-form input{width:6.5em}
+.st-slots{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin:10px 0 0;font-family:var(--fm);font-size:11px;text-align:center}
+.st-slots div{border:1px solid var(--line);border-radius:5px;padding:4px 2px;color:var(--ink-mute);background:var(--surface-2)}
+.st-slots div.st-on{color:var(--ink);background:var(--surface);border-color:var(--ink-mute)}
+.st-slots b{display:block;font-weight:500;color:var(--ink)}
+.st-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.st-card{border:1px solid var(--line-soft);border-radius:6px;padding:6px;font-family:var(--fm);font-size:11px;color:var(--ink-soft);line-height:1.4}
+.st-card canvas{display:block;width:96px;height:48px;image-rendering:pixelated;background:#000;border-radius:3px;margin:0 0 4px}
+.st-card b{display:block;color:var(--ink);font-weight:500}
+@media (max-width:640px){:root{--gx:16px}.st-two{grid-template-columns:1fr}.st-slots{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.st-cv[hidden]{display:none}
+#st-map{cursor:pointer}
+.st-list{margin:10px 0 0;padding:0 0 0 18px;font-size:15px}
+.st-list li{margin:2px 0}
+.sp-stack{position:relative;max-width:768px}
+.sp-stack canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.sp-stack canvas+canvas{position:absolute;left:0;top:0;pointer-events:none;background:transparent}
+#sp-screen{background:#000;border-radius:4px;touch-action:none}
+.sp-pad{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,48px);gap:6px;margin:14px 0 0;user-select:none;-webkit-user-select:none;touch-action:none}
+.sp-pad button{font:inherit;font-family:var(--fm);font-size:13px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;color:var(--ink);touch-action:none}
+.sp-pad button.on{background:var(--chip);color:var(--chip-ink)}
+.sp-pad .sp-fire{grid-column:3;grid-row:3}
+@media (pointer:coarse),(max-width:700px){.sp-pad{display:grid}}
+#sp-map{background:#fff;min-width:640px}
+.sp-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 0;font-family:var(--fm);font-size:12px;color:var(--ink-soft)}
+.sp-key i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1986 · Mastertronic</p>
+  <h1>Storm</h1>
+  <p class="sub">The whole game, ported to JavaScript routine by routine and run on its own bytes at the C64's pace, with a map of the lair that fills in as you go and a guide to the nearest brooch.</p>
+</header>
+<main class="wrap">
+
+<section id="play">
+  <p class="fig">01 · Play</p>
+  <h2 class="t">Play Storm with the keyboard</h2>
+  <p class="lede">The characters turn rather than steer: left and right turn a character a quarter at a time, and up walks it the way it faces. On the title, fire starts; then left picks one player and right two, and down skips the instructions.</p>
+  <div class="plate">
+    <div class="st-row">
+      <button class="st-btn" id="sp-pause" aria-pressed="false">Pause</button>
+      <button class="st-btn" id="sp-sound" aria-pressed="false">Sound</button>
+      <button class="st-btn" id="sp-guide" aria-pressed="false">Guide</button>
+      <button class="st-btn" id="sp-reset">Reset</button>
+      <span id="sp-out"></span>
+    </div>
+    <div class="sp-stack">
+      <canvas id="sp-screen" width="768" height="544" aria-label="The game"></canvas>
+      <canvas id="sp-path" width="768" height="544" aria-hidden="true"></canvas>
+    </div>
+    <div class="sp-pad" id="sp-pad" aria-label="Joystick 1">
+      <button data-b="1" style="grid-column:2;grid-row:1">up</button>
+      <button data-b="4" style="grid-column:1;grid-row:2">left</button>
+      <button data-b="8" style="grid-column:3;grid-row:2">right</button>
+      <button data-b="2" style="grid-column:2;grid-row:3">down</button>
+      <button data-b="16" class="sp-fire">fire</button>
+    </div>
+    <table class="st-tbl">
+      <tr><th>Joystick</th><th>Agravain (joystick 1)</th><th>Storm (joystick 2)</th></tr>
+      <tr><td>Turn</td><td><code>A</code> <code>D</code></td><td><code>←</code> <code>→</code></td></tr>
+      <tr><td>Walk forward</td><td><code>W</code></td><td><code>↑</code></td></tr>
+      <tr><td>Fire</td><td><code>Space</code></td><td><code>Enter</code></td></tr>
+      <tr><td>Magic</td><td><code>S</code> a mask, <code>S</code> with <code>Space</code> a scroll</td><td><code>↓</code> with <code>Enter</code> an amulet</td></tr>
+    </table>
+    <p class="cap"><b>The game as the port runs it.</b> A one-player game is always Agravain's, on joystick 1, so the arrow keys and Enter drive joystick 1 too until a two-player game begins. On a touch screen the pad under the game is joystick 1. The Guide button draws, over the room, the way to the nearest brooch each player can reach with what the two of them carry, and once three are carried, the way to Corrine.</p>
+  </div>
+</section>
+
+<section id="map">
+  <p class="fig">02 · The map</p>
+  <h2 class="t">The lair as you have seen it</h2>
+  <p class="lede">Each room you stand in is drawn into its place on the game's map of 16 by 12 places, as the screen shows it, and stays as you left it. The rooms you have not seen are numbered boxes, joined by their doorways.</p>
+  <div class="plate">
+    <div class="st-wide"><canvas id="sp-map" class="st-cv" width="1408" height="528" aria-label="The map of the lair"></canvas></div>
+    <p class="st-out" id="sp-guide-out"></p>
+    <div class="sp-key">
+      <span><i style="background:#c25a00"></i>the room you are in</span>
+      <span><i style="background:#f0c000"></i>a brooch still in its room</span>
+      <span><i style="background:#8e44ad"></i>Corrine's room</span>
+      <span><i style="background:#d04a3a"></i>the guide's way for Agravain</span>
+      <span><i style="background:#1f5fa8"></i>the guide's way for Storm</span>
+    </div>
+    <p class="cap">The places come from <code>room_map</code> and the doorways from <code>exit_bits</code>, read from the game's memory as it runs. A brooch's mark goes when the game marks its record taken in the room's object list. The guide reads the same memory and searches the rooms as the game would draw them on entering: walls a trap has opened stay open and objects taken stay gone (<a href="levels.html">Maps</a> has every room drawn whole).</p>
+  </div>
+</section>
+
+<section id="port">
+  <p class="fig">03 · The port</p>
+  <h2 class="t">Every pass checked against the game's own code</h2>
+  <p>Nothing on this page emulates a 6502, except for the title tune, whose player is the game's own code. The rest of the game is written out in JavaScript, one function for each routine of the listing, and runs on the game's own 64 KB, loaded from the bytes the Source code tab shows. Every variable stays where the game keeps it, so the map and the guide read the same addresses the game does.</p>
+  <p><code>test_play.js</code> runs the port beside the game's own code on the kit's model of the C64, with the same joysticks, through 40,000 passes of the main loop at <code>$78D7</code>: whole games of one player and of two, and the title screens between them. At every pass the two memories are compared, and so are colour RAM and every register written to the video chip and the SID. One race of the game's is left out of the port: on the title, the tune's driver shares a pointer with the routine that colours a block, and an interrupt in the middle of a block sends the rest of its colours elsewhere, so a few cells keep their old colours. The port draws every block whole.</p>
+  <p>The page keeps the C64's pace by keeping its clock. Each routine the port calls moves the clock on by the cycles the game's own routine took on the kit's machine, on average over the same 40,000 passes; for the routines that draw a block, by the block's width and height. The clock runs the raster interrupt on its lines and takes from the processor the 43 cycles of each bad line, as the video chip does. In <code>test_pace.js</code>, over 24,000 frames with both driven by the same autopilot, a pass of play took the page 0.45 % longer than the game with one player and 0.41 % with two.</p>
+  <p>The screen is drawn by the site's model of the video chip from the port's memory, with each write the interrupt makes to the video chip at the line and cycle where the game makes it. The font the game copies from the character ROM is carried on this page: the first 512 bytes of the C64's character ROM (901225-01, <code>$D000</code>-<code>$D1FF</code>), which <code>copy_rom_font</code> reads.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script type="application/json" data-listing="listing.json">["$0000-$FFFF"]</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/storm-port.js"></script>
+<script src="reference/storm-guide.js"></script>
+<script src="reference/storm-play.js"></script>
+<script>
+/* storm-play-page */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const CLOCK = 985248;
+const UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8, FIRE = 16;
+const CW = 80, CH = 36, GAP = 8;                        // a room on the map, as on the Maps tab
+const BROOCH_ROOMS = [11, 44, 63], CORRINE = 99;
+const WHO = [{ name: 'Agravain', base: 0x8629, dead: 0x8618, colour: '#d04a3a', ink: '#ff7777' },
+  { name: 'Storm', base: 0x861E, dead: 0x8619, colour: '#1f5fa8', ink: '#70a4b2' }];
+
+function start(D) {
+  const char = new Uint8Array(4096);
+  char.set(StormPort.FONT);
+  let s = ''; for (const b of char) s += String.fromCharCode(b);
+  const charrom = btoa(s);
+  const G = StormGuide.create(StormPort);
+  let play, target, keep, thumbs, room, since, inPlay, plans, planAge;
+
+  function boot() {
+    play = StormPlay.create({ M: D.ram.slice(), Port: StormPort });
+    target = 0; keep = {}; thumbs = []; room = -1; since = 0; inPlay = false;
+    plans = [null, null]; planAge = 0;
+  }
+  boot();
+
+  // ---- the joysticks: WASD and Space for joystick 1; the arrows and Enter for joystick 2 in a
+  // two-player game, else joystick 1 as well; the touch pad for joystick 1
+  const held = new Set(), pad = { bits: 0 };
+  const KEYS = { KeyW: [0, UP], KeyS: [0, DOWN], KeyA: [0, LEFT], KeyD: [0, RIGHT], Space: [0, FIRE],
+    ArrowUp: [1, UP], ArrowDown: [1, DOWN], ArrowLeft: [1, LEFT], ArrowRight: [1, RIGHT], Enter: [1, FIRE], NumpadEnter: [1, FIRE] };
+  const inView = () => { const r = cv.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+  addEventListener('keydown', (e) => {
+    if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (!KEYS[e.code] || e.metaKey || e.ctrlKey || e.altKey || !inView()) return;
+    held.add(e.code); e.preventDefault();
+  });
+  addEventListener('keyup', (e) => { if (held.delete(e.code)) e.preventDefault(); });
+  addEventListener('blur', () => held.clear());
+  for (const b of $('sp-pad').querySelectorAll('button')) {
+    const bit = +b.dataset.b;
+    const on = (e) => { pad.bits |= bit; b.classList.add('on'); e.preventDefault(); };
+    const off = () => { pad.bits &= ~bit; b.classList.remove('on'); };
+    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
+    b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+  function sticks() {
+    const M = play.M, two = M[0x8137] === 2 && !M[0x8106], j = [pad.bits, 0];
+    for (const k of held) { const [p, bit] = KEYS[k]; j[two ? p : 0] |= bit; }
+    play.joy[0] = 0x1F & ~j[0]; play.joy[1] = 0x1F & ~j[1];
+  }
+
+  // ---- the screen: the port's memory through the site's model of the video chip
+  const cv = $('sp-screen'), over = $('sp-path'), og = over.getContext('2d');
+  function draw() {
+    const f = play.shown;
+    if (!f) return;
+    C64.drawFrame(cv, { lines: 312, cycles: 63, vic: f.vic, cia2: [0xC7, 0x3F], writes: f.writes, mem: play.M,
+      colourMem: play.colour, charrom, keep }, 2);
+  }
+
+  // ---- sound: each frame's SID writes, streamed to the site's model of the SID
+  let host = null, soundOn = false;
+  function driver() {
+    const sid = new Uint8Array(25), queue = [];
+    const d = { sid, writes: [], playing: () => true, stop() {},
+      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 8) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
+      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) if (f[i] < 25) sid[f[i]] = f[i + 1]; } };
+    return d;
+  }
+  $('sp-sound').onclick = async () => {
+    soundOn = !soundOn; $('sp-sound').setAttribute('aria-pressed', soundOn);
+    if (soundOn && !host && window.C64Sid) {
+      try {
+        host = await C64Sid.host({ driver, data: null, gain: 0.5 });
+        const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]);
+        host.send({ cmd: 'start', tune: { frames: [all] } });
+      } catch (e) { soundOn = false; $('sp-sound').setAttribute('aria-pressed', false); $('sp-out').textContent = 'No sound: ' + e.message; }
+    }
+    if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
+  };
+
+  // ---- the map: the game's places and doorways, each room seen drawn in from the screen
+  const map = $('sp-map'), mg = map.getContext('2d');
+  const xy = (i) => [(i & 15) * (CW + GAP) + GAP / 2, (i >> 4) * (CH + GAP) + GAP / 2];
+  const exitsOf = (M, r) => { const e = M[0x179B + (r >> 1)]; return (r & 1 ? e : e >> 4) & 15; };
+  const hasBrooch = (M, r) => G.objects(M, r).some((o) => o.type === 0x17);
+  function thumb(r) {
+    let t = thumbs[r];
+    if (!t) { t = thumbs[r] = document.createElement('canvas'); t.width = 160; t.height = 72; }
+    t.getContext('2d').drawImage(cv, 64, 166, 640, 288, 0, 0, 160, 72);      // rows 6-23, the room
+  }
+  function drawMap() {
+    const M = play.M, P = G.map(M);
+    mg.fillStyle = '#ffffff'; mg.fillRect(0, 0, map.width, map.height);
+    mg.strokeStyle = '#b5b3ac'; mg.lineWidth = 3;
+    for (let r = 0; r < 100; r++) {
+      const i = P.at[r]; if (i === undefined) continue;
+      const [x, y] = xy(i), e = exitsOf(M, r);
+      if (e & 1) { mg.beginPath(); mg.moveTo(x + CW, y + CH / 2); mg.lineTo(x + CW + GAP, y + CH / 2); mg.stroke(); }
+      if (e & 4) { mg.beginPath(); mg.moveTo(x + CW / 2, y + CH); mg.lineTo(x + CW / 2, y + CH + GAP); mg.stroke(); }
+    }
+    mg.font = '500 13px IBM Plex Mono, monospace'; mg.imageSmoothingEnabled = true;
+    for (let r = 0; r < 100; r++) {
+      const i = P.at[r]; if (i === undefined) continue;
+      const [x, y] = xy(i);
+      if (thumbs[r]) mg.drawImage(thumbs[r], x, y, CW, CH);
+      else { mg.fillStyle = '#f1efea'; mg.fillRect(x, y, CW, CH); mg.strokeStyle = '#d5d3cc'; mg.lineWidth = 1; mg.strokeRect(x + 0.5, y + 0.5, CW - 1, CH - 1); }
+      const t = String(r), w = mg.measureText(t).width + 6;
+      mg.fillStyle = 'rgba(255,255,255,.85)'; mg.fillRect(x, y, w, 15);
+      mg.fillStyle = '#2f3136'; mg.fillText(t, x + 3, y + 12);
+      const mark = (c) => { mg.fillStyle = c; mg.beginPath(); mg.arc(x + CW - 9, y + 9, 6, 0, 7); mg.fill(); mg.strokeStyle = '#fff'; mg.lineWidth = 2; mg.stroke(); };
+      if (BROOCH_ROOMS.includes(r) && hasBrooch(M, r)) mark('#f0c000');
+      if (r === CORRINE) mark('#8e44ad');
+    }
+    if (guideOn) for (let w = 1; w >= 0; w--) {
+      const p = plans[w]; if (!p || p.places.length < 2) continue;
+      const off = w ? 4 : -4;
+      mg.strokeStyle = WHO[w].colour; mg.lineWidth = 5; mg.lineJoin = 'round'; mg.beginPath();
+      p.places.forEach((i, k) => { const [x, y] = xy(i); (k ? mg.lineTo : mg.moveTo).call(mg, x + CW / 2 + off, y + CH / 2 + off); });
+      mg.stroke();
+      const [tx, ty] = xy(p.places[p.places.length - 1]);
+      mg.fillStyle = WHO[w].colour; mg.beginPath(); mg.arc(tx + CW / 2 + off, ty + CH / 2 + off, 8, 0, 7); mg.fill();
+    }
+    if (inPlay && P.at[M[0x8118]] !== undefined) {
+      const [x, y] = xy(P.at[M[0x8118]]);
+      mg.strokeStyle = '#c25a00'; mg.lineWidth = 4; mg.strokeRect(x - 2, y - 2, CW + 4, CH + 4);
+    }
+  }
+
+  // ---- the guide: for each player still in the game, the way to the nearest brooch in reach
+  let guideOn = false;
+  $('sp-guide').onclick = () => { guideOn = !guideOn; $('sp-guide').setAttribute('aria-pressed', guideOn); planAge = 0; if (!guideOn) og.clearRect(0, 0, over.width, over.height); };
+  const players = (M) => (M[0x8137] === 2 ? [0, 1] : [0]).filter((w) => !M[WHO[w].dead]);
+  function plan() {
+    const M = play.M;
+    plans = [null, null];
+    for (const w of players(M)) if (!(M[WHO[w].base] & 0x80)) plans[w] = G.plan(M, w);
+    planAge = 60;
+    const say = [];
+    for (const w of players(M)) {
+      const p = plans[w], n = p ? p.places.length - 1 : 0;
+      const far = n === 0 ? 'in this room' : n === 1 ? 'in the next room' : n + ' rooms on';
+      say.push(!p ? `${WHO[w].name}: no brooch can be reached with what the two of you carry.`
+        : p.goal === 'corrine' ? `${WHO[w].name}: three brooches carried; Corrine's room is ${far}.`
+        : `${WHO[w].name}: the nearest brooch in reach is in room ${p.target.room}, ${far}.`);
+    }
+    $('sp-guide-out').textContent = say.join(' ');
+  }
+  function drawPath() {
+    og.clearRect(0, 0, over.width, over.height);
+    const M = play.M;
+    for (const w of players(M)) {
+      const p = plans[w]; if (!p || !p.path.length) continue;
+      const at = M[WHO[w].base], x0 = at & 0x7F, y0 = M[WHO[w].base + 1];
+      let k = p.path.findIndex(([x, y]) => x === x0 && y === y0);
+      if (k < 0) { planAge = Math.min(planAge, 10); k = 0; }
+      const cells = p.path.slice(k);
+      og.strokeStyle = WHO[w].ink; og.lineWidth = 6; og.lineJoin = 'round'; og.lineCap = 'round'; og.globalAlpha = 0.8;
+      og.setLineDash([2, 12]); og.beginPath();
+      cells.forEach(([x, y], n) => { const px = (64 + 16 * x) * 2, py = (91 + 8 * y) * 2; (n ? og.lineTo : og.moveTo).call(og, px, py); });
+      og.stroke(); og.setLineDash([]); og.globalAlpha = 1;
+      if (p.target.room === M[0x8118]) {
+        const [x, y] = p.path[p.path.length - 1];
+        og.strokeStyle = WHO[w].ink; og.lineWidth = 4; og.strokeRect((64 + 16 * x - 16) * 2, (91 + 8 * y - 8) * 2, 64, 32);
+      }
+    }
+  }
+
+  // ---- the clock: a target one frame on for each frame shown, and the port run up to it
+  let paused = false, last = 0, n = 0;
+  $('sp-pause').onclick = () => {
+    paused = !paused; $('sp-pause').setAttribute('aria-pressed', paused);
+    if (host && soundOn) { if (paused) host.ctx.suspend(); else host.ctx.resume(); }
+  };
+  for (const b of document.querySelectorAll('#play .st-btn')) b.addEventListener('click', () => b.blur());
+  $('sp-reset').onclick = () => { boot(); og.clearRect(0, 0, over.width, over.height); $('sp-guide-out').textContent = ''; };
+  document.addEventListener('visibilitychange', () => { last = 0; });
+  function frame(t) {
+    if (!paused) {
+      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+      sticks();
+      target += dt * CLOCK;
+      play.run(target);
+      const frames = play.sound.splice(0);
+      if (soundOn && host && frames.length) host.send({ cmd: 'start', tune: { frames } });
+      draw();
+      const M = play.M, now = !M[0x8106];
+      if (now && !inPlay) thumbs = [];                                      // a new game: the lair as new
+      inPlay = now;
+      if (M[0x8118] !== room) { room = M[0x8118]; since = 0; planAge = 0; } else since++;
+      if (inPlay && since > 40) thumb(room);
+      if (guideOn && inPlay && --planAge <= 0) plan();
+      if (guideOn && inPlay) drawPath(); else if (guideOn) og.clearRect(0, 0, over.width, over.height);
+      if (++n % 6 === 0) drawMap();
+      $('sp-out').textContent = inPlay ? `room ${M[0x8118]}` : '';
+    } else $('sp-out').textContent = 'paused';
+    last = paused ? 0 : t;
+    requestAnimationFrame(frame);
+  }
+  drawMap();
+  requestAnimationFrame(frame);
+}
+
+if (!window.C64 || !window.StormPort || !window.StormPlay) {
+  const p = document.createElement('p'); p.className = 'st-note';
+  p.textContent = 'The game runs from the listing\'s bytes through the site\'s shared scripts; it works in the built site.';
+  $('sp-screen').parentNode.replaceWith(p);
+} else C64.load('listing.json').then(start).catch((e) => { console.error(e); $('sp-out').textContent = 'The game could not start: ' + e.message; });
+// end of storm-play-page
+</script>

@@ -40,3 +40,34 @@ A 6502 in `site/lib` for pages: this run wrote three (the widgets' block and one
 ## Operating system and tools
 
 Linux x86_64 (Ubuntu 24.04 container, no display); VICE x64sc, vice-mcp v3.13.2; regenerator2000 0.9.20; node 22; Chromium from Playwright for the page check.
+
+## The Play tab (a follow-up)
+
+### What was changed in the kit
+
+- `kit/c64/lockstep.js`, raster waits: after a wait's exit, a second wait
+  with no checkpoint between is a second stop at the same exit, as a
+  routine that waits makes it when called twice running. Before, the
+  machine ran on past that exit to the stop after it, and the two sides
+  fell out of step. `test_lockstep.js`, test 12.
+- `kit/c64/lockstep.js`, interrupt replay: the bytes set back to what the
+  game's handler saw now include its instructions' operands, through the
+  CPU's `executed` hook. A handler whose operand the main program patches
+  (an address stored into it) ran in the port on the patched value.
+  `test_lockstep.js`, test 13.
+
+### Candidates
+
+- `kit/skills/core/70-minisite/play.md`, "Pace it by the machine's
+  clock": measure each routine's own cycles on the game's code (hooks at
+  its entry and its RTS, the interrupts left out) rather than fitting
+  them to the stretches. Here the measurement brought the page within
+  half a per cent of the game's pace. Two more things it needed: costs
+  keyed by what a routine is given where its work follows from it (a
+  block's width and height), and the video chip's bad lines on both
+  clocks, since a cost measured on a machine without them is short.
+  Only this game shows it so far.
+- `play.md`, the pace check: passes stay in the same frames for a few
+  passes only, wherever mean costs leave a pass near a raster wait, so
+  the check that holds is the average over the passes of play, with
+  waits for input (a title answered by the frame) left out.
