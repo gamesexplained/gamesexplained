@@ -43,7 +43,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <p>The whole map of the first section: 20 rows of 90 blocks from <a href="source-load1.html#A000"><code>$A000</code></a>, each block 8 by 6 characters from <a href="source-load1.html#8000"><code>$8000</code></a>. The screen shows five blocks across and three down at a time. The top three rows are drawn with the character set and colours the game swaps in when the soldier climbs up to them (<code>$BAB6</code>), the rest with the jungle's (<code>$BAFD</code>).</p>
 <p>The jungle is six levels, each one scene high. Ladders join each level to the one below at the same place: pressing down on a ladder's foothold (<a href="source-load1.html#0EA7"><code>$0EA7</code></a>) takes the soldier down a level, and pressing up at its top (<a href="source-load1.html#0DE2"><code>$0DE2</code></a>) takes him back. The six huts on the top level have doors, and going up through one leads to the inside of that hut on the sixth level (<a href="source-load1.html#29B6"><code>$29B6</code></a>), where the searches and the trapdoor are.</p>
 <div class="plate"><div style="overflow-x:auto" id="jscroll"><div style="position:relative;width:max-content"><canvas id="jmap"></canvas><canvas id="jroute" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></div></div>
-<p class="cap"><button id="jplay" type="button">▶ Play the route</button> <span id="jstep" aria-live="polite"></span><br>The route is the shortest walk between the jobs, worked out from the ladders and hut doors in the map data. It takes the first of the two places the explosives can appear, and after the bridge blows it keeps off the bridge. A hut door drops the soldier straight into that hut, so those jumps are drawn as long lines.</p><p class="cap" id="jcap"><label><input type="checkbox" id="jjoin" checked> Join the levels</label>: hides most of the treetops between levels, so each ladder runs straight from one level into the next. The two block rows below the huts are left out: the lowest scene starts at the huts, so they are never on screen. Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
+<p class="cap"><button id="jplay" type="button">▶ Play the route</button> <span id="jstep" aria-live="polite"></span><br>The route is the shortest walk between the jobs, worked out from the ladders and hut doors in the map data. It takes the first of the two places the explosives can appear, and after the bridge blows it keeps off the bridge. Tree trunks stop the soldier walking (<a href="source-load1.html#0F17"><code>$0F17</code></a>, <a href="source-load1.html#0FAA"><code>$0FAA</code></a>), but a jump carries him over, because the jump moves him without testing for them, so the marker hops each trunk. A hut door drops the soldier straight into that hut, so those jumps are drawn as long lines.</p><p class="cap" id="jcap"><label><input type="checkbox" id="jjoin" checked> Join the levels</label>: hides most of the treetops between levels, so each ladder runs straight from one level into the next. The two block rows below the huts are left out: the lowest scene starts at the huts, so they are never on screen. Scroll sideways to follow the map. White tags mark where things happen (<a href="source-load1.html#3B25"><code>$3B25</code></a>): ▶ the start, ■ the bridge, the explosives and the villager, ▼ the trapdoor down to the tunnels. Under each hut is what a search finds there (<a href="source-load1.html#CC8D"><code>$CC8D</code></a>): ★ the torch or the map, ✕ a booby trap, · an ordinary find. Tags sit where the soldier stands, two blocks into the scene; that offset is read from where the huts and their search ranges line up, not traced. The background and shared colours are the jungle band's: black, brown and light green (<code>$057A</code>-<code>$058E</code>).</p></div>
 </section>
 
 <section id="tunnels"><p class="fig">02 · Section two</p><h2 class="t">The tunnel map</h2>
@@ -130,6 +130,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     for (let k = 0; k < 5; k++) for (let c = 0; c < 90; c++)
       if (chr(3 * k + 2, c, 5).includes(0x01) && chr(3 * k + 4, c, 5).includes(0x61)) ladder.add(k + ':' + c);
     const doorAt = []; for (let c = 0; c < 90; c++) if (chr(2, c, 1).includes(0x7A)) doorAt.push(c);
+    // walls: a tree trunk between $2D (stops walking right, $0FAF) and $4C (stops walking left, $0F1C) on the path's character row;
+    // a jump ($0E2D) carries the soldier over one, since the jump moves him ($110D) without testing for walls
+    const wall = new Set();
+    for (let k = 0; k < 6; k++) for (let c = 0; c < 90; c++) if (chr(3 * k + 2, c, 2).includes(0x4C)) wall.add(k + ':' + c);
     const col = pos => pos % 90 + 2, bridge = col(0x0150);
     function route(from, to, blown) {
       // breadth-first over (level, block); level 5 is the huts' insides, entered only through their doors
@@ -149,6 +153,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         if (k === 5) next.push([0, c]);
         for (const x of next) if (!prev.has(key(x))) { prev.set(key(x), n); q.push(x); }
       }
+      if (!prev.has(key(to))) console.warn('no route', from, to);
       const path = []; for (let n = to; n; n = prev.get(n[0] + ':' + n[1])) path.unshift(n);
       return path;
     }
@@ -170,9 +175,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       rc.lineWidth = 4; rc.strokeStyle = '#ffffff'; rc.setLineDash([10, 6]); rc.beginPath();
       steps.slice(0, Math.floor(i) + 1).forEach((s, j) => { const [x, y] = pt(s); j ? rc.lineTo(x, y) : rc.moveTo(x, y); }); rc.stroke(); rc.setLineDash([]);
       const a = steps[Math.floor(i)], b = steps[Math.min(steps.length - 1, Math.floor(i) + 1)], f = i % 1;
-      const [ax, ay] = pt(a), [bx, by] = pt(b), x = ax + (bx - ax) * f, y = ay + (by - ay) * f;
+      const [ax, ay] = pt(a), [bx, by] = pt(b), x = ax + (bx - ax) * f, hop = a.n[0] === b.n[0] && (wall.has(a.n[0] + ':' + a.n[1]) || wall.has(b.n[0] + ':' + b.n[1])), y = ay + (by - ay) * f - (hop ? 30 * Math.sin(Math.PI * ((wall.has(a.n[0] + ':' + a.n[1]) ? 1 : 0) + f) / 2) : 0);
       rc.fillStyle = '#ffffff'; rc.strokeStyle = '#000000'; rc.lineWidth = 3; rc.beginPath(); rc.arc(x, y, 12, 0, 7); rc.fill(); rc.stroke();
-      $('jstep').textContent = a.text;
+      $('jstep').textContent = a.text + (hop ? ' (jumping a tree trunk)' : '');
       const sc = $('jscroll'); sc.scrollLeft = x * sc.scrollWidth / $('jroute').width - sc.clientWidth / 2;
       if (playing) { i += a.n[0] !== b.n[0] ? 0.04 : 0.12; if (i >= steps.length - 1) { i = steps.length - 1; playing = false; $('jplay').textContent = '↻ Play again'; } raf = requestAnimationFrame(frame); }
     }
