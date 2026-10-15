@@ -248,6 +248,13 @@ A value the player sets at the start, a password or a difficulty, is
 the same kind of test at a distance: find every reader of it
 (`opcodes.py --refs`), not only the routine that sets it. The one reader
 may be at the end of the level, and decide whether it can be won at all.
+So is a value the start of a new game leaves alone. List the variables
+play changes that the new-game routine does not set, and read every
+test of each with what the last game can leave there: a counter that
+carries over can pass, or fail for good, a test written for the counts
+one game reaches. One door opened only on exactly three of a
+collectable that carried over from game to game, so a second game that
+took the three again could never be won.
 
 ## Live verification
 
