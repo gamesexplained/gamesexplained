@@ -77,17 +77,14 @@ class Machine:
         return self.j("vice_cycles_stopwatch", {"action": "read"})["cycles"]
 
     def vic(self):
-        """The raster line and the registers $D000-$D02E. vice_vicii_get_state reports them,
-        except with an Ultimax cartridge attached: there v3.13.2 gave the RAM's power-on pattern
-        for every register and line 256 throughout, while the chip read through the io bank was
-        right (Clowns, 11 October 2026). When the two disagree about the line, the chip's own
-        registers decide."""
-        v = self.j("vice_vicii_get_state")
+        """The raster line and the registers $D000-$D02E, read from the chip through the io bank.
+        vice_vicii_get_state is not used: v3.13.2 reads its registers wherever the processor
+        reads $D000, so it gave the RAM there with an Ultimax cartridge attached (the power-on
+        pattern, line 256; Clowns, 11 October 2026) and with the I/O banked out ($01 = $34:
+        zeros and line 0, which agreed with the chip's line at the top of the frame; Space Rogue,
+        15 October 2026)."""
         io = self.read(0xD000, 47, "io")
-        line = (io[0x11] & 0x80) << 1 | io[0x12]
-        if v["raster_line"] != line:
-            return line, list(io)
-        return v["raster_line"], v["registers"][:47]
+        return (io[0x11] & 0x80) << 1 | io[0x12], list(io)
 
     def ultimax(self):
         """The 4 KB the video chip reads at $3000-$3FFF of every bank when an Ultimax cartridge

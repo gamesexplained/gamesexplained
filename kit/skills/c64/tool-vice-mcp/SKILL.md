@@ -110,7 +110,14 @@ passed, by date and system, are the table at the top of that file.
    every tick). Leave `stop` false unless you mean to stop.
 7. `vice_vicii_get_state`, `vice_sid_get_state`, `vice_cia_get_state`,
    `vice_sprite_get`, `vice_sprite_inspect` for chip state and a rendered
-   look at sprite data.
+   look at sprite data. In v3.13.2, `vice_vicii_get_state` reads its
+   registers and its raster line wherever the processor reads `$D000`,
+   so where the processor sees RAM there it answers with the RAM, and
+   nothing says so: with an Ultimax cartridge attached (the RAM's
+   power-on pattern, line 256) and when the game has banked the I/O out
+   with `$01` (`$34`: zeros and line 0). Read the chip's
+   registers as `read_mem(rpc, 0xD000, 47, "io")`, as `frame.py` and
+   `screen.py` do, and take the line from `$D012` and bit 7 of `$D011`.
 8. `vice_run_until` an address or a cycle count; `vice_cycles_stopwatch`
    for timing.
 

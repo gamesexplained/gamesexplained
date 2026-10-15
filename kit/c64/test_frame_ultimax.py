@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""An Ultimax cartridge in kit/c64/frame.py and site/lib/c64.js: the raster line read from the chip
-when the emulator's state call gives the RAM instead, the cartridge told from RAM under a banked-out
+"""An Ultimax cartridge in kit/c64/frame.py and site/lib/c64.js: the raster line and registers read
+from the chip, where the emulator's state call gives the RAM, the cartridge told from RAM under a banked-out
 KERNAL, and the cartridge ROM the video chip sees at $3000-$3FFF (F.ultimax). No emulator; the drawing needs node or JavaScriptCore, and fails
 rather than skips without one when KIT_REQUIRE_TOOLS is set."""
 import base64, json, os, shutil, sys, tempfile, unittest
@@ -9,14 +9,14 @@ import frame
 
 
 class FakeMachine(frame.Machine):
-    """vice_vicii_get_state as vice-mcp v3.13.2 answered it with an Ultimax cartridge attached:
-    the RAM's power-on pattern and line 256; the io bank holds the chip."""
-    def __init__(self, line, state_line=256):
-        self.line, self.state_line = line, state_line
+    """The io bank holds the chip. vice_vicii_get_state, which v3.13.2 answers from wherever the
+    processor reads $D000 (the RAM's power-on pattern and line 256 with an Ultimax cartridge,
+    zeros and line 0 with the I/O banked out), must not be asked."""
+    def __init__(self, line):
+        self.line = line
 
     def j(self, tool, args=None):
-        assert tool == "vice_vicii_get_state"
-        return {"raster_line": self.state_line, "registers": [255, 255, 0, 0] * 12}
+        raise AssertionError(f"{tool}: the registers come from the io bank")
 
     def read(self, a, n, bank="ram"):
         assert (a, bank) == (0xD000, "io")
@@ -28,14 +28,15 @@ class FakeMachine(frame.Machine):
 
 
 class RasterTests(unittest.TestCase):
-    def test_state_that_disagrees_gives_way_to_the_chip(self):
+    def test_line_and_registers_from_the_chip(self):
         line, regs = FakeMachine(0x102).vic()
         self.assertEqual(line, 0x102)
         self.assertEqual(regs[0x20], 3)
 
-    def test_state_that_agrees_is_kept(self):
-        line, regs = FakeMachine(256, 256).vic()
-        self.assertEqual((line, regs[0]), (256, 255))
+    def test_top_of_the_frame(self):
+        # line 0, where the state call's zeros from the RAM under the I/O agreed on the line
+        line, regs = FakeMachine(0).vic()
+        self.assertEqual((line, regs[0x11], regs[0x20]), (0, 0x1B, 3))
 
 
 class Banks(frame.Machine):
