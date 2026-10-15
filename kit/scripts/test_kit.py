@@ -21,6 +21,7 @@ that this list does not grow.
 
 Usage:
   test_kit.py [--require-tools] [--list] [--until PATH] [substring ...]
+  test_kit.py -h                    this
 
   --require-tools   export KIT_REQUIRE_TOOLS=1 to every test (CI), so a
                     missing tool fails rather than skips, and count any
@@ -133,6 +134,9 @@ def run(label, argv, require_tools, capture=False):
 
 
 def main(argv):
+    if "-h" in argv or "--help" in argv:
+        print(__doc__)
+        return 0
     require_tools = "--require-tools" in argv
     argv = [a for a in argv if a != "--require-tools"]
     listed = "--list" in argv
