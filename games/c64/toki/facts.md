@@ -18,6 +18,7 @@ alphabet). No version string found.
 |---|---|
 | Cartridge copy routines | `cart_copy` $011F and `cart_copy_six` $0100, in the stack page |
 | Cartridge directory | bank 0 from $8009, 8 bytes an entry, read by `cart_copy` |
+| Cartridge directory format | 8 bytes: bank ($80 + n, written to $DE00), flags, source, destination, length - 1 (low, high). Flag bit 6 copies with $01 = $37 so writes reach I/O (colour RAM); clear, $01 = $00 so writes reach RAM. Bit 5 is set on seven entries but `cart_copy` never tests it (meaning unknown). Read statically from the cartridge, 2026-10-15 |
 | Ocean bank register | $DE00, written by `cart_copy` ($80 selects bank 0) and from $0502-$0B52 and $4F66-$5238 |
 | Game code copied from bank 3 | $8000-$9FFF (8,004 of 8,192 bytes match bank 3 in play) |
 | Screen during the stage card | $CC00 (video bank $C000, $D018 = $31) *live* |
@@ -80,3 +81,42 @@ reach the other voices: an absence of named writes says nothing.
 
 - PC sampled 16 times in play: always $819E (`wait_frame`).
 - Writes to $9FF0 and $BFF0 read back changed: RAM, not cartridge, in play.
+
+## Cartridge directory
+
+All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), inferred to be the five stages; the callers of entries 6-31 are not traced.
+
+| # | X | Bank | Flags | Source | Destination | Bytes |
+|---|---|---|---|---|---|---|
+| 0 | $00 | 1 | $00 | $8058 | $4000-$5F48 | 8009 |
+| 1 | $08 | 2 | $00 | $8000 | $5F49-$64FE | 1462 |
+| 2 | $10 | 3 | $00 | $8000 | $8000-$9F41 | 8002 |
+| 3 | $18 | 4 | $00 | $8000 | $9F42-$BD6B | 7722 |
+| 4 | $20 | 0 | $00 | $822F | $0200-$04FB | 764 |
+| 5 | $28 | 0 | $00 | $9260 | $0917-$0C00 | 746 |
+| 6 | $30 | 1 | $00 | $8000 | $C7A0-$C7F7 | 88 |
+| 7 | $38 | 0 | $00 | $9020 | $0500-$073F | 576 |
+| 8 | $40 | 0 | $00 | $861B | $7D98-$7F3F | 424 |
+| 9 | $48 | 0 | $00 | $85A3 | $7F48-$7FBF | 120 |
+| 10 | $50 | 0 | $40 | $852B | $DB48-$DBBF | 120 |
+| 11 | $58 | 0 | $00 | $89F7 | $0812-$0941 | 304 |
+| 12 | $60 | 12 | $00 | $89C1 | $0C01-$223F | 5695 |
+| 13 | $68 | 13 | $00 | $99E4 | $2240-$285B | 1564 |
+| 14 | $70 | 15 | $00 | $98BA | $285C-$2F9C | 1857 |
+| 15 | $78 | 2 | $20 | $85BB | $2F9D-$3731 | 1941 |
+| 16 | $80 | 2 | $20 | $8D55 | $6501-$762F | 4399 |
+| 17 | $88 | 6 | $00 | $8000 | $C000-$C77F | 1920 |
+| 18 | $90 | 2 | $00 | $9E84 | $BD76-$BE6A | 245 |
+| 19 | $98 | 14 | $20 | $8005 | $0C01-$1687 | 2695 |
+| 20 | $A0 | 6 | $00 | $8780 | $C000-$C777 | 1912 |
+| 21 | $A8 | 0 | $00 | $9692 | $BD76-$BF92 | 541 |
+| 22 | $B0 | 14 | $20 | $8A91 | $0C01-$1884 | 3204 |
+| 23 | $B8 | 6 | $00 | $8EF8 | $C000-$C477 | 1144 |
+| 24 | $C0 | 0 | $00 | $98AF | $BD76-$C007 | 658 |
+| 25 | $C8 | 15 | $20 | $8005 | $0C01-$18EA | 3306 |
+| 26 | $D0 | 6 | $00 | $9370 | $C000-$C4C7 | 1224 |
+| 27 | $D8 | 0 | $00 | $9B41 | $BD76-$BEFE | 393 |
+| 28 | $E0 | 15 | $20 | $8CF4 | $0C01-$17C6 | 3014 |
+| 29 | $E8 | 6 | $00 | $9838 | $C000-$C6A7 | 1704 |
+| 30 | $F0 | 0 | $00 | $9CCA | $BD76-$BF21 | 428 |
+| 31 | $F8 | 14 | $20 | $971A | $0C01-$14B6 | 2230 |
