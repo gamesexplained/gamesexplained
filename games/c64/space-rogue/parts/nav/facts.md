@@ -8,8 +8,8 @@ engine's.
 ## The tile set
 
 - `NAV.TIL` holds 128 chart tiles, 16 pixels by 16: pixel row r of tile
-  t has its left byte at `$4000` + `$100` × r + t and its right byte at
-  `$4080` + `$100` × r + t (`nav_tile_pixels`), drawn by `draw_chart`
+  t has its left byte at `$4080` + `$100` × r + t and its right byte at
+  `$4000` + `$100` × r + t (`nav_tile_pixels`), drawn by `draw_chart`
   (engine `$8658`).
 - `nav_tile_kinds` (`$5000`): the high nybble is the sector's kind, 0
   open space, `$20` nebula, `$30` shard field, `$50` asteroids, `$60` an

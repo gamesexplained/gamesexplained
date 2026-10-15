@@ -54,7 +54,7 @@
 // waveforms (approximated by AND), samples played through the volume register (registers change
 // once a frame), the time between writes inside a frame (a frame's writes land at one instant, so
 // a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
-// cycles between). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
+// cycles between; the test bit set and cleared inside one frame still resets the oscillator). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
 // passes ntsc: true to mount or host (1,022,727 Hz, frames of 263 lines of 65 cycles).
 // The player calls the driver once a frame of that clock unless a page passes period, a number of
 // cycles (1 or more), to mount or host: then once a period, for a game that calls its driver from
@@ -217,6 +217,9 @@ globalThis.C64Sid = (function () {
           case 2: o.pw = (o.pw & 0xF00) | val; break;
           case 3: o.pw = (o.pw & 0x0FF) | (val & 15) << 8; break;
           case 4:
+            // the test bit resets the oscillator at once, so a driver that sets it and clears it
+            // again within one frame (a frame's writes land at one instant) still restarts the wave
+            if (val & 8) { o.acc = 0; o.msbUp = false; }
             if ((val & 1) && !(o.ctrl & 1)) { o.state = ATTACK; o.period = RATE[o.ad >> 4]; o.hold = false; }
             else if (!(val & 1) && (o.ctrl & 1)) { o.state = RELEASE; o.period = RATE[o.sr & 15]; }
             o.ctrl = val; break;

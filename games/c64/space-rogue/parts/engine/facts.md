@@ -167,8 +167,10 @@ flown (`$0838`) only the first 25 entries count, up to V.
   in ten, a missile three times in ten of those.
 - `pick_ship` (`$2C8C`): a random number spent across the system's five
   class weights picks a class, and `ship_class_types` (`$2D24`) one of
-  its four types; the third and fourth only when a random number from 0
-  to the player's rank value, halved, reaches 4.
+  its four types: one time in four any of them, otherwise a random
+  number from 0 to the player's rank value, halved, at most 3, so the
+  third and fourth (a Corsair for a Dart, a Titan for a Cruiser, a
+  Vulture for a Wasp) come more often as the rank grows.
 
 ## Navigation
 
