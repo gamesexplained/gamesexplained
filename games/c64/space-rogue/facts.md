@@ -196,7 +196,14 @@ not gates, the HELM encounter's wait, 20 ticks of a tenth of a second
 and not 20 frames, and HELM's rule for stopping. Seven more, on the
 function keys (F1 gives ESC and F7 `$1F`; the C128's HELP gives
 nothing) and the joysticks (the speed comes from port 1), were
-corrected from what writing this file found. No audit has been done.
+corrected from what writing this file found, and three from what the
+pages' ports found when they were run against the game's code: each
+tile's left pixel byte is at `$4080` + `$100` × row and its right at
+`$4000` (the engine and the three tile sets had them the other way
+round), `pick_ship` takes any of a class's four entries one time in
+four and otherwise one from the player's rank (said to reach the third
+and fourth only from a halved rank roll), and the HIVE! mound wait can
+be 92, where it was said to stop at 91. No audit has been done.
 
 ## Live tests
 
@@ -213,11 +220,15 @@ corrected from what writing this file found. No audit has been done.
   cargo check's "found everything in order"; calling the HIVE! handler
   (station `$AAD6`) gave the cabinet's menu and "MOUNDS: 03" on drop 1;
   the same docking call with `$071D` = 9 loaded `WON`.
+- *Live*, 15 October 2026: O at "Old or New Game?", then "zz" and Return
+  to the manual question, gave "ACCESS DENIED" with the border grey and
+  a band of stars recoloured (`reference/denied-answer.png`); the shown
+  buffer, `$4000`, matched what `unpack_picture`'s rules give for
+  `SPACE` with "zz" and a zero at `$BF00` laid over the question's
+  picture, byte for byte outside the two lines of text.
 
 Tests for a later run, each from a snapshot named in `orientation.md`:
 
 - F1 in flight pauses until a key; F7 switches between CF and NF.
-- An old game answered wrongly shows a star field that differs from the
-  one before the question.
 - In HIVE!, being caught on drop 5 pays 8 credits; on drop 4, nothing.
 - A base's cargo check finds contraband about one visit in two.

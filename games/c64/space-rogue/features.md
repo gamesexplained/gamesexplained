@@ -135,9 +135,10 @@ Found in the code, not in the manual.
 - Every pause in the title, the intro and the ending is the same length,
   about 0.86 seconds, whatever its caller asks: `pause` clears the key
   first, which sets A to `$FF` (intro `$68D6`).
-- HIVE!'s mounds never come faster on later drops: the wait is meant to
-  shorten with the level, but a reversed branch throws the shorter wait
-  away for every level up to 18 (hive `hive_raise_mound`, `$59E4`).
+- HIVE! raises mounds at its fastest rate from the first drop: the wait
+  is meant to shorten with the level, but a reversed branch throws the
+  longer wait away for every level up to 18, and from level 19 keeps a
+  wrapped one (hive `hive_raise_mound`, `$59E4`).
 - Picking a lock with anyone in sight always gets the player spotted:
   the half-the-time test reads the random routine's first byte instead
   of calling it (station `pick_lock`, `$B79E`).
@@ -146,7 +147,7 @@ Found in the code, not in the manual.
   packed star field (intro `line_buffer`, `$BF00`).
 - The distress call's Morse spells SOS SOS PLAY ULTIMA SOS SOS (intro
   `morse_text`, `$7397`).
-- "Space craft detected" does not stop the autopilot unless a key or
+- "Space craft detected" does not stop HELM's trip unless a key or
   fire is pressed in the two seconds after it; "Under attack" does
   (engine `helm_encounter`, `$2991`; `nav_helm`, `$277A`).
 - The ending's truce page starts a row lower than the others: it sets

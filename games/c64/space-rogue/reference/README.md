@@ -24,6 +24,8 @@ From VICE (384 x 272, the whole frame with its border), taken on 14 and
 | hive-menu.png | the Hive! cabinet: "Welcome to HIVE!", Insert Credit, Quit Game |
 | hive-drop.png | Hive! combat drop 1: the assault ship, "MOUNDS: 03" |
 | ending-1.png to ending-4.png | the ending's first four pages, a key between each |
+| denied-question.png | an old game's manual question over the star field, side 1 attached to the intro's entry snapshot, 15 October 2026 |
+| denied-answer.png | the same question answered "zz": "ACCESS DENIED", the border grey and a band of the star field recoloured |
 
 The base, Hive! and the ending were reached by calling the game's own
 routines (`../orientation.md`, "The parts").
