@@ -8212,22 +8212,18 @@ function create(image, opts = {}) {
   const IRQ = COST['@irq'] || {};
   // the port's own sense of time: the stretch after each checkpoint
   let lastLine = 0;
-  const pointers = new Uint8Array(16);             // the sprite pointers of both screens, for the frame's log
-  const POINTERS = [0x53F8, 0x57F8];
-  function snapPointers() { pointers.set(M.subarray(0x53F8, 0x5400), 0); pointers.set(M.subarray(0x57F8, 0x5800), 8); }
-  function logPointers(line, cycle) {
-    for (let i = 0; i < 16; i++) {
-      const a = POINTERS[i >> 3] + (i & 7), v = M[a];
-      if (v !== pointers[i]) { pointers[i] = v; chips.vicLog.push([line, cycle, a, v]); }
-    }
-  }
   rt.sidWrites = null;                             // set by the page: (register, value, cycles) for each SID write
-  // the frame being drawn: the VIC's registers and CIA 2's port as it began, the writes since
-  let frameVic = Uint8Array.from(chips.vic), frameCia2 = [chips.pra2, chips.ddra2];
+  // the frame being drawn: the VIC's registers, CIA 2's port, memory and colour RAM as it began, and
+  // the writes since, the memory the video chip reads among them (the sprite pointers the interrupts
+  // set, say) where the game made them (site/lib/c64.js, videoMemory)
+  rt.keep = {};
+  const vm = root.C64.videoMemory(M, chips.colour, { keep: rt.keep });
+  const bank = () => 3 - ((chips.pra2 | ~chips.ddra2) & 3);
+  let frameVic = Uint8Array.from(chips.vic), frameCia2 = [chips.pra2, chips.ddra2], frameMem = null;
   function beginFrame() {
     frameVic = Uint8Array.from(chips.vic); frameCia2 = [chips.pra2, chips.ddra2];
     chips.vicLog = []; chips.sidLog = [];
-    snapPointers();
+    frameMem = vm.begin();
   }
   beginFrame();
   // the clock: to t, raising the raster interrupt on its line as it goes
@@ -8236,6 +8232,7 @@ function create(image, opts = {}) {
       const nextLine = (lastLine + 1) * LINE;
       const step = Math.min(t, nextLine);
       rt.cycles = step;
+      vm.at(rt.cycles, chips.vicLog, bank());
       chips.cycle = (rt.cycles % LINE) + 1;
       if (rt.cycles >= nextLine) {
         lastLine++;
@@ -8249,7 +8246,6 @@ function create(image, opts = {}) {
           chips.cycle = 1;
           const key = name === 'irq_top' && M[0x077C] !== 0x4C ? 'irq_top_actors' : name;   // the top handler with update_actors
           P[name]();
-          logPointers(l, 1);
           const c = IRQ[key] || 0;
           if (c) t += c;
         }
@@ -8271,10 +8267,10 @@ function create(image, opts = {}) {
     const end = rt.frame + maxFrames;
     for (;;) { const y = rt.step(); if (y && y.cp === cp) return true; if (rt.frame > end) return false; }
   };
-  // What C64.renderFrame draws: the frame's starting registers and its writes, memory and colour
-  // RAM live (the last complete frame's in rt.last).
+  // What C64.renderFrame draws: the frame's starting registers, memory and colour RAM, and its
+  // writes (the last complete frame's in rt.last).
   rt.frameData = function () {
-    return { vic: frameVic, cia2: frameCia2, writes: chips.vicLog, mem: M, colourMem: chips.colour, keep: rt.keep || (rt.keep = {}) };
+    return { vic: frameVic, cia2: frameCia2, writes: chips.vicLog, mem: frameMem.mem, colourMem: frameMem.colour, keep: rt.keep };
   };
   rt.last = rt.frameData();
   return rt;

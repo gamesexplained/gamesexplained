@@ -145,8 +145,11 @@ and back left 10 about once in four drawings. The page drew the last
 whole frame's registers over the memory of the frame being run, and
 `panel_band` (line $FF) moves the message line a character on when the
 fine scroll comes round, so the frame's own fine scroll was laid over
-text a character ahead. Each frame now keeps the video chip's 16 KB and
-colour RAM as they stood when it began and is drawn over them;
-`test_screen.js` holds the message to 0 or 2 pixels left a drawing. The
-Ghostbusters Play tab drew the same way, and its car jumped on the drive
-for the same reason.
+text a character ahead. Drawing each frame over memory as it began fixed
+Storm, but on the Ghostbusters title it put the bottom row, written at
+line $B8 before the beam shows it, a frame late. So the page now draws
+memory as the beam meets it: `C64.videoMemory` (`site/lib/c64.js`) keeps
+memory as each frame began and logs each later change where the game
+made it, and `renderFrame` applies it there. `test_screen.js` holds the
+message to 0 or 2 pixels left a drawing. The Ghostbusters Play tab drew
+the same way, and its car jumped on the drive for the same reason.

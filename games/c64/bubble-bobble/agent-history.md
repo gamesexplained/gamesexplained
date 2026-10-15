@@ -227,3 +227,14 @@ checked in node writes `$1F`, and the page test clicks a tune and reads
 the volume after 1.5 s (15). The Play tab runs the start-up and was not
 affected.
 
+
+## 15 October 2026: the Play tab's memory
+
+The Play tab and the Enemies tab drew each frame's registers over memory
+as it stood when the page drew, part way into the next frame, and kept
+a log of their own for the sprite pointers the interrupts change. They
+now take memory as each frame began, with each later change logged where
+the game made it (`C64.videoMemory` in `site/lib/c64.js`), as the Storm
+and Ghostbusters Play tabs do; the pointer log is gone, since the
+pointers are among the bytes compared. Checked in Chromium: round 5
+plays, and the Enemies tab builds a round and steps it, with no errors.

@@ -16,7 +16,7 @@ time, operating system and tool versions.
 ## What was changed in the kit
 
 - `kit/skills/core/60-verify`, "What a test lets through": a value the start of a new game leaves alone is read at every test of it with what the last game can leave there. The other game is games/c64/wizball, whose shield timer survives a quit into the next game. Lesson `kit/lessons/2026-10-15-storm.md`.
-- `kit/skills/core/70-minisite/play.md`, "Draw a frame over its own memory" (after the Play tab): the page drew the last whole frame's registers over the memory of the frame being run, and the title's message, which `panel_band` moves a character in memory at line $FF, flickered a character ahead. The other game is games/c64/ghostbusters, whose Play tab drew the same way and whose car jumped while steered on the drive; both pages are fixed.
+- `kit/skills/core/70-minisite/play.md`, "Memory as the beam meets it" (after the Play tab), with `C64.videoMemory` in `site/lib/c64.js`: the page drew the last whole frame's registers over the memory of the frame being run, and the title's message, which `panel_band` moves a character in memory at line $FF, flickered a character ahead. The other game is games/c64/ghostbusters, whose Play tab drew the same way: its car jumped while steered on the drive, and drawn over memory as each frame began, its title's bottom row, written at line $B8 and shown from $F3, came a frame late. Both pages, and games/c64/bubble-bobble's, now use it. The same skill's "A clock, not a frame loop" now says a polling loop's turn moves the clock to the next line: the Ghostbusters runtime moved it a whole line on after the raster read's own 7 cycles, stepped over line $28 in two frames of every 45, and the title lost its top split there.
 
 ## What the run met
 

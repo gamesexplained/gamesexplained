@@ -129,7 +129,11 @@ clock handed to both. Each file's header is its manual.
   take their own time, not the wait's. Let the page move a target one
   frame per real frame and run the port until the clock reaches it. Never
   "run to the next frame boundary": one long stretch then carries the clock
-  frames ahead of real time and the game runs fast.
+  frames ahead of real time and the game runs fast. A turn of a polling
+  loop moves the clock to the start of the next line, not a line on from
+  wherever it stands: with a read of the raster that takes cycles of its
+  own, a whole line a turn steps over a line every few turns, and a loop
+  waiting for that line misses its frame.
 - **The page's own chips.** The page runs the port on chips of its own,
   not on `machine.js`, so it needs the chip behaviour the game leans on:
   the raster latch (the platform reference), the timers a speech or
@@ -137,13 +141,18 @@ clock handed to both. Each file's header is its manual.
   Run the page's runtime in node from the cold start before opening a
   browser: a game that stalls there (waiting for an interrupt the page
   never raises) stalls in the browser with nothing to say why.
-- **Draw a frame over its own memory.** The page draws the last whole
-  frame while the port runs the next, so keep a copy of the video chip's
-  bank and colour RAM as each frame begins and draw that frame's
-  registers and writes over the copy. Drawn over memory the game has
-  moved on since, anything split between a fine scroll register and a
-  character move in memory jumps a character for a frame and back (in
-  two games, a scrolling message and a car steered across a road).
+- **Memory as the beam meets it.** The page draws the last whole frame
+  while the port runs the next, so a frame needs memory of its own:
+  `C64.videoMemory` (`site/lib/c64.js`) keeps memory and colour RAM as
+  each frame began and puts each later change in the frame's writes
+  where the game made it, for `renderFrame` to apply as the beam gets
+  there. Call its `at` each time the clock moves and its `begin` as each
+  frame starts, and give it the `keep` the page draws with. Drawn over
+  memory as it stood at either end of the frame, a game that moves text
+  a character in memory and a pixel in the fine scroll, or fills a row
+  just before the beam reaches it, shows the text a character out for a
+  frame (in two games, two scrolling lines and a car steered across a
+  road).
 
 ## What the port finds in the listing
 

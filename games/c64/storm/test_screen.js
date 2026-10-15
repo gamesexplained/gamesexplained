@@ -20,8 +20,8 @@ const DRAWS = +process.argv[2] || 600;
 const char = new Uint8Array(4096);
 char.set(StormPort.FONT);
 const charrom = Buffer.from(char).toString('base64');
-const play = StormPlay.create({ M: g.listing().ram, Port: StormPort });
 const keep = {}, moves = {};
+const play = StormPlay.create({ M: g.listing().ram, Port: StormPort, keep });
 let target = 0, prev = null, compared = 0, wrong = 0;
 for (let i = 0; i < DRAWS; i++) {
   play.run(target += 985248 / 60);
