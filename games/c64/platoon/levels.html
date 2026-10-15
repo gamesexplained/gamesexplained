@@ -53,7 +53,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="maze"><p class="fig">03 · Section three</p><h2 class="t">The map of the last jungle</h2>
 <p>The rooms sit on a grid ten wide and twelve high, numbered across from 0 (<a href="source-load4.html#3591"><code>$3591</code></a>). Each room has a kind from 1 to 16; kind 0 is outside the maze. The kind picks one of ten maps of 30 by 25 characters (<code>$3609</code>, <code>$361A</code>) and a list of trees, huts and other shapes drawn over it (<code>$36D1</code>), so rooms of the same kind look alike.</p>
-<div class="plate"><canvas id="rgrid"></canvas><p class="cap">The whole maze, every room drawn at its place on the grid with its number; the soldier starts in room 105 (START), and the three rooms of kind 16 (BUNKER) are Barnes's, whose edges the room test at <code>$33E7</code> handles apart from the others. Empty squares are outside the maze. Press a room to draw it larger below.</p>
+<div class="plate"><canvas id="rgrid"></canvas><p class="cap">The whole maze, every room drawn at its place on the grid with its number; the soldier starts in room 105 (START), and the three rooms of kind 16 (BUNKER) are Barnes's, whose edges the room test at <code>$33E7</code> handles apart from the others. Empty squares are outside the maze. The white line is the way to the bunker. Press a room to draw it larger below.</p>
+<p class="cap"><button id="mplay" type="button">▶ Play the way to the bunker</button> <span id="mstep" aria-live="polite"></span><br>Walking off a room's left or right edge leads to a neighbouring room, but which neighbour depends on the way the soldier has turned: each exit rotates the four directions (<a href="source-load4.html#344A"><code>$344A</code></a>, <a href="source-load4.html#34A0"><code>$34A0</code></a>), so the same edge can lead somewhere different on a later visit. The route is the shortest one through those rules, from START to the bunker, and says which edge to leave by in each room.</p>
 <div class="row"><span class="lab" id="rlab"></span></div>
 <canvas id="room" style="margin-top:12px"></canvas></div>
 </section>
@@ -245,7 +246,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       for (let a = 0; a < 750; a++) glyph(ctx, set, scr[a], ox + (a % 30) * 8 * s, oy + Math.floor(a / 30) * 8 * s, j[0x3C93 + scr[a]], rcols, s);
     }
     // the whole maze: every room at its place on the 10 x 12 grid
-    const RW = 240, RH = 200, GAP = 4, g = C.canvas($('rgrid'), 10 * (RW + GAP), 12 * (RH + GAP));
+    const RW = 240, RH = 200, GAP = 0, g = C.canvas($('rgrid'), 10 * (RW + GAP), 12 * (RH + GAP));
     $('rgrid').style.width = '100%';
     g.fillStyle = '#e9e7e1'; g.fillRect(0, 0, 10 * (RW + GAP), 12 * (RH + GAP));
     g.font = 'bold 28px IBM Plex Mono, monospace'; g.textAlign = 'left';
@@ -270,6 +271,50 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       drawRoom(Math.floor((e.clientY - b.top) * sx / (RH + GAP)) * 10 + Math.floor((e.clientX - b.left) * sx / gs));
     });
     drawRoom(105);
+    // the way to the bunker: search over (room, the four exit steps), as $33E7 opens the edges by kind
+    const base = document.createElement('canvas'); base.width = $('rgrid').width; base.height = $('rgrid').height; base.getContext('2d').drawImage($('rgrid'), 0, 0);
+    const kind = r => j[0x3591 + r], O0 = [j[0x3630], j[0x3631], j[0x3632], j[0x3633]].map(v => v > 127 ? v - 256 : v);
+    const prevM = new Map(), K0 = 105 + ':' + O0; prevM.set(K0, null); const qm = [[105, O0]]; let goal = null;
+    while (qm.length) {
+      const [r, O] = qm.shift();
+      if (kind(r) === 16) { goal = [r, O]; break; }
+      const k = kind(r), mv = [];
+      if (k >= 7) mv.push(['left', r + O[2], [O[3], O[0], O[1], O[2]]]);
+      if (k < 7 || k >= 13) mv.push(['right', r + O[0], [O[1], O[2], O[3], O[0]]]);
+      for (const [d, nr, nO] of mv) { const key = nr + ':' + nO; if (nr >= 0 && nr < 120 && kind(nr) && !prevM.has(key)) { prevM.set(key, [r + ':' + O, d, r]); qm.push([nr, nO]); } }
+    }
+    const mpath = []; for (let key = goal[0] + ':' + goal[1]; prevM.get(key); key = prevM.get(key)[0]) mpath.unshift({from: prevM.get(key)[2], edge: prevM.get(key)[1], to: +key.split(':')[0]});
+    const mc = n => [(n % 10) * RW + RW / 2, Math.floor(n / 10) * RH + RH / 2];
+    let mi = 0, mt = 0, mplaying = false, mraf = 0;
+    function mframe() {
+      g.drawImage(base, 0, 0);
+      const leg = mpath[Math.min(mi, mpath.length - 1)], done = mi >= mpath.length;
+      for (let q = Math.max(0, mi - 4); q < Math.min(mi, mpath.length); q++) {
+        const [x0, y0] = mc(mpath[q].from), [x1, y1] = mc(mpath[q].to);
+        g.strokeStyle = 'rgba(255,255,255,' + (1 - (mi - q) / 5).toFixed(2) + ')'; g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+      }
+      const [ax, ay] = mc(done ? leg.to : leg.from), [bx, by] = mc(leg.to), f = done ? 0 : Math.max(0, mt - 1);
+      const x = ax + (bx - ax) * Math.min(1, f), y = ay + (by - ay) * Math.min(1, f);
+      g.fillStyle = '#ffffff'; g.strokeStyle = '#000000'; g.lineWidth = 5; g.beginPath(); g.arc(x, y, 22, 0, 7); g.fill(); g.stroke();
+      const say = done ? 'Room ' + leg.to + ': Barnes\'s bunker. Walk into its mouth and throw five grenades (fire) to finish him.' : 'Room ' + leg.from + ': walk off the ' + leg.edge.toUpperCase() + ' edge of the screen.';
+      $('mstep').textContent = say;
+      if (mt < 1 || done) {
+        g.font = 'bold 30px IBM Plex Mono, monospace'; g.textAlign = 'left';
+        const w = Math.min(g.measureText(say).width + 24, 900), bx0 = Math.min(Math.max(4, x - w / 2), 10 * RW - w - 4), by0 = y > 90 ? y - 80 : y + 34;
+        g.fillStyle = '#ffffff'; g.fillRect(bx0, by0, w, 44); g.lineWidth = 3; g.strokeRect(bx0, by0, w, 44); g.fillStyle = '#000000'; g.fillText(say.length > 52 ? say.slice(0, 50) + '…' : say, bx0 + 12, by0 + 32);
+      }
+      if (mplaying) {
+        mt += mt < 1 ? 0.012 : 0.03;
+        if (mt >= 2) { mt = 0; mi++; }
+        if (mi >= mpath.length) { mplaying = false; $('mplay').textContent = '↻ Play again'; mframe(); return; }
+        mraf = requestAnimationFrame(mframe);
+      }
+    }
+    $('mplay').addEventListener('click', () => {
+      if (mplaying) { mplaying = false; $('mplay').textContent = '▶ Resume'; return; }
+      if (mi >= mpath.length) { mi = 0; mt = 0; }
+      mplaying = true; $('mplay').textContent = '❚❚ Pause'; cancelAnimationFrame(mraf); mframe();
+    });
   });
 })();
 </script>
