@@ -138,7 +138,7 @@
         if(n<=cols) return;
         g[1].forEach(function(c,i){ if(i>=cols) c.classList.add('hidden'); });
         var more=document.createElement('button'); more.type='button'; more.className='showall';
-        more.textContent='Show all '+n+' '+(t?t[1]+' ':'')+'games';
+        more.innerHTML='See all '+n+'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'; more.setAttribute('aria-label','See all '+n+' '+(t?t[1]+' ':'')+'games');
         more.onclick=function(){ st.open[g[0]]=true; g[1].forEach(function(c){ c.classList.remove('hidden'); }); more.remove(); };
         sec.appendChild(more);
       });
