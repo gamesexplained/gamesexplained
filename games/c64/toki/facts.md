@@ -123,7 +123,7 @@ All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartri
 
 ## Loading a stage
 
-Read statically from the cartridge, 2026-10-15; not yet run in the emulator.
+Read statically from the cartridge, then checked live in VICE on 2026-10-15: from power-on to stage 1, `stage_load` stopped three times, with X = $80, $60, and $88 (`stage` = 0).
 
 | Thing | Where | What |
 |---|---|---|
@@ -149,4 +149,6 @@ The kit's 6502 simulator (`kit/c64/cpu6502.js`) ran `unpack` from bank 0 on each
 | 28 (stage 4) | 3,014 | $0C01-$2323 | 5,923 |
 | 31 (stage 5) | 2,230 | $0C01-$21BA | 5,562 |
 
-What the unpacked stage data holds is not read yet.
+Live check (VICE, 2026-10-15): at $0B11 after stage 1 loaded, RAM $0C01-$20DF matched the simulator's unpacked stage 1 byte for byte (5,343 of 5,343).
+
+What stage 1's block holds, from a load watch on $0C01-$20DF over a few seconds of play: nothing executes there, and the reads come through zero-page pointers into it ($36/$38 = $1B34/$1B71, $3A/$3C = $1AE3/$1AA1), each pair read as split low and high bytes at the same index ($B207/$B20B, $A23D/$A241, $B57D/$B581), with the index from a per-object table ($33CA,x), and one read at $4C2E adds to a per-object table ($38EC,x). So the block holds pointer tables and the data behind them that the object code uses for each stage. Which object property each table holds is unknown.
