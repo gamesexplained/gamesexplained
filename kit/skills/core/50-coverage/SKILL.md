@@ -31,7 +31,10 @@ same way, so tiers mean the same thing everywhere.
    While it is in front of you, note
    anything it would accept that the player was never meant to do: an
    exact match where a range was meant, a comparison that assumes a sign,
-   an eight-bit sum that can wrap, a test whose order leaves a gap. Put
+   an eight-bit sum that can wrap, an `ADC` or `SBC` straight after a
+   `JSR` with no `CLC` or `SEC` between (the carry the routine returns,
+   on each of its exits, is part of the sum), a test whose order leaves
+   a gap. Put
    the note in `facts.md` as an open question; `60-verify` says how to
    settle it and `70-minisite` what to make of it.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
