@@ -116,7 +116,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, hgt); ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, w - 1, hgt - 1);
       ctx.fillStyle = '#000000'; lines.forEach((l, i) => ctx.fillText(l, x + 4, y + 13 + 15 * i));
     }
-    marks.forEach(([pos, col, t, name]) => tag(((pos % 90) + 2) * 64 + col * 8, Math.max(0, Yr(Math.floor(pos / 90)) + cut(Math.floor(pos / 90)) * 8 - 20), [t + ' ' + name]));
+    jy = k => Yr(3 * k + 2) + 22;
+    // tags sit on the line the soldier walks, centred on where he stands
+    marks.forEach(([pos, col, t, name]) => { const x = ((pos % 90) + 2) * 64 + col * 8 + 32; ctx.font = 'bold 13px IBM Plex Mono, monospace'; tag(x - (ctx.measureText(t + ' ' + name).width + 8) / 2, jy(Math.floor(pos / 270)) - 44, [t + ' ' + name]); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#000000'; ctx.beginPath(); ctx.moveTo(x - 6, jy(Math.floor(pos / 270)) - 26); ctx.lineTo(x + 6, jy(Math.floor(pos / 270)) - 26); ctx.lineTo(x, jy(Math.floor(pos / 270)) - 16); ctx.closePath(); ctx.fill(); ctx.stroke(); });
     huts.forEach(h => tag(h.x, Yr(h.r) + 50, h.lines));
     jy = k => Yr(3 * k + 2) + 22;
     C.canvas($('jroute'), 90 * 64, acc);
@@ -160,31 +162,47 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     }
     const hut = i => doorAt[i];
     const legs = [
-      [[1, col(0x0114)], [4, col(0x0469) + 1], 'Climb down to level 5 and pick up the explosives', false],
-      [null, [1, col(0x0153)], 'Climb back up to the bridge and set the explosives', false],
-      [null, [1, col(0x0153) + 5], 'Run clear of the bridge, towards the village side, before it blows', false],
-      [null, [0, hut(0)], 'Climb to the village and enter hut A', true],
-      [null, [5, hut(0)], 'Search hut A for the torch', true],
-      [null, [5, hut(2)], 'Leave, go along to hut C and search it for the map', true],
-      [null, [5, hut(1)], 'Go back to hut B and use its trapdoor to reach the tunnels', true]];
+      [[1, col(0x0114)], [4, col(0x0469) + 1], 'Head down to level 5', 'Walk over the explosives to pick them up: YOU HAVE FOUND THE EXPLOSIVES.'],
+      [null, [1, col(0x0153)], 'Climb back up to the bridge', 'Walk on to the middle of the bridge. The explosives are set by themselves: THE EXPLOSIVES ARE SET RUN FOR IT !'],
+      [null, [1, col(0x0153) + 5], 'Run on, off the far end of the bridge', 'Keep clear while the bridge blows. Do not go back: the gap drops you into the river.'],
+      [null, [0, hut(0)], 'Climb up to the village', 'Push up at the door of the first hut to go in.'],
+      [null, [5, hut(0)], 'Inside the first hut', 'Push up to search. One spot here hides the torch, another a booby trap.'],
+      [null, [5, hut(2)], 'Push down at the door to leave, walk to the third hut and go in', 'Push up to search: HERE IS A MAP OF A TUNNEL SYSTEM.'],
+      [null, [5, hut(1)], 'Leave, and go into the second hut', 'Stand on the trapdoor: DO YOU WISH TO GO DOWN [Y/N]. Press Y to go down to the tunnels.']];
     const steps = []; let at = legs[0][0];
-    legs.forEach(([f, t, text, blown]) => { route(f || at, t, blown).forEach((n, i) => { if (i || !steps.length) steps.push({n, text}); }); at = t; });
-    let playing = false, i = 0, raf = 0;
+    legs.forEach(([f, t, text, stop], li) => { const p = route(f || at, t, li >= 3); p.forEach((n, i) => { if (i || !steps.length) steps.push({n, text}); }); steps[steps.length - 1].stop = stop; at = t; });
+    let playing = false, i = 0, raf = 0, held = -1;
     function frame() {
       const rc = $('jroute').getContext('2d'); rc.clearRect(0, 0, $('jroute').width, $('jroute').height);
-      const pt = s => [s.n[1] * 64 + 32, jy(s.n[0])];
-      rc.lineWidth = 4; rc.strokeStyle = '#ffffff'; rc.setLineDash([10, 6]); rc.beginPath();
-      steps.slice(0, Math.floor(i) + 1).forEach((s, j) => { const [x, y] = pt(s); j ? rc.lineTo(x, y) : rc.moveTo(x, y); }); rc.stroke(); rc.setLineDash([]);
-      const a = steps[Math.floor(i)], b = steps[Math.min(steps.length - 1, Math.floor(i) + 1)], f = i % 1;
+      const pt = s => [s.n[1] * 64 + 32, jy(s.n[0])], now = Math.floor(i), TRAIL = 14;
+      rc.lineWidth = 5; rc.lineCap = 'round';
+      for (let j = Math.max(1, now - TRAIL); j <= now; j++) {
+        const [x0, y0] = pt(steps[j - 1]), [x1, y1] = pt(steps[j]);
+        rc.strokeStyle = 'rgba(255,255,255,' + (1 - (now - j) / TRAIL).toFixed(2) + ')'; rc.beginPath(); rc.moveTo(x0, y0); rc.lineTo(x1, y1); rc.stroke();
+      }
+      const a = steps[now], b = steps[Math.min(steps.length - 1, now + 1)], f = i % 1;
       const [ax, ay] = pt(a), [bx, by] = pt(b), x = ax + (bx - ax) * f, y = ay + (by - ay) * f;
       rc.fillStyle = '#ffffff'; rc.strokeStyle = '#000000'; rc.lineWidth = 3; rc.beginPath(); rc.arc(x, y, 12, 0, 7); rc.fill(); rc.stroke();
-      $('jstep').textContent = a.text;
+      const stopped = held === now && a.stop;
+      $('jstep').textContent = stopped ? '▶ In the game: ' + a.stop : a.text;
+      if (stopped) {
+        rc.font = 'bold 15px IBM Plex Mono, monospace'; const words = a.stop.split(' '), lines = [''];
+        words.forEach(w => { if ((lines[lines.length - 1] + ' ' + w).length > 34) lines.push(w); else lines[lines.length - 1] += (lines[lines.length - 1] ? ' ' : '') + w; });
+        const w = Math.max(...lines.map(l => rc.measureText(l).width)) + 16, h = lines.length * 19 + 10, bx0 = Math.min(Math.max(4, x - w / 2), $('jroute').width - w - 4), by0 = y > h + 30 ? y - h - 22 : y + 22;
+        rc.fillStyle = '#ffffff'; rc.fillRect(bx0, by0, w, h); rc.lineWidth = 2; rc.strokeRect(bx0, by0, w, h);
+        rc.fillStyle = '#000000'; rc.textAlign = 'left'; lines.forEach((l, k) => rc.fillText(l, bx0 + 8, by0 + 20 + 19 * k));
+      }
       const sc = $('jscroll'); sc.scrollLeft = x * sc.scrollWidth / $('jroute').width - sc.clientWidth / 2;
-      if (playing) { i += a.n[0] !== b.n[0] ? 0.04 : 0.12; if (i >= steps.length - 1) { i = steps.length - 1; playing = false; $('jplay').textContent = '↻ Play again'; } raf = requestAnimationFrame(frame); }
+      if (playing) {
+        const nxt = i + (a.n[0] !== b.n[0] ? 0.04 : 0.12);
+        if (Math.floor(nxt) > now && steps[now + 1] && steps[now + 1].stop && held !== now + 1) { i = now + 1; held = i; playing = false; $('jplay').textContent = i >= steps.length - 1 ? '↻ Play again' : '▶ Next'; frame(); return; }
+        i = nxt; if (i >= steps.length - 1) { i = steps.length - 1; playing = false; $('jplay').textContent = '↻ Play again'; }
+        raf = requestAnimationFrame(frame);
+      }
     }
     $('jplay').addEventListener('click', () => {
       if (playing) { playing = false; $('jplay').textContent = '▶ Resume'; return; }
-      if (i >= steps.length - 1) i = 0;
+      if (i >= steps.length - 1) { i = 0; held = -1; }
       playing = true; $('jplay').textContent = '❚❚ Pause'; cancelAnimationFrame(raf); frame();
     });
     $('jjoin').addEventListener('change', () => { if (!playing) frame(); });
