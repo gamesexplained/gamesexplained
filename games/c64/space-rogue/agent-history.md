@@ -61,3 +61,30 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   with the beam, HELM, QUERY, the AI and the station.
 - `random_upto` (`$A298`) is inclusive, so a call with 100 gives 101
   outcomes; three comments had counted 100.
+
+## 15 October 2026, minisite and retrospective
+
+- The chart drawer's port, checked against the engine in the simulator,
+  drew every tile with its halves swapped: the comments had each tile's
+  two pixel bytes the wrong way round (`facts.md`, "The listing's error
+  rate", gives the right addresses). The encounter port showed that `pick_ship` takes any
+  of a class's four entries one time in four, not always one from the
+  player's rank. Both were corrected in four parts' listings.
+- The HIVE! mound port first disagreed with the game once in 91 cases:
+  `random_upto` returns with the carry set when the number equals its
+  limit, and the `ADC` after it has no `CLC`, so the longest wait is 92.
+- `frame.py compare` found 13,852 pixels wrong in a frame of the walk
+  through a base. `vice_vicii_get_state` gave zeros and line 0 while the
+  game ran with `$01` = `$34`; `frame.py` and `screen.py` now read the
+  chip through the io bank, and the recapture matches to the pixel.
+- The first live test of the star field after a wrong answer ran from
+  `intro-prompt.vsf`, which holds the title's lift-off, not the prompt;
+  the run from the intro's `entry.vsf` then sat in the KERNAL's serial
+  routine because side 2 was in the drive. With `work/side1.g64`
+  attached it reached the question, and "zz" gave a grey border.
+- The screen after the wrong answer differed from a fresh unpack outside
+  the typed text too: the routine stops where the damaged stream ends
+  and keeps the earlier picture past it. The page's port lays the second
+  unpack over the first, as the game does.
+- The Ja-Karn paragraph first said each map names up to two gates; the
+  `$5630` records allow four. Rewritten from the records.
