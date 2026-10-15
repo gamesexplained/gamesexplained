@@ -90,7 +90,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 90 * 64, acc);
     const cols = [P[0], P[9], P[13]];
     for (const r of rows) {
-      const set = m.subarray(r < 3 ? 0xD800 : 0xD000, (r < 3 ? 0xD800 : 0xD000) + 2048), ct = r < 3 ? 0xAE00 : 0xAF00;
+      // the huts' insides (rows 15 to 17) are entered from the top level, so they keep its character set: nothing swaps it back on the way in ($29B6)
+      const vs = r < 3 || r >= 15, set = m.subarray(vs ? 0xD800 : 0xD000, (vs ? 0xD800 : 0xD000) + 2048), ct = vs ? 0xAE00 : 0xAF00;
       for (let c = 0; c < 90; c++) {
         const blk = 0x8000 + 48 * m[0xA000 + 90 * r + c];
         for (let y = cut(r); y < 6; y++) for (let x = 0; x < 8; x++) {
