@@ -87,9 +87,9 @@ The game is four loads. Each has a folder under `parts/`.
 | Part | Files | Route |
 |---|---|---|
 | `load1` Jungle and village | OVL1 (side 1) | steps 1 to 4 above |
-| `load2` | LAY1 then O1 (side 2) | not reached in this run |
-| `load3` | LAY2 then O2 (side 2) | not reached in this run |
-| `load4` | LAY3 then O3 (side 2) | not reached in this run |
+| `load2` | LAY1 then O1 (side 2) | the jungle and the village again, loaded after the last section ends |
+| `load3` | LAY2 then O2 (side 2) | the tunnels and the dugout |
+| `load4` | LAY3 then O3 (side 2) | the jungle maze and Barnes's bunker |
 
 OVL1 holds the message TURN THE DISK OVER TO SIDE B and a KERNAL load of
 a file named LAY2 at `$3DDE`, run with `jmp $4000`; the digit is probably

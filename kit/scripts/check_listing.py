@@ -50,6 +50,13 @@ def untyped_code(gdir, S):
     # in RAM (BASIC's CHRGET at $0073 runs during RUN) is the machine's, not untyped game code
     out = {a for lo, hi, *_ in (S.get("regions") or {}).get("exclude", []) for a in range(lo, hi + 1)}
     loose = span("code") - out - {a for b in S["blocks"] if b["type"] == "Code" for a in range(b["start"], b["end"] + 1)}
+    # the processor fetches the byte after a one-byte RTS or RTI and drops it, and the emulator's
+    # memory map marks that fetch as code: such a byte is the next thing's, not untyped code
+    lp = os.path.join(gdir, "listing.json")
+    if os.path.isfile(lp):
+        ends = {r["a"] + 1 for r in json.load(open(lp))["records"]
+                if r.get("t") == "code" and r.get("b") in ([0x60], [0x40])}
+        loose -= ends
     ran = loose & span("ran")
     return sorted(ran), sorted(loose - ran)
 
