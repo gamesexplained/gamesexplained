@@ -292,6 +292,12 @@ flown (`$0838`) only the first 25 entries count, up to V.
   the wedge in front of the viewer (`clip_polygon`, `$7F7E`), then to
   the window (`fill_polygon`, `$8288`) and filled a row at a time
   (`scan_fill`, `$850E`, `span`, `$8C9C`).
+- A model's nose is its -z end and its top its +y side: every ship's
+  engine faces (colour `$12`) are at its largest z, the Sunracer's and
+  the Hunter's windows (`$51`) toward the smallest, and the Sunracer's
+  hull and window stand on its wings, which lie at y = 0. `fill_slot`
+  (`$1971`) gives a new object in slots 0-6 the identity orientation
+  (`$0DA8`), so it starts nose toward -z, level.
 - All of the 3D maths is in logarithms: a number is a 16-bit log2
   (fraction, whole part) and a sign byte. Multiplying adds logs;
   `log_add` and `log_sub` (in the flight part) add and subtract through

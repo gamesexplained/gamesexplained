@@ -95,23 +95,8 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
 </header>
 <main class="wrap">
 
-<section data-part="engine" id="encounters">
-  <p class="fig">01 · Encounters</p>
-  <h2 class="t">What the ship meets depends on the system and the player's rank</h2>
-  <p class="lede">Each system's map carries a danger level and five weights, one for each class of ship. When an encounter comes, the weights choose the class and the player's rank chooses the ship within it.</p>
-  <div class="plate">
-    <div class="pick" id="sr-enc-pick"><button class="step" data-d="-1" aria-label="Previous system">‹</button><select id="sr-enc" aria-label="System"></select><button class="step" data-d="1" aria-label="Next system">›</button></div>
-    <div class="sr-bar"><label>Player's rank <input type="range" id="sr-rank" min="0" max="5" value="0" aria-label="The player's rank"></label><span class="sr-mono" id="sr-rank-v"></span></div>
-    <p class="sr-need" id="sr-enc-need" hidden></p>
-    <table class="sr-odds" id="sr-odds"></table>
-    <p class="cap">The chance of each ship once one is drawn, worked out by the page's port of <code>pick_ship</code> (<code>$2C8C</code>) over every roll it can make, from <code>ship_class_types</code> (<code>$2D24</code>). A test, <code>test_odds.js</code>, runs the engine's own routine on every roll for every system and rank and counts the same.</p>
-  </div>
-  <p>A roll from 0 to 99 is spent across the weights from the last class to the first. A second roll from 0 to 15 picks one of the class's four entries directly if it comes out under 4; otherwise a roll from 0 to the Sunracer's rank value, halved and kept to 3 at most, picks it. The rank value is the player's rank plus 2 (<code>$175B</code>), and the rank rises from 0 to 5 with kills and surrenders (<code>$1B2B</code>), so a Dart becomes a Corsair, a Cruiser a Titan and a Wasp a Vulture more often as the player's repute grows.</p>
-  <p>Whether an encounter happens at all is decided before this, on each step of HELM travel, from the hours the step takes and the danger level (<code>encounter_roll</code>, <code>$2C1E</code>), and in flight every 256th pass with an eighth of the danger level (<code>frame_update</code>, <code>$1239</code>). Ja-Karn, the Manchi system, has danger 85 and sends nothing but Wasps and Vultures.</p>
-</section>
-
 <section data-part="engine" id="ships">
-  <p class="fig">02 · Ships</p>
+  <p class="fig">01 · Ships</p>
   <h2 class="t">Each model carries its own drawing order</h2>
   <p class="lede">The flight engine draws every ship, base and planet from fourteen model files and the two models built into <code>MAIN</code>, the Sunracer and the missile. A ship is seven to eleven flat faces, and the drawer never sorts them: each face names the plane that decides whether it is drawn before the others or after. Drag the ship to turn it.</p>
   <div class="plate">
@@ -133,6 +118,21 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
   <p>A colour is a fill pattern from <code>$F1C8</code>: a pattern for the even rows and one for the odd rows, making the four bit pairs solid or six checkerboards of two of them. Two of the bit pairs take their colour from the screen matrix, and the face rewrites one nybble of the matrix byte, or both, in every 4-by-8 cell it touches. A face drawn later can change the colour of an earlier face's pixels in the cells they share, and the drawer leaves those clashes on screen.</p>
   <p>Beams and collisions never look at the model. <code>trace_beam</code> (<code>$2189</code>) tests each point along the beam against a box round the target's centre, its type's radius plus 2 units each way, and <code>check_collisions</code> (<code>$6AB3</code>) tests boxes of the two radii added. Show the hit box: the fighters fit inside theirs, but the Cruiser's nose, the Vulture's wings and most of the Titan stick out, so a beam can cross a Vulture's wing tip on the screen and do no damage.</p>
   <div class="sr-scroll"><table id="sr-shp-all"></table></div>
+</section>
+
+<section data-part="engine" id="encounters">
+  <p class="fig">02 · Encounters</p>
+  <h2 class="t">What the ship meets depends on the system and the player's rank</h2>
+  <p class="lede">Each system's map carries a danger level and five weights, one for each class of ship. When an encounter comes, the weights choose the class and the player's rank chooses the ship within it.</p>
+  <div class="plate">
+    <div class="pick" id="sr-enc-pick"><button class="step" data-d="-1" aria-label="Previous system">‹</button><select id="sr-enc" aria-label="System"></select><button class="step" data-d="1" aria-label="Next system">›</button></div>
+    <div class="sr-bar"><label>Player's rank <input type="range" id="sr-rank" min="0" max="5" value="0" aria-label="The player's rank"></label><span class="sr-mono" id="sr-rank-v"></span></div>
+    <p class="sr-need" id="sr-enc-need" hidden></p>
+    <table class="sr-odds" id="sr-odds"></table>
+    <p class="cap">The chance of each ship once one is drawn, worked out by the page's port of <code>pick_ship</code> (<code>$2C8C</code>) over every roll it can make, from <code>ship_class_types</code> (<code>$2D24</code>). A test, <code>test_odds.js</code>, runs the engine's own routine on every roll for every system and rank and counts the same.</p>
+  </div>
+  <p>A roll from 0 to 99 is spent across the weights from the last class to the first. A second roll from 0 to 15 picks one of the class's four entries directly if it comes out under 4; otherwise a roll from 0 to the Sunracer's rank value, halved and kept to 3 at most, picks it. The rank value is the player's rank plus 2 (<code>$175B</code>), and the rank rises from 0 to 5 with kills and surrenders (<code>$1B2B</code>), so a Dart becomes a Corsair, a Cruiser a Titan and a Wasp a Vulture more often as the player's repute grows.</p>
+  <p>Whether an encounter happens at all is decided before this, on each step of HELM travel, from the hours the step takes and the danger level (<code>encounter_roll</code>, <code>$2C1E</code>), and in flight every 256th pass with an eighth of the danger level (<code>frame_update</code>, <code>$1239</code>). Ja-Karn, the Manchi system, has danger 85 and sends nothing but Wasps and Vultures.</p>
 </section>
 
 <section data-part="engine" id="combat">
@@ -751,7 +751,7 @@ const SRSim = (function () {
   const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const MODELS = JSON.parse($('sr-models').textContent);
   const NEED = 'This widget draws from the game\'s bytes with the site\'s shared script, ../../lib/c64.js: open the page from the built site.';
-  const NEEDS = ['sr-enc-need', 'sr-shp-need', 'sr-cmb-need'];
+  const NEEDS = ['sr-shp-need', 'sr-enc-need', 'sr-cmb-need'];
   const need = (id, msg) => { const p = $(id); p.textContent = msg || NEED; p.hidden = false; };
   function pressed(group, btn) { group.querySelectorAll('[aria-pressed]').forEach(b => { if (b.parentNode === group && b.dataset[Object.keys(btn.dataset)[0]] !== undefined) b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); }); }
   function picker(pickId, selId, names, onPick) {
@@ -768,27 +768,7 @@ const SRSim = (function () {
     () => NEEDS.forEach(id => need(id, 'The listings this widget reads come with the built site: open the page from there.')));
 
   function start([E, FL]) {
-    encounters(E); ships(E); fight(E, FL);
-  }
-
-  // ---- 01 encounters
-  function encounters(E) {
-    const SYSTEMS = [['Karonus', 40, [10, 10, 45, 30, 5]], ['Deneb', 53, [10, 10, 45, 30, 5]], ['Gryphon', 38, [10, 20, 40, 25, 5]],
-      ['Arcturus', 30, [10, 5, 45, 35, 5]], ['Nar\'see', 45, [10, 20, 40, 20, 10]], ['Bassruti', 45, [10, 30, 35, 10, 15]],
-      ['Sigure', 30, [10, 25, 30, 10, 25]], ['Zed N27', 30, [10, 20, 35, 10, 25]], ['Ja-Karn', 85, [0, 0, 0, 0, 100]]];
-    const TYPES = { 1: 'Wasp', 2: 'Dart', 3: 'Cruiser', 4: 'Vulture', 5: 'Corsair', 6: 'Titan', 7: 'Scow', 8: 'Tanker', 12: 'Hunter' };
-    const classTypes = Array.from(E.ram.subarray(0x2D24, 0x2D38));
-    let sys = 0;
-    function draw() {
-      const rank = +$('sr-rank').value, R = rank + 2, { count, total } = shipOdds(SYSTEMS[sys][2], R, classTypes);
-      $('sr-rank-v').textContent = rank + ', rank value ' + R + '; danger ' + SYSTEMS[sys][1];
-      const rows = Object.keys(count).filter(k => k !== 'none').map(k => [TYPES[k] || 'type ' + k, count[k] / total])
-        .sort((a, b) => b[1] - a[1]);
-      $('sr-odds').innerHTML = rows.map(([n, p]) => '<tr><td>' + n + '</td><td class="sr-pc">' + (100 * p).toFixed(1) +
-        ' %</td><td class="sr-barcell"><i style="width:' + (100 * p).toFixed(1) + '%"></i></td></tr>').join('');
-    }
-    picker('sr-enc-pick', 'sr-enc', SYSTEMS.map(s => s[0]), i => { sys = i; draw(); });
-    $('sr-rank').addEventListener('input', draw);
+    ships(E); encounters(E); fight(E, FL);
   }
 
 
@@ -833,19 +813,20 @@ const SRSim = (function () {
     new IntersectionObserver(es => f(es[es.length - 1].isIntersecting)).observe(el);
   }
 
-  // ---- 02 the ships
+  // ---- 01 the ships
   function ships(E) {
     const ram = E.ram, W = 144, H = 144;
     const cv = $('sr-shp-cv'), ctx = cv.getContext('2d'), img = ctx.createImageData(2 * W, H);
     const LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 9, 10, 17, 18, 19, 20];
     const MISSILE = { 9: 'SM-1', 10: 'Nova', 11: 'plasma torpedo' };
     const SYSTEMS = ['launcher', 'beam', 'engine', 'aft shield', 'fore shield', 'ECM'];
-    let t = 0, M = null, front = null, yaw = Math.PI - 0.7, pitch = -0.45, spin = true, faces = -1, box = false;
+    let t = 0, M = null, front = null, yaw = Math.PI - 0.7, pitch = 0.45, spin = true, faces = -1, box = false;
     let raf = 0, steps = 0, visible = false;
-    // the view's axes in the model's frame: x right, y down, z toward the eye (the engine's way round)
+    // the view's axes in the model's frame: x right, y down, z toward the eye (the engine's way round);
+    // a model's top is its +y side, so the view's down starts as the model's -y
     function rot() {
       const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
-      return [[cy, 0, -sy], [-sp * sy, cp, -sp * cy], [cp * sy, sp, cp * cy]];
+      return [[-cy, 0, sy], [sp * sy, -cp, sp * cy], [cp * sy, sp, cp * cy]];
     }
     const hull = m => Math.max(...m.points.map(p => Math.hypot(...p)), 1e-6);
     const extent = m => Math.max(...m.points.map(p => Math.max(...p.map(Math.abs))));
@@ -922,7 +903,7 @@ const SRSim = (function () {
       draw(); kick();
     });
     $('sr-shp-box').addEventListener('click', () => { box = !box; $('sr-shp-box').setAttribute('aria-pressed', box ? 'true' : 'false'); draw(); });
-    dragger(cv, (dx, dy) => { setSpin(false); yaw -= dx * 0.012; pitch = Math.max(-1.45, Math.min(1.45, pitch - dy * 0.012)); draw(); });
+    dragger(cv, (dx, dy) => { setSpin(false); yaw += dx * 0.012; pitch = Math.max(-1.45, Math.min(1.45, pitch + dy * 0.012)); draw(); });
     onScreen(cv, v => { visible = v; kick(); });
     // every ship's figures in one table
     $('sr-shp-all').innerHTML = '<tr><th>Ship</th><th>Faction</th><th>Hit points</th><th>Shields</th><th>Beam</th><th>Missile</th><th>ECM</th><th>Turn a pass</th><th>To speed 70</th><th>Own tactic</th><th>Rank value</th></tr>' +
@@ -930,6 +911,26 @@ const SRSim = (function () {
         return '<tr><td>' + s.name + '</td><td>' + FACTION[s.faction] + '</td><td>' + s.armour + '</td><td>' + s.fore + ' / ' + s.aft + '</td><td>' + (s.beam ? s.beam + (s.turret ? ', any way' : ', ahead') : '') +
           '</td><td>' + (s.missile ? MISSILE[s.missile] : '') + '</td><td>' + (s.ecm ? s.ecm + '%' : '') + '</td><td>' + degrees(s.turn) + '</td><td>' + Math.ceil(70 / 16 / s.gain) +
           ' passes</td><td>' + tacticName(ram, s.tactic) + '</td><td>' + s.rank + '</td></tr>'; }).join('');
+  }
+
+  // ---- 02 encounters
+  function encounters(E) {
+    const SYSTEMS = [['Karonus', 40, [10, 10, 45, 30, 5]], ['Deneb', 53, [10, 10, 45, 30, 5]], ['Gryphon', 38, [10, 20, 40, 25, 5]],
+      ['Arcturus', 30, [10, 5, 45, 35, 5]], ['Nar\'see', 45, [10, 20, 40, 20, 10]], ['Bassruti', 45, [10, 30, 35, 10, 15]],
+      ['Sigure', 30, [10, 25, 30, 10, 25]], ['Zed N27', 30, [10, 20, 35, 10, 25]], ['Ja-Karn', 85, [0, 0, 0, 0, 100]]];
+    const TYPES = { 1: 'Wasp', 2: 'Dart', 3: 'Cruiser', 4: 'Vulture', 5: 'Corsair', 6: 'Titan', 7: 'Scow', 8: 'Tanker', 12: 'Hunter' };
+    const classTypes = Array.from(E.ram.subarray(0x2D24, 0x2D38));
+    let sys = 0;
+    function draw() {
+      const rank = +$('sr-rank').value, R = rank + 2, { count, total } = shipOdds(SYSTEMS[sys][2], R, classTypes);
+      $('sr-rank-v').textContent = rank + ', rank value ' + R + '; danger ' + SYSTEMS[sys][1];
+      const rows = Object.keys(count).filter(k => k !== 'none').map(k => [TYPES[k] || 'type ' + k, count[k] / total])
+        .sort((a, b) => b[1] - a[1]);
+      $('sr-odds').innerHTML = rows.map(([n, p]) => '<tr><td>' + n + '</td><td class="sr-pc">' + (100 * p).toFixed(1) +
+        ' %</td><td class="sr-barcell"><i style="width:' + (100 * p).toFixed(1) + '%"></i></td></tr>').join('');
+    }
+    picker('sr-enc-pick', 'sr-enc', SYSTEMS.map(s => s[0]), i => { sys = i; draw(); });
+    $('sr-rank').addEventListener('input', draw);
   }
 
   // ---- 03 the fight: ships the reader picks, run by SRSim on the engine's own code, and the replay
@@ -940,7 +941,7 @@ const SRSim = (function () {
     const ram = new Uint8Array(E.ram), has = new Uint8Array(E.has);
     ram.set(FL.ram.subarray(0xA500, 0xBD00), 0xA500); has.set(FL.has.subarray(0xA500, 0xBD00), 0xA500);
     has.fill(1, 0x4000, 0x6400);
-    const cv = $('sr-cmb-cv'), ctx = cv.getContext('2d'), CW = cv.width, CH = cv.height, K = 3, UP = [0, -1, 0];
+    const cv = $('sr-cmb-cv'), ctx = cv.getContext('2d'), CW = cv.width, CH = cv.height, K = 3, UP = [0, 1, 0];    // a model's top is its +y side
     const COL = ['#e8665c', '#edf171', '#8f9cff', '#7ee07a', '#ffffff'];       // by faction, the player last
     const ATT = { 0xFE: 'hostile', 0xFF: 'unfriendly', 0: 'neutral', 1: 'friendly', 2: 'allied' };
     const STATE = { 0: '', 1: 'looking for a target', 2: 'state 2', 3: 'flying at its target', 0xFE: 'fighting', 0xFF: 'fleeing' };
@@ -956,7 +957,8 @@ const SRSim = (function () {
     }
     let fleet = START.slice(), manchi = false, seed = null, F = null, job = 0, logN = -1, touched = false;
     let cam = 0, az = CAMS[0][0], el = CAMS[0][1], pass = 0, playing = false, trails = true, raf = 0, visible = false;
-    let lo = [-400, -100, -1100], hi = [400, 100, -100];                       // the box the camera frames
+    const LO = [-400, -100, -1100], HI = [400, 100, -100];
+    let lo = LO.slice(), hi = HI.slice();                                     // the box the camera frames
 
     // the builder: a button for each ship, the fight's ships as chips that take a ship out
     const swatch = t => '<i class="sw" style="background:' + COL[faction(t)] + '"></i>';
@@ -969,11 +971,19 @@ const SRSim = (function () {
     }
     $('sr-cmb-add').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b && fleet.length < MAX) { fleet.push(+b.dataset.t); showFleet(); } });
     $('sr-cmb-fleet').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) { fleet.splice(+b.dataset.i, 1); showFleet(); } });
-    $('sr-cmb-clear').addEventListener('click', () => { fleet = []; showFleet(); });
+    $('sr-cmb-clear').addEventListener('click', () => { fleet = []; showFleet(); empty(); });
     $('sr-cmb-manchi').addEventListener('change', e => { manchi = e.target.checked; });
     $('sr-cmb-seed').addEventListener('click', () => { seed = [Math.random() * 256 | 0, Math.random() * 256 | 0]; go(true); });
     $('sr-cmb-go').addEventListener('click', () => go(true));
 
+    // Clear: no fight, and the space empty
+    function empty() {
+      job++; F = null; touched = true; setPlay(false); pass = 0; logN = -1; lo = LO.slice(); hi = HI.slice();
+      $('sr-cmb-status').textContent = 'Add ships and press Fight.';
+      $('sr-cmb-ships').innerHTML = $('sr-cmb-log').innerHTML = $('sr-cmb-pass').textContent = '';
+      $('sr-cmb-at').max = 0; $('sr-cmb-at').value = 0;
+      draw();
+    }
     // a fight: the engine runs a slice of passes at a time, ahead of the replay, which follows it
     function go(play) {
       if (!fleet.length) return;
@@ -1051,7 +1061,7 @@ const SRSim = (function () {
     }
     function camera() {
       const C = lo.map((v, k) => (v + hi[k]) / 2), size = Math.max(300, ...hi.map((v, k) => v - lo[k])), dist = size * CAMS[cam][2];
-      const ce = Math.cos(el), P = [C[0] + dist * ce * Math.sin(az), C[1] - dist * Math.sin(el), C[2] + dist * ce * Math.cos(az)];
+      const ce = Math.cos(el), P = [C[0] + dist * ce * Math.sin(az), C[1] + dist * Math.sin(el), C[2] + dist * ce * Math.cos(az)];
       const f = unit3(sub3(C, P)), r = unit3(cross3(UP, f));
       return { P, f, r, u: cross3(f, r), F: CW * 1.35, size };
     }
@@ -1062,7 +1072,6 @@ const SRSim = (function () {
     function line(c, a, b) { const A = proj(c, a), B = proj(c, b); if (A && B) { ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); } }
     function draw() {
       ctx.fillStyle = '#141720'; ctx.fillRect(0, 0, CW, CH);
-      if (!F) return;
       const c = camera(), p = pass, step = c.size > 2400 ? 500 : 100;
       // the grid on the Sunracer's level, y = 0
       const g0 = [Math.floor(lo[0] / step) * step - step, Math.floor(lo[2] / step) * step - step], g1 = [Math.ceil(hi[0] / step) * step + step, Math.ceil(hi[2] / step) * step + step];
@@ -1070,6 +1079,7 @@ const SRSim = (function () {
       for (let x = g0[0]; x <= g1[0]; x += step) line(c, [x, 0, g0[1]], [x, 0, g1[1]]);
       for (let z = g0[1]; z <= g1[1]; z += step) line(c, [g0[0], 0, z], [g1[0], 0, z]);
       ctx.stroke();
+      if (!F) return;
       const now = F.tracks.map(tr => ({ tr, o: at(tr, p) })).filter(x => x.o);
       // trails and the lines down to the grid
       if (trails) for (const { tr } of now) {
@@ -1182,7 +1192,7 @@ const SRSim = (function () {
     $('sr-cmb-at').addEventListener('input', () => { touched = true; if (!F) return; pass = Math.min(top(), +$('sr-cmb-at').value); fit(true); draw(); });
     $('sr-cmb-trails').addEventListener('click', () => { trails = !trails; $('sr-cmb-trails').setAttribute('aria-pressed', trails ? 'true' : 'false'); draw(); });
     $('sr-cmb-cam').querySelectorAll('[data-cam]').forEach(b => b.addEventListener('click', () => { cam = +b.dataset.cam; [az, el] = CAMS[cam]; pressed($('sr-cmb-cam'), b); draw(); }));
-    dragger(cv, (dx, dy) => { az -= dx * 0.008; el = Math.max(-1.45, Math.min(1.45, el + dy * 0.008)); draw(); });
+    dragger(cv, (dx, dy) => { az += dx * 0.008; el = Math.max(-1.45, Math.min(1.45, el + dy * 0.008)); draw(); });
     // the opening fight runs when the section first comes into view
     let begun = false;
     onScreen(cv, v => { visible = v; if (v && !begun) { begun = true; go(false); } if (v && playing && !raf) raf = requestAnimationFrame(loop); });

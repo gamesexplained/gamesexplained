@@ -137,3 +137,7 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   `$FE`, so the measuring runs never saw it read, and the page, which
   does not carry it, had 0 there. The page now sets `$FE` itself, and a fight's end counts enemies of the Sunracer,
   so a Manchi ship on its own fights until the Sunracer is destroyed.
+- The ship viewer and the fight's 3D view first drew every ship upside
+  down: they put a model's +y at the bottom of the screen, where the
+  model's top is its +y side (the Sunracer's hull stands on its wings at
+  y = 0). Both now put +y up; Aaron saw it first.
