@@ -1271,7 +1271,7 @@ def build_game(gdir, out_root):
     if P:
         game["_parts"] = (sum(1 for p in P if started(p)), len(P))
     present = present_tabs(gdir, game)
-    cons = credited(contributors(gdir), game)
+    cons = game["_cons"] = credited(contributors(gdir), game)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
     platform_scripts = "".join(f'<script src="{lib}/{f}"></script>' for f in PLATFORM_MAP_LIBS.get(plat, []))
@@ -1502,13 +1502,13 @@ def hook(g):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
 
 
-def strip_html(g, root=""):
-    """The one-dimensional memory map, drawn by C64Map.strip from memmap.json. Nothing for a
-    game with no listing: it has no memmap.json."""
+def strip_html(g):
+    """The one-dimensional memory map under the featured game, drawn by C64Map.strip from
+    memmap.json. Nothing for a game with no listing: it has no memmap.json."""
     if g["_totals"] is None:
         return ""
     total = sum(g["_totals"][k] for k in PROGRAM)
-    return f'<div class="strip" data-strip="{root}{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
+    return f'<div class="strip" data-strip="{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
 
 
 def featured_frames(g):
@@ -1553,20 +1553,36 @@ def tier_edge(g):
     return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t))}">{html.escape(word)}</span>'
 
 
-def card_html(g, root=""):
-    """Every game, small: the tier up the left edge, thumbnail, title, a line of facts, the memory
-    strip. root is the way up to the site's top from the page the card is on. The data- attributes
-    are what the home page's search, filters and sorts read (site.js)."""
+def names(people):
+    """People as a sentence: a; a and b; a, b and c."""
+    return ", ".join(people[:-1]) + " and " + people[-1] if len(people) > 1 else "".join(people)
+
+
+def tile_html(g, root, line, foot, data=""):
+    """A game's card, as New and updated and the catalogue show one: the tier up the left edge,
+    the title screen, the game's title (the card's link), a line on who, and a line in small type.
+    root is the way up to the site's top from the page the card is on."""
     plat, slug = g["platform"], g["slug"]
-    kb = "" if g["_totals"] is None else f' · {sum(g["_totals"][k] for k in PROGRAM) / 1024:.0f} KB'
+    line = f'<span class="v">{line}</span>' if line else ""
+    return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}<span class="body">'
+            f'<a class="g" href="{root}{plat}/{slug}/">{html.escape(g.get("title", slug))}</a>{line}{foot}</span></div>')
+
+
+def card_html(g, root=""):
+    """Every game, in the catalogue: its card (tile_html), naming the people who contributed it,
+    as the About tab credits them, and the year and publisher. The data- attributes are what the
+    home page's search, filters and sorts read (site.js)."""
+    plat, slug = g["platform"], g["slug"]
+    cons = g["_cons"]
     words = " ".join(str(x) for x in (g.get("title", slug), g.get("publisher"), g.get("developer"),
-                                       PLATFORM_NAMES.get(plat, plat), g.get("year"), hook(g)) if x)
+                                       PLATFORM_NAMES.get(plat, plat), g.get("year"), hook(g),
+                                       *(login or name for _, name, login in cons)) if x)
     data = (f' data-platform="{html.escape(plat)}" data-platform-name="{html.escape(PLATFORM_NAMES.get(plat, plat))}"'
             f' data-tier="{tier_group(g)}" data-year="{g.get("year") or ""}" data-added="{html.escape(g.get("created") or "")}"'
             f' data-title="{html.escape(g.get("title", slug))}" data-q="{html.escape(words.lower())}"')
-    return (f'<a class="tile t-{tier_group(g)}" href="{root}{plat}/{slug}/"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}'
-            f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b></span>'
-            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")}{kb}</span>{strip_html(g, root)}</span></a>')
+    who = names([person_html(name, login) for _, name, login in cons])
+    made = " · ".join(str(x) for x in (g.get("year"), g.get("publisher")) if x)
+    return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data)
 
 
 def platform_pages(games, out_root):
@@ -1649,21 +1665,17 @@ def recent_changes(games, n=20):
 
 
 def recent_html(rows):
-    """One card per change: the tier, title screen, the game (the card's link), who and when.
-    Four show at a time; site.js turns the row into a carousel that moves on by itself."""
+    """One card per change (tile_html): the game, who changed it and when. Four show at a time;
+    site.js turns the row into a carousel that moves on by itself."""
     if not rows:
         return ""
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
     cards = []
     for r in rows:
-        g = r["game"]
-        who = [person_html(nm, login) for nm, login in r["who"].values()]
-        by = " by " + (", ".join(who[:-1]) + " and " + who[-1] if len(who) > 1 else who[0]) if who else ""
+        who = names([person_html(nm, login) for nm, login in r["who"].values()])
         m, d = (int(x) for x in r["date"].split("-")[1:])
-        cards.append(f'<div class="card t-{tier_group(g)}">{tier_edge(g)}{shot_html(g, "thumb")}<span class="body">'
-                     f'<a class="g" href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>'
-                     f'<span class="v">{r["kind"]}{by}</span>'
-                     f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time></span></div>')
+        cards.append(tile_html(r["game"], "", r["kind"] + (f" by {who}" if who else ""),
+                               f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time>'))
     return (f'<div class="recent"><div class="cathead"><h2>New and updated</h2>'
             f'<a href="{html.escape(repo)}/commits/main/games">All changes</a></div>'
             f'<div class="cards" tabindex="0" aria-label="New and updated games">{"".join(cards)}</div>'

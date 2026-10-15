@@ -153,7 +153,7 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 /* home page: the split hero, the featured game, the catalogue */
 .hidden{display:none!important}
 .contribute .k,.showcol .k{font-family:var(--fm);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0 0 8px}
-.hero.split .m,.show .m,.tile .m,.contribute .m{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.hero.split .m,.show .m,.contribute .m{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
 .hero.split{display:grid;grid-template-columns:1fr 1.1fr;gap:44px;align-items:center;padding:44px var(--gx) 24px;border-bottom:1px solid var(--line-soft)}
 .hero.split .sub{color:var(--ink-soft)}
 .contribute{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px 12px;margin-top:18px;box-shadow:var(--plate-shadow)}
@@ -179,54 +179,45 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .cathead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin:26px 0 14px}
 .cathead h2{margin:0;font-size:18px;display:flex;align-items:baseline;gap:10px}
 .cathead h2 .n{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:400;letter-spacing:.08em;text-transform:uppercase}
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 24px}
+/* A game's card, in New and updated and in the catalogue (build.py tile_html): the tier up the left edge,
+   the title screen, the title, who, and a line in small type. The title's link covers the whole card; the
+   people's links sit on top. Four a row, two below 900px. */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 24px}
 @media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:600px){.tiles{grid-template-columns:minmax(0,1fr)}}
-.tile{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;align-items:center;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;text-decoration:none;box-shadow:var(--plate-shadow)}
-/* hover: the card lifts; no underline (.site a:hover would otherwise win) and no outline */
-.tile{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
-.tile:hover,.site a.tile:hover{text-decoration:none;color:var(--ink);transform:translateY(-2px);border-color:#c9c6be;
-  box-shadow:0 2px 4px rgba(0,0,0,.05),0 12px 28px rgba(0,0,0,.10)}
-.tile:hover b{color:var(--link-hover)}
-.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover,.site a.tile:hover{transform:none}}
-.tile .thumb{width:80px;border-radius:4px}
-.tile .body{display:flex;flex-direction:column;gap:4px;min-width:0}
-.tile b{font-weight:700;font-size:15px}
-.tile .strip{margin-top:4px}
-.tile .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:8px 8px 10px 30px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--plate-shadow);
+  transition:transform .16s ease,border-color .16s ease}
+.tile:hover{border-color:#c9c6be;transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover{transform:none}}
+.tile .thumb{width:100%;border-radius:5px}
+.tile .body{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.tile a.g{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile a.g::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
+.tile a.g:hover,.tile a.g:focus-visible{text-decoration:none;outline:none}
+.tile:hover a.g{color:var(--link-hover)}
+.tile a.g:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
+.tile .v{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.tile .v a{position:relative;z-index:1}
+.tile time,.tile .m{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:3px}
 /* The tier up a card's left edge, in the tier's colour: gold, slate and bronze differ in lightness
    as well as hue, so they part for a colour-blind reader too, and the word is always there. */
 .t-gold{--tc:#8f6a00}.t-silver{--tc:#68707c}.t-bronze{--tc:#8a4a1e}.t-none{--tc:#80838a}
-.tile,.recent .card{position:relative;overflow:hidden;padding-left:34px}
 .tier{position:absolute;left:0;top:0;bottom:0;width:22px;display:flex;align-items:center;justify-content:center;
   writing-mode:vertical-rl;transform:rotate(180deg);background:var(--tc);color:#fff;font-family:var(--fm);font-size:10px;
   font-weight:500;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 /* New and updated: the latest games added or changed, four cards at a time. site.js moves the row on
-   every few seconds and fills the dots. The title's link covers the whole card; the author's link sits on top. */
+   every few seconds and fills the dots. */
 .recent .cathead{margin:18px 0 10px}
 .recent .cathead>a{font-size:13.5px}
 .recent .cards{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 36px)/4);gap:12px;overflow-x:auto;
   scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding:2px 2px 6px}
 .recent .cards::-webkit-scrollbar{display:none}
-.recent .card{display:flex;flex-direction:column;gap:8px;padding:8px 8px 10px 30px;background:var(--surface);border:1px solid var(--line);
-  border-radius:var(--r);box-shadow:var(--plate-shadow);scroll-snap-align:start;transition:transform .16s ease,border-color .16s ease}
-.recent .card:hover{border-color:#c9c6be;transform:translateY(-2px)}
-.recent .thumb{width:100%;border-radius:5px}
-.recent .body{display:flex;flex-direction:column;min-width:0;line-height:1.3}
-.recent a.g{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.recent a.g::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
-.recent a.g:hover,.recent a.g:focus-visible{text-decoration:none;outline:none}
-.recent .card:hover a.g{color:var(--link-hover)}
-.recent a.g:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
-.recent .v{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
-.recent .v a{position:relative;z-index:1}
-.recent time{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:3px}
+.recent .tile{scroll-snap-align:start}
 .recent .dots{display:flex;justify-content:center;gap:6px;margin-top:8px;min-height:7px}
 .recent .dots button{width:7px;height:7px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer}
 .recent .dots button[aria-current=true]{width:18px;background:var(--ink)}
 @media (max-width:900px){.recent .cards{grid-auto-columns:calc((100% - 12px)/2)}}
-@media (prefers-reduced-motion:reduce){.recent .cards{scroll-behavior:auto}.recent .card{transition:none}.recent .card:hover{transform:none}}
+@media (prefers-reduced-motion:reduce){.recent .cards{scroll-behavior:auto}}
 /* The finder: search, sort, view and filters, pinned while the catalogue scrolls (site.js) */
 .finder{position:sticky;top:0;z-index:5;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--line);margin:0 0 16px;display:grid;gap:10px}
 .finder .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -255,13 +246,12 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .showall:hover svg{transform:translateX(2px)}
 .showall:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--ink-soft)}
-/* List view: one row a game, the opening line beside the title */
+/* List view: one row a game, a small title screen beside the title */
 .list .tiles{grid-template-columns:1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.list .tile{grid-template-columns:56px minmax(0,1fr);border:0;border-top:1px solid var(--line-soft);border-radius:0;box-shadow:none;padding-top:6px;padding-bottom:6px}
+.list .tile{flex-direction:row;align-items:center;gap:12px;padding:6px 12px 6px 34px;border:0;border-top:1px solid var(--line-soft);border-radius:0;box-shadow:none}
 .list .tile:first-child{border-top:0}
-.list .tile:hover{transform:none;box-shadow:none;background:var(--surface-2)}
-.list .tile .thumb{width:56px}
-.list .tile .strip{display:none}
+.list .tile:hover{transform:none;background:var(--surface-2)}
+.list .tile .thumb{width:56px;flex:none;border-radius:4px}
 /* the featured box's frames fade into one another (site.js) */
 .show .shots{position:relative;display:block}
 .show .shots img+img{position:absolute;inset:0}
