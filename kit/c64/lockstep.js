@@ -58,7 +58,9 @@
 //   aside), and go back to the port's after
 //   unless it wrote them. Its reads of the raster ($D012, and $D011's bit 7) get the values the
 //   game's did, in turn (a read past those, the line the game's handler ended on), and the raster's
-//   interrupt bit is latched. At the next checkpoint or wait's exit, where the two stand at the same
+//   interrupt bit is latched. So do its reads of the interrupt flags, $D019, $DC0D and $DD0D, the
+//   port's chips' own after those: one handler for the raster and a CIA's timer, as many games
+//   have, takes the branch the game's took. At the next checkpoint or wait's exit, where the two stand at the same
 //   place, a byte an interrupt wrote and the game's main program wrote again afterwards gets back
 //   the port's own value: the last writer of each byte is the game's. What no replay can give is
 //   the main program reading, in the middle of a stretch, what an interrupt wrote there: those are
@@ -123,6 +125,11 @@ const { CPU, OPCODES } = require('./cpu6502.js');
 const LENGTH = Uint8Array.from(OPCODES, ([, mode]) => mode === 'imp' || mode === 'acc' ? 1 : ['abs', 'abx', 'aby', 'ind'].includes(mode) ? 3 : 2);
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
+// The chips' interrupt flags, by address: the video chip's $D019 and the CIAs' $DC0D and $DD0D,
+// wherever their registers repeat; -1 for any other address. A handler that serves more than one
+// source reads one of these to tell which came, so a replay gives it what the game's read.
+const flagRegister = a => (a >= 0xD000 && a < 0xD400 && (a & 0x3F) === 0x19 ? 0xD019
+  : a >= 0xDC00 && a < 0xDE00 && (a & 0x0F) === 0x0D ? (a & 0xFF00) | 0x0D : -1);
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const NONE = new Set();
 const LIST = 64;                                   // differing bytes kept per pass
@@ -261,6 +268,8 @@ class Lockstep {
       if (r === 0x12 && q.i12 < q.d012.length) return q.d012[q.i12++];
       if (r === 0x11 && q.i11 < q.d011.length) return (v & 0x7F) | (q.d011[q.i11++] & 0x80);
     }
+    const f = q !== null ? flagRegister(a) : -1;
+    if (f >= 0 && q.flags.has(f)) { const x = q.flags.get(f); if (x.i < x.v.length) return x.v[x.i++]; }
     return v;
   }
 
@@ -300,7 +309,7 @@ class Lockstep {
     const irq = cpu.irq, RAM_R = cpu.rk[2], RAM_W = cpu.wk[2];          // page 2 is RAM on any map
     cpu.irq = function (handler, opts) {
       const c = this, q = { at: handler != null ? handler & 0xFFFF : c.vector(0xFFFE, 'IRQ'), line: m.line, frame: m.frames,
-        cycle: c.cycles, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0, seen: new Map(), wrote: new Map() };
+        cycle: c.cycles, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0, flags: new Map(), seen: new Map(), wrote: new Map() };
       const reads = new Proxy({}, { set(t, k) {
         const a = +k;
         if ((a < 0x100 ? a > 1 : c.rk[a >>> 8] === RAM_R) && !q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, c.m[a]);
@@ -349,6 +358,8 @@ class Lockstep {
         const r = a & 0x3F;
         if (r === 0x12) q.d012.push(v); else if (r === 0x11) q.d011.push(v);
       }
+      const f = q !== null ? flagRegister(a) : -1;
+      if (f >= 0) { if (!q.flags.has(f)) q.flags.set(f, { v: [], i: 0 }); q.flags.get(f).v.push(v); }
       return v;
     };
   }
