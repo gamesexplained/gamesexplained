@@ -2,8 +2,15 @@
 
 CI runs the three checks, reproduces coverage figures and builds the site.
 
-Claude reviews each pull request that adds or updates a game against the
-checklist in `review-game-pr/SKILL.md`. Edit it to change what gets checked.
+To have Claude review a pull request that adds or updates a game, run
+`/review-game-pr <n>` in a session in this repo. The checklist is
+`review-game-pr/SKILL.md`; edit it to change what gets checked. The skill is
+not in `.claude/skills` (that is the contributor kit), so link it into your
+own skills once:
+
+```
+ln -s "$PWD/admin/review-game-pr" ~/.claude/skills/review-game-pr
+```
 
 ## Preview the site
 

@@ -1,6 +1,8 @@
 ---
 name: review-game-pr
-description: Review a gamesexplained pull request that adds or updates a game against the maintainer's checklist, and recommend the next step. Run by hand on a PR number, or by the hourly routine below.
+description: Review a gamesexplained pull request that adds or updates a game against the maintainer's checklist, and recommend the next step. Run by hand on a PR number, e.g. /review-game-pr 385.
+argument-hint: <pr-number>
+disable-model-invocation: true
 ---
 
 # Reviewing a game pull request
@@ -13,13 +15,19 @@ the maintainer decides.
 
 ## Setup
 
+The pull request is `$ARGUMENTS`. If no number was given, run `gh pr list`
+and ask which one.
+
 ```
 git fetch -q origin main +pull/<n>/head:refs/remotes/pr/<n>
+gh pr view <n> --json title,url,isDraft,headRefName,headRefOid,author
 python3 admin/review-game-pr/pr_shape.py pr/<n>
 ```
 
 `pr_shape.py` says whether it adds a game, updates one, or is something
-else (not this skill's), and breaks its lines down by area.
+else (not this skill's), and breaks its lines down by area. If it is
+something else, a draft, or one of this repository's `claude/` branches,
+say so in one line and stop.
 
 ## The agent checks
 
@@ -66,24 +74,8 @@ touches what they look at.
 
 ## Report
 
-One reply in the pull request's thread: the next step you recommend
-(merge, fix it ourselves, or send it back), and one line per check (fine, or
-what is wrong and the evidence). If anything goes
-back to the contributor, draft the comment in a `markdown` code block.
-
-Save it as `/mnt/project-files/pr-reviews/pr-<n>.md` (`mkdir -p`),
-starting with `PR: #<n>`, `Head: <sha reviewed>` and `Thread: <this
-thread's id>`.
-
-## The routine
-
-Every hour a routine fires into the project thread "Automatic new-game PR
-review". It lists the open pull requests, leaving out drafts and this
-repository's `claude/` branches, and runs `pr_shape.py` on each one it has
-not seen. For each new game or update it asks the channel session
-(`get_channel_session_id`, then `send_message`) to start a thread that
-runs this skill. When a reviewed pull request gets commits from someone
-other than the maintainer, it asks for another look in the same thread
-(`Thread:` in `pr-<n>.md`). It keeps what it has seen in
-`/mnt/project-files/pr-reviews/ledger.json` and posts nothing unless
-something is broken.
+Reply in this session: the pull request's number, title and link, the head
+SHA reviewed, the next step you recommend (merge, fix it ourselves, or send
+it back), and one line per check (fine, or what is wrong and the evidence).
+A check that is fine gets at most one line; don't add noise. If anything
+goes back to the contributor, draft the comment in a `markdown` code block.
