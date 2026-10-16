@@ -48,7 +48,7 @@ G.aim = function (P) {
   // area A's own list. A 0 and ($7C) at it when found, 1 when not; X and Y kept.
   P.FIND_OBJECT_BY_ID = function (r) {
     M[0x621A] = r.x; M[0x621B] = r.y;
-    const out = a => ({ a, x: M[0x621A], y: M[0x621B] });
+    const out = a => ({ a, x: M[0x621A], y: M[0x621B], z: a ? 0 : 1 });
     const scan = n => {
       M[0x6217] = n;
       do {
