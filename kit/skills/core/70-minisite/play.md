@@ -58,7 +58,11 @@ file's header is its manual.
   simulator (`cpu.call`) on thousands of random states made from real
   moments of play. Start calls with the stack pointer at `$FF`: a deep
   call chain started lower can run down into tables the game keeps in the
-  stack page, and the failures look like the game's.
+  stack page, and the failures look like the game's. A routine that waits
+  for a frame is tested the same way with `checkGen` on the C64
+  (`kit/c64/lockstep.js`): the port's generator and the game's routine
+  run side by side, each to its next poll, the frame counter moves on in
+  both, and their memories are compared at every poll.
 - **Then the whole loop in lockstep.** Make the port's main loop yield at
   checkpoints, the address of each call in its body. The lockstep runs the
   game to the same address and runs the interrupts it took on the way in
@@ -67,7 +71,10 @@ file's header is its manual.
   passes, `onFrame` for a key the game waits for in the middle of one. A
   checkpoint the game reaches that the port did not yield stops the run
   with both named. While a group is unfinished, the game's own code stands
-  in for its routines (`standIn`). A polling loop in the port yields at
+  in for its routines (`standIn`). On the C64 a routine that waits stands
+  in as a generator (`standInGen`), which yields at each turn of the
+  game's polling loop, so the whole program runs in lockstep with one
+  group ported. A polling loop in the port yields at
   each turn and the game moves on a raster line, so the port sees the
   line and the flags the game's loop does. A wait for a line yields the
   line, and the game runs to the loop's exit; a HALT yields that it
