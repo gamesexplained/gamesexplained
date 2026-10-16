@@ -6,28 +6,105 @@
   "year": 1990,
   "publisher": "Domark",
   "developer": "Incentive Software",
-  "title_image": "reference/original-menu.png",
-  "build": "Dualis disk release; language menu reached from a hard reset",
-  "tier": "bronze",
+  "title_image": "reference/loading-screen.png",
+  "build": "Original Domark disk (castle_master[domark_1990](!).g64, C64 Preservation Project); language menu reached from a hard reset",
+  "tier": "silver",
   "coverage_percent": 100,
   "copy": "agent-draft",
   "steward": "",
   "credits": [],
   "tools": {
-    "host": "Linux x86_64",
-    "disassembler": "regenerator 2000 0.9.20",
-    "publication": "Python 3; canonical symbols_export.py and listing.py",
-    "emulator": "VICE MCP 3.13.1",
-    "disassembler_check": "regenerator 2000 0.9.20",
-    "browser": "Firefox 157.0 (installed); WebDriver BiDi"
+    "host": "Linux 6.18 x86_64, Ubuntu 24.04 cloud container with four cores (Intel Xeon) and no display",
+    "emulator": "VICE, release v3.13.2, v3.13.2-linux-x86_64-gui.zip (vice-mcp), run under Xvfb and driven through kit/c64/vice.py; check-emulator 54 of 54",
+    "disassembler": "regenerator2000 0.9.20, built from crates.io",
+    "publication": "Python 3; symbols_export.py and listing.py",
+    "python": "3.13.16",
+    "node": "22.22.0",
+    "browser": "Chromium 141.0.7390.37 (Playwright 1.56.1's), for the page checks and screenshots",
+    "simulator": "kit/c64/cpu6502.js, for test_world.js, test_music.js and test_meter.js",
+    "subagents": "six checker agents on the Agent tool's opus alias for 60-verify: one for each sample, one for each of the audit's four ranges and one for facts.md, one at a time; all other work by one agent"
   },
-  "model": "gpt-6.1-sol",
-  "step_models": {"50-coverage": ["gpt-6.1-sol"], "60-verify": ["gpt-6.1-sol"]},
+  "model": "claude-opus-5-5[1m]",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5[1m]"
+    ],
+    "50-coverage": [
+      "gpt-6.1-sol",
+      "claude-opus-5-5[1m]"
+    ],
+    "60-verify": [
+      "gpt-6.1-sol",
+      "claude-opus-5-5[1m]"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5[1m]"
+    ],
+    "80-retro": [
+      "claude-opus-5-5[1m]"
+    ]
+  },
   "accuracy": [
-    {"step": "research", "web": true, "models": ["gpt-6.1-sol"]},
-    {"step": "annotate", "models": ["gpt-6.1-sol"], "note": "started from an imported Ghidra analysis by 64kramsystem, its model unknown"}
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "gpt-6.1-sol",
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "the manual and C64-Wiki, read again for the Silver run"
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "note": "started from an imported Ghidra analysis by 64kramsystem, its model unknown"
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 14,
+      "fixed": 14,
+      "seed": 7351,
+      "by": "air",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "40 hand-written and 20 templated comments; 83 more that said the same things corrected with them"
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "the loader annotated again from the original disk, and comments written while building the pages"
+    },
+    {
+      "step": "audit",
+      "checked": 779,
+      "of": 779,
+      "fixed": 182,
+      "by": "air",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "four ranges, a fresh checker each, one at a time, and every claim in facts.md (21 of 177 corrected)"
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 2,
+      "fixed": 2,
+      "seed": 9157,
+      "by": "air",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "40 hand-written and 20 templated comments, from those the first sample did not draw"
+    }
   ],
-  "kit_version": "0.0.55",
+  "kit_version": "0.0.173",
   "created": "2026-09-30",
   "imported": {
     "source": "castle_master_full_listing.txt",
@@ -57,11 +134,6 @@
         "$E000",
         "$FF3F",
         "Complete initial bitmap footprint; viewport outputs excluded separately"
-      ],
-      [
-        "$D800",
-        "$DBFF",
-        "Complete authored initial third-colour shadow and its padding"
       ],
       [
         "$C400",
@@ -96,7 +168,7 @@
       [
         "$8663",
         "$86CE",
-        "Complete 54-word keyboard RAM copy directory"
+        "Complete 54-word scroll copy table of CUSTOM_CHROUT's fourteen-character screen window"
       ],
       [
         "$071A",
@@ -106,7 +178,7 @@
       [
         "$0F5E",
         "$1009",
-        "Authored pitch/vibrato sequence allocation"
+        "Authored arpeggio sequence allocation"
       ],
       [
         "$3C6D",
@@ -120,11 +192,6 @@
       ]
     ],
     "include": [
-      [
-        "$D800",
-        "$DBFF",
-        "Loaded initial colour-plane shadow; first 1000 bytes exactly match hardware colour RAM at cold hand-over"
-      ],
       [
         "$C400",
         "$C4A4",
@@ -207,6 +274,16 @@
       ]
     ],
     "exclude": [
+      [
+        "$0400",
+        "$040F",
+        "Text screen RAM below the main program's load address $0410: spaces from the KERNAL's screen clear; no file loads it and no instruction reads it"
+      ],
+      [
+        "$C3A8",
+        "$C3FF",
+        "RAM after the loader's last byte: no file loads it and no instruction reads it"
+      ],
       [
         "$87CC",
         "$95DB",
@@ -535,7 +612,7 @@
       [
         "$8660",
         "$8662",
-        "Runtime keyboard CHROUT saved character/state; 8661 written $86DD/$8751 and read 8722"
+        "Runtime CUSTOM_CHROUT saved character/state; 8661 written $86DD/$8751 and read 8722"
       ]
     ]
   },
@@ -565,16 +642,16 @@
       "$FF3F",
       "graphics",
       "HUD bitmap with separately excluded runtime viewport"
-    ],
-    [
-      "$D800",
-      "$DBFF",
-      "graphics",
-      "Initial third-colour shadow beneath I/O"
     ]
   ],
   "links": {
-    "wiki": {"title": "Castle Master – C64-Wiki", "url": "https://www.c64-wiki.com/wiki/Castle_Master"},
-    "manual": {"title": "Castle Master manual (PDF) – MOCAGH", "url": "https://mocagh.org/miscgame/castlemaster-alt3-manual.pdf"}
+    "wiki": {
+      "title": "Castle Master – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/Castle_Master"
+    },
+    "manual": {
+      "title": "Castle Master manual (PDF) – MOCAGH",
+      "url": "https://mocagh.org/miscgame/castlemaster-alt3-manual.pdf"
+    }
   }
 }

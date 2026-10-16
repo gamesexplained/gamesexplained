@@ -39,3 +39,56 @@ have separate rows. Published the code-difference audit recipe instead of
 requiring a private JSON. Browser checks exercised all 34 areas, fourteen
 projection cases, 59 glyphs, eight instruments and save controls at phone
 width, without script errors or horizontal overflow.
+
+## 16 October 2026: the original disk, the audit and Silver
+
+Taken on by the maintainer (`air`) after the contributor's Bronze, as a
+fresh run from `kit/START.md`. The listing had been built from a Dualis
+crack; this run fetched the original Domark disk (a verified G64 from the
+C64 Preservation Project), booted it from a hard reset and saved new
+hand-over, menu and play snapshots (`orientation.md`). The game's code
+and data were the same; the crack had replaced the loader at `$C200`, so
+that was annotated again and every byte of the listing now comes from the
+original.
+
+The first sample, 60 comments with seed 7351 on a proven model, found 14
+wrong, over the mark. Each was corrected with the 83 others that said the
+same thing, and the listing was audited in four ranges, one fresh checker
+at a time. Range B's checker said `$3697` and `$4803` were workspaces,
+not leftover text, which the summing loop at `$36D2-$36E0` bears out; the
+TODO's open "retained text fragments" had been the same misreading.
+
+The page was rebuilt to the current kit: a tune player on the game's own
+driver, a frame rebuilt from memory, the database's record format, and a
+Maps tab that draws all 34 areas and decodes all 193 scripts, held
+against `SELECT_AREA`, `FIND_OBJECT_BY_ID` and `QUEUE_PYRAMID_OBJECT` by
+`test_world.js`. The old article's projection, font, instrument and save
+widgets were cut; their facts stay in `facts.md`.
+
+Reading every decoded script turned up the potion of strength that never
+hides itself (64 drinks, confirmed with `stores.py`), the Hospital's
+regeneration, the food that runs shared object 214, and the escape's
+tour skipping the Hospital's redraw. Sweeping the spirit meter through
+the game's own multiply and divide for every clock value showed that
+"never if all 21 are destroyed", as `features.md` had it, held from 13;
+the earlier note was right only in its last case. A first draft of the
+How it works copy gave the potion's sound, the moat and the sensor
+drain from memory of the scripts; each was checked against the decoded
+tokens before publishing, and three were wrong in a detail (the fall
+threshold is tested as at least scale times 2 by one caller and more
+than it by the other; strength ends the
+game at 0, not only below it; the spirits are shared shapes, not one
+script each).
+
+The audit's four checkers corrected 182 of the 779 comments and renamed
+18 labels. The two template errors among them were in all 34 area
+headers: the first byte holds the sky's and the floor's fill patterns,
+not flags, and the scale multiplies every vertical distance, not only
+the step. Range C's checker called the fills colours and range D's
+named the pattern table, so C's 22 headers were reworded to match. A
+fifth checker then went through the 177 claims in `facts.md` and found
+21 wrong in a detail. Two had reached the page, the second fall test
+and voice 2's frequency in the alarm; and the note length in
+`facts.md` (it is the byte after the pitch; the nibble the old text gave
+belongs to the instrument's waveform steps) had been right in the
+listing all along.
