@@ -34,9 +34,9 @@ function standInCpu(P, irqBytes) {
   return new StandInCPU(P.M, { port: { dir: 0x2F, data: P.M[1] }, io: { read: x => P.io.read(x), write: (x, v) => P.io.write(x, v) } });
 }
 
-// Fill P with stand-ins for every label the port has not written. ported: the names it has.
-function install(P, names, irqBytes = []) {
-  const ported = new Set(Object.keys(P).filter(k => typeof P[k] === 'function'));
+// The KERNAL's routines the game calls, served by P's (src/kernal.js) on P's memory and disk, as
+// hooks for the kit's simulator: for the stand-ins, and for the game's own code in check.js.
+function kernalHooks(P) {
   const hooks = {};
   const kernalIn = c => (c.pdata | ~c.pdir) & 2;
   for (const [a, name] of Object.entries(KERNAL)) {
@@ -47,6 +47,18 @@ function install(P, names, irqBytes = []) {
       return false;
     };
   }
+  return hooks;
+}
+
+// Fill P with stand-ins for every label the port has not written. ported: the names it has.
+function install(P, names, irqBytes = []) {
+  const ported = new Set(Object.keys(P).filter(k => typeof P[k] === 'function'));
+  // a routine that waits is a generator, and GEN names it, so that a stand-in for it is one too
+  for (const k of ported) {
+    const gen = P[k].constructor.name === 'GeneratorFunction';
+    if (gen !== P.GEN.has(k)) throw new Error(k + (gen ? ' is a generator that GEN leaves out' : ' is in GEN but is not a generator'));
+  }
+  const hooks = kernalHooks(P);
   for (const [label, a] of names) {
     if (!ported.has(label) || P.GEN.has(label)) continue;
     const f = P[label];
@@ -89,4 +101,4 @@ function install(P, names, irqBytes = []) {
   return P;
 }
 
-module.exports = { labels, install };
+module.exports = { labels, install, kernalHooks };

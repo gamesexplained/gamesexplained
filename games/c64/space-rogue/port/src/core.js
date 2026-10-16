@@ -16,7 +16,8 @@
 // - A routine that waits (for a key, for the interrupt's frame count, in a delay loop), or calls
 //   one that does, is a generator: it yields where time passes, as kit/c64/lockstep.js describes
 //   (a bare yield for each turn of a loop that polls memory the interrupt changes, { cycles: n }
-//   for a delay loop, { cp: a } at a checkpoint), and is called with yield*. GEN lists them.
+//   for a delay loop, { cp: a } at a checkpoint), and is called with yield*. GEN lists them, and
+//   P.CHECKPOINTS the places a routine yields { cp }, which each group adds to.
 // - A byte the interrupt writes and the main program reads (the frame count $16, the keyboard
 //   buffer $03-$15) is read through P.irqByte(a): on the page that is M[a]; in the lockstep it is
 //   what the game's code read there, since where an interrupt falls inside a stretch is the
@@ -27,11 +28,13 @@
 'use strict';
 const G = root.SRGroups = root.SRGroups || {};
 const GEN = new Set(`
-  main_loop do_key
+  main_loop do_key wait_key wait_fire_up
+  check_collisions on_contact collide gate_contact gate_jump dock dock_check build_draw_list draw_frame
+  station_run
 `.trim().split(/\s+/));
 class Goto { constructor(to, r) { this.to = to; this.r = r || {}; } }
 function makePort(M, io, opts = {}) {
-  const P = { M, Goto, GEN, at: {} };
+  const P = { M, Goto, GEN, at: {}, CHECKPOINTS: [] };
   // P.io is one object for good, so that a routine may keep it (const io = P.io): giving P a new
   // set of chips (the lockstep does) replaces its members
   const IO = Object.assign({}, io);

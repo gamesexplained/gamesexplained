@@ -33,7 +33,7 @@ G.render = function (P) {
   // Every object in use tested against the view; those that are in it and large go in the list
   // (14 at most), the small are drawn at once. Then the list is drawn farthest first, each
   // object followed by the docking test.
-  P.build_draw_list = function (r) {
+  P.build_draw_list = function* (r) {
     for (let y = 0x13; y >= 0; y--) M[0x0621 + y] = 0;
     M[0x0D3D] = 0;
     M[0x5C] = 0x13;
@@ -63,7 +63,7 @@ G.render = function (P) {
         if (((x - 1) & 0x80)) break;
       }
       P.draw_object({ c: 1 });
-      const d = P.dock_check();
+      const d = yield* P.dock_check();
       if (d.unwind) return d;
       M[0x0D7E + M[0x0D3D]] = 0xFF;
       M[0x3EB7] = (M[0x3EB7] - 1) & 255;
@@ -127,12 +127,12 @@ G.render = function (P) {
   // face that points at the player ($7062) and a dockable type at a speed below 21 docks; any
   // other touch is a collision. Either takes the place of the rest of the draw list (the
   // game's code drops build_draw_list's return), so unwind tells the list to stop.
-  P.dock_check = function (r) {
+  P.dock_check = function* (r) {
     if (M[0x5C] !== M[0x0837]) return { a: M[0x5C] };
     const f = P.facing_face();
     if (f.n) return f;
-    if (f.z && (M[0x08D5 + M[0x5D]] & 1) && P.speed_of({ y: 0 }).a < 0x15) return Object.assign({ unwind: true }, P.dock());
-    return Object.assign({ unwind: true }, P.collide({ x: 0, y: M[0x0837] }));
+    if (f.z && (M[0x08D5 + M[0x5D]] & 1) && P.speed_of({ y: 0 }).a < 0x15) return Object.assign({ unwind: true }, yield* P.dock());
+    return Object.assign({ unwind: true }, yield* P.collide({ x: 0, y: M[0x0837] }));
   };
 
   // ---- objects

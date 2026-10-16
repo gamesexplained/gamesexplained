@@ -94,8 +94,10 @@ function check(o) {
     const set = { d: 0 };
     for (const k of ['a', 'x', 'y', 'c', 'z', 'n', 'v']) if (regs[k] !== undefined) set[k] = regs[k];
     cpu.setRegs(set); cpu.sp = 0xFF;
+    // the KERNAL's routines served on the game's memory and its own copy of the disk
+    const hooks = standin.kernalHooks(SR.makePort(MA, Object.assign(ioOf(cA), portDisk()), { only: ['kernal'] }));
     let gerr = null;
-    try { cpu.call(entry, {}, { maxSteps: o.maxSteps || 5e6 }); } catch (e) { gerr = e; }
+    try { cpu.call(entry, {}, { maxSteps: o.maxSteps || 5e6, hooks }); } catch (e) { gerr = e; }
     const rA = { a: cpu.a, x: cpu.x, y: cpu.y, c: cpu.c, z: cpu.z, n: cpu.n, v: cpu.v };
     // the port
     const MB = M0.slice(), cB = cloneChips(c0, game), logB = logWrites(cB), ioB = Object.assign(ioOf(cB), portDisk());
@@ -109,7 +111,8 @@ function check(o) {
       rB = rB || {};
     } catch (e) { perr = e; }
     const diffs = [];
-    if (gerr || perr) diffs.push('game ' + (gerr ? 'threw: ' + gerr.message : 'ran') + '; port ' + (perr ? 'threw: ' + (perr.stack || perr.message).split('\n').slice(0, 3).join(' | ') : 'ran'));
+    const said = e => (e instanceof SR.Goto ? 'went to ' + hex(e.to) : (e.stack || e.message || String(e)).split('\n').slice(0, 3).join(' | '));
+    if (gerr || perr) diffs.push('game ' + (gerr ? 'threw: ' + gerr.message : 'ran') + '; port ' + (perr ? 'threw: ' + said(perr) : 'ran'));
     if (!gerr && !perr) {
       let nd = 0;
       for (let a = 0; a < 65536; a++) if (!skip[a] && MA[a] !== MB[a]) { if (nd++ < 12) diffs.push(hex(a) + ' game ' + hex2(MA[a]) + ' port ' + hex2(MB[a])); }

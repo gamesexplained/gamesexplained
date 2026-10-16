@@ -21,12 +21,12 @@ G.main = function (P) {
       yield { cp: 0x0DFC }; P.gravity();
       yield { cp: 0x0DFF }; P.move_objects();
       yield { cp: 0x0E02 }; yield* P.do_key();
-      yield { cp: 0x0E05 }; P.check_collisions();
+      yield { cp: 0x0E05 }; yield* P.check_collisions();
       yield { cp: 0x0E08 };
       if (P.frame_skip3().c) continue;
       yield { cp: 0x0E0D }; P.update_camera();
       yield { cp: 0x0E10 }; P.place_particles();
-      yield { cp: 0x0E13 }; P.draw_frame();
+      yield { cp: 0x0E13 }; yield* P.draw_frame();
       yield { cp: 0x0E16 }; P.sector_hazard();
       yield { cp: 0x0E19 }; P.draw_target_arrows();
       yield { cp: 0x0E1C }; P.flip_buffers();
@@ -34,6 +34,7 @@ G.main = function (P) {
   };
   P.MAIN_LOOP = [0x0DED, 0x0DF0, 0x0DF3, 0x0DF6, 0x0DF9, 0x0DFC, 0x0DFF, 0x0E02, 0x0E05, 0x0E08, 0x0E0D, 0x0E10,
     0x0E13, 0x0E16, 0x0E19, 0x0E1C];
+  P.CHECKPOINTS.push(...P.MAIN_LOOP);
 
   // ---- the machine for play ($0E22): the I/O in, $02 = $40, a raster interrupt at line $32 and
   // none from CIA 1, the vectors in RAM and at $0314-$0319 pointed at the game's handlers
@@ -479,9 +480,9 @@ G.main = function (P) {
     M[0x2E] = v & 255; M[0x16] = 1;
     return { a: 1, x: r && r.x, y: r && r.y, c: v >= 0 ? 1 : 0 };
   };
-  P.draw_frame = function (r) {
+  P.draw_frame = function* (r) {
     P.set_flash_colour();
-    const o = P.build_draw_list();
+    const o = yield* P.build_draw_list();
     const s = M[0x2E] + P.irqByte(0x16);
     M[0x2E] = s > 255 ? s & 255 : 0;
     return R(o, { a: M[0x2E] });

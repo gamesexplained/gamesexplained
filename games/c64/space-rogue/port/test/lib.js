@@ -49,6 +49,15 @@ function runner(o = {}) {
     if (!hit) throw new Error('stopAt: $' + a.toString(16) + ' not reached in ' + maxFrames + ' frames');
     t = R.cpu.cycles;
   };
+  // A routine of the game's run where the processor stands (a pass's start), on the stack below
+  // it, as the game's own code would call it; no interrupt comes while it runs.
+  S.call = (entry, regs = {}) => {
+    const c = R.cpu, pc = c.pc, sp = c.sp;
+    c.call(entry, Object.assign({ sp }, regs), { hooks: R.m.hooks, maxSteps: 5e7 });
+    c.pc = pc; c.sp = sp;
+    t = Math.max(t, c.cycles);
+    return { a: c.a, x: c.x, y: c.y, c: c.c };
+  };
   // The moment as it stands, with the address its main loop's passes start at.
   S.save = (name, passAt) => {
     const s = R.save();

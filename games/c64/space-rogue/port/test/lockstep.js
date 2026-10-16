@@ -52,7 +52,7 @@ function run(o) {
   const m = RunMachine.restore(s.machine);
   const P = SR.makePort(new Uint8Array(65536), portDisk(), { only: o.groups });
   standin.install(P, standin.labels(o.parts || ['engine', 'flight']), IRQ_BYTES);
-  const ls = new Lockstep({ machine: m, port: P, program: P => P.main_loop(), checkpoints: P.MAIN_LOOP,
+  const ls = new Lockstep({ machine: m, port: P, program: P => P.main_loop(), checkpoints: P.CHECKPOINTS,
     irqs: { 0x0EA0: 'irq_entry', 0xFF48: 'irq_body' }, irqBytes: IRQ_BYTES, chips: ['colour', 'vic', 'sid'],
     ignore: o.ignore || [], maxFrames: o.maxFrames || 500 });
   P.M[0] = m.cpu.pdir; P.M[1] = m.cpu.pdata;
