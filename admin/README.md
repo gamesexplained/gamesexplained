@@ -38,3 +38,14 @@ gh run watch $(gh run list -w ci -b main -L 1 --json databaseId -q '.[0].databas
 curl -sI https://gamesexplained.com | head -1
 git worktree remove /tmp/pr-preview
 ```
+
+## Fix open issues
+
+To have Claude work through the open issues, oldest first, run
+`/fix-issues` in a session in this repo. The rules are
+`fix-issues/SKILL.md`; edit it to change how issues are taken. Link it
+into your own skills once, as above:
+
+```
+ln -s "$PWD/admin/fix-issues" ~/.claude/skills/fix-issues
+```
