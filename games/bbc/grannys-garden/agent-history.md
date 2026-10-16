@@ -157,9 +157,20 @@ fit the TOSEC disc (no boot file, GRAN1 rather than GRANNY1, no initial
 program before `Ready to start?`), and its note on loading the tape into a
 disc machine is the case the programs' own relocation was written for.
 The page now says the disc is most likely a copy of the tape. The Mac
-edition was looked at for the BASIC program, to settle it; its program
-file holds the game's words and teletext pictures as data, and its tunes
-are MP3 recordings, so it did not.
+edition was looked at for the BASIC program, to settle it. A search of its
+program file for the BASIC's text found none, and the first reading was
+that it was a new program holding the game's words and pictures as data.
+The maintainer's own session on the Mac read the class and method names
+the C++ compiler left in it and found otherwise: the app is the BASIC
+rewritten in C++, a class for each part, with methods named after the
+procedures (`PROCkn`, `PROCcot`, `PROCwitch`) and, for routines the BASIC
+reached by number, after the line (`GOSUB3180`, `LINE2890`). All fifteen
+of those line numbers were checked against the listing; each is a line of
+this disc's GRAN1 doing the same job (3180 asks which creature to call,
+and 2890, 2940, 3000 and 3060 are its four callers in the Giant's garden).
+So 4Mation's program is numbered as this one is. A port has no PAGE, so
+it cannot say whether 4Mation's disc ran out of memory, and the disc
+question stays open. Its tunes are three MP3 recordings.
 
 **The theme.** The author's note thanks Neil "for whistling 'Queen of the
 Fairies' down the telephone". PROCsnd1's DATA, moved down three semitones,

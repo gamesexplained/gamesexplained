@@ -34,9 +34,12 @@ the listing checked only when a sample after an audit is within the mark.
   first line's relocation test into a REM, and Part 2 ends `&0D &81`.
   Comparing 4Mation's disc, or the tape, would say whether any copy 4Mation
   sold has the bug that stops Part 1 at &1900. Retro Granny's Garden for
-  the Mac (4Mation) did not settle it on 16 October 2026: its program file
-  holds the game's words and teletext pictures as data, its tunes are MP3
-  recordings, and a search of it for the BASIC program's text found none.
+  the Mac (4Mation) cannot settle it. On 16 October 2026 its program file
+  turned out to be the BASIC rewritten in C++, with methods named after the
+  procedures and, for routines the BASIC reached by number, after the line
+  (`GOSUB3180`, `LINE2890`). All fifteen of those line numbers are lines of
+  this disc's GRAN1 doing the same job, so 4Mation's program is numbered as
+  this disc's is, but a port has no PAGE to run out of memory at.
 - The lake asked for at the lake prints two messages over each other
   (parts/part-2/facts.md, traced); not seen live.
 
