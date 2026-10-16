@@ -155,17 +155,27 @@ its music or its maps can put that first instead.
   browser" below. A widget the next game could use as it is belongs
   there, not in the page. One that grew inside a page moves there with a
   test that the page still gives the same result.
-- Name the pieces of the listing a page draws from, so the build embeds
-  them and the reader's browser does not fetch the whole listing:
-  `<script type="application/json" data-listing="listing.json">["charset",
-  "$4000-$43FF"]</script>`, a label standing for its record and those
-  after it up to the next label. The build puts those records in the page
-  with their addresses, types, labels and bytes, and the loaders read
-  them before they fetch (`kit/scripts/build.py`, `embed_listings`). A
-  page that reads more of a record, such as its disassembly, names the
-  fields after the pieces' URL, `data-fields="m o oa"`; the comments stay
-  on the Source tab. A page that reads all of memory names
-  `"$0000-$FFFF"`.
+- A page draws from the listing through the loaders:
+  `C64.load('listing.json')`, or `parts/<id>/listing.json` for a part,
+  fetches the whole listing, one download the browser caches for every
+  tab of the game, the Source tab included.
+- Only a game whose listing is withheld (`"publish_source": false`)
+  names the pieces of the listing a page reads, because the site serves
+  none of it: `<script type="application/json"
+  data-listing="listing.json">["charset", "$4000-$43FF"]</script>`, a
+  label standing for its record and those after it up to the next label.
+  The build puts those records in the page with their addresses, types,
+  labels and bytes, and the loaders read them in place of a fetch
+  (`kit/scripts/build.py`, `embed_listings`). A byte the pieces leave out
+  reads as 0 with no error: a picture drawn black, text drawn as `@`. So
+  copy the game's `listing.json` into its folder under `_site/`, open each
+  built page with `?listing-reads` after its address and exercise every
+  widget, a slider through its values for each choice of the menu beside
+  it, and let every animation run its course: the console then names
+  each byte and label the page read that its pieces leave out, with the
+  line that read it, as the list to add (`site/lib/listing-reads.js`). Do
+  it again whenever a widget changes, and after merging `main` into a
+  branch that changed one.
 - The build publishes the authored pages, `listing.json`, `symbols.json`
   and `reference/`, and nothing else from the game folder; for a game
   whose `game.json` has `"publish_source": false`, neither JSON file. A
@@ -470,7 +480,9 @@ nothing and does not use the contributor's personal browser session. See
 `kit/INSTALL.md`, "Browser checks", for the tested host and containment.
 
 Check, at least: every canvas has drawn something; the console has no
-errors; every control does something when clicked; and the rebuilt screen
+errors, and for a withheld game none with `?listing-reads` after the
+address either; every control does
+something when clicked; and the rebuilt screen
 matches a reference screenshot from `reference/`. The reconstruction is
 the one section that is either right or obviously wrong the moment you
 see it, which makes it the best test that the data is understood.

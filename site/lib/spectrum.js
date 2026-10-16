@@ -8,17 +8,33 @@ globalThis.Spectrum = (function () {
                '#000000', '#0000ff', '#ff0000', '#ff00ff', '#00ff00', '#00ffff', '#ffff00', '#ffffff'];
   const BITMAP = 0x4000, ATTRS = 0x5800;
 
-  // A listing the build embedded in the page (kit/scripts/build.py, embed_listings): the pieces of
-  // it the page names, in <script type="application/json" data-listing="url">. Before the build
-  // fills it in the tag holds only the list of pieces, and the listing is fetched instead.
+  // A listing the build embedded in the page (kit/scripts/build.py, embed_listings), for a game
+  // whose listing the site withholds: the pieces of it the page names, in <script
+  // type="application/json" data-listing="url">. Before the build fills it in the tag holds only
+  // the list of pieces, and is passed over. Every other listing is fetched whole, one file the
+  // browser caches for all of a game's tabs.
   function embedded(url) {
     if (typeof document === 'undefined') return null;
     for (const s of document.querySelectorAll('script[type="application/json"][data-listing]'))
       if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
     return null;
   }
-  // Text a widget writes into a canvas stays in the font it was drawn in. A fetched listing
-  // usually arrived after the page's fonts had loaded; an embedded one is in hand at once, so it
+  function fetched(url) {
+    return fetch(url).then(r => { if (r.ok === false) throw new Error(url + ': ' + r.status); return r.json(); });
+  }
+  // A page of a withheld game opened with ?listing-reads in its address gets the whole listing
+  // behind its pieces, with what it reads checked against them (listing-reads.js).
+  const READS = typeof document !== 'undefined' && document.currentScript && /[?&]listing-reads(?:[=&]|$)/.test(location.search)
+    ? new URL('listing-reads.js', document.currentScript.src).href : null;
+  let reads;
+  function watched(url, got) {
+    if (!READS || !embedded(url)) return got;
+    reads = reads || (globalThis.ListingReads ? Promise.resolve() : new Promise((ok, no) => {
+      const s = document.createElement('script'); s.src = READS; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+    return reads.then(() => ListingReads.watch(url, got));
+  }
+  // Text a widget writes into a canvas stays in the font it was drawn in. A listing in the page,
+  // or one the browser has cached, is in hand before the page's fonts have loaded, so a listing
   // is handed over when they have, or after three seconds if they never do.
   function fontsIn() {
     if (typeof document === 'undefined' || !document.fonts || !document.body) return Promise.resolve();
@@ -29,8 +45,7 @@ globalThis.Spectrum = (function () {
   // stays zero. Bytes no record covers have has[a] false.
   async function load(url) {
     url = url || 'listing.json';
-    let L = embedded(url);
-    if (L) await fontsIn(); else L = await fetch(url).then(r => r.json());
+    const [L] = await Promise.all([embedded(url) || fetched(url), fontsIn()]);
     const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
     for (const r of L.records) {
       if (!r.b) continue;
@@ -38,9 +53,9 @@ globalThis.Spectrum = (function () {
     }
     const names = new Map(L.records.filter(r => r.l).map(r => [r.a, r.l]));
     const byName = new Map(L.records.filter(r => r.l).map(r => [r.l, r.a]));
-    return { ram, has, names, byName, listing: L,
+    return watched(url, { ram, has, names, byName, listing: L,
              bytes: (a, n) => ram.subarray(a, a + n),
-             sym: n => { if (!byName.has(n)) throw new Error('no symbol ' + n); return byName.get(n); } };
+             sym: n => { if (!byName.has(n)) throw new Error('no symbol ' + n); return byName.get(n); } });
   }
 
   // The address of the byte holding pixel (x, y): the bitmap is stored a third of the

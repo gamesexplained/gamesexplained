@@ -8,9 +8,9 @@
 // frame_skip3 ($A470) skips it when a pass runs late. This test
 // - steps the page's 6502 and the kit's (kit/c64/cpu6502.js) through every documented opcode from
 //   random states, and compares the registers and the memory;
-// - runs fights in both: the page's on only the bytes ships.html embeds (its data-listing pieces of
-//   the engine and flight listings, the display buffer at $4000-$63FF empty), the kit's on the whole
-//   listings with the display buffer full of random bytes, set up as the page sets them up; and
+// - runs fights in both: the page's on the bytes ships.html reads (the engine listing's, with the
+//   flight listing's maths at $A500-$BCFF and the display buffer at $4000-$63FF empty), the kit's on
+//   the same with the display buffer full of random bytes; and
 //   compares every sample, every event and every byte the page knows at the end;
 // - checks what the section says of those fights, and the flight section's turns and thrust.
 //   node test_combat.js
@@ -144,16 +144,9 @@ function kit(lineup, o) {
   return F;
 }
 
-// ---- the same fight on the page, on only the bytes ships.html embeds
-const carried = new Uint8Array(0x10000), PAGE = new Uint8Array(0x10000);
-for (const [file, L] of [['parts/engine/listing.json', ENGINE], ['parts/flight/listing.json', FLIGHT]]) {
-  const tag = page.match(new RegExp('data-listing="' + file.replace(/[./]/g, '\\$&') + '">(\\[.*?\\])</script>'));
-  if (!tag) { fail('ships.html embeds nothing of', file); continue; }
-  for (const piece of JSON.parse(tag[1])) {
-    const [a, b] = piece.slice(1).split('-$').map(x => parseInt(x, 16));
-    for (let x = a; x <= b; x++) if (L.has[x]) { carried[x] = 1; PAGE[x] = L.ram[x]; }
-  }
-}
+// ---- the same fight on the page, on the bytes ships.html reads, as its fight() makes them
+const carried = new Uint8Array(ENGINE.has), PAGE = new Uint8Array(ENGINE.ram);
+PAGE.set(FLIGHT.ram.subarray(0xA500, 0xBD00), 0xA500); carried.set(FLIGHT.has.subarray(0xA500, 0xBD00), 0xA500);
 carried.fill(1, 0x4000, 0x6400);                                              // the display buffer, empty
 function onPage(lineup, o) {
   const F = SRSim.fight(PAGE, carried, MODELS, lineup, Object.assign({ passes: CAP }, o));

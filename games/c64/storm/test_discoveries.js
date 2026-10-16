@@ -2,7 +2,7 @@
 // Hold the Discoveries page to the game's code. Its storm-machine block must be index.html's, which
 // test_machine.js checks. Its storm-spell block (SPELL_STEPS) walks the spell bug on the page's
 // 6502; the same steps are run on the kit's simulator through a machine with the same calls
-// (enter, pass, hit, spell), over the bytes the page embeds, and every byte of memory outside the
+// (enter, pass, hit, spell), over the bytes the page reads, and every byte of memory outside the
 // stack page must match after each step but the last. The last, the second scroll, must not return
 // on either. It exits 1 on any difference.
 //   node games/c64/storm/test_discoveries.js [discoveries.html]
@@ -17,13 +17,8 @@ if (g.block(page, 'storm-machine').text !== g.block('index.html', 'storm-machine
 const { stormRooms } = g.run(page, 'storm-machine', 'stormRooms');
 const { SPELL_STEPS } = g.run(page, 'storm-spell', 'SPELL_STEPS');
 
-const html = g.read(path.relative(__dirname, path.resolve(__dirname, page)));
-const want = JSON.parse(/<script type="application\/json" data-listing="listing.json">(.*?)<\/script>/s.exec(html)[1]);
-const L = g.listing(), ram = new Uint8Array(0x10000);
-for (const w of want) {
-  const [lo, hi] = w.slice(1).split('-$').map((h) => parseInt(h, 16));
-  for (const r of L.listing.records) if (r.b && r.a <= hi && r.a + r.b.length > lo) ram.set(r.b, r.a);
-}
+// The bytes the page has: every byte of listing.json, which it fetches whole
+const ram = g.listing().ram.slice();
 
 // The same machine on the kit's simulator: each call starts with A, X and Y 0 and every flag
 // clear, as the page's 6502 does, and sfx_start returns at once
