@@ -5,7 +5,7 @@
 <title>Labyrinth</title>
 <style>
 *{box-sizing:border-box}html{background:#23262d}body{max-width:1080px;margin:0 auto;padding-bottom:48px;background:#e9e7e1;color:#2f3136;font:17px/1.6 system-ui,sans-serif}.hero,main,footer{padding-left:clamp(20px,6vw,68px);padding-right:clamp(20px,6vw,68px)}.hero{padding-top:44px}.eyebrow{font:12px/1.6 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:#55585f}h1{font-size:46px;line-height:1.15;margin:12px 0}h2{font-size:26px;line-height:1.3;margin:0 0 14px}.sub{color:#55585f;max-width:720px}section{padding:36px 0 8px}a,summary{color:#1f5fa8}.pictures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}figure{margin:0;padding:16px;background:white;border:1px solid #d5d3cc;border-radius:10px}figure img{display:block;width:100%;height:auto;image-rendering:pixelated;background:black}figcaption{font-size:14px;line-height:1.5;color:#55585f;margin-top:12px}.status{font-size:15px;border-left:3px solid #c25a00;padding:10px 16px;background:#fff8e8}li{margin:8px 0}details{margin-top:24px}select{font:inherit;max-width:100%;padding:8px;margin:8px 0 16px}.gallery{max-width:640px;margin:0 auto}.gallery label{display:block;font-weight:600}summary{cursor:pointer}.font{max-width:768px;margin:18px auto 0}.sources{font-size:14px;color:#55585f}footer{margin-top:40px;padding-top:20px;border-top:1px solid #d5d3cc;font-size:12px;color:#55585f}@media(max-width:650px){.pictures{grid-template-columns:1fr}h1{font-size:36px}}
-.lab-word-demo{background:#fff;border:1px solid #d5d3cc;border-radius:10px;padding:20px}.lab-word-controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.lab-word-controls label{display:block}.lab-word-result{font:24px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#171c28;color:#a4efd6;padding:16px;border-radius:6px;margin:12px 0}.lab-word-bytes{font:14px/1.6 ui-monospace,monospace;overflow-wrap:anywhere}.lab-word-note{font-size:14px;color:#55585f}</style>
+.lab-word-demo{background:#fff;border:1px solid #d5d3cc;border-radius:10px;padding:20px}.lab-word-controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.lab-word-controls label{display:block}.lab-word-result{font:24px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#171c28;color:#a4efd6;padding:16px;border-radius:6px;margin:12px 0}.lab-word-bytes{font:14px/1.6 ui-monospace,monospace;overflow-wrap:anywhere}.lab-word-note{font-size:14px;color:#55585f}.lab-passage-text{min-height:7em;font:18px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#171c28;color:#a4efd6;padding:16px;border-radius:6px}.lab-passage-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.lab-passage-actions button{font:inherit;padding:7px 12px;cursor:pointer}.lab-passage-actions button:disabled{cursor:default;opacity:.5}.lab-passage-bytes{font:14px/1.6 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}</style>
 <!-- tabs -->
 <header class="hero">
 <p class="eyebrow">1986 · Activision · Commodore 64</p>
@@ -34,6 +34,17 @@
 <div class="lab-word-result" id="lab-expanded" aria-live="polite"></div>
 <p class="lab-word-note">A visible ␣ marks a space in this display. These words come from the opening’s dictionary; the controls show combinations independently of a particular sentence.</p>
 </div>
+<h3>A passage, piece by piece</h3>
+<p>The opening mixes ordinary letters with dictionary references. Step through a stored passage to see which words come from the dictionary and where the game starts a new line.</p>
+<div class="lab-word-demo">
+<label for="lab-passage">Opening passage</label><br>
+<select id="lab-passage"><option value="0">The sidewalk</option><option value="1">The rain and owl</option></select>
+<div class="lab-passage-actions"><button id="lab-restart" type="button">Restart</button><button id="lab-next" type="button">Next piece</button><button id="lab-complete" type="button">Show complete passage</button></div>
+<div id="lab-passage-output" class="lab-passage-text" aria-live="polite"></div>
+<p id="lab-passage-explanation"></p>
+<p id="lab-passage-raw" class="lab-passage-bytes"></p>
+</div>
+<p class="sources">Passages at <code>$9867</code> and <code>$98A7</code>, checked against the stored bytes and the game’s parser at each step. Line breaks follow the stored instructions; the display uses a browser font.</p>
 <p class="sources">The <code>$67B5</code> parser chooses the format; <code>$68D4</code> reads the word through the pointer tables at <code>$D800</code> and <code>$D900</code>. All dictionary entries and four formats were checked against the game’s routine in a 6502 simulator: 1,024 cases.</p>
 </section>
 <section>
@@ -92,6 +103,26 @@ function expandLabyrinthWord(index, token) {
  }
  return word+((token===0xfd || token===0xfe)?' ':'');
 }
+const labyrinthPassages = [{"title": "The sidewalk", "address": 39015, "bytes": [89, 111, 117, 32, 97, 114, 101, 32, 115, 116, 97, 110, 100, 105, 110, 103, 32, 111, 110, 32, 116, 104, 101, 32, 115, 105, 100, 101, 119, 97, 108, 107, 32, 111, 110, 255, 116, 104, 101, 32, 253, 79, 115, 105, 100, 101, 32, 111, 102, 32, 97, 32, 99, 105, 116, 121, 32, 98, 108, 111, 99, 107, 46, 0]}, {"title": "The rain and owl", "address": 39079, "bytes": [73, 116, 32, 105, 115, 32, 100, 97, 114, 107, 32, 97, 110, 100, 32, 114, 97, 105, 110, 105, 110, 103, 46, 255, 84, 104, 101, 114, 101, 32, 105, 115, 32, 97, 32, 99, 105, 103, 97, 114, 32, 253, 85, 104, 101, 114, 101, 46, 255, 65, 32, 253, 90, 253, 104, 105, 115, 32, 102, 108, 97, 112, 112, 105, 110, 103, 32, 97, 98, 111, 117, 116, 46, 0]}];
+function splitLabyrinthPassage(bytes) {
+ const pieces=[];
+ for(let i=0;i<bytes.length;) {
+  const offset=i, byte=bytes[i++];
+  if(byte===0) {pieces.push({offset,bytes:[0],text:'',kind:'end'});break;}
+  if(byte===0xff) {pieces.push({offset,bytes:[byte],text:'\n',kind:'line'});continue;}
+  if(byte>=0xfb && byte<=0xfe) {
+   if(i===bytes.length) throw new Error('Missing dictionary index');
+   const index=bytes[i++];
+   pieces.push({offset,bytes:[byte,index],text:expandLabyrinthWord(index,byte),kind:'word'});
+   continue;
+  }
+  if(byte<0x20 || byte>=0x7f || byte===0x40) throw new Error('Unsupported passage control');
+  while(i<bytes.length && bytes[i]>=0x20 && bytes[i]<0x7f && bytes[i]!==0x40) i++;
+  const literal=bytes.slice(offset,i);
+  pieces.push({offset,bytes:literal,text:String.fromCharCode(...literal),kind:'letters'});
+ }
+ return pieces;
+}
 // end of labyrinth-dictionary
 const labWord=document.getElementById('lab-word');
 const labCapital=document.getElementById('lab-capital');
@@ -105,6 +136,27 @@ function updateLabyrinthWord() {
 }
 for (const input of [labWord,labCapital,labSpace]) input.addEventListener('change',updateLabyrinthWord);
 updateLabyrinthWord();
+
+const labPassage=document.getElementById('lab-passage');
+let labPassagePosition=0;
+function updateLabyrinthPassage() {
+ const passage=labyrinthPassages[Number(labPassage.value)];
+ const pieces=splitLabyrinthPassage(passage.bytes);
+ const output=pieces.slice(0,labPassagePosition).map(p=>p.text).join('');
+ document.getElementById('lab-passage-output').textContent=labPassagePosition?output:'Press Next piece to begin.';
+ const piece=pieces[labPassagePosition-1];
+ const explanation=piece?({letters:'Ordinary letters, copied directly.',word:'A dictionary reference expands into this word.',line:'FF starts a new line.',end:'00 ends the passage.'})[piece.kind]:'The text is shown in the order the game reads it.';
+ document.getElementById('lab-passage-explanation').textContent=labPassagePosition+' / '+pieces.length+' pieces. '+explanation;
+ document.getElementById('lab-passage-raw').textContent=piece?'Bytes for this piece: '+piece.bytes.map(b=>b.toString(16).toUpperCase().padStart(2,'0')).join(' '):'';
+ document.getElementById('lab-next').disabled=labPassagePosition>=pieces.length;
+ document.getElementById('lab-complete').disabled=labPassagePosition>=pieces.length;
+ document.getElementById('lab-restart').disabled=labPassagePosition===0;
+}
+labPassage.addEventListener('change',()=>{labPassagePosition=0;updateLabyrinthPassage();});
+document.getElementById('lab-next').addEventListener('click',()=>{labPassagePosition++;updateLabyrinthPassage();});
+document.getElementById('lab-restart').addEventListener('click',()=>{labPassagePosition=0;updateLabyrinthPassage();});
+document.getElementById('lab-complete').addEventListener('click',()=>{labPassagePosition=splitLabyrinthPassage(labyrinthPassages[Number(labPassage.value)].bytes).length;updateLabyrinthPassage();});
+updateLabyrinthPassage();
 </script>
 
 <script>
