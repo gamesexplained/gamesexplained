@@ -24,16 +24,41 @@ The hand-over into the text overlay was not captured. Whether its startup overwr
 
 ## Parts and route beyond the snapshot
 
-| Part | State of analysis | Route |
+The opening has the partial symbol map and listing. The following graphical loads have saved states but no exported analysis. Their resident/overlay ranges are deliberately left undecided; a Silver pass must compare the loaded bytes before giving the shared engine an owner. Slots that reuse a resource are not assigned separate folders merely for a changed scene variable.
+
+| Scene | Captured load | Capture route |
 |---|---|---|
-| `opening` | Snapshot, symbols, listing, and initial sweeps | Recipe above |
-| `labyrinth` | Graphical gate and first corridor reached; part boundaries under analysis | Dismiss movie card with fire, then walk up through the gate and dismiss The Labyrinth card |
+| `01` | The entrance gate | ordinary input |
+| `02` | The Labyrinth | ordinary input |
+| `03` | The Brick Hallway | forced scene request |
+| `04` | Alph and Ralph | forced scene request |
+| `05` | The Wall of Hands | forced scene request |
+| `06` | The Stone Corridor | forced scene request |
+| `07` | The Hedge Maze | forced scene request |
+| `08` | The Persecution of Ludo | forced scene request |
+| `09` | The Wise Man's Garden | forced scene request |
+| `10` | The Hedge Maze | forced scene request |
+| `11` | The Door Knockers | forced scene request |
+| `12` | The Forest | forced scene request |
+| `14` | The Forest | forced scene request |
+| `15` | The Stone Faces | forced scene request |
+| `16` | The Bog of Eternal Stench | forced scene request |
+| `18` | The Goblin Village | forced scene request |
+| `20` | The Underground | forced scene request |
+| `21` | The Castle of the Goblin King | forced scene request |
+| `24` | The Secret Corridor | forced scene request |
+| `25` | The Upside-Down Room | forced scene request |
+| `26` | The Final Confrontation | forced scene request |
+
+The gate and first corridor were reached normally. The saved gate/corridor states in the scene folders were then reproduced with the capture driver; `work/gate-steady.vsf` and `work/corridor-play.vsf` retain the natural route. For later loads, the driver restores that natural corridor snapshot, sets pending scene `$0530` to the requested index, and runs the game's loader at `$5098`. It stops at the first room hook (`$8C8F`, `$8C92`, `$8C95`) or loader return `$59DC`, saves an entry state, then saves play after 60 frames. These are loader-generated states, not assembled memory images, and do not prove puzzle reachability. An entry stopped at loader return is after room initialization; it does not settle whether initialization overwrote authored data. Scene 04 also has a female-state capture, made by setting `$052C=1` and `$052F='F'` before loading; its screenshot is explicitly named `room-04-female.png`.
+
+When the requested side changes, the game saves to the previously attached working disk first. The capture driver reads the requested side at `$56C4`, attaches that working image, and presses Space for the modal disk prompt. Attaching side 2 before that save caused a side-1 prompt; Space, rather than fire, dismisses that prompt because `$5DE5` waits for a new keyboard-queue byte. The source images remain untouched.
 
 The opening was played with the game’s own word wheels. Each command starts on the left wheel: type the verb, Space, type the object, Return. A one-word command needs only the verb and Return. Matrix holds of 0.16 seconds per letter, releases of 0.12 seconds, and a pause between commands worked.
 
 Route exercised after the saved sidewalk state: `GO HOME`, `TAKE CAMCORDER`, `GO OUTSIDE`, `GO NORTH`, `GIVE NICKEL`, `GO WEST`, `GO THEATRE`, `GIVE DOLLAR`, `GO THEATRE`, `GO NORTH`, `LOOK`, `GIVE DOLLAR`, `TAKE`, `COMPLAIN`, `COMPLAIN`, `TAKE`, `TAKE`, `GIVE NICKEL`, `GO SOUTH`, `GO SOUTH`, `GIVE POPCORN`, `COMPLAIN`. Screenshots show the home, street, theater lobby, popcorn counter, auditorium, and movie-start text. The route came from the [Zzap!64 solution transcribed at c64.tin.at](https://c64.tin.at/labyrinth/labyrinth.sol.htm), read on 17 October 2026, and was checked by observing these responses.
 
-After the movie-start text the display loaded the character before an arched gate (`reference/maze-intro.png`). Black-screen intervals followed. `$0F10-$0F1C` is a ten-frame pacing loop using the IRQ counter at `$0353`, not a loader wait. A continuation dismissed the movie card with joystick-port-1 fire, saved `work/gate-steady.vsf`, and demonstrated movement with 100 frames of right input. From the initial gate position, 150 then 600 frames of up input entered the doorway and brought up The Labyrinth title card. Fire dismissed the card; with warp for the disk load, this reached the playable brick corridor in `work/corridor-play.vsf`. Side 2 was extracted for comparison but was not attached during play. Its correct swap point remains open. Further loads must be split into their own parts as they are identified; `labyrinth` is a continuation placeholder, not a claim that all subsequent scenes share one image.
+After the movie-start text the display loaded the character before an arched gate (`reference/maze-intro.png`). Black-screen intervals followed. `$0F10-$0F1C` is a ten-frame pacing loop using the IRQ counter at `$0353`, not a loader wait. A continuation dismissed the movie card with joystick-port-1 fire, saved `work/gate-steady.vsf`, and demonstrated movement with 100 frames of right input. From the initial gate position, 150 then 600 frames of up input entered the doorway and brought up The Labyrinth title card. Fire dismissed the card; with warp for the disk load, this reached the playable brick corridor in `work/corridor-play.vsf`. Side 2 was attached for the forced later-room captures described above. The graphical part folders are placeholders for those captured loads; their source partitions remain open.
 
 ## Steady-state memory
 
@@ -50,11 +75,15 @@ Both sides were extracted with the bundled `c1541`: 46 files on side 1 and 68 on
 | Side / file | Payload bytes | Candidate base | Matching pieces | Equal payload bytes | Interpretation |
 |---|---:|---|---:|---:|---|
 | 1 / `activision` | 33,942 | `$0800` | 1,107 | 19,557 | Substantial initial-image match; replaced or changed ranges remain unclassified |
-| 1 / `ds` | 2,259 | `$BC00` | 93 | 2,193 | Strong contiguous match; purpose not established |
+| 1 / `ds` | 2,259 | `$BC00` | 93 | 2,193 | Strong contiguous match; menu code/text candidate; not fully traced |
 | 1 / `tx` | 13,258 | `$7900` | 740 | 13,251 | Text-adventure overlay, including executable jumps, messages, and tables |
 
-All other files lack a convincing whole-payload match in this snapshot. This does not show that they are unused: packing, relocation, and later scene loads can hide their relationship. The seven differing bytes in `tx` have not been assigned writers. The `activision` match overlaps the later overlay, so its matches must not be counted as a second independent copy of the engine.
+The text-opening snapshot has no convincing whole-payload match for the later art and room files. This does not show that they are unused: packing, relocation, and later scene loads can hide their relationship. The seven differing bytes in `tx` have not been assigned writers. The `activision` match overlaps the later overlay, so its matches must not be counted as a second independent copy of the engine.
 
 ## Loader
 
-The first directory entry boots a publisher loader through the emulated 1541. It presents the logo and slot selector, then loads the text-adventure state. The `tx` payload accounts for almost all bytes at `$7900-$ACC9`. The cinema transition loads further graphical material. The resident/overlay boundary and the side-2 protocol need further tracing. Loader internals were not annotated for this Bronze contribution.
+The first directory entry boots a publisher loader through the emulated 1541. It presents the logo and slot selector, then loads the text-adventure state. The `tx` payload accounts for almost all bytes at `$7900-$ACC9`. The cinema transition loads further graphical material. The loader selects scene resources through `$592A`; `U` overlays load at `$8B00`, with room callbacks at `$8C8F/$8C92/$8C95`. Male `AV` and female `AF` costume files load at `$7900`, and NPC costume files at `$A000`. Packed `M`, `P`, and `C` files expand to `$0600`, `$BC00`, and `$E000`. The four-byte packed header holds packed and expanded lengths; the unpacker is `$5C55-$5D35`. A standalone decoder reproduced every byte of the natural first corridor’s M2 (510 bytes), P2 (3328 bytes), and C2 (2008 bytes). These placements establish resource families, not the final listing ownership ranges. Loader internals were not annotated for this Bronze contribution.
+
+## Graphical frame check
+
+A PAL frame captured from the natural corridor snapshot contains 133 register/vector/pointer writes, accounts for the ending register state, and changes seven RAM bytes and no colour cells during the frame. `$D018` changes from `$35` to `$39` at raster line 80, selecting the room font at `$E000` for the picture; the text uses the `$D000` font. The raw frame and its emulator image remain in ignored `work/corridor-frame.*`. This records the split; a browser rendering comparison was not performed for Bronze.

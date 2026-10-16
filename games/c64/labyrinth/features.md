@@ -31,7 +31,7 @@ Read on 17 October 2026:
 | SAVE GAME and LOAD GAME use the three slots | open | Disk guide pp. 10–12. |
 | Save/load menus stop the clock | open | Disk guide p. 9. |
 | Shift plus left arrow restarts | open | Disk guide p. 13. |
-| Goblins, oubliettes, the bog, Hoggle, Fireys, Ludo, and Didymus | open | Cassette guide’s introduction documents these encounters; later scenes unreached. |
+| Goblins, oubliettes, the bog, Hoggle, Fireys, Ludo, and Didymus | open | Cassette guide’s introduction documents these encounters; room images captured with forced scene requests; encounter behavior remains unverified. |
 
 ## Reference pictures
 

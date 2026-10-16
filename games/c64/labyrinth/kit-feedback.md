@@ -13,7 +13,7 @@ None. No kit or shared site file changed.
 
 ## Candidates
 
-None. Existing instructions covered the banking, mixed text, and protected-disk cases.
+None. Existing instructions covered the banking, mixed text, protected-disk, and misleading wait-loop cases. The continuation’s mistaken wait-loop interpretation was corrected by controlled input and a trace; `10-orient` already requires sampling the program counter and proving that play advances.
 
 ## Maintainer asks
 
@@ -21,7 +21,7 @@ None. The contributor reserved opening the pull request; no issues were filed.
 
 ## What cost the most time
 
-A faster frame-capture transport would have saved the most time; the complete capture succeeded, and no new correctness rule was needed.
+A faster frame-capture transport would have saved the most time; both complete captures succeeded, and no new correctness rule was needed. During the continuation, following the requested disk side and sending Space resolved a modal disk prompt; this game-specific behavior is recorded in orientation.md and agent-history.md. The split-pointer alias problem was caught by check_listing.py, so it needs no new skill rule.
 
 ## Environment
 
