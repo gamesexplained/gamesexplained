@@ -6760,7 +6760,7 @@
   },
   {
    "address": 13290,
-   "name": "tac_target_of",
+   "name": "tac_label",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -18030,12 +18030,12 @@
   {
    "address": 12585,
    "type": "line",
-   "text": "Lights the lamp at screen cell $E2F1 (and its copy at $62F1) in colour $8A when a ship in slots 1-5 whose type's $0AEF is zero has the player (slot 0) as its target; $C5 otherwise"
+   "text": "Lights the lamp at screen cell $E2F1 (and its copy at $62F1) in colour $8A when something in slots 1-5 whose type's $0AEF is not zero (a missile, or a ship that is no threat) has the player (slot 0) as its target; $C5 otherwise"
   },
   {
    "address": 12621,
    "type": "line",
-   "text": "Sets the three lamps at $E33B, $E363 and $E38B (with copies at $63xx): for each of up to three ships in slots 1-5 whose type's $0AEF is zero, a level of 1 for present, 2 with a target, 3 with the player as its target; each level picks a colour from threat_colours ($319F)"
+   "text": "Sets the three lamps at $E33B, $E363 and $E38B (with copies at $63xx): for each of up to three ships in slots 1-5 whose type's $0AEF is zero, a level of 1 for present, 2 with a target, 3 with the player as its target; each level picks a colour from threat_colours ($319F). A fourth and fifth such ship count in $89 and $8A, which no lamp shows"
   },
   {
    "address": 12703,
@@ -18060,12 +18060,12 @@
   {
    "address": 12864,
    "type": "line",
-   "text": "The hit-points bar: the player's hit points ($051D/$051E) halved, plus one, at most $3C, drawn at x $4E, row $13, in pattern 4 against pattern 1, in pattern 7 (the warning colour) when under 15"
+   "text": "The hit-points bar: a quarter of the player's hit points (bits 2-8 of $051D/$051E), plus one, at most $3C, drawn at x $4E, row $13, in pattern 4 against pattern 1, in pattern 7 (the warning colour) when under 15"
   },
   {
    "address": 12956,
    "type": "line",
-   "text": "The weapon readout at column $1E, row $1E. For the beam: a reversed mark when it is damaged ($0409 bit 1), the heat level ($0D00/2, at most 3) as one of four symbols, A or M for automatic or manual fire, then \"-]\". For a missile: its symbol ($7C), a reversed mark if the launcher is damaged, the count left, and a \"*\" in place of \"]\" when it cannot fire (damaged, none left, or reloading, $0836). Then the weapon's two-character name ($3363) and its colours at screen cells $E366/$E33E and $E36B/$E343 ($3367, $336B), each also written to the copy at $63xx"
+   "text": "The weapon readout at column $1E, row $1E. For the beam: a reversed mark when it is damaged ($0409 bit 1), the heat level ($0D00/2, at most 3) as one of four symbols, A or M for automatic or manual fire, then \" -\". For a missile: its symbol ($7C), the count left and a space. The cells under the first character ($E366, $E33E) get colour $5D, or $2A when a missile cannot be fired (none left, or reloading, $0836). The launcher's damage ($0409 bit 0) was meant to reverse the count and stop it too, but the AND #$01 at $32F2 tests what print_char left in A, $BC or 0, so it never does. Then the weapon's two-character name ($3363) and its colours at $E36B/$E343 ($3367) and $E36C/$E344 ($336B), each also written to the copy at $63xx"
   },
   {
    "address": 13155,
@@ -18085,7 +18085,7 @@
   {
    "address": 13167,
    "type": "line",
-   "text": "The TAC's data page. With no target, an empty name line, the hit points of the player ($345D) and the systems ($3480). For a ship target (slots 0-5): name ($33B5), its own target ($33EA), the range ($33F8), its tactic ($3435), hit points and systems. Any other target: name and range. Ends in $87FE"
+   "text": "The TAC's data page. With no target, an empty name line, the hit points of the player ($345D) and the systems ($3480). For a ship target (slots 0-5): name ($33B5), its label ($33EA), the range ($33F8), its tactic ($3435), hit points and systems. Any other target: name and range. Ends in $87FE"
   },
   {
    "address": 13237,
@@ -18095,12 +18095,12 @@
   {
    "address": 13290,
    "type": "line",
-   "text": "Prints the name of the target's own target ($366D) at column $15"
+   "text": "Prints the target's own three-character label ($366D) at column $15, then turns reverse off"
   },
   {
    "address": 13304,
    "type": "line",
-   "text": "Prints \"RAN \" and the range to the target: the distance from the player ($7947) plus 2 in its high byte, divided ($B5E0); $75 or more in the top byte prints \"30+ km\", otherwise the number ($9EBF) and \"m\""
+   "text": "Prints \"RAN \" and the range to the target: the distance from the player ($7947), a log, plus 2 (four times the distance) and made a number ($B5E0); $75 or more in the top byte prints \"30+ km\", otherwise the number ($9EBF) and \"m\""
   },
   {
    "address": 13365,
@@ -18140,7 +18140,7 @@
   {
    "address": 13644,
    "type": "line",
-   "text": "Draws slot $A2's model in the TAC: the viewing distance is the type's $0A63 word plus $02CE (kept at $366A); the orientation is the slot's 27-byte block at $044B (or the identity at $0DA8 for objects past slot 6, and for the player's own ship), the position is that of the target relative to the player ($92CC, $923E, $95A0, $9160, $934B, $91B0) so it is seen as from the cockpit. Then jumps into the model's own code through the type's model pointer ($08F8/$08F9) with the type's $0999 and $0A63 words in $76/$77 and $5F/$60"
+   "text": "Draws slot $A2's model in the TAC: the viewing distance is the type's $0A63 word plus $02CE (kept at $366A). The camera is the player's orientation (slot 0's block at $044B, or the identity at $0DA8 when the TAC shows the player's own ship) with its third row replaced by the way from the slot to the player ($92CC) and made orthonormal ($923E); that row times the distance ($95A0) is turned into the slot's frame by the slot's orientation (the identity past slot 6, $9160, $934B), and the two orientations are multiplied into $0D40 ($91B0). Then jumps into the model's own code through the type's model pointer ($08F8/$08F9) with the type's $0999 and $0A63 words in $76/$77 and $5F/$60"
   },
   {
    "address": 13924,

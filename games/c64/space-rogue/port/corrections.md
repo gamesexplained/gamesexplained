@@ -25,3 +25,9 @@ the port finds in the listing").
 | engine | $3CDC random_rates, $3D61 random_rate | -31 to 32 | -32 to 32 |
 | engine | $A0C1 print_char | the font address $F200 + 8 * A (also at $A130) | $F200 + 8 * (A AND $7F): the first ASL drops bit 7 |
 | engine | $9E90 saved_cursors | the saved columns and rows from $9E90 | $9E90 is save_cursor's RTS; the columns start at $9E91 |
+| engine | $3129 attack_lamp | lit for a ship whose type's $0AEF is zero | lit for one whose $0AEF is not zero: a missile, or a ship that is no threat |
+| engine | $3240 draw_armour_bar | the hit points halved, plus one | a quarter of them (bits 2-8), plus one |
+| engine | $329C draw_weapon | "-]", a reversed mark for a damaged launcher, "*" in place of "]" | " -"; $5D or $2A are the colours of the cells under the first character; the launcher's damage never shows (the test reads print_char's A) |
+| engine | $33EA tac_target_of | the name of the target's own target | the target's own label (renamed tac_label) |
+| engine | $33F8 tac_range | the distance plus 2 in its high byte, divided | the distance as a log plus 2: four times the distance |
+| engine | $354C tac_draw_model | the slot's orientation at $044B | the camera is the player's orientation turned to the slot; the slot's own orientation takes the camera into its frame |

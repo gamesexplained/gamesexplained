@@ -36,7 +36,7 @@ const GEN = new Set(`
   print_date print_time fire_beam beam_hit joystick_flight joystick_speed navigation nav_menu
   nav_scan nav_cockpit draw_chart_cursor nav_helm nav_chart nav_cursor_info helm_step_time
   helm_encounter nav_query back_to_cockpit print_disk_text_cf9c update_cockpit draw_tac draw_speed
-  draw_weapon tac_data tac_name tac_target_of tac_range tac_tactic tac_armour tac_systems
+  draw_weapon tac_data tac_name tac_label tac_range tac_tactic tac_armour tac_systems
   tac_system_letter print_ship_label ship_ai ai_fire key_surrender merchant_surrender ask_agree
   build_draw_list set_view check_collisions on_contact collide hit_shard ram gate_contact
   missile_hit hazard_hit blow_up damage dock_check dock gate_jump wormhole_step gravity gravity_pull

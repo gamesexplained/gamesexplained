@@ -982,6 +982,8 @@ G.render = function (P) {
   };
   P.window_full = function (r) { M[0x41] = 0x3F; M[0x42] = 0xC7; P.set_window({ a: 0, x: 0, y: 0 }); return {}; };
   P.window_right = function (r) { M[0x41] = 0x9F; M[0x42] = 0xC7; P.set_window({ a: 0, x: 0xA0, y: 0 }); return {}; };
+  // The 3D view: 251 by 102 pixels from x 34, row 73 ($87FE)
+  P.window_view = function (r) { M[0x41] = 0xFB; M[0x42] = 0x66; return P.set_window({ a: 0, x: 0x22, y: 0x49 }); };
 
   // ---- the buffers
   // The end of a frame: colour 1 set (its clear byte the clears use), the buffer just drawn
