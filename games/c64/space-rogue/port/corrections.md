@@ -8,3 +8,18 @@ the port finds in the listing").
 |---|---|---|---|
 | engine | $186F read_block | the block number's low byte in A | in X: the routine's first instruction is TXA (read_text_block's s_9CCE leaves it in X) |
 | engine | $9977 arccos_rad | the label and its comment on $9977 | $9977 is the operand of the SBC at $9976; the arccosine in radians starts at $997B (JSR arccos_units, JMP units_to_radians) |
+| engine | $1239 frame_update | "skipped when $A2C5 is negative with two ships already present"; "the clock line ($923E with $044B)" | a merchant type (faction 1, the X pick_ship returns) is skipped one time in two; $923E keeps the player's orientation square; the drop loop tests $0403 with Y, not the slot |
+| engine | $13D4 key_jettison | the message at $CFCE | $CECF: X is the low byte |
+| engine | $1D82 key_next_target | "slot 20's type" among the targets | slots 1-5 are ships, 6-19 bases (flag bit 0) or type $14 |
+| engine | $1DDF target_status | said once ($0833) | a friend greets once; a hostile ship, or one with the player as its target, speaks once and then one time in four |
+| engine | $20EC fire_beam | a miss is drawn for the player; a computer ship hits any ship slot | only a player with no target draws a miss; only the player's beam hits a ship it was not aimed at (a type that does damage, $0433 not 0) |
+| engine | $2189 trace_beam | the direction at $0896 | the direction at ($74), scaled into $0896 |
+| engine | $2279 draw_beam | $901D for the player's shot in another view | $901D when a computer ship's beam hits the player; the player's shot in another view is a triangle |
+| engine | $23BA project_point | the point ($58) relative to ($5A) | the point at ($74), seen from the camera at ($58) with the orientation at ($5A) |
+| engine | $2419 joystick_flight | the speed held at -$45 | -$46 |
+| engine | $375F ai_tactic | one in ten changes from cruise or pursue to the type's tactic | cruise and pursue always take the type's tactic; one in ten of any other changes |
+| engine | $37E7 ai_closing_speed | the tactic's speed far, $4B close | $4B far, the tactic's speed close |
+| engine | $392A key_surrender | "every ship leaves" | that ship and the computer ships' missiles leave; print_wrapped is called again with what clear_tac leaves |
+| engine | $3A2D merchant_surrender | "its escorts" leave | every computer ship's missile |
+| engine | $3BA1 ask_agree | the list at $3BD3 | the pointers at $3BCF |
+| engine | $3CDC random_rates, $3D61 random_rate | -31 to 32 | -32 to 32 |

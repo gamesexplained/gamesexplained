@@ -341,7 +341,7 @@ G.render = function (P) {
   };
   // The view mode in $0D3C: the cockpit's camera is the player's own position and orientation;
   // the outside views have their own, put ahead of the ship. Then the view's name is shown.
-  P.set_view = function (r) {
+  P.set_view = function* (r) {
     if (!M[0x0D3C]) {
       M[0x0649] = 0;
       setp(0x58, 0x065D); setp(0x5A, 0x044B);
@@ -351,7 +351,7 @@ G.render = function (P) {
       P.place_camera();
     }
     const y = (M[0x0D3C] << 1) & 255;
-    return P.print_message({ x: M[0x665E + y], a: M[0x665F + y], y });
+    return yield* P.print_message({ x: M[0x665E + y], a: M[0x665F + y], y });
   };
   // The outside camera 80 ahead of the ship along its velocity, and 10/256 to the side
   P.place_camera = function (r) {

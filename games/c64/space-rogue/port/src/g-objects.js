@@ -6,7 +6,7 @@
 // An object is a slot, 0 to 19: 0 is the player, 1-5 the other ships, 6 a planet or a base, 7-19
 // everything else. A slot's position is three 24-bit linear numbers at $065D + 9 n and its
 // velocity three more at $0545 + 9 n; a ship's orientation is three log-form rows at $044B +
-// 18 n. The type's tables are indexed by the type ($08D5 its flags) or twice it (its radius at
+// 27 n. The type's tables are indexed by the type ($08D5 its flags) or twice it (its radius at
 // $0A1D, its armour at $0AA9, its thrust at $0C04).
 (function (root) {
 'use strict';
@@ -87,14 +87,14 @@ G.objects = function (P) {
   };
   // Takes slot Y out of play; A says how: $FF quietly, 0 destroyed by the player (the reward
   // when a ship that is not a missile), anything else destroyed by another; all but $FF explode
-  P.destroy_object = function (r) {
+  P.destroy_object = function* (r) {
     M[0x8A] = r.y; M[0x8B] = r.a;
     if (r.y === M[0x0445]) P.clear_tac();
-    P.free_slot({ y: M[0x8A] });
-    if (M[0x8B] & 0x80) return { a: M[0x8B] };
+    const f = P.free_slot({ y: M[0x8A] });
+    if (M[0x8B] & 0x80) return { a: M[0x8B], x: f.x, y: f.y };
     if (!M[0x8B]) {
       const y = M[0x8A];
-      if (y < 6 && !M[0x0403 + y]) P.kill_reward({ y });
+      if (y < 6 && !M[0x0403 + y]) yield* P.kill_reward({ y });
     }
     return P.explode({ y: M[0x8A] });
   };
@@ -120,7 +120,7 @@ G.objects = function (P) {
   // a pirate (faction 0, with a random part) or faction 3; one time in two a step toward the
   // next rank; one in four the standing with the factions moved; and for factions 1 and 2 the
   // bounty owed by the law.
-  P.kill_reward = function (r) {
+  P.kill_reward = function* (r) {
     let y = r.y;
     if (M[0x079C] && M[0x060D + y] === 6) { M[0x079A] = (M[0x079A] + 1) & 255; M[0x079C] = 0; }
     M[0x60] = 0; M[0x61] = 0;
@@ -132,9 +132,9 @@ G.objects = function (P) {
       M[0x60] = s & 255;
       if (s > 255) M[0x61] = (M[0x61] + 1) & 255;
       P.add_credits({ a: M[0x60], x, y: M[0x8A] });
-      P.print_message({ x: 0x96, a: 0x1B });
-      P.print_number({});
-      P.print_text({ x: 0xAF, y: 0x1B });
+      yield* P.print_message({ x: 0x96, a: 0x1B });
+      yield* P.print_number({});
+      yield* P.print_text({ x: 0xAF, y: 0x1B });
     }
     if (!(P.random().a & 0x80)) return {};
     y = M[0x8A];
@@ -447,7 +447,7 @@ G.objects = function (P) {
   };
   // Each object in slots 19..6 whose type has flag bit 1 pulls every solid ship 5..0 toward it,
   // by its type's mass (the radius word less 2 in the whole part, doubled)
-  P.gravity = function () {
+  P.gravity = function* () {
     let y = 0x13;
     M[0x94] = y;
     do {
@@ -462,7 +462,7 @@ G.objects = function (P) {
           if (M[0x0635 + s]) {
             setp(0x76, pos(s));
             P.slot_pos_ptr({ y: M[0x94] });
-            P.gravity_pull();
+            yield* P.gravity_pull();
             const v = vel(M[0x95]);
             setp(0x78, v); setp(0x76, v);
             P.vec_add_lin();
@@ -479,7 +479,7 @@ G.objects = function (P) {
   // The pull of the object at ($74) on the ship at ($76), linear at $6B: the unit vector toward
   // it times the mass over the distance squared. The first time the player's pull reaches $F700
   // (log) the gravity warning is printed.
-  P.gravity_pull = function () {
+  P.gravity_pull = function* () {
     setp(0x78, 0x006B);
     P.vec_sub_to_log();
     setp(0x74, 0x006B);
@@ -492,7 +492,7 @@ G.objects = function (P) {
     M[0x60] = (M[0x97] - M[0x60] - (lo < 0 ? 1 : 0)) & 255;
     if (!M[0x95] && !M[0x0834] && !((M[0x60] - 0xF7) & 0x80)) {
       const p = ptr(0x74);
-      P.print_message({ x: 0x1E, a: 0xCF });
+      yield* P.print_message({ x: 0x1E, a: 0xCF });
       setp(0x74, p);
       M[0x0834] = 1;
     }
@@ -626,7 +626,7 @@ G.objects = function (P) {
   // by one, only marks it in $0837 for the docking test after it is drawn; anything else collides.
   P.on_contact = function* () {
     if (M[0x0D3C]) {
-      if (flags(M[0xC7]) & 1) { M[0x0D3C] = 0; return P.set_view(); }
+      if (flags(M[0xC7]) & 1) { M[0x0D3C] = 0; return yield* P.set_view(); }
     } else {
       const other = !M[0xC6] ? M[0xC7] : !M[0xC7] ? M[0xC6] : -1;
       if (other >= 0) {
@@ -642,23 +642,23 @@ G.objects = function (P) {
     M[0xB2] = r.x; M[0xB8] = M[0x060D + r.x];
     M[0xB3] = r.y; M[0xB9] = M[0x060D + r.y];
     M[0x0835] = M[0xB9];
-    if (M[0xB9] === 0x1B) return P.hit_shard();
+    if (M[0xB9] === 0x1B) return yield* P.hit_shard();
     if (M[0xB9] === 0x14 && !r.x) return yield* P.gate_contact();
     const fx = M[0x08D5 + M[0xB8]], fy = M[0x08D5 + M[0xB9]];
-    if ((fx | fy) & 0x20) return P.missile_hit({ x: M[0xB8], y: M[0xB9] });
-    if (fy & 0x40) return P.hazard_hit();
-    return P.ram();
+    if ((fx | fy) & 0x20) return yield* P.missile_hit({ x: M[0xB8], y: M[0xB9] });
+    if (fy & 0x40) return yield* P.hazard_hit();
+    return yield* P.ram();
   };
   // A shard (type $1B) explodes against the first object, and a new one starts at the origin
-  P.hit_shard = function () {
-    P.blow_up({ a: M[0x0AEF + M[0xB9]], x: M[0xB3], y: M[0xB2] });
+  P.hit_shard = function* () {
+    yield* P.blow_up({ a: M[0x0AEF + M[0xB9]], x: M[0xB3], y: M[0xB2] });
     setp(0x74, 0x0DC3);
     return P.create_object({ x: 0x1B });
   };
   // Two objects ram: unless either ship touched something in the last two passes, the window
   // flashes for the player, each takes damage from the speed between them (the second only when
   // it is a ship), and they bounce apart
-  P.ram = function () {
+  P.ram = function* () {
     if (P.contact_cooldown({ x: M[0xB2] }).drop) return {};
     if (P.contact_cooldown({ x: M[0xB3] }).drop) return {};
     if (!M[0xB2] || !M[0xB3]) {
@@ -674,9 +674,9 @@ G.objects = function (P) {
     P.log_to_lin();
     M[0xB7] = M[0x60];
     M[0x80] = M[0xB7];
-    P.damage({ a: 0, x: M[0xB3], y: M[0xB2] });
+    yield* P.damage({ a: 0, x: M[0xB3], y: M[0xB2] });
     M[0x80] = M[0xB7];
-    if (M[0xB3] < 6) P.damage({ a: 0, x: M[0xB2], y: M[0xB3] });
+    if (M[0xB3] < 6) yield* P.damage({ a: 0, x: M[0xB2], y: M[0xB3] });
     setp(0x7A, 0x00BA);
     return P.bounce({ x: M[0xB2], y: M[0xB3] });
   };
@@ -692,7 +692,7 @@ G.objects = function (P) {
   // A missile is in the collision (types X and Y): it is made the first object. It does not hit
   // the ship that launched it; against anything but a ship, or a ship it is not aimed at, it
   // turns into an explosion (type $22); otherwise it blows up against the ship.
-  P.missile_hit = function (r) {
+  P.missile_hit = function* (r) {
     if (!(M[0x08D5 + r.x] & 0x20)) {
       M[0xB9] = r.x; M[0xB8] = r.y;
       const t = M[0xB2]; M[0xB2] = M[0xB3]; M[0xB3] = t;
@@ -701,7 +701,7 @@ G.objects = function (P) {
     if (x < 6) {
       if (x === M[0x0433 + y]) return { a: x, x, y };
       const t = M[0x0445 + y];
-      if ((t & 0x80) || t === M[0xB3]) return P.blow_up({ a: M[0x0AEF + M[0xB8]], x: M[0xB2], y: M[0xB3] });
+      if ((t & 0x80) || t === M[0xB3]) return yield* P.blow_up({ a: M[0x0AEF + M[0xB8]], x: M[0xB2], y: M[0xB3] });
     }
     P.free_slot({ y });
     P.slot_pos_ptr({ y });
@@ -709,10 +709,10 @@ G.objects = function (P) {
   };
   // The second object is a hazard (flag bit 6): the first takes its damage whole; a type $1A one
   // starts again at the origin
-  P.hazard_hit = function () {
+  P.hazard_hit = function* () {
     if (!M[0xB2]) P.sound_play({ a: 0x0B });
     M[0x80] = M[0x0AEF + M[0xB9]];
-    P.damage({ a: 0xFF, x: 0xFF, y: M[0xB2] });
+    yield* P.damage({ a: 0xFF, x: 0xFF, y: M[0xB2] });
     if (M[0xB9] !== 0x1A) return {};
     P.free_slot({ y: M[0xB3] });
     setp(0x74, 0x0DC3);
@@ -795,7 +795,7 @@ G.objects = function (P) {
   };
   // Slot X (a missile or a shard) blows up against slot Y, which takes damage A: the player's
   // window flashes and the ship is jolted; an explosion (type $17) where X was; X freed
-  P.blow_up = function (r) {
+  P.blow_up = function* (r) {
     M[0xAA] = r.a; M[0xA8] = r.x; M[0xA9] = r.y;
     if (!r.y) {
       P.set_colour({ x: 0x12 });
@@ -807,7 +807,7 @@ G.objects = function (P) {
     P.create_object({ x: 0x17 });
     M[0x80] = M[0xAA];
     const x = M[0xA8];
-    P.damage({ a: M[0x060D + x] === 0x0B ? 1 : 0, x, y: M[0xA9] });
+    yield* P.damage({ a: M[0x060D + x] === 0x0B ? 1 : 0, x, y: M[0xA9] });
     return P.free_slot({ y: M[0xA8] });
   };
   P.jolt_player = function () {
@@ -820,7 +820,7 @@ G.objects = function (P) {
   // $FF, not at all. Slot 6 and up only notes the player shooting a base. A missile hit is gone.
   // The attacker is remembered; the shields take their part; a hard hit sets a computer ship
   // turning and may knock out a system; then the armour, and below zero the ship is destroyed.
-  P.damage = function (r) {
+  P.damage = function* (r) {
     M[0x9E] = r.x; M[0x9F] = r.y; M[0xA0] = r.a;
     M[0xA1] = M[0x80];
     if (!M[0xA1]) return {};
@@ -852,7 +852,7 @@ G.objects = function (P) {
         if (!(M[0x0C45] & M[0xA4])) return { a: 0 };
         P.select_window({ y: 0 });
         const k = (M[0xA3] << 1) & 255;
-        return P.print_message({ x: M[0x6FD9 + k], a: M[0x6FDA + k] });
+        return yield* P.print_message({ x: M[0x6FD9 + k], a: M[0x6FDA + k] });
       }
     }
     const v = M[0x9F], w = (v << 1) & 255;
@@ -862,7 +862,7 @@ G.objects = function (P) {
     if (!(M[0x051E + w] & 0x80)) return { a: M[0x051E + w] };
     const k = M[0x9E];
     const a = !(k & 0x80) && (flags(k) & 0x20) ? M[0x0433 + k] : k;
-    return P.destroy_object({ a, y: M[0x9F] });
+    return yield* P.destroy_object({ a, y: M[0x9F] });
   };
   // The damage $A1 after the shields: the fore shield when the attacker is in front of the
   // victim (the dot product of bearing positive), the aft one behind, unless that shield is out;
@@ -942,7 +942,7 @@ G.objects = function (P) {
     P.reverse_velocity({ y: 0 });
     M[0x040F] = 8;
     M[0x1E] = 0xFF;
-    return P.back_to_cockpit();
+    return yield* P.back_to_cockpit();
   };
   // The Malir gate: 256 passes of the jump at speed 127, then everything but the player cleared,
   // the gate's destination looked up in the system map, and the wormhole flown until the ship
@@ -971,7 +971,7 @@ G.objects = function (P) {
     const x = M[0x55B0 + (y & 255)];
     M[0x72BD] = M[0x5630 + x]; M[0x72BE] = M[0x5631 + x]; M[0x72BF] = M[0x5632 + x]; M[0x72C0] = M[0x5633 + x];
     P.copy_to_bank1();
-    P.print_message({ x: 0x1D, a: 0xCF });
+    yield* P.print_message({ x: 0x1D, a: 0xCF });
     for (let s = 0x13; s; s--) P.free_slot({ y: s });
     P.reset_models();
     P.clear_tac();
@@ -994,19 +994,19 @@ G.objects = function (P) {
       M[0x5E] = (M[0x5E] + 1) & 255;
       yield { cp: 0x71F6 };
       yield* P.do_key();
-      P.wormhole_step();
+      yield* P.wormhole_step();
     } while (P.wormhole_rings().c);
     P.show_bank3();
     P.mirror_text_off();
     M[0x3A] = 0;
     if (M[0x74A2] < M[0x72C0]) {
-      P.print_message({ x: 0x1C, a: 0xCF });
+      yield* P.print_message({ x: 0x1C, a: 0xCF });
       P.load_system_map();
     } else {
       M[0x071D] = M[0x72BD]; M[0x071E] = M[0x72BE]; M[0x071F] = M[0x72BF];
       P.load_system_map();
-      P.print_message({ x: 0x1B, a: 0xCF });
-      P.print_text({ x: 0x05, y: 0x55 });
+      yield* P.print_message({ x: 0x1B, a: 0xCF });
+      yield* P.print_text({ x: 0x05, y: 0x55 });
     }
     M[0x0D04] = 0xFF; M[0x0D05] = 0xFF; M[0x0D06] = 0xFF;
     P.load_nav_tiles();
@@ -1026,7 +1026,7 @@ G.objects = function (P) {
   // Each wormhole pass: the ship a quarter unit on along -z; every 8th pass, without the null
   // damper, the hull loses a point (none left: destroyed, type $1A the killer) and the speed and
   // armour are redrawn
-  P.wormhole_step = function () {
+  P.wormhole_step = function* () {
     const v = M[0x0663] - 0x40;
     M[0x0663] = v & 255;
     if (v < 0) dec16(0x0664, 1);
@@ -1036,7 +1036,7 @@ G.objects = function (P) {
       if (M[0x051E] & 0x80) { M[0x0835] = 0x1A; return P.player_destroyed(); }
     }
     P.window_full();
-    P.draw_speed();
+    yield* P.draw_speed();
     P.draw_armour_bar();
     return P.window_view();
   };
@@ -1144,10 +1144,10 @@ G.objects = function (P) {
     P.copy_to_bank1();
     return P.select_window({ y: 0 });
   };
-  P.back_to_cockpit = function () {
+  P.back_to_cockpit = function* () {
     P.restore_after_disk();
     P.mirror_text_on();
-    return P.update_cockpit();
+    return yield* P.update_cockpit();
   };
 };
 })(typeof window !== 'undefined' ? window : globalThis);

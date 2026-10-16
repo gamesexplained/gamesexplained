@@ -13,12 +13,12 @@ G.main = function (P) {
   // draws the view and the arrows and shows the buffer just drawn
   P.main_loop = function* () {
     for (;;) {
-      yield { cp: 0x0DED }; P.frame_update();
+      yield { cp: 0x0DED }; yield* P.frame_update();
       yield { cp: 0x0DF0 }; P.age_objects();
-      yield { cp: 0x0DF3 }; P.ship_ai();
+      yield { cp: 0x0DF3 }; yield* P.ship_ai();
       yield { cp: 0x0DF6 }; P.turn_objects();
       yield { cp: 0x0DF9 }; P.apply_thrust();
-      yield { cp: 0x0DFC }; P.gravity();
+      yield { cp: 0x0DFC }; yield* P.gravity();
       yield { cp: 0x0DFF }; P.move_objects();
       yield { cp: 0x0E02 }; yield* P.do_key();
       yield { cp: 0x0E05 }; yield* P.check_collisions();

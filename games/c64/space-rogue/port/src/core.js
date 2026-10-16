@@ -17,7 +17,9 @@
 //   one that does, is a generator: it yields where time passes, as kit/c64/lockstep.js describes
 //   (a bare yield for each turn of a loop that polls memory the interrupt changes, { cycles: n }
 //   for a delay loop, { cp: a } at a checkpoint), and is called with yield*. GEN lists them, and
-//   P.CHECKPOINTS the places a routine yields { cp }, which each group adds to.
+//   P.CHECKPOINTS the places a routine yields { cp }, which each group adds to. A routine that
+//   prints may wait: print_char waits for a key when a line ends at the bottom of a window that
+//   is full. test/t-gen.js holds GEN to the closure of the game's calls.
 // - A byte the interrupt writes and the main program reads (the frame count $16, the keyboard
 //   buffer $03-$15) is read through P.irqByte(a): on the page that is M[a]; in the lockstep it is
 //   what the game's code read there, since where an interrupt falls inside a stretch is the
@@ -28,9 +30,19 @@
 'use strict';
 const G = root.SRGroups = root.SRGroups || {};
 const GEN = new Set(`
-  main_loop do_key wait_key wait_fire_up
-  check_collisions on_contact collide gate_contact gate_jump dock dock_check build_draw_list draw_frame
-  station_run
+  main_loop
+  sr_start sr_init frame_update do_key key_jettison key_tac_mode key_view key_escape key_navigation
+  key_save destroy_object kill_reward key_next_target key_fire target_status key_next_weapon
+  print_date print_time fire_beam beam_hit joystick_flight joystick_speed navigation nav_menu
+  nav_scan nav_cockpit draw_chart_cursor nav_helm nav_chart nav_cursor_info helm_step_time
+  helm_encounter nav_query back_to_cockpit print_disk_text_cf9c update_cockpit draw_tac draw_speed
+  draw_weapon tac_data tac_name tac_target_of tac_range tac_tactic tac_armour tac_systems
+  tac_system_letter print_ship_label ship_ai ai_fire key_surrender merchant_surrender ask_agree
+  build_draw_list set_view check_collisions on_contact collide hit_shard ram gate_contact
+  missile_hit hazard_hit blow_up damage dock_check dock gate_jump wormhole_step gravity gravity_pull
+  menu menu_choose menu_select menu_draw menu_blank print_message print_wrapped print_text
+  print_number print_signed print_char scroll_window s_A1BD clear_window s_A240 wait_ticks wait_key
+  wait_fire_up draw_frame station_run init_game game_over
 `.trim().split(/\s+/));
 class Goto { constructor(to, r) { this.to = to; this.r = r || {}; } }
 function makePort(M, io, opts = {}) {

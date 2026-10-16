@@ -15975,7 +15975,7 @@
   {
    "address": 1638,
    "type": "line",
-   "text": "Slots 1-19's positions, 9 bytes each after slot 0's (the player's): slot n at $065D + 9 \u00d7 n, written as the objects move"
+   "text": "Slots 1-19's positions, 9 bytes each after slot 0's (the player's): slot n at $065D + 9 × n, written as the objects move"
   },
   {
    "address": 1809,
@@ -16985,7 +16985,7 @@
   {
    "address": 4665,
    "type": "line",
-   "text": "The main loop's first call. Counts down $0836; fires the beam ($20EC) when auto fire ($0CFF) is on, the player's target ($0445) is a ship slot (0-5) and $0D00 has counted down to zero; every seventh pass with $3A clear runs $3102. Every 256th pass: $1DDF, then the clock line ($923E with $044B), then, with fewer than three ships in slots 1-5 (in use, $0403 clear), it may add one: $2C8A picks a type from $077C divided by 8 (none if negative), skipped when $A2C5 is negative with two ships already present; $1D4A/$1D6A when $08F9 for that type is clear, then $1E73 and $1949 create it, and ships whose distance ($7947, a log) is $0B49 or more (about 2,500 units) are removed ($1A5F with A=$FF). Every 16th pass: counts $0D29 down to clear the message line ($A178), counts $0D00 down, and computes $0C04/$0C05 from $073B/$073C and a value from $2EDB and $B451"
+   "text": "The main loop's first call. Counts down $0836; fires the beam ($20EC) when auto fire ($0CFF) is on, the player's target ($0445) is a ship slot (0-5) and $0D00 has counted down to zero; every seventh pass with $3A clear runs $3102. Every 256th pass: $1DDF, then the player's orientation ($044B) made square again ($923E), then, with fewer than three ships in slots 1-5 (in use, $0403 clear), it may add one: $2C8A picks a type with $077C divided by 8 as the chance (none when it returns N set: no ship, or a type of a negative faction), and a merchant type (faction 1) is skipped one time in two ($A2C5 negative); $1D4A/$1D6A when $08F9 for that type is clear, then $1E73 and $1949 create it, and ships whose distance ($7947, a log) is $0B49 or more (about 2,500 units) are removed ($1A5F with A=$FF); that loop tests $0403 with Y, which holds what the routine called last left there, not the slot it is looking at. Every 16th pass: counts $0D29 down to clear the message line ($A178), counts $0D00 down, and computes $0C04/$0C05 from $073B/$073C and a value from $2EDB and $B451"
   },
   {
    "address": 4957,
@@ -17040,7 +17040,7 @@
   {
    "address": 5076,
    "type": "line",
-   "text": "Key J: jettison. Calls $2ECF and prints the message at $CFCE"
+   "text": "Key J: jettison. Calls $2ECF and prints the message at $CECF (X is the low byte)"
   },
   {
    "address": 5086,
@@ -17295,7 +17295,7 @@
   {
    "address": 6255,
    "type": "line",
-   "text": "Reads one 256-byte block of the disk, by number, into ($80): A is the block number's low byte and Y its high byte. Converts it to a track and sector with the sectors-per-track table ($190A), writes them into the command \"U1 5 0 tt ss\", opens \"#\" as channel 5 and the command channel 15 with that command, and reads 256 bytes; on an error it shows the disk prompt and tries again"
+   "text": "Reads one 256-byte block of the disk, by number, into ($80): X is the block number's low byte and Y its high byte. Converts it to a track and sector with the sectors-per-track table ($190A), writes them into the command \"U1 5 0 tt ss\", opens \"#\" as channel 5 and the command channel 15 with that command, and reads 256 bytes; on an error it shows the disk prompt and tries again"
   },
   {
    "address": 6409,
@@ -17450,7 +17450,7 @@
   {
    "address": 7554,
    "type": "line",
-   "text": "Key T or Return: auto fire off, then the player's target ($0445) moves to the next slot in use after it: a ship slot (1-5) with $0403 clear, slot 20's type, or an object whose type has flag bit 0 (bases, planets and the like) or is type $14; past slot 19 the target becomes none ($FF). Redraws the TAC ($311E, $3114)"
+   "text": "Key T or Return: auto fire off, then the player's target ($0445) moves to the next slot in use after it: a ship slot (1-5) with $0403 clear, or, in slots 6-19, an object whose type has flag bit 0 (bases, planets and the like) or is type $14; past slot 19 the target becomes none ($FF). Redraws the TAC ($311E, $3114)"
   },
   {
    "address": 7614,
@@ -17460,7 +17460,7 @@
   {
    "address": 7647,
    "type": "line",
-   "text": "Every 256 main-loop passes (frame_update): when the player's target is a ship slot whose $0433 is not 3, checks whether it targets the player in turn ($0445 of that ship, $387E) and, unless $0833 already says so, prints the message at $1E5B with the ship's name ($366D) and one of the texts from $CE9E chosen by its type ($0C) or $0433 and two random numbers; $0833 is set so it is said once"
+   "text": "Every 256 main-loop passes (frame_update): when the player's target is a ship slot whose $0433 is not 3, and that ship has no target of its own or has the player: prints the message at $1E5B with the ship's name ($366D) and one of the texts from $CE9E chosen by its type ($0C) or $0433 and a random number. A ship not hostile to the player ($387E) and with no target greets it once (the texts 8 on); a hostile one, or one targeting the player, speaks once and then one time in four ($0833 says one has spoken)"
   },
   {
    "address": 7771,
@@ -17525,12 +17525,12 @@
   {
    "address": 8428,
    "type": "line",
-   "text": "Ship slot Y fires its beam, if its $0409 bit 1 is clear and its type has a beam ($0C52, kept in $A9). The player's beam goes along the ship's own axis (the vector at $045D); a computer ship's goes toward its target, the direction worked out into $0896 ($7C52, $92CC, $9669); no target, no shot. trace_beam finds what it hits. For the player a miss still draws the beam ($2279) with effect 12; a hit on the target (or on any ship slot for a computer ship, unless the victim's type has no $0AEF value or the shooter is its own $0433) does the damage ($2222). Each shot of the player's adds one to the beam heat $0D00, up to 8"
+   "text": "Ship slot Y fires its beam, if its $0409 bit 1 is clear and its type has a beam ($0C52, kept in $A9). The player's beam goes along the ship's own axis (the vector at $045D); a computer ship's goes toward its target, the direction worked out into $0896 ($7C52, $92CC, $9669); no target, no shot. trace_beam finds what it hits. A player with no target draws the beam ($2279) with effect 12 even when it hits nothing; a computer ship's miss, and the player's miss with a target, draw nothing. A hit on the shooter's target does the damage ($2222); the player's beam also hits a ship slot (0-5) it was not aimed at when that ship's type does damage ($0AEF) and its $0433 is not 0 (the player's own missiles, and ships of faction 0, are passed through). Each shot of the player's adds one to the beam heat $0D00, up to 8"
   },
   {
    "address": 8585,
    "type": "line",
-   "text": "Follows the beam from ship slot $A8 in 50 steps along the direction at $0896 (scaled by $95A0 and $934B from the word $0300 with $FF): at each step every object with a hit radius ($0635) other than the shooter is tested ($74A3) against its type's radius ($0A1D) plus 2. Returns the first slot hit, or $FF"
+   "text": "Follows the beam from ship slot $A8 in 50 steps along the direction at ($74) (scaled by $95A0 and $934B by the log $0300 with its sign turned, into $0896): at each step every object with a hit radius ($0635) other than the shooter is tested ($74A3) against its type's radius ($0A1D) plus 2. Returns the first slot hit, or $FF"
   },
   {
    "address": 8738,
@@ -17540,12 +17540,12 @@
   {
    "address": 8825,
    "type": "line",
-   "text": "Draws a beam shot from slot $B2 at slot $B3 with power $B4, its pattern from $2410 ($8F80). From the player in the cockpit view ($0D3C = 0) it fills the two triangles of the cockpit's guns ($23F9 and $2405) between screen updates ($8EEB); from the player with nothing hit in another view, $901D. Otherwise it projects both ends ($23BA), skipping the shot when either is behind the viewer, and fills a thin triangle ($8288 with 3 corners at $FD00): the near end, the far end, and the far end moved 4 pixels along the shorter axis"
+   "text": "Draws a beam shot from slot $B2 at slot $B3 with power $B4, its pattern from $2410 ($8F80). From the player in the cockpit view ($0D3C = 0) it fills the two triangles of the cockpit's guns ($23F9 and $2405) between screen updates ($8EEB); a computer ship's beam that hits the player flashes the window ($901D). Otherwise it projects both ends ($23BA), skipping the shot when either is behind the viewer, and fills a thin triangle ($8288 with 3 corners at $FD00): the near end, the far end, and the far end moved 4 pixels along the shorter axis"
   },
   {
    "address": 9146,
    "type": "line",
-   "text": "Projects the point ($58) relative to ($5A) for the beam: subtracts ($92CC), rotates into the view ($9160 into $0896) and projects ($6773); returns $089E's sign (negative when the point is in front)"
+   "text": "Projects the point at ($74) for the beam as the camera sees it ($58 its position, $5A its orientation): subtracts ($92CC), rotates into the view ($9160 into $0896) and projects ($6773); returns $089E's sign (negative when the point is in front)"
   },
   {
    "address": 9209,
@@ -17570,7 +17570,7 @@
   {
    "address": 9241,
    "type": "line",
-   "text": "Called by do_key before the keys: reads the joysticks. Fire on the joystick in port 2 fires the selected weapon. Up and down on the joystick in port 1 change the player's speed ($0415) by one, held at $46 and -$45, and refuse to cross zero in one push (a push from zero needs $0D01 clear); in Newtonian flight ($0D02) neither changes the speed. The direction pushed is kept in $0D01 (1, $FF or 0). Then, while $0D03 is set (no key pressed since a stick was used), the port 2 stick's smoothed position ($A3B1) sets the pitch ($0508) and turn ($0516) rates directly through joy_rates"
+   "text": "Called by do_key before the keys: reads the joysticks. Fire on the joystick in port 2 fires the selected weapon. Up and down on the joystick in port 1 change the player's speed ($0415) by one, held at $46 and -$46, and refuse to cross zero in one push (a push from zero needs $0D01 clear); in Newtonian flight ($0D02) neither changes the speed. The direction pushed is kept in $0D01 (1, $FF or 0). Then, while $0D03 is set (no key pressed since a stick was used), the port 2 stick's smoothed position ($A3B1) sets the pitch ($0508) and turn ($0516) rates directly through joy_rates"
   },
   {
    "address": 9260,
@@ -18185,7 +18185,7 @@
   {
    "address": 14175,
    "type": "line",
-   "text": "For a ship that is fighting ($041B = $FE): beyond $0861 in distance (a log: about 333 units) the tactic is 2 (pursue). Otherwise one in ten (a random number of $E6 or more) changes tactic: from cruise or pursue to the type's own tactic ($0C38), from any other to one of seven drawn from ai_tactic_choices"
+   "text": "For a ship that is fighting ($041B = $FE): beyond $0861 in distance (a log: about 333 units) the tactic is 2 (pursue). Otherwise a ship cruising or pursuing takes the type's own tactic ($0C38), and one in any other tactic changes, one time in ten (a random number of $E6 or more), to one of seven drawn from ai_tactic_choices. The distance test is signed: a negative log (very close) counts as near"
   },
   {
    "address": 14248,
@@ -18195,7 +18195,7 @@
   {
    "address": 14311,
    "type": "line",
-   "text": "Speed rule 2: 5 when the target is more than about 45 degrees off the nose (negative $D4 or $D2/$D3 below $FF7D), otherwise the tactic's speed while far ($D0/$D1, a log, over $0861: about 333 units) and $4B while close"
+   "text": "Speed rule 2: 5 when the target is more than about 45 degrees off the nose (negative $D4 or $D2/$D3 below $FF7D), otherwise $4B while far ($D0/$D1, a log, at $0861 or over: about 333 units) and the tactic's speed while close"
   },
   {
    "address": 14344,
@@ -18235,17 +18235,17 @@
   {
    "address": 14634,
    "type": "line",
-   "text": "Key G, surrender. Clears the view and shows the surrender text ($CF88). It counts only with exactly one ship fighting the player and the first time ($0832): then the rank count $072B gains $072A. A faction hostile to the player refuses ($CF81); one time in five any other ignores it ($CF7F). The Imperium (faction 2) asks for the bounty ($0726/$0727) plus 50 credits ($CF87, Y/N $3BA1): paid, the bounty is cleared ($CF86) and every ship leaves; too little money, $CF85. Any other faction asks for the cargo ($CF84): yes with an empty hold gives $CF83, otherwise the hold is emptied ($CF82) and the ships leave. Refusing gives $CF80"
+   "text": "Key G, surrender. Clears the view and shows the surrender text ($CF88). It counts only with exactly one ship fighting the player and the first time ($0832): then the rank count $072B gains $072A. A faction hostile to the player refuses ($CF81); one time in five any other ignores it ($CF7F). The Imperium (faction 2) asks for the bounty ($0726/$0727) plus 50 credits ($CF87, Y/N $3BA1): paid, the bounty is cleared ($CF86) and that ship and every computer ship's missile leave; too little money, $CF85. Any other faction asks for the cargo ($CF84): yes with an empty hold gives $CF83, otherwise the hold is emptied ($CF82) and the ship and the missiles leave. After either, print_wrapped is called again with what clear_tac left in A and X. Refusing gives $CF80"
   },
   {
    "address": 14893,
    "type": "line",
-   "text": "Checked after ship_ai: a badly damaged merchant offers its cargo. Only once per encounter ($0832), when the player's target is a ship of faction 1 targeting the player, with under a quarter of its type's hit points ($0AA9 word / 4), no other ship targeting it or the player. The chance is a random 0-100 ($A298, 101 outcomes) under $43, halved when the player has under a quarter of its own hit points and again when that faction is hostile to the player. Then the view shows the offer ($CF8D and a random cargo name, $2EF7 with 0-19, and \"?\") with AGREE or REFUSE ($3BA1): refused, $CF8C; agreed, $CF8B, and with room in the hold ($CF89 if full) one or two units of that cargo ($CF8A, cargo_add), its escorts and the ship leave, the standing with faction 1 may drop (one time in four), and $079A counts it when $079B is set"
+   "text": "Checked after ship_ai: a badly damaged merchant offers its cargo. Only once per encounter ($0832), when the player's target is a ship of faction 1 targeting the player, with under a quarter of its type's hit points ($0AA9 word / 4), no other ship targeting it or the player. The chance is a random 0-100 ($A298, 101 outcomes) under $43, halved when the player has under a quarter of its own hit points and again when that faction is hostile to the player. Then the view shows the offer ($CF8D and a random cargo name, $2EF7 with 0-19, and \"?\") with AGREE or REFUSE ($3BA1): refused, $CF8C; agreed, $CF8B, and with room in the hold ($CF89 if full) one or two units of that cargo ($CF8A, cargo_add), every computer ship's missile and the ship leave, the standing with faction 1 may drop (one time in four), and $079A counts it when $079B is set"
   },
   {
    "address": 15265,
    "type": "line",
-   "text": "Shows the two-item menu AGREE / REFUSE ($99DE with the list at $3BD3) centred on the message window, then prints character $11. Returns Z set for AGREE"
+   "text": "Shows the two-item menu AGREE / REFUSE ($99DE with the list of pointers at $3BCF) centred on the message window, then prints character $11. Returns Z set for AGREE"
   },
   {
    "address": 15307,
@@ -18270,12 +18270,12 @@
   {
    "address": 15580,
    "type": "line",
-   "text": "Gives ship X random turn, pitch and roll rates, each -31 to 32 ($3D61)"
+   "text": "Gives ship X random turn, pitch and roll rates, each -32 to 32 ($3D61)"
   },
   {
    "address": 15713,
    "type": "line",
-   "text": "A random rate from -31 to 32"
+   "text": "A random rate from -32 to 32: the random byte's low six bits less $1F, less one more when random's carry is clear"
   },
   {
    "address": 15721,
