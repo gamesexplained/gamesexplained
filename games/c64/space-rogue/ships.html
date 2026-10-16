@@ -149,12 +149,12 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
     <div class="sr-sky sr-drag"><canvas id="sr-cmb-cv" width="960" height="540" aria-label="The fight in 3D: the ships, their trails, their beams and missiles"></canvas></div>
     <div class="sr-scroll"><table class="sr-legend" id="sr-cmb-ships"></table></div>
     <div class="sr-log" id="sr-cmb-log"></div>
-    <p class="cap">The page runs the engine's main loop (<code>$0DED</code>) on the engine's own bytes from the listing, in a 6502 of its own: each pass runs everything the loop calls before the drawing, with nothing pressed and the Sunracer sitting still. The ships are made with <code>create_object</code> (<code>$1949</code>) where the builder puts them, each faction a group on a ring 600 units across, ahead of the Sunracer. The danger level is 0, so that no other ship arrives, and the Sunracer is neutral to the pirates and the Imperium. The random numbers go on from where the listing's snapshot left them until New random numbers seeds them with <code>random_seed</code> (<code>$A2DC</code>), as a new day in the game does. A fight stops when none of the ships left is an enemy of another or of the Sunracer, when the Sunracer is destroyed, or after 6,000 passes. A test, <code>test_combat.js</code>, holds the page's 6502 to the kit's simulator opcode by opcode, then runs the fight this section opens with and four others in both, the page's on only the bytes this page carries, and gets the same positions, headings, hit points, tactics and targets every 8 passes, the same launches, hits, rams and kills, and the same memory at the end. The models are drawn three times their size, so that the fighters show; the grid is the Sunracer's level, 100 units a square, and the lines drop each ship to it.</p>
+    <p class="cap">The page runs the engine's main loop (<code>$0DED</code>) on the engine's own bytes from the listing, in a 6502 of its own: each pass runs everything the loop calls before the drawing, with nothing pressed and the Sunracer sitting still. The ships are placed as the game places an encounter's ships when the Sunracer enters a sector (<code>enter_sector</code>, <code>$15A0</code>): each at random within eight times its radius of the Sunracer on each axis, 24 units for a Wasp or a Dart and 176 for a Titan (<code>place_object</code>, <code>$167F</code>), then made with <code>create_object</code> (<code>$1949</code>). The danger level is 0, so that no other ship arrives, and the Sunracer is neutral to the pirates and the Imperium. The random numbers, which also decide where the ships start, go on from where the listing's snapshot left them until New random numbers seeds them with <code>random_seed</code> (<code>$A2DC</code>), as a new day in the game does. A fight stops when none of the ships left is an enemy of another or of the Sunracer, when the Sunracer is destroyed, or after 6,000 passes. A test, <code>test_combat.js</code>, holds the page's 6502 to the kit's simulator opcode by opcode, then runs the fight this section opens with and four others in both, the page's on only the bytes this page carries, and gets the same positions, headings, hit points, tactics and targets every 8 passes, the same launches, hits, rams and kills, and the same memory at the end. The models are drawn three times their size, so that the fighters show; the grid is the Sunracer's level, 100 units a square, and the lines drop each ship to it.</p>
   </div>
   <h3 class="sr-h3">Choosing a target</h3>
   <p>Once in 17 passes <code>ship_ai</code> (<code>$3689</code>) runs for every computer ship; on every third of those runs a ship without a target looks for one and a ship with a target reconsiders it. The search (<code>ai_find_enemy</code>, <code>$3811</code>) takes the ship whose faction its own faction likes least, hostile before unfriendly, and a ship that finds no enemy takes the target of a ship its faction is allied to. How the four factions stand to one another is a table of sixteen bytes (<code>faction_table</code>, <code>$38B1</code>):</p>
   <div class="sr-scroll"><table class="sr-grid" id="sr-cmb-fac"></table></div>
-  <p>So two pirate ships, or two Guild ships, never fight each other, and a fight of ships of one faction is over before it starts, unless they are Manchi ships set to attack the Sunracer. Toward the player each faction takes the player's standing with it, from <code>$072E</code>, which the player's kills move between −2 and 2. The Manchi's entry is the byte after the Imperium's, which is also the count of the beam weapon, <code>$FE</code>, so the Manchi are always hostile (<a href="discoveries.html#manchi">Discoveries</a>). The page sets the count to 0 for its fights, which makes the Manchi neutral to the Sunracer. Tick The Manchi attack the Sunracer to leave the count alone: in the opening fight the Wasp and the Vulture, both Manchi ships, then shoot at the Sunracer between their attacks on the Imperial ships, and a Manchi ship on its own destroys it.</p>
+  <p>So two pirate ships, or two Guild ships, never fight each other, and a fight of ships of one faction is over before it starts, unless they are Manchi ships set to attack the Sunracer. Toward the player each faction takes the player's standing with it, from <code>$072E</code>, which the player's kills move between −2 and 2. The Manchi's entry is the byte after the Imperium's, which is also the count of the beam weapon, <code>$FE</code>, so the Manchi are always hostile (<a href="discoveries.html#manchi">Discoveries</a>). The page sets the count to 0 for its fights, which makes the Manchi neutral to the Sunracer. Tick The Manchi attack the Sunracer to leave the count alone: in the opening fight the Wasp and the Vulture, both Manchi ships, then shoot at the Sunracer between their attacks on the Imperial ships, and a Vulture on its own destroys it.</p>
   <h3 class="sr-h3">Fight or flee</h3>
   <p>With a target chosen, <code>ai_fight_score</code> (<code>$3BE0</code>) adds up a score, and a negative score sends the ship running (tactic flee):</p>
   <div class="sr-scroll"><table>
@@ -183,7 +183,7 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
     <tr><td>3</td><td>20</td><td>Cruiser and Vulture</td></tr>
     <tr><td>4</td><td>20, which the shields do not reduce</td><td>Titan and Hunter</td></tr>
   </table></div>
-  <p>The shields halve a hit once for each step of strength, the fore shield for a hit from in front and the aft shield for one from behind (<code>shield_reduce</code>, <code>$6F88</code>). A beam, and a plasma torpedo, gets through one step of them (<code>beam_hit</code>, <code>$2222</code>), so a fore shield of 3 halves a power-3 beam twice, to 5, and an SM-1 missile's 100 three times, to 12. A hit of 10 or more, after the shields, knocks out one of the ship's systems one time in five, and that hit takes nothing off the hit points (<code>damage</code>, <code>$6EA0</code>). Ships that touch ram each other: each takes eight times their relative speed, of which only the low byte counts, and they bounce apart as in an elastic collision (<code>ram</code>, <code>$6BC3</code>). Ships on the same side ram each other too: in the opening fight the Cruiser and the Hunter, which start side by side, collide on pass 256.</p>
+  <p>The shields halve a hit once for each step of strength, the fore shield for a hit from in front and the aft shield for one from behind (<code>shield_reduce</code>, <code>$6F88</code>). A beam, and a plasma torpedo, gets through one step of them (<code>beam_hit</code>, <code>$2222</code>), so a fore shield of 3 halves a power-3 beam twice, to 5, and an SM-1 missile's 100 three times, to 12. A hit of 10 or more, after the shields, knocks out one of the ship's systems one time in five, and that hit takes nothing off the hit points (<code>damage</code>, <code>$6EA0</code>). Ships that touch ram each other: each takes eight times their relative speed, of which only the low byte counts, and they bounce apart as in an elastic collision (<code>ram</code>, <code>$6BC3</code>). Ships on the same side ram each other too, since <code>check_collisions</code> (<code>$6AB3</code>) tests every pair and never their factions: in one of the fights <code>test_combat.js</code> runs, a Titan and four fighters, the Titan and the Hunter, both Imperial, collide four times.</p>
 </section>
 
 <section data-part="engine" id="encounters">
@@ -459,7 +459,9 @@ const SRShips = (function () {
 // SRSim.fight(ram, known, models, lineup, opts) sets a fight up as test_combat.js does and gives
 // { pass(), passes, tracks, events, over, end }. ram is the engine listing's 64 KB with the flight
 // part's maths in, known which of its bytes the page has, models the page's model files by name
-// (sr-models, base64). lineup is [[type, x, y, z], ...] in the engine's units. opts.manchi sets the
+// (sr-models, base64). lineup is the ships' types: each is placed as enter_sector ($15A0) places an
+// encounter's ships, at random within eight times its radius of the Sunracer on each axis
+// (place_object, $167F), and made with create_object ($1949). opts.manchi sets the
 // Sunracer's beam count, $0731, which is also its standing with the Manchi, to $FE, as the game
 // keeps it: hostile; without it the count is set to 0, neutral, and the Manchi leave the Sunracer
 // alone. opts.seed, [x, y],
@@ -663,10 +665,8 @@ const SRSim = (function () {
     m[0x0415] = 0; m.fill(0, 0x0545, 0x054E);                                // the Sunracer still
     if (kn) { kn[0x077C] = kn[0x072E] = kn[0x0730] = kn[0x0731] = kn[0x0726] = kn[0x0727] = kn[0x0415] = 1; kn.fill(1, 0x0545, 0x054E); }
     if (opts.seed) C.call(0xA2DC, { x: opts.seed[0], y: opts.seed[1] });  // random_seed, as a new day seeds it
-    for (const [type, ...p] of lineup) {
-      p.forEach((q, k) => { const r = Math.round(q * 256) & 0xFFFFFF; m[0x6B + 3 * k] = r & 255; m[0x6C + 3 * k] = r >> 8 & 255; m[0x6D + 3 * k] = r >> 16; });
-      m[0x74] = 0x6B; m[0x75] = 0x00;
-      if (kn) kn.fill(1, 0x6B, 0x76);
+    for (const type of lineup) {
+      C.call(0x167F, { x: type });                                           // place_object: near the Sunracer, at random
       C.call(0x1949, { x: type });                                           // create_object
     }
     F.player = [0, 1, 2].map(k => rd24(0x065D + 3 * k) / 256);
@@ -720,20 +720,7 @@ const SRSim = (function () {
     F.m = m; F.known = kn; F.cpu = C;
     return F;
   }
-  // Where the builder puts the ships: each faction's group on a ring of 300 units round a point 700
-  // units ahead of the Sunracer, the groups a little above and below its level by turns, and in a
-  // group a ship 70 units across from the last, a row of three, the next row 50 units higher
-  function place(ram, types) {
-    const fac = t => ram[0x0C1E + t];
-    const groups = [...new Set(types.map(fac))], count = {};
-    return types.map(t => {
-      const g = groups.indexOf(fac(t)), k = count[g] = (count[g] || 0) + 1;
-      const ring = groups.length > 1 ? 300 : 0, a = 2 * Math.PI * g / groups.length;
-      const across = 70 * ((k - 1) % 3 - 1), up = 50 * Math.floor((k - 1) / 3) + (g % 2 ? 40 : -40);
-      return [t, Math.round(ring * Math.sin(a) + across * Math.cos(a)), up, Math.round(-700 + ring * Math.cos(a) - across * Math.sin(a))];
-    });
-  }
-  return { cpu, fight, place };
+  return { cpu, fight };
 })();
 // end of sr-sim
 </script>
@@ -923,7 +910,7 @@ const SRSim = (function () {
     const COL = ['#e8665c', '#edf171', '#8f9cff', '#7ee07a', '#ffffff'];       // by faction, the player last
     const ATT = { 0xFE: 'hostile', 0xFF: 'unfriendly', 0: 'neutral', 1: 'friendly', 2: 'allied' };
     const STATE = { 0: '', 1: 'looking for a target', 2: 'state 2', 3: 'flying at its target', 0xFE: 'fighting', 0xFF: 'fleeing' };
-    const CAMS = [[-0.8, 0.42, 1.5], [-Math.PI / 2, 1.45, 1.7], [-Math.PI / 2, 0.03, 1.8]];   // azimuth, elevation, distance in sizes
+    const CAMS = [[-0.8, 0.42], [-Math.PI / 2, 1.45], [-Math.PI / 2, 0.03]];  // azimuth, elevation
     const MAX = 5, START = [3, 12, 1, 4];                                    // the opening fight: Cruiser and Hunter, Wasp and Vulture
     const isShip = t => t < 9 || t > 11;
     const faction = t => t === 0 ? 4 : SRShips.stats(ram, t).faction;
@@ -935,7 +922,7 @@ const SRSim = (function () {
     }
     let fleet = START.slice(), manchi = false, seed = null, F = null, job = 0, logN = -1, touched = false;
     let cam = 0, az = CAMS[0][0], el = CAMS[0][1], pass = 0, playing = false, trails = true, raf = 0, visible = false;
-    const LO = [-400, -100, -1100], HI = [400, 100, -100];
+    const LO = [-400, -100, -500], HI = [400, 100, 300];
     let lo = LO.slice(), hi = HI.slice();                                     // the box the camera frames
 
     // the builder: a button for each ship, the fight's ships as chips that take a ship out
@@ -967,7 +954,7 @@ const SRSim = (function () {
       if (!fleet.length) return;
       const my = ++job;
       touched = touched || play;
-      try { F = SRSim.fight(ram, has, MODELS, SRSim.place(ram, fleet), { manchi, seed, passes: 6000 }); }
+      try { F = SRSim.fight(ram, has, MODELS, fleet, { manchi, seed, passes: 6000 }); }
       catch (e) { F = null; $('sr-cmb-status').textContent = 'The engine stopped before the fight began: ' + e.message + '.'; draw(); return; }
       F.error = ''; logN = -1; pass = 0;
       tracks(); fit(true); status(); draw();
@@ -1020,11 +1007,12 @@ const SRSim = (function () {
     }
     const inSlot = (slot, p) => F.tracks.find(tr => tr.slot === slot && p >= tr.start && p <= tr.end + F.every - 1);
     const nameIn = (slot, p) => { const tr = inSlot(slot, p); return tr ? (tr.ship ? 'the ' + tr.name : 'a missile') : 'slot ' + slot; };
-    // the box of everything up to pass p, which the camera eases toward while the replay plays
+    // the box of the ships up to pass p, which the camera eases toward while the replay plays; a
+    // missile that misses flies on out of the picture
     function fit(snap) {
       const l = [Infinity, Infinity, Infinity], h = [-Infinity, -Infinity, -Infinity];
       for (const tr of F.tracks) {
-        if (tr.start > pass) continue;
+        if (tr.start > pass || !tr.ship) continue;
         const n = Math.min(tr.samples.length, Math.floor((pass - tr.start) / F.every) + 1);
         for (let i = 0; i < n; i++) { const q = tr.samples[i].p; for (let k = 0; k < 3; k++) { if (q[k] < l[k]) l[k] = q[k]; if (q[k] > h[k]) h[k] = q[k]; } }
       }
@@ -1037,11 +1025,17 @@ const SRSim = (function () {
       const span = h.map((v, k) => at$(Math.round((v - l[k]) / 10) * 10));
       $('sr-cmb-span').textContent = span[0] + ' units from side to side, ' + span[1] + ' up and down and ' + span[2] + ' from front to back';
     }
+    // the eye looks at the box's centre from az and el, back just far enough that every corner of
+    // the box, with room for the models round it, lands on the canvas
     function camera() {
-      const C = lo.map((v, k) => (v + hi[k]) / 2), size = Math.max(300, ...hi.map((v, k) => v - lo[k])), dist = size * CAMS[cam][2];
-      const ce = Math.cos(el), P = [C[0] + dist * ce * Math.sin(az), C[1] + dist * Math.sin(el), C[2] + dist * ce * Math.cos(az)];
-      const f = unit3(sub3(C, P)), r = unit3(cross3(UP, f));
-      return { P, f, r, u: cross3(f, r), F: CW * 1.35, size };
+      const C = lo.map((v, k) => (v + hi[k]) / 2), size = Math.max(300, ...hi.map((v, k) => v - lo[k])), ce = Math.cos(el), FL = CW * 1.35;
+      const back = [ce * Math.sin(az), Math.sin(el), ce * Math.cos(az)], f = back.map(v => -v), r = unit3(cross3(UP, f)), u = cross3(f, r);
+      let dist = 0;
+      for (let i = 0; i < 8; i++) {
+        const q = [0, 1, 2].map(k => ((i >> k) & 1 ? hi[k] + 40 : lo[k] - 40) - C[k]), z = dot3(q, f);
+        dist = Math.max(dist, FL * Math.abs(dot3(q, r)) / (CW / 2 - 60) - z, FL * Math.abs(dot3(q, u)) / (CH / 2 - 30) - z, 100 - z);
+      }
+      return { P: C.map((v, k) => v + dist * back[k]), f, r, u, F: FL, size };
     }
     function proj(c, p) {
       const d = sub3(p, c.P), z = dot3(d, c.f);

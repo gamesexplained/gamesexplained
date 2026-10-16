@@ -2,8 +2,9 @@
 // Holds Combat's fights (Ships and combat) to the engine. The page runs the engine's own main loop
 // ($0DED) in a 6502 of its own (sr-sim): SRSim.fight empties every slot but the player's, sets the
 // danger level to 0 so that no ship arrives, keeps the player still and neutral to the pirates and
-// the Imperium, and creates the reader's ships where SRSim.place puts them (create_object, $1949;
-// their models from the page's sr-models, through load_model's own relocation). Each pass runs
+// the Imperium, and places the reader's ships as enter_sector places an encounter's (place_object,
+// $167F) and creates them (create_object, $1949; their models from the page's sr-models, through
+// load_model's own relocation). Each pass runs
 // everything the loop calls before its drawing, with no key pressed; the drawing is skipped as
 // frame_skip3 ($A470) skips it when a pass runs late. This test
 // - steps the page's 6502 and the kit's (kit/c64/cpu6502.js) through every documented opcode from
@@ -96,10 +97,9 @@ function kit(lineup, o) {
   m[0x077C] = 0; m[0x072E] = 0; m[0x0730] = 0; m[0x0731] = o.manchi ? 0xFE : 0;
   m[0x0726] = m[0x0727] = 0; m[0x0415] = 0; m.fill(0, 0x0545, 0x054E);
   if (o.seed) cpu.call(0xA2DC, { x: o.seed[0], y: o.seed[1] }, { hooks });
-  for (const [type, ...p] of lineup) {
-    p.forEach((q, k) => { const r = Math.round(q * 256) & 0xFFFFFF; m[0x6B + 3 * k] = r & 255; m[0x6C + 3 * k] = r >> 8 & 255; m[0x6D + 3 * k] = r >> 16; });
-    m[0x74] = 0x6B; m[0x75] = 0x00;
-    cpu.call(0x1949, { x: type }, { hooks });
+  for (const type of lineup) {
+    cpu.call(0x167F, { x: type }, { hooks });                                 // place_object
+    cpu.call(0x1949, { x: type }, { hooks });                                 // create_object
   }
   function sample() {
     for (let k = 0; k < 20; k++) {
@@ -164,7 +164,7 @@ const FIGHTS = [
 ];
 const runs = {};
 for (const f of FIGHTS) {
-  const lineup = SRSim.place(RAM, f.types);
+  const lineup = f.types;
   let P;
   try { P = onPage(lineup, f.o); } catch (e) { fail(f.name, 'stopped on the page:', e.message); continue; }
   const K = kit(lineup, f.o);
@@ -178,8 +178,7 @@ for (const f of FIGHTS) {
 const slotOf = (F, t) => F.tracks.find(tr => tr.type === t && tr.from === 0).slot;
 const open = runs['the opening fight'], manchi = runs['the opening fight with the Manchi attacking'];
 if (open) {
-  const F = open.K, cr = slotOf(F, 3), hu = slotOf(F, 12);
-  if (!F.events.some(e => e[0] === 256 && e[1] === 'ram' && [e[2], e[3]].sort().join() === [cr, hu].sort().join())) fail('the Cruiser and the Hunter do not collide on pass 256');
+  const F = open.K;
   // the computer pilots think on one pass in 17: beams, and changes of tactic, on passes 17 apart
   const ticks = F.events.filter(e => e[1] === 'beam').map(e => e[0] % 17), tacs = F.turns.map(p => p % 17);
   if (new Set(ticks).size !== 1) fail('beams fired on passes that are not 17 apart:', ticks.join(' '));
@@ -190,20 +189,37 @@ if (manchi) {
   const F = manchi.K, at = new Set(F.events.filter(e => e[1] === 'beam' && e[3] === 0).map(e => F.tracks.find(t => t.slot === e[2] && t.from === 0).type));
   if ([...at].sort().join() !== '1,4') fail('with the Manchi attacking, the Sunracer is shot at by types', [...at].join(' '), 'not the Wasp and the Vulture');
 }
+// every ship starts within eight times its radius of the Sunracer on each axis (place_object)
+for (const [name, { K }] of Object.entries(runs)) {
+  const me = K.tracks.find(t => t.slot === 0).samples[0].p;
+  for (const t of K.tracks.filter(t => t.from === 0 && t.slot > 0)) {
+    const r = 8 * (RAM[0x0A1D + 2 * t.type] | RAM[0x0A1E + 2 * t.type] << 8);
+    if (t.samples[0].p.some((v, k) => Math.abs(v - me[k]) > r)) fail(name, ': type', t.type, 'starts at', t.samples[0].p.join(), 'more than', r, 'from the Sunracer on an axis');
+  }
+}
+// ships on the same side ram each other: the Titan and the Hunter, both Imperial, four times
+{
+  const T = runs['a Titan and four fighters'];
+  if (T) {
+    const F = T.K, ti = slotOf(F, 6), hu = slotOf(F, 12);
+    const n = F.events.filter(e => e[1] === 'ram' && [e[2], e[3]].sort().join() === [ti, hu].sort().join()).length;
+    if (n !== 4) fail('the Titan and the Hunter collide', n, 'times, not four');
+  }
+}
 for (const [name, { K }] of Object.entries(runs)) {
   const ships = K.tracks.filter(t => t.from === 0 && t.slot > 0).length;
   const kill = (K.events.find(e => e[1] === 'destroyed') || [Infinity])[0], launch = K.events.find(e => e[1] === 'launch');
   if (ships === 5 && launch && launch[0] < kill) fail(name, ': a missile launched on pass', launch[0], 'with five ships and none destroyed');
 }
 if (!Object.values(runs).some(({ K }) => K.tracks.filter(t => t.from === 0 && t.slot > 0).length === 5 && K.events.some(e => e[1] === 'launch'))) fail('no fight of five ships launches a missile');
-// a Manchi ship on its own destroys the Sunracer; ships of one faction are over at once; the engine
+// a Vulture on its own destroys the Sunracer; ships of one faction are over at once; the engine
 // makes no more than five ships, the most the builder takes
 {
-  const F = onPage(SRSim.place(RAM, [1]), { manchi: true });
-  if (F.end !== 'destroyed') fail('a Wasp attacking the Sunracer ends', F.end, 'on pass', F.passes);
-  const G = onPage(SRSim.place(RAM, [2, 5]), {});
+  const F = onPage([4], { manchi: true });
+  if (F.end !== 'destroyed') fail('a Vulture attacking the Sunracer ends', F.end, 'on pass', F.passes);
+  const G = onPage([2, 5], {});
   if (G.over !== 1) fail('a Dart and a Corsair are over on pass', G.over);
-  const H = SRSim.fight(PAGE, carried, MODELS, SRSim.place(RAM, [1, 2, 3, 4, 5, 6, 7]), {});
+  const H = SRSim.fight(PAGE, carried, MODELS, [1, 2, 3, 4, 5, 6, 7], {});
   const made = H.tracks.filter(t => t.slot > 0).length, max = +(page.match(/const MAX = (\d+)/) || [])[1];
   if (made !== 5 || max !== 5) fail('the engine made', made, 'of seven ships; the builder takes', max);
 }
