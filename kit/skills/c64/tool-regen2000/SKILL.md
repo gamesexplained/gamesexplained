@@ -77,7 +77,13 @@ line each, `$C000 name : line comment`, `$C000 name`, `$C000 : line
 comment` or `$C100-$C1FF byte`, sent as batches of
 `r2000_batch_execute` in the file's order. Only the calls that succeed
 are logged, and each that fails is printed with its line number; a line
-that does not parse stops the file before anything is sent.
+that does not parse stops the file before anything is sent. A file
+ending `.json` is an audit's corrections (`60-verify`, `checker.md`): a
+list of `{address, comment, label, type}`, where a comment keeps the
+kind, line or side, that its address has in `symbols.json` unless
+`type` says otherwise. Either kind of file that gives one label name to
+two addresses sends nothing: the disassembler would refuse the second
+inside its batch and apply the rest.
 
 ## Tools that matter
 
