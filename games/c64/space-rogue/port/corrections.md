@@ -7,3 +7,4 @@ the port finds in the listing").
 | Part | Address | Was | Is |
 |---|---|---|---|
 | engine | $186F read_block | the block number's low byte in A | in X: the routine's first instruction is TXA (read_text_block's s_9CCE leaves it in X) |
+| engine | $9977 arccos_rad | the label and its comment on $9977 | $9977 is the operand of the SBC at $9976; the arccosine in radians starts at $997B (JSR arccos_units, JMP units_to_radians) |
