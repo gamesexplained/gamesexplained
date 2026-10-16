@@ -23,3 +23,5 @@ the port finds in the listing").
 | engine | $3A2D merchant_surrender | "its escorts" leave | every computer ship's missile |
 | engine | $3BA1 ask_agree | the list at $3BD3 | the pointers at $3BCF |
 | engine | $3CDC random_rates, $3D61 random_rate | -31 to 32 | -32 to 32 |
+| engine | $A0C1 print_char | the font address $F200 + 8 * A (also at $A130) | $F200 + 8 * (A AND $7F): the first ASL drops bit 7 |
+| engine | $9E90 saved_cursors | the saved columns and rows from $9E90 | $9E90 is save_cursor's RTS; the columns start at $9E91 |

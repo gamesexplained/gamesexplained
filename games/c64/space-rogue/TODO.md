@@ -21,6 +21,12 @@ pages' ports against the game's code found three more, also corrected
 
 ## Checks the run did not make
 
+- Two labels in the engine's listing sit on the wrong byte, and moving
+  them needs a build from a snapshot (`listing.py`, not `--recomment`):
+  `arccos_rad` belongs at $997B, not on the SBC operand at $9977, and
+  `saved_cursors` at $9E90 labels save_cursor's RTS, which should be
+  code. Their comments already say so (`port/corrections.md`).
+
 - `60-verify` gained a paragraph on values a new game leaves alone after
   this run's verify step. The variables play changes that the new-game
   routine does not set have not been listed and read.

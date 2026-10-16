@@ -73,6 +73,9 @@ function install(P, names, irqBytes = []) {
       c.setRegs(out);
       c.sp = sp;
       c.portWrite(1, P.M[1]);
+      // a routine that drops its caller's return address (PLA PLA, then RTS) returns from its
+      // caller too, with the address's high byte in A
+      if (r.up) { c.pull(); const hi = c.pull(); c.setRegs({ a: hi, n: hi >> 7, z: hi ? 0 : 1 }); }
       c.rts();
       return false;
     };

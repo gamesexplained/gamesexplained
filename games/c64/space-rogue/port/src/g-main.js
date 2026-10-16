@@ -449,23 +449,34 @@ G.main = function (P) {
 
   // ---- waits
   // A key (carry set) or fire, which it then waits to see let go; any key waiting is thrown away
-  // first
+  // first. Each turn ends at a checkpoint, the return from the game's own call of get_key ($A434
+  // in the first loop, $A439 in the second), so that the port reads the stick at the same place
+  // as the game: a turn is 37 cycles in the first loop and 138 in the second, with the stick still.
   P.wait_key = function* (r) {
-    while (P.get_key().c) ;
     for (;;) {
       const k = P.get_key();
+      yield { cp: 0xA434, cycles: 37 };
+      if (!k.c) break;
+    }
+    for (;;) {
+      const k = P.get_key();
+      yield { cp: 0xA439, cycles: 138 };
       if (k.c) return k;
       if (P.fire_pressed().a) return yield* P.wait_fire_up();
-      yield;
     }
   };
+  P.CHECKPOINTS.push(0xA434, 0xA439);
+  // Fire let go. As in wait_key, each turn reads and then ends at a checkpoint, the return from the
+  // game's own read ($A447): a turn is 84 cycles, longer than a raster line, so a turn a line would
+  // read the stick before the game does.
   P.wait_fire_up = function* (r) {
     for (;;) {
       const j = P.read_joystick2();
+      yield { cp: 0xA447, cycles: 84 };
       if (!(j.a & 0x10)) return R(j, { a: 0 });
-      yield;
     }
   };
+  P.CHECKPOINTS.push(0xA447);
 
   // ---- the pace of the main loop. The interrupt counts frames in $16; frame_skip3 takes three
   // off the lag ($2E) and starts the count again at 1, and the drawing is skipped while the lag

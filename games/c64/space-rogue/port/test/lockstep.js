@@ -3,7 +3,7 @@
 // work/states with random keys and joystick moves at the start of passes. The game runs on
 // kit/c64/c64run.js, the drive and KERNAL stand-in included; routines the port has not written are
 // the game's own code (standin.js).
-//   node lockstep.js [passes] [state name filter] [seed]
+//   node lockstep.js [passes] [state name filter] [seed] [more keys, comma-separated]
 const fs = require('fs'), path = require('path');
 const lib = require('./lib.js');
 const { Lockstep, describe } = require(path.join(lib.REPO, 'kit/c64/lockstep.js'));
@@ -52,30 +52,45 @@ function run(o) {
   const m = RunMachine.restore(s.machine);
   const P = SR.makePort(new Uint8Array(65536), portDisk(), { only: o.groups });
   standin.install(P, standin.labels(o.parts || ['engine', 'flight']), IRQ_BYTES);
+  if (o.onPort) o.onPort(P, m);
   const ls = new Lockstep({ machine: m, port: P, program: P => P.main_loop(), checkpoints: P.CHECKPOINTS,
     irqs: { 0x0EA0: 'irq_entry', 0xFF48: 'irq_body' }, irqBytes: IRQ_BYTES, chips: ['colour', 'vic', 'sid'],
     ignore: o.ignore || [], maxFrames: o.maxFrames || 500 });
   P.M[0] = m.cpu.pdir; P.M[1] = m.cpu.pdata;
   let seed = o.seed || 1;
   const rnd = n => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return Math.floor(seed / 4294967296 * n); };
-  const KEYS = o.keys || ['A', 'D', 'W', 'X', 'Z', 'C', 'S', '+', 'T', 'V', 'SPACE', 'R', 'I'];
+  const KEYS = (o.keys || ['A', 'D', 'W', 'X', 'Z', 'C', 'S', '+', 'T', 'V', 'SPACE', 'R', 'I']).concat(o.extraKeys || []);
   const DIRS = [0, 1, 2, 4, 8, 16, 5, 9, 6, 10, 17, 20, 24];
-  let held = null, until = 0;
+  // While no pass starts (a dialog waits for a key, a menu for a choice), now and then the stick
+  // up or down or its fire button, held for a few frames. Not a key: a key given in the middle of
+  // a stretch reaches the game's keyboard buffer, which the port reads through irqByte as a copy
+  // of the game run on ahead saw it, and a copy made before the key has not seen it.
+  const ANSWERS = { FIRE: 0x10, UP: 0x01, DOWN: 0x02 }, ANSWER = ['FIRE', 'FIRE', 'UP', 'DOWN'];
+  let held = null, until = 0, answer = null, answerUntil = 0, lastPass = -1, passFrame = 0;
   const res = ls.run({ passes: o.passes || 200, stopOnDiff: o.stopOnDiff !== false, onPass: (n, mm) => {
     if (held && n >= until) { mm.release(held); held = null; }
     if (!held && rnd(12) === 0) { held = KEYS[rnd(KEYS.length)]; mm.press(held); until = n + 1 + rnd(3); }
     if (rnd(8) === 0) mm.joy = 0x1F & ~DIRS[rnd(DIRS.length)];
+  }, onFrame: (f, mm, l) => {
+    if (answer && f >= answerUntil) { mm.joy |= ANSWERS[answer]; answer = null; }
+    if (l.res.passes !== lastPass) { lastPass = l.res.passes; passFrame = f; return; }
+    if (f - passFrame > 25 && !answer && rnd(10) === 0) {
+      answer = ANSWER[rnd(ANSWER.length)];
+      mm.joy &= ~ANSWERS[answer];
+      answerUntil = f + 2 + rnd(6);
+    }
   } });
   return { res, ls, m, P };
 }
 
 if (require.main === module) {
   const passes = +(process.argv[2] || 200), filter = process.argv[3] || 'flight', seed = +(process.argv[4] || 1);
+  const extraKeys = process.argv[5] ? process.argv[5].split(',') : [];
   let ok = 0, n = 0;
   for (const f of lib.states(filter)) {
     n++;
     let out;
-    try { out = run({ state: f, passes, seed }); } catch (e) { console.log(f + ': ' + (e.stack || e.message).split('\n').slice(0, 4).join('\n  ')); continue; }
+    try { out = run({ state: f, passes, seed, extraKeys }); } catch (e) { console.log(f + ': ' + (e.stack || e.message).split('\n').slice(0, 4).join('\n  ')); continue; }
     console.log(f + ' (' + out.P.standIns.size + ' stand-ins): ' + describe(out.res).split('\n').join('\n  '));
     if (out.res.ok) ok++;
   }

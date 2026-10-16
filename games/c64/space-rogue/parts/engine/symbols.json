@@ -19710,7 +19710,7 @@
   {
    "address": 39287,
    "type": "line",
-   "text": "Unused: the arccosine in radians ($9964, $99A8)"
+   "text": "Misplaced label: $9977 is the operand of the SBC at $9976. The unused arccosine in radians starts at $997B (JSR arccos_units, JMP units_to_radians)"
   },
   {
    "address": 39297,
@@ -19780,7 +19780,7 @@
   {
    "address": 39705,
    "type": "line",
-   "text": "Copies the next line of the text at ($74) from offset Y into $FF05, as much as fits between the cursor and the window's right edge ($0D21): leading spaces skipped, cut back to the last space when the room runs out, and ended with $0D. Carry set at the end of the text. A $0D in the text straight after an automatic break is dropped ($9B84)"
+   "text": "Copies the next line of the text at ($74) from offset Y into $FF05, as much as fits between the cursor and the window's right edge ($0D21): leading spaces skipped, cut back to the last space when the room runs out, and ended with $0D. Carry set at the end of the text. A $0D in the text straight after an automatic break is dropped ($9B84). A word wider than the whole window is cut back to nothing every time, so print_wrapped prints new lines for ever"
   },
   {
    "address": 39812,
@@ -19880,7 +19880,7 @@
   {
    "address": 40160,
    "type": "line",
-   "text": "Decodes one character with the Huffman tree at $9D66: from its root, each bit read ($9D1E) picks the left (0) or right (1) entry; an entry below $80 is the distance from that entry to the next pair, one with bit 7 set is a character in its low 7 bits. The character $1B (entry $9B) is an escape: the next 7 bits are the character itself. Returns it in A, Z set for the zero that ends a text"
+   "text": "Decodes one character with the Huffman tree at $9D66: from its root, each bit read ($9D1E) picks the left (0) or right (1) entry; an entry below $80 is the distance from that entry to the next pair, one with bit 7 set is a character in its low 7 bits. The character $1B (entry $9B) is an escape: the next 7 bits, high bit first, are the character itself. Returns it in A, Z set for the zero that ends a text"
   },
   {
    "address": 40218,
@@ -19970,7 +19970,7 @@
   {
    "address": 40592,
    "type": "line",
-   "text": "Columns ($9E91-$9E95) and rows ($9E96-$9E9A) saved for the windows"
+   "text": "$60, save_cursor's RTS, shown here as data under a misplaced label; the saved columns are at $9E91-$9E95 and the rows at $9E96-$9E9A"
   },
   {
    "address": 40593,
@@ -20030,7 +20030,7 @@
   {
    "address": 40847,
    "type": "line",
-   "text": "Inverts the menu bar at the cursor: 9 pixel rows from $50 up, Y + 2 character cells from column $4F - 1 (one either side of the item), with the first and last bytes only partly inverted so the bar has narrow ends; in both buffers when text is mirrored ($0D28)"
+   "text": "Inverts the menu bar at the cursor: 9 pixel rows from $50 up, Y + 2 character cells from column $4F - 1 (one either side of the item), with only the right two pixels of the first cell and the left four of the last inverted, so the bar has narrow ends; in both buffers when text is mirrored ($0D28)"
   },
   {
    "address": 40883,
@@ -20070,12 +20070,12 @@
   {
    "address": 41031,
    "type": "line",
-   "text": "Prints character A at the cursor ($4F column, $50 row) in the current window and moves on. Controls: $0D a new line, the window scrolling ($A178) when at its bottom and waiting for a key ($A431) when a page has filled ($0D26); $0E waits for a key and clears the window; $0F reverse on, $10 reverse off ($0D25); $11 clears the window and homes the cursor; $12 fills the rest of the line with character $7B. Other codes are drawn from the font at $F200 (8 bytes each), into the drawing buffer and, when mirrored, the other one; a cell with any pixels gets colour $BC in the screen matrix"
+   "text": "Prints character A at the cursor ($4F column, $50 row) in the current window and moves on. Controls: $0D a new line, the window scrolling ($A178) when at its bottom and waiting for a key ($A431) when a page has filled ($0D26); $0E waits for a key and clears the window; $0F reverse on, $10 reverse off ($0D25); $11 clears the window and homes the cursor; $12 fills the rest of the line with character $7B. Other codes are drawn from the font at $F200 (8 bytes each, bit 7 ignored), into the drawing buffer and, when mirrored, the other one; a cell with any pixels gets colour $BC in the screen matrix"
   },
   {
    "address": 41153,
    "type": "line",
-   "text": "Drawing a character: its font address ($F200 + 8 * A) goes into the LDA at $A12F, the row into the LDY at $A0F9 and the column's byte offset into the ADCs at $A0FF and $A108; eight pixel rows"
+   "text": "Drawing a character: its font address ($F200 + 8 * (A AND $7F): the first ASL drops bit 7) goes into the LDA at $A12F, the row into the LDY at $A0F9 and the column's byte offset into the ADCs at $A0FF and $A108; eight pixel rows"
   },
   {
    "address": 41210,
@@ -20100,7 +20100,7 @@
   {
    "address": 41264,
    "type": "line",
-   "text": "Low byte of the glyph's address in the font ($F200 + 8 * character), patched by print_char"
+   "text": "Low byte of the glyph's address in the font ($F200 + 8 * (character AND $7F)), patched by print_char"
   },
   {
    "address": 41265,
@@ -20175,7 +20175,7 @@
   {
    "address": 41488,
    "type": "line",
-   "text": "Blanks a one-line window with spaces"
+   "text": "Blanks a one-line window with spaces, which leaves the cursor one column past its right edge: wrap_line then finds no room, so print_wrapped prints new lines for ever there when a text needs a second line"
   },
   {
    "address": 41508,
