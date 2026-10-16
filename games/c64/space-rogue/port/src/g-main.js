@@ -357,7 +357,7 @@ G.main = function (P) {
     M[0x80] = m;
     let v;
     do { v = P.random().a & M[0x80]; } while (v > M[0x81]);
-    return R(r, { a: v, y: v });
+    return R(r, { a: v, y: v, c: v === M[0x81] ? 1 : 0 });
   };
   P.random_word = function (r) {
     let a = M[0x61];

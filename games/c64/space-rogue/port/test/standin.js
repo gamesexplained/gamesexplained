@@ -52,14 +52,22 @@ function install(P, names, irqBytes = []) {
     const f = P[label];
     hooks[a] = c => {
       P.M[1] = c.pdata;
-      const r = f.call(P, regsOf(c)) || {};
-      c.setRegs(Object.assign({}, r, { pc: undefined }));
+      const r0 = regsOf(c), sp = c.sp;
+      const r = f.call(P, Object.assign({}, r0)) || {};
+      // the registers it gives back; the rest as they were on entry (a stand-in it called may
+      // have changed them)
+      const out = Object.assign({}, r0);
+      for (const k of Object.keys(out)) if (r[k] !== undefined) out[k] = typeof r[k] === 'boolean' ? +r[k] : r[k];
+      c.setRegs(out);
+      c.sp = sp;
       c.portWrite(1, P.M[1]);
       c.rts();
       return false;
     };
   }
-  let cpu = null;
+  // A stand-in called from a ported routine that a stand-in called runs on, deeper in the same
+  // stack, as the game's code would.
+  let cpu = null, depth = 0;
   P.standIns = new Set();
   for (const [label, a] of names) {
     if (ported.has(label)) continue;
@@ -69,10 +77,10 @@ function install(P, names, irqBytes = []) {
       const regs = { d: 0 };
       r = r || {};
       for (const k of ['a', 'x', 'y', 'n', 'v', 'z', 'c']) if (r[k] !== undefined) regs[k] = r[k];
-      cpu.setRegs(regs);
-      cpu.sp = 0xFF;
+      if (depth) regs.sp = cpu.sp;
       cpu.portWrite(0, 0x2F); cpu.portWrite(1, P.M[1]);
-      cpu.call(a, {}, { hooks, maxSteps: 5e6 });
+      depth++;
+      try { cpu.call(a, regs, { hooks, maxSteps: 5e6 }); } finally { depth--; }
       P.M[1] = cpu.pdata;
       return regsOf(cpu);
     };
