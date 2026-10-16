@@ -63,3 +63,16 @@ clocks: the level jingle's is PAL-tuned, the treasure tune's NTSC-tuned.
 
 The first independent checker stopped at the contributor's session
 limit before it wrote anything; it was run again after the limit reset.
+
+## 16 October 2026, how the monsters move
+
+Asked for a closer look at the monster updates. Reading monster_aim, the
+sign handling after wrap_delta looked as if every distance came out
+negative, which would have sent every monster after the farther player.
+A live stop at the end of monster_target showed positive distances:
+wrap_delta's CMP leaves the flags inverted and monster_aim's BMI reads
+them that way on purpose. The same live run then showed the real slip:
+13 of 60 aims went to the farther player, all of them by monsters across
+the map's edge, where wrap_delta's EOR leaves the value's own sign. The
+listing's comment on monster_step said it stepped by one; the trace
+showed two, and the comment was corrected with monsters_run's.

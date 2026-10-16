@@ -121,3 +121,80 @@ own Overview tab (`index.html`), and the rest of How it works moved to
 `how-it-works.html`, renumbered from 01. The page sources in `work/page/`
 were renamed to match, and `test_ports.py` now reads the map builder from
 `how-it-works.html`.
+
+## The map viewer scrolls (15 October 2026)
+
+At the contributor's request the Maps / levels viewer draws each map as
+one strip of 512 columns in a window that scrolls sideways, with 1× and 2×
+zoom, a slider and drag to scroll, after the Maps tab of Mayhem in
+Monsterland, in place of four wrapped strips of 128 columns. The page
+sources in `work/page/` were brought up to date with the footer and the
+`data-listing` block the site added to the committed pages, and assembling
+them reproduced those pages byte for byte before the change.
+
+## Four mechanics explained in depth, and a Discoveries tab (15 October 2026)
+
+At the contributor's request How it works gained sections on the stars,
+the shots and bullets, the waves' flight paths and the take-off, and the
+site gained a Discoveries tab. Each new widget runs a port of the game's
+routine, compared with the routine in the 6502 simulator before it went
+on the page; `test_ports.py` keeps all six comparisons.
+
+The take-off was recorded frame by frame in the emulator. It took four
+attempts to get a clean recording: marking the level as landed from the
+play snapshot landed the Manta at the start of Zinc, so the take-off
+crossed the whole hull and crashed into it; waiting for the chamber by
+its variables pressed fire before the chamber existed; and fire pressed
+during the eight readings `wait_fire_release` makes at the start of each
+step was ignored. A landing placed over column 408 after 150 frames of
+play, and the chamber stepped frame by frame, gave the 568-frame record.
+It showed the vaporising overtaking the Manta, which the listing and the
+page had described as happening behind it.
+
+Tracing the routines found six comments wrong: `vaporise_column` and
+`random_heights` called the per-row column offsets heights, and the
+destruction was said to follow the Manta; `new_wave`'s side byte was
+described by an intent the code does not show; `fighter_move` tested
+shot codes `$10`-`$1F` (it tests every code below `$20`) and was said
+to turn fighters round at the edge (it notes the edge and switches them
+off). `$8D` and `make_stars` were completed with the star counts.
+
+The site now embeds the listing pieces each page names in its
+`data-listing` block, so the new widgets' tables, sprites and paths were
+added to it; a browser test compared every canvas drawn from the
+embedded pieces with the same canvas drawn from the whole listing. The
+block as the site wrote it had left out `$32F5`, the half-loop heights
+the Manta widget reads.
+
+A `hit_feature` path that ends another shot found inside a target looks
+up the shot's slot without masking off `$10` (`$2B35`). It was not put
+on the Discoveries tab: every target is made only of target characters,
+so no shot can sit inside one without hitting it, and the path looks
+unreachable.
+
+## Homing mines (16 October 2026)
+
+The page and `facts.md` had said mines appear "while no wave is flying",
+read from `spawn_mine`'s `$6C` bit 7 test the wrong way round: the test
+skips the launch when bit 7 is clear, and bit 7 is set from a wave's
+launch until `wave_control` finds its sprites gone. Recorded live, mines
+appeared with fighters on the screen and in the wait after them, never
+between `wave_control`'s reset and the next wave; and since a mine counts
+in `$6C`, it holds that wait open. `spawn_mine` also leaves the slot's
+vertical fraction `$A4C8` as the last user left it, which would give a
+mine a downward drift of a pixel a frame; the simulator shows the effect,
+but in twelve live mines the fraction was always 0, so it is noted here
+and not published.
+
+## Release and reception (16 October 2026)
+
+The Overview gained two sections from primary sources read in scans: ZZAP! 64 issue 11 (the
+ratings, the reviewers' complaints, and the Braybrook interview's 17 and 50 updates a second), Crash
+issue 35 (the Spectrum advertisement naming Dominic Robinson), Popular Computing Weekly of 20 March
+1986 (the Gallup chart), and Computer and Video Games issue 66 (the Golden Joysticks). Spectrum
+Computing gave the Spectrum release date, price and reviews. The release date of the C64 version,
+The Last Starfighter and the Virtual Console release rest on Wikipedia and Nintendo World Report.
+The Gold Medal in ZZAP! 64 issue 11 went to Mercenary, and the advertisement there calling a game a
+"gold medal winner" means Paradroid, so the page claims no ZZAP! award for Uridium. Spectrum
+Computing's "2nd Game of the Year" at the Golden Joysticks was left out: the C&VG report read here
+does not name the runner-up for that award.

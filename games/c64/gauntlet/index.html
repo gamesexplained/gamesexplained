@@ -60,390 +60,57 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1986 · U.S. Gold</p>
   <h1>Gauntlet</h1>
-  <p class="sub">The arcade hit squeezed into 64 KB, where every monster on screen is a set of letters in a font, and the game keeps armour values for its heroes that it never reads. Eat poison with under 100 health and you can wander the dungeon for hours.</p>
+  <p class="sub">Atari's four-player arcade dungeon, squeezed onto a Commodore 64 for two players by Gremlin Graphics. Its home versions went to the top of the British chart, and it won the 1986 Golden Joystick for Game of the Year.</p>
 </header>
 <main class="wrap">
 
 <section>
   <p class="fig">01 · The game</p>
-  <h2 class="t">Four heroes, endless dungeons</h2>
-  <p class="lede">One or two players each pick a hero and fight down through a scrolling maze, level after level, until their health runs out.</p>
+  <h2 class="t">Two heroes against an endless dungeon</h2>
   <div class="gx-pair">
     <figure><img src="reference/title.png" alt="The title screen"><figcaption>The title screen.</figcaption></figure>
-    <figure><img src="reference/play-level1.png" alt="Level 1 in play"><figcaption>Level 1: the Warrior at the top left, a key to the right, the status panel below.</figcaption></figure>
+    <figure><img src="reference/play-level1.png" alt="Level 1 in play"><figcaption>Level 1: the Warrior at the top left, the status panel below.</figcaption></figure>
   </div>
-  <p>The heroes are Thor the Warrior, Thyra the Valkyrie, Questor the Elf, and Merlin the Wizard. Each level is a maze of walls and doors, seen through a window that scrolls with the players. Generators pour out ghosts, grunts, demons, lobbers, and sorcerers, and Death walks among them. Health starts at 2000 and drains by one point every 64 frames whatever you do, so the food lying in the maze matters as much as the fighting.</p>
-  <p>Keys open doors, potions blow up every monster on screen, and treasure scores points. Each level ends at an exit, a whirlpool in the floor. A second player can join at any moment by pressing fire.</p>
+  <p>Gauntlet is a dungeon crawl seen from above. One or two players each pick a hero, Thor the Warrior, Thyra the Valkyrie, Questor the Elf, or Merlin the Wizard, and fight their way down through a maze that scrolls with them. Generators pour out ghosts, grunts, demons, lobbers, and sorcerers, and Death walks among them. Each hero shoots, fights hand to hand, and carries potions that blast every monster on screen.</p>
+  <p>Health starts at 2000 and drains one point at a time whatever the players do, so the food scattered through the maze matters as much as the fighting. Keys open doors, treasure scores points, and an exit in the floor leads to the next level. The first seven levels are always the same; after that the game deals them at random from the disk, with a treasure room every few levels, and play goes on until the last hero's health runs out.</p>
 </section>
 
 <section>
-  <p class="fig">02 · One frame, rebuilt from memory</p>
-  <h2 class="t">Characters for the maze and its monsters, sprites for the heroes</h2>
-  <p class="lede">The picture below is drawn by this page from the game's memory and the video chip's registers, as the emulator recorded them for one frame of level 2.</p>
-  <div class="plate">
-    <div class="gx-ctl"><button type="button" id="gx-spr" aria-pressed="true">Sprites on</button></div>
-    <canvas id="gx-frame" class="gx-cv"></canvas>
-    <p class="cap"><b>Level 2, both players in.</b> Drawn by the site's renderer from the frame <code>kit/c64/frame.py</code> recorded: all 104,448 pixels match the emulator's own picture of the same frame. Switch the sprites off and only the heroes and their two-sprite black masks at the play area's edges go: the walls, the generator, and the field of ghosts are all characters.</p>
-  </div>
-  <p>The maze is a grid of 32 by 32 tiles at <code>$0C00</code>, each tile 2 by 2 characters. The game draws the grid into a character map of 64 by 64 at <code>$3000</code> and a colour map at <code>$2000</code>, then copies the 33 by 20 window the players can see into whichever of its two screens is hidden, and swaps (maze_draw at <code>$8A0B</code>). Scrolling moves the window 2 pixels a step with the video chip's fine scroll and redraws on each whole character.</p>
-  <p>Monsters are drawn into the same maps as four characters each (monster_draw, <code>$CA7F</code>). The character map is also the collision map: a player's four cells hold <code>$5B</code>, a character that looks like floor, and anything above <code>$5A</code> blocks the way (cells_free). The only sprites are the two heroes, the shots, the level number's digits, and two black masks that cover the columns the scroll brings in at each side.</p>
+  <p class="fig">02 · The release</p>
+  <h2 class="t">An Atari coin-op, converted by Gremlin for U.S. Gold</h2>
+  <p>Gauntlet began as an Atari Games arcade machine, released in October 1985 and designed by Ed Logg. The cabinet took four players at once, and it was Atari's first coin-op with a speech chip, which gave the game a narrator's voice. The game's credits screen thanks Logg by name.</p>
+  <p>U.S. Gold published the Commodore 64 version in Europe in 1986, and Gremlin Graphics wrote the conversion. Its credits screen names Bob Armour as the game's programmer, Kevin Bulmer for the graphics, Bill Allen and Dave Partington for sound and additional programming, Stu Gregg and Jason Perkins for additional programming, and Ben Daglish for the music. It came on disk and on cassette. In North America the C64 version followed in September 1987 from Mindscape, whose manual covered the Commodore 64, Atari 8-bit and Atari ST versions in one booklet; C64-Wiki also lists OziSoft and ERBE Software among its publishers.</p>
+  <p>In 1987 Gremlin made an expansion, Gauntlet: The Deeper Dungeons, with 512 new levels, published by U.S. Gold in Europe and by Mindscape in the United States, for the Commodore 64 among other machines. The disk analysed on this site is U.S. Gold's original release, with its 128 levels.</p>
 </section>
 
 <section>
-  <p class="fig">03 · The music</p>
-  <h2 class="t">Music: three tunes on two players</h2>
-  <p class="lede">The disk carries three pieces of music by Ben Daglish, played by two different music drivers.</p>
-  <div class="plate"><div id="gx-sid"></div>
-    <p class="cap"><b>The game's own players, running in this page.</b> Each button runs the game's code on a small 6502 core in the page and plays what it writes through the site's model of the SID. The title music and the level jingle go through the player in PLAYER-$E000; the treasure-room tune goes through the second player at <code>$A036</code>. <code>test_music.js</code> runs the page's core beside the kit's 6502 simulator on the committed listing: every register write of every frame is the same for all three tunes, to their ends. The treasure tune's bass goes down to about 35 Hz, which laptop and phone speakers barely play.</p></div>
-  <p>The title music is the file DATATITLE, 18 seconds long, and the level jingle DITTIDATA, 4 seconds. Both are data for the full driver at <code>$E000</code>, which has 33 commands, vibrato, slides, pulse sweeps, and arpeggios (music_commands, <code>$E643</code>). The level jingle plays before each level (level_intro, <code>$9BEF</code>), with the game waiting until it ends.</p>
-  <p>The treasure-room tune, DATATREASURE, plays on a simpler driver built into the game program at <code>$A036</code>, called once a frame from the raster interrupt while a treasure room runs. Its 96-note frequency table (note_freqs, <code>$A29E</code>) is tuned for an American machine: 95 of its notes are within 10 cents of true pitch at the NTSC clock. On the PAL machines this release was sold for the tune plays about 65 cents flat, two thirds of a semitone. The <code>$E000</code> driver's table is tuned for PAL.</p>
-</section>
-
-<section>
-  <p class="fig">04 · The monsters</p>
-  <h2 class="t">Three fonts animate every monster at once</h2>
-  <p class="lede">The game has three copies of its maze font, identical except for the monsters. Changing font is how the monsters move their arms and legs.</p>
-  <div class="plate">
-    <div class="gx-ctl"><button type="button" id="gx-anim" aria-pressed="true">Animating</button><button type="button" id="gx-step">Step</button><label>Facing <select id="gx-face"></select></label><span id="gx-fnt" class="gx-out"></span></div>
-    <div class="gx-mon" id="gx-mon"></div>
-    <p class="cap"><b>The six monsters</b>, drawn from the tile table at <code>$F400</code> (four characters a tile), the tile colours at <code>$F600</code> and the three maze fonts at <code>$4800</code>, <code>$5000</code> and <code>$5800</code>, in the order panel_flash steps through them (<code>$8255</code>: font selects 2, 4, 2, 6), one step every eight frames.</p>
-  </div>
-  <p>A monster is a tile from <code>$40</code> to <code>$6F</code>: six kinds, each with a tile for every one of eight facings. The lobber has one picture for all eight. The three fonts at <code>$4800</code>, <code>$5000</code> and <code>$5800</code> hold the same walls, floor, and treasure, and the monsters in three different poses. Once a frame panel_flash (<code>$8C7C</code>) counts, and every eighth frame it points the video chip at the next font in the cycle: one write to <code>$D018</code> animates every monster on screen.</p>
-  <p>A monster's byte in the table at <code>$0580</code> holds its facing (bits 0-2), kind (bits 3-5) and level (bits 6-7). The same byte is its strength: a hand-to-hand blow takes <code>$40</code> off it, so a level-one monster dies at the first blow and a level-three one at the third. Death's byte starts at <code>$C0</code> or above, and shots do not hurt it.</p>
-</section>
-
-<section>
-  <p class="fig">05 · Poison</p>
-  <h2 class="t">Bug: poison can make you nearly immortal</h2>
-  <p class="lede">Poison takes 100 health, and a potion if there is one, from a hero with no special powers to lose. It does the subtraction in the wrong number system, and with under 100 health left the result wraps round to over 16,000.</p>
-  <div class="plate">
-    <div class="gx-ctl"><label>Health before the poison <input type="number" id="gx-hp" min="0" max="9999" value="50"></label>
-      <button type="button" data-hp="2000">2000</button><button type="button" data-hp="1250">1250</button><button type="button" data-hp="50">50</button></div>
-    <div id="gx-pois" class="gx-out"></div>
-    <p class="cap"><b>The game's arithmetic, ported.</b> The panel digits are drawn with the game's own panel font (<code>$6000</code>), glyph <code>$10</code> plus each digit. <code>test_poison.js</code> holds the port against the game's code in the kit's 6502 simulator: poison_health (<code>$9F62</code>) for all 256 values of the hundreds byte, and one tick of health_tick (<code>$B933</code>) from all 65,536 health values, every result and every death the same.</p>
-  </div>
-  <p>Health is kept as four decimal digits in two bytes (<code>$B931</code> and <code>$B92F</code> for player one): 2000 is <code>$20</code> <code>$00</code>. The clock takes one off with the processor in decimal mode (health_tick, <code>$B944</code>). Poison, when the hero has no power to lose, takes a potion if it carries one, then one off the high byte with decimal mode off (poison_health, <code>$9F62</code>). From 2000 the high byte becomes <code>$1F</code>, which is not a decimal number: the panel shows a glyph from the word SCORE in the hundreds place, and the decimal countdown treats F as fifteen hundreds, so the hero has 600 more health than it should.</p>
-  <p>Below 100 there is nothing to borrow from. <code>$00</code> less one is <code>$FF</code>, the routine never tests for it, and the clock counts down from $FF50 in decimal: 16,550 ticks, nearly six hours of play. In the emulator, a Warrior poisoned with 50 health had <code>$FF</code> <code>$47</code> after the message, two stray glyphs on the panel, and <code>$FF</code> <code>$07</code> forty ticks later, still in the game. Poison jugs appear on their own from level 8.</p>
-</section>
-
-<section>
-  <p class="fig">06 · Armour and fight power</p>
-  <h2 class="t">Bug: the heroes' armour does nothing</h2>
-  <p class="lede">The manual gives each hero an armour rating and sells a potion of extra armour. The game keeps the numbers, then never reads them.</p>
+  <p class="fig">03 · The reception</p>
+  <h2 class="t">A number one, a Sizzler, and the Golden Joystick</h2>
   <div class="plate gx-scroll">
     <table class="gx-tab">
-      <tr><th>What hits</th><th>Health taken</th><th>Where</th></tr>
-      <tr><td>Grunt, demon, lobber or sorcerer's blow, by level 1 / 2 / 3</td><td>5 / 8 / 10</td><td>monster_damage <code>$C3F5</code></td></tr>
-      <tr><td>Ghost, by level</td><td>10 / 20 / 30</td><td>ghost_damage <code>$C3FB</code></td></tr>
-      <tr><td>Demon's fireball</td><td>10</td><td>shot_hits_player <code>$AC3E</code></td></tr>
-      <tr><td>Lobber's rock</td><td>3</td><td>shot_hits_player</td></tr>
-      <tr><td>Death's touch</td><td>4, fifty times</td><td>death_drain <code>$BC9B</code></td></tr>
+      <tr><th>Source</th><th>Version</th><th>Verdict</th></tr>
+      <tr><td>Zzap!64, issue 22, February 1987</td><td>Commodore 64</td><td>93 %, a Sizzler</td></tr>
+      <tr><td>UK sales chart, December 1986</td><td>all home versions</td><td>number one</td></tr>
+      <tr><td>Golden Joystick Awards 1986</td><td>the game</td><td>Game of the Year; runner-up, Arcade Game of the Year</td></tr>
+      <tr><td>UK sales</td><td>all home versions</td><td>more than 200,000 copies by 1987, over 300,000 by 1988</td></tr>
     </table>
-    <p class="cap"><b>The same for every hero.</b> In the emulator a level-three grunt was put beside a standing player: in 187 attacks the game read monster_damage 93 times, on alternate attacks, and the six armour values not once. Health fell by 961: 93 blows of 10 and 31 ticks of the clock.</p>
+    <p class="cap"><b>Contemporary verdicts.</b> Scores and awards from the sources listed below; the sales figures and the chart position count every home version together.</p>
   </div>
-  <p>At the start of a game each player gets six damage values from its hero's table, and the armour potion replaces them with lower ones (power_apply, <code>$9D10</code>; damage_taken <code>$9E49</code>). No instruction in the program reads them. A Warrior with 20 % armour and a Wizard with none lose health at exactly the same rate.</p>
-  <p>Hand-to-hand is the same story. A blow takes <code>$40</code> off a monster for any hero (fight_damage, <code>$ACCA</code>); the fight-power potion writes a stronger value one place along, at <code>$ACCC</code>, which nothing reads. The potion's other half, more power against generators (fight_power, <code>$ACC8</code>), does work.</p>
+  <p>The Commodore 64 magazine Zzap!64 gave the C64 version 93 % and its Sizzler award in its February 1987 issue. The home versions together went to the top of the UK sales chart in December 1986, and had sold more than 200,000 copies in Britain by 1987 and over 300,000 by 1988.</p>
+  <p>At the 1986 Golden Joystick Awards in London, Gauntlet won Game of the Year and came second as Arcade Game of the Year. The Deeper Dungeons did less well with the critics: reviewers found its levels much harder than the original's, and the consensus was that it fell a little short of the first game.</p>
 </section>
 
 <section>
-  <p class="fig">07 · Waiting</p>
-  <h2 class="t">The idle timer turns walls into exits</h2>
-  <p class="lede">Stop shooting for long enough and the game helps you out of the level.</p>
-  <div class="plate">
-    <div class="gx-time"><div style="flex:30;background:#55585f">30 s: doors and keys become floor</div><div style="flex:150;background:#2a8a4a">150 s more: every wall becomes an exit</div></div>
-    <p class="cap"><b>Game seconds.</b> A game second is twelve passes of the main loop, 48 frames with the screen still, 0.96 s on PAL. In the emulator, from 129 seconds left the walls became exits within 6,250 frames.</p>
-  </div>
-  <p>idle_timer (<code>$B557</code>) counts game seconds whenever nobody fires, and every shot sets it back (shot_fire). After 30 every door and key turns to floor (idle_doors_open, <code>$B581</code>). After 150 more, every wall, crumbling wall, and key becomes an exit (idle_walls_exit, <code>$B59C</code>). The manual says 30 and then another 30, and that the walls vanish first.</p>
-</section>
-
-<section>
-  <p class="fig">08 · Levels</p>
-  <h2 class="t">128 files, endlessly reshuffled</h2>
-  <p class="lede">The box promises hundreds of levels. The disk holds 128 level files, and after level 7 the game draws them at random.</p>
-  <div class="plate">
-    <p style="margin:0">Every one of the 128 files, built by the game's own code, is on the <a href="levels.html">Levels</a> tab.</p>
-    <p class="cap"><b>The rule</b> is level_pick (<code>$9AC4</code>) and level_start (<code>$99CF</code>).</p>
-  </div>
-  <p>Levels 1 to 7 load files 1 to 7. From level 8 on, level_pick chooses a file at random from 8 to 117. A countdown runs out every four to seven levels and then a treasure room comes instead, one of files 118 to 128, and the level number is put back by one so it does not count. Two exits on level 1 skip ahead, to levels 4 and 8, and one on level 4 to level 8 (exit_targets). The game never ends while a player has health.</p>
-  <p>A level file is under 512 bytes: a four-byte header, a list of wall lines and the objects run-length coded. The header can make the maze wrap at its edges, make shots hurt or stun the other player, or keep only one exit, chosen at random. From level 8 the game scatters extra food and the odd poison jug (extras_place) and, in six rolls of sixteen, prints "FIND THE HIDDEN POTION". One of those six, the shot-speed potion, prints the message and hides nothing (hidden_potion_place, <code>$A35E</code>).</p>
-</section>
-
-<section>
-  <p class="fig">09 · Left on the disk</p>
-  <h2 class="t">Secret: a cable link from the developers' desk</h2>
-  <p class="lede">Among the files the game loads is a small program that sends and receives memory through the user port, and nothing in the game calls it.</p>
-  <div class="plate"><p style="margin:0">PINN232 loads at <code>$1388</code>, 5000 in decimal. SYS 5000 receives a block, SYS 5003 several, SYS 5006 sends one, a bit at a time on the user port with a handshake, the border changing colour with each byte (pinn_send_byte, <code>$142A</code>).</p>
-    <p class="cap"><b>Loaded every game, never run.</b> load_files (<code>$9964</code>) loads it with the music and graphics; no instruction in the game program jumps into it.</p></div>
-  <p>Its entry points take their numbers from a BASIC statement, so it was driven by hand from the BASIC prompt. It looks like the tool the programmers used to move code between machines while they worked, left in the load list when the game shipped. Beside it, the program carries the prompt "INSERT SIDE 2 OF DISK / THEN PRESS SPACE BAR / TO CONTINUE GAME" with code to wait for it (<code>$A693</code>), which nothing reaches either: every level is on side 1.</p>
+  <p class="fig">04 · Sources</p>
+  <h2 class="t">Where these facts come from</h2>
+  <ul>
+    <li>The game's own credits screen, for the Commodore 64 version's authors (<a href="reference/credits.png">screenshot</a>).</li>
+    <li>Wikipedia, "Gauntlet (1985 video game)", <a href="https://en.wikipedia.org/wiki/Gauntlet_(1985_video_game)">en.wikipedia.org</a>, read 16 October 2026: the arcade game, the release dates, the Deeper Dungeons, the UK chart and sales, the Golden Joystick Awards.</li>
+    <li>C64-Wiki, "Gauntlet", <a href="https://www.c64-wiki.com/wiki/Gauntlet">www.c64-wiki.com</a>, read 16 October 2026: the developer, the publishers, the media, and the Zzap!64 score and issue.</li>
+    <li>The Centre for Computing History, "Zzap! - No.22 February 1987", <a href="https://www.computinghistory.org.uk/det/49573/Zzap-No-22-February-1987/">computinghistory.org.uk</a>: the issue's date.</li>
+    <li>Mindscape's manual, "Commodore C64 Manual: Gauntlet (1987)(Mindscape)(US)", <a href="https://archive.org/details/Gauntlet_1987_Mindscape_US">archive.org</a>.</li>
+  </ul>
 </section>
 
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
-<!-- the listing pieces this page's widgets read, which the build fills in from the listing -->
-<script type="application/json" data-listing="listing.json">["$4800-$67FF", "$F500-$F5FF", "$F700-$F800"]</script>
-<script src="../../lib/c64.js"></script>
-<script src="../../lib/sid.js"></script>
-<script>
-/* gx-music */
-// createDriver for C64Sid: runs Gauntlet's two music players on a small 6502 core, over the
-// bytes of the game as the listing has them (D.regions). Tune 0 is the title music (DATATITLE,
-// $1000) and tune 1 the level jingle (DITTIDATA, $EA00), both on PLAYER-$E000: music_init
-// ($E003) with the data's address in A/X, then music_play ($E000) once a frame while $E69E is
-// set, as level_intro ($9BEF) does. Tune 2 is the treasure tune (DATATREASURE, $E800) on the
-// player in the game program: tune_start ($A039) with A/X, tune_on ($A03C) set as
-// treasure_start ($B0D1) sets it, then tune_tick ($A036) once a frame while it stays set.
-function createDriver(D) {
-  'use strict';
-  const m = new Uint8Array(0x10000);
-  const sid = new Uint8Array(25);
-  let writes = [], bus = 0, env3 = 0, osc3 = 0, tune = -1;
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0;
-  const rd = (ad) => {
-    if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; }
-    return m[ad];
-  };
-  const wr = (ad, val) => {
-    if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; }
-    m[ad] = val;
-  };
-  const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-  const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-  const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-  const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-  const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-  const adc = (b) => {
-    if (d) { let lo = (a & 15) + (b & 15) + (c ? 1 : 0); let hi = (a >> 4) + (b >> 4); if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; n = (hi << 4) & 0x80; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80);
-      if (hi > 9) hi += 6; c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 255; return; }
-    const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-  };
-  const sbc = (b) => {
-    if (d) { const s = a - b - (c ? 0 : 1); let lo = (a & 15) - (b & 15) - (c ? 0 : 1); let hi = (a >> 4) - (b >> 4);
-      if (lo & 16) { lo -= 6; hi--; } if (hi & 16) hi -= 6; v = ((a ^ b) & (a ^ s) & 0x80); c = s >= 0 ? 1 : 0; nz(s & 255);
-      a = ((hi << 4) | (lo & 15)) & 255; return; }
-    adc(b ^ 255);
-  };
-  const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-  function step() {
-    const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-    const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-    const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-    const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-    // addressing by the opcode's low bits, for the regular groups
-    const g = op & 3, mode = (op >> 2) & 7;
-    let ea = -1, len = 2;
-    if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-    else if (g === 2 || g === 0) { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-    const M = () => (ea === -2 ? b1 : rd(ea));
-    switch (op) {
-      // group 1: ORA AND EOR ADC STA LDA CMP SBC
-      case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-      case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-      case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-      case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-      case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-      case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-      case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-      case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-      // shifts and inc/dec on memory
-      case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-      case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea); const r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-      case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-      case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea); const r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-      case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-      case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-      case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-      case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-      case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-      case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-      // loads, stores, compares with X and Y
-      case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-      case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-      case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-      case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-      case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-      case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-      case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-      // implied
-      case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-      case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-      case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-      case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-      case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-      case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-      case 0x58: case 0x78: case 0xEA: len = 1; break;
-      case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-      case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-      case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-      // branches
-      case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-        const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-        pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return; }
-      case 0x4C: pc = w; return;
-      case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-      case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-      case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-      default: throw new Error('opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-    }
-    pc = (pc + len) & 0xFFFF;
-  }
-  function call(entry, regs) {
-    a = regs.a || 0; x = regs.x || 0; y = regs.y || 0; d = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-    for (let i = 0; i < 200000; i++) { if (pc === 0xFFFF) return; step(); }
-    throw new Error('runaway at $' + pc.toString(16));
-  }
-  function fresh() {
-    m.fill(0);
-    for (const [base, hex] of D.regions) for (let i = 0; i < hex.length / 2; i++) m[base + i] = parseInt(hex.substr(2 * i, 2), 16);
-  }
-  const FLAG = [0xE69E, 0xE69E, 0xA03C];
-  return {
-    sid,
-    get writes() { return writes; },
-    readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
-    init(t) {
-      fresh(); writes = []; tune = t;
-      if (t < 2) { call(0xE003, { a: 0x00, x: t === 0 ? 0x10 : 0xEA }); m[0xE69E] = 1; }
-      else { call(0xA039, { a: 0x00, x: 0xE8 }); m[0xA03C] = 1; }
-    },
-    stop() { writes = []; if (tune >= 0) m[FLAG[tune]] = 0; tune = -1; },
-    play() {
-      writes = [];
-      if (tune < 0 || !m[FLAG[tune]]) return;
-      call(tune < 2 ? 0xE000 : 0xA036, {});
-    },
-    playing() { return tune >= 0 && !!m[FLAG[tune]]; },
-    voice(i) {
-      if (tune < 0) return {};
-      return tune < 2 ? { at: m[0xE61A + i] | m[0xE617 + i] << 8 } : { at: m[0xA03D + 10 * i] | m[0xA03E + 10 * i] << 8 };
-    },
-  };
-}
-// end of gx-music
-</script>
-<script>
-/* gx-poison */
-// poison_health ($9F62): one off the high byte of health, decimal mode off.
-function poisonHealth(hi) { return (hi - 1) & 255; }
-// One subtraction on the NMOS 6502 in decimal mode (SBC with D set), as health_tick ($B944) does
-// it: the result the processor gives for any byte, decimal or not, and the borrow.
-function sbcDecimal(a, b, carry) {
-  const bin = a - b - (carry ? 0 : 1);
-  let lo = (a & 15) - (b & 15) - (carry ? 0 : 1), hi = (a >> 4) - (b >> 4);
-  if (lo & 16) { lo -= 6; hi--; }
-  if (hi & 16) hi -= 6;
-  return { r: ((hi << 4) | (lo & 15)) & 255, c: bin >= 0 ? 1 : 0 };
-}
-// One tick of health_tick ($B933) for one player: health less one, in decimal; a borrow out of
-// the high byte is a death, and the health is set to 0.
-function healthTick(hi, lo) {
-  const l = sbcDecimal(lo, 1, 1), h = sbcDecimal(hi, 0, l.c);
-  return h.c ? { hi: h.r, lo: l.r, dead: false } : { hi: 0, lo: 0, dead: true };
-}
-function ticksToDeath(hi, lo) {
-  let n = 0;
-  for (;;) { const t = healthTick(hi, lo); if (t.dead) return n; hi = t.hi; lo = t.lo; n++; }
-}
-// end of gx-poison
-</script>
-<script>
-const $ = (id) => document.getElementById(id);
-const HASC = typeof C64 !== 'undefined';
-function missing(el) { el.insertAdjacentHTML('afterend', '<p class="gx-miss">This is drawn by the site\'s shared script, which the built site serves.</p>'); }
-const MUSIC = {"regions":[[4096,"40008400010f00010569034102180a2c056804020e14140611009308960898089808960898109808100a110093089608980898089608981098081bfd1004000100011e0100011406034104020e9602350b1e0a4300081100ae08b008a908ab08a410a41010030020ab08b008b708b528b510b748ba28ba10bc48be28be10bf50110100fe10ff00010001030002350a4304010e321406201e1100930896089808980896089810980810039308960898089808b0ff9608034104020e280341a708ab08b308b228b210b3100311021f0d14b33806020f01080103410235b62808000f00b610b848ba28ba10bb50110100fe10ff0001a40201200120318033333233323332323332333233323333333233333333333333333333333333333233323332323332333330333233323333333333333333333333333333333333333333333333333332333233333233323033323333323032323332333233333333333333333333323333333333333333323333333333333233323333323332333233323332333333333333333333333333333333333333333233333233323332333333303332333233333230333333333333333333333333333333333333323233323332323332333333333033323332333233333233323333333333333333333333333333333332333333333333333332333233333033333333333333333333"],[41014,"4ccca04c5ca00004ff0000000000000001e1ff000000000000000102ff000000000000000100488a48a900a8a21e9d3da0ca10fa68aa688d3da08e3ea085808681481871808d47a08a69008d48a068c8c81871808d51a08a69008d52a0a20020bda020bda0a20a20bda020bda0a21420bda0a9018d46a08d50a08d5aa0a9008d3ca0a9d485856018bd3da069029d3da09003fe3ea060ad3ca0d00160ce46a0d032ad40a0f00ace40a0a9ff8d46a0d023a93d8582a9a08583ad3da08580ad3ea08581a20086842078a1a5808d3da0a5818d3ea0ce50a0d032ad4aa0f008ce4aa0a9ff8d50a0d023a9478582a9a08583ad47a08580ad48a08581a20786842078a1a5808d47a0a5818d48a0ce5aa0d032ad54a0f00ace54a0a9ff8d5aa0d023a9518582a9a08583ad51a08580ad52a08581a20e86842078a1a5808d51a0a5818d52a060a001b180aa88b18010034c6ba2d00f8aa0099182a004a90091842092a260c901d00d8a8d18d48d5ba02092a24c78a1c902d0068aa0054c62a2c903d00a8aa0079182a0044c62a2c904d0068aa0034c62a2c90ad0068aa0064c62a2c919d00fa009a90091828a38e901a0034c8aa1c91ed012a900a0049184a00b9184a01291848d3ca060c911d0192092a2a580a0049182c8a5819182a008b182098091824c78a1c910d02fa008b182100a297f91828aa0064c31a2a006b18238e9019182f00ea004b1828580c8b18285814c78a12092a24c78a1c91bd00b188a6d5ba08d18d48d5ba02092a24c78a16091842092a24c78a1600aaabd9ea29184bd9fa2c89184a001b180a0099182a900a0049184a007b182a00491842092a260a58018690285809002e681600c011c012d013e01510166017b019101a901c301dd01fa01180238025a027d02a302cc02f602230353038603e303f40330047004b404fb0447059805ed054706a7060c077707e9076108e1086809f7098f0a300bda0b8f0c4e0d180eef0ed20fc310c311d112ef131f156016b5171e199c1a311cdf1da51f87218623a225df273e2ac12c6b2f3c3239356338be3b4b3f0f430c47454bbf4f7d548359d65e7964736ac7707c77977e1e86188e8a967e9ffaa806b3acbdf3c8e6d48fe1f8ee2efd"],[57344,"4c0ae0850286034ce4e1ad9ee6f00e201ee0a218bd85e69d00d4ca10f760ad9ae6186d9be58d9ae6c907900629078d9ae638ad9be66d9ce58d9be6a200bc20e684048605bdc2e5186901d98ae59014fec5e5bdb3e5186901c9039002a9009db3e5a9009dc2e5feaae5bd1ae68502bd17e68503a000b10238e901c921b01f0aa8b943e68d95e0b944e68d96e0a001b102a404a605203be22077e54c73e0a604a405bd86e5f028b99ee5f0032061e3b9ade5f0032024e4bd8be5f00320bbe3bd8ce5f00320f1e3b9fbe5f0032070e320e6e0a605a5029d1ae6a5039d17e6e8e003b0034c3de060a605a404bd14e638e9019d14e6bdcee5e9009dcee5d012bd14e6f010dd40e6b008b989e629fe9989e64ce3e1a9009987e69dcee59daae59dd1e59dd7e59dd4e59dc2e59dc5e59db3e59db0e5ec85e5d0098d9ae6ad9de58d9be6bdf8e5998ae6bdefe5998be6bdf5e59988e6a000b102d00ba9008d12e68d13e64ca4e1c980903d187de6e58d10e6bdb9e5f013186d10e62035e5ad12e69dbfe5ad13e69dbce5bdb6e5f013186d10e62035e5ad12e69da1e5ad13e69da4e5ad10e62035e5a404ad12e69986e69986e5ad13e69985e69987e5a001b102a4049d14e62077e5bd14e6c9ffd00fb987e59da4e5b986e59da1e54c52e1bdf2e59989e69988e560a9008d9ee6a27e9d84e5cad0faa2028e41e68e40e68e42e6a9019d14e69d1de6ca10f5a5021869048d1ae6a50369008d17e6a27ea000b102186d1ae69d9de508c828b1026d17e69d9ae5c8e810e82040e2a9018d9ee660a9008d9ee6a217a9099d85e6a9009d85e6ca10f3608d9de6609df2e5609df8e5609defe5608d10e6bde0e5d009fee0e5ad10e69dfee5defee5bdfee5f00bbd04e68502bd07e6850360dee0e560a5029d04e6a5039d07e6608d10e6bde3e5d009fee3e5ad10e69d01e6de01e6bd01e6f00bbd0ae68502bd0de6850360dee3e560a5029d0ae6a5039d0de6609de6e5609dfbe5609dece5609de9e5609df5e560c964900738e9649d40e6609989e560998ae560c963900738e9648d85e560998be560998ce5609d9ee5609dade5609da7e56048290f9ddde56829f04a4a4a4a9ddae5609d1de6608d9ce6608d9de560187de6e59de6e560186d9de68d9de6609db9e5604829f84a4a4a8d9ce56829078d9be5609db6e5609dc8e5609dcbe560187dcee59dcee560b9aae5d9a7e59006b99ee54c9fe460b9c2e5d0fab9dae5f031b9d7e5f01bbd87e638f9fbe59d87e6b02fde88e6bd88e6d9dde5b0d9a900f00d20abe3bd88e6d9dae590caa90199d7e560bd87e61879fbe59d87e69003fe88e660c906900fb9c5e52901d022bd8be538e9051014b9aae5c9029013bd89e5f005d9aae59009bd8be5a8b922e6d003bd88e59d89e6a40560c901d016b9c5e52901d025b9a1e59d86e6b9a4e59d85e64c1de4b9b3e5f011c901f0e8b9bfe59d86e6b9bce59d85e6604c28e5b9cbe5d006b9ade599b0e5b9d4e5c901f00ac902f0182071e44c55e4b9b0e51879cbe5d9ade59003b9ade599b0e52086e4b9d1e5186901d91de6900db9d4e5186901290399d4e5a90099d1e560bd87e51879b0e59d87e59d85e6bd86e569004c98e4bd87e538f9b0e59d87e59d85e6bd86e5e9009d86e59d86e660c901d07cb9a1e5dd86e59032d00ab9a4e5dd87e5f0e9902620f6e4bd86e5d9a1e5f004b00a90d8bd87e5d9a4e590d0b9a4e59d87e5b9a1e59d86e54c28e52009e5bd86e5d9a1e5f00490e4b0b2bd87e5d9a4e5b0aa90d8bd87e51879e9e59d87e5bd86e579ece54c19e5bd87e538f9e9e59d87e5bd86e5f9ece59d86e54c28e5c903f0e6c904f0cf60bd86e59d86e6bd87e59d85e660a207c98c9006e90cca4c37e5e97f0aa8b928e68d12e6b929e68d13e6e000f01d4e12e66e13e6cad0f7a605a404ad13e6187dc8e58d13e69003ee12e660a404a60560a50218690285029002e60360000000000041000000000b9d410000000000000000000000000000000000000000000000000000000a02001e00001e00000102000000000000000000000000000000000a0200001e0000000000000000000002000000000000000000000000010000000606060000000000002c43434141000202011835351496320000fe0000c718608aeaeaea0b651a8e8f13ff0000000106fceaeaea40628c01010100070e412111815183688b3993809c45a590af69b9d7c4e3d099dd00ea25f81004020250e258e254e2d6e2dae2e9e2ede2fce208e35ce204e3cee2d2e2cae200e360e288e293e2bbe2c6e20ce31de321e325e359e329e331e339e33de33be24de351e355e30000000241182c9d0b960000000000000000000000000000030006754cbe4700f700ff00ff00ff66000050494e4b5900ff00ff00ff00ff00ff0000ffff00ff00ff00fd00ff00ff00ff00ff00ff00ff00ff00ff00bf00ff00fb007f00"],[59392,"0e008000010f000100101905000100011e01000103510a0d0405110002198e2802458e288e288e1e8e0a1002110002198e2402458e248e248e1b8e091002110002198e2002458e208e208e188e081002110002198e1c02458e1c8e1c8e158e07100202198e1a02458e1a8e1a8e148e0602198e1a02458e1a8e1a8e1a110100fe10ff00010001031102050a250bb4000ac50acd0ace0ac50acc0acd0ac50ac90ac50ac40ac30aca0ac50ac60ac30ac10abe0ac30abe0ac20ac30ac20ab90abd0abe0ab90abd0abb0abe0aba0abd0ac109bc09c309bf09c509c109c309c509c709c309c909c509cc09c909c509c209ca09cc09ce09cf09d109ce09ca09c609c512d112c512d1120008c108ca08c008c108c608c108be08bd08b908c508c308c108bd08b808b908be08b708b908b708b608b408b608b408b210be10b210be100007be07c507c407c507c909cd07d107c907c507cd07cc07c907cc07c907cf07cc07cd07c907c507ca07c507cc07c507cd07cc07cd07d207d60ed507d607d807d906da07dd06da07d606d107ce06cf07d106ce07ca06d607cb06cf07d206cd07cf06d207cf06d207d706d207db06da07d606d107cf06ce1a110100fe10ff0001"],[59904,"3a006400010f00010569034102180a2c056804020e141406110093089608980898089608981098081bfa1002930896089808980896089818000100011e0100011406034104020e9602350b1e0a4300081100ae08b008a908ab08a410a4101003110100fe10ff00010001030002350a4304010e321406201e110093089608980898089608981098081003110100fe10ff0001a700e000e000e0"]]};
-const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[31,172,56,172,0,0,0,0,0,0,0,0,100,131,100,147,2,20,0,33,3,255,212,3,5,120,241,0,252,0,255,255,240,240,251,241,243,250,241,240,240,242,242,242,243,242,243],"cia2":[198,63],"cpu":[47,53],"writes":[[43,8,53249,46],[43,12,53251,46],[86,2,53249,88],[86,6,53251,88],[127,14,53249,130],[127,18,53251,130],[161,27,53249,172],[161,31,53251,172],[207,12,53265,127],[208,4,53276,0],[208,8,53269,0],[208,14,53289,240],[208,18,53290,240],[208,22,53291,240],[208,26,53292,240],[208,30,53293,240],[208,34,53294,240],[208,40,53272,9],[214,55,53265,31],[214,61,53270,216],[311,14,53265,148],[311,24,53270,212],[311,50,53272,5]],"colour":"AAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICAAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAgAAAAAAAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICgAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAoAAAAAAAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICAAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAgAAAAAAAAACgoICAgICAgICAgICgoICAgICAgICAgICAgKCggICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCwsLCwsLCwsLCwsLCAgICAgICAAAAAAAAAAKCggICAgICAgICAgKCgsLCwsLCwsLCwsLCwgICAgICAgAAAAAAAAACgoICAgICAgICAgICgoLCwsLCwsLCwsLCwsICAgICAgLAAAAAAAAAAoKCAgICAgICAgICAoKCwsLCwsLCwsLCwsLCAgICAgICwAAAAAAAAAKCggICAgICAgICAgKCgsLCwsLCwsLCwsLCwgICAgICAgAAAAAAAAACgoICAgICAgICAgICgoLCwsLCwsLCwsLCwsICAgICAgIAAAAAAAAAAoKCAgICAgICAgICAoKCAgICAgICAgICAgICgoICAgICAAAAAAAAAAKCggICAgICAgICAgKCggICAgICAgICAgICAoKCAgICAgAAAAAAAAACgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAAAAAAAAAAoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgAAAAACAgICAgICAgICAgICAgICAgICAgMDAwMDAwMDAwMDAwMDAwMDAwMDAgICAgICAgICAgICAgICAgICAgIDAwMDAwMDAwMDAwMDAwMDAwMDAwICAgICAgICAgICAgICAgICAgICAwMDAwMDAwMDAwMDAwMDAwMDAwMCAgICAgICAgICAgICAgICAgICAgMDAwMDAwMDAwMDAwMDAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","ram":[{"a":16384,"b":"AAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAGQAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAABsAAAAAAAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAABAcAAAAAAAAAAAAAAAAKDAAAAAAAAAAAAAAAAAQHAAAAAFtbAAAAAAQHeHl4eXh5eHl4eXh5AAAAAAAAAAAAAAAAAAAEBwAAAABbWwAAAAAEB3p7ent6e3p7ent6ewAAAAAAAAAAAAAAAAAABAcAAAAAW1sAAAAABAd4eVNUeHl4eVNUeHkAAAAAAABTAAAAAAAAAAQHAAAAAFtbAAAAAAQHentVVnp7entVVnp7AAAAAAAAVQAAAAAAAAAEBwAAAAAAAAAAAAAEB3x9fH18fXx9fH18fQAAAAAAAAAAAAAAAAAABAcAAAAAAAAAAAAABAd+f35/fn9+f35/fn8AAAAAAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAQHAAAAAAAAAAAAAAAAGRoAAAAAAAAAAAAAAAAEBwAAAAAAAAAAAAAEBwAAAAAAAAAAAAAAABscAAAAAAAAAAAAAAAACQgCAgICAgICAgICCQgCAgICAgICAgICAgICAgICAgICAAAAAAAAAAYFCwsLCwsLCwsLCwYFCwsLCwsLCwsLCwsLBgULCwsLCwAAAAAAAAAAAAAAAHBxcnN0dXZ3AAAAAAAAAAA2ISwrOTIpJQAAAAAAAAAAAAAAAAAaGxwdHh8AACglISw0KAAAGhscHR4fAAAoJSEsNCgAAAAAAAAAAAAAEBAQEBAQAAAAERUVEQAAABAQEBAQEAAAABEVGBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":17400,"b":"oKCioqT/xuY="},{"a":20480,"b":"VVVVVVVVVVU="},{"a":20496,"b":"/7ruq+667qs="},{"a":20512,"b":"/v7+//7+/v/uu+8="},{"a":20528,"b":"7v7+"},{"a":20536,"b":"77vvqO+776jvuu6r7rruq/667qvuuu6r/v/z/PPPM/zuzzM="},{"a":20576,"b":"788z/DPPM/w="},{"a":20680,"b":"VVB///5AcXZVAfD8/QExcXF5cn9/ZVlVsXEx8fWVWVU="},{"a":21144,"b":"VbS66mNoflpVFMO+M7Hxznrsp7vdVVVV8SHseFldVVU="},{"a":21208,"b":"VVVVVVVVVVU="},{"a":21440,"b":"UWDse1tfXlpVVRUVFQXFxVpaW1ZW4mpbwPP///65ZVVVVVdXVcWGglUFsbFxsbGxsmpqVldVVVWxsfD8/L//9w=="},{"a":22464,"b":"VVU="},{"a":22472,"b":"dc0="},{"a":22480,"b":"V1U="},{"a":22488,"b":"M/M="},{"a":22496,"b":"VVc="},{"a":22504,"b":"1TA="},{"a":22512,"b":"XFw="},{"a":22520,"b":"8Mw="},{"a":22528,"b":"VVU="},{"a":22536,"b":"//4="},{"a":22544,"b":"/7o="},{"a":22552,"b":"/7s="},{"a":22560,"b":"/v4="},{"a":22568,"b":"7rs="},{"a":22576,"b":"7v4="},{"a":22584,"b":"77s="},{"a":22592,"b":"77o="},{"a":22600,"b":"/ro="},{"a":22608,"b":"/v8="},{"a":22616,"b":"7s8="},{"a":22624,"b":"788="},{"a":22632,"b":"VVU="},{"a":22640,"b":"VVE="},{"a":22648,"b":"V18="},{"a":22656,"b":"zDw="},{"a":22664,"b":"6w=="},{"a":22672,"b":"QQ=="},{"a":22680,"b":"Lw=="},{"a":22688,"b":"uw=="},{"a":22696,"b":"QA=="},{"a":22704,"b":"AA=="},{"a":22712,"b":"+g=="},{"a":22720,"b":"jA=="},{"a":22728,"b":"VQ=="},{"a":22736,"b":"VQ=="},{"a":22744,"b":"cQ=="},{"a":22752,"b":"sQ=="},{"a":22760,"b":"AA=="},{"a":22768,"b":"AA=="},{"a":22776,"b":"AA=="},{"a":24576,"b":"AAAAAAAAAAA="},{"a":24704,"b":"AHzGxsbG/nwAGDgYGBh+fg=="},{"a":24744,"b":"AH5gfAZmfjw="},{"a":24768,"b":"ADxmPGZmfjw="},{"a":24784,"b":"AAcMDAcADwcAh8wYmNzPhwCHzBgYHM+HAI/GZmfmz48Az2Zmx8ZvbwDgIICAIODg"},{"a":24840,"b":"ABg8Zn5mZmY="},{"a":24872,"b":"AP5iaHhi/v4="},{"a":24896,"b":"AGZmfmZmZmYAfhgYGBh+fg=="},{"a":24920,"b":"AOZmbHhs5uYA8GBgYGL+/g=="},{"a":24976,"b":"APxmZnxs9vY="},{"a":24992,"b":"AH5aGBgYPDw="},{"a":25008,"b":"AGZmZmZ+PBg="},{"a":25032,"b":"AGZmZjwYPDw="},{"a":25472,"b":"ABgYGh8fHRgAw8fMz8zMzAAPhsbHxs/PAMdjY8PDZ2cA4zAw4GCzswDxw8bGx/PxAMdjMzNz58cA4DAw4GCwsA=="},{"a":26624,"b":"////////////////////////////////////////////////////////////////////////////////////"},{"a":26752,"b":"D/AAOqwA6+sA7DsA7DsA7DsA7DsA7DsA7DsA7DsA7DsA7DsA7DsA6+sAOqwAD/AAAAAAAAAAAAAAAAAAAAAA"},{"a":26880,"b":"D8AAOrAA66wA7OwA/OwAAOwAAOwAA7AADrAAOsAAOwAA7AAA7DwA7+wA6qwA//wAAAAAAAAAAAAAAAAAAAAA"},{"a":29056,"b":"MKAAP6gAP2gAPGgABKgABlQADlQADJQABVgABVAAAKAAAJAAAJAAAJAAAFAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":30658,"b":"ACwAAGwA"},{"a":30666,"b":"AADkAADk"},{"a":30674,"b":"NQAAAQAA"},{"a":30682,"b":"AAAAAAAA"},{"a":30690,"b":"AAAAAAAA"},{"a":30698,"b":"AAAAAAAA"},{"a":30706,"b":"AAAAAAAA"},{"a":30714,"b":"AAAAAACC"},{"a":30722,"b":"AAtIAC/M"},{"a":30730,"b":"yACvyACf"},{"a":30738,"b":"F1gAF1QA"},{"a":30746,"b":"AAqQAAaA"},{"a":30754,"b":"QAAMwAAE"},{"a":30762,"b":"AAAAAAAA"},{"a":30770,"b":"AAAAAAAA"},{"a":30778,"b":"AAAAAAAA"},{"a":30786,"b":"AAPAAA/A"},{"a":30794,"b":"4AAP4AAP"},{"a":30802,"b":"DWgABaAA"},{"a":30810,"b":"AAmAAAaA"},{"a":30818,"b":"QAAEwAAA"},{"a":30826,"b":"AMAAAAAA"},{"a":30834,"b":"AAAAAAAA"},{"a":30842,"b":"AAAAAAAA"},{"a":30850,"b":"AAPAAA/g"},{"a":30857,"b":"D2AAD2AADw=="},{"a":30865,"b":"AAWgAAagAA=="},{"a":30873,"b":"gAAFqAAKAA=="},{"a":30881,"b":"BQAABwAAAQ=="},{"a":30889,"b":"AAPAAAAAAA=="},{"a":30897,"b":"AAAAAAAAAA=="},{"a":30905,"b":"AAAAAAAAAA=="},{"a":30913,"b":"AAAHQAAPwA=="},{"a":30921,"b":"DUAADUAADQ=="},{"a":30929,"b":"ABaYABqoAA=="},{"a":30937,"b":"oAAaoAAKQA=="},{"a":30945,"b":"BoAADKAABA=="},{"a":30953,"b":"AA8AAAAAAA=="},{"a":30961,"b":"AAAAAAAAAA=="},{"a":30969,"b":"AAAAAAAAAA=="},{"a":31104,"b":"AAAADwAAD8AAB8AAB8AAB8AAAtAAKdAAKZAACYAACoAACkAAC0AAAQAADwAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":32704,"b":"wAAAwAAAMAAAMgAACgAAKQAAJgAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjg=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19654,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":11,"colour_cells_changed_during_frame":0}};
-const PALC = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
-              '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
-
-// ---- 02 the frame
-const fcv = $('gx-frame');
-let sprites = true;
-function drawFrame() {
-  let F = FRAME;
-  if (!sprites) {
-    F = JSON.parse(JSON.stringify(FRAME));
-    F.vic[0x15] = 0;
-    F.writes = F.writes.filter(w => w[2] !== 0xD015);
-  }
-  C64.drawFrame(fcv, F, 2);
-}
-if (HASC) drawFrame(); else missing(fcv);
-$('gx-spr').onclick = () => { sprites = !sprites; $('gx-spr').setAttribute('aria-pressed', sprites); $('gx-spr').textContent = sprites ? 'Sprites on' : 'Sprites off'; if (HASC) drawFrame(); };
-
-// ---- 03 the music
-if (typeof C64Sid !== 'undefined') {
-  C64Sid.mount($('gx-sid'), {
-    driver: createDriver, data: MUSIC,
-    tunes: ['The title music', 'The level jingle', 'The treasure room'],
-    rows: [{ k: 'Reading', f: (v) => v.at ? '$' + v.at.toString(16).toUpperCase() : '-' }],
-  });
-} else missing($('gx-sid'));
-
-// ---- 04 the monsters, and 05's panel digits: drawn from the listing's bytes
-const KINDS = ['Ghost', 'Grunt', 'Demon', 'Lobber', 'Sorcerer', 'Death'];
-const FONTS = [0x4800, 0x5000, 0x4800, 0x5800];       // panel_flash's cycle: font selects 2 4 2 6
-const BG = [0, 11, 1];                                // $D021-$D023 as the maze has them
-const FACINGS = ['up', 'up-right', 'right', 'down-right', 'down', 'down-left', 'left', 'up-left'];
-FACINGS.forEach((f, i) => $('gx-face').insertAdjacentHTML('beforeend', `<option value="${i}">${i}</option>`));
-$('gx-face').value = 4;
-let G = null, phase = 0, anim = true, timer = null;
-const mons = KINDS.map((k) => {
-  const fig = document.createElement('figure');
-  const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16;
-  fig.appendChild(cv); fig.appendChild(document.createTextNode(k));
-  $('gx-mon').appendChild(fig);
-  return cv;
-});
-function drawMonsters() {
-  const font = FONTS[phase], face = +$('gx-face').value;
-  $('gx-fnt').textContent = `font $${font.toString(16).toUpperCase()}`;
-  KINDS.forEach((k, i) => {
-    const tile = 0x40 + i * 8 + face, ctx = mons[i].getContext('2d');
-    ctx.fillStyle = PALC[BG[0]]; ctx.fillRect(0, 0, 16, 16);
-    for (let q = 0; q < 4; q++) {
-      const ch = G.ram[0xF400 + tile * 4 + q], col = G.ram[0xF600 + tile * 4 + q];
-      const cols = [PALC[BG[0]], PALC[BG[1]], PALC[BG[2]], PALC[col & 7]];
-      C64.drawGlyphMC(ctx, G.ram.subarray(font, font + 2048), ch, (q & 1) * 8, (q >> 1) * 8, 1, cols);
-    }
-  });
-}
-function tick() { phase = (phase + 1) & 3; drawMonsters(); }
-$('gx-step').onclick = () => { if (G) tick(); };
-$('gx-face').onchange = () => { if (G) drawMonsters(); };
-$('gx-anim').onclick = () => {
-  anim = !anim; $('gx-anim').setAttribute('aria-pressed', anim); $('gx-anim').textContent = anim ? 'Animating' : 'Stopped';
-  if (anim && G && !timer) timer = setInterval(tick, 160); else if (!anim && timer) { clearInterval(timer); timer = null; }
-};
-
-// ---- 05 poison
-function bcd(n) { return ((Math.floor(n / 1000) % 10) << 12) | ((Math.floor(n / 100) % 10) << 8) | ((Math.floor(n / 10) % 10) << 4) | (n % 10); }
-function hex2(b) { return '$' + b.toString(16).toUpperCase().padStart(2, '0'); }
-function panel(id, hi, lo) {
-  const cv = $(id); if (!cv || !G) return;
-  const ctx = C64.canvas(cv, 32, 8);
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 32, 8);
-  [hi >> 4, hi & 15, lo >> 4, lo & 15].forEach((dg, i) => C64.drawGlyph(ctx, G.ram.subarray(0x6000, 0x6800), 0x10 + dg, i * 8, 0, 1, PALC[10]));
-}
-function poison() {
-  const hp = Math.max(0, Math.min(9999, Math.floor(+$('gx-hp').value || 0)));
-  const w = bcd(hp), hi = w >> 8, lo = w & 255;
-  const after = poisonHealth(hi);
-  const meant = Math.max(0, hp - 100);
-  const t = ticksToDeath(after, lo);
-  $('gx-pois').innerHTML =
-    `Before: ${hex2(hi)} ${hex2(lo)}, ${hp} health<br>` +
-    `After the poison: <b>${hex2(after)} ${hex2(lo)}</b> <canvas id="gx-p1" class="gx-panel"></canvas><br>` +
-    `The clock takes it to zero in <b>${t.toLocaleString('en-GB')}</b> ticks, where ${meant.toLocaleString('en-GB')} were meant` +
-    ` (${(t * 64 / 50.125 / 60).toFixed(t * 64 / 50.125 / 60 < 10 ? 1 : 0)} minutes of play).`;
-  panel('gx-p1', after, lo);
-}
-$('gx-hp').oninput = poison;
-document.querySelectorAll('[data-hp]').forEach(b => b.onclick = () => { $('gx-hp').value = b.dataset.hp; poison(); });
-
-if (HASC) {
-  C64.load('listing.json').then((L) => {
-    G = L; drawMonsters(); poison();
-    if (anim) timer = setInterval(tick, 160);
-  }).catch(() => { missing($('gx-mon')); poison(); });
-} else { missing($('gx-mon')); poison(); }
-</script>

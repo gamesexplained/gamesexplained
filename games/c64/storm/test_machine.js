@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Hold the page's 6502 and what it runs on it against the kit's simulator. index.html's storm-machine
 // block (stormCore, and stormRooms, stormEnergy and stormObjects built on it) runs the game's own
-// routines over the bytes the page embeds (its data-listing tag); the same calls on the kit's
+// routines over the bytes the page reads (listing.json); the same calls on the kit's
 // simulator over the same bytes must leave every byte of memory the same, outside the stack page:
 // - every room drawn whole, and with each of its five lists left out (draw_floor ... draw_objects),
 // - 2,000 passes of the main loop's monster work (move_monster, spawn) in each room the monster
@@ -20,14 +20,8 @@ const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]
 const { stormRooms, roomRecords, monsterRooms, stormEnergy, stormObjects, stormTouch } =
   g.run(page, 'storm-machine', 'stormRooms', 'roomRecords', 'monsterRooms', 'stormEnergy', 'stormObjects', 'stormTouch');
 
-// The bytes the page has: the records of listing.json its data-listing tag names, as build.py cuts them
-const html = g.read(path.relative(__dirname, path.resolve(__dirname, page)));
-const want = JSON.parse(/<script type="application\/json" data-listing="listing.json">(.*?)<\/script>/s.exec(html)[1]);
-const L = g.listing(), ram = new Uint8Array(0x10000);
-for (const w of want) {
-  const [lo, hi] = w.slice(1).split('-$').map((h) => parseInt(h, 16));
-  for (const r of L.listing.records) if (r.b && r.a <= hi && r.a + r.b.length > lo) ram.set(r.b, r.a);
-}
+// The bytes the page has: every byte of listing.json, which it fetches whole
+const ram = g.listing().ram.slice();
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 const OUTSIDE_STACK = [[0x0000, 0x00FF], [0x0200, 0xFFFF]];

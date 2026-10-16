@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""A page that names pieces of a listing in a <script type="application/json" data-listing="URL">
-tag gets those records of the game folder's listing in place of the list, each cut to its address,
-type, label and bytes: a label stands for its record and those after it up to the next label, a
-range "$C000-$C3FF" for every record with a byte in it. The tag's data-fields adds other fields,
-never the comments, and none for a withheld game. The listing.json the Source tab reads is still
-served. A piece the listing does not have, or a URL the game folder has no listing at, stops the
-build."""
+"""A page of a withheld game names the pieces of a listing it reads in a <script
+type="application/json" data-listing="URL"> tag and gets those records of the game folder's
+listing in place of the list, cut to address, type, label and bytes: a label stands for its record
+and those after it up to the next label, a range "$C000-$C3FF" for every record with a byte in it.
+It names no fields beyond those. A page of a game whose listing is published fetches the whole
+listing, which the site serves, and a tag on it is left out of the built page. A piece the listing
+does not have, or a URL the game folder has no listing at, stops the build."""
 from pathlib import Path
 import json
 import sys
@@ -29,9 +29,9 @@ class Embed(unittest.TestCase):
     def tearDown(self):
         build.shot_html = self.shot
 
-    def built(self, pieces, url="listing.json", parts=False, fields=None, publish=True):
-        """The records the fixture's How it works carries once built, its data-listing tag naming
-        pieces for url, and the names of the files served beside it."""
+    def built(self, pieces, url="listing.json", parts=False, fields=None, publish=False):
+        """The listing the fixture's How it works carries once built, its data-listing tag naming
+        pieces for url (None when the tag is left out), and the JSON files served beside it."""
         with tempfile.TemporaryDirectory() as d:
             g, out_root = listed_game(d, parts, publish=publish), site(d)
             where = g / "parts" / "engine" if parts else g
@@ -43,38 +43,41 @@ class Embed(unittest.TestCase):
             (g / "index.html").write_text(page.replace(tag, f'data-listing="{url}"{more}>{json.dumps(pieces)}'))
             build.build_game(str(g), str(out_root))
             out = out_root / "c64" / "fixture"
-            E = embedded((out / "index.html").read_text())[url]
+            built = (out / "index.html").read_text()
+            E = embedded(built).get(url)
+            served = {str(p.relative_to(out)): json.loads(p.read_text()) for p in out.rglob("*.json")}
+            if E is None:
+                self.assertNotIn("data-listing", built)
+                return None, served
             self.assertNotIn("index", E)
             self.assertEqual(E["schema"], 1)
-            return E["records"], sorted(str(p.relative_to(out)) for p in out.rglob("*.json"))
+            return E, served
 
     def test_a_label_brings_its_records_cut_to_their_bytes(self):
-        recs, served = self.built(["table"])
-        self.assertEqual(recs, [TABLE, GAP])
-        self.assertIn("listing.json", served)
-        self.assertIn("symbols.json", served)
+        E, served = self.built(["table"])
+        self.assertEqual(E["records"], [TABLE, GAP])
+        self.assertEqual([f for f in served if "listing" in f], [])     # a withheld game serves none
 
     def test_a_range_brings_every_record_with_a_byte_in_it(self):
-        recs, _ = self.built(["$C001-$C003", "$C100-$C100"])
-        self.assertEqual(recs, [START, TABLE, MORE])
+        E, _ = self.built(["$C001-$C003", "$C100-$C100"])
+        self.assertEqual(E["records"], [START, TABLE, MORE])
 
     def test_a_part_listing(self):
-        recs, served = self.built(["start"], "parts/engine/listing.json", parts=True)
-        self.assertEqual(recs, [START])
-        self.assertIn("parts/engine/listing.json", served)
+        E, served = self.built(["start"], "parts/engine/listing.json", parts=True)
+        self.assertEqual(E["records"], [START])
+        self.assertEqual([f for f in served if "listing" in f], [])
 
-    def test_data_fields_adds_the_fields_it_names(self):
-        recs, _ = self.built(["start"], fields="d")
-        self.assertEqual(recs, [dict(START, d="LDA #$00")])
+    def test_a_published_listing_is_served_whole_and_the_tag_left_out(self):
+        for parts, at in ((False, ""), (True, "parts/engine/")):
+            for fields in (None, "d"):
+                E, served = self.built(["start"], at + "listing.json", parts=parts, fields=fields, publish=True)
+                self.assertIsNone(E)
+                self.assertEqual(served[at + "listing.json"]["records"], LISTING["records"] + [GAP, MORE])
+                self.assertEqual([f for f in served if "listing" in f], [at + "listing.json"])
 
-    def test_data_fields_never_brings_the_comments(self):
+    def test_fields_on_a_withheld_game_stop_the_build(self):
         with self.assertRaises(SystemExit) as e:
-            self.built(["start"], fields="d c")
-        self.assertIn("names c", str(e.exception))
-
-    def test_data_fields_on_a_withheld_game_stops_the_build(self):
-        with self.assertRaises(SystemExit) as e:
-            self.built(["start"], fields="d", publish=False)
+            self.built(["start"], fields="d")
         self.assertIn("publish_source", str(e.exception))
 
     def test_an_unknown_label_stops_the_build(self):

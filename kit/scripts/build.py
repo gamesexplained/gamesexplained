@@ -9,16 +9,9 @@ For every games/<platform>/<slug>/game.json:
   source.html  from site/source.html + facts.md + cheats.md   (Source code)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
-A page that draws from the listing names the pieces it reads in a tag the
-build fills in: <script type="application/json" data-listing="URL">, URL the
-listing as the page would fetch it (listing.json, parts/<id>/listing.json),
-holding a list of labels, each standing for its record and those up to the
-next label, or "$C000-$C3FF" ranges. The build replaces the list with those
-records of the game folder's listing, each cut to its address, type, label and
-bytes, with any fields the tag's data-fields adds (embed_listings), and
-C64.load, BBC.load and Spectrum.load take a listing from the page before they
-fetch one. So the page carries the bytes it uses, from the listing as it was
-built.
+Every tab but Source draws from the same listing.json: C64.load, BBC.load and
+Spectrum.load fetch it whole, one download the browser caches for all of a
+game's tabs.
 A game with no listing at all, at tier none, builds with no Source tab, no
 footprint on About and no memory strip or size in the catalogue; at any other
 tier the build stops and says how to make the listing.
@@ -32,8 +25,16 @@ A game whose maintainers withhold its annotated listing sets "publish_source":
 false in game.json. Its Source tab is one page with the line on the comments
 and a sentence saying the annotations are not published; no tab links an
 address into it, About's footprint opens nothing, and the site serves no
-listing.json and no symbols.json. Its pages carry only the pieces they name,
-and no fields but those. The repository keeps the whole listing.
+listing.json and no symbols.json. A page of such a game names the pieces of
+the listing it reads in a tag the build fills in: <script
+type="application/json" data-listing="URL">, URL the listing as the page would
+fetch it (listing.json, parts/<id>/listing.json), holding a list of labels,
+each standing for its record and those up to the next label, or "$C000-$C3FF"
+ranges. The build replaces the list with those records, each cut to its
+address, type, label and bytes (embed_listings), and the loaders take the
+listing from the page. A byte a page reads and does not name reads as 0, which
+opening the page with ?listing-reads finds (site/lib/listing-reads.js). The
+repository keeps the whole listing.
 Those are the default tabs, in the order the bar shows them. A game that wants
 others lists all of its tabs in game.json's "tabs" as [file, label] pairs; every
 authored page it names is copied through, and a page in the folder that no tab
@@ -473,17 +474,20 @@ def listing_pieces(L, want, where):
 
 
 LOADED = ("a", "t", "l", "b")    # what C64.load, BBC.load and Spectrum.load read from a record
-COMMENTS = ("c", "s", "x")       # a record's comment, side comment and cross-references: the Source tab's
 
 
 def embed_listings(page, gdir, game, where):
     """The page with each <script type="application/json" data-listing="URL"> tag's list of pieces
     replaced by those records of the listing at URL in the game folder, each cut to the address,
-    type, label and bytes the loaders read (LOADED). A page that reads more of a record from the
-    loaded listing, such as the disassembly ("m", "o", "oa"), names those fields in the tag's
-    data-fields="m o oa"; never the comments (COMMENTS), and nothing more for a withheld game."""
+    type, label and bytes the loaders read (LOADED). Only a game whose listing is withheld names
+    pieces: on any other game's page the tag is left out, and the loaders fetch the whole listing,
+    which the site serves."""
     def one(m):
         url = m.group(2)
+        if not withheld(game):
+            warn(f"{where}: the data-listing tag for {url} is left out of the built page, which fetches the whole "
+                 "listing; name pieces only for a game whose listing is withheld (\"publish_source\": false)")
+            return ""
         try:
             want = json.loads(m.group(4))
         except ValueError:
@@ -493,16 +497,11 @@ def embed_listings(page, gdir, game, where):
         path = os.path.join(gdir, url)
         if not os.path.isfile(path):
             sys.exit(f"{where}: the data-listing tag names {url}, and the game folder has no such listing")
-        more = (m.group(3) or "").split()
-        if set(more) & set(COMMENTS):
-            sys.exit(f"{where}: the data-listing tag for {url} names {' '.join(sorted(set(more) & set(COMMENTS)))}; "
-                     "the comments and cross-references are the Source tab's")
-        if more and withheld(game):
+        if m.group(3) is not None:
             sys.exit(f"{where}: the data-listing tag for {url} names fields, and this game's pages carry only "
                      "the addresses, types, labels and bytes of its listing (\"publish_source\": false)")
-        keep = LOADED + tuple(more)
         L = json.load(open(path))
-        recs = [{k: r[k] for k in keep if k in r} for r in listing_pieces(L, want, f"{where} ({url})")]
+        recs = [{k: r[k] for k in LOADED if k in r} for r in listing_pieces(L, want, f"{where} ({url})")]
         out = {k: v for k, v in L.items() if k not in ("records", "index")}
         out["records"] = recs
         return m.group(1) + json.dumps(out, separators=(",", ":")).replace("</", "<\\/") + m.group(5)

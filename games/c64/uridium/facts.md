@@ -91,12 +91,25 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
   the height `$3D`.
 - Software sprites: the Manta's shots are characters. `draw_bullets`
   copies the character a shot covers into the shot's own character and
-  draws two pixel rows of shot over it, alternating between two banks of
-  six characters each frame.
+  draws two pixel rows of shot over it (`$00`, `$AA`), alternating between
+  two banks of six characters each frame (*live*: the operands `$2A7F` and
+  `$2AA0` read `$80`/`$10` and 0/0 on alternate frames). A shot moves two
+  columns a frame and its code goes into the map itself.
+- Enemy bullets are sprites in free enemy slots, flying level at the
+  fighter's speed plus the type's bullet speed for 160 frames
+  (`enemy_fire`, `bullet_move`).
 - The Dreadnought scrolls by whole characters (`draw_map` copies 17 rows
   of 39 characters every frame) and by pixel through `$D016` (`$2C`).
   The stars stay still because `draw_stars` rewrites the star characters'
-  rows with a one-pixel mask chosen by the fine scroll (`star_masks`).
+  rows with a one-pixel mask chosen by the fine scroll (`star_masks`):
+  each star character is solid in the dark space colour but for one hole
+  where the white background shows, and the hole moves against the fine
+  scroll. Stars are drawn only where their screen cell holds a space;
+  under the hull their colour cell gets the map colour back.
+- **Stars.** `make_stars` places 16 in screen rows 7-22, never in columns
+  20-24 (marked as taken before the first); `draw_stars` draws `$8D` + 1
+  of them: 16 on the giant message page, 10 in a game, 8 in the demo
+  (*live*: `$8D` read 15, 9 and 7).
 - Collisions are all in software. The game never reads the video chip's
   collision registers `$D01E`/`$D01F` (register census below): the Manta
   against the map characters under it (`manta_collide`), shots against
@@ -134,7 +147,12 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
   runway.
 - **Waves.** Each level has a list of wave numbers (`wave_lists`); a
   wave is up to six fighters on numbered paths, entering one after
-  another (`wave_records`, `new_wave`). The wave's type sets the
+  another (`wave_records`, `new_wave`). All of a wave's fighters start
+  at one sprite X, `$1A4` or `$1A2` (mirrored), between the right and left
+  borders (*live*: the first three waves of Zinc), and enter by the edge
+  their motion takes them to. A path is a list of steps (`fighter_paths`):
+  accelerate forwards or back, up or down, glide, stop, fire once or steer
+  to the Manta's height, each for a number of frames. The wave's type sets the
   fighters' speed, climb, firing chance, bullet and score, 100 to 1000
   (`type_score`). A wave starts when the last has gone, checked every 64
   frames (`wave_control`). Shooting all of a wave counts a formation for
@@ -143,10 +161,20 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
   flashes in the status line (*live*), and waves keep coming as random
   filler waves `$12`-`$15` whose fighters score nothing and count no
   formation (`filler_wave`, `fighter_move` at `$1E4B`).
-- **Homing mines.** While no wave is flying, every eighth frame a mine
-  may appear over a generator port that is on screen (`spawn_mine`), with
-  a chance of a quarter of the wave's firing chance; it homes on the
-  Manta for a while (`home_in`, `mine_move`) and explodes.
+- **Homing mines.** Every eighth frame `spawn_mine` may launch one, but
+  only while a wave is in progress (`$6C` bit 7, from `new_wave` until
+  `wave_control` finds the wave's sprites gone), when a noise byte is no
+  higher than a quarter of the firing chance (4 to 8 in 256 a check on
+  Zinc with three lives), over the last recorded generator port that is
+  on screen, in a free enemy slot. It materialises for 37 to 40 frames (ten shape steps on every fourth frame), then
+  homes for 128 + 4 × level + difficulty frames (132 on Zinc) and bursts
+  (*live*). `home_in` changes its speed by one every fourth frame towards
+  the Manta, within ±6 across and ±4 up and down, with no damping, so it
+  swings through the Manta's position (*live*: Y 156-192 round the
+  Manta's 176). It cannot be shot (`mine_move` tests no characters; the
+  1986 ZZAP! 64 review says the same). It counts in `$6C`, so the next
+  wave waits until it has burst (*live*: with mines made frequent, the
+  wait after Zinc's first wave lasted from frame 116 to 755).
 - **Danger and height.** Bullets and mines destroy the Manta only while
   its height `$3D` is below `$14` (`bullet_move`, `mine_move`); in a
   half-loop it is above them.
@@ -163,9 +191,20 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
   life (`out_of_time`).
 - **End-of-level bonuses.** 100 for each formation destroyed and 100
   for each unit of the chamber's bonus (`count_bonus`; *live*: three
-  formations and a chamber bonus of 10 added 1,300). Then the Manta
-  takes off and the Dreadnought vaporises column by column behind it
-  (`vaporise_column`, *live*).
+  formations and a chamber bonus of 10 added 1,300).
+- **The take-off** (`$150F` on, *live*: 568 frames recorded from the
+  start of the take-off to level 2 on Zinc). The autopilot pushes right
+  and the Manta climbs to height `$18`; the turn at the map's right end
+  half-loops it; then its speed is held at 7 a frame to the left, with a
+  random full roll one frame in 64 (*live*: rolls from frames 266 and
+  463). Once the map position is below `$0E00` the vaporising starts at
+  column 480 and moves one column (8 pixels) a frame (`vaporise_column`,
+  from frame 127), so it overtakes the Manta (*live*: level near column
+  360, then ahead). Each row's edge is offset 0-16 columns by a random
+  walk (`random_heights`); characters at the edge pass through wrecks
+  `$F9`-`$FE` over three frames and become space. The player keeps up,
+  down and fire, and the Manta can still crash. The take-off ends when the
+  map position falls below `$0200`.
 - **Lives.** Three at the start; an extra life whenever the score passes
   another 10,000 (`add_score`: a carry out of the thousands byte; *live*,
   9,900 + 1,300 took the lives from 3 to 4). The count is BCD and stops
@@ -278,3 +317,19 @@ All on VICE vice-mcp v3.13.2 (Linux), 10 October 2026, from
   9,900 points for the extra life (`t_life.py`).
 - Title keys, pause and a two-player game: the recorded session
   (`session.py`), 32 screenshots.
+- Take-off: a landing made over column 408 after 150 frames of play, the
+  chamber played frame by frame (the first value taken, then "Quit"), and
+  the take-off stepped one frame at a time to the start of level 2,
+  recording the map position, speed, height, attitude and `$89`/`$8A`
+  each frame (`t_takeoff.py`, 15 October 2026).
+- Wave starts and star counts: the play snapshot stepped until three
+  waves had launched, reading each fighter's sprite X on its first frame;
+  `$8D` read in play, on the giant message page and in the demo
+  (`t_spawn.py`, 15 October 2026).
+- Shot banks: `$2A7F` and `$2AA0` read on eight frames of play
+  (15 October 2026).
+- Homing mines: the play snapshot stepped frame by frame on Zinc with the
+  Manta held on a clear row and out of reach, once with the game left
+  alone and once with the firing chance `$69` held at `$FC` so that mines
+  came often, recording `$6C` and every enemy slot each frame
+  (`t_mines.py`, `t_minefrac.py`, 16 October 2026).

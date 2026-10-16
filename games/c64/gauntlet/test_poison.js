@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's poison arithmetic against the game's code. index.html's gx-poison block ports
+// Hold the page's poison arithmetic against the game's code. discoveries.html's gx-poison block ports
 // poison_health ($9F62) and one tick of health_tick ($B933); this runs both routines on the kit's
 // 6502 simulator over the committed listing and compares: poison_health for all 256 values of
 // the hundreds byte, and one tick for player one from all 65,536 values of the health bytes,
@@ -8,7 +8,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'discoveries.html';
 const { poisonHealth, healthTick, ticksToDeath } = g.run(page, 'gx-poison', 'poisonHealth', 'healthTick', 'ticksToDeath');
 const L = g.listing();
 const m = L.ram.slice();
