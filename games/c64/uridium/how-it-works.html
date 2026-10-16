@@ -58,6 +58,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ur-wide{width:100%;height:auto}
 .ur-click{cursor:pointer}
 .ur-note{font-size:13px;color:var(--ink-mute)}
+.ur-stars{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin:12px 0 0}
+.ur-stars #ur-sview{flex:1 1 320px;max-width:640px}
+.ur-bglyphs{margin:10px 0 0}
+.ur-mini{background:#000;border-radius:3px;width:48px;height:42px}
+.ur-h3{font-size:19px;margin:22px 0 8px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -74,11 +79,35 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate"><canvas id="ur-frame" class="ur-cv" width="384" height="272"></canvas>
   <p class="cap">Drawn by the site's renderer from a recorded frame: all 104,448 pixels match the emulator's picture. The status lines use one character set at <code>$7000</code> and the playfield another at <code>$7800</code>.</p></div>
   <p>Three raster interrupts split the screen. At line 82, <code>$3F38</code> switches to the playfield's character set and multicolour mode and sets the fine scroll. At line 97, <code>$3F73</code> clears a flag that lets the main loop start its frame. At line 252, <code>$3F00</code> switches back for the bottom status line and the top of the next frame, and runs the sound driver.</p>
-  <p>The playfield's background colour is white. Space is a character filled with solid colour, drawn in black, so the white background shows only in the hull's plating. The stars are characters too. They stay still while the screen scrolls a character at a time because the game rewrites the star characters' pixels every frame with a one-pixel mask chosen by the fine scroll (<code>$2ED7</code>).</p>
+  <p>The playfield's background colour is white. Space is a character filled with solid colour, drawn in black, so the white background shows only in the hull's plating. The stars are characters too, and the next section shows how they stay still.</p>
 </section>
 
-<section>
-  <p class="fig">02 · The Dreadnought</p>
+<section id="stars">
+  <p class="fig">02 · Stars</p>
+  <h2 class="t">Stars that stay still while the screen scrolls</h2>
+  <p class="lede">The stars behind the Dreadnought are characters fixed to the screen. They never move, and the hull slides over them.</p>
+  <div class="plate">
+    <div class="ur-ctl"><button type="button" id="ur-splay" aria-pressed="false">Play</button>
+      <button type="button" id="ur-sstep">One pixel</button>
+      <label>Speed <input id="ur-sspeed" type="range" min="1" max="8" value="2"></label>
+      <button type="button" id="ur-sgrid" aria-pressed="false">Cells</button></div>
+    <div class="ur-stars"><canvas id="ur-sview" class="ur-cv ur-wide" width="320" height="136"></canvas>
+      <canvas id="ur-szoom" class="ur-cv" width="176" height="136"></canvas></div>
+    <p class="ur-out" id="ur-sout"></p>
+    <p class="cap">Zinc's hull scrolling past the ten stars of the frame recorded in the emulator, drawn as <code>$2BEB</code> copies the map and <code>$2ED7</code> puts back the stars. On the right, star character <code>$42</code> and the hole in it for the current fine scroll. The star drawing was checked against the game's code in a 6502 simulator on 2,000 random screens.</p>
+  </div>
+  <p>The map is copied to the screen whole every frame, and that copy wipes out the stars. Straight after it, <code>$2ED7</code> goes through the star list. A star whose screen cell holds a space gets its character back, <code>$42</code> or <code>$43</code>, in the star colour. A star whose cell holds a piece of hull stays hidden, and its colour cell gets the map's colour back. So the hull passes over the stars, and they reappear behind it.</p>
+  <p>Each star is a character that is solid in the dark colour of space except for one pixel, a hole through which the white background shows. The screen scrolls a pixel at a time by the fine scroll in <code>$D016</code>, and moves a whole character only when the fine scroll wraps. Every frame the game moves the hole the other way, by writing the byte for the current fine scroll from <code>$311E</code> into the star characters' rows (<code>$7A15</code>, <code>$7A1A</code>, <code>$7A1B</code>). The screen cell moves right by the fine scroll and the hole moves left by the same amount, so the star's pixel stays where it was.</p>
+  <table class="ur-tbl"><thead><tr><th>Where</th><th>Stars drawn</th><th>Set at</th></tr></thead><tbody>
+    <tr><td>The giant scrolling message on the title screens</td><td>16</td><td><code>$0ADA</code></td></tr>
+    <tr><td>A game</td><td>10</td><td><code>$0B8F</code></td></tr>
+    <tr><td>The demo</td><td>8</td><td><code>$21CB</code></td></tr>
+  </tbody></table>
+  <p>At the start of each level, <code>$2E17</code> places 16 stars in screen rows 7 to 22, each in its own row where it can, from the random table at <code>$0800</code>. No star goes in columns 20 to 24, which <code>$2E17</code> marks as taken before it starts. The table above shows how many of the 16 each screen draws, the number at <code>$8D</code>, measured in the emulator. The rows above and below the playfield get scattered stars of their own (<code>$2532</code>), which the same hole trick keeps still.</p>
+</section>
+
+<section id="dreadnought">
+  <p class="fig">03 · The Dreadnought</p>
   <h2 class="t">Every Dreadnought is built from the same 148 pieces</h2>
   <p class="lede">Each Dreadnought is 512 characters long and 17 high, assembled at the start of the level from a list of pieces.</p>
   <div class="plate">
@@ -112,7 +141,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · The Manta</p>
+  <p class="fig">04 · The Manta</p>
   <h2 class="t">The Manta's manoeuvres</h2>
   <p class="lede">The Manta has 46 frames: two cycles of a roll, one facing each way, and the frames of a half-loop seen end-on.</p>
   <div class="plate">
@@ -127,22 +156,73 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The shadow is sprite 7. Its frames are not stored: at every restart the game builds them from the Manta's frames at <code>$5000</code>, ORing each pair of pixels together so that the shape becomes a solid multicolour silhouette (<code>$25E5</code>), and stores them as frames <code>$70</code> to <code>$9D</code>.</p>
 </section>
 
-<section>
-  <p class="fig">04 · Waves</p>
-  <h2 class="t">Fighters on numbered paths</h2>
-  <p class="lede">Each Dreadnought sends its fighters in a fixed order of formations, up to six fighters each.</p>
+<section id="shots">
+  <p class="fig">05 · Shots and bullets</p>
+  <h2 class="t">The Manta's shots are drawn into the map</h2>
+  <p class="lede">Up to six shots at a time, each one a character of its own, built every frame and written into the Dreadnought's map.</p>
   <div class="plate">
-    <div class="ur-ctl"><label>Dreadnought <select id="ur-wlv"></select></label></div>
-    <canvas id="ur-waves" class="ur-cv" width="640" height="120"></canvas>
-    <p class="ur-out" id="ur-wout"></p>
-    <p class="cap">The level's wave list (<code>$C590</code> on), each wave's type from its record (<code>$C200</code>, 16 bytes a wave) and the type's fighter, drawn from <code>$6800</code>. The type tables at <code>$36F3</code> set the rest.</p>
+    <div class="ur-ctl"><label>Row <select id="ur-brow"></select></label>
+      <button type="button" id="ur-bfire">Fire</button>
+      <button type="button" id="ur-bstep">Next frame</button>
+      <button type="button" id="ur-bplay" aria-pressed="false">Play</button></div>
+    <div class="ur-scroll"><canvas id="ur-bview" class="ur-cv" width="640" height="96"></canvas></div>
+    <div class="ur-bglyphs"><canvas id="ur-bglyph" class="ur-cv" width="352" height="112"></canvas></div>
+    <p class="ur-out" id="ur-bout"></p>
+    <p class="cap">A stretch of Zinc's map around the chosen row, with the shot run by a port of <code>$2A17</code> and <code>$2AE9</code>, which matched the game's code in a 6502 simulator over 18,000 frames of random volleys on every Dreadnought. Below, the character the shot covers and the shot's own character as this frame builds it.</p>
   </div>
-  <p>A wave record names up to six paths, one per fighter, their start heights, the frames between fighters entering, the side they come from and the wave's type (<code>$1A98</code>). A path is a list of steps: accelerate one way or the other, climb, dive, stop, fire, or steer towards the Manta's height, each for a number of frames. The type picks the fighter's picture and sets its speed, its climb, its bullet, its score (100 to 1000) and its chance of firing, to which the game adds half the lives left, the level and the difficulty.</p>
-  <p>A new wave starts when the last has gone, checked every 64 frames. A wave shot down to the last fighter counts as a formation, worth 100 at the end of the level. While no wave is flying, a homing mine may materialise over one of the generator ports that flash on the hull (<code>$1F7F</code>).</p>
+  <p>A shot moves two columns, 16 pixels, every frame (<code>$29A1</code>). It has no sprite. Each frame, <code>$2A17</code> first puts back the character every shot is covering. Then it moves each shot and looks at the map character it has reached. A wall, codes <code>$80</code> to <code>$8F</code>, ends it. A target, <code>$90</code> to <code>$9F</code>, is destroyed whole: every character of it becomes its wreck, 32 codes lower, and the score is paid (<code>$2AE9</code>). Anything else, space or plating, the shot flies over.</p>
+  <p>To fly over a character, the shot copies it into a character of its own and draws itself on top: two pixel rows, one of background pixels (<code>$00</code>) and one of the second multicolour (<code>$AA</code>), at the height of the gun that fired it. Then it writes its own character's code into the map, and the map copy puts it on the screen like any other piece of the Dreadnought. A shot leaves the screen when its column passes the visible ones.</p>
+  <p>Each shot has two characters, its slot number (<code>$00</code>-<code>$05</code>) and the slot plus <code>$10</code>, and uses them on alternate frames. The game flips the two operands that choose (<code>$2A7F</code>, <code>$2AA0</code>) at the end of every pass. The character on the screen is never the one being rebuilt, so a shot never shows half drawn.</p>
+  <p>A fighter is hit when one of the four screen cells under its sprite holds a code below <code>$20</code>. Only shots use those codes, so <code>$1DCB</code> needs no list of shots: it reads the slot from the character, ends that shot, scores the fighter and turns it into an explosion.</p>
+  <p>The fighters' bullets are sprites. A fighter fires into a free sprite slot (<code>$1F0F</code>): the bullet starts at the fighter, takes the wave type's bullet shape and flies level at the fighter's speed plus the type's bullet speed, for 160 frames, then bursts. It destroys the Manta if it is in the Manta's column, sprite X <code>$A2</code> to <code>$B1</code>, within a height window that depends on the bullet's shape (<code>$1FF0</code>), and only while the Manta flies low, height below <code>$14</code>. Above that, in a half-loop, bullets pass under it.</p>
 </section>
 
-<section>
-  <p class="fig">05 · Landing</p>
+<section id="waves">
+  <p class="fig">06 · Waves</p>
+  <h2 class="t">Fighters fly short programs</h2>
+  <p class="lede">Each Dreadnought sends its fighters in a fixed order of waves. A wave is up to six fighters, each flying a path: a list of steps that push it forwards, back, up or down.</p>
+  <div class="plate">
+    <div class="ur-ctl"><label>Dreadnought <select id="ur-wlv"></select></label>
+      <label>Wave <select id="ur-wave"></select></label>
+      <label>Side <select id="ur-wside"><option value="127">first</option><option value="255">second</option></select></label>
+      <button type="button" id="ur-wplay" aria-pressed="false">Fly</button></div>
+    <div class="ur-scroll"><canvas id="ur-wview" class="ur-cv" width="640" height="300"></canvas></div>
+    <p class="ur-out" id="ur-wout"></p>
+    <p class="cap">The wave's fighters flown by a port of <code>$1A98</code> and <code>$1C73</code> with the Manta stopped, so the hull does not scroll and the picture shows the fighters' own flight. The box is the screen; the dot is the Manta. The port matched the game's code in a 6502 simulator on all 57 wave records, both entry sides and two Manta heights: 157,298 fighter positions, frame by frame. Firing is left out.</p>
+  </div>
+  <p>A wave record (<code>$C200</code>, 16 bytes) gives each of its six fighters a path number, or 0 for none, and a start height, or 0 for the Manta's height. It also gives the frames between one fighter starting its path and the next, the side byte and the wave's type (<code>$1A98</code>). All the fighters of a wave are placed at once at the same sprite X, <code>$1A2</code> or <code>$1A4</code>, in the stretch between the right and left borders that no screen position uses. They wait there, one after another, until their path begins; the emulator shows every fighter launched at one of those two X positions.</p>
+  <p>Which edge a fighter enters by depends only on which way it moves from there. Moving right, its X runs past 511 and comes back at 0, on the left edge. Moving left, it comes in from the right. The side byte decides: 0 and <code>$FF</code> choose one way or the other, judged from the Manta's direction, and any other value lets the random noise choose. A fighter entering from the other side flies the mirror image of its shape (<code>$6C00</code>), and its forwards and back swap.</p>
+  <p>A path (<code>$C648</code> on) is a list of bytes, one step each. The low bits choose forwards or back and up or down, which add the type's acceleration to the fighter's speed every frame; the other bits stop it dead, fire once, or steer it towards the Manta's height. With bit 7 set the next byte is the step's length in frames, otherwise it lasts one frame, and <code>$FF</code> holds the last step for good (<code>$1C73</code>). Speeds are kept in 256ths of a pixel, so eight frames of forwards with an acceleration of 160 give a speed of five pixels a frame. Every path but four starts with such a burst, which carries the fighter onto the screen; the gliding steps after it keep that speed.</p>
+  <p>Every eighth frame, on a frame of its own, a fighter on the screen may fire. It fires when a noise byte is no higher than the wave's firing chance, so the chance is out of 256: the type's base, plus half the lives left, the level and the difficulty. A fighter that leaves the screen is switched off once it is well past the edge it left by.</p>
+  <h3 class="ur-h3">The sixteen types</h3>
+  <div class="ur-scroll"><table class="ur-tbl" id="ur-types"></table></div>
+  <p class="cap">From the type tables at <code>$36F3</code>, <code>$3703</code>, <code>$3713</code>, <code>$3723</code>, <code>$3733</code> and <code>$3743</code>. Acceleration and climb are in 256ths of a pixel a frame, added every frame of a step; firing is the base chance out of 256.</p>
+  <h3 class="ur-h3">The forty paths</h3>
+  <div class="ur-scroll"><table class="ur-tbl" id="ur-paths"></table></div>
+  <p class="cap">Each path decoded from its bytes: a step and its length in frames. Forwards is the way the fighter entered; the last step holds until the fighter leaves the screen.</p>
+  <p>A new wave starts when the last has gone, checked every 64 frames. A wave shot down to the last fighter counts as a formation, worth 100 at the end of the level. While a wave is in progress, homing mines may also rise from the generator ports that flash on the hull (the next section).</p>
+</section>
+
+<section id="mines">
+  <p class="fig">07 · Homing mines</p>
+  <h2 class="t">Homing mines swing back and forth through the Manta</h2>
+  <p class="lede">The flashing generator ports on the hull launch mines that home on the Manta for a few seconds and then burst. Shots pass straight through them.</p>
+  <div class="plate">
+    <div class="ur-ctl"><label>Manta's height on screen <input id="ur-hmy" type="range" min="98" max="215" value="176"></label>
+      <label>Dreadnought <select id="ur-hmlv"></select></label>
+      <button type="button" id="ur-hmgo">Launch</button></div>
+    <div class="ur-scroll"><canvas id="ur-hmview" class="ur-cv ur-click" width="640" height="300"></canvas></div>
+    <p class="ur-out" id="ur-hmout">Choose a point on the screen for the generator port, then Launch.</p>
+    <p class="cap">A mine flown by a port of <code>$1F62</code>, <code>$2021</code> and <code>$205F</code> with the Manta stopped. The port matched the game's code in a 6502 simulator on 600 random mines, every frame from the port to the burst. Recorded live on Zinc, a mine's height swung between 156 and 192 round the Manta's 176.</p>
+  </div>
+  <p>Every eighth frame the play loop calls <code>$1F7F</code>, and it launches a mine only while a wave is in progress: from the moment <code>$1A98</code> sends a wave until <code>$1A75</code> finds every sprite of it gone, the top bit of <code>$6C</code> is set. Then a noise byte no higher than a quarter of the wave's firing chance launches one. On Zinc with three Mantas that is 4 to 8 chances in 256 at each check, a mine every five to ten seconds on average; the later Dreadnoughts and the higher difficulties raise it to as much as 24 in 256. The mine needs a generator port on the screen, and takes the last one the map recorded (<code>$0240</code>), and a free one of the six enemy sprites. Without either, nothing happens.</p>
+  <p>The mine appears over the port and materialises for 37 to 40 frames, depending on where in the four-frame cycle it starts: its shape steps from <code>$1D</code> down through the sparkle shapes every fourth frame until it becomes the mine itself, <code>$11</code> (<code>$1F62</code>). It moves only with the hull while it does.</p>
+  <p>Then it homes. Every fourth frame <code>$205F</code> adds one to its vertical speed towards the Manta's height and one to its horizontal speed towards the Manta's column, at most 4 pixels a frame up or down and 6 across. Nothing slows it as it arrives, so it overshoots and swings back: a mine that misses keeps passing through the Manta's position until its time runs out. It beeps every 16 frames (effect <code>$0E</code>), and after 128 frames, plus four for each level and 16 for each time the game has gone round the fifteen Dreadnoughts, it bursts. That is 132 frames on Zinc, under three seconds.</p>
+  <p>A mine destroys the Manta like a bullet does, inside the same box and only while the Manta flies low, below height <code>$14</code> (<code>$1FF0</code>), so a half-loop carries the Manta over it. It cannot be shot: <code>$2021</code> never looks at the characters under the mine, where a fighter checks for the Manta's shots. A mine also counts as one of the wave's sprites in <code>$6C</code>, so the next wave waits until it has burst (Discoveries).</p>
+</section>
+
+<section id="landing">
+  <p class="fig">08 · Landing</p>
   <h2 class="t">The landing test is one character and one attitude</h2>
   <p class="lede">After the last wave, the Manta lands only over one particular character, flying level and facing right.</p>
   <div class="ur-shots"><figure><img src="reference/land-now.png" alt="Land now! in the status line above the Dreadnought"><figcaption><i>Land now!</i> in the status line once the wave list is used up.</figcaption></figure></div>
@@ -150,7 +230,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">06 · The bonus game</p>
+  <p class="fig">09 · The bonus game</p>
   <h2 class="t">The fuel rod chamber</h2>
   <p class="lede">The bonus for destroying the ship is a timing game against a countdown.</p>
   <div class="plate">
@@ -162,16 +242,39 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The chamber's rule from <code>$114E</code>: six steps from the bottom up, the countdown stepping every 256 - <code>$310A</code>[level] frames, each offer the countdown plus the bonus so far. The flashing here is paced by a timer, not the game's frame counts, and the lit side is random as in the game.</p>
   </div>
   <p>After landing, the fuel rod chamber offers a value and <i>Quit</i> in turn at each of six steps. The value is the countdown digit plus the bonus taken so far, and the bonus starts at the level number, so the first offer is 900 + 100 × level. Fire on the value takes it and moves up a step; fire on <i>Quit</i> leaves with the bonus. Letting the countdown reach zero costs a life (<code>$15BD</code>).</p>
-  <p>The bonuses are then counted up, and the Manta takes off over the hull while the Dreadnought vaporises behind it, one column at a time from a ragged random edge (<code>$1413</code>, <code>$16D2</code>). Its surface can still be strafed for points on the way.</p>
+  <p>The two bonuses are then counted up in hundreds (<code>$176E</code>), and the take-off follows (the next section).</p>
   <div class="ur-shots">
     <figure><img src="reference/fuel-rod-chamber.png" alt="The fuel rod chamber: six rows of paired slots, 1000 lit at the bottom left"><figcaption>The chamber, 1000 offered at level 1.</figcaption></figure>
-    <figure><img src="reference/dreadnought-vaporising.png" alt="The Manta flying over the Dreadnought as its right end breaks up"><figcaption>The take-off over the vaporising hull.</figcaption></figure>
   </div>
 </section>
 
+<section id="take-off">
+  <p class="fig">10 · The take-off</p>
+  <h2 class="t">The Dreadnought vaporises faster than the Manta flies</h2>
+  <p class="lede">After the bonus game the Manta takes off, turns at the right-hand end of the ship and flies back over it as the hull breaks up behind it, then overtakes it.</p>
+  <div class="plate">
+    <div class="ur-ctl"><label>Dreadnought <select id="ur-tlv"></select></label>
+      <button type="button" id="ur-tplay" aria-pressed="false">Play</button>
+      <button type="button" id="ur-trestart">From the start</button>
+      <label>Frame <input id="ur-tframe" type="range" min="0" max="567" value="0"></label></div>
+    <div class="ur-scroll"><canvas id="ur-tview" class="ur-cv" width="640" height="272"></canvas></div>
+    <p class="ur-out" id="ur-tout"></p>
+    <p class="cap">The Manta's flight is the one recorded in the emulator on Zinc, frame by frame, with no input from the player; the autopilot flies every Dreadnought the same way. The vaporising is run by a port of <code>$173B</code> and <code>$16D2</code>, which matched the game's code in a 6502 simulator on every Dreadnought, given the same noise. Its random edge is new each time you play it.</p>
+  </div>
+  <p>The take-off is run by <code>$150F</code> on. The autopilot holds the horizontal input to the right (<code>$5F</code>) and the Manta speeds away from the runway, climbing one step a frame to height <code>$18</code>. Near the right-hand end of the map the usual turn at the edge (<code>$268C</code>) swings it round in a half-loop. From then on its speed is held at 7 pixels a frame to the left, and once in a while, one frame in 64 on average, it does a full roll for show (<code>$1582</code>).</p>
+  <p>The vaporising starts when the map position falls below <code>$0E00</code>, at column 480, and moves one column, 8 pixels, every frame (<code>$16D2</code>). That is one pixel a frame faster than the Manta. The edge starts at least 14 columns behind it. Its leading rows draw level about 120 frames later, near column 360, and then run ahead, so that for the rest of the way the Manta flies over hull that has already gone. The take-off ends when the map position falls below <code>$0200</code>, near the left end, and the next level begins.</p>
+  <p>The edge is ragged. Before the flight, <code>$173B</code> gives each of the 17 rows an offset: a random walk from 8 that moves up or down by one, or stays, from row to row, within 0 to 16 columns. In each row, every frame, the three cells at the edge turn to wreckage if they hold anything but space, the first to <code>$F9</code> or <code>$FA</code>, the second to <code>$FB</code> or <code>$FC</code> and the third to <code>$FD</code> or <code>$FE</code>, and the three cells after them become space. As the band moves left, each character passes through the three stages of wreckage in three frames and vanishes.</p>
+  <div class="ur-shots">
+    <figure><img src="reference/takeoff-edge-behind.png" alt="The Manta flying left over Zinc with the ragged edge of wreckage just behind it"><figcaption>Frame 180 of the recorded take-off: the edge just behind the Manta.</figcaption></figure>
+    <figure><img src="reference/takeoff-edge-ahead.png" alt="The Manta flying left with the Dreadnought already broken up ahead of it"><figcaption>Frame 330: the edge has overtaken it and is breaking up the hull ahead.</figcaption></figure>
+  </div>
+  <p>The player still has the stick for up and down and the fire button: <code>$13BF</code> reads them as in play and only replaces the horizontal input. Shots fired on the way back destroy targets and score as usual, while the hull is still there to hit. The Manta can still crash into a wall, since its collision test runs every frame.</p>
+</section>
+
 <section>
-  <p class="fig">07 · Quirks</p>
+  <p class="fig">11 · Quirks</p>
   <h2 class="t">Quirks</h2>
+  <p class="lede">Smaller rules worth knowing. The <b>Discoveries</b> tab has the findings a player is least likely to know.</p>
   <p>After <i>Land now!</i>, fighters keep coming. Once a level's list of waves is used up, the game picks one of four filler waves at random (<code>$12</code> to <code>$15</code>), and their fighters score nothing and count no formation (<code>$1E4B</code>).</p>
   <p>An extra Manta comes with every 10,000 points, at the carry out of the score's thousands byte (<code>$19F5</code>). The lives are kept in BCD and stop at 99.</p>
   <p>After the fifteenth Dreadnought the game starts again at the first, with the difficulty raised by <code>$10</code>, up to three times. The difficulty adds to the fighters' chance of firing and shortens the chamber's countdown.</p>
@@ -275,6 +378,218 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
     return { m, ended: false, uses };
   }
   // end of buildMap
+
+  function vapourStart(m, rnd) {
+    // Port of random_heights ($173B): the vaporising starts at the map address $83E0 (row 0,
+    // column 480), and each row r gets a column offset, a random walk over the rows from 8 within
+    // 0 to 16 (a noise byte below $55 keeps it, $55-$A9 adds one, $AA up takes one), kept at
+    // $A4D0 + 17 - r as the game keeps it. rnd() stands for a read of $D41B.
+    m[0x89] = 0xE0; m[0x8A] = 0x83;
+    let o = 8;
+    for (let x = 0x11; x > 0; x--) {
+      const v = rnd();
+      if (v >= 0x55) { if (v >= 0xAA) { if (o) o--; } else if (o < 0x10) o++; }
+      m[0xA4D0 + x] = o;
+    }
+  }
+  function vapourStep(m, rnd) {
+    // Port of vaporise_column ($16D2), one call a frame: at the column $89/$8A (row 0's address),
+    // stopping below $8220, row by row from row 0 (offset $A4D0 + 17) down: the three cells from
+    // the row's offset on, if not a space, become wreckage $F9/$FA, $FB/$FC and $FD/$FE (the noise
+    // picks which of each pair), and the three after them become spaces. Then one column left.
+    const a = m[0x89] | m[0x8A] << 8;
+    if (a < 0x8220) return false;
+    let p = a;
+    for (let x = 0x11; x > 0; x--) {
+      let y = m[0xA4D0 + x];
+      for (const base of [0xF9, 0xFB, 0xFD]) {
+        const c = (p + y) & 0xFFFF;
+        if (m[c] !== 0x20) m[c] = (rnd() & 1) + base;
+        y++;
+      }
+      for (let k = 0; k < 3; k++) { m[(p + y) & 0xFFFF] = 0x20; y++; }
+      p = (p + 0x200) & 0xFFFF;
+    }
+    const n = (a - 1) & 0xFFFF;
+    m[0x89] = n & 255; m[0x8A] = n >> 8;
+    return true;
+  }
+  // end of vapour
+
+  function flyWave(ram, wave, o) {
+    // Port of new_wave ($1A98) and fighter_move ($1C73) for one wave, with the Manta stopped
+    // ($2E = 0), so the Dreadnought does not scroll: the fighters' own flight over the hull.
+    // o.mantaY is the Manta's Y ($33), o.noise the value every read of $D41B gives (it picks the
+    // entry side where the record says random), o.frames how long to fly. Firing is left out: it
+    // starts bullets in free slots and changes no fighter. Returns, for each of the six slots, null
+    // for no fighter or the list of [x, y, edge] each frame (x the 9-bit sprite X, edge $A4E8),
+    // ending when the fighter is switched off.
+    const rec = 0xC200 + 16 * wave, type = ram[rec + 14], side = ram[rec + 13], noise = o.noise & 255;
+    const sp = ram[0x36F3 + type], cl = ram[0x3703 + type];
+    let a1 = (-sp) & 255, a1h = 0xFF, a2 = sp, a2h = 0;                    // $63/$64 and $66/$67
+    const down = cl, downh = 0, up = (-cl) & 255, uph = 0xFF;               // $82/$83 and $80/$81
+    // the entry ($1B28): with the Manta stopped, side 0 takes $1B4D and $FF takes $1B5B; any
+    // other side byte takes $1B5B when the noise byte's bit 7 is set
+    const mirror = side === 0 ? false : side === 0xFF ? true : (noise & 0x80) !== 0;
+    let x0 = 0x1A4, shape = 0xA0 + type, edge0 = 0;
+    if (mirror) { x0 = 0x1A2; shape = 0xB0 + type; [a1, a2] = [a2, a1]; [a1h, a2h] = [a2h, a1h]; edge0 = 0xFF; }
+    const S = [];
+    let delay = 0;
+    for (let s = 5; s >= 0; s--) {                                          // slots 5 down to 0
+      const path = ram[rec + s];
+      if (!path) { S[s] = null; continue; }
+      const h = ram[rec + s + 6];
+      S[s] = { on: true, x: x0, y: h || o.mantaY, vxf: 0, vxl: 0, vxh: 0, vyf: 0, vyi: 0, timer: delay, flags: 0, edge: edge0,
+               ptr: ram[0xC120 + path] | ram[0xC190 + path] << 8, trail: [] };
+      delay = (delay + ram[rec + 12]) & 255;
+    }
+    for (let f = 1; f <= o.frames; f++) {
+      const frame = f & 255;                                               // $62, counted before the enemies run
+      for (let s = 5; s >= 0; s--) {
+        const F = S[s];
+        if (!F || !F.on) continue;
+        // move_by_velocity ($1EF4)
+        F.x = (F.x + (F.vxl | F.vxh << 8)) & 0x1FF;
+        F.y = (F.y + F.vyi + (F.vyf >> 7)) & 255;
+        // the path ($1C79)
+        if (!F.timer) {
+          const b = ram[F.ptr];
+          if (b !== 0xFF) {
+            F.ptr++; F.flags = b & 0x7F;
+            if (b & 0x80) { F.timer = ram[F.ptr]; F.ptr++; } else F.timer = 1;
+          }
+        }
+        F.timer = (F.timer - 1) & 255;
+        const fl = F.flags;
+        const addX = (lo, hi) => { let t = F.vxf + lo; F.vxf = t & 255; t = F.vxl + hi + (t >> 8); F.vxl = t & 255; F.vxh = (F.vxh + hi + (t >> 8)) & 255; };
+        const addY = (lo, hi) => { let t = F.vyf + lo; F.vyf = t & 255; F.vyi = (F.vyi + hi + (t >> 8)) & 255; };
+        if (fl & 0x0F) {
+          if (fl & 1) addX(a1, a1h); else if (fl & 2) addX(a2, a2h);
+          if (fl & 4) addY(down, downh); else if (fl & 8) addY(up, uph);
+        } else if (fl & 0x10) {                                              // fire once: no change to the flight
+        } else if (fl & 0x20) { F.vxf = F.vxl = F.vxh = F.vyf = F.vyi = 0; }
+        else if (fl & 0x40) {                                                 // steer to the Manta's Y ($1D64)
+          if (F.y === o.mantaY) { F.vyf = F.vyi = 0; }
+          else if (F.y > o.mantaY) {
+            if (F.vyi !== 0 && F.vyi < 0x80) { F.vyf = F.vyi = 0; }
+            else if (F.vyi === 0 || F.vyi >= 0xFC) addY(up, uph);
+          } else {
+            if (F.vyi >= 0x80) { F.vyf = F.vyi = 0; }
+            else if (F.vyi < 5) addY(down, downh);
+          }
+        }
+        // on screen or off it ($1DCB)
+        if (((F.x >> 3) - 2 & 255) < 0x27) {
+          F.edge = 0x80;
+        } else if (F.x & 0x100) {
+          const lo = F.x & 255;
+          if (F.edge === 0x80) F.edge = lo & 0x80 ? 0 : 0xFF;
+          else if (F.edge === 0xFF ? lo >= 0xE8 : lo < 0x78) F.on = false;
+        }
+        F.trail.push([F.x, F.y, F.edge]);
+      }
+    }
+    return { type, side, mirror, shape, slots: S.map(F => F && F.trail) };
+  }
+  // end of flyWave
+
+  function shotsFrame(m) {
+    // Port of draw_bullets ($2A17) with hit_feature ($2AE9), one frame, on a copy of memory m:
+    // the six shots' map addresses $A430/$A440, the cells they cover $A450, their steps $A460
+    // (0 for a free slot) and pixel rows $A470; the playfield characters at $7800; the visible
+    // columns $50/$51; the two operands draw_bullets flips each frame, $2A7F ($80 or 0) and $2AA0
+    // ($10 or 0). Returns what happened to each shot this frame. The score and the sounds are
+    // left out.
+    const ev = [];
+    for (let x = 5; x >= 0; x--) if (m[0xA460 + x]) m[m[0xA430 + x] | m[0xA440 + x] << 8] = m[0xA450 + x];
+    for (let x = 0; x < 6; x++) {
+      const step = m[0xA460 + x];
+      if (!step) { ev[x] = null; continue; }
+      let a = ((m[0xA430 + x] | m[0xA440 + x] << 8) + (step < 0x80 ? step : step - 0x100)) & 0xFFFF;
+      m[0xA430 + x] = a & 255; m[0xA440 + x] = a >> 8;                    // bullet_step ($2AC9)
+      const half = (a >> 1) & 255;                                        // the column / 2, the row's page bit on top
+      if (half < m[0x50] || half >= m[0x51]) { m[0xA460 + x] = 0; ev[x] = 'left the screen'; continue; }
+      const c = m[a];
+      if (c >= 0x80 && c < 0x90) { m[0xA460 + x] = 0; ev[x] = 'hit a wall'; continue; }
+      if (c >= 0x90 && c < 0xA0) { hitFeature(m, x, c); m[0xA460 + x] = 0; ev[x] = 'hit a target'; continue; }
+      m[0xA450 + x] = c;                                                  // the cell it covers
+      const dst = 0x7800 + (m[0x3937 + x] | m[0x2A7F]);                    // its own character
+      for (let r = 7; r >= 0; r--) m[dst + r] = m[0x7800 + c * 8 + r];
+      m[dst + m[0xA470 + x]] = 0x00; m[dst + m[0xA470 + x] + 1] = 0xAA;
+      m[a] = x | m[0x2AA0];
+      ev[x] = 'flying';
+    }
+    m[0x2A7F] ^= 0x80; m[0x2AA0] ^= 0x10;
+    return ev;
+  }
+  function hitFeature(m, x, c) {
+    // hit_feature ($2AE9): from the shot's cell back to the target's top-left corner (columns at
+    // $33C6 + c, rows times 2 pages at $33D6 + c), then over its size ($33E6 + c, plus one, square)
+    // every character from $20 up to $EF becomes its wreck, 32 lower. A shot's own character
+    // (below $20) found there ends that shot, by the slot the game takes from the character.
+    let p = ((m[0xA430 + x] | m[0xA440 + x] << 8) - (m[0x33C6 + c] | m[0x33D6 + c] << 8)) & 0xFFFF;
+    const n = m[0x33E6 + c];
+    for (let row = n; row >= 0; row--) {
+      for (let y = n; y >= 0; y--) {
+        const v = m[(p + y) & 0xFFFF];
+        if (v < 0x20) m[0xA460 + v] = 0;
+        else if (v < 0xF0) m[(p + y) & 0xFFFF] = v - 0x20;
+      }
+      p = (p + 0x200) & 0xFFFF;
+    }
+  }
+  // end of shots
+
+  function drawStars(m) {
+    // Port of draw_stars ($2ED7), once a frame after the map has been copied to the screen: each of
+    // the $8D + 1 stars (screen address $A400/$A410, colour RAM high byte $A480, character $A420)
+    // is put back where its screen cell holds a space, in the star colour $58; where the hull covers
+    // it, its colour cell gets the map colour $4D back. Then the hole in the star characters moves
+    // with the fine scroll $2C: the byte at $311E + $2C goes into row 5 of character $42 ($7A15) and
+    // rows 2 and 3 of $43 ($7A1A, $7A1B).
+    for (let x = m[0x8D]; x >= 0; x--) {
+      const lo = m[0xA410 + x], scr = m[0xA400 + x] << 8 | lo, col = m[0xA480 + x] << 8 | lo;
+      if (m[scr] === 0x20) { m[scr] = m[0xA420 + x]; m[col] = m[0x58]; }
+      else m[col] = m[0x4D];
+    }
+    const hole = m[0x311E + m[0x2C]];
+    m[0x7A15] = m[0x7A1A] = m[0x7A1B] = hole;
+  }
+  // end of stars
+
+  function flyMine(o) {
+    // Port of a homing mine's flight with the Manta stopped ($2E = 0): mine_appear ($1F62) while it
+    // materialises, then mine_move ($2021) with home_in ($205F). o.x and o.y are where spawn_mine put
+    // the sprite, o.mantaY the Manta's Y ($33), o.level and o.diff the level and difficulty, which set
+    // its lifetime, o.phase the frame counter $62 before the first frame, and o.frac the vertical
+    // fraction $A4C8 the slot's last user left: spawn_mine does not clear it, and from $80 up it adds a
+    // pixel a frame downwards (move_by_velocity). Returns [x, y, state,
+    // shape] for each frame until the mine bursts (state 6) or leaves the screen.
+    let x = o.x & 0x1FF, y = o.y & 255, state = 8, shape = 0x1D, vx = 0, vy = 0;
+    let timer = (o.level * 4 + o.diff) & 255 | 0x80, frame = o.phase & 255;
+    const out = [];
+    for (let f = 0; f < (o.frames || 600); f++) {
+      frame = (frame + 1) & 255;
+      if (state === 8) {                                                   // $1F62
+        if (!(frame & 3)) { shape = (shape - 1) & 255; if (shape < 0x14) { state = 10; shape = 0x11; } }
+      } else {                                                             // $2021
+        x = (x + vx) & 0x1FF; y = (y + vy + ((o.frac || 0) >> 7)) & 255;  // move_by_velocity
+        if (!(frame & 3)) {                                                // home_in
+          vy += y >= o.mantaY ? -1 : 1;
+          const right = x & 0x100 ? (x & 255) >= 0xA0 : (x & 255) < 0xAA;  // left of the Manta's column
+          vx += right ? 1 : -1;
+          vx = Math.max(-6, Math.min(6, vx));
+          vy = Math.max(-4, Math.min(4, vy));
+        }
+        timer = (timer - 1) & 255;
+        if (!timer) { out.push([x, y, 6, 0x14]); break; }                 // bursts into an explosion
+      }
+      if ((x & 0x100) && (x & 255) >= 0x9C && (x & 255) < 0xC4) break;    // $1EA6: off the screen, switched off
+      out.push([x, y, state, shape]);
+    }
+    return out;
+  }
+  // end of flyMine
 
 const say = (id, t) => { const e = document.getElementById(id); if (e) e.innerHTML = '<p class="ur-msg">' + t + '</p>'; };
 const hex2 = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
@@ -437,25 +752,330 @@ C64.load('listing.json').then((L) => {
   document.getElementById('ur-step').addEventListener('click', () => { stop(); step(); });
   sSel.addEventListener('change', () => { stop(); st = 0; height = 0x10; drawManta(); });
   drawManta();
-  // ---------------------------------------------------------------- waves
-  const wSel = document.getElementById('ur-wlv'), wc = document.getElementById('ur-waves');
-  for (let lv = 1; lv <= 15; lv++) wSel.add(new Option(String(lv).padStart(2, '0') + '. ' + NAMES[lv], lv));
-  function drawWaves() {
-    const lv = +wSel.value, C = levelColours(lv);
-    let a = ram[0xC100 + lv] | ram[0xC110 + lv] << 8; const list = [];
-    while (ram[a] !== 0xFF && list.length < 40) list.push(ram[a++]);
-    const ctx = C64.canvas(wc, Math.max(640, list.length * 52), 120), s = 2;
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, wc.width, 120);
-    const out = [];
-    list.forEach((w, k) => {
-      const r = 0xC200 + 16 * w, type = ram[r + 14], n = [0, 1, 2, 3, 4, 5].filter(i => ram[r + i]).length;
-      C64.drawSpriteMC(ctx, Array.from(ram.slice(0x6800 + type * 64, 0x6800 + type * 64 + 63)), k * 52 + 2, 14, s, P[C.enemy], P[7], P[1]);
-      ctx.fillStyle = '#ccc'; ctx.font = '11px monospace'; ctx.fillText(hex2(w), k * 52 + 8, 10); ctx.fillText(n + ' x', k * 52 + 10, 70 + 36);
-      out.push(`${hex2(w)}: ${n} of type ${type}, ${[100, 150, 250, 500, 750, 1000][ram[0x3733 + type] - 4] || '?'} each`);
+  // ---------------------------------------------------------------- stars
+  {
+    const STARCELLS = [[7, 7, 66], [11, 8, 67], [13, 28, 67], [17, 13, 67], [20, 15, 67], [19, 26, 66], [13, 1, 67], [18, 29, 66], [9, 33, 67], [21, 37, 66], [14, 25, 66], [15, 30, 67], [10, 6, 67], [12, 16, 67], [22, 31, 67], [8, 10, 67]];                    // [screen row, column, character] of the recorded frame's stars
+    const lv = 1, C = levelColours(lv), R = mapOf(lv), W = Uint8Array.from(R.m);
+    W.set(charset(lv), 0x7800);
+    STARCELLS.forEach(([row, col, ch], x) => {
+      const a = 0x4800 + row * 40 + col;
+      W[0xA400 + x] = a >> 8; W[0xA410 + x] = a & 255; W[0xA480 + x] = (a >> 8) + 0x90; W[0xA420 + x] = ch;
     });
-    document.getElementById('ur-wout').textContent = `${list.length} waves, then filler waves until the landing. ` + out.join('; ');
+    W[0x8D] = 9; W[0x58] = C.map & 0xF7; W[0x4D] = C.map;
+    const sv = document.getElementById('ur-sview'), sz = document.getElementById('ur-szoom'), sp = document.getElementById('ur-sspeed');
+    let pos = 0x01C0, timer = 0, grid = false;
+    function draw() {
+      const fine = (8 - pos) & 7, c0 = (pos + 7) >> 3;
+      for (let r = 0; r < 17; r++) for (let c = 0; c < 39; c++) {       // draw_map: 17 rows of 39 cells from screen row 6
+        W[0x48F0 + r * 40 + c] = W[0x8200 + r * 0x200 + c0 + c];
+        W[0xD8F0 + r * 40 + c] = C.map;
+      }
+      W[0x2C] = fine;
+      drawStars(W);
+      const cs = W.subarray(0x7800, 0x8000), s = 1, ctx = C64.canvas(sv, 320, 136);
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 320, 136);
+      for (let r = 0; r < 17; r++) for (let c = 0; c < 39; c++) {
+        const code = W[0x48F0 + r * 40 + c], col = W[0xD8F0 + r * 40 + c] & 15, x = c * 8 + fine, y = r * 8;
+        ctx.fillStyle = P[1]; ctx.fillRect(x, y, 8, 8);
+        if (col & 8) C64.drawGlyphMC(ctx, cs, code, x, y, s, [P[1], P[C.mc1], P[C.mc2], P[col & 7]]);
+        else C64.drawGlyph(ctx, cs, code, x, y, s, P[col & 7], P[1]);
+        if (grid) { ctx.strokeStyle = 'rgba(31,95,168,.45)'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, 7, 7); }
+      }
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 8, 136); ctx.fillRect(312, 0, 8, 136);   // 38 columns, as the game sets
+      const z = C64.canvas(sz, 176, 136), k = 14;
+      z.fillStyle = '#f1efea'; z.fillRect(0, 0, 176, 136);
+      for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+        z.fillStyle = (W[0x7800 + 0x42 * 8 + y] >> (7 - x)) & 1 ? P[C.map & 7] : P[1];
+        z.fillRect(8 + x * k, 8 + y * k, k - 1, k - 1);
+      }
+      z.fillStyle = '#55585f'; z.font = '11px monospace'; z.fillText('$42, fine ' + fine, 8, 132);
+      const shown = STARCELLS.slice(0, 10).filter(([row, col]) => W[0x4800 + row * 40 + col] === 0x42 || W[0x4800 + row * 40 + col] === 0x43).length;
+      document.getElementById('ur-sout').textContent = `Map position $${pos.toString(16).toUpperCase().padStart(4, '0')}: fine scroll ${fine}, hole byte $${W[0x311E + fine].toString(16).toUpperCase()}, map columns ${c0}-${c0 + 38}; ${shown} of the 10 stars in space, ${10 - shown} behind the hull.`;
+    }
+    function stop() { clearInterval(timer); timer = 0; document.getElementById('ur-splay').setAttribute('aria-pressed', 'false'); }
+    function step(n) { pos += n; if (pos > 0x0E00) pos = 0x01C0; draw(); }
+    document.getElementById('ur-splay').addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      document.getElementById('ur-splay').setAttribute('aria-pressed', 'true');
+      timer = setInterval(() => step(+sp.value), 40);
+    });
+    document.getElementById('ur-sstep').addEventListener('click', () => { stop(); step(1); });
+    document.getElementById('ur-sgrid').addEventListener('click', (e) => { grid = !grid; e.currentTarget.setAttribute('aria-pressed', grid); draw(); });
+    draw();
   }
-  wSel.addEventListener('change', drawWaves); drawWaves();
+  // ---------------------------------------------------------------- shots
+  {
+    const lv = 1, C = levelColours(lv), base = mapOf(lv).m, ROWS = 6;
+    // a window of Zinc where, on some row, the first thing ahead of the shot is a target 12 to 30 columns on
+    const firstAhead = (c0, r) => {
+      for (let c = c0 + 5; c < c0 + 40; c++) {
+        const v = base[0x8200 + r * 0x200 + c];
+        if (v >= 0x80 && v < 0xA0) return [v < 0x90 ? 'a wall' : 'a target', c - c0 - 3];
+      }
+      return ['open space', 0];
+    };
+    let C0 = 64;
+    search: for (let c0 = 64; c0 < 470; c0 += 4) for (let r = 1; r < 16; r++) {
+      const [what, d] = firstAhead(c0, r);
+      if (what === 'a target' && d >= 12 && d <= 30) { C0 = c0; break search; }
+    }
+    const START = C0 + 3;
+    const rowSel = document.getElementById('ur-brow'), bv = document.getElementById('ur-bview'), bg = document.getElementById('ur-bglyph');
+    let W = null, timer = 0, last = '', covered = 0x20, own = -1;
+    // the rows with a target within the 40 columns ahead of the shot come first in the list
+    const ahead = (r) => firstAhead(C0, r);
+    let best = 0, bestD = -1;
+    for (let r = 1; r < 16; r++) {
+      const [what, d] = ahead(r);
+      rowSel.add(new Option(`${r}: ${what}${d ? ' ' + d + ' columns' : ''} ahead`, r));
+      if (what === 'a target' && d > bestD && d <= 30) { best = r; bestD = d; }
+    }
+    if (best) rowSel.value = best;
+    function reset() {
+      W = Uint8Array.from(base); W.set(charset(lv), 0x7800);
+      W[0x50] = C0 >> 1; W[0x51] = (C0 + 40) >> 1; W[0x2A7F] = 0x80; W[0x2AA0] = 0x10;
+      for (let x = 0; x < 6; x++) W[0xA460 + x] = 0;
+      last = 'Press Fire.'; own = -1; draw();
+    }
+    function fire() {
+      reset();
+      const a = 0x8200 + (+rowSel.value) * 0x200 + START;
+      W[0xA460] = 2; W[0xA430] = a & 255; W[0xA440] = a >> 8; W[0xA450] = W[a]; W[0xA470] = 3;   // as $29A1 launches one, row 3 of the cell
+      last = 'Fired from column ' + START + '.'; draw();
+    }
+    function step() {
+      if (!W[0xA460]) { stop(); return; }
+      const ev = shotsFrame(W)[0];
+      const a = W[0xA430] | W[0xA440] << 8;
+      covered = W[0xA450]; own = W[a];
+      last = ev === 'flying' ? `Column ${a - 0x8200 - (+rowSel.value) * 0x200}: the shot covers $${covered.toString(16).toUpperCase()} and is drawn as its own character $${own.toString(16).toUpperCase().padStart(2, '0')}.` : `The shot ${ev}.`;
+      if (ev !== 'flying') { stop(); own = -1; }
+      draw();
+    }
+    function draw() {
+      const r0 = Math.max(0, +rowSel.value - 2), cs = W.subarray(0x7800, 0x8000), s = 2;
+      const ctx = C64.canvas(bv, 640, ROWS * 16);
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < 40; c++) {
+        const code = W[0x8200 + (r0 + r) * 0x200 + C0 + c], x = c * 16, y = r * 16;
+        ctx.fillStyle = P[1]; ctx.fillRect(x, y, 16, 16);
+        C64.drawGlyphMC(ctx, cs, code, x, y, s, [P[1], P[C.mc1], P[C.mc2], P[C.map & 7]]);
+      }
+      const g = C64.canvas(bg, 352, 112);
+      g.fillStyle = '#f1efea'; g.fillRect(0, 0, 352, 112);
+      const cell = (code, x0, label) => {
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 4; x++) {
+          const v = (cs[code * 8 + y] >> (6 - 2 * x)) & 3;
+          g.fillStyle = [P[1], P[C.mc1], P[C.mc2], P[C.map & 7]][v]; g.fillRect(x0 + x * 24, 4 + y * 12, 23, 11);
+        }
+        g.fillStyle = '#55585f'; g.font = '11px monospace'; g.fillText(label, x0, 110);
+      };
+      if (own >= 0) { cell(covered, 8, `covered $${covered.toString(16).toUpperCase()}`); cell(own, 184, `shot's own $${own.toString(16).toUpperCase().padStart(2, '0')}`); }
+      document.getElementById('ur-bout').textContent = last;
+    }
+    function stop() { clearInterval(timer); timer = 0; document.getElementById('ur-bplay').setAttribute('aria-pressed', 'false'); }
+    document.getElementById('ur-bfire').addEventListener('click', () => { stop(); fire(); });
+    document.getElementById('ur-bstep').addEventListener('click', () => { stop(); if (!W[0xA460]) fire(); else step(); });
+    document.getElementById('ur-bplay').addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      if (!W[0xA460]) fire();
+      document.getElementById('ur-bplay').setAttribute('aria-pressed', 'true');
+      timer = setInterval(step, 300);
+    });
+    rowSel.addEventListener('change', () => { stop(); reset(); });
+    reset();
+  }
+  // ---------------------------------------------------------------- waves
+  {
+    const SCORES = [0, 10, 25, 50, 100, 150, 250, 500, 750, 1000, 2000, 5000];
+    const WORDS = (f) => {
+      if (!f) return 'glide';
+      const w = [];
+      if (f & 0x0F) { if (f & 1) w.push('back'); else if (f & 2) w.push('forwards'); if (f & 4) w.push('dive'); else if (f & 8) w.push('climb'); }
+      else if (f & 0x10) w.push('fire'); else if (f & 0x20) w.push('stop'); else if (f & 0x40) w.push('home in');
+      return w.join(' and ');
+    };
+    function steps(p) {
+      let a = ram[0xC120 + p] | ram[0xC190 + p] << 8; const out = [];
+      while (ram[a] !== 0xFF && out.length < 40) { const b = ram[a++]; const n = b & 0x80 ? ram[a++] : 1; out.push([WORDS(b & 0x7F), n]); }
+      return out;
+    }
+    const sprite = (shape) => Array.from(ram.slice(0x4000 + shape * 64, 0x4000 + shape * 64 + 63));
+    const wl = document.getElementById('ur-wlv'), ws = document.getElementById('ur-wave'), wside = document.getElementById('ur-wside'), wv = document.getElementById('ur-wview');
+    for (let lv = 1; lv <= 15; lv++) wl.add(new Option(String(lv).padStart(2, '0') + '. ' + NAMES[lv], lv));
+    const list = (lv) => { let a = ram[0xC100 + lv] | ram[0xC110 + lv] << 8; const L = []; while (ram[a] !== 0xFF && L.length < 64) L.push(ram[a++]); return L; };
+    const SX = (x) => x < 384 ? x - 24 : x - 512 - 24;                 // the game's own split of the hidden band ($1E68)
+    const CX = (sx) => (sx + 170) * 1.2, CY = (y) => y * 1.15;
+    let fly = null, timer = 0, f = 0;
+    function fillWaves() {
+      ws.innerHTML = '';
+      list(+wl.value).forEach((w, k) => { const t = ram[0xC200 + 16 * w + 14]; ws.add(new Option(`${k + 1}: wave $${w.toString(16).toUpperCase().padStart(2, '0')}, type ${t}`, w)); });
+      plan();
+    }
+    function plan() {
+      stop();
+      const w = +ws.value, rec = 0xC200 + 16 * w, side = ram[rec + 13];
+      wside.disabled = side === 0 || side === 0xFF;
+      fly = flyWave(ram, w, { mantaY: 0x98, noise: +wside.value, frames: 600 });
+      f = 600; draw();
+      const paths = [0, 1, 2, 3, 4, 5].filter(s => ram[rec + s]).map(s => ram[rec + s]);
+      let enter = '';
+      for (const T of fly.slots) if (T) { const k = T.findIndex(p => p[2] === 0x80); if (k >= 0) { enter = SX(T[k][0]) < 160 ? 'the left' : 'the right'; break; } }
+      document.getElementById('ur-wout').textContent = `Wave $${w.toString(16).toUpperCase().padStart(2, '0')}: type ${fly.type} (${SCORES[ram[0x3733 + fly.type]]} points a fighter), ${paths.length} fighter${paths.length > 1 ? 's' : ''} on path${paths.length > 1 ? 's' : ''} ${paths.join(', ')}, ${ram[rec + 12]} frames apart; side byte $${side.toString(16).toUpperCase().padStart(2, '0')}${wside.disabled ? '' : ', random'}. ${enter ? 'With the Manta stopped they enter from ' + enter + '.' : 'They never reach the screen with the Manta stopped.'}`;
+    }
+    function draw() {
+      const ctx = C64.canvas(wv, 640, 300), C = levelColours(+wl.value);
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, 640, 300);
+      ctx.fillStyle = '#000'; ctx.fillRect(CX(0), CY(50), 320 * 1.2, 200 * 1.15);
+      ctx.strokeStyle = '#686868'; ctx.lineWidth = 1; ctx.strokeRect(CX(0) + 0.5, CY(98) + 0.5, 320 * 1.2, 136 * 1.15);
+      ctx.fillStyle = '#80838a'; ctx.font = '11px monospace'; ctx.fillText('the hidden band', 6, 14); ctx.fillText('the screen', CX(4), CY(50) + 12);
+      ctx.fillStyle = P[7]; ctx.beginPath(); ctx.arc(CX(0xAA - 24 + 12), CY(0x98 + 10), 4, 0, 7); ctx.fill();
+      const cols = ['#ff7b54', '#ffd400', '#7bd0ff', '#a9ff9f', '#c79bff', '#ff9fd0'];
+      fly.slots.forEach((T, s) => {
+        if (!T) return;
+        ctx.strokeStyle = cols[s]; ctx.lineWidth = 1.5; ctx.beginPath();
+        let px = null;
+        for (let i = 0; i < Math.min(f, T.length); i++) {
+          const sx = SX(T[i][0]) + 12, y = T[i][1] + 10;
+          if (px === null || Math.abs(sx - px) > 100) ctx.moveTo(CX(sx), CY(y)); else ctx.lineTo(CX(sx), CY(y));
+          px = sx;
+        }
+        ctx.stroke();
+        if (f < 600 && f < T.length) {
+          const [x, y] = T[f];
+          C64.drawSpriteMC(ctx, sprite(fly.shape), CX(SX(x)), CY(y), 1, P[C.enemy], P[7], P[1]);
+        }
+      });
+    }
+    function stop() { clearInterval(timer); timer = 0; document.getElementById('ur-wplay').setAttribute('aria-pressed', 'false'); }
+    document.getElementById('ur-wplay').addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      f = 0; document.getElementById('ur-wplay').setAttribute('aria-pressed', 'true');
+      timer = setInterval(() => { f += 2; if (f >= 600) { f = 600; stop(); } draw(); }, 40);
+    });
+    wl.addEventListener('change', fillWaves); ws.addEventListener('change', plan); wside.addEventListener('change', plan);
+    fillWaves();
+    // the tables
+    const shapeCell = (shape, colour) => { const c = document.createElement('canvas'); const x = C64.canvas(c, 48, 42); C64.drawSpriteMC(x, sprite(shape), 0, 0, 2, P[colour], P[7], P[1]); c.className = 'ur-cv ur-mini'; return c; };
+    const tt = document.getElementById('ur-types');
+    tt.innerHTML = '<thead><tr><th>Type</th><th>Fighter</th><th>Acceleration</th><th>Climb</th><th>Firing</th><th>Bullet</th><th>Bullet speed</th><th>Points</th><th>Waves</th></tr></thead>';
+    const tb = document.createElement('tbody');
+    const used = {}; for (let w = 0; w < 57; w++) (used[ram[0xC200 + 16 * w + 14]] = used[ram[0xC200 + 16 * w + 14]] || []).push(w);
+    for (let t = 0; t < 16; t++) {
+      const tr = document.createElement('tr');
+      const td = (v) => { const e = document.createElement('td'); if (v instanceof Node) e.appendChild(v); else e.textContent = v; tr.appendChild(e); };
+      td(String(t)); td(shapeCell(0xA0 + t, 8)); td(String(ram[0x36F3 + t])); td(String(ram[0x3703 + t])); td(String(ram[0x3713 + t]));
+      td(shapeCell(ram[0x3723 + t], 1)); td(String(ram[0x3743 + t])); td(String(SCORES[ram[0x3733 + t]])); td(String((used[t] || []).length));
+      tb.appendChild(tr);
+    }
+    tt.appendChild(tb);
+    const pt = document.getElementById('ur-paths');
+    const byPath = {}; for (let w = 0; w < 57; w++) for (let s = 0; s < 6; s++) { const p = ram[0xC200 + 16 * w + s]; if (p) (byPath[p] = byPath[p] || new Set()).add(w); }
+    let h = '<thead><tr><th>Path</th><th>Steps (frames)</th><th>Waves</th></tr></thead><tbody>';
+    for (let p = 1; p <= 40; p++) {
+      const st = steps(p).map(([w, n]) => `${w} ${n}`).join(' · ');
+      h += `<tr><td>${p}</td><td>${st}, then holds the last step</td><td>${byPath[p] ? byPath[p].size : 0}</td></tr>`;
+    }
+    pt.innerHTML = h + '</tbody>';
+  }
+  // ---------------------------------------------------------------- homing mines
+  {
+    const mv = document.getElementById('ur-hmview'), my = document.getElementById('ur-hmy'), ml = document.getElementById('ur-hmlv');
+    for (let lv = 1; lv <= 15; lv++) ml.add(new Option(String(lv).padStart(2, '0') + '. ' + NAMES[lv], lv));
+    const SX = (x) => x < 384 ? x - 24 : x - 512 - 24;
+    const CX = (sx) => (sx + 170) * 1.2, CY = (y) => y * 1.15;
+    let start = { x: 0x60, y: 0x9C }, trail = [], f = 0, timer = 0;
+    const sprite = (shape) => Array.from(ram.slice(0x4000 + shape * 64, 0x4000 + shape * 64 + 63));
+    function plan() {
+      trail = flyMine({ x: start.x, y: start.y, mantaY: +my.value, level: +ml.value, diff: 0, phase: 0 });
+      f = trail.length; draw();
+      const homing = trail.filter(p => p[2] === 10).length, appear = trail.filter(p => p[2] === 8).length;
+      const ys = trail.filter(p => p[2] === 10).map(p => p[1]);
+      document.getElementById('ur-hmout').textContent = `Materialising ${appear} frames, homing ${homing} frames, then it bursts; its height ranges over ${Math.min(...ys)}-${Math.max(...ys)} round the Manta's ${my.value}.`;
+    }
+    function draw() {
+      const ctx = C64.canvas(mv, 640, 300);
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, 640, 300);
+      ctx.fillStyle = '#000'; ctx.fillRect(CX(0), CY(50), 320 * 1.2, 200 * 1.15);
+      ctx.strokeStyle = '#686868'; ctx.lineWidth = 1; ctx.strokeRect(CX(0) + 0.5, CY(98) + 0.5, 320 * 1.2, 136 * 1.15);
+      C64.drawSpriteMC(ctx, sprite(0x59), CX(0xAA - 24), CY(+my.value), 1, P[0], P[7], P[1]);
+      ctx.strokeStyle = '#ffd400'; ctx.strokeRect(CX(SX(start.x)) - 2, CY(start.y) - 2, 12, 12);
+      ctx.strokeStyle = '#ff7b54'; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i < Math.min(f, trail.length); i++) {
+        const [x, y] = trail[i]; const px = CX(SX(x) + 12), py = CY(y + 10);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      if (f < trail.length) { const [x, y, , shape] = trail[f]; C64.drawSpriteMC(ctx, sprite(shape), CX(SX(x)), CY(y), 1, P[7], P[7], P[1]); }
+    }
+    function stop() { clearInterval(timer); timer = 0; }
+    document.getElementById('ur-hmgo').addEventListener('click', () => {
+      stop(); plan(); f = 0;
+      timer = setInterval(() => { f++; if (f >= trail.length) stop(); draw(); }, 20);
+    });
+    mv.addEventListener('click', (e) => {
+      const r = mv.getBoundingClientRect(), k = mv.width / r.width;
+      const sx = (e.clientX - r.left) * k / 1.2 - 170, y = (e.clientY - r.top) * k / 1.15;
+      if (sx < 0 || sx > 320 || y < 98 || y > 234) return;           // the playfield
+      start = { x: Math.round(sx) + 24 - 12, y: Math.round(y) - 10 }; stop(); plan();
+    });
+    my.addEventListener('input', () => { stop(); plan(); }); ml.addEventListener('change', () => { stop(); plan(); });
+    plan();
+  }
+  // ---------------------------------------------------------------- the take-off
+  {
+    const T = {"pos0":3123,"dpos":[0,0,0,0,0,0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9,10,10,10,10,11,11,11,12,12,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,7,7,7,7,7,6,6,6,6,5,5,5,5,5,4,4,4,4,4,3,3,3,3,2,2,2,2,2,1,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,-7,0],"fr":[65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,65,96,96,97,97,98,98,99,99,100,100,101,101,102,102,81,81,82,82,83,83,84,84,85,85,86,86,87,87,88,88,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,90,90,90,91,92,92,93,93,94,94,95,95,80,80,81,81,82,82,83,83,84,84,85,85,86,86,87,87,88,88,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,90,90,91,91,92,92,93,93,94,94,95,95,80,80,81,81,82,82,83,83,84,84,85,85,86,86,87,87,88,88,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89,89],"h":[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,25,25,27,27,29,29,32,32,35,35,37,37,38,38,38,38,37,37,35,35,33,33,30,30,27,27,25,25,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24],"att":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,133,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5]};                                 // the flight recorded on Zinc: map position, frame, height, attitude
+    const N = T.fr.length, POS = [T.pos0];
+    for (const d of T.dpos) POS.push(POS[POS.length - 1] + d);
+    // vaporise_column runs only in the loop after the turn ($1563 waits for $45 bit 2), and there
+    // only while the map position is below $0E00 ($1579): on the recorded flight, from frame 127
+    const TURN = T.att.findIndex(a => a & 4), VAP = (i) => i >= TURN && POS[i] < 0x0E00;
+    const tl = document.getElementById('ur-tlv'), tv = document.getElementById('ur-tview'), tf = document.getElementById('ur-tframe');
+    for (let lv = 1; lv <= 15; lv++) tl.add(new Option(String(lv).padStart(2, '0') + '. ' + NAMES[lv], lv));
+    let W = null, f = 0, seed = 1, timer = 0;
+    const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return seed & 255; };
+    let runSeed = 12345;
+    function seek(k) {                                           // rebuild the vaporising up to frame k
+      W = Uint8Array.from(mapOf(+tl.value).m); seed = runSeed;
+      vapourStart(W, rnd);
+      for (let i = 0; i < k; i++) if (VAP(i)) vapourStep(W, rnd);
+      f = k; draw();
+    }
+    function draw() {
+      const lv = +tl.value, C = levelColours(lv), cs = charset(lv), pos = POS[f], s = 2;
+      const fine = (8 - pos) & 7, c0 = (pos + 7) >> 3, ctx = C64.canvas(tv, 640, 272);
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 640, 272);
+      for (let r = 0; r < 17; r++) for (let c = 0; c < 39; c++) {
+        const code = W[0x8200 + r * 0x200 + c0 + c], x = (c * 8 + fine) * s, y = r * 8 * s;
+        ctx.fillStyle = P[1]; ctx.fillRect(x, y, 8 * s, 8 * s);
+        C64.drawGlyphMC(ctx, cs, code, x, y, s, [P[1], P[C.mc1], P[C.mc2], P[C.map & 7]]);
+      }
+      ctx.fillStyle = P[0]; ctx.fillRect(0, 0, 8 * s, 272); ctx.fillRect(312 * s, 0, 8 * s, 272);
+      const fr = T.fr[f];
+      C64.drawSpriteMC(ctx, Array.from(ram.slice(0x4000 + fr * 64, 0x4000 + fr * 64 + 63)), (0xAA - 24) * s, (0x98 - 50 - 48) * s, s, P[0], P[7], P[1]);
+      // the last column vaporise_column worked on, plus the smallest of the rows' offsets: the leading row
+      let off = 16; for (let x = 1; x <= 17; x++) off = Math.min(off, W[0xA4D0 + x]);
+      const v = (W[0x89] | W[0x8A] << 8) - 0x8200 + 1, lead = v + off, manta = c0 + 18;
+      const facing = T.att[f] & 4 ? 'left' : 'right';
+      const edge = v > 480 ? 'the vaporising has not started' : `the edge's leading row is at column ${lead}, ${lead > manta ? (lead - manta) + ' columns behind the Manta' : lead === manta ? 'level with the Manta' : (manta - lead) + ' columns ahead of it'}`;
+      document.getElementById('ur-tout').textContent = `Frame ${f} of ${N - 1}: the Manta over column ${manta}, facing ${facing}, height $${T.h[f].toString(16).toUpperCase()}${T.att[f] & 0x80 ? ', in a manoeuvre' : ''}; ${edge}.`;
+      tf.value = f;
+    }
+    function stop() { clearInterval(timer); timer = 0; document.getElementById('ur-tplay').setAttribute('aria-pressed', 'false'); }
+    document.getElementById('ur-tplay').addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      if (f >= N - 1) seek(0);
+      document.getElementById('ur-tplay').setAttribute('aria-pressed', 'true');
+      timer = setInterval(() => {
+        if (f >= N - 1) { stop(); return; }
+        if (VAP(f)) vapourStep(W, rnd);
+        f++; draw();
+      }, 20);
+    });
+    document.getElementById('ur-trestart').addEventListener('click', () => { stop(); runSeed = (Math.random() * 0x7FFFFFFF) | 1; seek(0); });
+    tf.addEventListener('input', () => { stop(); seek(+tf.value); });
+    tl.addEventListener('change', () => { stop(); seek(f); });
+    runSeed = (Math.random() * 0x7FFFFFFF) | 1; seek(0);
+  }
   // ---------------------------------------------------------------- the chamber
   const cSel = document.getElementById('ur-clv'), rods = document.getElementById('ur-rods'), cout = document.getElementById('ur-cout');
   for (let lv = 1; lv <= 15; lv++) cSel.add(new Option(String(lv), lv));

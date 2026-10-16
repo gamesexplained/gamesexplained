@@ -58,7 +58,20 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ur-wide{width:100%;height:auto}
 .ur-click{cursor:pointer}
 .ur-note{font-size:13px;color:var(--ink-mute)}
-.ur-wide{width:100%;height:auto}
+.ur-stars{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;margin:12px 0 0}
+.ur-stars #ur-sview{flex:1 1 320px;max-width:640px}
+.ur-bglyphs{margin:10px 0 0}
+.ur-mini{background:#000;border-radius:3px;width:48px;height:42px}
+.ur-h3{font-size:19px;margin:22px 0 8px}
+.ur-seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.ur-seg button{font-family:var(--fm);font-size:12.5px;background:var(--surface);color:var(--ink-soft);border:0;padding:6px 12px;cursor:pointer}
+.ur-seg button+button{border-left:1px solid var(--line)}
+.ur-seg button.on{background:var(--chip);color:var(--chip-ink)}
+.ur-seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ur-view{overflow-x:auto;overflow-y:hidden;background:#000;border-radius:6px;margin:12px 0 0;cursor:grab;-webkit-overflow-scrolling:touch}
+.ur-view canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.ur-range{width:100%;margin:10px 0 0}
+.ur-pos{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin:4px 0 0}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -71,16 +84,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">01 · The Dreadnoughts</p>
   <h2 class="t">Each Dreadnought whole</h2>
-  <p class="lede">All 512 columns of a level's map, in four strips of 128, in the level's colours and tile set.</p>
+  <p class="lede">All 512 columns of a level's map in one strip, in the level's colours and tile set. Drag the map or use the slider to scroll along it.</p>
   <div class="pick"><a class="step" id="ur-prev" role="button" tabindex="0" title="Previous">‹</a><select id="ur-lv" aria-label="Dreadnought"></select><a class="step" id="ur-next" role="button" tabindex="0" title="Next">›</a></div>
   <div class="plate">
     <div class="ur-ctl">
+      <div class="ur-seg" role="group" aria-label="Zoom"><button type="button" data-zoom="1">1×</button><button type="button" data-zoom="2" class="on">2×</button></div>
       <button type="button" id="ur-walls" aria-pressed="false">Walls</button>
       <button type="button" id="ur-targets" aria-pressed="false">Targets</button>
       <button type="button" id="ur-ports" aria-pressed="false">Ports</button></div>
-    <canvas id="ur-whole" class="ur-cv ur-wide" width="1024" height="560"></canvas>
+    <div class="ur-view" id="ur-view"><canvas id="ur-whole" width="4096" height="136" aria-label="The whole map of the Dreadnought"></canvas></div>
+    <input type="range" class="ur-range" id="ur-range" min="0" max="1000" value="0" aria-label="Scroll the map">
+    <p class="ur-pos" id="ur-pos"></p>
     <p class="ur-out" id="ur-out"></p>
-    <p class="cap">Built by the same port as the How it works page (<code>$2CB2</code>), which matches the game's own builder byte for byte on every level and the message. Columns 0 to 63, at the start of the first strip, are the open space where the Manta turns; the line under the picture gives the column of the runway's end, character <code>$6F</code>. Walls are characters <code>$80</code>-<code>$8F</code>, targets <code>$90</code>-<code>$9F</code>; the ports are where homing mines appear.</p>
+    <p class="cap">Built by the same port as the How it works page (<code>$2CB2</code>), which matches the game's own builder byte for byte on every level and the message. Columns 0 to 63, at the left end, are the open space where the Manta turns; the line under the picture gives the column of the runway's end, character <code>$6F</code>. Walls are characters <code>$80</code>-<code>$8F</code>, targets <code>$90</code>-<code>$9F</code>; the ports are where homing mines appear.</p>
   </div>
   <table class="ur-tbl" id="ur-one"></table>
 </section>
@@ -225,28 +241,28 @@ C64.load('listing.json').then((L) => {
   const sw = (c) => `<span style="display:inline-block;width:12px;height:12px;border:1px solid #999;vertical-align:-1px;background:${P[c]}"></span>`;
   // ------------------------------------------------------------- one level, whole
   const sel = document.getElementById('ur-lv'), cv = document.getElementById('ur-whole');
+  const view = document.getElementById('ur-view'), range = document.getElementById('ur-range'), posOut = document.getElementById('ur-pos');
   const tog = { walls: false, targets: false, ports: false };
+  let zoom = 2;
   for (let lv = 0; lv < 16; lv++) sel.add(new Option(String(lv).padStart(2, '0') + '. ' + NAMES[lv], lv));
   sel.value = 1;
+  // the whole map, 512 x 17 characters, one canvas pixel to a C64 pixel; zoom sets its size on screen
   function draw() {
     const lv = +sel.value, R = mapOf(lv), m = R.m, cs = charset(lv), C = colours(lv), S = stats(lv);
-    const ctx = C64.canvas(cv, 1024, 4 * 136 + 3 * 8);
-    ctx.fillStyle = '#e9e7e1'; ctx.fillRect(0, 0, cv.width, cv.height);
-    for (let strip = 0; strip < 4; strip++) {
-      const y0 = strip * 144;
-      for (let r = 0; r < 17; r++) for (let c = 0; c < 128; c++) {
-        const col = strip * 128 + c, code = m[0x8200 + r * 0x200 + col], x = c * 8, y = y0 + r * 8;
-        ctx.fillStyle = P[1]; ctx.fillRect(x, y, 8, 8);
-        if (C.map & 8) C64.drawGlyphMC(ctx, cs, code, x, y, 1, [P[1], P[C.mc1], P[C.mc2], P[C.map & 7]]);
-        else C64.drawGlyph(ctx, cs, code, x, y, 1, P[C.map], P[1]);
-        const w = code >= 0x80 && code < 0x90, t = code >= 0x90 && code < 0xA0;
-        if ((tog.walls && w) || (tog.targets && t)) { ctx.fillStyle = w ? 'rgba(208,74,58,.6)' : 'rgba(42,138,74,.65)'; ctx.fillRect(x, y, 8, 8); }
-      }
+    const ctx = C64.canvas(cv, 512 * 8, 17 * 8);
+    for (let r = 0; r < 17; r++) for (let c = 0; c < 512; c++) {
+      const code = m[0x8200 + r * 0x200 + c], x = c * 8, y = r * 8;
+      ctx.fillStyle = P[1]; ctx.fillRect(x, y, 8, 8);
+      if (C.map & 8) C64.drawGlyphMC(ctx, cs, code, x, y, 1, [P[1], P[C.mc1], P[C.mc2], P[C.map & 7]]);
+      else C64.drawGlyph(ctx, cs, code, x, y, 1, P[C.map], P[1]);
+      const w = code >= 0x80 && code < 0x90, t = code >= 0x90 && code < 0xA0;
+      if ((tog.walls && w) || (tog.targets && t)) { ctx.fillStyle = w ? 'rgba(208,74,58,.6)' : 'rgba(42,138,74,.65)'; ctx.fillRect(x, y, 8, 8); }
     }
     if (tog.ports) for (let k = 0; k < S.ports; k++) {
-      const col = m[0x0230 + k] << 8 | m[0x0210 + k], row = m[0x0220 + k] - 6, strip = col >> 7;
-      ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 2; ctx.strokeRect((col & 127) * 8 - 3, strip * 144 + row * 8 - 3, 14, 14);
+      const col = m[0x0230 + k] << 8 | m[0x0210 + k], row = m[0x0220 + k] - 6;
+      ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 2; ctx.strokeRect(col * 8 - 3, row * 8 - 3, 14, 14);
     }
+    size();
     document.getElementById('ur-out').textContent = lv
       ? `${NAMES[lv]}: ${S.walls} wall and ${S.targets} target characters, ${S.ports} generator ports, the runway's end at column ${S.runway}.`
       : `The giant message, built from letter pieces: "Uridium by Andrew Braybrook. High - 12000 AEB".`;
@@ -257,17 +273,40 @@ C64.load('listing.json').then((L) => {
       <tr><th>Colours</th><td>scheme ${C.scheme}: ${sw(C.mc1)} ${sw(C.mc2)} ${sw(C.map & 7)} on ${sw(1)}; fighters ${sw(C.enemy)}</td></tr>
       <tr><th>Waves</th><td>${lv ? W.length + ': ' + W.map(w => hex(w)).join(' ') : 'none'}</td></tr></tbody>`;
   }
+  function size() { cv.style.width = cv.width * zoom + 'px'; cv.style.height = cv.height * zoom + 'px'; sync(); }
+  // the slider and the line under the map follow the window's scroll position
+  function sync() {
+    const span = view.scrollWidth - view.clientWidth;
+    range.value = span > 0 ? Math.round(view.scrollLeft / span * 1000) : 0;
+    const first = Math.floor(view.scrollLeft / zoom / 8), last = Math.min(511, Math.floor((view.scrollLeft + view.clientWidth) / zoom / 8));
+    posOut.textContent = `Columns ${first}-${last} of 512, at ${zoom}×.`;
+  }
+  function show(v) { sel.value = (v + 16) % 16; view.scrollLeft = 0; draw(); }
   for (const k of Object.keys(tog)) {
     const b = document.getElementById('ur-' + k);
-    b.addEventListener('click', () => { tog[k] = !tog[k]; b.setAttribute('aria-pressed', tog[k]); draw(); });
+    b.addEventListener('click', () => { tog[k] = !tog[k]; b.setAttribute('aria-pressed', tog[k]); const s = view.scrollLeft; draw(); view.scrollLeft = s; sync(); });
   }
-  const go = (d) => { const v = +sel.value + d; if (v >= 0 && v < 16) { sel.value = v; draw(); } };
+  document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
+    const f = (view.scrollLeft + view.clientWidth / 2) / Math.max(1, view.scrollWidth);   // keep the middle in view
+    zoom = +b.dataset.zoom; document.querySelectorAll('[data-zoom]').forEach(c => c.classList.toggle('on', c === b));
+    size(); view.scrollLeft = f * view.scrollWidth - view.clientWidth / 2; sync();
+  }));
   for (const [id, d] of [['ur-prev', -1], ['ur-next', 1]]) {
     const e = document.getElementById(id);
-    e.addEventListener('click', () => go(d));
-    e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(d); } });
+    e.addEventListener('click', () => show(+sel.value + d));
+    e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); show(+sel.value + d); } });
   }
-  sel.addEventListener('change', draw); draw();
+  sel.addEventListener('change', () => show(+sel.value));
+  range.addEventListener('input', () => { view.scrollLeft = range.value / 1000 * (view.scrollWidth - view.clientWidth); });
+  view.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  // drag to scroll
+  let drag = null;
+  view.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, s: view.scrollLeft }; view.setPointerCapture(e.pointerId); });
+  view.addEventListener('pointermove', (e) => { if (drag) view.scrollLeft = drag.s - (e.clientX - drag.x); });
+  view.addEventListener('pointerup', () => { drag = null; });
+  view.addEventListener('pointercancel', () => { drag = null; });
+  draw();
   // ------------------------------------------------------------- the table
   let h = '<thead><tr><th>Level</th><th>Map list</th><th>Tile set</th><th>Colours</th><th>Waves</th><th>Targets</th><th>Ports</th><th>Chamber digit</th></tr></thead><tbody>';
   for (let lv = 0; lv < 16; lv++) {

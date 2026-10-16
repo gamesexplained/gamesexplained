@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's music driver against the game's own code. index.html's gx-music block
+// Hold the page's music driver against the game's own code. music.html's gx-music block
 // (createDriver) runs Gauntlet's two music players on a 6502 core of its own; this runs the same
 // players on the kit's 6502 simulator over the committed listing, as level_intro ($9BEF) and
 // treasure_start ($B0D1) call them, and compares every SID write of every frame, in order, for
@@ -9,7 +9,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'music.html';
 const { createDriver } = g.run(page, 'gx-music', 'createDriver');
 const html = g.read(page);
 const mm = html.match(/const MUSIC = (\{.*?\});/);

@@ -17496,7 +17496,7 @@
   {
    "address": 47918,
    "type": "line",
-   "text": "Moves the monsters on screen. With a potion's blast under way it goes to blast_hit. Otherwise, on three passes in four (bits 1-2 of $824B not both clear), it works through up to half the table from where it stopped last time ($BE6D), moving each monster that is on screen (monster_step), and stops early when the raster interrupt asks the main loop to redraw ($8264) or there are 192 monsters."
+   "text": "Moves the monsters on screen. With a potion's blast under way it goes to blast_hit. Otherwise, on three passes in four (bits 1-2 of pass_count $824B not both clear), it visits half the table and one more (monsters_left, from monster_count / 2), every second slot (monster_step), from where it stopped last time ($BE6D); past the last monster it starts again at slot 0 or slot 1, by bit 0 of pass_count, so each monster comes up on every second working pass. It stops early when the raster interrupt has given the go-ahead for the next pass (main_go, $8264) or there are 192 monsters. Only monsters on screen move (monster_on_screen)."
   },
   {
    "address": 48010,
@@ -17506,7 +17506,7 @@
   {
    "address": 48011,
    "type": "line",
-   "text": "Moves monster Y if it is on screen ($BD06); steps Y on by one, or by two when the monster was removed."
+   "text": "Moves monster Y if it is on screen (monster_on_screen, then monster_move $BD06) and steps Y on by two, to every second slot; when the move removed the monster, Y stays, for the monster moved into its slot."
   },
   {
    "address": 48027,
@@ -17616,7 +17616,7 @@
   {
    "address": 48979,
    "type": "line",
-   "text": "Picks which player monsters go for: the nearer when both are in the game, otherwise the one that is."
+   "text": "Picks which player monsters go for: the nearer by the two distances monster_aim added up (target_dist, short across the map's edge, wrap_delta) when both are in the game, otherwise the one that is. The table target_of is indexed by which players are in the game, and its fourth entry is target_far itself."
   },
   {
    "address": 49022,
@@ -17681,7 +17681,7 @@
   {
    "address": 49067,
    "type": "line",
-   "text": "Folds a difference on the 128-unit maze into -64 to 63, so that distances work across the edges of a maze that wraps."
+   "text": "Folds a difference on the 128-unit maze into -64 to 63, the short way round. The value is right; the flags it returns are not the value's: unfolded, they come from its CMP, which monster_aim's BMI reads as \"already positive\" and so takes the length right; folded, they come from the EOR, the value's own sign, and monster_aim then keeps that axis negative. A distance across the map's edge comes out short (the axis subtracted), which can make monster_target pick the farther player."
   },
   {
    "address": 49083,

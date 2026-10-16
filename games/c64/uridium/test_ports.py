@@ -19,6 +19,13 @@ the title message, the map, the piece index and the generator ports compared
 byte for byte, and the piece placements the port records for the page must
 rebuild each map exactly.
 
+Then the ports on the How it works tab, each against the game's routines in the simulator: the
+take-off's vaporising ($173B, $16D2) on every Dreadnought with the same noise, compared at four
+points of its run; the fighters ($1A98, $1C73) on all 57 wave records, both entry sides and two
+Manta heights, every position frame by frame; the shots ($2A17, $2AE9) over random volleys on
+every Dreadnought; the stars ($2ED7) on random screens; and the homing mines ($1F62, $2021,
+$205F) over 600 random launches, every frame from materialising to the burst.
+
 Everything it needs is committed: no game image, no snapshot, no emulator.
 It needs node; with KIT_REQUIRE_TOOLS set it fails without it.
 
@@ -159,6 +166,215 @@ const buildMap = new Function(mapSrc[0] + '\nreturn buildMap;')();
 """
 
 
+# the ports of the How it works page: the take-off's vaporising, the fighters, the shots and the stars
+EXTRA_VAPOUR = r"""'use strict';
+// Written out and run by test_ports.py; see there.
+const fs = require('fs'), path = require('path');
+const GAME = process.argv[2], ROOT = process.argv[3];
+globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
+require(path.join(ROOT, 'site/lib/c64.js'));
+const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
+const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
+const buildMap = new Function(grab('map.js', 'function buildMap', '// end of buildMap') + '\nreturn buildMap;')();
+const V = new Function(grab('vapour.js', 'function vapourStart', '// end of vapour') + '\nreturn { vapourStart, vapourStep };')();
+(async () => {
+  const ram = (await C64.load('listing.json')).ram;
+  let fail = 0;
+  for (let lv = 1; lv <= 15; lv++) {
+    const base = buildMap(ram, lv).m;
+    let s1 = lv * 7919, s2 = s1;
+    const gen = s => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return s; };
+    const m1 = Uint8Array.from(base);
+    const cpu = new CPU(m1, { port: { dir: 0x2F, data: 0x35 }, io: { write(a) { throw new Error('write ' + a.toString(16)); },
+      read(a) { if (a !== 0xD41B) throw new Error('read ' + a.toString(16)); s1 = gen(s1); return (s1 >>> 0) & 255; } } });
+    const m2 = Uint8Array.from(base), rnd = () => { s2 = gen(s2); return (s2 >>> 0) & 255; };
+    cpu.call(0x173B); V.vapourStart(m2, rnd);
+    let d = 0, first = -1, wreckMax = 0;
+    const span = [[0x8200, 0xA400], [0x89, 0x8B], [0xA4D0, 0xA4E2]];   // the map, the column, the offsets
+    for (let f = 1; f <= 600; f++) {
+      cpu.call(0x16D2); V.vapourStep(m2, rnd);
+      if (f === 50 || f === 150 || f === 300 || f === 600) {
+        for (const [x, y] of span) for (let a = x; a < y; a++) if (cpu.m[a] !== m2[a]) { d++; if (first < 0) first = a; }
+        let w = 0; for (let a = 0x8200; a < 0xA400; a++) if (m2[a] >= 0xF9 && m2[a] <= 0xFE) w++;
+        wreckMax = Math.max(wreckMax, w);
+      }
+    }
+    const wreck = wreckMax;
+    if (d) { fail++; console.log('level', lv, d, 'bytes differ, first $' + first.toString(16)); }
+    else console.log('level', lv, 'matches at frames 50, 150, 300 and 600; wreckage cells at most', wreck);
+  }
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.log(e.stack || e); process.exit(1); });
+"""
+
+EXTRA_FIGHTERS = r"""'use strict';
+// Written out and run by test_ports.py; see there.
+const fs = require('fs'), path = require('path');
+const GAME = process.argv[2], ROOT = process.argv[3];
+globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
+require(path.join(ROOT, 'site/lib/c64.js'));
+const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
+const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
+const src = PAGE;
+const flyWave = new Function(src.slice(src.indexOf('function flyWave'), src.indexOf('// end of flyWave')) + '\nreturn flyWave;')();
+(async () => {
+  const ram = (await C64.load('listing.json')).ram;
+  let fail = 0, cmp = 0, removed = 0, onScreen = 0, steerSeen = 0;
+  for (let w = 0; w < 57; w++) for (const noise of [0x7F, 0xFF]) for (const mantaY of [0x98, 0x62]) {
+    const m = Uint8Array.from(ram);
+    for (let a = 0x4800; a < 0x4BE8; a++) m[a] = 0x20;                       // an empty screen: no shots to hit
+    m[0x2E] = m[0x2D] = 0; m[0x33] = mantaY; m[0x25] = 3; m[0x26] = 1; m[0x28] = 0; m[0x4F] = 8; m[0x24] = 0;
+    m[0x0300] = w; m[0x6D] = 0x00; m[0x6E] = 0x03;
+    const vic = new Uint8Array(0x2F);
+    const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io: {
+      write(a, v) { if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v; else if (!(a >= 0xD400 && a <= 0xD418)) throw new Error('write ' + a.toString(16)); },
+      read(a) { if (a >= 0xD000 && a < 0xD02F) return vic[a - 0xD000]; if (a === 0xD41B) return noise; throw new Error('read ' + a.toString(16)); } } });
+    cpu.call(0x1A98);                                                         // new_wave
+    const P = flyWave(ram, w, { mantaY, noise, frames: 600 });
+    let bad = null;
+    for (let f = 1; f <= 600 && !bad; f++) {
+      cpu.m[0x62] = (cpu.m[0x62] + 1) & 255; cpu.call(0x1BFD);                // enemies_frame
+      for (let s = 0; s < 6; s++) {
+        const T = P.slots[s]; if (!T) continue;
+        const on = f <= T.length && (f < T.length || T.length === 600 || false);
+        const gameOn = cpu.m[0xA490 + s] === 2;
+        const portOn = f < T.length || (f === T.length && f === 600) || (f === T.length && T.length === 600);
+        if (f === T.length && T.length < 600) { if (gameOn) bad = `wave ${w} slot ${s} frame ${f}: the port switched it off, the game did not`; else removed++; continue; }
+        if (f > T.length) { if (gameOn) bad = `wave ${w} slot ${s} frame ${f}: still flying in the game`; continue; }
+        if (!gameOn) { bad = `wave ${w} slot ${s} frame ${f}: the game switched it off, the port did not`; continue; }
+        const gx = vic[2 * s] | ((vic[0x10] >> s) & 1) << 8, gy = vic[2 * s + 1], [px, py, pe] = T[f - 1];
+        cmp++; if (pe === 0x80) onScreen++;
+        if (gx !== px || gy !== py || cpu.m[0xA4E8 + s] !== pe) bad = `wave ${w} slot ${s} frame ${f}: game ${gx},${gy},${cpu.m[0xA4E8 + s].toString(16)} port ${px},${py},${pe.toString(16)}`;
+      }
+    }
+    if (bad) { fail++; if (fail < 8) console.log('DIFFERS noise', noise.toString(16), 'mantaY', mantaY.toString(16), bad); }
+  }
+  console.log(`${cmp} fighter-frames compared (${onScreen} on screen), ${removed} fighters switched off in both; ${fail ? fail + ' runs differ' : 'all match'}`);
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.log(e.stack || e); process.exit(1); });
+"""
+
+EXTRA_SHOTS = r"""'use strict';
+// Written out and run by test_ports.py; see there.
+const fs = require('fs'), path = require('path');
+const GAME = process.argv[2], ROOT = process.argv[3];
+globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
+require(path.join(ROOT, 'site/lib/c64.js'));
+const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
+const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
+const buildMap = new Function(grab('map.js', 'function buildMap', '// end of buildMap') + '\nreturn buildMap;')();
+const shotsFrame = new Function(grab('shots.js', 'function shotsFrame', '// end of shots') + '\nreturn shotsFrame;')();
+(async () => {
+  const ram = (await C64.load('listing.json')).ram;
+  let seed = 20261015; const rnd = n => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) % n; };
+  let fail = 0, frames = 0; const seen = {};
+  for (let lv = 1; lv <= 15; lv++) {
+    const base = buildMap(ram, lv).m;
+    const cs = base[0xE040 + lv] << 8; base.set(base.subarray(cs, cs + 0x400), 0x7C00);   // the level's tiles in place
+    for (let trial = 0; trial < 40; trial++) {
+      const m1 = Uint8Array.from(base);
+      const c0 = 64 + rnd(400);                                         // a window of 40 columns
+      m1[0x50] = c0 >> 1; m1[0x51] = (c0 + 40) >> 1; m1[0x2A7F] = rnd(2) ? 0x80 : 0; m1[0x2AA0] = m1[0x2A7F] ? 0x10 : 0;
+      for (let x = 0; x < 6; x++) {
+        if (rnd(3) === 0) { m1[0xA460 + x] = 0; continue; }
+        const a = 0x8200 + rnd(17) * 0x200 + c0 + 4 + rnd(32);
+        m1[0xA460 + x] = rnd(2) ? 2 : 0xFE; m1[0xA430 + x] = a & 255; m1[0xA440 + x] = a >> 8; m1[0xA450 + x] = m1[a]; m1[0xA470 + x] = rnd(7);
+      }
+      const m2 = Uint8Array.from(m1);
+      const cpu = new CPU(m1, { port: { dir: 0x2F, data: 0x35 }, io: { write(a) { if (!(a >= 0xD400 && a <= 0xD418)) throw new Error('write ' + a.toString(16)); }, read(a) { throw new Error('read ' + a.toString(16)); } } });
+      for (let f = 0; f < 30; f++) {
+        cpu.call(0x2A17); const ev = shotsFrame(m2); frames++;
+        for (const e of ev) if (e) seen[e] = (seen[e] || 0) + 1;
+        let d = -1;
+        for (const [x, y] of [[0x8200, 0xA400], [0x7800, 0x8000], [0xA430, 0xA478], [0x2A7F, 0x2A80], [0x2AA0, 0x2AA1]])
+          for (let a = x; a < y && d < 0; a++) if (cpu.m[a] !== m2[a]) d = a;
+        if (d >= 0) { fail++; if (fail < 6) console.log('level', lv, 'trial', trial, 'frame', f, 'differs at $' + d.toString(16), cpu.m[d], m2[d]); break; }
+      }
+    }
+  }
+  console.log(`${frames} frames compared; shot outcomes ${JSON.stringify(seen)}; ${fail ? fail + ' runs differ' : 'all match'}`);
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.log(e.stack || e); process.exit(1); });
+"""
+
+EXTRA_STARS = r"""'use strict';
+// Written out and run by test_ports.py; see there.
+const fs = require('fs'), path = require('path');
+const GAME = process.argv[2], ROOT = process.argv[3];
+globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
+require(path.join(ROOT, 'site/lib/c64.js'));
+const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
+const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
+const s = PAGE;
+const drawStars = new Function(s.slice(s.indexOf('function drawStars'), s.indexOf('// end of stars')) + '\nreturn drawStars;')();
+(async () => {
+  const ram = (await C64.load('listing.json')).ram;
+  let seed = 77; const rnd = n => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) % n; };
+  let fail = 0, n = 0, hidden = 0, shown = 0;
+  for (let t = 0; t < 2000; t++) {
+    const m1 = Uint8Array.from(ram);
+    for (let a = 0x4800; a < 0x4BE8; a++) m1[a] = rnd(3) ? 0x20 : 0x80 + rnd(0x60);   // spaces and hull
+    m1[0x8D] = rnd(16); m1[0x2C] = rnd(8); m1[0x58] = rnd(8); m1[0x4D] = 8 + rnd(8);
+    for (let x = 0; x < 16; x++) { const a = 0x4800 + (7 + rnd(16)) * 40 + rnd(40); m1[0xA400 + x] = a >> 8; m1[0xA410 + x] = a & 255; m1[0xA480 + x] = (a >> 8) + 0x90; m1[0xA420 + x] = 0x42 + rnd(2); }
+    const m2 = Uint8Array.from(m1);
+    const cpu = new CPU(m1, { port: { dir: 0x2F, data: 0x35 }, io: { write(a, v) { if (a >= 0xD800 && a < 0xDC00) m1[a] = v; else throw new Error('write ' + a.toString(16)); }, read(a) { throw new Error('read ' + a.toString(16)); } } });
+    cpu.call(0x2ED7); drawStars(m2); n++;
+    for (let x = 0; x <= m2[0x8D]; x++) { const a = m2[0xA400 + x] << 8 | m2[0xA410 + x]; if (m2[a] === 0x42 || m2[a] === 0x43) shown++; else hidden++; }
+    for (const [x, y] of [[0x4800, 0x4C00], [0xD800, 0xDC00], [0x7A10, 0x7A20]]) for (let a = x; a < y; a++) if (cpu.m[a] !== m2[a]) { fail++; console.log('trial', t, 'differs at $' + a.toString(16)); break; }
+  }
+  console.log(`${n} frames compared, ${shown} stars drawn and ${hidden} under the hull; ${fail ? fail + ' differ' : 'all match'}`);
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.log(e.stack || e); process.exit(1); });
+"""
+
+EXTRA_MINE = r"""'use strict';
+// Written out and run by test_ports.py; see there.
+const fs = require('fs'), path = require('path');
+const GAME = process.argv[2], ROOT = process.argv[3];
+globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
+require(path.join(ROOT, 'site/lib/c64.js'));
+const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const s = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
+if (s.indexOf('function flyMine') < 0) throw new Error('flyMine not found in how-it-works.html');
+const flyMine = new Function(s.slice(s.indexOf('function flyMine'), s.indexOf('// end of flyMine')) + '\nreturn flyMine;')();
+(async () => {
+  const ram = (await C64.load('listing.json')).ram;
+  let seed = 4242; const rnd = n => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) % n; };
+  let fail = 0, frames = 0, burst = 0, gone = 0;
+  for (let t = 0; t < 600; t++) {
+    const m = Uint8Array.from(ram), vic = new Uint8Array(0x2F), s0 = rnd(6);
+    const o = { x: 24 + rnd(320), y: 0x62 + rnd(0x76), mantaY: 0x62 + rnd(0x76), level: 1 + rnd(15), diff: [0, 0x10, 0x20, 0x30][rnd(4)], phase: rnd(256), frac: rnd(256), frames: 600 };
+    for (let a = 0x4800; a < 0x4BE8; a++) m[a] = 0x20;
+    m[0x2E] = m[0x2D] = 0; m[0x33] = o.mantaY; m[0x3D] = 0x20; m[0x62] = o.phase; m[0x26] = o.level; m[0x28] = o.diff;
+    for (let k = 0; k < 6; k++) m[0xA490 + k] = 0;
+    // the slot as spawn_mine leaves it ($1FA6), with the leftover fraction
+    m[0xA490 + s0] = 8; m[0xA4B0 + s0] = (o.level * 4 + o.diff) & 255 | 0x80; m[0xA498 + s0] = m[0xA4A8 + s0] = m[0xA4A0 + s0] = 0; m[0xA4C8 + s0] = o.frac;
+    vic[2 * s0] = o.x & 255; vic[0x10] = (o.x >> 8) << s0; vic[2 * s0 + 1] = o.y; vic[0x15] = 1 << s0; m[0x4BF8 + s0] = 0x1D;
+    const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io: {
+      write(a, v) { if (a >= 0xD000 && a < 0xD02F) vic[a - 0xD000] = v; else if (!(a >= 0xD400 && a <= 0xD418)) throw new Error('write ' + a.toString(16)); },
+      read(a) { if (a >= 0xD000 && a < 0xD02F) return vic[a - 0xD000]; if (a === 0xD41B) return 0xFF; throw new Error('read ' + a.toString(16)); } } });
+    const P = flyMine(o);
+    let bad = null;
+    for (let f = 0; f < P.length + 1 && !bad; f++) {
+      cpu.m[0x62] = (cpu.m[0x62] + 1) & 255; cpu.call(0x1BFD); frames++;
+      const st = cpu.m[0xA490 + s0], gx = vic[2 * s0] | ((vic[0x10] >> s0) & 1) << 8, gy = vic[2 * s0 + 1], sh = cpu.m[0x4BF8 + s0];
+      if (f === P.length) { if (st === 8 || st === 10) bad = `frame ${f}: the game's mine flies on`; else gone++; break; }
+      const [px, py, pst, psh] = P[f];
+      if (pst === 6) { burst++; if (st !== 6 || sh !== 0x14) bad = `frame ${f}: the port bursts, the game has state ${st}`; break; }
+      if (st !== pst || gx !== px || gy !== py || sh !== psh) bad = `frame ${f}: game ${st} ${gx},${gy} $${sh.toString(16)}, port ${pst} ${px},${py} $${psh.toString(16)}`;
+    }
+    if (bad) { fail++; if (fail < 6) console.log('trial', t, JSON.stringify(o), bad); }
+  }
+  console.log(`${frames} mine frames compared over 600 mines; ${burst} burst, ${gone - burst > 0 ? gone - burst : 0} left the screen; ${fail ? fail + ' differ' : 'all match'}`);
+  process.exit(fail ? 1 : 0);
+})().catch(e => { console.log(e.stack || e); process.exit(1); });
+"""
+
+
 def main():
     node = shutil.which("node")
     if not node:
@@ -171,8 +387,16 @@ def main():
         with open(script, "w") as f:
             f.write(JS)
         r = subprocess.run([node, script, HERE, ROOT] + PAGES)
-    print("OK - both ports match the game" if r.returncode == 0 else "FAILED")
-    return r.returncode
+        codes = [r.returncode]
+        for name, js in (("vaporising", EXTRA_VAPOUR), ("fighters", EXTRA_FIGHTERS), ("shots", EXTRA_SHOTS), ("stars", EXTRA_STARS), ("homing mines", EXTRA_MINE)):
+            f = os.path.join(d, name + ".js")
+            with open(f, "w") as out:
+                out.write(js)
+            print("--", name)
+            codes.append(subprocess.run([node, f, HERE, ROOT]).returncode)
+    ok = not any(codes)
+    print("OK - every port matches the game" if ok else "FAILED")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

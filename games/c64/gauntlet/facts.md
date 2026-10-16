@@ -215,14 +215,53 @@ wall, crumbling wall and key becomes an exit (idle_walls_exit, sound
   blow.
 - Generators release monsters every eighth pass, up to 192 in the table
   (generators_run, monster_spawn).
-- Monsters go for the nearer player (monster_target); a lobber nearer
-  than `$18` turns away (monster_aim). Ghosts hit once and vanish, and do
+- Monsters go for the nearer player (monster_target), by the distance
+  on each axis taken the short way round the 128-unit map (wrap_delta)
+  and added; a lobber nearer than `$18` (12 cells) turns away
+  (monster_aim). Across the map's edge the distance comes out short:
+  wrap_delta's flags after a fold make monster_aim keep that axis
+  negative. *Live*: with both players near the bottom of level 2 and
+  monsters across the seam at the top, 13 of 60 aims went to the farther
+  player, each with a stored distance (`$BF87`/`$BF88`) that subtracts
+  the folded axis (a monster at (32, 4): 0 and 4 where 40 and 36 were
+  meant). Ghosts hit once and vanish, and do
   not attack from a diagonal (monster_attack). Demons fire on a straight
   line or a diagonal once in four moves; lobbers throw a rock on an arc
   (rock_path, rock_fly). Sorcerers turn invisible and cannot be shot then
   (bit 3 of `$0640`, shot_hits_monster). Death drains 4 health a touch for
   50 touches, 200 in all, and only magic kills it (deaths_first,
   blast_monster).
+
+### Monster updates
+
+- The table: five arrays of 192 (`$0400` X, `$04C0` Y, `$0580` kind,
+  level and facing, `$0640` flags, `$0700` Death's touches),
+  monster_count (`$824E`) the last index. Monsters from the level file
+  come first, top-left on, every Death moved to the front (deaths_first);
+  monster_spawn adds at the end; monster_remove moves the last into the
+  gap. Positions are in half-cells (cell = X / 2) and always even.
+- play_loop runs generators_run, then monsters_run, in that order, after
+  the shots and the magic keys; on a pass whose scroll direction has
+  changed it skips both (`$819C`).
+- monsters_run does nothing when bits 1-2 of pass_count are both clear
+  (one pass in four). Otherwise it visits monster_count / 2 + 1 slots,
+  stepping by two (monster_step), from `$BE6D`, restarting at slot 0 or 1
+  by bit 0 of pass_count, and stops early once main_go (`$8264`) is set.
+  *Live*, level 2, 52 monsters: 26 slots a working pass, even and odd
+  slots in turn; passes 88-89, 96-97 and 104-105 skipped; one pass cut
+  short after 10.
+- Only monsters inside the 34 x 22 cells from map_x - 1, map_y - 1 move
+  (monster_on_screen); generators_run looks only at the 16 x 10 tiles on
+  screen. *Live*: of the 26 slots visited each pass, 11 reached
+  monster_move, the on-screen monsters of that half (slots 36-51 and 0-5
+  were on screen).
+- A move (monster_move): the monster's cells are cleared, it aims and may
+  attack (monster_aim, monster_attack); a diagonal facing goes through
+  monster_turn, which drops a blocked side (or one side in turn when only
+  the corner is blocked); the monster steps one cell if the 2 x 2 cells
+  ahead are empty (monster_cells_free) and is redrawn. A straight facing
+  into a wall is not turned. Sorcerers flip bit 3 of their flags each
+  move; demons and lobbers may fire (monster_shoot).
 
 ### Treasure rooms
 
@@ -393,5 +432,12 @@ No second sample was drawn after the corrections.
   of every frame), `test_poison.js` (poison_health for 256 values, one
   health_tick from 65,536), `test_levels.js` (level_build, grid_draw and
   the monsters for all 128 files, 4,341 monsters).
+- The monster simulation on How it works: `test_chase.js` runs
+  generators_run and monsters_run for 400 passes of levels 1-7 on the
+  page's core and on the kit's simulator: the monster table, both maps
+  and the health the same after every pass.
+- Monster scheduling and aiming in the emulator (`work/live11.py`,
+  `work/live12.py`): stops at `$BB2E`, `$BB8B`, `$BD06` and `$BF7D` on
+  level 2 with both players in.
 - The rebuilt frame: one frame of level 2 recorded with `frame.py
   capture`, drawn by `site/lib/c64.js`: 104,448 of 104,448 pixels match.
