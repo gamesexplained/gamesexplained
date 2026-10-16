@@ -46,3 +46,9 @@ The `$D011` row added to `c64-reference` here: the freeze it explains stopped ev
 ## Operating system and tools
 
 Linux x86_64 (Ubuntu 24.04 container, four cores, no display); VICE v3.13.2 (`v3.13.2-linux-x86_64-gui.zip`); regenerator2000 0.9.20; Python 3.13.16; node 22.22.0; OpenAI Codex CLI 0.162.1 for the checker; Chromium from Playwright for the browser check.
+
+## The Play port
+
+- `kit/skills/core/70-minisite/play.md`, "Pace it by the machine's clock": the fit and the pass-for-pass check were right and the page still ran busy views at half speed, because the main loop reads the interrupt's frame count in the middle of a stretch to decide whether to draw. The page now moves its clock on by the stretch's cost so far before such a read (`port/page/runtime.js`, `irqByte`). Only this game shows it so far; the lesson is in `kit/lessons/2026-10-16-space-rogue-play.md`.
+- The same file, on a page that carries the game's data without its program: nothing says the game may keep state in its instructions. `port/test/t-page.js` runs the page's machine on the stripped disk beside the whole one and found 3,157 bytes the port reads; the lesson file says how.
+- `kit/c64/lockstep.js` ran each of the title, the intro and the ending as a program of its own once `port/test/lockstep.js` caught the port's jump to the next program and compared at its target. A game of several programs that jump to each other could use that in the kit; it is left in this game's test until a second game needs it.

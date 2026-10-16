@@ -27,6 +27,11 @@ pages' ports against the game's code found three more, also corrected
   `saved_cursors` at $9E90 labels save_cursor's RTS, which should be
   code. Their comments already say so (`port/corrections.md`).
 
+- The Play tab's pace was checked against the game in flight and in
+  fights (`port/test/t-page.js`). Navigation, the bases and HIVE! were
+  not: their waits are the game's delay loops, whose cycles the port
+  counts exactly, but the work between them is costed by the fit made
+  on flight, fights and docking.
 - `60-verify` gained a paragraph on values a new game leaves alone after
   this run's verify step. The variables play changes that the new-game
   routine does not set have not been listed and read.
@@ -40,6 +45,7 @@ pages' ports against the game's code found three more, also corrected
 - The flight engine's 3D maths, which works in logarithms
   (`parts/engine/facts.md`), as a widget that runs one projection step
   by step.
-- A Play tab for HIVE!, which is one load of 7,680 bytes over the
-  engine.
+- The Play tab's second pass: the 3D view drawn at the browser's own
+  resolution and frame rate, as Mercenary's Play tab does, with the
+  game's pace kept.
 - The talk scripts as a browser: who says what at which base.
