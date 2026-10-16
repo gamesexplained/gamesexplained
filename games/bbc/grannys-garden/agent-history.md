@@ -135,3 +135,35 @@ secret showed its standfirst calling a1 the top tree on the left; the
 trees' screen labels its rows 3, 2 and 1 from the top, and `magicTree`
 gives M = 12 the name a1, so it is the bottom tree on the left, and the
 page says so.
+
+## 16 October 2026, the teacher's booklet
+
+**The booklet.** The maintainer bought Retro Granny's Garden, which comes
+with 4Mation's reprint of the teacher's booklet as a PDF, and asked what
+the page could learn from it; the booklet itself stays out of the
+repository. Every claim it makes about the program was read against the
+listing. Two of the page's findings turned out to be documented: T at
+`Ready to start?` (the booklet's "If 'T' is entered the magic tree is set
+to be A1"), which the Discoveries tab had headed a secret, and the sound
+switch, which the booklet gives as OFF where the page had described the
+code's test for a final f. The T section moved to How it works, beside the
+trees' button that already used it. The bee hurt in the wood, headed a
+bug, is a trap the booklet warns of ("Each creature can help once only
+although this information is not given to the children"), and the code
+has replies written for it, so it lost its `Bug:`.
+
+**The disc.** The booklet's loading instructions and program names do not
+fit the TOSEC disc (no boot file, GRAN1 rather than GRANNY1, no initial
+program before `Ready to start?`), and its note on loading the tape into a
+disc machine is the case the programs' own relocation was written for.
+The page now says the disc is most likely a copy of the tape. The Mac
+edition was looked at for the BASIC program, to settle it; its program
+file holds the game's words and teletext pictures as data, and its tunes
+are MP3 recordings, so it did not.
+
+**The theme.** The author's note thanks Neil "for whistling 'Queen of the
+Fairies' down the telephone". PROCsnd1's DATA, moved down three semitones,
+matched the first strain of the set dance "The King of the Fairies" in a
+set-dance collection's ABC (X:2, K:Edor) bar for bar, with two quick runs
+simplified; the Séamus Connolly Collection's "Queen of the Faeries", whose
+opening Connolly calls related to the King, is further from it.

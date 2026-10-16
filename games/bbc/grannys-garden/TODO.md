@@ -28,12 +28,15 @@ the listing checked only when a sample after an audit is within the mark.
 
 ## Open
 
-- The teacher's booklet (features.md): not part of the program, and not
-  found online.
-- Whether this is 4Mation's own disc. Both files were saved after a run
-  had turned the first line's relocation test into a REM, and Part 2 ends
-  `&0D &81`. Comparing another copy of the disc, or the tape, would say
-  whether every copy has the bug that stops Part 1 at &1900.
+- Whether this is 4Mation's own disc. The teacher's booklet points to a
+  copy of the tape (`orientation.md`, The image), but no disc of
+  4Mation's was compared. Both files were saved after a run had turned the
+  first line's relocation test into a REM, and Part 2 ends `&0D &81`.
+  Comparing 4Mation's disc, or the tape, would say whether any copy 4Mation
+  sold has the bug that stops Part 1 at &1900. Retro Granny's Garden for
+  the Mac (4Mation) did not settle it on 16 October 2026: its program file
+  holds the game's words and teletext pictures as data, its tunes are MP3
+  recordings, and a search of it for the BASIC program's text found none.
 - The lake asked for at the lake prints two messages over each other
   (parts/part-2/facts.md, traced); not seen live.
 

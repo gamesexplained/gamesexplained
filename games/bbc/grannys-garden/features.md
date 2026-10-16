@@ -23,8 +23,13 @@ Sources:
   Again blog, 31 October 2014,
   http://www.ourdigitalheritage.org/archive/playitagain/4mation-a-britishaustralian-box-of-treasures/,
   read 14 October 2026.
-- The teacher's booklet that came with the game (Acorn User) was not found
-  online.
+- The teacher's booklet that came with the game: 4Mation's reprint of it,
+  14 pages ("© 1983-2006"), the PDF that comes with Retro Granny's Garden
+  (https://www.4mation.co.uk/retro/retrogranny.html), read 16 October 2026
+  from the maintainer's purchased copy, which is not stored here. Cited by
+  its sections: Introduction, Program procedure, Using the program, In the
+  classroom, Additional ideas, User-friendliness, Author's note, Loading
+  instructions.
 - The game's own screens, every one a route reaches
   (`orientation.md`), saved in `reference/` as `p1-*` and `p2-*`.
 
@@ -42,7 +47,19 @@ Sources:
 | One-word answers (Acorn User) | confirmed | PROCi takes only letters, DELETE and RETURN, so no answer can hold a space; Part 1 line 1020, Part 2 line 460 |
 | Misspelt answers accepted without comment (Acorn User) | confirmed | answers are matched by INSTR on two to four letters inside the word: "itch" for kitchen, "ack", "upb", "rs", "pl", "ic", "or", "ot", "ak", "as", "il", "pom", "horn", "no", "ky", "iv", "ed", "reen" |
 | Rubbish sometimes accepted as an answer (Acorn User) | confirmed | a yes or no is the answer's first letter; several questions take anything but "Y" as no and go on (Part 1 lines 600, 620, 680, 700); `Stars` reaches the stairs |
-| The teacher's booklet, with ideas for discussion (Acorn User) | open | not part of the program; not found online |
+| The teacher's booklet, with ideas for discussion (Acorn User) | live | the booklet (Sources); its questions for the class are answered from the code on the Discoveries tab |
+| T at `Ready to start?` sets the magic tree to a1 (the booklet, Program procedure) | live | line 230 sets `t%`, line 290 puts the tree at L=4, M=12; it lasts until the part is run again |
+| OFF at `Ready to start?` turns the sound off (the booklet, Program procedure) | live | line 220 sets on% FALSE for an answer ending in f, which `Off` is; the field holds three letters |
+| GRANNY1, GRANNY2: in the second, T has no effect (the booklet) | confirmed | Part 2 lines 210-220 have no `t%` |
+| A password from the second program typed into the first asks for an adult (the booklet) | live | Part 1 line 3190, for sky and river |
+| The cottage: four places to visit, and "things can change" (the booklet) | live | the kitchen, the backroom, the cupboard and the stairs; the green broomstick from the second visit to the cupboard (`cup%`) |
+| The Giant's garden: five difficulties, five creatures, each helping once, which the children are not told (the booklet) | live | one creature for each stage; a bee or a butterfly hurt in the wood keeps its own reply (Part 1 lines 2690, 2750), the butterfly after the pond says it has helped once (line 2700) |
+| The City of the Dragons: four baby dragons, each with a favourite food (the booklet) | live | the loves and hates of Part 2's line 1270 and its sentence table |
+| The Land of Mystery: a map of five places, and two children (the booklet) | live | PROCmap, Jessica and Daniel |
+| `Key S to start again` at the end of each section (the booklet) | live | PROCkey |
+| Text in double height, letters only, one word, the same capitals whatever CAPS LOCK says, no auto-repeat (the booklet, User-friendliness) | confirmed | PROCh; PROCi; `*FX11,0` at line 150 of both parts |
+| On disc, SHIFT-BREAK loads and runs it; on tape an initial program runs the main one (the booklet, Loading instructions) | differs | this disc has no `!BOOT` and no first program (`orientation.md`, The image) |
+| The theme: Neil whistled "Queen of the Fairies" down the telephone (the booklet, Author's note) | confirmed | PROCsnd1's DATA (Part 1 lines 3230-3240) is the first strain of the set dance "The King of the Fairies", moved to G, played twice with its two endings |
 | No joystick (the archive) | confirmed | no ADVAL in either program |
 | No saving (the archive) | confirmed | no file access after the load; the passwords take its place |
 | The theme tune (Gazzard) | live | PROCsnd1: 52 notes on three channels, under each part's title and at the end; recorded from the sound chip (`facts.md`, Sound) |
@@ -55,15 +72,9 @@ Found in the code, then played.
 - **Only six of the twelve magic trees can be the one.** Line 290 picks
   the column as `RND(3)*9+4` and the row as `RND(2)*6`: columns b, c and
   d and rows 1 and 2. Column a and row 3 never hold it. **live**
-- **Secret: T at "Ready to start?" fixes the tree at a1**, a tree that is
-  otherwise never magic (lines 230 and 290). The prompt comes back; then
-  Y starts. It has a flag (`t%`) and a test of its own, so it was put
-  there on purpose, and nothing on the screen, in a review or in a guide
-  found online mentions it: a secret, as the Discoveries tab heads it.
-  **live**
-- **An answer ending in f turns the music off** (line 220 in Part 1, 210
-  in Part 2): `Yf` starts with no tune under the title and none of the
-  witch's sounds; Part 2's ending still plays the theme (line 2580).
+- **Any answer ending in f turns the music off**, not only the booklet's
+  OFF (line 220 in Part 1, 210 in Part 2): `Yf` starts with no tune under
+  the title and none of the witch's sounds; Part 2's ending still plays the theme (line 2580).
   `Yesf` cannot be given: the field there takes four letters, and the key
   after the fourth, RETURN included, is taken as DELETE, so three survive
   (PROCi, line 1030). **live**
@@ -102,7 +113,8 @@ Found in the code, then played.
   only tells the player who gives it the key; any answer with "horn"
   after its first letter passes, and "horn" alone does not, because the
   input routine makes the first letter a capital. **live**
-- **A bee hurt in the wood cannot pass the dog.** Called in the wood, the
+- **A bee hurt in the wood cannot pass the dog**, a trap the booklet's
+  "Each creature can help once only" covers. Called in the wood, the
   bee stings the nut trees and a nut makes its nose bleed (be=1); on the
   dog's path it refuses and the Witch comes, and no other creature gets
   past the dog (Part 1 lines 2740-2750, 3020). **live** (`p1-beewood`)
@@ -126,6 +138,9 @@ Found in the code, then played.
 
 ## Open questions
 
-- Whether the disc in the TOSEC set is 4Mation's own or a copy made from
-  the tape (`orientation.md`, The image).
-- What the teacher's booklet says.
+- Whether the disc in the TOSEC set is a copy made from the tape. The
+  booklet points that way (`orientation.md`, The image), but no disc of
+  4Mation's has been compared.
+- The "droopy tree": the booklet's author's note offers a free booklet to
+  anyone who can explain it. Not placed; the tree beside the river in the
+  City of the Dragons (`reference/p2-05`) is a candidate, unchecked.
