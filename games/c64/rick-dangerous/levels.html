@@ -1,0 +1,99 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rick Dangerous</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a; --chip:#2f3136; --chip-ink:#ffffff;
+  --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2{font-weight:var(--hw);letter-spacing:-.01em;margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.rd-maps{display:flex;gap:18px;overflow-x:auto;align-items:flex-start;padding-bottom:8px}
+.rd-maps figure{margin:0;flex:0 0 auto}
+.rd-maps figcaption{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-bottom:6px}
+.rd-maps canvas{display:block;image-rendering:pixelated;width:256px;background:#000}
+@media (max-width:640px){:root{--gx:16px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1989 · Firebird</p>
+  <h1>Rick Dangerous</h1>
+  <p class="sub">The four levels, each drawn whole from the game's map data.</p>
+</header>
+<main class="wrap">
+<section>
+  <p class="fig">01 · The levels</p>
+  <h2 class="t">Four levels, top to bottom</h2>
+  <p>Each picture below is a level's map as the game stores it: rows of eight block numbers (<code>$9200</code>-<code>$A5BF</code>), each block four tiles by four (<code>$8200</code>), each tile a character from the level's tile set with its colour from the tile colour table. The game shows six map rows at a time and scrolls by two when Rick nears the top or the bottom of the screen; rooms to the left and right are further stretches of the same map, reached through the exits. Objects, enemies and traps are not part of the map and are not drawn.</p>
+  <div class="plate"><div class="rd-maps" id="rd-maps"></div>
+    <p class="cap">Drawn by this page from <code>listing.json</code>: levels 1 and 2 with the tile set at <code>$D000</code> and the colours at <code>$8000</code>, levels 3 and 4 with the second set at <code>$7000</code> and <code>$8100</code>, which <code>$1911</code> swaps in; the two shared multicolours of each level from <code>$1988</code> and <code>$198C</code>. Each level runs from its first room's map address to the next level's. <code>test_maps.js</code> checks the decoding of every map row against the game's own <code>$2D59</code> in the kit's simulator.</p></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* rd-maps */
+// One map row decoded as $2D59 does: eight block numbers at ram[row..row+7], each block 16 tile
+// codes at $8200 + 16 x block (through the tables $B300/$B400), laid out four rows of 32 tiles.
+function decodeRow(ram, row) {
+  const out = new Uint8Array(128);
+  for (let b = 0; b < 8; b++) {
+    const blk = ram[row + b], at = ram[0xB300 + blk] | (ram[0xB400 + blk] << 8);
+    for (let k = 0; k < 16; k++) out[(k >> 2) * 32 + b * 4 + (k & 3)] = ram[at + k];
+  }
+  return out;
+}
+// The levels: the map from each level's first room record to the next level's, the tile set and
+// colours of its graphics set, and its two shared multicolours.
+function levels(ram) {
+  const first = [0, 1, 2, 3].map((l) => ram[0x1980 + l] | (ram[0x1984 + l] << 8));
+  const map = (rec) => ram[rec + 1] | (ram[rec + 2] << 8);
+  return first.map((rec, l) => ({
+    from: map(rec), to: l < 3 ? map(first[l + 1]) : 0xA5C0,
+    set: ram[rec], chars: ram[rec] ? 0x7000 : 0xD000, colours: ram[rec] ? 0x8100 : 0x8000,
+    mc1: ram[0x1988 + l] & 15, mc2: ram[0x198C + l] & 15,
+  }));
+}
+// end of levels
+(async function () {
+  const box = document.getElementById('rd-maps');
+  if (!window.C64) { box.textContent = 'Needs the site\'s c64.js: open this page from the built site.'; return; }
+  const L = await C64.load('listing.json'), ram = L.ram;
+  const names = ['South America', 'Egypt', 'Schwarzendumpf Castle', 'Missile base'];
+  levels(ram).forEach((lv, i) => {
+    const rows = (lv.to - lv.from) >> 3;
+    const fig = document.createElement('figure');
+    fig.innerHTML = `<figcaption>${i + 1}. ${names[i]}<br>${rows} map rows, $${lv.from.toString(16).toUpperCase()}</figcaption>`;
+    const cv = document.createElement('canvas');
+    fig.appendChild(cv); box.appendChild(fig);
+    const ctx = C64.canvas(cv, 256, rows * 32);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 256, rows * 32);
+    const charset = ram.subarray(lv.chars, lv.chars + 0x800);
+    for (let r = 0; r < rows; r++) {
+      const tiles = decodeRow(ram, lv.from + r * 8);
+      for (let t = 0; t < 128; t++) {
+        const code = tiles[t], col = ram[lv.colours + code], x = (t & 31) * 8, y = r * 32 + (t >> 5) * 8;
+        if (col & 8) C64.drawGlyphMC(ctx, charset, code, x, y, 1, [null, C64.PAL[lv.mc1], C64.PAL[lv.mc2], C64.PAL[col & 7]]);
+        else C64.drawGlyph(ctx, charset, code, x, y, 1, C64.PAL[col & 15], null);
+      }
+    }
+  });
+})();
+</script>

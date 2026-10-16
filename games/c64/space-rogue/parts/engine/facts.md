@@ -51,8 +51,15 @@ stretch that needs a chip or the KERNAL.
   (`update_cockpit`) every seventh pass (`$135D`), the message line's
   timer every 16th, and every 256th the target's hail, the clock line
   and a chance of a new ship (`pick_ship_with_chance` with the danger
-  level divided by 8; ships farther than `$0B49`, a log of the
-  distance, about 2,500 units, are removed).
+  level divided by 8, placed at random within 1,250 units, `$04E2`, of
+  the Sunracer on each axis by `random_offset`, `$1E73`; ships farther
+  than `$0B49`, a log of the distance, about 2,500 units, are removed).
+- `enter_sector` (`$15A0`) places each of the sector's objects and an
+  encounter's ships at random within eight times its type's radius
+  (`type_radius`, `$0A1D`) of the Sunracer on each axis
+  (`place_object`, `$167F`): 24 units for a Wasp or a Dart, 88 for a
+  Cruiser, 176 for a Titan. The fights on Ships and combat are placed
+  the same way (`test_combat.js`).
 - `wait_ticks` (`$A317`) waits A ticks of 76 × 256 turns of a delay
   loop, about a tenth of a second each.
 
@@ -154,9 +161,10 @@ flown (`$0838`) only the first 25 entries count, up to V.
   radii added; neither looks at the model. Flying along the axes, the
   Cruiser's nose and the Corsair's reach 16 units against a box of 13,
   the Vulture's wings 16, and the Titan 28.8 against 24 (the models as
-  `test_ships.js` holds them to `draw_model`). *Simulated* (the opening fight
-  on Ships and combat, in `test_combat.js`): the Cruiser and the Hunter,
-  both Imperial, start side by side and ram each other on pass 256.
+  `test_ships.js` holds them to `draw_model`). `check_collisions` tests
+  no faction. *Simulated* (a Titan and four fighters, in
+  `test_combat.js`): the Titan and the Hunter, both Imperial, ram each
+  other four times.
 - `hazard_hit` (`$6CC5`): planets and the black hole do 255.
 - `kill_reward` (`$1ABF`): a destroyed pirate (faction 0) pays 32 ×
   its type's rank value (`type_rank`) plus a random 0-255 in credits,

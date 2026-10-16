@@ -254,6 +254,13 @@ def kernal_only(rom, ram, recorded, sources):
     only where the RAM holds a JMP there too: otherwise it is a call to the KERNAL. both: what the
     two reach alike; the rest neither reaches, and stays. rom is the memory with the KERNAL in
     (the RAM below it, for the vectors it jumps through); ram is the RAM alone (#309)."""
+    by_rom, by_ram = reaches(rom, ram, recorded, sources)
+    return sorted(by_rom - by_ram), sorted(by_rom & by_ram)
+
+
+def reaches(rom, ram, recorded, sources):
+    """(by_rom, by_ram): the recorded addresses the KERNAL's own code reaches, and those code in RAM
+    reaches, as kernal_only decodes them."""
     vectors = restor_defaults(rom)
     by_rom = reach(rom, [word(rom, v) for v in (0xFFFA, 0xFFFC, 0xFFFE)] + list(JUMP_TABLE)
                    + list(vectors.values()), recorded, vectors)
@@ -263,7 +270,17 @@ def kernal_only(rom, ram, recorded, sources):
         if d:
             entries += transfers(ram, a, d)
     by_ram = reach(ram, [e for e in entries if e not in JUMP_TABLE or ram[e] in (0x4C, 0x6C)], recorded)
-    return sorted(by_rom - by_ram), sorted(by_rom & by_ram)
+    return by_rom, by_ram
+
+
+def unreached(rom, ram, recorded, sources):
+    """The recorded addresses under the KERNAL that neither the KERNAL's code nor code in RAM is
+    found to reach. dump keeps them, and names them: they may be the KERNAL's own, reached through
+    a path the decoding does not follow (one game's record kept four instructions of the KERNAL's
+    keyboard wait at $E5CD-$E5D4, where the game keeps sprite graphics), or the game's, reached
+    through a jump the decoding cannot see."""
+    by_rom, by_ram = reaches(rom, ram, recorded, sources)
+    return sorted(set(recorded) - by_rom - by_ram)
 
 
 def ranges(addrs, most=12):
@@ -329,6 +346,12 @@ def dump(gdir, under_rom=False):
         if both:
             print(f"note: {len(both)} instructions under the KERNAL are reached both by its code and by code in RAM, "
                   f"and are kept: {ranges(both)}. Check them against what the game's code there runs")
+        neither = unreached(ram[:0xE000] + kernal, ram, {a for a in under if a >= 0xE000},
+                            set(executed) | {a for a in under if a < 0xE000})
+        if neither:
+            print(f"note: {len(neither)} instructions under the KERNAL are reached neither by its code nor by code "
+                  f"in RAM, and are kept: {ranges(neither)}. Check each: a stretch of the KERNAL's own (its "
+                  "keyboard wait, say) kept here types the game's data there as code; remove those from codemap.json")
     if under and under_rom:
         executed = sorted(set(executed) | set(under))
         print(f"kept {len(under)} instructions marked ROM execute in RAM the port (${port:02X}) has a ROM "

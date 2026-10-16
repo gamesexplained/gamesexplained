@@ -303,8 +303,12 @@ time or longer, and measure in the machine's time (frames, loop passes,
 the cycle stopwatch), never the host's. A script that waits a fixed
 number of seconds for a stop can give up before the stop arrives: wait
 on the machine's state, with a limit scaled to the speed the check
-reported. Nothing in the workflow needs warp. Autostart still turns
-warp on, so turn it off as usual.
+reported. Nothing in the workflow needs warp. Autostart turns warp on
+while it loads, and when it turns it off depends on the image: disk runs
+found it still on at the game, while a TAP autostarted on 12 October 2026
+read `WarpMode` 0 twenty seconds in, with the turbo part still to load at
+real speed. Read `WarpMode` after an autostart rather than assume either,
+and set it to what the next step needs.
 
 Until 3 October 2026 the check judged `watch-store`, `watch-load`,
 `checkpoints-survive-load` and `warp` against a second of the host's

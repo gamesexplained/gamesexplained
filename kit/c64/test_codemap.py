@@ -8,7 +8,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from codemap import banked_out_ram, kernal_only, parse_executed, restor_defaults, runs, sizes  # noqa: E402
+from codemap import banked_out_ram, kernal_only, parse_executed, restor_defaults, runs, sizes, unreached  # noqa: E402
 
 SAMPLE = """\
 (C:$1005) addr: IO  ROM RAM
@@ -123,6 +123,13 @@ class KernalTests(unittest.TestCase):
         dropped, both = kernal_only(rom, ram, self.RECORDED, {0xC000, 0xC003})
         self.assertEqual(both, [0xE102])
         self.assertEqual(dropped, [a for a in self.KERNAL if a != 0xE102])
+
+    def test_unreached(self):
+        """An address under the KERNAL that neither its code nor the RAM's reaches is named; the
+        game's routine and the KERNAL's own are not."""
+        rom, ram = self.images({0xE000: [0xEA, 0x60]})
+        self.assertEqual(unreached(rom, ram, self.RECORDED, {0xC000, 0xC003}), [])
+        self.assertEqual(unreached(rom, ram, self.RECORDED | {0xE5CD}, {0xC000, 0xC003}), [0xE5CD])
 
     def test_own_jump_table(self):
         """A jump into the jump table is the RAM's own only where the RAM holds a JMP there."""

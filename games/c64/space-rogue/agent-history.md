@@ -219,3 +219,24 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the game's picture to the pixel, except in the first three passes
   after a saved moment is restored, where a dust dot can sit a row off.
   The cause was not found; the page never restores a moment.
+
+## Combat's starting places (16 October 2026)
+
+- The fights on Ships and combat started each faction as a group on a
+  ring 700 units ahead of the Sunracer, a layout of the page's own, and
+  Aaron saw the ships fight their way out of the picture. The game
+  places an encounter's ships with `place_object` (`$167F`), within
+  eight times each type's radius of the Sunracer, and the page now calls
+  it. Over 40 random fights the ships' median distance from the
+  Sunracer fell from about 850 units to about 300.
+- Starting close, a lone Wasp attacking the Sunracer can circle it for
+  thousands of passes without lining up a shot (a fighter fires only
+  with its target near the nose): in five tries it outlasted the 6,000
+  passes twice. A lone Vulture, which fires any way, destroyed it in
+  600 to 1,100 passes each time, so the page's claim moved to the
+  Vulture.
+- The camera framed every track, missiles too, from a set multiple of
+  the box's size, so a missile that missed dragged the ships into a
+  corner, and with the ships close the set distance cut them off. It
+  now frames the ships alone and backs off just far enough to keep the
+  box's corners on the canvas.
