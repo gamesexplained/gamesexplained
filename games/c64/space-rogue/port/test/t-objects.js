@@ -1,11 +1,17 @@
 'use strict';
 // The objects' routines alone against the game's (check.js): thrust, turning, gravity, contact
 // and damage, making and freeing objects, and the wormhole, on the moments of flight with
-// objects moved and set up at random. A type is made only when its model is loaded already, or
-// it has none (the game's code would load it through the KERNAL, which check.js does not serve).
+// objects moved and set up at random; a sector's objects on the chart's moments, with the
+// encounter and the map's entries shuffled; the pictures, the models and the save, through the
+// KERNAL that check.js serves from each side's own copy of the disk.
 const { check } = require('./check.js');
 let f = 0;
-const t = o => { f += check(Object.assign({ cases: 600, outs: [] }, o)).fails ? 1 : 0; };
+// node t-objects.js [names]: those checks only
+const ONLY = process.argv.slice(2);
+const t = o => {
+  if (ONLY.length && !ONLY.includes(o.name)) return;
+  f += check(Object.assign({ cases: 600, outs: [] }, o)).fails ? 1 : 0;
+};
 const nine = (M, i) => M[0x0846 + i];
 const pos = (M, i) => 0x065D + nine(M, i);
 const w16 = (M, a, v) => { M[a] = v & 255; M[a + 1] = (v >> 8) & 255; };
@@ -101,4 +107,52 @@ t({ name: 'make_wormhole', states: st => [0x1F, 0x20, 0x21].every(k => st.ram[0x
 } });
 t({ name: 'ring_drift', cases: 1500, setup: (M, c, rnd) => { M[0x74A0] = rnd(256); M[0x74A1] = rnd(8); for (let i = 0; i < 9; i++) M[0x6B + i] = rnd(256); return { y: rnd(2) ? 1 : 4 }; } });
 t({ name: 'ring_type', setup: (M, c, rnd) => { M[0x749B] = rnd(256); }, outs: ['x'] });
+
+// ---- a sector's objects, on the chart's moments (the system's map is in memory there)
+const SHIPS = [0x0C, 0x02, 0x05, 0x07, 0x08, 0x03, 0x06, 0x01, 0x04];
+const sector = (M, rnd) => {
+  if (rnd(2)) { M[0x071E] = rnd(32); M[0x071F] = rnd(32); }
+  for (let i = 0; i < 3; i++) M[0x0D04 + i] = rnd(3) ? 0xFF : pick(rnd, SHIPS);
+  M[0x0D07] = rnd(2) ? 0 : 1 + rnd(3);
+  // entries of the map moved into the ship's sector
+  for (let e = 1; e < 32; e++) if (rnd(4) === 0) { M[0x5510 + e] = M[0x071E]; M[0x5530 + e] = M[0x071F]; }
+};
+const nav = o => t(Object.assign({ moments: 'nav' }, o));
+nav({ name: 'enter_sector', cases: 300, setup: (M, c, rnd) => { sector(M, rnd); }, maxSteps: 4e7, outs: ['a', 'y'] });
+nav({ name: 'base_file_from_map', setup: (M, c, rnd) => ({ y: rnd(32) }), outs: ['a', 'y'] });
+t({ name: 'count_special_entry', setup: (M, c, rnd) => { M[0x0782] = rnd(256); } });
+t({ name: 'place_object', setup: (M, c, rnd) => ({ x: rnd(0x23) }), outs: ['a', 'y'] });
+t({ name: 'copy_ship_stats', setup: (M, c, rnd) => { for (let i = 0; i < 6; i++) M[0x0735 + i] = rnd(256); M[0x072A] = rnd(256); }, outs: ['a'] });
+t({ name: 'start_game_objects', cases: 100, setup: (M, c, rnd) => { for (let i = 0; i < 6; i++) M[0x0735 + i] = rnd(256); }, outs: ['a'] });
+
+// ---- the pictures and the models
+t({ name: 'load_picture', cases: 40, setup: (M, c, rnd) => ({ a: rnd(4) }), maxSteps: 4e7 });
+// a picture of random records, from $4000 to $C000
+t({ name: 'unpack_picture', cases: 300, setup: (M, c, rnd) => {
+  let a = 0x4000, out = 0;
+  while (out < 7000) {
+    if (rnd(2)) { const n = 1 + rnd(127); M[a++] = n; M[a++] = rnd(256); out += n; }
+    else { const n = rnd(20) ? 1 + rnd(127) : 0; M[a++] = 0x80 | n; for (let i = 0; i < (n || 256); i++) M[a++] = rnd(256); out += n || 256; }
+  }
+  M[a++] = 0; M[a] = rnd(16);
+  w16(M, 0x74, 0x4000); w16(M, 0x78, 0xC000);
+}, maxSteps: 4e7, outs: ['a'] });
+t({ name: 'set_border', setup: (M, c, rnd) => ({ a: rnd(256) }), outs: ['a'] });
+// a type's model loaded, or found loaded already; the heap where play leaves it
+t({ name: 'load_model', cases: 300, states: st => (st.ram[0x1D80] | st.ram[0x1D81] << 8) < 0xF000, setup: (M, c, rnd) => {
+  const y = rnd(0x23), m = M[0x093E + y];
+  if (!(m & 0x80) && rnd(4)) for (let t2 = 0; t2 < 0x23; t2++) if (M[0x093E + t2] === m) M[0x08F9 + 2 * t2] = 0;
+  return { y };
+}, maxSteps: 4e7, outs: ['a', 'x', 'y', 'c'] });
+t({ name: 'reset_models', outs: ['a', 'x', 'y'] });
+// after reset_models: every slot's model loaded again
+t({ name: 'load_slot_models', cases: 100, setup: (M, c, rnd) => {
+  for (let x = 0; x < 0x23; x++) if (!(M[0x093E + x] & 0x80)) M[0x08F9 + 2 * x] = 0;
+  M[0x1D80] = 0; M[0x1D81] = 0xE4;
+}, maxSteps: 4e7, outs: ['a', 'x', 'y'] });
+// CTRL-S, with a key thrown away and then N, Y or another waiting
+t({ name: 'key_save', cases: 60, setup: (M, c, rnd) => {
+  M[0x03] = 2; M[0x05] = rnd(256); M[0x06] = pick(rnd, [0x59, 0x79, 0x4E, 0x20, rnd(256)]);
+  c.game.joy = 0x1F;
+}, maxSteps: 4e7 });
 process.exitCode = f ? 1 : 0;

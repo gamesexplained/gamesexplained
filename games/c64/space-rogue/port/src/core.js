@@ -34,7 +34,7 @@ const GEN = new Set(`
   sr_start sr_init frame_update do_key key_jettison key_tac_mode key_view key_escape key_navigation
   key_save destroy_object kill_reward key_next_target key_fire target_status key_next_weapon
   print_date print_time fire_beam beam_hit joystick_flight joystick_speed navigation nav_menu
-  nav_scan nav_cockpit draw_chart_cursor nav_helm nav_chart nav_cursor_info helm_step_time
+  nav_scan nav_cockpit nav_status draw_chart_cursor nav_helm nav_chart nav_cursor_info helm_step_time
   helm_encounter nav_query back_to_cockpit print_disk_text_cf9c update_cockpit draw_tac draw_speed
   draw_weapon tac_data tac_name tac_label tac_range tac_tactic tac_armour tac_systems
   tac_system_letter print_ship_label ship_ai ai_fire key_surrender merchant_surrender ask_agree
@@ -42,11 +42,26 @@ const GEN = new Set(`
   missile_hit hazard_hit blow_up damage dock_check dock gate_jump wormhole_step gravity gravity_pull
   menu menu_choose menu_select menu_draw menu_blank print_message print_wrapped print_text
   print_number print_signed print_char scroll_window s_A1BD clear_window s_A240 wait_ticks wait_key
-  wait_fire_up draw_frame station_run init_game game_over
+  wait_fire_up draw_frame station_run sr_setup init_game game_over
+  station_view base_screen arrival_message base_step base_act player_act base_menu do_action act_notice
+  act_ship act_alarm_plate act_hive act_read talk_to status_pages status_ship status_onboard
+  status_person print_standing print_system_ok cargo_merchant cargo_buy cargo_sell sell_one buy_one
+  pick_line shop_anything_else shop_bought shop_short shop_good_day list_goods outfitter buy_laser
+  buy_shield buy_ecm laser_bought shield_bought ecm_bought buy_special shield_price shop_refuse
+  shop_no_room repair_shop buy_ordnance fix_armour fix_system find_adjacent act_lock use_card
+  pick_lock act_safe safe_loot lock_menu guards_check act_item act_coil show_credits bartender
+  talk_script talk_say talk_do talk_next talk_answer talk_menu talk_give_credits talk_take_credits
+  type_line hive_start hive_menu hive_quit hive_game hive_game_over hive_clear_view hive_drop
+  hive_raise_mound hive_mound_frame hive_shoot hive_show_mounds
 `.trim().split(/\s+/));
 class Goto { constructor(to, r) { this.to = to; this.r = r || {}; } }
+// A program of its own (the title, the intro, the ending: src/g-screens.js) is made with
+// opts.program, and has only the KERNAL's routines and its own group, and its own GEN: the
+// library's generators and those its gen names; the main program has every other group.
 function makePort(M, io, opts = {}) {
-  const P = { M, Goto, GEN, at: {}, CHECKPOINTS: [] };
+  const PROGRAMS = root.SRPrograms || {}, prog = opts.program ? PROGRAMS[opts.program] : null;
+  if (opts.program && !prog) throw new Error('makePort: no program ' + opts.program);
+  const P = { M, Goto, GEN: prog ? new Set(PROGRAMS.library.gen.concat(prog.gen)) : GEN, at: {}, CHECKPOINTS: [] };
   // P.io is one object for good, so that a routine may keep it (const io = P.io): giving P a new
   // set of chips (the lockstep does) replaces its members
   const IO = Object.assign({}, io);
@@ -67,7 +82,8 @@ function makePort(M, io, opts = {}) {
     return M[a];
   };
   P.wr = (a, v) => { if (a >= 0xD000 && a < 0xE000 && ioIn()) IO.write(a, v); else M[a] = v; };
-  for (const name of Object.keys(G)) if (!opts.only || opts.only.includes(name)) G[name](P);
+  const only = opts.only || (prog ? ['kernal', opts.program] : null);
+  for (const name of Object.keys(G)) if (only ? only.includes(name) : !PROGRAMS[name]) G[name](P);
   if (opts.standIn) opts.standIn(P);
   return P;
 }

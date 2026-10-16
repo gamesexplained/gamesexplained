@@ -11,7 +11,13 @@
 //   check({ name: 'vec_dot', cases: 3000, setup: (M, chips, rnd, st) => ({ x: rnd(256) }), outs: ['a', 'c'] });
 // setup's rnd(n) is an integer below n (rnd() a fraction); it may change M and the chips, and gives
 // the registers (those it leaves out are random, the same on both sides). ignore lists addresses
-// or [first, last] ranges left out; port is $01 for the call (default the moment's).
+// or [first, last] ranges left out; port is $01 for the call (default the moment's); moments
+// names the set of moments ('flight', the default, 'nav', 'station', 'title', 'intro' or
+// 'ending') and states filters them; parts names the parts in memory (engine and flight by
+// default; a base's are engine and station); program names the port's program, for the title's,
+// the intro's and the ending's routines (src/g-screens.js); onPort(P) may change the port once it
+// is made (a routine that waits replaced, as setup replaces the game's); loops lets a case that
+// runs on past the limits on both sides pass uncompared.
 const fs = require('fs'), path = require('path');
 const lib = require('./lib.js');
 const { CPU } = require(path.join(lib.REPO, 'kit/c64/cpu6502.js'));
@@ -19,15 +25,17 @@ const { PortChips } = require(path.join(lib.REPO, 'kit/c64/lockstep.js'));
 const standin = require('./standin.js');
 const { loadPort, portDisk } = require('./lockstep.js');
 
-let STATES = null;
-function moments(filter) {
-  if (!STATES) {
-    STATES = lib.states('flight').map(f => {
+// The moments by the start of their names: 'flight' (the default), 'nav', the chart's, or
+// 'station', a base's
+const STATES = {};
+function moments(filter, set = 'flight') {
+  if (!STATES[set]) {
+    STATES[set] = lib.states(set + '-').map(f => {
       const s = lib.readState(f).machine;
       return { name: f, ram: new Uint8Array(Buffer.from(s.ram, 'base64')), colour: new Uint8Array(Buffer.from(s.colour, 'base64')), s };
     });
   }
-  return STATES.filter(filter || (() => true));
+  return STATES[set].filter(filter || (() => true));
 }
 function chipsFrom(st, game) {
   const c = new PortChips(), s = st.s;
@@ -66,20 +74,22 @@ function makeRnd(seed) {
 }
 const hex = lib.hex, hex2 = v => '$' + (v & 255).toString(16).toUpperCase().padStart(2, '0');
 
-let NAMES = null;
+const NAMES = {};
 function check(o) {
   const SR = loadPort();
-  if (!NAMES) NAMES = standin.labels(o.parts || ['engine', 'flight']);
-  const entry = o.entry !== undefined ? o.entry : NAMES.get(o.name);
+  const parts = o.parts || ['engine', 'flight'], key = parts.join();
+  if (!NAMES[key]) NAMES[key] = standin.labels(parts);
+  const names = NAMES[key];
+  const entry = o.entry !== undefined ? o.entry : names.get(o.name);
   if (entry === undefined) throw new Error('check: no label ' + o.name);
   const outs = o.outs || ['a', 'x', 'y'];
   const skip = new Uint8Array(65536);
   skip.fill(1, 0, 2); skip.fill(1, 0x100, 0x200);
   for (const x of o.ignore || []) if (Array.isArray(x)) skip.fill(1, x[0], x[1] + 1); else skip[x] = 1;
   const rnd = makeRnd(o.seed || 1);
-  const all = moments(o.states);
+  const all = moments(o.states, o.moments);
   const cases = o.cases || 1000;
-  let fails = 0, shown = 0;
+  let fails = 0, shown = 0, running = 0;
   for (let n = 0; n < cases; n++) {
     const st = all[rnd(all.length)];
     const M0 = st.ram.slice();
@@ -102,14 +112,18 @@ function check(o) {
     // the port
     const MB = M0.slice(), cB = cloneChips(c0, game), logB = logWrites(cB), ioB = Object.assign(ioOf(cB), portDisk());
     MB[0] = 0x2F; MB[1] = port;
-    const P = SR.makePort(MB, ioB);
-    standin.install(P, NAMES);
+    const P = SR.makePort(MB, ioB, { program: o.program });
+    standin.install(P, names);
+    if (o.onPort) o.onPort(P);
     let rB, perr = null;
     try {
       rB = P[o.name](Object.assign({}, regs));
       if (rB && typeof rB.next === 'function') { let y, g = 0; const it = rB; while (!(y = it.next()).done) if (++g > 1e6) throw new Error('never ended'); rB = y.value; }
       rB = rB || {};
     } catch (e) { perr = e; }
+    // with loops, a case still running on both sides at their limits (a talk that goes round for
+    // ever on the choices scripted) is counted apart: there is nothing at an end to compare
+    if (o.loops && gerr && /step limit/.test(gerr.message) && perr && perr.message === 'never ended') { running++; continue; }
     const diffs = [];
     const said = e => (e instanceof SR.Goto ? 'went to ' + hex(e.to) : (e.stack || e.message || String(e)).split('\n').slice(0, 3).join(' | '));
     if (gerr || perr) diffs.push('game ' + (gerr ? 'threw: ' + gerr.message : 'ran') + '; port ' + (perr ? 'threw: ' + said(perr) : 'ran'));
@@ -131,8 +145,9 @@ function check(o) {
       }
     }
   }
-  console.log((fails ? 'FAIL ' : 'ok   ') + o.name + ': ' + (cases - fails) + '/' + cases + ' cases identical');
-  return { fails, cases };
+  console.log((fails ? 'FAIL ' : 'ok   ') + o.name + ': ' + (cases - fails - running) + '/' + (cases - running) + ' cases identical' +
+    (running ? ' (' + running + ' still running on both sides at the limit)' : ''));
+  return { fails, cases, running };
 }
 
 module.exports = { check, moments, makeRnd };

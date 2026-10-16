@@ -31,3 +31,13 @@ the port finds in the listing").
 | engine | $33EA tac_target_of | the name of the target's own target | the target's own label (renamed tac_label) |
 | engine | $33F8 tac_range | the distance plus 2 in its high byte, divided | the distance as a log plus 2: four times the distance |
 | engine | $354C tac_draw_model | the slot's orientation at $044B | the camera is the player's orientation turned to the slot; the slot's own orientation takes the camera into its frame |
+| engine | $2543 navigation | clears the view; counts the ship slots whose ship has no target | it never clears the view; it counts the ships in slots 1-5 whose target is the player (slot 0), and greys HELM by the count |
+| engine | $2619 nav_scan | until a key ends it | until Return, Space or fire ends it |
+| engine | $264D move_cursor | by X across and Y down | by X across and Y up: the chart's rows count from the bottom |
+| engine | $2787 nav_chart | Return or Escape leaves; $072C is $FF while the chart is open | Return, Space or fire leaves; $072C is $FF only until the cursor first moves |
+| engine | $2880 plot_course | each step one sector across and one down | one sector along each axis that still differs, diagonally until one coordinate matches |
+| engine | $290F helm_step_time | the view cleared; a key ends the trip | the message line (window 1) cleared; fire or a waiting key stops it, and $AB counts on each hour |
+| engine | $2728 nav_helm | stops on a key, or fire after an encounter | stops on fire or a key during the step or its encounter |
+| engine | $15A0 enter_sector | "clearing $0445,y" for a ship of the encounter's type; up to three map entries of type below $64 | $0445 set to 0 makes the player that ship's target; entry 0 (the ship) and types with bit 7 set are skipped; the encounter's own types go in at $CA-$CC, and $0832-$0834 are cleared too |
+| flight | $E900 init_game | asks for side 2; both redraw ($A14C) | sets the disk prompt to DATA, which shows only if a load fails; $A14C turns on text into both bitmaps; the projection is worked out first ($66CA) |
+| flight | $E972 game_over | asks for side 1 | sets the disk prompt to BOOT, shown only if a load fails |

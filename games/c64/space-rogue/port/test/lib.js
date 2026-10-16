@@ -23,7 +23,8 @@ function readDisk() {
 // The main loop's first instruction in flight: each pass starts here (sr_init's loop, $0DED).
 const FLIGHT_PASS = 0x0DED;
 
-// A runner on the disk: booted as BOOT leaves the machine, or from a saved moment. Saves go to
+// A runner on the disk: booted as BOOT leaves the machine (or with another file, boot: { file,
+// to }), or from a saved moment. Saves go to
 // a copy of the disk's files, so a run never changes the disk another run reads.
 function runner(o = {}) {
   const d = readDisk();
@@ -31,7 +32,7 @@ function runner(o = {}) {
   const fixes = [];
   const R = C64Run.create({ drive: C64Run.drive({ files, sectors: d.sectors, onSave: o.onSave }), keep: {},
     rasterFix: (i) => fixes.push(i), state: o.state, hooks: o.hooks });
-  if (!o.state) R.boot({ file: 'TITLE', to: 0x2000 });
+  if (!o.state) R.boot(o.boot || { file: 'TITLE', to: 0x2000 });
   let t = R.cpu.cycles;
   const S = { R, fixes, m: R.m };
   S.run = (s) => { t = Math.max(t, R.cpu.cycles) + Math.round(s * 50) * FRAME; R.run(t); };

@@ -245,10 +245,10 @@ G.render = function (P) {
   P.set_projection = function (r) {
     M[0x0D68] = M[0x5F]; M[0x0D69] = M[0x60];
     M[0x60] = M[0x41]; M[0x61] = 0;
-    P.uint16_to_log();
+    const u1 = P.uint16_to_log(r);
     M[0x84] = M[0x5F]; M[0x85] = M[0x60];
     M[0x60] = M[0x42]; M[0x61] = 0;
-    P.uint16_to_log();
+    const u2 = P.uint16_to_log(u1);
     M[0x86] = M[0x5F]; M[0x87] = M[0x60];
     let s = M[0x0D68] + M[0x84];
     M[0x0D64] = s & 255; M[0x0D65] = (M[0x0D69] + M[0x85] + (s >> 8)) & 255;
@@ -257,22 +257,23 @@ G.render = function (P) {
     s = M[0x0D66] - M[0x86];
     M[0x0D6A] = s & 255; M[0x0D6B] = (M[0x0D67] - M[0x87] - (s < 0 ? 1 : 0)) & 255;
     M[0x5F] = M[0x0D68]; M[0x60] = M[0x0D69];
-    P.log_hypot1();
+    const h1 = P.log_hypot1(u2);
     M[0x0D6C] = M[0x5F]; M[0x0D6D] = M[0x60];
     M[0x5F] = M[0x0D6A]; M[0x60] = M[0x0D6B];
-    P.log_hypot1();
+    const h2 = P.log_hypot1(h1);
     M[0x0D6E] = M[0x5F]; M[0x0D6F] = M[0x60];
-    return {};
+    return { a: M[0x0D6F], x: h2.x, y: h2.y };
   };
   // log2 sqrt(1 + v v) for v in $5F/$60
   P.log_hypot1 = function (r) {
     const w = (w16(0x5F) << 1) & 0xFFFF;
     M[0x5F] = w & 255; M[0x60] = w >> 8;
     M[0x62] = 0; M[0x63] = 0;
-    P.log_add_mag();
+    const o = P.log_add_mag(r);
+    const a = (M[0x60] << 1) & 255;
     M[0x5F] = (M[0x5F] >> 1) | ((M[0x60] & 1) << 7);
     M[0x60] = (M[0x60] >> 1) | (M[0x60] & 0x80);
-    return {};
+    return { a, x: o.x, y: o.y };
   };
   // The point in log form at ($74) on the screen: x and y each over twice z, scaled; when the
   // larger whole part is above 13, both are brought down by the excess. $51/$52 and $53/$54.
@@ -1044,6 +1045,17 @@ G.render = function (P) {
   // ---- colours
   // Colour code X: below $13 through the palette at $F1E6, others their low three bits plus 1;
   // its patterns for even and odd rows, its clear byte, and its screen cells' mask and value
+  // The whole drawing window in the colour set, a span for each row from the top ($42) down
+  P.fill_window = function (r) {
+    let y = M[0x42];
+    M[0x4B] = y; M[0x45] = 0; M[0x46] = M[0x41];
+    do {
+      P.span({ x: M[0x46], y });
+      M[0x4B] = (M[0x4B] - 1) & 255;
+      y = M[0x4B];
+    } while (y !== 0xFF);
+    return { y: 0xFF };
+  };
   P.set_colour = function (r) {
     let x = r.x;
     M[0x8FC9] = x;

@@ -17140,7 +17140,7 @@
   {
    "address": 5536,
    "type": "line",
-   "text": "Sets up the objects of the sector the ship is in (from $7256 and INIT). $040F = $40; empties object slots 19-1 ($1A8A) and sets the 21-byte type list at $C6 to $FF; $1D4A; picks a list from sector_object_lists by the value $2F75 gives for the sector at $071E/$071F (divided by 8) and writes its object types into the type list from the top; then reads the sector's own entries ($3030 gives the pointer and count) through the system map's tables at $5590/$5550/$55B0, adding up to three objects of type below $64 (bit 7 at $5550 also copies three bytes from $5620 to $0778, $16B2) and counting entries of $64 and up in $0782; then creates every listed object ($167F and $1949), clearing $0445,y for one whose $060D matches $0D04 when $0D07 is set. Ends with the player's speed at 5 ($0415) and $0545-$054D cleared"
+   "text": "Sets up the objects of the sector the ship is in (from $7256 and INIT): $040F = $40, $0782 and the surrender, taunt and gravity-warning flags ($0832-$0834) cleared; slots 19-1 emptied ($1A8A), the models forgotten ($1D4A), and the 21-byte type list at $C6 set to $FF. Into the list go the types of the sector's kind (sector_object_lists, by the kind $2F75 gives for $071E/$071F) from $DA down; up to three of the map's entries in the sector ($3030) at $C9-$C7, skipping entry 0 (the ship) and types with bit 7 set and counting types of $64 and up in $0782 instead (a base, bit 7 at $5550, also notes its file, $16B2); and the encounter's types $0D06, $0D05 and $0D04 at $CA-$CC. Each listed type is then placed at random ($167F) and made ($1949); with ships near ($0D07), one of the encounter's first type ($0D04) gets the player, slot 0, as its target ($0445). Ends with the player's speed at 5 ($0415) and velocity ($0545-$054D) cleared"
   },
   {
    "address": 5755,
@@ -17610,7 +17610,7 @@
   {
    "address": 9539,
    "type": "line",
-   "text": "Key N, Navigation Control. Prints \"Switching to navigation panel\", clears the view, loads NAV.PAC as the picture and NAV.TIL to $4000, draws the system chart ($2E7A, $8810, $2880), copies the ship's sector ($071E/$071F) to the chart's cursor ($C6/$C7) and to $5510/$5530, counts in $0D07 the ship slots whose ship has no target, then loops: date, time, the chart ($2669) and the menu ($25CA)"
+   "text": "Key N, Navigation Control. Prints \"Switching to navigation panel\", shows the $C000 bitmap, loads NAV.PAC as the picture ($1BEE) and NAV.TIL to $4000 ($26B1), loads the system's map ($2E7A), sets the full-screen window ($8810), copies the ship's sector ($071E/$071F) to the chart's cursor ($C6/$C7) and to the map's entry 0 ($5510/$5530), plots the course ($2880), counts in $0D07 the ships in slots 1-5 whose target is the player (slot 0) and greys the menu's HELM line by it ($26C0), then loops: date, time, the chart ($2669) and the menu ($25CA). COCKPIT leaves the loop by dropping its return address ($2634)"
   },
   {
    "address": 9674,
@@ -17620,7 +17620,7 @@
   {
    "address": 9753,
    "type": "line",
-   "text": "SCAN: moves the chart cursor with the keys ($27D6, $A33F, $264D) and redraws, until a key ends it"
+   "text": "SCAN: moves the chart cursor with the keys or the stick ($A33F, $264D), naming its sector ($27D6) and redrawing the chart with the cursor's brackets ($0D2F), until Return, Space or fire ends it"
   },
   {
    "address": 9780,
@@ -17630,7 +17630,7 @@
   {
    "address": 9805,
    "type": "line",
-   "text": "Moves the chart cursor ($C6, $C7) by X across and Y down, unless that leaves the 32 by 32 chart"
+   "text": "Moves the chart cursor ($C6, $C7) by X across and Y up (the chart's rows count from the bottom), unless that leaves the 32 by 32 chart: carry set then, and the cursor stays"
   },
   {
    "address": 9833,
@@ -17680,12 +17680,12 @@
   {
    "address": 10024,
    "type": "line",
-   "text": "HELM, the autopilot: flies the course in $FC00/$FC20 a sector at a time from the ship's chart position ($5510/$5530). When the course runs out it prints \"Ship has arrived at destination\" ($2847) and returns. Each step: draws the move ($30D7), marks that the ship moved ($C8), moves the ship's position, lets the time pass ($290F), recomputes the rest of the course ($2880), and stops when ships are near after an encounter ($0D07, recolouring the menu) or when helm_step_time returns nonzero ($B4: a key, or fire after an encounter)"
+   "text": "HELM, the autopilot: flies the course in $FC00/$FC20 a sector at a time from the ship's chart position ($5510/$5530). When the course runs out it prints \"Ship has arrived at destination\" ($2847) and returns. Each step: draws the move ($30D7), marks that the ship moved ($C8), moves the ship's position, lets the time pass ($290F), recomputes the rest of the course ($2880), and stops when ships are near after an encounter ($0D07, recolouring the menu) or when helm_step_time returns nonzero ($B4: fire or a key during the step or its encounter)"
   },
   {
    "address": 10119,
    "type": "line",
-   "text": "CHART: the cursor starts on the ship; the cursor keys move it ($A33F, move_cursor) and each move makes it the destination ($072C/$072D) and recomputes the course ($2880). Return or Escape leaves; with a course set it prints \"Course laid in Nav computer\" ($282B). $072C = $FF (no destination) while the chart is open"
+   "text": "CHART: the cursor starts on the ship; the cursor keys or the stick move it ($A33F, move_cursor) and each move makes it the destination ($072C/$072D) and recomputes the course ($2880). Return, Space or fire leaves; with a course set it prints \"Course laid in Nav computer\" ($282B). $072C is $FF (no destination) from opening the chart until the cursor first moves"
   },
   {
    "address": 10198,
@@ -17700,7 +17700,7 @@
   {
    "address": 10368,
    "type": "line",
-   "text": "Works out the course from the ship's sector ($5510/$5530) to the destination ($072C/$072D) as a list of sectors: each step moves one sector across and one down toward the destination, diagonal first; the X list goes to $FC00 and the Y list to $FC20, ended by $FF. No destination, no course"
+   "text": "Works out the course from the ship's sector ($5510/$5530) to the destination ($072C/$072D) as a list of sectors: each step moves one sector along each axis that still differs, so diagonally until one coordinate matches; the X list goes to $FC00 and the Y list to $FC20, ended by $FF. No destination ($072C negative), no course"
   },
   {
    "address": 10461,
@@ -17710,7 +17710,7 @@
   {
    "address": 10511,
    "type": "line",
-   "text": "The time one HELM step takes: $29CA gives the hours (5 straight, 7 diagonal, doubled in slow sectors and with a damaged drive); the clock advances an hour at a time with the date and time redrawn, and a key ends the trip ($AB). When the day changes: damage repairs itself ($2A53), the daily lists $07AE-$07BB and $0783 are cleared and the random generator reseeded ($A2DC). Then the chances of the step: $2A15, $2D38, the view cleared, the encounter counters $0832-$0834 cleared and $2991. Returns $AB, nonzero to stop"
+   "text": "The time one HELM step takes: $29CA gives the hours (5 straight, 7 diagonal, doubled in slow sectors and with a damaged drive); the clock advances an hour at a time with the time and date redrawn and, until the trip is stopped, the chart ($2669); fire, or a key waiting, stops it ($AB, counted up each hour from then). When the day changes: damage repairs itself ($2A53), the daily lists $07AE-$07BB and $0783 are cleared and the random generator reseeded ($A2DC). Then the chances of the step: spoiled cargo ($2A15), the map's entries moved ($2D38), the message line (window 1) cleared, the counters $0832-$0834 cleared and an encounter ($2991). Returns $AB, nonzero to stop"
   },
   {
    "address": 10641,
@@ -17775,7 +17775,7 @@
   {
    "address": 11294,
    "type": "line",
-   "text": "Rolls for an encounter after A hours of HELM travel: the chance grows with the hours and the system's danger level ($077C, both through $B451, less $495, $B5E0), kept in $96. Up to three ship types are drawn ($2C8C) into $0D04-$0D06 with their factions in $97-$99 (none: $FF); with at least one, $2CD2 decides whether they attack ($0D07). Returns the first type, negative for none"
+   "text": "Rolls for an encounter after A hours of HELM travel: the chance grows with the hours and the system's danger level ($077C, both through $B451, less $495, $B5E0), kept in $96. Up to three ship types are drawn ($2C8C) into $0D04-$0D06 with their factions in $97-$99 (none: $FF); with at least one, $2CD2 decides whether they attack ($0D07). The BMI after the first draw reads the N of pick_ship's last load, the faction for a ship (never negative for the types the classes hold) or $FF for none. Returns the first type, negative for none"
   },
   {
    "address": 11402,

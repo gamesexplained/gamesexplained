@@ -62,10 +62,10 @@ t({ name: 'tac_tactic', setup: (M, c, rnd) => { text(M, rnd); minds(M, rnd); lin
 t({ name: 'tac_armour', setup: (M, c, rnd) => { text(M, rnd); minds(M, rnd); line(M, rnd); }, outs: ['a', 'x', 'y'] });
 t({ name: 'tac_systems', setup: (M, c, rnd) => { text(M, rnd); minds(M, rnd); line(M, rnd); }, outs: ['a', 'x', 'y'] });
 t({ name: 'tac_data', cases: 1000, setup: (M, c, rnd) => { text(M, rnd); minds(M, rnd); target(M, rnd); }, outs: ['a', 'x', 'y'] });
-t({ name: 'tac_picture', cases: 800, setup: (M, c, rnd) => { minds(M, rnd); target(M, rnd); }, maxSteps: 4e7 });
+t({ name: 'tac_picture', cases: 800, setup: (M, c, rnd) => { minds(M, rnd); target(M, rnd); }, maxSteps: 4e7, outs: ['a', 'x', 'y'] });
 t({ name: 'update_cockpit', cases: 800, setup: (M, c, rnd) => {
   text(M, rnd); minds(M, rnd); player(M, rnd); target(M, rnd);
   M[0x7C] = rnd(2) ? 0xFF : 0;
-}, maxSteps: 4e7 });
+}, maxSteps: 4e7, outs: ['a', 'x', 'y'] });
 
 process.exitCode = f ? 1 : 0;

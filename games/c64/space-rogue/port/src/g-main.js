@@ -370,6 +370,10 @@ G.main = function (P) {
   };
   P.random_seed = function (r) {
     M[0xA2F2] = r.x; M[0xA2F3] = r.y;
+    return P.random_reseed(r);
+  };
+  // The generator set back to the seed last given ($A2E2, from a base)
+  P.random_reseed = function (r) {
     for (let y = 2; y >= 0; y--) M[0xA2EE + y] = M[0xA2F2 + y];
     return R(r, { a: M[0xA2EE], y: 0xFF });
   };

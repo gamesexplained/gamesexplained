@@ -42,7 +42,8 @@ t({ name: 'spray_triangles', cases: 600, setup: (M, c, rnd) => { colours(M, rnd)
 t({ name: 'draw_bar', setup: (M, c, rnd) => { colours(M, rnd); const x = rnd(M[0x41]); return { x, a: rnd(M[0x41] - x + 1), y: rnd(M[0x42] - 8) }; } });
 t({ name: 'set_window', setup: (M, c, rnd) => { M[0x41] = rnd(256); M[0x42] = rnd(200); return { a: rnd(2), x: rnd(256), y: rnd(200) }; } });
 t({ name: 'window_full' }); t({ name: 'window_right' });
-t({ name: 'set_projection', setup: (M, c, rnd) => { M[0x5F] = rnd(256); M[0x60] = (rnd(8) - 4) & 255; M[0x41] = 1 + rnd(255); M[0x42] = 1 + rnd(199); } });
+t({ name: 'set_projection', setup: (M, c, rnd) => { M[0x5F] = rnd(256); M[0x60] = (rnd(8) - 4) & 255; M[0x41] = 1 + rnd(255); M[0x42] = 1 + rnd(199); }, outs: ['a', 'x', 'y'] });
+t({ name: 'log_hypot1', setup: (M, c, rnd) => { M[0x5F] = rnd(256); M[0x60] = rnd(256); }, outs: ['a', 'x', 'y'] });
 t({ name: 'set_colour', setup: (M, c, rnd) => ({ x: rnd(256) }) });
 t({ name: 'set_flash_colour', setup: (M, c, rnd) => { M[0x3A] = rnd(2) * 0x80; } });
 t({ name: 'project', setup: (M, c, rnd) => { point3d(M, 0xC100, rnd); w16(M, 0x74, 0xC100); } });

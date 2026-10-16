@@ -1,7 +1,8 @@
-// The objects of flight: making and freeing them ($1949-$1BED, $24B3-$2541, $1E73), thrust,
-// turning, movement and gravity ($74A3-$798E), the particles and the target arrows ($7772-$7C20),
-// contact between objects and the damage it does ($6AB3-$7032), docking, the Malir gate and its
-// wormhole ($7062-$74A2), and the loads that go with them ($14E5-$1549, $2E71).
+// The objects of flight: making and freeing them ($1949-$1BED, $24B3-$2541, $1E73), a sector's
+// set ($15A0-$1764), thrust, turning, movement and gravity ($74A3-$798E), the particles and the
+// target arrows ($7772-$7C20), contact between objects and the damage it does ($6AB3-$7032),
+// docking, the Malir gate and its wormhole ($7062-$74A2), and the loads that go with them: the
+// overlays, the pictures and the models ($14E5-$159F, $1BEE-$1D81, $2E71).
 //
 // An object is a slot, 0 to 19: 0 is the player, 1-5 the other ships, 6 a planet or a base, 7-19
 // everything else. A slot's position is three 24-bit linear numbers at $065D + 9 n and its
@@ -12,7 +13,8 @@
 'use strict';
 const G = root.SRGroups = root.SRGroups || {};
 G.objects = function (P) {
-  const M = P.M;
+  const M = P.M, io = P.io;
+  const R = (r, o) => Object.assign({}, r, o);
   const ptr = zp => M[zp] | M[zp + 1] << 8;
   const setp = (zp, v) => { M[zp] = v & 255; M[zp + 1] = (v >> 8) & 255; };
   const at = (zp, i) => M[(ptr(zp) + i) & 0xFFFF];
@@ -1126,6 +1128,96 @@ G.objects = function (P) {
     return { x: n & 1 ? 0x1F : n & 2 ? 0x20 : 0x21 };
   };
 
+  // ---- a sector's objects. The 21 bytes at $C6 hold a type for each slot to fill, $FF for none:
+  // the list for the sector's kind from $DA down, up to three of the map's entries in the sector at
+  // $C9-$C7 (a base's file noted for docking), and the encounter's ships at $CA-$CC.
+  P.enter_sector = function (r) {
+    M[0x040F] = 0x40;
+    M[0x0782] = 0; M[0x0832] = 0; M[0x0833] = 0; M[0x0834] = 0;
+    for (let y = 0x14; y >= 0; y--) M[0xC6 + y] = 0xFF;
+    for (let y = 0x13; y; y--) P.free_slot({ y });
+    P.reset_models();
+    const k = P.sector_kind({ x: M[0x071E], y: M[0x071F] }).a >> 3;
+    M[0x74] = M[0x16C9 + k]; M[0x75] = M[0x16CA + k];
+    // (count, type) pairs to a zero count
+    let y = 0xFF, x = 0x14;
+    for (;;) {
+      y = (y + 1) & 255;
+      M[0xBC] = at(0x74, y);
+      if (!M[0xBC]) break;
+      y = (y + 1) & 255;
+      const t = at(0x74, y);
+      do { M[(0xC6 + x) & 255] = t; x = (x - 1) & 255; M[0xBC] = (M[0xBC] - 1) & 255; } while (M[0xBC]);
+    }
+    // the map's entries, but the ship's own (0), those off the map and those of type $64 and up,
+    // which are counted
+    const e = P.sector_entries({ x: M[0x071E], y: M[0x071F] });
+    y = (e.y - 1) & 255;
+    for (x = 2; !(y & 0x80); y = (y - 1) & 255) {
+      const n = at(0x74, y);
+      if (!n) continue;
+      M[0xBD] = y;
+      const t = M[0x5590 + n];
+      if (!(t & 0x80)) {
+        if (t >= 0x64) P.count_special_entry();
+        else {
+          M[(0xC7 + x) & 255] = t;
+          if (M[0x5550 + n] & 0x80) P.base_file_from_map({ y: n });
+          x = (x - 1) & 255;
+          if (x & 0x80) break;
+        }
+      }
+      y = M[0xBD];
+    }
+    M[0xCA] = M[0x0D06]; M[0xCB] = M[0x0D05]; M[0xCC] = M[0x0D04];
+    // each a slot, somewhere near the origin; with ships near, those of the encounter's first
+    // type have the player as their target
+    for (M[0x1722] = 0x14; !(M[0x1722] & 0x80); M[0x1722] = (M[0x1722] - 1) & 255) {
+      if (M[0xC6 + M[0x1722]] & 0x80) continue;
+      P.place_object({ x: M[0xC6 + M[0x1722]] });
+      const o = P.create_object({ x: M[0xC6 + M[0x1722]] });
+      if (o.n || !M[0x0D07]) continue;
+      if (M[0x060D + o.y] === M[0x0D04]) M[0x0445 + o.y] = 0;
+    }
+    M[0x0415] = 5;
+    for (let i = 8; i >= 0; i--) M[0x0545 + i] = 0;
+    return { a: 0, y: 0xFF };
+  };
+  P.count_special_entry = function (r) { M[0x0782] = (M[0x0782] + 1) & 255; return r; };
+  // ($74) a random place for an object of type X, within eight times its radius of the origin
+  // in every axis: the position at $065D (slot 0's, but its whole parts are all that count, and
+  // the player sits at the origin) offset into $6B
+  P.place_object = function (r) {
+    const x = (r.x << 1) & 255;
+    const w = ((M[0x0A1D + x] | M[0x0A1E + x] << 8) << 3) & 0xFFFF;
+    M[0x60] = w & 255; M[0x61] = w >> 8;
+    setp(0x74, 0x065D); setp(0x78, 0x006B);
+    const o = P.random_offset();
+    M[0x74] = M[0x78]; M[0x75] = M[0x79];
+    return { a: M[0x79], y: o.y };
+  };
+  // A base's map file, three letters such as "L00", from the system map's names at $5620
+  P.base_file_from_map = function (r) {
+    const y = M[0x55B0 + r.y];
+    M[0x0778] = M[0x5620 + y]; M[0x0779] = M[0x5621 + y]; M[0x077A] = M[0x5622 + y];
+    return { a: M[0x077A], x: r.x, y };
+  };
+  // A new game's player: type 0 in slot 0 at the origin, faction 4; then the ship's stats
+  P.start_game_objects = function () {
+    setp(0x74, 0x0DC3);
+    P.create_in_slot({ x: 0, y: 0 });
+    M[0x0433] = 4;
+    return P.copy_ship_stats();
+  };
+  // The player's ship described as type 0: its armour, ECM, systems, beam and shields from
+  // $0735-$073A, and its rank plus 2
+  P.copy_ship_stats = function (r) {
+    M[0x0AA9] = M[0x0735]; M[0x0AAA] = M[0x0736]; M[0x0C2B] = M[0x0737];
+    M[0x0C45] = M[0x0738]; M[0x0C52] = M[0x0739]; M[0x0C6C] = M[0x073A];
+    M[0x0C79] = (M[0x072A] + 2) & 255;
+    return R(r, { a: M[0x0C79] });
+  };
+
   // ---- the loads of flight
   const load = (x, to) => { M[0x80] = 0; M[0x81] = to; return P.load_file({ x, y: 0x07 }); };
   P.load_end = function () { M[0x1E] = 0; return load(0xF9, 0xE9); };
@@ -1139,10 +1231,123 @@ G.objects = function (P) {
     P.swap_kernal_zp();
     throw new P.Goto(0x6800);
   };
+  // CTRL-S: "Save game? (Y/N)". Y saves $0403-$0801 as SAVED on the BOOT disk, after loading SPB
+  // as a check that the disk is in, and puts the cockpit back; any other key scrolls the question
+  // away. The wait reads a key and then ends at the return from the game's own read ($1560): a
+  // turn is 40 cycles.
+  P.key_save = function* () {
+    P.select_window({ y: 0 });
+    yield* P.print_message({ x: 0x9B, a: 0xCF });
+    P.get_key();
+    let k;
+    for (;;) {
+      k = P.get_key();
+      yield { cp: 0x1560, cycles: 40 };
+      if (k.c) break;
+    }
+    if (k.a !== 0x59) return yield* P.scroll_window({ a: 1 });
+    P.view_clear_c000();
+    P.show_bank3();
+    P.prompt_boot_disk();
+    M[0x80] = 0; M[0x81] = 0x40;
+    P.load_file({ x: 0xCC, y: 0x07 });
+    M[0x80] = 0x03; M[0x81] = 0x04; M[0x82] = 0x02; M[0x83] = 0x08;
+    P.save_file({ x: 0xE0, y: 0x07 });
+    P.prompt_data_disk();
+    return P.restore_after_disk();
+  };
+  P.CHECKPOINTS.push(0x1560);
   P.restore_after_disk = function () {
     P.load_picture({ a: 0 });
     P.copy_to_bank1();
     return P.select_window({ y: 0 });
+  };
+  // Picture A (0 PIT.PAC, the cockpit; 1 NAV.PAC; 2 LAND.PAC; 3 H.PAC) loaded to $4000 and
+  // unpacked to the bitmap at $C000
+  P.load_picture = function (r) {
+    const y = (r.a << 1) & 255;
+    M[0x80] = 0; M[0x81] = 0x40;
+    P.load_file({ x: M[0x1C15 + y], y: M[0x1C16 + y] });
+    setp(0x74, 0x4000); setp(0x78, 0xC000);
+    return P.unpack_picture();
+  };
+  // A picture from ($74) to ($78): the screen matrix after the bitmap ($2000 on) cleared and the
+  // border black, then records to a zero: n (1-127) and a byte, n of the byte; $80 + n and n
+  // bytes as they are ($80 alone is 256 of them, after which neither pointer moves on). The byte
+  // after the zero is the border's colour.
+  P.unpack_picture = function () {
+    M[0x80] = M[0x74]; M[0x81] = M[0x75]; M[0x82] = M[0x78];
+    const hi = M[0x79], scr = M[0x82] | ((hi + 0x20) & 255) << 8;
+    for (let i = 0; i < 0x400; i++) M[(scr + i) & 0xFFFF] = 0;
+    P.set_border({ a: 0 });
+    M[0x83] = hi;
+    for (;;) {
+      const src = ptr(0x80), dst = ptr(0x82), h = M[src];
+      if (!h) return P.set_border({ a: M[(src + 1) & 0xFFFF] });
+      if (h & 0x80) {
+        const n = h & 0x7F, from = (src + 1) & 0xFFFF;
+        for (let i = 0; i < (n || 256); i++) M[(dst + i) & 0xFFFF] = M[(from + i) & 0xFFFF];
+        setp(0x80, from + n); setp(0x82, dst + n);
+      } else {
+        const v = M[(src + 1) & 0xFFFF];
+        for (let i = 0; i < h; i++) M[(dst + i) & 0xFFFF] = v;
+        setp(0x80, src + 2); setp(0x82, dst + h);
+      }
+    }
+  };
+  P.set_border = function (r) {
+    P.bank_io_in();
+    io.vicWrite(0x20, r.a);
+    return P.bank_all_ram();
+  };
+  // ---- the models. Each object type with a model ($093E, a number below $80) draws through the
+  // model's address ($08F8, twice the type), loaded from the disk the first time a slot takes the
+  // type: the file named by four bytes at $0961 goes to the next free address on the heap ($1D80,
+  // from $E400), its pointers are made absolute, and every type with the same model is given it.
+  P.load_model = function (r) {
+    const t = r.y;
+    M[0x8A] = t;
+    const m = M[0x093E + t];
+    if (m & 0x80) return R(r, { x: m, c: 0 });
+    const t2 = (t << 1) & 255;
+    if (M[0x08F9 + t2]) return { a: M[0x08F9 + t2], x: m, y: t2, c: 0 };
+    // the name at $0961 + 4 m (the carry of the second shift adds one for a model of 64 or more)
+    const a1 = (m << 1) & 255, n = ((a1 << 1) & 255) + 0x61 + (a1 >> 7);
+    M[0x80] = M[0x1D80]; M[0x81] = M[0x1D81];
+    P.load_file({ x: n & 255, y: 0x09 + (n >> 8) });
+    const lo = M[0x1D80], hi = M[0x1D81], b = lo | hi << 8;
+    M[0x8B] = lo; M[0x8C] = hi;
+    const rd = i => M[(b + i) & 0xFFFF], wr = (i, v) => { M[(b + i) & 0xFFFF] = v & 255; };
+    // the model's length (at $2F) gives the next free address
+    let s = lo + rd(0x2F);
+    M[0x8E] = s & 255; M[0x8F] = (hi + rd(0x30) + (s >> 8)) & 255;
+    s = rd(1) + lo; wr(1, s); wr(5, rd(5) + hi + (s >> 8));
+    wr(3, 0x7A); wr(7, 0x7B); wr(9, 0x61); wr(10, 0x7C);
+    for (let i = 0x11; i < 0x2F; i += 2) { s = rd(i) + lo; wr(i, s); wr(i + 1, rd(i + 1) + hi + (s >> 8)); }
+    M[0x8D] = M[0x093E + M[0x8A]];
+    let x = 0;
+    for (let y = 0x22; y >= 0; y--) {
+      if (M[0x093E + y] !== M[0x8D]) continue;
+      x = (y << 1) & 255;
+      M[0x08F8 + x] = lo; M[0x08F9 + x] = hi;
+    }
+    M[0x1D80] = M[0x8E]; M[0x1D81] = M[0x8F];
+    return { a: M[0x8F], x, y: 0xFF, c: 0 };
+  };
+  // Every model forgotten, the heap empty
+  P.reset_models = function () {
+    for (let x = 0x22; x >= 0; x--) if (!(M[0x093E + x] & 0x80)) M[0x08F9 + 2 * x] = 0;
+    M[0x1D80] = 0; M[0x1D81] = 0xE4;
+    return { a: 0xE4, x: 0xFF, y: 0xFF };
+  };
+  // The models of the objects in slots 19-1
+  P.load_slot_models = function (r) {
+    let a = 0, y = r && r.y;
+    for (M[0xBD] = 0x13; M[0xBD]; M[0xBD] = (M[0xBD] - 1) & 255) {
+      a = M[0x05F9 + M[0xBD]];
+      if (a) ({ a, y } = P.load_model({ y: M[0x060D + M[0xBD]] }));
+    }
+    return { a, x: 0, y };
   };
   P.back_to_cockpit = function* () {
     P.restore_after_disk();
