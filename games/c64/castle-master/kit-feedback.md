@@ -26,7 +26,8 @@ A script that applies a checker's corrections file to the disassembler would hav
 
 ## Maintainer asks
 
-(filled in when the issues are filed)
+- #386: a kit script that applies an audit checker's corrections (`fixes.json`) to the disassembler, and `checker.md` naming that format.
+- #387: a `port_check.js` helper that checks a code block is the same on every page of a game that carries it.
 
 ## Tools
 
