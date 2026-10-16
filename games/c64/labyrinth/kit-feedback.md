@@ -7,6 +7,8 @@
 - `c64-reference`: "RAM the CPU cannot see": rendered the RAM font beneath I/O and checked the $DE12 caller’s banking before describing that routine.
 - `tool-regen2000`: "The flow tracer can wander into text.": kept the mixed code/text overlay split into inspected regions rather than typing the whole file as text.
 
+- `70-minisite`: "A widget that runs a mechanic is a claim too.": compared the dialogue explorer with the original parser in the kit’s 6502 simulator before publishing its behavior.
+
 ## What was changed in the kit
 
 None. No kit or shared site file changed.

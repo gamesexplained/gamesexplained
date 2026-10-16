@@ -12,4 +12,4 @@ Bronze is complete for the playable text opening. Silver requires:
 - Trace the sound service and identify every tune; build its player for the Silver page.
 - Run coverage and verification, obtain the independent listing-comment sample, and recommend the later audit. No sample or audit belongs to this Bronze contribution.
 
-Possible follow-ups: a working word-wheel demonstration, a map of the city opening, a dialogue decoder, and a browser for the maze’s scene data.
+Possible follow-ups: a working word-wheel demonstration, a map of the city opening, a complete dialogue browser, and a browser for the maze’s scene data.

@@ -142,3 +142,9 @@ The snapshot was swept as screen codes, PETSCII, and printable ASCII. The openin
 | `$9AE5` | You are standing in the lobby of the |
 | `$9F16` | There is also a combination video |
 | `$A966` |          Welcome to Labyrinth |
+
+## Dictionary example verification
+
+`test_dictionary.js` compares the page’s word-expansion function with the original parser at `$67B5` and expansion routine `$68D4`, using bytes reconstructed from the committed opening listing. Every dictionary index (0–255) is exercised with each token `$FB/$FC/$FD/$FE`: 1,024 cases, all equal. The glyph-write routine `$6891` is intercepted to record emitted bytes, and line finishing `$6866` is intercepted to avoid drawing the window. This checks word selection, first-byte subtraction, and following spaces; it does not verify the full window renderer or formatting controls.
+
+The page offers entries beginning with lowercase letters so its “Capital initial” control describes the byte operation correctly. The original code subtracts `$20` from the first byte regardless of its existing case; the test includes already-capitalized and empty entries too. The widget’s combinations are exploratory, not claims that a particular sentence requests them.
