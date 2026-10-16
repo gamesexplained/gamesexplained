@@ -90,7 +90,7 @@ that does not parse stops the file before anything is sent.
 | `r2000_set_data_type` `{start_address, end_address, data_type}` | type a data block. The values are **lower case**: `code`, `byte`, `word`, `address`, `petscii`, `screencode`, `lo_hi_address`, `hi_lo_address`, `lo_hi_word`, `hi_lo_word`, `external_file`, `undefined` |
 | `r2000_get_cross_references` `{address}` | who reads, writes, calls or jumps to an address; the fastest way to attribute a table |
 | `r2000_get_address_details` `{address}` | semantics, xrefs, labels and comments at one address; not on a snapshot (Traps) |
-| `r2000_search_memory`, `r2000_search_disassembly` | bytes or text in memory; a substring, or a regex with `use_regex: true`, over each field of the listing (register census in one call) |
+| `r2000_search_memory`, `r2000_search_disassembly` | bytes or text in memory; a substring, or a regex with `use_regex: true`, over each field of the listing. The disassembly search in regenerator2000 0.9.20 returned at most 50 results without saying it had stopped (13 October 2026), so a register census comes from `kit/c64/census.py` instead |
 | `r2000_get_blocks`, `r2000_get_symbols`, `r2000_get_comments` | state; what the coverage and export scripts read |
 | `r2000_undo` | undo the last operation; note that the log does not record undos |
 | `r2000_unpack_binary` | **destructive**: wipes all annotations. Do not use on an annotated session |

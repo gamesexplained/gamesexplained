@@ -22,6 +22,12 @@ engine, including why repeated pitches merge into one sustained note.
 Produce a table in `facts.md`: register, what the game does with it, which
 routine. Every row with a "?" is a work item.
 
+Take the accesses from every decoded instruction, not from a text search:
+a disassembler's search can stop at a fixed number of results and say
+nothing. On the C64, `python3 kit/c64/census.py <game or part dir> <snapshot.vsf>`
+lists each register with its instructions, counts and first address, then
+the registers nothing names.
+
 ## Screen-code string sweep
 
 Decode the whole image as screen codes (and again as the system's text
