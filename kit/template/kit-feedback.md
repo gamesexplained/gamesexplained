@@ -9,7 +9,8 @@ time, operating system and tool versions.
 
 <up to five lines, the one that mattered most first, each written as
 - `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here.>
+or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
+once game.json has a tier (80-retro, step 7) and on any pull request.>
 
 ## What was changed in the kit
 
