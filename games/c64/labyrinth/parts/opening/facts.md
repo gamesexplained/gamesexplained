@@ -150,3 +150,7 @@ The snapshot was swept as screen codes, PETSCII, and printable ASCII. The openin
 The page offers entries beginning with lowercase letters so its “Capital initial” control describes the byte operation correctly. The original code subtracts `$20` from the first byte regardless of its existing case; the test includes already-capitalized and empty entries too. The widget’s combinations are exploratory, not claims that a particular sentence requests them.
 
 The passage stepper embeds only the zero-terminated records `$9867-$98A6` and `$98A7-$98F0`, taken from the same opening snapshot. Its pieces group consecutive literal letters, retain `$FF` line breaks, expand dictionary references, and stop at `$00`. The committed test confirms every embedded byte against the listing and compares all 19 displayed prefixes with the original parser. The line-break call at `$67C4` is recorded as a newline; glyph output and window line finishing are intercepted as above. Browser typography and layout are outside this comparison.
+
+## Character viewer verification
+
+The character viewer embeds the opening snapshot’s `$D000-$D7FF` font, the same data as the glyph sheet. `test_font.js` checks all 2,048 bytes against the committed listing and compares each of the 256 monochrome glyphs, pixel for pixel, with `C64.drawGlyph` in `site/lib/c64.js`. The display uses high-bit-first rows and an optional grid. This verifies the font excerpt and monochrome shape decoding; it does not assert that every font slot is used during play or reproduce multicolour display modes.

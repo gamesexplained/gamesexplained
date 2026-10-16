@@ -23,7 +23,7 @@ None. The contributor reserved opening the pull request; no issues were filed.
 
 ## What cost the most time
 
-A faster frame-capture transport would have saved the most time; both complete captures succeeded, and no new correctness rule was needed. During the continuation, following the requested disk side and sending Space resolved a modal disk prompt; this game-specific behavior is recorded in orientation.md and agent-history.md. The split-pointer alias problem was caught by check_listing.py, so it needs no new skill rule.
+A faster frame-capture transport would have saved the most time; both complete captures succeeded, and no new correctness rule was needed. During the continuation, following the requested disk side and sending Space resolved a modal disk prompt; this game-specific behavior is recorded in orientation.md and agent-history.md. The split-pointer alias problem was caught by check_listing.py, so it needs no new skill rule. The character test encountered the lib helper’s side-effect-only return; its source and header describe globalThis, and this visible error needs no new rule.
 
 ## Environment
 
