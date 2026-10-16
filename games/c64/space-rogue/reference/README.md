@@ -30,6 +30,18 @@ From VICE (384 x 272, the whole frame with its border), taken on 14 and
 The base, Hive! and the ending were reached by calling the game's own
 routines (`../orientation.md`, "The parts").
 
+## The Play tab's 3D view
+
+From the Play tab on 16 October 2026: one pass of a fight in the cinematic
+view, from a moment saved by the port's tests (`flight-fight-04`), paused
+three seconds in. Each is the view's window only, 252 x 103 of the frame,
+drawn three times as large.
+
+| File | Shows |
+|---|---|
+| play-view-c64.png | the view in the C64's pixels, as the game draws it |
+| play-view-native.png | the same pass with Native resolution on |
+
 ## From the web
 
 Read on 14 October 2026:

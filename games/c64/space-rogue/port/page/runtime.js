@@ -16,6 +16,7 @@
 //   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low }
 //   rt.onSid(f)        f(register, value, cycle) for every write to the SID
 //   rt.program         'title', 'intro', 'main' or 'ending'
+//   rt.target          the clock at the end of the frame runFrame last ran to (null before the first)
 //   rt.restore(machine, entry)   the machine of a moment saved by the tests (kit/c64/machine.js's
 //                      state: its memory, chips and clock), and the main program started at
 //                      entry(P), a generator (test/t-page.js)
@@ -336,6 +337,7 @@ function create(o) {
   return {
     M, colour, vic, sidw, input, KEY,
     get t() { return t; }, get frame() { return frameIdx; }, get program() { return program; }, get P() { return P; },
+    get target() { return target; },
     runFrame, runUntil, restore, lastFrame: () => done[done.length - 1],
     onSid: f => sidListeners.push(f),
     files,

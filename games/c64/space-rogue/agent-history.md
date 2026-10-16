@@ -196,3 +196,26 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - Fights were not in the first timing data, and one ran 6 % fast on the
   page; timing the eight fight moments and fitting again brought it
   within 2 %.
+
+## Native resolution and smooth motion on the Play tab (16 October 2026)
+
+- Asked for both together, as Mercenary has them, for the 3D view only.
+  `port/page/modern.js` reads the game's numbers at every pass, drawn or
+  skipped, and works the view out again with the game's rules; it never
+  writes the game's memory, and `test_play.js` runs two machines side by
+  side to hold it to that.
+- The first native drawings put the wrong faces in front on every model
+  that is not a ship. The game decides a face's side in the model's own
+  frame (the camera brought into it), not in the camera's; working it out
+  that way brought the polygons to 99.7 % of the game's.
+- Pacing the smooth view by the game's flips stalled it about a frame at
+  every picture, because a pass's numbers exist only once its drawing
+  starts, after the flip before it. It is paced by the passes' own times
+  instead, a little behind the newest: 44 ms later than the C64's picture
+  on average over the test's 23,100 frames.
+- The outside views move the camera only at passes the game draws; the
+  page places it for the passes in between as `update_camera` would.
+- Painted in the C64's pixels at a pass the game drew, the smooth view is
+  the game's picture to the pixel, except in the first three passes
+  after a saved moment is restored, where a dust dot can sit a row off.
+  The cause was not found; the page never restores a moment.
