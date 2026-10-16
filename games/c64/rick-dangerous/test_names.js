@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Hold the page's Hall of Fame name box (the rd-names block of index.html, hofCheck) against the
+// Hold the page's Hall of Fame name box (the rd-names block of discoveries.html, hofCheck) against the
 // game's own routines run in kit/c64/cpu6502.js over the committed listing: the rude-word filter
 // at $2103 and the code words at $2146, with the name on screen at $C306 and random bytes in the
 // 246 screen bytes after it, which the filter can read. The cases: every name the page offers,
@@ -12,7 +12,7 @@ const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname);
-const { hofCheck } = g.run('index.html', 'rd-names', 'hofCheck');
+const { hofCheck } = g.run('discoveries.html', 'rd-names', 'hofCheck');
 const ram = g.listing().ram;
 let seed = 20261013;
 const rnd = (n) => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) % n; };

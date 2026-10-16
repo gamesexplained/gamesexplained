@@ -50,19 +50,16 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 .rd-key{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:14px;margin-top:10px}
 .rd-key span{display:inline-flex;align-items:center;gap:6px}
 .rd-key i{display:inline-block;width:14px;height:14px;border-radius:3px}
-.rd-name{font-family:var(--fm);font-size:20px;letter-spacing:.12em;text-transform:uppercase;width:12ch;padding:4px 8px;border:1px solid var(--line);border-radius:6px}
 .rd-out{font-family:var(--fm);font-size:15px;margin-top:12px;min-height:3em}
 .rd-out b{font-size:18px;letter-spacing:.1em}
-.rd-try{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .rd-wide{display:block;width:100%;max-width:768px;height:auto;image-rendering:pixelated;margin:0 auto;background:#10131a;border-radius:4px}
 .rd-fig{margin:0}.rd-fig figcaption{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-bottom:6px;min-height:1.6em}
-.rd-try button{font-family:var(--fm);font-size:13px;border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:2px 8px;cursor:pointer}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1989 · Firebird</p>
   <h1>Rick Dangerous</h1>
-  <p class="sub">Core Design's platform game of traps, sticks and dynamite. Rick jumps, rooms scroll and boulders roll to a beat of 25 steps a second, and ten objects share six sprites. Its Hall of Fame hides two names that change the game.</p>
+  <p class="sub">Core Design's platform game of traps, sticks and dynamite. Rick jumps, rooms scroll and boulders roll to a beat of 25 steps a second, and ten objects share six sprites. What the game hides, from two names in its Hall of Fame that change the game to a line of its own source code, is on <a href="discoveries.html">Discoveries</a>.</p>
 </header>
 <main class="wrap">
 
@@ -74,7 +71,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <div class="plate rd-pair"><img class="rd-shot" src="reference/title.png" alt="The title screen: RICK DANGEROUS in orange above Rick in a film-strip frame, with the Firebird and Core Design logos"><img class="rd-shot" src="reference/level1-start.png" alt="The first room: Rick at the left of a grey stone cave crossed by blue water, below the score panel"><p class="cap" style="grid-column:1/-1">The title screen, and the first room of the cave. The panel shows the score, the bullets, the dynamite and the lives as hats.</p></div>
 </section>
 
-<section>
+<section id="frame">
   <p class="fig">02 · One frame</p>
   <h2 class="t">What the game sees in a room</h2>
   <p>The picture below is drawn by this page from the memory of one frame of play, recorded in the emulator: the screen, the character set and the video chip's registers as they change during the frame. Every one of its 104,448 pixels matches the emulator's own picture.</p>
@@ -82,7 +79,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
     <div class="rd-ctl"><button type="button" id="rd-overbtn" aria-pressed="false">Show what each tile is</button></div>
     <div class="rd-key" id="rd-key" hidden></div>
     <p class="cap">Drawn by the site's C64 renderer from the recorded frame, pixel for pixel the emulator's picture. The overlay takes each tile's code from the screen and looks it up the way <code>$4081</code> does, with the eight codes of graphics set 0 from <code>$185B</code>.</p></div>
-  <p>The room is made of characters, and the game decides what each one is by its code alone. Eight codes in zero page (<code>$38</code>-<code>$3F</code>, copied from <code>$185B</code> for each graphics set) mark where each kind begins: background first, then ladders, deadly tiles, scenery that stands in front of Rick, platforms, springy floors (section 05), ordinary floors and walls, and the tops of ladders. <code>$4081</code> turns those eight numbers into a table of 256 flags at <code>$0600</code>, and every collision test reads it. The tile graphics only have to be kept in that order.</p>
+  <p>The room is made of characters, and the game decides what each one is by its code alone. Eight codes in zero page (<code>$38</code>-<code>$3F</code>, copied from <code>$185B</code> for each graphics set) mark where each kind begins: background first, then ladders, deadly tiles, scenery that stands in front of Rick, platforms, springy floors (<a href="discoveries.html#trampoline">Discoveries</a>), ordinary floors and walls, and the tops of ladders. <code>$4081</code> turns those eight numbers into a table of 256 flags at <code>$0600</code>, and every collision test reads it. The tile graphics only have to be kept in that order.</p>
 </section>
 
 <section>
@@ -97,7 +94,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <p>One step calls, in order, Rick's move (<code>$0B2A</code>), the exits and the scroll (<code>$186F</code>, <code>$3018</code>), every object (<code>$1990</code>), the bullet, the dynamite, the room bonus, the panel's sprites, the masked sprite images (<code>$0F83</code>) and the panel. Nothing in the step waits for the beam. In the emulator, 141 steps took 284 frames.</p>
 </section>
 
-<section>
+<section id="move">
   <p class="fig">04 · Rick on his feet</p>
   <h2 class="t">Rick jumps 33 pixels high, in eleven steps</h2>
   <p>Rick's vertical speed is kept in whole pixels and 256ths of a pixel (<code>$39B5</code>, <code>$39A9</code>). Each step adds the speed to his height and then half a pixel to the speed, up to eight pixels a step (<code>$0B82</code>). A jump sets the speed to 5½ pixels upwards (<code>$0D2D</code>). Eleven steps later the speed has run out and he is 33 pixels up.</p>
@@ -106,26 +103,18 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
     <div class="rd-ctl" id="rd-movebtn"></div>
     <div class="rd-out" id="rd-moveout"></div>
     <p class="cap">Rick's height at each step, from left to right, the numbers counting steps; yellow in the air, green on the floor. Drawn by <code>rickStep</code>, a port of <code>$0B2A</code> and <code>$0C92</code> for open ground. <code>test_move.js</code> holds it to the game's own code run in the kit's simulator on the first room with its ceiling taken away: 400 runs of 80 steps of random stick, on both kinds of floor, the same position and speed at every step.</p></div>
-  <p>Before each move the game tests the tiles at the new place (<code>$3F04</code>). A move that runs into a solid tile is tried again without its sideways part, so Rick slides down a wall rather than sticking to it. Rising into a ceiling turns the speed into a fall of half a pixel a step. Falling onto a floor lands him: his height is put back on the row of tiles (<code>$0C20</code>) and his speed set to one pixel down. On the next step that pixel is blocked again, so a Rick standing still is landing on the floor 25 times a second.</p>
+  <p>Before each move the game tests the tiles at the new place (<code>$3F04</code>). A move that runs into a solid tile is tried again without its sideways part, so Rick slides down a wall rather than sticking to it. Rising into a ceiling turns the speed into a fall of half a pixel a step. Falling onto a floor lands him: his height is put back on the row of tiles (<code>$0C20</code>) and his speed set to one pixel down. On the next step that pixel is blocked again, so a Rick standing still is landing on the floor 25 times a second. One kind of floor does not land him at all: "Springy floor" above shows it (<a href="discoveries.html#trampoline">Discoveries</a>).</p>
 </section>
 
 <section>
-  <p class="fig">05 · Secret</p>
-  <h2 class="t">Secret: a floor in Egypt is a trampoline</h2>
-  <p>One kind of tile carries a flag no other solid tile has (<code>$20</code>, section 02). Landing on it does not stop Rick. The code at <code>$0BFE</code> turns his speed round, less a pixel, and sends him back up, and each bounce starts half a pixel a step slower than the one before, until the speed is one and he stands. Holding the stick up as he lands sends him up at eight pixels a step instead (<code>$0BED</code>), the top speed the game allows: 68 pixels, twice the height of a jump. The movement picture above shows both with "Springy floor" pressed.</p>
-  <div class="plate"><canvas id="rd-spring" class="rd-wide"></canvas>
-    <p class="cap">The two places the maps hold springy tiles, outlined: a strip of 24 across one room of Egypt (level 2, map row 86, codes <code>$BE</code>-<code>$C0</code>), and four under a pair of crates in Schwarzendumpf Castle (level 3, map row 51, code <code>$D8</code>). Levels 1 and 4 have none. The bounce was read from the code and run in the simulator, not watched in play.</p></div>
-</section>
-
-<section>
-  <p class="fig">06 · The rooms</p>
+  <p class="fig">05 · The rooms</p>
   <h2 class="t">Each level is one tall map</h2>
-  <p>A level is a column of map rows, eight bytes each, from <code>$9200</code> to <code>$A5BF</code>. Each byte is the number of a block, and each of the 256 blocks at <code>$8200</code> is four rows of four tiles. So a map row is 32 tiles across, the width of the play area, and four tiles deep. The screen shows six map rows; when Rick climbs near the top or the bottom, the view scrolls two map rows (64 pixels) as eight shifts of one row (<code>$3018</code>, <code>$30A3</code>), each drawn on a hidden screen (section 07).</p>
+  <p>A level is a column of map rows, eight bytes each, from <code>$9200</code> to <code>$A5BF</code>. Each byte is the number of a block, and each of the 256 blocks at <code>$8200</code> is four rows of four tiles. So a map row is 32 tiles across, the width of the play area, and four tiles deep. The screen shows six map rows; when Rick climbs near the top or the bottom, the view scrolls two map rows (64 pixels) as eight shifts of one row (<code>$3018</code>, <code>$30A3</code>), each drawn on a hidden screen (section 06).</p>
   <p>The Maps tab draws all four levels from these bytes. Levels 1 and 2 use one tile set and levels 3 and 4 another; <code>$1911</code> swaps them, exchanging 2 KB of graphics between <code>$7000</code> and the RAM under the I/O chips.</p>
 </section>
 
 <section>
-  <p class="fig">07 · The scroll</p>
+  <p class="fig">06 · The scroll</p>
   <h2 class="t">The scroll is drawn on a hidden screen</h2>
   <p>When Rick climbs near the top of the screen (his height under <code>$60</code>) or drops near the bottom (<code>$CC</code> and over), play stops for a third of a second while the view moves two map rows, 64 pixels (<code>$3018</code>, <code>$30A3</code>). The game keeps two screens, at <code>$C000</code> and <code>$C400</code>. While the video chip shows one, the main program copies the play area into the other one row of tiles further on, with the next row of the map coming in at the edge (<code>$3132</code>). The raster interrupt then points the chip at the new screen (<code>$3AE8</code>), and the two change places. Eight shifts of eight pixels take sixteen frames.</p>
   <div class="plate"><div class="rd-pair"><figure class="rd-fig"><figcaption id="rd-scrA"></figcaption><canvas id="rd-scroll0" class="rd-wide"></canvas></figure><figure class="rd-fig"><figcaption id="rd-scrB"></figcaption><canvas id="rd-scroll1" class="rd-wide"></canvas></figure></div>
@@ -136,7 +125,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 </section>
 
 <section>
-  <p class="fig">08 · Traps</p>
+  <p class="fig">07 · Traps</p>
   <h2 class="t">Every trap says what sets it off</h2>
   <p>Each object in a room has a record of five bytes in the object lists (<code>$A5C0</code>): where it is, its type, and a byte of flags. For a trap, four of the flags say what sets it off: Rick walking into its zone, the stick, a bullet, or an explosion (<code>$1A72</code>). One more makes it deadly to touch while it moves and another while it waits, and one pays 1000 points and removes it when its movement ends.</p>
   <div class="plate"><table class="rd-tab" id="rd-traps"></table>
@@ -145,7 +134,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 </section>
 
 <section>
-  <p class="fig">09 · The boulder</p>
+  <p class="fig">08 · The boulder</p>
   <h2 class="t">The boulder in the first room follows a script</h2>
   <p>A trap does not think. Once it goes off, it plays a script from a table with one entry for each trap type (<code>$B880</code>): records of three bytes, a count and a step across and down, repeated that many times, until <code>$FF</code> (<code>$1B0B</code>). A step that would take it past the side of the room or out of its 320 lines ends the script early. At the end the trap goes back to where it started and waits again or, with bit 0 of its flags, pays 1000 points and is gone. Its frames change every fourth step, from a list of their own.</p>
   <div class="plate"><div class="rd-stack"><canvas id="rd-boulder"></canvas></div>
@@ -157,16 +146,16 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 </section>
 
 <section>
-  <p class="fig">10 · Sprites</p>
+  <p class="fig">09 · Sprites</p>
   <h2 class="t">Rick walks behind the scenery</h2>
   <p>A C64 sprite can be set behind the background, but then it is behind every foreground pixel on the screen at once, and Rick has to pass behind some tiles and in front of others. So Rick Dangerous builds his picture again every frame (<code>$0F83</code>): it takes his 64-byte frame and ANDs it with a mask made from the tiles behind him (<code>$1052</code>), clearing every pixel where a tile of the "in front" kind stands. The dynamite and up to three enemies get the same treatment. The finished pictures go into one of two sets of buffers, <code>$C800</code> or <code>$CA00</code>, by turns, so the video chip never shows a half-drawn one.</p>
   <p>The bullet is not a sprite at all: <code>$2ABA</code> writes a character into the screen, keeping the one it covers, and moves it eight pixels a step.</p>
 </section>
 
-<section>
-  <p class="fig">11 · Sprites</p>
+<section id="sprites">
+  <p class="fig">10 · Sprites</p>
   <h2 class="t">Ten objects share six sprites</h2>
-  <p>The C64 has eight hardware sprites. Rick takes two, laid one over the other, which leaves six for the objects of a room: enemies, traps, treasures and the dynamite, ten slots in all. Once a frame, at line 240, <code>$3559</code> sorts the ten by height, and the six highest get sprites 2 to 7. A seventh and eighth object lower down get sprites 2 and 3 again: a raster handler waits until the beam is below the second of the six (<code>$3831</code>) and moves the two sprites down to them. A ninth and tenth get sprites 4 and 5 the same way, below the fourth (<code>$387D</code>).</p>
+  <p>The C64 has eight hardware sprites. Rick takes two, laid one over the other, which leaves six for the objects of a room: enemies, traps, treasures and the dynamite, ten slots in all. Once a frame, at line 240, <code>$3559</code> sorts the ten by height, and the six highest get sprites 2 to 7. A seventh and eighth object lower down get sprites 2 and 3 again: a raster handler waits until the beam is below the second of the six (<code>$3831</code>) and moves the two sprites down to them. A ninth and tenth get sprites 4 and 5 the same way, below the fourth (<code>$387D</code>), and lose the ninth bit of their X on the way: "Show the bug" below sets up a room where it shows (<a href="discoveries.html#ninth-bit">Discoveries</a>).</p>
   <div class="plate"><canvas id="rd-mux" class="rd-wide"></canvas>
     <div class="rd-ctl" id="rd-muxbtn"></div>
     <div class="rd-out" id="rd-muxout"></div>
@@ -174,14 +163,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 </section>
 
 <section>
-  <p class="fig">12 · Secret</p>
-  <h2 class="t">Secret: an object at the right of a room can jump to the left edge</h2>
-  <p>A sprite's X needs nine bits on a 320-pixel screen, and the ninth bits of all eight sprites share one register (<code>$D010</code>). The sort works the ninth bit out for each reused sprite in turn, each from the last: <code>$3978</code>, then <code>$397A</code> and <code>$397B</code>. For the third and fourth it writes its result to <code>$3980</code> and <code>$3981</code> instead of the next two bytes, <code>$397C</code> and <code>$397D</code>. Then, every frame, <code>$36D9</code> copies <code>$397C</code> and <code>$397D</code> over them. Nothing writes those two, so the handler at <code>$387D</code> always gets a zero.</p>
-  <p>An object's sprite X is its X plus 56, so every object 200 pixels or more from the left of the room needs the ninth bit. Shown on sprite 4 or 5 below the others, such an object is drawn 256 pixels to the left, at the left edge of the screen and mostly in the border. It takes nine objects in view, with this one the ninth or tenth from the top, so it can only happen in a crowded room. Found in the code; "Show the bug" above sets up a room where it happens.</p>
-</section>
-
-<section>
-  <p class="fig">13 · Music</p>
+  <p class="fig">11 · Music</p>
   <h2 class="t">Music: seven tunes by Dave Pridmore</h2>
   <p>A tune plays on each story screen before a level, on the ending, on the title and Hall of Fame, and on GAME OVER. None plays during play: while a tune runs, the sound effects and Rick's footsteps are silent (<code>$4F86</code>).</p>
   <div class="plate"><div id="rd-music"></div>
@@ -190,41 +172,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 </section>
 
 <section>
-  <p class="fig">14 · Secret</p>
-  <h2 class="t">Secret: two names change the game</h2>
-  <p>A score good enough for the Hall of Fame lets the player spell a name of up to ten letters with the joystick. The routine at <code>$2146</code> then compares the name with two words kept at <code>$21B8</code>. BBOOIINNGG turns on two cheat keys (<code>$53</code>): 2 fills the bullets, the dynamite and the lives back to six, and C= jumps to the next level. FLUFOMATIC (<code>$37</code>) turns the title screen into a level select, offering every level reached so far (<code>$51</code>).</p>
-  <div class="plate rd-pair"><img class="rd-shot" src="reference/level-select.png" alt="The title screen with SELECT LEVEL and four levels listed: South America, Egypt, Schwarzendumpf Castle, Missile Base"><div>
-    <p style="margin-top:0">Before either check, <code>$2103</code> looks for eleven rude words in the name and writes SNIGGER over any name that holds one. The search is looser than it looks: it takes each word's letters in order anywhere in the first seven letters, with other letters between them. Type a name to see what the Hall of Fame keeps.</p>
-    <input class="rd-name" id="rd-name" maxlength="10" value="SHIFT" aria-label="A name for the Hall of Fame">
-    <div class="rd-try" id="rd-try"></div>
-    <div class="rd-out" id="rd-out"></div></div>
-    <p class="cap" style="grid-column:1/-1">The level select, after FLUFOMATIC, with all four levels reached. The name box runs a port of <code>$2103</code> and <code>$2146</code>, checked against the game's own routines on 3,000 names in the kit's 6502 simulator (<code>test_names.js</code>).</p></div>
-  <p>The level select has one more condition. A game started from it does not show the ending: <code>$23A0</code> skips the story screen for the fifth "level" when the start was chosen (<code>$52</code>). A player who took the shortcut finishes on GAME OVER.</p>
-</section>
-
-<section>
-  <p class="fig">15 · Controls</p>
-  <h2 class="t">Secret: a second joystick can end the game</h2>
-  <p>The manual gives the up-arrow key for quitting. The game reads ← instead: <code>$0A95</code> tests one bit of the keyboard, and pressing ← ends the game. That bit is shared with joystick port 1, because the game never changes which keyboard row it reads (<code>$DC00</code> stays at <code>$7F</code>). A joystick left in port 1 and pushed down ends the game too, and pushed right it is the cheat's 2 key.</p>
-  <p>Run/Stop, on the same keyboard row, pauses the game until it is pressed again (<code>$40E0</code>).</p>
-</section>
-
-<section>
-  <p class="fig">16 · The Hall of Fame</p>
-  <h2 class="t">Secret: the Hall of Fame can change at power-on</h2>
-  <p>At power-on, <code>$226A</code> reads the line the video chip is drawing and uses it as a random number. When the line's top bit is set and its three low bits are not all zero, about seven times in sixteen, it copies NOBBY or JEZEBEL (<code>$2368</code>) over one of the first seven names. The names are stored column by column (<code>$2318</code>): the first letters of all eight names, then the second letters, and so on.</p>
-  <div class="plate"><img class="rd-shot" src="reference/hall-of-fame.png" alt="HALL OF FAME in orange capitals above eight names with scores from 8000 down to 1000"><p class="cap">The Hall of Fame the game starts on. JEZEBEL is one of the two names <code>$226A</code> can add.</p></div>
-</section>
-
-<section>
-  <p class="fig">17 · Leftovers</p>
-  <h2 class="t">A line of the source code, loaded with the game</h2>
-  <p>The sprite multiplexer's buffers at <code>$3963</code> are overwritten in the first frame, but before that they hold plain text: RICK_MASK,Y, a line break, !124, a tab and S. It is a fragment of the game's own assembler source, left in memory on the developers' machine when the game was saved.</p>
-  <p>Other things the finished game never uses are still in it: a collision test nothing calls (<code>$1CB1</code>), a memory swap (<code>$2524</code>), and a routine that writes a byte as eight binary digits (<code>$414E</code>). Holding SPACE while a room is built copies the map rows above the screen over its bottom eight rows (<code>$2FD5</code>). The start-up calls <code>$4108</code> once to build the object-type tables and then writes an LDA over its own JSR (<code>$0864</code>), so the call never happens again.</p>
-</section>
-
-<section>
-  <p class="fig">18 · The tape</p>
+  <p class="fig">12 · The tape</p>
   <h2 class="t">One load</h2>
   <p>The cassette loads once. A turbo loader puts up NOW LOADING ... RICK DANGEROUS and reads the whole game into memory, all four levels, the ending's text and every tune; nothing is loaded again. The game's first instruction is at <code>$0810</code>.</p>
 </section>
@@ -233,40 +181,6 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script>
-/* rd-names */
-// The Hall of Fame's checks on a new name: $2103 (the rude words) and $2146 (the two code words).
-// name: up to ten character codes as the name entry leaves them on screen at $C306 ($41-$5A
-// letters, $2E the full stop, $00 a space, $3B an unused place); after: the 246 screen bytes that
-// follow, which $2139 can read (see below). Returns the ten codes kept, and the two flags.
-function hofCheck(name, after) {
-  const RUDE = 'FUCKCUNTPISSSHITCRAPFARTWANKBASTBOLLARSEBROS';
-  const s = new Uint8Array(256);
-  for (let i = 0; i < 10; i++) s[i] = name[i] === undefined ? 0x3B : name[i];
-  for (let i = 10; i < 256; i++) s[i] = after ? after[i - 10] : 0;
-  // $2139: look for code a from position y on; stops after looking at position 6, or, when the
-  // search starts at 7 or later, only when y wraps round to 7: then it reads the whole 256 bytes
-  function find(a, y) {
-    for (;;) {
-      if (s[y] === a) return { found: true, y: (y + 1) & 0xFF };
-      y = (y + 1) & 0xFF;
-      if (y === 7) return { found: false, y };
-    }
-  }
-  let rude = false;
-  for (let w = 0; w < RUDE.length && !rude; w += 4) {      // $2103: four letters a word
-    let y = 0, ok = true;
-    for (let k = 0; k < 4 && ok; k++) {
-      const r = find(RUDE.charCodeAt(w + k), y);
-      ok = r.found; y = r.y;
-    }
-    if (ok) rude = true;
-  }
-  if (rude) { const t = 'SNIGGER@@@'; for (let i = 0; i < 10; i++) s[i] = t.charCodeAt(i); }
-  const is = (word) => { for (let i = 0; i < 10; i++) if (s[i] !== word.charCodeAt(i)) return false; return true; };
-  return { name: Array.from(s.slice(0, 10)), select: is('FLUFOMATIC'), cheat: is('BBOOIINNGG'), rude };
-}
-// end of hofCheck
-
 /* rd-music */
 // The game's own music player, run on a small 6502 core: the bytes $4FCC-$5F8D (the player's
 // variables, its code at $5042-$5730 and the tunes' data) as the game loads them, and zero page
@@ -607,21 +521,6 @@ function multiplex(o, keep) {
     });
     if (location.hash === '#tiles') btn.click();
   }
-  // the Hall of Fame name box
-  const inp = document.getElementById('rd-name'), out = document.getElementById('rd-out');
-  const codes = (s) => Array.from(s.toUpperCase()).filter((ch) => /[A-Z. ]/.test(ch)).slice(0, 10)
-    .map((ch) => (ch === ' ' ? 0 : ch.charCodeAt(0)));
-  const show = (cs) => cs.map((b) => (b >= 0x41 && b <= 0x5A ? String.fromCharCode(b) : b === 0x2E ? '.' : ' ')).join('').replace(/@/g, ' ').trimEnd();
-  function check() {
-    const r = hofCheck(codes(inp.value));
-    const kept = show(r.name.map((b) => (b === 0x3B ? 0 : b === 0x40 ? 0 : b)));
-    out.innerHTML = `Kept as <b>${kept || '(nothing)'}</b>` + (r.rude ? ' (a rude word was found)' : '') +
-      (r.cheat ? '<br>Cheat keys on: 2 refills, C= skips a level.' : '') + (r.select ? '<br>The title screen will offer the level select.' : '');
-  }
-  inp.addEventListener('input', check);
-  document.getElementById('rd-try').innerHTML = ['SHIFT', 'ARSENAL', 'BROTHERS', 'SHIRT', 'BBOOIINNGG', 'FLUFOMATIC', 'RICK'].map((w) => `<button type="button">${w}</button>`).join('');
-  document.getElementById('rd-try').addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') { inp.value = e.target.textContent; check(); } });
-  check();
   // the music
   const mus = document.getElementById('rd-music');
   if (!window.C64Sid || !L) mus.textContent = 'The player needs the site\'s sid.js and the listing: open this page from the built site.';
@@ -736,28 +635,6 @@ function multiplex(o, keep) {
     };
     bx.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.spring) springy = !springy; else pick = b.dataset.k; draw(); });
     draw();
-  }
-
-  // the springy tiles in the maps
-  if (L) {
-    const ram = L.ram, sc = document.getElementById('rd-spring');
-    const ctx = C64.canvas(sc, 256, 3 * 32 * 2 + 8);
-    ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, 256, sc.height);
-    const row = (ram2, r) => { const t = new Uint8Array(128); for (let b = 0; b < 8; b++) { const k = ram2[r + b], at = ram2[0xB300 + k] | (ram2[0xB400 + k] << 8); for (let i = 0; i < 16; i++) t[(i >> 2) * 32 + b * 4 + (i & 3)] = ram2[at + i]; } return t; };
-    [[1, 86], [2, 51]].forEach(([l, mr], n) => {
-      const rec = ram[0x1980 + l] | (ram[0x1984 + l] << 8), set = ram[rec], from = ram[rec + 1] | (ram[rec + 2] << 8);
-      const chars = ram.subarray(set ? 0x7000 : 0xD000, (set ? 0x7000 : 0xD000) + 0x800), cols = set ? 0x8100 : 0x8000;
-      const mc1 = ram[0x1988 + l] & 15, mc2 = ram[0x198C + l] & 15, oy = n * (96 + 8);
-      for (let k = -1; k <= 1; k++) {
-        const t = row(ram, from + (mr + k) * 8);
-        for (let i = 0; i < 128; i++) {
-          const code = t[i], col = ram[cols + code], x = (i & 31) * 8, y = oy + (k + 1) * 32 + (i >> 5) * 8;
-          if (col & 8) C64.drawGlyphMC(ctx, chars, code, x, y, 1, [null, C64.PAL[mc1], C64.PAL[mc2], C64.PAL[col & 7]]);
-          else C64.drawGlyph(ctx, chars, code, x, y, 1, C64.PAL[col & 15], null);
-          if (set ? code === 0xD8 : code >= 0xBE && code <= 0xC0) { ctx.strokeStyle = '#ff4fd8'; ctx.strokeRect(x + .5, y + .5, 7, 7); }
-        }
-      }
-    });
   }
 
   // the scroll, frame by frame

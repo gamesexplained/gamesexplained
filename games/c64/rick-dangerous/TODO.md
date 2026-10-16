@@ -12,7 +12,7 @@ tab. The copy is `agent-draft`.
 
 ## Missing for Gold
 
-- A human pass over every section of How it works and the Maps tab,
+- A human pass over every section of How it works, Discoveries and the Maps tab,
   rewriting, cutting and adding (`copy` in `game.json` then records it).
 
 ## Open
