@@ -27,13 +27,13 @@ The hand-over into the text overlay was not captured. Whether its startup overwr
 | Part | State of analysis | Route |
 |---|---|---|
 | `opening` | Snapshot, symbols, listing, and initial sweeps | Recipe above |
-| `labyrinth` | Named continuation; no analysed snapshot | Finish the cinema sequence; graphical introduction observed, interactive maze unreached |
+| `labyrinth` | Graphical gate and first corridor reached; part boundaries under analysis | Dismiss movie card with fire, then walk up through the gate and dismiss The Labyrinth card |
 
 The opening was played with the game’s own word wheels. Each command starts on the left wheel: type the verb, Space, type the object, Return. A one-word command needs only the verb and Return. Matrix holds of 0.16 seconds per letter, releases of 0.12 seconds, and a pause between commands worked.
 
 Route exercised after the saved sidewalk state: `GO HOME`, `TAKE CAMCORDER`, `GO OUTSIDE`, `GO NORTH`, `GIVE NICKEL`, `GO WEST`, `GO THEATRE`, `GIVE DOLLAR`, `GO THEATRE`, `GO NORTH`, `LOOK`, `GIVE DOLLAR`, `TAKE`, `COMPLAIN`, `COMPLAIN`, `TAKE`, `TAKE`, `GIVE NICKEL`, `GO SOUTH`, `GO SOUTH`, `GIVE POPCORN`, `COMPLAIN`. Screenshots show the home, street, theater lobby, popcorn counter, auditorium, and movie-start text. The route came from the [Zzap!64 solution transcribed at c64.tin.at](https://c64.tin.at/labyrinth/labyrinth.sol.htm), read on 17 October 2026, and was checked by observing these responses.
 
-After the movie-start text the display loaded the character before an arched gate (`reference/maze-intro.png`). Black-screen intervals and repeated loader PCs around `$0F10` followed. Fire on joystick port 1, Space, and Return were tried; no stable interactive maze state was established. That is a load or progression question, not evidence that the image is defective. Side 2 was extracted for comparison but was not attached during play. Its correct swap point remains open. Further loads must be split into their own parts as they are identified; `labyrinth` is a continuation placeholder, not a claim that all subsequent scenes share one image.
+After the movie-start text the display loaded the character before an arched gate (`reference/maze-intro.png`). Black-screen intervals followed. `$0F10-$0F1C` is a ten-frame pacing loop using the IRQ counter at `$0353`, not a loader wait. A continuation dismissed the movie card with joystick-port-1 fire, saved `work/gate-steady.vsf`, and demonstrated movement with 100 frames of right input. From the initial gate position, 150 then 600 frames of up input entered the doorway and brought up The Labyrinth title card. Fire dismissed the card; with warp for the disk load, this reached the playable brick corridor in `work/corridor-play.vsf`. Side 2 was extracted for comparison but was not attached during play. Its correct swap point remains open. Further loads must be split into their own parts as they are identified; `labyrinth` is a continuation placeholder, not a claim that all subsequent scenes share one image.
 
 ## Steady-state memory
 

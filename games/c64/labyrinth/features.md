@@ -16,16 +16,16 @@ Read on 17 October 2026:
 | Choose among three game slots with F1, F3, or F5 | live | `reference/title.png` shows the empty-slot menu. |
 | Enter a player name | live | EUAN was accepted; `reference/gender.png`. |
 | Choose gender and favorite color | live | M and BLUE were accepted; `reference/colour.png` and `reference/opening.png`. |
-| Text opening before the graphical adventure | live | `reference/opening.png`; the cinema sequence leads to `reference/maze-intro.png`. Interactive maze play remains open. |
+| Text opening before the graphical adventure | live | `reference/opening.png`; the cinema sequence leads to `reference/maze-intro.png`. Graphical gate movement and the first brick corridor were reached in the continuation. |
 | Reach Jareth through the maze before thirteen hours expire | open | Disk guide pp. 2–3; clock rate and failure behavior untraced. |
-| Move the character with joystick port 1 | open | Disk guide p. 4 and p. 6; test in graphical play. |
+| Move the character with joystick port 1 | live | From the saved gate state, 100 right-input frames moved the figure; up input walked through the doorway into the brick corridor. `reference/gate-after-right.png` and `reference/corridor-play.png`. |
 | Compose commands from verb and object wheels | live | GO HOME, TAKE CAMCORDER, and the cinema commands changed the displayed state. |
 | Space changes the active wheel | live | Used between verbs and objects throughout the opening route. |
 | Horizontal cursor keys change wheels; vertical cursor keys scroll | open | Disk guide pp. 7–9; cursor input was not tested. |
 | Typing selects matching words | live | Entered words in the active wheels during the opening route. |
 | Delete clears the prefix | open | Disk guide pp. 8–9; Delete was not tested. |
 | Return executes commands | live | Repeatedly exercised in the text adventure. |
-| Fire executes commands after the movie starts | open | Disk guide p. 8; no stable interactive maze state reached. |
+| Fire executes commands after the movie starts | open | Disk guide p. 8; graphical play was reached, but command execution by fire has not been isolated in a control test. |
 | An invalid prefix flashes the border red | open | Disk guide p. 9. |
 | Scene entry automatically saves to the active slot | open | Disk guide p. 9; verify writes on a working disk copy. |
 | SAVE GAME and LOAD GAME use the three slots | open | Disk guide pp. 10–12. |

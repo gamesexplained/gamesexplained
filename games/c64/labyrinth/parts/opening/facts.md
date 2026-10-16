@@ -1,6 +1,6 @@
 # The text adventure — technical facts
 
-Source image: `work/play.vsf`, captured at the initial sidewalk prompt, as described in the game’s `orientation.md`. Unless marked live, statements below come from the snapshot and its exported disassembly. This is a Bronze sweep; most routine purposes and all high-byte text substitutions remain open.
+Source image: `work/play.vsf`, captured at the initial sidewalk prompt, as described in the game’s `orientation.md`. Unless marked live, statements below come from the snapshot and its exported disassembly. This is a Bronze sweep; most routine purposes and the room overlays beyond the opening are analysed separately.
 
 ## Interrupt and banking
 
@@ -27,7 +27,7 @@ The rendered RAM glyphs at `$D000-$D7FF` are in `reference/opening-font.png` in 
 | `$41-$5A` | Uppercase A–Z |
 | `$61-$7A` | Lowercase a–z |
 
-Some other slots are blank or graphical. They must not be decoded by assuming the complete ASCII punctuation set. Literal stored text uses ASCII bytes, interspersed with bytes above `$7F`. These high bytes break words as well as sentences; they are not a second proven alphabet. No full expansion table was established.
+Some other slots are blank or graphical. They must not be decoded by assuming the complete ASCII punctuation set. Literal stored text uses ASCII bytes, interspersed with bytes above `$7F`. These high bytes break words as well as sentences; they are not a second proven alphabet. The expansion table is split into high bytes at $D800 and low bytes at $D900. At $68D4-$691C, token $FB emits the selected word, $FC uppercases it, $FD appends a space, and $FE uppercases it and appends a space. Each token is followed by an index. The dictionary string ends at zero. The routine temporarily banks I/O out with port value $24 while reading these RAM tables. Exact text capitalization is obtained by subtracting $20 from the first emitted character when the high flag is set. The flag is then reduced to its space bit, so subsequent letters retain their stored case.
 
 ## Scope of the sweeps
 
@@ -39,7 +39,7 @@ The platform’s all-opcode scan found no undocumented opcodes in the exported c
 
 ## Error rate
 
-Nine listing comments were written from inspected code or rendered data. No independent sample or audit was performed. The error rate is unmeasured; a Silver continuation must run the kit’s verification workflow.
+The listing comments describe inspected code, rendered data, and dictionary records decoded by a script from their RAM pointers. No independent sample or audit was performed. The error rate is unmeasured; a Silver continuation must run the kit’s verification workflow.
 
 ## Hardware register census
 
@@ -111,7 +111,7 @@ Mechanical census of absolute and indexed absolute operands in the traced code b
 
 ## String sweep
 
-The snapshot was swept as screen codes, PETSCII, and printable ASCII. The opening text is stored as literal ASCII mixed with bytes above $7F; a printable run alone is not a complete sentence. High-byte expansion and control semantics remain open. No build identifier was established.
+The snapshot was swept as screen codes, PETSCII, and printable ASCII. The opening text is stored as literal ASCII mixed with bytes above $7F; a printable run alone is not a complete sentence. High-byte word substitutions are decoded by $68D4-$691C; additional formatting controls are decoded by $67B5-$6865. No build identifier was established.
 
 | Address | Literal span |
 |---|---|
