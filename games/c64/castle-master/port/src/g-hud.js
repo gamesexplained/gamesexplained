@@ -85,7 +85,10 @@ G.hud = function (P) {
         }
       } else c = 1;
     }
-    a = M[0x2455];
+    // strength ($2455) and the spirits' count ($246A) are the interrupt's to change: each read is
+    // the game's, in turn
+    const str = () => P.irqByte(0x2455);
+    a = str();
     if (a !== M[0x7027]) {
       M[0x7027] = a;
       let mode = -1;
@@ -108,17 +111,18 @@ G.hud = function (P) {
       M[0x1C74] = 1; setp(0x7A, 0x1E9F); setp(0x7C, 0x1C75);
       blit(0, 0);
       setp(0x7C, ptr(0x7C) + 0x0C);
-      if (M[0x2455] < 4) setp(0x7C, ptr(0x7C) + (((4 - M[0x2455]) << 1) & 255));
+      if (str() < 4) setp(0x7C, ptr(0x7C) + (((4 - str()) << 1) & 255));
       setp(0x7A, 0x1F49);
       blit(0, 3);
       setp(0x7A, 0x1F6F);
       setp(0x7C, ptr(0x7C) - 0x0C);
       M[0x7028] = 4; M[0x7029] = 0x26;
-      if (!M[0x2455]) M[0x109B] = 2;
+      const s = str();
+      if (!s) M[0x109B] = 2;
       else {
         // the tally: a pair of marks for each four points of strength, the last pair cut short
-        M[0x702B] = ((M[0x2455] >> 2) + 1) & 255;
-        const frac = M[0x2455] & 3;
+        M[0x702B] = ((s >> 2) + 1) & 255;
+        const frac = str() & 3;
         let go;
         if (frac) { M[0x702A] = frac; a = ((4 - frac) & 255) | 0x80; go = true; } else { a = 0x80; M[0x702B]--; go = M[0x702B] !== 0; }
         while (go) {
@@ -137,7 +141,7 @@ G.hud = function (P) {
       copy(0, 0x0B, 0x0F);
       M[0x1C74] = 8;
     }
-    a = M[0x246A];
+    a = P.irqByte(0x246A);
     c = a >= M[0x7026] ? 1 : 0;
     const same = a === M[0x7026];
     M[0x7026] = a;
