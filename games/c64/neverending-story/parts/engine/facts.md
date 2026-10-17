@@ -98,8 +98,8 @@ hold no code.
 | $D01A | raster interrupt on, $F1; $F0 around a load | $06C9, $0508, $0537 |
 | $D020, $D021 | border and background colours | $072B, $1587; $0728, $1582, $A7E5, $A810 |
 | $D400-$D418 | the title tune's three voices, filter and volume; ADSR through indexed stores | $9680-$9FEE |
-| $DC0D | CIA 1 interrupts off when the game's IRQ is installed | $A8D8 |
-| $DC0E | CIA 1 timer A stopped and restarted around KERNAL calls | $052D, $0532 |
+| $DC0D | $10 written only by `INSTALL_GAME_IRQ`, which nothing calls ("Code and data nothing reaches") | $A8D8 |
+| $DC0E | CIA 1 timer A stopped after IOINIT and again after each load; nothing in the game starts it | $06A8-$06AD, $052D-$0532 |
 | $DD00 | VIC bank 3 selected | $06D1 |
 
 No sprite register, no paddle or joystick port and no CIA 2 timer is
@@ -119,8 +119,8 @@ never runs.
   "Restore a saved game?" (sentence $2E) and on Y calls the LOAD stub
   ($14F3); `INIT_GAME` ($14D6) jumps over it and nothing else names it.
 - **Return to BASIC.** `RESTORE_SYSTEM_TO_BASIC` ($A893) and
-  `INSTALL_GAME_IRQ` ($A8CC), in icon slots 4 and 5 beside the raster
-  code, are named by no instruction and no pointer.
+  `INSTALL_GAME_IRQ` ($A8CC), in icon slot 5 ($A880-$A91F) beside the
+  raster code, are named by no instruction and no pointer.
 - **Crucifix.** Icon slot 27 ($B640) is a gold cross on black, and the
   vocabulary has the stem "cru" (noun $5A, object 40, $1C36). The
   noun-to-icon map holds object 0, Auryn, at position 27 ($22BF), and

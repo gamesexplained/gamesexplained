@@ -12236,7 +12236,7 @@
   {
    "address": 4655,
    "type": "line",
-   "text": "PARSE_INPUT ($122F)\nPurpose: Turn one edited command line into an executed command. Splits the line into words and records each word's start offset in an even byte of PARSED_TOKENS, then looks each word up and stores its vocabulary token id in the odd byte after the offset, then resolves the verb and noun and dispatches the matching rule, once for each command on the line.\nInputs: INPUT_TEXT_BUFFER ($CBA0) holds the lowercased line and INPUT_LEN ($26) its length. An empty line returns immediately.\nOutputs: PARSED_TOKENS ($28-$47) holds, for up to fifteen words, each word's start offset and token id (the byte after the last word's id holds the offset just past that word, plus one); WORD_COUNT ($27) holds twice the number of words; and the action script of each command on the line has been run, so any game state may have changed. An unknown word ends the line after its message ($12F6), before any command is dispatched.\nAssumptions: The token table is sixteen two-byte slots and the tokenizer stops when it fills. Vocabulary matching uses only the first three characters of each word; the disambiguation block at $1325 inspects characters four to six to separate stems that share a prefix.\nClobbers: A, X, Y, flags, WORD_COUNT, PARSED_TOKENS, LOOP_COUNTER ($4B), SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SCRATCH_BYTE_2 ($04), WORD_BUFFER ($64-$69), MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), VERB_ID ($4C), NOUN_ID ($4D), SAVED_PARSE_INDEX ($6A), the self-modified operand at $13B1, and all VM and renderer state through dispatch.\nHardware changes: None directly; the renderer writes screen and colour RAM, and an executed command may reach the disk and display paths."
+   "text": "PARSE_INPUT ($122F)\nPurpose: Turn one edited command line into an executed command. Splits the line into words and records each word's start offset in an even byte of PARSED_TOKENS, then looks each word up and stores its vocabulary token id in the odd byte after the offset, then resolves the verb and noun and dispatches the matching rule, once for each command on the line.\nInputs: INPUT_TEXT_BUFFER ($CBA0) holds the lowercased line and INPUT_LEN ($26) its length. An empty line returns immediately.\nOutputs: PARSED_TOKENS ($28-$47) holds, for up to fifteen words, each word's start offset and token id (the byte after the last word's id holds the offset just past that word, plus one); WORD_COUNT ($27) holds twice the number of words; and the action script of each command on the line has been run, so any game state may have changed. An unknown word ends the line after its message ($12F6), before any command is dispatched.\nAssumptions: The token table is sixteen two-byte slots and the tokenizer stops when it fills. Vocabulary matching uses only the first three characters of each word; the block at $1325 inspects characters four to six only after NOR and SOU, to tell NORTHEAST, NORTHWEST, SOUTHEAST and SOUTHWEST from NORTH and SOUTH; other stems that share three letters (the three TRE entries) always give the first entry.\nClobbers: A, X, Y, flags, WORD_COUNT, PARSED_TOKENS, LOOP_COUNTER ($4B), SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SCRATCH_BYTE_2 ($04), WORD_BUFFER ($64-$69), MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), VERB_ID ($4C), NOUN_ID ($4D), SAVED_PARSE_INDEX ($6A), the self-modified operand at $13B1, and all VM and renderer state through dispatch.\nHardware changes: None directly; the renderer writes screen and colour RAM, and an executed command may reach the disk and display paths."
   },
   {
    "address": 4655,
@@ -12336,7 +12336,7 @@
   {
    "address": 4804,
    "type": "line",
-   "text": "The vocabulary is a list of 4-byte entries [char1,char2,char3,id], terminated by '@' ($40).\nMatches the word's first 3 chars against each entry; on a full match reads the id byte\n(-> $02) and goes on to VOCAB_READ_TOKEN_ID ($1325), which separates the stems that share a prefix. A '@' terminator means the word\nis unknown -> WORD_NOT_FOUND."
+   "text": "The vocabulary is a list of 4-byte entries [char1,char2,char3,id], terminated by '@' ($40).\nMatches the word's first 3 chars against each entry; on a full match reads the id byte\n(-> $02) and goes on to VOCAB_READ_TOKEN_ID ($1325), which tells the four diagonal directions from NORTH and SOUTH. A '@' terminator means the word\nis unknown -> WORD_NOT_FOUND."
   },
   {
    "address": 4808,
@@ -12416,7 +12416,7 @@
   {
    "address": 4901,
    "type": "line",
-   "text": "Reads the matched vocab entry's id byte into $02. For ambiguous stems (id type 1 or 5) it\ninspects WORD_BUFFER[3..5] to pick the exact word \u2014 e.g. \"th e\"/\"th w\" variants map to\ndifferent ids ($2,$4,$6,$8). This lets 3-char-stem matching still distinguish words that\nshare a stem."
+   "text": "Reads the matched vocab entry's id byte into $02. For ambiguous stems (id type 1 or 5) it\ninspects WORD_BUFFER[3..5] to pick the exact word \u2014 e.g. \"th e\"/\"th w\" variants map to\ndifferent ids ($2,$4,$6,$8). Only these two stems are told apart: NORTHEAST, NORTHWEST, SOUTHEAST and SOUTHWEST\nget ids 2, 8, 4 and 6, and other stems that share three letters (the three TRE entries)\nalways give the first entry."
   },
   {
    "address": 4901,

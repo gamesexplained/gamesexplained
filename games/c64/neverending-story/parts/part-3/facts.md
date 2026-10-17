@@ -20,9 +20,11 @@ at the part's first command prompt.
 - Pictures 37-56, $4300-$8DCD (engine `ROOM_GRAPHIC_TABLE`). Picture
   49, Atreyu buried to the waist in rubble ($71FE-$7581), is shown by no
   room and no script.
-- $3842-$42FF and $8DCE-$95FF are filler that no pointer reaches: room
-  texts of an earlier build of Part 2 and of Part 1, then the bytes
-  Parts 1 and 2 hold at the same addresses.
+- $3842-$42FF and $8DCE-$95FF are filler that nothing in Part 3 reads:
+  room texts of an earlier build of Part 2 and of Part 1, then the bytes
+  Parts 1 and 2 hold at the same addresses. The engine's records for
+  pictures 19 and 20 reach into the second (picture 20's, $0C71, points
+  at $8EA0), but no Part 3 room or script shows either.
 
 ## The mazes
 
@@ -31,7 +33,7 @@ at the part's first command prompt.
   room ($63, picture 50, his rock cycle), the stone corridor ending at a
   chest ($6B, picture 48), where the casket, the sapphire, the diamond
   and the ruby start, and the viewing room ($78). The rest share their
-  maze's text, and nine pictures (40-45, 53-55) serve them: a plain
+  maze's text, as $6B does too, and nine pictures (40-45, 53-55) serve them: a plain
   corridor, one with stairs up and one with stairs down, in each
   material.
 - LOOK GLASS FRAGMENT sets flag 18 (engine action $2ED7). On the next

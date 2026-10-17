@@ -19,9 +19,11 @@ first command prompt.
 - 20 events ($3016).
 - Pictures 21-36, $4300-$7A8B (engine `ROOM_GRAPHIC_TABLE`).
 - $40AA-$42E1 and $7A8C-$95FF hold, byte for byte, what Part 1 holds at
-  the same addresses: the end of Part 1's room texts, and the second
-  half of Part 1's picture 15 with pictures 16-20 and the filler after
-  them. No pointer reaches either.
+  the same addresses: the end of Part 1's room texts, and the last 240
+  of the 900 bytes of Part 1's picture 15 with pictures 16-20 and the
+  filler after them. Nothing in Part 2 reads either: the engine's records
+  for pictures 15-20 and Part 3's 51-56 reach into the second, but no
+  Part 2 room or script shows those pictures.
 
 ## The turn script ($2F06)
 
@@ -37,7 +39,8 @@ first command prompt.
 ## Room scripts
 
 - Room $29 is the Nothing: its text says Atreyu has been consumed, and
-  its script waits for a key and restarts the game. 29 exits lead into
+  its script waits for Space ("Paused - hit space to continue!") and
+  restarts the game. 29 exits lead into
   it, from rooms $2E, $2F, $31 and $33-$36, all of which warn "The pull of
   the Nothing is very strong here" (event 9).
 - The graveyard, room $2D: an unseen force pushes Atreyu into an open

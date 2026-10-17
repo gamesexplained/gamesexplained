@@ -127,10 +127,14 @@ sound among it, is in that part's `parts/<id>/facts.md`.
   Space and the letters, which it folds to lower case, up to 78
   characters at $CBA0.
 - The parser ($122F) matches the first three letters of each word
-  against the 142 stems at $1A2E ("sav", "loa", "art", ...); two
-  stems are told apart by later letters ($1325). The first verb and the
-  first noun it finds pick a rule from the 70 verb-noun pairs at
-  $19A0, $FB in the noun place matching any noun.
+  against the 142 stems at $1A2E ("sav", "loa", "art", ...); after the
+  stems "nor" and "sou" it reads three more letters, so that NORTHEAST,
+  NORTHWEST, SOUTHEAST and SOUTHWEST are directions of their own
+  ($1325). Stems that share their three letters are not told apart: of
+  the three "tre" the first, $CB at $1B82, always wins. The first verb,
+  and the first word after it that the parser does not skip, noun or not
+  (FLY SOUTH takes the direction), pick a rule from the 70 verb-noun
+  pairs at $19A0, $FB in the noun place matching any noun.
 - Directions are N, NE, E, SE, S, SW, W, NW, U and D, each a verb with
   its own exit table ($16B6); 356 exits in all.
 - SAVE and LOAD are words the parser knows, but their actions jump to
@@ -200,8 +204,12 @@ sound among it, is in that part's `parts/<id>/facts.md`.
 
 Text is compressed: a byte with bit 7 set is a dictionary word, any
 other run is a literal word that starts with a capital; letters print in
-lower case except after a full stop or at the start of a text, '<'
-starts a line and $FF takes the next byte as a colour ($0A0E, $0ADB).
+lower case except after a full stop, at the start of a message or
+event, and at the start of a dictionary word, which keeps its first
+capital ("Atreyu", "Great Forest"); '<' starts a line ($0A0E, $0ADB).
+$FF takes the next byte as a colour only in the title and credits, which
+$1580 prints straight through $0ADB: no compressed text holds one, and
+$0A0E would read it as a dictionary word.
 
 ## The listing's error rate
 
@@ -269,6 +277,7 @@ in 312.
   answered "You can't do that." and CLIMB TREE "The tree is not strong enough to climb!"; in
   room $23, GET TREE answered "You can't do that." and CLIMB TREE took Atreyu to the top of the
   tree, room $20's description. Objects 2 and 50 lay in rooms $11 and $23.
-- *Live*, walking from room $01: in rooms $05 and $0A, whose scripts show no picture, the
+- *Live*, walking from room $01: in rooms $05 and $0A (room $05's script shows no picture,
+  room $0A's shows picture 6 only while Artax is with Atreyu, flag 0), the
   picture in use ($2942) was 0, the open book, the same as `OBJ_ROOM_TABLE` gives them; in
   room $04 it was 18 and in room $06 5, as the table gives.

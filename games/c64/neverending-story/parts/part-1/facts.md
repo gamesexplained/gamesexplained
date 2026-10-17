@@ -24,13 +24,15 @@ $00-$28. Unless marked *live*, a fact comes from the bytes of
 
 ## The turn script ($2F06)
 
-- On the first turn it sets flag 2, takes Gmork out of play ($FB) and
-  sets counter 3 to 30.
+- On the first turn it sets flag 2, brings Gmork into play in no room
+  ($FB; he starts gone, $FD) and sets counter 3 to 30.
 - Gmork's chase: while Gmork is in play, each turn a test that passes
   on 102 of the frame's 312 raster lines (operand 50; the game's `facts.md`,
-  "Mechanics", Chance) takes one from counter 3, and each step Atreyu takes adds one to it
-  (the engine's direction actions, $2A13 and $2A26 among them), so only
-  turns spent standing still let him close in; at 10 Gmork "is gaining on you" (event 3), at
+  "Mechanics", Chance) takes one from counter 3, and each direction command adds one to it,
+  even one the map refuses (the engine's direction actions, $2A13 and
+  $2A26 among them, run MOVE and then the increment), except SOUTH, whose
+  action ($2A51) has none; so he closes in only on turns without a
+  direction command and on steps south; at 10 Gmork "is gaining on you" (event 3), at
   1 "almost on top of you" (event 4), at 0 he catches Atreyu (event 5)
   and the game restarts. Picture 10 goes with each.
 - The burning branch counts down counter 4 each turn and burns away at
@@ -57,8 +59,10 @@ $00-$28. Unless marked *live*, a fact comes from the bytes of
 - The sphinxes, room $27 ($3082): each turn prints "I hope you know
   what you're doing!" (event 17), clears flag 5 and, on 52 of the 312
   lines (operand 25), sets it: "The sphinxes' eyes blink!" (event 26).
-- The great mirror, room $28 ($3090): gives Atreyu Falkor if he is not
-  already with him (flag 1), prints the oracle's message (event 25) with
+- The great mirror, room $28 ($3090): if Falkor is not with Atreyu
+  (flag 1 clear), puts Falkor in the room and tries to take him, which
+  fails with "You can't do that." because no noun resolves to Falkor
+  (`RESOLVE_NOUN`, $15E3); then prints the oracle's message (event 25) with
   picture 17, and ends the part with action $1F (engine
   `ACTION_NEXT_PART`).
 

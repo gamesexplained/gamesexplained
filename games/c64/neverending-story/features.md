@@ -24,7 +24,7 @@ Sources:
 | Three parts, played in order, each loaded when the one before is finished | live | `ACTION_NEXT_PART` $0FF1, `SWITCH_TO_NEXT_PART` $0415; played through both hand-overs (`facts.md`, "Live tests") |
 | Objects carried at the end of a part are kept for the next | live | the object locations at $28BF are the engine's and no load touches them; live, Part 2's route starts by dropping the horn and the stone brought from Part 1 |
 | Up to five objects carried | traced | TAKE refuses a sixth when counter 0 is 5 ($0F22, sentence $0B "You've got a full load already!"); not tried live |
-| Every object has an icon, shown at the top right while carried | live | `RENDER_ROOM_GRAPHICS` $0570, icon records at $2943, icons at $A560; seen with Part 2's first room |
+| Every object has an icon, shown at the top right while carried | live | `RENDER_ROOM_GRAPHICS` $0570, icon records at $2943, icons at $A560; seen with Part 2's first room. Not every object: the crucifix (object 40) has no slot in the map of icon slots to objects at $22A4, and Falkor's and Artax's icons are shown by the scripts' action $17, which names a slot |
 | A companion, Falkor or Artax, shown at the bottom of the icons | live | the sixth icon record, set by the scripts (`SCRIPT_SET_OBJECT_GRAPHIC` $113D, icons 23 and 24) |
 | Pictures for locations and events at the top left | live | 57 picture records at $0BF9; rooms take theirs from $0D4F, events through action $10; every route screenshot |
 | Commands need a verb; some take a noun | confirmed | `RESOLVE_VERB_NOUN` $1396: ids below $32 are verbs; a line with none prints sentence $01, "There is no verb in that sentence." |
