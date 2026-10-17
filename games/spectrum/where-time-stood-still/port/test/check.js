@@ -14,7 +14,7 @@
 //   check({ name: 'clock', outs: ['a'], cases: 300 });
 // Options: entry (an address, for a place that is not a label, with bank), states (a filter of
 // state names), per (cases taken from each state, default 4), passes (how far to run from each
-// state, default 40), most (how many states, spread over them, default 60), ignore (addresses or [first, last] ranges), show (failures printed).
+// state, default 40, with the stick held one way and then another unless still), most (how many states, spread over them, default 60), ignore (addresses or [first, last] ranges), show (failures printed).
 const path = require('path');
 const lib = require('./lib.js');
 const standin = require('./standin.js');
@@ -50,8 +50,9 @@ class CaseIO {
 // The machine at the routine's entries, from the states: { M, banks, paging, ay, regs, sp, keys,
 // joy, ear, border, state }.
 const cache = new Map();
+const J = lib.JOY, WALK = [J.RIGHT, J.UP, J.LEFT, J.DOWN, J.UP | J.RIGHT, J.DOWN | J.LEFT, J.UP | J.LEFT, J.DOWN | J.RIGHT];
 function entries(address, bank, o = {}) {
-  const key = address + ':' + bank + ':' + (o.states || '') + ':' + (o.per || 4) + ':' + (o.passes || 60);
+  const key = address + ':' + bank + ':' + (o.states || '') + ':' + (o.per || 4) + ':' + (o.passes || 60) + ':' + !!o.still;
   if (cache.has(key)) return cache.get(key);
   const out = [];
   const per = o.per || 4, passes = o.passes || 40;
@@ -73,7 +74,12 @@ function entries(address, bank, o = {}) {
       got++;
       return false;
     };
-    for (let i = 0; i < passes * 8 && got < per; i++) m.runFrames(1);
+    // the stick held one way and then another, so the leader walks and the view scrolls
+    const k0 = Math.floor(i);
+    for (let i = 0; i < passes * 8 && got < per; i++) {
+      if (!o.still) { m.releaseAll(); m.joy = WALK[(k0 + (i / 60 | 0)) % WALK.length]; }
+      m.runFrames(1);
+    }
   }
   const list = typeof o.states === 'function' ? out.filter(o.states) : out;
   cache.set(key, list);

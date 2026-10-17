@@ -146,7 +146,7 @@ G.main = function (P) {
     const step = a => {
       a = (a + a) & 255;
       const t = (0x9963 + a) & 0xFFFF, to = w(t);
-      P.jump(to, { a, hl: to });
+      P.jump(to, { a: to & 255, hl: to });
     };
     if (M[0x8300] === M[0x8D0A]) {
       if (M[0x8D16] !== 0xFF) { const a = (M[0x8D16] + 14) & 255; M[0x8D16] = 0xFF; step(a); }
