@@ -32,7 +32,15 @@ most time, operating system and tool versions.
 
 ## Maintainer asks
 
-None.
+- #406: kit/c64: Give machine.js the video chip's sprite collisions
+- #407: kit/c64: Start machine.js with the keyboard port the KERNAL leaves
+
+## The Play port
+
+- `kit/skills/core/70-minisite/play.md`, "What lockstep cannot match is the game's own races ... hook the machine at the addresses involved and look for an interrupt between the store and the read before calling it a port bug": a difference in `$D010` at pass 10,670 of a wandering player's lockstep was the interrupt writing Willy's bit between the main program's load and store of the register at `$3275`, found by hooking both. Instead of leaving the register out of the comparison, the port now yields at each end of every such read-modify-write, and before each of the room build's sprite writes the interrupt's rope copy also makes, and the lockstep holds with every chip register compared. The lesson is in `kit/lessons/2026-10-17-jet-set-willy.md`.
+- The same file, "measure instead of fitting": each routine's cycles are measured on the kit's C64 from its entry to its return or to a jump that leaves it, keyed by what decides its work, and the interrupt's per branch it takes (`test_play.js --cost` writes them into `reference/jsw-play.js`). Measured that way the page keeps the game's pace within 0.04 % over 60,000 frames (`test_pace.js`), where the first costs ran it 1.4 to 1.8 % slow. The lesson file says what was missing.
+- The same file, "Check the fit on sessions it was not fitted on": the second input, a player who only wanders, found the `$D010` race that 400,000 passes of steered play never met.
+- `kit/c64/machine.js` has no sprite collisions, and the game finds its hits through `$D01E` and `$D01F`, so this folder models them (`reference/jsw-collide.js`) for both the page and the lockstep; Chiller did the same before it, a line at a time. Asked as #406. The machine also starts with the keyboard port at power-on, where the KERNAL leaves it set for a game that never sets `$DC02` itself; asked as #407.
 
 ## What cost the most time
 
