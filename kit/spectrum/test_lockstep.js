@@ -430,4 +430,55 @@ for (const lines of [40, 320]) {
   check('and the machine\'s own hook is back', m.hooks[0x38], rom);
 }
 
+// The 128: a pass pages bank 3 or 4 in by its count, counts in the bank's $C000, writes the count to
+// AY register 8 and halts. $8020 LD A,($8800); INC A; LD ($8800),A; AND 1; ADD A,3; LD BC,$7FFD;
+// OUT (C),A; LD HL,$C000; INC (HL); LD BC,$FFFD; LD A,8; OUT (C),A; LD B,$BF; LD A,($8800);
+// OUT (C),A; HALT; JP $8020. The handler at $A000 is EI; RETI.
+function program128() {
+  const ram = new Uint8Array(65536);
+  const at = (a, bytes) => bytes.forEach((b, i) => { ram[a + i] = b; });
+  at(0x8000, [0xF3, 0x31, 0x00, 0xBF, 0x3E, 0x90, 0xED, 0x47, 0xED, 0x5E, 0x21, 0x00, 0xA0, 0x22, 0xFF, 0x90, 0xFB, 0xC3, 0x20, 0x80]);
+  at(0x8020, [0x3A, 0x00, 0x88, 0x3C, 0x32, 0x00, 0x88, 0xE6, 0x01, 0xC6, 0x03, 0x01, 0xFD, 0x7F, 0xED, 0x79, 0x21, 0x00, 0xC0,
+    0x34, 0x01, 0xFD, 0xFF, 0x3E, 0x08, 0xED, 0x79, 0x06, 0xBF, 0x3A, 0x00, 0x88, 0xED, 0x79, 0x76, 0xC3, 0x20, 0x80]);
+  at(0xA000, [0xFB, 0xED, 0x4D]);
+  const banks = [0, 1, 2, 3, 4, 5, 6, 7].map(n => new Uint8Array(0x4000).fill(n * 0x11));
+  banks[5].set(ram.subarray(0x4000, 0x8000)); banks[2].set(ram.subarray(0x8000, 0xC000));
+  ram.set(banks[0], 0xC000);
+  return { ram, banks };
+}
+function port128(fault) {
+  const M = new Uint8Array(65536), P = { M };
+  P.main = function* () {
+    for (;;) {
+      yield { cp: 0x8020 };
+      M[0x8800] = (M[0x8800] + 1) & 255;
+      P.io.out(0x7FFD, (M[0x8800] & 1) + 3);
+      const a = fault ? 0xC001 : 0xC000;
+      M[a] = (M[a] + 1) & 255;
+      P.io.out(0xFFFD, 8); P.io.out(0xBFFD, M[0x8800]);
+      yield { halt: true };
+    }
+  };
+  P.irq = function () {};
+  return P;
+}
+for (const fault of [false, true]) {
+  const { ram, banks } = program128();
+  const m = new Machine({ ram, banks, model: 128, pc: 0x8000, passAt: 0x8020 });
+  m.runUntilPass(() => true);
+  const P = port128(fault);
+  const ls = new Lockstep({ machine: m, port: P, program: Q => Q.main(), halts: [0x8043], irqs: { 0xA000: 'irq' },
+    stack: [0xBE00, 0xBEFF], chips: ['border', 'paging', 'ay'] });
+  const r = ls.run({ passes: 10 });
+  if (!fault) {
+    check('128: ten passes paging banks 3 and 4 and writing the AY, identical', r.ok && r.passes === 10, true);
+    check('128: the port\'s banks moved as the game\'s', P.mem.bank(3)[0] + ',' + P.mem.bank(4)[0] + ',' + P.io.ay.regs[8],
+      m.bank(3)[0] + ',' + m.bank(4)[0] + ',' + m.ay.regs[8]);
+  } else {
+    const d = r.diffs[0];
+    check('128: a byte of a bank out of view is named with its bank', !!d && d.bytes.some(b => b.bank === 4 && b.address === 0xC000), true);
+    check('128: and described so', /bank 4 \$C000/.test(describe(r)), true);
+  }
+}
+
 process.exit(fails ? 1 : 0);

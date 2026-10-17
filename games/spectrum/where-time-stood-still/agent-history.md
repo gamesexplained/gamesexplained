@@ -83,3 +83,30 @@ the title music climbing a semitone after its first time round.
 `$7F` is a Fuller box (recalled, and in no reference the kit has), that
 CAPS SHIFT's reset was left in by the developers, and that a second
 effect request replaces the first.
+
+## 17 October 2026: the cast sheet and the routes
+
+Aaron asked for three follow-ups in one pull request: a sheet of every
+class's frames, the zones and routes drawn over the plateau, and a Play
+tab.
+
+**The cast sheet** draws every frame of the twelve classes with the
+game's own drawers written again in JavaScript, and `test_cast.js` holds
+each frame, plain and mirrored, at every pixel position the page uses and
+every row of a character row, to `draw_actors` run from the listings. Two
+things showed only under that test. Three of class 5's frames take the
+visibility mask at `$8521` as their mask, and the tyrannosaur's 45-row
+pieces read past the end of that mask into the code at `$85E1`, which
+eats up to four pixels of its feet. The pictures also moved a claim: the
+carrying flight (event 6, `$F26E`) ends animations only in the
+pteranodon's list (`$E412`, types `$14` to `$17`), where `features.md`
+had given it to `$18` to `$27`.
+
+**The routes.** The overlay projects each place as `$C362` does, at the
+height of the ground cell `$90DE` finds, and `test_routes.js` holds both
+and the zone search to the game. The ground's unpacker first read a count
+of 0 as 128; the game's DJNZ makes it 256. Many route points and every
+river zone sit on special ground, which holds no height; the page takes
+the nearest ordinary cell's, and says so. The route table's entry 0 is
+the ham's place, read as a route only as a fallback: the page draws
+routes 1 to 35.
