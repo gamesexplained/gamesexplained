@@ -88,17 +88,33 @@
 <h3>Two dollars for cold popcorn</h3>
 <p>At the popcorn stand, giving a dollar bill can spend two dollars: one in the counter’s branch and one in the shared GIVE routine. The first purchase adds a box of popcorn. After that, a purchase flag makes the woman refuse another dollar payment, leaving your money alone.</p>
 <div class="lab-word-demo"><label for="lab-popcorn-money">Dollars carried</label> <select id="lab-popcorn-money"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select><br><label><input id="lab-popcorn-bought" type="checkbox"> Already bought popcorn</label><p id="lab-popcorn-state"></p><div id="lab-popcorn-reply" class="lab-home-output" aria-live="polite"></div></div>
-<p class="sources">The dollar-payment branch at <code>$93E1</code> checks <code>$9688</code>, updates the dollar and popcorn inventory entries, and reaches the shared debit at <code>$087F</code>. The example is checked against the original GIVE handler with one through nine dollars and every purchase-flag byte. The response mentions change and a dropped nickel; collecting those coins is separate from this example.</p>
+<p class="sources">The dollar-payment branch at <code>$93E1</code> checks <code>$9688</code>, updates the dollar and popcorn inventory entries, and reaches the shared debit at <code>$087F</code>. The example is checked against the original GIVE handler with one through nine dollars and every purchase-flag byte. The response mentions change and a dropped nickel; the complaint example below follows their collection.</p>
 <div class="pictures">
 <figure><img src="reference/popcorn.png" width="384" height="272" alt="A popcorn-counter conversation and the COMPLAIN command"><figcaption>The popcorn counter responds to a complaint. This scene was reached using ordinary commands.</figcaption></figure>
 <figure><img src="reference/corridor-play.png" width="384" height="272" alt="The player in the first brick corridor, with active command wheels"><figcaption>The first graphical corridor, reached by walking up through the gate. Its command wheels are visible below the scene.</figcaption></figure>
 </div>
 </section>
 <section data-part="opening">
+<h2>Two complaints recover the missing quarter</h2>
+<p>The popcorn menu asks $1.25, but the woman takes two dollars and leaves only two quarters in change. The first complaint gets an excuse. The second produces another quarter. Three quarters in change restore the advertised $1.25 price. Further complaints produce a rebuke.</p>
+<p>This example starts just after the purchase. TAKE collects the available quarters together, then exposes the dropped nickel. Complaining before collecting the change puts three quarters on the counter; complaining after collecting it adds one more to pick up.</p>
+<div class="lab-word-demo">
+<p id="lab-change-state" aria-live="polite"></p>
+<p id="lab-change-next"></p>
+<div class="lab-passage-actions"><button id="lab-change-take">TAKE</button><button id="lab-change-complain">COMPLAIN</button><button id="lab-change-return">GIVE NICKEL</button><button id="lab-change-reset">Restart purchase</button></div>
+<div id="lab-change-reply" class="lab-home-output" aria-live="polite"></div>
+<p id="lab-change-later"></p>
+<p class="lab-word-note">The starting inventory includes one nickel from character setup. The dropped nickel is an additional coin. This example follows a route that keeps the starting nickel.</p>
+</div>
+<p>Returning a nickel after picking up the dropped one gets the woman’s thanks. The game remembers the return. While the teenager in the main theater accepts popcorn, keeping the dropped nickel makes him take the whole box. Returning it makes him take a handful and leave the box in your inventory.</p>
+<figure class="gallery"><img src="reference/change-return-and-repeat.png" width="384" height="272" alt="The woman thanks the player for returning the nickel, followed by a repeated complaint"><figcaption>Returning the nickel gets the woman’s thanks. A further complaint gets “You sure complain a lot.” Both responses were reached with ordinary commands.</figcaption></figure>
+<p class="sources">TAKE at <code>$927C</code>, the complaint branch at <code>$95B7</code>, and the return branch at <code>$943A</code> update the pickup slot, quarter count, and nickel flags. The later offer checks <code>$0575</code> at <code>$9485</code>. Counter sequences were replayed with ordinary inputs in VICE. The example is also compared with the original routines, including both later popcorn-offer branches; that later comparison isolates the offer before the movie transition.</p>
+</section>
+<section data-part="opening">
 <h2>Replies from the city</h2>
 <p>The city’s replies mix ordinary letters with dictionary words. The same format carries street descriptions, shop transactions, and the beggar’s one-word hints. All 127 opening text streams are available below. Choose a stored reply to read its expansion. The text reflects the saved setup; a reply’s presence does not establish how to reach it in play.</p>
 <div class="lab-word-demo"><label for="lab-response">Stored opening reply</label><br><select id="lab-response"></select><p id="lab-response-address"></p><div class="lab-home-output" id="lab-response-text" aria-live="polite"></div></div>
-<p class="sources">Text records at <code>$7910</code>, <code>$968E</code>, and <code>$9816</code> through <code>$A9E7</code>, checked against the original text parser at <code>$67B5</code>. The records include the menu asking $1.25 for popcorn, while the payment branch spends two dollar bills and its reply describes change. Coin collection remains a separate question. Pronoun substitutions reflect the captured setup; the game can change them.</p>
+<p class="sources">Text records at <code>$7910</code>, <code>$968E</code>, and <code>$9816</code> through <code>$A9E7</code>, checked against the original text parser at <code>$67B5</code>. The records include the menu asking $1.25 for popcorn, while the payment branch spends two dollar bills and its reply describes change. The complaint example follows coin collection and the missing-quarter refund. Pronoun substitutions reflect the captured setup; the game can change them.</p>
 </section>
 <section>
 <h2>Inside the Labyrinth</h2>
@@ -140,6 +156,53 @@ const labResponse=document.getElementById('lab-response');
 labyrinthOpeningResponses.forEach((r,i)=>{const option=document.createElement('option');option.value=i;option.textContent='$'+r.address.toString(16).toUpperCase()+' · '+r.text.split('\n')[0];labResponse.appendChild(option);});
 function updateLabyrinthResponse(){const r=labyrinthOpeningResponses[Number(labResponse.value)];document.getElementById('lab-response-text').textContent=r.text;document.getElementById('lab-response-address').textContent='$'+r.address.toString(16).toUpperCase()+'–$'+r.end.toString(16).toUpperCase()+' · '+(r.end-r.address+1)+' stored bytes, including the terminator.';}
 labResponse.addEventListener('change',updateLabyrinthResponse);updateLabyrinthResponse();
+</script>
+
+<script>
+/* labyrinth-change */
+function labyrinthChangeStart(){return {quarterByte:255,nickelByte:0,phase:1,changeByte:2,pickup:17,nickelTaken:0,nickelReturned:0,karma:0,description:0xa257};}
+function labyrinthChangeStep(before,action){
+ const s={...before};let reply;
+ if(action==='take'){
+  if(s.pickup===0)reply=0x9ef9;
+  else if(s.pickup===12){s.pickup=0;s.description=0xa23a;s.nickelTaken=1;s.karma=1;s.nickelByte=(s.nickelByte+1)&255;reply=0x9798;}
+  else if(s.pickup===17){
+   if(s.nickelTaken===0){s.pickup=12;s.description=0xa21f;s.quarterByte=(s.quarterByte+s.changeByte)&255;s.changeByte=0;}
+   else{s.pickup=0;s.description=0xa23a;s.quarterByte=(s.quarterByte+1)&255;}
+   reply=0x97f2;
+  }else throw new RangeError('Unsupported local pickup');
+ }else if(action==='complain'){
+  reply=0xa3d7;
+  const phase=s.phase;
+  if(phase===0)reply=0xa5db;
+  if(phase===1){reply=0xa614;s.phase=(s.phase+1)&255;}
+  if(phase===2){
+   reply=0xa64d;
+   if(s.changeByte===0){s.pickup=17;s.description=0xa68c;}
+   s.phase=(s.phase+1)&255;s.changeByte=(s.changeByte+1)&255;
+   if(s.nickelTaken===0)s.description=s.changeByte<2?0xa29d:0xa257;
+  }
+  if(phase>=3)reply=0xa69f;
+ }else if(action==='return'){
+  if(s.nickelTaken!==0&&s.nickelReturned===0){s.nickelReturned=(s.nickelReturned+1)&255;s.karma=255;if(s.nickelByte<128)s.nickelByte=(s.nickelByte-1)&255;reply=0x81b3;}
+  else reply=0xa1f0;
+ }else throw new RangeError('Unknown counter action');
+ return {state:s,reply};
+}
+// end of labyrinth-change
+let labChange=labyrinthChangeStart();
+const labChangeText=new Map(labyrinthOpeningResponses.map(r=>[r.address,r.text]));
+const labChangeQuantity=b=>b<128?b+1:0;
+function updateLabyrinthChange(reply){
+ document.getElementById('lab-change-state').textContent=`Quarters carried: ${labChangeQuantity(labChange.quarterByte)}. Nickels carried: ${labChangeQuantity(labChange.nickelByte)}. Quarters waiting: ${labChange.pickup===17?labChange.changeByte:0}.`;
+ document.getElementById('lab-change-next').textContent=labChange.pickup===17?'TAKE will collect the change.':labChange.pickup===12?'TAKE will pick up the dropped nickel.':'There is nothing left here to TAKE.';
+ document.getElementById('lab-change-reply').textContent=reply?labChangeText.get(reply):'Purchase complete. The woman has left two quarters on the counter and dropped a nickel.';
+ document.getElementById('lab-change-later').textContent=labChange.karma===1?'Later popcorn offer: the teenager takes the whole box.':labChange.karma===255?'Later popcorn offer: the teenager takes a handful; you keep the box.':'The later popcorn offer depends on what happens to the dropped nickel.';
+ document.getElementById('lab-change-return').disabled=labChangeQuantity(labChange.nickelByte)===0;
+}
+for(const [id,action] of [['lab-change-take','take'],['lab-change-complain','complain'],['lab-change-return','return']])document.getElementById(id).addEventListener('click',()=>{const result=labyrinthChangeStep(labChange,action);labChange=result.state;updateLabyrinthChange(result.reply);});
+document.getElementById('lab-change-reset').addEventListener('click',()=>{labChange=labyrinthChangeStart();updateLabyrinthChange();});
+updateLabyrinthChange();
 </script>
 
 <script>

@@ -3607,9 +3607,9 @@
   },
   {
    "address": 1397,
-   "name": "a_0575",
+   "name": "opening_nickel_disposition",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 1400,
@@ -16171,9 +16171,9 @@
   },
   {
    "address": 38327,
-   "name": "b_95B7",
+   "name": "complain_at_popcorn_counter",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38344,
@@ -16291,13 +16291,13 @@
   },
   {
    "address": 38540,
-   "name": "data_slice_968C",
+   "name": "opening_popcorn_complaint_phase",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 38541,
-   "name": "data_slice_968D",
+   "name": "opening_counter_quarters",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -19519,6 +19519,11 @@
   }
  ],
  "comments": [
+  {
+   "address": 1397,
+   "type": "line",
+   "text": "Persistent nickel-disposition byte. Taking the dropped nickel at $92CE stores one; the first accepted return at $944B stores $FF. During an accepted popcorn offer in main theater nine, $9485 compares exactly with one: equal removes the whole box through $087F and prints $80A7; other values print $80F6 and retain the box. The counter return is live checked; both later offer branches are isolated original-code tests with nonnegative conversation state."
+  },
   {
    "address": 2048,
    "type": "line",
@@ -23825,6 +23830,11 @@
    "text": "Choose a default starting-game reply and override by location/state. At the present beggar, remove his local presence and change the south movement reply. Home/TV chooses a dinner reply from $9687. Ticket-counter replies depend on money and ticket availability. Popcorn-counter complaints advance phases $968C, potentially restore the missing quarter count $968D and update its pickup/description pointers; later complaints use the repeated-complaint reply. At the elephant theater print its refusal; at the main theater conversation state can print the teenager's apology and companion thanks before entering the movie transition. Final ordinary replies print through $8CE3."
   },
   {
+   "address": 38327,
+   "type": "line",
+   "text": "Counter-specific branch of COMPLAIN at $954A. X preserves the old $968C phase: zero chooses $A5DB; one chooses $A614 and advances; two chooses $A64D, restores quarter pickup $11 if the change count was zero, advances, and adds one to $968D. If nickel-taken flag $968A is zero, choose quarter-plus-nickel description $A29D for count below two or $A257 otherwise. Old phase at least three overrides the reply with $A69F. Completion continues through the location checks and prints via $8CE3. Tests compare the exact pointers and state mutations, including byte wrap boundaries."
+  },
+  {
    "address": 38518,
    "type": "line",
    "text": "Add A modulo 256 to persistent accumulator $0568 and return. Carry out is not propagated into another field here."
@@ -23867,12 +23877,12 @@
   {
    "address": 38540,
    "type": "line",
-   "text": "Offset 6 within the record at $9686. Trailing opening interaction-state byte adjacent to the counters at $9686-$968B. The captured byte is zero; no direct operand reference was found in the decoded opening/resident instruction census. Its gameplay use remains unassigned."
+   "text": "Popcorn-counter complaint phase read at $95BB. Initially zero: no-purchase abuse reply. The dollar purchase writes one at $9419. Complaint with phase one prints $A614 and increments to two; phase two prints $A64D, increments to three, and adds a quarter through $968D. Values at least three select $A69F without another increment. Ordinary-input VICE sequences and test_change.js verify complaint timing before and after coin collection."
   },
   {
    "address": 38541,
    "type": "line",
-   "text": "Offset 7 within the record at $9686. Trailing opening interaction-state byte adjacent to the counters at $9686-$968B. The captured byte is zero; no direct operand reference was found in the decoded opening/resident instruction census. Its gameplay use remains unassigned."
+   "text": "Number of quarters available in the counter-change path, initialized to two by the dollar purchase at $9424. Before the dropped nickel is taken, TAKE quarter slot seventeen adds this byte modulo 256 to inventory $673A and clears it. Complaint phase two adds one. After nickel pickup the extra-quarter TAKE uses the ordinary one-unit increment and leaves this counter stale; local pickup slot $AAB3 then becomes zero, so the nonzero byte alone does not mean another coin is collectible."
   },
   {
    "address": 38542,

@@ -192,7 +192,7 @@ The GIVE handler at `$9327` reaches the purchase branch when location is 6 and t
 
 ## Popcorn dollar payment
 
-At popcorn-stand location 7, selected dollar slot 6 reaches `$93E1`. A nonzero `$9688` prints `$A1F0` and returns without charging. With zero flag, dollar entry `$672F` below one selects insufficient-money reply `$A886`. Otherwise it subtracts one, sets popcorn entry `$6739` to zero (one box), increments the purchase flag, and selects `$A148`. Common completion `$94A5` calls the actual `$087F` removal routine, charging the second dollar. The branch also writes local description/state bytes; interpreting subsequent coin collection remains open.
+At popcorn-stand location 7, selected dollar slot 6 reaches `$93E1`. A nonzero `$9688` prints `$A1F0` and returns without charging. With zero flag, dollar entry `$672F` below one selects insufficient-money reply `$A886`. Otherwise it subtracts one, sets popcorn entry `$6739` to zero (one box), increments the purchase flag, and selects `$A148`. Common completion `$94A5` calls the actual `$087F` removal routine, charging the second dollar. The branch also sets complaint phase one, counter quarter count two, and the quarter pickup slot; the change sequence below verifies their consumers.
 
 `test_popcorn.js` runs the original GIVE routine for 1–9 owned dollars and all 256 purchase-flag values: 2,304 comparisons of remaining money, added popcorn, flag and reply. The actual inventory debit runs; text output and wheel redraw are intercepted. It additionally checks the success-path writes to `$968B-$968D`, `$AAB3`, and `$AAA5/$AA97`, and compares all three page reply strings through the original parser, including stored line breaks. These cases assume an available selected dollar and initially absent popcorn; they do not assert reachability of every artificial flag value.
 
@@ -204,7 +204,7 @@ At popcorn-stand location 7, selected dollar slot 6 reaches `$93E1`. A nonzero `
 
 The `$9FB4-$A00C` offer-refusal message crosses `$A000`; continuation labels describe the same stream on both sides. Its dictionary-index operand at `$9FBE` is `$11` (girl) in the captured state. The setup branch at `$8E60-$8E9D` writes `$10` (boy) there. A test runs `$8E16` with W input supplied through the input hook, then passes the modified reply through the actual parser and confirms the changed word. Setup also patches other text operands; this check does not claim to cover all of them.
 
-The decoded `$A03D` menu asks $1.25 for popcorn. The verified payment path removes two dollar bills and `$A148` describes two quarters in change plus a dropped nickel. Coin collection and later complaint adjustments remain separate work; this text does not establish a final net price.
+The decoded `$A03D` menu asks $1.25 for popcorn. The verified payment path removes two dollar bills and `$A148` describes two quarters in change plus a dropped nickel. Two complaints add the third quarter, as verified below. Three quarters of change from the two-dollar payment produce the advertised $1.25 charge; keeping or returning the separately dropped nickel is another decision.
 
 ## Resident records and boundary checks
 
@@ -217,3 +217,26 @@ The default sound directory has 59 entries; the menu directory has 35. Their str
 `test_opening_services.js` checks the twelve later strip-pointer handlers with three Y values each, including sprite pointers, Y preservation, raster/vector scheduling and IRQ acknowledgement. It also checks nine colour names with exact, trailing, lowercase and short inputs. The matcher uppercases dictionary letters but expects the input already normalized. A complete name with trailing characters is accepted. It tests a tenth entry using the mutable result byte; the caller rejects result indices at least nine. Success flag alone therefore does not prove an accepted colour.
 
 The hand-over snapshot is at PC `$8D14`, before TX setup. Its `$7900-$ACC9` payload matches the disk file in all 13,258 bytes. The seven differences in the playable TX image are `$8C80` location, `$8C83` colour-match flag, `$8F4F/$8F50` patched dictionary pointer, `$8F94` result and `$AA91/$AA9F` street-description pointer. There is no TX startup-only difference in that comparison. Other resident startup and runtime mutations remain represented by the selected play image and their producer descriptions.
+
+
+## Popcorn change and nickel disposition
+
+Purchase writes complaint phase `$968C=1`, counter quarters `$968D=2` and pickup slot `$AAB3=$11` (quarter). The initial quarter inventory is `$FF` (none); inventory entries encode quantity minus one. The route used here keeps the nickel supplied by character setup, so its starting inventory byte is zero (one coin).
+
+| Command/state | Result |
+|---|---|
+| TAKE quarter, before nickel pickup | `$92F0` adds all `$968D` quarters to `$673A` modulo 256 and clears the counter count. Makes slot twelve (nickel) available and selects `$A21F`. |
+| TAKE nickel | Adds one to `$6735`, marks `$968A=1` and `$0575=1`, clears the local pickup and selects `$A23A`. |
+| COMPLAIN, phase one | Reply `$A614` (chilled-popcorn excuse), phase becomes two. |
+| COMPLAIN, phase two | Reply `$A64D` (other quarter), phase becomes three and counter count increases by one. If the count was zero, restores quarter pickup and `$A68C` description. Before nickel pickup, selects the quarter-plus-nickel description from the new count. |
+| COMPLAIN, phase at least three | Reply `$A69F`; no further refund. |
+| TAKE extra quarter, after nickel pickup | Ordinary single-unit inventory increment, clears the pickup and selects `$A23A`. `$968D` can remain one: the count alone does not establish an available pickup. |
+| GIVE NICKEL, after pickup and before first return | Reply `$81B3`, sets return flag `$9689=1`, stores `$0575=$FF`, and removes one nickel through `$087F`. An attempted earlier or repeated return gets `$A1F0`. |
+
+The normal-input route was initial sidewalk → GO NORTH → GO WEST → GO THEATER → GIVE DOLLAR → GO THEATER → GO NORTH. Both collect-first and complain-first sequences were replayed from the reached counter snapshot, without memory pokes, on 18 October 2026. Both produce three carried quarters after two complaints and collection. The first sequence also picks up and returns the nickel. `change-observations.json` records the selected scalar observations and route; raw screen/memory state remains ignored. The emulator’s previous snapshot and running state were restored afterward.
+
+`test_change.js` imports the page’s actual transition function and compares 7,995 transitions with original `$927C`, `$954A` and `$9327` code, including all 17 states reachable by the example’s actions, every byte value of each exposed state field separately, and 600 deterministic mixed states. It also compares twelve command transitions with the live observations. Synthetic boundary cases do not assert ordinary reachability.
+
+For a popcorn offer at location nine with nonnegative conversation state, `$9485` tests `$0575` for exact equality with one. One removes the whole box and selects `$80A7`; zero or `$FF` retains the box and selects `$80F6`. Nine original-code cases check these three values with three nonnegative conversation states. This establishes the isolated later offer, not its complete movie-transition timing or effects in graphical loads. The existing negative conversation branch rejects the offer rather than taking either amount.
+
+The phase and quarter-count comments name their verified readers, including `$95BB` and `$95E3`. No independent listing sample is claimed.
