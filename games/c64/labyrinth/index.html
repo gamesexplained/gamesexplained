@@ -80,6 +80,11 @@
 <p>The command stays the same, but its result depends on your location. On the street, <em>go home</em> selects the home location. At home, the command replies “You are home!” At the ticket counter, the command says you cannot go home from there.</p>
 <div class="lab-word-demo"><label for="lab-home-location">Try GO HOME from</label><br><select id="lab-home-location"><option value="1">East sidewalk</option><option value="2">North sidewalk</option><option value="3">West sidewalk</option><option value="4">South sidewalk</option><option value="5">Home</option><option value="6">Ticket counter</option><option value="7">Popcorn stand</option><option value="13">Theater lobby</option></select><p id="lab-home-kind"></p><div id="lab-home-output" class="lab-home-output" aria-live="polite"></div></div>
 <p class="sources">The opening’s handler at <code>$9114</code> reads the location’s entry from <code>$AA58</code> and <code>$AA66</code>. A zero high byte selects a destination; another value selects a reply. All 14 table entries are checked against the original handler. Destinations are shown before their arrival routine runs.</p>
+<h3>The ticket changes GO EAST</h3>
+<p>At the ticket counter, <em>go east</em> checks whether you carry a ticket before consulting the movement table. Without a ticket, the reply is “You can't enter without a ticket.” With one, the table selects the lobby destination.</p>
+<div class="lab-word-demo"><label><input id="lab-ticket-held" type="checkbox"> Carrying a ticket</label><p id="lab-ticket-kind"></p><div id="lab-ticket-output" class="lab-home-output" aria-live="polite"></div></div>
+<p>The purchase follows a shared payment path. Giving the dollar bill with at least five dollars available deducts four dollars in the ticket handler, then another dollar in the common give routine. The girl hands over one ticket.</p>
+<p class="sources">The east handler at <code>$90F4</code> checks the ticket entry at <code>$6740</code>. The purchase path starts at <code>$9327</code> and uses <code>$087F</code> to remove the final dollar. The eastward table decision is checked for every location index and every ticket byte; the purchase is checked with one through nine dollars. Arrival effects remain separate.</p>
 <div class="pictures">
 <figure><img src="reference/popcorn.png" width="384" height="272" alt="A popcorn-counter conversation and the COMPLAIN command"><figcaption>The popcorn counter responds to a complaint. This scene was reached using ordinary commands.</figcaption></figure>
 <figure><img src="reference/corridor-play.png" width="384" height="272" alt="The player in the first brick corridor, with active command wheels"><figcaption>The first graphical corridor, reached by walking up through the gate. Its command wheels are visible below the scene.</figcaption></figure>
@@ -113,10 +118,31 @@
 <figure><img id="scene-picture" src="reference/room-07.png" width="384" height="272" alt="The Hedge Maze"><figcaption id="scene-caption">The Hedge Maze. Captured with a forced scene request.</figcaption></figure>
 </div>
 
-<p class="status">Bronze: 17.4% of the tracked opening image is explained. One of 22 identified parts has a partial listing; the graphical loads await analysis. The listing’s comments have no independent accuracy sample.</p>
+<p class="status">Bronze: 17.0% of the tracked opening image is explained. One of 22 identified parts has a partial listing; the graphical loads await analysis. The listing’s comments have no independent accuracy sample.</p>
 <p class="sources">Sources: the <a href="https://www.mocagh.org/activision/labyrinth-manual.pdf">disk Player’s Guide</a>, <a href="https://www.c64-wiki.de/wiki/Labyrinth">C64-Wiki</a>, and the supplied disks. The About tab carries the feature checklist and the recipe for rebuilding the saved state.</p>
 </section>
 </main>
+<script>
+/* labyrinth-east */
+const labyrinthEastTable=[{"high": 0, "low": 0}, {"high": 152, "low": 22}, {"high": 0, "low": 1}, {"high": 0, "low": 6}, {"high": 0, "low": 1}, {"high": 0, "low": 10}, {"high": 0, "low": 13}, {"high": 156, "low": 89}, {"high": 155, "low": 20}, {"high": 155, "low": 20}, {"high": 155, "low": 20}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 8}];
+const labyrinthNoTicketReply="You can't enter without a ticket.";
+function labyrinthEastOutcome(location,ticketByte) {
+ if(!Number.isInteger(location)||location<0||location>=14)throw new RangeError('Unknown location');
+ if(!Number.isInteger(ticketByte)||ticketByte<0||ticketByte>255)throw new RangeError('Ticket byte must be 0–255');
+ if(location===6 && (ticketByte&128))return {kind:'reply',address:0x9f52};
+ const entry=labyrinthEastTable[location];
+ return entry.high===0?{kind:'move',destination:entry.low}:{kind:'reply',address:entry.high*256+entry.low};
+}
+// end of labyrinth-east
+const labTicketHeld=document.getElementById('lab-ticket-held');
+function updateLabyrinthTicket() {
+ const result=labyrinthEastOutcome(6,labTicketHeld.checked?0:255);
+ document.getElementById('lab-ticket-kind').textContent=result.kind==='move'?'The ticket check allows the table’s destination.':'The ticket check selects a refusal.';
+ document.getElementById('lab-ticket-output').textContent=result.kind==='move'?'Destination: Theater lobby':labyrinthNoTicketReply;
+}
+labTicketHeld.addEventListener('change',updateLabyrinthTicket);updateLabyrinthTicket();
+</script>
+
 <script>
 /* labyrinth-home */
 const labyrinthHomeTable=[{"high": 0, "low": 0}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 155, "low": 50}, {"high": 153, "low": 56}, {"high": 153, "low": 56}, {"high": 153, "low": 56}, {"high": 155, "low": 20}, {"high": 155, "low": 50}, {"high": 155, "low": 50}, {"high": 155, "low": 50}, {"high": 153, "low": 56}];

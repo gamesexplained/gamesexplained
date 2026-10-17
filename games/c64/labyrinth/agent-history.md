@@ -61,3 +61,13 @@ The first committed-listing comparison reported missing table bytes. Typing and 
 Copy was written after the tests and reviewed for the house style. Bronze remains the contribution’s tier; no independent listing sample was performed.
 
 The dictionary regression test then found that the new typing operation had regenerated three automatic colour-RAM aliases inside the hidden-RAM pointer table ($D8A0/$D8F0/$D9B8). Removed those aliases after typing and rebuilt the listing, restoring the complete table. All existing examples passed again. Final opening coverage is 6,504 / 37,421 bytes (17.4%). The exported symbol map remains partial and the hidden-RAM and small code gaps reported by listing.py remain open.
+
+## 17 October 2026 — ticket gate and payment
+
+The contributor requested another small addition. Followed the extra GO EAST check at location six to the ticket inventory byte $6740. Its writer in the GIVE path grants one ticket. The price is split across two routines: the purchase subtracts four from the dollar count, then the common GIVE completion removes one more through $087F. The complete path passes simulator tests for one through nine owned dollars; the eastward decision agrees in all 3,584 location/ticket-byte combinations.
+
+The opcode-reference scan initially missed $90FB because the command handlers, reached through a dispatch table, still had undefined/data typing despite some earlier comments and tests using their bytes. Explicitly traced the verified movement and GIVE entry points and the outside entry from that table. A decimal argument initially named $912C, a valid interior instruction, instead of $9114; subsequently seeded $9114 and the complete outside entry $9123, removing the artificial gap before that interior instruction. The new source classifies the recovered handlers as code. Existing dictionary alias handling was repeated after the new typing, then all examples were retested.
+
+Added six descriptions and a ticket-state comparison on the page. Coverage is 6,428 / 37,814 bytes (17.0%). The percentage is below the preceding 17.4% because tracing recovered more code and changed the ledger’s boundaries; the newly exposed undescribed bytes remain in the denominator. The ticket inventory entry is bounded by an explicitly unclassified following byte, so its comment claims only that entry. Copy was written after the tests and revised for the house style. Bronze and the lack of an independent listing sample are unchanged.
+
+The committed ticket test also requires the recovered command entry points to appear as code in the listing, so later data retyping cannot silently undo that recovery.

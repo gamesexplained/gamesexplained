@@ -38,3 +38,9 @@ The coverage pass kept the quantity formatter’s colon boundary as an open reac
 The listing-backed GO HOME test caught missing bytes in an incompletely typed table before the viewer could ship. Naming and typing both halves made the full mixed destination/message records explicit. The failure was visible and existing table-typing guidance covers it; no shared-kit change is needed.
 
 The dictionary regression also caught regenerated colour-RAM aliases cutting through the hidden-RAM pointer table after the new data typing. The existing tool skill describes this alias behavior; clearing those aliases after typing restored the complete table. This is another visible regression caught by an existing test, not a reason for a new skill rule.
+
+## Ticket continuation
+
+The reference scan exposed that the table-dispatched handlers had not been typed as code. Explicit disassembly from the verified command pointers recovered them. Existing `50-coverage` guidance on following computed dispatch already covers this case; no new rule is needed. The lower recalculated percentage is retained, with the newly exposed code left in scope.
+
+The game’s ticket test now checks the recovered command entries are listed as code as well as executing their bytes, making that regression visible without a new shared rule.
