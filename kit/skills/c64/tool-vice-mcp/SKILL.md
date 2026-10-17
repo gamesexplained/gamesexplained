@@ -73,7 +73,8 @@ passed, by date and system, are the table at the top of that file.
    `warp(rpc, False)` in `vice.py` turns it off if it is still on.
 3. Send input: `vice_keyboard_type` for text at the BASIC prompt,
    `vice_keyboard_matrix` for games that scan the keyboard themselves,
-   `vice_joystick_set` for the stick. Hold an input until the thing that
+   `vice_joystick_set` for the stick, and `paddle()` in `vice.py` for
+   the paddles, which have no tool. Hold an input until the thing that
    should react has reacted; on a running machine a short press can fall
    between two of the game's reads.
    Before trusting a silence, prove the machine is moving: two sprite
@@ -160,6 +161,23 @@ in-game input hook below does the same job.
   before the call returns, seen by the next instruction, and stays until
   you release it. `joy()` in `vice.py`. Most C64 games read port 2; the
   early Commodore titles read port 1.
+- **The paddles.** The server has no tool for them, and with nothing in
+  the control ports `$D419` and `$D41A` read `$FF`. `paddle()` in
+  `vice.py` stops the machine at each read and gives the game a value of
+  your own instead: `with paddle(rpc, x=100) as pad: pad.frames(50)`,
+  where `x` is what `$D419` reads and `y` what `$D41A` reads, each a
+  number or a function of the read. A load checkpoint stops just after
+  the reading instruction (v3.13.2, 16 October 2026), so the helper sets
+  the register and flags that a load, a compare or a `BIT` would have
+  set from the value. An `ADC`, `SBC`, `AND`, `ORA` or `EOR` has used the
+  `$FF` by then: its first read comes back unanswered, and from then on
+  the helper stops before it and does its work itself. Give its address
+  with `at=` to have the first read answered too. The helper manages
+  about 8 reads a second, so a game that reads its paddle every frame
+  runs at a sixth of its speed. For a long session at the game's own
+  speed, the in-game input hook below does it, where the game's code is
+  in RAM. `python3 kit/c64/test_vice_paddle.py --live` measures all of
+  this on a new build, and resets the machine.
 - **Keys.** `vice_keyboard_matrix` (row and column, or a key name) behaves
   like the stick. `vice_keyboard_key_press` by host key name does not: VICE
   delivers it 1000 cycles plus a random amount up to a frame later, on

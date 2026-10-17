@@ -21,10 +21,12 @@ Usage:
   pause(rpc)                           # stop wherever it is, between two instructions,
                                        # never vice_execution_pause alone (pause-at-instruction)
   stick_arm(rpc); stick(rpc, LEFT)     # joystick input on a build that fails joy-port-1
+  with paddle(rpc, x=100) as pad:      # the paddles, which the server has no tool for: every
+      pad.frames(50)                   # read of $D419 (x) and $D41A (y) answered, at about 8 a second
 
 Which of these to use depends on `tools.py --platform c64 check-emulator`: step_pass needs
 stop-exact and step-pass, frames and pause need the frame-advance- checks,
-joy needs the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
+paddle needs stop-exact and the frame-advance- checks, joy needs the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
 says what to use instead (halt_at and release for stops, stick_arm for port 1).
 
 These absorb the server's quirks, on any build; the plain tool calls do not:
@@ -370,6 +372,308 @@ def stick_release(rpc):
     """Give CIA1 port B back to the keyboard."""
     poke(rpc, 0xDC01, [0xFF])
     poke(rpc, 0xDC03, [0x00])
+
+
+POTX, POTY = 0xD419, 0xD41A
+_POTS = {POTX: "x", POTY: "y"}
+_MODES = ("abs", "abs,x", "abs,y", "(zp,x)", "(zp),y")
+_READS = {}                    # opcode -> (mnemonic, mode): the reads of $D419 and $D41A paddle() answers
+for _m, _ops in (("lda", (0xAD, 0xBD, 0xB9, 0xA1, 0xB1)), ("cmp", (0xCD, 0xDD, 0xD9, 0xC1, 0xD1)),
+                 ("adc", (0x6D, 0x7D, 0x79, 0x61, 0x71)), ("sbc", (0xED, 0xFD, 0xF9, 0xE1, 0xF1)),
+                 ("and", (0x2D, 0x3D, 0x39, 0x21, 0x31)), ("ora", (0x0D, 0x1D, 0x19, 0x01, 0x11)),
+                 ("eor", (0x4D, 0x5D, 0x59, 0x41, 0x51))):
+    _READS.update({o: (_m, mode) for o, mode in zip(_ops, _MODES)})
+_READS.update({0xAE: ("ldx", "abs"), 0xBE: ("ldx", "abs,y"), 0xAC: ("ldy", "abs"), 0xBC: ("ldy", "abs,x"),
+               0xEC: ("cpx", "abs"), 0xCC: ("cpy", "abs"), 0x2C: ("bit", "abs"),
+               0xAF: ("lax", "abs"), 0xBF: ("lax", "abs,y"), 0xB3: ("lax", "(zp),y")})
+_COMPUTES = ("adc", "sbc", "and", "ora", "eor")     # these use the value: answered from a stop before them
+_FLAG_BITS = {"N": 0x80, "V": 0x40, "Z": 0x02, "C": 0x01}
+
+
+def _effect(m, v, r):
+    """The registers and flags instruction m sets when it reads v, from the registers r it starts with."""
+    def nz(x):
+        return {"N": x >> 7, "Z": int(x == 0)}
+    if m in ("lda", "ldx", "ldy"):
+        return {m[2].upper(): v, **nz(v)}
+    if m == "lax":
+        return {"A": v, "X": v, **nz(v)}
+    if m in ("cmp", "cpx", "cpy"):
+        reg = r["A" if m == "cmp" else m[2].upper()]
+        return {"C": int(reg >= v), **nz((reg - v) & 0xFF)}
+    if m == "bit":
+        return {"N": v >> 7, "V": (v >> 6) & 1, "Z": int((r["A"] & v) == 0)}
+    a = r["A"]
+    if m in ("adc", "sbc"):
+        if r["D"]:
+            raise ViceError(f"paddle: {m.upper()} of a paddle in decimal mode is not covered")
+        w = v ^ 0xFF if m == "sbc" else v              # SBC adds the complement
+        s = a + w + int(r["C"])
+        res = s & 0xFF
+        return {"A": res, "C": s >> 8, "V": int(((a ^ res) & (w ^ res) & 0x80) != 0), **nz(res)}
+    res = {"and": a & v, "ora": a | v, "eor": a ^ v}[m]
+    return {"A": res, **nz(res)}
+
+
+class Paddles:
+    """A control port's two paddles, as paddle() hands them over.
+
+    x and y are what $D419 (POTX) and $D41A (POTY) read: a number from 0 to 255, or a function
+    of the read (the dict below, without its value) that returns one, or None to leave that
+    register to the SID. They can be changed between runs. frames(n) and reads(n) run the machine
+    and answer every read; each returns the reads, oldest first, as dicts:
+
+      pot     "x" or "y"                 address  $D419 or $D41A     value  what the game got
+      pc      the reading instruction    op       its mnemonic       n      reads before this one
+      frame   frames run before it       stop     "after", "interrupt" or "before": how it was answered
+      answered  False for a read the helper could not answer (paddle() says which), value None
+
+    A run that another stopping checkpoint ends returns early, with stopped_at its address."""
+
+    def __init__(self, rpc, x=None, y=None):
+        self.rpc, self.x, self.y = rpc, x, y
+        self.frame = self.n = 0
+        self.stopped_at = None
+        self.sites = {}                 # instruction address -> its checkpoint, stopped before
+        self._watch = None              # (checkpoint, first, last) on the registers watched
+        self._hits = 0                  # the watch's hit count, as far as counted
+
+    def frames(self, n=1):
+        """Run n frames from a stopped machine, answering every read, and stop at the frame boundary."""
+        return self._run(n, None)
+
+    def reads(self, n=1, limit=FRAME_ADVANCE_MAX):
+        """Run until at least n reads have been made, and stop just after the last; or give up after
+        limit frames. The next frames(1) runs to the end of the frame the last read was in."""
+        return self._run(limit, n)
+
+    def site(self, a):
+        """Stop before the instruction at a and answer its read there, from its first read on."""
+        if a not in self.sites:
+            self.sites[a] = arm(self.rpc, a)
+
+    def release(self):
+        """Delete the helper's checkpoints."""
+        numbers = list(self.sites.values()) + ([self._watch[0]] if self._watch else [])
+        for n in numbers:
+            call(self.rpc, "vice_checkpoint_delete", {"checkpoint_num": n})
+        self._watch, self.sites = None, {}
+
+    def _steered(self, pot):
+        return (self.x if pot == "x" else self.y) is not None
+
+    def _arm(self):
+        """One load checkpoint over the registers that have a value, on a stopped machine."""
+        want = [a for a, v in ((POTX, self.x), (POTY, self.y)) if v is not None]
+        span = (want[0], want[-1]) if want else None
+        if (self._watch[1:] if self._watch else None) == span:
+            return
+        if self._watch:
+            call(self.rpc, "vice_checkpoint_delete", {"checkpoint_num": self._watch[0]})
+        self._watch, self._hits = None, 0
+        if span:
+            self._watch = (arm(self.rpc, span[0], span[1], load=True), *span)
+
+    def _run(self, frames, reads):
+        self._arm()
+        self.stopped_at, got = None, []
+        if self.sites:                  # stopped on a site already: a run would carry it out unanswered
+            regs = ask(self.rpc, "vice_registers_get")
+            if regs["PC"] in self.sites:
+                got += [h for h in [self._before(regs["PC"], read_mem(self.rpc, regs["PC"], 3), regs)] if h]
+        left = frames
+        while left > 0 and (reads is None or len(got) < reads):
+            step = min(left, FRAME_ADVANCE_MAX)
+            r = ask(self.rpc, "vice_frame_advance", {"frames": step})
+            if not isinstance(r, dict) or r.get("status") != "ok":
+                raise ViceError(f"paddle: frame advance failed: {r}")
+            left -= r.get("frames", 0)
+            self.frame += r.get("frames", 0)
+            if not r.get("stopped_early"):
+                if r.get("frames") != step:
+                    raise ViceError(f"paddle: frame advance did not complete {step} frames: {r}")
+                continue
+            hits = self._stop(r["PC"])
+            if hits is None:
+                self.stopped_at = r["PC"]
+                break
+            got += hits
+        return got
+
+    def _stop(self, pc):
+        """Answer the read that stopped the machine at pc. None when the stop was not the helper's."""
+        regs = ask(self.rpc, "vice_registers_get")
+        mem = read_mem(self.rpc, (pc - 3) & 0xFFFF, 6)          # the three bytes before pc, and its own
+        read, stack, how = self._behind(mem[:3], pc, regs), None, "after"
+        if read and pc in self.sites:
+            read = read if self._fired() else None             # a site a read happens to precede
+        elif read:
+            self._hits += 1
+        elif pc not in self.sites:
+            read, stack = self._interrupted(pc, regs)
+            how = "interrupt"
+            if read:
+                self._hits += 1
+            elif self._fired():
+                raise ViceError(f"paddle: a read of $D419 or $D41A ended at ${pc:04X} by an instruction the "
+                                f"helper does not cover (the bytes before it: {mem[:3].hex(' ')}); it is "
+                                "stopped there, the read unanswered")
+            else:
+                return None
+        hits = self._after(read, regs, how, stack) if read else []
+        if pc in self.sites:
+            hits += [h for h in [self._before(pc, mem[3:], regs)] if h]
+        return hits
+
+    def _fired(self):
+        """Whether the load checkpoint has stopped the machine since the count was last taken."""
+        if not self._watch:
+            return False
+        for c in ask(self.rpc, "vice_checkpoint_list")["checkpoints"]:
+            if c["checkpoint_num"] == self._watch[0]:
+                fired, self._hits = c["hit_count"] > self._hits, c["hit_count"]
+                return fired
+        return False
+
+    def _ea(self, mode, operand, regs):
+        if mode.startswith("abs"):
+            return (operand + {"abs": 0, "abs,x": regs["X"], "abs,y": regs["Y"]}[mode]) & 0xFFFF
+        zp = read_mem(self.rpc, 0, 256)
+        z = (operand + regs["X"]) & 0xFF if mode == "(zp,x)" else operand
+        base = zp[z] | zp[(z + 1) & 0xFF] << 8
+        return base if mode == "(zp,x)" else (base + regs["Y"]) & 0xFFFF
+
+    def _behind(self, b, end, regs):
+        """The read of $D419 or $D41A by the instruction that ends at end, b being its three bytes before.
+        No instruction it covers changes the index register it used, so the registers after it serve."""
+        for at, op, operand in ((end - 3, b[0], b[1] | b[2] << 8), (end - 2, b[1], b[2])):
+            m = _READS.get(op)
+            if m and (m[1].startswith("abs") == (at == end - 3)):
+                ea = self._ea(m[1], operand, regs)
+                if ea in _POTS:
+                    return {"m": m[0], "pc": at & 0xFFFF, "ea": ea}
+        return None
+
+    def _interrupted(self, pc, regs):
+        """An interrupt taken as the read ended: the stop is on the handler's first instruction, with
+        the flags and the return address on the stack. Returns the read and where the flags are."""
+        v = read_mem(self.rpc, 0xFFFA, 6)
+        if pc not in (v[0] | v[1] << 8, v[4] | v[5] << 8):
+            return None, None
+        st, sp = read_mem(self.rpc, 0x0100, 256), regs["SP"]
+        ret = st[(sp + 2) & 0xFF] | st[(sp + 3) & 0xFF] << 8
+        read = self._behind(read_mem(self.rpc, (ret - 3) & 0xFFFF, 3), ret, regs)
+        return (read, (0x0100 + ((sp + 1) & 0xFF), st[(sp + 1) & 0xFF])) if read else (None, None)
+
+    def _hit(self, read, how):
+        hit = {"pot": _POTS[read["ea"]], "address": read["ea"], "pc": read["pc"], "op": read["m"],
+               "n": self.n, "frame": self.frame, "stop": how, "answered": True}
+        self.n += 1
+        return hit
+
+    def _value(self, hit):
+        v = self.x if hit["pot"] == "x" else self.y
+        v = v(dict(hit)) if callable(v) else v
+        if not isinstance(v, int) or not 0 <= v <= 255:
+            raise ValueError(f"paddle: {hit['pot']} gave {v!r} for the read at ${hit['pc']:04X}; it takes 0 to 255")
+        return v
+
+    def _set(self, regs, k, val):
+        if int(regs[k]) != val:
+            ask(self.rpc, "vice_registers_set", {"register": k, "value": val})
+
+    def _after(self, read, regs, how, stack):
+        """Put right what the instruction did with the SID's value; it has run."""
+        if not self._steered(_POTS[read["ea"]]):
+            return []
+        hit = self._hit(read, how)
+        if read["m"] in _COMPUTES:      # it has computed with the SID's value: answer it before, from now on
+            self.site(read["pc"])
+            return [dict(hit, value=None, answered=False)]
+        v = self._value(hit)
+        ch = _effect(read["m"], v, regs)
+        flags = {k: ch.pop(k) for k in "NVZC" if k in ch}
+        for k, val in ch.items():
+            self._set(regs, k, val)
+        if stack:                       # the flags the handler's RTI will restore
+            where, p = stack
+            q = p
+            for k, val in flags.items():
+                q = q & ~_FLAG_BITS[k] | (_FLAG_BITS[k] if val else 0)
+            if q != p:
+                poke(self.rpc, where, [q])
+        else:
+            for k, val in flags.items():
+                self._set(regs, k, val)
+        return [dict(hit, value=v)]
+
+    def _before(self, pc, b, regs):
+        """Do the instruction at pc with the value given, and move on past it; it has not run."""
+        m = _READS.get(b[0])
+        if not m:
+            return None
+        indirect = m[1].startswith("(")
+        ea = self._ea(m[1], b[1] if indirect else b[1] | b[2] << 8, regs)
+        if ea not in _POTS or not self._steered(_POTS[ea]):
+            return None                 # it runs as it is
+        hit = self._hit({"m": m[0], "pc": pc, "ea": ea}, "before")
+        v = self._value(hit)
+        for k, val in _effect(m[0], v, regs).items():
+            self._set(regs, k, val)
+        ask(self.rpc, "vice_registers_set", {"register": "PC", "value": (pc + (2 if indirect else 3)) & 0xFFFF})
+        return dict(hit, value=v)
+
+
+@contextlib.contextmanager
+def paddle(rpc, x=None, y=None, at=()):
+    """Turn the paddles: answer the game's reads of $D419 (x) and $D41A (y) for the body of a with block.
+
+        with paddle(rpc, x=100) as pad:
+            pad.frames(50)                      # 50 frames, every read of $D419 answered 100
+            pad.x = lambda hit: aim(rpc)        # or a function of the read, asked at each one
+            pad.reads(1)                        # run to just after the next read
+
+    vice-mcp has no paddle input (v3.13.2), and with nothing in the control ports both registers
+    read $FF. So the helper stops the machine at each read and puts the result right: a stopping
+    load checkpoint on the registers that have a value, and frame advances that it ends.
+    Measured on the v3.13.2 release on Linux x86_64, 16 October 2026: a load checkpoint stops after
+    the reading instruction has run, with the PC on the next one and the register loaded with $FF,
+    N and Z set from it. So for LDA, LDX, LDY and LAX the helper sets the register that was loaded,
+    and N and Z; for CMP, CPX, CPY and BIT, the flags. When an interrupt is due as the read ends,
+    the stop comes on the handler's first instruction, with the return address and the flags on
+    the stack; the helper finds the read from the return address and corrects the stacked flags.
+
+    ADC, SBC, AND, ORA and EOR compute with the value, which by that stop has already happened.
+    The first read by one of them is left as the SID gave it, returned with answered False, and
+    the helper then stops before that instruction (an exec checkpoint) and does its work itself,
+    setting the PC past it; the machine skips the instruction's four to six cycles. Name such
+    instructions with at=, as addresses, to have their first read answered too. Decimal-mode ADC
+    and SBC raise ViceError.
+
+    Covered: those twelve, and LAX, in the forms that can name $D419 or $D41A: absolute, absolute
+    indexed, (zp,X) and (zp),Y (the forms each has; LAX not as (zp,X)). A read by anything else
+    (INC $D419, another undocumented opcode) raises ViceError with the machine stopped after it.
+    Only $D419 and $D41A themselves are watched. The helper answers whichever port's paddles the
+    game reads; it does not model which one CIA 1 has selected.
+
+    A read costs a frame advance to its stop (51 ms there) and three to six other calls (17 ms
+    each, on a stopped machine): about 8 reads a second for LDA $D419 and for SBC $D419,Y alike,
+    in a four-core container, with warp mode on or off. A game that reads its paddle once a frame
+    runs at about a sixth of its speed. A machine that was running is stopped with pause() first
+    and set running again at the end; the checkpoints are deleted however the block ends."""
+    was_running = not paused(rpc)
+    if was_running and not pause(rpc):
+        raise ViceError("paddle: the machine did not stop, so no checkpoint was added")
+    pad = Paddles(rpc, x, y)
+    try:
+        for a in at:
+            pad.site(a)
+        pad._arm()
+        yield pad
+    finally:
+        pad.release()
+        if was_running:
+            call(rpc, "vice_execution_run", {})
 
 
 def _key_args(k):
