@@ -200,9 +200,10 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .tile .v a{position:relative;z-index:1}
 .tile time,.tile .m{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:3px}
 /* The tier up a card's left edge, in the tier's colour: gold, slate and bronze differ in lightness
-   as well as hue, so they part for a colour-blind reader too, and the word is always there. */
+   as well as hue, so they part for a colour-blind reader too, and the word is always there. Only a
+   card's: the tab bar's .tier, the tier or build date at its right, stays in the bar. */
 .t-gold{--tc:#8f6a00}.t-silver{--tc:#68707c}.t-bronze{--tc:#8a4a1e}.t-none{--tc:#80838a}
-.tier{position:absolute;left:0;top:0;bottom:0;width:22px;display:flex;align-items:center;justify-content:center;
+.tile>.tier{position:absolute;left:0;top:0;bottom:0;width:22px;display:flex;align-items:center;justify-content:center;
   writing-mode:vertical-rl;transform:rotate(180deg);background:var(--tc);color:#fff;font-family:var(--fm);font-size:10px;
   font-weight:500;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 /* New and updated: the latest games added or changed, four cards at a time. site.js moves the row on
@@ -412,6 +413,90 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 .about h2 .hash:hover{color:var(--accent)}
 @media (max-width:900px){.about .who{grid-template-columns:1fr;gap:8px}.about .cards{grid-template-columns:1fr}}
 @media (max-width:700px){.about [id]{scroll-margin-top:110px}.about h2 .hash{position:static;margin-left:.3em;opacity:.35}}
+
+/* activity page: what landed each day (site/lib/activity.js draws it). A tile per count picks
+   the one the chart draws; below, every day of the period with what landed on it. */
+.activity .hero{padding-bottom:0}
+.activity [id]{scroll-margin-top:72px}
+.activity .act-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:18px 0 16px}
+.activity .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.activity .seg button{font:12.5px var(--fm);color:var(--ink-soft);background:none;border:0;padding:7px 14px;cursor:pointer}
+.activity .seg button:hover{color:var(--ink)}
+.activity .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.activity .act-every{margin:0;color:var(--ink-soft);font-size:15px}
+.activity .act-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.activity .act-kpi{display:flex;flex-direction:column;align-items:stretch;gap:2px;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 10px;box-shadow:var(--plate-shadow)}
+.activity .act-kpi:hover{border-color:var(--ink-mute)}
+.activity .act-kpi.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent),var(--plate-shadow)}
+.activity .act-kpi .k{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);line-height:1.35}
+.activity .act-kpi .v{font-size:32px;font-weight:900;line-height:1.15;color:var(--ink);letter-spacing:-.01em}
+.activity .act-kpi .s{font-size:13px;line-height:1.35;color:var(--ink-soft);min-height:2.7em}
+.activity .act-kpi .spark{display:block;width:100%;height:28px;margin-top:6px}
+.activity .act-kpi .spark rect{fill:var(--ink-mute);opacity:.55}
+.activity .act-kpi .spark .line{fill:none;stroke:var(--ink-mute);stroke-width:2;vector-effect:non-scaling-stroke}
+.activity .act-kpi.on .spark rect{fill:var(--accent);opacity:1}
+.activity .act-kpi.on .spark .line{stroke:var(--accent)}
+.activity .act-chart{margin:0 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 6px;box-shadow:var(--plate-shadow)}
+.activity .act-chart figcaption{font-size:15px;margin:0 0 6px}
+.activity .act-plot{position:relative;min-height:220px}
+.activity .act-svg{display:block;font-family:var(--fm);outline:none}
+.activity .act-svg:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.activity .act-svg .grid{stroke:var(--line-soft);stroke-width:1}
+.activity .act-svg .base{stroke:var(--line);stroke-width:1}
+.activity .act-svg .tick{font-size:11px;fill:var(--ink-mute);font-variant-numeric:tabular-nums}
+.activity .act-svg .marks path{fill:var(--accent);transition:opacity .12s}
+.activity .act-svg .marks path.dim{opacity:.45}
+.activity .act-svg .marks .wash{fill:var(--accent);opacity:.1}
+.activity .act-svg .marks .line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.activity .act-svg .marks .dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.activity .act-svg .marks .end{font-size:12px;fill:var(--ink);font-weight:500}
+.activity .act-svg .cross{stroke:var(--ink-mute);stroke-width:1}
+.activity .act-svg .hit{fill:transparent;cursor:pointer}
+.activity .act-tip{position:absolute;top:4px;left:0;z-index:2;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);padding:8px 11px;font-size:13px;line-height:1.45;min-width:170px}
+.activity .act-tip[hidden]{display:none}
+.activity .act-tip .when{display:block;font-weight:700;margin:0 0 3px}
+.activity .act-tip .row{display:flex;gap:8px;color:var(--ink-soft)}
+.activity .act-tip .row b{min-width:2.2em;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+.activity .act-tip .row.on{color:var(--ink)}
+.activity .act-tip .row.on b{color:var(--accent)}
+.activity .act-none{padding:80px 0;text-align:center;margin:0}
+.activity .act-days{margin:0 0 20px;border-bottom:1px solid var(--line-soft)}
+.activity .act-day{border-top:1px solid var(--line-soft)}
+.activity .act-day .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:10px 0;list-style:none}
+.activity .act-day summary{cursor:pointer}
+.activity .act-day summary::-webkit-details-marker{display:none}
+.activity .act-day summary::before{content:"\25B8";color:var(--ink-mute);font-size:12px;width:12px;margin-right:-6px;transition:transform .12s}
+.activity .act-day[open] summary::before{transform:rotate(90deg)}
+.activity .act-day div.head{padding-left:20px}
+.activity .act-day time{font-weight:700}
+.activity .act-day .n{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.activity .act-items{list-style:none;padding:0 0 12px 20px;margin:0}
+.activity .act-items li{display:grid;grid-template-columns:10.5em minmax(0,1fr);column-gap:12px;align-items:baseline;padding:5px 0;font-size:15px;line-height:1.45}
+.activity .act-items .tags{display:flex;flex-wrap:wrap;gap:0 8px}
+.activity .act-items .m{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:8px}
+.activity .act-items .m a{color:var(--ink-soft)}
+.activity .act-items .fix{display:block;font-size:14px;margin-top:2px}
+.activity .act-items .fix .act-tag{margin-right:8px}
+.activity .act-items code{background:none;color:inherit;padding:0;font-size:.86em}
+.activity .act-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:11px;color:var(--ink-soft);white-space:nowrap}
+.activity .act-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink-mute)}
+.activity .act-tag.new::before{background:var(--amber)}
+.activity .act-tag.game::before{background:var(--accent)}
+.activity .act-tag.kit::before{background:var(--green)}
+.activity .act-tag.site::before{background:var(--violet)}
+.activity .act-tag.issue::before{background:var(--coral)}
+.activity dl.act-defs{margin:0 0 1em}
+.activity dl.act-defs dt{font-weight:700;margin:16px 0 2px}
+.activity dl.act-defs dd{margin:0;color:var(--ink-soft)}
+.activity .foot{margin-top:40px}
+@media (max-width:900px){.activity .act-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:700px){.activity .act-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.activity .act-kpi .v{font-size:26px}
+  .activity [id]{scroll-margin-top:110px}.activity .act-items{padding-left:0}.activity .act-day div.head{padding-left:0}
+  .activity .act-kpi:last-child:nth-child(odd){grid-column:span 2}
+  .activity .act-items li{grid-template-columns:minmax(0,1fr);padding:8px 0;border-top:1px solid var(--line-soft)}}
+@media (prefers-reduced-motion:reduce){.activity .act-svg .marks path,.activity .act-day summary::before{transition:none}}
 
 /* A game of several parts. Above its listing, the parts in the order they are played (.partpick).
    Beside it, the control that steps from one to the next (.pick): the one before, a list of them

@@ -58,7 +58,9 @@
 //   aside), and go back to the port's after
 //   unless it wrote them. Its reads of the raster ($D012, and $D011's bit 7) get the values the
 //   game's did, in turn (a read past those, the line the game's handler ended on), and the raster's
-//   interrupt bit is latched. At the next checkpoint or wait's exit, where the two stand at the same
+//   interrupt bit is latched. So do its reads of the interrupt flags, $D019, $DC0D and $DD0D, the
+//   port's chips' own after those: one handler for the raster and a CIA's timer, as many games
+//   have, takes the branch the game's took. At the next checkpoint or wait's exit, where the two stand at the same
 //   place, a byte an interrupt wrote and the game's main program wrote again afterwards gets back
 //   the port's own value: the last writer of each byte is the game's. What no replay can give is
 //   the main program reading, in the middle of a stretch, what an interrupt wrote there: those are
@@ -88,11 +90,17 @@
 //   P.io.irqByte(a), and gets, in turn, the values the game's main program read of it in the same
 //   stretch (a read past those, the port's own byte). The port runs a stretch before the game does,
 //   so what the game has not yet read comes from a copy of the machine run on ahead to its next
-//   checkpoint or wait's exit: its class's restore(save()), with the input as it stands. A machine
+//   checkpoint or wait's exit: its class's restore(save(), { rom }), with the input as it stands
+//   and the ROMs the machine was given. A machine
 //   class that keeps more than Machine does extends save() and restore(), or the copy is not the
 //   game. Input onFrame gives inside the stretch, after the copy is made, is not in it, and a copy
 //   made at the head of a raster wait's loop stops at that head the first time round. On the page,
 //   outside the lockstep, the port's io gives irqByte: a => M[a].
+// - hooks: the machine's own stand-ins, by address, as Machine's hooks take them (a KERNAL routine
+//   the game calls and the simulator holds no ROM for): put on the machine for the run and on the
+//   copies irqBytes runs on ahead, which a hook set on the machine alone never reaches. A hook acts
+//   on the cpu it is given (c.m, the registers), never on a machine it keeps, so that a copy's run
+//   leaves the game as it was.
 //
 // run({ passes, onPass, onFrame, stopOnDiff }) runs until passes more passes have started (default
 // 1) and returns { passes, ok, diffs, diverged, frames }. At the start of each pass, once the
@@ -175,6 +183,11 @@ const DATA = Uint8Array.from(OPCODES, ([name, mode]) => ['imp', 'acc', 'imm', 'r
   ['asl', 'lsr', 'rol', 'ror', 'inc', 'dec', 'slo', 'rla', 'sre', 'rra', 'dcp', 'isb'].includes(name) ? 2 : 1);
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
+// The chips' interrupt flags, by address: the video chip's $D019 and the CIAs' $DC0D and $DD0D,
+// wherever their registers repeat; -1 for any other address. A handler that serves more than one
+// source reads one of these to tell which came, so a replay gives it what the game's read.
+const flagRegister = a => (a >= 0xD000 && a < 0xD400 && (a & 0x3F) === 0x19 ? 0xD019
+  : a >= 0xDC00 && a < 0xDE00 && (a & 0x0F) === 0x0D ? (a & 0xFF00) | 0x0D : -1);
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const NONE = new Set();
 const LIST = 64;                                   // differing bytes kept per pass
@@ -275,6 +288,7 @@ class Lockstep {
     for (const a of this.waits) if (this.cps.has(a)) throw new Error('Lockstep: ' + hex(a) + ' is both a checkpoint and a wait\'s exit');
     this.irqs = o.irqs || {};
     this.maxFrames = o.maxFrames || 500;
+    this.hooks = o.hooks || {};
     this.runs = ranges(o);
     try { this.chipList = chipNames(o); } catch (e) { throw new Error('Lockstep: ' + e.message); }
     // the port starts as the game is
@@ -331,12 +345,13 @@ class Lockstep {
   // The game's reads of irqBytes to the end of the stretch: those it has made since the last stop,
   // then a copy's, run on from here to the next stop outside its interrupts.
   lookahead() {
-    const m = this.m, g = m.constructor.restore(m.save());
+    const m = this.m, g = m.constructor.restore(m.save(), { rom: m.cpu.rom });
     if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
     g.sidw.set(m.sidw);
     const out = new Map(), B = this.irqBytes;
     for (const [a, vs] of this.ib.live) out.set(a, vs.slice());
     let depth = 0, stop = false, skip = g.cpu.pc;
+    Object.assign(g.hooks, this.hooks);
     for (const a of [...this.cps, ...this.waits]) {
       const prev = g.hooks[a];
       g.hooks[a] = c => {
@@ -365,6 +380,8 @@ class Lockstep {
       if (r === 0x12 && q.i12 < q.d012.length) return q.d012[q.i12++];
       if (r === 0x11 && q.i11 < q.d011.length) return (v & 0x7F) | (q.d011[q.i11++] & 0x80);
     }
+    const f = q !== null ? flagRegister(a) : -1;
+    if (f >= 0 && q.flags.has(f)) { const x = q.flags.get(f); if (x.i < x.v.length) return x.v[x.i++]; }
     return v;
   }
 
@@ -387,9 +404,10 @@ class Lockstep {
     const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
     const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), run: own(cpu, 'run') };
     m.onPass = null;
+    for (const [a, h] of Object.entries(this.hooks)) { s.hooks[a] = m.hooks[a]; m.hooks[a] = h; }
     for (const a of [...this.cps, ...this.waits]) {
       const prev = m.hooks[a];
-      s.hooks[a] = prev;
+      if (!Object.prototype.hasOwnProperty.call(s.hooks, a)) s.hooks[a] = prev;
       m.hooks[a] = c => {
         if (ls.irq !== null) return prev ? prev(c) : false;            // an interrupt's code, not the main program
         if (ls.resume === a) { ls.resume = -1; return prev ? prev(c) : false; }
@@ -404,7 +422,7 @@ class Lockstep {
     const irq = cpu.irq, RAM_R = cpu.rk[2], RAM_W = cpu.wk[2];          // page 2 is RAM on any map
     cpu.irq = function (handler, opts) {
       const c = this, q = { at: handler != null ? handler & 0xFFFF : c.vector(0xFFFE, 'IRQ'), line: m.line, frame: m.frames,
-        cycle: c.cycles, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0, seen: new Map(), wrote: new Map() };
+        cycle: c.cycles, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0, flags: new Map(), seen: new Map(), wrote: new Map() };
       const reads = new Proxy({}, { set(t, k) {
         const a = +k;
         if ((a < 0x100 ? a > 1 : c.rk[a >>> 8] === RAM_R) && !q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, c.m[a]);
@@ -453,6 +471,8 @@ class Lockstep {
         const r = a & 0x3F;
         if (r === 0x12) q.d012.push(v); else if (r === 0x11) q.d011.push(v);
       }
+      const f = q !== null ? flagRegister(a) : -1;
+      if (f >= 0) { if (!q.flags.has(f)) q.flags.set(f, { v: [], i: 0 }); q.flags.get(f).v.push(v); }
       return v;
     };
   }
