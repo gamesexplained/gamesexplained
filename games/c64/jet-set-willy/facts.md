@@ -195,6 +195,44 @@ uses bank 1, $4000-$7FFF, in extended colour mode.
   alone recorded about 19 dB quieter than with $D415-$D417 cleared.
   Another crack of the game has 0 at $2020.
 
+## Hardware registers
+
+From `kit/c64/census.py` over every decoded instruction: 298 instructions
+name 67 registers.
+
+| Register | What the game does with it | Where |
+|---|---|---|
+| $01 | $36: BASIC banked out, the KERNAL and I/O in, at the start-up and at the start of every game | $0819, $2C76; the code card's restart stub $0FA0 |
+| $D000-$D00F | Sprite places: Willy (sprite 0) every frame from his column and height, guardians from sprite 1 up, the rope on 5-7, an arrow on 6, the toilet or Maria on 7; each room build parks them all | $33E1, $2E07, $2FCD, $3614, $369E, $16A2, $320E, $324E, $3284, $383B |
+| $D010 | The top X bit of each of those sprites | the same, with $16A2 and $369E |
+| $D011 | Bit 6 set at the start of a game, for extended colour mode; bit 7 (bit 8 of the raster compare) cleared before each compare | $2C88, $2D1B, $3402, $3594; the title $A744, $A7D3, $A801 |
+| $D012 | Two raster interrupts a frame, at line $FB and line 0; the play interrupt reads it to tell them apart | $2D25, $2E29, $33F5, $33FF, $359E; the title $A7AB, $A801 |
+| $D015 | Which sprites are on: Willy alone at each room build, then the guardians, the rope, an arrow while it flies, the toilet or Maria; all off at a death and at game over | $2E07, $2FCD, $16A2, $314D, $324E, $3284, $38EF, $383B |
+| $D016 | The title only: the message's fine scroll | $A744, $A7D3, $A801 |
+| $D017 | Sprites stretched tall: none for guardians, sprites 5-7 ($E0) for the rope | $30A5, $30A8 |
+| $D018 | Screen at $7C00, character set at $7800 | $2C6C; the title $A744 |
+| $D019, $D01A | The raster interrupt enabled and acknowledged | $2D2A, $33E1; the title $A7A6, $A801 |
+| $D01E | Sprite-sprite collisions: Willy's death on touching a guardian, Maria or an arrow, and catching a rope; cleared by reads before play | $3392, $1C4C, $1ABC, $1B96, $2E07, $30D9, $38EF |
+| $D01F | Sprite-background collisions: Willy against the room while he holds a rope; cleared by a read at each rope's set-up | $1B37, $30D6 |
+| $D020, $D021 | Border and background from the room record; white border during a death; the border steps through colours as game over wipes the room | $2E9C, $38EF, $383B; the code card $3A02, $3C6B; the title $A744 |
+| $D022, $D023 | Backgrounds 1 and 2 black, once at the start of a game | $2CD7, $2CE3 |
+| $D024 | Background 3, the border's colour from the room record | $2EA2 |
+| $D027-$D02E | Sprite colours: each room's eight from $29EB, white for the arrow and the toilet, yellow for Maria, and the game-over scene's own | $309D, $2D09, $325E, $32A8, $3896 |
+| $D400-$D40D | Voices 1 and 2: the in-game tune and two voices of the title tune; gated off with their frequencies cleared while the music is off | $2005, $2075, $20B2, $3416; the title $A0CD, $A14F, $A191 |
+| $D40E-$D414 | Voice 3: the arrow's warning and launch, the pick-up sweep, the death's noise and the title tune's third voice; its frequency cleared at each room build | $314D, $334F, $38EF, $2EC7; the title $A1C5; the code card $3A02 |
+| $D418 | The volume, from $5F, which + and − set; 0 while the game is paused | $205C, $3108, $3410, $3516, $38EF, $383B |
+| $D41B | Voice 3's oscillator, read as a random number by the code card | $3B15 |
+| $DC00, $DC01 | Keyboard and joystick port 2 | $3791; the title $A083, $A7EE |
+| $DC0D, $DC0E | CIA 1's timer interrupt stopped | $2C78, $2C80; the title $A7B6 |
+| $DD00, $DD02 | Video bank 1, $4000-$7FFF, through CIA 2 | $2C58, $2C60; the title $A744 |
+
+No instruction names the light pen, the sprite priority, horizontal
+stretch and multicolour registers, the paddles, voice 3's envelope or any
+other CIA register. Indexed writes reach three that are not named: $309D
+sets sprites 3-5's colours ($D02A-$D02C), and the clearing loops at
+$2005 and $2D13 run on through the filter's cutoff and resonance
+($D415-$D417).
+
 ## The listing's error rate
 
 The run's own sample, seed 20261016, drew 60 of the 781 comments in two
