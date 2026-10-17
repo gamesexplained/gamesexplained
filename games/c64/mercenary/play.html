@@ -94,6 +94,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="render" aria-pressed="false" title="Draw the view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="smooth" aria-pressed="false" title="Draw the view at the screen's own frame rate, moving between the game's pictures">Smooth motion</button>
       <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="ctrlq" title="CTRL + Q: quit the situation">CTRL + Q</button>
       <button type="button" data-act="save" title="CTRL + S: save a position">Save</button>
@@ -221,6 +222,7 @@ section table{margin:6px 0 18px}
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
 <script>
 /* the port: Mercenary's routines, each a function on the game's memory M, named by the listing's label */
 (function () {
@@ -7408,7 +7410,7 @@ function makeDisplay(opts) {
     if (act === 'pause') { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
     else if (act === 'restart') { rt = null; skipping = false; boot(); sound.attach(); running = true; paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false'); skipButton(); screen.focus(); }
     else if (act === 'skip') skip();
-    else if (act === 'render') { native = !native; b.setAttribute('aria-pressed', String(native)); if (!native) { cv.width = 1; } draw(); screen.focus(); }
+    else if (act === 'render') { native = !native; b.setAttribute('aria-pressed', String(native)); if (native) crt.set(false); else cv.width = 1; draw(); screen.focus(); }
     else if (act === 'smooth') { setSmooth(!smooth); draw(); screen.focus(); }
     else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); screen.focus(); }
     else if (act === 'ctrlq' && running) tap([KEY.CTRL, KEY.Q], 12);
@@ -7416,6 +7418,10 @@ function makeDisplay(opts) {
     else if (act === 'load' && running) { tap([KEY.CTRL, KEY.L], 12); say('Loading: type a digit 0-9, then Enter.'); }
     screen.focus();                             // every button hands the keyboard back to the game
   });
+  // The CRT screen (site/lib/crt.js) draws the C64's pixels again, so native resolution goes off with it
+  const crt = CRT.attach(cv, { button: bar.querySelector('[data-crt]'), onChange: on => {
+    if (on && native) { native = false; bar.querySelector('[data-act="render"]').setAttribute('aria-pressed', 'false'); cv.width = 1; draw(); }
+  } });
   screen.addEventListener('click', () => { if (!running && rt === null && image) start(); });
 
   C64.load('listing.json').then(G => {
