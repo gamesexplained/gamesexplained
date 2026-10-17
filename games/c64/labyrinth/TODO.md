@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,059/43,949 bytes); 20 other graphical parts are untouched. The provisional image-ledger total is 50,320/92,210 bytes (54.6%) across two started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); 20 other graphical parts are untouched. The provisional image-ledger total is 50,377/92,210 bytes (54.6%) across two started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -13,7 +13,7 @@ For the opening’s verification:
 For the gate:
 
 - Capture its natural pre-initialization hand-over, resolve loaded-data warnings and partition shared resident/overlay ownership. Forced entry captures cannot establish this.
-- Establish the ordinary presentation of all seven speech records, the physical input behind `$030B`, and the identities of the actor poses; the stored-text viewer and isolated dispatcher tests do not prove those.
+- Establish the ordinary presentation of all seven speech records, the live fire-skip during an early speech phase, and the identities of the actor poses; the stored-text viewer and isolated dispatcher tests do not prove those.
 - Extend the verified approach and deferred corridor transition through the remaining movement, dialogue, graphics and scripts. Obtain an independent comment sample.
 
 For a full-game Silver contribution:

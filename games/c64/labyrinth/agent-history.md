@@ -110,3 +110,8 @@ Continued beyond the text opening using the natural gate snapshot. Positive move
 ## 18 October 2026 — shared gate/introduction sequence
 
 Traced the remaining waiting-sequence dispatch and seven headered messages. The initial inference that this was simply dialogue before the saved gate was narrowed: phase zero skips the messages in nonzero scenes, and the natural earlier capture is already phase ten. Kept ordinary presentation open. Added a whitespace-normalized speech viewer, checked every message against the parser, and checked 15,360 phase/countdown cases against the original dispatcher. Pose and sound helpers are traced with their input/visual meanings left open.
+
+
+## 18 October 2026 — fire latch
+
+Followed writes to `$030B` back through `$1993` to port-one sampler `$19AE`, consulted the C64 reference, and verified ordinary fire press/hold/release/re-press with a positive execution checkpoint. Added 8,192 original latch cases. Kept full live early-speech skipping distinct from the verified input producer.

@@ -79,3 +79,8 @@ The tests caught an event-state field-name reversal, readonly constants describe
 ## Introduction sequence continuation
 
 `60-verify`’s distinction between isolated execution and player reachability prevented stored speech from being presented as a fully observed gate conversation. `70-minisite`’s widget-check rule led to original-parser comparisons and exhaustive phase/countdown cases. Existing guidance covers this; no kit change or maintainer ask is needed.
+
+
+## Fire-latch continuation
+
+The C64 reference supplied port and bit meanings; `60-verify` required reading the producer and checking ordinary input with a positive checkpoint. No kit change or maintainer ask is needed.

@@ -50,3 +50,9 @@ for(let phase=0;phase<15;phase++)for(let timer=0;timer<256;timer++)for(const sce
  if(phase===0&&timer===1&&scene===0&&interrupt===0)assert.deepStrictEqual(Array.from(c.m.slice(0x8f22,0x8f26)),[65,66,46,0]);schedulerCases++;
 }
 console.log(`OK - seven original speech parses and ${schedulerCases} original phase/countdown decisions, including name insertion and scene-dependent skip`);
+for(let sample=0;sample<32;sample++)for(let latch=0;latch<256;latch++){
+ const c=new CPU(Uint8Array.from(ram));c.m[0x30c]=sample;c.m[0x30b]=latch;let queued=0;
+ c.call(0x1993,{d:0},{hooks:{0x18db:c=>{queued++;c.rts();}}});
+ assert.equal(c.m[0x30b],sample&16?(latch||255):0);assert.equal(queued,Boolean(sample&16)&&latch===0?1:0);
+}
+console.log('OK - 8,192 original fire-latch cases: press, hold, release and re-press');
