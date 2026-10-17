@@ -86,6 +86,11 @@ G.main = function (P) {
     M[0x8D1F] = 0x0D;
     P.place_creatures({ a: 0x0D, bc: 0, de: 0xD5E3, hl: 0xD5E2 });
     P.load_area({});
+    return P.new_game_868e({});
+  });
+  // $868E, where a new leader ($F607) goes on too: the view coloured and drawn, the windows, and
+  // the main loop afresh
+  P.def(0x868E, 'new_game_868e', () => {
     P.colour_view({});
     M[0xA6F2] = 0xFF;
     P.draw_view({ a: 0xFF });

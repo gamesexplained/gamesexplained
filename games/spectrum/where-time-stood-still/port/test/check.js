@@ -14,7 +14,7 @@
 //   check({ name: 'clock', outs: ['a'], cases: 300 });
 // Options: entry (an address, for a place that is not a label, with bank), states (a filter of
 // state names), per (cases taken from each state, default 4), passes (how far to run from each
-// state, default 40), play (how the player plays meanwhile: walk, still or mix; PLAY), most (how many states, spread over them, default 60), ignore (addresses or [first, last] ranges), show (failures printed).
+// state, default 40), play (how the player plays meanwhile: walk, still or mix; PLAY), most (how many states, spread over them, default 60), ignore (addresses or [first, last] ranges), show (failures printed), port (P => ..., run on the port's side before each case: a routine that never returns stopped where the case's setup stops the game's, by a RET written there).
 const path = require('path');
 const lib = require('./lib.js');
 const standin = require('./standin.js');
@@ -181,6 +181,7 @@ function check(o) {
     const sk = skip.slice();
     sk.fill(1, Math.max(0x4000, c.sp - 0x100), c.sp + 2);
     const A = side(c, false), B = side(c, true);
+    if (o.port) o.port(B.P);
     let rA, rB, eA = null, eB = null;
     try { rA = A.P.at(address, Object.assign({}, c.regs)); } catch (e) { eA = e; }
     try {
