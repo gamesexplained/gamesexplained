@@ -76,3 +76,21 @@ until room 6 reproduced the trap.
 `reference/` lost the earlier run's import audit, its review script and an
 unused picture, none of which a page loads. `kit-feedback.md` was
 rewritten for this run; the earlier run's version is in the history.
+
+After the pull request was opened Aaron asked for a Play tab. The port
+(`reference/jsw-port.js`) follows the game routine by routine and was
+held against the game's own code on the kit's C64 in lockstep, pass by
+pass, from the crackers' start-up. The kit's machine has no sprite
+collisions and the game finds its hits through them, so a model of the
+chip's collisions (`reference/jsw-collide.js`) was written for both
+sides. Two differences were the game's own races with its interrupt: the
+room build's sprite writes against the interrupt's rope copy, at pass
+250,471 of steered play, and every main-program load and store of
+`$D010` against the interrupt's update of Willy's bit, at pass 10,670 of
+a player who only wanders. The port now yields at both ends of each, and
+400,000 passes of steered play and 300,000 of wandering play run
+identical. The page's clock first ran 1.8 % slow, then 1.4 %: the
+measured costs counted the sound sweeps' waits twice, the routines the
+player update leaves by a jump had no cost, and the interrupt's cost was
+averaged per band of lines rather than per branch it takes. Measured
+again, the page keeps the game's pace within 0.04 % over 60,000 frames.
