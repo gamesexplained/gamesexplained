@@ -193,8 +193,19 @@ address below `$C000` with no part named is `main`'s.
   the driver and is never requested: no instruction writes 1 to `$7002`.
   Section 3 flips the transposition (`$7992`) between 0 and 1 and plays
   section 2 again, so the tune alternates a semitone up and back.
+- The second tune is Parry's "Jerusalem": Aaron (`air`) knew it by ear
+  on 17 October 2026, and channel B's first eight notes rise 4, 3, 2 and
+  3 semitones and fall 3, 2 and 2 ("And did those feet in ancient time").
+  Channel A's notes take their vibrato row from their top four bits
+  (`$75BD` into `$7015`); the rows at `$7995` are 16 offsets in
+  quarter-semitones, and rows `$20`, `$40` and `$60` cycle 0, 4 and 7
+  semitones, 0, 3 and 7, and 0, 3 and 6 (major, minor and diminished
+  chords), with 94, 88 and 12 of channel A's notes in the first 3,845
+  calls. Channels B and C use row `$70` (1, 0, 48, 0: an octave one call
+  in four), channel B after a delay of 10 calls. 26 of channel B's notes
+  in those calls slide, a quarter-semitone a call (`$761C`).
 - The title music climbs a semitone after its first time round: section
-  23 (`$72DF`) sets `$7992` from its notes' high nibbles and leaves it at
+  23 (`$72DF`) sets `$7992` from its notes' top three bits and leaves it at
   1, section 26 (`$7339`) goes back to 14 without clearing it, and only a
   new request clears it (`$708B`), so sections 15 to 21 play a semitone
   higher every time after the first.
