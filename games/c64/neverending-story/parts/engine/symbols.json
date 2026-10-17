@@ -3096,13 +3096,13 @@
   },
   {
    "address": 5300,
-   "name": "ROOM_DESC_INDEX_HIGH",
+   "name": "ROOM_SCRIPT_INDEX_HIGH",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 5304,
-   "name": "ROOM_DESC_ADD_TABLE_BASE",
+   "name": "ROOM_SCRIPT_ADD_TABLE_BASE",
    "type": "Branch",
    "kind": "user"
   },
@@ -12206,7 +12206,7 @@
   {
    "address": 4642,
    "type": "line",
-   "text": "COND_RANDOM ($1222)\nPurpose: Condition opcode $88, the engine's one test of chance. Compares an operand threshold against the low eight bits of the VIC-II raster counter and returns the resulting carry, so the outcome depends on when in the frame the script happens to run.\nInputs: One operand byte at SCRIPT_PC: the threshold.\nOutputs: SCRIPT_PC advanced by one; carry set iff threshold >= the sampled raster value. A PAL frame is 312 lines, so the low bytes 0-55 come round twice a frame and the rest once: a threshold n passes on n + 1 + min(n, 55) + 1 of the 312 lines, 257 for 200 and 102 for 50, when the test is equally likely to fall anywhere in the frame.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The stack is used for one balanced PHA/PLA, so the stack pointer is restored. Two tests in one script read the raster a few hundred cycles apart, so their results are not independent.\nClobbers: A, flags, SCRATCH_BYTE ($02), SCRIPT_PC.\nHardware changes: Reads the VIC-II raster register $D012 through READ_RASTER_LINE. Nothing is written."
+   "text": "COND_RANDOM ($1222)\nPurpose: Condition opcode $88, the engine's one test of chance. Compares an operand threshold against the low eight bits of the VIC-II raster counter and returns the resulting carry, so the outcome depends on when in the frame the script happens to run.\nInputs: One operand byte at SCRIPT_PC: the threshold.\nOutputs: SCRIPT_PC advanced by one; carry set iff threshold >= the sampled raster value. A PAL frame is 312 lines, so the low bytes 0-55 come round twice a frame and the rest once: a threshold n passes on n + 1 + min(n, 55) + 1 of the 312 lines, 257 for 200 and 102 for 50, when the test is equally likely to fall anywhere in the frame.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The stack is used for one balanced PHA/PLA, so the stack pointer is restored. Two tests in one script read the raster a few hundred cycles apart, so their results are not independent.\nClobbers: A, X (set to 0 by FETCH_SCRIPT_BYTE), flags, SCRATCH_BYTE ($02), SCRIPT_PC.\nHardware changes: Reads the VIC-II raster register $D012 through READ_RASTER_LINE. Nothing is written."
   },
   {
    "address": 4642,
@@ -12236,7 +12236,7 @@
   {
    "address": 4655,
    "type": "line",
-   "text": "PARSE_INPUT ($122F)\nPurpose: Turn one edited command line into an executed command. Splits the line into words and records their start and end offsets, then replaces each offset pair with a vocabulary token id, then resolves the verb and noun and dispatches the matching rule.\nInputs: INPUT_TEXT_BUFFER ($CBA0) holds the lowercased line and INPUT_LEN ($26) its length. An empty line returns immediately.\nOutputs: PARSED_TOKENS ($28-$47) holds up to sixteen resolved token ids, WORD_COUNT ($27) the number of words, and the matching action script has been run, so any game state may have changed.\nAssumptions: The token table is sixteen two-byte slots and the tokenizer stops when it fills. Vocabulary matching uses only the first three characters of each word; the disambiguation block at $1325 inspects characters four to six to separate stems that share a prefix.\nClobbers: A, X, Y, flags, WORD_COUNT, PARSED_TOKENS, LOOP_COUNTER ($4B), SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SCRATCH_BYTE_2 ($04), WORD_BUFFER ($64-$69), MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), VERB_ID ($4C), NOUN_ID ($4D), SAVED_PARSE_INDEX ($6A), the self-modified operand at $13B1, and all VM and renderer state through dispatch.\nHardware changes: None directly; the renderer writes screen and colour RAM, and an executed command may reach the disk and display paths."
+   "text": "PARSE_INPUT ($122F)\nPurpose: Turn one edited command line into an executed command. Splits the line into words and records each word's start offset in an even byte of PARSED_TOKENS, then looks each word up and stores its vocabulary token id in the odd byte after the offset, then resolves the verb and noun and dispatches the matching rule, once for each command on the line.\nInputs: INPUT_TEXT_BUFFER ($CBA0) holds the lowercased line and INPUT_LEN ($26) its length. An empty line returns immediately.\nOutputs: PARSED_TOKENS ($28-$47) holds, for up to fifteen words, each word's start offset and token id (the byte after the last word's id holds the offset just past that word, plus one); WORD_COUNT ($27) holds twice the number of words; and the action script of each command on the line has been run, so any game state may have changed. An unknown word ends the line after its message ($12F6), before any command is dispatched.\nAssumptions: The token table is sixteen two-byte slots and the tokenizer stops when it fills. Vocabulary matching uses only the first three characters of each word; the disambiguation block at $1325 inspects characters four to six to separate stems that share a prefix.\nClobbers: A, X, Y, flags, WORD_COUNT, PARSED_TOKENS, LOOP_COUNTER ($4B), SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SCRATCH_BYTE_2 ($04), WORD_BUFFER ($64-$69), MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), VERB_ID ($4C), NOUN_ID ($4D), SAVED_PARSE_INDEX ($6A), the self-modified operand at $13B1, and all VM and renderer state through dispatch.\nHardware changes: None directly; the renderer writes screen and colour RAM, and an executed command may reach the disk and display paths."
   },
   {
    "address": 4655,
@@ -12296,12 +12296,12 @@
   {
    "address": 4739,
    "type": "side",
-   "text": "record word end, advance token slot"
+   "text": "record next word's start offset, advance token slot"
   },
   {
    "address": 4745,
    "type": "side",
-   "text": "table full (16 words)?"
+   "text": "table full (16 start offsets)? Then WORD_COUNT is 15 and the 16th word is dropped"
   },
   {
    "address": 4752,
@@ -12336,7 +12336,7 @@
   {
    "address": 4804,
    "type": "line",
-   "text": "The vocabulary is a list of 4-byte entries [char1,char2,char3,id], terminated by '@' ($40).\nMatches the word's first 3 chars against each entry; on a full match reads the id byte\n(-> $02) and resolves the token type at RESOLVE_TOKEN_TYPE. A '@' terminator means the word\nis unknown -> WORD_NOT_FOUND."
+   "text": "The vocabulary is a list of 4-byte entries [char1,char2,char3,id], terminated by '@' ($40).\nMatches the word's first 3 chars against each entry; on a full match reads the id byte\n(-> $02) and goes on to VOCAB_READ_TOKEN_ID ($1325), which separates the stems that share a prefix. A '@' terminator means the word\nis unknown -> WORD_NOT_FOUND."
   },
   {
    "address": 4808,
@@ -12386,7 +12386,7 @@
   {
    "address": 4867,
    "type": "side",
-   "text": "word length = end offset - start offset - 1"
+   "text": "word length = next slot's offset (next word's start, or the last word's end + 1) - start offset - 1; extra spaces between words are counted in"
   },
   {
    "address": 4877,
@@ -12441,7 +12441,7 @@
   {
    "address": 5000,
    "type": "line",
-   "text": "Overwrites PARSED_TOKENS[X] with the resolved id ($02) and loops to the next word (via\n$1296) until WORD_COUNT words are done. RESOLVE_VERB_NOUN ($1396) then rescans the token\nstream: WORD_COUNT is doubled to a byte length, and the first meaningful token becomes the\nverb; NOUN_ID defaults to $FA (none). Verb tokens are id<$32 or with bit7 set. A lone\ntoken with no verb prints sentence $1 (\"I don't understand\")."
+   "text": "Stores the resolved id ($02) in PARSED_TOKENS[X], the odd byte after the word's start offset, and loops to the next word (via\n$1296) until WORD_COUNT words are done. RESOLVE_VERB_NOUN ($1396) then rescans the odd bytes: WORD_COUNT is doubled to\na byte length, and the first token that is nonzero, below $32 and has bit 7 clear becomes the verb; tokens with bit 7 set\nare skipped. NOUN_ID defaults to $FA (none). A scan that finds no verb prints sentence $1 (\"There is no verb in that\nsentence.\") unless a command on the line has already been dispatched (COMMAND_UNHANDLED_FLAG, $13B1)."
   },
   {
    "address": 5000,
@@ -12521,12 +12521,12 @@
   {
    "address": 5113,
    "type": "side",
-   "text": "$FF token: run command then continue scanning"
+   "text": "$FF token, or words left after the noun: run this command, then scan on for the next one"
   },
   {
    "address": 5123,
    "type": "line",
-   "text": "DISPATCH_COMMAND ($1403)\nPurpose: Find the rule matching the current verb and noun and run its action script. Scans the two-byte verb-rule table for the verb, then requires the following byte to be the any-noun wildcard $FB or to equal the parsed noun; on a match it loads the script and runs the interpreter.\nInputs: VERB_ID ($4C), NOUN_ID ($4D); the verb-rule table base is the word at $199E; ACTION_SCRIPT_COUNT ($2A12) bounds the rule index.\nOutputs: On a match, RUN_ACTION_SCRIPT sets SCRIPT_PC and RUN_SCRIPT executes the bytecode. On no match, sentence $03 is printed and the caller's return address is discarded so control unwinds directly to the outer parse loop. A rule index at or above the count returns silently.\nAssumptions: The rule index doubles as the action-script index, so the table order and the script table order must agree. The bit-7 test on the index rejects indices above 127 before the count comparison.\nClobbers: A, X, Y, flags, MEMCPY_SOURCE ($0A/$0B), LOOP_COUNTER ($4B), the self-modified operand at $13B1, SCRIPT_PC ($4E/$4F), and everything the executed script touches.\nHardware changes: None directly; scripts may reach the display, disk and banking paths."
+   "text": "DISPATCH_COMMAND ($1403)\nPurpose: Find the rule matching the current verb and noun and run its action script. Scans the two-byte verb-rule table for the verb, then requires the following byte to be the any-noun wildcard $FB or to equal the parsed noun; on a match it loads the script and runs the interpreter.\nInputs: VERB_ID ($4C), NOUN_ID ($4D); the verb-rule table base is the word at $199E; ACTION_SCRIPT_COUNT ($2A12) bounds the rule index.\nOutputs: On a match, RUN_ACTION_SCRIPT sets SCRIPT_PC and RUN_SCRIPT executes the bytecode. On no match, sentence $03 is printed and the resolver's return address is discarded, so the RTS leaves PARSE_INPUT for MAIN_LOOP ($0412) and any later commands on the line are dropped. A rule index at or above the count returns silently.\nAssumptions: The rule index doubles as the action-script index, so the table order and the script table order must agree. The bit-7 test on the index rejects indices above 127 before the count comparison.\nClobbers: A, X, Y, flags, MEMCPY_SOURCE ($0A/$0B), LOOP_COUNTER ($4B), the self-modified operand at $13B1, WORK_PTR ($0C/$0D) and SCRIPT_PC ($4E/$4F) through RUN_ACTION_SCRIPT, the text printer's state through PRINT_SENTENCE on the no-match path, and everything the executed script touches.\nHardware changes: None directly; scripts may reach the display, disk and banking paths."
   },
   {
    "address": 5128,
@@ -12576,17 +12576,17 @@
   {
    "address": 5181,
    "type": "side",
-   "text": "rule index within VERB_RULE_COUNT?"
+   "text": "rule index within ACTION_SCRIPT_COUNT?"
   },
   {
    "address": 5187,
    "type": "side",
-   "text": "run the action script"
+   "text": "point SCRIPT_PC at the rule's action script"
   },
   {
    "address": 5190,
    "type": "side",
-   "text": "post-action processing"
+   "text": "run the action script"
   },
   {
    "address": 5202,
@@ -12611,7 +12611,7 @@
   {
    "address": 5245,
    "type": "line",
-   "text": "RUN_TURN_SCRIPTS ($147D)\nPurpose: The per-turn narrative pass. Sets the ordinary text colour, then runs three bytecode programs in order: the resident global turn script, the part's own turn script at $2F06, and the script belonging to the current room.\nInputs: CURRENT_PART_NO ($2940) and CURRENT_ROOM ($293F); the global turn script pointer is the word at $1C6D, and the room-script pointer table base is the word at $2F04.\nOutputs: All three scripts have run, so the room text, any daemon behaviour and any room-local events have been applied.\nAssumptions: The room index is made part-relative by subtracting PART_ROOM_BASE_IDS[CURRENT_PART_NO] ($0DCC), so the same global room number selects different scripts in different parts. Both the $2F06 script and the room table are part of each part's data.\nClobbers: A, X, Y, flags, CURRENT_CHAR_COLOR ($0286), SCRIPT_PC ($4E/$4F), WORK_PTR ($0C/$0D), SCRATCH_BYTE ($02), and all VM, parser and renderer scratch.\nHardware changes: Writes screen RAM, colour RAM and, when a script changes the picture, bitmap memory."
+   "text": "RUN_TURN_SCRIPTS ($147D)\nPurpose: The per-turn narrative pass. Sets the ordinary text colour, then runs three bytecode programs in order: the resident global turn script, the part's own turn script at $2F06, and the script belonging to the current room.\nInputs: CURRENT_PART_NO ($2940) and CURRENT_ROOM ($293F); the global turn script pointer is the word at $1C6D, and the room-script pointer table base is the word at $2F04.\nOutputs: The three scripts have run, so any daemon behaviour and room-local events have been applied. RUN_TURN_SCRIPTS does not print the room's text, which MOVE ($0E85) and SETUP_CURRENT_ROOM ($1579) print; of the scripts it runs, only Part 2's room scripts for rooms $2D and $39 print it, after moving Atreyu (SETROOM, then action $0A). A script that restarts the game (RESTART_GAME $0FDD) or ends the part (ACTION_NEXT_PART $0FF1, in the room scripts of rooms $28 and $36) leaves without returning here.\nAssumptions: The room index is made part-relative by subtracting PART_ROOM_BASE_IDS[CURRENT_PART_NO] ($0DCC), so a part's first room is entry 0 of its table; rooms are numbered across the game, so each room number belongs to one part. Both the $2F06 script and the room table are part of each part's data.\nClobbers: A, X, Y, flags, CURRENT_CHAR_COLOR ($0286), SCRIPT_PC ($4E/$4F), WORK_PTR ($0C/$0D), SCRATCH_BYTE ($02), and all VM, parser and renderer scratch.\nHardware changes: Writes screen RAM, colour RAM and, when a script changes the picture, bitmap memory; reads the keyboard when a script pauses; when a room script ends the part, SHOW_PART_LOAD_SCREEN blanks the display, rewrites $D01A, stops CIA 1 timer A and drives the serial bus."
   },
   {
    "address": 5245,
@@ -12636,22 +12636,22 @@
   {
    "address": 5277,
    "type": "side",
-   "text": "base = PART_STRING_BASE_TABLE[CURRENT_PART_NO]"
+   "text": "base = PART_ROOM_BASE_IDS[CURRENT_PART_NO], the part's first room"
   },
   {
    "address": 5307,
    "type": "side",
-   "text": "+ ROOM_DESC_TABLE_PTR ($2F04)"
+   "text": "+ the part's room-script table pointer ($2F04)"
   },
   {
    "address": 5330,
    "type": "side",
-   "text": "run the room's description script"
+   "text": "run the room's script"
   },
   {
    "address": 5334,
    "type": "line",
-   "text": "INIT_GAME ($14D6)\nPurpose: Entry point for a new game, called at $0406 and jumped to by RESTART_GAME ($0FEE). A bare jump to INIT_GAME_RUN ($14E6), over the question at $14D9 that once asked whether to restore a saved game.\nInputs: None.\nOutputs: Control transferred to INIT_GAME_RUN; no ordinary return from this instruction.\nClobbers: Through INIT_GAME_RUN, the whole game state.\nHardware changes: None here."
+   "text": "INIT_GAME ($14D6)\nPurpose: Entry point for a new game, called at $0406 (CALL_INIT_GAME, which the opening falls into and RESTART_GAME jumps to at $0FEE) and jumped to from $14FA in RESTORE_SAVED_GAME, which nothing reaches. A bare jump to INIT_GAME_RUN ($14E6), over the question at $14D9 that would ask whether to restore a saved game; nothing else reaches it.\nInputs: None.\nOutputs: Control transferred to INIT_GAME_RUN; no ordinary return from this instruction.\nClobbers: Through INIT_GAME_RUN, the whole game state.\nHardware changes: None here."
   },
   {
    "address": 5337,
@@ -12676,7 +12676,7 @@
   {
    "address": 5350,
    "type": "line",
-   "text": "INIT_GAME_RUN ($14E6)\nPurpose: The real initialisation body: reset the whole state block, pull in a story part if one was previously loaded, and then set up the starting room.\nInputs: LOADED_PART_NO ($5E) records whether a part other than the resident one is required.\nOutputs: State arrays reset by INIT_GAME_STATE; the required part loaded if LOADED_PART_NO is non-zero; control tail-jumps to SETUP_CURRENT_ROOM, which describes the room and returns to the caller of INIT_GAME.\nAssumptions: Entered by jump from INIT_GAME and by fall-through from the unreferenced confirmation block, so it is a genuine shared entry. The display, IRQ and banking are assumed already established.\nClobbers: A, X, Y, flags, the whole state block, SCRIPT_PC, and all renderer and blitter scratch.\nHardware changes: Indirect only: a part load drives the display, CIA, interrupt and banking registers through SHOW_PART_LOAD_SCREEN."
+   "text": "INIT_GAME_RUN ($14E6)\nPurpose: The real initialisation body: reset the whole state block, load a part unless Part 1 is already in memory, and then set up the starting room.\nInputs: LOADED_PART_NO ($5E), the part in memory: 0 for Part 1, 1 or 2 for a later part, $FF after the opening, when none is.\nOutputs: State arrays reset by INIT_GAME_STATE; SHOW_PART_LOAD_SCREEN called if LOADED_PART_NO is non-zero: it asks for Part one but loads the next file by name, PART 1 after the opening and PART 3 or the missing PART 4 after a later part; control tail-jumps to SETUP_CURRENT_ROOM, which describes the room and returns to the caller of INIT_GAME.\nAssumptions: Entered by jump from INIT_GAME and by fall-through from the unreferenced confirmation block, so it is a genuine shared entry. The display, IRQ and banking are assumed already established.\nClobbers: A, X, Y, flags, the whole state block, SCRIPT_PC, and all renderer and blitter scratch.\nHardware changes: Indirect only: a part load drives the display, CIA, interrupt and banking registers through SHOW_PART_LOAD_SCREEN."
   },
   {
    "address": 5350,
@@ -12686,7 +12686,7 @@
   {
    "address": 5353,
    "type": "side",
-   "text": "a part loaded? -> fetch it"
+   "text": "Part 1 in memory (LOADED_PART_NO = 0)? -> skip the load"
   },
   {
    "address": 5360,
@@ -12711,7 +12711,7 @@
   {
    "address": 5374,
    "type": "line",
-   "text": "INIT_GAME_STATE ($14FE)\nPurpose: Reset the serialized adventure state to its initial values: clear the runtime illustration records, select part 0 and room 1, copy the initial object-location template over the live array, clear all flags and counters, and light the starting room.\nInputs: INITIAL_OBJECT_LOCATIONS ($226C) and OBJECT_COUNT ($22A3).\nOutputs: $2941 and CURRENT_ROOM_GRAPHIC_ID ($2942) cleared; the six visible-record source-pointer high bytes at $2946, $294C, $2952, $2958, $295E and $2964 cleared, which deactivates all six records without touching their other fields; CURRENT_PART_NO ($2940) = 0; CURRENT_ROOM ($293F) = 1; OBJECT_COUNT location bytes copied; the 48 bytes of OBJ_FLAGS ($290F-$293E) cleared; OBJ_FLAGS[7] set to 1 so the first room is lit.\nAssumptions: Only the high byte of each visible record's source pointer is cleared, because that byte is the record's enable flag; the row, column, height and width fields keep whatever they held. The flag clear loop covers $30 bytes, which spans both the flag and counter regions.\nClobbers: A, X, Y, flags, and the whole state block.\nHardware changes: None; ordinary RAM only."
+   "text": "INIT_GAME_STATE ($14FE)\nPurpose: Reset the serialized adventure state to its initial values: clear the runtime illustration records, select part 0 and room 1, copy the initial object-location template over the live array, clear all flags and counters, and light the starting room.\nInputs: INITIAL_OBJECT_LOCATIONS ($226C) and OBJECT_COUNT ($22A3).\nOutputs: $2941 and CURRENT_ROOM_GRAPHIC_ID ($2942) cleared; the six visible-record source-pointer high bytes at $2946, $294C, $2952, $2958, $295E and $2964 cleared, which deactivates all six records without touching their other fields; CURRENT_PART_NO ($2940) = 0; CURRENT_ROOM ($293F) = 1; OBJECT_COUNT location bytes copied; the 32 flags (OBJ_FLAGS, $290F-$292E) and 16 counters (OBJ_COUNTERS, $292F-$293E), 48 bytes, cleared; OBJ_FLAGS[7] set to 1 so the first room is lit.\nAssumptions: Only the high byte of each visible record's source pointer is cleared, because that byte is the record's enable flag; the row, column, height and width fields keep whatever they held. The flag clear loop covers $30 bytes, which spans both the flag and counter regions.\nClobbers: A, X, Y, flags, and the whole state block.\nHardware changes: None; ordinary RAM only."
   },
   {
    "address": 5376,
@@ -12801,7 +12801,7 @@
   {
    "address": 5603,
    "type": "line",
-   "text": "RESOLVE_NOUN ($15E3)\nPurpose: Map a parsed noun token to the object it names. Subtracts the noun token base $32, scans the noun-to-object map for that value, and returns the object's current location together with its icon slot index.\nInputs: A = parsed noun token; NOUN_TO_OBJECT_INDEX ($22A4) is an $FF-terminated map from object slot to noun value.\nOutputs: On success carry is set, A holds OBJECT_LOCATIONS[slot], Y holds the object slot index and CURRENT_OBJECT_INDEX ($5C) holds the icon slot index. On failure carry is clear and A is meaningless.\nAssumptions: Carry is part of the API: callers must not treat A as a location when carry is clear. The map index and the location index are the same value, while the icon index is the map position, so the three id spaces are deliberately distinct.\nClobbers: A, Y, flags, SCRATCH_BYTE ($02), CURRENT_OBJECT_INDEX.\nHardware changes: None."
+   "text": "RESOLVE_NOUN ($15E3)\nPurpose: Map a parsed noun token to the object it names. Subtracts the noun token base $32, scans the noun-to-object map for that value, and returns the object's current location together with its icon slot index.\nInputs: A = parsed noun token; NOUN_TO_OBJECT_INDEX ($22A4) is an $FF-terminated map from icon slot (the position) to object index (the value, noun token - $32).\nOutputs: On success carry is set, A holds OBJECT_LOCATIONS[slot], Y holds the object slot index and CURRENT_OBJECT_INDEX ($5C) holds the icon slot index. On failure carry is clear and A is meaningless.\nAssumptions: Carry is part of the API: callers must not treat A as a location when carry is clear. The object index searched for is also the index into OBJECT_LOCATIONS, and the icon slot is the position where it is found; the first match wins, so object 0, listed at positions 0, 4, 5, 23, 24, 27, 29, 30 and 31, always gets position 0, and an object not in the map cannot be resolved.\nClobbers: A, Y, flags, SCRATCH_BYTE ($02), CURRENT_OBJECT_INDEX.\nHardware changes: None."
   },
   {
    "address": 5604,
@@ -12811,12 +12811,12 @@
   {
    "address": 5610,
    "type": "side",
-   "text": "scan NOUN_TABLE for a match"
+   "text": "scan NOUN_TO_OBJECT_INDEX for the object index"
   },
   {
    "address": 5627,
    "type": "side",
-   "text": "Cache the noun-to-object lookup result as CURRENT_OBJECT_INDEX."
+   "text": "Cache the map position, the object's icon slot, as CURRENT_OBJECT_INDEX."
   },
   {
    "address": 5632,
@@ -12861,7 +12861,7 @@
   {
    "address": 5698,
    "type": "line",
-   "text": "Low operand byte of the condition-handler JSR at $1641; $1638 writes it from CONDITION_DISPATCH_TABLE. $1643 is the high byte, written at $163E. Handler carry selects continuation or skip-actions. Following code reads action opcodes: $FF ends, $FE starts the next rule, and $80-$FE backs the script pointer up for condition processing."
+   "text": "Low operand byte of the condition-handler JSR at $1641; $1638 writes it from CONDITION_DISPATCH_TABLE. $1643 is the high byte, written at $163E. Handler carry selects continuation or skip-actions. Following code reads action opcodes: $FF ends, $FE starts the next rule, and $80-$FD backs the script pointer up for condition processing."
   },
   {
    "address": 5699,
@@ -12911,7 +12911,7 @@
   {
    "address": 5786,
    "type": "line",
-   "text": "Low operand byte of the action-handler JSR at $1699, written by $1690 from the action dispatch table. $169B is the high byte, written at $1696. After the handler returns, execution resumes RUN_SCRIPT; unsuccessful-condition processing skips action bytes until a separator or condition opcode."
+   "text": "Low operand byte of the action-handler JSR at $1699, written by $1690 from the action dispatch table. $169B is the high byte, written at $1696. After the handler returns, $169C goes back to read the next action opcode ($1649); after a false condition, SCRIPT_SKIP_ACTIONS ($169F) skips bytes up to the next $FE (next rule) or $FF (end of script)."
   },
   {
    "address": 5787,
@@ -13156,7 +13156,7 @@
   {
    "address": 7279,
    "type": "line",
-   "text": "GLOBAL_TURN_SCRIPT ($1C6F-$1CAF) - resident every-turn housekeeping bytecode, the first\nscript RUN_TURN_SCRIPTS runs ($148C) on each pass of MAIN_LOOP ($0409).\nThis is interpreted data, not 6510 code. RUN_SCRIPT ($1605) walks it through SCRIPT_PC\n($4E/$4F). Opcodes $80-$89 are conditions, dispatched through CONDITION_DISPATCH_TABLE\n($1193); each returns carry, and a false condition jumps to the skip loop at $169F, so\nconsecutive conditions AND together. Opcodes $00-$7F are actions via ACTION_DISPATCH_TABLE\n($0DE3). $FE separates rules, $FF ends the script.\nWhat it does each turn:\n- once only (OBJ_FLAGS[6]), sets Atreyu's strength OBJ_COUNTERS[1] = 50 and lights flag 7\n- warns at strength 10 (sentence $1B) and kills at 0 (sentence $1C, pause, RESTART)\n- grants OBJ_FLAGS[$11] while the Black Velvet Cape (object $1A) is carried\n- keeps flag 7 set while the Glowglobe (object $13) is carried; flag 7 is the same \"room\nlit\" flag DESCRIBE_CURRENT_ROOM ($107E) tests before printing anything\n- counts turns in the dark in OBJ_COUNTERS[6] and kills at 4 (sentence $41)\n- drains strength each turn while poisoned (OBJ_FLAGS[8], sentence $40)\nIt ends with action $07 (RETURN_SKIP_CALLER), which pops the interpreter's self-modified JSR\nframe and returns straight to RUN_TURN_SCRIPTS, so the trailing $FF is unreachable.\nBeing below $2F00, it survives every part load: each part's file covers $2F00-$95FF\nonly."
+   "text": "GLOBAL_TURN_SCRIPT ($1C6F-$1CAF) - resident every-turn housekeeping bytecode, the first\nscript RUN_TURN_SCRIPTS runs ($148C) on each pass of MAIN_LOOP ($0409).\nThis is interpreted data, not 6510 code. RUN_SCRIPT ($1605) walks it through SCRIPT_PC\n($4E/$4F). Opcodes $80-$89 are conditions, dispatched through CONDITION_DISPATCH_TABLE\n($1193); each returns carry, and a false condition jumps to the skip loop at $169F, so\nconsecutive conditions AND together. Opcodes $00-$7F are actions via ACTION_DISPATCH_TABLE\n($0DE3). $FE separates rules, $FF ends the script.\nWhat it does each turn:\n- once only (OBJ_FLAGS[6]), sets Atreyu's strength OBJ_COUNTERS[1] = 50 and lights flag 7\n- at strength 10 takes a point and warns (sentence $1B); kills at 0 (sentence $1C, pause, RESTART)\n- sets OBJ_FLAGS[$11] the first time the Black Velvet Cape (object $1A) is carried; nothing clears\nit, and nothing but this rule's own test reads it\n- keeps flag 7 set while the Glowglobe (object $13) is carried; flag 7 is the same \"room\nlit\" flag DESCRIBE_CURRENT_ROOM ($107E) tests before printing anything\n- counts turns in the dark in OBJ_COUNTERS[6] and kills at 4 (sentence $41)\n- drains strength each turn while poisoned (OBJ_FLAGS[8], sentence $40)\nIt ends with action $07 (RETURN_SKIP_CALLER), which pops the interpreter's self-modified JSR\nframe and returns straight to RUN_TURN_SCRIPTS, so the trailing $FF is unreachable.\nBeing below $2F00, it survives every part load: each part's file covers $2F00-$95FF\nonly."
   },
   {
    "address": 7344,
@@ -13256,7 +13256,7 @@
   {
    "address": 7736,
    "type": "line",
-   "text": "Sentence $12: \"Error!\" Ends with @ at $1E3E. Printed by the code at $04BD."
+   "text": "Sentence $12: \"Error!\" Ends with @ at $1E3E. Printed by the code at $04BD, reached only from the disk load and save code, which nothing calls, so it never appears."
   },
   {
    "address": 7743,
@@ -13291,7 +13291,7 @@
   {
    "address": 7825,
    "type": "line",
-   "text": "Sentence $19: \"There is no noun in that sentence!\" Ends with @ at $1EA4. Printed by the code at $0EB4 and the code at $0F06."
+   "text": "Sentence $19: \"There is no noun in that sentence!\" Ends with @ at $1EA4. Printed by the code at $0EB4 and the code at $0F06 when NOUN_ID is 0, which never happens (the parser leaves $FA or a nonzero token, and no script sets 0), so it never appears."
   },
   {
    "address": 7845,
@@ -13396,7 +13396,7 @@
   {
    "address": 8260,
    "type": "line",
-   "text": "Sentence $2E: \"Restore a saved game?\" Ends with @ at $2056. Printed by the code at $14D9."
+   "text": "Sentence $2E: \"Restore a saved game?\" Ends with @ at $2056. Printed by the code at $14D9, which nothing reaches (INIT_GAME jumps over it), so it never appears."
   },
   {
    "address": 8279,
@@ -13501,7 +13501,7 @@
   {
    "address": 8791,
    "type": "line",
-   "text": "Sentence $43: \"Please enter the filename\" Ends with @ at $226B. Printed by the code at $04C8."
+   "text": "Sentence $43: \"Please enter the filename\" Ends with @ at $226B. Printed by the code at $04C8, called only from DISK_LOAD_GAME ($0463), which nothing calls, so it never appears."
   },
   {
    "address": 8812,
@@ -13511,7 +13511,7 @@
   {
    "address": 8866,
    "type": "line",
-   "text": "$FF sentinel following the initial object-state image; the copy count is stored separately at $22A3."
+   "text": "$FF after the initial object-state image; nothing reads it, because the copy stops at the count stored separately at $22A3."
   },
   {
    "address": 8867,
@@ -13521,7 +13521,7 @@
   {
    "address": 8868,
    "type": "line",
-   "text": "Maps parsed object noun ids ($32-based) to object-state indices; searched linearly by the noun resolver."
+   "text": "Maps icon slots to objects: the byte at position n is the object index (noun token - $32) whose icon is slot n, $FF-terminated; RESOLVE_NOUN ($15E3) searches it linearly for an object and takes the first position that holds it as the icon slot, so object 0, at positions 0, 4, 5, 23, 24, 27, 29, 30 and 31, always gets slot 0."
   },
   {
    "address": 8904,
@@ -14206,7 +14206,7 @@
   {
    "address": 10427,
    "type": "line",
-   "text": "Start address of the serialized game-state block used by KERNAL LOAD/SAVE."
+   "text": "Start address of the serialized game-state block, read by the KERNAL LOAD and SAVE code (DISK_LOAD_GAME $046E, DISK_SAVE_GAME $0497), which nothing calls: the SAVE and LOAD actions return at once."
   },
   {
    "address": 10428,
@@ -14216,7 +14216,7 @@
   {
    "address": 10429,
    "type": "line",
-   "text": "Exclusive end address of the serialized game-state block used by KERNAL SAVE."
+   "text": "Exclusive end address of the serialized game-state block, read only by DISK_SAVE_GAME ($04A6) for KERNAL SAVE; nothing calls that routine."
   },
   {
    "address": 10430,
@@ -14261,7 +14261,7 @@
   {
    "address": 10563,
    "type": "line",
-   "text": "Six six-byte records for the icons drawn over the backdrop at the right of the picture band: records 0-4 for the objects carried and record 5 for the companion. Each record is row, column, source address (low, high), height and width, in character cells, the layout of the picture records at $0BF9; a source high byte of 0 marks an unused record. TAKE puts the icon of the object taken into the first unused one of records 0-4 ($0F3A) and DROP clears the record that holds the dropped object's icon ($0EDA); RENDER_ROOM_GRAPHICS ($0570) draws every record in use. The records end the block SAVE writes ($28BF-$2966). Record 0: row 5, column 21 of the picture band, 4 by 4 cells."
+   "text": "Six six-byte records for the icons drawn over the backdrop at the right of the picture band: records 0-4 for the objects carried and record 5 for the companion. Each record is row, column, source address (low, high), height and width, in character cells, the layout of the picture records at $0BF9; a source high byte of 0 marks an unused record. TAKE puts the icon of the object taken into the first unused one of records 0-4 ($0F3A) and DROP clears the record that holds the dropped object's icon ($0EDA); RENDER_ROOM_GRAPHICS ($0570) draws every record in use. The records end the block DISK_SAVE_GAME would write ($28BF-$2966), though nothing calls it. Record 0: row 5, column 21 of the picture band, 4 by 4 cells."
   },
   {
    "address": 10566,
@@ -14301,12 +14301,12 @@
   {
    "address": 10599,
    "type": "line",
-   "text": "Single pad byte at the exclusive end of the serialized save block.\nDISK_SAVE_END_ADDR ($28BD) holds $2967 and DISK_LOAD_ADDR ($28BB) holds $28BF, so KERNAL SAVE\n($FFD8, called at $04AC with the start address in the zero-page pair $FE/$FF and the end\naddress in X/Y) writes $28BF-$2966 inclusive - ending exactly on the last byte of\nVISIBLE_OBJECT_RECORDS[5]. Not bytecode; PART_1_START_SCRIPT begins at the next byte."
+   "text": "Single pad byte at the exclusive end of the serialized save block.\nDISK_SAVE_END_ADDR ($28BD) holds $2967 and DISK_LOAD_ADDR ($28BB) holds $28BF, so KERNAL SAVE\n($FFD8, called at $04AC in DISK_SAVE_GAME, which nothing calls, with the start address in the zero-page pair $FE/$FF and the end\naddress in X/Y) would write $28BF-$2966 inclusive - ending exactly on the last byte of\nVISIBLE_OBJECT_RECORDS[5]. Not bytecode; PART_1_START_SCRIPT begins at the next byte."
   },
   {
    "address": 10600,
    "type": "line",
-   "text": "Part 1's start script, run by SETUP_CURRENT_ROOM through PART_INIT_SCRIPT_POINTERS: 08 1B prints event $1B, Cairon telling the peoples of Fantasia they need a hero; 10 04 shows picture 4, the gathering at the Ivory Tower; 1A waits for Space; FF ends it."
+   "text": "Part 1's start script, run by SETUP_CURRENT_ROOM through PART_INIT_SCRIPT_POINTERS: 08 1B prints event $1B, Cairon telling the peoples of Fantasia they need a hero; 10 04 shows picture 4, the gathering at the Ivory Tower; 1A prints \"Paused - hit space to continue!\" and waits for Space; FF ends it."
   },
   {
    "address": 10605,
@@ -14316,12 +14316,12 @@
   {
    "address": 10606,
    "type": "line",
-   "text": "Part 2's start script: event 0 with picture 22 (Falkor in flight), event 1 with picture 23 (Spook City from the air), event 2 with picture 24 (Atreyu falling), each followed by 1A, a wait for Space; FF ends it. The events and pictures are part 2's, in memory once it has loaded."
+   "text": "Part 2's start script: event 0 with picture 22 (Falkor in flight), event 1 with picture 23 (Spook City from the air), event 2 with picture 24 (Atreyu falling), each followed by 1A, which prints \"Paused - hit space to continue!\" and waits for Space; FF ends it. The events and pictures are part 2's, in memory once it has loaded."
   },
   {
    "address": 10622,
    "type": "line",
-   "text": "Part 3's start script: event 0, the debris of Fantasia around the Ivory Tower, with picture 37 (asteroids drifting in space), then 1A, a wait for Space, and FF."
+   "text": "Part 3's start script: event 0, the debris of Fantasia around the Ivory Tower, with picture 37 (asteroids drifting in space), then 1A, which prints \"Paused - hit space to continue!\" and waits for Space, and FF."
   },
   {
    "address": 10628,
@@ -14491,7 +14491,7 @@
   {
    "address": 11350,
    "type": "line",
-   "text": "The action for FLY anything (rule 41): if flag 1 is set: move in the direction given as the noun, stop; if flag 0 is set: print sentence 38 (\"You can't fly on Artax !\"), stop; print sentence 23 (\"He's not with you !\")."
+   "text": "The action for FLY anything (rule 41): if flag 1 is set: move in the direction given as the noun, stop; if flag 0 is set: print sentence 38 (\"You can't fly on Artax !\"), stop; print sentence 23 (\"He's not with you !\"). A noun that is not a direction, or none, makes the move print sentence 37 (\"I don't understand that !\") instead."
   },
   {
    "address": 11364,
@@ -14511,7 +14511,7 @@
   {
    "address": 11465,
    "type": "line",
-   "text": "The action for RIDE anything (rule 47): if flag 0 is set: move in the direction given as the noun, stop; if flag 1 is set: move in the direction given as the noun, stop; print sentence 39 (\"You've got nothing to ride on !\")."
+   "text": "The action for RIDE anything (rule 47): if flag 0 is set: move in the direction given as the noun, stop; if flag 1 is set: move in the direction given as the noun, stop; print sentence 39 (\"You've got nothing to ride on !\"). A noun that is not a direction, or none, makes either move print sentence 37 (\"I don't understand that !\") instead."
   },
   {
    "address": 11478,
@@ -16991,7 +16991,17 @@
   {
    "address": 10593,
    "type": "line",
-   "text": "Record 5, the companion's: row 5, column 28 of the picture band, 4 by 4 cells, in the middle of the lower row. Only the scripts' icon action (SCRIPT_SET_OBJECT_GRAPHIC $113D) fills or clears it, with Artax's or Falkor's icon; TAKE and DROP look at records 0-4 only."
+   "text": "Record 5, the companion's: row 5, column 28 of the picture band, 4 by 4 cells, in the middle of the lower row. Only the scripts' icon action (SCRIPT_SET_OBJECT_GRAPHIC $113D) fills it, with Artax's or Falkor's icon; that action and INIT_GAME_STATE ($1515) clear it; TAKE and DROP look at records 0-4 only."
+  },
+  {
+   "address": 5300,
+   "type": "line",
+   "text": "High byte of the offset into the part's room-script table when the doubled part-relative room number carries past $FF."
+  },
+  {
+   "address": 5304,
+   "type": "line",
+   "text": "Add the part's room-script table pointer ($2F04) to the doubled part-relative room number and load that room's script address into SCRIPT_PC."
   }
  ]
 }

@@ -156,8 +156,8 @@ sound among it, is in that part's `parts/<id>/facts.md`.
   carried, and 5 stops it with "You've got a full load already!"
   ($0F22, sentence $0B).
 - **Strength.** The resident turn script sets Atreyu's strength,
-  counter 1, to 50 once, warns at 10 ("Atreyu is very weak!") and ends
-  the game at 0 ($1C6F). Food restores it (sentence $18). Poison, flag
+  counter 1, to 50 once, warns at 10 ("Atreyu is very weak!"), taking
+  one more point as it does, and ends the game at 0 ($1C6F). Food restores it (sentence $18). Poison, flag
   8, takes strength each turn until the apple cures it (sentences $40,
   $36).
 - **Light.** Flag 7 is light. A dark room prints "It's too dark to see
