@@ -159,7 +159,7 @@
     "A leftover text editor and fill saved with the game; nothing calls it"
    ],
    [
-    2077,
+    2078,
     2111,
     "A leftover loader fragment after the BCS start-up"
    ]
@@ -8235,7 +8235,7 @@
   {
    "address": 1344,
    "type": "line",
-   "text": "Three staged 64-byte rope sprites copied to $6B00-$6BBF by the frame IRQ."
+   "text": "The second and third of the three staged 64-byte rope sprites, $0540-$057F and $0580-$05BF; the first is at $0500. The frame IRQ copies all three to $6B00-$6BBF ($353F)."
   },
   {
    "address": 1472,
@@ -8245,7 +8245,7 @@
   {
    "address": 1478,
    "type": "line",
-   "text": "Bytes from $05C6 to $07F7: the game's work space beside the staged rope sprites and coordinates, and the rest of the screen page at $0400, which the game never shows in play."
+   "text": "Bytes from $05C6 to $07F7, which nothing in the game reads or writes: the rest of the 1000-byte screen at $0400, to $07E7, still holding spaces, and the 16 bytes after it, $07E8-$07F7, which hold the power-on pattern. The game never shows this screen in play."
   },
   {
    "address": 2040,
@@ -8260,7 +8260,7 @@
   {
    "address": 2049,
    "type": "line",
-   "text": "The BCS crackers' one-line BASIC program, 10 SYS2061: link $080B, line number 10, the SYS token $9E and \"2061\", then the two zero bytes that end the program. SYS 2061 runs the start-up at $080D. In play, $0801-$0807 hold rows two to eight of the keyboard matrix (see $0800)."
+   "text": "The BCS crackers' one-line BASIC program, 10 SYS2061: link $080B, line number 10, the SYS token $9E and \"2061\", the zero that ends the line at $080A, then the two zero bytes at $080B that end the program. SYS 2061 runs the start-up at $080D. In play, $0801-$0807 hold rows two to eight of the keyboard matrix (see $0800)."
   },
   {
    "address": 2061,
@@ -8270,7 +8270,7 @@
   {
    "address": 2077,
    "type": "line",
-   "text": "35 bytes of code nothing runs, after the start-up's last instruction: the end of a store to $01, a short delay loop, and copies of the interrupt vector $0314/$0315 into $08A0-$08A3. They are what was in memory here when the file was saved, from an earlier loader."
+   "text": "34 bytes of code nothing runs, $081E-$083F, after the start-up's last instruction, the JMP $A000 whose last byte is here at $081D. They hold the end of a store to $01, a short delay loop, copies of the interrupt vector $0314/$0315 into $08A0-$08A3, and LDA #$00 with the first byte of a store that the room copy at $0840 cuts off. They are what was in memory here when the file was saved, from an earlier loader."
   },
   {
    "address": 2112,
@@ -8285,7 +8285,7 @@
   {
    "address": 2376,
    "type": "line",
-   "text": "Seven-record guardian work area for the current room."
+   "text": "Guardian records 2 to 7 of the current room, $0948-$0977, eight bytes each; the first record is at $0940."
   },
   {
    "address": 2424,
@@ -8335,7 +8335,7 @@
   {
    "address": 2881,
    "type": "line",
-   "text": "The start of a text-buffer editor that was in memory when the game was saved, and is loaded with it: nothing in the game calls it. It keeps a command line at $0100, reads an optional decimal repeat count, dispatches the commands @ to Z through the table at $0C60, and keeps its buffer pointers in $5D/$5E and $5F/$60. Some of the routines it calls, at $090C and from $1000, are now the game's own code, so it could not run as it stands."
+   "text": "The first surviving instruction of a text-buffer editor that was in memory when the game was saved, and is loaded with it: nothing in the game calls it. It keeps a command line at $0100, reads an optional decimal repeat count, dispatches the commands @ to Z through the table at $0C60, and keeps its buffer pointers in $5D/$5E and $5F/$60. Part of it lay below here: it jumps to $0912 and $0915 and its K command is at $090C, all now in the current room's copy at $0840-$093F. $10CB and several command routines from $101F up are now the game's own code, so it could not run as it stands."
   },
   {
    "address": 2886,
@@ -8345,12 +8345,12 @@
   {
    "address": 2948,
    "type": "line",
-   "text": "Saves command index $65 into $6E and calls the next-character helper, preserving its flags when restoring the saved index."
+   "text": "Saves Y in $6E, reads the next command character through $0B8E, then loads Y back from $6E, keeping the flags $0B8E left (PHP/PLP). Only Y is put back: the command index $65 stays moved on. Nothing in the surviving code calls it."
   },
   {
    "address": 2958,
    "type": "line",
-   "text": "Reads $0100,Y using the index $65, moves the index on and compares the character with the terminator, byte 1. An index of 40 or more branches to the error path."
+   "text": "Reads $0100,Y using the index $65, moves the index on and compares the character with the terminator, byte 1. An index of 40 or more branches to the overflow path at $0BAC, which clears the command line and sets the status CO."
   },
   {
    "address": 2972,
@@ -8415,7 +8415,7 @@
   {
    "address": 3262,
    "type": "line",
-   "text": "Four short trampolines that use the N flag to choose between opposite editing operations: moving, moving a byte or moving a line. The command tables above reach them."
+   "text": "Four short trampolines, each choosing by the N flag between two opposite operations: $0CBE between dropping the byte before the gap ($0CDE) and the byte after it ($0D21); $0CC6 between moving one byte forward ($0DC3) and back ($0DA1); $0CCE between moving forward past the next return ($0DE6) and back to the start of the line ($0DB5); $0CD6 between going to the start ($0D8B) and to the end ($0D9A) of the text. Only the table at $0C20 points at them."
   },
   {
    "address": 3294,
@@ -8425,7 +8425,7 @@
   {
    "address": 3330,
    "type": "line",
-   "text": "Moves backward until it finds a byte $0D (a carriage return), using $0CDE, with the same lower-bound handling."
+   "text": "Steps $5D/$5E back with $0CDE once without testing, then again until the byte at $5D is $0D (a carriage return) or the lower bound stops it with carry set. On a return it goes to $0CAF, which in copy mode takes the return back off the copy buffer ($0E7D) and moves $5D/$5E forward one byte, so the pointer ends just after the return, carry clear. $5F/$60 does not move, so the bytes passed leave the text: it deletes back to the start of the line."
   },
   {
    "address": 3350,
@@ -8455,7 +8455,7 @@
   {
    "address": 3439,
    "type": "line",
-   "text": "Reads one command character through $0B8E and rejects byte-1 spaces through $0D6B (TXA; JMP $0BB9), the editor error path. Tests ASCII 0-9 and returns a digit with carry clear; other characters return carry set for the hex helper. The repeat parser at $0BC5 is the separate routine that skips byte-1 spaces."
+   "text": "Reads one command character through $0B8E. Byte 1 and any character below ASCII 0 ($30) are rejected through $0D6B (TXA; JMP $0BB9), the editor error path. A digit 0-9 comes back as its value with carry clear; a character from $3A up comes back unchanged with carry set, for the hex helper. The repeat parser at $0BC5 is the separate routine that skips byte-1 spaces."
   },
   {
    "address": 3453,
@@ -8470,7 +8470,7 @@
   {
    "address": 3507,
    "type": "line",
-   "text": "Sets X=0, transfers backward until carry is set or byte $0D is encountered, then joins the forward helper entry."
+   "text": "Sets X=0 and transfers one byte backward with $0DA1 without testing, then keeps transferring backward until carry is set (the lower bound) or the byte moved is $0D. At the lower bound it returns with carry set. On a $0D it falls into the forward helper at $0DC1, which moves the return forward again, so the pointers end just after the previous return."
   },
   {
    "address": 3521,
@@ -8480,12 +8480,12 @@
   {
    "address": 3558,
    "type": "line",
-   "text": "Repeats $0DC3 until its returned byte is $0D or the upper-bound condition stops it."
+   "text": "Repeats $0DC3 until the byte it moved is $0D or $0DC3 returns carry set. Carry is set at the upper bound, and also in copy mode when $0E7D finds the copy pointer at its base: it then turns copy mode off and the move stops."
   },
   {
    "address": 3572,
    "type": "line",
-   "text": "Toggles bits of $6D with EOR $78 and derives $63 from $11 and the shifted sign bit. What the flags controlled is unknown."
+   "text": "Sets $63 to $11, toggles bits 3-6 of $6D (EOR with the constant $78), and halves $63 to $08 when bit 6 of the new $6D is set. What the flags controlled is unknown."
   },
   {
    "address": 3588,
@@ -8525,12 +8525,12 @@
   {
    "address": 3778,
    "type": "line",
-   "text": "The editor's initialiser: clears the trampoline's low byte, sets a flag, writes RTS ($60) at $B000, copies eight settings from $0EDC to $78-$7F and jumps to $0810. In this file $B000 is a room record and $0810 is the BCS start-up, so it would wreck the game if called; nothing calls it."
+   "text": "The editor's initialiser: clears $74, the first byte of the trampoline that $0B6E calls (its address goes in $75/$76), sets $56, the setting the @ command changes, to 9, writes RTS ($60) at $B000, copies eight settings from $0EDC to $78-$7F and jumps to $0810. In this file $B000 is the first byte of room 0's record and $0810 falls inside the BCS start-up, at the second byte of its STA $033C at $080F, so it would wreck the game if called; nothing calls it."
   },
   {
    "address": 3804,
    "type": "line",
-   "text": "Eight settings the initialiser at $0EC2 copies to $78-$7F: 00 13 ED 27 50 54 54 B0. What each one meant is unknown."
+   "text": "Eight settings the initialiser at $0EC2 copies to $78-$7F: 00 13 ED 27 50 54 54 B0. The last four are page bounds the surviving routines use: $7C ($50) is the copy buffer's base ($0E74, $0E7D, $0E8D), $7D ($54) the page the copy pointer may not reach ($0CF2), $7E ($54) the text's lower bound ($0BFA, $0CDE) and $7F ($B0) its upper bound ($0BFA, $0DC3, $0E0B). Nothing that survives reads $78-$7B, and what they meant is unknown."
   },
   {
    "address": 3814,
@@ -8545,7 +8545,7 @@
   {
    "address": 3841,
    "type": "line",
-   "text": "Fill after the cut-off editor routine: 63 bytes of $FF from $0F01 to $0F3F, then 64 zero bytes to $0F7F."
+   "text": "Fill after the cut-off editor routine, in runs of $FF and $00: 31 bytes of $FF from $0F01 to $0F1F, 32 zero bytes to $0F3F, 32 bytes of $FF to $0F5F and 32 zero bytes to $0F7F."
   },
   {
    "address": 3968,
