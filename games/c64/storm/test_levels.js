@@ -8,6 +8,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'levels.html';
+g.lib('cpu6502');                   // the 6502 the storm-machine block runs on, as the page loads it
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 g.sameBlock('storm-machine', page);   // every page's copy, and the page tested

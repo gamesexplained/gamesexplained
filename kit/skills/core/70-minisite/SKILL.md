@@ -106,12 +106,21 @@ address links into the Source tab, and the house style in `kit/style.md`.
    `period`, and port one call to each `play()`: the player keeps the
    game's tempo, where mapping calls to frames in the port makes a
    note's length wander by up to a frame. The script's header gives the
-   driver's contract and what the model leaves out. The game's own driver
-   run on a 6502 core inside `createDriver` counts as a port, its code and
-   tables embedded in the page as data like any widget's. Test the core as
-   a port is tested: every tune, frame by frame, against the same bytes
-   run on `kit/c64/cpu6502.js`, with every write compared. Say in the
-   caption that the page runs the game's own player. The filter is off
+   driver's contract and what the model leaves out. The game's own driver,
+   run inside `createDriver` on the kit's 6502, counts as a port, its code
+   and tables embedded in the page as data like any widget's. Write no
+   6502 of your own: the page loads the kit's after `sid.js`, as
+   `../../lib/cpu6502.js`, and `sid.js` hands it to `createDriver` as its
+   second argument, `C64Cpu`, in the AudioWorklet too, where the driver
+   reaches nothing outside its own text.
+   `new C64Cpu.CPU(memory, { port: 0x35, io })` gives a 6502 whose `io`
+   answers the chips at `$D000`-`$DFFF`, and its `call(entry, regs)` runs
+   a routine to its return. What the test then checks is what the driver
+   adds: its entry points, its registers and its chips. Hand
+   `createDriver` the module, `require('<repo>/kit/c64/cpu6502.js')`, and
+   compare every write of every tune, frame by frame, with the same calls
+   made on the simulator as the game makes them. Say in the caption that
+   the page runs the game's own player. The filter is off
    unless the page passes `filter: '6581'` (or `'8580'`) to `mount`,
    which also shows a switch to compare it with no filter; pass it when
    the game sets the filter,
@@ -154,8 +163,12 @@ its music or its maps can put that first instead.
   glyphs, screens and sprites, and rebuilds the game image from
   `listing.json`, so a page draws from the bytes the Source tab shows;
   `../../lib/sid.js` plays a music driver's port through a model of the
-  SID. Those work only in the built site, served as in "Check it in a
-  browser" below. A widget the next game could use as it is belongs
+  SID; `../../lib/cpu6502.js` is the kit's 6502 simulator,
+  `kit/c64/cpu6502.js`, as `C64Cpu`, for a widget that runs the game's
+  own code on the listing's bytes. A page never carries a 6502 of its
+  own, and a test hands a block the same one with `g.lib('cpu6502')`
+  (`kit/scripts/port_check.js`). Those work only in the built site,
+  served as in "Check it in a browser" below. A widget the next game could use as it is belongs
   there, not in the page. One that grew inside a page moves there with a
   test that the page still gives the same result.
 - A page draws from the listing through the loaders:
@@ -451,8 +464,8 @@ emulator is the original product shipped again, and it plays the same
 whether the listing is right or wrong. The maintainers have ruled on
 this: do not offer the choice to the contributor. The game's own code
 runs only in the tests, as the game the port is checked against (and a
-music driver on a 6502 core inside `createDriver` counts as a port, as
-"The sound" above says).
+music driver run inside `createDriver` on the kit's 6502 counts as a
+port, as "The sound" above says).
 
 This is a first-class part of the minisite, not an extra: a reader who
 can play the game while reading how it works understands it better than

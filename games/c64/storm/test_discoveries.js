@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // Hold the Discoveries page to the game's code. Its storm-machine block must be the one every page
-// carries, index.html's, which test_machine.js checks. Its storm-spell block (SPELL_STEPS) walks the spell bug on the page's
-// 6502; the same steps are run on the kit's simulator through a machine with the same calls
-// (enter, pass, hit, spell), over the bytes the page reads, and every byte of memory outside the
-// stack page must match after each step but the last. The last, the second scroll, must not return
-// on either. It exits 1 on any difference.
+// carries, index.html's, which test_machine.js checks. Its storm-spell block (SPELL_STEPS) walks the
+// spell bug on the page's machine (stormRooms); the same steps are run on the kit's simulator through
+// a machine of this test's own with the same calls (enter, pass, hit, spell), over the bytes the page
+// reads, and every byte of memory outside the stack page must match after each step but the last.
+// The last, the second scroll, must not return on either. It exits 1 on any difference.
 //   node games/c64/storm/test_discoveries.js [discoveries.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'discoveries.html';
+g.lib('cpu6502');                   // the 6502 the storm-machine block runs on, as the page loads it
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 g.sameBlock('storm-machine', page);   // every page's copy, and the page tested
@@ -20,7 +21,7 @@ const { SPELL_STEPS } = g.run(page, 'storm-spell', 'SPELL_STEPS');
 const ram = g.listing().ram.slice();
 
 // The same machine on the kit's simulator: each call starts with A, X and Y 0 and every flag
-// clear, as the page's 6502 does, and sfx_start returns at once
+// clear, as stormCore does, and sfx_start returns at once
 function simRooms(image) {
   const m = image.slice();
   const io = {

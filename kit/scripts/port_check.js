@@ -39,6 +39,8 @@
 //   folder of the last game() made, when a test makes more than one).
 // - g.lib(name, ...) loads site/lib/<name>.js, as the page's <script src> does: what it defines
 //   is on globalThis then (g.lib('c64') gives C64, and C64.load reads the folder).
+//   g.lib('cpu6502') gives C64Cpu, the 6502 the build serves from kit/c64/cpu6502.js (build.py,
+//   KIT_LIB), for a block that runs the game's own code on it.
 // - g.listing(file) gives { ram, has, names, byName, listing, bytes(a, n), sym(label) } from the
 //   folder's listing.json (or file, a path from the folder: 'parts/engine/listing.json'), as
 //   C64.load and Spectrum.load do, but at once: every byte the listing records, the rest 0, has[a]
@@ -98,6 +100,9 @@ function findBlock(src, name, isScript) {
   const end = marks.length ? start + Math.min(...marks) : src.length;
   return { start, end };
 }
+
+// The lib files the build serves from the kit (build.py, KIT_LIB), and the name each gives a page
+const KIT_LIB = { cpu6502: ['kit/c64/cpu6502.js', 'C64Cpu'] };
 
 function game(dir) {
   dir = path.resolve(dir);
@@ -183,7 +188,10 @@ function game(dir) {
   }
 
   function lib(...names) {
-    for (const name of names) require(path.join(ROOT, 'site', 'lib', name + '.js'));
+    for (const name of names) {
+      if (KIT_LIB[name]) globalThis[KIT_LIB[name][1]] = require(path.join(ROOT, KIT_LIB[name][0]));
+      else require(path.join(ROOT, 'site', 'lib', name + '.js'));
+    }
   }
 
   return { dir, root: ROOT, read, json, block, sameBlock, run, listing, lib };
@@ -196,7 +204,7 @@ function differ(a, b, ranges) {
   return -1;
 }
 
-module.exports = { game, differ, ROOT };
+module.exports = { game, differ, ROOT, KIT_LIB };
 
 if (require.main === module) {
   const args = process.argv.slice(2);

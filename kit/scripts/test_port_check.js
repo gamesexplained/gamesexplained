@@ -9,7 +9,7 @@
 // Exits 1 on any failure. node kit/scripts/test_port_check.js
 const fs = require('fs'), os = require('os'), path = require('path');
 const { spawnSync } = require('child_process');
-const { game, differ } = require('./port_check.js');
+const { game, differ, KIT_LIB } = require('./port_check.js');
 
 let fails = 0;
 // ok is true, or what went wrong instead (throws gives the message it got)
@@ -124,6 +124,18 @@ try {
   y[9] = 1;
   check('differ: the first difference', differ(x, y) === 9);
   check('differ: ranges include both ends', differ(x, y, [[0, 8]]) === -1 && differ(x, y, [[0, 3], [9, 9]]) === 9);
+
+  // ---- the kit's 6502, as a page loads it -----------------------------------------------------
+  g.lib('cpu6502');
+  check('lib: cpu6502 gives C64Cpu, the kit\'s simulator', globalThis.C64Cpu
+        && globalThis.C64Cpu.CPU === require(path.join(__dirname, '..', 'c64', 'cpu6502.js')).CPU);
+  const served = spawnSync('python3', ['-c', 'import json, build; print(json.dumps(build.KIT_LIB))'],
+                           { cwd: __dirname, encoding: 'utf8' });
+  let kitLib = null;
+  try { kitLib = JSON.parse(served.stdout); } catch (e) { /* checked below */ }
+  check('lib: g.lib knows the files the build serves from the kit, as it serves them', kitLib
+        && Object.keys(kitLib).length === Object.keys(KIT_LIB).length
+        && Object.entries(KIT_LIB).every(([n, [f]]) => kitLib[n + '.js'] === f), served.stdout + served.stderr);
 
   (async () => {
     g.lib('c64');

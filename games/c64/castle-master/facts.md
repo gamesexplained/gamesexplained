@@ -385,8 +385,9 @@ between music and effects, `K` cycles the keys collected and `Q` quits.
   the decrement reads back whatever the bus last held. *Live*: the
   controls were left at `$00`, `$FF` and `$FE`: voice 1 cleared, and the
   test bit set on voices 2 and 3.
-- `test_music.js` runs the page's copy of the driver against the kit's
-  6502 core on all 17 tunes, 16,457 frames, and every SID write matches.
+- `test_music.js` runs the page's driver, on the kit's 6502, against the
+  same calls made on the simulator directly, on all 17 tunes, 16,457
+  frames, and every SID write matches.
 
 ## The listing's error rate
 

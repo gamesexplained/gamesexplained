@@ -13,6 +13,7 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 require(path.join(ROOT, 'site/lib/c64.js'));
 const C64 = globalThis.C64;
 const g = game(__dirname);
+g.lib('cpu6502');                   // the 6502 the port's title music runs on, as play.html loads it
 const { StormPort } = g.run('reference/storm-port.js', 'storm-port', 'StormPort');
 const { StormPlay } = g.run('reference/storm-play.js', 'storm-play', 'StormPlay');
 const DRAWS = +process.argv[2] || 600;

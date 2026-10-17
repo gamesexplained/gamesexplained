@@ -82,7 +82,7 @@ class Machine:
         reads $D000, so it gave the RAM there with an Ultimax cartridge attached (the power-on
         pattern, line 256; Clowns, 11 October 2026) and with the I/O banked out ($01 = $34:
         zeros and line 0, which agreed with the chip's line at the top of the frame; Space Rogue,
-        15 October 2026)."""
+        15 October 2026). Reported upstream as barryw/vice-mcp#33 (17 October 2026)."""
         io = self.read(0xD000, 47, "io")
         return (io[0x11] & 0x80) << 1 | io[0x12], list(io)
 

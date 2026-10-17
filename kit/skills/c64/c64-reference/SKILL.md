@@ -212,6 +212,11 @@ f = value × clock / 16777216 (PAL clock 985,248 Hz; NTSC 1,022,727 Hz).
 A game that never writes control or envelope registers is playing by
 frequency writes alone; frequency 0 is silence.
 
+`$D419` and `$D41A` are read-only: the positions of the two paddles,
+0 to 255. With nothing in the control ports both read `$FF` (VICE
+v3.13.2, measured 16 October 2026), and the emulator's server has no
+way to set them; `tool-vice-mcp`, "The paddles", says what does.
+
 ## CIA timers and the tick
 
 CIA1 `$DC00`–`$DC0F`: port A `$DC00`, port B `$DC01`, timer A latch

@@ -125,7 +125,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="gx-ch-k">The monster table, slot by slot, on the last pass</p>
     <canvas id="gx-ch-slots" class="gx-ch-slots" width="768" height="40"></canvas>
     <div class="gx-key"><span><i style="background:#2a8a4a"></i>visited and moved</span><span><i style="background:#80838a"></i>visited, off screen</span><span><i style="background:#e0ded8"></i>not visited this pass</span><span><i style="background:#f2c94c"></i>the hero</span></div>
-    <p class="cap"><b>The game's own code, running in this page.</b> The whole 64 by 64 map of the level; the clear box is the area round the screen where monsters move, and everything in the shaded part stands still. Monsters that moved on the last pass are outlined. Click a floor cell to move the hero; the screen's window follows. Each pass runs generators_run (<code>$B16A</code>) and monsters_run (<code>$BB2E</code>) on a small 6502 core over the game's bytes from the listing, twelve and a half passes a second, the main loop's pace with the screen still. <code>test_chase.js</code> runs the same routines on the kit's 6502 simulator for 400 passes of each of these levels: the monster table, the maps and the hero's health come out the same, byte for byte, after every pass.</p>
+    <p class="cap"><b>The game's own code, running in this page.</b> The whole 64 by 64 map of the level; the clear box is the area round the screen where monsters move, and everything in the shaded part stands still. Monsters that moved on the last pass are outlined. Click a floor cell to move the hero; the screen's window follows. Each pass runs generators_run (<code>$B16A</code>) and monsters_run (<code>$BB2E</code>) on the kit's 6502 simulator over the game's bytes from the listing, twelve and a half passes a second, the main loop's pace with the screen still. <code>test_chase.js</code> calls the same routines on the simulator directly for 400 passes of each of these levels: the monster table, the maps and the hero's health come out the same, byte for byte, after every pass.</p>
   </div>
   <p>Each monster is a slot in five tables of 192 bytes: its X at <code>$0400</code>, its Y at <code>$04C0</code>, its kind, level and facing at <code>$0580</code>, its flags at <code>$0640</code>, and, for Death, the touches it has left at <code>$0700</code>. monster_count (<code>$824E</code>) holds the index of the last one. The table keeps monsters in the order they arrived: those in the level file from the maze's top-left corner on, with every Death moved to the front (deaths_first, <code>$CC60</code>), then each one a generator releases, added at the end (monster_spawn, <code>$B230</code>). A monster that dies hands its slot to the last monster in the table (monster_remove, <code>$BCC7</code>), so the table never has a gap.</p>
   <div class="plate gx-scroll">
@@ -175,119 +175,33 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
 /* gx-chase */
-// Runs the game's own monster code on a small 6502 core: a level built by level_build ($C625),
-// deaths_first ($CC60), grid_draw ($CBC2) and monsters_draw_all ($C00E), as level_begin ($80A5)
-// builds it; then, for each main-loop pass, what play_loop ($818B) does for the monsters: it
-// counts the pass (pass_count, $824B) and calls generators_run ($B16A) and monsters_run ($BB2E).
-// One player stands still where the reader puts it: in the game ($9120), its position in
-// player_world_x/y ($9104, $9106, four units a cell), its four cells marked $5B in the
-// character map as cell_mark marks them, and the screen's window (map_x $8831, map_y $8833)
+// Runs the game's own monster code on the kit's 6502 (C64Cpu, ../../lib/cpu6502.js): a level
+// built by level_build ($C625), deaths_first ($CC60), grid_draw ($CBC2) and monsters_draw_all
+// ($C00E), as level_begin ($80A5) builds it; then, for each main-loop pass, what play_loop ($818B)
+// does for the monsters: it counts the pass (pass_count, $824B) and calls generators_run ($B16A)
+// and monsters_run ($BB2E). One player stands still where the reader puts it: in the game ($9120),
+// its position in player_world_x/y ($9104, $9106, four units a cell), its four cells marked $5B in
+// the character map as cell_mark marks them, and the screen's window (map_x $8831, map_y $8833)
 // placed round it. The raster interrupt's go-ahead (main_go, $8264) never arrives during a pass
 // here, so a pass is never cut short; the CIA timers the game reads for chance ($DC04-$DC07)
-// read a counter that steps by $3B. base is the game's memory from the listing.
+// read a counter that steps by $3B, the other chips at $D000-$DFFF read 0, and a write there goes
+// nowhere. base is the game's memory from the listing.
 function makeChase(base) {
   'use strict';
   const m = new Uint8Array(0x10000);
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0, chance = 0;
-  let visited = [], moved = [];
-  const rd = (ad) => {
-    if (ad >= 0xD000 && ad < 0xE000) { if (ad >= 0xDC04 && ad <= 0xDC07) { chance = (chance + 0x3B) & 255; return chance; } return 0; }
-    return m[ad];
+  let chance = 0, visited = [], moved = [];
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+    read(ad) { if (ad >= 0xDC04 && ad <= 0xDC07) { chance = (chance + 0x3B) & 255; return chance; } return 0; },
+    write() {},
+  } });
+  const hooks = {
+    0xBB8B: (c) => { visited.push(c.y); },          // monster_step: the slot monsters_run visits
+    0xBD06: (c) => { moved.push(c.y); },            // monster_move: the monster was on screen
   };
-  const wr = (ad, val) => { if (ad < 0xD000 || ad >= 0xE000) m[ad] = val; };
-  const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-  const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-  const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-  const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-  const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-  const adc = (b) => {
-    if (d) { let lo = (a & 15) + (b & 15) + (c ? 1 : 0); let hi = (a >> 4) + (b >> 4); if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; n = (hi << 4) & 0x80; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80);
-      if (hi > 9) hi += 6; c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 255; return; }
-    const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-  };
-  const sbc = (b) => {
-    if (d) { const s = a - b - (c ? 0 : 1); let lo = (a & 15) - (b & 15) - (c ? 0 : 1); let hi = (a >> 4) - (b >> 4);
-      if (lo & 16) { lo -= 6; hi--; } if (hi & 16) hi -= 6; v = ((a ^ b) & (a ^ s) & 0x80); c = s >= 0 ? 1 : 0; nz(s & 255);
-      a = ((hi << 4) | (lo & 15)) & 255; return; }
-    adc(b ^ 255);
-  };
-  const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-  function step() {
-    const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-    const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-    const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-    const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-    // addressing by the opcode's low bits, for the regular groups
-    const g = op & 3, mode = (op >> 2) & 7;
-    let ea = -1, len = 2;
-    if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-    else if (g === 2 || g === 0) { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-    const M = () => (ea === -2 ? b1 : rd(ea));
-    switch (op) {
-      // group 1: ORA AND EOR ADC STA LDA CMP SBC
-      case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-      case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-      case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-      case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-      case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-      case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-      case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-      case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-      // shifts and inc/dec on memory
-      case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-      case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea); const r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-      case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-      case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea); const r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-      case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-      case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-      case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-      case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-      case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-      case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-      // loads, stores, compares with X and Y
-      case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-      case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-      case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-      case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-      case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-      case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-      case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-      // implied
-      case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-      case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-      case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-      case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-      case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-      case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-      case 0x58: case 0x78: case 0xEA: len = 1; break;
-      case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-      case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-      case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-      // branches
-      case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-        const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-        pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return; }
-      case 0x4C: pc = w; return;
-      case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-      case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-      case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-      default: throw new Error('opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-    }
-    pc = (pc + len) & 0xFFFF;
-  }
-  function call(entry) {
-    a = 0; x = 0; y = 0; d = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-    for (let i = 0; i < 5000000; i++) {
-      if (pc === 0xFFFF) return;
-      if (pc === 0xBB8B) visited.push(y);           // monster_step: the slot monsters_run visits
-      else if (pc === 0xBD06) moved.push(y);        // monster_move: the monster was on screen
-      step();
-    }
-    throw new Error('runaway at $' + pc.toString(16));
-  }
+  const call = (entry) => cpu.call(entry, { a: 0, x: 0, y: 0, d: 0 }, { hooks, maxSteps: 5000000 });
   const hero = { cx: -1, cy: -1 };
   const cell = (cx, cy) => 0x3000 + (cy & 63) * 64 + (cx & 63);
   const quad = (cx, cy) => [[0, 0], [1, 0], [0, 1], [1, 1]].map(([dx, dy]) => cell(cx + dx, cy + dy));
@@ -386,7 +300,7 @@ const CHASE_LEVELS = ["TwAGCun+CEMTjpVQSV+1IoMigjiCP4UTrBX8IoIigiKyFf/PQIFAgUCmQ
 let CH = null, chLast = { visited: [], moved: [] }, chPass = 0, chTimer = null, chLevel = 0;
 CHASE_LEVELS.forEach((s, i) => $('gx-ch-lv').insertAdjacentHTML('beforeend', `<option value="${i}">${i + 1}</option>`));
 function chaseStart() {
-  if (!G) return;
+  if (!G || typeof C64Cpu === 'undefined') return;
   if (!CH) CH = makeChase(G.ram);
   CH.load(Uint8Array.from(atob(CHASE_LEVELS[chLevel]), (ch) => ch.charCodeAt(0)));
   chLast = { visited: [], moved: [] }; chPass = 0;
@@ -453,7 +367,8 @@ $('gx-ch-map').onclick = (e) => {
 
 if (HASC) {
   C64.load('listing.json').then((L) => {
-    G = L; drawMonsters(); chaseStart();
+    G = L; drawMonsters();
+    if (typeof C64Cpu !== 'undefined') chaseStart(); else missing($('gx-ch-map'));
     if (anim) timer = setInterval(tick, 160);
   }).catch(() => { missing($('gx-mon')); missing($('gx-ch-map')); });
 } else { missing($('gx-mon')); missing($('gx-ch-map')); }
