@@ -94,3 +94,13 @@ measured costs counted the sound sweeps' waits twice, the routines the
 player update leaves by a jump had no cost, and the interrupt's cost was
 averaged per band of lines rather than per branch it takes. Measured
 again, the page keeps the game's pace within 0.04 % over 60,000 frames.
+
+The audit of the listing ended with 77 of its 781 comments corrected,
+most of them wrong in one detail of a count, a range or a caller list.
+The audit of `facts.md` marked 23 of its 93 claims wrong in a detail;
+22 held when read against the code and were corrected, among them the
+end of the player code, a fourth unused copy routine and the
+interrupt's own switch of the processor port, and one did not: the
+census script it said was missing is in `kit/c64`. The second sample,
+seed 1122228220, found 1 comment of 60 wrong, and `tier` became
+`silver`.

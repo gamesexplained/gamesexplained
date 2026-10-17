@@ -297,6 +297,15 @@ $1CFF), a fourth unused copy routine at $1F00, the interrupt's own
 switch of the processor port to $34, and six exit-taking places the
 list left out; all 22 were corrected.
 
+The second sample drew 60 of the 781 comments with seed 1122228220, in
+the same strata; 8 of them had been in an earlier sample. A fresh
+checker on a proven model, run by `air`, found 1 wrong (1.7 % plain,
+1.4 % weighted by stratum; 95 % interval 0.3 % to 8.9 %), hand-written
+and wrong in a detail: the zero-page scratch at $14 named room drawing
+and item drawing as its users and left out the tile lookup at $35E4,
+which every collision probe of the player reaches. It was corrected.
+1 of 60 is within the mark.
+
 ## Live tests
 
 - Boot: `LADER` autostarted from a hard reset reaches $080D and the title
