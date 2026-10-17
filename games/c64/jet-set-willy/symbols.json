@@ -9245,7 +9245,7 @@
   {
    "address": 12513,
    "type": "line",
-   "text": "In room 32, Halfway up the East Wall, puts six conveyor cells (glyph $25) into the room after it is drawn, one a row down and to the right from $7C5A, at screen addresses the code names, and sets the conveyor's direction $13 to 1, right. The colour of those cells stays as the map drew them. On into the main loop at $30FF."
+   "text": "In room 32, Halfway up the East Wall, puts six conveyor cells (glyph $25) into the room after it is drawn, one a row down and to the right from $7C5A, at screen addresses the code names, and sets the conveyor's direction $13 to 1, right. The six cells are the room's ramp (offsets $D3-$D5: row 2, column 6, six cells down to the right), which $2FA8 drew as glyph $24; their colour stays as the ramp drawing left it, $26, the room's offset $DA colour. On into the main loop at $30FF."
   },
   {
    "address": 12543,
@@ -9260,12 +9260,12 @@
   {
    "address": 12607,
    "type": "line",
-   "text": "Draws the items ($3983) on every pass, then, on every eighth pass ($1A), moves the arrows at $314D. Either way on to $324E."
+   "text": "Calls the item routine $3983 on every pass, which draws the items only on every eighteenth pass ($55); then, on every eighth pass ($1A), moves the arrows at $314D. Either way on to $324E."
   },
   {
    "address": 12621,
    "type": "line",
-   "text": "Goes through the first 15 arrow records. A record whose room, its first byte less bit 7, is not the current room is passed over untouched ($315D). For one that is, it counts the record's second byte down: at 10 a noise starts on voice 3 as a warning, and at 0 the sound stops and the arrow fires, with bit 7 of the first byte set and sprite 6 switched on. A flying arrow moves a column at a time and is shown as sprite 6 ($AA or $AB, by its direction) until it reaches the room's edge, when sprite 6 goes off and the record waits again. The loop stops after 15, so record 16 at $243F, in The Beach, never fires. Clobbers A, X, Y and arrow state."
+   "text": "Goes through the first 15 arrow records. A record whose room, its first byte less bit 7, is not the current room is passed over untouched ($315D). For one that is, it counts the record's second byte down: at 10 a noise starts on voice 3 as a warning, and at 0 the sound stops and the arrow fires, with bit 7 of the first byte set and sprite 6 switched on. A flying arrow moves a column at a time and is shown as sprite 6 ($AA or $AB, by its direction) until it reaches the room's edge. Then sprite 6 is moved to height 0, the column byte is set to 0 (an arrow flying right) or $9F (column 31, flying left), bit 7 of the first byte is cleared and the record waits again. Only an arrow flying right also switches sprite 6 off ($31DE); one flying left leaves it on, at height 0. The loop stops after 15, so record 16 at $243F, in The Beach, never fires. Clobbers A, X, Y and arrow state."
   },
   {
    "address": 12814,
@@ -9305,7 +9305,7 @@
   {
    "address": 13135,
    "type": "line",
-   "text": "Where every player update ends, through the vector at $CFF4: the stack is reset, and when the item count has changed during the update, the pick-up sound plays: voice 3, pulse, its frequency swept up from $2000 to $2500 in a loop the game waits for, then the gate closed. On to $3392."
+   "text": "Where a player update ends when it neither changes room nor kills Willy, through the vector at $CFF4 ($1021); an update that changes room goes on to $2DC6 through $1027, and a death to $38EF through $102A. The stack is reset, and when the item count has changed during the update, the pick-up sound plays: voice 3, pulse, its frequency swept up one step at a time to $2500 in a loop the game waits for, then the gate closed. The sweep starts at $20xx: the high byte $08 is set to $20, and the low byte $07 is left as the update left it. On to $3392."
   },
   {
    "address": 13202,
@@ -9330,7 +9330,7 @@
   {
    "address": 13281,
    "type": "line",
-   "text": "The play interrupt, from the raster at two lines a frame. While the game is paused it does nothing. At line 0 it goes to $3594, which reads the keys. At line $FB it sets the next interrupt for line 0 and runs the frame. The music: when it is off ($35), voices 1 and 2 are gated off and their frequencies cleared; when it is on, every second frame $2066 ticks three times. The clock: every 50 frames a second goes on, the digits rolling over at the limits at $2261, and the time is printed at $7F40 as HH:MM:SS. The conveyors: with $01 = $34 the IRQ rotates a byte of every room's conveyor glyph, 19 to the right from the pointers at $2271 and 22 to the left from $2297, in the room records themselves, and copies the room's conveyor glyph (offsets $C0-$C7) to glyph $25 at $7928. Every 15 frames, while the music is on: + ($2B) raises the volume in $5F and - ($2D) lowers it, within 0 to 15, it goes to $D418, and the spare-life glyphs $3B-$3E at $79D8 take the next of four frames from $21AC, so the spare lives stand still while the music is off. When $0407 is 0, the rope's staged sprites and places are copied to $6B00 and $D00A. Last, Willy's sprite: x from his cell, 8 pixels a cell from $38; y his height plus $32; and his frame $50 his facing (bit 2) plus half his phase, shown as sprite frame $50 + 6. A pause check at $340A never passes, because a paused game left at $33EE."
+   "text": "The play interrupt, from the raster at two lines a frame. While the game is paused it does nothing. At line 0 it goes to $3594, which reads the keys. At line $FB it sets the next interrupt for line 0 and runs the frame. The music: when it is off ($35), voices 1 and 2 are gated off and their frequencies cleared; when it is on, every second frame $2066 ticks three times. The clock: every 50 frames a second goes on, the digits rolling over at the limits at $2261, and the time is printed at $7F40 as HH:MM:SS. The conveyors: with $01 = $34 the IRQ rotates 41 bytes of conveyor glyphs in the room records themselves, at offsets $C0 and $C2 of 24 rooms, 19 a pixel to the right from the pointers at $2271 and 22 to the left from $2297. Five rooms that have a conveyor (21, 35, 39, 43 and 59) have no pointer, so their conveyor never moves. It then copies the current room's conveyor glyph (offsets $C0-$C7) to glyph $25 at $7928. Every 15 frames, while the music is on: + ($2B) raises the volume in $5F and - ($2D) lowers it, within 0 to 15, it goes to $D418, and the spare-life glyphs $3B-$3E at $79D8 take the next of four frames from $21AC, so the spare lives stand still while the music is off. In a room with a rope ($0402), when $0407 is 0, the rope's staged sprites and places are copied to $6B00 and $D00A, and $0407 is set to $FF. Last, Willy's sprite: x from his cell, 8 pixels a cell from $38; y his height plus $32; and his frame $50 his facing (bit 2) plus half his phase, shown as sprite frame $50 + 6. A pause check at $340A never passes, because a paused game left at $33EE."
   },
   {
    "address": 13716,
@@ -9385,7 +9385,7 @@
   {
    "address": 14575,
    "type": "line",
-   "text": "The death sequence, through the vector at $CFFA. The sprites go off and the border goes white while voice 3 plays noise at full volume, its frequency swept from $0200 to $1200 in a loop the game waits for; then the volume goes back to $5F and the border to its colour. Willy's checkpoint, saved at $2E7C on entering the room, is put back, the spare-life rows of the status line are cleared, and a life is taken from $41. Below zero the game is over ($383B); otherwise the room is built again from $2E07, with Willy where he came in."
+   "text": "The death sequence, reached through the vector at $CFFA ($102A, from the player code at $15F6) and by direct jumps from the sprite-collision check at $33A7, $33AF and $33B8. The sprites go off and the border goes white while voice 3 plays noise at full volume, its frequency swept from $0200 up to $11FF in a loop the game waits for; then the volume goes back to $5F and the border to its colour. Willy's checkpoint, saved at $2E7C on entering the room, is put back, the spare-life rows of the status line are cleared, and a life is taken from $41. Below zero the game is over ($383B); otherwise the room is built again from $2E07, with Willy where he came in."
   },
   {
    "address": 14723,
@@ -9420,7 +9420,7 @@
   {
    "address": 14947,
    "type": "line",
-   "text": "X and Y for sprites 0 to 4: the four colour slots at X $38, $58, $78 and $98, Y $80, and the cursor below the first slot at X $38, Y $98. $3C15 moves the cursor's X to the slot being entered."
+   "text": "X and Y for sprites 0 to 3, the four colour slots, at X $38, $58, $78 and $98, Y $80: $3BC1 copies these eight bytes to $D000-$D007. The two bytes after them, $38 and $98 at $3A6B-$3A6C, are never read. The cursor, sprite 4, is placed by $3C15, at the X of the slot being entered ($3A63 plus twice the slot), and $3C1B, at Y $9C."
   },
   {
    "address": 14963,
@@ -9440,7 +9440,7 @@
   {
    "address": 14973,
    "type": "line",
-   "text": "The four colours entered, 0 to 3 for keys 1 to 4, $FF for an empty slot. $3C23 sends a code back while any slot is empty, then compares all four with $3A81-$3A84. Only slot 0 is emptied when a code is asked for ($3B23), so the other three keep what they held. In this file all four are spaces ($20), as are the four at $3A81: the code card never ran before it was saved."
+   "text": "The four colours entered, 0 to 3 for keys 1 to 4, $FF for an empty slot. $3C23 sends a code back while any slot is empty, then compares all four with $3A81-$3A84. Only slot 0 is emptied when a code is asked for ($3B23), so the other three keep what they held. In this file all four are spaces ($20), as are the four at $3A81: no code was asked for before the file was saved, because $3B20, which fills $3A81, never ran. The failure header at $8000, which only $3C77 writes, suggests that the card's start at $3A02 had run."
   },
   {
    "address": 14977,
@@ -9525,7 +9525,7 @@
   {
    "address": 15418,
    "type": "line",
-   "text": "A correct code: copies the success header to $8000 ($3C83), waits for the keys to be released, clears five bytes of decoded keys and jumps to $0FA0 with interrupts off, which starts the title."
+   "text": "A correct code: copies the success header to $8000 ($3C83), waits for the keys to be released, clears $43-$47 (the key count, the three decoded keys and the scan's bit index $47) and jumps to $0FA0 with interrupts off, which starts the title."
   },
   {
    "address": 15438,
@@ -9575,7 +9575,7 @@
   {
    "address": 16128,
    "type": "line",
-   "text": "A copy routine nothing calls: with the processor port at $36 it copies 32 pages, $B000-$CFFF, to $2000-$3FFF, then sets the port to $37. It sits inside its own destination, so it could only have run from a copy somewhere else, presumably during an earlier loading stage."
+   "text": "A copy routine nothing calls: with the processor port at $36 it copies 32 pages, $B000-$CFFF, to $2000-$3FFF, then sets the port to $37. It sits inside its own destination: run where it is, the last page it copies ($CF00 onto $3F00) overwrites it as it runs, which works only if that page holds these same bytes. Its branches are all relative, so it would also run from a copy elsewhere. Whether and where it ran is not known."
   },
   {
    "address": 16384,

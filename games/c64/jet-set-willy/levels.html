@@ -180,8 +180,8 @@ table.t tr[data-room]{cursor:pointer}
     const f = [
       ['Record', `<code>${hex(B.record)}</code>, room ${n}`],
       ...SIDES.map((s, i) => [s[0].toUpperCase() + s.slice(1), exitText(n, i)]),
-      ['Conveyor', R[0xD0] ? `${cells(R[0xD0] & 0x3F)} from column ${R[0xD2]}, row ${R[0xD1]}, carrying ${R[0xD0] & 0x80 ? 'left' : 'right'}` : n === 32 ? 'six cells patched in by <code>$30E1</code>, carrying right' : 'none'],
-      ['Ramp', R[0xD3] & 0x80 ? 'every floor cell counts as a ramp' : R[0xD5] ? `${cells(R[0xD5] & 0x3F)} from column ${R[0xD4]}, row ${R[0xD3]}, down to the ${R[0xD5] & 0x80 ? 'left' : 'right'}` : 'none'],
+      ['Conveyor', R[0xD0] ? `${cells(R[0xD0] & 0x3F)} from column ${R[0xD2]}, row ${R[0xD1]}, carrying ${R[0xD0] & 0x80 ? 'left' : 'right'}` : n === 32 ? 'the ramp\'s six cells, turned into conveyor by <code>$30E1</code>, carrying right' : 'none'],
+      ['Ramp', n === 32 ? 'six cells from column 6, row 2, down to the right, which <code>$30E1</code> turns into conveyor' : R[0xD3] & 0x80 ? 'every floor cell counts as a ramp' : R[0xD5] ? `${cells(R[0xD5] & 0x3F)} from column ${R[0xD4]}, row ${R[0xD3]}, down to the ${R[0xD5] & 0x80 ? 'left' : 'right'}` : 'none'],
       ['Rope', R[0xE2] ? 'yes, sprites 5 to 7' : 'none'],
       ['Items', items.length ? items.map(t => `${t.x},${t.y}`).join('; ') + ` (column, row)` : 'none'],
       ['Arrows', arrows.length ? arrows.map(({ i, a }) => `row ${a[3]}, flying ${a[2] & 0x80 ? 'left' : 'right'}${i === 15 ? ', never fires' : ''}`).join('; ') : 'none'],
@@ -231,7 +231,7 @@ table.t tr[data-room]{cursor:pointer}
   for (let n = 0; n < 60; n++) {
     const B = jswRoom.build(ram, n), R = B.R, items = jswRoom.items(ram, n, 0).length;
     let arrows = 0; for (let i = 0; i < 16; i++) if ((ram[0x2403 + 4 * i] & 0x7F) === n) arrows++;
-    const extra = [R[0xD0] || n === 32 ? 'conveyor' : '', R[0xD3] & 0x80 || R[0xD5] ? 'ramp' : '', R[0xE2] ? 'rope' : '', arrows ? arrows + (arrows > 1 ? ' arrows' : ' arrow') : ''].filter(Boolean).join(', ');
+    const extra = [R[0xD0] || n === 32 ? 'conveyor' : '', (R[0xD3] & 0x80 || R[0xD5]) && n !== 32 ? 'ramp' : '', R[0xE2] ? 'rope' : '', arrows ? arrows + (arrows > 1 ? ' arrows' : ' arrow') : ''].filter(Boolean).join(', ');
     rows += `<tr data-room="${n}"><td class="n">${n}</td><td>${NAMES[n]}</td><td class="n">${hex(B.record)}</td>${[0, 1, 2, 3].map(i => `<td class="n">${cell(n, i)}</td>`).join('')}<td class="n">${R[0xE1]}</td><td class="n">${items}</td><td>${extra}</td></tr>`;
   }
   $('jw-all').innerHTML = rows;
