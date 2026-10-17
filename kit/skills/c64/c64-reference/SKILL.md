@@ -80,7 +80,12 @@ port's lines, not the byte written: a bit that `$00` makes an input reads
 as 1 there. Read back, `$01` gives what was written on its output bits;
 an input bit reads 1 on bits 0-2 and 4, 0 on bit 5, and on bits 3, 6 and 7
 whatever was last driven on it, until bits 6 and 7 fade to 0 some 350,000
-cycles later (VICE x64sc, measured 26 September 2026). The Source tab names
+cycles later (VICE x64sc, measured 26 September 2026). Bits 3-5 are the
+cassette port, not banking: bit 3 the write line, bit 4 the sense line (an
+input, 0 while a key on the recorder is down) and bit 5 the motor, which
+runs while the bit is 0 (Commodore 64 Programmer's Reference Guide, the
+memory map at `$0001`). The values above all keep bit 5 at 1; `$05` and
+`$06` select the same banks as `$35` and `$36` with the motor on. The Source tab names
 the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 `sid_v1_control`, `cia1_port_a`) on the instructions that see the chips.
 

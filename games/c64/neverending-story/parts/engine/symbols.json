@@ -3120,7 +3120,7 @@
   },
   {
    "address": 5337,
-   "name": "CONFIRM_RESTART",
+   "name": "ASK_RESTORE_GAME",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -3138,13 +3138,13 @@
   },
   {
    "address": 5363,
-   "name": "DO_RESTART",
+   "name": "RESTORE_SAVED_GAME",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 5373,
-   "name": "DO_RESTART_DONE",
+   "name": "RESTORE_DONE",
    "type": "Branch",
    "kind": "user"
   },
@@ -9042,7 +9042,7 @@
   {
    "address": 1081,
    "type": "line",
-   "text": "SHOW_PART_LOAD_SCREEN ($0439)\nPurpose: Print the \"insert part N\" prompt, wait for Space, then load the next part through the loader at $9700 and record which part is in memory.\nInputs: CURRENT_PART_NO ($2940) gives the prompt's digit. It does not choose the file: the loader adds one to the digit in its own file name before each load, so it loads PART 1, PART 2 and PART 3 in turn.\nOutputs: The prompt and the digit CURRENT_PART_NO+'0' printed; the next PART file loaded over $2F00-$95FF; LOADED_PART_NO ($5E) set to CURRENT_PART_NO; returns normally.\nAssumptions: Terminal, keyboard, the installed loader at $9700 and the drive are all available. Gameplay interrupts are suspended and restored by PREPARE_DISK_IO/END_DISK_IO around the load.\nClobbers: A, X, Y, flags, the whole text-renderer scratch, and the zero page (exchanged with its backup and exchanged back).\nHardware changes: Blanks and re-enables the VIC display through $D011 bit 4 (DEN); rewrites the VIC interrupt-enable register $D01A ($F0 then $F1); stops CIA 1 timer A through $DC0E bit 0; drives the serial bus through the KERNAL's LOAD."
+   "text": "SHOW_PART_LOAD_SCREEN ($0439)\nPurpose: Print sentence $2F, \"Hit space to load\", and the part's name (sentence $30 + CURRENT_PART_NO: \"Part two!\" or \"Part three!\"), wait for Space, then load the next part through the loader at $9700 and record which part is in memory.\nInputs: CURRENT_PART_NO ($2940), added to $30, picks the sentence that names the part. It does not choose the file: the loader adds one to the digit in its own file name before each load, so it loads PART 1, PART 2 and PART 3 in turn.\nOutputs: The two sentences printed; the next PART file loaded over $2F00-$95FF; LOADED_PART_NO ($5E) set to CURRENT_PART_NO; returns normally.\nAssumptions: Terminal, keyboard, the installed loader at $9700 and the drive are all available. Gameplay interrupts are suspended and restored by PREPARE_DISK_IO/END_DISK_IO around the load.\nClobbers: A, X, Y, flags, the whole text-renderer scratch, and the zero page (exchanged with its backup and exchanged back).\nHardware changes: Blanks and re-enables the VIC display through $D011 bit 4 (DEN); rewrites the VIC interrupt-enable register $D01A ($F0 then $F1); stops CIA 1 timer A through $DC0E bit 0; drives the serial bus through the KERNAL's LOAD."
   },
   {
    "address": 1081,
@@ -12627,17 +12627,17 @@
   {
    "address": 5334,
    "type": "line",
-   "text": "INIT_GAME ($14D6)\nPurpose: Entry point for game initialisation. A bare jump to INIT_GAME_RUN, which keeps the initialisation entry address stable while the confirmation block that follows it is bypassed.\nInputs: None.\nOutputs: Control transferred to INIT_GAME_RUN; no ordinary return from this instruction.\nAssumptions: The three bytes exist so that callers can JSR $14D6 without entering the restart-confirmation block at $14D9.\nClobbers: Nothing of its own.\nHardware changes: None."
+   "text": "INIT_GAME ($14D6)\nPurpose: Entry point for a new game, called at $0406 and jumped to by RESTART_GAME ($0FEE). A bare jump to INIT_GAME_RUN ($14E6), over the question at $14D9 that once asked whether to restore a saved game.\nInputs: None.\nOutputs: Control transferred to INIT_GAME_RUN; no ordinary return from this instruction.\nClobbers: Through INIT_GAME_RUN, the whole game state.\nHardware changes: None here."
   },
   {
    "address": 5337,
    "type": "line",
-   "text": "CONFIRM_RESTART ($14D9)\nPurpose: Retained restart-confirmation block: print the 'are you sure' sentence, read one key, and on 'Y' fall into the restart tail; otherwise fall through into ordinary initialisation.\nInputs: None in registers.\nOutputs: Sentence $2E printed, a key read, and either the DO_RESTART tail or plain INIT_GAME_RUN entered.\nAssumptions: Nothing in the engine or the three parts reaches $14D9: it is code left in place by the build. The QUIT verb reaches its own confirmation at ACTION_QUIT instead.\nClobbers: A, X, Y, flags, keyboard workspace, renderer scratch, and, through the fall-through, all game state.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY and GETIN; writes screen and colour RAM."
+   "text": "ASK_RESTORE_GAME ($14D9)\nPurpose: Asks \"Restore a saved game?\" (sentence $2E) and reads one key ($0565). Y goes to $14F3, which calls the LOAD action's stub at $045F; any other key falls into INIT_GAME_RUN for a new game. INIT_GAME's JMP at $14D6 skips it, and no instruction or pointer names $14D9, so the question is never asked.\nInputs: None in registers.\nOutputs: Sentence $2E printed and a key read; then either $14F3 or INIT_GAME_RUN.\nClobbers: A, X, Y, flags, keyboard workspace and renderer scratch.\nHardware changes: Reads the keyboard through the KERNAL; writes screen and colour RAM."
   },
   {
    "address": 5337,
    "type": "side",
-   "text": "A=$2E 'are you sure?' sentence"
+   "text": "A = $2E, \"Restore a saved game?\""
   },
   {
    "address": 5345,
@@ -12647,7 +12647,7 @@
   {
    "address": 5348,
    "type": "side",
-   "text": "yes -> restart"
+   "text": "Y -> restore a saved game"
   },
   {
    "address": 5350,
@@ -12670,14 +12670,19 @@
    "text": "set up current room"
   },
   {
+   "address": 5363,
+   "type": "line",
+   "text": "RESTORE_SAVED_GAME: the Y answer to ASK_RESTORE_GAME. Calls $045F, the LOAD action's one-byte return, so nothing loads; if DISK_ERROR_FLAG ($5F) is set it starts again at INIT_GAME, otherwise it returns to INIT_GAME's caller with the game as it stood. Never reached ($14D9)."
+  },
+  {
    "address": 5366,
    "type": "side",
-   "text": "restart flag $5F set?"
+   "text": "load failed (DISK_ERROR_FLAG $5F)?"
   },
   {
    "address": 5370,
    "type": "side",
-   "text": "-> INIT_GAME"
+   "text": "-> INIT_GAME, a new game"
   },
   {
    "address": 5374,
@@ -15752,7 +15757,7 @@
   {
    "address": 45056,
    "type": "line",
-   "text": "ICON_17 - brand / bar-shaped implement, drawn upright on a light-grey ground (colour-RAM value 15). Slot 17 of\nOBJECT_ICON_TABLE: 4x4-cell multicolor payload, 160 bytes; see the plate at $A560.\nNOUN_TO_OBJECT_INDEX[17] = $1D, parser object id $4F, vocabulary stem \"bra\"."
+   "text": "ICON_17 - the branch, a dark stick drawn upright on a light-grey ground (colour-RAM value 15); its burning form is the next slot. Slot 17 of\nOBJECT_ICON_TABLE: 4x4-cell multicolor payload, 160 bytes; see the plate at $A560.\nNOUN_TO_OBJECT_INDEX[17] = $1D, parser object id $4F, vocabulary stem \"bra\"."
   },
   {
    "address": 45216,
@@ -15762,7 +15767,7 @@
   {
    "address": 45376,
    "type": "line",
-   "text": "ICON_19 - framed oval / locket (white oval inside a border, on a dark-red ground). Slot 19 of\nOBJECT_ICON_TABLE: 4x4-cell multicolor payload, 160 bytes; see the plate at $A560.\nNOUN_TO_OBJECT_INDEX[19] = $1F, parser object id $51, vocabulary stem \"fra\"."
+   "text": "ICON_19 - the glass fragment, a white shard of glass on a dark-red ground, left when HIT BOX shatters the glass box. Slot 19 of\nOBJECT_ICON_TABLE: 4x4-cell multicolor payload, 160 bytes; see the plate at $A560.\nNOUN_TO_OBJECT_INDEX[19] = $1F, parser object id $51, vocabulary stem \"fra\"."
   },
   {
    "address": 45536,
