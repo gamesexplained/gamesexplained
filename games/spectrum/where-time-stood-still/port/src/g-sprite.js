@@ -90,6 +90,8 @@ G.sprite = function (P) {
   }
   P.def(0xA079, 'draw_sprite_24', r => draw24(M[(r.iy + 0x1F) & 0xFFFF], M[(r.iy + 0x14) & 0xFFFF] & 7));
   P.def(0xA178, 'draw_sprite_24_left', r => draw24(r.c, r.a));
+  // $A07F: the bank in C and the pixel position in A (the menu pointer's, draw_pointer)
+  P.def(0xA07F, 'draw_sprite_24_a07f', r => draw24(r.c, r.a & 7));
 
   // draw_sprite_16 ($A277) and draw_sprite_16_left ($A379): two bytes of graphics a row and a
   // mask made from them by the tables at $8100 (the left byte) and $8200 (the right): paper
@@ -154,6 +156,7 @@ G.sprite = function (P) {
   }
   P.def(0xA277, 'draw_sprite_16', r => draw16(M[(r.iy + 0x1F) & 0xFFFF], M[(r.iy + 0x14) & 0xFFFF] & 7));
   P.def(0xA379, 'draw_sprite_16_left', r => draw16(r.c, r.a));
+  P.def(0xA27D, 'draw_sprite_16_a27d', r => draw16(r.c, r.a & 7));
   // mirror_24 ($A476), mirror_16 ($A48B): a row's bytes swapped end for end and each reversed,
   // in both register sets for the 24-pixel sprite
   P.def(0xA476, 'mirror_24', r => ({ b: rev(r.e), c: rev(r.c), e: rev(r.b), bc_: rev(r.de_ & 255) << 8 | rev(r.bc_ & 255),
@@ -214,8 +217,7 @@ G.sprite = function (P) {
 
   // patch_drawers ($A5EF): the drawers of the sprite's width (+$1C: 3, or else 4) given E rows,
   // and their stores: none for the B columns cut off at the left, then C written, none after
-  P.def(0xA5EF, 'patch_drawers', r => {
-    const three = M[(r.iy + 0x1C) & 0xFFFF] === 3;
+  const patch = (three, r) => {
     let table, width;
     if (three) { M[0xA2AB] = r.e; M[0xA39F] = r.e; width = 3; table = 0xA05D; }
     else { M[0xA0B3] = r.e; M[0xA1A4] = r.e; width = 4; table = 0xA069; }
@@ -229,7 +231,10 @@ G.sprite = function (P) {
       if (!n) { op ^= 0x77; step ^= 0x2C; }
     }
     return { e: width };
-  });
+  };
+  P.def(0xA5EF, 'patch_drawers', r => patch(M[(r.iy + 0x1C) & 0xFFFF] === 3, r));
+  // $A5F2: the width in A (the menu pointer's, draw_pointer)
+  P.def(0xA5F2, 'patch_drawers_a5f2', r => patch(r.a === 3, r));
 
   // set_up_sprite ($A493): the drawing of the actor at IY (and HL) set up. Its bank (+$1F) is
   // paged in; at a half character its screen position across is 4 less; its frame (+$1B, bit 7
