@@ -6,7 +6,7 @@ Bronze is complete for the playable text opening. Silver requires:
 - Capture the text overlay’s hand-over and compare it with `parts/opening/work/play.vsf`. For the room captures stopped at loader return, capture before room initialization as well; a post-initialization entry snapshot cannot establish startup-only bytes. Preserve any startup-only code or authored data in the listing’s chosen image.
 - Identify every later load and resolve the captured scene placeholders into verified resident/overlay ownership ranges; compare snapshots before deciding what is resident.
 - Explain the remaining opening code and data to 100% coverage. Classify the 14 small code gaps and RAM under I/O flagged by `listing.py`; do not exclude them merely to clear the warnings.
-- Test the decoded high-byte dialogue substitutions and finish the formatting controls, including their punctuation. Trace the prefix-matching wheel code and inventory representation.
+- Test the decoded high-byte dialogue substitutions and finish the formatting controls, including their punctuation. Extend the checked prefix-matching behavior to every scene’s wheel configuration; finish the inventory representation and determine whether quantity-byte value 9 is reachable.
 - Assign producers and consumers to the disk-file matches, especially the seven modified bytes of `tx` and the changed initial-image ranges.
 - Test the documented disk saving, loading, pause, and restart controls on expendable working copies. Establish the clock rate, failure conditions, maze changes, and later puzzles from code and live tests.
 - Trace the sound service and identify every tune; build its player for the Silver page.

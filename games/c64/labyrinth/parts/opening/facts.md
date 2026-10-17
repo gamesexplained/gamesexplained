@@ -154,3 +154,15 @@ The passage stepper embeds only the zero-terminated records `$9867-$98A6` and `$
 ## Character viewer verification
 
 The character viewer embeds the opening snapshot’s `$D000-$D7FF` font, the same data as the glyph sheet. `test_font.js` checks all 2,048 bytes against the committed listing and compares each of the 256 monochrome glyphs, pixel for pixel, with `C64.drawGlyph` in `site/lib/c64.js`. The display uses high-bit-first rows and an optional grid. This verifies the font excerpt and monochrome shape decoding; it does not assert that every font slot is used during play or reproduce multicolour display modes.
+
+## Word-wheel prefixes
+
+`$5F2C` appends a typed byte to `$6683` and increments the length `$6682`, except when that length equals ten. Bytes at least `$5B` are reduced by `$20`; ordinary lowercase letters therefore compare as uppercase. `$612C` applies the same fold while searching dictionary words. Entries with a negative flag at `$66FB` are skipped. The first character begins searching at wheel base plus one; later characters begin at the selected slot. The exact loop bounds are described in the listing.
+
+On a failed match, `$61C3-$61C8` writes `$02` to the border and decrements the prefix length. The preceding accepted prefix and selected word remain intact. `$61F7` clears the complete prefix and restores its colour cells without changing the selected word. The normal keyboard table’s Delete entry is `$FE`, dispatched to this routine by `$5D6F-$5D73`.
+
+**Live check:** restore the saved opening, select the active action wheel already present there, and press G, Z, O, and Delete (matrix row 0, column 0). Each key was held for 20 frames and released for 20. Observed (prefix, action slot): initial `('',6)`; G `('G',4)`; Z `('G',4)`; O `('GO',5)`; Delete `('',5)`. Slots 6, 4, and 5 resolve to inventory, give, and go. The emulator state from before the probe was preserved and restored. The raw probe stays in ignored `work/wheel-live.json`.
+
+`test_wheel.js` runs the original routines from the committed listing, stopping at the successful redraw entry `$5EB0` so that selection can be checked independently of drawing. It checks the recorded replay, red-border writes on rejection, clear-prefix behavior, and upper/lowercase agreement for 112 prefixes across 23 available entries in the saved action, destination, and inventory wheels. Separate cases exercise append lengths 0, 9, and 10. These are tests of the saved wheel configuration, not a census of every scene’s choices.
+
+**Open quantity boundary:** `$6031` displays inventory counts by adding `$31` to entry values 1–9 and placing that byte between parentheses. Value 8 displays `(9)`; value 9 would display `(:)`, rather than a two-digit quantity. Simulator cases confirm these byte results and omitted suffixes at 0 and 10. Whether an ordinary sequence of play can produce value 9 remains open; this is not an established player-reachable bug.

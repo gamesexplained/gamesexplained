@@ -28,3 +28,7 @@ A faster frame-capture transport would have saved the most time; both complete c
 ## Environment
 
 macOS arm64; installed VICE MCP release v3.13.2 GUI, 57 of 57 emulator checks; existing regenerator2000 0.9.20; Python 3.9 with Pillow 11.3.0 for the glyph sheet. Tools were started through the kit launcher. No software installation was needed. The actual snapshot, copied disks, extraction output, and disassembler project stay under ignored `work/` folders.
+
+## Word-wheel continuation
+
+The coverage pass kept the quantity formatter’s colon boundary as an open reachability question, following `50-coverage`’s instruction to note inputs the player was never meant to supply. Direct simulator cases corrected the carry-dependent highlight description and single-byte quantity arithmetic before completion. These are covered by the existing boundary-checking and reachability rules; no kit change or maintainer ask is needed. The live probe preserved and restored the emulator state, and all raw state remained in ignored work files.

@@ -10580,9 +10580,9 @@
   },
   {
    "address": 23862,
-   "name": "s_5D36",
+   "name": "service_word_wheel_input",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 23880,
@@ -10748,9 +10748,9 @@
   },
   {
    "address": 24178,
-   "name": "j_5E72",
+   "name": "move_word_wheel_choice",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 24198,
@@ -10814,15 +10814,15 @@
   },
   {
    "address": 24352,
-   "name": "b_5F20",
+   "name": "accept_word_wheel_letter",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 24364,
-   "name": "s_5F2C",
+   "name": "append_word_prefix",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 24378,
@@ -10838,9 +10838,9 @@
   },
   {
    "address": 24387,
-   "name": "j_5F43",
+   "name": "dispatch_wheel_command",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 24410,
@@ -10964,9 +10964,9 @@
   },
   {
    "address": 24625,
-   "name": "s_6031",
+   "name": "draw_word_wheel_row",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 24664,
@@ -11096,9 +11096,9 @@
   },
   {
    "address": 24876,
-   "name": "s_612C",
+   "name": "find_wheel_prefix",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 24903,
@@ -11162,9 +11162,9 @@
   },
   {
    "address": 25036,
-   "name": "s_61CC",
+   "name": "highlight_new_prefix_character",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 25049,
@@ -11174,9 +11174,9 @@
   },
   {
    "address": 25050,
-   "name": "s_61DA",
+   "name": "restore_prefix_highlight",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 25058,
@@ -11192,9 +11192,9 @@
   },
   {
    "address": 25079,
-   "name": "j_61F7",
+   "name": "clear_word_wheel_prefix",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 25090,
@@ -15224,6 +15224,11 @@
    "text": "Read the packed byte count and expanded byte count from a four-byte header. Move the packed block to the end of the configured buffer, then expand it back at its original destination. Tokens $00-$3F copy count+1 literals; $40-$7F repeat the following byte count+1 times; $80-$9F repeat zero; $A0-$BF repeat $55; $C0-$DF repeat $AA; $E0-$FF repeat $FF, using the low five bits plus one for these constant runs. Stop at the declared output end, even within a run. A separate decoder matched the live M2, P2, and C2 expansions byte for byte."
   },
   {
+   "address": 23862,
+   "type": "line",
+   "text": "Service message-window timing, failure state, and the room hook at $8C8F, then dequeue at most one pending key. In graphical mode, scenes below two skip the wheel commands. $FF executes the chosen command, $FE clears the prefix, $FD/$FC move through choices, and $FB or Space changes the active wheel. Printable letters reach the typing path; the remaining filter tests the sign of X minus $20. $EF reaches the restart path."
+  },
+  {
    "address": 24037,
    "type": "line",
    "text": "Remember the keyboard-queue count, wait for it to change, and decrement it once. This waits for a newly queued key rather than accepting a key already in the queue."
@@ -15237,6 +15242,51 @@
    "address": 24067,
    "type": "line",
    "text": "Wait until the queue-busy flag at $02DF is negative, take the first byte from $02E0 into X, shift the remaining entries down, and decrement the queued-byte count $02F2."
+  },
+  {
+   "address": 24178,
+   "type": "line",
+   "text": "With $6666 clear, use signed delta X to search from the active selection, skipping entries with a negative $66FB flag. Zero or an index reaching $6679 restores the original selection. A selected change clears the prefix through $61F7. Redraw the active wheel and choose the right-hand wheel mode from the action table $66DC; $6666 can bypass the movement search."
+  },
+  {
+   "address": 24352,
+   "type": "line",
+   "text": "Append A through $5F2C, then search the active wheel through $612C. Clear $6666 on return. The caller $5EED supplies a nonnegative key byte; command execution takes its separate negative-byte branch."
+  },
+  {
+   "address": 24364,
+   "type": "line",
+   "text": "A is a typed byte. If prefix length $6682 equals ten, return unchanged. Otherwise store A at $6683 plus that length, subtracting $20 first when A is at least $5B; restore the original A and increment the prefix length. The guard tests equality with ten, not an arbitrary out-of-range length."
+  },
+  {
+   "address": 24387,
+   "type": "line",
+   "text": "Resolve the selected action and right-hand word into dictionary indices $6691/$6692. Scan two-byte action/object pairs at $8B00 through offset $BE, treating zero in either field as a wildcard and a negative first field as an end marker. A match uses its parallel pointer at $8BC0: negative high bytes jump to code, otherwise set high bit and pass the message to $674C. In text mode, call $7903 before the response."
+  },
+  {
+   "address": 24625,
+   "type": "line",
+   "text": "Y selects an entry in the combined wheel table and X selects a column offset in the $CF70 screen rows. Resolve its dictionary index through $6693, read the word using the hidden-RAM pointer halves $D900/$D800 with port $24 selected, and copy letters through $60AA. Pad to the configured wheel width. Inventory wheel two appends parentheses around entry value plus $31 for values one through nine; zero and values at least ten omit that suffix. The byte for value nine would be a colon, whose player reachability is open."
+  },
+  {
+   "address": 24876,
+   "type": "line",
+   "text": "Match the uppercase prefix at $6683, length $6682, against available entries of the active wheel. A first letter starts at base plus one with $6679 candidates; a longer prefix starts at the selected slot with $6679 minus that slot candidates. Negative $66FB flags skip an entry. Fold word bytes at least $5B by subtracting $20. On success select the matching slot, highlight the new prefix position, and redraw through $5EB0. On failure write red ($02) to the border and decrement the prefix length, preserving the preceding accepted prefix and selection."
+  },
+  {
+   "address": 25036,
+   "type": "line",
+   "text": "Set one colour cell to white ($01). Add the accepted prefix length to the active wheel column offset with the incoming carry, use the sum as Y, and write $DB97,Y. The successful search enters with carry set from subtracting the wheel base, so the addition includes one extra cell."
+  },
+  {
+   "address": 25050,
+   "type": "line",
+   "text": "For the active wheel, set the existing prefix's colour cells to white ($01), walking backwards from the stored length at $6682. Return immediately for a zero length."
+  },
+  {
+   "address": 25079,
+   "type": "line",
+   "text": "Restore fourteen colour cells beginning at $DB98 plus the active wheel's column offset to colour three, then set prefix length $6682 to zero. The selected word at $666D plus wheel number is preserved; the previously stored prefix bytes are left in the buffer."
   },
   {
    "address": 26549,

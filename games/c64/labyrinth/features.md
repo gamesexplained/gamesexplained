@@ -23,10 +23,10 @@ Read on 17 October 2026:
 | Space changes the active wheel | live | Used between verbs and objects throughout the opening route. |
 | Horizontal cursor keys change wheels; vertical cursor keys scroll | open | Disk guide pp. 7–9; cursor input was not tested. |
 | Typing selects matching words | live | Entered words in the active wheels during the opening route. |
-| Delete clears the prefix | open | Disk guide pp. 8–9; Delete was not tested. |
+| Delete clears the prefix | live and traced | G, Z, O, then Delete produced prefixes G, G, GO, empty. The selected word remained go after Delete. `$61F7`; `test_wheel.js`. |
 | Return executes commands | live | Repeatedly exercised in the text adventure. |
 | Fire executes commands after the movie starts | open | Disk guide p. 8; graphical play was reached, but command execution by fire has not been isolated in a control test. |
-| An invalid prefix flashes the border red | open | Disk guide p. 9. |
+| An invalid prefix flashes the border red | traced; rejection live | Z after G was discarded in VICE. `$612C` writes red to the border on rejection; the simulator checks that write. The flash duration is unmeasured. |
 | Scene entry automatically saves to the active slot | open | Disk guide p. 9; verify writes on a working disk copy. |
 | SAVE GAME and LOAD GAME use the three slots | open | Disk guide pp. 10–12. |
 | Save/load menus stop the clock | open | Disk guide p. 9. |
