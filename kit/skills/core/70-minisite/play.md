@@ -166,6 +166,38 @@ file's header is its manual.
   frame (in two games, two scrolling lines and a car steered across a
   road).
 
+## Native resolution and smooth motion
+
+A 3D game's Play tab can offer two switches: the 3D view drawn at the
+screen's own resolution, and moved at the screen's frame rate from one
+of the game's pictures to the next (`port/page/modern.js`). They are
+views of the port, never changes to it.
+
+- **Read, never write.** Watch the port's routines and read the game's
+  memory. Hold that with two machines side by side, one with the view
+  attached and asked for a smooth view several times a frame: every
+  byte the same at every frame.
+- **Read the scene where the game builds it.** By the time the game
+  draws, what it drew from can be painted over (a game can keep its
+  objects' bounds in the view's own buffer) or old (a redraw with no
+  rebuild before it draws the last rebuild's objects).
+- **Take the game's choices.** Draw the objects the game queued for the
+  picture, sorted by its own sort on its own bounds, and leave a face
+  out by the game's own test on its corners as the game rounds them. A
+  sort that is not a strict order moves the others when the page keeps
+  one object more: in one game a sliver a pixel across reordered one
+  view in sixty until the page read the game's queue.
+- **Pace the glide by when the next picture is known and when it is
+  shown.** The page's machine runs a pass when its clock reaches it, so
+  the next picture is known only from then. Glide from that moment to
+  the first frame that shows it; paced by the blits alone, the view
+  stalls or jumps at every picture.
+- **Test it against the game's drawing.** At each picture the game
+  draws, the same objects in the same order, the same faces, corners
+  within the rounding and, in the C64's pixels, the game's own buffer
+  but for a pixel at the edges; the smooth view never moving back and
+  arriving as the C64 shows each picture.
+
 ## What the port finds in the listing
 
 Porting a routine means reading every instruction of it, and the

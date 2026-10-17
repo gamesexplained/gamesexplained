@@ -288,6 +288,8 @@ G.scene = function (P) {
     'z-side': [S(8, 0xA8, [0x06, 0x18], [0x1E, 0x30]), W(10, [0x0C, 0x12]), Z(0x06, 0xAC, [0x24, 0x2A])],
     'x-side': [S(0, 0xA6, [0x02, 0x08], [0x1A, 0x26]), W(2, [0x0E, 0x14]), Z(0x02, 0xAA, [0x20, 0x2C])],
   };
+  // the page's modern view (page/modern.js) works each orientation's corners out from this table
+  P.PYRAMID_CORNERS = PYRAMID;
   const corners = list => {
     for (const op of list) {
       if (typeof op === 'string') { corners(PYRAMID[op]); continue; }

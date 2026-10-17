@@ -18,3 +18,7 @@ describes:
   Carpenter's, the Great Hall, the Kitchen, the Hot Baths, the Courtyard
   and the Wilderness (`work/scripts/tour.py`). The tour's Hospital is
   never drawn.
+- `play-view-c64.png` and `play-view-native.png`: the Play tab's 3D view
+  (240 by 120, cut from the frame, three times over) in the Wilderness,
+  as the game draws it and with Native resolution on, from the page in
+  Chromium on 17 October 2026.

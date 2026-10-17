@@ -116,3 +116,30 @@ takes longer, and the C64 misses such a tap as well.
 A checker that wrote none of the port compared the comments of the 114
 routines it covers with the port, and found six wrong
 (`port/corrections.md`).
+
+## 17 October 2026: native resolution and smooth motion
+
+Two switches on the Play tab redraw the 3D view and nothing else, as on
+Space Rogue's and Mercenary's (`port/page/modern.js`, `test_modern.js`).
+The first version read everything at the draw. From the 199 moments,
+whole views came out wrong: the draw paints the background over the
+objects' bounds, which share the view's buffer, and a redraw after a
+fall draws the last rebuild's objects from a place the player has left.
+The place and the objects are now read as the game's sort finishes, and
+only the background as the draw starts.
+
+The page's sort on the game's own bounds matched the game's every time,
+yet 29 of 1,619 views came out in another order: the page kept slivers a
+pixel across that the game had left out, and the sort, which is not a
+strict order, moved the others round them. The page now reads which
+objects the game queued from its directory. The faces the game left out
+were faces whose first three corners, on the game's whole pixels, wind
+no way; the game's projection drops the fraction toward the middle of
+the view, and with that rounding the page's winding test leaves out 158
+of the 169 faces it had drawn and the game had not.
+
+Without its easing, the smooth view jumped at almost every picture, by
+up to a third of a step: the next picture is known only once the page's
+machine runs its pass, a frame or two after the last one's blit. It now glides from that moment
+to the first frame that shows the next picture, eased over a frame, and
+is on average 1.4 % of a step behind as each picture comes on show.

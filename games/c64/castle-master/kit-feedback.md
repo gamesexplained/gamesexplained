@@ -10,9 +10,10 @@ This run, 16 October 2026, took the game to Silver from the original disk.
 - `70-minisite`: "The How it works page keeps the format, shown on one level, and links here for the rest": the database section shows one object's bytes, and the 34 areas went to a Maps tab of their own.
 - `70-minisite`: "Head each one `Secret:` or `Bug:` with the finding in the heading": every Discoveries section says what it found in its heading.
 
-## Changes to the kit
+## What was changed in the kit
 
 - `kit/lessons/2026-10-16-castle-master.md`: three lessons, on sweeping a gauge's arithmetic through the game's own routines, on decoding every script of a data-driven game before writing the page, and on a start call made every frame.
+- `kit/skills/core/70-minisite/play.md`, "Native resolution and smooth motion", from the Play tab's switches (17 October): read and never write, read the scene where the game builds it, take the game's own choices, pace the glide by when the next picture is known and shown, and test it against the game's drawing. `games/c64/space-rogue` met the pacing rule (its agent-history.md: paced by the flips, its view stalled about a frame at every picture) and holds its view with the same two machines; `games/c64/mercenary` has the same two switches. The lesson is `kit/lessons/2026-10-17-castle-master-modern.md`.
 
 ## What cost the most time
 
@@ -42,6 +43,15 @@ The Play tab, 16 and 17 October 2026, after Silver: the whole game ported to Jav
 - `kit/c64/lockstep.js` takes `hooks`, which it puts on the machine and on the copies it runs ahead on, and those copies keep the machine's ROMs. The game saves and loads through the KERNAL with interrupts on, so the copy needs the KERNAL's interrupt entry and the hooks that stand in for its disk routines; without them it stopped at `$FFF0`. Test: section 1c of `kit/c64/test_lockstep.js`.
 - What cost the most time: the menus' pace, after play's was right. Three things had to be found one at a time: the opening step with no cost, a waiting loop priced at nothing that stopped the page's clock (now a floor of 10 cycles a stretch, `port/page/runtime.js`), and stops recorded at the frame shown rather than the frame the program had reached.
 - Candidate: a key the game reads once a pass is missed by a test that taps it for less than a pass, as it is on the C64. `test_play.js` holds I until the information screen is up. One game so far.
+
+## Native resolution and smooth motion
+
+The Play tab's two switches, 17 October 2026, as Space Rogue's and Mercenary's.
+
+- What helped most was Space Rogue's own test (`games/c64/space-rogue/test_play.js`): two machines side by side, one with the view watching, and the view held to the port's own drawing at every pass. Its counts showed every problem below, each from the moments rather than from the walk the page's own test can make.
+- `play.md` has a section on the switches now ("What was changed in the kit", above). Space Rogue's run left it as a candidate for a maintainer; with a third game it meets the bar for a skill line.
+- What cost the most time: views wrong as a whole, from reading the scene at the draw, and the order of a few views, from objects the game had left out. Neither showed in the Wilderness walk the page's test makes from the loader; both showed in the moments.
+- Not known: 60 faces of 11,521, each cut by an edge of the view, have a corner up to 35 pixels from the game's. The page cuts where the edge meets the side of the view; why the game's cut lands elsewhere was not traced.
 
 ## Earlier runs
 
