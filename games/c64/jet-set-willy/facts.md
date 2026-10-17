@@ -268,6 +268,35 @@ the same things. The plain rate is 16 in 60, 27 % (95 % interval 17 % to
 39 %), and weighted by the strata's sizes 24 %; a checker misses some,
 so both are lower bounds.
 
+The maintainer's check (`kit/CHECKING.md`) drew another 60 with seed
+1792191626, in the same strata. A checker on another provider's model
+(named in `game.json`), run by `air`, found 7 wrong, each in a detail
+(11.7 % plain, 10.7 % weighted by stratum; 95 % interval 5.8 % to
+22.2 %): a ramp's stride called a horizontal one, the rope's work every
+second call said to run in rooms with no rope, the rope handler's
+contact check and placing said to run on every update, the game-over
+wipe said to turn the room black where it leaves the background, a reset
+said to restart the title where it runs into BASIC ROM, every note of
+the table said to be about 65 cents flat on PAL, and a room's arrow
+given the wrong record. All 7 were corrected, with every room record's
+arrow note and four other comments saying the same things. 7 of 60 is
+over the mark, so the whole listing was then audited.
+
+The audit checked all 781 comments in eight address ranges, each by a
+checker that wrote none of them, one range at a time, run by `air`: zero
+page on the sample's model, the rest by fresh agents on a proven model.
+It found 74 wrong in a detail, 2 doubtful and 1 that the bytes cannot
+settle, and all 77 were corrected or cut back to what the code shows.
+The kinds that recurred: a comment on one record describing the whole
+table, counts and ranges off by one, an immediate operand read as an
+address, a loop given without one of its exits, and a routine credited
+with what its caller does. A fresh checker then tested the 93 claims in
+this file and found 23 wrong in a detail, of which 22 held when read
+against the code, among them the end of the player code ($1CAD, not
+$1CFF), a fourth unused copy routine at $1F00, the interrupt's own
+switch of the processor port to $34, and six exit-taking places the
+list left out; all 22 were corrected.
+
 ## Live tests
 
 - Boot: `LADER` autostarted from a hard reset reaches $080D and the title
