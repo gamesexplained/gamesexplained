@@ -135,6 +135,30 @@ requests knows what changed and why, without opening it:
 Good: `kit: Fix INSTALL.md growing with every game run`.
 Hard to read: `kit: a run corrects the install notes in place, not with a row or section of its own`.
 
+## Writing an issue or a pull request
+
+This applies to every issue, pull request description and comment an
+agent writes, on this repository or on another project's, such as a bug
+report to a tool's maintainer. The reader is a busy person who did not
+see the work. Write for someone clever who knows nothing about it.
+
+- Use plain words and full sentences, one idea to a sentence. Explain
+  a term the reader may not know in a few words.
+- Keep the exact facts: versions, commands, numbers, addresses.
+- Lay out a bug, even one mentioned in passing, as: what we did (with
+  the command), what we expected, what happened, why we think it
+  happened, how we checked, and a possible fix. Give each a sentence or
+  two of its own.
+- Leave out shorthand picked up during the work. Say what it stands for.
+- Before posting, or handing a draft to the contributor, read it again
+  against this list.
+
+Good: "We expected the two files to give the same machine at 600 million
+ticks. They don't: the original is at PC `E202` and the copy is at PC
+`E9EE`."
+Hard to read: "The copy is stamped 0.9.9, so the quirk is off and the
+copy drifts."
+
 ## Rules that are not negotiable
 
 - **Model.** Any model may run the kit, but only a proven one can take a

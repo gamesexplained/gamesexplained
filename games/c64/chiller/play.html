@@ -156,7 +156,7 @@ section table{margin:6px 0 18px}
     <li><b>The loading.</b> There is none: the page starts where the loader hands over, at the title.</li>
     <li><b>The KERNAL.</b> Chiller keeps the C64's ROM switched in and uses three pieces of it: the 50 Hz timer interrupt's own work (the clock and the keyboard scan), the routine that prints a character, which draws the cards between levels, and the one that places the cursor. The page does not carry the ROM. It has those three written out in JavaScript from what they do to memory, and they were checked against the game's run with the real ROM.</li>
     <li><b>The screen.</b> The page draws the picture once a frame from the memory and the video chip's registers as they stand. Chiller changes nothing in the middle of a frame, so this is the picture the C64 shows.</li>
-    <li><b>Sprite collisions.</b> The game learns that a ghost has touched you, or that you have walked into a wall, from the video chip's collision registers, which the chip sets as it draws the line where two things overlap. The page works them out line by line on the same clock, from the sprites and characters in memory.</li>
+    <li><b>Sprite collisions.</b> The game learns that a ghost has touched you, or that you have walked into a wall, from the video chip's collision registers, which the chip sets as it draws the line where two things overlap. The page works them out as the beam draws, on the same clock, from the sprites and characters in memory, with the site's model of the chip's collisions (<code>collide.js</code>), which was held against VICE on 17 October 2026.</li>
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, with the filter the game sets on the 6581's curve as the reSID emulator measured it from one chip. Real 6581s differ from one another, and they distort, which the model does not.</li>
     <li><b>The interrupt.</b> On the C64 the music and the keyboard scan can interrupt the game between any two instructions; on the page they run between the port's steps. The game reads three bytes the interrupt keeps: the clock, the key held and the SHIFT keys. Where the two runs could read different values, the check gave the port what the game read (section 01). In play, a key or a clock tick can be seen a few hundred cycles later than on a C64, which no one can tell.</li>
     <li><b>Start on.</b> The level buttons are the page's own. They start a new game and finish each level before the one chosen, in the game's own code, as if the crosses had all been taken, so the scores, lives and energy are those of a new game.</li>
@@ -166,6 +166,7 @@ section table{margin:6px 0 18px}
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/collide.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
@@ -321,73 +322,7 @@ function boot(M) {
   setPos(M, 0, 0);
 }
 
-// The video chip's collision registers, which the kit's C64 does not keep: one raster line's
-// collisions, as the chip finds them while it draws the line, from memory as the processor
-// leaves it (bank 0, the RAM; a character set in the ROM's place collides with nothing).
-// Returns [sprite-sprite bits, sprite-background bits]. Sprites collide wherever they are drawn,
-// the border included; with the background only inside the display window, and only with a
-// character's foreground: set bits in a high-resolution character, bit pairs 10 and 11 in a
-// multicolour one. A sprite's pixel is any set bit, or any bit pair but 00 in multicolour.
-const sprRow = new Int32Array(8 * 2);                  // up to 48 pixels a line: two 24-bit halves
-function collideLine(M, vic, colour, line) {
-  const en = vic[0x15];
-  if (!en) return [0, 0];
-  const scr = (vic[0x18] >> 4) << 10, chars = ((vic[0x18] >> 1) & 7) << 11;
-  let on = 0;
-  const x0 = [], w = [], px = [];
-  for (let n = 0; n < 8; n++) {
-    if (!(en >> n & 1)) continue;
-    const y = vic[1 + 2 * n], ey = vic[0x17] >> n & 1;
-    let dy = line - (y + 1); if (dy < 0) dy += 312;
-    if (dy >= (ey ? 42 : 21)) continue;
-    const r = ey ? dy >> 1 : dy, a = M[scr + 0x3F8 + n] * 64 + r * 3;
-    const bits = (M[a] << 16) | (M[a + 1] << 8) | M[a + 2], mc = vic[0x1C] >> n & 1, ex = vic[0x1D] >> n & 1;
-    const p = new Uint8Array(ex ? 48 : 24);
-    for (let i = 0; i < 24; i++) {
-      const b = mc ? ((bits >> (22 - (i & ~1))) & 3) !== 0 : ((bits >> (23 - i)) & 1) !== 0;
-      if (!b) continue;
-      if (ex) { p[2 * i] = 1; p[2 * i + 1] = 1; } else p[i] = 1;
-    }
-    on |= 1 << n; x0[n] = vic[2 * n] | ((vic[0x10] >> n & 1) << 8); w[n] = p.length; px[n] = p;
-  }
-  let ss = 0, sb = 0;
-  for (let a = 0; a < 8; a++) {
-    if (!(on >> a & 1)) continue;
-    for (let b = a + 1; b < 8; b++) {
-      if (!(on >> b & 1)) continue;
-      const lo = Math.max(x0[a], x0[b]), hi = Math.min(x0[a] + w[a], x0[b] + w[b]);
-      for (let x = lo; x < hi; x++) if (px[a][x - x0[a]] && px[b][x - x0[b]]) { ss |= (1 << a) | (1 << b); break; }
-    }
-  }
-  // the background: text mode only (the game's)
-  const d11 = vic[0x11], d16 = vic[0x16], ys = d11 & 7, xs = d16 & 7;
-  const ly = line - 0x30 - ys;
-  if ((d11 & 0x60) || ly < 0 || ly >= 200 || !(d11 & 0x10)) return [ss, sb];
-  const top = d11 & 8 ? 51 : 55, bot = d11 & 8 ? 250 : 246;
-  if (line < top || line > bot) return [ss, sb];
-  const left = d16 & 8 ? 24 : 31, right = d16 & 8 ? 343 : 334;
-  const romChars = chars === 0x1000 || chars === 0x1800;
-  if (romChars) return [ss, sb];
-  const row = ly >> 3, gl = ly & 7, mcm = d16 & 0x10;
-  for (let n = 0; n < 8; n++) {
-    if (!(on >> n & 1)) continue;
-    for (let i = 0; i < w[n]; i++) {
-      if (!px[n][i]) continue;
-      const x = x0[n] + i;
-      if (x < left || x > right) continue;
-      const tx = x - 24 - xs;
-      if (tx < 0 || tx >= 320) continue;
-      const cell = row * 40 + (tx >> 3), code = M[scr + cell], g = M[chars + code * 8 + gl], cc = colour[cell] & 15;
-      let fg;
-      if (mcm && (cc & 8)) fg = ((g >> (6 - ((tx & 6)))) & 2) !== 0;
-      else fg = ((g >> (7 - (tx & 7))) & 1) !== 0;
-      if (fg) { sb |= 1 << n; break; }
-    }
-  }
-  return [ss, sb];
-}
-
-root.ChillerKernal = { irqTail, scnkey, chrout, plot, boot, clearScreen, collideLine };
+root.ChillerKernal = { irqTail, scnkey, chrout, plot, boot, clearScreen };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -2844,19 +2779,20 @@ const VIC0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1B,0x37,0,0,0,0x08,0,0x15,0x0F
   0x0E,0x06,0x01,0x02,0x03,0x04,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07];
 
 // The chips the game uses: the video chip's registers (the raster from the clock, the collision
-// registers latched as the lines are drawn and cleared by a read), colour RAM, the SID's
-// registers (each write passed to onSid with the time), CIA 1's keyboard and joystick.
-function Chips(rt) {
+// registers as the beam draws to the clock, site/lib/collide.js), colour RAM, the SID's registers
+// (each write passed to onSid with the time), CIA 1's keyboard and joystick. The video chip sees
+// bank 0, the RAM but for the character ROM at $1000-$1FFF, which collides with nothing here.
+function Chips(rt, M) {
   const c = {
     vic: new Uint8Array(0x40), colour: new Uint8Array(0x400), sidw: new Uint8Array(0x20),
-    pra: 0x7F, ddra: 0xFF, keys: new Set(), joy: 0x1F, coll: [0, 0], cmp: 0, onSid: null,
+    pra: 0x7F, ddra: 0xFF, keys: new Set(), joy: 0x1F, cmp: 0, onSid: null,
     get line() { return Math.floor(rt.cycles / LINE) % LINES; },
     read(a) {
       if (a >= 0xD000 && a < 0xD400) {
         const r = a & 0x3F;
         if (r === 0x12) return c.line & 255;
         if (r === 0x11) return (c.vic[0x11] & 0x7F) | ((c.line >> 8) << 7);
-        if (r === 0x1E || r === 0x1F) { const v = c.coll[r - 0x1E]; c.coll[r - 0x1E] = 0; return v; }
+        if (r === 0x1E || r === 0x1F) return c.collide.read(r, rt.cycles);
         if (r === 0x19) return 0x70;
         if (r === 0x1A) return 0xF0;
         return c.vic[r];
@@ -2879,7 +2815,7 @@ function Chips(rt) {
     },
     write(a, v) {
       v &= 255;
-      if (a >= 0xD000 && a < 0xD400) { c.vic[a & 0x3F] = v; return; }
+      if (a >= 0xD000 && a < 0xD400) { c.collide.to(rt.cycles); c.vic[a & 0x3F] = v; return; }
       if (a >= 0xD400 && a < 0xD800) { c.sidw[a & 0x1F] = v; if (c.onSid) c.onSid(a & 0x1F, v, rt.cycles); return; }
       if (a >= 0xD800 && a < 0xDC00) { c.colour[a - 0xD800] = v & 15; return; }
       if (a >= 0xDC00 && a < 0xDD00) { const r = a & 15; if (r === 0) c.pra = v; else if (r === 2) c.ddra = v; }
@@ -2894,13 +2830,15 @@ function Chips(rt) {
     cia2Read: r => 0, cia2Write: (r, v) => {},
   };
   c.vic.set(VIC0);
+  c.collide = root.C64Collide.create(c.vic, a => (a >= 0x1000 && a < 0x2000 ? 0 : M[a]), i => c.colour[i]);
+  c.collide.at(0);
   return c;
 }
 
 function create(image, opts = {}) {
   const M = new Uint8Array(image);
   const rt = { cycles: 0, frame: 0, busy: false, level: null };
-  const chips = rt.chips = Chips(rt);
+  const chips = rt.chips = Chips(rt, M);
   const P = rt.P = root.ChillerPort.makePort(M, chips.io);
   K().boot(M);
   // the routines' calls since the last yield, for the cost of the stretch
@@ -2923,7 +2861,7 @@ function create(image, opts = {}) {
     if ((M[0x0314] | (M[0x0315] << 8)) === 0x60F5) P.music_irq({ a: 0, x: 0, y: 0, c: 0 });   // the KERNAL's entry leaves A = 0
     else K().irqTail(P.k);
   }
-  // the clock to t: the lines drawn on the way latch the collisions, the timer's interrupts run;
+  // the clock to t: the beam draws on the way, the timer's interrupts run;
   // for the port's work (work true) an interrupt's own cycles put the end later, as on the C64
   function advance(t, work) {
     while (rt.cycles < t) {
@@ -2931,11 +2869,9 @@ function create(image, opts = {}) {
       rt.cycles = step;
       while ((lastLine + 1) * LINE <= rt.cycles) {
         lastLine++;
-        const l = lastLine % LINES;
-        if (l === 0) rt.frame++;
-        const hit = K().collideLine(M, chips.vic, chips.colour, l);
-        chips.coll[0] |= hit[0]; chips.coll[1] |= hit[1];
+        if (lastLine % LINES === 0) rt.frame++;
       }
+      chips.collide.to(rt.cycles);
       if (rt.cycles >= nextIrq) { nextIrq += TIMER; due = true; }
       if (!rt.irqOn && M[0x0314] === 0xF5 && M[0x0315] === 0x60) rt.irqOn = true;
       if (due && rt.irqOn) { due = false; irq(); if (work) t += IRQ; }

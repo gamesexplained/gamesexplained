@@ -4,9 +4,9 @@
 // committed listing, started where the crackers' start-up begins ($080D), with the KERNAL banked in as
 // the game keeps it: its raster interrupts come in through the KERNAL's entry and the vector at $0314,
 // the title's leaves through the KERNAL's exit at $FEBC, and the one KERNAL call it makes, CHROUT at
-// the title and at the start of a game, does nothing here or in the port. The kit's C64 has no sprite
-// collisions, so the game's machine finds them with the Play tab's own (reference/jsw-collide.js), and
-// the port reads them from the game's machine where the game reads them. Each pass is one turn of the
+// the title and at the start of a game, does nothing here or in the port. The game's machine finds
+// the sprite collisions with the kit's model of them (machine.js's collide option, site/lib/collide.js),
+// the one the Play tab uses, and the port reads them from the game's machine where the game reads them. Each pass is one turn of the
 // main loop ($30FF). At the start of every pass all of RAM is compared, and so are colour RAM and the
 // registers written to the video chip and the SID; the stack page is left out as for every lockstep.
 //
@@ -29,7 +29,6 @@ const { Machine, KEY, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.j
 const { Lockstep, describe } = require(path.join(ROOT, 'kit/c64/lockstep.js'));
 const g = game(__dirname);
 const { JSWPort } = g.run('reference/jsw-port.js', 'jsw-port', 'JSWPort');
-const { JSWCollide } = g.run('reference/jsw-collide.js', 'jsw-collide', 'JSWCollide');
 const { JSWPlay } = g.run('reference/jsw-play.js', 'jsw-play', 'JSWPlay');
 const args = process.argv.slice(2);
 const plainAt = args.indexOf('--plain'), PLAIN = plainAt >= 0 && !!args.splice(plainAt, 1);
@@ -38,18 +37,18 @@ const PASSES = +args[0] || 40000;
 
 // The game's interrupts go through the KERNAL (cpu6502.js's kernal option): $FF48 saves the registers
 // and jumps through $0314; the play interrupt leaves by its own PLA TAY PLA TAX PLA RTI, the title's
-// by the KERNAL's at $FEBC. The collisions are worked out as the raster moves, and before each write
-// to the video chip, so that a sprite moved in the middle of a frame is found where it was drawn.
+// by the KERNAL's at $FEBC. The collisions are the machine's own (collide), worked out as the raster
+// moves and before each write to the video chip, so that a sprite moved in the middle of a frame is
+// found where it was drawn.
 class JSWMachine extends Machine {
-  constructor(o) { super(o); this.setup(); }
+  constructor(o) { super(Object.assign({ collide: true }, o)); this.setup(); }
   setup() {
     this.hooks[0xFEBC] = (c) => { c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; };
     this.hooks[0xFFD2] = (c) => { c.cycles += 40; c.rts(); };       // CHROUT $08: nothing kept of it
-    this.coll = JSWCollide.create(this.vic, (a) => this.ram[0x4000 | a]);
-    this.coll.at(this.cpu.cycles);
   }
   tick() {
     if (this.dma) this.dmaCatchUp();
+    this.collide.to(this.cpu.cycles);
     const ln = Math.floor(this.cpu.cycles / LINE);
     while (this.lastLine < ln) {
       this.lastLine++;
@@ -57,39 +56,25 @@ class JSWMachine extends Machine {
       if (l === 0) this.frames++;
       if (l === this.cmp) this.latch |= 1;
     }
-    this.coll.to(this.cpu.cycles);
     if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
   }
-  // a read happens in the instruction's last cycle, three after the first for LDA absolute
-  ioRead(a) {
-    const r = a & 0x3F;
-    if (a >= 0xD000 && a < 0xD400 && (r === 0x1E || r === 0x1F)) return this.coll.read(r, this.cpu.cycles + 3);
-    return super.ioRead(a);
-  }
-  ioWrite(a, v) {
-    if (a >= 0xD000 && a < 0xD400 && (a & 0x3F) < 0x2F) this.coll.to(this.cpu.cycles + 3);
-    super.ioWrite(a, v);
-  }
-  save() { const s = super.save(); s.coll = this.coll.save(); return s; }
   static restore(s, o) {
     const m = Machine.restore(s, o);
     Object.setPrototypeOf(m, JSWMachine.prototype);
     m.setup();
-    m.coll.load(s.coll);
     return m;
   }
 }
 const m = new JSWMachine({ ram: g.listing().ram, pc: 0x080D, passAt: 0x30FF, dma: !costFile });
-m.ddra = 0xFF; m.pra = 0x7F;                                       // CIA 1's port A as the KERNAL leaves it
 const R = m.ram;
 const P = JSWPort.create(new Uint8Array(65536), {});
 // The port reads a collision register where the game stands at its LDA (the checkpoints $3392, $1C52
 // and $1B37), and gets what the game's read will give: from a copy of the machine run on to the read,
 // since an interrupt may come first and the beam draw more lines before it. The reads the game throws
-// away give what the register holds.
+// away give what the register holds, in the LDA's last cycle, three after its first.
 const USED = new Set([0x3392, 0x1C52, 0x1B37]);
 P.io.collide = (r) => {
-  if (!USED.has(m.cpu.pc)) return m.coll.peek(r, m.cpu.cycles + 3);
+  if (!USED.has(m.cpu.pc)) return m.collide.peek(r, m.cpu.cycles + 3);
   const c = JSWMachine.restore(m.save());
   let v = -1;
   c.ioRead = function (a) {

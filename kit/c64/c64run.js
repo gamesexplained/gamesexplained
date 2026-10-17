@@ -246,7 +246,7 @@ module.exports = (function () {
       ram.fill(0x20, 0x0400, 0x07E8);
       m.colour.fill(14);
       Object.assign(m.vic, { 0x11: 0x1B, 0x16: 0xC8, 0x18: 0x15, 0x20: 0x0E, 0x21: 0x06 });
-      m.pra2 = 0x97; m.ddra2 = 0x3F; m.pra = 0x7F; m.ddra = 0xFF;
+      m.pra2 = 0x97; m.ddra2 = 0x3F;
       const c = m.cia[0];
       c.lat[0] = c.cnt[0] = 0x4025; c.cr[0] = 0x01; c.mask = 0x01;
       const f = D.files.get(D.find(b.file)), to = b.to === undefined ? f[0] | f[1] << 8 : b.to;

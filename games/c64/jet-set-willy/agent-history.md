@@ -121,3 +121,14 @@ sprite fetches that hold it. Over 889 drawings the ticker moved 0 or 1
 pixel left each time (`test_screen.js`); `test_play.js` still finds
 40,000 passes identical and `test_pace.js` gives the same pace as
 before.
+
+## 17 October 2026: the kit's sprite collisions
+
+`reference/jsw-collide.js` became the kit's `site/lib/collide.js`, with
+the multicolour and bitmap modes it lacked, and was held against VICE in
+144 scenes read to the cycle (#406). The test machine's own reads had
+gone to the model four cycles late, from the end of the instruction plus
+three; `machine.js` with `collide: true` reads in the access's cycle.
+`test_play.js` still finds 40,000 passes identical, and over 60,000
+frames `test_pace.js` gives the page 0.13 % faster than the game, where
+it gave 0.04 % before.

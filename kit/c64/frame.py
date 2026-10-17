@@ -23,7 +23,7 @@ Usage:
                                          writes <frame>-diff.png
   frame.py trim <frame.json> <out.json>  keep only the memory the drawing reads, for a page
   frame.py test [--keep]                 the kit's own test: a program with a split of every
-                                         kind, captured, drawn and compared, then dma. It resets
+                                         kind, captured, drawn and compared, then dma and collide. It resets
                                          the machine: not during a game you mean to keep. It sets
                                          the video chip its standard is checked on (the 8565 for
                                          PAL), which a switch of standard changes
@@ -31,6 +31,10 @@ Usage:
                                          bad lines and for sprites, measured case by case and
                                          compared with kit/c64/fixtures/vic-dma.json, or written
                                          to it with --record. It resets the machine too
+  frame.py collide [--record]            the sprite collisions ($D01E, $D01F), scene by scene and
+                                         read to the cycle, compared with
+                                         kit/c64/fixtures/vic-collide.json, or written to it with
+                                         --record. It resets the machine too
 
 Needs the emulator (`tools.py vice`) for capture and test, and a JavaScript runtime for the
 drawing: node, or on macOS the system's own JavaScriptCore. The frame file holds a copy of the
@@ -614,7 +618,8 @@ def late_bad_lines(F):
 
 def test(keep=False):
     """Run the kit's test program, capture a frame of it, draw it and compare; then measure the
-    cycles the video chip takes and compare them with the fixture (dma). True if both pass."""
+    cycles the video chip takes and the sprite collisions and compare them with their fixtures
+    (dma, collide). True if all three pass."""
     from vice import poke
     m = fresh()
     for a, data in test_memory():
@@ -655,8 +660,9 @@ def test(keep=False):
                 os.remove(os.path.join(out, name))
     print("the picture: " + ("PASS" if bad == 0 else f"FAIL: {bad} pixels differ; kept in {out}"))
     held = dma_check()
-    print("PASS" if bad == 0 and held else "FAIL")
-    return bad == 0 and held
+    hit = collide_check()
+    print("PASS" if bad == 0 and held and hit else "FAIL")
+    return bad == 0 and held and hit
 
 
 # --- the cycles the video chip takes from the processor -----------------------------------
@@ -943,6 +949,337 @@ def dma_check():
     return not bad
 
 
+# --- the sprite collisions -----------------------------------------------------------------
+# The video chip sets a bit in $D01E for each sprite whose pixel meets another sprite's, and in
+# $D01F for each whose pixel meets the foreground of the graphics, as the beam draws them; a read
+# clears the register. collide_measure() sets up one scene a case, each in the video bank at
+# $4000: the screen at $4400 (its sprite pointers at $47F8), the sprite shapes at $4C00, the
+# characters at $5000, a bitmap at $6000 and the byte $7FFF the chip shows where no row is
+# fetched. Each pass of the program writes the chip's registers from a table, reads both
+# registers on one line to clear them, and both again on a later line, and the reads are timed
+# by single steps: [line, cycle] of the cycle each read was made in, and what it gave.
+# kit/c64/fixtures/vic-collide.json is the record: `test` checks the emulator against it, and
+# kit/c64/test_machine_collide.js checks site/lib/collide.js (machine.js's option collide)
+# against it, case by case, at the same cycles.
+COLLIDE_FIXTURE = os.path.join(HERE, "fixtures", "vic-collide.json")
+COLLIDE_ORG, COLLIDE_TABLE = 0xC000, 0xC800
+SCREEN, SHAPES, CHARS, BITMAP, IDLE = 0x4400, 0x4C00, 0x5000, 0x6000, 0x7FFF
+SOLID, DOT, MC01, MC10 = 0x30, 0x31, 0x32, 0x33     # the sprite shapes, by pointer
+# the glyphs: blank, solid, %01010101 rows, %10101010 rows, the left pixel, the top row
+BLANK, FULL, G55, GAA, LEFT, TOP = range(6)
+
+
+def collide_base():
+    """The registers $D000-$D02E, [$DD00, $DD02], and memory as [address, bytes], that every
+    case starts from: the display on with 25 rows and 40 columns, the Y scroll 3, bank 1, no
+    sprite on, a blank screen in white."""
+    regs = bytearray(47)
+    regs[0x11], regs[0x16], regs[0x18] = 0x1B, 0x08, 0x14
+    regs[0x20:0x2F] = bytes([14, 6, 1, 2, 3, 4, 5, 1, 7, 3, 4, 5, 8, 13, 2, 10])[:15]
+    shapes = bytes([0xFF] * 63 + [0]) + bytes([0x80] + [0] * 63) + bytes([0x40] + [0] * 63) + bytes([0x80] + [0] * 63)
+    glyphs = bytes(8) + bytes([0xFF] * 8) + bytes([0x55] * 8) + bytes([0xAA] * 8) + bytes([0x80] * 8) + bytes([0xFF] + [0] * 7)
+    return regs, [0x96, 0x3F], [(SHAPES, shapes), (CHARS, glyphs), (0xD800, bytes([1] * 1000))]
+
+
+def _sprite(regs, mem, n, x, y, shape):
+    """Sprite n on at (x, y), showing shape."""
+    regs[2 * n], regs[2 * n + 1] = x & 255, y
+    regs[0x10] = regs[0x10] & ~(1 << n) | (x >> 8 & 1) << n
+    regs[0x15] |= 1 << n
+    mem.append((SCREEN + 0x3F8 + n, bytes([shape])))
+
+
+def _cell(mem, row, col, code, colour=None):
+    mem.append((SCREEN + 40 * row + col, bytes([code])))
+    if colour is not None:
+        mem.append((0xD800 + 40 * row + col, bytes([colour])))
+
+
+def collide_cases():
+    """The cases: each the base changed, the lines its reads are made on, and a delay before the
+    second (the loop count of a DEX, BNE loop) that moves them along their line."""
+    out = []
+
+    def case(name, sprites=(), regs=None, mem=(), clear=8, read=300, at=None):
+        r, cia2, _ = collide_base()
+        m = list(mem)
+        for s in sprites:
+            _sprite(r, m, *s)
+        for k, v in (regs or {}).items():
+            r[k] = v
+        out.append({"name": name, "regs": bytes(r), "cia2": cia2, "mem": m, "clear": clear, "read": read, "at": at})
+
+    # sprite against sprite, a whole frame
+    case("two sprites overlapping", [(0, 100, 100, SOLID), (1, 110, 105, SOLID)])
+    case("two sprites side by side, not touching", [(0, 100, 100, SOLID), (1, 124, 100, SOLID)])
+    case("two sprites overlapping by one pixel", [(0, 100, 100, SOLID), (1, 123, 100, SOLID)])
+    case("two sprites overlapping in the left border", [(0, 0, 100, SOLID), (1, 0, 100, SOLID)])
+    case("two sprites overlapping in the top border", [(0, 100, 20, SOLID), (1, 100, 20, SOLID)])
+    case("two sprites overlapping at X 420, beyond the right border", [(0, 420, 100, SOLID), (1, 420, 100, SOLID)])
+    case("two sprites overlapping at X 500, across the line's wrap", [(0, 500, 100, SOLID), (1, 500, 100, SOLID)])
+    case("two sprites at X 505, past the line's end", [(0, 505, 100, SOLID), (1, 505, 100, SOLID)])
+    case("two sprites past X 255", [(0, 300, 100, SOLID), (1, 310, 100, SOLID)])
+    case("two sprites with Y below 56, met on their second showing", [(0, 100, 20, SOLID), (1, 100, 29, SOLID)],
+         clear=260, read=310)
+    case("a sprite stretched (X-expanded) meets a dot on its second pixel",
+         [(0, 100, 100, DOT), (1, 101, 100, DOT)], regs={0x1D: 0x01})
+    case("a sprite stretched (X-expanded) misses a dot past its second pixel",
+         [(0, 100, 100, DOT), (1, 102, 100, DOT)], regs={0x1D: 0x01})
+    case("a sprite stretched (Y-expanded) meets a dot on its second line",
+         [(0, 100, 100, DOT), (1, 100, 101, DOT)], regs={0x17: 0x01})
+    case("a sprite stretched (Y-expanded) misses a dot past its second line",
+         [(0, 100, 100, DOT), (1, 100, 102, DOT)], regs={0x17: 0x01})
+    case("a multicolour sprite's pair %01 meets a dot", [(0, 100, 100, MC01), (1, 101, 100, DOT)], regs={0x1C: 0x01})
+    case("a multicolour sprite's pair %10 meets a dot on its second pixel",
+         [(0, 100, 100, MC10), (1, 101, 100, DOT)], regs={0x1C: 0x01})
+    case("a sprite's pixel against its own, alone", [(0, 100, 100, SOLID)])
+    # sprite against the graphics, a whole frame: the cell at row 5, column 10 is at X 104, Y 93
+    case("a sprite over a solid character", [(0, 104, 90, SOLID)], mem=[(SCREEN + 210, bytes([FULL]))])
+    case("a sprite over a blank character", [(0, 104, 90, SOLID)])
+    case("a sprite behind a solid character ($D01B)", [(0, 104, 90, SOLID)], regs={0x1B: 0x01},
+         mem=[(SCREEN + 210, bytes([FULL]))])
+    for name, code, colour, glyph_on in [
+            ("multicolour characters: a cell's pairs %01", G55, 9, True),
+            ("multicolour characters: a cell's pairs %10", GAA, 9, True),
+            ("multicolour characters: a cell in hires (colour bit 3 clear), %01010101", G55, 1, True)]:
+        m = []
+        _cell(m, 5, 10, code, colour)
+        case(name, [(0, 104, 90, SOLID)], regs={0x16: 0x18}, mem=m)
+    case("extended colour: code $41 shows glyph 1", [(0, 104, 90, SOLID)], regs={0x11: 0x5B},
+         mem=[(SCREEN + 210, bytes([0x40 | FULL]))])
+    case("extended colour: code $C0 shows glyph 0", [(0, 104, 90, SOLID)], regs={0x11: 0x5B},
+         mem=[(SCREEN + 210, bytes([0xC0])), (CHARS + 0x600, bytes([0xFF] * 8))])
+    cell = BITMAP + 5 * 320 + 10 * 8                 # the bitmap's cell at row 5, column 10
+    case("bitmap: a cell's bits set", [(0, 104, 90, SOLID)], regs={0x11: 0x3B, 0x18: 0x18},
+         mem=[(cell, bytes([0xFF] * 8))])
+    case("bitmap: a cell's bits clear", [(0, 104, 90, SOLID)], regs={0x11: 0x3B, 0x18: 0x18},
+         mem=[(SCREEN + 210, bytes([0xFF]))])
+    case("multicolour bitmap: pairs %01", [(0, 104, 90, SOLID)], regs={0x11: 0x3B, 0x16: 0x18, 0x18: 0x18},
+         mem=[(cell, bytes([0x55] * 8))])
+    case("multicolour bitmap: pairs %10", [(0, 104, 90, SOLID)], regs={0x11: 0x3B, 0x16: 0x18, 0x18: 0x18},
+         mem=[(cell, bytes([0xAA] * 8))])
+    case("the invalid mode, extended colour and bitmap: bits set", [(0, 104, 90, SOLID)],
+         regs={0x11: 0x7B, 0x18: 0x18}, mem=[(cell, bytes([0xFF] * 8))])
+    case("the invalid mode, extended colour and bitmap: the byte read with address bits 9 and 10 clear",
+         [(0, 104, 90, SOLID)], regs={0x11: 0x7B, 0x18: 0x18}, mem=[(cell - BITMAP & ~0x600 | BITMAP, bytes([0xFF] * 8))])
+    case("the invalid mode, extended colour and multicolour bitmap: pairs %01", [(0, 104, 90, SOLID)],
+         regs={0x11: 0x7B, 0x16: 0x18, 0x18: 0x18}, mem=[(cell, bytes([0x55] * 8))])
+    m = []
+    _cell(m, 5, 10, GAA, 9)
+    case("the invalid mode, extended colour and multicolour characters: pairs %10", [(0, 104, 90, SOLID)],
+         regs={0x11: 0x5B, 0x16: 0x18}, mem=m)
+    m = []
+    _cell(m, 5, 10, G55, 9)
+    case("the invalid mode, extended colour and multicolour characters: pairs %01", [(0, 104, 90, SOLID)],
+         regs={0x11: 0x5B, 0x16: 0x18}, mem=m)
+    case("the display off", [(0, 104, 90, SOLID)], regs={0x11: 0x0B}, mem=[(SCREEN + 210, bytes([FULL]))])
+    case("38 columns: a character under the left border", [(0, 7, 90, SOLID)], regs={0x16: 0x00},
+         mem=[(SCREEN + 200, bytes([FULL]))])
+    case("40 columns: the same character in the window", [(0, 7, 90, SOLID)],
+         mem=[(SCREEN + 200, bytes([FULL]))])
+    case("24 rows: a character under the top border", [(0, 104, 33, SOLID)], regs={0x11: 0x13},
+         mem=[(SCREEN + 10, bytes([FULL]))], read=100)
+    case("25 rows: the same character in the window", [(0, 104, 33, SOLID)],
+         mem=[(SCREEN + 10, bytes([FULL]))], read=100)
+    case("the idle pattern above the first row, Y scroll 7", [(0, 104, 33, SOLID)], regs={0x11: 0x1F},
+         mem=[(IDLE, b"\xFF")], read=100)
+    case("the X scroll: a dot on the shifted pixel", [(0, 107, 90, DOT)], regs={0x16: 0x0B},
+         mem=[(SCREEN + 210, bytes([LEFT]))])
+    case("the X scroll: a dot a pixel to its left", [(0, 106, 90, DOT)], regs={0x16: 0x0B},
+         mem=[(SCREEN + 210, bytes([LEFT]))])
+    case("the Y scroll: a dot on the shifted line", [(0, 104, 92, DOT)], regs={0x11: 0x1D},
+         mem=[(SCREEN + 210, bytes([TOP]))])
+    case("the Y scroll: a dot a line above it", [(0, 104, 91, DOT)], regs={0x11: 0x1D},
+         mem=[(SCREEN + 210, bytes([TOP]))])
+    # when in the line a bit is set: a dot on the sprite's first line, line 101, read on that line
+    # in a cycle chosen, with the dot at each X around the pixels the chip draws then. The read of
+    # $D01F comes 7 cycles after that of $D01E.
+    full = [(SCREEN, bytes([FULL] * 1000))]
+    for cyc in (34, 46):
+        for x in range(8 * (cyc - 15) - 12, 8 * (cyc - 15) + 13):
+            case(f"timing, sprite against sprite: dots at X {x}, read in cycle {cyc}",
+                 [(0, x, 100, DOT), (1, x, 100, DOT)], clear=99, read=101, at=cyc)
+    for cyc in (41, 52):
+        for x in range(8 * (cyc - 15) - 12, 8 * (cyc - 15) + 13):
+            case(f"timing, sprite against the characters: a dot at X {x}, read in cycle {cyc}",
+                 [(0, x, 100, DOT)], mem=full, clear=99, read=101, at=cyc - 7)
+    return out
+
+
+def collide_program():
+    """(code, labels). Each pass writes $D000-$D02E, $DD02 and $DD00 from the table, waits for
+    the clear line and reads $D01E and $D01F, waits for the read line, runs a DEX loop (X from
+    the table, or set by the measurement to place the read in a cycle), and reads them again."""
+    from asm6502 import assemble
+    t = COLLIDE_TABLE
+    return assemble(f"""
+            sei
+            lda #$35
+            sta $01
+    frame:  ldx #46
+    regs:   lda ${t:04x},x
+            sta $d000,x
+            dex
+            bpl regs
+            lda ${t + 48:04x}
+            sta $dd02
+            lda ${t + 47:04x}
+            sta $dd00
+    w1:     lda $d011
+            and #$80
+            cmp ${t + 49:04x}
+            bne w1
+            lda $d012
+            cmp ${t + 50:04x}
+            bne w1
+    clr:    lda $d01e
+            lda $d01f
+    w2:     lda $d011
+            and #$80
+            cmp ${t + 51:04x}
+            bne w2
+            lda $d012
+            cmp ${t + 52:04x}
+            bne w2
+            ldx ${t + 53:04x}
+    dl:     dex
+            bne dl
+    rd:     lda $d01e
+            sta $02
+            lda $d01f
+            sta $03
+            jmp frame
+    """, COLLIDE_ORG)
+
+
+def collide_table(c):
+    return c["regs"] + bytes(c["cia2"]) + bytes([0x80 if c["clear"] > 255 else 0, c["clear"] & 255,
+                                                0x80 if c["read"] > 255 else 0, c["read"] & 255, 1])
+
+
+def _collide_beam(m, labels):
+    """The stopwatch's origin from the top of the frame: steps through the wait for the read
+    line, sampling the line, until the samples pin it to the cycle."""
+    samples = []
+    for _ in range(40):
+        _stop_at(m, labels["w2"])
+        for _ in range(30):
+            samples.append((m.stopwatch(), m.vic()[0]))
+            m.j("vice_execution_step", {"count": 1})
+        o, spread = phase(samples, 312, 63)
+        if spread == 0:
+            return o
+    raise RuntimeError(f"the beam's position stayed uncertain by {spread} cycles")
+
+
+def _read(m, o):
+    """Step the LDA the machine is stopped at: [line, cycle] of the cycle it read in, and A."""
+    m.j("vice_execution_step", {"count": 1})
+    return _at((o + m.stopwatch() - 1) % FRAME_CYCLES), m.j("vice_registers_get")["A"]
+
+
+def _mem_record(mem):
+    """Memory as the fixture keeps it: [address, hex], or [address, hex of one byte, count] for a
+    run of one byte."""
+    return [[a, b[:1].hex(), len(b)] if len(b) > 16 and b == b[:1] * len(b) else [a, b.hex()] for a, b in mem]
+
+
+def collide_measure():
+    """Run every case in the emulator. The record, as the fixture holds it."""
+    from tools import vice_build
+    from vice import poke
+    m = fresh()
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    if std != "PAL":
+        raise SystemExit(f"the machine is {std}: the cases are written for PAL's 312 lines of 63 cycles")
+    code, labels = collide_program()
+    cases = collide_cases()
+    poke(m.rpc, COLLIDE_ORG, code)
+    poke(m.rpc, COLLIDE_TABLE, collide_table(cases[0]))
+    m.j("vice_registers_set", {"register": "PC", "value": COLLIDE_ORG})
+    _stop_at(m, labels["frame"])
+    o = _collide_beam(m, labels)
+    regs, cia2, base = collide_base()
+    out = {"source": "kit/c64/frame.py collide --record", "recorded": time.strftime("%Y-%m-%d"),
+           "emulator": f"VICE {m.j('vice_ping').get('version', '?')}, {vice_build()}", "standard": std,
+           "program": {"org": COLLIDE_ORG, "code": code.hex(), "table": COLLIDE_TABLE},
+           "base": {"regs": bytes(regs).hex(), "cia2": cia2, "mem": _mem_record(base)},
+           "cases": []}
+    for c in cases:
+        _stop_at(m, labels["frame"])
+        mem = bytearray(0x4000)
+        colour = bytearray(1000)
+        for a, b in base + c["mem"]:
+            if a >= 0xD800:
+                colour[a - 0xD800:a - 0xD800 + len(b)] = b
+            else:
+                mem[a - 0x4000:a - 0x4000 + len(b)] = b
+        for i in range(0, 0x4000, 0x1000):
+            poke(m.rpc, 0x4000 + i, mem[i:i + 0x1000])
+        poke(m.rpc, 0xD800, colour)
+        poke(m.rpc, COLLIDE_TABLE, collide_table(c))
+        _stop_at(m, labels["frame"])             # one whole pass with the scene before the reads
+        for tries in range(80):
+            _stop_at(m, labels["clr"])
+            c1, _ = _read(m, o)
+            c2, _ = _read(m, o)
+            if c["at"] is None:
+                break
+            # the DEX loop from here takes 5X - 1 cycles, and the LDA after it reads in its 4th: a
+            # count that puts the read in the cycle wanted, when the poll left it a multiple of 5 away
+            p = (o + _stop_at(m, labels["dl"])) % FRAME_CYCLES
+            want = c["read"] * 63 + c["at"] - 1
+            if (want - p - 2) % 5 == 0 and 1 <= (want - p - 2) // 5 <= 255:
+                m.j("vice_registers_set", {"register": "X", "value": (want - p - 2) // 5})
+                break
+            # a pass of another length, so that the next one's poll leaves the read somewhere else
+            m.j("vice_registers_set", {"register": "X", "value": 1 + tries % 7})
+        else:
+            raise RuntimeError(f"{c['name']}: eighty passes left the read out of reach of cycle {c['at']}")
+        _stop_at(m, labels["rd"])
+        r1, v1 = _read(m, o)
+        if c["at"] is not None and r1 != [c["read"], c["at"]]:
+            raise RuntimeError(f"{c['name']}: read on line {r1[0]} cycle {r1[1]}, not in cycle {c['at']}")
+        m.j("vice_execution_step", {"count": 1})
+        r2, v2 = _read(m, o)
+        rec = {"name": c["name"], "regs": c["regs"].hex(), "mem": _mem_record(c["mem"]),
+               "clear": [c1, c2], "read": [r1, r2], "d01e": v1, "d01f": v2}
+        print(f"{c['name']}: $D01E ${v1:02X} (line {r1[0]} cycle {r1[1]}), $D01F ${v2:02X} "
+              f"(line {r2[0]} cycle {r2[1]})", flush=True)
+        out["cases"].append(rec)
+    m._call(m.rpc, "vice_execution_run", {})
+    return out
+
+
+def collide_write(out):
+    """The fixture, a case to a line."""
+    lines = ["{"] + [f" {json.dumps(k)}: {json.dumps(v)}," for k, v in out.items() if k != "cases"]
+    rows = out["cases"]
+    lines += [' "cases": ['] + [f"  {json.dumps(r)}" + ("," if i < len(rows) - 1 else "") for i, r in enumerate(rows)]
+    with open(COLLIDE_FIXTURE, "w") as f:
+        f.write("\n".join(lines + [" ]", "}"]) + "\n")
+
+
+def collide_check():
+    """Measure again and compare with the fixture. True if every case agrees."""
+    want = json.load(open(COLLIDE_FIXTURE))
+    got = collide_measure()
+    bad = []
+    if len(want["cases"]) != len(got["cases"]):
+        bad.append(f"the fixture has {len(want['cases'])} cases, frame.py {len(got['cases'])}")
+    for w, g in zip(want["cases"], got["cases"]):
+        if w["name"] != g["name"] or w["regs"] != g["regs"] or w["mem"] != g["mem"]:
+            bad.append(f"{g['name']}: the case is not the fixture's ({w['name']})")
+        elif (w["d01e"], w["d01f"]) != (g["d01e"], g["d01f"]):
+            bad.append(f"{g['name']}: the fixture has ${w['d01e']:02X} ${w['d01f']:02X}, the emulator "
+                       f"${g['d01e']:02X} ${g['d01f']:02X}")
+    for b in bad:
+        print("  " + b)
+    print(f"the sprite collisions: {'they agree with' if not bad else 'FAIL, they differ from'} "
+          f"{os.path.relpath(COLLIDE_FIXTURE, ROOT)} ({want['recorded']}, {want['emulator']})")
+    return not bad
+
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -955,6 +1292,12 @@ if __name__ == "__main__":
             print(f"wrote {os.path.relpath(DMA_FIXTURE, ROOT)}")
         else:
             sys.exit(0 if dma_check() else 1)
+    elif argv[0] == "collide":
+        if "--record" in argv:
+            collide_write(collide_measure())
+            print(f"wrote {os.path.relpath(COLLIDE_FIXTURE, ROOT)}")
+        else:
+            sys.exit(0 if collide_check() else 1)
     elif argv[0] == "compare":
         sys.exit(1 if compare(argv[1], argv[2] if len(argv) > 2 else None) else 0)
     elif argv[0] == "trim":

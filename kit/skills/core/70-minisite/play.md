@@ -26,7 +26,8 @@ recording within a menu or two.
 With no demonstration to replay, run the game's own code beside the port
 and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
 machine for it: the simulator with a raster interrupt, the keyboard, the
-joystick and colour RAM around it, started from the listing's memory
+joystick and colour RAM around it (and with `collide: true` the sprite
+collisions), started from the listing's memory
 or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
 interrupt set as the game left it, counting passes where the main loop
 begins. On the 48K Spectrum,
@@ -150,6 +151,10 @@ file's header is its manual.
   not on `machine.js`, so it needs the chip behaviour the game leans on:
   the raster latch (the platform reference), the timers a speech or
   sample player counts on, sprite collisions if the game reads them.
+  On the C64 the collisions are `site/lib/collide.js`, the model
+  `machine.js` runs with `collide: true`, held against VICE: give it
+  the page's clock at each read and write of the chip, and never write
+  a model of your own.
   Run the page's runtime in node from the cold start before opening a
   browser: a game that stalls there (waiting for an interrupt the page
   never raises) stalls in the browser with nothing to say why.
