@@ -135,6 +135,14 @@ const input = (n, m) => {
     const r2 = lockstep(P, { irqBytes: [0x2005] }).run({ passes: 50, onPass: input });
     check('irqBytes read ' + lines + ' lines on: 50 passes identical', r2.ok && r2.passes === 50, true);
   }
+  // the machine's own hooks given to the lockstep: on the machine for the run, on each copy run
+  // on ahead too, and the machine's own again after
+  let calls = 0;
+  const lh = lockstep(withByte(), { irqBytes: [0x2005], hooks: { [ADDR.WORK]: () => { calls++; return false; } } });
+  const rh = lh.run({ passes: 20, onPass: input });
+  check('hooks: 20 passes identical', rh.ok && rh.passes === 20, true);
+  check('hooks: run on the copies run on ahead too', calls, 40);
+  check('hooks: off the machine after the run', lh.m.hooks[ADDR.WORK], undefined);
   let msg = '';
   try { lockstep(withByte()).run({ passes: 2 }); } catch (e) { msg = e.message; }
   check('irqByte of a byte not listed', /\$2005 through irqByte, and it is not in irqBytes/.test(msg), true);
@@ -456,6 +464,33 @@ const TICK = (() => {
   };
   r = checkGen(T, 'tick', 0x1040, { frame: 0xA2 });
   check('a routine that works and then polls', r.ok && r.frames === 1, true);
+}
+
+// 17. One handler for the raster and CIA 1's timer A, which reads $D019 to tell them apart: the
+// replay gives the port's handler the flags the game's read, so it takes the game's branch.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x30, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0,                            // the raster at line $30
+    0xA9, 0x25, 0x8D, 0x04, 0xDC, 0xA9, 0x40, 0x8D, 0x05, 0xDC, 0xA9, 0x81, 0x8D, 0x0D, 0xDC,
+    0xA9, 0x11, 0x8D, 0x0E, 0xDC, 0x58, 0x4C, 0x40, 0x10);                                  // timer A every $4026 cycles
+  put(0x1040, 0x20, 0x50, 0x10, 0x4C, 0x40, 0x10);                                        // JSR work, JMP
+  put(0x1050, 0xA2, 0x00, 0xE8, 0xD0, 0xFD, 0xEE, 0x03, 0x20, 0x60);                      // 256 INX, INC $2003, RTS
+  put(0x1100, 0x48, 0xAD, 0x19, 0xD0, 0x29, 0x01, 0xF0, 0x08, 0x8D, 0x19, 0xD0, 0xEE, 0x00, 0x20, 0x68, 0x40,
+    0xEE, 0x01, 0x20, 0xAD, 0x0D, 0xDC, 0x68, 0x40);                                        // raster: INC $2000; timer: INC $2001
+  const m = new Machine({ ram, pc: 0x1000, passAt: 0x1040, cia: true, port: { dir: 0x2F, data: 0x35 } });
+  m.runUntilPass(q => q.passes >= 3);
+  const M = new Uint8Array(65536), P = { M };
+  P.irq = function () {
+    if (P.io.vicRead(0x19) & 1) { P.io.vicWrite(0x19, 1); M[0x2000] = (M[0x2000] + 1) & 255; }
+    else { M[0x2001] = (M[0x2001] + 1) & 255; P.io.ciaRead(0x0D); }
+  };
+  const program = function* () { for (;;) { yield { cp: 0x1040 }; yield { cycles: 1281 }; M[0x2003] = (M[0x2003] + 1) & 255; } };
+  const n0 = [m.ram[0x2000], m.ram[0x2001]];
+  const r = new Lockstep({ machine: m, port: P, program, checkpoints: [0x1040], irqs: { 0x1100: 'irq' } }).run({ passes: 400 });
+  check('the raster and a timer through one handler: 400 passes identical', r.ok && r.passes === 400, true);
+  check('and both came', m.ram[0x2000] !== n0[0] && m.ram[0x2001] !== n0[1], true);
 }
 
 process.exit(fails ? 1 : 0);

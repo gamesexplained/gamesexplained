@@ -33,6 +33,16 @@ A script that applies a checker's corrections file to the disassembler would hav
 
 VICE MCP release v3.13.2 passed all 54 of the kit's emulator checks on 16 October 2026 in the cloud container; regenerator2000 0.9.20 built from crates.io.
 
+## The Play port
+
+The Play tab, 16 and 17 October 2026, after Silver: the whole game ported to JavaScript and run on the page.
+
+- `70-minisite/play.md`, "Check the fit on sessions it was not fitted on, and on every kind of play the page offers: a scene the fit never saw can run fast by a routine it never costed": play kept time from the first fit, and the title's opening still ran 23.5 % fast. The viewport's opening step runs only inside loops that wait for the clock, which the fit leaves out, so it had no cost. It is now timed alone (`port/scripts/time-routines.js`) and the menus and the title are timed against the game key by key (`port/test/t-page.js`). The lesson is in `kit/lessons/2026-10-17-castle-master-play.md`.
+- `play.md`, "Read what the interrupt writes through one function": the clock's tick, the lightning's countdown and the strength are read through `irqByte`, so the lockstep hands the port every value the game read in a stretch.
+- `kit/c64/lockstep.js` takes `hooks`, which it puts on the machine and on the copies it runs ahead on, and those copies keep the machine's ROMs. The game saves and loads through the KERNAL with interrupts on, so the copy needs the KERNAL's interrupt entry and the hooks that stand in for its disk routines; without them it stopped at `$FFF0`. Test: section 1c of `kit/c64/test_lockstep.js`.
+- What cost the most time: the menus' pace, after play's was right. Three things had to be found one at a time: the opening step with no cost, a waiting loop priced at nothing that stopped the page's clock (now a floor of 10 cycles a stretch, `port/page/runtime.js`), and stops recorded at the frame shown rather than the frame the program had reached.
+- Candidate: a key the game reads once a pass is missed by a test that taps it for less than a pass, as it is on the C64. `test_play.js` holds I until the information screen is up. One game so far.
+
 ## Earlier runs
 
 ### Lesson and correction

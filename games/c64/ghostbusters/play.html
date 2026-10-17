@@ -89,6 +89,7 @@ section table{margin:6px 0 18px}
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="sound" aria-pressed="true">Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="f1" title="F1 on the title: a new game, with the interview">F1</button>
       <button type="button" data-act="f3" title="F3 on the title: the account you typed last, straight to the cars">F3</button>
@@ -201,6 +202,7 @@ section table{margin:6px 0 18px}
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
 <script>
 // Ghostbusters, Play port, group "frame": the per-frame steps $6FF0-$746D, the input ($96CA,
 // $96E8), the text engine and number printing ($9B90-$9DB9, $9063, $95B9, $99CC), money and PK
@@ -5103,6 +5105,7 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   // --- drawing -----------------------------------------------------------------------------------
   const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
   const ctx = cv.getContext('2d');
+  CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
   let img = null, keep = {};
   function draw() {
     const f = rt && rt.lastFrame(); if (!f) return;

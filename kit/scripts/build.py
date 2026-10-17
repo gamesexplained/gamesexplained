@@ -1393,7 +1393,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 # the simulator the kit's tests hold pages to (kit/c64/cpu6502.js, "On a page").
 KIT_LIB = {"cpu6502.js": "kit/c64/cpu6502.js"}
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js", "cpu6502.js", "activity.js")
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js", "cpu6502.js", "activity.js", "crt.js")
 
 
 def lib_versions(out_root):

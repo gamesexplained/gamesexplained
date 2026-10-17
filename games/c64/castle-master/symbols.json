@@ -19655,7 +19655,7 @@
   {
    "address": 9328,
    "type": "line",
-   "text": "MUL_S16_S8_TO_S24 ($2470-$24FD)\nPurpose: multiply a signed 16-bit value by a signed 8-bit value using shift/add arithmetic.\nInputs: signed factor in A low/X high, signed factor in Y, and interrupt-state convention byte $1C72.\nOutputs: signed 24-bit product in $82-$84.\nAssumptions: binary two's-complement operands; $1C72 accurately says whether the engine already owns the interrupt-disabled arithmetic critical section.\nClobbers: A, X, Y, flags, $82-$8C, and sign scratch $1056.\nHardware changes: executes SEI; executes CLI before return only when $1C72=0, otherwise leaves interrupts disabled; no VIC-II, SID, or CIA register changes."
+   "text": "MUL_S16_S8_TO_S24 ($2470-$24FD)\nPurpose: multiply a signed 16-bit value by a signed 8-bit value using shift/add arithmetic.\nInputs: signed factor in A low/X high, signed factor in Y, and interrupt-state convention byte $1C72.\nOutputs: signed 24-bit product in $82-$84.\nAssumptions: binary two's-complement operands; $1C72 accurately says whether the engine already owns the interrupt-disabled arithmetic critical section.\nClobbers: A, X, flags, $82-$8C, and sign scratch $1056; Y is kept.\nHardware changes: executes SEI; executes CLI before return only when $1C72=0, otherwise leaves interrupts disabled; no VIC-II, SID, or CIA register changes."
   },
   {
    "address": 9470,
@@ -19675,7 +19675,7 @@
   {
    "address": 9795,
    "type": "line",
-   "text": "MUL_S8_S8_TO_S16 ($2643-$26AA)\nPurpose: multiply two signed 8-bit values using shift/add arithmetic.\nInputs: signed factors in X and Y.\nOutputs: signed 16-bit product in $82/$83; zero input produces zero output through the fast path.\nAssumptions: binary two's-complement operands and writable shared arithmetic workspace.\nClobbers: A, X, Y, flags, $82-$88, $8C, and sign scratch $1056.\nHardware changes: none."
+   "text": "MUL_S8_S8_TO_S16 ($2643-$26AA)\nPurpose: multiply two signed 8-bit values using shift/add arithmetic.\nInputs: signed factors in X and Y.\nOutputs: signed 16-bit product in $82/$83; zero input produces zero output through the fast path.\nAssumptions: binary two's-complement operands and writable shared arithmetic workspace.\nClobbers: A, X, flags, $82-$88, $8C, and sign scratch $1056; Y is kept.\nHardware changes: none."
   },
   {
    "address": 9899,
@@ -19870,7 +19870,7 @@
   {
    "address": 15208,
    "type": "line",
-   "text": "Purpose: Classify one camera-space vertex against the selected clip plane.\nInputs: selector $104B and the current signed x, y, z vertex. It evaluates 1: x+z, 2: y+z, 3: z-x, 4: z-y, default: z.\nOutputs: Y=$00 inside/positive, $01 outside/negative, or $FF on-plane. This proves volume |x|<=z, |y|<=z, z>=0.\nAssumptions: Caller-established pointers, counts, tables, and scratch state described in Inputs are valid.\nClobbers: A, X, flags and arithmetic scratch; no C64 hardware registers are changed.\nHardware changes: None."
+   "text": "Purpose: Classify one camera-space vertex against the selected clip plane.\nInputs: selector $104B and the current signed x, y, z vertex. It evaluates 1: x+z, 2: y+z, 3: z-x, 4: z-y, default: z.\nOutputs: Y=$00 inside/positive, $01 outside/negative, or $FF on-plane. This proves volume |x|<=z, |y|<=z, z>=0.\nAssumptions: Caller-established pointers, counts, tables, and scratch state described in Inputs are valid.\nClobbers: A, flags and arithmetic scratch; X is kept; no C64 hardware registers are changed.\nHardware changes: None."
   },
   {
    "address": 15365,
@@ -19905,7 +19905,7 @@
   {
    "address": 16101,
    "type": "line",
-   "text": "Purpose: Classify projected polygon winding.\nInputs: projected 2D vertices.\nOutputs: signed-area determinant sign selecting front/back packed color nybble; chosen color zero discards the face.\nAssumptions: a valid projected polygon.\nClobbers: A, X, Y, flags and determinant scratch; no C64 hardware registers are changed.\nHardware changes: None."
+   "text": "Purpose: Classify projected polygon winding.\nInputs: projected 2D vertices.\nOutputs: signed-area determinant sign selecting front/back packed color nybble; chosen color zero discards the face.\nAssumptions: a valid projected polygon.\nClobbers: A, X, flags and determinant scratch; Y and $7A/$7B are pushed and restored; no C64 hardware registers are changed.\nHardware changes: None."
   },
   {
    "address": 16238,
@@ -20305,7 +20305,7 @@
   {
    "address": 25320,
    "type": "line",
-   "text": "DISPATCH_AIM_FIRE_ACTIVATE ($62E8-$659B)\nPurpose: toggle aim mode, toggle the centre sight, move the crosshair selector, fire at a selected face/object, or activate a nearby selected object.\nInputs: decoded actions; aim flag $2467; sight latch $246B; selector $2465/$2466; rendered selection data; current objects.\nOutputs: updated aim/selector/sight state. A shot stores 4 in $1084, or 5 (bit 0 as well) when game bit 30 is set and the area is neither $10 nor $15. An activation sets $1084 bit 1 when the object is near enough and its condition stream holds a token with both top bits set, and otherwise shows the message at $1470 or $1480. Event object $1082 and sound/render requests.\nAssumptions: joystick fire outside aim mode is dispatched as aim-on, fire, aim-off by UPDATE_FRAME_INPUT_EVENTS.\nClobbers: A, X, Y, flags and picker/action scratch.\nHardware changes: updates sprite/display state through aim presentation and may request SID effects."
+   "text": "DISPATCH_AIM_FIRE_ACTIVATE ($62E8-$659B)\nPurpose: toggle aim mode, toggle the centre sight, move the crosshair selector, fire at a selected face/object, or activate a nearby selected object.\nInputs: decoded actions; aim flag $2467; sight latch $246B; selector $2465/$2466; rendered selection data; current objects.\nOutputs: updated aim/selector/sight state. A shot stores 4 in $1084, or 5 (bit 0 as well) when game bit 30 is set and the area is neither $10 nor $15. An activation sets $1084 bit 1 when the object is near enough and its condition stream holds a token with both top bits set, one too far away shows the message at $1470, and one near enough with no such token the message at $1480. Nothing picked ($1082 = 0), an object FIND_OBJECT_BY_ID cannot find, or one larger than five times the area scale $2416 on an axis ends the action with no message. Event object $1082 and sound/render requests.\nAssumptions: joystick fire outside aim mode is dispatched as aim-on, fire, aim-off by UPDATE_FRAME_INPUT_EVENTS.\nClobbers: A, X, Y, flags and picker/action scratch.\nHardware changes: updates sprite/display state through aim presentation and may request SID effects."
   },
   {
    "address": 26012,
@@ -20485,7 +20485,7 @@
   {
    "address": 31491,
    "type": "line",
-   "text": "PROMPT_SAVE_DEVICE_AND_NAME ($7B03-$7C59)\nPurpose: choose tape or disk and collect a bounded five-character filename for save/load.\nInputs: menu action and decoded controls.\nOutputs: device 1 for T or device 8 for D, filename bytes/length, then dispatch to the KERNAL-backed save/load path.\nAssumptions: at most five filename characters are accepted.\nClobbers: A, X, Y, flags, filename and prompt state.\nHardware changes: input uses CIA scanning; LOAD_SAVE_DISPATCH later banks in and calls KERNAL file services.\nEvidence: exact command branches, bounds and KERNAL setup verified."
+   "text": "PROMPT_SAVE_DEVICE_AND_NAME ($7B03-$7C59)\nPurpose: choose tape or disk and collect a bounded five-character filename for save/load.\nInputs: menu action and decoded controls.\nOutputs: device 1 for T or device 8 for D, filename bytes/length; it returns to LOAD_SAVE_DISPATCH ($0446), its only caller, which makes the KERNAL calls.\nAssumptions: at most five filename characters are accepted.\nClobbers: A, X, Y, flags, filename and prompt state.\nHardware changes: input uses CIA scanning; LOAD_SAVE_DISPATCH later banks in and calls KERNAL file services.\nEvidence: exact command branches, bounds and KERNAL setup verified."
   },
   {
    "address": 31834,

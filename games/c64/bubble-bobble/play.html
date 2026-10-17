@@ -92,6 +92,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-levels" id="pl-levels" aria-label="Start on a round">
@@ -147,6 +148,7 @@ section table{margin:6px 0 18px}
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
 <script>
 /* port/src/core.js */
 // The port's frame: P, the game's routines on the game's memory. Each group of routines is a file
@@ -8340,6 +8342,7 @@ window.BB_COST = {
 const $ = id => document.getElementById(id);
 const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = BBRuntime.FRAME, FRAME_MS = 1000 * FRAME / 985248;
 let image = null, rt = null, running = false, paused = false;

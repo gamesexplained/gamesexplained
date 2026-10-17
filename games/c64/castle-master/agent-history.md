@@ -92,3 +92,27 @@ and voice 2's frequency in the alarm; and the note length in
 `facts.md` (it is the byte after the pitch; the nibble the old text gave
 belongs to the instrument's waveform steps) had been right in the
 listing all along.
+
+## 16 and 17 October 2026: the Play tab
+
+After Silver, the whole game was ported to JavaScript for a Play tab, as
+Space Rogue's and Mercenary's were: 123 routines, each checked alone
+against the game's own on the simulator, then the main loop in lockstep
+from 199 moments, the title's six choices from the loader's jump, and the
+information screen's saves and loads. The page carries the game's memory
+with every instruction byte zeroed except 192 the game uses as variables,
+and the music driver, which runs on the site's shared 6502.
+
+Play kept the game's pace from the first fit, on 8,240 passes. The
+title's opening ran 23.5 % fast: its 60 steps run between clock ticks,
+in loops the fit leaves out, so the step had no cost. Timing it alone,
+with the lines each step draws and clears counted, put it right, and the
+menus and the information screen were then timed against the game key by
+key; each key is taken within 2 % of the game's time. A load from the
+information screen first failed in the page's test, which tapped I for
+three frames: the game reads the keys once a pass, which in that view
+takes longer, and the C64 misses such a tap as well.
+
+A checker that wrote none of the port compared the comments of the 114
+routines it covers with the port, and found six wrong
+(`port/corrections.md`).
