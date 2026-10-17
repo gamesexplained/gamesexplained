@@ -14,7 +14,7 @@
 //   check({ name: 'clock', outs: ['a'], cases: 300 });
 // Options: entry (an address, for a place that is not a label, with bank), states (a filter of
 // state names), per (cases taken from each state, default 4), passes (how far to run from each
-// state, default 40, with the stick held one way and then another unless still), most (how many states, spread over them, default 60), ignore (addresses or [first, last] ranges), show (failures printed).
+// state, default 40), play (how the player plays meanwhile: walk, still or mix; PLAY), most (how many states, spread over them, default 60), ignore (addresses or [first, last] ranges), show (failures printed).
 const path = require('path');
 const lib = require('./lib.js');
 const standin = require('./standin.js');
@@ -51,39 +51,84 @@ class CaseIO {
 // joy, ear, border, state }.
 const cache = new Map();
 const J = lib.JOY, WALK = [J.RIGHT, J.UP, J.LEFT, J.DOWN, J.UP | J.RIGHT, J.DOWN | J.LEFT, J.UP | J.LEFT, J.DOWN | J.RIGHT];
+// How the player plays from each state (o.play): walk, the stick held one way and then another so
+// the leader walks and the view scrolls; still; or mix, a choice every 25 frames from a seeded
+// sequence of walking, walking with fire, fire alone, a tap of SPACE (a menu) and nothing, so
+// menus open, items are used and shots fly.
+const PLAY = {
+  walk: (m, i, k0) => { m.releaseAll(); m.joy = WALK[(k0 + (i / 60 | 0)) % WALK.length]; },
+  still: () => {},
+  mix: (m, i, k0) => {
+    const slot = i / 25 | 0, at = i % 25;
+    let x = (k0 * 7919 + slot * 104729) >>> 0;
+    x = Math.imul(x ^ (x >>> 13), 0x5bd1e995) >>> 0; x = (x ^ (x >>> 15)) >>> 0;
+    const pick = x % 20, dir = WALK[(x >>> 8) % WALK.length];
+    m.releaseAll(); m.joy = 0;
+    if (pick < 9) m.joy = dir;
+    else if (pick < 12) m.joy = dir | J.FIRE;
+    else if (pick < 14) m.joy = J.FIRE;
+    else if (pick < 16) { if (at < 4) m.press('SPACE'); }
+  },
+};
+const keyOf = (address, bank, o, play) => address + ':' + bank + ':' + (o.states || '') + ':' + (o.per || 4) + ':' + (o.passes || 60) + ':' + play;
 function entries(address, bank, o = {}) {
-  const key = address + ':' + bank + ':' + (o.states || '') + ':' + (o.per || 4) + ':' + (o.passes || 60) + ':' + !!o.still;
-  if (cache.has(key)) return cache.get(key);
-  const out = [];
-  const per = o.per || 4, passes = o.passes || 40;
+  const play = o.play || (o.still ? 'still' : 'walk');
+  const key = keyOf(address, bank, o, play);
+  if (!cache.has(key)) gather([[address, bank]], o);
+  return cache.get(key);
+}
+// The cases for several routines from one run of the sessions (each routine's are those it would
+// have alone: the first `per` calls from each state).
+function gather(where, o = {}) {
+  const play = o.play || (o.still ? 'still' : 'walk');
+  where = where.filter(([a, b]) => !cache.has(keyOf(a, b, o, play)));
+  if (!where.length) return;
+  const outs = where.map(() => []);
+  const per = o.per || 4, passes = o.passes || 40, every = o.every || 1;
   const all = lib.states(typeof o.states === 'string' ? o.states : '');
   const most = o.most || 60, step = Math.max(1, all.length / most);
   for (let i = 0; i < all.length; i += step) {
     const f = all[Math.floor(i)];
     const m = lib.restore(lib.readState(f));
-    let got = 0, seen = 0;
-    const every = o.every || 1;
-    m.hooks[address] = mm => {
-      if (bank >= 0 && (mm.paging & 7) !== bank) return false;
-      if (got >= per || seen++ % every) return false;
-      const cpu = mm.cpu, regs = {};
-      for (const k of ['a', 'f', 'b', 'c', 'd', 'e', 'h', 'l', 'ix', 'iy', 'af_', 'bc_', 'de_', 'hl_']) regs[k] = cpu[k];
-      out.push({ M: mm.ram.slice(), banks: [0, 1, 2, 3, 4, 5, 6, 7].map(n => mm.bank(n).slice()), paging: mm.paging,
-        ay: { sel: mm.ay.sel, regs: Array.from(mm.ay.regs) }, regs, sp: cpu.sp, keys: [...mm.keys], joy: mm.joy, ear: mm.ear,
-        border: mm.border, state: f });
-      got++;
-      return false;
-    };
-    // the stick held one way and then another, so the leader walks and the view scrolls
+    const got = where.map(() => 0), seen = where.map(() => 0);
+    const at = new Map();
+    where.forEach(([address, bank], j) => { if (!at.has(address)) at.set(address, []); at.get(address).push([bank, j]); });
+    for (const [address, list] of at) {
+      m.hooks[address] = mm => {
+        for (const [bank, j] of list) {
+          if (bank >= 0 && (mm.paging & 7) !== bank) continue;
+          if (got[j] >= per || seen[j]++ % every) continue;
+          const cpu = mm.cpu, regs = {};
+          for (const k of ['a', 'f', 'b', 'c', 'd', 'e', 'h', 'l', 'ix', 'iy', 'af_', 'bc_', 'de_', 'hl_']) regs[k] = cpu[k];
+          outs[j].push({ M: mm.ram.slice(), banks: [0, 1, 2, 3, 4, 5, 6, 7].map(n => mm.bank(n).slice()), paging: mm.paging,
+            ay: { sel: mm.ay.sel, regs: Array.from(mm.ay.regs) }, regs, sp: cpu.sp, keys: [...mm.keys], joy: mm.joy, ear: mm.ear,
+            border: mm.border, state: f });
+          got[j]++;
+        }
+        return false;
+      };
+    }
     const k0 = Math.floor(i);
-    for (let i = 0; i < passes * 8 && got < per; i++) {
-      if (!o.still) { m.releaseAll(); m.joy = WALK[(k0 + (i / 60 | 0)) % WALK.length]; }
+    for (let i = 0; i < passes * 8 && got.some(g => g < per); i++) {
+      PLAY[play](m, i, k0);
       m.runFrames(1);
     }
   }
-  const list = typeof o.states === 'function' ? out.filter(o.states) : out;
-  cache.set(key, list);
-  return list;
+  where.forEach(([address, bank], j) => {
+    const list = typeof o.states === 'function' ? outs[j].filter(o.states) : outs[j];
+    cache.set(keyOf(address, bank, o, play), list);
+  });
+}
+// gather by names and entries: ['name', 0xC260, ...]
+function prefetch(names, o = {}) {
+  const L = standin.labels();
+  if (ONLY) names = names.filter(n => wanted(typeof n === 'number' ? { entry: n } : { name: n }));
+  gather(names.map(n => {
+    if (typeof n === 'number') return [n, n < 0xC000 ? -1 : 3];
+    const e = L.byName.get(n);
+    if (!e) throw new Error('prefetch: no label ' + n);
+    return [e.a, e.bank];
+  }), o);
 }
 
 const hex = lib.hex, hex2 = v => '$' + (v & 255).toString(16).toUpperCase().padStart(2, '0');
@@ -105,7 +150,11 @@ function snapshot(s) {
   return { banks, paging: s.ioObj.paging, ay: Array.from(s.ioObj.ay.regs), log: s.log.join(' ') };
 }
 
+// ONLY=name,name (or addresses in hex) in the environment checks just those
+const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
+const wanted = o => !ONLY || ONLY.includes(o.name) || (o.entry !== undefined && ONLY.includes(o.entry.toString(16)));
 function check(o) {
+  if (!wanted(o)) return { fails: 0, cases: 0 };
   const L = standin.labels();
   let address, bank;
   if (o.entry !== undefined) { address = o.entry; bank = o.bank !== undefined ? o.bank : address < 0xC000 ? -1 : 3; }
@@ -159,7 +208,12 @@ function check(o) {
       }
       if (nd > 10) diffs.push('... ' + nd + ' bytes in all');
       if (sA.paging !== sB.paging) diffs.push('$7FFD game ' + hex2(sA.paging) + ' port ' + hex2(sB.paging));
-      if (sA.log !== sB.log) diffs.push('writes: game [' + sA.log.slice(0, 200) + '] port [' + sB.log.slice(0, 200) + ']');
+      if (sA.log !== sB.log) {
+        let i = 0;
+        while (i < sA.log.length && sA.log[i] === sB.log[i]) i++;
+        i = Math.max(0, sA.log.lastIndexOf(' ', i - 1));
+        diffs.push('writes from ' + i + ': game [' + sA.log.slice(i, i + 200) + '] port [' + sB.log.slice(i, i + 200) + ']');
+      }
       const rg = standin.regsOf(Object.assign({}, rA));
       for (const k of outs) {
         let v = rB[k];
@@ -181,4 +235,4 @@ function check(o) {
   return { fails, cases: n };
 }
 
-module.exports = { check, entries, CaseIO, side };
+module.exports = { check, entries, gather, prefetch, CaseIO, side };
