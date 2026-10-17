@@ -30,8 +30,10 @@ sample: the Source tab says the listing has not had one.
   what object 15 is for, and a month's end with no capture.
 - What the small font draws for code `$2C`, the mirrored O of the
   tribe's speech (`discoveries.html`, 02).
-- Which creature is which: the types are named by behaviour, and the
-  fan map's names are matched to them by inference.
+- Which creature is which: the frames name the tentacle, the
+  pteranodon, the tyrannosaur, the rocks and `$2D`'s arm; that types
+  `$1C` to `$1F` are the fan map's boars and `$20` to `$27` its
+  ankylosaur is inferred.
 - The envelope of the AY chip is not modelled in `site/lib/ay.js`. In
   every recording the page plays, no volume has bit 4 set and registers
   11 to 13 are never written, so this game does not need it; a game that
@@ -43,5 +45,3 @@ sample: the Source tab says the listing has not had one.
   view's renderer, the area loader's output and the sound are already
   held to the game's code; the party, the creatures and the menus are
   what a port would add.
-- The plateau overview on the Maps tab with the zones and the
-  creatures' routes (bank 3 `$FB1E`, `$ED68`) drawn over it.

@@ -159,7 +159,17 @@ address below `$C000` with no part named is `main`'s.
   adds a quarter of what is left to 100.
 - Nine zones start events when the leader stands in them (bank 3
   `$FB1E`): the tribe's welcome, actor `$2D`, the capture, the altar, the
-  dynamite's place and three rivers.
+  dynamite's place and three rivers. In a river's zone the leader cannot
+  walk towards its middle line (`$FCBD`).
+- Records not in play walk their routes: twice a pass the game takes the
+  next of the 46 in turn and, when it is not an actor, moves it a step
+  (bank 3 `$E187`). Routes are numbered
+  1 to 35; a record with route 0 has none (`$F561`). Forty records start
+  on a route.
+- The classes' frames show which creature each type is: `$10`-`$13` a
+  tentacle, `$14`-`$17` a pteranodon (the only list with the carrying
+  flight, event 6 at `$F26E`), `$18`-`$1B` a tyrannosaur, `$28`-`$2C`
+  rolling rocks and `$2D` an arm reaching out of a rock (`test_cast.js`).
 
 ## Data tables
 
