@@ -243,6 +243,25 @@ function banks128(paged = 0) {
   check('128: bit 5 locks the port', m.paging + ',' + m.mem.paged, 0x21 + ',' + 1);
 }
 {
+  // An excerpt of the ROM: ROM 0's $0000-$0003 only. $7000 LD A,($0002); LD ($7100),A;
+  // LD A,$10; OUT (C),A (ROM 1); LD A,($0002)
+  const { ram, banks } = banks128();
+  at(ram, 0x7000, [0x3A, 0x02, 0x00, 0x32, 0x00, 0x71, 0x3E, 0x10, 0x01, 0xFD, 0x7F, 0xED, 0x79, 0x3A, 0x02, 0x00]);
+  const rom = new Uint8Array(0x8000);
+  rom.set([0xF3, 0x01, 0x2B, 0x69]);
+  const m = new Machine({ ram, banks, model: 128, rom, romRanges: [[0, 4]], regs: { pc: 0x7000 } });
+  for (let i = 0; i < 2; i++) m.step();
+  check('128: a byte the excerpt holds is read', ram[0x7100], 0x2B);
+  for (let i = 0; i < 3; i++) m.step();
+  let msg = '';
+  try { m.step(); } catch (e) { msg = e.message; }
+  check('128: the same address in ROM 1, outside the excerpt, stops the run', /ROM at \$0002/.test(msg), true);
+  const r = Machine.restore(m.save(), { rom, romRanges: [[0, 4]] });
+  check('128: a restored machine keeps the excerpt\'s bounds', r.romHas(2) + ',' + r.romHas(4), 'false,false');
+  r.page(0);
+  check('128: and with ROM 0 back, holds its bytes', r.romHas(3) + ',' + r.ram[3], 'true,' + 0x69);
+}
+{
   // Contention on the 128 starts at T-state 14361, and $C000 up is contended with an odd bank in:
   // a NOP fetched there at 14361 waits 6 and takes 4
   const nop = (paged, pc, t) => {

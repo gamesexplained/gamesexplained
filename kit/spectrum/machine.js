@@ -61,17 +61,20 @@
 //   instruction there. A hook may change registers and memory, return from a routine it stands in
 //   for (m.ret()) or set cpu.pc; returning true stops the run there.
 // - rom: the 16 KB ROM, a Uint8Array(16384) (on the 128, both, 32 KB: ROM 0 then ROM 1, paged by
-//   bit 4 of $7FFD); contention: false for none; tstate: the frame's
-//   T-state to start at (default 0); border: the border to start with. A .sna holds no MIC or EAR
-//   output, and ear starts 0.
+//   bit 4 of $7FFD); romRanges: [[from, to], ...], offsets into rom (to not included), when rom holds
+//   only an excerpt, the bytes a game reads (AGENTS.md, "No binaries, ever"): a fetch or a read
+//   anywhere else in the ROM stops the run as it does with no rom; contention: false for none;
+//   tstate: the frame's T-state to start at (default 0); border: the border to start with. A .sna
+//   holds no MIC or EAR output, and ear starts 0.
 // - runTStates(n), runFrames(n), runPasses(n), runUntilPass(f): run with the interrupts. frames
 //   counts the frames begun since the start.
 // - keys (a Set of key numbers), press(k), release(k), releaseAll(): the keyboard, read whenever the
 //   game scans. k is a KEY name or its number, half-row x 8 + bit.
 // - border, ear: the last values written to the ULA.
-// - save() and Machine.restore(state, { rom }): the whole machine as JSON, for tests that start from
-//   a moment of play. A state holds the game's memory (every bank, on the 128), never the ROM: it
-//   stays in the game's gitignored work/. A subclass's restore makes a machine of its own class.
+// - save() and Machine.restore(state, { rom, romRanges }): the whole machine as JSON, for tests
+//   that start from a moment of play. A state holds the game's memory (every bank, on the 128),
+//   never the ROM: it stays in the game's gitignored work/. A subclass's restore makes a machine
+//   of its own class.
 // - LINE, FRAME and delay: the machine's line, frame and contention table, by its model.
 // - portIn(port) and portOut(port, value) may be wrapped by a test or a page, to add a joystick
 //   interface or watch the ULA: they see every I/O cycle in order, with cpu.tstates as the time.
@@ -186,7 +189,7 @@ class Bus extends CPU {
   }
   contend(a) { const m = this.machine; if (m.contention && m.contended(a)) this.tstates += m.delay[this.tstates % m.FRAME]; }
   rom(a, what) {
-    if (a < 0x4000 && !this.machine.hasRom) {
+    if (a < 0x4000 && !this.machine.romHas(a)) {
       this.fail(`${what} the ROM at $${a.toString(16).toUpperCase().padStart(4, '0')}, and the machine has no rom`, { address: a });
     }
   }
@@ -247,10 +250,12 @@ class Machine {
     this.delay = m128 ? DELAY128 : DELAY;
     this.hasRom = !!opts.rom;
     this.rom = null;
+    this.romRanges = null;
     if (opts.rom) {
       const size = m128 ? 0x8000 : 0x4000;
       if (opts.rom.length !== size) throw new Error(`Machine: a ${this.model}K ROM is ${size} bytes, not ${opts.rom.length}`);
       this.rom = opts.rom;
+      if (opts.romRanges) this.romRanges = opts.romRanges.map(([f, t]) => [f, t]);
     }
     if (m128) {
       this.paging = (opts.paging || 0) & 0xFF;
@@ -294,6 +299,13 @@ class Machine {
     return top === 0x4000 || (top === 0xC000 && this.model === 128 && (this.mem.paged & 1) === 1);
   }
   bank(n) { if (this.model !== 128) throw new Error('Machine: bank() is the 128\'s'); return this.mem.bank(n); }
+  // Whether the ROM's byte at a (below $4000, in the ROM paged in) is one the machine holds.
+  romHas(a) {
+    if (!this.hasRom) return false;
+    if (!this.romRanges) return true;
+    const o = this.model === 128 ? a + ((this.paging & 0x10) << 10) : a;
+    return this.romRanges.some(([f, t]) => o >= f && o < t);
+  }
   get screen() { return this.model === 128 && (this.paging & 8) ? 7 : 5; }
   // A write to $7FFD: the bank at $C000, the screen shown, the ROM; ignored once bit 5 has locked it.
   page(v) {
@@ -413,7 +425,7 @@ class Machine {
   }
   static restore(s, opts = {}) {
     const banks = s.banks ? s.banks.map(b => new Uint8Array(Buffer.from(b, 'base64'))) : undefined;
-    const m = new this({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), rom: opts.rom, hooks: opts.hooks,
+    const m = new this({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), rom: opts.rom, romRanges: opts.romRanges, hooks: opts.hooks,
       passAt: opts.passAt !== undefined ? opts.passAt : s.passAt, contention: s.contention,
       model: s.model || 48, banks, paging: s.paging });
     if (s.ay) { m.ay.sel = s.ay.sel; m.ay.regs.set(s.ay.regs); }

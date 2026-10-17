@@ -294,7 +294,7 @@ class Lockstep {
   lookahead() {
     const m = this.m, hooks = Object.assign({}, m.hooks);
     for (const a of [...this.cps, ...this.halts]) { const h = this.saved.hooks[a]; if (h) hooks[a] = h; else delete hooks[a]; }
-    const g = m.constructor.restore(m.save(), { rom: m.rom || undefined, hooks, passAt: null });
+    const g = m.constructor.restore(m.save(), { rom: m.rom || undefined, romRanges: m.romRanges || undefined, hooks, passAt: null });
     if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
     if (own(m, 'portIn')) g.portIn = m.portIn;
     const out = new Map(), B = this.irqBytes, cpu = g.cpu;
