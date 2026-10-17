@@ -11420,12 +11420,12 @@
   {
    "address": 52736,
    "type": "line",
-   "text": "Noncanonical physical-RAM tail between the first room bank and the stale mirrored residue."
+   "text": "256 bytes of leftover RAM, $CE00-$CEFF, after room 29's record at $CD00, the last of the first bank, and before the vector page at $CF00: $FF, $FF, $A0, then 253 zeros. No room number reaches it ($2E55 reads rooms 0-29 from $B000-$CDFF and rooms from 30 up from $E000), and no code that runs reads it; only the copy routines that nothing calls, at $3F00, $AB80 and $FF00, would take it in as part of their sources."
   },
   {
    "address": 52992,
    "type": "line",
-   "text": "A page of RAM, $CF00-$CFFF, above the room records and below the I/O area. $CFF0-$CFFD hold the seven vectors the game dispatches through, which the initialiser writes at $2D40-$2D83: the input scan $3791, $3349 and $334F in the main loop, the tile lookup $35E4, the room entry $2DC6, the death sequence $38EF and the item records $22C3. They are in the file already, as it was saved after a game had started; the rest of the page is zeros that nothing reads."
+   "text": "A page of RAM, $CF00-$CFFF, above the room records and below the I/O area. $CFF0-$CFFD hold seven vectors, which the initialiser writes at $2D40-$2D83: the input scan $3791, $3349 and $334F in the main loop, the tile lookup $35E4, the room entry $2DC6, the death sequence $38EF and the item records $22C3. The game jumps through the second to the sixth at $101E, $1021, $1024, $1027 and $102A, and $15FF reads the last as the base address of the item records. The first is used only by JMP ($CFF0) at $101B, which only the room-select cheat at $1BBC calls, and that cheat is switched off; the main loop calls $3791 directly, at $310C. They are in the file already, as it was saved after a game had started. The rest of the page is zeros except $CFFF, which holds $54; nothing reads any of it."
   },
   {
    "address": 57344,
@@ -11585,7 +11585,7 @@
   {
    "address": 65520,
    "type": "line",
-   "text": "Fourteen bytes that look like the seven vectors at $CFF0 from an earlier build of the game: five of them ($376E, $3326, $332C, $35C1, $38CC) are each $23 lower than this build's ($3791, $3349, $334F, $35E4, $38EF). The routine at $FF00 copies $B000-$CFFF to $E000-$FFFF, which would put them here. Nothing reads them; with the KERNAL ROM in, the processor takes its NMI, reset and IRQ vectors from the ROM, not from $FFFA-$FFFF here."
+   "text": "Fourteen bytes that look like the seven vectors at $CFF0 from an earlier build of the game: five of them ($376E, $3326, $332C, $35C1, $38CC) are each $23 lower than this build's ($3791, $3349, $334F, $35E4, $38EF). The routine at $FF00 copies $B000-$CFFF to $E000-$FFFF, which would put them here. No instruction reads them. While the KERNAL ROM is in, as it is for most of play, the processor takes its NMI, reset and IRQ vectors from the ROM, not from $FFFA-$FFFF here. In the two stretches with $01 = $34, all RAM, the room copy at $2E6D-$2E79 and the play interrupt's conveyor rotation at $3497-$34DE, IRQs are masked, but an NMI from RESTORE would take its vector from $FFFA-$FFFB here: $38CC, the middle of the instruction at $38CB."
   }
  ]
 }
