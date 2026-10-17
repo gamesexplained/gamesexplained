@@ -9,6 +9,7 @@ G.main = function (P) {
   // LDIR: n bytes from s to d, a byte at a time as the processor copies them (so an overlapping
   // copy one byte on fills); gives where both end
   const ldir = P.ldir = (s, d, n) => {
+    P.N.byte += n || 0x10000;
     do { M[d] = M[s]; s = (s + 1) & 0xFFFF; d = (d + 1) & 0xFFFF; n = (n - 1) & 0xFFFF; } while (n);
     return { hl: s, de: d };
   };
@@ -28,6 +29,7 @@ G.main = function (P) {
     yield { cp: 0x8521 };
     M[0x7002] = 0x0E;                                // the title music
     yield* P.title();
+    yield { cp: 0x8534 };                            // play chosen: the page times what follows as a stretch
     for (let l = 0; l < 256; l++) {                  // $8000: each byte its index, bits reversed
       let c = 0;
       for (let b = 0, a = l; b < 8; b++, a >>= 1) c = (c << 1) | (a & 1);
@@ -172,7 +174,7 @@ G.main = function (P) {
   // screen drawn is shown, the other paged in and the view copied to it
   P.def(0x9987, 'show_frame', function* () {
     setw(0x9635, M[0x9633] * 8); setw(0x9637, M[0x9634] * 8);
-    yield { halt: true };
+    yield { halt: true, at: 0x999C };               // at: the HALT's exit, for the page's pacing
     const a = M[0x8D1E] ^ 8;
     M[0x8D1E] = a;
     P.io.out(0x7FFD, a);

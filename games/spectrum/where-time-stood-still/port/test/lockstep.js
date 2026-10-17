@@ -29,9 +29,12 @@ function run(o) {
   const P = WT.makePort(new Uint8Array(65536), {});
   standin.install(P);
   if (o.onPort) o.onPort(P, m);
-  const ls = new Lockstep({ machine: m, port: P, program: P => P.program(boot), checkpoints: P.CHECKPOINTS.concat(boot ? [0x8521] : []),
+  const ls = new Lockstep({ machine: m, port: P, program: P => P.program(boot), checkpoints: P.CHECKPOINTS.concat(boot ? [0x8521, 0x8534] : []),
     halts: P.HALTS, irqs: { 0xBEBE: 'interrupt' }, irqBytes: IRQ_BYTES, chips: ['border', 'paging', 'ay'], stack: STACK,
     ignore: IGNORE.concat(o.ignore || []), maxFrames: o.maxFrames || 600, timing: o.timing });
+  // ROM 0's bytes the game reads, which the port reads at the same addresses (the lockstep's copy
+  // of memory has ROM 1 there when it starts from the hand-over)
+  P.M.set(lib.ROM0, lib.EXCERPT.from);
   const input = player(lib.makeRnd(o.seed || 1)), title = lib.titleInput(o.choice || 'kempston');
   let lastPass = -1, passFrame = 0;
   const res = ls.run({ passes: o.passes || 200, stopOnDiff: o.stopOnDiff !== false,

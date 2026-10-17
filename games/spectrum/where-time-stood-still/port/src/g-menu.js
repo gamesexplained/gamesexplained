@@ -64,7 +64,7 @@ G.menu = function (P) {
   // fire
   P.def(0xCDEE, 'pause', function* () {
     while (P.input_routine().a >= 9) yield;
-    yield { halt: true };
+    yield { halt: true, at: 0xCDF6 };               // at: the HALT's exit, for the page's pacing
     while (P.input_routine().a >= 9) yield;
     for (;;) {
       M[0xBF30] = 3; P.io.out(0x03FE, 3);

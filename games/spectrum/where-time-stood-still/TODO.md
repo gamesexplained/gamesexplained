@@ -2,7 +2,7 @@
 
 Tier: Silver. Coverage is 100 % in each of the six parts
 (`coverage.py`), every feature in `features.md` is live, confirmed,
-traced, or open with what was tried, and the three tabs are built and
+traced, or open with what was tried, and the four tabs are built and
 checked in a browser. The copy is `agent-draft`.
 
 ## The listing's error rate
@@ -38,10 +38,3 @@ sample: the Source tab says the listing has not had one.
   every recording the page plays, no volume has bit 4 set and registers
   11 to 13 are never written, so this game does not need it; a game that
   uses the envelope will.
-
-## Ideas
-
-- A Play tab. The logic is bank 3's and `main`'s Z80 code, and the
-  view's renderer, the area loader's output and the sound are already
-  held to the game's code; the party, the creatures and the menus are
-  what a port would add.

@@ -90,7 +90,8 @@ G.sound = function (P) {
   P.def(0x7212, 'snd_tune18', section([[0x723C, 0x18, 'a'], [0x725C, 0x13, 0x19], [0x71B2, 0, 0x32, true]], true));
   P.def(0x72AC, 'snd_tune20', section([[0x727C, 0x13, 0x19], [0x723C, 0x18, 'a'], [0x71B2, 0, 0x32, true]], true));
   P.def(0x7315, 'snd_tune24', section([[0x71F2, 0x18, 'a'], [0x71B2, 0x13, 0x19], [0x71B2, 0, 0x32, true]]));
-  // tune 23: the top three bits of channel A's byte become the transposition, the low nibble its note
+  // tune 23: the step's top three bits become the transposition, its low nibble picks channel A's
+  // note
   P.def(0x72DF, 'snd_tune23', section([[0x729C, 0x18, 'a'], [0x71B2, 0x13, 0x19, true], [0x71B2, 0, 0x32]], false, bc => {
     const c = bc & 255;
     M[0x7992] = c >> 5;

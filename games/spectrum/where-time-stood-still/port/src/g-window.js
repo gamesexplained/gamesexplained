@@ -148,6 +148,7 @@ G.window = function (P) {
       let de = w(ix); ix = (ix + 2) & 0xFFFF;
       de = (de & 0xFF00) | (((de & 0xE0) | M[0xAC4F]) & 255);
       for (let i = 0; i < n; i++) { wr(de, rd(hl)); hl = (hl + 1) & 0xFFFF; de = (de + 1) & 0xFFFF; }
+      P.N.wrow++; P.N.wbyte += n;
       hl = (hl + M[0xAC7E]) & 0xFFFF;
       b = (b - 1) & 255;
     } while (b);
@@ -158,6 +159,7 @@ G.window = function (P) {
     b = W(1);
     do {
       for (let i = 0, s = src, d = dst; i < M[0xACD2]; i++) { wr(d, rd(s)); s = (s + 1) & 0xFFFF; d = (d + 1) & 0xFFFF; }
+      P.N.wrow++; P.N.wbyte += M[0xACD2] || 256;
       dst = (dst + 0x20) & 0xFFFF;
       src = (src + W(5)) & 0xFFFF;
       b = (b - 1) & 255;
@@ -185,8 +187,10 @@ G.window = function (P) {
         P.io.out(0x7FFD, bank0);
         const ch = M[mp];
         let gl;
+        P.N.cell++;
         if (ch === 0xFF) { gl = 0xAA7D; P.io.out(0x7FFD, screen); }
         else {
+          P.N.glyph++;
           gl = (ch * 9 + 0xED25) & 0xFFFF;
           for (let k = 0, s = sp; k < 8; k++) {
             P.io.out(0x7FFD, bank0);

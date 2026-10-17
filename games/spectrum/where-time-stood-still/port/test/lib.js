@@ -13,6 +13,13 @@ const ROOT = path.join(GAME, '..', '..', '..');
 const { Machine, KEY } = require(path.join(ROOT, 'kit', 'spectrum', 'machine.js'));
 const STATES = path.join(GAME, 'work', 'states');
 
+// The ROM's bytes the game reads: area 14's packed grid runs on past $FFFF into ROM 0
+// (rom-excerpt.json). The machine holds those and stops on a read of any other byte of the ROM.
+const EXCERPT = JSON.parse(fs.readFileSync(path.join(GAME, 'rom-excerpt.json'), 'utf8'));
+const ROM0 = Uint8Array.from(Buffer.from(EXCERPT.hex, 'hex'));
+const ROM_RANGES = [[EXCERPT.from, EXCERPT.from + ROM0.length]];
+const romImage = () => { const r = new Uint8Array(0x8000); r.set(ROM0, EXCERPT.from); return r; };
+
 // The Kempston interface: port $1F (A5 low) reads the stick, right, left, down, up and fire in
 // bits 0 to 4, set when held.
 const JOY = { RIGHT: 1, LEFT: 2, DOWN: 4, UP: 8, FIRE: 16 };
@@ -45,7 +52,7 @@ function memory() {
 // before it enables the interrupts again).
 function boot(opts = {}) {
   const { ram, banks } = memory();
-  return new WMachine(Object.assign({ ram: ram.slice(), banks, model: 128, paging: 0x10,
+  return new WMachine(Object.assign({ ram: ram.slice(), banks, model: 128, paging: 0x10, rom: romImage(), romRanges: ROM_RANGES,
     regs: { pc: 0x8521, sp: 0x5FFF, i: 0x3F, im: 1, iff1: 1, iff2: 1 }, passAt: 0x86A2 }, opts));
 }
 
@@ -93,7 +100,7 @@ function writeState(name, m, extra = {}) {
   fs.mkdirSync(STATES, { recursive: true });
   fs.writeFileSync(path.join(STATES, name + '.json'), JSON.stringify(Object.assign(m.save(), extra)));
 }
-const restore = (s, o = {}) => WMachine.restore(s, Object.assign({ passAt: 0x86A2 }, o));
+const restore = (s, o = {}) => WMachine.restore(s, Object.assign({ passAt: 0x86A2, rom: romImage(), romRanges: ROM_RANGES }, o));
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
 function makeRnd(seed) {
@@ -101,5 +108,5 @@ function makeRnd(seed) {
   return n => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; const x = s / 4294967296; return n === undefined ? x : Math.floor(x * n); };
 }
 
-module.exports = { boot, memory, toPlay, titleInput, TITLE, JOY, WMachine, Machine, KEY, ROOT, GAME, STATES,
+module.exports = { boot, memory, EXCERPT, ROM0, toPlay, titleInput, TITLE, JOY, WMachine, Machine, KEY, ROOT, GAME, STATES,
   states, readState, writeState, restore, hex, makeRnd };

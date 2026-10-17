@@ -3132,7 +3132,7 @@
   {
    "address": 53058,
    "type": "line",
-   "text": "An object's icon: the empty slot (picture 5), then the object's picture from bank 6 (its record at $F1B1, 48 bytes, two or three across) ORed over it, centred, shifted half a byte when it is two bytes wide."
+   "text": "An object's icon: the empty slot (picture 5), then the object's picture from bank 6 (its record at $F1B1, 48 bytes, two or three across) ORed over it, centred, shifted half a byte when it is two bytes wide. A' comes back changed, which use_knife reads at $F8D6: $FF for a picture of width 4, otherwise the middle byte of the last row drawn."
   },
   {
    "address": 53219,
@@ -3207,7 +3207,7 @@
   {
    "address": 54938,
    "type": "line",
-   "text": "Lowers the need byte at HL, unless it is 0, and queues message B or B+1 for character C as it comes to 32 or 16 above its limit ($FF in C for none)."
+   "text": "Lowers the need byte at HL, unless it is 0, and queues message B or B+1 for character C as it comes to 32 or 16 above its limit at DE ($FF in C for none); B comes back one more when C is not $FF."
   },
   {
    "address": 54970,
@@ -3337,7 +3337,7 @@
   {
    "address": 56232,
    "type": "line",
-   "text": "Each actor whose place on the screen (across or down, the byte at +$13 or +$15) is beyond DE (the comparison flipped by the CCF or NOP at $DBC7) is given the new area (+$1E) and moved by BC ($DBDD); type $2D is left."
+   "text": "Each actor in play but type $2D whose word at +$14 (across on the screen) or +$16 (down), as A = $13 or $15 picks (written into $DBBD), is below DE (or at least DE, with the CCF written at $DBC7 in place of the NOP) is given the new area (+$1E) and moved by BC ($DBDD)."
   },
   {
    "address": 56285,
@@ -3367,7 +3367,7 @@
   {
    "address": 56920,
    "type": "line",
-   "text": "An actor leaving play: its record ($E492) takes back its state (a character following the leader is left in state 0), its place in units of four and its route; the slot is freed."
+   "text": "An actor leaving play: its record ($E492) takes back its state (bit 6 off; one of type 4 or above in state 1 goes back in state 0), its area, its place in units of four and its route, which a character (type below 4) not in state 0 does not keep; the slot is freed."
   },
   {
    "address": 57013,
@@ -3482,7 +3482,7 @@
   {
    "address": 58456,
    "type": "line",
-   "text": "Moves a record's place up to 4 units across and down towards the point at HL; Z when there."
+   "text": "Moves a record's place at DE up to 4 units across and down towards the point at HL; C counts the axes it moved, 0 when it was there. A is 0 and Z on every return (XOR A, AND C)."
   },
   {
    "address": 58497,
@@ -3552,7 +3552,7 @@
   {
    "address": 59230,
    "type": "line",
-   "text": "Clips a line going down (direction 4) to the view: its ends are brought within the view's columns and rows; NZ when it lies outside the view."
+   "text": "Keeps a line going down (direction 4) within the view: NZ when its column (+8) is left of the view ($9635) or $DF or more to its right, or when its end (+$14, as it was before clipping) is above the word at +$1E, which is the next shot's record ($18 bytes on) at +6. Otherwise A is 0 and Z, with its start (+$0A) no higher than the view's top ($9637, $9632 added to its low byte) and its end (+$14) no lower than the top plus $8F."
   },
   {
    "address": 59335,
@@ -3747,7 +3747,7 @@
   {
    "address": 62311,
    "type": "line",
-   "text": "Looks along direction A: the actor's height ($F411, 0 for types $14 to $17) and a margin of 4 ($F3E4) set the scan; along the across axis ($F3AA) or the down axis ($F39F), then the boxes ($F446, $F452) when no actor is found."
+   "text": "Looks along direction A: the actor's height ($F411, 0 for types $14 to $17) and a margin of 4 ($F3E4) set the scan for actors, along the across axis ($F3AA) or the down axis ($F39F). When an actor is found, the boxes are scanned too ($F446, $F452), and a nearer box takes its place. Looking across and finding none, the scan goes on down from where it left HL ($8301): slot 0's place."
   },
   {
    "address": 62355,

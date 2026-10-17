@@ -110,3 +110,42 @@ river zone sit on special ground, which holds no height; the page takes
 the nearest ordinary cell's, and says so. The route table's entry 0 is
 the ham's place, read as a route only as a fallback: the page draws
 routes 1 to 35.
+
+## 17 October 2026: the Play tab
+
+**The port.** One agent ported `main` and bank 3 routine by routine,
+452 functions in `port/src/`, each group checked alone against the
+game's own code on the kit's Z80 (`port/test/t-*.js`) and the whole
+program in lockstep (`port/test/lockstep.js`) on the 128K machine the
+kit gained for it (`kit/spectrum/machine.js`, `model: 128`). The last
+runs: 1,500 passes from the hand-over and 400 from each of the 148
+moments, every one in step.
+
+**Area 14 and the ROM.** The lockstep stopped in area 14: its packed
+grid, and the mask of the arm's sixth frame, run past `$FFFF` into the
+ROM. A trace showed the game pages ROM 0 throughout, so the pages and
+the tests carry `rom-excerpt.json` (171 bytes of ROM 0), and the area
+map and the cast sheet were redrawn with them.
+
+**Code read as data.** The page carries the banks with the instructions
+set to zero, and running its machine beside the whole memory
+(`port/test/t-page.js`) found three places the game reads its own code:
+the random numbers are bank 3's bytes in turn, the start-up code is the
+sprites' visibility mask until the first cut-out fills it, and tune 17's
+channel A plays tune 18's code as notes. `scripts/pack-data.js` keeps
+them (`KEEP`), bank 3 whole. A first version of the test blanked moments
+of play by value and wiped bytes of the view's buffer that happened to
+equal the title's code; the buffer is now kept whole there.
+
+**The pace.** The first fit left the page 15 to 20 % fast where the
+windows are dragged and the view scrolls, because one call of a drawer
+covers very different amounts of work. Counting the work inside them
+(`P.N`: bytes copied, window rows, sprite rows and shifts, mask cells)
+and timing a planned walk brought every moment within 4 %. The start of
+play was 9 % fast until a checkpoint after the title (`$8534`) gave
+the new game's set-up a stretch of its own to fit.
+
+**The listing.** Eleven comments were wrong (`port/corrections.md`),
+among them tune 23's transposition, which comes from the step count
+and not from channel A's notes; `index.html` and `facts.md` said the
+same and are corrected.

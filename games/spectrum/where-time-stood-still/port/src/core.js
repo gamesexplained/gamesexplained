@@ -71,6 +71,11 @@ function makePort(M, io, opts = {}) {
   Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
     set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
   P.mem = opts.mem || null;
+  // counts of the work inside routines whose length varies, for the page's pacing
+  // (scripts/time-stretches.js, page/runtime.js): bytes an LDIR copies, a window's rows and bytes,
+  // the characters redrawn behind a window and those of them drawn whole, a sprite's rows and the
+  // shifts of each, and the characters of scenery a sprite's visibility mask is cut by
+  P.N = { byte: 0, wrow: 0, wbyte: 0, cell: 0, glyph: 0, row24: 0, shift24: 0, row16: 0, shift16: 0, mcell: 0, cut: 0 };
   P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
   P.w = a => M[a] | M[(a + 1) & 0xFFFF] << 8;
   P.setw = (a, v) => { M[a] = v & 255; M[(a + 1) & 0xFFFF] = (v >> 8) & 255; };

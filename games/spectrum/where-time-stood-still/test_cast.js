@@ -17,6 +17,15 @@ const PARTS = { 0: 'main', 1: 'bank-01', 3: 'bank-03', 4: 'bank-04', 6: 'bank-06
 const listings = {};
 for (const [b, part] of Object.entries(PARTS)) listings[b] = g.listing(`parts/${part}/listing.json`);
 const bankOf = b => listings[b].ram.slice(0xC000);
+// n bytes from a in bank B paged in at $C000, and on past $FFFF into ROM 0's bytes the game reads
+// (rom-excerpt.json): type $2D's sixth frame has the last two bytes of its mask there
+const EX = g.json('rom-excerpt.json'), ROM0 = Buffer.from(EX.hex, 'hex');
+const span = (B, a, n) => Uint8Array.from({ length: n }, (_, i) => {
+  const x = (a + i) & 0xFFFF;
+  if (x >= 0xC000) return B[x - 0xC000];
+  if (x >= EX.from && x < EX.from + ROM0.length) return ROM0[x - EX.from];
+  throw new Error(`a frame's bytes run on to $${x.toString(16)}, outside the bank and the ROM's excerpt`);
+});
 
 // The classes, from bank 3's $EAC8: five bytes each, the bank, the frame list and the animations.
 // A frame list's length is its table's in the listing; types $14 to $1B are drawn in two pieces,
@@ -41,8 +50,7 @@ function build() {
       const a = list + 6 * f, wd = at(a), rows = at(a + 1), ga = w(a + 2), ma = w(a + 4);
       if (wd !== 3 && wd !== 4) throw new Error(`class ${c} frame ${f}: width ${wd}`);
       const n = (wd - 1) * rows;
-      frames.push([wd, rows, ga, ma, b64(B.subarray(ga - 0xC000, ga - 0xC000 + n)),
-        wd === 4 && ma >= 0xC000 ? b64(B.subarray(ma - 0xC000, ma - 0xC000 + n)) : '']);
+      frames.push([wd, rows, ga, ma, b64(span(B, ga, n)), wd === 4 && ma >= 0xC000 ? b64(span(B, ma, n)) : '']);
       if (wd === 4 && ma < 0xC000 && ma !== 0x8521) throw new Error(`class ${c} frame ${f}: its mask at $${ma.toString(16)}`);
     }
     const out = { name, types: TYPES[c], bank, list, frames };

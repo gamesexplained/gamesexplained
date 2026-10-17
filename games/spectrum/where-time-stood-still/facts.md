@@ -129,6 +129,19 @@ address below `$C000` with no part named is `main`'s.
   at 15 places, the start of play among them. It scrolls a pixel row at a time up and down
   and half a character across, following the leader's animation
   (`$98FF`).
+- Area 14's packed grid runs on past `$FFFF` into the ROM, which is
+  ROM 0 while the game runs (it writes `$7FFD` from `$8D1E`, whose bit
+  4 is always clear). The `$FF` at `$FFFF` takes its count and block
+  from `$0000` and `$0001` (243 blocks of `$01` from row 25, column
+  36), and `$0002`-`$00AA` are the grid's last 169 blocks, so the bottom
+  of the area's map is the ROM's program read as blocks (`$8B15`). The
+  +2's ROM 0 differs at `$009B` and `$00A0`, two of those blocks. The
+  mask of type `$2D`'s sixth frame (bank 1 `$FFBD`) also runs on past
+  `$FFFF`: its last two bytes are the ROM's `$0000` and `$0001`. The
+  pages carry these 171 bytes in `rom-excerpt.json`, which names the
+  ROM. *Tested*: `test_maps.js` and `test_cast.js` run the game's code
+  with them, and the port stays in step with the game through area 14
+  (`port/test/lockstep.js`, from `s1-kempston-00150`, seed 3).
 - Actors and objects are sprites 16 or 24 pixels wide, drawn back to
   front (`$A6F4`, `$A802`) with a visibility mask cut by the scenery pieces
   that stand in front of them (`$A879`, bank 4 `$C000`). Each class of
@@ -205,8 +218,9 @@ address below `$C000` with no part named is `main`'s.
   in four), channel B after a delay of 10 calls. 26 of channel B's notes
   in those calls slide, a quarter-semitone a call (`$761C`).
 - The title music climbs a semitone after its first time round: section
-  23 (`$72DF`) sets `$7992` from its notes' top three bits and leaves it at
-  1, section 26 (`$7339`) goes back to 14 without clearing it, and only a
+  23 (`$72DF`) sets `$7992` from the top three bits of its step count, 0
+  for its first 32 steps and 1 for its last 32, and leaves it at 1;
+  section 26 (`$7339`) goes back to 14 without clearing it, and only a
   new request clears it (`$708B`), so sections 15 to 21 play a semitone
   higher every time after the first.
 - *Live*: the AY's registers read once a frame in ZEsarUX 13.0

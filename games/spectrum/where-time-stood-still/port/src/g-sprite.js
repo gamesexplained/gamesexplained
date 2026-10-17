@@ -60,6 +60,7 @@ G.sprite = function (P) {
     const shifts = left ? 4 - k : 3 - k;
     let rows = M[A.rows];
     do {
+      P.N.row24++; P.N.shift24 += shifts;
       P.io.out(0x7FFD, M[A.sb]);
       let b = rd(gp), cc = rd(inc(gp)), e = rd((gp + 2) & 0xFFFF); gp = (gp + 3) & 0xFFFF;
       let mb = rd(mp), mc = rd(inc(mp)), me = rd((mp + 2) & 0xFFFF); mp = (mp + 3) & 0xFFFF;
@@ -108,6 +109,7 @@ G.sprite = function (P) {
     const shifts = left ? 4 - k : 3 - k;
     let rows = M[A.rows];
     do {
+      P.N.row16++; P.N.shift16 += shifts;
       P.io.out(0x7FFD, M[A.sb]);
       let d = rd(gp), e = rd(inc(gp)); gp = (gp + 2) & 0xFFFF;
       if (M[0xA05C] & 0x80) [d, e] = [rev(e), rev(d)];
@@ -420,7 +422,8 @@ G.sprite = function (P) {
       const mrow = mp, prow = p, drow = de;
       do {
         const ch = M[p];
-        if (ch) cutChar(ch, mp);
+        P.N.mcell++;
+        if (ch) { P.N.cut++; cutChar(ch, mp); }
         mp = lo(mp, 1);
         p = lo(p, 1);
         if (!(p & 3)) {

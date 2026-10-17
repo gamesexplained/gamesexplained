@@ -1,7 +1,8 @@
 'use strict';
 // The game's memory on the kit's Z80 with the 128K's paging, for the tests beside it that run the
 // game's own routines (test_maps.js, test_cast.js, test_routes.js). Banks 5, 2 and 0 are main's
-// listing at $4000-$FFFF, the others their parts' at $C000; port $7FFD (A15 and A1 low) pages the
+// listing at $4000-$FFFF, the others their parts' at $C000, and ROM 0's bytes the game reads at
+// $0000 (rom-excerpt.json); port $7FFD (A15 and A1 low) pages the
 // bank in its low three bits in at $C000. Any other port is an error: none of the routines run
 // here reads the keyboard or writes the sound chip.
 //   const M = machine(g)          g: kit/scripts/port_check.js's game(__dirname)
@@ -18,6 +19,9 @@ const PARTS = { 1: 'bank-01', 3: 'bank-03', 4: 'bank-04', 6: 'bank-06', 7: 'bank
 
 function machine(g) {
   const mem = g.listing('parts/main/listing.json').ram;
+  // ROM 0's bytes area 14's grid runs on into (rom-excerpt.json)
+  const ex = JSON.parse(g.read('rom-excerpt.json'));
+  mem.set(Buffer.from(ex.hex, 'hex'), ex.from);
   const banks = {};
   for (const [b, part] of Object.entries(PARTS)) banks[b] = g.listing(`parts/${part}/listing.json`).ram.slice(0xC000);
   let cur = 0;
