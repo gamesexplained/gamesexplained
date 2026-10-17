@@ -259,3 +259,15 @@ in 312.
 - *Live*: from the Part 1 prompt with no key pressed, a non-stopping
   checkpoint on the picture band ($A7E3) counted 1,591 frames before
   the editor's timeout ($08C4).
+- *Live*, from the Part 1 prompt in room $01 (`work/scripts/disc_live.py`): N E and NORTH EAST
+  each answered "You can't do that." and left Atreyu in room $01; NE took him to room $02
+  (`reference/n-e.png`). SAVE and LOAD printed nothing but a blank line
+  (`reference/save-load.png`). MUSIC and NOM each printed "Ok!", and TEST printed nothing
+  (`reference/mus-nom-test.png`). XYZZY answered `I don't understand the word "xyzzy"`.
+- *Live*, with CURRENT_ROOM ($293F) poked (`work/scripts/disc_tree.py`): in room $11, GET TREE
+  answered "You can't do that." and CLIMB TREE "The tree is not strong enough to climb!"; in
+  room $23, GET TREE answered "You can't do that." and CLIMB TREE took Atreyu to the top of the
+  tree, room $20's description. Objects 2 and 50 lay in rooms $11 and $23.
+- *Live*, walking from room $01: in rooms $05 and $0A, whose scripts show no picture, the
+  picture in use ($2942) was 0, the open book, the same as `OBJ_ROOM_TABLE` gives them; in
+  room $04 it was 18 and in room $06 5, as the table gives.

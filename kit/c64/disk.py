@@ -27,7 +27,8 @@ game allocates and no file holds is data it reads with the drive's block command
 
 Usage:
   disk.py <image>                          the directory, and the sectors no file holds
-  disk.py extract <image> <dir>            each file to <dir>/<name>
+  disk.py extract <image> <dir>            each file to <dir>/<name>, with a character a file
+                                           name cannot hold ("/", "*", $00) written $hh
   disk.py pack <out.json> <image> [<image> ...] [--sectors <image>]
                                            the files of every image, and with --sectors the
                                            unowned sectors of that one, for C64Run.read:
@@ -37,7 +38,7 @@ Usage:
 Images, and what pack writes from them, hold the game: both stay in the game's work/ folder
 (AGENTS.md, "No binaries, ever").
 """
-import argparse, base64, json, os, sys
+import argparse, base64, json, os, re, sys
 
 SPT = [0] + [21] * 17 + [19] * 7 + [18] * 6 + [17] * 12          # sectors per track, tracks 1-42
 D64_SIZES = {174848: (35, False), 175531: (35, True), 196608: (40, False), 197376: (40, True)}
@@ -182,6 +183,15 @@ def pack(images, sector_images):
     return {"files": files, "sectors": sectors}
 
 
+def file_name(name):
+    """A directory entry's name as a file name on any host: a control character, or one Windows
+    or Unix refuses in a name, as $ and its two hex digits, and a name of nothing but dots with a
+    $ in front. A commercial disk has been
+    seen to name one file $00 and another "*"."""
+    s = re.sub(r'[\x00-\x1f/\\<>:"|?*]', lambda m: "$%02X" % ord(m.group()), name)
+    return s if s.strip(".") else "$" + s
+
+
 def main(argv):
     if len(argv) >= 1 and argv[0] == "pack":
         ap = argparse.ArgumentParser(prog="disk.py pack")
@@ -197,7 +207,7 @@ def main(argv):
         d = Disk(argv[1])
         os.makedirs(argv[2], exist_ok=True)
         for name, data in d.files().items():
-            open(os.path.join(argv[2], name.replace("/", "_")), "wb").write(data)
+            open(os.path.join(argv[2], file_name(name)), "wb").write(data)
         return 0
     if len(argv) != 1 or argv[0].startswith("-"):
         print(__doc__); return 0 if argv and argv[0] in ("-h", "--help") else 2

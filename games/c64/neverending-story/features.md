@@ -58,6 +58,15 @@ Sources:
   "Code and data nothing reaches").
 - The crack in this copy keeps Ocean's loading picture, shown before the
   game starts (`orientation.md`).
+- In this copy a restart after Part 2 has loaded, by a death, QUIT and Y
+  or the win, loads the next file by name instead of Part 1, and the game
+  cannot be played from there (`facts.md`, "Restart"; live).
+- "N E", the way the instructions write north-east, is two words, and the
+  parser takes only the first direction as the verb and the second as
+  its noun, a pair no rule matches: "You can't do that." (live).
+- Objects 2 and 50, the two trees, have nouns ($34 and $64) that the
+  word TREE never reaches, because an earlier TRE in the vocabulary
+  gives $CB first (`VOCAB_LOOKUP` $12C4; live in rooms $11 and $23).
 
 ## Open questions
 

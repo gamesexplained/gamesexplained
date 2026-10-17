@@ -5,7 +5,8 @@ The disk holds a PRG of two sectors, a SEQ of one, a scratched entry, and a sect
 used that no file holds (what a game reads with the drive's block commands). Both images must give
 the same directory, files and unowned sectors; the .g64's data blocks are GCR-coded with the
 1541's table, and one of them gets a bad checksum. Then pack writes both files and the sector for
-kit/c64/c64run.js, and they read back as the same bytes.
+kit/c64/c64run.js, and they read back as the same bytes. Last, extract writes a disk whose
+names hold $00, "*" and "/" as files the host can hold.
 
   python3 kit/c64/test_disk.py
 """
@@ -123,5 +124,21 @@ j = json.load(open(out))
 back = {k: base64.b64decode(v) for k, v in j["files"].items()}
 check(back == {"PROG": prog, "TEXT": text} and list(j["sectors"]) == ["20,5"] and
       base64.b64decode(j["sectors"]["20,5"]) == bytes(S[(20, 5)]), "pack: the files and the sector, as C64Run.read reads them")
+
+# names a host cannot use as they are: extract writes each with the character as $hh
+odd = os.path.join(tmp, "odd.d64")
+d = bytearray(S[(18, 1)])
+for i, name in ((0, b"\x00"), (1, b"*"), (2, b"A/B")):
+    d[i * 32 + 2], d[i * 32 + 3], d[i * 32 + 4] = 0x81, 16, 0
+    d[i * 32 + 5:i * 32 + 21] = name.ljust(16, b"\xa0")
+with open(odd, "wb") as f:
+    for t in range(1, 36):
+        for s in range(disk.SPT[t]):
+            f.write(d if (t, s) == (18, 1) else S[(t, s)])
+out = os.path.join(tmp, "odd")
+disk.main(["extract", odd, out])
+check(sorted(os.listdir(out)) == ["$00", "$2A", "A$2FB"] and
+      all(open(os.path.join(out, n), "rb").read() == text for n in os.listdir(out)),
+      "extract: names with $00, * and / written as $00, $2A and A$2FB")
 
 sys.exit(1 if failed else 0)
