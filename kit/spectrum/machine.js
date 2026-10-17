@@ -71,7 +71,7 @@
 // - border, ear: the last values written to the ULA.
 // - save() and Machine.restore(state, { rom }): the whole machine as JSON, for tests that start from
 //   a moment of play. A state holds the game's memory (every bank, on the 128), never the ROM: it
-//   stays in the game's gitignored work/.
+//   stays in the game's gitignored work/. A subclass's restore makes a machine of its own class.
 // - LINE, FRAME and delay: the machine's line, frame and contention table, by its model.
 // - portIn(port) and portOut(port, value) may be wrapped by a test or a page, to add a joystick
 //   interface or watch the ULA: they see every I/O cycle in order, with cpu.tstates as the time.
@@ -413,7 +413,7 @@ class Machine {
   }
   static restore(s, opts = {}) {
     const banks = s.banks ? s.banks.map(b => new Uint8Array(Buffer.from(b, 'base64'))) : undefined;
-    const m = new Machine({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), rom: opts.rom, hooks: opts.hooks,
+    const m = new this({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), rom: opts.rom, hooks: opts.hooks,
       passAt: opts.passAt !== undefined ? opts.passAt : s.passAt, contention: s.contention,
       model: s.model || 48, banks, paging: s.paging });
     if (s.ay) { m.ay.sel = s.ay.sel; m.ay.regs.set(s.ay.regs); }
