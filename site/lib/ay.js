@@ -43,11 +43,87 @@
 //                        beeper along the foot), its playhead moving as the tune plays.
 //                        opts.onTime(t, tune) is called each animation frame while a tune plays,
 //                        and with t = null when it stops. Returns { play(i), stop(), draw(i) }.
+//
+// The sound of a game as it plays (a Play tab), on the same model as render():
+//   live(rate)           { push(frames, most), render(out, n), queued }: frames of writes as the
+//                        game made them, each a flat list [t, reg, value, ...] with t the T-state
+//                        within the 128K's frame of 70,908 (reg 16 the beeper, as above). They play
+//                        one a frame of the chip's own time, each write at its T-state; with none
+//                        waiting the registers hold. More than most waiting (default 4) and the
+//                        oldest are applied at once, so that the sound keeps up with the game.
+//   host({ gain, most }) an AudioContext playing live() in an AudioWorklet (or the older
+//                        ScriptProcessorNode), resolving to { ctx, mode, push(frames) }. Call it
+//                        inside a click or a key press, where a browser lets a page start sound.
 globalThis.SpectrumAY = (function () {
-  const CLOCK = 3546900 / 2, HZ = 3546900 / 70908;
+// The model's own source text goes into the worklet, so it refers to nothing outside itself.
+function spectrumAYModel() {
+  const CLOCK = 3546900 / 2, FRAME_T = 70908, STEPS = FRAME_T / 16;
   const UNITS = [0, 0.45, 0.6, 0.8, 1.05, 1.6, 2.2, 3, 4, 6, 8, 10, 14, 16, 20, 24];
   const VOLUME = Float32Array.from(UNITS, u => u / 48);   // a channel's swing at full volume is 0.5
   const BEEPER = 100 / 48 * VOLUME[15];
+  const tp = (r, ch) => (r[ch * 2] | (r[ch * 2 + 1] & 15) << 8) || 1;
+  // The chip steps at clock / 8: a tone's output turns over every TP steps, so a cycle is 16 TP
+  // clocks, and the noise shifts every 2 NP. step() gives the output of one step.
+  function chip() {
+    const reg = new Uint8Array(16), count = [0, 0, 0], bit = [0, 0, 0];
+    let ncount = 0, lfsr = 1;
+    const c = {
+      reg, beeper: 0,
+      write(r, v) { if (r === 16) c.beeper = v & 1; else reg[r & 15] = v; },
+      step() {
+        for (let ch = 0; ch < 3; ch++) if (++count[ch] >= tp(reg, ch)) { count[ch] = 0; bit[ch] ^= 1; }
+        if (++ncount >= 2 * ((reg[6] & 31) || 1)) { ncount = 0; lfsr = (lfsr >> 1) | (((lfsr ^ (lfsr >> 3)) & 1) << 16); }
+        let x = c.beeper * BEEPER;
+        for (let ch = 0; ch < 3; ch++) {
+          const t = bit[ch] | (reg[7] >> ch & 1), n = (lfsr & 1) | (reg[7] >> (ch + 3) & 1);
+          x += (t & n) * VOLUME[reg[8 + ch] & 15];
+        }
+        return x;
+      },
+    };
+    return c;
+  }
+  // The steps averaged down to the output's rate, through a high pass at 20 Hz: put(x) for each
+  // step gives a sample when one is due, else undefined; last() the sample of the steps so far
+  function output(rate) {
+    const per = CLOCK / 8 / rate, alpha = 1 / (1 + 2 * Math.PI * 20 / rate);
+    let i = 0, next = per, acc = 0, accN = 0, prevIn = 0, prevOut = 0;
+    const last = () => {
+      next += per;
+      const y = acc / accN;
+      prevOut = alpha * (prevOut + y - prevIn); prevIn = y;
+      acc = 0; accN = 0;
+      return prevOut;
+    };
+    return { put(x) { acc += x; accN++; if (++i >= next) return last(); return undefined; }, last };
+  }
+  function live(rate) {
+    const c = chip(), o = output(rate), queue = [];
+    let cur = null, wi = 0, pos = STEPS;
+    const rest = () => { if (cur) for (; wi + 2 < cur.length; wi += 3) c.write(cur[wi + 1], cur[wi + 2]); };
+    return {
+      chip: c,
+      get queued() { return queue.length; },
+      push(frames, most = 4) {
+        for (const f of frames) queue.push(f);
+        while (queue.length > most) { const f = queue.shift(); for (let k = 0; k + 2 < f.length; k += 3) c.write(f[k + 1], f[k + 2]); }
+      },
+      render(out, n) {
+        for (let j = 0; j < n;) {
+          if (pos >= STEPS) { pos -= STEPS; rest(); cur = queue.length ? queue.shift() : null; wi = 0; }
+          while (cur && wi + 2 < cur.length && cur[wi] / 16 <= pos) { c.write(cur[wi + 1], cur[wi + 2]); wi += 3; }
+          const y = o.put(c.step());
+          pos++;
+          if (y !== undefined) out[j++] = y;
+        }
+      },
+    };
+  }
+  return { CLOCK, FRAME_T, STEPS, VOLUME, BEEPER, tp, chip, output, live };
+}
+
+  const MODEL = spectrumAYModel(), { CLOCK, VOLUME, BEEPER, tp, chip, output, live } = MODEL;
+  const HZ = 3546900 / MODEL.FRAME_T;
   const NAMES = ['A', 'B', 'C', 'noise', 'beeper'];
   const COLOURS = ['#4fc3f7', '#ffb74d', '#e57373', '#9e9e9e', '#aed581'];
 
@@ -80,7 +156,6 @@ globalThis.SpectrumAY = (function () {
     return { format: 'kit-ay-calls', clock: p.clock, hz: p.hz, calls };
   }
 
-  const tp = (r, ch) => (r[ch * 2] | (r[ch * 2 + 1] & 15) << 8) || 1;
   const hz = (period, clock = CLOCK) => clock / (16 * period);
 
   function decode(log) {
@@ -112,35 +187,72 @@ globalThis.SpectrumAY = (function () {
     return out.sort((a, b) => a.t - b.t || a.ch - b.ch);
   }
 
-  // The chip steps at clock / 8: a tone's output turns over every TP steps, so a cycle is 16 TP
-  // clocks, and the noise shifts every 2 NP. The steps are averaged down to the output's rate.
+  // The recording on the model, a step at a time, averaged down to the output's rate.
   function render(log, rate) {
     log = unpack(log);
     const STEP = log.clock / 8, total = Math.ceil(log.calls.length / log.hz * STEP);
-    const per = STEP / rate, out = new Float32Array(Math.ceil(total / per) + 1);
-    const s = fresh(), count = [0, 0, 0], bit = [0, 0, 0];
-    let ncount = 0, lfsr = 1, call = 0, acc = 0, accN = 0, o = 0, next = per, prevIn = 0, prevOut = 0;
-    const alpha = 1 / (1 + 2 * Math.PI * 20 / rate);
+    const out = new Float32Array(Math.ceil(total * rate / STEP) + 1);
+    const c = chip(), o = output(rate);
+    let call = 0, n = 0;
     for (let i = 0; i < total; i++) {
-      while (call < log.calls.length && call / log.hz * STEP <= i) apply(s, log.calls[call++]);
-      const r = s.reg;
-      for (let ch = 0; ch < 3; ch++) if (++count[ch] >= tp(r, ch)) { count[ch] = 0; bit[ch] ^= 1; }
-      if (++ncount >= 2 * ((r[6] & 31) || 1)) { ncount = 0; lfsr = (lfsr >> 1) | (((lfsr ^ (lfsr >> 3)) & 1) << 16); }
-      let x = s.beeper * BEEPER;
-      for (let ch = 0; ch < 3; ch++) {
-        const t = bit[ch] | (r[7] >> ch & 1), n = (lfsr & 1) | (r[7] >> (ch + 3) & 1);
-        x += (t & n) * VOLUME[r[8 + ch] & 15];
+      while (call < log.calls.length && call / log.hz * STEP <= i) {
+        const w = log.calls[call++];
+        for (let k = 0; k < w.length; k += 2) c.write(w[k], w[k + 1]);
       }
-      acc += x; accN++;
-      if (i + 1 >= next || i === total - 1) {
-        next += per;
-        const y = acc / accN;
-        prevOut = alpha * (prevOut + y - prevIn); prevIn = y;
-        out[o++] = prevOut;
-        acc = 0; accN = 0;
-      }
+      const y = o.put(c.step());
+      if (y !== undefined) out[n++] = y;
+      else if (i === total - 1) out[n++] = o.last();
     }
-    return out.subarray(0, o);
+    return out.subarray(0, n);
+  }
+
+  // ------------------------------------------------------------------ the sound, on a Play tab
+  const WORKLET = `
+class SpectrumAYProcessor extends AudioWorkletProcessor {
+  constructor(o) {
+    super();
+    const q = o.processorOptions || {};
+    this.l = MODEL.live(sampleRate); this.gain = q.gain || 1; this.most = q.most || 4;
+    this.port.onmessage = (e) => { if (e.data && e.data.frames) this.l.push(e.data.frames, this.most); };
+  }
+  process(inputs, outputs) {
+    const ch = outputs[0], out = ch[0];
+    this.l.render(out, out.length);
+    if (this.gain !== 1) for (let i = 0; i < out.length; i++) out[i] *= this.gain;
+    for (let k = 1; k < ch.length; k++) ch[k].set(out);
+    return true;
+  }
+}
+registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
+  const worklet = () => 'const MODEL = (' + spectrumAYModel.toString() + ')();\n' + WORKLET;
+  async function host(o = {}) {
+    const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
+    if (!AC) throw new Error('This browser has no Web Audio.');
+    const ctx = new AC();
+    ctx.resume();
+    const gain = o.gain || 1, most = o.most || 4, code = worklet();
+    const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
+      () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
+    let node = null, local = null;
+    for (const u of ctx.audioWorklet ? urls : []) {
+      try {
+        await ctx.audioWorklet.addModule(typeof u === 'function' ? u() : u);
+        node = new AudioWorkletNode(ctx, 'spectrum-ay', { numberOfInputs: 0, outputChannelCount: [1], processorOptions: { gain, most } });
+        break;
+      } catch (e) { node = null; }
+    }
+    if (!node) {                                             // no worklet: the older ScriptProcessorNode
+      local = live(ctx.sampleRate);
+      node = ctx.createScriptProcessor(4096, 1, 1);
+      node.onaudioprocess = (e) => {
+        const out = e.outputBuffer.getChannelData(0);
+        local.render(out, out.length);
+        if (gain !== 1) for (let i = 0; i < out.length; i++) out[i] *= gain;
+      };
+    }
+    node.connect(ctx.destination);
+    return { ctx, mode: local ? 'script-processor' : 'worklet',
+      push: (frames) => { if (local) local.push(frames, most); else node.port.postMessage({ frames }); } };
   }
 
   function mount(el, opts) {
@@ -246,5 +358,5 @@ globalThis.SpectrumAY = (function () {
     return { play, stop, draw: i => draw(i, null) };
   }
 
-  return { CLOCK, HZ, VOLUME, BEEPER, NAMES, pack, unpack, decode, notes, hz, render, mount };
+  return { CLOCK, HZ, FRAME_T: MODEL.FRAME_T, VOLUME, BEEPER, NAMES, pack, unpack, decode, notes, hz, render, mount, live, host, worklet };
 })();
