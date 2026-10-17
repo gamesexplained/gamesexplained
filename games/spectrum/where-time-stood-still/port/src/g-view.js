@@ -42,6 +42,7 @@ G.view = function (P) {
     M[0x9630] = (a * 28) & 255;
     return { a: M[0x9630] };
   }
+  P.def(0x96C5, 'scroll_up_96c5', rowOffset);
   // the leader's row in the buffer less the pixel row: +$16 of his record less $9637, the view's
   // top as pixels
   const leaderRow = () => ((w(0x8316) - w(0x9637)) & 255) - M[0x9632];
