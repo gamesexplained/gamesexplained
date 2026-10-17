@@ -77,7 +77,6 @@ for (let f = 0; f < 300; f++) {
 }
 if (!alarm.playing()) fail('the alarm stopped');
 // every page's copy of the block
-const mine = g.block(page, 'cm-music').text;
-for (const other of ['index.html', 'discoveries.html']) if (g.block(other, 'cm-music').text !== mine) fail(other + "'s cm-music block differs from " + path.basename(page) + "'s");
+g.sameBlock('cm-music', page);
 console.log(`${frames} frames of 17 tunes (${lengths.join(', ')} frames each): ` + (bad ? bad + ' differences' : 'every write matches') + '; the alarm, 300 frames: ' + (bad ? 'see above' : 'every write matches'));
 process.exit(bad ? 1 : 0);

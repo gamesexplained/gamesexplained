@@ -243,7 +243,10 @@ its music or its maps can put that first instead.
   listing's memory, and `kit/scripts/port_check.py` does the same for a
   test whose simulator is in Python. Open the block with a line
   `/* name */`, or end a function inside the page's own script with a
-  line `// end of name`; the header is the manual. On the C64 use the
+  line `// end of name`; the header is the manual. When more than one
+  page carries the block, `g.sameBlock(name)` fails when any copy
+  differs, so a page that gains a copy is checked without a change to
+  the test. On the C64 use the
   kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
   manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
   left it, the port's banking included, and `call(entry, regs)` runs a

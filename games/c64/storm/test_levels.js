@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Hold the Maps page to the room tables. Its storm-machine block must be index.html's, which
-// test_machine.js checks room by room against the kit's simulator. Here roomMap must place each of
+// Hold the Maps page to the room tables. Its storm-machine block must be the one every page carries,
+// index.html's, which test_machine.js checks room by room against the kit's simulator. Here roomMap must place each of
 // the 100 rooms exactly once on room_map ($471C), decoded independently below, and every doorway in
 // exit_bits ($179B) must lead to a room with a doorway back, as the page's caption says.
 // It exits 1 on any difference.
@@ -10,8 +10,7 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'levels.html';
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
-if (g.block(page, 'storm-machine').text !== g.block('index.html', 'storm-machine').text)
-  fail('the storm-machine block is not the one index.html has');
+g.sameBlock('storm-machine', page);   // every page's copy, and the page tested
 const { roomMap, roomRecords } = g.run(page, 'storm-machine', 'roomMap', 'roomRecords');
 const ram = g.listing().ram, M = roomMap(ram);
 const seen = new Array(100).fill(0);

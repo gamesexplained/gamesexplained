@@ -23,6 +23,10 @@
 //   starts on. A page with no such block, or a block with nothing in it but its opening comment,
 //   stops the test with the page and the name, so a page that renamed its port fails rather than
 //   tests nothing.
+// - g.sameBlock(name, ...pages) finds every page in the folder (its .html files, and any pages
+//   named) with a line /* name */ inside a <script>, and stops the test, naming the pages, when
+//   their blocks differ. It gives { text, pages } for the one block they share. A page that carries
+//   a copy of a port is then checked with the rest without the test listing it.
 // - g.run(page, name, ...wanted) runs the block in node and returns { wanted: value } for each
 //   identifier asked for, read in the block's own scope and then on globalThis; with none asked
 //   for, the block's name, when that is an identifier. An identifier the block does not define
@@ -120,6 +124,26 @@ function game(dir) {
     return { text, line: src.slice(0, at.start).split('\n').length, file: file(page) };
   }
 
+  function sameBlock(name, ...pages) {
+    const opener = new RegExp('^[ \\t]*/\\*[ \\t]*' + esc(name) + '[ \\t]*\\*/[ \\t]*$', 'm');
+    const files = fs.readdirSync(dir).filter(f => /\.html$/i.test(f)).sort().concat(pages);
+    const copies = new Map();                       // text -> the pages that carry it
+    for (const f of new Set(files.map(file))) {
+      const page = path.relative(dir, f) || f, src = read(f), m = opener.exec(src);
+      const at = m && findBlock(src.slice(m.index), name, false);
+      if (!at) continue;                            // none, or one outside a <script>
+      const text = src.slice(m.index + at.start, m.index + at.end);
+      copies.set(text, (copies.get(text) || []).concat(page));
+    }
+    if (!copies.size) fail(`no page in ${dir} carries a block /* ${name} */`);
+    if (copies.size > 1) {
+      fail(`the pages carry ${copies.size} different ${name} blocks: `
+           + [...copies.values()].map(p => p.join(', ')).join('; ') + ' (one block to a group); make them the same');
+    }
+    const [[text, carried]] = copies;
+    return { text, pages: carried };
+  }
+
   function run(page, name, ...wanted) {
     if (!wanted.length) {
       if (!IDENT.test(name)) fail(`${page}: say which identifiers the block ${name} gives: g.run(page, name, 'X')`);
@@ -162,7 +186,7 @@ function game(dir) {
     for (const name of names) require(path.join(ROOT, 'site', 'lib', name + '.js'));
   }
 
-  return { dir, root: ROOT, read, json, block, run, listing, lib };
+  return { dir, root: ROOT, read, json, block, sameBlock, run, listing, lib };
 }
 
 function differ(a, b, ranges) {
