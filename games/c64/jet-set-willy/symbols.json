@@ -9025,7 +9025,7 @@
   {
    "address": 8753,
    "type": "line",
-   "text": "Eight bit masks, $01 up to $80, read as $2231,X to pick out one sprite's or guardian's bit."
+   "text": "Mask 0, $01, the first of the eight bit masks $01 up to $80 at $2231-$2238, each picking out one sprite's bit. $300B reads them as $2231,X, X being the sprite, to switch on sprites 1 up; $3067 and $370D read them as $2232,Y and $2232,X, the index being the guardian's slot, to set the X high bit of its sprite, the slot plus one."
   },
   {
    "address": 8754,
@@ -9040,7 +9040,7 @@
   {
    "address": 8762,
    "type": "line",
-   "text": "Second entry of the descending inverted-mask table $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F."
+   "text": "Entries 1-7, $FD,$FB,$F7,$EF,$DF,$BF,$7F, of the descending inverted-mask table $2239-$2240 ($FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F). $306F and $3715 read it as $223A,Y and $223A,X with the guardian's slot, to clear the X high bit of its sprite, the slot plus one."
   },
   {
    "address": 8769,
@@ -9060,7 +9060,7 @@
   {
    "address": 8817,
    "type": "line",
-   "text": "The first of the 19 pointers the play interrupt rotates right at $349D, a bit each frame, read from the last down. Each points at a row of a room's conveyor glyph in the room's own record at $B000 or $E000: offset $C0, its top row, or $C2, its third. $34CF then copies the current room's glyph to $25 at $7928. This one is The Off Licence's third row. With $2297, the tables give each conveyor its top row turning its way and its third the other; West of Kitchen's top row turns right though its conveyor carries Willy left, and the conveyors of Ballroom West, Master Bedroom, Emergency Generator, Conservatory Roof and The Bow have no pointer, so their glyphs never turn."
+   "text": "The first of the 19 pointers the play interrupt rotates right at $349D, a bit each frame, read from the last down. Each points at a row of a room's conveyor glyph in the room's own record at $B000 or $E000: offset $C0, its top row, or $C2, its third. $34CF then copies the current room's glyph to $25 at $7928. This one is The Off Licence's third row. With $2297, the tables give 17 conveyors their top row turning their way and their third row the other way. The Forgotten Abbey, The Nightmare Room, The Bathroom, Orangery, Tool Shed and The Beach have a pointer to their top row alone, turning their way, so their third row never turns. West of Kitchen also has only its top row, and it turns right though its conveyor carries Willy left. The conveyors of Ballroom West, Master Bedroom, Emergency Generator, Conservatory Roof and The Bow have no pointer, so their glyphs never turn."
   },
   {
    "address": 8819,
@@ -9150,22 +9150,22 @@
   {
    "address": 11243,
    "type": "line",
-   "text": "Keyboard-matrix decoding table used by gameplay input."
+   "text": "Entry 0 of the 64-byte key table at $2BEB-$2C2A that the gameplay input scan reads at $37E8: for each key down, the entry at 8 times its keyboard row plus 7 minus its column gives the key's code. Entry 0 is $11, cursor down (row 0, column 7)."
   },
   {
    "address": 11244,
    "type": "line",
-   "text": "Gameplay keyboard matrix lookup table."
+   "text": "Entries 1-63 of the gameplay key table at $2BEB."
   },
   {
    "address": 11307,
    "type": "line",
-   "text": "The first of the eleven left keys, Q E T U O @ 1 3 5 7 9, the first of four lists of eleven key codes that $380B compares with each key down: left from $2C2B, right from $2C36, jump from $2C41, pause from $2C4C."
+   "text": "The first of the eleven left keys, Q E T U O @ 1 3 5 7 9, the first of four lists of eleven key codes: left from $2C2B, right from $2C36, jump from $2C41, pause from $2C4C. The loop at $380B compares each key down with the left, right and jump lists ($380B, $3814, $381D); the main loop compares the first key down with the pause list at $3120."
   },
   {
    "address": 11308,
    "type": "line",
-   "text": "Left/right/jump/pause key alias lists."
+   "text": "Left keys 2-11, E T U O @ 1 3 5 7 9, of the list at $2C2B."
   },
   {
    "address": 11318,
@@ -9185,7 +9185,7 @@
   {
    "address": 11351,
    "type": "line",
-   "text": "Starts a game. It puts the video chip in bank 1 ($4000-$7FFF) with the screen at $7C00 and the character set at $7800, in extended colour mode; banks BASIC out ($01 = $36); stops the timer interrupt of CIA 1; clears zero page $07-$5F and the taken flag of all 80 items. Willy starts in The Bathroom (room 33) at column 20 and height $68, which is also the first checkpoint, with eight spare lives, the music on ($35) and the volume $5F at 12. The play interrupt $33E1 goes in at raster line $FB, $2005 sets up the tune, and the seven vectors at $CFF0 are written. The screen is cleared to $C0, the rows below the room to $A0 in white, the clock set to 07:00:00 from $2267 and the status line from $2241. Then on into $2DC6 with the room build."
+   "text": "Starts a game. It puts the video chip in bank 1 ($4000-$7FFF) with the screen at $7C00 and the character set at $7800, in extended colour mode; banks BASIC out ($01 = $36); stops the timer interrupt of CIA 1; clears zero page $07-$5F and the taken flag of all 80 items. Willy starts in The Bathroom (room 33) at column 20 and height $68, which is also the first checkpoint, with eight spare lives, the music on ($35) and the volume $5F at 12. The play interrupt $33E1 goes in at raster line $FB, $2005 sets up the tune, and the seven vectors at $CFF0 are written. The screen is cleared to $C0, rows 19-24 (from $7EF8) to $A0 in white, the clock set to 07:00:00 from $2267 and the status line from $2241. Then on into $2DC6 with the room build."
   },
   {
    "address": 11411,
@@ -9230,7 +9230,7 @@
   {
    "address": 12237,
    "type": "line",
-   "text": "Loads the room's guardians: offset $E1 of them, from the record at $2443 + 8 times offset $E0, to $0940. Each becomes sprite 1 up, switched on, with its starting direction in $0980 (bit 6 of its type), its moving coordinate in $0988, its frame from byte 3 and its place from bytes 1 and 2, a cell being 8 pixels from $38 across and $32 down. Then the room's eight sprite colours, from $29EB + 8 times the room, go to $D027-$D02E, and the stretch of every sprite is cleared. A room with no guardians skips all of this, colours too, and goes straight to $30A8."
+   "text": "Loads the room's guardians: offset $E1 of them, from the record at $2443 + 8 times offset $E0, to $0940. Each becomes sprite 1 up, switched on, with its starting direction in $0980 (bit 6 of its type), its column (byte 1) in $0988, which only a horizontal guardian moves, its frame from byte 3 and its place from bytes 1 and 2, a cell being 8 pixels from $38 across and $32 down. Then the room's eight sprite colours, from $29EB + 8 times the room, go to $D027-$D02E, and the vertical stretch of every sprite ($D017) is cleared. A room with no guardians skips all of this, colours too, and goes straight to $30A8."
   },
   {
    "address": 12456,
