@@ -82,6 +82,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <ul class="pl-keys">
@@ -134,6 +135,7 @@ section table{margin:6px 0 18px}
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <script>
 /* port/src/core.js */
@@ -5403,6 +5405,7 @@ let data = null, rt = null, running = false, paused = false;
 
 // --- drawing: the frame the video chip would show at the clock's frame
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272);
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
 function draw(F) {
   if (!F) return;
   const p = C64.renderFrame(F).px, d = img.data;
