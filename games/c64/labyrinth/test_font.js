@@ -4,7 +4,7 @@ const path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const g=game(__dirname);
 const {labyrinthFont,labyrinthGlyph}=g.run('index.html','labyrinth-font','labyrinthFont','labyrinthGlyph');
-const {ram,has}=g.listing('parts/opening/listing.json');
+const {ram,has}=require('./opening_image.js')(g);
 g.lib('c64');
 const C64=globalThis.C64;
 assert.equal(labyrinthFont.length,2048);

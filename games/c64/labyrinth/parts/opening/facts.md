@@ -1,14 +1,14 @@
 # The text adventure — technical facts
 
-Source image: `work/play.vsf`, captured at the initial sidewalk prompt, as described in the game’s `orientation.md`. Unless marked live, statements below come from the snapshot and its exported disassembly. This is a Bronze sweep; most routine purposes remain open and the room overlays have no exported analysis.
+Source image: `work/play.vsf`, captured at the initial sidewalk prompt, as described in the game’s `orientation.md`. Unless marked live, statements below come from the snapshot and its exported disassembly. The opening ledger has descriptions for all 48,261 tracked bytes: 25,258 code and 23,003 data. The room overlays have no exported analysis. A description of retained opaque bytes records their provenance and boundaries; it does not establish their purpose.
 
 ## Interrupt and banking
 
 - **Live capture:** the IRQ chain repeatedly changes `$FFFE/$FFFF` within a frame. The initial snapshot vector is `$127C`; `$113A` is another chain entry visible in the captured writes.
-- `$113A` pushes A, X, and Y, selects `$25` at the processor port, calls `$1267`, acknowledges VIC/CIA interrupt state, updates counters, and dispatches several services. Their detailed purposes are open. It restores banking from `$61` before returning.
+- `$113A` pushes A, X, and Y, selects `$25` at the processor port, calls `$1267`, acknowledges VIC/CIA interrupt state, updates counters, and dispatches several services. The services cover input, clock/countdowns, movement, sound and display state; their entry descriptions are in the listing. It restores banking from `$61` before returning.
 - `$1267` schedules raster `$3D` and installs `$127C`. `$127C` copies six sprite X positions from `$02CC-$02D1`, sets the first six sprite Y values to `$46`, and schedules `$136F` at raster `$50`.
 - `$11C1` is RTI, and is the NMI vector target in the saved state.
-- `$69E1-$69EE` writes processor-port value `$24`, calls `$DE12` from RAM beneath I/O, and restores `$25`. `$DE12-$DE1D` fills 34 cells at each of `$CCA2` and `$CED2` with `$0A`. Its remaining instructions belong to the message-window drawing path; only the opening loop is described here.
+- `$69E1-$69EE` writes processor-port value `$24`, calls `$DE12` from RAM beneath I/O, and restores `$25`. `$DE12-$DE1D` fills 34 cells at each of `$CCA2` and `$CED2` with `$0A`. The complete routine builds the message-window edges and colour cells; its branch and loop descriptions cover the full $DE12-$DEFD allocation.
 
 ## Alphabet
 
@@ -35,7 +35,11 @@ Some other slots are blank or graphical. They must not be decoded by assuming th
 
 The file comparison found a strong `ds` match at `$BC00`, a partial initial-program match at `$0800`, and a near-complete `tx` match at `$7900`. An overlapping loaded region is not an independent twin copy. No second equivalent engine was established by this comparison; packed copies and other loads remain open.
 
-The platform’s all-opcode scan found no undocumented opcodes in the exported code blocks. Fourteen short untyped gaps between code runs remain to be classified; that result does not describe untraced memory. The listing also flags unclassified RAM beneath I/O outside the declared font, dictionary, keyboard tables, and `$DE12-$DEFD` routine. These are open Bronze work items, not exclusions justified by non-use.
+The annotation pass follows the 42 resident overlay API jump stubs, command pointers, patched calls and both variants of the raster strip handlers. The remaining code gaps were classified from these entry points. Hidden RAM includes the font, dictionary, keyboard data, 94 note-frequency pairs, the message-window routine and the explicit retained tail. The final listing build reports no unaccounted loaded-data stretches.
+
+Four extents remain opaque: `$747E-$74FF` (130 bytes), `$8367-$8AFF` (1,945 bytes), `$DEFE-$DFFF` (258 bytes), and the TX descriptor trailer `$ACAA-$ACC9` (32 bytes). They are unchanged between hand-over and play. Their complete bytes remain in the ledger with provenance comments. `test_opening_scope.py` checks twelve bounded chunks, their digests, 575 known directory/API targets, and 11,097 decoded instruction operands. No direct operand or checked pointer target lands in those extents. This is a bounded negative result: it does not prove that arbitrary indirect inputs, another overlay or an unrecognised format cannot use them. Their purpose is unknown.
+
+Generated state is excluded only with a producer or allocation boundary: processor/game state, the wheel descriptor copy, command echo, screen, scale multiples and cleared costume buffers. The DS payload ends at `$C4D2`; later scene-node allocations beyond it retain power-on RAM in this opening. `test_resident.js` checks the clearing boundaries and scale generation, and `opening_image.js` reconstructs the excluded wheel workspace with the original descriptor-copy routine for the tests.
 
 ## Error rate
 
@@ -43,95 +47,98 @@ The listing comments describe inspected code, rendered data, and dictionary reco
 
 ## Hardware register census
 
-Mechanical census of absolute and indexed absolute operands in the traced code blocks of `parts/opening/symbols.json`. Indexed operands name their base, not every address the index can reach. Indirect accesses are outside this census. A missing row does not establish that a register is unused. Routine purposes beyond the descriptions below remain open.
+Absolute/indexed operands in the complete typed opening/resident image, with the declared banking overrides applied. Indexed rows name the base, not every reachable address. Indirect accesses are outside this census; a missing row does not establish non-use. This includes resident services for later graphical loads without establishing those loads’ behavior.
 
-| Operand | Register / RAM candidate | Instruction sites | Attribution |
-|---|---|---|---|
-| `$D000` | vic_sprite0_x | `$1285` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D001` | vic_sprite0_y | `$1345` STY, `$138D` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D002` | vic_sprite1_x | `$128B` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D003` | vic_sprite1_y | `$1348` STY, `$1390` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D004` | vic_sprite2_x | `$1291` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D005` | vic_sprite2_y | `$134B` STY, `$1393` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D006` | vic_sprite3_x | `$1297` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D007` | vic_sprite3_y | `$134E` STY, `$1396` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D008` | vic_sprite4_x | `$129D` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D009` | vic_sprite4_y | `$133F` STY, `$1387` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D00A` | vic_sprite5_x | `$12A3` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D00B` | vic_sprite5_y | `$1342` STY, `$138A` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D00C` | vic_sprite6_x | `$1317` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D00D` | vic_sprite6_y | `$1321` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D00E` | vic_sprite7_x | `$131C` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D00F` | vic_sprite7_y | `$1326` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D010` | vic_sprite_x_msb | `$12AC` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D011` | vic_control1 | `$0F23` STA, `$0F66` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D012` | vic_raster | `$0F7B` STA, `$1269` STY, `$1358` STY, `$13A0` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D015` | vic_sprite_enable | `$093B` STA, `$0957` STA, `$0F9E` STY, `$52BF` STA, `$6252` STX | display service; sprite/raster writes visible in the frame capture |
-| `$D016` | vic_control2 | `$1150` STA, `$137C` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D017` | vic_sprite_expand_y | `$10EC` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D018` | vic_memory | `$0F76` STA, `$1382` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D019` | vic_irq_status | `$0F83` STA, `$1148` STA, `$1353` STY, `$139B` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D01A` | vic_irq_enable | `$0F86` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D01B` | vic_sprite_priority | `$10EF` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D01C` | vic_sprite_multicolour | `$10FA` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D01D` | vic_sprite_expand_x | `$10E9` STA, `$12B2` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D01E` | vic_sprite_collision | `$10F2` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D01F` | vic_sprite_bg_collision | `$10F5` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D020` | vic_border | `$0F20` STA, `$1055` STA, `$1278` STY, `$61C5` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D021` | vic_background0 | `$1058` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D022` | vic_background1 | `$1065` STA, `$5A37` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D023` | vic_background2 | `$106A` STA, `$5A3D` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D025` | vic_sprite_mc0 | `$1060` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D026` | vic_sprite_mc1 | `$105B` STA | display service; sprite/raster writes visible in the frame capture |
-| `$D027` | vic_sprite0_colour | `$12F4` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D028` | vic_sprite1_colour | `$12FA` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D029` | vic_sprite2_colour | `$1300` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D02A` | vic_sprite3_colour | `$1306` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D02B` | vic_sprite4_colour | `$130C` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D02C` | vic_sprite5_colour | `$1312` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D02D` | vic_sprite6_colour | `$1335` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D02E` | vic_sprite7_colour | `$133A` STY | display service; sprite/raster writes visible in the frame capture |
-| `$D400` | sid_v1_freq_lo | `$1E6C` STA indexed, `$1EF9` STA indexed | sound hardware access; effect or tune attribution open |
-| `$D401` | sid_v1_freq_hi | `$1E72` STA indexed, `$1EFF` STA indexed | sound hardware access; effect or tune attribution open |
-| `$D404` | sid_v1_control | `$1F1E` STA indexed | sound hardware access; effect or tune attribution open |
-| `$D405` | sid_v1_attack_decay | `$1F09` STA indexed | sound hardware access; effect or tune attribution open |
-| `$D406` | sid_v1_sustain_release | `$1F0F` STA indexed | sound hardware access; effect or tune attribution open |
-| `$D415` | sid_filter_cutoff_lo | `$1E84` STA | sound hardware access; effect or tune attribution open |
-| `$D416` | sid_filter_cutoff_hi | `$1E8A` STA | sound hardware access; effect or tune attribution open |
-| `$D417` | sid_filter_resonance | `$1CF7` STA, `$1D12` STA | sound hardware access; effect or tune attribution open |
-| `$D418` | sid_filter_mode_volume | `$1D1B` STA | sound hardware access; effect or tune attribution open |
-| `$D800` | colour_ram | `$1044` STA indexed, `$6050` LDA indexed, `$617E` LDA indexed, `$6769` STA indexed, `$68E3` LDA indexed, `$8F44` LDA indexed | hidden-RAM dictionary high bytes at $68E3, with I/O banked out |
-| `$D8A0` | unnamed / RAM candidate | `$5C3A` STA indexed, `$5C43` STA indexed, `$6AF4` STA indexed | banking and use open |
-| `$D8F0` | unnamed / RAM candidate | `$6B01` STA indexed | banking and use open |
-| `$D900` | unnamed / RAM candidate | `$1047` STA indexed, `$604A` LDA indexed, `$6178` LDA indexed, `$68DD` LDA indexed, `$8F3E` LDA indexed | hidden-RAM dictionary low bytes at $68DD, with I/O banked out |
-| `$D9B8` | unnamed / RAM candidate | `$6B0B` STA indexed | banking and use open |
-| `$DA00` | unnamed / RAM candidate | `$104A` STA indexed | banking and use open |
-| `$DA80` | unnamed / RAM candidate | `$6B18` STA indexed | banking and use open |
-| `$DAD0` | unnamed / RAM candidate | `$6B25` STA indexed | banking and use open |
-| `$DB00` | unnamed / RAM candidate | `$104D` STA indexed | banking and use open |
-| `$DB43` | unnamed / RAM candidate | `$6058` LDA indexed | banking and use open |
-| `$DB70` | unnamed / RAM candidate | `$60CC` STA indexed, `$6105` STA indexed | banking and use open |
-| `$DB97` | unnamed / RAM candidate | `$61D5` STA indexed | banking and use open |
-| `$DB98` | unnamed / RAM candidate | `$60D4` STA indexed, `$610B` STA indexed, `$61ED` STA indexed, `$6202` STA indexed | banking and use open |
-| `$DBC0` | unnamed / RAM candidate | `$60CF` STA indexed, `$6108` STA indexed | banking and use open |
-| `$DC00` | cia1_port_a | `$1870` LDA, `$1887` STA, `$19B3` STA | input-port access; keyboard/joystick paths need tracing |
-| `$DC01` | cia1_port_b | `$186D` STA, `$188A` LDA, `$19BB` LDA | input-port access; keyboard/joystick paths need tracing |
-| `$DC02` | cia1_ddr_a | `$1867` STA, `$187C` STA, `$19B0` STA | input-port access; keyboard/joystick paths need tracing |
-| `$DC03` | cia1_ddr_b | `$1862` STA, `$1881` STA, `$19B8` STA | input-port access; keyboard/joystick paths need tracing |
-| `$DC0D` | cia1_interrupt | `$0F89` LDA, `$114B` LDA, `$135B` LDY, `$13A3` LDY | IRQ acknowledgement in raster handlers |
-| `$DC0E` | cia1_control_a | `$0F96` STA | banking and use open |
-| `$DC0F` | cia1_control_b | `$0F99` STA | banking and use open |
-| `$DC23` | unnamed / RAM candidate | `$8F4E` LDA indexed | banking and use open |
-| `$DC5D` | unnamed / RAM candidate | `$68EB` LDA indexed | self-modified dictionary-read operand in the saved state; not a fixed hardware access |
-| `$DCD6` | unnamed / RAM candidate | `$18C6` LDA indexed | hidden-RAM keyboard translation; port $24 selected before $18C6 |
-| `$DD00` | cia2_port_a | `$0F8C` LDA, `$0F91` STA, `$1AFC` STA, `$1B1A` BIT, `$1B21` STA, `$1B3C` LDA, `$1B3F` STY, `$1B4D` LDA, `$1B50` STY, `$1B73` STY, `$1B83` STY | banking and use open |
-| `$DD0D` | cia2_interrupt | `$1A26` STA, `$1A4A` STA, `$1A66` STA, `$1A84` STA, `$1A90` STA, `$1AB4` STA | banking and use open |
-| `$DD56` | unnamed / RAM candidate | `$25FF` LDA indexed | hidden-RAM note-frequency lookup; callers select port $24 |
-| `$DDB4` | unnamed / RAM candidate | `$25FB` LDA indexed | hidden-RAM note-frequency lookup; callers select port $24 |
+| Operand | Meaning at these instruction sites | Instruction sites |
+|---|---|---|
+| `$D000` | vic_sprite0_x (I/O) | `$1285` STY, `$180B` STY, `$1823` STY |
+| `$D001` | vic_sprite0_y (I/O) | `$1345` STY, `$138D` STY, `$143E` STY, `$14E5` STY, `$158C` STY, `$1633` STY, `$16DA` STY, `$17F9` STY |
+| `$D002` | vic_sprite1_x (I/O) | `$128B` STY, `$1811` STY, `$1826` STY |
+| `$D003` | vic_sprite1_y (I/O) | `$1348` STY, `$1390` STY, `$1441` STY, `$14E8` STY, `$158F` STY, `$1636` STY, `$16DD` STY, `$17FC` STY |
+| `$D004` | vic_sprite2_x (I/O) | `$1291` STY |
+| `$D005` | vic_sprite2_y (I/O) | `$134B` STY, `$1393` STY, `$1444` STY, `$14EB` STY, `$1592` STY, `$1639` STY, `$16E0` STY |
+| `$D006` | vic_sprite3_x (I/O) | `$1297` STY |
+| `$D007` | vic_sprite3_y (I/O) | `$134E` STY, `$1396` STY, `$1447` STY, `$14EE` STY, `$1595` STY, `$163C` STY, `$16E3` STY |
+| `$D008` | vic_sprite4_x (I/O) | `$129D` STY |
+| `$D009` | vic_sprite4_y (I/O) | `$133F` STY, `$1387` STY, `$1438` STY, `$14DF` STY, `$1586` STY, `$162D` STY, `$16D4` STY |
+| `$D00A` | vic_sprite5_x (I/O) | `$12A3` STY |
+| `$D00B` | vic_sprite5_y (I/O) | `$1342` STY, `$138A` STY, `$143B` STY, `$14E2` STY, `$1589` STY, `$1630` STY, `$16D7` STY |
+| `$D00C` | vic_sprite6_x (I/O) | `$1317` STY |
+| `$D00D` | vic_sprite6_y (I/O) | `$1321` STY |
+| `$D00E` | vic_sprite7_x (I/O) | `$131C` STY |
+| `$D00F` | vic_sprite7_y (I/O) | `$1326` STY |
+| `$D010` | vic_sprite_x_msb (I/O) | `$12AC` STA, `$181A` STA, `$182B` STY |
+| `$D011` | vic_control1 (I/O) | `$0F23` STA, `$0F66` STA, `$17C8` STY |
+| `$D012` | vic_raster (I/O) | `$0F7B` STA, `$1269` STY, `$1358` STY, `$13A0` STY, `$1414` STY, `$144C` STY, `$14BB` STY, `$14F3` STY, `$1562` STY, `$159A` STY, `$1609` STY, `$1641` STY, `$16B0` STY, `$16E8` STY, `$1757` STY, `$1780` STY, `$17CD` STY, `$1841` STY |
+| `$D015` | vic_sprite_enable (I/O) | `$093B` STA, `$0957` STA, `$0F9E` STY, `$52BF` STA, `$6252` STX |
+| `$D016` | vic_control2 (I/O) | `$1150` STA, `$137C` STY, `$17BE` STY |
+| `$D017` | vic_sprite_expand_y (I/O) | `$10EC` STA |
+| `$D018` | vic_memory (I/O) | `$0F76` STA, `$1382` STY, `$17C3` STY |
+| `$D019` | vic_irq_status (I/O) | `$0F83` STA, `$1148` STA, `$1353` STY, `$139B` STY, `$1423` STY, `$146C` STY, `$14CA` STY, `$1513` STY, `$1571` STY, `$15BA` STY, `$1618` STY, `$1661` STY, `$16BF` STY, `$1708` STY, `$1766` STY, `$178F` STY, `$17DC` STY, `$183C` STY |
+| `$D01A` | vic_irq_enable (I/O) | `$0F86` STA |
+| `$D01B` | vic_sprite_priority (I/O) | `$10EF` STA |
+| `$D01C` | vic_sprite_multicolour (I/O) | `$10FA` STA |
+| `$D01D` | vic_sprite_expand_x (I/O) | `$10E9` STA, `$12B2` STY, `$1801` STY |
+| `$D01E` | vic_sprite_collision (I/O) | `$10F2` STA |
+| `$D01F` | vic_sprite_bg_collision (I/O) | `$10F5` STA |
+| `$D020` | vic_border (I/O) | `$0F20` STA, `$1055` STA, `$1278` STY, `$61C5` STA |
+| `$D021` | vic_background0 (I/O) | `$1058` STA, `$140F` STY, `$177B` STY |
+| `$D022` | vic_background1 (I/O) | `$1065` STA, `$5A37` STA |
+| `$D023` | vic_background2 (I/O) | `$106A` STA, `$5A3D` STA |
+| `$D025` | vic_sprite_mc0 (I/O) | `$1060` STA |
+| `$D026` | vic_sprite_mc1 (I/O) | `$105B` STA |
+| `$D027` | vic_sprite0_colour (I/O) | `$12F4` STY, `$1831` STY |
+| `$D028` | vic_sprite1_colour (I/O) | `$12FA` STY, `$1837` STY |
+| `$D029` | vic_sprite2_colour (I/O) | `$1300` STY |
+| `$D02A` | vic_sprite3_colour (I/O) | `$1306` STY |
+| `$D02B` | vic_sprite4_colour (I/O) | `$130C` STY |
+| `$D02C` | vic_sprite5_colour (I/O) | `$1312` STY |
+| `$D02D` | vic_sprite6_colour (I/O) | `$1335` STY |
+| `$D02E` | vic_sprite7_colour (I/O) | `$133A` STY |
+| `$D400` | sid_v1_freq_lo (I/O) | `$1E6C` STA indexed, `$1EF9` STA indexed |
+| `$D401` | sid_v1_freq_hi (I/O) | `$1E72` STA indexed, `$1EFF` STA indexed |
+| `$D404` | sid_v1_control (I/O) | `$1F1E` STA indexed |
+| `$D405` | sid_v1_attack_decay (I/O) | `$1F09` STA indexed |
+| `$D406` | sid_v1_sustain_release (I/O) | `$1F0F` STA indexed |
+| `$D415` | sid_filter_cutoff_lo (I/O) | `$1E84` STA |
+| `$D416` | sid_filter_cutoff_hi (I/O) | `$1E8A` STA |
+| `$D417` | sid_filter_resonance (I/O) | `$1CF7` STA, `$1D12` STA |
+| `$D418` | sid_filter_mode_volume (I/O) | `$1D1B` STA |
+| `$D800` | colour_ram (I/O) | `$1044` STA indexed, `$6769` STA indexed |
+| `$D800` | hidden RAM (RAM) | `$6050` LDA indexed, `$617E` LDA indexed, `$68E3` LDA indexed, `$8F44` LDA indexed |
+| `$D8A0` | unnamed register or mirror (I/O) | `$5C3A` STA indexed, `$5C43` STA indexed, `$6AF4` STA indexed |
+| `$D8F0` | unnamed register or mirror (I/O) | `$6B01` STA indexed |
+| `$D900` | unnamed register or mirror (I/O) | `$1047` STA indexed |
+| `$D900` | hidden RAM (RAM) | `$604A` LDA indexed, `$6178` LDA indexed, `$68DD` LDA indexed, `$8F3E` LDA indexed |
+| `$D9B8` | unnamed register or mirror (I/O) | `$6B0B` STA indexed |
+| `$DA00` | unnamed register or mirror (I/O) | `$104A` STA indexed |
+| `$DA80` | unnamed register or mirror (I/O) | `$6B18` STA indexed |
+| `$DAD0` | unnamed register or mirror (I/O) | `$6B25` STA indexed |
+| `$DB00` | unnamed register or mirror (I/O) | `$104D` STA indexed |
+| `$DB43` | hidden RAM (RAM) | `$6058` LDA indexed |
+| `$DB70` | unnamed register or mirror (I/O) | `$60CC` STA indexed, `$6105` STA indexed |
+| `$DB97` | unnamed register or mirror (I/O) | `$61D5` STA indexed |
+| `$DB98` | unnamed register or mirror (I/O) | `$60D4` STA indexed, `$610B` STA indexed, `$61ED` STA indexed, `$6202` STA indexed |
+| `$DBC0` | unnamed register or mirror (I/O) | `$60CF` STA indexed, `$6108` STA indexed |
+| `$DC00` | cia1_port_a (I/O) | `$1870` LDA, `$1887` STA, `$19B3` STA |
+| `$DC01` | cia1_port_b (I/O) | `$186D` STA, `$188A` LDA, `$19BB` LDA |
+| `$DC02` | cia1_ddr_a (I/O) | `$1867` STA, `$187C` STA, `$19B0` STA |
+| `$DC03` | cia1_ddr_b (I/O) | `$1862` STA, `$1881` STA, `$19B8` STA |
+| `$DC0D` | cia1_interrupt (I/O) | `$0F89` LDA, `$114B` LDA, `$135B` LDY, `$13A3` LDY, `$1426` LDY, `$146F` LDY, `$14CD` LDY, `$1516` LDY, `$1574` LDY, `$15BD` LDY, `$161B` LDY, `$1664` LDY, `$16C2` LDY, `$170B` LDY, `$1769` LDY, `$1792` LDY, `$17DF` LDY, `$1844` LDY |
+| `$DC0E` | cia1_control_a (I/O) | `$0F96` STA |
+| `$DC0F` | cia1_control_b (I/O) | `$0F99` STA |
+| `$DC23` | hidden RAM (RAM) | `$8F4E` LDA indexed |
+| `$DC5D` | hidden RAM (RAM) | `$68EB` LDA indexed |
+| `$DCD6` | hidden RAM (RAM) | `$18C6` LDA indexed |
+| `$DD00` | cia2_port_a (I/O) | `$0F8C` LDA, `$0F91` STA, `$1AFC` STA, `$1B1A` BIT, `$1B21` STA, `$1B3C` LDA, `$1B3F` STY, `$1B4D` LDA, `$1B50` STY, `$1B73` STY, `$1B83` STY |
+| `$DD0D` | cia2_interrupt (I/O) | `$1A26` STA, `$1A4A` STA, `$1A50` STA, `$1A5A` STA, `$1A66` STA, `$1A84` STA, `$1A90` STA, `$1AB4` STA |
+| `$DD56` | hidden RAM (RAM) | `$25FF` LDA indexed |
+| `$DDB4` | hidden RAM (RAM) | `$25FB` LDA indexed |
+| `$DE12` | unnamed register or mirror (I/O) | `$69E7` JSR |
 
 ## String sweep
 
-The snapshot was swept as screen codes, PETSCII, and printable ASCII. The opening text is stored as literal ASCII mixed with bytes above $7F; a printable run alone is not a complete sentence. High-byte word substitutions are decoded by $68D4-$691C; additional formatting controls are decoded by $67B5-$6865. No build identifier was established.
+The snapshot was swept as screen codes, PETSCII, and printable ASCII. The opening text is stored as literal ASCII mixed with bytes above $7F; a printable run alone is not a complete sentence. High-byte word substitutions are decoded by $68D4-$691C; additional formatting controls are decoded by $67B5-$6865. The bounded literal credit at `$743D-$747D` reads `Labyrinth, (c) 1986 Lucasfilm Ltd., All Rights Reserved. V 1.0 V`, followed by zero. This identifies the stored build string without proving a different disk edition equivalent.
 
 | Address | Literal span |
 |---|---|
@@ -189,12 +196,24 @@ At popcorn-stand location 7, selected dollar slot 6 reaches `$93E1`. A nonzero `
 
 `test_popcorn.js` runs the original GIVE routine for 1–9 owned dollars and all 256 purchase-flag values: 2,304 comparisons of remaining money, added popcorn, flag and reply. The actual inventory debit runs; text output and wheel redraw are intercepted. It additionally checks the success-path writes to `$968B-$968D`, `$AAB3`, and `$AAA5/$AA97`, and compares all three page reply strings through the original parser, including stored line breaks. These cases assume an available selected dollar and initially absent popcorn; they do not assert reachability of every artificial flag value.
 
-## Consecutive opening text records
+## Complete opening text corpus
 
-`$9816-$A3D6` contains 54 consecutive zero-terminated streams, totaling 3,009 bytes. Every stream is shorter than 256 bytes. Parsing token operands separately from text shows that these records use literal printable bytes, `$40` (skipped), `$FB/$FC` (dictionary insertion), `$FD/$FE` (insertion with following space), and `$FF` (line break). `$FC/$FE` subtract `$20` from the dictionary word’s first character. Their line comments contain the full captured-state expansion; the description generator uses this rule for each record rather than inferring a caller or a reachable command. Other formatting controls are outside this corpus.
+`$7910-$833F` and `$968E-$A9E7` contain 127 zero-terminated streams, totaling 7,562 bytes. The former 54-record subset is `$9816-$A3D6`. Every stream is shorter than 256 bytes. Parsing token operands separately from text shows that these records use literal printable bytes, `$40` (skipped), `$FB/$FC` (dictionary insertion), `$FD/$FE` (insertion with following space), and `$FF` (line break). `$FC/$FE` subtract `$20` from the dictionary word’s first character. Their line comments contain the full captured-state expansion; the description generator uses this rule for each record rather than inferring a caller or a reachable command. Headered resident messages also use framing controls `$F7-$FA`; `test_records.js` exercises them through the original parser on both colour-dependent finishing paths.
 
-`test_responses.js` checks all 54 expansions against the actual `$67B5` parser and `$68D4` word reader from the listing, with glyph output and line finishing intercepted. It verifies every source byte is present, every boundary and zero terminator, consecutive coverage of the 3,009-byte region, and the expanded text in each generated listing description. The page’s reply browser displays these checked strings. Browser font metrics and window wrapping are outside the comparison.
+`test_responses.js` checks all 127 expansions against the actual `$67B5` parser and `$68D4` word reader from the listing, with glyph output and line finishing intercepted. It verifies every source byte is present, every boundary and zero terminator, complete coverage of the two 7,562-byte regions, and the expanded text in each generated listing description. The page’s reply browser displays these checked strings. Browser font metrics and window wrapping are outside the comparison.
 
 The `$9FB4-$A00C` offer-refusal message crosses `$A000`; continuation labels describe the same stream on both sides. Its dictionary-index operand at `$9FBE` is `$11` (girl) in the captured state. The setup branch at `$8E60-$8E9D` writes `$10` (boy) there. A test runs `$8E16` with W input supplied through the input hook, then passes the modified reply through the actual parser and confirms the changed word. Setup also patches other text operands; this check does not claim to cover all of them.
 
 The decoded `$A03D` menu asks $1.25 for popcorn. The verified payment path removes two dollar bills and `$A148` describes two quarters in change plus a dropped nickel. Coin collection and later complaint adjustments remain separate work; this text does not establish a final net price.
+
+## Resident records and boundary checks
+
+`$6C02-$6C7B` contains split message pointers for 32 scene/title entries and 29 object/terminal entries, including a mutable custom-dialog pointer. Together with twelve short resident messages and the menu/slot templates, 58 unique headered messages are decoded. `test_records.js` compares their body text and layout/colour headers with the original `$6782` parser. Stored later-scene descriptions establish text, not those puzzles.
+
+The default sound directory has 59 entries; the menu directory has 35. Their streams contain 255 parsed events. Event bits select voice/filter paths, cached values, durations, slides, envelopes, immediate register changes, control bits, chaining and repeats. `test_records.js` executes each event with the original parser, checking length, cached value, duration, slide and envelope fields where present. Loop counters are set to exercise fall-forward; this is not an audible tune comparison. The menu tune has 28 three-voice groups and 49 distinct note/instrument sequences. The 94 frequency pairs lie at `$DD56-$DE11` under I/O. Tune identity and audible playback still need verification for Silver.
+
+`test_costume.js` checks 1,152 unrolled painter suffix/mask cases and all 65,536 depth/input pairs. `$2ACF` sums rounded bit weights; it is not an ordinary multiply. `test_resident.js` checks all 65,536 random seeds against `(37*seed+17) mod 65536`, four screen shifts, initialization boundaries, 512 low-pointer rewind states and cached writes for seven sound slots. `$687D` computes a high-byte borrow but stores only the low-byte subtraction; its comment preserves that behavior.
+
+`test_opening_services.js` checks the twelve later strip-pointer handlers with three Y values each, including sprite pointers, Y preservation, raster/vector scheduling and IRQ acknowledgement. It also checks nine colour names with exact, trailing, lowercase and short inputs. The matcher uppercases dictionary letters but expects the input already normalized. A complete name with trailing characters is accepted. It tests a tenth entry using the mutable result byte; the caller rejects result indices at least nine. Success flag alone therefore does not prove an accepted colour.
+
+The hand-over snapshot is at PC `$8D14`, before TX setup. Its `$7900-$ACC9` payload matches the disk file in all 13,258 bytes. The seven differences in the playable TX image are `$8C80` location, `$8C83` colour-match flag, `$8F4F/$8F50` patched dictionary pointer, `$8F94` result and `$AA91/$AA9F` street-description pointer. There is no TX startup-only difference in that comparison. Other resident startup and runtime mutations remain represented by the selected play image and their producer descriptions.

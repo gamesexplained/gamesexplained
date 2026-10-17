@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/c64/cpu6502.js'));
-const g=game(__dirname),{ram,has}=g.listing('parts/opening/listing.json');
+const g=game(__dirname),{ram,has}=require('./opening_image.js')(g);
 const {labyrinthOpeningResponses:records}=g.run('index.html','labyrinth-responses','labyrinthOpeningResponses');
 const symbols=g.json('parts/opening/symbols.json');
 function parse(memory,address){
@@ -13,8 +13,10 @@ function parse(memory,address){
   0x67c4:c=>{text+='\n';},0x6866:c=>c.rts()
  },maxSteps:30000});return text;
 }
-assert.equal(records.length,54);
-let next=0x9816,bytes=0;
+assert.equal(records.length,127);
+let bytes=0;
+const ranges=[[0x7910,0x8340],[0x968e,0xa9e8]];
+let range=0,next=ranges[0][0];
 for(const record of records){
  assert.equal(record.address,next);assert(record.end-record.address<256);
  let i=record.address;
@@ -28,12 +30,13 @@ for(const record of records){
  const comment=symbols.comments.find(c=>c.address===record.address&&c.type==='line');
  assert(comment&&comment.text.includes(JSON.stringify(record.text)),`listing description for $${record.address.toString(16)}`);
  next=record.end+1;bytes+=record.end-record.address+1;
+ if(next===ranges[range][1]&&range+1<ranges.length){range++;next=ranges[range][0];}
 }
-assert.equal(next,0xa3d7);assert.equal(bytes,3009);
+assert.equal(next,0xa9e8);assert.equal(bytes,0x8340-0x7910+0xa9e8-0x968e);
 // Execute the actual setup writer before checking the editable word in its reply.
 const c=new CPU(Uint8Array.from(ram));
 c.call(0x8e16,{d:0},{hooks:{0x8ce3:c=>c.rts(),0x8cda:c=>c.rts(),0x8edb:c=>{c.m[0x6683]=0x57;c.rts();}}});
 assert.equal(c.m[0x9fbe],0x10);
 const offer=records.find(r=>r.address===0x9fb4);
 assert.equal(parse(c.m,offer.address),offer.text.replace('girl','boy'));
-console.log(`OK - all 54 response texts, listing descriptions and 3,009 stored bytes match; setup's editable-word path also matches`);
+console.log(`OK - all 127 response texts, listing descriptions and ${bytes} stored bytes match; setup's editable-word path also matches`);

@@ -20,11 +20,11 @@ VICE MCP release v3.13.2, macOS arm64 GUI build, PAL, SID 6581. The emulator pas
 5. At the initial sidewalk, pause on an instruction boundary and save without ROMs. The listing’s exact image is `parts/opening/work/play.vsf`, SHA-256 recorded by `parts/opening/listing.json`. An ignored duplicate is `work/opening.vsf`. The saved image includes drive state and the working disk, so it must never be uploaded.
 6. Start the disassembler on that snapshot through `tools.py r2000`; on a resumed session import `parts/opening/symbols.json` rather than trusting a cached project. The snapshot’s code at `$127C` is `84 33 A0 25`; its NMI target `$11C1` is `40` (RTI). These checks agree with the live disassembler and independently anchor the snapshot’s RAM offset of 209.
 
-The hand-over into the text overlay was not captured. Whether its startup overwrites additional authored bytes remains open. The Bronze listing describes the saved playable state, not every byte ever loaded.
+The text hand-over is captured at PC `$8D14` in ignored `parts/opening/work/entry.vsf`, using a fresh expendable copy of side one and an execute checkpoint before TX setup. Its TX payload matches the disk file exactly; the seven play-state changes are assigned in `parts/opening/facts.md`. Use a fresh working image: the earlier copy contains a saved graphical game and takes a different boot path. Emulator state was preserved and restored around the replay. The listing uses the playable snapshot.
 
 ## Parts and route beyond the snapshot
 
-The opening has the partial symbol map and listing. The following graphical loads have saved states but no exported analysis. Their resident/overlay ranges are deliberately left undecided; a Silver pass must compare the loaded bytes before giving the shared engine an owner. Slots that reuse a resource are not assigned separate folders merely for a changed scene variable.
+The opening has its complete ledger annotation and listing, with opaque retained data explicitly identified. The following graphical loads have saved states but no exported analysis. Their resident/overlay ranges are deliberately left undecided; a Silver pass must compare the loaded bytes before giving the shared engine an owner. Slots that reuse a resource are not assigned separate folders merely for a changed scene variable.
 
 | Scene | Captured load | Capture route |
 |---|---|---|
@@ -75,14 +75,14 @@ Both sides were extracted with the bundled `c1541`: 46 files on side 1 and 68 on
 | Side / file | Payload bytes | Candidate base | Matching pieces | Equal payload bytes | Interpretation |
 |---|---:|---|---:|---:|---|
 | 1 / `activision` | 33,942 | `$0800` | 1,107 | 19,557 | Substantial initial-image match; replaced or changed ranges remain unclassified |
-| 1 / `ds` | 2,259 | `$BC00` | 93 | 2,193 | Strong contiguous match; menu code/text candidate; not fully traced |
+| 1 / `ds` | 2,259 | `$BC00` | 93 | 2,193 | Menu code, headered text, instrument streams and note sequences traced |
 | 1 / `tx` | 13,258 | `$7900` | 740 | 13,251 | Text-adventure overlay, including executable jumps, messages, and tables |
 
-The text-opening snapshot has no convincing whole-payload match for the later art and room files. This does not show that they are unused: packing, relocation, and later scene loads can hide their relationship. The seven differing bytes in `tx` have not been assigned writers. The `activision` match overlaps the later overlay, so its matches must not be counted as a second independent copy of the engine.
+The text-opening snapshot has no convincing whole-payload match for the later art and room files. This does not show that they are unused: packing, relocation, and later scene loads can hide their relationship. The seven differing bytes in `tx` are assigned setup/runtime roles in the opening facts; its hand-over payload matches all disk bytes. The `activision` match overlaps the later overlay, so its matches must not be counted as a second independent copy of the engine.
 
 ## Loader
 
-The first directory entry boots a publisher loader through the emulated 1541. It presents the logo and slot selector, then loads the text-adventure state. The `tx` payload accounts for almost all bytes at `$7900-$ACC9`. The cinema transition loads further graphical material. The loader selects scene resources through `$592A`; `U` overlays load at `$8B00`, with room callbacks at `$8C8F/$8C92/$8C95`. Male `AV` and female `AF` costume files load at `$7900`, and NPC costume files at `$A000`. Packed `M`, `P`, and `C` files expand to `$0600`, `$BC00`, and `$E000`. The four-byte packed header holds packed and expanded lengths; the unpacker is `$5C55-$5D35`. A standalone decoder reproduced every byte of the natural first corridor’s M2 (510 bytes), P2 (3328 bytes), and C2 (2008 bytes). These placements establish resource families, not the final listing ownership ranges. Loader internals were not annotated for this Bronze contribution.
+The first directory entry boots a publisher loader through the emulated 1541. It presents the logo and slot selector, then loads the text-adventure state. The `tx` payload accounts for almost all bytes at `$7900-$ACC9`. The cinema transition loads further graphical material. The loader selects scene resources through `$592A`; `U` overlays load at `$8B00`, with room callbacks at `$8C8F/$8C92/$8C95`. Male `AV` and female `AF` costume files load at `$7900`, and NPC costume files at `$A000`. Packed `M`, `P`, and `C` files expand to `$0600`, `$BC00`, and `$E000`. The four-byte packed header holds packed and expanded lengths; the unpacker is `$5C55-$5D35`. A standalone decoder reproduced every byte of the natural first corridor’s M2 (510 bytes), P2 (3328 bytes), and C2 (2008 bytes). These placements establish resource families, not the final listing ownership ranges. The resident loader and unpacker are annotated in the opening listing. Later loaded resources retain their separate placeholder parts.
 
 ## Graphical frame check
 

@@ -40,4 +40,4 @@ Read on 17 October 2026:
 
 Popcorn purchase: traced and simulator checked at `$93E1`. The first dollar payment costs two dollars and adds one box; a nonzero purchase flag refuses repeat payment. Coin collection remains open.
 
-Opening dialogue: 54 consecutive stored replies at `$9816-$A3D6` decoded and simulator checked. Includes descriptions, refusals, purchase text, and four one-word beggar hints. Individual trigger paths and the remaining dialogue remain open.
+Opening dialogue: all 127 stored streams at `$7910-$833F` and `$968E-$A9E7` decoded and simulator checked, including setup, descriptions, transactions and hints. The original handler entries and pointer tables are described. Artificial state combinations in the tests do not establish ordinary reachability; coin collection and complaint timing still need live end-to-end checks. Resident messages, sound-event formats, renderer, loader and IRQ services have opening-snapshot annotations; later loaded puzzles remain open.

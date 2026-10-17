@@ -52,3 +52,10 @@ The verification skill’s instruction to test cheap claims led to executing the
 ## Dialogue coverage continuation
 
 The coverage skill’s instruction to take the largest undescribed run led to the bounded text records rather than many small command branches. Its warning about `$A000` cutting a data description required a continuation label, and its rule that a generated comment is a repeated claim led to checking all 54 outputs against the original parser. Existing guidance covers the work; there is no shared-kit edit or maintainer ask.
+
+
+## Opening-only completion
+
+`50-coverage`’s “Is the picture loaded or drawn?” required a fresh pre-setup snapshot and explicit producer checks for generated memory. Its loaded-data audit prevented the unreferenced retained extents from disappearing from scope. The instruction to follow patched/computed targets recovered the remaining API and raster entries. `60-verify`’s “a negative result is a claim about your search” kept the opaque ranges visible with qualified results rather than inventing a use or excluding them. `70-minisite` kept the complete 127-record reply viewer tied to the original parser.
+
+The tests caught an event-state field-name reversal, readonly constants described as mutable state, and a tenth colour-match entry whose success flag needs the caller’s range check. These corrections follow existing instructions. No shared-kit change or maintainer ask is needed. All new helper and test fixtures hold annotations, selected data or digests; machine images and tool state stay ignored. The listing has no independent accuracy sample, and the purpose of the explicitly opaque bytes remains open.

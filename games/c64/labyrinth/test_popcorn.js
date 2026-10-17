@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/c64/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/opening/listing.json');
+const g=game(__dirname),{ram}=require('./opening_image.js')(g);
 const {labyrinthPopcornPurchase,labyrinthPopcornReplies}=g.run('index.html','labyrinth-popcorn','labyrinthPopcornPurchase','labyrinthPopcornReplies');
 let cases=0;
 for(let dollars=1;dollars<=9;dollars++)for(let flag=0;flag<256;flag++){

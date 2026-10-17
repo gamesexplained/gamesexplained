@@ -79,3 +79,10 @@ Followed the neighboring GIVE branch from the ticket purchase. Established the t
 ## Opening to about 25 percent
 
 The contributor requested about 25% coverage. Followed the largest unexplained dialogue runs and separated 54 consecutive records through `$A3D6`. The parser accepts all their bytes under the already traced literal/dictionary format. Generated exact expansions, typed only that bounded range, and retained the editable dictionary operand at `$9FBE` with continuation descriptions across the `$A000` boundary. Cleared regenerated hidden-RAM colour aliases after typing and exported the symbol map and listing. All record expansions and descriptions are checked against the real parser; a setup-input test also checks its changed word. Added a browser for the checked replies and rewrote its copy after the facts were fixed. The ledger measures 9,533 / 37,814 (25.2%); no exclusions changed, code explanation is unchanged, and no independent sample is claimed.
+
+
+## 17 October 2026 — opening-only completion
+
+The contributor requested 100% of the opening only. The pass recovered resident API targets, the remaining raster chain, text, sound and renderer/loader services, then corrected small-field and operand aliases against their readers. Exhaustive scale and PRNG tests caught arithmetic assumptions; event tests checked both voice and nonvoice parsing. A fresh disk copy allowed an entry checkpoint before TX setup after the old working copy’s save slot diverted replay into graphical play. The emulator state was restored afterward.
+
+The final opening ledger is 48,261/48,261 with no loaded-data audit warnings. It deliberately includes 2,365 opaque retained bytes as provenance/boundary annotations; their purpose remains unknown. Generic runtime field descriptions were narrowed where their access was read-only, and interaction state names were corrected against the actual handlers. These are author checks, not an independent comment sample. The 21 graphical parts were left untouched. Overall tier remains Bronze; the contributor retains PR creation.
