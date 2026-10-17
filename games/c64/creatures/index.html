@@ -131,7 +131,7 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
   <p class="fig">03 · Music</p>
   <h2 class="t">Music: in a level the tune has one voice, and the effects two</h2>
   <div class="plate"><div id="cr-music"></div>
-    <p class="cap">The page runs <b>the game's own music player</b>: its code and every tune's bytes, from the listings, on a small 6502 core inside the <code>cr-music</code> block, once a frame, through the site's model of the SID. <code>test_music.js</code> runs the same bytes on the kit's 6502 simulator and compares every write to the SID, frame by frame, for every tune: to its end, or for 20,000 frames where it repeats. The level tunes play as they do in a level, on the third voice alone; the rest play on all three.</p>
+    <p class="cap">The page runs <b>the game's own music player</b>: its code and every tune's bytes, from the listings, on the kit's 6502 simulator, from the <code>cr-music</code> block, once a frame, through the site's model of the SID. <code>test_music.js</code> calls the same code on the simulator directly and compares every write to the SID, frame by frame, for every tune: to its end, or for 20,000 frames where it repeats. The level tunes play as they do in a level, on the third voice alone; the rest play on all three.</p>
   </div>
   <p>One player serves the whole game. The engine keeps it at <a href="source-engine.html#0334"><code>$0334</code></a>, and the title carries its own copy of the same code, assembled <code>$CC</code> bytes higher, because the title is a separate program. A tune is a header of two voice offsets and three voices of two-byte commands that call shared sections, and all eighteen tunes are in that form.</p>
   <p>Before a level starts, <code>music_hooks_ingame</code> writes three bytes into the player's own instructions (<a href="source-engine.html#0456"><code>$0456</code></a>, <a href="source-engine.html#087C"><code>$087C</code></a>, <a href="source-engine.html#0887"><code>$0887</code></a>): where its voice loop stops, and which registers its copy to the chip starts and stops at. In a level the loop runs for the third voice alone, and the copy skips the registers of the first two, which are left to the sound effects. On the Get Ready screen, left and right on the joystick turn the level's music off and on.</p>
@@ -141,7 +141,7 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
   <p class="fig">04 · Sound effects</p>
   <h2 class="t">Sound: the effects take the voices the tune leaves free</h2>
   <div class="plate"><div id="cr-sfx"></div>
-    <p class="cap">The page runs <b>the engine's own sound effect code</b>, its routines and tables from the listing, on the same 6502 core as the music, once a frame. Each sound starts as the game starts it, with the same requests, from silence, with the music off and the effect channels idle as they are when a level begins. The charge turns into the flame after 36 frames, as a full charge does when fire is let go, and the waterfall's roar takes the loudness <code>level_sound</code> gives each column of the map, a column every 32 frames here. The five creatures' sounds are named after a creature whose movement script plays them. <code>test_sfx.js</code> runs the same calls on the kit's 6502 simulator and compares every write to the SID, frame by frame.</p>
+    <p class="cap">The page runs <b>the engine's own sound effect code</b>, its routines and tables from the listing, on the kit's 6502 simulator as the music is, once a frame. Each sound starts as the game starts it, with the same requests, from silence, with the music off and the effect channels idle as they are when a level begins. The charge turns into the flame after 36 frames, as a full charge does when fire is let go, and the waterfall's roar takes the loudness <code>level_sound</code> gives each column of the map, a column every 32 frames here. The five creatures' sounds are named after a creature whose movement script plays them. <code>test_sfx.js</code> runs the same calls on the kit's 6502 simulator and compares every write to the SID, frame by frame.</p>
   </div>
   <p>A part of the game asks for an effect by its number, 0 to 28 (<a href="source-engine.html#1054"><code>sfx_request</code></a>). Three tables give each number its channel, its priority and the definition it plays, and the request takes its channel only if nothing of higher priority is playing there. Once a frame <a href="source-engine.html#1020"><code>sfx_play_pending</code></a> starts one waiting effect at most, so the two halves of a shot or a pickup start a frame apart, and <a href="source-engine.html#0A68"><code>sfx_update</code></a> steps each channel. A definition is 20 bytes (<a href="source-engine.html#0D62"><code>sfx_definitions</code></a>): an envelope, a length, and two sets of waveform, pulse width and a frequency that sweeps up or down between two limits, with the sound switching from one set to the other every so many frames.</p>
   <p>With the music on, the tune has the third voice, and <code>sound_set_music_mode</code> writes an RTS over the test for the third channel's requests, so the effects share the other two. The effects that belong to the third channel then never start: world 1's waterfall, and the sounds of the creatures' movement scripts, whose sound command does nothing with the music on anyway (<a href="source-engine.html#C4CF"><code>$C4CF</code></a>). Turn the music off on the Get Ready screen and the hoppers, the bombs and the discs can be heard. Five of the 29 numbers are asked for by no code in any of the game's files (<a href="discoveries.html#leftovers">Discoveries</a>).</p>
@@ -216,6 +216,7 @@ th{font-family:var(--fm);font-size:12px;letter-spacing:.04em;text-transform:uppe
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
 // The data the widgets draw and play, from the committed listings: test_gallery.js,
 // test_music.js, test_sfx.js, test_shop.js and test_end.js check every byte against them.
@@ -292,8 +293,9 @@ function crCreature(c, mem, phaseA, phaseC) {
 </script>
 <script>
 /* cr-music */
-// createDriver for C64Sid: runs Creatures' own music player on a small 6502 core, over the bytes
-// of the game as the listings have them (D.blocks). Every tune but the title's plays on the
+// createDriver for C64Sid: runs Creatures' own music player on the kit's 6502 (C64Cpu, from
+// ../../lib/cpu6502.js, which sid.js passes to createDriver), over the bytes of the game as the
+// listings have them (D.blocks). Every tune but the title's plays on the
 // engine's player: music_play ($0804) with the tune's header in Y (low) and X (high), after the
 // three operands music_set_hooks ($18E2) writes ($0456, $087C, $0887) are set as the game sets
 // them for that tune, then music_frame ($0873) once a frame while music_on ($0334) stays set. In
@@ -308,105 +310,20 @@ function crCreature(c, mem, phaseA, phaseC) {
 // sounds what feeds them), while any of the player's busy bytes is set; later pokes and calls come
 // on the frames they name, before the frame's routines, as the game's own code makes them, and a
 // sound with an end stops there.
-function createDriver(D) {
+function createDriver(D, C64Cpu) {
   'use strict';
   const m = new Uint8Array(0x10000);
   const sid = new Uint8Array(25);
   let writes = [], bus = 0, env3 = 0, osc3 = 0, tune = -1;
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0;
-  const rd = (ad) => {
-    if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; }
-    return m[ad];
-  };
-  const wr = (ad, val) => {
-    if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; }
-    m[ad] = val;
-  };
-  const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-  const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-  const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-  const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-  const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-  const adc = (b) => {
-    if (d) { let lo = (a & 15) + (b & 15) + (c ? 1 : 0); let hi = (a >> 4) + (b >> 4); if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; n = (hi << 4) & 0x80; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80);
-      if (hi > 9) hi += 6; c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 255; return; }
-    const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-  };
-  const sbc = (b) => {
-    if (d) { const s = a - b - (c ? 0 : 1); let lo = (a & 15) - (b & 15) - (c ? 0 : 1); let hi = (a >> 4) - (b >> 4);
-      if (lo & 16) { lo -= 6; hi--; } if (hi & 16) hi -= 6; v = ((a ^ b) & (a ^ s) & 0x80); c = s >= 0 ? 1 : 0; nz(s & 255);
-      a = ((hi << 4) | (lo & 15)) & 255; return; }
-    adc(b ^ 255);
-  };
-  const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-  function step() {
-    const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-    const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-    const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-    const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-    // addressing by the opcode's low bits, for the regular groups
-    const g = op & 3, mode = (op >> 2) & 7;
-    let ea = -1, len = 2;
-    if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-    else if (g === 2 || g === 0) { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-    const M = () => (ea === -2 ? b1 : rd(ea));
-    switch (op) {
-      // group 1: ORA AND EOR ADC STA LDA CMP SBC
-      case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-      case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-      case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-      case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-      case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-      case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-      case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-      case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-      // shifts and inc/dec on memory
-      case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-      case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea); const r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-      case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-      case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea); const r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-      case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-      case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-      case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-      case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-      case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-      case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-      // loads, stores, compares with X and Y
-      case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-      case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-      case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-      case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-      case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-      case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-      case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-      // implied
-      case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-      case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-      case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-      case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-      case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-      case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-      case 0x58: case 0x78: case 0xEA: len = 1; break;
-      case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-      case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-      case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-      // branches
-      case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-        const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-        pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return; }
-      case 0x4C: pc = w; return;
-      case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-      case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-      case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-      default: throw new Error('opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-    }
-    pc = (pc + len) & 0xFFFF;
-  }
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {             // the chips at $D000-$DFFF
+    read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+  } });
+  // A call starts with A, X and Y as regs gives them (0 otherwise) and decimal mode off. At the
+  // sound effects' start (P.start) it notes the sound each voice is given: Y, for the voice in X.
   function call(entry, regs) {
-    a = regs.a || 0; x = regs.x || 0; y = regs.y || 0; d = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-    for (let i = 0; i < 200000; i++) { if (pc === 0xFFFF) return; if (pc === P.start) started[x & 3] = y; step(); }
-    throw new Error('runaway at $' + pc.toString(16));
+    const hooks = P.start === undefined ? null : { [P.start]: (c) => { started[c.x & 3] = c.y; } };
+    cpu.call(entry, { a: regs.a || 0, x: regs.x || 0, y: regs.y || 0, d: 0 }, { hooks, maxSteps: 200000 });
   }
   let P = null, T = null, pending = [], started = [], frame = 0;
   const busy = () => !Array.isArray(P.on) ? !!m[P.on]
@@ -1062,21 +979,21 @@ function draw() {
   requestAnimationFrame(loop);
 }
 // ---- the music
-if (typeof C64Sid !== 'undefined') {
+if (typeof C64Sid !== 'undefined' && typeof C64Cpu !== 'undefined') {
   C64Sid.mount($('cr-music'), {
     driver: createDriver, data: MUSIC, filter: '6581',
     tunes: MUSIC.tunes.map((T) => T.name),
     rows: [{ k: 'Reading', f: (v) => v.at ? hex(v.at) : '-' }],
   });
-} else missing($('cr-music'), 'The player runs the game\'s own code through the site\'s shared script, ../../lib/sid.js, which the built site serves.');
+} else missing($('cr-music'), 'The player runs the game\'s own code through the site\'s shared scripts, ../../lib/sid.js and ../../lib/cpu6502.js, which the built site serves.');
 // ---- the sound effects: the same driver, running the engine's effect routines
-if (typeof C64Sid !== 'undefined') {
+if (typeof C64Sid !== 'undefined' && typeof C64Cpu !== 'undefined') {
   C64Sid.mount($('cr-sfx'), {
     driver: createDriver, data: SFX,
     tunes: SFX.tunes.map((T) => T.name),
     rows: [{ k: 'Definition', f: (v) => v.def === undefined ? '-' : v.def + ' at ' + hex(0x0D62 + 20 * v.def) }],
   });
-} else missing($('cr-sfx'), 'The player runs the game\'s own code through the site\'s shared script, ../../lib/sid.js, which the built site serves.');
+} else missing($('cr-sfx'), 'The player runs the game\'s own code through the site\'s shared scripts, ../../lib/sid.js and ../../lib/cpu6502.js, which the built site serves.');
 // ---- the witch's shop
 (() => {
   const cv = $('shop-scr'), say = $('shop-say'), sel = $('shop-stage'), livesEl = $('shop-lives'), clueBtn = $('shop-clue');
@@ -1177,7 +1094,7 @@ if (typeof C64Sid !== 'undefined') {
     sndWanted = !sndWanted;
     sound.setAttribute('aria-pressed', sndWanted);
     sound.textContent = sndWanted ? 'Sound off' : 'Sound on';
-    if (sndWanted && !snd && typeof C64Sid !== 'undefined') {
+    if (sndWanted && !snd && typeof C64Sid !== 'undefined' && typeof C64Cpu !== 'undefined') {
       try { snd = await C64Sid.host({ driver: createDriver, data: MUSIC, filter: '6581' }); } catch (e) { snd = null; }
     }
     tune(sndWanted);

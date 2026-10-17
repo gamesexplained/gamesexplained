@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Hold the page's two sound players against the game's code. index.html's storm-music block
 // (createDriver) runs the title tune's driver, and its storm-sfx block (createSfxDriver) the sound
-// effects, each on its own small 6502 over the bytes the page gives it. The same calls on the kit's
-// simulator over the listing's bytes must write the same values to the same SID registers, in the
-// same order, frame by frame:
+// effects, each on the kit's 6502 (handed in as sid.js hands it) over the bytes the page gives it.
+// The same calls on the kit's simulator over the listing's bytes must write the same values to the
+// same SID registers, in the same order, frame by frame:
 // - the tune: music_init ($9000), 7,000 frames of music_play ($911B), then music_stop ($9227);
 // - each of the 15 effects: sfx_reset ($5632) and sfx_start ($5645) with its number, then
 //   sfx_update ($5830) once a frame until the effect ends, when the port must stop too.
@@ -11,7 +11,7 @@
 //   node games/c64/storm/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'storm-music', 'createDriver');
 const { createSfxDriver } = g.run(page, 'storm-sfx', 'createSfxDriver');
@@ -32,7 +32,7 @@ function sim(m, frame) {
 const FRAMES = 7000;
 {
   const m = L.ram.slice(), frame = { w: [] }, cpu = sim(m, frame);
-  const drv = createDriver({ mem: [[0x9000, L.ram.slice(0x9000, 0x99C2)]] });
+  const drv = createDriver({ mem: [[0x9000, L.ram.slice(0x9000, 0x99C2)]] }, kit);
   const same = (what) => { if (frame.w.join() !== drv.writes.join()) fail('tune', what, frame.w.join(), '|', drv.writes.join()); frame.w = []; };
   cpu.call(0x9000, Z); drv.init(); same('music_init');
   for (let f = 0; f < FRAMES; f++) {
@@ -47,7 +47,7 @@ const FRAMES = 7000;
 let sfxFrames = 0;
 for (let t = 0; t < 15; t++) {
   const m = L.ram.slice(), frame = { w: [] }, cpu = sim(m, frame);
-  const drv = createSfxDriver({ mem: [[0x5632, L.ram.slice(0x5632, 0x5938)]] });
+  const drv = createSfxDriver({ mem: [[0x5632, L.ram.slice(0x5632, 0x5938)]] }, kit);
   const same = (what) => { if (frame.w.join() !== drv.writes.join()) fail('effect', t, what, frame.w.join(), '|', drv.writes.join()); frame.w = []; };
   cpu.call(0x5632, Z); cpu.call(0x5645, { ...Z, a: t }); drv.init(t); same('start');
   let f = 0;

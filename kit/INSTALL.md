@@ -155,6 +155,19 @@ controlled by an existing Playwright Core 1.59.1 client. No browser package
 was downloaded in that run. This establishes the tested configuration;
 `verify-footprint` still does not scan browser state.
 
+On a Mac, a Firefox in `/Applications` is found without being on `PATH`.
+With no Firefox at all, `tools.py browser` names the Chrome, Chromium or
+Edge it finds there and starts nothing, because using one is the
+contributor's call: ask first. With their yes, point
+`KIT_BROWSER_CHROMIUM` at the executable inside the app, as in
+`KIT_BROWSER_CHROMIUM='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' python3 kit/scripts/tools.py browser`,
+and drive it over CDP as above; `stop browser` stops it. The profile and
+its state go under `tools/chromium/`, but Google Chrome can start
+Google's own updater, which runs and writes outside the folder: the
+Bubble Bobble run on a Mac without Firefox saw it start (#331). The Mac
+paths were written from that run's report and tested on Linux only, on
+16 October 2026.
+
 On Windows 11 with the kit under WSL2, where WSL had no browser, the
 Microsoft Edge that Windows ships did the page check on 12 October 2026
 without installing anything: the site served from WSL with

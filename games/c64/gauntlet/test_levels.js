@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 // Hold the Levels page's level builder against the game's own code. levels.html's gl-build block
-// runs level_build ($C625) and grid_draw ($CBC2) on a 6502 core of its own; this runs them on the
-// kit's 6502 simulator over the committed listing, with each of the page's 128 level files at
-// $0A00, and compares the tile grid ($0C00-$0FFF), the colour and character maps ($2000-$3FFF),
-// the three maze fonts' wall glyphs ($4808, $5008, $5808) and the tile colours ($F600-$F7FF).
+// runs level_build ($C625) and grid_draw ($CBC2) on the kit's 6502 simulator as the page loads it
+// (C64Cpu); this runs them on the simulator directly, over the committed listing, with each of
+// the page's 128 level files at $0A00, and compares the tile grid ($0C00-$0FFF), the colour and
+// character maps ($2000-$3FFF), the three maze fonts' wall glyphs ($4808, $5008, $5808) and the
+// tile colours ($F600-$F7FF).
 // Everything it needs is committed.
 //   node games/c64/gauntlet/test_levels.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'levels.html';
+g.lib('cpu6502');
 const { buildLevel } = g.run(page, 'gl-build', 'buildLevel');
 const html = g.read(page);
 const lm = html.match(/const LEVELS = (\[.*?\]);/);

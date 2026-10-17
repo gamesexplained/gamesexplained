@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Hold the page's 6502 and what it runs on it against the kit's simulator. index.html's storm-machine
-// block (stormCore, and stormRooms, stormEnergy and stormObjects built on it) runs the game's own
-// routines over the bytes the page reads (listing.json); the same calls on the kit's
-// simulator over the same bytes must leave every byte of memory the same, outside the stack page:
+// Hold what the page runs on the kit's 6502 against the game's routines called on it directly.
+// index.html's storm-machine block (stormCore, the simulator as the page sets it up, and stormRooms,
+// stormEnergy and stormObjects built on it) runs the game's own routines over the bytes the page
+// reads (listing.json); the same calls made here on the kit's simulator over the same bytes must
+// leave every byte of memory the same, outside the stack page:
 // - every room drawn whole, and with each of its five lists left out (draw_floor ... draw_objects),
 // - 2,000 passes of the main loop's monster work (move_monster, spawn) in each room the monster
 //   widget offers, comparing after every pass,
@@ -17,6 +18,7 @@ const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+g.lib('cpu6502');                   // the 6502 the storm-machine block runs on, as the page loads it
 const { stormRooms, roomRecords, monsterRooms, stormEnergy, stormObjects, stormTouch } =
   g.run(page, 'storm-machine', 'stormRooms', 'roomRecords', 'monsterRooms', 'stormEnergy', 'stormObjects', 'stormTouch');
 
@@ -37,7 +39,7 @@ function sim(m, extra) {
   return new CPU(m, { port: { dir: 0x2F, data: 0x37 }, io });
 }
 const quiet = { 0x5645: (c) => { c.rts(); } };
-// The page's 6502 starts each call with A, X and Y 0 and every flag clear; so does the simulator here
+// stormCore starts each call with A, X and Y 0 and every flag clear; so does the simulator here
 const Z = { a: 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 };
 
 // Rooms

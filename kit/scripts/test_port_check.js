@@ -3,12 +3,13 @@
 // a page with a block of each kind a page names (a script headed /* name */, a function inside the
 // page's script ending at // end of name, a const), a .js file beside it, a listing. It checks
 // what each block gives, that a missing, empty or unended block stops with the page and the name,
+// that sameBlock finds every page's copy of a block and stops when they differ,
 // that an error a block throws names the page's own line, the listing's image and fetch, differ,
 // and the script's two modes, the --ask answer whole past the 64 KB a pipe takes at once.
 // Exits 1 on any failure. node kit/scripts/test_port_check.js
 const fs = require('fs'), os = require('os'), path = require('path');
 const { spawnSync } = require('child_process');
-const { game, differ } = require('./port_check.js');
+const { game, differ, KIT_LIB } = require('./port_check.js');
 
 let fails = 0;
 // ok is true, or what went wrong instead (throws gives the message it got)
@@ -92,6 +93,22 @@ try {
         throws(() => g.run('page.html', 'unended'), /block unended, lines 23-\d+, does not compile on its own.*\/\/ end of unended/));
   check('a page that is not there', throws(() => g.run('nopage.html', 'x'), /nopage\.html: cannot read it/));
 
+  // ---- one block on every page ------------------------------------------------------------------
+  const alpha = a.text;
+  fs.writeFileSync(path.join(dir, 'copy.html'), '<!doctype html>\n<p>A copy</p>\n<script>\n' + alpha + '</script>\n');
+  fs.mkdirSync(path.join(dir, 'drafts'));
+  fs.writeFileSync(path.join(dir, 'drafts', 'edited.html'), '<script>\n' + alpha + '</script>\n');
+  const same = g.sameBlock('alpha.js');
+  check('sameBlock: every page with the block, the prose that names it aside', same.pages.join() === 'copy.html,page.html'
+        && same.text === alpha, same.pages);
+  check('sameBlock: a page named, outside the folder\'s pages', g.sameBlock('alpha.js', path.join(dir, 'drafts', 'edited.html'),
+        'page.html').pages.join() === 'copy.html,page.html,drafts/edited.html');
+  fs.writeFileSync(path.join(dir, 'odd.html'), '<script>\n' + alpha.replace('2 * v', '3 * v') + '</script>\n');
+  check('sameBlock: a copy that differs stops the test, naming the pages',
+        throws(() => g.sameBlock('alpha.js'), /2 different alpha\.js blocks: copy\.html, page\.html; odd\.html/));
+  check('sameBlock: a block no page carries', throws(() => g.sameBlock('nosuch'), /carries a block \/\* nosuch \*\//));
+  for (const f of ['copy.html', 'odd.html']) fs.rmSync(path.join(dir, f));
+
   // ---- the listing and fetch ---------------------------------------------------------------------
   const L = g.listing();
   check('listing: the bytes the records hold', L.ram[0x1000] === 1 && L.ram[0x1002] === 3 && L.ram[0xFFFF] === 0x12);
@@ -107,6 +124,18 @@ try {
   y[9] = 1;
   check('differ: the first difference', differ(x, y) === 9);
   check('differ: ranges include both ends', differ(x, y, [[0, 8]]) === -1 && differ(x, y, [[0, 3], [9, 9]]) === 9);
+
+  // ---- the kit's 6502, as a page loads it -----------------------------------------------------
+  g.lib('cpu6502');
+  check('lib: cpu6502 gives C64Cpu, the kit\'s simulator', globalThis.C64Cpu
+        && globalThis.C64Cpu.CPU === require(path.join(__dirname, '..', 'c64', 'cpu6502.js')).CPU);
+  const served = spawnSync('python3', ['-c', 'import json, build; print(json.dumps(build.KIT_LIB))'],
+                           { cwd: __dirname, encoding: 'utf8' });
+  let kitLib = null;
+  try { kitLib = JSON.parse(served.stdout); } catch (e) { /* checked below */ }
+  check('lib: g.lib knows the files the build serves from the kit, as it serves them', kitLib
+        && Object.keys(kitLib).length === Object.keys(KIT_LIB).length
+        && Object.entries(KIT_LIB).every(([n, [f]]) => kitLib[n + '.js'] === f), served.stdout + served.stderr);
 
   (async () => {
     g.lib('c64');

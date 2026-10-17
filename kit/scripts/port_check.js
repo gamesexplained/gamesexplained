@@ -23,6 +23,10 @@
 //   starts on. A page with no such block, or a block with nothing in it but its opening comment,
 //   stops the test with the page and the name, so a page that renamed its port fails rather than
 //   tests nothing.
+// - g.sameBlock(name, ...pages) finds every page in the folder (its .html files, and any pages
+//   named) with a line /* name */ inside a <script>, and stops the test, naming the pages, when
+//   their blocks differ. It gives { text, pages } for the one block they share. A page that carries
+//   a copy of a port is then checked with the rest without the test listing it.
 // - g.run(page, name, ...wanted) runs the block in node and returns { wanted: value } for each
 //   identifier asked for, read in the block's own scope and then on globalThis; with none asked
 //   for, the block's name, when that is an identifier. An identifier the block does not define
@@ -35,6 +39,8 @@
 //   folder of the last game() made, when a test makes more than one).
 // - g.lib(name, ...) loads site/lib/<name>.js, as the page's <script src> does: what it defines
 //   is on globalThis then (g.lib('c64') gives C64, and C64.load reads the folder).
+//   g.lib('cpu6502') gives C64Cpu, the 6502 the build serves from kit/c64/cpu6502.js (build.py,
+//   KIT_LIB), for a block that runs the game's own code on it.
 // - g.listing(file) gives { ram, has, names, byName, listing, bytes(a, n), sym(label) } from the
 //   folder's listing.json (or file, a path from the folder: 'parts/engine/listing.json'), as
 //   C64.load and Spectrum.load do, but at once: every byte the listing records, the rest 0, has[a]
@@ -95,6 +101,9 @@ function findBlock(src, name, isScript) {
   return { start, end };
 }
 
+// The lib files the build serves from the kit (build.py, KIT_LIB), and the name each gives a page
+const KIT_LIB = { cpu6502: ['kit/c64/cpu6502.js', 'C64Cpu'] };
+
 function game(dir) {
   dir = path.resolve(dir);
   const file = f => path.resolve(dir, f);
@@ -118,6 +127,26 @@ function game(dir) {
     const text = src.slice(at.start, at.end);
     if (!text.replace(/^\s*\/\*[\s\S]*?\*\//, '').trim()) fail(`${page}: the block ${name} is empty`);
     return { text, line: src.slice(0, at.start).split('\n').length, file: file(page) };
+  }
+
+  function sameBlock(name, ...pages) {
+    const opener = new RegExp('^[ \\t]*/\\*[ \\t]*' + esc(name) + '[ \\t]*\\*/[ \\t]*$', 'm');
+    const files = fs.readdirSync(dir).filter(f => /\.html$/i.test(f)).sort().concat(pages);
+    const copies = new Map();                       // text -> the pages that carry it
+    for (const f of new Set(files.map(file))) {
+      const page = path.relative(dir, f) || f, src = read(f), m = opener.exec(src);
+      const at = m && findBlock(src.slice(m.index), name, false);
+      if (!at) continue;                            // none, or one outside a <script>
+      const text = src.slice(m.index + at.start, m.index + at.end);
+      copies.set(text, (copies.get(text) || []).concat(page));
+    }
+    if (!copies.size) fail(`no page in ${dir} carries a block /* ${name} */`);
+    if (copies.size > 1) {
+      fail(`the pages carry ${copies.size} different ${name} blocks: `
+           + [...copies.values()].map(p => p.join(', ')).join('; ') + ' (one block to a group); make them the same');
+    }
+    const [[text, carried]] = copies;
+    return { text, pages: carried };
   }
 
   function run(page, name, ...wanted) {
@@ -159,10 +188,13 @@ function game(dir) {
   }
 
   function lib(...names) {
-    for (const name of names) require(path.join(ROOT, 'site', 'lib', name + '.js'));
+    for (const name of names) {
+      if (KIT_LIB[name]) globalThis[KIT_LIB[name][1]] = require(path.join(ROOT, KIT_LIB[name][0]));
+      else require(path.join(ROOT, 'site', 'lib', name + '.js'));
+    }
   }
 
-  return { dir, root: ROOT, read, json, block, run, listing, lib };
+  return { dir, root: ROOT, read, json, block, sameBlock, run, listing, lib };
 }
 
 function differ(a, b, ranges) {
@@ -172,7 +204,7 @@ function differ(a, b, ranges) {
   return -1;
 }
 
-module.exports = { game, differ, ROOT };
+module.exports = { game, differ, ROOT, KIT_LIB };
 
 if (require.main === module) {
   const args = process.argv.slice(2);

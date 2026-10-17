@@ -16,8 +16,14 @@ Usage:
       $C000 : clears the screen                a line comment alone
       $C100-$C1FF byte                         a data type (lower case, as set_data_type takes)
       # a note to yourself                     ignored, as are blank lines
+    or, for a file ending .json, a list of {"address", "comment", "label", "type"} (an audit's
+    corrections, kit/skills/core/60-verify/checker.md): address a number or "$C000", label and
+    comment each optional, type "line" or "side", by default the type the address's comment has
+    in the game's symbols.json, else "line";
     sent as batches of r2000_batch_execute in the file's order; the calls that succeed are logged
-    one by one, and each that fails is printed with its line number
+    one by one, and each that fails is printed with its line number (its entry, for .json). A file
+    that names one label at two addresses, or leaves a comment's type to an address that has both
+    kinds, sends nothing: the disassembler would refuse the second label and go on with the rest
   r2000.py --game games/c64/<slug> <tool> '<json>'
   r2000.py --log annotations-3.jsonl <tool> '<json>'   write to that log instead
 
@@ -227,16 +233,86 @@ def parse_annotations(text):
     return calls, problems
 
 
+def comment_types(gdir):
+    """{address: {"line", "side"}}: the kinds of comment each address has in the game's symbols.json."""
+    out = {}
+    try:
+        with open(os.path.join(gdir or "", "symbols.json"), encoding="utf-8") as f:
+            comments = json.load(f).get("comments", [])
+    except (OSError, ValueError):
+        return out
+    for c in comments:
+        out.setdefault(c["address"], set()).add(c.get("type", "line"))
+    return out
+
+
+def parse_fixes(entries, types=None):
+    """([(entry number, call), ...], [(entry number, problem), ...]) from a list of corrections,
+    {address, comment, label, type}, as an audit's checkers write them (#386). A comment's type is
+    the one given, else the one its address has in types (comment_types), else line."""
+    calls, problems, types = [], [], types or {}
+    if not isinstance(entries, list):
+        return [], [(0, "not a JSON list of {address, comment, label, type}")]
+    for n, e in enumerate(entries, 1):
+        a = e.get("address") if isinstance(e, dict) else None
+        if isinstance(a, str) and re.fullmatch(r"\$[0-9A-Fa-f]{1,4}", a.strip()):
+            a = int(a.strip()[1:], 16)
+        if not isinstance(a, int) or isinstance(a, bool) or not 0 <= a <= 0xFFFF:
+            problems.append((n, "no address: a number or \"$C000\""))
+            continue
+        label, comment, kind = e.get("label"), e.get("comment"), e.get("type")
+        if label is None and comment is None:
+            problems.append((n, "neither a label nor a comment"))
+            continue
+        if label is not None:
+            if not isinstance(label, str) or not re.fullmatch(r"[A-Za-z_][\w.]*", label):
+                problems.append((n, f"{label!r} is not a label name"))
+                continue
+            calls.append((n, {"name": "r2000_set_label_name", "arguments": {"address": a, "name": label}}))
+        if comment is not None:
+            has = types.get(a, set())
+            if kind is None and len(has) > 1:
+                problems.append((n, f"${a:04X} has a line and a side comment in symbols.json: say which, "
+                                    "\"type\": \"line\" or \"side\""))
+                continue
+            kind = kind or (next(iter(has)) if has else "line")
+            if kind not in ("line", "side"):
+                problems.append((n, f"type {kind!r}: \"line\" or \"side\""))
+                continue
+            calls.append((n, {"name": "r2000_set_comment", "arguments": {"address": a, "type": kind, "comment": comment}}))
+    return calls, problems
+
+
+def same_label_twice(calls):
+    """[(number, problem)] for a label name a file gives two addresses (#333): the disassembler
+    refuses the second inside its batch and applies the rest."""
+    first, problems = {}, []
+    for n, c in calls:
+        if c["name"] != "r2000_set_label_name":
+            continue
+        name, a = c["arguments"]["name"], c["arguments"]["address"]
+        if first.setdefault(name, (n, a))[1] != a:
+            problems.append((n, f"{name} is already given to ${first[name][1]:04X} at {first[name][0]}"))
+    return problems
+
+
 def apply(path, explicit=None, log=None, batch=200):
     """Send the file's annotations in batches, log each call that succeeds, and return how many
     failed. Nothing is sent when a line does not parse."""
+    gdir = game_dir(explicit)
     with open(path, encoding="utf-8") as f:
-        calls, problems = parse_annotations(f.read())
+        if path.endswith(".json"):
+            try:
+                calls, problems = parse_fixes(json.load(f), comment_types(gdir))
+            except ValueError as e:
+                calls, problems = [], [(0, f"not JSON: {e}")]
+        else:
+            calls, problems = parse_annotations(f.read())
+    problems += same_label_twice(calls)
     for n, msg in problems:
         print(f"{path}:{n}: {msg}")
     if problems:
         sys.exit(f"nothing sent: {len(problems)} line(s) to fix first")
-    gdir = game_dir(explicit)
     rpc, done, bad = make_client(gdir), 0, 0
     for i in range(0, len(calls), batch):
         part = calls[i:i + batch]

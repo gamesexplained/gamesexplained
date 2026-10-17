@@ -5,7 +5,8 @@ page calls the listing checked only when the last sample came after a full audit
 the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A sample
 row says how many of the comments it found wrong were then corrected, so no other row has to, and
 each row ends with a bar of the whole listing as it stood after its step. A Play
-tab's port and an older maintainer's check are rows of their own and change nothing the page says;
+tab's port, a page's port checked against the game, and an older maintainer's check are rows of
+their own and change nothing the page says;
 a maintainer's sample or audit carries their login as `by`. A game made before game.json carried
 `accuracy` is not checked."""
 from pathlib import Path
@@ -133,6 +134,19 @@ class Accuracy(unittest.TestCase):
         self.assertEqual(two[2][1], "someone, with some-model")
         self.assertIn("18 were wrong, so the check failed", two[2][2])
         self.assertIn("none was wrong, so the check passed", two[4][2])
+
+    def test_a_pages_port_has_a_row(self):
+        port = {"step": "port", "fixed": 15, "models": M, "note": "the stage maps"}
+        self.assertEqual(accuracy.problems(game(RESEARCH, ANNOTATE, FIRST, port)), [])
+        self.assertEqual(len(accuracy.problems(game(RESEARCH, ANNOTATE, FIRST, dict(port, fixed="15")))), 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "listing.json").write_text(json.dumps({"records": [{"c": "x"}] * 100}))
+            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, port, {"step": "port", "models": M}), tmp)
+        self.assertEqual([r[0] for r in rows][3:], ["Port check", "Port check"])
+        self.assertEqual([r[4] for r in rows][3:], ["port-check", "port-check"])
+        self.assertIn("corrected 15 comments it showed wrong", rows[3][2])
+        self.assertIn("was not recorded", rows[4][2])
+        self.assertTrue(rows[3][5][1].startswith("Corrected 15 of the listing’s 100 comments"))
 
     def test_each_row_ends_with_a_bar_of_the_listing_as_it_stood_after_the_step(self):
         with tempfile.TemporaryDirectory() as tmp:

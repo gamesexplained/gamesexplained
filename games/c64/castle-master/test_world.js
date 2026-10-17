@@ -113,8 +113,7 @@ want(streams.length === 193, 'streams', streams.length);
 want(streams.reduce((n, s) => n + s.tokens.length, 0) === 809, 'tokens');
 
 // every page's copy of the block
-const mine = g.block(page, 'cm-world').text;
-for (const other of ['index.html', 'levels.html', 'discoveries.html']) want(g.block(other, 'cm-world').text === mine, other + "'s cm-world block differs from " + path.basename(page) + "'s");
+g.sameBlock('cm-world', page);
 console.log(`${checks} checks: 34 areas through SELECT_AREA, every object through FIND_OBJECT_BY_ID, ${pyramids} pyramids through QUEUE_PYRAMID_OBJECT, ${streams.length} scripts`);
 if (bad) { console.log(bad + ' differ'); process.exit(1); }
 console.log('the page reads the database as the game does');
