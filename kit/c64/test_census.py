@@ -6,7 +6,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from census import census, report  # noqa: E402
+from census import census, no_code, report  # noqa: E402
 
 CODE = [0x8D, 0x18, 0xD4,   # $1000 sta $D418
         0x99, 0x00, 0xD4,   # $1003 sta $D400,y
@@ -52,6 +52,12 @@ class Census(unittest.TestCase):
                             for line in never), never)
         self.assertTrue(any(line.startswith("  $D419-$D41A") for line in never), never)
         self.assertIn("  $DC00-$DC0F  cia1_port_a to cia1_control_b", never)
+
+    def test_no_code_blocks_is_refused_not_reported(self):
+        self.assertIsNone(no_code(machine()[2], False))
+        unexported = [{"start": 0, "end": 0xFFFF, "type": "Undefined"}]
+        self.assertIn("symbols_export.py", no_code(unexported, False))
+        self.assertIn("disassemble", no_code(unexported, True))
 
 
 if __name__ == "__main__":

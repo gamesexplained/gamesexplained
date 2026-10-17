@@ -117,6 +117,18 @@ def report(rows, source):
     return lines
 
 
+def no_code(blocks, live):
+    """Why the census would be empty, or None. With no code blocks it would print every register
+    as named by nothing, which reads as a finding; a first session's work is in the disassembler
+    until symbols_export.py writes it to symbols.json."""
+    if any(b["type"] == "Code" for b in blocks):
+        return None
+    if live:
+        return "the running disassembler has no code blocks: disassemble the game's code first"
+    return ("symbols.json has no code blocks, so there is nothing to take a census of: export the "
+            "disassembler's work first (kit/scripts/symbols_export.py), or pass --live")
+
+
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -125,6 +137,9 @@ def main():
     vsf = argv[1] if len(argv) > 1 and argv[1].endswith(".vsf") else None
     ram, known = image(gdir, vsf)
     blocks, _ = blocks_of(gdir, "--live" in argv)
+    why = no_code(blocks, "--live" in argv)
+    if why:
+        sys.exit(why)
     source = f"bytes from {'the snapshot' if vsf else 'listing.json'}, blocks from " + \
              ("the running disassembler" if "--live" in argv else "symbols.json")
     print("\n".join(report(census(ram, known, blocks), source)))
