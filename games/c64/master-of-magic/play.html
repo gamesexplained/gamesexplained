@@ -76,7 +76,8 @@ section.pl-first{padding-top:28px}
     <div class="pl-bar">
       <button type="button" class="pl-main" data-act="demo">Watch the demonstration</button>
       <button type="button" data-act="new">New game</button>
-      <button type="button" data-act="music" aria-pressed="true">Music</button>
+      <button type="button" data-act="music" aria-pressed="true" title="The game's M key: its music off and on">Music</button>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <span class="pl-status" aria-live="polite"></span>
     </div>
@@ -131,6 +132,7 @@ window.MOM_MUSIC = {"source":"entry-07f9.vsf, the game's memory at its first ins
 </script>
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
 <script>
 /* Master of Magic (Mastertronic, 1985), music by Rob Hubbard: the game's music driver
    ($C000-$C32E and $CBC3-$CBE6) ported to JavaScript from its 6502 code. The site's shared SID
@@ -1968,18 +1970,19 @@ window.MOM_MUSIC = {"source":"entry-07f9.vsf, the game's memory at its first ins
   const btnMusic = root.querySelector('[data-act="music"]');
 
   // ------------------------------------------------------------------ sound: the music driver's port
-  let actx = null, ahost = null, audioStarting = null, lastTune = null;
+  let actx = null, ahost = null, lastTune = null;
   function send(c) { if (ahost) ahost.send(c); }
-  async function audio() {                                   // the shared SID model plays the driver's port
-    if (!window.C64Sid || !window.MoMMusic) return;
-    ahost = await C64Sid.host({ driver: MoMMusic.createDriver, data: MUS, gain: 0.6 });
-    actx = ahost.ctx;
-    if (lastTune !== null) send({ cmd: 'start', tune: lastTune });
+  async function sound(on) {                                 // the shared SID model plays the driver's port
+    if (on && !ahost) {
+      if (!window.C64Sid || !window.MoMMusic) return false;
+      try { ahost = await C64Sid.host({ driver: MoMMusic.createDriver, data: MUS, gain: 0.6 }); } catch (e) { return false; }
+      actx = ahost.ctx;
+      if (lastTune !== null) send({ cmd: 'start', tune: lastTune });
+    }
+    if (actx) { if (on) actx.resume(); else actx.suspend(); }
+    return on;
   }
-  function wakeAudio() {                                     // inside a click or key press
-    if (!audioStarting) audioStarting = audio().catch(() => {});
-    else if (actx && actx.state !== 'running') actx.resume();
-  }
+  Sound.attach(root.querySelector('[data-sound]'), sound);   // the sound switch (site/lib/sound.js)
   function music(cmd, tune) {                                // the game's calls of $C000 and $C003
     if (cmd === 'start') lastTune = tune; else lastTune = null;
     if (ahost) send(cmd === 'start' ? { cmd: 'start', tune } : { cmd: 'stop' });
@@ -2012,15 +2015,15 @@ window.MOM_MUSIC = {"source":"entry-07f9.vsf, the game's memory at its first ins
   screenBox.addEventListener('keydown', (e) => {
     const k = KEYS[e.key];
     if (!k || e.altKey || e.ctrlKey || e.metaKey) return;
-    e.preventDefault(); wakeAudio(); press(k, true);
+    e.preventDefault(); press(k, true);
   });
   screenBox.addEventListener('keyup', (e) => { const k = KEYS[e.key]; if (k) { e.preventDefault(); press(k, false); } });
   screenBox.addEventListener('blur', () => { for (const k in held) press(k, false); });
-  screenBox.addEventListener('pointerdown', () => { screenBox.focus({ preventScroll: true }); wakeAudio(); });
+  screenBox.addEventListener('pointerdown', () => { screenBox.focus({ preventScroll: true }); });
   // the touch pad
   root.querySelectorAll('[data-pad]').forEach((b) => {
     const ks = b.dataset.pad.split(' ');
-    const down = (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) { /* fine */ } wakeAudio(); ks.forEach((k) => press(k, true)); b.classList.add('on'); };
+    const down = (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) { /* fine */ } ks.forEach((k) => press(k, true)); b.classList.add('on'); };
     const up = () => { ks.forEach((k) => press(k, false)); b.classList.remove('on'); };
     b.addEventListener('pointerdown', down);
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((t) => b.addEventListener(t, up));
@@ -2028,7 +2031,6 @@ window.MOM_MUSIC = {"source":"entry-07f9.vsf, the game's memory at its first ins
   });
 
   function start(which, byUser) {
-    if (byUser) wakeAudio();
     mode = which;
     gen = which === 'demo' ? game.demo() : game.game(false);
     finished = false; pendingReply = undefined;
@@ -2040,7 +2042,7 @@ window.MOM_MUSIC = {"source":"entry-07f9.vsf, the game's memory at its first ins
   btnDemo.addEventListener('click', () => start('demo', true));
   btnNew.addEventListener('click', () => start('play', true));
   btnMusic.addEventListener('click', () => {                 // the M key, pressed for one poll
-    wakeAudio(); press('m', true); setTimeout(() => press('m', false), 40); screenBox.focus({ preventScroll: true });
+    press('m', true); setTimeout(() => press('m', false), 40); screenBox.focus({ preventScroll: true });
   });
 
   // Run the game until its own clock (S.now, estimated cycles) catches up with real time.

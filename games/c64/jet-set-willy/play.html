@@ -64,7 +64,7 @@ button.jw-b:hover{border-color:var(--ink-mute)}
   <div class="plate">
     <div class="jw-row">
       <button class="jw-b" type="button" id="jw-pause" aria-pressed="false">Pause</button>
-      <button class="jw-b" type="button" id="jw-sound" aria-pressed="false">Sound</button>
+      <button class="jw-b" type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" class="jw-b" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <button class="jw-b" type="button" id="jw-reset">Reset</button>
       <span class="jw-out" id="jw-out"></span>
@@ -106,6 +106,7 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
 <script src="reference/jsw-port.js"></script>
 <script src="reference/jsw-collide.js"></script>
 <script src="reference/jsw-play.js"></script>
@@ -181,17 +182,19 @@ function start(D) {
       play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) if (f[i] < 25) sid[f[i]] = f[i + 1]; } };
     return d;
   }
-  $('jw-sound').onclick = async () => {
-    soundOn = !soundOn; $('jw-sound').setAttribute('aria-pressed', soundOn);
-    if (soundOn && !host && window.C64Sid) {
+  async function sound(on) {
+    soundOn = on;
+    if (on && !host) {
       try {
         host = await C64Sid.host({ driver, data: null, gain: 0.5, period: JSWPlay.FRAME / JSWPlay.SLICES });
         const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]);
         host.send({ cmd: 'start', tune: { frames: [all] } });
-      } catch (e) { soundOn = false; $('jw-sound').setAttribute('aria-pressed', false); $('jw-out').textContent = 'No sound: ' + e.message; }
+      } catch (e) { soundOn = false; $('jw-out').textContent = 'No sound: ' + e.message; }
     }
-    if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
-  };
+    if (host) { if (soundOn && !paused) host.ctx.resume(); else host.ctx.suspend(); }
+    return soundOn;
+  }
+  Sound.attach(document.querySelector('[data-sound]'), sound);   // the sound switch (site/lib/sound.js)
 
   // ---- what the game shows: the room's name from its record, the items and the lives
   const name = () => Array.from(play.M.subarray(0x0840, 0x0860), (c) => String.fromCharCode(c < 0x20 ? c + 0x40 : c)).join('').trim().replace(/\s+/g, ' ');

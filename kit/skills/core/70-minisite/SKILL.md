@@ -484,6 +484,17 @@ view at the screen's own resolution, which goes off when the CRT screen
 goes on (`onChange`). `kit/scripts/test_crt_screen.js` fails a Play page that
 leaves it out.
 
+Every Play tab whose game makes a sound offers the site's sound switch,
+on by default: load `../../lib/sound.js`, put
+`<button type="button" data-sound aria-pressed="true">🔊 Sound</button>`
+in the page's bar, and call `Sound.attach(button, set)` with the page's
+own `set(on)`, which starts or stops its sound and resolves to whether
+it is on. A browser lets a page start sound only inside a click or a key
+press, so the switch starts it at the viewer's first one and keeps the
+viewer's choice for every Play tab; the page starts no sound of its own,
+neither when its game starts nor in its key handlers.
+`kit/scripts/test_sound_switch.js` fails a Play page that leaves it out.
+
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in
 lockstep, pace it by the machine's clock, give it a level picker and the

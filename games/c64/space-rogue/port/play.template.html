@@ -99,7 +99,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="smooth" aria-pressed="false" title="Draw the 3D view at the screen's own frame rate, moving between the game's passes">Smooth motion</button>
       <span class="pl-sep" aria-hidden="true"></span>
-      <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
@@ -140,6 +140,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
 <!-- port -->
 <script>
 /* the page: the port on a virtual PAL clock, drawn each frame, the keyboard and the joysticks */
@@ -229,6 +230,7 @@ const sound = (function () {
   }
   return { attach, set, frame, get on() { return on; } };
 })();
+Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
 
 // --- the disk: the page's copy of the game's files, and the save kept in this browser --------
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -356,19 +358,16 @@ function start(fast) {
   busy = null;
   boot();
   if (fast) { skip('ROGUE'); overMsg.textContent = 'Through the title and the story…'; over.hidden = false; }
-  const sb = document.querySelector('[data-act="sound"]');
-  if (sb.getAttribute('aria-pressed') === 'true' && !sound.on) sound.set(true).then(v => sb.setAttribute('aria-pressed', String(v)));
   running = true; paused = false; last = 0; acc = 0;
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
   screen.focus();
 }
-$('pl-bar').addEventListener('click', async e => {
+$('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && disk) start(false);
   else if (act === 'skip' && disk) start(true);
-  else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); }
   else if (act === 'render') { setModern(!native, smooth); draw(); }
   else if (act === 'smooth') { setModern(native, !smooth); draw(); }
   screen.focus();

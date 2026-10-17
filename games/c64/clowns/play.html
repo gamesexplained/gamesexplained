@@ -55,7 +55,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button class="cp-btn" id="cp-f1">F1 · one player</button>
       <button class="cp-btn" id="cp-f3">F3 · two players</button>
       <button class="cp-btn" id="cp-pause" aria-pressed="false">Pause</button>
-      <button class="cp-btn" id="cp-sound" aria-pressed="false">Sound</button>
+      <button class="cp-btn" type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" class="cp-btn" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">CRT screen</button>
       <button class="cp-btn" id="cp-reset">Reset</button>
       <span class="cp-out" id="cp-out"></span>
@@ -78,6 +78,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
 <script src="reference/cl-port.js"></script>
 <script>
 'use strict';
@@ -164,17 +165,19 @@ if (!window.C64 || !window.ClownsPort) {
     return d;
   }
   let pending = [];
-  $('cp-sound').onclick = async () => {
-    soundOn = !soundOn; $('cp-sound').setAttribute('aria-pressed', soundOn);
-    if (soundOn && !host && window.C64Sid) {
+  async function sound(on) {
+    soundOn = on;
+    if (on && !host) {
       try {
         host = await C64Sid.host({ driver, data: null, gain: 0.5, period: 10001 });
         const all = []; for (let r = 0; r < 25; r++) all.push(r, sidRegs[r]);
         host.send({ cmd: 'start', tune: { frames: [all] } });
-      } catch (e) { soundOn = false; $('cp-sound').setAttribute('aria-pressed', false); $('cp-out').textContent = 'No sound: ' + e.message; }
+      } catch (e) { soundOn = false; $('cp-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
-  };
+    return soundOn;
+  }
+  Sound.attach(document.querySelector('[data-sound]'), sound);   // the sound switch (site/lib/sound.js)
 
   // ---- the clock: each tick moves it on by what the game's tick of that loop costs
   let paused = false, last = 0;
