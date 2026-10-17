@@ -6,7 +6,7 @@
 // its zero page with the KERNAL's (kept at $DF02-$DFFF, under the I/O) and puts back the
 // KERNAL's vectors.
 //
-// The KERNAL's routines are the machine's, not the game's, so the port has its own, written from
+// The KERNAL's routines are the machine's (these, and SETMSG, which the start-up calls), not the game's, so the port has its own, written from
 // what each does to memory (as kit/c64/c64run.js's stand-ins are), on the files the page keeps:
 // - P.io.load(name) gives a file's bytes, its two-byte address first, or null when there is none
 //   of that name (? matches any letter; an empty name, the tape's "the next file", any file);
@@ -32,6 +32,7 @@ G.save = function (P) {
     return s;
   };
   P.kernal = {
+    SETMSG: r => { M[0x9D] = r.a; return R(r, {}); },
     PLOT: r => { if (!r.c) { M[0xD6] = r.x; M[0xD3] = r.y; } return R(r, {}); },
     SETLFS: r => { M[0xB8] = r.a; M[0xBA] = r.x; M[0xB9] = r.y; return R(r, {}); },
     SETNAM: r => { M[0xB7] = r.a; M[0xBB] = r.x; M[0xBC] = r.y; return R(r, {}); },

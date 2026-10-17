@@ -44,6 +44,8 @@ function run(o) {
     // a wait with no pass (a message, a menu): a key tapped now and then where both stand at a stop
     if (l.res.passes !== lastPass) { lastPass = l.res.passes; passFrame = f; return; }
     const still = l.matched && l.at >= 0;
+    // a key held into a wait that wants every key let go (the view's transition) is let go
+    if (held && f - passFrame > 30 && still) { mm.release(held); held = null; return; }
     if (tap && f - tap.at > 6 && still) { mm.release(tap.k); tap = null; return; }
     if (!tap && f - passFrame > 60 && still && rnd(20) === 0) { tap = { k: 'SPACE', at: f }; mm.press('SPACE'); }
   } });
@@ -64,4 +66,4 @@ if (require.main === module) {
   process.exitCode = ok === n ? 0 : 1;
 }
 
-module.exports = { run, IRQ_BYTES };
+module.exports = { run, IRQ_BYTES, IGNORE };
