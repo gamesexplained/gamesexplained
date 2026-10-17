@@ -112,3 +112,17 @@ the slot's last frame (`+$23`). The enemy was watched in the port over
 3,000 frames and took every pointer from `$88` to `$F2`. The earlier
 pages had drawn four frames for every enemy, which hid both this and the
 cinema's one-frame enemies.
+
+## 17 October 2026: the kit's sprite collisions
+
+The port's own model of `$D01E` and `$D01F` (`collideLine` in
+`port/src/kernal.js`, a raster line at a time) gave way to the kit's,
+`site/lib/collide.js`, which follows the beam cycle by cycle and was held
+against VICE in 144 scenes (#406). The page's runtime gives it the clock
+at each read and write of the video chip, and the game's machine in the
+tests runs it with `machine.js`'s `collide: true`. With states made again
+from seed 1, the lockstep over nine seeds of 2,000 passes left a few
+states out of step at a raster wait, as before (3 of 693 runs, against 2
+of 675 on the old model). The passes `scripts/pace.js` counts
+in 400 frames, level by level, moved by at most 3.3 % on the game's
+machine and 1.1 % on the page.

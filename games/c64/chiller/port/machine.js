@@ -2,7 +2,8 @@
 // Chiller on the kit's C64: kit/c64/machine.js with what the game uses of the KERNAL. The game
 // keeps the KERNAL banked in and its interrupt is the KERNAL's: CIA 1's timer A, set by the
 // KERNAL at start-up to $4025 (a PAL machine: an underflow every 16,422 cycles, 60 a second),
-// entered at $FF48 and through ($0314) to music_irq, which leaves by $EA31.
+// entered at $FF48 and through ($0314) to music_irq, which leaves by $EA31. The sprite collisions
+// are the kit's (machine.js's collide option, site/lib/collide.js), the model the Play tab uses.
 const path = require('path');
 const REPO = path.resolve(__dirname, '../../../..');
 const { Machine, KEY, loadListing, LINE, LINES, FRAME } = require(path.join(REPO, 'kit/c64/machine.js'));
@@ -18,10 +19,8 @@ const COST = { irqTail: 1100, chrout: 120, clear: 22000, plot: 90 };
 
 class ChillerMachine extends Machine {
   constructor(opts = {}) {
-    super(Object.assign({ ram: opts.ram || loadListing(path.join(REPO, 'games/c64/chiller/listing.json')), passAt: 0xCA00 }, opts));
-    this.pra = 0x7F; this.ddra = 0xFF;             // as SCNKEY leaves the keyboard port
+    super(Object.assign({ ram: opts.ram || loadListing(path.join(REPO, 'games/c64/chiller/listing.json')), passAt: 0xCA00, collide: true }, opts));
     this.timerAt = TIMER; this.timerDue = false;
-    this.coll = [0, 0];                            // $D01E and $D01F, latched until read
     const self = this;
     this.k = {
       M: this.ram,
@@ -36,21 +35,9 @@ class ChillerMachine extends Machine {
       0xEA31: c => { K.irqTail(self.k); c.cycles += COST.irqTail; c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; },
     });
   }
-  ioRead(a) {
-    if (a >= 0xD000 && a < 0xD400 && ((a & 0x3F) === 0x1E || (a & 0x3F) === 0x1F)) {
-      const i = (a & 0x3F) - 0x1E, v = this.coll[i];
-      this.coll[i] = 0;
-      return v;
-    }
-    return super.ioRead(a);
-  }
   get kernalIn() { return this.cpu.rk[0xFF] !== this.cpu.rk[0x02]; }
   tick() {
-    const cpu = this.cpu, ln = Math.floor(cpu.cycles / LINE);
-    for (let l = this.lastLine + 1; l <= ln; l++) {
-      const c = K.collideLine(this.ram, this.vic, this.colour, l % LINES);
-      this.coll[0] |= c[0]; this.coll[1] |= c[1];
-    }
+    const cpu = this.cpu;
     super.tick();
     while (cpu.cycles >= this.timerAt) { this.timerDue = true; this.timerAt += TIMER; }
     if (this.timerDue && !cpu.i) {
@@ -59,14 +46,17 @@ class ChillerMachine extends Machine {
       else cpu.irq(null, { hooks: this.hooks });
     }
   }
-  save() { return Object.assign(super.save(), { timerAt: this.timerAt, timerDue: this.timerDue, coll: this.coll.slice() }); }
+  save() { return Object.assign(super.save(), { timerAt: this.timerAt, timerDue: this.timerDue }); }
+  // the collisions' model reads this machine's registers and colour RAM, so those are copied in
   static restore(s, opts = {}) {
     const b = Machine.restore(s, opts), m = new ChillerMachine({ ram: b.ram, passAt: b.passAt });
-    for (const k of Object.keys(b)) if (!['cpu', 'hooks', 'k', 'ram'].includes(k)) m[k] = b[k];
+    for (const k of Object.keys(b)) if (!['cpu', 'hooks', 'k', 'ram', 'vic', 'colour', 'collide'].includes(k)) m[k] = b[k];
+    m.vic.set(b.vic); m.colour.set(b.colour);
     const c = m.cpu, d = b.cpu;
     for (const k of ['a', 'x', 'y', 'sp', 'pc', 'cycles', 'pdir', 'pdata', 'pout']) c[k] = d[k];
     c.p = d.p; c.mapPort();
-    m.timerAt = s.timerAt; m.timerDue = !!s.timerDue; m.coll = s.coll ? s.coll.slice() : [0, 0];
+    if (s.collide) m.collide.load(s.collide); else m.collide.at(c.cycles);   // a moment saved without them
+    m.timerAt = s.timerAt; m.timerDue = !!s.timerDue;
     return m;
   }
 }

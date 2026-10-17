@@ -161,11 +161,11 @@ globalThis.C64 = (function () {
   // the second drawn, so that what crosses the frame boundary (the border, a sprite) is as the
   // steady state leaves it. Not followed to the pixel: the few pixels after a mid-line change of
   // a mode bit or the scroll, and the grey pixel VICE draws where a colour register changes.
-  // Not modelled: sprite collisions; the characters on a late bad line and on the lines after it
-  // up to the next bad line, which the chip shows from the row's first character on, starting
-  // where its display came on, and this draws each in its own column (VSP games hide those lines
-  // in the top border, where it does not matter); and a bad line condition that comes and goes
-  // before cycle 14, which turns the display on in VICE.
+  // Not modelled: sprite collisions (collide.js works them out); the characters on a late bad
+  // line and on the lines after it up to the next bad line, which the chip shows from the row's
+  // first character on, starting where its display came on, and this draws each in its own
+  // column (VSP games hide those lines in the top border, where it does not matter); and a bad
+  // line condition that comes and goes before cycle 14, which turns the display on in VICE.
   // For a live display (a Play page) three more fields save the work of a recording:
   //   F.mem     a 64 KB Uint8Array used in place of F.ram     F.colourMem  1024 bytes, for F.colour
   //             (both as the frame began, with the changes after in F.writes: videoMemory below)

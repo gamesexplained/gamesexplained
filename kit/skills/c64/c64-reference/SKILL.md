@@ -201,6 +201,33 @@ instruction. The record is `kit/c64/fixtures/vic-dma.json`, and
 | Sprite 0, Y-expanded | 210 | 1,285 |
 | All eight sprites | 399 | 1,474 |
 
+The sprite collisions were measured in VICE (x64sc, release v3.13.2) on
+17 October 2026 with `kit/c64/frame.py collide`, which `frame.py test`
+runs: 144 scenes, each register read to the cycle. The record is
+`kit/c64/fixtures/vic-collide.json`; `site/lib/collide.js` models it,
+and `kit/c64/machine.js` with `collide: true`.
+
+- A read of `$D01E` or `$D01F` in cycle r of a line sees what the beam
+  has drawn up to sprite X = 8(r − 14), on the line it is drawing; cycle
+  c draws X from 8(c − 15). The read clears the register, and the pixels
+  drawn after it set it again. A register written in cycle c counts from
+  the next cycle's pixels.
+- Two sprites' pixels on one place set both their bits in `$D01E`
+  anywhere they are drawn: in the border, past the right border (X 420)
+  and across the line's end (X 500). A sprite at X 504-511 is never
+  drawn and collides with nothing.
+- A sprite pixel is a set bit, or in a multicolour sprite a pair other
+  than `%00`. `$D01B`'s priority changes nothing.
+- `$D01F` counts the graphics' foreground: a set bit in text, bitmap and
+  extended colour modes (a glyph of the code's low six bits), a pair
+  `%10` or `%11` in multicolour text cells and multicolour bitmap. The
+  modes the chip draws black (extended colour with bitmap or
+  multicolour) still collide, the bitmap read with address bits 9 and
+  10 clear.
+- The 38-column side border hides graphics that still collide. Under
+  the 24-row border, and with the display off, there is no foreground.
+  The idle pattern (`$3FFF`, `$39FF` with extended colour) collides.
+
 ## SID essentials (`$D400`)
 
 Three voices, 7 registers each from `$D400`, `$D407`, `$D40E`: frequency
@@ -251,7 +278,11 @@ CIA1 port A selects keyboard rows (and reads joystick port 2); port B
 `$DC01` reads keyboard columns **and joystick port 1**. A game polling a
 key on `$DC01` also sees the port-1 joystick. Bits, active low: 0 up, 1
 down, 2 left, 3 right, 4 fire. The KERNAL's own scan leaves the last key
-in `$C5`/`$CB` and the buffer at `$0277`.
+in `$C5`/`$CB` and the buffer at `$0277`. It leaves `$DC02` at `$FF`
+and `$DC00` at `$7F` (VICE, at the READY prompt, 17 October 2026), so
+a game that reads the keys or the stick without setting `$DC02` finds
+port A an output with row 7 selected, and `kit/c64/machine.js` starts
+there.
 
 The matrix. A row is the `$DC00` bit driven low, a column the `$DC01` bit
 that reads low; `vice_keyboard_matrix` takes the same `row` and `col`.

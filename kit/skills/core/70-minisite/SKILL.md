@@ -474,7 +474,7 @@ Omit the tab only if there is genuinely nothing playable to put on it.
 No tier requires the Play tab, so it never blocks Silver or Gold.
 
 Every Play tab that draws on a canvas offers the site's CRT screen:
-load `../../lib/crt.js`, put a "CRT screen" button with `data-crt` in
+load `../../lib/crt.js`, put a "📺 CRT screen" button with `data-crt` in
 the page's bar, and call `CRT.attach(canvas, { button })` once the
 canvas exists. It draws the picture again on the GPU each time the page
 draws, so the page adds nothing to its loop; the header of
@@ -483,6 +483,17 @@ from another (`source`), one drawn at twice the size (`pixel`), and a
 view at the screen's own resolution, which goes off when the CRT screen
 goes on (`onChange`). `kit/scripts/test_crt_screen.js` fails a Play page that
 leaves it out.
+
+Every Play tab whose game makes a sound offers the site's sound switch,
+on by default: load `../../lib/sound.js`, put
+`<button type="button" data-sound aria-pressed="true">🔊 Sound</button>`
+in the page's bar, and call `Sound.attach(button, set)` with the page's
+own `set(on)`, which starts or stops its sound and resolves to whether
+it is on. A browser lets a page start sound only inside a click or a key
+press, so the switch starts it at the viewer's first one and keeps the
+viewer's choice for every Play tab; the page starts no sound of its own,
+neither when its game starts nor in its key handlers.
+`kit/scripts/test_sound_switch.js` fails a Play page that leaves it out.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in

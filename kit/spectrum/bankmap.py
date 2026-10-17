@@ -115,7 +115,10 @@ class Recording:
         self.thread = threading.Thread(target=self._read, daemon=True)
         self.thread.start()
         self.rpc.cmd(f"cpu-transaction-log logfile {self.fifo}")
-        self.rpc.cmd("cpu-transaction-log registers yes")
+        # the form token() reads, the address first: the settings outlast the call, and the
+        # Z80 and machine checks turn the T-states on, which would put a count before the address
+        for k, v in (("tstates", "no"), ("datetime", "no"), ("address", "yes"), ("registers", "yes")):
+            self.rpc.cmd(f"cpu-transaction-log {k} {v}")
         poke = threading.Thread(target=self._poke, daemon=True)
         poke.start()
         self.rpc.cmd("cpu-transaction-log enabled yes")

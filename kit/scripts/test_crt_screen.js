@@ -1,5 +1,5 @@
 // Test of site/lib/crt.js, the CRT screen every Play tab offers: each Play page with a canvas
-// loads it, gives it a "CRT screen" button and attaches it; a browser without WebGL2 never shows
+// loads it, gives it a "📺 CRT screen" button and attaches it; a browser without WebGL2 never shows
 // the button; switched on, it lays its own canvas over the game's, draws the game's frame again
 // each time the page draws one (from the source canvas, at the page's pixel size), keeps the
 // viewer's choice for every Play tab, and tells the page so that it can turn off what cannot be
@@ -24,7 +24,7 @@ for (const platform of fs.readdirSync(games)) {
     const page = fs.readFileSync(p, 'utf8'), name = `games/${platform}/${slug}/play.html`;
     if (!/<canvas\b/.test(page)) continue;
     check(page.includes('<script src="../../lib/crt.js"></script>'), name + ' loads ../../lib/crt.js');
-    check((page.match(/<button\b[^>]*\bdata-crt\b[^>]*>CRT screen<\/button>/g) || []).length === 1, name + ' has one "CRT screen" button with data-crt');
+    check((page.match(/<button\b[^>]*\bdata-crt\b[^>]*>📺 CRT screen<\/button>/g) || []).length === 1, name + ' has one "📺 CRT screen" button with data-crt');
     check(/\bCRT\.attach\(/.test(page), name + ' calls CRT.attach');
   }
 }

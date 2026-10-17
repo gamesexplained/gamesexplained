@@ -21,21 +21,19 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { Machine, KEY, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.js'));
 const g = game(__dirname);
 const { JSWPort } = g.run('reference/jsw-port.js', 'jsw-port', 'JSWPort');
-const { JSWCollide } = g.run('reference/jsw-collide.js', 'jsw-collide', 'JSWCollide');
 const { JSWPlay } = g.run('reference/jsw-play.js', 'jsw-play', 'JSWPlay');
 const FRAMES = +process.argv[2] || 20000;
 
 // the game's interrupts through the KERNAL and its sprite collisions, as test_play.js's machine
 class JSWMachine extends Machine {
   constructor(o) {
-    super(o);
+    super(Object.assign({ collide: true }, o));
     this.hooks[0xFEBC] = (c) => { c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; };
     this.hooks[0xFFD2] = (c) => { c.cycles += 40; c.rts(); };
-    this.coll = JSWCollide.create(this.vic, (a) => this.ram[0x4000 | a]);
-    this.coll.at(this.cpu.cycles);
   }
   tick() {
     if (this.dma) this.dmaCatchUp();
+    this.collide.to(this.cpu.cycles);
     const ln = Math.floor(this.cpu.cycles / LINE);
     while (this.lastLine < ln) {
       this.lastLine++;
@@ -43,17 +41,7 @@ class JSWMachine extends Machine {
       if (l === 0) this.frames++;
       if (l === this.cmp) this.latch |= 1;
     }
-    this.coll.to(this.cpu.cycles);
     if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
-  }
-  ioRead(a) {
-    const r = a & 0x3F;
-    if (a >= 0xD000 && a < 0xD400 && (r === 0x1E || r === 0x1F)) return this.coll.read(r, this.cpu.cycles + 3);
-    return super.ioRead(a);
-  }
-  ioWrite(a, v) {
-    if (a >= 0xD000 && a < 0xD400 && (a & 0x3F) < 0x2F) this.coll.to(this.cpu.cycles + 3);
-    super.ioWrite(a, v);
   }
 }
 
@@ -100,13 +88,12 @@ function side(M, set, frame) {
 }
 
 const m = new JSWMachine({ ram: g.listing().ram, pc: 0x080D, passAt: 0x30FF, dma: true });
-m.ddra = 0xFF; m.pra = 0x7F;
 const game1 = side(m.ram, (joy, keys) => { m.joy = joy; m.keys.clear(); for (const k of keys) m.keys.add(k); }, () => m.frames);
 m.onPass = () => game1.pass();
 for (const a of [0x2E07, 0x38EF, 0x383B]) { const prev = m.hooks[a]; m.hooks[a] = (c) => { game1.mark(); return prev ? prev(c) : false; }; }
 
 let page = null;
-const play = JSWPlay.create({ M: g.listing().ram, Port: JSWPort, Collide: JSWCollide, onCheckpoint: (a) => {
+const play = JSWPlay.create({ M: g.listing().ram, Port: JSWPort, Collide: globalThis.C64Collide, onCheckpoint: (a) => {
   if (a === 0x30FF) page.pass();
   else if (a === 0x2E07 || a === 0x38EF || a === 0x383B) page.mark();
 } });

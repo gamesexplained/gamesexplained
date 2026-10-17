@@ -7,7 +7,10 @@
 //   $D011, the latch $D019 and the enable $D01A) taken through the vector at $FFFE when the
 //   processor allows it, and $D011/$D012 reading the current line;
 // - CIA 1's keyboard matrix and joystick port 2 ($DC00-$DC03): keys are held as the KERNAL numbers
-//   them (row x 8 + column, KEY below), the stick as the port's five bits, active low;
+//   them (row x 8 + column, KEY below), the stick as the port's five bits, active low. Port A starts
+//   as the KERNAL leaves it, not as at power-on: $DC02 $FF (all outputs) and $DC00 $7F (row 7 low),
+//   read in VICE at the READY prompt (17 October 2026), so a game that writes a row to $DC00 and
+//   never sets $DC02 reads its keys here as it does on the machine;
 // - colour RAM ($D800-$DBFF, four bits, read with the upper four high);
 // - a SID that records: the last value of each register, and a log of [cycle, register, value]
 //   when sidLog is an array. A read of a register the chip does not answer returns the data bus,
@@ -39,6 +42,14 @@
 //   cycles taken while it ran are added when it returns, from the registers as it left them.
 //   Checked against the emulator by kit/c64/test_machine_dma.js (kit/c64/fixtures/vic-dma.json).
 //   Without dma the processor has every cycle, and a pass runs faster here than on the machine.
+// - With collide: true, the sprite collisions: $D01E and $D01F as the video chip sets them while
+//   the beam draws (site/lib/collide.js, checked against VICE by kit/c64/test_machine_collide.js),
+//   each read clearing its register. The beam is worked out to the processor's cycle at each read
+//   of them and each write to the chip or to $DD00 and $DD02 (which pick the video bank, kept with
+//   collide whether or not cia is on), and at each line, from memory as it stands then. The
+//   character ROM the chip sees at $1000-$1FFF of banks 0 and 2 is rom.char when given; without it
+//   those bytes read 0, collide nothing, and are counted in collideRomReads. Without collide the
+//   two registers read what was last written to them.
 // Not modelled: the VIC-II's timing beyond that and whole lines, the disk and the ROMs (the
 // simulator stops on a ROM read; a hook can stand in, or rom: { char } gives the character ROM,
 // read from the emulator's own file at run time and never committed). Reads of other VIC
@@ -62,6 +73,7 @@
 // - passAt: the address of the main loop's first instruction. Each time the processor reaches it,
 //   passes counts one and onPass(machine) runs, the place to set the next pass's input; onPass
 //   returning true stops the run with the program counter there, before the pass (runUntilPass).
+// - collide: true, the sprite collisions in $D01E and $D01F (above).
 // - sid: '6581' or '8580', the chip whose bus fade the SID's reads follow. The default is the
 //   8580, the chip the kit's emulator starts with (v3.13.2; its SidModel resource).
 // - runCycles(n), runFrames(n), runPasses(n), runUntilPass(f): run with the interrupts. frames
@@ -79,6 +91,7 @@ const fs = require('fs');
 const path = require('path');
 const { CPU, readSnapshot } = require('./cpu6502.js');
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'sid.js'));
+require(path.join(__dirname, '..', '..', 'site', 'lib', 'collide.js'));
 const { createBus } = globalThis.C64Sid.engine();
 
 function loadListing(file) {
@@ -112,7 +125,7 @@ class Machine {
     this.sidChip = opts.sid || '8580';
     this.sidBus = createBus(this.sidChip);
     this.colour = new Uint8Array(0x400);
-    this.pra = 0xFF; this.ddra = 0; this.ddrb = 0;
+    this.pra = 0x7F; this.ddra = 0xFF; this.ddrb = 0;   // CIA 1's ports as the KERNAL leaves them
     this.keys = new Set();
     this.joy = 0x1F;                    // port 2, active low: 1 up, 2 down, 4 left, 8 right, 16 fire
     this.joy1 = 0x1F;                   // port 1, the same bits, on $DC01
@@ -123,6 +136,9 @@ class Machine {
     // cycles, whether this frame's line 48 saw the display on, and each sprite's lines to fetch
     this.dma = opts.dma ? { at: -1, holds: [], bad: false, rows: [0, 0, 0, 0, 0, 0, 0, 0] } : null;
     this.cmp = 0; this.latch = 0; this.enable = 0;
+    this.charRom = opts.rom && opts.rom.char ? opts.rom.char : null;
+    this.collideRomReads = 0;
+    this.collide = opts.collide ? globalThis.C64Collide.create(this.vic, a => this.vmem(a), i => this.colour[i]) : null;
     if (opts.vic) {
       const r = opts.vic.regs;
       this.vic.set(r);
@@ -143,6 +159,7 @@ class Machine {
     this.lastCycles = 0;
     this.cpu.pc = opts.pc === undefined ? 0 : opts.pc;
     this.cpu.i = 1;
+    if (this.collide) this.collide.at(this.cpu.cycles);
     this.skipOnce = false;              // resuming at passAt after a stop there: not counted twice
     this.hooks = {};
     if (this.passAt !== null) this.hooks[this.passAt] = () => {
@@ -166,9 +183,21 @@ class Machine {
   }
   get line() { return Math.floor(this.cpu.cycles / LINE) % LINES; }
   get now() { return this.cpu.cycles; }      // the chips' clock
+  // The byte the video chip reads at a (14 bits) in the bank CIA 2's port A picks.
+  vmem(a) {
+    const bank = 3 - ((this.pra2 | ~this.ddra2) & 3);
+    if (!(bank & 1) && a >= 0x1000 && a < 0x2000) {
+      if (this.charRom) return this.charRom[a & 0xFFF];
+      this.collideRomReads++;
+      return 0;
+    }
+    return this.ram[bank << 14 | a];
+  }
   ioRead(a) {
     if (a >= 0xD000 && a < 0xD400) {
       const r = a & 0x3F, ln = this.line;
+      // a read is made in the instruction's last cycle, the one before the count it leaves
+      if (this.collide && (r === 0x1E || r === 0x1F)) return this.collide.read(r, this.cpu.cycles - 1);
       if (r === 0x12) return ln & 255;
       if (r === 0x11) return (this.vic[0x11] & 0x7F) | ((ln >> 8) << 7);
       if (r === 0x19) return this.latch | 0x70 | ((this.latch & this.enable) ? 0x80 : 0);
@@ -241,6 +270,7 @@ class Machine {
     return best;
   }
   ioWrite(a, v) {
+    if (this.collide && ((a >= 0xD000 && a < 0xD400) || a === 0xDD00 || a === 0xDD02)) this.collide.to(this.cpu.cycles);
     if (a >= 0xD000 && a < 0xD400) {
       const r = a & 0x3F;
       if (r === 0x12) this.cmp = (this.cmp & 0x100) | v;
@@ -261,9 +291,9 @@ class Machine {
       else if (this.cia) this.ciaTimerWrite(0, r, v);
       return;
     }
-    if (a >= 0xDD00 && a < 0xDE00 && this.cia) {
+    if (a >= 0xDD00 && a < 0xDE00 && (this.cia || this.collide)) {
       const r = a & 15;
-      if (r === 0) this.pra2 = v; else if (r === 2) this.ddra2 = v; else this.ciaTimerWrite(1, r, v);
+      if (r === 0) this.pra2 = v; else if (r === 2) this.ddra2 = v; else if (this.cia) this.ciaTimerWrite(1, r, v);
     }
   }
   // The video chip's next look at its registers or next hold on the processor, as a cycle.
@@ -325,6 +355,7 @@ class Machine {
   }
   tick() {
     if (this.dma) this.dmaCatchUp();
+    if (this.collide) this.collide.to(this.cpu.cycles);
     const ln = Math.floor(this.cpu.cycles / LINE);
     while (this.lastLine < ln) {
       this.lastLine++;
@@ -365,13 +396,13 @@ class Machine {
       cmp: this.cmp, latch: this.latch, enable: this.enable, lastLine: this.lastLine, frames: this.frames, passes: this.passes,
       pra: this.pra, ddra: this.ddra, ddrb: this.ddrb, skipOnce: this.skipOnce, joy: this.joy, keys: Array.from(this.keys), passAt: this.passAt,
       joy1: this.joy1, cia: this.cia ? JSON.parse(JSON.stringify(this.cia)) : null, pra2: this.pra2, ddra2: this.ddra2, lastCycles: this.lastCycles, nmiDue: !!this.nmiDue,
-      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null };
+      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null, collide: this.collide ? this.collide.save() : null };
   }
   // opts.dma turns the video chip's fetches on or off for the restored machine (default: as saved).
   static restore(s, opts = {}) {
     const dma = opts.dma !== undefined ? !!opts.dma : !!s.dma;
     const m = new Machine({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), passAt: opts.passAt !== undefined ? opts.passAt : s.passAt,
-      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma });
+      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma, collide: !!s.collide });
     if (dma && s.dma) m.dma = JSON.parse(JSON.stringify(s.dma));
     const c = m.cpu;
     Object.assign(c, { a: s.cpu.a, x: s.cpu.x, y: s.cpu.y, sp: s.cpu.sp, pc: s.cpu.pc, cycles: s.cpu.cycles });
@@ -382,6 +413,7 @@ class Machine {
     if (s.joy1 !== undefined) m.joy1 = s.joy1;
     if (s.cia) Object.assign(m, { cia: s.cia, pra2: s.pra2, ddra2: s.ddra2, lastCycles: s.lastCycles, nmiDue: s.nmiDue });
     else m.lastCycles = c.cycles;
+    if (s.collide) { m.pra2 = s.pra2; m.ddra2 = s.ddra2; m.collide.load(s.collide); }
     return m;
   }
 }
