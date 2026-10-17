@@ -100,7 +100,6 @@ function side(M, set, frame) {
 }
 
 const m = new JSWMachine({ ram: g.listing().ram, pc: 0x080D, passAt: 0x30FF, dma: true });
-m.ddra = 0xFF; m.pra = 0x7F;
 const game1 = side(m.ram, (joy, keys) => { m.joy = joy; m.keys.clear(); for (const k of keys) m.keys.add(k); }, () => m.frames);
 m.onPass = () => game1.pass();
 for (const a of [0x2E07, 0x38EF, 0x383B]) { const prev = m.hooks[a]; m.hooks[a] = (c) => { game1.mark(); return prev ? prev(c) : false; }; }

@@ -80,7 +80,6 @@ class JSWMachine extends Machine {
   }
 }
 const m = new JSWMachine({ ram: g.listing().ram, pc: 0x080D, passAt: 0x30FF, dma: !costFile });
-m.ddra = 0xFF; m.pra = 0x7F;                                       // CIA 1's port A as the KERNAL leaves it
 const R = m.ram;
 const P = JSWPort.create(new Uint8Array(65536), {});
 // The port reads a collision register where the game stands at its LDA (the checkpoints $3392, $1C52

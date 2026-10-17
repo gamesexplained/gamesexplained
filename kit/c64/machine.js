@@ -7,7 +7,10 @@
 //   $D011, the latch $D019 and the enable $D01A) taken through the vector at $FFFE when the
 //   processor allows it, and $D011/$D012 reading the current line;
 // - CIA 1's keyboard matrix and joystick port 2 ($DC00-$DC03): keys are held as the KERNAL numbers
-//   them (row x 8 + column, KEY below), the stick as the port's five bits, active low;
+//   them (row x 8 + column, KEY below), the stick as the port's five bits, active low. Port A starts
+//   as the KERNAL leaves it, not as at power-on: $DC02 $FF (all outputs) and $DC00 $7F (row 7 low),
+//   read in VICE at the READY prompt (17 October 2026), so a game that writes a row to $DC00 and
+//   never sets $DC02 reads its keys here as it does on the machine;
 // - colour RAM ($D800-$DBFF, four bits, read with the upper four high);
 // - a SID that records: the last value of each register, and a log of [cycle, register, value]
 //   when sidLog is an array. A read of a register the chip does not answer returns the data bus,
@@ -112,7 +115,7 @@ class Machine {
     this.sidChip = opts.sid || '8580';
     this.sidBus = createBus(this.sidChip);
     this.colour = new Uint8Array(0x400);
-    this.pra = 0xFF; this.ddra = 0; this.ddrb = 0;
+    this.pra = 0x7F; this.ddra = 0xFF; this.ddrb = 0;   // CIA 1's ports as the KERNAL leaves them
     this.keys = new Set();
     this.joy = 0x1F;                    // port 2, active low: 1 up, 2 down, 4 left, 8 right, 16 fire
     this.joy1 = 0x1F;                   // port 1, the same bits, on $DC01

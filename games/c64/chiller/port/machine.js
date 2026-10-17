@@ -19,7 +19,6 @@ const COST = { irqTail: 1100, chrout: 120, clear: 22000, plot: 90 };
 class ChillerMachine extends Machine {
   constructor(opts = {}) {
     super(Object.assign({ ram: opts.ram || loadListing(path.join(REPO, 'games/c64/chiller/listing.json')), passAt: 0xCA00 }, opts));
-    this.pra = 0x7F; this.ddra = 0xFF;             // as SCNKEY leaves the keyboard port
     this.timerAt = TIMER; this.timerDue = false;
     this.coll = [0, 0];                            // $D01E and $D01F, latched until read
     const self = this;
