@@ -46,6 +46,12 @@ the kit's 6502 over the same memory, and the page tests keep those checks.
 The maintainer check ran on the run's own proven model, fresh checkers that wrote none of the
 listing. The first sample found 4 of 60 comments wrong, over the mark, so every comment was
 audited range by range and every claim in the facts files checked, before a second sample.
+The audit corrected 211 of 2,019 comments, almost all in a detail (a caller or a way in left
+out, a count, an offset, which memory is banked in); the worst read the icon map at $22A4 the
+wrong way round. The notes' checker found Gmork's count rising on moves the map refuses, and the
+mirror room failing to hand Atreyu Falkor. The second sample found 4 of 60 wrong, still over the
+mark, all in details of the same kinds; the check asks for one audit, and the Source tab reports
+what the second sample found.
 
 Building the Maps page found two room texts that cross $4000 cut short in the part listings: a
 data symbol's span ends at that edge, so the bytes after it were in no listing, and the page's

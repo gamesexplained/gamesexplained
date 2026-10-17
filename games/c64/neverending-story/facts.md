@@ -240,6 +240,30 @@ can reach, and the chance test, whose odds the template gave as n + 1
 in 256 where a PAL frame's 312 lines make them n + 1 + min(n, 55) + 1
 in 312.
 
+Because 4 is over the mark of 2, checkers on the same proven model then
+audited every comment, one address range at a time: the engine in three
+ranges and the three parts together, 2,019 comments in all. They found
+211 wrong in a detail or worse, about one in ten, and each was
+corrected. Among them: the map at $22A4 was read the wrong way round
+(it maps icon slots to objects); $FD30, where the code reads the KERNAL
+ROM's vector table, was labelled as the font beneath it; and the
+templates listed, as users of an event, scripts that a room test
+confines to another part. A sixth checker checked the 153 claims in the
+five `facts.md` files and corrected 13, and the pages' text, where 8
+were corrected.
+
+The second sample, after the audit, drew 60 more comments with seed
+61018: 40 of the 1,451 written by hand and 20 of the 508 written from
+templates that the first sample had not drawn. A checker that wrote none
+of them found 4 wrong (6.7 % plain, 6.3 % weighted by stratum; 95 %
+Wilson interval 2.6 % to 15.9 %), each in a detail: the ways into a tune
+segment left out the return from the call before it; a maze script
+quoted one of its three maze texts for all 19 rooms; a zero-page note
+missed the swap around each part's load; and a side comment said disk
+where the load is from the cassette. All four were corrected, with five
+more tune segments the same template had left incomplete in the same
+way.
+
 ## Live tests
 
 - *Live*, on the copy above in VICE 3.13.2: from the Part 1 command
