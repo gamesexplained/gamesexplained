@@ -12,8 +12,9 @@ const standin = require('./standin.js');
 const { loadPort } = require('./port.js');
 const { player } = require('./sessions.js');
 
-// the bytes the interrupt writes and the main program reads in the middle of a stretch
-const IRQ_BYTES = [];
+// the bytes the interrupt writes and the main program reads in the middle of a stretch: the clock's
+// midnight count ($BF29), the light and its count ($BF2E, $BF2F), which the panel reads
+const IRQ_BYTES = [0xBF29, 0xBF2E, 0xBF2F];
 // the bytes the port does not keep the game's way (kit/skills/core/70-minisite/play.md): the
 // stack pointer the sound driver's snd_pitch ($761C) saves at $798B while it reads the pitch table
 // through it, which is wherever the interrupt found the stack
