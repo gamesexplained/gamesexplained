@@ -1,81 +1,227 @@
-# Jet Set Willy — checked facts
+# Jet Set Willy — verified technical facts
 
-- **Boot (live):** CMM disk boots from hard reset to CMMO intro. Port 1 fire dismisses it; three `N` answers disable trainers. Return at the title reaches THE BATHROOM. Fresh captures are `reference/title.png` and `reference/play.png`.
-- **Intro input (live trace):** `$2AF7` reads `$DC01`, compares with `$EF`, and jumps through `$2C23` when fire alone is held. Stepping observed A=$EF and the taken exit branch. This is boot provenance, not gameplay logic.
-- **Code image (byte comparison):** boot title and play each match every imported code-typed byte (6,777) and word-typed byte (514). Title/play code agrees completely. Sprite storage `$4000–$6AFF` is unchanged. Room ranges differ at 16 and 24 bytes respectively; these are not assumed immutable.
-- **Initialized gameplay (live):** IRQ vector changes from `$A801` at title to `$33E1` in play. Play processor port `$36`, DDR `$2F`; CIA2 port `$96` selects VIC bank `$4000`. The observed `$D018=$FF` selects screen `$7C00` and characters `$7800` in that bank.
+Current truth for this game, the Berlin Cracking Service (BCS) disk
+release (`orientation.md`). Every fact names the routine or table it
+comes from. Unless marked *live*, a fact comes from reading the code in
+`work/entry.vsf` and `work/play.vsf`.
 
-## Verification work
+## Build
 
-Collection logic, collisions, guardians, arrows, ropes and winning route remain verification leads. The source export’s own tests do not verify these claims here. The interactive draft stays private until normal coverage/verification confirms it.
+- Three files: `LADER`, a BASIC chain loader; `JET`, $0801-$CFFF; `SET
+  WILLY`, $E000-$FFFF (*live*: loaded from the disk and compared).
+- `JET` begins with the crackers' `10 SYS2061`; the start-up at $080D
+  stores $CBE5 at $033C/$033D, which nothing reads, sets $01 = $36 and
+  jumps to the title at $A000.
+- The game was saved from memory after a game had begun: the vectors at
+  $CFF0 are already set, and screen RAM at $7C00 holds The Bathroom with
+  its status line.
+- Leftovers saved with it: a text editor at $0B41-$0F00, scraps of the
+  assembly source at $6BC0, $768E, $80CF, $9A80 and $9FAA, copies of
+  rooms 25 and 26 at $751A-$768C, three unused copy routines ($3F00,
+  $AB80, $FF00), and the power-on pattern of $FF and $00 in the gaps.
+- The 14 bytes at $FFF0 look like the vectors at $CFF0 from an earlier
+  build: five of the seven are $23 lower than this build's.
 
-## Annotation checks
+## Memory layout
 
-The 60 room records carry individual descriptions naming their captured room title and four exit ids. The sprite bank has 172 individual 64-byte records, each described as 21 three-byte rows plus alignment; sprite pointer arithmetic follows the C64 platform reference. Ghidra operand labels retain their actual offcut addresses. Post-row data descriptions were moved back to the row they describe; duplicate comments on the following row were removed. Runtime guardian work arrays, copied room glyphs and the indirect vector page are excluded from the authored-data ledger.
+| Thing | Where |
+|---|---|
+| Player code (states 0-6, ropes, cheat) | $1000-$1CFF |
+| In-game tune player and note table | $2005-$21AB |
+| Item records, 80 of 4 bytes | $22C3 |
+| Arrow records, 16 of 4 bytes | $2403 |
+| Guardian records, 8 bytes each | $2443 |
+| Room colours | $29EB |
+| Initialiser, main loop, interrupts, death | $2C57-$39F0 |
+| Code card (copy protection) | $3A02-$3CD2 |
+| Sprites, 172 of 64 bytes (pointers $00-$AB) | $4000-$6AFF |
+| Rope sprites as shown (pointers $AC-$AE) | $6B00-$6BBF |
+| Title tune | $6C00-$7517 |
+| Character set / screen | $7800 / $7C00 |
+| Rope sprites, 34 positions of three | $8100-$9A7F |
+| In-game tune | $9C00-$9FA9 |
+| Title program, message and logo | $A000-$AA94 |
+| Rooms 0-29 / 30-59, 256 bytes each | $B000-$CDFF / $E000-$FDFF |
+| Dispatch vectors | $CFF0-$CFFD |
+| Current room copy | $0840-$093F |
 
-## Checked room and rope transfers
+The processor port is $36 in play (BASIC ROM out, KERNAL and I/O in);
+the room copy at $2E55 sets $34 while it reads a room. The video chip
+uses bank 1, $4000-$7FFF, in extended colour mode.
 
-- **Room copy (live, controlled entry):** entering `$2E55` with each room id 0–59 copied exactly 256 bytes into `$0840–$093F`, stopping at `$2E7C`. Rooms 0–29 use `$B000 + id*256`; rooms 30–59 use `$C200 + id*256`. Each test compared the destination with the live source immediately before the call, because animated glyphs can change room records. All 60 cases restored processor port `$36`.
-- **Rope staging (live, controlled entry):** the 34 words at `$1856` are `$8100 + position*192`. For each position 0–33, forcing the room rope flag and staging divider then entering `$16A2` copied the selected 192 bytes to `$0500–$05BF`; the check stopped at `$16E8` before coordinate processing. This verifies graphics staging, not player attachment or reachability.
-- **Retained bootstrap (live, controlled entry):** `$D002` relocates 37 bytes from `$D015–$D039` to `$0334–$0358`. The relocated loop copies 8,192 bytes from `$D100–$F0FF` to `$E000–$FFFF` in descending pages, then restores `$01=$36`, enables interrupts and jumps to `$3C23`. All destination bytes matched the source captured before the test. This was a controlled execution of the retained routine, not an observed cold-boot hand-over.
-- **Hidden room templates (traced):** `$D100–$DFFF` holds retained source copies of rooms 30–44. They are distinct from the later playable records at `$E000–$EEFF`, whose glyph bytes can change. CPU references to `$DAAC`, `$DAF8`, `$DB70`, `$DB71`, `$DB98` and `$DB99` made with I/O visible write color RAM; those stores are not physical reads of the hidden templates.
-- **Snapshot scope (live):** `work/entry.vsf` stops at `$3C23` after the three trainer answers and RLE decompression, before copyright acceptance and title setup. Every code-typed byte matches the play image. CPU port is `$37`, DDR `$2F`, CIA2 port `$97` (VIC bank `$0000`), screen selector `$D018=$15`.
+## Timing
 
-- **Packed terrain (live, controlled entry):** the renderer at `$2E9C` was run for every captured room record, stopping at `$2F0F`. All 30,720 screen cells and color-RAM low nibbles matched an independent decoder: four two-bit cells per source byte, most-significant pair first. Tile codes come from `$222C`; colors come from record offsets `$D7-$DA`. The `$2F11` glyph-copy loop separately matched all 48 bytes from `$08E0-$090F` to `$7908-$7937`. The browser shows this base terrain only, before conveyor/ramp/object/sprite overlays.
-- **Title music (live, controlled native loop):** after `$A0CD`, repeated calls to `$A139` ended with pointers `$7246`, `$7350`, `$7518`, end flag `$FE=$FF` and SID volume zero. Voice 1 supplies 803 note/duration pairs and the terminal `$FF,$FF`; voice 2 consumes 132 pairs and voice 3 consumes 228 pairs.
+- The play interrupt at $33E1 runs at raster line 251 and line 0 of each
+  frame. The bottom half moves the clock on once every 50 frames ($3446),
+  so the clock runs in real seconds on a PAL machine.
+- The clock starts at 07:00:00 ($2267) and the game ends when its hours
+  read 12 ($33BB): five hours of real time.
+- Both tunes tick three times every second frame, 75 ticks a second
+  ($3435, $A801).
 
-- **Frame reconstruction (live capture):** `C64.renderFrame` matched all 104,448 pixels of one initialized gameplay frame. The trimmed renderer input contains 1,409 RAM bytes in 17 runs, plus color memory and display-register state. The page's sprite toggle changes the sprite-enable register in a copy of this capture. This is a rendering check, not a timing or collision test.
+## Controls
 
-## Retained copyright and restart behavior
+- Joystick in port 2: left, right and fire ($3791).
+- Keys ($380B): left on Q E T U O @ 1 3 5 7 9, right on W R Y I P * 2 4
+  6 8 0, jump on Z X C V B N M , . / and Space, pause on A S D F G H J K L
+  : ; ($2C2B, $2C36, $2C41, $2C4C). A key off the pause list ends a pause
+  ($3114).
+- Return turns the in-game music off and on, read after each item pass,
+  every eighteenth pass of the main loop ($39F1).
+- + and − raise and lower the volume, 0 to 15 from 12, read every 15
+  frames while the music is on ($34EC); the title's message does not
+  mention them (*live*: + took it from 12 to 15, − from 15 to 10).
+- RUN/STOP ends the game, through the game-over sequence ($3132).
 
-The retained loading-complete/copyright code spans `$3A02-$3CD2`. Its four-color checker at `$3C23` first treats any entered byte with bit 7 set as incomplete, then compares all four bytes with `$3A81-$3A84`. A controlled correct code reached `$3C3A`; changing each individual digit reached `$3C4E`; one `$FF` slot reached `$3C00`. The success routine copied all nine bytes of its cartridge header from `$3C62` to `$8000`. The captured expected-color base word is `$2C57`; its origin is open and no unpatched protection-sheet layout is inferred.
+## Graphics
 
-**RESTORE versus reset (live):** both reach the success header's entry stub `$0FA0`. RESTORE preserves DDR `$2F` and port `$36`, and the jump to `$A000` fetches the RAM title's `JMP $A744`. A CPU reset, checked with a positive checkpoint at KERNAL reset entry `$FCE2`, reaches the stub with DDR `$00` and port readback `$17`. Clearing bit 0 in the port latch cannot drive the banking pins while the direction register is zero. At the subsequent `$A000` jump, CPU-visible bytes are BASIC ROM `94 E3 7B`, while physical RAM contains `4C 44 A7`. The stub never initializes the direction register. This finding applies to the captured CMM disk image.
+- The spare lives are drawn on the status line, each in the next colour
+  from white ($3304), and walk only while the music is on: the play
+  interrupt steps their glyphs every 15 frames in the same branch as the
+  volume keys ($34E8).
+- 172 sprites at $4000: the boot and barrel of game over ($00, $01),
+  Maria ($02-$05), Willy ($06-$0D, four steps each way), the toilet
+  ($0E-$11, of which the game shows $0E and $0F), the guardians
+  ($12-$A9) and the arrow ($AA, $AB).
+- Rooms are drawn from 2-bit cells with six glyphs each room carries
+  (offsets $A0-$CF), in extended colour mode ($2E9C).
+- The code card's five sprites at $0A00-$0B3F, in bank 0: a marker and
+  keycaps 1 to 4.
 
-The third trainer answer led through the retained decompressor: a store checkpoint stopped with PC `$011E` after writing `$22` to the gap byte `$3CDE`, matching the later title/play capture. This identifies its producer, not the purpose of the surrounding gap. A packed-data relocation also wrote `$AEBD`; that byte changed again to its final captured value during unpacking. These observations do not establish an active gameplay consumer.
+## Mechanics
 
-**Retained-copy phase (live):** the observed CMM boot hit the copyright entry `$3C23` without hitting execution checkpoints at `$D002` or `$0334`. Its RLE decompressor's final jump is `$0140: JMP $3C23`, after writing port `$37`. The controlled retained-bootstrap result remains valid, but it does not describe this disk's executed hand-over. The word `$1002` preceding that retained bootstrap is recorded as a prefix of unknown original file role.
+- 60 rooms. No code checks an exit before taking it ($10F8, $1130,
+  $1236, $127A). Rooms 0-4 have exits of 60, which would load the 256
+  bytes at $FE00, past the last room; 47 rooms have an exit that is their
+  own number. Whether Willy can reach each of those edges is not checked.
+  Room 6, Entrance to Hades, has all four exits leading to itself, so
+  Willy can never leave it. Walking left off the end of the Security
+  Guard's floor (room 5) drops him through its gap into room 6, where
+  the guardians beside the gap kill him on the way down, and every life
+  restarts at the top of the room in the same fall (*live*: nine lives
+  lost in ten entries into room 6, then the title).
+- On entering a room Willy is placed by which of the old room's exits
+  names it, tested up, down, right, left ($2DC6). Coming through the
+  bottom keeps the fall counter, so a fall goes on counting from room to
+  room.
+- The checkpoint a death goes back to is saved on entering a room
+  ($2E7C), with the fall counter. A fall that reaches a cell boundary
+  with 17 counts or more is deadly ($11FB), and Willy cannot steer a
+  fall, so when a fall that came in through the top of a room ends in a
+  deadly landing, every life restarts in the same fall and ends the same
+  way. *Live*: jumping left over the wall on the Watch Tower's roof
+  (room 49) drops Willy five cells into We Must Perform a Quirkafleeg
+  (room 16) with a count of 20, and the game took all nine lives there,
+  one landing after another, and went back to the title.
+- 80 items. Taking one adds 1 to the decimal count at $0401; at 50,
+  $164A sets $0400, and $3284 stops drawing Maria in the Master Bedroom.
+  Nothing else reads $0400, so the bed does nothing: the game has no
+  ending other than the clock or the last life (*live*: with $0400 set,
+  the Master Bedroom showed Willy's sprite alone, and Willy stood on the
+  bed for 200 frames with nothing happening).
+- Nine lives: eight spare at $2CFF, and the death sequence at $3977 ends
+  the game when the count drops below zero.
+- Arrows: $314D processes 15 records, so the 16th, in The Beach, never
+  fires. It flies a record only in the room its first byte names, less
+  bit 7 ($315D), and records 7, 11 and 12 ($241F, $242F, $2433) name
+  room 99, which does not exist, so they never fly either (*live*: over
+  600 frames, sprite 6 showed an arrow in no frame in The Beach, in 83
+  in Cuckoo's Nest and in 51 in I'm Sure I've Seen This Before).
+- Touching a sprite kills Willy ($3392), except the toilet in The
+  Bathroom; in a room with a rope only sprites 1-4 kill. Maria kills him
+  too.
+- On a rope, the check at $1B96 compares screen codes ($20-$26) with the
+  tile kinds 0 and 3, so any contact with a cell's pixels makes Willy let
+  go, and a hazard never kills him there.
+- Five conveyors never move on screen, in Ballroom West, Master Bedroom,
+  Emergency Generator, Conservatory Roof and The Bow: the play interrupt
+  rotates conveyor glyphs from pointer tables ($2271, $2297), and those
+  rooms have none (*live*: over 60 frames the conveyor glyph at $7928
+  changed in The Bathroom and stayed the same in the Master Bedroom).
+  West of Kitchen's top row turns right while the conveyor carries Willy
+  left.
+- The turn-round on the spot at $1091 needs $4B = $FE, which the test at
+  $382C sets only when $49 XOR $60 = $FE. $60 is never set and stays 0,
+  so the test never passes (*live*: a watch on stores to $60 through a
+  stretch of random play saw none).
+- The room-select cheat at $1BBC is switched off by an RTS ($60) in
+  place of its first byte, $A5. With it restored, ↑ alone, then F, A, C,
+  E, S, one at a time, turn the border white; two digits then choose a
+  room, tens 0-5 from $1C46 and units 0-9 (*live*: ↑ FACES 5 7 took
+  Willy to room 57, The Beach).
 
-The copyright input display uses pointer `$28` for an unset slot and pointers `$29-$2C` for color indexes 0-3. With the observed prior-phase VIC bank `$0000`, these select five addressed 64-byte slots at `$0A00-$0B3F`, whose contents overlap predecessor editor code.
+## Data tables
 
-**RLE image (independent decode and live writes):** at the third trainer answer, a 79-byte decoder is installed in `$0100-$014E`. It reads the relocated stream from `$521B-$FFFF` and emits 63,511 bytes at `$07E8-$FFFE`. A byte-for-byte independent decode matched that entire interval in the real cold hand-over snapshot. Ordinary bytes are literals; `$BA` introduces a repeat count and repeated value, with a zero count byte introducing the extended count. Watchpoints caught the final decoder writing the low retained tail, the gap after copyright code and the title-side tail at PC `$011E`. Their remaining semantic consumers are open; producing bytes does not establish that the gameplay uses them. The decoder lives in the stack area and is not a code block in the later play listing.
+- Room record, 256 bytes: $00-$1F name; $20-$9F map; $A0-$CF glyphs;
+  $D0-$D2 conveyor; $D3-$D5 ramp; $D6-$DB colours; $DC-$DF exits up,
+  down, left, right; $E0 first guardian, $E1 count, $E2 rope.
+- Guardian record, 8 bytes at $2443: type (bit 7 horizontal, bit 6
+  starting direction), x cell, y cell, base frame, bound, frame mask,
+  speed, lower bound.
+- The code card's answers: for row r (0-19) and column c (0-17, shown
+  as A-R), the four colours are the low two bits of the bytes at
+  $2C57 + 4 × (18r + c) to that plus 3 ($3B3D-$3B7B). Keys 1-4 enter
+  colours 0-3, shown red, green, blue and yellow ($3A74). *Live*: with
+  the processor sent to $3A02 in play, the card asked for A14, cell 252;
+  the four colours from $3047-$304A, green, yellow, green and green, were
+  accepted, the success header went to $8000, and the title started.
+- After a correct code, $3C83 copies a cartridge header ($3C62) to
+  $8000 with both vectors at $0FA0, so that RESTORE restarts the title.
+  A reset would not: it leaves the processor port's direction register
+  $00 at 0, so $0FA0's write to $01 does not take BASIC out, and its
+  jump to $A000 runs into BASIC ROM, where the processor jams on the
+  byte at $A005 (*live*: header copied to $8000 by hand, then a reset;
+  $0FA0 and $A000 each ran once, $00 read 0, and the PC stayed at
+  $A005).
 
-**Retained text-buffer editor (traced and controlled calls):** `$0B41-$0F00` contains a predecessor command loop, character/repeat parsing, a 27-entry @-through-Z dispatch table and buffer-editing helpers. Some of its entry/UI callbacks have been replaced by gameplay code, and the routine at `$0EF2` is truncated after `$0F00`. Its identity as a particular editor product is unknown. Direct calls to `$0D34` inserted HELLO into a scratch buffer and advanced the pointer by five; `$0D46` converted 00, 12, 4A and FF into the matching one-byte outputs. These calls do not demonstrate a working editor UI or player-accessible command interface. The preserved fragment stays Byte in the play listing so that predecessor callback addresses do not become false gameplay control-flow links.
+## Sound
 
-The retained copyright display's pointer calculations address `$0A00-$0B3F` in its observed bank, but those low-memory bytes overlap predecessor editor contents. The CMM boot bypasses the entry/display path and reaches its accepted comparison state directly. They are described as addressed slots, not asserted to be intact original copyright artwork.
+- Both note tables, $20EC and $A207, hold the same 96 values, tuned for
+  the NTSC clock: by it index 1 is C#0 and index 58 is A#4 at 466.2 Hz.
+  On a PAL machine every note is 65 cents lower than on NTSC (A#4 at
+  449.1 Hz).
+  Index 79, 25271, is 30.6 cents flat of G6 even on NTSC.
+- Title tune ($A0CD, $A139): three voices, the first 803 notes long, the
+  opening of the Moonlight Sonata's first movement; named by the NTSC
+  clock it opens G# C# E, in C# minor, the sonata's key.
+- In-game tune ($2005, $2066): two voices, 246 and 221 notes, 4,224
+  ticks; Bach's Invention No. 1 (BWV 772), opening C D E F D E C G by the
+  NTSC clock, in C major, the invention's key. It loops when voice 1
+  reaches its end marker.
+- $2005 clears the SID by storing A into $D401-$D418 with A = 1 ($2020).
+  That leaves $D415-$D417 at 1: the filter takes voice 1 and no filter
+  mode is set, and nothing else in play writes those registers, so voice
+  1 plays almost silent all game. *Live*: on VICE's 8580 model, voice 1
+  alone recorded about 19 dB quieter than with $D415-$D417 cleared.
+  Another crack of the game has 0 at $2020.
 
-## Item, jump and death checks
+## The listing's error rate
 
-- **Collection (controlled native candidates):** all 80 records matched the incoming screen address at `$07/$08`; nine additional cases covered decimal 9→10, 49→50, 50→51, 79→80 and 99→00, taken flags 1/$FF, wrong room and wrong address. Only a matching untaken record increments the packed-BCD counter and clears its cell. Only an increment resulting in `$50` sets `$0400`; this is an equality test, not a >= predicate. All cases returned with decimal mode clear and matching status digits. The candidate fields at `$15F9/$15FA` hold the copied screen address, not X/Y coordinates. These checks do not prove routes to all items.
-- **Jump (actual input and control):** a brief fire pulse in the initial bathroom entered state 1 and raised Y from 104 to 84. Every consecutive jump-state update matched the signed delta table at `$102D`; bathroom geometry ended the jump at index 33. A replay with no input stayed at state 0/Y=104. No player coordinates or state were poked in either replay.
-- **Death (controlled native entry):** all eight checkpoint fields at `$57-$5E` were restored to their corresponding player variables. Six spare-counter cases 8, 1, 0, `$80`, `$81`, `$FF` agreed with decrement-then-BPL: resulting nonnegative bytes enter room setup at `$2E07`, negative ones enter game over at `$383B`. The initialized value 8 represents eight spares in addition to the current attempt. The high-byte counter cases are synthetic arithmetic boundaries, not reachable-life claims.
-- **Maria flag (controlled room states):** room 35 with flag zero enables sprite 7. A nonzero flag makes `$3284` skip its writes; it does not clear an already enabled sprite-7 bit. Room initialization at `$2E07` clears that bit, and the flag prevents re-enabling it. Five controlled room/flag/enable combinations and a room reset matched. Whether a player can arrange the fiftieth pickup in a state with Maria already displayed is open.
-- **Additional copy helpers (relocated native calls):** the preserved helpers at `$3F00-$3F2A` and physical `$FF00-$FF2B` copy 8 KB from `$B000-$CFFF` to `$2000-$3FFF` and `$E000-$FFFF` respectively. Clones executed at `$0200` matched every output byte and restored port `$37`. Their original addresses lie inside their destinations, so neither their earlier caller nor safe in-place execution is inferred from the clone tests.
+The run's own sample, seed 20261016, drew 60 of the 781 comments in two
+strata: 40 of the 447 written by hand and 20 of the 334 a decoder wrote
+for the sprites, rooms and rope sprites. A checker on
+claude-opus-5-5[1m] that wrote none of them, with each verdict settled
+against the code, found 16 wrong, each in a detail: 15 of the 40
+written by hand and 1 of the 20 from the decoder. Seven of the 12 drawn
+from the 87 routine headers written in one Purpose, Inputs, Outputs and
+Clobbers form were wrong, in inputs a routine does not take, registers it
+does not leave alone, or a reader cited for the wrong path; the others
+were tables whose continuation records claimed the whole table's count,
+a note table called PAL that is tuned for NTSC, a frame list given for
+the wrong direction of travel, a guardian's colour said to match the
+background, and the code card's slots, of which only the first is
+emptied. All 16 were corrected, and with them every one of the 87
+headers was rewritten from the code, as were 29 other comments saying
+the same things. The plain rate is 16 in 60, 27 % (95 % interval 17 % to
+39 %), and weighted by the strata's sizes 24 %; a checker misses some,
+so both are lower bounds.
 
-## Review verification, 3 October 2026
+## Live tests
 
-`node games/c64/jet-set-willy/reference/review-checks.js` runs 44
-controlled checks against bytes in the committed listing. Four editor
-inputs distinguish rejected byte-1 spaces, accepted decimal digits and a
-non-digit. Four title-loop inputs distinguish fire alone, Return, another
-key with fire and another key without fire. All 34 rope-directory pointers
-and trajectory-pointer calls match their address formulas; both eight-byte
-bit-mask tables match entry by entry. These simulator calls confirm routine
-contracts, not legal routes from ordinary play.
-
-The rope storage ends at $1ABC: the pointer directory is $1856-$1899;
-the active attachment windows start at $189C and cover seventeen 32-byte
-windows through $1ABB. The preceding pair at $189A/$189B is $80,$04;
-no independent header role is claimed. $2233-$2239 crosses from the final
-six ascending masks into the first inverted mask.
-
-A fresh CMM boot on 3 October 2026 with VICE MCP v3.13.2, console mode
-and dummy sound reached the title with all trainers disabled. Holding
-port-2 fire for 120 frames with $50/$51 both zero produced no execution
-hits at $A7EE; Return then reached THE BATHROOM. The private play snapshot
-matches all 7,415 code bytes and 560 word bytes of the preceding listing.
-Twenty-four byte-data bytes differ at the title glyph area $79E0 onward;
-these differing bytes are not treated as immutable. Source was
-rebuilt from the fresh play snapshot. Coverage measures 59,668 of 59,668
-tracked bytes; this does not close the loaded-image audit or the open
-mechanics in the scope notes.
+- Boot: `LADER` autostarted from a hard reset reaches $080D and the title
+  ($A000); Return starts a game in The Bathroom, 07:00:00.
+- The room-select cheat, with $1BBC set to $A5: ↑, F, A, C, E, S turned
+  the border white; 5, 7 took Willy to The Beach.
+- The in-game tune's first voice, recorded with and without $D415-$D417
+  cleared.
+- RESTORE during play: the game went on, unaffected.

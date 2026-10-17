@@ -34,3 +34,45 @@ headless/dummy-sound gameplay snapshot. Re-export preserved the previous
 auto symbols as well as the edited user annotations. Remaining loaded
 gaps and mechanics stay open; tier remains Bronze pending a fresh
 maintainer check.
+
+## 16-17 October 2026 — a fresh run on the BCS release
+
+The game's first contributor was not expected back, so Aaron asked for
+the game to be taken to Silver under kit 0.0.173, from his upload of
+the Berlin Cracking Service disk ("Jet Set Willy - BCS.d64"). The earlier
+listing was of another crack, whose boot, trainer and packer this release
+does not have: `LADER` loads `JET` and `SET WILLY` and hands over at the
+title, so orientation, the start-up comments and the coverage record were
+written again from this release, keeping the imported names and comments
+only where its own code bore them out.
+
+Annotation described all 172 sprites and 60 rooms from their bytes, traced
+the code card the crack bypasses and the room-select cheat it switches
+off, and named every untracked stretch the listing build reported. Five of
+those stretches are scraps of the programmers' source text, and four of
+them match the shipped code line for line.
+
+The run's own sample (seed 20261016) found 16 of 60 comments wrong; with
+them, all 87 routine headers written in one templated form were rewritten
+from the code. Aaron's maintainer sample (seed 1792191626), on a Codex
+checker, found 7 wrong, so the listing went to a full audit. Zero page was
+audited on Codex, which corrected 9; Codex's usage limit ran out there.
+The audit was briefly moved to Fable, read as a different model was what
+`kit/CHECKING.md` asked for; Aaron said a fresh agent on the run's own
+proven model is the baseline, so the rest went to fresh Opus agents, one
+range at a time, and `CHECKING.md` was reworded to say so.
+
+Live tests in VICE settled the Discoveries: one jump off the Watch Tower
+took all nine lives, because the restart point saved on entering We Must
+Perform a Quirkafleeg keeps the fall count; walking off the Security Guard's floor
+into the Entrance to Hades cost every life in ten entries; three rooms'
+arrows flew for 0, 83 and 51 frames of 600; standing on the bed did nothing;
+one conveyor's glyph changed and another's did not; no store reached $60;
+and the code card, run by hand from its entry, accepted the colours the
+game's own code gives for cell 252. A test of the Entrance to Hades first
+released the joystick too early and Willy stopped on the floor; holding it
+until room 6 reproduced the trap.
+
+`reference/` lost the earlier run's import audit, its review script and an
+unused picture, none of which a page loads. `kit-feedback.md` was
+rewritten for this run; the earlier run's version is in the history.
