@@ -8,39 +8,15 @@
 // node games/spectrum/where-time-stood-still/test_maps.js [--write]   (--write updates the pages)
 const path = require('path'), fs = require('fs');
 const ROOT = path.join(__dirname, '..', '..', '..');
-const { CPU } = require(path.join(ROOT, 'kit', 'spectrum', 'z80.js'));
 const { game } = require(path.join(ROOT, 'kit', 'scripts', 'port_check.js'));
 const g = game(__dirname);
+const machine = () => require('./wtss_machine.js').machine(g);
 
 function bankOf(part) {
   const a = new Uint8Array(0x4000), r = g.listing(`parts/${part}/listing.json`).ram;
   a.set(r.subarray(0xC000));
   return a;
 }
-// Banks 5, 2 and 0 from main at $4000-$FFFF, the others from their parts; port $7FFD (A15 and A1
-// low) pages the bank in its low three bits in at $C000.
-function machine() {
-  const mem = g.listing('parts/main/listing.json').ram;
-  const banks = { 1: bankOf('bank-01'), 3: bankOf('bank-03'), 4: bankOf('bank-04'), 6: bankOf('bank-06'), 7: bankOf('bank-07') };
-  let cur = 0;
-  const page = v => {
-    const b = v & 7;
-    if (b === 2 || b === 5) throw new Error('bank ' + b + ' paged in at $C000');
-    if (b !== cur) { banks[cur] = mem.slice(0xC000); mem.set(banks[b], 0xC000); delete banks[b]; cur = b; }
-  };
-  const cpu = new CPU(mem, { io: {
-    out(port, v) { if (!(port & 0x8002)) page(v); else if (port & 1) throw new Error('out to ' + port.toString(16)); },
-    in(port) { throw new Error('in from ' + port.toString(16)); } } });
-  const call = (pc, limit = 2e7) => {
-    cpu.setRegs({ pc, sp: 0x5FF0 }); mem[0x5FF0] = 0; mem[0x5FF1] = 0;
-    for (let n = 0; cpu.pc !== 0; n++) {
-      if (cpu.pc < 0x4000 || n > limit) throw new Error(`left the code at ${cpu.pc.toString(16)}`);
-      cpu.step();
-    }
-  };
-  return { mem, page, call, bank: b => (b === cur ? mem.slice(0xC000) : banks[b]) };
-}
-
 // Areas 12 and 15 have no scenery record: bank 7's words for them point into the ROM ($DB00).
 const AREAS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
 function area(n) {

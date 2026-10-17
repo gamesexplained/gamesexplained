@@ -5,7 +5,7 @@
 // check against the emulator is check_machine.js.
 // Exits 1 on any failure. node kit/spectrum/test_machine.js
 const fs = require('fs'), os = require('os'), path = require('path');
-const { Machine, KEY, loadSna, FRAME } = require('./machine.js');
+const { Machine, KEY, loadSna, FRAME, FRAME128 } = require('./machine.js');
 
 let fails = 0;
 const check = (what, got, want) => {
@@ -201,6 +201,122 @@ function near(bytes, t, regs) {
   check('the border', border, 2);
   const m = new Machine({ ram, regs });
   check('a machine from it', m.cpu.pc === 0x8123 && m.cpu.iy === 0x5C3A && m.cpu.iff1 === 1, true);
+}
+
+// The 128: eight banks, each filled with its number times $11, banks 5 and 2 and the paged one in
+// view as the machine expects them.
+function banks128(paged = 0) {
+  const banks = [0, 1, 2, 3, 4, 5, 6, 7].map(n => new Uint8Array(0x4000).fill(n * 0x11));
+  const ram = new Uint8Array(65536);
+  ram.set(banks[5], 0x4000); ram.set(banks[2], 0x8000); ram.set(banks[paged], 0xC000);
+  return { ram, banks };
+}
+{
+  // $7000 LD A,3; LD BC,$7FFD; OUT (C),A; LD A,($C000); LD ($7100),A; LD A,$5A; LD ($C001),A;
+  // XOR A; OUT (C),A
+  const { ram, banks } = banks128();
+  at(ram, 0x7000, [0x3E, 0x03, 0x01, 0xFD, 0x7F, 0xED, 0x79, 0x3A, 0x00, 0xC0, 0x32, 0x00, 0x71, 0x3E, 0x5A, 0x32, 0x01, 0xC0,
+    0xAF, 0xED, 0x79]);
+  const m = new Machine({ ram, banks, model: 128, regs: { pc: 0x7000 } });
+  for (let i = 0; i < 9; i++) m.step();
+  check('128: bank 3 paged in at $C000 is read there', ram[0x7100], 0x33);
+  check('128: paging back to bank 0 brings its bytes', ram[0xC001], 0x00);
+  check('128: and bank 3 keeps what was written', m.bank(3)[1], 0x5A);
+  check('128: bank 5 is $4000 and bank 2 $8000', m.bank(5)[0] + ',' + m.bank(2)[0], 0x55 + ',' + 0x22);
+  check('128: the value last written to $7FFD', m.paging, 0);
+  // bank 5 paged in at $C000 is the RAM at $4000: $7000 LD A,5; OUT (C),A; LD A,$A5; LD ($C010),A;
+  // LD A,($4011); LD ($C011),A; LD A,3; OUT (C),A
+  ram[0x4011] = 0x3C;
+  at(ram, 0x7015, [0x3E, 0x05, 0xED, 0x79, 0x3E, 0xA5, 0x32, 0x10, 0xC0, 0x3A, 0x11, 0x40, 0x32, 0x11, 0xC0, 0x3E, 0x03, 0xED, 0x79]);
+  m.cpu.pc = 0x7015;
+  for (let i = 0; i < 6; i++) m.step();
+  check('128: bank 5 at $C000 writes the RAM at $4000', ram[0x4010] + ',' + m.bank(5)[0x11], 0xA5 + ',' + 0x3C);
+  check('128: and its $C000 is contended, as bank 5', m.contended(0xC000), true);
+  m.step(); m.step();
+  check('128: bank 3 back in', ram[0xC010] + ',' + ram[0xC011] + ',' + m.mem.paged, 0x33 + ',' + 0x33 + ',' + 3);
+  m.page(0x02);
+  check('128: bank 2 at $C000 is the RAM at $8000, not contended', m.mem.alias(0xC123) + ',' + m.contended(0xC000), 0x8123 + ',false');
+  m.page(0x0F);
+  check('128: bit 3 shows bank 7', m.screen, 7);
+  m.page(0x21);
+  m.page(0x03);
+  check('128: bit 5 locks the port', m.paging + ',' + m.mem.paged, 0x21 + ',' + 1);
+}
+{
+  // An excerpt of the ROM: ROM 0's $0000-$0003 only. $7000 LD A,($0002); LD ($7100),A;
+  // LD A,$10; OUT (C),A (ROM 1); LD A,($0002)
+  const { ram, banks } = banks128();
+  at(ram, 0x7000, [0x3A, 0x02, 0x00, 0x32, 0x00, 0x71, 0x3E, 0x10, 0x01, 0xFD, 0x7F, 0xED, 0x79, 0x3A, 0x02, 0x00]);
+  const rom = new Uint8Array(0x8000);
+  rom.set([0xF3, 0x01, 0x2B, 0x69]);
+  const m = new Machine({ ram, banks, model: 128, rom, romRanges: [[0, 4]], regs: { pc: 0x7000 } });
+  for (let i = 0; i < 2; i++) m.step();
+  check('128: a byte the excerpt holds is read', ram[0x7100], 0x2B);
+  for (let i = 0; i < 3; i++) m.step();
+  let msg = '';
+  try { m.step(); } catch (e) { msg = e.message; }
+  check('128: the same address in ROM 1, outside the excerpt, stops the run', /ROM at \$0002/.test(msg), true);
+  const r = Machine.restore(m.save(), { rom, romRanges: [[0, 4]] });
+  check('128: a restored machine keeps the excerpt\'s bounds', r.romHas(2) + ',' + r.romHas(4), 'false,false');
+  r.page(0);
+  check('128: and with ROM 0 back, holds its bytes', r.romHas(3) + ',' + r.ram[3], 'true,' + 0x69);
+}
+{
+  // Contention on the 128 starts at T-state 14361, and $C000 up is contended with an odd bank in:
+  // a NOP fetched there at 14361 waits 6 and takes 4
+  const nop = (paged, pc, t) => {
+    const { ram, banks } = banks128(paged);
+    ram[pc] = 0;
+    const m = new Machine({ ram, banks, model: 128, paging: paged, regs: { pc }, tstate: t });
+    m.step();
+    return m.cpu.tstates - t;
+  };
+  check('128: a NOP at $C000 with bank 1 in, at T-state 14361', nop(1, 0xC000, 14361), 10);
+  check('128: with bank 0 in, none', nop(0, 0xC000, 14361), 4);
+  check('128: at $4000, 14361', nop(0, 0x4000, 14361), 10);
+  check('128: at $4000, 14335, before the picture', nop(0, 0x4000, 14335), 4);
+  check('128: at $4000, a line on (228 T-states)', nop(0, 0x4000, 14361 + 228), 10);
+}
+{
+  const ram = frameLoop(), seen = [];
+  const m = new Machine({ ram, model: 128, pc: 0x8000, hooks: { 0xA000: q => { seen.push(q.cpu.tstates); } } });
+  m.runFrames(3);
+  check('128: a frame of 70,908 T-states, the first interrupt 19 T-states after it', seen[0], FRAME128 + 19);
+  check('128: one a frame', seen[1] - seen[0], 70908);
+}
+{
+  // The AY: $7000 LD BC,$FFFD; LD A,1; OUT (C),A; LD B,$BF; LD A,$FF; OUT (C),A; LD B,$FF;
+  // IN A,(C); LD ($7100),A
+  const { ram, banks } = banks128();
+  at(ram, 0x7000, [0x01, 0xFD, 0xFF, 0x3E, 0x01, 0xED, 0x79, 0x06, 0xBF, 0x3E, 0xFF, 0xED, 0x79, 0x06, 0xFF, 0xED, 0x78,
+    0x32, 0x00, 0x71]);
+  const m = new Machine({ ram, banks, model: 128, regs: { pc: 0x7000 } });
+  m.ayLog = [];
+  for (let i = 0; i < 9; i++) m.step();
+  check('128: register 1 keeps four bits, read back through $FFFD', ram[0x7100], 0x0F);
+  check('128: the write logged', m.ayLog.length + ',' + m.ayLog[0][1] + ',' + m.ayLog[0][2], '1,1,15');
+  check('128: and no border change', m.border, 7);
+  const r = Machine.restore(JSON.parse(JSON.stringify(m.save())));
+  check('128: a restored machine keeps its banks, paging and AY', [r.bank(3)[0], r.bank(7)[5], r.ay.regs[1], r.model].join(),
+    [0x33, 0x77, 0x0F, 128].join());
+}
+{
+  // A 128K .sna: banks 5, 2 and 3 (paged), the PC, $7FFD = 3, a TR-DOS flag, then 0, 1, 4, 6, 7
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'machine-'));
+  const file = path.join(dir, 't.sna');
+  const h = Buffer.alloc(27);
+  h.writeUInt16LE(0x6000, 23);
+  const bank = n => Buffer.alloc(0x4000, n * 0x11);
+  fs.writeFileSync(file, Buffer.concat([h, bank(5), bank(2), bank(3), Buffer.from([0x21, 0x85, 0x03, 0x00]),
+    bank(0), bank(1), bank(4), bank(6), bank(7)]));
+  check('128 .sna: 131,103 bytes', fs.statSync(file).size, 131103);
+  const sna = loadSna(file);
+  fs.rmSync(dir, { recursive: true });
+  check('128 .sna: the PC as stored, the SP as is', sna.regs.pc + ',' + sna.regs.sp, 0x8521 + ',' + 0x6000);
+  check('128 .sna: $7FFD and the banks', [sna.model, sna.paging, sna.banks[4][0], sna.banks[3][9], sna.ram[0xC000]].join(),
+    [128, 3, 0x44, 0x33, 0x33].join());
+  const m = new Machine(Object.assign({}, sna));
+  check('128 .sna: a machine from it', m.bank(7)[0] + ',' + m.mem.paged, 0x77 + ',' + 3);
 }
 
 process.exit(fails ? 1 : 0);

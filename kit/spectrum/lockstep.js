@@ -109,6 +109,16 @@
 // maxFrames; diverged says where. passes counts pass starts, but not the one the lockstep was made
 // at. describe(result) gives a result as lines to print.
 //
+// On the 128 (a machine of model 128), the port's memory is banked as the machine's is: the
+// lockstep gives P.mem, a Banks128 (kit/spectrum/machine.js) over P.M holding the eight banks as
+// the game's are when the lockstep is made, and the port's writes to $7FFD through P.io.out page it,
+// so P.M is always what the processor would see. The port's AY registers are P.io's too (ay: { sel,
+// regs }), set by its writes to $FFFD and $BFFD and read back through $FFFD. At the start of every
+// pass the banks out of view (0, 1, 3, 4, 6 and 7, the paged one included) are compared as well,
+// each over $C000-$FFFF less the ranges compare and ignore leave out there; ignoreBanks: { n:
+// [ranges] } leaves out more of bank n alone. A bank's differences are listed with bank: n. chips
+// may add 'paging' (the value last written to $7FFD) and 'ay' (the fourteen registers).
+//
 // standIn(P, address, { sp, rom, maxSteps }) is the game's own routine at address, run on P.M
 // through P.io by the kit's Z80 (kit/spectrum/z80.js), for a port whose routine is not written yet:
 // P.draw = standIn(P, 0x9000) takes and returns registers ({ a, f, b, c, d, e, h, l, ix, iy, af_,
@@ -120,7 +130,7 @@
 //
 // While a lockstep runs it owns the machine: it hooks the checkpoints and wraps the machine's
 // interrupt and the processor's fetch, rd and wr, and it puts them back when run returns.
-const { LINE, LINES, FRAME } = require('./machine.js');
+const { Banks128, AY_MASK } = require('./machine.js');
 const { CPU } = require('./z80.js');
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
@@ -132,13 +142,26 @@ const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undef
 // The port's ULA: its own border and EAR output, and the game's keyboard, read through the game's
 // machine (and so through any portIn a page or a test wraps there) with the port's EAR bit.
 class PortULA {
-  constructor(game) { this.game = game; this.border = game.border; this.ear = game.ear; }
+  constructor(game, mem) {
+    this.game = game; this.border = game.border; this.ear = game.ear;
+    this.mem = null;
+    if (game.model === 128) {
+      this.mem = mem; this.paging = game.paging;
+      this.ay = { sel: game.ay.sel, regs: Uint8Array.from(game.ay.regs) };
+    }
+  }
   in(port) {
+    if (this.mem && (port & 0xC002) === 0xC000) { const r = this.ay.sel; return r < 14 ? this.ay.regs[r] : 0xFF; }
     const g = this.game, ear = g.ear;
     g.ear = this.ear;
     try { return g.portIn(port & 0xFFFF) & 0xFF; } finally { g.ear = ear; }
   }
   out(port, v) {
+    if (this.mem) {
+      if (!(port & 0x8002) && !(this.paging & 0x20)) { this.paging = v; this.mem.page(v & 7); }
+      if ((port & 0xC002) === 0xC000) this.ay.sel = v & 15;
+      else if ((port & 0xC002) === 0x8000) this.ay.regs[this.ay.sel] = v & AY_MASK[this.ay.sel];
+    }
     if (port & 1) return;
     this.border = v & 7;
     this.ear = (v >> 4) & 1;
@@ -195,14 +218,28 @@ class Lockstep {
     const keep = new Uint8Array(65536);
     for (const [a, b] of o.compare || [[0x4000, 0xFFFF]]) keep.fill(1, a, b + 1);
     for (const x of o.ignore || []) if (Array.isArray(x)) keep.fill(0, x[0], x[1] + 1); else keep[x] = 0;
+    const m128 = this.m128 = m.model === 128;
     const addrs = [];
-    for (let a = 0; a < 65536; a++) if (keep[a] && !stack[a]) addrs.push(a);
+    for (let a = 0; a < (m128 ? 0xC000 : 65536); a++) if (keep[a] && !stack[a]) addrs.push(a);
     this.addrs = Int32Array.from(addrs);
+    // on the 128, each bank out of view over $C000-$FFFF, offsets into its 16 KB
+    this.bankAddrs = {};
+    if (m128) {
+      for (const n of [0, 1, 3, 4, 6, 7]) {
+        const k = keep.slice(0xC000);
+        for (const x of (o.ignoreBanks || {})[n] || []) if (Array.isArray(x)) k.fill(0, x[0] - 0xC000, x[1] - 0xC000 + 1); else k[x - 0xC000] = 0;
+        const list = [];
+        for (let i = 0; i < 0x4000; i++) if (k[i] && !stack[0xC000 + i]) list.push(i);
+        this.bankAddrs[n] = Int32Array.from(list);
+      }
+    }
     this.chipList = o.chips || ['border'];
-    for (const c of this.chipList) if (!['border', 'ear'].includes(c)) throw new Error('Lockstep: no chip ' + c + ' to compare');
+    const chips = m128 ? ['border', 'ear', 'paging', 'ay'] : ['border', 'ear'];
+    for (const c of this.chipList) if (!chips.includes(c)) throw new Error('Lockstep: no chip ' + c + ' to compare');
     // the port starts as the game is
     P.M.set(m.ram);
-    this.ula = new PortULA(m);
+    if (m128) P.mem = new Banks128(P.M, [0, 1, 2, 3, 4, 5, 6, 7].map(n => m.bank(n)), m.mem.paged);
+    this.ula = new PortULA(m, m128 ? P.mem : null);
     this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
     this.ib = { live: new Map(), list: null, used: new Map() };   // the stretch's reads of them
     this.io = this.makeIO(top);
@@ -238,6 +275,8 @@ class Lockstep {
       out: (port, v) => u.out(port & 0xFFFF, v & 0xFF),
       irqByte: a => this.irqByte(a & 0xFFFF),
       sp,
+      get ay() { return u.ay; },
+      get paging() { return u.paging; },
     };
   }
   // A byte an interrupt writes, as the game's main program read it at this point of the stretch.
@@ -255,7 +294,7 @@ class Lockstep {
   lookahead() {
     const m = this.m, hooks = Object.assign({}, m.hooks);
     for (const a of [...this.cps, ...this.halts]) { const h = this.saved.hooks[a]; if (h) hooks[a] = h; else delete hooks[a]; }
-    const g = m.constructor.restore(m.save(), { rom: m.hasRom ? m.ram.slice(0, 0x4000) : undefined, hooks, passAt: null });
+    const g = m.constructor.restore(m.save(), { rom: m.rom || undefined, romRanges: m.romRanges || undefined, hooks, passAt: null });
     if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
     if (own(m, 'portIn')) g.portIn = m.portIn;
     const out = new Map(), B = this.irqBytes, cpu = g.cpu;
@@ -278,7 +317,7 @@ class Lockstep {
       return v;
     };
     const end = g.frames + this.maxFrames;
-    while (!stop && g.frames < end) g.runTStates(FRAME);
+    while (!stop && g.frames < end) g.runTStates(g.FRAME);
     return out;
   }
 
@@ -356,7 +395,7 @@ class Lockstep {
     if (this.at >= 0 && !this.matched) return this.at;
     if (this.at >= 0) { this.resume = this.at; this.at = -1; }
     const end = m.frames + this.maxFrames;
-    while (this.at < 0 && m.frames < end) m.runTStates(FRAME);
+    while (this.at < 0 && m.frames < end) m.runTStates(m.FRAME);
     return this.at;
   }
   // Run the game on for n T-states of its own work (its interrupts not counted), or to its next
@@ -367,7 +406,7 @@ class Lockstep {
     if (this.at >= 0 && !this.matched) return false;
     if (this.at >= 0) { this.resume = this.at; this.at = -1; }
     const end = m.frames + this.maxFrames;
-    if (n <= 0) m.runTStates(LINE - cpu.tstates % LINE);
+    if (n <= 0) m.runTStates(m.LINE - cpu.tstates % m.LINE);
     else {
       const t0 = cpu.tstates, i0 = this.irqTstates, mine = () => (cpu.tstates - t0) - (this.irqTstates - i0);
       while (this.at < 0 && mine() < n && m.frames < end) m.runTStates(Math.max(1, n - mine()));
@@ -469,7 +508,7 @@ class Lockstep {
   poll() {
     this.polls++;
     if (this.at >= 0 && !this.matched) {           // the game waits at a stop ahead: the port polls alone
-      if (++this.idle > 2 * LINES) return this.diverge('the port polls on while the game waits at ' + hex(this.at), { game: this.at, port: 'poll' });
+      if (++this.idle > 2 * this.m.LINES) return this.diverge('the port polls on while the game waits at ' + hex(this.at), { game: this.at, port: 'poll' });
       return;
     }
     this.forTStates(0);
@@ -519,14 +558,33 @@ class Lockstep {
       count++;
     };
     for (let i = 0; i < A.length; i++) { const a = A[i]; if (M[a] !== R[a]) add(a, R[a], M[a]); }
-    for (const chip of this.chipList) if (this.m[chip] !== this.ula[chip]) add(ULA, this.m[chip], this.ula[chip], chip);
+    for (const n of Object.keys(this.bankAddrs)) {
+      const G = this.m.bank(n), Q = this.P.mem.bank(n), B = this.bankAddrs[n];
+      for (let i = 0; i < B.length; i++) {
+        const o = B[i];
+        if (G[o] !== Q[o]) { if (bytes.length < LIST) bytes.push({ address: 0xC000 + o, game: G[o], port: Q[o], bank: +n }); count++; }
+      }
+    }
+    for (const chip of this.chipList) {
+      if (chip === 'ay') {
+        for (let r = 0; r < 14; r++) if (this.m.ay.regs[r] !== this.ula.ay.regs[r]) add(r, this.m.ay.regs[r], this.ula.ay.regs[r], 'ay');
+      } else if (this.m[chip] !== this.ula[chip]) add(chip === 'paging' ? 0x7FFD : ULA, this.m[chip], this.ula[chip], chip);
+    }
     return count ? { count, bytes } : null;
   }
   // The port's compared memory and ULA made the game's again.
   resync() {
     const M = this.P.M, R = this.m.ram, A = this.addrs;
     for (let i = 0; i < A.length; i++) M[A[i]] = R[A[i]];
-    for (const chip of this.chipList) this.ula[chip] = this.m[chip];
+    for (const n of Object.keys(this.bankAddrs)) {
+      const G = this.m.bank(n), Q = this.P.mem.bank(n), B = this.bankAddrs[n];
+      for (let i = 0; i < B.length; i++) Q[B[i]] = G[B[i]];
+    }
+    for (const chip of this.chipList) {
+      if (chip === 'ay') this.ula.ay.regs.set(this.m.ay.regs);
+      else if (chip === 'paging') { this.ula.paging = this.m.paging; this.P.mem.page(this.m.paging & 7); }
+      else this.ula[chip] = this.m[chip];
+    }
   }
 
   // --- the run ---
@@ -611,7 +669,8 @@ function standIn(P, address, opts = {}) {
 function describe(r) {
   const out = [];
   for (const d of r.diffs) {
-    const shown = d.bytes.slice(0, 8).map(b => (b.chip ? b.chip + ' ' : '') + hex(b.address) + ' game ' + hex(b.game, 2) + ' port ' + hex(b.port, 2));
+    const shown = d.bytes.slice(0, 8).map(b => (b.chip ? b.chip + ' ' : '') + (b.bank !== undefined ? 'bank ' + b.bank + ' ' : '') +
+      hex(b.address) + ' game ' + hex(b.game, 2) + ' port ' + hex(b.port, 2));
     out.push('pass ' + d.pass + ' (frame ' + d.frame + '): ' + d.count + (d.count === 1 ? ' byte differs: ' : ' bytes differ: ') +
       shown.join(', ') + (d.count > shown.length ? ', ...' : ''));
   }

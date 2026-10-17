@@ -33,7 +33,10 @@ interrupt set as the game left it, counting passes where the main loop
 begins. On the 48K Spectrum,
 `kit/spectrum/machine.js` is: the Z80 with the frame's interrupt, the
 keyboard read through port `$FE` and contended memory around it, started
-from a `.sna` or the listing's memory, counting passes the same way.
+from a `.sna` or the listing's memory, counting passes the same way; given
+`model: 128` it is the 128 instead, with its frame, its banks paged
+through `$7FFD` and its sound chip, and the lockstep compares the banks
+out of view as well.
 `kit/c64/lockstep.js` runs a port beside the C64's, and
 `kit/spectrum/lockstep.js` beside the Spectrum's, and each says what the
 port gives it: the checkpoints it yields, its raster waits (on the

@@ -129,6 +129,19 @@ address below `$C000` with no part named is `main`'s.
   at 15 places, the start of play among them. It scrolls a pixel row at a time up and down
   and half a character across, following the leader's animation
   (`$98FF`).
+- Area 14's packed grid runs on past `$FFFF` into the ROM, which is
+  ROM 0 while the game runs (it writes `$7FFD` from `$8D1E`, whose bit
+  4 is always clear). The `$FF` at `$FFFF` takes its count and block
+  from `$0000` and `$0001` (243 blocks of `$01` from row 25, column
+  36), and `$0002`-`$00AA` are the grid's last 169 blocks, so the bottom
+  of the area's map is the ROM's program read as blocks (`$8B15`). The
+  +2's ROM 0 differs at `$009B` and `$00A0`, two of those blocks. The
+  mask of type `$2D`'s sixth frame (bank 1 `$FFBD`) also runs on past
+  `$FFFF`: its last two bytes are the ROM's `$0000` and `$0001`. The
+  pages carry these 171 bytes in `rom-excerpt.json`, which names the
+  ROM. *Tested*: `test_maps.js` and `test_cast.js` run the game's code
+  with them, and the port stays in step with the game through area 14
+  (`port/test/lockstep.js`, from `s1-kempston-00150`, seed 3).
 - Actors and objects are sprites 16 or 24 pixels wide, drawn back to
   front (`$A6F4`, `$A802`) with a visibility mask cut by the scenery pieces
   that stand in front of them (`$A879`, bank 4 `$C000`). Each class of
@@ -159,7 +172,17 @@ address below `$C000` with no part named is `main`'s.
   adds a quarter of what is left to 100.
 - Nine zones start events when the leader stands in them (bank 3
   `$FB1E`): the tribe's welcome, actor `$2D`, the capture, the altar, the
-  dynamite's place and three rivers.
+  dynamite's place and three rivers. In a river's zone the leader cannot
+  walk towards its middle line (`$FCBD`).
+- Records not in play walk their routes: twice a pass the game takes the
+  next of the 46 in turn and, when it is not an actor, moves it a step
+  (bank 3 `$E187`). Routes are numbered
+  1 to 35; a record with route 0 has none (`$F561`). Forty records start
+  on a route.
+- The classes' frames show which creature each type is: `$10`-`$13` a
+  tentacle, `$14`-`$17` a pteranodon (the only list with the carrying
+  flight, event 6 at `$F26E`), `$18`-`$1B` a tyrannosaur, `$28`-`$2C`
+  rolling rocks and `$2D` an arm reaching out of a rock (`test_cast.js`).
 
 ## Data tables
 
@@ -183,9 +206,21 @@ address below `$C000` with no part named is `main`'s.
   the driver and is never requested: no instruction writes 1 to `$7002`.
   Section 3 flips the transposition (`$7992`) between 0 and 1 and plays
   section 2 again, so the tune alternates a semitone up and back.
+- The second tune is Parry's "Jerusalem": Aaron (`air`) knew it by ear
+  on 17 October 2026, and channel B's first eight notes rise 4, 3, 2 and
+  3 semitones and fall 3, 2 and 2 ("And did those feet in ancient time").
+  Channel A's notes take their vibrato row from their top four bits
+  (`$75BD` into `$7015`); the rows at `$7995` are 16 offsets in
+  quarter-semitones, and rows `$20`, `$40` and `$60` cycle 0, 4 and 7
+  semitones, 0, 3 and 7, and 0, 3 and 6 (major, minor and diminished
+  chords), with 94, 88 and 12 of channel A's notes in the first 3,845
+  calls. Channels B and C use row `$70` (1, 0, 48, 0: an octave one call
+  in four), channel B after a delay of 10 calls. 26 of channel B's notes
+  in those calls slide, a quarter-semitone a call (`$761C`).
 - The title music climbs a semitone after its first time round: section
-  23 (`$72DF`) sets `$7992` from its notes' high nibbles and leaves it at
-  1, section 26 (`$7339`) goes back to 14 without clearing it, and only a
+  23 (`$72DF`) sets `$7992` from the top three bits of its step count, 0
+  for its first 32 steps and 1 for its last 32, and leaves it at 1;
+  section 26 (`$7339`) goes back to 14 without clearing it, and only a
   new request clears it (`$708B`), so sections 15 to 21 play a semitone
   higher every time after the first.
 - *Live*: the AY's registers read once a frame in ZEsarUX 13.0
