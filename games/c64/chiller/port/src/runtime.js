@@ -18,19 +18,20 @@ const VIC0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1B,0x37,0,0,0,0x08,0,0x15,0x0F
   0x0E,0x06,0x01,0x02,0x03,0x04,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07];
 
 // The chips the game uses: the video chip's registers (the raster from the clock, the collision
-// registers latched as the lines are drawn and cleared by a read), colour RAM, the SID's
-// registers (each write passed to onSid with the time), CIA 1's keyboard and joystick.
-function Chips(rt) {
+// registers as the beam draws to the clock, site/lib/collide.js), colour RAM, the SID's registers
+// (each write passed to onSid with the time), CIA 1's keyboard and joystick. The video chip sees
+// bank 0, the RAM but for the character ROM at $1000-$1FFF, which collides with nothing here.
+function Chips(rt, M) {
   const c = {
     vic: new Uint8Array(0x40), colour: new Uint8Array(0x400), sidw: new Uint8Array(0x20),
-    pra: 0x7F, ddra: 0xFF, keys: new Set(), joy: 0x1F, coll: [0, 0], cmp: 0, onSid: null,
+    pra: 0x7F, ddra: 0xFF, keys: new Set(), joy: 0x1F, cmp: 0, onSid: null,
     get line() { return Math.floor(rt.cycles / LINE) % LINES; },
     read(a) {
       if (a >= 0xD000 && a < 0xD400) {
         const r = a & 0x3F;
         if (r === 0x12) return c.line & 255;
         if (r === 0x11) return (c.vic[0x11] & 0x7F) | ((c.line >> 8) << 7);
-        if (r === 0x1E || r === 0x1F) { const v = c.coll[r - 0x1E]; c.coll[r - 0x1E] = 0; return v; }
+        if (r === 0x1E || r === 0x1F) return c.collide.read(r, rt.cycles);
         if (r === 0x19) return 0x70;
         if (r === 0x1A) return 0xF0;
         return c.vic[r];
@@ -53,7 +54,7 @@ function Chips(rt) {
     },
     write(a, v) {
       v &= 255;
-      if (a >= 0xD000 && a < 0xD400) { c.vic[a & 0x3F] = v; return; }
+      if (a >= 0xD000 && a < 0xD400) { c.collide.to(rt.cycles); c.vic[a & 0x3F] = v; return; }
       if (a >= 0xD400 && a < 0xD800) { c.sidw[a & 0x1F] = v; if (c.onSid) c.onSid(a & 0x1F, v, rt.cycles); return; }
       if (a >= 0xD800 && a < 0xDC00) { c.colour[a - 0xD800] = v & 15; return; }
       if (a >= 0xDC00 && a < 0xDD00) { const r = a & 15; if (r === 0) c.pra = v; else if (r === 2) c.ddra = v; }
@@ -68,13 +69,15 @@ function Chips(rt) {
     cia2Read: r => 0, cia2Write: (r, v) => {},
   };
   c.vic.set(VIC0);
+  c.collide = root.C64Collide.create(c.vic, a => (a >= 0x1000 && a < 0x2000 ? 0 : M[a]), i => c.colour[i]);
+  c.collide.at(0);
   return c;
 }
 
 function create(image, opts = {}) {
   const M = new Uint8Array(image);
   const rt = { cycles: 0, frame: 0, busy: false, level: null };
-  const chips = rt.chips = Chips(rt);
+  const chips = rt.chips = Chips(rt, M);
   const P = rt.P = root.ChillerPort.makePort(M, chips.io);
   K().boot(M);
   // the routines' calls since the last yield, for the cost of the stretch
@@ -97,7 +100,7 @@ function create(image, opts = {}) {
     if ((M[0x0314] | (M[0x0315] << 8)) === 0x60F5) P.music_irq({ a: 0, x: 0, y: 0, c: 0 });   // the KERNAL's entry leaves A = 0
     else K().irqTail(P.k);
   }
-  // the clock to t: the lines drawn on the way latch the collisions, the timer's interrupts run;
+  // the clock to t: the beam draws on the way, the timer's interrupts run;
   // for the port's work (work true) an interrupt's own cycles put the end later, as on the C64
   function advance(t, work) {
     while (rt.cycles < t) {
@@ -105,11 +108,9 @@ function create(image, opts = {}) {
       rt.cycles = step;
       while ((lastLine + 1) * LINE <= rt.cycles) {
         lastLine++;
-        const l = lastLine % LINES;
-        if (l === 0) rt.frame++;
-        const hit = K().collideLine(M, chips.vic, chips.colour, l);
-        chips.coll[0] |= hit[0]; chips.coll[1] |= hit[1];
+        if (lastLine % LINES === 0) rt.frame++;
       }
+      chips.collide.to(rt.cycles);
       if (rt.cycles >= nextIrq) { nextIrq += TIMER; due = true; }
       if (!rt.irqOn && M[0x0314] === 0xF5 && M[0x0315] === 0x60) rt.irqOn = true;
       if (due && rt.irqOn) { due = false; irq(); if (work) t += IRQ; }

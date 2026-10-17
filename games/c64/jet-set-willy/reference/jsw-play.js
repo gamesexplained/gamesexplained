@@ -1,10 +1,10 @@
 /* jsw-play */
 // The Play tab's C64: the port (jsw-port.js) on a clock and chips of its own, with the sprite
-// collisions of jsw-collide.js, for play.html and for test_pace.js, which runs it beside the kit's
+// collisions of the site's model (site/lib/collide.js), for play.html and for test_pace.js, which runs it beside the kit's
 // machine and compares the pace.
 //
 // JSWPlay.create({ M, Port, Collide, keep }) gives the machine. M is the game's 64 KB, as the listing
-// holds it; Port is JSWPort and Collide JSWCollide; keep is the object the page gives C64.drawFrame,
+// holds it; Port is JSWPort and Collide C64Collide; keep is the object the page gives C64.drawFrame,
 // whose record of the bytes the video chip reads narrows the memory compared (C64.videoMemory). Its
 // costs are COST below, which test_play.js --cost measures and writes.
 //   run(t)    runs the port until the clock reaches cycle t (a PAL frame is 19,656 cycles)
@@ -31,7 +31,7 @@
 //   line a sprite is fetched on, five cycles for sprite n from cycle 55 + 2n, holds that overlap
 //   counting once (kit/skills/c64/c64-reference): the costs are the processor's own cycles, so the
 //   page takes the video chip's from them as the machine does;
-// - the collisions, worked out line by line as the beam goes (jsw-collide.js), and read by the port
+// - the collisions, worked out as the beam goes (site/lib/collide.js), and read by the port
 //   where the game reads them;
 // - the start of each frame, which closes the one before for the screen and the sound.
 //
@@ -91,7 +91,7 @@ globalThis.JSWPlay = (function () {
     const keys = new Set();
     const S = { clock: 0, frames: 0, passes: 0, shown: null, sound: [], keys, joy: 0x1F, vic, colour, sid, M };
     const bank = () => (3 - ((cia.pra2 | ~cia.ddra2) & 3)) << 14;
-    const C = o.Collide.create(vic, (a) => M[bank() | a]);
+    const C = o.Collide.create(vic, (a) => M[bank() | a], (i) => colour[i]);
     let done = -1, latch = 0, inIrq = false, owed = 0, irqOwed = 0, badFrame = false, pending = false, irqLeft = 0;
     // the memory the video chip reads, as each frame began and changed after (the node tests that
     // draw nothing load no C64, and their frames carry no memory)

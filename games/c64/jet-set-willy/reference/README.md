@@ -13,9 +13,9 @@ Everything here is shown or loaded by the game's pages.
 - `jsw-rooms.js`: the ports of the game's room builder, guardians,
   arrows, rope and conveyors that every page draws rooms with;
   `test_rooms.js` in the game folder holds them against the game's code.
-- `jsw-port.js`, `jsw-collide.js` and `jsw-play.js`: the Play tab's
-  port of the whole game, the sprite collisions it reads, and the clock
-  and chips it runs on. `test_play.js` holds the port against the
+- `jsw-port.js` and `jsw-play.js`: the Play tab's port of the whole
+  game, and the clock and chips it runs on, with the sprite collisions
+  of the site's model (`site/lib/collide.js`). `test_play.js` holds the port against the
   game's code in lockstep and measures the costs `jsw-play.js` keeps;
   `test_pace.js` holds the page's pace against the game's, and
   `test_screen.js` draws the title as the page does and holds the

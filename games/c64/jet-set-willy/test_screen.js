@@ -11,15 +11,15 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 require(path.join(ROOT, 'site/lib/c64.js'));
+require(path.join(ROOT, 'site/lib/collide.js'));
 const C64 = globalThis.C64;
 const g = game(__dirname);
 const { JSWPort } = g.run('reference/jsw-port.js', 'jsw-port', 'JSWPort');
-const { JSWCollide } = g.run('reference/jsw-collide.js', 'jsw-collide', 'JSWCollide');
 const { JSWPlay } = g.run('reference/jsw-play.js', 'jsw-play', 'JSWPlay');
 const DRAWS = +process.argv[2] || 900;
 
 const keep = {}, moves = {};
-const play = JSWPlay.create({ M: g.listing().ram.slice(), Port: JSWPort, Collide: JSWCollide, keep });
+const play = JSWPlay.create({ M: g.listing().ram.slice(), Port: JSWPort, Collide: globalThis.C64Collide, keep });
 let target = 0, prev = null, compared = 0, wrong = 0;
 for (let i = 0; i < DRAWS; i++) {
   play.run(target += 985248 / 60);

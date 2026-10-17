@@ -96,8 +96,8 @@ button.jw-b:hover{border-color:var(--ink-mute)}
   <p>Nothing on this page emulates a 6502. The game is written out in JavaScript, one function for each routine of the listing, and runs on the game's own 64 KB, loaded from the bytes the Source code tab shows. Every variable stays where the game keeps it: the room's record at <code>$0840</code>, the guardians at <code>$0940</code>, the rope at <code>$0400</code>, the items' flags at <code>$22C3</code> and the screen at <code>$7C00</code>.</p>
   <p><code>test_play.js</code> runs the port beside the game's own code on the kit's model of the C64, with the same keys, through 400,000 passes of the main loop at <code>$30FF</code>. Its player walks, jumps, pauses, turns the tune off and on, and gives up now and then, and in one room in two every exit is sent to a room picked at random, a room with a rope one time in two. A second run, of 300,000 passes, has a player who only wanders and so stays longer in each room. At the start of every pass the two memories are compared, and so are colour RAM and every register written to the video chip and the SID.</p>
   <p>Two races between the main program and the play interrupt are kept as the game has them. The interrupt moves the rope's sprites while a new room sets them, and it sets Willy's bit in <code>$D010</code>, the sprites' ninth bit of X, while the main program reads, changes and writes back the register for an arrow, a guardian, the toilet, Maria, or the rope. An interrupt between that read and that write is undone, and Willy's bit stays as it was until the next frame's interrupt. The port yields at each read and write, so the page's interrupt can fall between them as the game's can.</p>
-  <p>The game finds its deaths by guardians and arrows in the video chip's collision registers, <code>$D01E</code> and <code>$D01F</code>, which the site's model of the chip does not keep. <code>jsw-collide.js</code> works them out line by line as the beam would draw the sprites and the graphics, and <code>test_play.js</code> gives the game's own code on the kit's machine the same model, which has none. The model follows the chip as the C64 reference describes it; it has not been checked against VICE.</p>
-  <p>The page keeps the C64's pace by keeping its clock. Each routine the port calls moves the clock on by the cycles the game's own routine took on the kit's machine, its average over 120,000 passes, and for a few by what they are given: the items in the room, the guardians that move, the spare lives. The code between two of the port's checkpoints that no routine accounts for moves it by that stretch's own average. The clock runs the play interrupt on its lines and takes from the processor the 43 cycles of each bad line and the cycles of each sprite's fetch, as the video chip does. In <code>test_pace.js</code>, over 60,000 frames with both sides given the same input, a pass of play took the page 0.04 % less time than the game.</p>
+  <p>The game finds its deaths by guardians and arrows in the video chip's collision registers, <code>$D01E</code> and <code>$D01F</code>. The site's model of them, <code>collide.js</code>, works them out as the beam draws the sprites and the graphics, and <code>test_play.js</code> gives the game's own code on the kit's machine the same model. On 17 October 2026 it was held against VICE in 144 scenes, each register read to the cycle, and gave what VICE gave in every one.</p>
+  <p>The page keeps the C64's pace by keeping its clock. Each routine the port calls moves the clock on by the cycles the game's own routine took on the kit's machine, its average over 120,000 passes, and for a few by what they are given: the items in the room, the guardians that move, the spare lives. The code between two of the port's checkpoints that no routine accounts for moves it by that stretch's own average. The clock runs the play interrupt on its lines and takes from the processor the 43 cycles of each bad line and the cycles of each sprite's fetch, as the video chip does. In <code>test_pace.js</code>, over 60,000 frames with both sides given the same input, a pass of play took the page 0.13 % less time than the game.</p>
   <p>The screen is drawn by the site's model of the video chip from the port's memory, with each write to the chip at the line and cycle where the clock stood, and each change to memory where the game's code made it. The interrupt's changes count from where its cycles end: on the title, the interrupt at line <code>$EA</code> moves the ticker's row a character on after the chip has fetched the row for the frame, so the moved row shows from the next frame, as on the C64. <code>test_screen.js</code> draws the title sixty times a second and holds the ticker to a move of 0 or 1 pixel left from one drawing to the next. The sound is the port's writes to the SID, in twelfths of a frame, played through the site's model of the SID.</p>
 </section>
 
@@ -108,7 +108,7 @@ button.jw-b:hover{border-color:var(--ink-mute)}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="reference/jsw-port.js"></script>
-<script src="reference/jsw-collide.js"></script>
+<script src="../../lib/collide.js"></script>
 <script src="reference/jsw-play.js"></script>
 <script>
 /* jsw-play-page */
@@ -131,7 +131,7 @@ function start(D) {
   let play, target, keep;
   function boot() {
     keep = {};
-    play = JSWPlay.create({ M: D.ram.slice(), Port: JSWPort, Collide: JSWCollide, keep });
+    play = JSWPlay.create({ M: D.ram.slice(), Port: JSWPort, Collide: C64Collide, keep });
     target = 0;
   }
   boot();
@@ -232,7 +232,7 @@ function start(D) {
   requestAnimationFrame(frame);
 }
 
-if (!window.C64 || !window.JSWPort || !window.JSWPlay || !window.JSWCollide) {
+if (!window.C64 || !window.JSWPort || !window.JSWPlay || !window.C64Collide) {
   const p = document.createElement('p'); p.className = 'jw-note';
   p.textContent = 'The game runs from the listing\'s bytes through the site\'s shared scripts; it works in the built site.';
   $('jw-screen').replaceWith(p);
