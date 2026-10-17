@@ -48,7 +48,8 @@ tab but the last ends with a link to the one after it (next_tab).
 Plus a home page with the catalogue and the games most recently added or changed
 (from git history), a page for each platform with games, <platform>/index.html
 (from site/platform.html: its catalogue alone, the page the platform in a game's
-breadcrumb links to), site/lib/, status.html (from site/status.html +
+breadcrumb links to), site/lib/ as lib/ (with lib/cpu6502.js from the kit:
+KIT_LIB), status.html (from site/status.html +
 site/status.json: which kits work on which computers, and the work needed)
 about.html (from site/about-site.html: who runs the site and the
 principles it follows; static) and accuracy.html (from site/accuracy.html: how a
@@ -1382,7 +1383,12 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js")
+# The lib files the site serves from the kit instead of site/lib/, each with one source: the 6502
+# a page runs a game's own code on, which sid.js also hands to a music driver in its worklet, is
+# the simulator the kit's tests hold pages to (kit/c64/cpu6502.js, "On a page").
+KIT_LIB = {"cpu6502.js": "kit/c64/cpu6502.js"}
+
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js", "cpu6502.js")
 
 
 def lib_versions(out_root):
@@ -1993,6 +1999,10 @@ def main():
         shutil.rmtree(out_root)
     os.makedirs(out_root)
     shutil.copytree(os.path.join(SITE, "lib"), os.path.join(out_root, "lib"))
+    for f, src in KIT_LIB.items():
+        if os.path.exists(os.path.join(SITE, "lib", f)):
+            sys.exit(f"site/lib/{f} and {src} would both be lib/{f}: the site serves {src}, so delete site/lib/{f}")
+        shutil.copy(os.path.join(ROOT, *src.split("/")), os.path.join(out_root, "lib", f))
     games = []
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
         games.append(build_game(os.path.dirname(gj), out_root))

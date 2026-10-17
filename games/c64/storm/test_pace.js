@@ -19,6 +19,7 @@ const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { Machine, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.js'));
 const g = game(__dirname);
+g.lib('cpu6502');                   // the 6502 the port's title music runs on, as play.html loads it
 const { StormPort } = g.run('reference/storm-port.js', 'storm-port', 'StormPort');
 const { StormPlay } = g.run('reference/storm-play.js', 'storm-play', 'StormPlay');
 const { StormGuide } = g.run('reference/storm-guide.js', 'storm-guide', 'StormGuide');

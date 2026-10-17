@@ -28,7 +28,7 @@
   <p class="lede">The <a href="highjump.html">High Jump</a> music is not one long tune. The music is nine phrases for two voices, and each time one ends, the game picks the next at random from a short list (<code>$3549</code>). Press the music to hear it, played by the game's own code.</p>
   <div class="plate">
     <div id="sid"></div>
-    <p class="cap"><b>The game's own driver, run in the page.</b> A small 6502 interpreter runs High Jump's sound code and scripts, <code>$2000</code>-<code>$3CFF</code> as the game loads them: <code>init_sound_driver</code> (<code>$22B7</code>), then <code>queue_sound_id</code> (<code>$22F5</code>) with the sound's number, then <code>update_sid_voices</code> (<code>$232C</code>) once a frame, as the main loop does. Checked against the game itself running in the kit's 6502 simulator from the High Jump snapshot: every one of 16,917 SID writes over five minutes matched, in order. The page starts the music from the random state the event's file brings from the disk (<code>$35AB</code>-<code>$35AD</code> = <code>$8F</code> <code>$D0</code> <code>$FF</code>), so it plays the phrases in the order the game plays them the first time after loading.</p>
+    <p class="cap"><b>The game's own driver, run in the page.</b> The kit's 6502 simulator runs High Jump's sound code and scripts, <code>$2000</code>-<code>$3CFF</code> as the game loads them: <code>init_sound_driver</code> (<code>$22B7</code>), then <code>queue_sound_id</code> (<code>$22F5</code>) with the sound's number, then <code>update_sid_voices</code> (<code>$232C</code>) once a frame, as the main loop does. Checked against the game itself running in the kit's 6502 simulator from the High Jump snapshot: every one of 16,917 SID writes over five minutes matched, in order. The page starts the music from the random state the event's file brings from the disk (<code>$35AB</code>-<code>$35AD</code> = <code>$8F</code> <code>$D0</code> <code>$FF</code>), so it plays the phrases in the order the game plays them the first time after loading.</p>
   </div>
   <p>Phrase 0 always comes first (<code>$34E3</code>). After it, a table at <code>$3C6C</code> lists where each phrase may lead: phrase 0 to any of 1 to 4; phrases 1 to 4 to any of 1 to 8 but themselves; phrases 5 to 8 back to 1 to 4. The chooser also refuses the phrase that was just played (<code>$356F</code>). The two voices run their own copies of the phrase, and whichever voice finishes first makes the choice for both (<code>$35A8</code>); each voice's script then rewrites the address of the notes it will play next inside itself (<code>$3517</code>, <code>$3530</code>).</p>
   <p>The random numbers come from a byte at <code>$35AB</code> that High Jump never sets (<code>$357E</code>): its value comes from the disk with the event's code, so the music's first run after each load takes the same path, and later runs carry on from where the byte has got to.</p>
@@ -80,6 +80,7 @@
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script src="reference/sod-page.js"></script>
 <script src="reference/sod-music.js"></script>
 <script>
@@ -105,7 +106,7 @@
 <script>
 (async function () {
   const root = document.getElementById('sid');
-  if (!window.C64Sid) { root.textContent = 'This player needs the site’s shared script, lib/sid.js.'; return; }
+  if (!window.C64Sid || !window.C64Cpu) { root.textContent = 'This player needs the site’s shared scripts, lib/sid.js and lib/cpu6502.js.'; return; }
   let G; try { G = await SOD.load(); } catch (e) { root.textContent = e.message; return; }
   C64Sid.mount(root, {
     driver: SODMUSIC.createDriver,
@@ -128,7 +129,7 @@
                jam: [0x15, 0xAB3E, [0x0B, 0x11, 0x4C]], joust: [1, 0x3493, [0x00, 0xFF, 0x00]] };
   for (const ev in EV) {
     const root = document.getElementById('sid-' + ev), [id, at, seed] = EV[ev];
-    if (!window.C64Sid) { root.textContent = 'This player needs the site’s shared script, lib/sid.js.'; continue; }
+    if (!window.C64Sid || !window.C64Cpu) { root.textContent = 'This player needs the site’s shared scripts, lib/sid.js and lib/cpu6502.js.'; continue; }
     let P; try { P = await SOD.load(ev); } catch (e) { root.textContent = e.message; continue; }
     // the event's memory from its listing, with the music's random bytes as the disk brings them
     const b = Array.from(P.ram); b.splice(at, 3, ...seed);

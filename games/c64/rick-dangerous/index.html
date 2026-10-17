@@ -167,7 +167,7 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
   <h2 class="t">Music: seven tunes by Dave Pridmore</h2>
   <p>A tune plays on each story screen before a level, on the ending, on the title and Hall of Fame, and on GAME OVER. None plays during play: while a tune runs, the sound effects and Rick's footsteps are silent (<code>$4F86</code>).</p>
   <div class="plate"><div id="rd-music"></div>
-    <p class="cap">The game's own music player, its code (<code>$5042</code>-<code>$5730</code>) and the tunes' data (<code>$5732</code>-<code>$5F8D</code>) as the listing holds them, run on a small 6502 core in this page once a frame, through the site's model of the SID. <code>test_music.js</code> compares every SID write of every frame of all seven tunes with the same code run in the kit's simulator: 117,097 writes. The tunes do not use the filter.</p></div>
+    <p class="cap">The game's own music player, its code (<code>$5042</code>-<code>$5730</code>) and the tunes' data (<code>$5732</code>-<code>$5F8D</code>) as the listing holds them, run once a frame on the kit's 6502 simulator in this page, through the site's model of the SID. <code>test_music.js</code> compares every SID write of every frame of all seven tunes with the same code called on the simulator directly: 117,097 writes. The tunes do not use the filter.</p></div>
   <p>Each tune has a header of three addresses at <code>$5732</code>, one track list a voice. A track list is a run of pattern numbers with a few commands mixed in (transpose, repeat, change an instrument); a pattern is notes and their lengths, rests, and changes of instrument, arpeggio and slide. Tunes 5 and 6 leave voice 3 alone.</p>
 </section>
 
@@ -180,163 +180,36 @@ table.rd-tab td.rd-n{text-align:right;font-family:var(--fm)}
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
 /* rd-music */
-// The game's own music player, run on a small 6502 core: the bytes $4FCC-$5F8D (the player's
-// variables, its code at $5042-$5730 and the tunes' data) as the game loads them, and zero page
-// $A0-$A5. init(t) calls tune_start ($567D) with A = t, as play_tune ($4FC6) does; play() calls
-// tune_play ($5042) once, as the raster interrupt does each frame. A read of the SID returns the
-// last value written to it (the bus), and a read-modify-write on a SID register writes the old
-// value back before the new one, as the chip sees it. Documented opcodes only: the player uses no
-// others.
-function createDriver(D) {
+// The game's own music player, run on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which
+// sid.js passes to createDriver): the bytes $4FCC-$5F8D (the player's variables, its code at
+// $5042-$5730 and the tunes' data) as the game loads them, and zero page $A0-$A5. init(t) calls
+// tune_start ($567D) with A = t, as play_tune ($4FC6) does; play() calls tune_play ($5042) once,
+// as the raster interrupt does each frame. A read of the SID returns the last value written to it
+// (the bus), and a read-modify-write on a SID register writes the old value back before the new
+// one, as the chip sees it.
+function createDriver(D, C64Cpu) {
   'use strict';
   const m = new Uint8Array(0x10000);
   for (let i = 0; i < D.hex.length / 2; i++) m[D.base + i] = parseInt(D.hex.substr(2 * i, 2), 16);
   const sid = new Uint8Array(25);
   let writes = [], bus = 0;
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, c = 0, z = 0, n = 0, v = 0, d = 0;
   const isSid = (ad) => ad >= 0xD400 && ad <= 0xD41F;
-  const rd = (ad) => (isSid(ad) ? bus : m[ad]);
-  function wr(ad, val) {
-    val &= 0xFF;
-    if (isSid(ad)) { const r = (ad - 0xD400) & 31; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; }
-    else m[ad] = val;
-  }
-  const nz = (val) => { n = (val >> 7) & 1; z = val === 0 ? 1 : 0; return val; };
-  const fetch = () => { const b = m[pc]; pc = (pc + 1) & 0xFFFF; return b; };
-  const word = () => { const lo = fetch(); return lo | (fetch() << 8); };
-  const push = (val) => { m[0x100 | sp] = val; sp = (sp - 1) & 0xFF; };
-  const pull = () => { sp = (sp + 1) & 0xFF; return m[0x100 | sp]; };
-  const zpw = (zp) => m[zp & 0xFF] | (m[(zp + 1) & 0xFF] << 8);
-  function addr(mode) {
-    switch (mode) {
-      case 0: return -1;
-      case 1: return fetch();
-      case 2: return (fetch() + x) & 0xFF;
-      case 3: return (fetch() + y) & 0xFF;
-      case 4: return word();
-      case 5: return (word() + x) & 0xFFFF;
-      case 6: return (word() + y) & 0xFFFF;
-      case 7: return zpw(fetch() + x);
-      case 8: return (zpw(fetch()) + y) & 0xFFFF;
-    }
-  }
-  const val = (mode) => (mode === 0 ? fetch() : rd(addr(mode)));
-  function adc(b) {
-    if (d) {
-      let lo = (a & 15) + (b & 15) + c, hi = (a >> 4) + (b >> 4);
-      if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + c) & 0xFF) === 0 ? 1 : 0;
-      n = (hi << 4 >> 7) & 1; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80) ? 1 : 0;
-      if (hi > 9) hi += 6;
-      c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 0xFF;
-    } else {
-      const r = a + b + c;
-      v = (~(a ^ b) & (a ^ r) & 0x80) ? 1 : 0; c = r > 0xFF ? 1 : 0; a = nz(r & 0xFF);
-    }
-  }
-  function sbc(b) {
-    if (d) {
-      const r = a - b - (1 - c);
-      let lo = (a & 15) - (b & 15) - (1 - c), hi = (a >> 4) - (b >> 4);
-      if (lo < 0) { lo -= 6; hi--; }
-      if (hi < 0) hi -= 6;
-      v = ((a ^ b) & (a ^ r) & 0x80) ? 1 : 0; c = r >= 0 ? 1 : 0; nz(r & 0xFF);
-      a = ((hi << 4) | (lo & 15)) & 0xFF;
-    } else adc(b ^ 0xFF);
-  }
-  const cmp = (r, b) => { c = r >= b ? 1 : 0; nz((r - b) & 0xFF); };
-  function rmw(mode, f) {
-    if (mode === -1) { a = f(a); return; }
-    const ad = addr(mode), old = rd(ad);
-    if (isSid(ad)) wr(ad, old);
-    wr(ad, f(old));
-  }
-  const asl = (b) => { c = (b >> 7) & 1; return nz((b << 1) & 0xFF); };
-  const lsr = (b) => { c = b & 1; return nz(b >> 1); };
-  const rol = (b) => { const o = c; c = (b >> 7) & 1; return nz(((b << 1) | o) & 0xFF); };
-  const ror = (b) => { const o = c; c = b & 1; return nz((b >> 1) | (o << 7)); };
-  const branch = (cond) => { const o = fetch(); if (cond) pc = (pc + (o < 128 ? o : o - 256)) & 0xFFFF; };
-  const M1 = [7, 1, 0, 4, 8, 2, 6, 5];
-  const M2 = [0, 1, -1, 4, null, 2, null, 5];
-  function step() {
-    const op = fetch();
-    switch (op) {
-      case 0x00: throw new Error('BRK at ' + ((pc - 1) & 0xFFFF).toString(16));
-      case 0x20: { const t = word(); const r = (pc - 1) & 0xFFFF; push(r >> 8); push(r & 0xFF); pc = t; return; }
-      case 0x60: { const lo = pull(); pc = ((lo | (pull() << 8)) + 1) & 0xFFFF; return; }
-      case 0x4C: pc = word(); return;
-      case 0x6C: { const p = word(); pc = m[p] | (m[(p & 0xFF00) | ((p + 1) & 0xFF)] << 8); return; }
-      case 0x08: push((n << 7) | (v << 6) | 0x30 | (d << 3) | 4 | (z << 1) | c); return;
-      case 0x28: { const p = pull(); n = (p >> 7) & 1; v = (p >> 6) & 1; d = (p >> 3) & 1; z = (p >> 1) & 1; c = p & 1; return; }
-      case 0x48: push(a); return;
-      case 0x68: a = nz(pull()); return;
-      case 0x18: c = 0; return; case 0x38: c = 1; return;
-      case 0x58: case 0x78: return;
-      case 0xB8: v = 0; return; case 0xD8: d = 0; return; case 0xF8: d = 1; return;
-      case 0xEA: return;
-      case 0xAA: x = nz(a); return; case 0x8A: a = nz(x); return;
-      case 0xA8: y = nz(a); return; case 0x98: a = nz(y); return;
-      case 0xBA: x = nz(sp); return; case 0x9A: sp = x; return;
-      case 0xE8: x = nz((x + 1) & 0xFF); return; case 0xCA: x = nz((x - 1) & 0xFF); return;
-      case 0xC8: y = nz((y + 1) & 0xFF); return; case 0x88: y = nz((y - 1) & 0xFF); return;
-      case 0x10: return branch(!n); case 0x30: return branch(n);
-      case 0x50: return branch(!v); case 0x70: return branch(v);
-      case 0x90: return branch(!c); case 0xB0: return branch(c);
-      case 0xD0: return branch(!z); case 0xF0: return branch(z);
-      case 0x24: case 0x2C: { const b = rd(op === 0x24 ? fetch() : word()); z = (a & b) === 0 ? 1 : 0; n = (b >> 7) & 1; v = (b >> 6) & 1; return; }
-    }
-    const aaa = op >> 5, bbb = (op >> 2) & 7, cc = op & 3;
-    if (cc === 1) {
-      const mode = M1[bbb];
-      switch (aaa) {
-        case 0: a = nz(a | val(mode)); return;
-        case 1: a = nz(a & val(mode)); return;
-        case 2: a = nz(a ^ val(mode)); return;
-        case 3: adc(val(mode)); return;
-        case 4: wr(addr(mode), a); return;
-        case 5: a = nz(val(mode)); return;
-        case 6: cmp(a, val(mode)); return;
-        case 7: sbc(val(mode)); return;
-      }
-    }
-    if (cc === 2) {
-      let mode = M2[bbb];
-      if (aaa === 4 || aaa === 5) { if (bbb === 5) mode = 3; if (bbb === 7) mode = 6; }
-      switch (aaa) {
-        case 0: return rmw(mode, asl);
-        case 1: return rmw(mode, rol);
-        case 2: return rmw(mode, lsr);
-        case 3: return rmw(mode, ror);
-        case 4: wr(addr(mode), x); return;
-        case 5: x = nz(mode === -1 ? 0 : (bbb === 0 ? fetch() : val(mode))); return;
-        case 6: return rmw(mode, (b) => nz((b - 1) & 0xFF));
-        case 7: return rmw(mode, (b) => nz((b + 1) & 0xFF));
-      }
-    }
-    if (cc === 0) {
-      const mode = [0, 1, null, 4, null, 2, null, 5][bbb];
-      switch (aaa) {
-        case 4: wr(addr(mode), y); return;
-        case 5: y = nz(val(mode)); return;
-        case 6: cmp(y, val(mode)); return;
-        case 7: cmp(x, val(mode)); return;
-      }
-    }
-    throw new Error('opcode ' + op.toString(16) + ' at ' + ((pc - 1) & 0xFFFF).toString(16));
-  }
-  function call(entry, acc) {
-    a = acc & 0xFF; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE;
-    pc = entry;
-    for (let k = 0; k < 200000 && pc !== 0xFFFF; k++) step();
-  }
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {          // the chips at $D000-$DFFF
+    read: (ad) => (isSid(ad) ? bus : m[ad]),
+    write(ad, val) {
+      if (isSid(ad)) { const r = ad - 0xD400; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; }
+      else m[ad] = val;
+    },
+  } });
   return {
     sid, m,
     get writes() { return writes; },
-    init(t) { writes = []; call(0x567D, t); },
+    init(t) { writes = []; cpu.call(0x567D, { a: t }); },
     stop() { m[0x4FCC] = 0; },
-    play() { writes = []; if (m[0x4FCC]) call(0x5042, 0); },
+    play() { writes = []; if (m[0x4FCC]) cpu.call(0x5042, { a: 0 }); },
     playing() { return m[0x4FCC] !== 0; },
     voice(k) { return { note: m[0x503E + k] }; },
   };
@@ -523,7 +396,7 @@ function multiplex(o, keep) {
   }
   // the music
   const mus = document.getElementById('rd-music');
-  if (!window.C64Sid || !L) mus.textContent = 'The player needs the site\'s sid.js and the listing: open this page from the built site.';
+  if (!window.C64Sid || !window.C64Cpu || !L) mus.textContent = 'The player needs the site\'s sid.js and cpu6502.js and the listing: open this page from the built site.';
   else {
     const hex = Array.from(L.bytes(0x4FCC, 0x5F8E - 0x4FCC), (b) => b.toString(16).padStart(2, '0')).join('');
     C64Sid.mount(mus, { driver: createDriver, data: { base: 0x4FCC, hex },

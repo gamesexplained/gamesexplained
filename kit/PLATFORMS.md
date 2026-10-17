@@ -17,7 +17,7 @@ and it is the worked example for the next one.
 | `kit/<platform>/registers.py` | the I/O registers by name, `NAMES`, for the operands of the Source tab; without it an operand that sees the chips shows its address | `kit/c64/registers.py` |
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |
 | `kit/skills/<platform>/tool-<emulator>/workarounds.md` | what to do instead, one section per check that fails on some build | `tool-vice-mcp/workarounds.md` |
-| `site/lib/<platform>.js` | what the page needs that is specific to the machine | `c64.js`, and the memory map in `memmap.js` |
+| `site/lib/<platform>.js` | what the page needs that is specific to the machine; a kit script a page runs as it is, such as the machine's processor, is served beside it from `kit/<platform>/` (`KIT_LIB` in `kit/scripts/build.py`) rather than copied | `c64.js`, and the memory map in `memmap.js`; `kit/c64/cpu6502.js` as `lib/cpu6502.js` |
 | `site/status.json` | the machine's entry under `systems` (its library size, with the source and the date it was read), and its cell in every row of `hosts`: what was measured on each kind of computer, and when | the `c64` entries |
 
 ## Where the shared scripts branch on the platform

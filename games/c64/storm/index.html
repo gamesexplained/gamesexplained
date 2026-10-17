@@ -89,7 +89,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Music: one tune, on the title only</h2>
   <p class="lede">David Whittaker's tune plays while the title waits and stops the moment play starts. A game has no music at all, only effects.</p>
   <div class="plate"><div id="st-sid"></div>
-    <p class="cap">The title tune played by the game's own music driver: its bytes, <code>$9000</code>-<code>$99C1</code>, run once a frame on a small 6502 in the page, heard through the site's model of the SID. Checked against the same bytes in the kit's 6502 simulator: every register write of 7,000 frames matches. The bass goes down to about 31 Hz, which laptop and phone speakers barely play.</p></div>
+    <p class="cap">The title tune played by the game's own music driver: its bytes, <code>$9000</code>-<code>$99C1</code>, run once a frame on the kit's 6502 simulator in the page, heard through the site's model of the SID. Checked against the same bytes called on the simulator directly: every register write of 7,000 frames matches. The bass goes down to about 31 Hz, which laptop and phone speakers barely play.</p></div>
   <p>The driver is the file <code>storm-c</code>, the one HVSC lists as Whittaker's Storm: <code>music_init</code> at <code>$9000</code> starts it and <code>music_play</code> at <code>$911B</code> plays a frame of it. The title calls the first, and the interrupt that draws the panel calls the second once a frame while <code>title_mode</code> is set. When a game starts, <code>music_stop</code> at <code>$9227</code> silences the chip.</p>
   <p>Each voice reads an order list of patterns (<code>tune_orders</code>), and each pattern is a run of bytes: below <code>$80</code> a note, <code>$80</code>-<code>$93</code> a command such as a waveform, a drum, or the end of the pattern, <code>$C0</code>-<code>$CF</code> an arpeggio and <code>$E0</code>-<code>$FF</code> a note's length. A tick comes every five frames, and the whole tune is 640 ticks, so it loops every 64 seconds.</p>
   <table class="st-tbl">
@@ -116,7 +116,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <p class="st-out" id="st-room-desc"></p>
     <div class="st-wide"><table class="st-tbl" id="st-room-tbl"></table></div>
-    <p class="cap">Drawn by the game's own routines, run on a small 6502 in the page over the listing's bytes, after <code>reset_walls</code> and <code>reset_objects</code> have put every room back as a new game finds it. Checked against the kit's 6502 simulator running the same code: in all 100 rooms, drawn whole and with each list left out, every byte of memory matches. <a href="levels.html">Maps</a> shows every room.</p>
+    <p class="cap">Drawn by the game's own routines, run on the kit's 6502 simulator in the page over the listing's bytes, after <code>reset_walls</code> and <code>reset_objects</code> have put every room back as a new game finds it. Checked against the same code called on the simulator directly: in all 100 rooms, drawn whole and with each list left out, every byte of memory matches. <a href="levels.html">Maps</a> shows every room.</p>
   </div>
   <p>The play area is 18 cells across and 18 down, a cell being two characters wide and one high (<code>cell_address</code>). Each room has a pointer into five tables, and each list ends early at a zero byte. Floor pieces (<code>floor_ptrs</code>) are runs of 4-by-2-character decorations; walls (<code>wall_ptrs</code>) are runs of single cells in one of three styles; generators (<code>gen_ptrs</code>) and objects (<code>obj_ptrs</code>) are one record each. The outer wall comes from no list: <code>draw_border</code> draws it with the last wall record's style and cuts a doorway where <code>exit_bits</code> has a bit set. In rooms 37 and 81, whose walls mix two styles, the outer wall <a href="discoveries.html#border">takes the second</a>.</p>
   <p>The rooms sit on a map of 16 by 12 places (<code>room_map</code>), each holding a room number in decimal, tens and units, or <code>$FF</code> for none. Leaving by a side moves one place along it, and by the top or the bottom sixteen. The game starts in room 0, at row 4, column 6.</p>
@@ -225,7 +225,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">Sound: fifteen effects on two voices</h2>
   <p class="lede">Every sound in play is one of fifteen records of twenty bytes, swept on voices 1 and 3 once a frame.</p>
   <div class="plate"><div id="st-sfx"></div>
-    <p class="cap">Each effect played by the game's own code, <code>sfx_start</code> and then <code>sfx_update</code> once a frame (<code>$5632</code>-<code>$5937</code>), on a small 6502 in the page. Checked against the kit's 6502 simulator: every register write of all 15 effects, 805 frames, matches. Each starts from a silenced chip, as the first effect of a game does.</p></div>
+    <p class="cap">Each effect played by the game's own code, <code>sfx_start</code> and then <code>sfx_update</code> once a frame (<code>$5632</code>-<code>$5937</code>), on the kit's 6502 simulator in the page. Checked against the same code called on the simulator directly: every register write of all 15 effects, 805 frames, matches. Each starts from a silenced chip, as the first effect of a game does.</p></div>
   <p>A record (<code>sfx_records</code>) holds a duration, a step length, start frequencies, envelopes, waveforms, and pulse widths for both voices, a sweep for each, a repeat count, and a flag that adds a random byte to voice 1's pitch at each repeat. <code>sfx_update</code> sweeps both voices every frame, restarts them at each repeat, and stops the effect when its duration runs out. Effect 5 is never asked for.</p>
 </section>
 
@@ -233,120 +233,39 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
 /* storm-machine */
-// The game's own code at work in the page: a 6502 core (stormCore), the room drawing and the
-// monsters run on it (stormRooms), and a painter for the play area (stormPaint). Checked against
-// the kit's 6502 simulator by test_machine.js beside this page.
-// A small 6502: runs Storm's own routines on the bytes of the listing. m is 64 KB of
-// RAM; io answers $D000-$DFFF (the chips), except colour RAM ($D800-$DBFF), which is kept in m.
-// call(entry, regs, hooks) runs from entry to the routine's return, starting with A, X and Y as regs
-// gives them (0 otherwise) and every flag clear. A hook at an address runs
-// before the instruction there: returning 'rts' returns from the subroutine it stands in for,
-// returning true ends the call there.
+// The game's own code at work in the page: a 6502 (stormCore), the room drawing and the monsters
+// run on it (stormRooms), and a painter for the play area (stormPaint). Checked against the kit's
+// 6502 simulator by test_machine.js beside this page.
+// The 6502 is the kit's (C64Cpu, from ../../lib/cpu6502.js), running Storm's own routines on the
+// bytes of the listing. m is 64 KB of RAM; io answers $D000-$DFFF (the chips), except colour RAM
+// ($D800-$DBFF), which is kept in m. call(entry, regs, hooks) runs from entry to the routine's
+// return, starting with A, X and Y as regs gives them (0 otherwise) and every flag clear. A hook at
+// an address runs before the instruction there: returning 'rts' returns from the subroutine it
+// stands in for, returning true ends the call there.
 function stormCore(m, io) {
   'use strict';
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0;
-  const rd = (ad) => (ad >= 0xD000 && ad < 0xE000 && (ad < 0xD800 || ad >= 0xDC00)) ? io.read(ad) : m[ad];
-  const wr = (ad, val) => { if (ad >= 0xD000 && ad < 0xE000 && (ad < 0xD800 || ad >= 0xDC00)) io.write(ad, val); else m[ad] = val; };
-  const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-  const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-  const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-  const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-  const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-  const adc = (b) => {
-    if (d) {
-      let lo = (a & 15) + (b & 15) + (c ? 1 : 0), hi = (a >> 4) + (b >> 4);
-      if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; n = (hi << 4) & 0x80; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80);
-      if (hi > 9) hi += 6;
-      c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 255; return;
-    }
-    const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-  };
-  const sbc = (b) => {
-    if (d) {
-      const s = a - b - (c ? 0 : 1); let lo = (a & 15) - (b & 15) - (c ? 0 : 1), hi = (a >> 4) - (b >> 4);
-      if (lo & 16) { lo -= 6; hi--; }
-      if (hi & 16) hi -= 6;
-      v = ((a ^ b) & (a ^ s) & 0x80); c = s >= 0 ? 1 : 0; nz(s & 255); a = ((hi << 4) | (lo & 15)) & 255; return;
-    }
-    adc(b ^ 255);
-  };
-  const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-  function step() {
-    const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-    const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-    const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-    const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-    const g = op & 3, mode = (op >> 2) & 7;
-    let ea = -1, len = 2;
-    if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-    else { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-    const M = () => (ea === -2 ? b1 : rd(ea));
-    switch (op) {
-      case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-      case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-      case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-      case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-      case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-      case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-      case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-      case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-      case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-      case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea), r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-      case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-      case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea), r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-      case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-      case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-      case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-      case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-      case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-      case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-      case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-      case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-      case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-      case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-      case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-      case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-      case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-      case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-      case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-      case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-      case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-      case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-      case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-      case 0x58: case 0x78: case 0xEA: len = 1; break;
-      case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-      case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-      case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-      case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-        const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-        pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return;
-      }
-      case 0x4C: pc = w; return;
-      case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-      case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-      case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-      default: throw new Error('opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-    }
-    pc = (pc + len) & 0xFFFF;
-  }
+  const colour = (ad) => ad >= 0xD800 && ad < 0xDC00;
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+    read: (ad) => (colour(ad) ? m[ad] : io.read(ad)),
+    write: (ad, val) => { if (colour(ad)) m[ad] = val; else io.write(ad, val); },
+  } });
   function call(entry, regs, hooks) {
     regs = regs || {};
-    a = regs.a || 0; x = regs.x || 0; y = regs.y || 0; n = v = d = z = c = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-    for (let i = 0; i < 2e6; i++) {
-      if (pc === 0xFFFF) return;
-      if (hooks && hooks[pc]) {
-        const h = hooks[pc]({ a, x, y });
-        if (h === true) return;
-        if (h === 'rts') { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; continue; }
-      }
-      step();
+    let on = null;
+    if (hooks) {
+      on = {};
+      for (const ad of Object.keys(hooks)) on[ad] = (c) => {
+        const h = hooks[ad]({ a: c.a, x: c.x, y: c.y });
+        if (h === 'rts') c.rts();
+        return h === true;
+      };
     }
-    throw new Error('runaway at $' + pc.toString(16));
+    cpu.call(entry, { a: regs.a || 0, x: regs.x || 0, y: regs.y || 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { hooks: on, maxSteps: 2e6 });
   }
-  return { call, get a() { return a; }, get x() { return x; }, get y() { return y; }, get pc() { return pc; } };
+  return { call, get a() { return cpu.a; }, get x() { return cpu.x; }, get y() { return cpu.y; }, get pc() { return cpu.pc; } };
 }
 
 // stormRooms(ram, asLoaded) keeps its own copy of the listing's memory. reset_walls and reset_objects
@@ -517,104 +436,20 @@ function stormPaint(d, rows, cols) {
 <script>
 /* storm-music */
 // createDriver for C64Sid: runs Storm's own music driver, David Whittaker's (its bytes $9000-$99C1
-// from the listing), on a small 6502 core: music_init ($9000) for init, music_play ($911B) once a
-// frame as panel_band calls it on the title, music_stop ($9227) for stop.
-function createDriver(D) {
+// from the listing), on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which sid.js passes to
+// createDriver): music_init ($9000) for init, music_play ($911B) once a frame as panel_band calls
+// it on the title, music_stop ($9227) for stop. Each call starts with A, X and Y 0 and every flag
+// clear.
+function createDriver(D, C64Cpu) {
   const m = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) m.set(bytes, ad);
   const sid = new Uint8Array(25);
   let writes = [], bus = 0, env3 = 0, osc3 = 0;
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0;
-  const rd = (ad) => { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; };
-  const wr = (ad, val) => { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; };
-  const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-  const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-  const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-  const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-  const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-  const adc = (b) => {
-    if (d) {
-      let lo = (a & 15) + (b & 15) + (c ? 1 : 0), hi = (a >> 4) + (b >> 4);
-      if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; n = (hi << 4) & 0x80; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80);
-      if (hi > 9) hi += 6;
-      c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 255; return;
-    }
-    const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-  };
-  const sbc = (b) => {
-    if (d) {
-      const s = a - b - (c ? 0 : 1); let lo = (a & 15) - (b & 15) - (c ? 0 : 1), hi = (a >> 4) - (b >> 4);
-      if (lo & 16) { lo -= 6; hi--; }
-      if (hi & 16) hi -= 6;
-      v = ((a ^ b) & (a ^ s) & 0x80); c = s >= 0 ? 1 : 0; nz(s & 255); a = ((hi << 4) | (lo & 15)) & 255; return;
-    }
-    adc(b ^ 255);
-  };
-  const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-  function step() {
-    const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-    const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-    const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-    const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-    const g = op & 3, mode = (op >> 2) & 7;
-    let ea = -1, len = 2;
-    if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-    else { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-    const M = () => (ea === -2 ? b1 : rd(ea));
-    switch (op) {
-      case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-      case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-      case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-      case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-      case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-      case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-      case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-      case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-      case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-      case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea), r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-      case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-      case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea), r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-      case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-      case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-      case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-      case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-      case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-      case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-      case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-      case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-      case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-      case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-      case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-      case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-      case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-      case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-      case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-      case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-      case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-      case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-      case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-      case 0x58: case 0x78: case 0xEA: len = 1; break;
-      case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-      case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-      case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-      case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-        const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-        pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return;
-      }
-      case 0x4C: pc = w; return;
-      case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-      case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-      case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-      default: throw new Error('opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-    }
-    pc = (pc + len) & 0xFFFF;
-  }
-  function call(entry) {
-    a = 0; x = 0; y = 0; n = v = d = z = c = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-    for (let i = 0; i < 200000; i++) { if (pc === 0xFFFF) return; step(); }
-    throw new Error('runaway at $' + pc.toString(16));
-  }
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {             // the chips at $D000-$DFFF
+    read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+  } });
+  const call = (entry) => cpu.call(entry, { a: 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 200000 });
   return {
     sid,
     get writes() { return writes; },
@@ -634,105 +469,20 @@ function createDriver(D) {
 <script>
 /* storm-sfx */
 // createSfxDriver for C64Sid: runs Storm's own sound effects (their records and code, $5632-$5937
-// from the listing) on the same 6502 core: sfx_reset ($5632) and then sfx_start ($5645) with the
-// effect's number for init, as the first effect of a game is started, and sfx_update ($5830) once
-// a frame for play, as play_band calls it.
-function createSfxDriver(D) {
+// from the listing) on the kit's 6502 as well: sfx_reset ($5632) and then sfx_start ($5645) with
+// the effect's number in A for init, as the first effect of a game is started, and sfx_update
+// ($5830) once a frame for play, as play_band calls it. Each call starts with A, X and Y 0 (A the
+// effect's number for sfx_start) and every flag clear.
+function createSfxDriver(D, C64Cpu) {
   const m = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) m.set(bytes, ad);
   const sid = new Uint8Array(25);
   let writes = [], bus = 0, env3 = 0, osc3 = 0;
-  let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0;
-  const rd = (ad) => { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; };
-  const wr = (ad, val) => { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; };
-  const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-  const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-  const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-  const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-  const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-  const adc = (b) => {
-    if (d) {
-      let lo = (a & 15) + (b & 15) + (c ? 1 : 0), hi = (a >> 4) + (b >> 4);
-      if (lo > 9) { lo += 6; hi++; }
-      z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; n = (hi << 4) & 0x80; v = (~(a ^ b) & (a ^ (hi << 4)) & 0x80);
-      if (hi > 9) hi += 6;
-      c = hi > 15 ? 1 : 0; a = ((hi << 4) | (lo & 15)) & 255; return;
-    }
-    const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-  };
-  const sbc = (b) => {
-    if (d) {
-      const s = a - b - (c ? 0 : 1); let lo = (a & 15) - (b & 15) - (c ? 0 : 1), hi = (a >> 4) - (b >> 4);
-      if (lo & 16) { lo -= 6; hi--; }
-      if (hi & 16) hi -= 6;
-      v = ((a ^ b) & (a ^ s) & 0x80); c = s >= 0 ? 1 : 0; nz(s & 255); a = ((hi << 4) | (lo & 15)) & 255; return;
-    }
-    adc(b ^ 255);
-  };
-  const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-  function step() {
-    const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-    const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-    const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-    const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-    const g = op & 3, mode = (op >> 2) & 7;
-    let ea = -1, len = 2;
-    if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-    else { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-    const M = () => (ea === -2 ? b1 : rd(ea));
-    switch (op) {
-      case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-      case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-      case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-      case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-      case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-      case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-      case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-      case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-      case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-      case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea), r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-      case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-      case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea), r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-      case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-      case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-      case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-      case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-      case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-      case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-      case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-      case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-      case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-      case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-      case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-      case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-      case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-      case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-      case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-      case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-      case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-      case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-      case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-      case 0x58: case 0x78: case 0xEA: len = 1; break;
-      case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-      case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-      case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-      case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-        const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-        pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return;
-      }
-      case 0x4C: pc = w; return;
-      case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-      case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-      case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-      default: throw new Error('opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-    }
-    pc = (pc + len) & 0xFFFF;
-  }
-  function call(entry, t) {
-    a = t || 0; x = 0; y = 0; n = v = d = z = c = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-    for (let i = 0; i < 200000; i++) { if (pc === 0xFFFF) return; step(); }
-    throw new Error('runaway at $' + pc.toString(16));
-  }
+  const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {             // the chips at $D000-$DFFF
+    read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+  } });
+  const call = (entry, t) => cpu.call(entry, { a: t || 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 200000 });
   return {
     sid,
     get writes() { return writes; },
@@ -922,7 +672,7 @@ function frameWidget() {
   };
 }
 
-if (typeof C64 === 'undefined') {
+if (typeof C64 === 'undefined' || typeof C64Cpu === 'undefined') {
   for (const id of ['st-room', 'st-mon', 'st-en', 'st-gal', 'st-frame']) note(id === 'st-frame' ? $(id).parentNode : $(id), NEEDS);
 } else {
   frameWidget();

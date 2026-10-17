@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold the page's sound effects against the game's own code. index.html's cr-music block
-// (createDriver) also runs the engine's sound effect routines on its 6502 core, for each sound of
+// (createDriver) also runs the engine's sound effect routines on the kit's 6502, for each sound of
 // SFX: the pokes and calls that start it (sound_silence, sound_set_music_mode, then the requests
 // the game makes), the routines the game's frame runs for sound once a frame (sfx_play_pending
 // and sfx_update, with invulnerable_frame and frame_divider for the sound of invulnerability), and
@@ -10,7 +10,7 @@
 //   node games/c64/creatures/test_sfx.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'cr-music', 'createDriver');
 const mm = g.read(page).match(/const SFX = (\{.*?\});/);
@@ -37,7 +37,7 @@ SFX.tunes.forEach((T, t) => {
   const busy = (f) => !(S.end && f >= S.end) && P.on.concat(S.on || []).some((a) => m[a]);
   start(S.pokes, S.calls);
   let first = writes;
-  const drv = createDriver(SFX);
+  const drv = createDriver(SFX, kit);
   drv.init(t);
   let f = 0;
   for (; f < LIMIT && busy(f); f++) {

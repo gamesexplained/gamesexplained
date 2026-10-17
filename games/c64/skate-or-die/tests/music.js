@@ -7,7 +7,7 @@
 //   (the joust's after Poseur Pete is chosen)
 const kit = __dirname + '/../../../../kit/c64/';
 const { Machine } = require(kit + 'machine.js');
-const { readSnapshot } = require(kit + 'cpu6502.js');
+const cpu6502 = require(kit + 'cpu6502.js'), { readSnapshot } = cpu6502;
 const SODMUSIC = require(__dirname + '/../reference/sod-music.js');
 const [ev, snap, nfA] = process.argv.slice(2).filter(a => a !== '--listing'), nf = +(nfA || 9000);
 if (!SODMUSIC.at[ev] || !snap) { console.log('usage: node tests/music.js <event> <snapshot.vsf> [frames]; events: ' + Object.keys(SODMUSIC.at).join(', ')); process.exit(2); }
@@ -31,7 +31,7 @@ if (L) {
   for (const r of require(__dirname + '/../parts/' + ev + '/listing.json').records) (r.b || []).forEach((b, i) => { bytes[r.a + i] = b; });
   const [a, ...v] = SEEDS[ev]; bytes.set(v, a);
 }
-const d = SODMUSIC.createDriver({ base: 0, bytes, ids: [atQueue ? s.regs.a : 1], resume: L ? false : atQueue ? 'queue' : true, at: SODMUSIC.at[ev] });
+const d = SODMUSIC.createDriver({ base: 0, bytes, ids: [atQueue ? s.regs.a : 1], resume: L ? false : atQueue ? 'queue' : true, at: SODMUSIC.at[ev] }, cpu6502);
 d.init(0);
 const game = [], page = [];
 for (let f = 0; f < nf; f++) {

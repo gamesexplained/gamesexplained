@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 // Hold the How it works page's monster simulation against the game's own code. mechanics.html's
-// gx-chase block runs level_build, generators_run ($B16A) and monsters_run ($BB2E) on a 6502 core
-// of its own; this runs the same routines on the kit's 6502 simulator, over the same memory (every
-// byte of listing.json, which the page fetches whole, the rest 0), with the same player
-// and the same readings of the CIA timers, for 400 passes of each of the page's levels, and
-// compares the monster table ($0400-$07FF), the colour and character maps ($2000-$3FFF), the
-// players' health ($B92F-$B932) and monsters_run's own state after every pass. Everything it
-// needs is committed.
+// gx-chase block runs level_build, generators_run ($B16A) and monsters_run ($BB2E) on the kit's
+// 6502 simulator as the page loads it (C64Cpu); this runs the same routines on the simulator
+// directly, over the same memory (every byte of listing.json, which the page fetches whole, the
+// rest 0), with the same player and the same readings of the CIA timers, for 400 passes of each
+// of the page's levels, and compares the monster table ($0400-$07FF), the colour and character
+// maps ($2000-$3FFF), the players' health ($B92F-$B932) and monsters_run's own state after every
+// pass. Everything it needs is committed.
 //   node games/c64/gauntlet/test_chase.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'mechanics.html';
+g.lib('cpu6502');
 const { makeChase } = g.run(page, 'gx-chase', 'makeChase');
 const html = g.read(page);
 const lm = html.match(/const CHASE_LEVELS = (\[.*?\]);/);

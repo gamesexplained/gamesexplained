@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // Hold the page's music driver against the game's own code. index.html's cr-music block
-// (createDriver) runs Creatures' music player on a 6502 core of its own; this runs the same
-// player on the kit's 6502 simulator over the same bytes, as the game starts a tune (the hook
-// operands music_set_hooks writes, then music_play) and plays it (music_frame once a frame),
-// and compares every SID write of every frame, in order, for every tune: to its end, or for
-// 20,000 frames (six and a half minutes) when it repeats. It also checks that every byte the
+// (createDriver) runs Creatures' music player on the kit's 6502, handed in as sid.js hands it;
+// this runs the same player on the simulator itself over the same bytes, as the game starts a
+// tune (the hook operands music_set_hooks writes, then music_play) and plays it (music_frame once
+// a frame), and compares every SID write of every frame, in order, for every tune: to its end, or
+// for 20,000 frames (six and a half minutes) when it repeats. It also checks that every byte the
 // page's MUSIC carries is the committed listing's, part by part. Everything it needs is committed.
 //   node games/c64/creatures/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'cr-music', 'createDriver');
 const mm = g.read(page).match(/const MUSIC = (\{.*?\});/);
@@ -45,7 +45,7 @@ MUSIC.tunes.forEach((T, t) => {
   const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io, strict: true });
   cpu.call(P.play, { y: T.at & 255, x: T.at >> 8 });
   let first = writes;
-  const drv = createDriver(MUSIC);
+  const drv = createDriver(MUSIC, kit);
   drv.init(t);
   let f = 0, notes = 0;
   for (; f < LIMIT && m[P.on]; f++) {

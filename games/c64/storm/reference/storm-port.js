@@ -10,8 +10,8 @@
 // named as the listing names it. What it does not keep are the processor's registers: where the
 // game saves one in memory (save_x $8129, save_y $8127, sfx_save_x $58FE) the port writes it only
 // where it is data. David Whittaker's title music is the one part not ported: its own code
-// ($9000-$99C1, from the listing) runs on the small 6502 at the end of this file, as the How it
-// works page's player runs it.
+// ($9000-$99C1, from the listing) runs on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js), as
+// the How it works page's player runs it.
 //
 // StormPort.create(M, io) gives P. P.program() is the whole program from the loader's hand-over
 // ($75AC) as a generator, which yields where the game's code has got to: { cp: a } at the calls in
@@ -1341,7 +1341,7 @@ globalThis.StormPort = (function () {
       vw(0x20, 0);
     };
 
-    // ---- the title music: the driver's own code on a small 6502
+    // ---- the title music: the driver's own code on the kit's 6502
     const core = musicCore(M, (r, v) => sw(r, v));
     P.music_init = function () { core.call(0x9000); };
     P.music_play = function () { core.call(0x911B); };
@@ -1349,91 +1349,15 @@ globalThis.StormPort = (function () {
     return P;
   }
 
-  // A 6502 for the music driver ($9000-$99C1): its documented instructions on m, a write to
-  // $D400-$D7FF going to the SID (sid(register, value)); the driver reads no chip. call(entry) runs
-  // the routine to its return, with A, X and Y 0 and the flags clear.
+  // The music driver ($9000-$99C1) on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js), over m:
+  // a write to $D400-$D7FF goes to the SID (sid(register, value)); the driver reads no chip.
+  // call(entry) runs the routine to its return, with A, X and Y 0 and the flags clear.
   function musicCore(m, sid) {
-    let a = 0, x = 0, y = 0, sp = 0xFF, pc = 0, n = 0, v = 0, z = 0, c = 0, d = 0;
-    const rd = (ad) => m[ad];
-    const wr = (ad, val) => { if (ad >= 0xD400 && ad < 0xD800) sid(ad & 0x1F, val); else m[ad] = val; };
-    const nz = (r) => { n = r & 0x80; z = r === 0 ? 1 : 0; return r; };
-    const push = (b) => { m[0x100 + sp] = b; sp = (sp - 1) & 255; };
-    const pull = () => { sp = (sp + 1) & 255; return m[0x100 + sp]; };
-    const flags = () => (n ? 0x80 : 0) | (v ? 0x40 : 0) | 0x30 | (d ? 8 : 0) | 4 | (z ? 2 : 0) | (c ? 1 : 0);
-    const setf = (p) => { n = p & 0x80; v = p & 0x40; d = p & 8; z = p & 2; c = p & 1; };
-    const adc = (b) => {
-      if (d) { const r = adcD(a, b, c ? 1 : 0); z = ((a + b + (c ? 1 : 0)) & 255) === 0 ? 1 : 0; c = r >> 8; a = r & 255; n = a & 0x80; return; }
-      const s = a + b + (c ? 1 : 0); v = (~(a ^ b) & (a ^ s) & 0x80); c = s > 255 ? 1 : 0; a = nz(s & 255);
-    };
-    const sbc = (b) => {
-      if (d) { const r = sbcD(a, b, c ? 1 : 0); nz((a - b - (c ? 0 : 1)) & 255); c = r >> 8; a = r & 255; return; }
-      adc(b ^ 255);
-    };
-    const cmp = (r, b) => { const s = r - b; c = s >= 0 ? 1 : 0; nz(s & 255); };
-    function step() {
-      const op = m[pc], b1 = m[(pc + 1) & 0xFFFF], b2 = m[(pc + 2) & 0xFFFF], w = b1 | b2 << 8;
-      const zpx = (b1 + x) & 255, zpy = (b1 + y) & 255;
-      const izx = m[zpx] | m[(zpx + 1) & 255] << 8, izy = ((m[b1] | m[(b1 + 1) & 255] << 8) + y) & 0xFFFF;
-      const abx = (w + x) & 0xFFFF, aby = (w + y) & 0xFFFF;
-      const g = op & 3, mode = (op >> 2) & 7;
-      let ea, len;
-      if (g === 1) { ea = [izx, b1, -2, w, izy, zpx, aby, abx][mode]; len = (mode === 3 || mode >= 6) ? 3 : 2; }
-      else { ea = [-2, b1, -2, w, -1, (op === 0x96 || op === 0xB6) ? zpy : zpx, -1, (op === 0xBE) ? aby : abx][mode]; len = (mode === 3 || mode === 7) ? 3 : 2; }
-      const M = () => (ea === -2 ? b1 : rd(ea));
-      switch (op) {
-        case 0x01: case 0x05: case 0x09: case 0x0D: case 0x11: case 0x15: case 0x19: case 0x1D: a = nz(a | M()); break;
-        case 0x21: case 0x25: case 0x29: case 0x2D: case 0x31: case 0x35: case 0x39: case 0x3D: a = nz(a & M()); break;
-        case 0x41: case 0x45: case 0x49: case 0x4D: case 0x51: case 0x55: case 0x59: case 0x5D: a = nz(a ^ M()); break;
-        case 0x61: case 0x65: case 0x69: case 0x6D: case 0x71: case 0x75: case 0x79: case 0x7D: adc(M()); break;
-        case 0x81: case 0x85: case 0x8D: case 0x91: case 0x95: case 0x99: case 0x9D: wr(ea, a); break;
-        case 0xA1: case 0xA5: case 0xA9: case 0xAD: case 0xB1: case 0xB5: case 0xB9: case 0xBD: a = nz(M()); break;
-        case 0xC1: case 0xC5: case 0xC9: case 0xCD: case 0xD1: case 0xD5: case 0xD9: case 0xDD: cmp(a, M()); break;
-        case 0xE1: case 0xE5: case 0xE9: case 0xED: case 0xF1: case 0xF5: case 0xF9: case 0xFD: sbc(M()); break;
-        case 0x06: case 0x0E: case 0x16: case 0x1E: { const t = rd(ea); c = t >> 7; wr(ea, nz((t << 1) & 255)); break; }
-        case 0x26: case 0x2E: case 0x36: case 0x3E: { const t = rd(ea), r = ((t << 1) | (c ? 1 : 0)) & 255; c = t >> 7; wr(ea, nz(r)); break; }
-        case 0x46: case 0x4E: case 0x56: case 0x5E: { const t = rd(ea); c = t & 1; wr(ea, nz(t >> 1)); break; }
-        case 0x66: case 0x6E: case 0x76: case 0x7E: { const t = rd(ea), r = (t >> 1) | (c ? 0x80 : 0); c = t & 1; wr(ea, nz(r)); break; }
-        case 0xC6: case 0xCE: case 0xD6: case 0xDE: wr(ea, nz((rd(ea) - 1) & 255)); break;
-        case 0xE6: case 0xEE: case 0xF6: case 0xFE: wr(ea, nz((rd(ea) + 1) & 255)); break;
-        case 0x0A: c = a >> 7; a = nz((a << 1) & 255); len = 1; break;
-        case 0x2A: { const r = ((a << 1) | (c ? 1 : 0)) & 255; c = a >> 7; a = nz(r); len = 1; break; }
-        case 0x4A: c = a & 1; a = nz(a >> 1); len = 1; break;
-        case 0x6A: { const r = (a >> 1) | (c ? 0x80 : 0); c = a & 1; a = nz(r); len = 1; break; }
-        case 0xA2: case 0xA6: case 0xAE: case 0xB6: case 0xBE: x = nz(M()); break;
-        case 0xA0: case 0xA4: case 0xAC: case 0xB4: case 0xBC: y = nz(M()); break;
-        case 0x86: case 0x8E: case 0x96: wr(ea, x); break;
-        case 0x84: case 0x8C: case 0x94: wr(ea, y); break;
-        case 0xE0: case 0xE4: case 0xEC: cmp(x, M()); break;
-        case 0xC0: case 0xC4: case 0xCC: cmp(y, M()); break;
-        case 0x24: case 0x2C: { const t = rd(ea); n = t & 0x80; v = t & 0x40; z = (a & t) === 0 ? 1 : 0; break; }
-        case 0xAA: x = nz(a); len = 1; break; case 0xA8: y = nz(a); len = 1; break;
-        case 0x8A: a = nz(x); len = 1; break; case 0x98: a = nz(y); len = 1; break;
-        case 0xBA: x = nz(sp); len = 1; break; case 0x9A: sp = x; len = 1; break;
-        case 0xE8: x = nz((x + 1) & 255); len = 1; break; case 0xCA: x = nz((x - 1) & 255); len = 1; break;
-        case 0xC8: y = nz((y + 1) & 255); len = 1; break; case 0x88: y = nz((y - 1) & 255); len = 1; break;
-        case 0x18: c = 0; len = 1; break; case 0x38: c = 1; len = 1; break;
-        case 0x58: case 0x78: case 0xEA: len = 1; break;
-        case 0xB8: v = 0; len = 1; break; case 0xD8: d = 0; len = 1; break; case 0xF8: d = 1; len = 1; break;
-        case 0x48: push(a); len = 1; break; case 0x68: a = nz(pull()); len = 1; break;
-        case 0x08: push(flags()); len = 1; break; case 0x28: setf(pull()); len = 1; break;
-        case 0x10: case 0x30: case 0x50: case 0x70: case 0x90: case 0xB0: case 0xD0: case 0xF0: {
-          const f = [n, v, c, z][op >> 6], take = (op & 0x20) ? !!f : !f;
-          pc = (pc + 2 + (take ? (b1 < 128 ? b1 : b1 - 256) : 0)) & 0xFFFF; return;
-        }
-        case 0x4C: pc = w; return;
-        case 0x6C: pc = m[w] | m[(w & 0xFF00) | ((w + 1) & 255)] << 8; return;
-        case 0x20: { const r = (pc + 2) & 0xFFFF; push(r >> 8); push(r & 255); pc = w; return; }
-        case 0x60: { const lo = pull(); pc = ((pull() << 8 | lo) + 1) & 0xFFFF; return; }
-        default: throw new Error('music: opcode $' + op.toString(16) + ' at $' + pc.toString(16));
-      }
-      pc = (pc + len) & 0xFFFF;
-    }
-    function call(entry) {
-      a = 0; x = 0; y = 0; n = v = d = z = c = 0; sp = 0xFD; m[0x1FF] = 0xFF; m[0x1FE] = 0xFE; pc = entry;
-      for (let i = 0; i < 1e6; i++) { if (pc === 0xFFFF) return; step(); }
-      throw new Error('music: runaway at $' + pc.toString(16));
-    }
-    return { call };
+    const cpu = new C64Cpu.CPU(m, { port: 0x35, io: {
+      read: (ad) => m[ad],
+      write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) sid(ad & 0x1F, val); else m[ad] = val; },
+    } });
+    return { call(entry) { cpu.call(entry, { a: 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }); } };
   }
 
   return { create, FONT, adcD, sbcD };

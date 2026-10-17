@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // Hold the page's music driver against the game's own code. music.html's gx-music block
-// (createDriver) runs Gauntlet's two music players on a 6502 core of its own; this runs the same
-// players on the kit's 6502 simulator over the committed listing, as level_intro ($9BEF) and
-// treasure_start ($B0D1) call them, and compares every SID write of every frame, in order, for
-// all three tunes to their ends. It also checks that the page's MUSIC bytes are the listing's.
+// (createDriver) runs Gauntlet's two music players on the kit's 6502 simulator, as sid.js hands
+// it over; this runs the same players on the simulator directly, over the committed listing, as
+// level_intro ($9BEF) and treasure_start ($B0D1) call them, and compares every SID write of every
+// frame, in order, for all three tunes to their ends. It also checks that the page's MUSIC bytes are the listing's.
 // Everything it needs is committed.
 //   node games/c64/gauntlet/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'music.html';
 const { createDriver } = g.run(page, 'gx-music', 'createDriver');
 const html = g.read(page);
@@ -35,7 +35,7 @@ TUNES.forEach(([name, init, hi, play, flag], t) => {
   const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io, strict: true });
   cpu.call(init, { a: 0x00, x: hi });
   m[flag] = 1;
-  const drv = createDriver(MUSIC);
+  const drv = createDriver(MUSIC, kit);
   drv.init(t);
   let f = 0, notes = 0;
   for (; f < 5000 && m[flag]; f++) {
