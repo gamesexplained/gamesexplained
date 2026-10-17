@@ -87,3 +87,8 @@ The first directory entry boots a publisher loader through the emulated 1541. It
 ## Graphical frame check
 
 A PAL frame captured from the natural corridor snapshot contains 133 register/vector/pointer writes, accounts for the ending register state, and changes seven RAM bytes and no colour cells during the frame. `$D018` changes from `$35` to `$39` at raster line 80, selecting the room font at `$E000` for the picture; the text uses the `$D000` font. The raw frame and its emulator image remain in ignored `work/corridor-frame.*`. This records the split; a browser rendering comparison was not performed for Bronze.
+
+
+## Natural gate analysis
+
+The gate part uses the naturally reached `work/gate-steady.vsf`, copied to `parts/scene-01/work/play.vsf`. Forced snapshots remain separately named `play-forced.vsf` and `entry-forced.vsf`; a natural pre-initialization capture is still required. Joystick trials restored the natural gate and original emulator state. Aligned up entered scene 2; approaches beside the doorway stopped at depth 24. See `parts/scene-01/facts.md`.

@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The contributor limited this continuation to the opening; the 21 graphical parts are untouched.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (771/43,949 bytes); 20 other graphical parts are untouched. The provisional image-ledger total is 49,032/92,210 bytes (53.2%) across two started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -9,6 +9,11 @@ For the opening’s verification:
 - Test every setup mutation, disk save/load, pause and restart end to end on expendable disk copies. Extend the checked nickel-disposition offer branches through the complete later theater conversation and movie transition. Establish clock rate and loss conditions. Synthetic boundary inputs do not prove player reachability.
 - Identify and audibly verify the resident/menu tunes, then provide their players. The event-format and cached-register tests do not substitute for tune playback.
 - Establish whether inventory quantity-byte value 9 is reachable and sample the resident graphical helpers in their actual later loads.
+
+For the gate:
+
+- Capture its natural pre-initialization hand-over, resolve loaded-data warnings and partition shared resident/overlay ownership. Forced entry captures cannot establish this.
+- Extend the verified approach and deferred corridor transition through the remaining movement, dialogue, graphics and scripts. Obtain an independent comment sample.
 
 For a full-game Silver contribution:
 

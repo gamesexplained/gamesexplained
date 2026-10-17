@@ -69,3 +69,8 @@ The tests caught an event-state field-name reversal, readonly constants describe
 ## Workflow-diagram continuation
 
 `70-minisite`’s “A widget that runs a mechanic is a claim too” kept the map tied to original direction and purchase decisions. Checking the diagram’s proposed paths corrected the draft’s implied direct trip from the popcorn counter into the theater. Existing guidance covers this; no kit change or maintainer ask is needed.
+
+
+## Gate continuation
+
+`60-verify` required positive controls for the negative breakpoint result; movement checkpoints fired while the hypothesised generic exit did not. A store watch identified the real deferred transition. `70-minisite` required the diagram to execute a checked mechanic, leading to exhaustive classifier/threshold comparisons and original delay/dispatch tests. Existing guidance covers these findings; no shared-kit change or maintainer ask is needed. The missing natural hand-over remains explicit.

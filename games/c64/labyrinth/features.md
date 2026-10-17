@@ -43,3 +43,8 @@ Popcorn purchase: traced and simulator checked at `$93E1`. The first dollar paym
 Opening dialogue: all 127 stored streams at `$7910-$833F` and `$968E-$A9E7` decoded and simulator checked, including setup, descriptions, transactions and hints. The original handler entries and pointer tables are described. Artificial state combinations in the tests do not establish ordinary reachability; the counter’s collect-first and complain-first paths are live checked. Later movie-transition timing remains open. Resident messages, sound-event formats, renderer, loader and IRQ services have opening-snapshot annotations; later loaded puzzles remain open.
 
 Nickel disposition: the first accepted return writes `$0575=$FF`; keeping the dropped nickel leaves one. Isolated original-code tests show that an accepted later popcorn offer loses the whole box for one and retains it for `$FF`. The complete later encounter timing remains open.
+
+
+## Checked gate approach
+
+Observed with ordinary joystick input: aligned up from the natural gate starts the scripted corridor entry; left and right approaches stop at depth 24. The classifier, depth threshold, sound/delay sequence and deferred scene request are traced and tested in `parts/scene-01/facts.md` and `test_gate.js`. Remaining graphical movement and puzzles are open.
