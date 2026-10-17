@@ -474,7 +474,7 @@ Omit the tab only if there is genuinely nothing playable to put on it.
 No tier requires the Play tab, so it never blocks Silver or Gold.
 
 Every Play tab that draws on a canvas offers the site's CRT screen:
-load `../../lib/crt.js`, put a "CRT screen" button with `data-crt` in
+load `../../lib/crt.js`, put a "📺 CRT screen" button with `data-crt` in
 the page's bar, and call `CRT.attach(canvas, { button })` once the
 canvas exists. It draws the picture again on the GPU each time the page
 draws, so the page adds nothing to its loop; the header of
