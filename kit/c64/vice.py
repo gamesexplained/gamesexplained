@@ -635,7 +635,9 @@ def paddle(rpc, x=None, y=None, at=()):
 
     vice-mcp has no paddle input (v3.13.2), and with nothing in the control ports both registers
     read $FF. So the helper stops the machine at each read and puts the result right: a stopping
-    load checkpoint on the registers that have a value, and frame advances that it ends.
+    load checkpoint on the registers that have a value, and frame advances that it ends. A tool
+    was asked for upstream as barryw/vice-mcp#34 (17 October 2026); once a build has it, this
+    helper can call it behind the same interface and the checkpoints below can go.
     Measured on the v3.13.2 release on Linux x86_64, 16 October 2026: a load checkpoint stops after
     the reading instruction has run, with the PC on the next one and the register loaded with $FF,
     N and Z set from it. So for LDA, LDX, LDY and LAX the helper sets the register that was loaded,

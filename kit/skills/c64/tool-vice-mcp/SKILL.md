@@ -119,6 +119,7 @@ passed, by date and system, are the table at the top of that file.
    with `$01` (`$34`: zeros and line 0). Read the chip's
    registers as `read_mem(rpc, 0xD000, 47, "io")`, as `frame.py` and
    `screen.py` do, and take the line from `$D012` and bit 7 of `$D011`.
+   Reported upstream as barryw/vice-mcp#33 (17 October 2026).
 8. `vice_run_until` an address or a cycle count; `vice_cycles_stopwatch`
    for timing.
 
@@ -161,8 +162,10 @@ in-game input hook below does the same job.
   before the call returns, seen by the next instruction, and stays until
   you release it. `joy()` in `vice.py`. Most C64 games read port 2; the
   early Commodore titles read port 1.
-- **The paddles.** The server has no tool for them, and with nothing in
-  the control ports `$D419` and `$D41A` read `$FF`. `paddle()` in
+- **The paddles.** The server has no tool for them (one was asked for
+  upstream as barryw/vice-mcp#34 on 17 October 2026; `tools_list` shows
+  whether a newer build has it), and with nothing in the control ports
+  `$D419` and `$D41A` read `$FF`. `paddle()` in
   `vice.py` stops the machine at each read and gives the game a value of
   your own instead: `with paddle(rpc, x=100) as pad: pad.frames(50)`,
   where `x` is what `$D419` reads and `y` what `$D41A` reads, each a
