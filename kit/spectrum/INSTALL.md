@@ -35,7 +35,7 @@ can have of it. The measurements, each dated:
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
 | ZEsarUX-13.0 release, `ZEsarUX_macos-silicon-13.0.dmg` | macOS arm64 | 3 October 2026 | 41 of 45, 21 s |
-| ZEsarUX-13.0 release, `ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz` | Linux x86_64 (Ubuntu 24.04, no display) | 10 October 2026 | 42 of 45, 19 s, three runs; `verify-footprint` clean |
+| ZEsarUX-13.0 release, `ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz` | Linux x86_64 (Ubuntu 24.04, no display) | 17 October 2026 | 47 of 50, 19 to 20 s, three runs; `verify-footprint` clean |
 
 The three failures on Linux are `count-while-running`, `load-keeps-frame-phase`
 and `warp`, and each has a section in `workarounds.md`. The first is ZRCP's
@@ -55,6 +55,7 @@ per boundary. None of the failures costs a phase.
 | 2 state management | save from a running or a stopped machine; load and stay stopped at the loaded state; deterministic at a stop and across a restart of the emulator; the checkpoint table and its counts survive a load; a load with the machine running resumes it and says so | a load lands at the start of a frame, not at the frame position it was saved at (`load-keeps-frame-phase`); warp is a launch option, with no ZRCP command to change it (`warp`) | start every experiment from a load, never comparing a live run with a loaded one; pass `--emulatorspeed N` to the launcher for warp |
 | 3 live measurement | non-stopping checkpoints that count and agree with the program's own counter; a checkpoint on a routine that never runs stays at zero; the T-state counter, validated against the ROM's frame interrupt (69888 T-states each); store and load watchpoints count | a second connection's read waits for the run loop to finish (1.12 s of a 1.28 s run): ZRCP runs one command at a time, by design | run in bounded chunks (`run <limit>`) and read the counts between them; the machine never stops while a chunk runs. Watch the **last** byte of a multi-byte variable: `MWA`/`MRA` on the first byte counts nothing |
 | 4 frame stepping | the exact stop, on the checkpoint's own instruction; N frames in one call, on the boundary (one frame is 69888 T-states); input that lands before the next instruction, is seen by the program, and is released on request; the joystick byte; a step that returns with its PC; thirty stops at varied moments with nothing lost; typing with `send-keys-ascii`, seen by the program while each key is held (it releases every held key and the joystick when it ends) | | |
+| 128K | the machine switched to a Spectrum 128 over ZRCP (`set-machine 128k`) and back; each RAM bank paged in at `$C000` through `$7FFD` holds its own marker, read through ZRCP with the bank paged in and from a 128K `.sna` that `kit/spectrum/snapshot.py` reads (131103 bytes with bank 3 paged in, 147487 with bank 5); the transaction log names the bank code at `$C000` ran in, as `kit/spectrum/bankmap.py` reads it; `get-io-ports` reads back the fourteen values `OUT` wrote to the AY's registers, and the register selected last | | |
 | transport | a call made as a checkpoint stops the machine answers; 800 unpaced calls, 7 000 to 8 400 a second across runs, leave ZRCP up and the machine running | | |
 
 ## Where the Z80 stands, by test program
@@ -266,7 +267,7 @@ a day's.
 python3 kit/scripts/tools.py --platform spectrum status
 python3 kit/scripts/tools.py --platform spectrum zesarux            # ZRCP on 127.0.0.1:10000
 python3 kit/scripts/tools.py --platform spectrum snapshots          # where snapshots land
-python3 kit/scripts/tools.py --platform spectrum check-emulator     # 45 named checks, about 20 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator     # 50 named checks, about 20 s
 python3 kit/scripts/tools.py --platform spectrum stop               # the emulator only
 python3 kit/scripts/tools.py --platform spectrum verify-footprint   # what it writes outside the repository
 ```
@@ -462,8 +463,8 @@ carries no path on this computer.
 ## Linux
 
 `check-emulator` and `verify-footprint` were run on Linux x86_64 (Ubuntu
-24.04, no display) on 10 October 2026, on the 13.0 release's `ubuntu24`
-build: 42 of 45 in each of three runs, 19 s a run. `verify-footprint` was
+24.04, no display) on 17 October 2026, on the 13.0 release's `ubuntu24`
+build: 47 of 50 in each of three runs, 19 to 20 s a run. `verify-footprint` was
 clean: `.zesaruxrc` lands in `tools/zesarux-home/` and nothing in `$HOME`.
 With the launcher's flags the emulator opened no network connection
 (measured 3 October 2026). The `ubuntu24` build needs SDL

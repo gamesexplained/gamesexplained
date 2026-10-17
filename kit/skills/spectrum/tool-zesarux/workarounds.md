@@ -8,9 +8,9 @@ host is slow: that is a NOTE, not a failed check, and "A slow host" at the
 end is for it.
 
 Measured on the **ZEsarUX-13.0** release, file
-`ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz`, Linux x86_64, on **10 October
-2026** with the launcher's flags: 42 passed, 3 failed, 19 seconds, the same
-in three runs. The three are below, in the order they matter; a build that
+`ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz`, Linux x86_64, on **17 October
+2026** with the launcher's flags: 47 passed, 3 failed, 19 to 20 seconds, the
+same in three runs. The three are below, in the order they matter; a build that
 passes a check means its section no longer applies, so delete the section,
 not the check. `count-while-running` fails by ZRCP's design, so its section
 stays for as long as the protocol works that way.

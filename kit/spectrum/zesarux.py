@@ -16,6 +16,8 @@ is the scripting client for the loops that are too slow as one call each
     rpc.bp_set(1, "PC=8004H")             # slot 1: stop there
     rpc.run(); print(rpc.registers()["PC"])
     print(rpc.frames(1))                  # one 48K frame: 69888 T-states
+    rpc.set_machine("128k")               # a Spectrum 128, reset and running; its frame is 70908
+    print(rpc.ay_registers())             # the AY's sixteen registers, and the one selected
 
 From the command line, one call per invocation (the agent's transport):
 
@@ -438,6 +440,32 @@ class Rpc:
     # -- misc ---------------------------------------------------------------
     def machine(self):
         return self.cmd("get-current-machine").strip()
+
+    def set_machine(self, name):
+        """Switch the emulated machine by ZEsarUX's short name (`48k`, `128k`), and return the
+        name `get-current-machine` then gives. The switch resets the machine and leaves it
+        running, out of cpu-step, and `frames` steps by the new machine's frame from then on."""
+        self.strict("set-machine", name)
+        self._frame = None
+        return self.machine()
+
+    def ay_registers(self):
+        """The AY-3-8912's sixteen registers and the one selected, from `get-io-ports`.
+
+        Returns ([R0..R15], selected). ZEsarUX prints the registers in hex, `0D:  34`, and the
+        selected one in decimal, `Selected register: 13`. A machine with no AY, the 48K, has no
+        `AY-3-8912 chip 0` block, and this raises.
+        """
+        text = self.cmd("get-io-ports")
+        _, found, block = text.partition("AY-3-8912 chip 0")
+        if not found:
+            raise ZesaruxError(f"get-io-ports names no AY-3-8912 on a {self.machine()}")
+        block = block.split("AY-3-8912 chip", 1)[0]          # chip 0's block only, should another follow
+        regs = {int(a, 16): int(v, 16) for a, v in re.findall(r"^([0-9A-F]{2}):\s+([0-9A-F]{2})\s*$", block, re.M)}
+        sel = re.search(r"Selected register:\s*(\d+)", block)
+        if sorted(regs) != list(range(16)) or not sel:
+            raise ZesaruxError(f"get-io-ports' AY block is not sixteen registers and a selection: {block.strip()[:120]!r}")
+        return [regs[r] for r in range(16)], int(sel.group(1))
 
     def version(self):
         return self.cmd("get-version").strip()

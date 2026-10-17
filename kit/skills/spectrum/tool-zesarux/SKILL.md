@@ -85,9 +85,10 @@ lists all 129.
 | Load a game | `smartload <file>` | from the extension: `.tzx`/`.tap` plays the tape, `.sna`/`.z80` loads a snapshot; the loader then runs by itself. A tape plays at real speed, so wait for the game (poll the PC or save the screen) |
 | Screen | `save-screen <file>` | `.scr` is 6912 bytes, `.bmp` and `.pbm` too |
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
-| Machine | `get-current-machine` | `ZX Spectrum 48k` |
-| Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
-| Ports, the AY's registers among them | `get-io-ports` | on a 128K machine a block headed `AY-3-8912 chip 0`, then the 16 registers a line each, `00: 34` |
+| Machine | `get-current-machine` | `ZX Spectrum 48k`, or `ZX Spectrum+ 128k` |
+| Switch machine | `set-machine 128k`, `set-machine 48k` | resets the machine and leaves it running, out of cpu-step. A program written before it is gone, though a variable of it can still read non-zero (`check-emulator`'s pass counter read 23386 on 13.0, 17 October 2026): stop, and write it again |
+| Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine; on a 128K the ROM, then the bank in each 16 KB, `RO0 RA5 RA2 RA0` |
+| Ports, the AY's registers among them | `get-io-ports` | on a 128K machine `Spectrum 7FFD port: 13`, then a block headed `AY-3-8912 chip 0`: `Selected register: 13` in decimal, then the 16 registers a line each in hex, `00:  34` |
 | Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler; see "From the map to a control file" below, and iterate that sweep - one pass under-reports |
 
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
@@ -128,7 +129,8 @@ One call per invocation for the agent, and the same calls from a script
 `bp_passcount`, `bp_counts`, `bp_count`, `bp_conditions`, `bp_action`,
 `bp_disable`, `bp_enable_all`, `bp_clear`, `set_input`, `get_input`,
 `release_input`, `key_event`, `type_ascii`, `evaluate`, `snapshot_save`,
-`snapshot_load`, `smartload`, `save_screen`, `machine`, `version`.
+`snapshot_load`, `smartload`, `save_screen`, `machine`, `set_machine`,
+`ay_registers`, `version`.
 
 Anything with a loop in it belongs in a script: a round trip is about
 0.13 ms, and 800 unpaced calls take 0.1 s (measured), but an agent
@@ -372,7 +374,7 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
 ```
 python3 kit/scripts/tools.py --platform spectrum stop
 python3 kit/scripts/tools.py --platform spectrum get-zesarux     # what this machine can have
-python3 kit/scripts/tools.py --platform spectrum check-emulator  # 45 named checks, about 20 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator  # 50 named checks, about 20 s
 ```
 
 `check-emulator`'s names are the ones `workarounds.md` is indexed by, and
