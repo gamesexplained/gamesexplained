@@ -212,6 +212,10 @@ G.icons = function (P) {
   // pick_character ($CD33): a portrait in menu 1: that character's menu 2 opens as menu 1 closes
   P.def(0xCD33, 'pick_character', r => {
     M[0xD0B0] = ((r.a - 1) & 255) | 0x80;
+    return P.pick_character_cd39({});
+  });
+  // $CD39: menu 2 opens as menu 1 closes, with the icons already at $D0B0 (the end screen's)
+  P.def(0xCD39, 'pick_character_cd39', () => {
     M[0x8D22] = 0x0A;
     setw(0xC89C, 0x0409); setw(0xC899, 0x0103);
     return {};

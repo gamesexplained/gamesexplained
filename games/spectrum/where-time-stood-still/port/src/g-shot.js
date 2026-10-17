@@ -249,6 +249,8 @@ G.shot = function (P) {
     if (!P.clip_falling({ hl: s }).zf) M[s] = 0xFF;
   };
 
+  P.shot_tail = tail;
+
   // draw_any_shot ($C58A): the shot at HL drawn: the party's go to draw_shot. An enemy's, until it
   // has hit something ($C6DC, while +1's count is under 5), has its end put 128 units on from its
   // start, is clipped and projected ($C260), and its line drawn; then its start moves on a stretch,

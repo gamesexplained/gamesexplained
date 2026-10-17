@@ -306,6 +306,12 @@ G.actor = function (P) {
       M[iy + 1] = 0x49;
       M[r.bc] = 0;
     } else if (type <= 0x27) return P.turn_aside(r);
+    return P.ground_7e_9306({ hl: iy + 1 });
+  });
+  // $9306: the actor whose +1 is at HL stops (action $80) and drops (state $0C plus its
+  // direction), sound effect 4 on channel B
+  P.def(0x9306, 'ground_7e_9306', r => {
+    const iy = lo(r.hl, -1);
     M[iy + 0x0C] = 0x80;
     M[iy + 0x0D] = (M[iy + 0x0D] & 3) + 0x0C;
     M[0x701F] = 4;

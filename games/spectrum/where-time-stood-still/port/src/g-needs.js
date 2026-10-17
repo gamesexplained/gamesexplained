@@ -188,8 +188,9 @@ G.needs = function (P) {
     }
     return half ? (de + 1) & 0xFFFF : de;
   };
-  // or_letter_row ($D912): A ORed into HL, and HL 12 bytes down
-  const row = (hl, a) => { M[hl] |= a; return (hl + 12) & 0xFFFF; };
+  // or_letter_row ($D912): A ORed into HL, and HL a row down: 12 bytes, or 21 while the end screen
+  // has put $15 in the ADD at $D916
+  const row = (hl, a) => { M[hl] |= a; return (hl + M[0xD916]) & 0xFFFF; };
   P.def(0xD912, 'or_letter_row', r => {
     const hl = row(r.hl, r.a);
     return { hl, a: hl & 255 };
@@ -200,6 +201,9 @@ G.needs = function (P) {
     return print((r.hl_ + 1) & 0xFFFF, de);
   });
 
+  // $D838: the string at HL printed at DE (the end screen's texts)
+  P.def(0xD838, 'show_message_d838', r => print(r.hl, r.de));
+
   // code_he_said ($D8BF, $FA): HE SAID ($7FBE) when the window is at column 8
   P.def(0xD8BF, 'code_he_said', r => (M[0xAA80] !== 8 ? { a: M[0xAA80], zf: false, de: r.de } : print(0x7FBE, r.de)));
   // the B-th name after $FF from HL (B 0 is 256)
@@ -209,6 +213,8 @@ G.needs = function (P) {
   };
   // code_name ($D8CB, $FB): the name of character $8D0C
   P.def(0xD8CB, 'code_name', r => print(nth((M[0x8D0C] + 1) & 255, 0x7FA0), r.de));
+  // $D8E3: the name of character A
+  P.def(0xD8E3, 'code_name_d8e3', r => print(nth((r.a + 1) & 255, 0x7FA0), r.de));
   // code_exclamation ($D8D0, $F8): the speaker's exclamation from $7FC5
   P.def(0xD8D0, 'code_exclamation', r => print(nth((M[0xD5C2] + 1) & 255, 0x7FC5), r.de));
   // code_leader ($D8DA, $FC): the leader's name ($8D0A), or nothing when the leader speaks
