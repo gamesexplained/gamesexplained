@@ -1,6 +1,6 @@
 # Entrance gate — established facts
 
-This is a partial analysis of the naturally reached gate image. Its listing describes 771 of 43,949 tracked bytes (1.8%). There is no independent listing-comment sample. Shared resident/overlay ownership remains unresolved; the opening and gate are provisional independent image scopes, not a proved partition of shared code.
+This is a partial analysis of the naturally reached gate image. Its listing describes 2,059 of 43,949 tracked bytes (4.7%). There is no independent listing-comment sample. Shared resident/overlay ownership remains unresolved; the opening and gate are provisional independent image scopes, not a proved partition of shared code.
 
 ## Approach geometry
 
@@ -21,3 +21,12 @@ Resident consumer `$59AF` transfers a nonnegative deferred scene to `$0530` only
 Ordinary joystick trials restored the same natural gate snapshot before each case. Idle for 300 frames retained X=96, depth=6 and scene=1. Aligned up reached depth 51 at frame 150 and subsequently scene 2. Right for 100 frames followed by up for 300 settled at X=182, depth=24; the left equivalent settled at X=13, depth=24. Movement-control checkpoints fired in every trial; `$4115` had zero hits in the ordinary gate-entry trial. The natural gate and side-approach screenshots accompany the page.
 
 The part's ignored `work/play.vsf` is the natural `gate-steady.vsf` capture. Earlier forced captures are retained as `play-forced.vsf` and `entry-forced.vsf`; neither supplies a natural pre-initialization hand-over. Loaded-data warnings, shared-engine ownership, remaining movement, dialogue, graphics and other gate logic remain open.
+
+
+## Shared introduction sequence
+
+`$8E09` loads a countdown from fourteen bytes at `$8EC5`; phases 0–6 also select headered messages through split pointers `$8ED4/$8EDB`. Their records begin at `$8EF5`, `$8EFF`, `$8F1A`, `$8F40`, `$8F8A`, `$8FAE` and `$8FDE`. They address the audience, name the player and demand that the speaker be vanquished in his castle. The captured name is EUAN. Phase zero in scene zero copies up to 28 name bytes from `$0504` into `$8F22` and appends a period and terminator. The stored formatting controls are interpreted by `$67B7`; the page normalizes whitespace and omits those controls.
+
+`$8CD8` decrements `$8EB5` before testing zero. Expiry selects the phase's delay/message, then increments `$8EB4`. Phase zero in a nonzero scene first changes the selected phase to seven, skipping the speech records. A negative `$030B` during a phase below seven sets phase seven/countdown one and calls `$086C`; the physical input represented by this byte remains unresolved. Phases at least fourteen bypass the countdown and check approach depth. The natural steady gate is phase fourteen; the earlier natural `graphical-intro.vsf` capture is phase ten in scene one. These observations do not prove ordinary presentation of all seven stored lines.
+
+`test_gate.js` checks the seven texts against execution of the original `$67B5` parser and 15,360 dispatcher cases: fifteen phases, every countdown byte, scenes zero/one and positive/negative interruption state. Visual, sound and movement helpers are intercepted in this dispatcher check; it verifies decisions and name insertion, not their complete effects. `$8E29`'s pose selection and `$8EA4`'s conditional sound request are traced; pose artwork identities and input meanings remain open.

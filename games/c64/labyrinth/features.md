@@ -48,3 +48,6 @@ Nickel disposition: the first accepted return writes `$0575=$FF`; keeping the dr
 ## Checked gate approach
 
 Observed with ordinary joystick input: aligned up from the natural gate starts the scripted corridor entry; left and right approaches stop at depth 24. The classifier, depth threshold, sound/delay sequence and deferred scene request are traced and tested in `parts/scene-01/facts.md` and `test_gate.js`. Remaining graphical movement and puzzles are open.
+
+
+The gate resource’s seven stored introduction messages and phase/countdown selection are traced and checked against original-code execution. The player-name insertion is tested. Ordinary presentation of the complete speech and the physical interruption input remain open.

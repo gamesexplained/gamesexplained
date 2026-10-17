@@ -27,3 +27,26 @@ for(const pending of [255,0,3])for(const entry of [255,5]){
  assert.equal(c.m[0x530],pending===255?2:pending);assert.equal(c.m[0x532],pending===255&&entry===255?1:entry);assert.equal(c.m[0x2c3],255);assert.deepStrictEqual(calls,[0x60e6,0x5098]);
 }
 console.log('OK - 256 original column classifications, 256 original threshold cases, 65,536 combined candidates and seven deferred-scene cases');
+// Stored speech and the shared sequence scheduler, without simulating its artwork.
+const {labyrinthGateSpeech:speech}=g.run('index.html','labyrinth-gate-speech','labyrinthGateSpeech');
+assert.equal(speech.length,7);
+for(let i=0;i<7;i++){
+ const r=speech[i];assert.equal(r.address,ram[0x8ed4+i]+256*ram[0x8edb+i]);assert.equal(r.countdown,ram[0x8ec5+i]);assert.equal(ram[r.end],0);
+ const c=new CPU(Uint8Array.from(ram));c.m[0x10]=(r.address+2)&255;c.m[0x11]=(r.address+2)>>8;let text='';
+ c.call(0x67b5,{d:0},{hooks:{0x6891:c=>{if(c.a>=32&&c.a<127)text+=String.fromCharCode(c.a);c.rts();},0x6866:c=>c.rts()}});
+ assert.equal(text.replace(/\s+/g,' ').trim(),r.text);
+}
+let schedulerCases=0;
+for(let phase=0;phase<15;phase++)for(let timer=0;timer<256;timer++)for(const scene of [0,1])for(const interrupt of [0,255]){
+ const c=new CPU(Uint8Array.from(ram));c.m[0x8eb4]=phase;c.m[0x8eb5]=timer;c.m[0x531]=scene;c.m[0x30b]=interrupt;c.m[0x8e07]=255;c.m[0x544]=0;c.m[0x8ed3]=255;
+ c.m.set([65,66,0],0x504);let ptr=null,cleared=0;
+ const hooks={};for(const a of [0x8ea4,0x8e29,0x0824,0x0818,0x081b,0x081e,0x086f])hooks[a]=c=>c.rts();
+ hooks[0x086c]=c=>{cleared++;c.rts();};hooks[0x0803]=c=>{ptr=c.m[0x10]+256*c.m[0x11];c.rts();};
+ c.call(0x8cd8,{d:0},{hooks});
+ let next=phase,remaining=timer,message=null;
+ if(phase<14){if(phase<7&&interrupt===255){next=7;remaining=1;assert.equal(cleared,1);}
+ else {remaining=(timer-1)&255;if(remaining===0){const selected=phase===0&&scene!==0?7:phase;remaining=ram[0x8ec5+selected];if(selected<7)message=speech[selected].address;next=selected+1;}}}
+ assert.equal(c.m[0x8eb4],next);assert.equal(c.m[0x8eb5],remaining);assert.equal(ptr,message);assert.equal(c.m[0x8ed3],255);
+ if(phase===0&&timer===1&&scene===0&&interrupt===0)assert.deepStrictEqual(Array.from(c.m.slice(0x8f22,0x8f26)),[65,66,46,0]);schedulerCases++;
+}
+console.log(`OK - seven original speech parses and ${schedulerCases} original phase/countdown decisions, including name insertion and scene-dependent skip`);

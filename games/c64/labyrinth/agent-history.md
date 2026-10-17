@@ -105,3 +105,8 @@ Tests run the original parser/direction/GIVE routines for its displayed cases an
 ## 18 October 2026 — gate approach
 
 Continued beyond the text opening using the natural gate snapshot. Positive movement checkpoints and a store watch rejected the first hypothesis that entry used `$4115`: the actual request was deferred through `$02C3` and consumed at `$59BC`. Resolved `$081E` as sound request and `$0839` as counted delay before exporting the corrected comments. Replaced the forced play image with the natural capture and renamed the forced entry capture to avoid claiming a valid hand-over. Added the bounded classifier widget and original-code tests. Gate ownership and loaded-data warnings remain open.
+
+
+## 18 October 2026 — shared gate/introduction sequence
+
+Traced the remaining waiting-sequence dispatch and seven headered messages. The initial inference that this was simply dialogue before the saved gate was narrowed: phase zero skips the messages in nonzero scenes, and the natural earlier capture is already phase ten. Kept ordinary presentation open. Added a whitespace-normalized speech viewer, checked every message against the parser, and checked 15,360 phase/countdown cases against the original dispatcher. Pose and sound helpers are traced with their input/visual meanings left open.
