@@ -8,9 +8,10 @@ description: ZX Spectrum facts for reverse engineering, memory map, ULA port $FE
 Consult this file. If a fact you need is not here, say so in the game's
 `kit-feedback.md` and derive it from the emulator, not from memory.
 
-The first profile the kit reads is the **48K machine**: `kit/spectrum/snapshot.py`
-reads only the 48K `.sna`. The 128K facts are here because games use them;
-the kit does not read a banked snapshot until a 128K game is actually run.
+`kit/spectrum/snapshot.py` reads the 48K `.sna` and the 128K `.sna`. A
+128K game's other RAM banks become parts of the game, one a bank
+(`kit/spectrum/banks.py`), and `kit/skills/spectrum/tool-zesarux` says how
+to record which bank each piece of code ran in.
 
 ## Where to read about a game first
 
@@ -159,6 +160,19 @@ noise period, R7 the mixer (tone and noise enables, I/O direction), R8–R10
 the amplitudes of A, B and C (bit 4 set: use the envelope), R11–R12 the
 envelope period and R13 its shape; R14 (`$FFFD` select, then `IN`) is the I/O
 port. The 48K has no AY.
+
+The AY's clock on the 128K is half the CPU's, 1.7734 MHz. A tone of
+period P (R0–R5, 12 bits, 0 counting as 1) sounds at clock / (16 × P):
+period 256 at 433.0 Hz. The noise generator (R6, 5 bits) is a 17-bit
+shift register clocked at clock / (16 × NP). ZEsarUX 13.0, measured on
+17 October 2026 from a WAV of its own output (`--aofile`), played period
+256 at 430.7 Hz, and its 16 amplitude levels, with 15 as 24, were 0,
+0.45, 0.6, 0.8, 1.05, 1.6, 2.2, 3, 4, 6, 8, 10, 14, 16, 20 and 24: far from
+linear, each about 3 dB above the last from level 4 up. The beeper's step
+(bit 4 of port `$FE`) was 100 of the same units. `site/lib/ay.js` is the
+site's model of the chip, and `kit/spectrum/test_ay.js` holds it to those
+measurements. The envelope (R11–R13) was not measured, and the model
+leaves it out.
 
 ## Timing
 
@@ -311,8 +325,15 @@ variables are as the tape saved them.
   interrupt.
 - **A 128K snapshot is not the 48K one.** `.sna` and `.z80` carry the
   banked memory too, and the byte lengths differ; the kit's reader accepts
-  exactly the 48K `.sna` (49179 bytes) and refuses the rest, naming what
-  it saw.
+  the 48K `.sna` (49179 bytes) and the 128K `.sna` (131103 or 147487) and
+  refuses the rest, naming what it saw. The first 48K of a 128K `.sna`
+  are only the banks the CPU saw: read as a 48K image, it hides the five
+  others and every byte of code in them.
+- **An address at `$C000` or above names no code on a 128K.** It is in
+  whichever bank `$7FFD` had paged in when it ran, so an executed list of
+  bare addresses, ZEsarUX's code coverage among them, puts code from one
+  bank on top of data in another. Record the bank with it
+  (`kit/skills/spectrum/tool-zesarux`, "Finding a game's code").
 - **Contended memory is slow.** Code or data in `$4000`–`$7FFF` on the 48K,
   or in a contended bank on a 128K (Ports, `$7FFD`), loses cycles to the
   ULA, which changes what a timing measurement means.

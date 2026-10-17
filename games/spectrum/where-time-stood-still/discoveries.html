@@ -1,0 +1,158 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where Time Stood Still</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.wt-btns{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.wt-btns button{font:inherit;font-size:14px;padding:4px 10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
+.wt-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);min-height:1.5em;margin-top:8px}
+.wt-cal{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.wt-page{width:110px;height:120px;border:2px solid var(--ink);border-radius:6px;background:#fff;text-align:center;font-family:var(--fm);flex:none}
+.wt-page b{display:block;background:#d04a3a;color:#fff;font-size:20px;padding:6px 0;border-radius:3px 3px 0 0}
+.wt-page span{display:block;font-size:44px;font-weight:700;line-height:78px}
+.wt-tbl{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:14px}
+.wt-tbl td,.wt-tbl th{padding:3px 2px;text-align:center;border-bottom:1px solid var(--line-soft)}
+.wt-tbl th{font-weight:400;color:var(--ink-mute)}
+.wt-tbl td.wt-odd{background:var(--hl)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · Ocean</p>
+  <h1>Where Time Stood Still</h1>
+  <p class="sub">The calendar's month and the altar ceremony's count are the same byte, so the calendar shows May twice and a month's end can restart a sacrifice.</p>
+</header>
+<main class="wrap">
+<section>
+  <p class="fig">01 · The calendar</p>
+  <h2 class="t">Bug: the calendar shows May twice</h2>
+  <p class="lede">Play starts on MAY 1. After 31 May the calendar turns to MAY 1 again, and only then to June, July and August.</p>
+  <div class="plate">
+    <div class="wt-cal"><div class="wt-page" id="wt-cal-page"></div>
+    <div><div class="wt-btns"><button id="wt-cal-night">Midnight</button><button id="wt-cal-month">Midnight × 31</button><button id="wt-cal-cap">A capture starts a ceremony</button><button id="wt-cal-tick">The ceremony counts on</button><button id="wt-cal-end">The ceremony ends</button><button id="wt-cal-new">New game</button></div>
+    <p class="wt-read" id="wt-cal-read">&nbsp;</p></div></div>
+    <p class="cap">The page turn is bank 0's <code>$F465</code>, written again here and held to the game's own code by <code>test_calendar.js</code>. In ZEsarUX, from the start of play with the day set to 31 and the clock to just before midnight, the panel turned to MAY 1 and the month byte <code>$8D15</code> was 0.</p></div>
+  <p>The calendar keeps the day of the month at <code>$8D14</code> and the month at <code>$8D15</code>, and its names are MAY, JUN, JUL and AUG for months 0 to 3 (<code>$F57E</code>). At midnight the day goes up, and after the month's last day it goes back to 1 and the month to one more, kept to 0 to 3 (<code>$F465</code>). New game sets the month to <code>$FF</code> (<code>$865E</code>), and the panel starts with MAY drawn on it. So the first month is May, and the month after it is <code>$FF</code> plus one, which is month 0: May again.</p>
+  <p>The month byte has a second job. Bank 3's altar ceremony counts in the same byte: a capture sets it to 0 (<code data-part="bank-03">$FEB0</code>), the altar counts it up to the sacrifice at <code>$E8</code> (<code data-part="bank-03">$FEC8</code>), and the end of a ceremony sets it back to <code>$FF</code> (<code data-part="bank-03">$FF7F</code>). The altar counts only while the byte is not <code>$FF</code>, and the calendar shows whatever month the count happens to make.</p>
+  <p>Two things follow. A ceremony that ends puts the calendar back to the start of its cycle, so the next month is May. A month's end with no ceremony running leaves the byte at 0 to 3, and the altar's routine then runs as if a ceremony had started, with character 0, Jarret, as the captive, because the byte that names the captive is 0 from new game (<code>$8D0C</code>). That second consequence is traced in the code and has not been seen in play.</p>
+</section>
+<section>
+  <p class="fig">02 · The tribe's speech</p>
+  <h2 class="t">Secret: Dirk translates the tribe, whose letters come out mirrored</h2>
+  <p class="lede">When a tribesman speaks, every letter of his message is swapped for another, A for Z and B for Y. When Dirk is near enough to hear, the same message follows from him in plain words, beginning HE SAID.</p>
+  <div class="plate"><table class="wt-tbl" id="wt-mirror"><tbody></tbody></table>
+  <p class="cap">Each letter and what the conversation window prints in its place for a tribesman. The swap is two instructions at bank 3 <code data-part="bank-03">$D84C</code>: the letter's code taken from <code>$2C</code>. Dirk's translation is queued by <code data-part="bank-03">$FD95</code>.</p></div>
+  <p>The game's small font numbers its letters from <code>$0A</code> for A to <code>$17</code> for N, then <code>$18</code> for P to <code>$22</code> for Z. There is no O: the game prints the digit 0 for it. Taking each code from <code>$2C</code> mirrors the alphabet for most letters, but the missing O moves the middle. M stays M, L and N swap, and O, printed as the digit 0, becomes code <code>$2C</code>, which is past the alphabet. What the font draws for that code was not checked.</p>
+  <p>The manual only hints at this: Dirk's "studies on obscure eastern dialects may come in useful".</p>
+</section>
+<section>
+  <p class="fig">03 · Two areas</p>
+  <h2 class="t">Bug: areas 12 and 15 take their scenery from the ROM</h2>
+  <p class="lede">The plateau is sixteen areas, four by four, and areas 12 and 15 are the two bottom corners. The game holds no scenery for either of them.</p>
+  <div class="plate"><p class="cap" style="margin-top:0">Bank 7's table at <code data-part="bank-07">$DB00</code> gives each area's scenery record. Areas 0 and 1 share one, area 8's lies in main memory at <code>$6859</code>, and the words for areas 12 and 15 are <code data-part="">$0005</code> and <code data-part="">$3501</code>, inside the ROM.</p></div>
+  <p>Loading an area reads its record for the boxes the creatures walk round and the 2 KB of its map (<code>$8A9B</code>), so in either corner the loader would build the map out of whatever the ROM holds at those addresses. Whether a player can reach areas 12 or 15 is an open question: walking off the south edge of areas 8 or 11, or the west edge of 13 and the east edge of 14, would load them (bank 3 <code data-part="bank-03">$DB0B</code>). The <a href="levels.html">Maps</a> tab leaves them blank.</p>
+</section>
+<section>
+  <p class="fig">04 · Unused input</p>
+  <h2 class="t">Secret: a fifth joystick that no option offers</h2>
+  <p class="lede">The control selection screen offers four ways to play. The code has a fifth input routine, for a joystick on port <code>$7F</code>.</p>
+  <div class="plate"><p class="cap" style="margin-top:0">The routine is at <code>$B622</code>, the same shape as the four that are offered: up, down, left and right in bits 0 to 3 of the port, and fire in bit 7.</p></div>
+  <p>The title's four options lead to the four other routines, and nothing leads to this one. A player with a joystick on that port has no way to choose it.</p>
+</section>
+<section>
+  <p class="fig">05 · An unused reset</p>
+  <h2 class="t">Secret: holding CAPS SHIFT would reset the machine</h2>
+  <p class="lede">A routine at <code>$BEE0</code> resets the machine when CAPS SHIFT is held. Nothing calls it.</p>
+  <div class="plate"><p class="cap" style="margin-top:0">The routine sets the stack to <code>$5B00</code> and jumps to address 0 when CAPS SHIFT is down. It sits just before the game's clock (<code>$BEEF</code>), and no instruction in the code maps calls or jumps to it.</p></div>
+  <p>Since nothing reaches the routine, holding CAPS SHIFT in play does nothing.</p>
+</section>
+<section>
+  <p class="fig">06 · A test that always passes</p>
+  <h2 class="t">Bug: the seizing creatures' sound check compares the wrong number</h2>
+  <p class="lede">The creatures that seize a victim make a sound on alternate frames: effect <code>$0F</code> for one group, and effect 5 every fourth pass for the other. A check meant to keep effect 5 to a range of creatures compares a constant instead.</p>
+  <div class="plate"><p class="cap" style="margin-top:0">Bank 3 <code data-part="bank-03">$F150</code>: the actor's byte is compared with <code>$9C</code>, and A is loaded with <code>$0F</code> before the jump that uses the comparison. The next comparison, with <code>$A0</code>, then compares that <code>$0F</code>, so it always finds it lower and never skips the sound.</p></div>
+  <p>The effect is small: every creature that reaches the second test makes effect 5, whatever its byte, where the code meant to stop at <code>$A0</code>. Effect 5 is also Clive's cry for HELP, and it is on the <a href="index.html">How it works</a> tab's list of effects.</p>
+</section>
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+/* wtss-calendar */
+// The calendar's page turn at midnight, bank 0 $F465: the day ($8D14) goes up; after the 31st,
+// or the 30th in month 1, it is 1 again and the month ($8D15) is one more, kept to 0 to 3.
+function turnPage(day, month) {
+  day = (day + 1) & 0xFF;
+  if ((day === 31 && month === 1) || day === 32) { day = 1; month = (month + 1) & 3; }
+  return [day, month];
+}
+</script>
+<script>
+(function () {
+  const hex = (v, w) => '$' + v.toString(16).toUpperCase().padStart(w, '0');
+  const NAMES = ['MAY', 'JUN', 'JUL', 'AUG'];
+  let day, month, shown, nights;
+  const page = document.getElementById('wt-cal-page'), read = document.getElementById('wt-cal-read');
+  function show(note) {
+    page.innerHTML = `<b>${shown}</b><span>${day}</span>`;
+    read.textContent = `${note}. Day ${hex(day, 2)} ($8D14), month byte ${hex(month, 2)} ($8D15), ${nights} midnights since the crash.`;
+  }
+  function night() {
+    [day, month] = turnPage(day, month);
+    nights++;
+    if (day === 1) shown = NAMES[month];
+  }
+  function reset() { day = 1; month = 0xFF; shown = 'MAY'; nights = 0; show('New game: MAY 1, with the month byte at $FF'); }
+  document.getElementById('wt-cal-night').onclick = () => { night(); show('Midnight'); };
+  document.getElementById('wt-cal-month').onclick = () => { for (let i = 0; i < 31; i++) night(); show('31 midnights'); };
+  document.getElementById('wt-cal-cap').onclick = () => { month = 0; show('A capture sets the byte to 0 (bank 3 $FEB0); the calendar still shows ' + shown); };
+  document.getElementById('wt-cal-tick').onclick = () => { if (month !== 0xFF) month = (month + 1) & 0xFF; show('The altar counts the byte up (bank 3 $FEC8)'); };
+  document.getElementById('wt-cal-end').onclick = () => { month = 0xFF; show('The ceremony ends and sets the byte to $FF (bank 3 $FF7F)'); };
+  document.getElementById('wt-cal-new').onclick = reset;
+  reset();
+
+  // The tribe's mirrored letters, bank 3 $D84C: the code becomes $2C minus the code
+  const CODE = {};
+  'ABCDEFGHIJKLMN'.split('').forEach((c, i) => CODE[c] = 0x0A + i);
+  'PQRSTUVWXYZ'.split('').forEach((c, i) => CODE[c] = 0x18 + i);
+  CODE.O = 0;
+  const LETTER = Object.fromEntries(Object.entries(CODE).map(([c, v]) => [v, c]));
+  LETTER[0] = '0';
+  const rows = [[], [], [], []];
+  [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].forEach((c, i) => {
+    const m = (0x2C - CODE[c]) & 0xFF, out = LETTER[m] || hex(m, 2);
+    const odd = out !== String.fromCharCode(155 - c.charCodeAt(0)), half = i < 13 ? 0 : 2;
+    rows[half].push(`<th>${c}</th>`); rows[half + 1].push(`<td class="${odd ? 'wt-odd' : ''}">${out}</td>`);
+  });
+  document.querySelector('#wt-mirror tbody').innerHTML = rows.map(r => `<tr>${r.join('')}</tr>`).join('');
+})();
+</script>

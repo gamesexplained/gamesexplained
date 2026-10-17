@@ -239,19 +239,38 @@ def check_run_times_out_instead_of_hanging():
 
 def check_frames_is_bounded():
     """`frames` retries, then raises: it never spins (`kit/EMULATOR.md` phase 4)."""
-    f = Fake({"get-tstates-partial": "0", "run": "Running until a breakpoint, key press or data sent, menu opening or other event",
-              "reset-tstates-partial": "", "set-breakpoint": "", "set-breakpointpasscount": "",
-              "enable-breakpoints": "", "disable-breakpoint": ""})
+    for machine, frame in (("ZX Spectrum 48k", 69888), ("ZX Spectrum+ 128k", 70908)):
+        f = Fake({"get-tstates-partial": "0", "run": "Running until a breakpoint, key press or data sent, menu opening or other event",
+                  "reset-tstates-partial": "", "set-breakpoint": "", "set-breakpointpasscount": "",
+                  "enable-breakpoints": "", "disable-breakpoint": "", "get-current-machine": machine})
+        rpc = connect(port=f.port)
+        t0 = time.time()
+        try:
+            rpc.frames(1, timeout=1, tries=5)
+        except ZesaruxError as e:
+            assert f"did not reach {frame}" in str(e), (machine, e)
+        else:
+            raise AssertionError("frames must raise when the boundary is never reached")
+        assert time.time() - t0 < 10
+        assert sum(1 for c in f.seen if c.startswith("run")) == 5, f.seen
+        assert f"set-breakpoint 100 TSTATESP>{frame}" in f.seen, (machine, f.seen)
+        rpc.close(); f.close()
+
+
+def check_frames_says_when_the_machine_runs():
+    """A running machine refuses `run`: `frames` says to stop it, at once, rather than retrying."""
+    f = Fake({"get-tstates-partial": "0", "reset-tstates-partial": "", "set-breakpoint": "",
+              "set-breakpointpasscount": "", "enable-breakpoints": "", "disable-breakpoint": "",
+              "get-current-machine": "ZX Spectrum+ 128k",
+              "run": "Running until a breakpoint, menu opening or other event\nError. You must first enter cpu-step mode"})
     rpc = connect(port=f.port)
-    t0 = time.time()
     try:
         rpc.frames(1, timeout=1, tries=5)
     except ZesaruxError as e:
-        assert "did not reach 69888" in str(e), e
+        assert "enter_step" in str(e), e
     else:
-        raise AssertionError("frames must raise when the boundary is never reached")
-    assert time.time() - t0 < 10
-    assert sum(1 for c in f.seen if c.startswith("run")) == 5, f.seen
+        raise AssertionError("frames must raise when run is refused")
+    assert sum(1 for c in f.seen if c.startswith("run")) == 1, f.seen
     rpc.close(); f.close()
 
 

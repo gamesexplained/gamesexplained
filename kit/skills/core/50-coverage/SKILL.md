@@ -27,7 +27,11 @@ same way, so tiers mean the same thing everywhere.
    search (`60-verify`, "Negative results", names it), with how many
    there are; without the search, leave the claim out. They are the
    details a checker most often finds wrong: the routine in front of you
-   shows one caller, and it gets written up as the rule.
+   shows one caller, and it gets written up as the rule. So is a value
+   read off the snapshot: an immediate operand or a variable holds what
+   the last store left there, so before you call it fixed, or build a
+   table, a page or another comment on it, search for writes to that
+   address, the operand's byte included.
    While it is in front of you, note
    anything it would accept that the player was never meant to do: an
    exact match where a range was meant, a comparison that assumes a sign,

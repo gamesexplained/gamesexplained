@@ -1390,14 +1390,13 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 # the simulator the kit's tests hold pages to (kit/c64/cpu6502.js, "On a page").
 KIT_LIB = {"cpu6502.js": "kit/c64/cpu6502.js"}
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js", "cpu6502.js")
-
-
 def lib_versions(out_root):
-    """{lib file: the first 8 hex digits of its SHA-1}, for the lib files the build versions."""
+    """{lib file: the first 8 hex digits of its SHA-1}, for every script and stylesheet in the
+    built lib/: a list of names left a new file out, and its pages kept the cached copy."""
     import hashlib
-    return {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
-            for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+    lib = os.path.join(out_root, "lib")
+    return {f: hashlib.sha1(open(os.path.join(lib, f), "rb").read()).hexdigest()[:8]
+            for f in sorted(os.listdir(lib)) if f.endswith((".js", ".css"))} if os.path.isdir(lib) else {}
 
 
 def version_lib(out_root):

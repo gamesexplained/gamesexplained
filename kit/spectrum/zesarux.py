@@ -54,6 +54,12 @@ import json, os, re, socket, sys, time
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = int(os.environ.get("KIT_ZESARUX_PORT") or 10000)   # the launcher's --port sets it (kit/spectrum/tools.py)
 FRAME_TSTATES = 69888          # one 48K ZX Spectrum frame (kit/skills/spectrum/zx-spectrum-reference)
+FRAME_TSTATES_128K = 70908     # one frame of the 128K, +2, +2A and +3: 228 T-states a line, 311 lines
+
+
+def frame_tstates(machine):
+    """The frame of the machine `get-current-machine` names, in T-states."""
+    return FRAME_TSTATES_128K if "128" in machine or "+2" in machine or "+3" in machine else FRAME_TSTATES
 FRAME_SLOT = 100              # the breakpoint slot `frames` uses; slots are 1..100
 PROMPT = re.compile(r"^[^\n]*> $")
 
@@ -298,8 +304,14 @@ class Rpc:
             args.append(limit)
         return self.cmd("run", *args, timeout=timeout)
 
+    def frame(self):
+        """This machine's frame in T-states: 69888 on a 48K, 70908 on a 128K or later."""
+        if not getattr(self, "_frame", None):
+            self._frame = frame_tstates(self.machine())
+        return self._frame
+
     def frames(self, n, timeout=60.0, tries=20):
-        """Run until n * 69888 T-states have gone by, and stop there.
+        """Run until n frames of this machine (`frame`) have gone by, and stop there.
 
         A checkpoint on `TSTATESP>` fires at the frame boundary, so this is
         one round trip per frame, not a spin: each try arms the slot, runs,
@@ -307,13 +319,18 @@ class Rpc:
         rather than looping forever (`kit/EMULATOR.md` phase 4, "advance N
         frames ... one call").
         """
-        target = n * FRAME_TSTATES
+        target = n * self.frame()
         condition = f"TSTATESP>{target}"
         try:
             for _ in range(tries):
                 self.reset_tstates()
                 self.bp_set(FRAME_SLOT, condition)
                 reply = self.run(timeout=timeout)
+                if "must first enter cpu-step" in reply:
+                    # a load resumes a machine that was running when it loaded, and `run` is
+                    # refused while it runs: say so, instead of twenty silent tries
+                    raise ZesaruxError("the machine is running and `run` needs it stopped: call "
+                                       "enter_step() first (a load leaves it running if it was)")
                 got = self.tstates()
                 if "Breakpoint fired" in reply and condition not in reply:
                     # `run` stops on any checkpoint, so a caller's own stop ends it first:
