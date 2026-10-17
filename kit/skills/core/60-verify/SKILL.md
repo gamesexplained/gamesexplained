@@ -206,8 +206,11 @@ nobody recorded them): whether the run looked the game up online,
 "sample", "size": 60, "wrong": 2, "fixed": 2, "seed": ..., "models":
 [...]}`, where `fixed` is how many of the wrong ones were then
 corrected; each audit, `{"step": "audit", "checked": 640, "of": 640, "fixed": 90,
-"models": [...]}`; and a Play tab's port, `{"step": "play", "fixed": 16, "models": [...]}`
-(`70-minisite`, `play.md`). A sample or audit a maintainer makes for a
+"models": [...]}`; a Play tab's port, `{"step": "play", "fixed": 16, "models": [...]}`
+(`70-minisite`, `play.md`); and any other port or widget on a page that
+was checked against the game's code or the game running and showed
+comments wrong, `{"step": "port", "fixed": 15, "models": [...], "note":
+"the stage maps"}`, its note naming what was checked. A sample or audit a maintainer makes for a
 run on an unproven model adds their GitHub login as `"by"`
 (`kit/CHECKING.md`), and games checked before 12 October 2026 keep that
 older check as a `check` row. Any row may carry a short `note` about
