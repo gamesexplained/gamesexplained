@@ -299,6 +299,18 @@ def platform_notes(paths=None, hosts=None):
     return bad
 
 
+def before_retro(game, ci=None):
+    """True while a game's run has not reached its retrospective: game.json's tier is still the
+    template's "none" (80-retro, step 7 sets it), and this is not a pull request's CI, where the
+    run is meant to be finished. Until then kit-feedback.md's placeholder is expected (#343)."""
+    ci = os.environ.get("GITHUB_ACTIONS") == "true" if ci is None else ci
+    try:
+        tier = json.load(open(os.path.join(game, "game.json"), encoding="utf-8")).get("tier", "none")
+    except (OSError, ValueError):
+        return False
+    return tier == "none" and not ci
+
+
 def main():
     fails = 0
     fails += scan(os.path.join(ROOT, "AGENTS.md"), SUBJECT, "subject matter in the rules file", EXEMPT)
@@ -367,7 +379,12 @@ def main():
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from skill_usage import parse as named_skill_text
     for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "kit-feedback.md"))):
-        for n, msg in named_skill_text(f)["problems"]:   # the words themselves: skill_usage.py --game
+        named = named_skill_text(f)
+        if named["placeholder"] and before_retro(os.path.dirname(f)):
+            print(f"  -  {os.path.relpath(f, ROOT)}  the template's placeholder stays until the retrospective"
+                  " (tier none); a pull request fails it")
+            continue
+        for n, msg in named["problems"]:   # the words themselves: skill_usage.py --game
             print(f"  x  {os.path.relpath(f, ROOT)}:{n}  skill text that changed what I did: {msg}")
             fails += 1
     from skill_edits import check as skill_edits_check

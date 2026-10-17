@@ -135,3 +135,46 @@ secret showed its standfirst calling a1 the top tree on the left; the
 trees' screen labels its rows 3, 2 and 1 from the top, and `magicTree`
 gives M = 12 the name a1, so it is the bottom tree on the left, and the
 page says so.
+
+## 16 October 2026, the teacher's booklet
+
+**The booklet.** The maintainer bought Retro Granny's Garden, which comes
+with 4Mation's reprint of the teacher's booklet as a PDF, and asked what
+the page could learn from it; the booklet itself stays out of the
+repository. Every claim it makes about the program was read against the
+listing. Two of the page's findings turned out to be documented: T at
+`Ready to start?` (the booklet's "If 'T' is entered the magic tree is set
+to be A1"), which the Discoveries tab had headed a secret, and the sound
+switch, which the booklet gives as OFF where the page had described the
+code's test for a final f. The T section moved to How it works, beside the
+trees' button that already used it. The bee hurt in the wood, headed a
+bug, is a trap the booklet warns of ("Each creature can help once only
+although this information is not given to the children"), and the code
+has replies written for it, so it lost its `Bug:`.
+
+**The disc.** The booklet's loading instructions and program names do not
+fit the TOSEC disc (no boot file, GRAN1 rather than GRANNY1, no initial
+program before `Ready to start?`), and its note on loading the tape into a
+disc machine is the case the programs' own relocation was written for.
+The page now says the disc is most likely a copy of the tape. The Mac
+edition was looked at for the BASIC program, to settle it. A search of its
+program file for the BASIC's text found none, and the first reading was
+that it was a new program holding the game's words and pictures as data.
+The maintainer's own session on the Mac read the class and method names
+the C++ compiler left in it and found otherwise: the app is the BASIC
+rewritten in C++, a class for each part, with methods named after the
+procedures (`PROCkn`, `PROCcot`, `PROCwitch`) and, for routines the BASIC
+reached by number, after the line (`GOSUB3180`, `LINE2890`). All fifteen
+of those line numbers were checked against the listing; each is a line of
+this disc's GRAN1 doing the same job (3180 asks which creature to call,
+and 2890, 2940, 3000 and 3060 are its four callers in the Giant's garden).
+So 4Mation's program is numbered as this one is. A port has no PAGE, so
+it cannot say whether 4Mation's disc ran out of memory, and the disc
+question stays open. Its tunes are three MP3 recordings.
+
+**The theme.** The author's note thanks Neil "for whistling 'Queen of the
+Fairies' down the telephone". PROCsnd1's DATA, moved down three semitones,
+matched the first strain of the set dance "The King of the Fairies" in a
+set-dance collection's ABC (X:2, K:Edor) bar for bar, with two quick runs
+simplified; the Séamus Connolly Collection's "Queen of the Faeries", whose
+opening Connolly calls related to the King, is further from it.

@@ -9,10 +9,7 @@ const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_chec
 const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
 const g = game(__dirname);
 const C = g.run('levels.html', 'sr-chart', 'SRChart').SRChart;
-if (g.block('index.html', 'sr-chart').text !== g.block('levels.html', 'sr-chart').text) {
-  console.log('index.html and levels.html carry different sr-chart blocks: test both, or make them the same');
-  process.exit(1);
-}
+g.sameBlock('sr-chart');   // every page's copy is the one tested
 const page = g.read('levels.html');
 const maps = JSON.parse(page.match(/<script type="application\/json" id="sr-maps">([^<]*)<\/script>/)[1]);
 const E = g.listing('parts/engine/listing.json');

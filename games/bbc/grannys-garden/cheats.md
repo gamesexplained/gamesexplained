@@ -11,7 +11,7 @@ takes.
 | Effect | Answer | Status |
 |---|---|---|
 | The magic tree is a1 (Part 1, t%: L=4, M=12, line 290) | `T` at `Ready to start?`, then `Y` | live |
-| No music, and a silent Witch (on%, Part 1 line 220, Part 2 line 210) | an answer ending in `f` at `Ready to start?`, such as `Yf` | live |
+| No music, and a silent Witch (on%, Part 1 line 220, Part 2 line 210) | `OFF` at `Ready to start?`, then `Y`, as the teacher's booklet says; any answer ending in `f`, such as `Yf`, does the same | live |
 | Part 1 from Tom's search (Z=1, PROCpass) | `Y` to `Do you have a password?`, then `snow` | live |
 | Part 2 at the City of the Dragons (Z=2) | the password `sky` | live |
 | Part 2 at the Land of Mystery (Z=3) | the password `river` | live |

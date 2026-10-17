@@ -28,7 +28,8 @@ stopped at `Ready to start?`. The routes named are in
 - on% (music) is TRUE and t% FALSE before the question, which repeats
   until an answer begins with Y (lines 220-240, `ready`).
 - An answer ending in f sets on% FALSE; one beginning with T sets t%. Both
-  last until the part is run again, so `T`, then `Y`, works *(live)*.
+  last until the part is run again, so `T`, then `Y`, works *(live)*. The
+  teacher's booklet documents both, as `T` and `OFF`.
 - The field is PROCi(7,17,22,21): three letters. `Yf` and `Tf` fit; `Yesf`
   cannot be typed, as the f is shown and then deleted by the RETURN after
   it *(live)*.

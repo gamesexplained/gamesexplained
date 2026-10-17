@@ -8,10 +8,7 @@ const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_chec
 const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
 const g = game(__dirname);
 const { unpackPicture } = g.run('index.html', 'sr-unpack', 'unpackPicture');
-if (g.block('index.html', 'sr-unpack').text !== g.block('discoveries.html', 'sr-unpack').text) {
-  console.log('index.html and discoveries.html carry different sr-unpack blocks: test both, or make them the same');
-  process.exit(1);
-}
+g.sameBlock('sr-unpack');   // every page's copy is the one tested
 const pics = JSON.parse(g.read('index.html').match(/<script type="application\/json" id="sr-pacs">([^<]*)<\/script>/)[1]);
 const I = g.listing('parts/intro/listing.json'), E = g.listing('parts/engine/listing.json');
 const T = g.listing('parts/title/listing.json'), N = g.listing('parts/ending/listing.json');
