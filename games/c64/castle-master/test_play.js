@@ -18,6 +18,7 @@ const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const g = game(__dirname);
 globalThis.window = globalThis;                    // the page's scripts hand over on window
 g.lib('c64'); g.lib('sid');
+g.lib('cpu6502');                   // the 6502 the port's sound driver runs on, as play.html loads it
 const PAGE = 'play.html', page = g.read(PAGE);
 const blocks = [...page.matchAll(/^\/\* (port\/\S+\.js) \*\/$/gm)].map(m => m[1]);
 for (const b of ['port/src/core.js', 'port/page/runtime.js']) if (!blocks.includes(b)) { console.log('FAIL: play.html has no ' + b); process.exit(1); }

@@ -101,7 +101,7 @@ against the game's own on the simulator, then the main loop in lockstep
 from 199 moments, the title's six choices from the loader's jump, and the
 information screen's saves and loads. The page carries the game's memory
 with every instruction byte zeroed except 192 the game uses as variables,
-and the music driver, which runs on a 6502 core.
+and the music driver, which runs on the site's shared 6502.
 
 Play kept the game's pace from the first fit, on 8,240 passes. The
 title's opening ran 23.5 % fast: its 60 steps run between clock ticks,
