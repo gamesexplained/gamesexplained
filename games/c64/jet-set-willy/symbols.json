@@ -8630,7 +8630,7 @@
   {
    "address": 4119,
    "type": "line",
-   "text": "Resolved conveyor/contact direction used by states 4-5."
+   "text": "The way Willy was going as he came onto a conveyor: $01 right, $FF left or 0 neither. Player state 5 works it out on its first pass ($1557, $1564, $1572) and is the only reader ($1575, $1583, $15E5); state 4 uses the conveyor's direction $13 instead."
   },
   {
    "address": 4120,
@@ -8785,12 +8785,12 @@
   {
    "address": 4962,
    "type": "line",
-   "text": "Player state 1 jumping to the right, entered from $1247. When the step at the jump index $52 moves Willy and his height $1C is a whole cell, $13E2 runs first: within two pixels of the top Willy leaves by the room's upper exit ($1D, through $1027), and otherwise $1296 looks for a ceiling in the first 18 steps and $12E9 for a floor after them. Then $1372 takes the step."
+   "text": "Player state 1 jumping to the right, entered from $1247. When the step at the jump index $52 moves Willy and bits 1 and 2 of his height $1C are clear (AND #$06, so at a whole cell or one pixel below one), $13E2 runs first: within two pixels of the top Willy leaves by the room's upper exit ($1D, through $1027), and otherwise $1296 looks for a ceiling in the first 18 steps and $12E9 for a floor after them. Then $1372 takes the step: straight after the ceiling check, unless a wall there has ended the jump, and after the floor check through $0FD2, only while he is still jumping (state 1); a landing leaves through $1021 without the step."
   },
   {
    "address": 4978,
    "type": "line",
-   "text": "Takes one step of a jump to the right: adds the jump table's step ($102D) to Willy's height $1C and moves him a phase right, with the frame $50 at half the phase. At phase 0 he is at a cell's edge: in column $1F he leaves by the room's right exit ($20, through $1027); elsewhere $14A9 handles the cells ahead, two or, when his height is not a whole cell, three, and the phase becomes 1. At 8 he moves into the next cell at phase 0. Then on to $138F."
+   "text": "Takes one step of a jump to the right: adds the jump table's step ($102D) to Willy's height $1C and moves him a phase right, with the frame $50 at half the phase. At phase 0 he is at a cell's edge: in column $1F he leaves by the room's right exit ($20, through $1027); elsewhere $14A9 handles the cells ahead, two, or three when bits 1 and 2 of his height are not both clear (AND #$06: a height one pixel below a whole cell still gets two), and the phase becomes 1. At 8 he moves into the next cell at phase 0. Then on to $138F."
   },
   {
    "address": 5007,
@@ -8800,7 +8800,7 @@
   {
    "address": 5124,
    "type": "line",
-   "text": "Player state 1 jumping to the left, entered from $1242: the mirror of $1362, with $1487 for the checks at a whole cell and $1414 taking the step."
+   "text": "Player state 1 jumping to the left, entered from $1242: the mirror of $1362, with $1487 for the checks when bits 1 and 2 of the height $1C are clear (a whole cell or one pixel below one) and $1414 taking the step. After the floor check $0FE6 goes on to $1414 only while Willy is still jumping (state 1), and otherwise leaves through $1021."
   },
   {
    "address": 5140,
@@ -8820,12 +8820,12 @@
   {
    "address": 5313,
    "type": "line",
-   "text": "Player state 3, ramp: walks Willy along a ramp against its stored direction ($11), rising two pixels a step, with the counter at $14C0. Clobbers A, X, Y and player state; the tile probes read the screen."
+   "text": "Player state 3, on a ramp: lifts Willy one cell, two pixels an update for four updates, with the counter at $14C0 going from 8 down by 2, then puts him back in state 0, which walks him on. A climb starts only when the direction held ($49) is against the ramp's stored direction ($11) and his phase $32 is 2 facing right or 6 facing left; otherwise state 0 comes back at once. A height that is 0 once trimmed to a whole cell takes him out by the room's upper exit ($1D). When $4B is not zero it only turns him round. It does not move him across, calls no tile probe and uses only A."
   },
   {
    "address": 5316,
    "type": "line",
-   "text": "Player state 3 is ramp traversal: motion opposes the stored ramp direction, rises two pixels per update, and returns to ordinary grounded state when input or alignment no longer sustains the traversal."
+   "text": "While a climb is under way (the counter $14C0 not zero) this goes straight to $1510, which raises Willy two more pixels; the direction held and his phase are tested only when a climb starts. Player state 3 as a whole climbs one cell, two pixels an update for four updates, then returns to state 0; a climb starts only when the direction held is against the stored ramp direction $11 and the phase is 2 facing right or 6 facing left, and otherwise state 0 comes back at once."
   },
   {
    "address": 5407,
@@ -8840,12 +8840,12 @@
   {
    "address": 5432,
    "type": "line",
-   "text": "Player state 5, just onto a conveyor. On the first pass ($1016 zero) it trims Willy's height $1C to a whole cell and works out which way he was going, in $1017: from his facing if he was standing or walking (state 0), from the jump's direction $1013 if he was jumping (state 1) or had fallen for fewer than two updates ($51), and no way otherwise. Going the conveyor's way ($13), he is carried (state 4). Going no way, he is carried if he faces the conveyor's way; facing against it, a jump goes straight up, holding the direction against it keeps him standing, and anything else lets it carry him. Going against it, holding the direction against it lets him jump that way or walk on against it ($112A or $10CC), and anything else lets it carry him."
+   "text": "Player state 5, just onto a conveyor. On the first pass ($1016 zero) it trims Willy's height $1C to a whole cell and works out which way he was going, in $1017, from the state saved in $1015: from his facing when it is 0, from the jump's direction $1013 when it is 1, and for any other saved state from $1013 when the fall counter $51 is below 2 and no way otherwise. The saved state is $33 as it was when the conveyor cell was handled: 0 when he walked on ($11C4); on a landing ($1321), the jumping or falling state only when the conveyor cell was the only cell under him that counted, since a landing across two conveyor cells saves 5, from the second cell, and a floor or wall cell handled first saves 0. A jump from a conveyor does not clear $51. Going the conveyor's way ($13), he is carried (state 4). Going no way, he is carried if he faces the conveyor's way; facing against it, a jump goes straight up, holding the direction against it keeps him standing, and anything else lets it carry him. Going against it, holding the direction against it lets him jump that way or walk on against it ($112A or $10CC), and anything else lets it carry him."
   },
   {
    "address": 5435,
    "type": "line",
-   "text": "Player state 5 is conveyor-entry reconciliation: cached approach direction and facing determine whether the player settles into state 4, jumps, or returns to ordinary grounded motion."
+   "text": "On passes after the first ($1016 not zero) this goes straight to $1575. Player state 5 as a whole: the direction worked out on the first pass ($1017), Willy's facing and what is held ($49, $4A) decide whether he is carried (state 4), jumps (state 1), stands still, or walks against the conveyor through $10CC or $112A. He stays in state 5 in the last two; state 5 never puts him back in state 0."
   },
   {
    "address": 5616,
@@ -8895,12 +8895,12 @@
   {
    "address": 6230,
    "type": "line",
-   "text": "Rope source-sprite pointer selection followed by per-position attachment trajectories consumed by player state 6."
+   "text": "The low byte, $00, of pointer 0 ($8100) in the rope's table of 34 little-endian pointers at $1856-$1899, one for each swing position: pointer i is the three rope sprites of position i, which $16A2 copies to $0500. After the pointers come an unused word at $189A and, from $189C, the 17 windows of rope points that $1C86 picks, for player state 6 ($1B62) and for catching Willy on the rope ($1C4C)."
   },
   {
    "address": 6231,
    "type": "line",
-   "text": "The high bytes of the rope pointer table at $1856, read as $1857,X."
+   "text": "High byte $81 of pointer 0 ($8100) in the rope table at $1856. $16D2 reads the table's high bytes as $1857,X, X being twice the swing position $0403."
   },
   {
    "address": 6232,
@@ -8910,7 +8910,7 @@
   {
    "address": 6844,
    "type": "line",
-   "text": "Player state 6, holding a rope. $0405 is the way the rope is swinging. Only every second update ($101A) does anything more than place him. On those, a turn on the spot ($4B = $FE, which never happens: see $382C) would only turn him round; otherwise Willy moves along the rope, in the index $1019, 0 at the top: holding the direction the rope swings moves him down it, and the other direction up it. Past the bottom (16) he lets go and falls (state 2); past the top he leaves by the room's upper exit ($1D); a jump request jumps off in the direction held (state 1). Still holding on, when his sprite touches a cell's pixels ($D01F), $1B96 looks at the cells around him, and lets him go. An update that leaves him on the rope ends by placing him on it: his x and height come from the window $1C86 picks, the x mirrored as $F7 - x on the second half of the swing (positions 17-33), and his cell, phase and frame from the x."
+   "text": "Player state 6, holding a rope. $0405 is the way the rope is swinging. Only every second update ($101A) does anything more than place him. On those, a turn on the spot ($4B = $FE, which never happens: see $382C) would turn him round and clear $49 instead of moving him, and still go on to the cell check at $1B37; otherwise Willy moves along the rope, in the index $1019, 0 at the top: holding the direction the rope swings moves him down it, and the other direction up it. Past the bottom (16) he lets go and falls (state 2); past the top he leaves by the room's upper exit ($1D); a jump request jumps off in the direction held (state 1). Still holding on, when his sprite touches a cell's pixels ($D01F), $1B96 looks at the cells around him, and lets him go. An update that leaves him on the rope ends by placing him on it: his x and height come from the window $1C86 picks, the x mirrored as $F7 - x on the second half of the swing (positions 17-33), and his cell, phase and frame from the x."
   },
   {
    "address": 7062,
@@ -8945,7 +8945,7 @@
   {
    "address": 7342,
    "type": "line",
-   "text": "Unreferenced graphics/build remnant between rope code and the game-entry trampoline."
+   "text": "Bytes nothing in the game reads or runs, $1CAE-$1FFF: no instruction or table refers to any of them. $1F00-$1F22 is a routine nothing calls, which copies $C000-$CFFF to $1000-$1FFF, like the one at $AB80; what the rest once was is unknown, and it matches nothing else in memory."
   },
   {
    "address": 8192,
