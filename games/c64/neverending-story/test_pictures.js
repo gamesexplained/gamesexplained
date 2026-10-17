@@ -17,6 +17,7 @@ const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+g.sameBlock('nes-blit');
 const { nesBlit, nesRender } = g.run(page, 'nes-blit', 'nesBlit', 'nesRender');
 const E = g.listing('parts/engine/listing.json');
 const parts = [1, 2, 3].map((p) => g.listing(`parts/part-${p}/listing.json`));

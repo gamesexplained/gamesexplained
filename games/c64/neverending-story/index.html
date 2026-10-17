@@ -68,14 +68,26 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 .nes-icons{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
 .nes-icons canvas{width:64px;height:64px;image-rendering:pixelated;background:#000;border-radius:3px;cursor:pointer;outline:2px solid transparent}
 .nes-icons canvas.nes-on{outline-color:#ff932f}
+.nes-icons canvas.nes-dim{opacity:.4}
 .nes-frame312{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:3px}
 .nes-big{font-family:var(--fm);font-size:28px;font-weight:500;color:var(--ink)}
 .nes-err{color:var(--coral);font-family:var(--fm);font-size:13px}
 .nes-mem{display:flex;height:34px;border-radius:5px;overflow:hidden;margin:8px 0 4px;font-family:var(--fm);font-size:11px}
-.nes-mem div{display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap;overflow:hidden;cursor:pointer;border-right:1px solid rgba(255,255,255,.5)}
+.nes-mem div{display:block;min-width:0;line-height:34px;text-align:center;padding:0 4px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;border-right:1px solid rgba(255,255,255,.5)}
 .nes-mem div.nes-on{box-shadow:inset 0 0 0 3px #ff932f}
 details.nes-more{margin-top:14px}
 details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;color:var(--link)}
+.nes-one{display:block;max-width:420px;margin-bottom:18px}
+.nes-one img{max-width:384px}
+.nes-two figure{margin:0}
+.nes-two figure img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.nes-two figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px}
+.nes-tbl tr.nes-bad td{background:#fbe3df}
+.nes-bar button:disabled{opacity:.4;cursor:default}
+.nes-bar button.nes-on{outline:2px solid #ff932f}
+.nes-unseen{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.nes-unseen canvas{image-rendering:pixelated;border-radius:3px;background:#000}
+#nes-ucv{width:128px;height:128px}
 @media (max-width:760px){.nes-pics,.nes-two{grid-template-columns:1fr}}
 @media (max-width:650px){:root{--gx:18px;--h1:36px;--sy:32px;--pp:14px}}
 </style>
@@ -142,7 +154,7 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
   <p>Picture 0, an open book on a desk, stays in memory with the engine (<code>$A100</code>); 59 of the 125 rooms show it. Pictures 1-20 come with Part 1, 21-36 with Part 2 and 37-56 with Part 3, each part's set starting at <code>$4300</code> in its file. <code>OBJ_ROOM_TABLE</code> (<code>$0D4F</code>) names each room's picture, and a script can show any picture of the part for an event.</p>
   <div class="plate" style="margin-top:22px">
     <div class="nes-icons" id="nes-icons"></div>
-    <p class="cap" id="nes-icap">The 36 icon slots at <code>$A560</code>, 4 × 4 cells and 160 bytes each, drawn by the same port. Pick one to put it in the band above.</p>
+    <p class="cap" id="nes-icap">The 36 icon slots at <code>$A560</code>, 4 × 4 cells and 160 bytes each, drawn by the same port. Pick one to put it in the band above. Six are never shown: slots 4 and 5 hold the raster interrupt's code (<code>$A7E0</code>), 29 to 31 the opening's title and credits (<code>$B780</code>), and 27, a crucifix, is drawn but no object or script uses it (the noun-to-icon map at <code>$22A4</code> names none of the six).</p>
   </div>
   <p>Icons are pictures too. Each of the six icon records at <code>$2943</code> is a picture record whose address the engine changes: TAKE puts the address of the object's icon into the first free one of the five for objects (<code>$0F3A</code>), and the scripts put Falkor's or Artax's into the sixth, the companion's (<code>$113D</code>). A record whose address has a high byte of 0 is skipped.</p>
 </section>
@@ -786,7 +798,7 @@ const NES_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"
       const rooms = []; for (let r = 0; r < 125; r++) if (m[0x0D4F + r] === i) rooms.push(hex(r, 2));
       $('nes-pcap').innerHTML = `Record ${i} at <code>${hex(at)}</code>: row ${row}, column ${col}, ${h} rows of ${w} cells from <code>${hex(lo | hi << 8)}</code>, ${h * w * 10} bytes` +
         (i ? `, in Part ${partOfPic(i) + 1}` : ', in the engine') + '. ' +
-        (rooms.length ? `The picture of room${rooms.length > 1 ? 's' : ''} ${rooms.length > 8 ? rooms.length + ' rooms' : rooms.join(', ')}.` : 'No room has it as its picture; scripts show it.') +
+        (rooms.length ? `The picture of room${rooms.length > 1 ? 's' : ''} ${rooms.length > 8 ? rooms.length + ' rooms' : rooms.join(', ')}.` : i === 49 ? 'No room has it as its picture, and no script shows it (<a href="discoveries.html#nes-unseen">Discoveries</a>).' : 'No room has it as its picture; a script shows it for an event.') +
         ' Drawn by a port of <code>BLIT_ROOM_GRAPHIC</code>, which <code>test_pictures.js</code> holds to the game\'s routine on all 57 records, byte for byte.';
     }
     ['nes-pic', 'nes-back', 'nes-grid'].forEach((id) => $(id).addEventListener('change', drawPicture));
@@ -795,6 +807,7 @@ const NES_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"
     for (let k = 0; k < 36; k++) {
       const c = document.createElement('canvas'), m = M[0], v = band(), src = 0xA560 + 160 * k;
       c.title = 'Icon ' + k + ' at ' + hex(src);
+      if ([4, 5, 27, 29, 30, 31].includes(k)) { c.classList.add('nes-dim'); c.title += ', never shown'; }
       const rec = new Uint8Array(0x10000); rec.set(m);
       rec[0x2943] = 0; rec[0x2944] = 0; rec[0x2945] = src & 255; rec[0x2946] = src >> 8;
       nesBlit(rec, 0x2943, v);
@@ -874,16 +887,16 @@ const NES_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"
           : '<tr><td colspan="4">No words.</td></tr>') + '</tbody>';
       const out = [], scripts = [];
       for (const o of r.out) {
-        if (o.say !== undefined) out.push(`prints sentence ${o.say}: <b>${esc(say(o.say))}</b>`);
-        else if (o.unknown !== undefined) out.push(`then the word: <b>"${esc(o.unknown)}"</b>, and the line ends`);
+        if (o.say !== undefined) out.push(`Prints sentence ${o.say}: <b>${esc(say(o.say))}</b>`);
+        else if (o.unknown !== undefined) out.push(`Then the word: <b>"${esc(o.unknown)}"</b>. Nothing on the line is done, not even the commands before the word.`);
         else if (o.line) continue;
-        else if (o.rule === null) out.push(`verb ${esc(verbName(o.verb))} with ${o.noun === 0xFA ? 'no noun' : 'noun ' + esc(nounName(o.noun))}: no pair matches`);
+        else if (o.rule === null) out.push(`Verb ${esc(verbName(o.verb))} with ${o.noun === 0xFA ? 'no noun' : 'noun ' + esc(nounName(o.noun))}: no pair matches`);
         else {
-          out.push(`verb ${esc(verbName(o.verb))} with ${o.noun === 0xFA ? 'no noun' : 'noun ' + esc(nounName(o.noun))}: pair ${o.rule} (<code>${hex(rules + 2 * o.rule)}</code>) runs its script`);
+          out.push(`Verb ${esc(verbName(o.verb))} with ${o.noun === 0xFA ? 'no noun' : 'noun ' + esc(nounName(o.noun))}: pair ${o.rule} (<code>${hex(rules + 2 * o.rule)}</code>) runs its script`);
           scripts.push(o.rule);
         }
       }
-      $('nes-pout').innerHTML = out.length ? out.map((t, i) => (i ? '' : 'The engine ') + t).join('<br>') : 'Nothing: the line is empty.';
+      $('nes-pout').innerHTML = out.length ? out.join('<br>') : 'Nothing: the line is empty.';
       $('nes-pscript').innerHTML = scripts.map((k) => {
         const p = w16(m0, acts + 2 * k);
         return `<li>Pair ${k}, ${esc(verbName(m0[rules + 2 * k]))} with ${esc(m0[rules + 2 * k + 1] === 0xFB ? 'any noun' : m0[rules + 2 * k + 1] === 0xFA ? 'no noun' : nounName(m0[rules + 2 * k + 1]))}, script at <code>${hex(p)}</code>:</li>` +

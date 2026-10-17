@@ -19,6 +19,7 @@ const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+g.sameBlock('nes-parse');
 const { nesParse } = g.run(page, 'nes-parse', 'nesParse');
 const E = g.listing('parts/engine/listing.json');
 let bad = 0, lines = 0, dispatched = 0;

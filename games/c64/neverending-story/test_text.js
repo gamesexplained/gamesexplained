@@ -11,13 +11,16 @@
 // ($CC00-$CFE7), colour RAM, cursor ($06/$07 and $08/$09), column ($24), ink ($0286) and capital
 // flag ($0AFF) must be the routine's. It also counts the printer's instructions the calls ran,
 // so that a path the texts never take shows up, and prints some bytes of its own to take the paths
-// the game's texts leave out.
+// the game's texts leave out. Last, Part 1's event 27 with Part 3's file in memory, as a restart
+// after Part 2 prints it (discoveries.html): its pointer lies past Part 3's table. The other pages'
+// copies of the printer must be this one (g.sameBlock).
 // It exits 1 on any difference.
 //   node games/c64/neverending-story/test_text.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+g.sameBlock('nes-text');
 const { nesPrinter } = g.run(page, 'nes-text', 'nesPrinter');
 const E = g.listing('parts/engine/listing.json');
 const parts = [1, 2, 3].map((p) => g.listing(`parts/part-${p}/listing.json`));
@@ -73,6 +76,14 @@ for (let p = 0; p < 3; p++) {
     cpu.call(0x0B58, { a: first }, opts); P.room(first); check(`part ${p + 1} room $${first.toString(16)}, $${sw.toString(16)} switched`);
     cpu.call(0x099B, { a: 2 }, opts); P.sentence(2); check(`part ${p + 1} sentence 2, $${sw.toString(16)} switched`);
     cpu.m[sw] = tables[sw] = sw === 0x0949 ? 0 : 1;
+  }
+  // what a restart after Part 2 prints: Part 1's start script asks for event 27 with Part 3's
+  // file in memory, whose table holds 9 (discoveries.html, "Bug: restarting after Part 2 loads
+  // Part 3"); the pointer lies past the table's end
+  if (p === 2) {
+    cpu.m[0x2940] = tables[0x2940] = 0;
+    cpu.call(0x09D7, { a: 27 }, { executed, maxSteps: 5e7 }); P.event(27); check('Part 1\'s event 27 with Part 3 loaded');
+    cpu.m[0x2940] = tables[0x2940] = 2;
   }
 }
 // which of the printer's instructions ran ($08DB-$0BBC), and which not
