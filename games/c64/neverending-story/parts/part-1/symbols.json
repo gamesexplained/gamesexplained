@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "neverending-story",
  "part": "part-1",
- "build": "Ocean disk release; Part 1 at the command prompt",
+ "build": "MrL and Dr Bakterius crack of Ocean's release (.d64, MD5 1938dd66ac2dcf1f9067532f41c0b3e8); the engine at the opening, each part at its first prompt",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -930,7 +930,7 @@
   {
    "address": 12036,
    "type": "line",
-   "text": "Address of the room script pointers below ($2F4B). PRINT_ROOM_DESCRIPTION reads it at $14BB, adding twice the room number less $00."
+   "text": "Address of the room script pointers below ($2F4B). RUN_TURN_SCRIPTS reads it at $14BB, adding twice the room number less $00."
   },
   {
    "address": 12037,
@@ -940,12 +940,12 @@
   {
    "address": 12038,
    "type": "line",
-   "text": "Part 1's turn script, run every turn by PRINT_ROOM_DESCRIPTION ($148F) after the resident turn script at $1C6F and before the room's own script: if flag 2 is clear: set flag 2, move Gmork to nowhere yet ($FB), set counter 3 to 30; if burning branch is not gone: take 1 from counter 4; if burning branch is not gone and counter 4 is 0: print event 22 (\"The branch has burnt completely away.\"), make the noun burning branch, drop the object named, move burning branch to gone; if Gmork is not gone and a 51-in-256 chance: take 1 from counter 3; if Gmork is not gone and counter 3 is 10: take 1 from counter 3, print event 3 (\"Gmork , the great wolf , is gaining on you. Some...\"), show picture 10 (Gmork running through the forest); if Gmork is not gone and counter 3 is 1: print event 4 (\"Gmork is almost on top of you. You had better ge...\"), show picture 10 (Gmork running through the forest); if Gmork is not gone and counter 3 is 0: print event 5 (\"Gmork has caught up with you and consumed you in...\"), show picture 10 (Gmork running through the forest), wait for a key, restart the game."
+   "text": "Part 1's turn script, run every turn by RUN_TURN_SCRIPTS ($148F) after the resident turn script at $1C6F and before the room's own script: if flag 2 is clear: set flag 2, move Gmork to nowhere yet ($FB), set counter 3 to 30; if burning branch is not gone: take 1 from counter 4; if burning branch is not gone and counter 4 is 0: print event 22 (\"The branch has burnt completely away.\"), make the noun burning branch, drop the object named, move burning branch to gone; if Gmork is not gone and the raster line's low byte is 50 or less (102 of the 312 lines in a frame): take 1 from counter 3; if Gmork is not gone and counter 3 is 10: take 1 from counter 3, print event 3 (\"Gmork , the great wolf , is gaining on you. Some...\"), show picture 10 (Gmork running through the forest); if Gmork is not gone and counter 3 is 1: print event 4 (\"Gmork is almost on top of you. You had better ge...\"), show picture 10 (Gmork running through the forest); if Gmork is not gone and counter 3 is 0: print event 5 (\"Gmork has caught up with you and consumed you in...\"), show picture 10 (Gmork running through the forest), print \"Paused - hit space to continue!\" and wait for Space, restart the game."
   },
   {
    "address": 12107,
    "type": "line",
-   "text": "One pointer per room for rooms $00-$28: the script PRINT_ROOM_DESCRIPTION runs after the turn scripts each time the player is in that room. The 41 rooms point at 25 scripts."
+   "text": "One pointer per room for rooms $00-$28: the script RUN_TURN_SCRIPTS runs after the turn scripts each time the player is in that room. The 41 rooms point at 25 scripts."
   },
   {
    "address": 12189,
@@ -990,7 +990,7 @@
   {
    "address": 12252,
    "type": "line",
-   "text": "Script for room $0D (You are standing in a large sticky patch of quicksand). Runs every turn the player is there: take 1 from counter 1, print event 9 (\"The Sadness is sapping your will!\"); add 1 to counter 2; if counter 2 is 1: print event 11 (\"This quicksand is even stickier than the Swamps.\"); if counter 2 is 3: print event 12 (\"The quicksand claims another victim!\"), wait for a key, restart the game."
+   "text": "Script for room $0D (You are standing in a large sticky patch of quicksand). Runs every turn the player is there: take 1 from counter 1, print event 9 (\"The Sadness is sapping your will!\"); add 1 to counter 2; if counter 2 is 1: print event 11 (\"This quicksand is even stickier than the Swamps.\"); if counter 2 is 3: print event 12 (\"The quicksand claims another victim!\"), print \"Paused - hit space to continue!\" and wait for Space, restart the game."
   },
   {
    "address": 12274,
@@ -1030,7 +1030,7 @@
   {
    "address": 12347,
    "type": "line",
-   "text": "Script for room $15 (Atreyu stands atop the small mountain that is Morla the ancient one,...). Runs every turn the player is there: if a 126-in-256 chance: put the player in room $16, print event 8 (\"Morla is very irritable and he throws you off hi...\"), stop; put the player in room $14, print event 8 (\"Morla is very irritable and he throws you off hi...\")."
+   "text": "Script for room $15 (Atreyu stands atop the small mountain that is Morla the ancient one,...). Runs every turn the player is there: if the raster line's low byte is 125 or less (182 of the 312 lines in a frame): put the player in room $16, print event 8 (\"Morla is very irritable and he throws you off hi...\"), stop; put the player in room $14, print event 8 (\"Morla is very irritable and he throws you off hi...\")."
   },
   {
    "address": 12360,
@@ -1065,12 +1065,12 @@
   {
    "address": 12418,
    "type": "line",
-   "text": "Script for room $27 (Atreyu stands at the entrance to the southern oracle). Runs every turn the player is there: print event 17 (\"I hope you know what you're doing!\"), clear flag 5; if flag 5 is clear and a 26-in-256 chance: set flag 5, print event 26 (\"The sphinxes' eyes blink!\")."
+   "text": "Script for room $27 (Atreyu stands at the entrance to the southern oracle). Runs every turn the player is there: print event 17 (\"I hope you know what you're doing!\"), clear flag 5; if flag 5 is clear and the raster line's low byte is 25 or less (52 of the 312 lines in a frame): set flag 5, print event 26 (\"The sphinxes' eyes blink!\")."
   },
   {
    "address": 12432,
    "type": "line",
-   "text": "Script for room $28 (The great mirror). Runs every turn the player is there: if flag 1 is clear: move Falkor to the current room, stop confirming takes and drops, make the noun Falkor, take the object named, confirm takes and drops again; wait for a key, print event 25 (\"The singing voice of the southern oracle fills t...\"), show picture 17 (Falkor in flight), wait for a key; load the next part."
+   "text": "Script for room $28 (The great mirror). Runs every turn the player is there: if flag 1 is clear: move Falkor to the current room, stop confirming takes and drops, make the noun Falkor, take the object named, confirm takes and drops again; print \"Paused - hit space to continue!\" and wait for Space, print event 25 (\"The singing voice of the southern oracle fills t...\"), show picture 17 (Falkor in flight), print \"Paused - hit space to continue!\" and wait for Space; load the next part."
   },
   {
    "address": 12452,
@@ -1225,202 +1225,202 @@
   {
    "address": 14220,
    "type": "line",
-   "text": "Room $00: \"Atreyus' home. The reed constructed hut is sparsely furnished.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $00: \"Atreyus' home. The reed constructed hut is sparsely furnished.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 14272,
    "type": "line",
-   "text": "Room $01: \"Atreyu stands in a small clearing in the middle of the Great Forest. There is a campfire burning brightly in the centre of the clearing and a small Forest track leading off to the northeast.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $01: \"Atreyu stands in a small clearing in the middle of the Great Forest. There is a campfire burning brightly in the centre of the clearing and a small Forest track leading off to the northeast.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 3 (Rockbiter) instead."
   },
   {
    "address": 14354,
    "type": "line",
-   "text": "Room $02: \"You are deep in the Forest. A small track runs southwest and to the east the Forest appears to thin out.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $02: \"You are deep in the Forest. A small track runs southwest and to the east the Forest appears to thin out.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 2 (Teenyweeny in his top hat) instead."
   },
   {
    "address": 14394,
    "type": "line",
-   "text": "Room $03: \"Atreyu stands at the base of the Ivory Tower. There are pathways heading off in all directions in to the Great Forest but there doesn't appear to be any way in.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $03: \"Atreyu stands at the base of the Ivory Tower. There are pathways heading off in all directions in to the Great Forest but there doesn't appear to be any way in.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 1 (Nighthob) instead."
   },
   {
    "address": 14472,
    "type": "line",
-   "text": "Room $04: \"You are on a well trodden Forest path running east - west.\" Ends with @. Its picture is 18 (Atreyu on a forest path)."
+   "text": "Room $04: \"You are on a well trodden Forest path running east - west.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 18 (Atreyu on a forest path)."
   },
   {
    "address": 14500,
    "type": "line",
-   "text": "Room $05: \"Atreyu stands on the eastern border of the Great Forest. To the east are the grassy plains of atreyu's homeland and a path enters the Great Forest to the west.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $05: \"Atreyu stands on the eastern border of the Great Forest. To the east are the grassy plains of atreyu's homeland and a path enters the Great Forest to the west.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 14579,
    "type": "line",
-   "text": "Room $06: \"Atreyu stands in the centre of his home village. All around are the grass huts belonging to the people of the plains. The grassy ocean of the plains stretches as far as the eye can see in all directions. To the southwest is the hut belonging to Atreyu.\" Ends with @. Its picture is 5 (Atreyu on the plains)."
+   "text": "Room $06: \"Atreyu stands in the centre of his home village. All around are the grass huts belonging to the people of the plains. The grassy ocean of the plains stretches as far as the eye can see in all directions. To the southwest is the hut belonging to Atreyu.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 5 (Atreyu on the plains)."
   },
   {
    "address": 14727,
    "type": "line",
-   "text": "Room $07: \"You are in the eastern plains. To the east and south you can just see the snow-covered tops of the silver mountains.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $07: \"You are in the eastern plains. To the east and south you can just see the snow-covered tops of the silver mountains.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 6 (a horseman riding across the plains at sunset) instead."
   },
   {
    "address": 14793,
    "type": "line",
-   "text": "Room $08: \"The foothills of the silver mountains. It doesn't look possible to go any further east but there is a small tunnel leading down into the rock.\" Ends with @. Its picture is 19 (the silver mountains)."
+   "text": "Room $08: \"The foothills of the silver mountains. It doesn't look possible to go any further east but there is a small tunnel leading down into the rock.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 19 (the silver mountains)."
   },
   {
    "address": 14879,
    "type": "line",
-   "text": "Room $09: \"You are in the centre of the main pasture land used by the greenskins for their herds of wild buffalo.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $09: \"You are in the centre of the main pasture land used by the greenskins for their herds of wild buffalo.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 6 (a horseman riding across the plains at sunset) instead."
   },
   {
    "address": 14946,
    "type": "line",
-   "text": "Room $0A: \"The long, courser grass of the northern plains surrounds you. To the west the Great Forest can just be made out.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $0A: \"The long, courser grass of the northern plains surrounds you. To the west the Great Forest can just be made out.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 6 (a horseman riding across the plains at sunset) instead."
   },
   {
    "address": 15011,
    "type": "line",
-   "text": "Room $0B: \"Atreyu stands at the northern edge of the Great Forest. A small dark path leads in to the Forest to the southwest.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $0B: \"Atreyu stands at the northern edge of the Great Forest. A small dark path leads in to the Forest to the southwest.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 15058,
    "type": "line",
-   "text": "Room $0C: \"The path through the Forest is soft underfoot here. To the north the going looks even worse as the trees give way to swampland.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $0C: \"The path through the Forest is soft underfoot here. To the north the going looks even worse as the trees give way to swampland.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 15136,
    "type": "line",
-   "text": "Room $0D: \"You are standing in a large sticky patch of quicksand. It would be wise to get out of here as soon as possible.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $0D: \"You are standing in a large sticky patch of quicksand. It would be wise to get out of here as soon as possible.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 15212,
    "type": "line",
-   "text": "Room $0E: \"Rotting vegetation fills the cold, dank air with foul swamp gas as Atreyu stands on the southern border of the Swamps of Sadness. There is an overpowering feeling of despair about this place. To the north things don't look much better.\" Ends with @. Its picture is 7 (Atreyu knee deep in the swamp)."
+   "text": "Room $0E: \"Rotting vegetation fills the cold, dank air with foul swamp gas as Atreyu stands on the southern border of the Swamps of Sadness. There is an overpowering feeling of despair about this place. To the north things don't look much better.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 7 (Atreyu knee deep in the swamp). Its script can show picture 8 (Artax sinking into the swamp) instead."
   },
   {
    "address": 15360,
    "type": "line",
-   "text": "Room $0F: \"Sadness fills Atreyu as he stands knee deep in vile swamp water. The Swamps extend northwest and a path in to the Great Forest heads southeast.\" Ends with @. Its picture is 7 (Atreyu knee deep in the swamp)."
+   "text": "Room $0F: \"Sadness fills Atreyu as he stands knee deep in vile swamp water. The Swamps extend northwest and a path in to the Great Forest heads southeast.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 7 (Atreyu knee deep in the swamp). Its script can show picture 8 (Artax sinking into the swamp) instead."
   },
   {
    "address": 15426,
    "type": "line",
-   "text": "Room $10: \"Swamp water soaks Atreyu as he stands on the eastern border of the Swamps of Sadness. To the west can be seen a large withered tree.\" Ends with @. Its picture is 7 (Atreyu knee deep in the swamp)."
+   "text": "Room $10: \"Swamp water soaks Atreyu as he stands on the eastern border of the Swamps of Sadness. To the west can be seen a large withered tree.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 7 (Atreyu knee deep in the swamp)."
   },
   {
    "address": 15490,
    "type": "line",
-   "text": "Room $11: \"Atreyu hangs on to the branches of an old withered tree that somehow manages to survive in the swamp. To the north there is an enormous mound of earth that almost looks natural but not quite. All around Atreyu the Sadness hangs desperately to the damp air.\" Ends with @. Its picture is 9 (Morla)."
+   "text": "Room $11: \"Atreyu hangs on to the branches of an old withered tree that somehow manages to survive in the swamp. To the north there is an enormous mound of earth that almost looks natural but not quite. All around Atreyu the Sadness hangs desperately to the damp air.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 9 (Morla)."
   },
   {
    "address": 15653,
    "type": "line",
-   "text": "Rooms $12 and $13: \"The Swamps of Sadness. Atreyu can see no clear paths through the Swamps.\" Ends with @. Its picture is 7 (Atreyu knee deep in the swamp)."
+   "text": "Rooms $12 and $13: \"The Swamps of Sadness. Atreyu can see no clear paths through the Swamps.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives them picture 7 (Atreyu knee deep in the swamp)."
   },
   {
    "address": 15686,
    "type": "line",
-   "text": "Room $14: \"The Swamps of Sadness. To the east atreyu's path is blocked by a large grass covered mound.\" Ends with @. Its picture is 7 (Atreyu knee deep in the swamp)."
+   "text": "Room $14: \"The Swamps of Sadness. To the east atreyu's path is blocked by a large grass covered mound.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 7 (Atreyu knee deep in the swamp)."
   },
   {
    "address": 15735,
    "type": "line",
-   "text": "Room $15: \"Atreyu stands atop the small mountain that is Morla the ancient one, the oldest inhabitant of Fantasia. To the north Atreyu can see the cave that is morlas' home.\" Ends with @. Its picture is 7 (Atreyu knee deep in the swamp)."
+   "text": "Room $15: \"Atreyu stands atop the small mountain that is Morla the ancient one, the oldest inhabitant of Fantasia. To the north Atreyu can see the cave that is morlas' home.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 7 (Atreyu knee deep in the swamp)."
   },
   {
    "address": 15817,
    "type": "line",
-   "text": "Room $16: \"The Swamps of Sadness. Blocking the way to the west is a large unnatural looking hill. The swamp looks passable to the south and southwest though.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $16: \"The Swamps of Sadness. Blocking the way to the west is a large unnatural looking hill. The swamp looks passable to the south and southwest though.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 15890,
    "type": "line",
-   "text": "Room $17: \"Atreyu stands in the centre of morlas' cave. There is a small tunnel in the north wall.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $17: \"Atreyu stands in the centre of morlas' cave. There is a small tunnel in the north wall.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 20 (the crystal in its glass box) instead."
   },
   {
    "address": 15929,
    "type": "line",
-   "text": "Room $18: \"Atreyu stands at the western edge of the Great Forest. A small curvy track runs off to the south.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $18: \"Atreyu stands at the western edge of the Great Forest. A small curvy track runs off to the south.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 15972,
    "type": "line",
-   "text": "Room $19: \"You are on a wide well trodden Forest track that curves gently from south to northeast.\" Ends with @. Its picture is 18 (Atreyu on a forest path)."
+   "text": "Room $19: \"You are on a wide well trodden Forest track that curves gently from south to northeast.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 18 (Atreyu on a forest path)."
   },
   {
    "address": 16011,
    "type": "line",
-   "text": "Room $1A: \"Atreyu is on a tiny twisty path in the Great Forest. The Ivory Tower can be seen rising out of the Forest to the north.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $1A: \"Atreyu is on a tiny twisty path in the Great Forest. The Ivory Tower can be seen rising out of the Forest to the north.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16055,
    "type": "line",
-   "text": "Room $1B: \"You are deep in the Great Forest. Possible exits are west or northwest.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $1B: \"You are deep in the Great Forest. Possible exits are west or northwest.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16081,
    "type": "line",
-   "text": "Room $1C: \"The southern plains. To the east lie the foothills of the mountains.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $1C: \"The southern plains. To the east lie the foothills of the mountains.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 6 (a horseman riding across the plains at sunset) instead."
   },
   {
    "address": 16128,
    "type": "line",
-   "text": "Room $1D: \"The mountains dominate the skyline as Atreyu stands at the bottom of a thin broken trail which heads up into the foothills of the mountains to the northeast. The plains continue to the west and north.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $1D: \"The mountains dominate the skyline as Atreyu stands at the bottom of a thin broken trail which heads up into the foothills of the mountains to the northeast. The plains continue to the west and north.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16241,
    "type": "line",
-   "text": "Room $1E: \"The western edge of the Great Forest. There are paths north , southeast and east.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $1E: \"The western edge of the Great Forest. There are paths north , southeast and east.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16274,
    "type": "line",
-   "text": "Room $1F: \"Three separate Forest paths meet at this small clearing. They lead off to the northeast , north and west.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $1F: \"Three separate Forest paths meet at this small clearing. They lead off to the northeast , north and west.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100). Its script can show picture 16 (Falkor's head) instead."
   },
   {
    "address": 16327,
    "type": "line",
-   "text": "Room $20: \"From the top of this enormous tree Atreyu can see the Ivory Tower amid the Forest to the north , the plains of his homeland away to the northeast and the entrance to the southern oracle to the south.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $20: \"From the top of this enormous tree Atreyu can see the Ivory Tower amid the Forest to the north , the plains of his homeland away to the northeast and the entrance to the southern oracle to the south.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16414,
    "type": "line",
-   "text": "Room $21: \"The Great Forest comes to an abrupt end here as the impassable desert of many colours takes over the landscape to the south. A path leads in to the Forest to the northwest.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $21: \"The Great Forest comes to an abrupt end here as the impassable desert of many colours takes over the landscape to the south. A path leads in to the Forest to the northwest.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16505,
    "type": "line",
-   "text": "Room $22: \"You are standing in a small wood which runs along the southern border of the desert of many colours. The only real exit is to the east.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $22: \"You are standing in a small wood which runs along the southern border of the desert of many colours. The only real exit is to the east.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16590,
    "type": "line",
-   "text": "Room $23: \"Atreyu stands at the base of an enormous tree. There is a trail into the wood to the west and a small paved path lined with pebbles leading off to the south.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $23: \"Atreyu stands at the base of an enormous tree. There is a trail into the wood to the west and a small paved path lined with pebbles leading off to the south.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16667,
    "type": "line",
-   "text": "Room $24: \"The gnomics' house. The tiny house is the home of Engywook and Urgll , who are the only inhabitants of the lands of the south. Through an opening to the east can be seen a strange machine.\" Ends with @. Its picture is 13 (Engywook and Urgl)."
+   "text": "Room $24: \"The gnomics' house. The tiny house is the home of Engywook and Urgll , who are the only inhabitants of the lands of the south. Through an opening to the east can be seen a strange machine.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 13 (Engywook and Urgl)."
   },
   {
    "address": 16768,
    "type": "line",
-   "text": "Room $25: \"Warm air blown by a gentle breeze flows over the outcropping rock at the back of the gnomics house. Engywook uses this vantage point to study the entrance to the southern oracle.\" Ends with @. Its picture is 14 (Engywook's telescope)."
+   "text": "Room $25: \"Warm air blown by a gentle breeze flows over the outcropping rock at the back of the gnomics house. Engywook uses this vantage point to study the entrance to the southern oracle.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 14 (Engywook's telescope)."
   },
   {
    "address": 16884,
    "type": "line",
-   "text": "Room $26: \"Steep threatening cliffs form a valley that is guarded by two menacing sphinxes to the south and closed off to the north by engywooks' home.\" Ends with @. Its picture is 0 (an open book on a desk, the picture of every room without one of its own)."
+   "text": "Room $26: \"Steep threatening cliffs form a valley that is guarded by two menacing sphinxes to the south and closed off to the north by engywooks' home.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 0 (an open book on a desk, the shared picture at $A100)."
   },
   {
    "address": 16972,
    "type": "line",
-   "text": "Room $27: \"Atreyu stands at the entrance to the southern oracle. High above the sphinxes fix their stony gaze on a point on the ground in the centre of the thin passage between them.\" Ends with @. Its picture is 11 (the two sphinxes)."
+   "text": "Room $27: \"Atreyu stands at the entrance to the southern oracle. High above the sphinxes fix their stony gaze on a point on the ground in the centre of the thin passage between them.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 11 (the two sphinxes)."
   },
   {
    "address": 17078,
    "type": "line",
-   "text": "Room $28: \"The great mirror. In the mirror Atreyu can see Bastian reading the Neverending story.\" Ends with @. Its picture is 15 (Atreyu before the great mirror)."
+   "text": "Room $28: \"The great mirror. In the mirror Atreyu can see Bastian reading the Neverending story.\" Ends with @. OBJ_ROOM_TABLE ($0D4F) gives it picture 15 (Atreyu before the great mirror). Its script can show picture 17 (Falkor in flight) instead."
   },
   {
    "address": 17122,

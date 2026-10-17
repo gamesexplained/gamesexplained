@@ -49,7 +49,7 @@ sound among it, is in that part's `parts/<id>/facts.md`.
 | Resident turn script, sentences, object descriptions, dictionary, game state, start and action scripts | $1C6F-$2EFF |
 | One story part: its tables, scripts, texts and pictures (each part's own listing) | $2F00-$95FF |
 | Title tune driver (the opening); the disk loader replaces $9700-$98FF when the opening ends | $9680-$9FEE |
-| The game's copy of zero page, swapped with the real one around KERNAL calls | $A000-$A0FF |
+| The KERNAL's zero page, copied by the opening and swapped with the game's around each load ($053C) | $A002-$A0FF |
 | Picture 0, the shared room picture | $A100-$A55F |
 | 36 object icons of 160 bytes (the opening's texts fill slots 29-31) | $A560-$BBDF |
 | Saved play screen: bitmap $BC00, screen bytes $C880, colour bytes $CA10 | $BC00-$CB9F |
@@ -165,9 +165,13 @@ sound among it, is in that part's `parts/<id>/facts.md`.
   dark, counter 6, end the game ("Something grabs you out of the
   darkness and strangles you!"). The glowglobe keeps flag 7 set while
   carried ($1C6F).
-- **Chance.** The one random test, opcode $88, compares its operand
-  with the low byte of the raster line ($1222, $0695), a chance of
-  (operand + 1) in 256 when the line is evenly spread.
+- **Chance.** The one random test, opcode $88, passes when the low byte
+  of the raster line is no more than its operand ($1222, $0695). A PAL
+  frame is 312 lines, so the bytes 0-55 come round twice a frame and
+  the rest once: an operand n passes on n + 1 + min(n, 55) + 1 of the
+  312 lines, when the test is equally likely to fall anywhere in the
+  frame. That is 102 lines for 50 (33 %), not the 51 in 256 (20 %) the
+  operand suggests.
 - **Restart.** QUIT and Y, a death or the win runs `RESTART_GAME`
   ($0FDD) and then `INIT_GAME_RUN`, which reloads Part 1 if any other
   part has been loaded since (`LOADED_PART_NO` $5E). In this copy the
@@ -199,6 +203,33 @@ lower case except after a full stop or at the start of a text, '<'
 starts a line and $FF takes the next byte as a colour ($0A0E, $0ADB).
 
 ## The listing's error rate
+
+The first sample drew 60 of the listing's 2,000 comments with seed
+20261017, in two strata: 40 of the 1,472 written by hand and 20 of the
+528 written from templates (the engine's sentences, object descriptions
+and action scripts, the tune's segments, and the three parts' texts,
+scripts and pictures). A checker on a proven model (named in
+`game.json`) that wrote none of them found 4 wrong (6.7 % plain, 6.8 %
+weighted by stratum; 95 % Wilson interval 2.6 % to 15.9 %), a lower
+bound on the true rate. Three were written by hand: the zero page at
+$A002-$A0FF was called the game's own, swapped in around every KERNAL
+call, where it holds the KERNAL's and is swapped in only while a part
+loads; the six icon records at $2943 were labelled three bytes off,
+with their fields in the wrong order; and `PRINT_SENTENCE` was said to
+print a blank line first, which it does only when the cursor is at
+column 0. One was a template's: every room's text named the picture
+`OBJ_ROOM_TABLE` gives it as its picture, even where the room's script
+shows another, and called picture 0 the picture of every room without
+one of its own. All four were corrected, with 174 more comments that
+said the same things or were found wrong when each template was tested
+against the code: the scroll test ($CFE8, not $CFC0), the drop
+capital's colour (yellow, not light grey), the save code's device (1,
+the cassette), the sentences the template said nothing prints (it
+missed a JMP to the printer and the part names' computed id), the
+pause action (Space only, with its message), two DROP rules no command
+can reach, and the chance test, whose odds the template gave as n + 1
+in 256 where a PAL frame's 312 lines make them n + 1 + min(n, 55) + 1
+in 312.
 
 ## Live tests
 

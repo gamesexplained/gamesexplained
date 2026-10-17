@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "neverending-story",
  "part": "engine",
- "build": "Ocean disk release; Part 1 at the command prompt",
+ "build": "MrL and Dr Bakterius crack of Ocean's release (.d64, MD5 1938dd66ac2dcf1f9067532f41c0b3e8); the engine at the opening, each part at its first prompt",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -67,7 +67,7 @@
    [
     41216,
     42335,
-    "Room picture 0, the picture shared by every room without one of its own: 8 rows of 14 cells"
+    "Room picture 0, an open book on a desk, always in memory: the picture OBJ_ROOM_TABLE gives every room that has none in its part's set, 8 rows of 14 cells"
    ],
    [
     57344,
@@ -2088,15 +2088,9 @@
   },
   {
    "address": 3025,
-   "name": "f_0BD1",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
-   "address": 3027,
    "name": "SCREEN_ROW_ADDR_TABLE",
    "type": "Field",
-   "kind": "user"
+   "kind": "auto"
   },
   {
    "address": 3045,
@@ -3096,7 +3090,7 @@
   },
   {
    "address": 5245,
-   "name": "PRINT_ROOM_DESCRIPTION",
+   "name": "RUN_TURN_SCRIPTS",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -4962,45 +4956,45 @@
   },
   {
    "address": 10566,
-   "name": "a_2946",
+   "name": "OBJECT_RECORD_0_SOURCE_HI",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 10572,
-   "name": "a_294C",
+   "name": "OBJECT_RECORD_1_SOURCE_HI",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 10578,
-   "name": "VISIBLE_OBJECT_RECORD_2_COLUMN",
+   "name": "OBJECT_RECORD_2_SOURCE_HI",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 10584,
-   "name": "a_2958",
+   "name": "OBJECT_RECORD_3_SOURCE_HI",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 10590,
-   "name": "a_295E",
+   "name": "OBJECT_RECORD_4_SOURCE_HI",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 10595,
-   "name": "CURRENT_OBJECT_GRAPHIC_PTR",
+   "name": "COMPANION_SOURCE_PTR",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 10596,
-   "name": "a_2964",
+   "name": "COMPANION_SOURCE_HI",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 10599,
@@ -8511,6 +8505,36 @@
    "name": "KERNAL_GETIN",
    "type": "Predefined",
    "kind": "system"
+  },
+  {
+   "address": 10569,
+   "name": "OBJECT_RECORD_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 10575,
+   "name": "OBJECT_RECORD_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 10581,
+   "name": "OBJECT_RECORD_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 10587,
+   "name": "OBJECT_RECORD_4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 10593,
+   "name": "COMPANION_RECORD",
+   "type": "UserDefined",
+   "kind": "user"
   }
  ],
  "comments": [
@@ -8537,12 +8561,12 @@
   {
    "address": 5,
    "type": "line",
-   "text": "Saved current character color while drawing status text."
+   "text": "Saved current character colour while PRINT_ROOM_TEXT_DROPCAP ($0957) draws a room description's drop capital in yellow; nothing else uses it."
   },
   {
    "address": 10,
    "type": "line",
-   "text": "Primary work pointer; source pointer for MEMCPY and table pointer in parser/dispatcher code."
+   "text": "Primary work pointer: the source pointer for MEMCPY, the fill pointer of CLEAR_TEXT_SCREEN, the pointer to the command line (INPUT_TEXT_BUFFER, $CBA0) in PARSE_INPUT ($123F), and the verb-noun rule table pointer in DISPATCH_COMMAND ($1408)."
   },
   {
    "address": 12,
@@ -8552,12 +8576,12 @@
   {
    "address": 14,
    "type": "line",
-   "text": "Auxiliary pointer used by input, object-description, and renderer paths."
+   "text": "Auxiliary pointer: the command-line pointer of the line editor ($0818) and READ_FILENAME, the exit-table pointer in ACTION_MOVE_DIRECTION ($0E68-$0E80), and the object-description pointer in the inventory and room-object listings ($1061, $10D9)."
   },
   {
    "address": 16,
    "type": "line",
-   "text": "Voice 1's place in the tune: the address of its next event, which MUSIC_INIT sets to $F250. Zero page $10-$21 belongs to the tune while it plays in the opening; the game keeps its own zero page at $A002-$A0FF and swaps it in at $053C."
+   "text": "Voice 1's place in the tune: the address of its next event, which MUSIC_INIT sets to $F250. Zero page $10-$21 belongs to the tune while it plays in the opening; the game works in the real zero page, and $A002-$A0FF holds the KERNAL's, copied there by OPENING_SETUP ($06B2) before the tune starts and swapped back in only while a part loads ($053C)."
   },
   {
    "address": 18,
@@ -8652,7 +8676,7 @@
   {
    "address": 40,
    "type": "line",
-   "text": "Sixteen pairs of input-buffer start/end offsets and later parsed word ids."
+   "text": "Sixteen two-byte slots ($28-$47), cleared at $1238: the first byte of each is a word's start offset in INPUT_TEXT_BUFFER, the second the word's id once it is looked up ($138C). No end offset is kept: a word's length is the next slot's start minus its own minus 1 ($1303), and the slot after the last word holds that word's end + 1 ($1269). The parser stops after 15 words ($1289)."
   },
   {
    "address": 72,
@@ -8722,7 +8746,7 @@
   {
    "address": 92,
    "type": "line",
-   "text": "Resolved object-state index for the current noun; used to locate its packed graphic at $A560 + index*$A0."
+   "text": "Icon slot of the current object: the position in the noun-to-icon map NOUN_TO_OBJECT_INDEX ($22A4) at which RESOLVE_NOUN found the object number ($15FB; the object-state index itself, noun id - $32, stays in SCRATCH_BYTE), or the slot a script names for SCRIPT_SET_OBJECT_GRAPHIC ($114F). CALC_OBJECT_GRAPHIC_PTR uses it to locate the icon at $A560 + slot*$A0."
   },
   {
    "address": 93,
@@ -8732,12 +8756,12 @@
   {
    "address": 94,
    "type": "line",
-   "text": "Game part currently resident in memory; compared with CURRENT_PART_NO after state loads."
+   "text": "Game part resident in memory, numbered like CURRENT_PART_NO: SHOW_PART_LOAD_SCREEN sets it to CURRENT_PART_NO after each load ($045C) and OPENING_SETUP to $FF ($06FD). INIT_GAME_RUN ($14E9) shows the load screen and loads a part whenever it is not 0. The unreachable DISK_LOAD_GAME compares it with CURRENT_PART_NO after restoring a saved state ($047D)."
   },
   {
    "address": 95,
    "type": "line",
-   "text": "Set when KERNAL load/save fails; game initialization retries while nonzero."
+   "text": "Set to 1 when the retained save/load code fails or the file name is empty ($04BB), and from A on entry to DISK_LOAD_GAME ($0461); OPENING_SETUP clears it ($06EE). Its one reader, RESTORE_SAVED_GAME ($14F6), starts a new game through INIT_GAME when it is non-zero. Everything that sets or reads it after the opening is unreachable in this build."
   },
   {
    "address": 96,
@@ -8747,7 +8771,7 @@
   {
    "address": 99,
    "type": "line",
-   "text": "Controls verbose room/object feedback."
+   "text": "When non-zero, TAKE and DROP confirm with \"Taken!\" (sentence $0C, $0F31) and \"Dropped!\" (sentence $0D, $0ECE); nothing else reads it. Actions $1B and $1C clear and set it (SET_VERBOSE_OFF, SET_VERBOSE_ON), which scripts use around a silent take or drop; SETUP_CURRENT_ROOM sets it after a part's start script ($157C)."
   },
   {
    "address": 100,
@@ -8782,7 +8806,7 @@
   {
    "address": 178,
    "type": "line",
-   "text": "KERNAL file parameters ($B2-$C5), still as the last LOAD left them at the opening: device ($BA) 8, file name pointer ($BB/$BC) $0800. RESTORE_SYSTEM_TO_BASIC writes $033C to $B2/$B3 and $03 to $C2 ($A8A8-$A8AE), as the KERNAL does at power-up; the loader at $9700 sets the name, device and secondary address again through SETNAM and SETLFS before each part."
+   "text": "KERNAL file parameters ($B2-$C5) at the opening: device ($BA) 8, from the LOAD that started the game; the file name pointer ($BB/$BC), $0800, was written by the depacker ($016C-$0173), which also used the name length ($B7) as scratch. RESTORE_SYSTEM_TO_BASIC writes $033C to $B2/$B3 and $03 to $C2 ($A8A8-$A8AE), as the KERNAL does at power-up; the loader at $9700 sets the name, device and secondary address again through SETNAM and SETLFS before each part."
   },
   {
    "address": 198,
@@ -8797,7 +8821,7 @@
   {
    "address": 217,
    "type": "line",
-   "text": "KERNAL LDTB1 ($D9-$F2) \u2014 the screen editor's 26-byte line-link table: one entry per screen row\nplus an editor scratch byte. Bits 0-3 hold the screen-memory page displacement of that row's\nfirst byte; bit 7 set marks the first physical line of a logical line. The $84/$85/$86/$87\npattern here describes a stock 40x25 screen based at $0400, i.e. state left over from before the\ngame took the machine. The game neither reads nor writes it."
+   "text": "KERNAL LDTB1 ($D9-$F2) - the screen editor's 26-byte line-link table: one entry per screen row plus an editor scratch byte. Each entry is the high byte of its row's first screen address, with bit 7 set when the row is the first physical line of a logical line; the editor uses only bits 0-1 of it, ORed with HIBASE ($0288). The $84/$85/$86/$87 pattern here describes a stock 40x25 screen based at $0400, i.e. state left over from before the game took the machine. The game neither reads nor writes it."
   },
   {
    "address": 253,
@@ -8872,12 +8896,12 @@
   {
    "address": 650,
    "type": "line",
-   "text": "KERNAL RPTFLG: keyboard auto-repeat mode. Zero selects the normal policy (cursor keys repeat; other keys do not)."
+   "text": "KERNAL RPTFLG: keyboard auto-repeat mode. Zero, the power-up value, makes only the cursor keys, INST/DEL and the space bar repeat."
   },
   {
    "address": 651,
    "type": "line",
-   "text": "KERNAL key-repeat control flag, cleared after accepted input."
+   "text": "KERNAL KOUNT: the key-repeat countdown that SCNKEY counts down while a key is held, repeating the key when it runs out. The game zeroes it after each key the line editor accepts ($087D) and when play starts ($0763)."
   },
   {
    "address": 657,
@@ -8892,7 +8916,7 @@
   {
    "address": 768,
    "type": "line",
-   "text": "BASIC_VECTORS ($0300-$030B) - IERROR, IMAIN, ICRNCH, IQPLOP, IGONE, IEVAL: ROM BASIC's\nindirect entry points.\nStill at power-up values ($E38B, $A483, $A57C, $A71A, $A7E4, $AE86) and inert. BASIC ROM is\nbanked out ($01 = $06), and the RAM those addresses select now holds the game's IRQ handlers\nand the object-icon table. Left from start-up, not the game's state."
+   "text": "BASIC_VECTORS ($0300-$030B) - IERROR, IMAIN, ICRNCH, IQPLOP, IGONE, IEVAL: ROM BASIC's indirect entry points.\nStill at power-up values ($E38B, $A483, $A57C, $A71A, $A7E4, $AE86) and inert. BASIC ROM is banked out ($01 = $06): the RAM at $A483-$AE86 now holds picture 0, the object icons and the game's raster IRQ code, and $E38B is in the KERNAL ROM, which stays visible. Left from start-up, not the game's state."
   },
   {
    "address": 788,
@@ -8927,7 +8951,7 @@
   {
    "address": 1030,
    "type": "line",
-   "text": "CALL_INIT_GAME ($0406)\nPurpose: Alternate, non-returning entry into game initialisation. Reached by the restart path (JMP from RESTART_GAME at $0FEE). Calls INIT_GAME to rebuild adventure state and the starting room, then falls through into MAIN_LOOP.\nInputs: None in registers.\nOutputs: Adventure state rebuilt and the starting room described; control continues in MAIN_LOOP. Never returns to its caller.\nAssumptions: The gameplay memory layout, banking, raster IRQ and display are already established; only the adventure state is rebuilt.\nClobbers: A, X, Y, flags, and all game state through callees. Any stack frame belonging to the abandoned command is not unwound here; RESTART_GAME has already discarded it.\nHardware changes: None directly. Callees write screen and colour RAM through the terminal."
+   "text": "CALL_INIT_GAME ($0406)\nPurpose: Non-returning entry into game initialisation, reached by falling through from ENTRY_POINT after the opening ($0403) and by the restart path (JMP from RESTART_GAME at $0FEE). Calls INIT_GAME to rebuild adventure state and the starting room, then falls through into MAIN_LOOP.\nInputs: None in registers.\nOutputs: Adventure state rebuilt and the starting room described; control continues in MAIN_LOOP. Never returns to its caller.\nAssumptions: The gameplay memory layout, banking, raster IRQ and display are already established; only the adventure state is rebuilt, after SHOW_PART_LOAD_SCREEN has loaded a part whenever LOADED_PART_NO ($5E) is not 0 (INIT_GAME_RUN $14E9).\nClobbers: A, X, Y, flags, and all game state through callees. The stack is not unwound here: RESTART_GAME pulls three return addresses, which reaches the main loop's level for a restart from a turn or room script, but after QUIT, a rule's action four calls deep, the return from PARSE_INPUT into MAIN_LOOP stays on the stack.\nHardware changes: None directly. Callees write screen and colour RAM through the terminal, and when a part is loaded SHOW_PART_LOAD_SCREEN blanks and re-enables the display, rewrites $D01A, stops CIA 1 timer A and drives the serial bus."
   },
   {
    "address": 1030,
@@ -8937,12 +8961,12 @@
   {
    "address": 1033,
    "type": "line",
-   "text": "MAIN_LOOP ($0409)\nPurpose: The non-returning foreground command loop: describe the current room, read one edited command line, parse and execute it, repeat forever.\nInputs: None in registers. Requires a part's data at $2F00 and initialised game state.\nOutputs: Continuously updated screen and game-state arrays. Never returns; the only exits are the non-local ones taken by RESTART_GAME and ACTION_NEXT_PART.\nAssumptions: Runs under the already-established gameplay banking ($01=$06), the raster-split IRQ, and the split display; it does not configure them itself.\nClobbers: A, X, Y, flags, and the whole parser, VM and renderer workspace.\nHardware changes: None directly; callees write screen RAM at $CC00-$CFFF, colour RAM at $D800-$DBFF, and read the CIA 1 keyboard matrix through KERNAL SCNKEY/GETIN."
+   "text": "MAIN_LOOP ($0409)\nPurpose: The non-returning foreground command loop: run the turn scripts (the resident one, the part's and the current room's, $147D), read one edited command line, parse and execute it, repeat forever.\nInputs: None in registers. Requires a part's data at $2F00 and initialised game state.\nOutputs: Continuously updated screen and game-state arrays. Never returns; the only exits are the non-local ones taken by RESTART_GAME and ACTION_NEXT_PART.\nAssumptions: Runs under the already-established gameplay banking ($01=$06), the raster-split IRQ, and the split display; it does not configure them itself.\nClobbers: A, X, Y, flags, and the whole parser, VM and renderer workspace.\nHardware changes: None directly; callees write screen RAM at $CC00-$CFFF, colour RAM at $D800-$DBFF and the bitmap at $E000, and read the CIA 1 keyboard matrix through KERNAL SCNKEY/GETIN."
   },
   {
    "address": 1033,
    "type": "side",
-   "text": "MAIN_LOOP: print current room description"
+   "text": "MAIN_LOOP: run the turn scripts (resident, part, current room)"
   },
   {
    "address": 1036,
@@ -8982,7 +9006,7 @@
   {
    "address": 1055,
    "type": "side",
-   "text": "A = object id $4D"
+   "text": "A = room $4D, Part 3's first room"
   },
   {
    "address": 1057,
@@ -9042,17 +9066,17 @@
   {
    "address": 1081,
    "type": "line",
-   "text": "SHOW_PART_LOAD_SCREEN ($0439)\nPurpose: Print sentence $2F, \"Hit space to load\", and the part's name (sentence $30 + CURRENT_PART_NO: \"Part two!\" or \"Part three!\"), wait for Space, then load the next part through the loader at $9700 and record which part is in memory.\nInputs: CURRENT_PART_NO ($2940), added to $30, picks the sentence that names the part. It does not choose the file: the loader adds one to the digit in its own file name before each load, so it loads PART 1, PART 2 and PART 3 in turn.\nOutputs: The two sentences printed; the next PART file loaded over $2F00-$95FF; LOADED_PART_NO ($5E) set to CURRENT_PART_NO; returns normally.\nAssumptions: Terminal, keyboard, the installed loader at $9700 and the drive are all available. Gameplay interrupts are suspended and restored by PREPARE_DISK_IO/END_DISK_IO around the load.\nClobbers: A, X, Y, flags, the whole text-renderer scratch, and the zero page (exchanged with its backup and exchanged back).\nHardware changes: Blanks and re-enables the VIC display through $D011 bit 4 (DEN); rewrites the VIC interrupt-enable register $D01A ($F0 then $F1); stops CIA 1 timer A through $DC0E bit 0; drives the serial bus through the KERNAL's LOAD."
+   "text": "SHOW_PART_LOAD_SCREEN ($0439)\nPurpose: Print sentence $2F, \"Hit space to load\", and the part's name on the same line (sentence $30 + CURRENT_PART_NO: \"Part one!\", \"Part two!\" or \"Part three!\", printed in lower case), wait for Space, then load the next part through the loader at $9700 and record which part is in memory.\nInputs: CURRENT_PART_NO ($2940), added to $30, picks the sentence that names the part. It does not choose the file: the loader adds one to the digit in its own file name before each load, so it loads PART 1, PART 2 and PART 3 in turn.\nOutputs: The two sentences printed; the next PART file loaded over $2F00-$95FF; LOADED_PART_NO ($5E) set to CURRENT_PART_NO; returns normally.\nAssumptions: Terminal, keyboard, the installed loader at $9700 and the drive are all available. Gameplay interrupts are suspended and restored by PREPARE_DISK_IO/END_DISK_IO around the load.\nClobbers: A, X, Y, flags, the whole text-renderer scratch, and the zero page (exchanged with its backup and exchanged back).\nHardware changes: Blanks and re-enables the VIC display through $D011 bit 4 (DEN); rewrites the VIC interrupt-enable register $D01A ($F0 then $F1); stops CIA 1 timer A through $DC0E bit 0; drives the serial bus through the KERNAL's LOAD."
   },
   {
    "address": 1081,
    "type": "side",
-   "text": "print blank line"
+   "text": "end the line"
   },
   {
    "address": 1084,
    "type": "side",
-   "text": "A = $2F = 'part' message sentence id"
+   "text": "A = sentence $2F, \"Hit space to load\""
   },
   {
    "address": 1086,
@@ -9067,17 +9091,17 @@
   {
    "address": 1093,
    "type": "side",
-   "text": "+ '0' -> ASCII digit"
+   "text": "+ $30: sentence $30 + CURRENT_PART_NO"
   },
   {
    "address": 1095,
    "type": "side",
-   "text": "output the part-number digit"
+   "text": "print \"Part one!\", \"Part two!\" or \"Part three!\" on the same line"
   },
   {
    "address": 1098,
    "type": "side",
-   "text": "print blank line"
+   "text": "end the line"
   },
   {
    "address": 1101,
@@ -9112,17 +9136,17 @@
   {
    "address": 1119,
    "type": "line",
-   "text": "LOAD_DISABLED_RTS ($045F)\nPurpose: One-byte return stub standing in for the LOAD feature. Action opcode $13 jumps here instead of to the surviving KERNAL load implementation at DISK_LOAD_GAME, so the shipped LOAD verb does nothing.\nInputs: None. Also called (as a plain subroutine) by DO_RESTART at $14F3.\nOutputs: Immediate return with everything unchanged.\nAssumptions: Nothing; the stub is deliberately inert. The complete load implementation still exists at $0461 but no shipped rule reaches it.\nClobbers: Nothing. A, X, Y, flags, memory, banking and devices are all preserved.\nHardware changes: None."
+   "text": "LOAD_DISABLED_RTS ($045F)\nPurpose: One-byte return stub standing in for the LOAD feature. Action opcode $13 jumps here instead of to the surviving KERNAL load implementation at DISK_LOAD_GAME, so the shipped LOAD verb does nothing.\nInputs: None. Also called (as a plain subroutine) by RESTORE_SAVED_GAME at $14F3, which only the unreachable ASK_RESTORE_GAME reaches.\nOutputs: Immediate return with everything unchanged.\nAssumptions: Nothing; the stub is deliberately inert. The complete load implementation still exists at $0461 but no shipped rule reaches it.\nClobbers: Nothing. A, X, Y, flags, memory, banking and devices are all preserved.\nHardware changes: None."
   },
   {
    "address": 1120,
    "type": "line",
-   "text": "Single shipped $00 separator between the one-byte NOOP_045F RTS stub and DISK_LOAD_GAME. The byte is present in the original NEVER ENDING disk file, has no decoded operand or recorded reference, and is not on any control-flow path."
+   "text": "Single $00 byte between the one-byte LOAD_DISABLED_RTS stub ($045F) and DISK_LOAD_GAME ($0461). No instruction or pointer refers to it, and it is on no control-flow path."
   },
   {
    "address": 1121,
    "type": "line",
-   "text": "DISK_LOAD_GAME ($0461)\nPurpose: Complete but unreachable KERNAL restore-game implementation: prompt for a filename, LOAD the saved state block over OBJECT_LOCATIONS, pull in a different story part if the restored save belongs to one, then redescribe and repaint the room.\nInputs: A = mode flag stored into DISK_ERROR_FLAG ($5F). DISK_LOAD_ADDR ($28BB/$28BC) supplies the load address; the eight-character FILENAME_BUF ($0DD7) is filled by READ_FILENAME.\nOutputs: On success the saved state block is in memory, the room is redescribed and the picture repainted. On a carry-set KERNAL error it tail-jumps to DISK_IO_ERROR. Returns normally otherwise.\nAssumptions: Static audit finds no call, pointer, action script or decoded operand reaching $0461 in the shipped build, so this routine is retained but inactive; the SAVE/LOAD verbs dispatch to the no-op stubs instead. When it did run it required KERNAL ROM, I/O and the KERNAL zero page to be swapped in by PREPARE_DISK_IO.\nClobbers: A, X, Y, flags, DISK_ERROR_FLAG, the zero page (exchanged and restored), and the whole renderer workspace.\nHardware changes: Through its callees: VIC-II display enable $D011 bit 4, VIC interrupt enable $D01A, CIA 1 timer A control $DC0E, and the serial bus via KERNAL LOAD ($FFD5), SETLFS ($FFBA) and SETNAM ($FFBD). Executes SEI around the status check."
+   "text": "DISK_LOAD_GAME ($0461)\nPurpose: Complete but unreachable KERNAL restore-game implementation: prompt for a filename, LOAD the saved state block over OBJECT_LOCATIONS, pull in a different story part if the restored save belongs to one, then redescribe and repaint the room.\nInputs: A, stored into DISK_ERROR_FLAG ($5F); with no caller, nothing says what it means. DISK_LOAD_ADDR ($28BB/$28BC) supplies the load address; the eight-character FILENAME_BUF ($0DD7) is filled by READ_FILENAME.\nOutputs: On success the saved state block is in memory, the room is redescribed and the picture repainted. On a carry-set KERNAL error it tail-jumps to DISK_IO_ERROR. Returns normally otherwise.\nAssumptions: Static audit finds no call, pointer, action script or decoded operand reaching $0461 in the shipped build, so this routine is retained but inactive; the SAVE/LOAD verbs dispatch to the no-op stubs instead. When it did run it required KERNAL ROM, I/O and the KERNAL zero page to be swapped in by PREPARE_DISK_IO.\nClobbers: A, X, Y, flags, DISK_ERROR_FLAG, the zero page (exchanged and restored), and the whole renderer workspace.\nHardware changes: Through its callees: VIC-II display enable $D011 bit 4, VIC interrupt enable $D01A, CIA 1 timer A control $DC0E, and the cassette port (device 1, set by SETUP_KERNAL_FILE) via KERNAL LOAD ($FFD5); SETLFS ($FFBA) and SETNAM ($FFBD) only record the parameters. Executes SEI around the status check."
   },
   {
    "address": 1121,
@@ -9142,7 +9166,7 @@
   {
    "address": 1129,
    "type": "side",
-   "text": "SETLFS + SETNAM (device 8, 8-char name)"
+   "text": "SETLFS (device 1, the cassette) and SETNAM (8-character name)"
   },
   {
    "address": 1132,
@@ -9227,12 +9251,12 @@
   {
    "address": 1170,
    "type": "line",
-   "text": "UNUSED_READ_FILENAME_PTR \u2014 orphaned little-endian pointer $04C8 to READ_FILENAME, retained beside the disabled save/load implementation.\nThe shipped vocabulary accepts SAVE and LOAD, but their action scripts are only `12 FF` and `13 FF`; those opcode handlers jump to NOOP_0491 and NOOP_045F. No pointer, call, action script, decoded operand, or recorded reference reaches DISK_LOAD_GAME, DISK_SAVE_GAME, or this word. Their exact value and placement immediately after the save verb's RTS identify leftover filename-routine metadata from the disabled feature, not active code or an unresolved target."
+   "text": "UNUSED_READ_FILENAME_PTR - orphaned little-endian pointer $04C8 to READ_FILENAME, retained beside the disabled save/load implementation.\nThe shipped vocabulary accepts SAVE and LOAD, but their action scripts are only `12 FF` and `13 FF`; those opcode handlers jump to SAVE_DISABLED_RTS ($0491) and LOAD_DISABLED_RTS ($045F). No pointer, call, action script, decoded operand, or recorded reference reaches DISK_LOAD_GAME, DISK_SAVE_GAME, or this word. Their exact value and placement immediately after the save verb's RTS identify leftover filename-routine metadata from the disabled feature, not active code or an unresolved target."
   },
   {
    "address": 1172,
    "type": "line",
-   "text": "DISK_SAVE_GAME ($0494)\nPurpose: Complete but unreachable KERNAL save-game implementation: copy the save start address into the KERNAL's zero-page pointer at $FE/$FF, set the file parameters, and SAVE from there up to DISK_SAVE_END_ADDR.\nInputs: DISK_LOAD_ADDR ($28BB/$28BC) is the start of the block to write; DISK_SAVE_END_ADDR ($28BD/$28BE) is the exclusive end; FILENAME_BUF holds the eight-character name.\nOutputs: On success the block is written and END_DISK_IO restores the gameplay machine state. On a carry-set KERNAL error it tail-jumps to DISK_IO_ERROR.\nAssumptions: Static audit finds no active caller; the SAVE verb dispatches to SAVE_DISABLED_RTS. KERNAL SAVE requires A to hold the zero-page address of the start pointer, hence the LDA #$FE.\nClobbers: A, X, Y, flags, the KERNAL save pointer at $FE/$FF, and the zero page (exchanged and restored).\nHardware changes: 6510 port $01 during the zero-page exchange; VIC-II display enable $D011 bit 4; VIC interrupt enable $D01A; CIA 1 timer A control $DC0E; the serial bus via KERNAL SAVE ($FFD8), SETLFS and SETNAM. Executes SEI around the status check."
+   "text": "DISK_SAVE_GAME ($0494)\nPurpose: Complete but unreachable KERNAL save-game implementation: copy the save start address into the zero-page pointer at $FE/$FF, set the file parameters, and SAVE from there up to DISK_SAVE_END_ADDR.\nInputs: DISK_LOAD_ADDR ($28BB/$28BC) is the start of the block to write; DISK_SAVE_END_ADDR ($28BD/$28BE) is the exclusive end; FILENAME_BUF holds the eight-character name.\nOutputs: On success the block is written and END_DISK_IO restores the gameplay machine state. On a carry-set KERNAL error it tail-jumps to DISK_IO_ERROR.\nAssumptions: Static audit finds no active caller; the SAVE verb dispatches to SAVE_DISABLED_RTS. KERNAL SAVE requires A to hold the zero-page address of the start pointer, hence the LDA #$FE.\nClobbers: A, X, Y, flags, the save pointer at $FE/$FF, and the zero page (exchanged and restored).\nHardware changes: VIC-II display enable $D011 bit 4; VIC interrupt enable $D01A; CIA 1 timer A control $DC0E; the cassette port (device 1, set by SETUP_KERNAL_FILE) via KERNAL SAVE ($FFD8). Executes SEI around the status check."
   },
   {
    "address": 1172,
@@ -9332,7 +9356,7 @@
   {
    "address": 1219,
    "type": "line",
-   "text": "ABORT_EMPTY_FILENAME ($04C3)\nPurpose: Abort the filename prompt when the player entered nothing. Discards the immediate caller's return address so control cannot fall back into the load/save flow, then joins the error tail at $04B9.\nInputs: Entered by branch from READ_FILENAME ($04D5) with INPUT_LEN ($26) zero.\nOutputs: Two bytes popped from the stack; DISK_ERROR_FLAG set to 1 and sentence $12 printed; the eventual RTS returns to the caller of the routine that called READ_FILENAME.\nAssumptions: The stack contains exactly READ_FILENAME's return address on top, i.e. this label is only reachable from inside READ_FILENAME.\nClobbers: A, X, Y, flags, DISK_ERROR_FLAG, six bytes of stack depth accounting (two popped here), and renderer scratch.\nHardware changes: Writes screen and colour RAM through the terminal; no device register is programmed here."
+   "text": "ABORT_EMPTY_FILENAME ($04C3)\nPurpose: Abort the filename prompt when the player entered nothing. Discards the immediate caller's return address so control cannot fall back into the load flow, then joins the error tail at $04B9.\nInputs: Entered by branch from READ_FILENAME ($04D5) with INPUT_LEN ($26) zero.\nOutputs: Two bytes popped from the stack; DISK_ERROR_FLAG set to 1 and sentence $12 printed; the eventual RTS returns to the caller of the routine that called READ_FILENAME.\nAssumptions: The stack contains exactly READ_FILENAME's return address on top, i.e. this label is only reachable from inside READ_FILENAME.\nClobbers: A, X, Y, flags, DISK_ERROR_FLAG, the two stack bytes of READ_FILENAME's return address, and renderer scratch.\nHardware changes: Writes screen and colour RAM through the terminal; no device register is programmed here."
   },
   {
    "address": 1219,
@@ -9347,7 +9371,7 @@
   {
    "address": 1224,
    "type": "line",
-   "text": "READ_FILENAME ($04C8)\nPurpose: Prompt for and normalise an eight-character disk filename: print the prompt sentence, read one line with the long idle timeout, blank the buffer, then copy up to eight characters while folding lowercase to uppercase.\nInputs: None in registers. Uses the edited line left by READ_INPUT_ALT at INPUT_TEXT_BUFFER ($CBA0) with its length in INPUT_LEN ($26) and its pointer in AUX_PTR ($0E/$0F).\nOutputs: FILENAME_BUF ($0DD7-$0DDE) contains eight characters, space padded, PETSCII uppercase. Empty input does not return; it diverts to ABORT_EMPTY_FILENAME.\nAssumptions: Case folding is a plain SBC #$20 applied to every non-space character, so it only produces correct results for lowercase letters; digits and punctuation are mangled. Retained inactive code.\nClobbers: A, Y, flags, FILENAME_BUF, and everything READ_INPUT_ALT clobbers (editor state, idle counters, cursor).\nHardware changes: Through the editor: reads the CIA 1 keyboard matrix via KERNAL SCNKEY ($FF9F) and GETIN ($FFE4); writes screen and colour RAM."
+   "text": "READ_FILENAME ($04C8)\nPurpose: Prompt for and normalise an eight-character filename: print the prompt sentence, read one line with the long idle timeout, blank the buffer, then copy up to eight characters while folding lowercase to uppercase.\nInputs: None in registers. Uses the edited line left by READ_INPUT_ALT at INPUT_TEXT_BUFFER ($CBA0) with its length in INPUT_LEN ($26) and its pointer in AUX_PTR ($0E/$0F).\nOutputs: FILENAME_BUF ($0DD7-$0DDE) contains eight characters, space padded, PETSCII uppercase. Empty input does not return; it diverts to ABORT_EMPTY_FILENAME.\nAssumptions: Case folding is a plain SBC #$20 applied to every non-space character; that is enough because the line editor stores only spaces and lower-case letters. Retained inactive code.\nClobbers: A, X, Y, flags, FILENAME_BUF, and everything READ_INPUT_ALT clobbers (editor state, idle counters, cursor).\nHardware changes: Through the editor: reads the CIA 1 keyboard matrix via KERNAL SCNKEY ($FF9F) and GETIN ($FFE4); writes screen and colour RAM."
   },
   {
    "address": 1224,
@@ -9437,7 +9461,7 @@
   {
    "address": 1259,
    "type": "line",
-   "text": "BLANK_FILENAME_BUF ($04EB)\nPurpose: Fill the eight-byte FILENAME_BUF with PETSCII spaces so a short name is correctly padded for KERNAL SETNAM.\nInputs: None.\nOutputs: FILENAME_BUF ($0DD7-$0DDE) set to $20 eight times. Returns with X=$FF and N set.\nAssumptions: The buffer is exactly eight bytes and is followed by the orphaned metadata word, which this loop does not touch.\nClobbers: A, X, flags. Y is preserved.\nHardware changes: None; ordinary RAM only."
+   "text": "BLANK_FILENAME_BUF ($04EB)\nPurpose: Fill the eight-byte FILENAME_BUF with PETSCII spaces. The fill has no effect: READ_FILENAME, its one caller, then copies eight characters over the whole buffer, and a short name is padded by the spaces of the command line.\nInputs: None.\nOutputs: FILENAME_BUF ($0DD7-$0DDE) set to $20 eight times. Returns with X=$FF and N set.\nAssumptions: The buffer is exactly eight bytes and is followed by the orphaned metadata word, which this loop does not touch.\nClobbers: A, X, flags. Y is preserved.\nHardware changes: None; ordinary RAM only."
   },
   {
    "address": 1259,
@@ -9477,7 +9501,7 @@
   {
    "address": 1275,
    "type": "side",
-   "text": "swap in KERNAL zero page (restore $02-$FF from $A000 backup)"
+   "text": "swap the KERNAL's zero page in from $A002-$A0FF, parking the game's there"
   },
   {
    "address": 1278,
@@ -9517,7 +9541,7 @@
   {
    "address": 1294,
    "type": "side",
-   "text": "X = 8 device (disk drive)"
+   "text": "X = 1: device 1, the cassette"
   },
   {
    "address": 1296,
@@ -9602,7 +9626,7 @@
   {
    "address": 1340,
    "type": "line",
-   "text": "SWAP_ZERO_PAGE_AND_BACKUP ($053C)\nPurpose: Exchange the 254 bytes of zero page from $02 to $FF with the backup block at $A002-$A0FF, so the same code can serve both directions: park the game workspace before a KERNAL call and restore it afterwards.\nInputs: None.\nOutputs: The two regions have exchanged contents. Returns with Y=$01 and X holding the last byte read from zero page.\nAssumptions: $00 and $01 are deliberately excluded: they are the 6510 data-direction and port registers, not ordinary RAM, and swapping them would change the memory map mid-loop. BASIC ROM must be banked out so $A000-$A0FF reads the backup RAM; a write-only mapping is not enough because every byte is read before being replaced.\nClobbers: A, X, Y, flags, zero page $02-$FF, and the backup block.\nHardware changes: None directly, but the routine is only correct under a banking configuration that hides BASIC ROM."
+   "text": "SWAP_ZERO_PAGE_AND_BACKUP ($053C)\nPurpose: Exchange the 254 bytes of zero page from $02 to $FF with the backup block at $A002-$A0FF, so the same code can serve both directions: park the game's workspace while the KERNAL loads or saves a file and bring it back afterwards. PREPARE_DISK_IO ($04FB) and END_DISK_IO ($0521) are its only callers; the rest of the time $A002-$A0FF holds the KERNAL's zero page, which OPENING_SETUP copied there ($06B2).\nInputs: None.\nOutputs: The two regions have exchanged contents. Returns with Y=$01 and X holding the last byte read from zero page.\nAssumptions: $00 and $01 are deliberately excluded: they are the 6510 data-direction and port registers, not ordinary RAM, and swapping them would change the memory map mid-loop. BASIC ROM must be banked out so $A000-$A0FF reads the backup RAM; a write-only mapping is not enough because every byte is read before being replaced.\nClobbers: A, X, Y, flags, zero page $02-$FF, and the backup block.\nHardware changes: None directly, but the routine is only correct under a banking configuration that hides BASIC ROM."
   },
   {
    "address": 1362,
@@ -9622,12 +9646,12 @@
   {
    "address": 1381,
    "type": "line",
-   "text": "CHECK_YES_KEY ($0565)\nPurpose: Read exactly one key and classify it as confirmation. Carry is the Boolean result.\nInputs: None.\nOutputs: A = the key that was pressed; carry set only for uppercase PETSCII 'Y' ($59), clear for everything else.\nAssumptions: Same KERNAL ROM, I/O and zero-page requirements as WAIT_FOR_KEY. The comparison is exact: lowercase 'y' does not confirm.\nClobbers: A, X, Y, flags, KERNAL keyboard workspace.\nHardware changes: Through WAIT_FOR_KEY: CIA 1 keyboard matrix scanning via KERNAL SCNKEY and GETIN."
+   "text": "CHECK_YES_KEY ($0565)\nPurpose: Read exactly one key and classify it as confirmation. Carry is the Boolean result.\nInputs: None.\nOutputs: A = the key that was pressed; carry set only for $59, the Y key pressed without Shift, clear for everything else.\nAssumptions: Same KERNAL ROM, I/O and zero-page requirements as WAIT_FOR_KEY. The comparison is exact: Shift-Y ($D9) does not confirm.\nClobbers: A, X, Y, flags, KERNAL keyboard workspace.\nHardware changes: Through WAIT_FOR_KEY: CIA 1 keyboard matrix scanning via KERNAL SCNKEY and GETIN."
   },
   {
    "address": 1392,
    "type": "line",
-   "text": "RENDER_ROOM_GRAPHICS ($0570)\nPurpose: Rebuild the whole illustration band: restore the packed base display, draw each active runtime object record, then draw the static room picture selected by CURRENT_ROOM_GRAPHIC_ID.\nInputs: CURRENT_ROOM_GRAPHIC_ID ($2942) selects a RoomGraphicRecord in the 57-entry table at $0BF9; VISIBLE_OBJECT_RECORDS ($2943) holds six six-byte runtime records whose byte 3 is the enable flag.\nOutputs: Bitmap RAM at $E000, the screen matrix at $CC00 and colour RAM at $D800 hold the composed picture. Returns by falling into BLIT_ROOM_GRAPHIC's tail.\nAssumptions: The record index multiplication is performed as six repeated additions of CURRENT_ROOM_GRAPHIC_ID, which is the six-byte record stride; the caller must keep the index inside the table.\nClobbers: A, X, Y, flags, LOOP_COUNTER ($4B), GRAPHIC_RECORD_PTR ($5A/$5B), WORK_PTR ($0C/$0D), the blit state at $50-$59, and MEMCPY's pointers.\nHardware changes: Writes colour RAM at $D800-$DBFF directly. Writes bitmap and screen memory, which the VIC-II reads from bank 3. No VIC register is programmed here; the raster handler already selected the modes."
+   "text": "RENDER_ROOM_GRAPHICS ($0570)\nPurpose: Rebuild the whole illustration band: restore the packed base display, draw each active runtime object record, then draw the static room picture selected by CURRENT_ROOM_GRAPHIC_ID.\nInputs: CURRENT_ROOM_GRAPHIC_ID ($2942) selects a RoomGraphicRecord in the 57-entry table at $0BF9; VISIBLE_OBJECT_RECORDS ($2943) holds six six-byte runtime records whose byte 3, the source address's high byte, is 0 in an unused record.\nOutputs: Bitmap RAM at $E000, the screen matrix at $CC00 and colour RAM at $D800 hold the composed picture. Falls through into BLIT_ROOM_GRAPHIC ($05BF), which draws the room picture and returns.\nAssumptions: The record index multiplication is performed as six repeated additions of CURRENT_ROOM_GRAPHIC_ID, which is the six-byte record stride; the caller must keep the index inside the table.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), LOOP_COUNTER ($4B), GRAPHIC_RECORD_PTR ($5A/$5B), WORK_PTR ($0C/$0D), the blit state at $50-$59, and MEMCPY's pointers, SCRATCH_BYTE_2 ($04) and tail operand ($079E).\nHardware changes: Writes colour RAM at $D800-$DBFF directly. Writes bitmap and screen memory, which the VIC-II reads from bank 3. No VIC register is programmed here; the raster handler already selected the modes."
   },
   {
    "address": 1392,
@@ -9647,7 +9671,7 @@
   {
    "address": 1411,
    "type": "side",
-   "text": "record byte[3] (draw flag)"
+   "text": "record byte 3, the source address's high byte (0 in an unused record)"
   },
   {
    "address": 1415,
@@ -9667,12 +9691,12 @@
   {
    "address": 1459,
    "type": "side",
-   "text": "+ OBJ_GFX_TABLE_PTR ($0435)"
+   "text": "+ ROOM_GRAPHIC_TABLE_PTR ($0435), the picture records at $0BF9"
   },
   {
    "address": 1471,
    "type": "line",
-   "text": "BLIT_ROOM_GRAPHIC ($05BF)\nPurpose: Draw one RoomGraphicRecord. Copies the six record fields into the zero-page blit state and then, for each character row, writes the record's bitmap, screen-code and colour spans to the three destination tables.\nInputs: GRAPHIC_RECORD_PTR ($5A/$5B) points at a six-byte record: start row, start column, source pointer (two bytes), height in rows, width in columns.\nOutputs: A height-by-width rectangle of the picture band updated in bitmap, screen and colour memory; BLIT_ROW ($50) advanced to the end row.\nAssumptions: Row and column stay inside the ten-row, forty-column destination tables at $0BBD (bitmap), $0BD1 (screen) and $0BE5 (colour). No clipping is performed. The source stream is interleaved per row as width*8 bitmap bytes, then width screen bytes, then width colour bytes, so one record consumes height*width*10 bytes.\nClobbers: A, X, Y, flags, and the blit state $50-$59 (row, column, source pointer, end row, width, destination pointer, source end pointer).\nHardware changes: Writes colour RAM at $D800-$DBFF; writes bitmap and screen memory read by the VIC-II. Programs no VIC register."
+   "text": "BLIT_ROOM_GRAPHIC ($05BF)\nPurpose: Draw one RoomGraphicRecord. Copies the six record fields into the zero-page blit state and then, for each character row, writes the record's bitmap, screen-code and colour spans to bitmap, screen and colour memory.\nInputs: GRAPHIC_RECORD_PTR ($5A/$5B) points at a six-byte record: start row, start column, source pointer (two bytes), height in rows, width in columns.\nOutputs: A height-by-width rectangle of the picture band updated in bitmap, screen and colour memory; BLIT_ROW ($50) advanced to the end row.\nAssumptions: Rows stay inside the ten-entry row-address tables at $0BBD (bitmap), $0BD1 (screen) and $0BE5 (colour), and columns inside the forty-column band. No clipping is performed. The source stream is interleaved per row as width*8 bitmap bytes, then width screen bytes, then width colour bytes, so one record consumes height*width*10 bytes.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), and the blit state $50-$59 (row, column, source pointer, end row, width, destination pointer, source end pointer).\nHardware changes: Writes colour RAM at $D800-$DBFF; writes bitmap and screen memory read by the VIC-II. Programs no VIC register."
   },
   {
    "address": 1475,
@@ -9717,27 +9741,27 @@
   {
    "address": 1685,
    "type": "line",
-   "text": "READ_RASTER_LINE ($0695)\nPurpose: Sample the low eight bits of the VIC-II raster counter, used by the engine as its only entropy source.\nInputs: None.\nOutputs: A = the low eight bits of $D012; N and Z reflect that value. X and Y are preserved.\nAssumptions: The I/O page must be visible. Bit 8 of the raster counter lives in bit 7 of $D011 and is deliberately not returned, so the value wraps every 256 lines rather than every frame.\nClobbers: A and flags only.\nHardware changes: Reads VIC-II register $D012. Nothing is written and no VIC state changes."
+   "text": "READ_RASTER_LINE ($0695)\nPurpose: Sample the low eight bits of the VIC-II raster counter, used by the engine as its only entropy source.\nInputs: None.\nOutputs: A = the low eight bits of $D012; N and Z reflect that value. X and Y are preserved.\nAssumptions: The I/O page must be visible. Bit 8 of the raster counter lives in bit 7 of $D011 and is not returned, so over a PAL frame of 312 lines the value runs 0-255 and then 0-55 again: values 0-55 come round twice a frame, 56-255 once.\nClobbers: A and flags only.\nHardware changes: Reads VIC-II register $D012. Nothing is written and no VIC state changes."
   },
   {
    "address": 1689,
    "type": "line",
-   "text": "NOOP_0699 ($0699)\nPurpose: Deliberate one-byte RTS stub invoked by action opcode $0B through NOOP_ACTION_11.\nInputs: None.\nOutputs: Immediate return.\nAssumptions: The engine allocates one no-op opcode and one stub per silent verb; this is the $0B stub, distinct from the $0C stub at $069A.\nClobbers: Nothing. A, X, Y, flags, memory and devices are all preserved.\nHardware changes: None."
+   "text": "NOOP_0699 ($0699)\nPurpose: One-byte RTS stub invoked by action opcode $0B through NOOP_ACTION_11.\nInputs: None.\nOutputs: Immediate return.\nAssumptions: Opcode $0B is the action of the rule for the verb with stem \"mus\" (rule 28, then \"Ok!\") and also runs in Part 3's room $7C script; the $0C stub at $069A serves the \"nom\" verb. The third no-op opcode, $0F, has no stub: its handler at $118F is NOP, RTS.\nClobbers: Nothing. A, X, Y, flags, memory and devices are all preserved.\nHardware changes: None."
   },
   {
    "address": 1690,
    "type": "line",
-   "text": "NOOP_069A ($069A)\nPurpose: Deliberate one-byte RTS stub invoked by action opcode $0C through NOOP_ACTION_12.\nInputs: None.\nOutputs: Immediate return.\nAssumptions: Paired with NOOP_0699; the two adjacent stubs exist so that each no-op opcode has its own handler chain.\nClobbers: Nothing. A, X, Y, flags, memory and devices are all preserved.\nHardware changes: None."
+   "text": "NOOP_069A ($069A)\nPurpose: One-byte RTS stub invoked by action opcode $0C through NOOP_ACTION_12.\nInputs: None.\nOutputs: Immediate return.\nAssumptions: Paired with NOOP_0699. Opcode $0C is the action of the rule for the verb with stem \"nom\" (rule 29, then \"Ok!\"). The no-op opcode $0F has no stub of its own: its handler at $118F is NOP, RTS.\nClobbers: Nothing. A, X, Y, flags, memory and devices are all preserved.\nHardware changes: None."
   },
   {
    "address": 1691,
    "type": "line",
-   "text": "The opening's set-up. Masks interrupts, sets $01 = $06, calls the KERNAL's IOINIT ($FF84) and SETMSG ($FF90) with A = 0, stops CIA 1's timer A, and copies zero page $02-$FF to $A002-$A0FF, the game's own copy. Points the IRQ vector at $A880, enables the raster interrupt ($D01A = $F1) at line $33, selects VIC bank 3 ($C000-$FFFF) and the text screen ($D018 = $3E, $D011 = $1B, $D016 = $C8). Sets the screen and colour cursors to $CC00 and $D800, clears DISK_ERROR_FLAG ($5F) and the screen ($07E8), sets LOADED_PART_NO ($5E) to $FF, and with $01 = $05 calls MUSIC_STOP and MUSIC_INIT; then $01 = $06 and CLI."
+   "text": "The opening's set-up. Masks interrupts, sets $01 = $06, calls the KERNAL's IOINIT ($FF84) and SETMSG ($FF90) with A = 0, stops CIA 1's timer A, and copies zero page $02-$FF, as the KERNAL left it, to $A002-$A0FF, where it waits to be swapped back in for each load ($053C). Points the IRQ vector at $A880, enables the raster interrupt ($D01A = $F1) at line $33, selects VIC bank 3 ($C000-$FFFF) and the text screen ($D018 = $3E, $D011 = $1B, $D016 = $C8). Sets the screen and colour cursors to $CC00 and $D800, clears DISK_ERROR_FLAG ($5F) and the screen ($07E8), sets LOADED_PART_NO ($5E) to $FF, and with $01 = $05 calls MUSIC_STOP and MUSIC_INIT; then $01 = $06 and CLI."
   },
   {
    "address": 1807,
    "type": "line",
-   "text": "ENTER_GAMEPLAY_DISPLAY ($070F)\nPurpose: The gameplay-side half of the phase transition: set up the text cursor, clear the text screen, copy the disk loader from $C000 to $9700 over the music driver, save the play screen's background ($E000-$EF9F) to $BC00, restore the composed display, and install the raster-split IRQ handler.\nInputs: None in registers. Requires the loader at $C000-$C1FF and, as loaded, the background's bitmap at $E000-$EC7F, its screen bytes at $EC80-$EE0F and its colour bytes at $EE10-$EF9F; the previous phase has already selected VIC bank 3, enabled the raster interrupt in $D01A and programmed an initial $D012/$D011 compare.\nOutputs: SCREEN_CURSOR_PTR ($06/$07) = $CD90 and COLOR_CURSOR_PTR ($08/$09) = $D990; the text screen is cleared; the 512-byte loader occupies $9700-$98FF; $BC00-$CB9F holds a copy of $E000-$EF9F; the composed display is restored; CINV ($0314/$0315) = $A7E0; $01 = $06; interrupts enabled on return.\nAssumptions: Reading $E000-$EF9F needs $01 = $05, which shows the RAM under the KERNAL; the routine sets it for the copy and then restores $06.\nClobbers: A, X, Y, flags, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), the screen and colour cursors, CURRENT_COLUMN ($24), KEY_REPEAT_COUNTDOWN ($028B), the renderer state byte at $0AF5, and the two pages at $9700-$98FF.\nHardware changes: Executes SEI then CLI. Writes the 6510 port $01 ($05 then $06). Sets VIC-II background colour $D021 and border colour $D020 to medium grey ($0C). Writes colour RAM at $D800-$D98F (400 cells) through the display restore. Rewrites the KERNAL RAM IRQ vector CINV at $0314/$0315 to point at $A7E0."
+   "text": "ENTER_GAMEPLAY_DISPLAY ($070F)\nPurpose: The gameplay-side half of the phase transition: set up the text cursor, clear the text screen, copy the disk loader from $C000 to $9700 over the music driver, save the play screen's background ($E000-$EF9F) to $BC00, restore the composed display, and install the raster-split IRQ handler.\nInputs: None in registers. Requires the loader at $C000-$C1FF and, as loaded, the background's bitmap at $E000-$EC7F, its screen bytes at $EC80-$EE0F and its colour bytes at $EE10-$EF9F; the previous phase has already selected VIC bank 3, enabled the raster interrupt in $D01A and programmed an initial $D012/$D011 compare.\nOutputs: SCREEN_CURSOR_PTR ($06/$07) = $CD90 and COLOR_CURSOR_PTR ($08/$09) = $D990; the text screen is cleared; the 512-byte loader occupies $9700-$98FF; $BC00-$CB9F holds a copy of $E000-$EF9F; the composed display is restored; CINV ($0314/$0315) = $A7E0; $01 = $06; interrupts enabled on return.\nAssumptions: Reading $E000-$EF9F needs $01 = $05, which shows the RAM under the KERNAL; the routine sets it for the copy and then restores $06.\nClobbers: A, X, Y, flags, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and MEMCPY's tail operand at $079E, the screen and colour cursors, CURRENT_COLUMN ($24), C64_WORKSPACE_TEXT_COLOR ($0286, set to 6, blue), KEY_REPEAT_COUNTDOWN ($028B), the renderer state byte at $0AF5 (UPPERCASE_FILTER_ENABLED, set to 1), and the two pages at $9700-$98FF.\nHardware changes: Executes SEI then CLI. Writes the 6510 port $01 ($05 then $06). Sets VIC-II background colour $D021 and border colour $D020 to medium grey ($0C). Writes colour RAM at $D800-$D98F (400 cells) through the display restore. Rewrites the KERNAL RAM IRQ vector CINV at $0314/$0315 to point at $A7E0."
   },
   {
    "address": 1807,
@@ -9837,12 +9861,12 @@
   {
    "address": 1889,
    "type": "side",
-   "text": "Clear KERNAL color-code mode byte."
+   "text": "A = 0 for KEY_REPEAT_COUNTDOWN and CURRENT_COLUMN."
   },
   {
    "address": 1891,
    "type": "side",
-   "text": "Reset render/cursor state."
+   "text": "Zero the KERNAL's key-repeat countdown."
   },
   {
    "address": 1896,
@@ -9862,7 +9886,7 @@
   {
    "address": 1913,
    "type": "line",
-   "text": "MEMCPY ($0779)\nPurpose: General forward block copy of X complete pages plus an optional Y-byte tail, used for the display bundle, screen scrolling and buffer restores.\nInputs: MEMCPY_SOURCE ($0A/$0B) = source, WORK_PTR ($0C/$0D) = destination, X = number of whole 256-byte pages, Y = tail length in bytes.\nOutputs: The requested bytes are copied. The two pointer low bytes are unchanged; their high bytes have been incremented by the original X. When the tail was non-zero the routine returns with Y equal to the tail length.\nAssumptions: The copy is strictly forward and does not handle overlapping ranges where the destination is above the source within the same page. The tail bound is not a register: it is written into the CPY immediate operand at $079E, so the routine is self-modifying and not interrupt-reentrant.\nClobbers: A, X, Y, flags, SCRATCH_BYTE_2 ($04), the high bytes of both pointers, and the immediate operand byte at $079E, which retains the most recent non-zero tail length.\nHardware changes: None of its own; the destination may be colour RAM or VIC-visible RAM depending on the caller."
+   "text": "MEMCPY ($0779)\nPurpose: General forward block copy of X complete pages plus an optional Y-byte tail, used for the display bundle, screen scrolling and buffer restores.\nInputs: MEMCPY_SOURCE ($0A/$0B) = source, WORK_PTR ($0C/$0D) = destination, X = number of whole 256-byte pages, Y = tail length in bytes.\nOutputs: The requested bytes are copied. The two pointer low bytes are unchanged; their high bytes have been incremented by the original X. When the tail was non-zero the routine returns with Y equal to the tail length.\nAssumptions: The copy is strictly forward, so it corrupts any overlapping range where the destination lies above the source, within a page or across pages; a destination below the source, as in scrolling, is safe. The tail bound is not a register: it is written into the CPY immediate operand at $079E, so the routine is self-modifying and not interrupt-reentrant.\nClobbers: A, X, Y, flags, SCRATCH_BYTE_2 ($04), the high bytes of both pointers, and the immediate operand byte at $079E, which retains the most recent non-zero tail length.\nHardware changes: None of its own; the destination may be colour RAM or VIC-visible RAM depending on the caller."
   },
   {
    "address": 1913,
@@ -9922,7 +9946,7 @@
   {
    "address": 1954,
    "type": "line",
-   "text": "RESTORE_GAMEPLAY_DISPLAY ($07A2)\nPurpose: Repaint the whole gameplay display from the three packed buffers: 400 screen cells from $C880 to $CC00, 400 colour cells from $CA10 to $D800, and the $0C80-byte picture from $BC00 to $E000.\nInputs: None in registers; the three packed buffers must hold the composed base display.\nOutputs: Screen matrix, colour RAM and bitmap memory all restored to the base picture, ready for object overlays to be drawn on top.\nAssumptions: Runs with $01=$06. That leaves KERNAL ROM readable at $E000-$FFFF, but the routine only ever writes there, and writes always fall through to the RAM underneath, which is the RAM the VIC-II fetches the bitmap from in bank 3; no $05 switch is needed because nothing here reads $E000. Writing colour RAM requires the I/O page to be visible, which $06 provides.\nClobbers: A, X, Y, flags, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), and MEMCPY's self-modified tail operand.\nHardware changes: Writes colour RAM at $D800-$D98F (400 cells, X=$01/Y=$90). Writes screen and bitmap memory read by the VIC-II. Programs no VIC register."
+   "text": "RESTORE_GAMEPLAY_DISPLAY ($07A2)\nPurpose: Repaint the picture band of the gameplay display, character rows 0-9, from the three packed buffers: 400 screen cells from $C880 to $CC00, 400 colour cells from $CA10 to $D800, and the $0C80-byte picture from $BC00 to $E000.\nInputs: None in registers; the three packed buffers must hold the composed base display.\nOutputs: Screen matrix, colour RAM and bitmap memory of rows 0-9 restored to the base picture, ready for object overlays to be drawn on top. The text window, rows 10-24, is not touched.\nAssumptions: Runs with $01=$06. That leaves KERNAL ROM readable at $E000-$FFFF, but the routine only ever writes there, and writes always fall through to the RAM underneath, which is the RAM the VIC-II fetches the bitmap from in bank 3; no $05 switch is needed because nothing here reads $E000. Writing colour RAM requires the I/O page to be visible, which $06 provides.\nClobbers: A, X, Y, flags, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04), and MEMCPY's self-modified tail operand.\nHardware changes: Writes colour RAM at $D800-$D98F (400 cells, X=$01/Y=$90). Writes screen and bitmap memory read by the VIC-II. Programs no VIC register."
   },
   {
    "address": 1954,
@@ -9972,7 +9996,7 @@
   {
    "address": 2002,
    "type": "side",
-   "text": "SAVED_BITMAP -> $E000 (room picture)"
+   "text": "SAVED_BITMAP -> $E000 (the play screen's backdrop)"
   },
   {
    "address": 2008,
@@ -10012,7 +10036,7 @@
   {
    "address": 2054,
    "type": "line",
-   "text": "READ_INPUT ($0806)\nPurpose: Read and edit one command line with echo, backspace and an idle timeout. Return finishes the line, Delete backspaces, Space and A-Z are appended after folding to lowercase, and everything else is ignored.\nInputs: None in registers. Uses the terminal cursors at $06-$09 and CURRENT_COLUMN ($24).\nOutputs: A lowercased command line of up to 78 characters at INPUT_TEXT_BUFFER ($CBA0) with its length in INPUT_LEN ($26); the line has been echoed on screen and terminated with a blank line. On timeout the line is finished automatically and sentence $13 is printed.\nAssumptions: KERNAL ROM and the I/O page must be visible and the KERNAL's keyboard workspace usable, because the editor calls SCNKEY and GETIN directly rather than waiting on a timer interrupt. The buffer is 81 bytes and the editor stops appending at 78.\nClobbers: A, X, Y, flags, IDLE_COUNTDOWN ($60-$62), AUX_PTR ($0E/$0F), INPUT_LEN, KEYBOARD_BUFFER_LEN ($C6), CURRENT_CHAR_COLOR ($0286), KEY_REPEAT_COUNTDOWN ($028B), CURRENT_COLUMN, the terminal cursors, and the self-modified caret-gate operand at $0949.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4). Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "READ_INPUT ($0806)\nPurpose: Read and edit one command line with echo, backspace and an idle timeout. Return finishes the line, Delete backspaces, Space and A-Z are appended after folding to lowercase, and everything else is ignored.\nInputs: None in registers. Uses the terminal cursors at $06-$09 and CURRENT_COLUMN ($24).\nOutputs: A lowercased command line of up to 78 characters at INPUT_TEXT_BUFFER ($CBA0) with its length in INPUT_LEN ($26); the line has been echoed on screen and the cursor moved to the start of the next line. On timeout the line is finished automatically and sentence $13 is printed.\nAssumptions: KERNAL ROM and the I/O page must be visible and the KERNAL's keyboard workspace usable, because the editor calls SCNKEY and GETIN directly rather than waiting on a timer interrupt. The buffer is 81 bytes and the editor stops appending at 78.\nClobbers: A, X, Y, flags, IDLE_COUNTDOWN ($60-$62), AUX_PTR ($0E/$0F), INPUT_LEN, KEYBOARD_BUFFER_LEN ($C6), CURRENT_CHAR_COLOR ($0286), KEY_REPEAT_COUNTDOWN ($028B), CURRENT_COLUMN, the terminal cursors, and the self-modified caret-gate operand at $0949.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4). Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2054,
@@ -10132,7 +10156,7 @@
   {
    "address": 2253,
    "type": "line",
-   "text": "FINISH_INPUT_LINE ($08CD)\nPurpose: Close a command line: disable the input caret, restore the ordinary blue text colour, and advance to a fresh line.\nInputs: None.\nOutputs: The caret gate at $0949 cleared to zero, CURRENT_CHAR_COLOR ($0286) set to 6 (blue), and a blank line emitted so the cursor sits at column zero. Normally returns with A=$00 and Z set.\nAssumptions: The caret gate is an immediate operand inside PRINT_CHARACTER's scroll tail, so clearing it here suppresses the caret for all subsequent output until the editor sets it again.\nClobbers: A, flags, the caret-gate operand at $0949, CURRENT_CHAR_COLOR, CURRENT_COLUMN and the terminal cursors.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "FINISH_INPUT_LINE ($08CD)\nPurpose: Close a command line: disable the input caret, restore the ordinary blue text colour, and advance to a fresh line.\nInputs: None.\nOutputs: The caret gate at $0949 cleared to zero, CURRENT_CHAR_COLOR ($0286) set to 6 (blue), and the line ended with spaces, so the cursor sits at column zero of the next line (a whole blank line only when the typed line had just filled one). Normally returns with A=$00 and Z set.\nAssumptions: The caret gate is an immediate operand inside PRINT_CHARACTER's scroll tail, so clearing it here suppresses the caret for all subsequent output until the editor sets it again.\nClobbers: A, X, flags, the caret-gate operand at $0949, CURRENT_CHAR_COLOR, CURRENT_COLUMN, the terminal cursors, and, when the screen scrolls, Y, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2258,
@@ -10142,7 +10166,7 @@
   {
    "address": 2267,
    "type": "line",
-   "text": "PRINT_CHARACTER ($08DB)\nPurpose: Write one screen code at the terminal cursor in the current colour, advance both cursors and the column, wrap at column 39, and scroll the text window when the cursor passes the last row. Every character the engine prints goes through here.\nInputs: A = screen code. SCREEN_CURSOR_PTR ($06/$07), COLOR_CURSOR_PTR ($08/$09), CURRENT_COLUMN ($24) and CURRENT_CHAR_COLOR ($0286).\nOutputs: One screen cell and its colour cell written; both sixteen-bit cursors incremented; CURRENT_COLUMN advanced or reset to zero; the window scrolled and the caret optionally repainted.\nAssumptions: The two cursors must stay in step and inside the text window at $CD90-$CFFF / $D990-$DBFF. The scroll test compares the screen cursor against the literal $CFC0, so it only triggers on exact arrival at the last row.\nClobbers: A, X, Y, flags, both cursors, CURRENT_COLUMN, and, when scrolling, MEMCPY_SOURCE/WORK_PTR and MEMCPY's self-modified tail operand.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF. Colour RAM is only four bits wide, so the stored colour reads back as the low nibble."
+   "text": "PRINT_CHARACTER ($08DB)\nPurpose: Write one screen code at the terminal cursor in the current colour, advance both cursors and the column, wrap at column 39, and scroll the text window when the cursor passes the last row. Every character the engine prints goes through here.\nInputs: A = screen code. SCREEN_CURSOR_PTR ($06/$07), COLOR_CURSOR_PTR ($08/$09), CURRENT_COLUMN ($24) and CURRENT_CHAR_COLOR ($0286).\nOutputs: One screen cell and its colour cell written; both sixteen-bit cursors incremented; CURRENT_COLUMN advanced or reset to zero; the window scrolled and the caret optionally repainted.\nAssumptions: The two cursors must stay in step and inside the text window at $CD90-$CFFF / $D990-$DBFF. The scroll test compares the screen cursor with $CFE8, one past the screen's last cell, so it triggers as soon as a character has been written in that cell.\nClobbers: A, X, Y, flags, both cursors, CURRENT_COLUMN, and, when scrolling, MEMCPY_SOURCE/WORK_PTR, SCRATCH_BYTE_2 ($04) and MEMCPY's self-modified tail operand.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF. Colour RAM is only four bits wide, so the stored colour reads back as the low nibble."
   },
   {
    "address": 2267,
@@ -10202,12 +10226,12 @@
   {
    "address": 2303,
    "type": "line",
-   "text": "When the cursor reaches $CFC0 (start of the screen's last text row) the text window is\nscrolled up one row: screen rows are block-moved up ($CDB8->$CD90, ~560 bytes) and the\nmatching color RAM is moved ($D9B8->$D990); the cursor is reset to $CFC0 and the new last\nrow (40 cells) is cleared to spaces."
+   "text": "When the cursor reaches $CFE8, one past the screen's last cell, the text window scrolls up one row:\nrows 11-24 move up to rows 10-23 ($CDB8 to $CD90, 560 bytes) and their colours with them ($D9B8 to\n$D990); the cursor goes back to $CFC0, the start of the last row, which is cleared to spaces."
   },
   {
    "address": 2305,
    "type": "side",
-   "text": "cursor low == $C0?"
+   "text": "cursor low byte = $E8?"
   },
   {
    "address": 2307,
@@ -10292,7 +10316,7 @@
   {
    "address": 2391,
    "type": "line",
-   "text": "PRINT_ROOM_TEXT_DROPCAP ($0957)\nPurpose: Render the first letter of a room description as a two-by-two drop capital built from four consecutive custom glyphs, in light grey, then restore the previous text colour.\nInputs: A = the top-left glyph code. The caller derives it as $7B + 4*(letter - 'A') from the description's leading letter.\nOutputs: Four screen cells and their colour cells written: the top pair, then thirty-eight spaces in the caller's colour to reach the next row, then the bottom pair. CURRENT_CHAR_COLOR ($0286) is restored to its entry value.\nAssumptions: The gameplay character set at $F800 contains the four-cell drop-cap glyphs at $7B upwards, and the terminal cursor is at the start of a row so that the thirty-eight-space advance lands the bottom pair directly underneath the top pair.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SAVED_CHAR_COLOR ($05), the terminal cursors and CURRENT_COLUMN.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "PRINT_ROOM_TEXT_DROPCAP ($0957)\nPurpose: Render the first letter of a room description as a two-by-two drop capital built from four consecutive custom glyphs, in yellow (colour 7), then restore the previous text colour.\nInputs: A = the top-left glyph code. The caller derives it as $7B + 4*(letter - 'A') from the description's leading letter.\nOutputs: Four screen cells and their colour cells written: the top pair, then thirty-eight spaces in the caller's colour to reach the next row, then the bottom pair. CURRENT_CHAR_COLOR ($0286) is restored to its entry value.\nAssumptions: The gameplay character set at $F800 contains the four-cell drop-cap glyphs at $7B upwards, and the terminal cursor is at the start of a row so that the thirty-eight-space advance lands the bottom pair directly underneath the top pair.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SAVED_CHAR_COLOR ($05), the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2391,
@@ -10307,7 +10331,7 @@
   {
    "address": 2398,
    "type": "side",
-   "text": "color = 7 (light grey)"
+   "text": "colour 7, yellow"
   },
   {
    "address": 2420,
@@ -10317,12 +10341,12 @@
   {
    "address": 2434,
    "type": "side",
-   "text": "color = 7 (light grey) again"
+   "text": "colour 7, yellow, again"
   },
   {
    "address": 2459,
    "type": "line",
-   "text": "PRINT_SENTENCE ($099B)\nPurpose: Print one common sentence, preceded by a blank line and with its first letter capitalised. This is the engine's standard way of emitting a canned reply.\nInputs: A = common-sentence id.\nOutputs: A blank line, then the selected compressed term stream rendered with word wrapping. Tail-jumps into COMPUTE_SENTENCE_PTR_OFS, so the caller's RTS is the renderer's.\nAssumptions: SENTENCE_POINTERS ($1CB0, reached through the base pointer at $1C69) contains a valid entry for the id; ids are not range checked.\nClobbers: A, X, Y, flags, UPPERCASE_LETTER_FLAG ($0AFF), WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), WORD_REMAINING_LEN ($25), the terminal cursors and CURRENT_COLUMN.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through the renderer."
+   "text": "PRINT_SENTENCE ($099B)\nPurpose: Print one common sentence on a new line, with its first letter capitalised: PRINT_EMPTY_LINE first ends the line the cursor is on (a whole blank line when the cursor is already at column 0). This is the engine's standard way of emitting a canned reply.\nInputs: A = common-sentence id.\nOutputs: The cursor at column 0, then the selected compressed term stream rendered with word wrapping. Tail-jumps into COMPUTE_SENTENCE_PTR_OFS, so the caller's RTS is the renderer's.\nAssumptions: SENTENCE_POINTERS ($1CB0, reached through the base pointer at $1C69) contains a valid entry for the id; ids are not range checked.\nClobbers: A, X, Y, flags, UPPERCASE_LETTER_FLAG ($0AFF), WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), WORD_REMAINING_LEN ($25), the cursors ($06-$09), CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through the renderer."
   },
   {
    "address": 2459,
@@ -10372,7 +10396,7 @@
   {
    "address": 2519,
    "type": "line",
-   "text": "PRINT_EVENT_TEXT ($09D7)\nPurpose: Render one event-text entry: capitalise the first letter, emit a blank line and a two-space paragraph indent, then resolve the id through the event pointer table and render the stream.\nInputs: A = event-text id. The event pointer table base is the word at $2F02.\nOutputs: A new indented paragraph containing the event text. Tail-jumps to PROCESS_TERM.\nAssumptions: Event ids come from the scripts and are not range checked. The word at $2F02 is part of each part's data, so the same id means different text in each part.\nClobbers: A, X, Y, flags, UPPERCASE_LETTER_FLAG ($0AFF), WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), and the terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
+   "text": "PRINT_EVENT_TEXT ($09D7)\nPurpose: Render one event-text entry: capitalise the first letter, end the line (a blank line when the cursor is already at column 0) and indent two spaces, then resolve the id through the event pointer table and render the stream.\nInputs: A = event-text id. The event pointer table base is the word at $2F02.\nOutputs: A new indented paragraph containing the event text. Tail-jumps to PROCESS_TERM.\nAssumptions: Event ids come from the scripts and are not range checked. The word at $2F02 is part of each part's data, so the same id means different text in each part.\nClobbers: A, X, Y, flags, UPPERCASE_LETTER_FLAG ($0AFF), WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), and the terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
   },
   {
    "address": 2520,
@@ -10382,7 +10406,7 @@
   {
    "address": 2525,
    "type": "side",
-   "text": "Print a blank line and two-space paragraph indent before the event text."
+   "text": "End the line and indent two spaces before the event text."
   },
   {
    "address": 2529,
@@ -10402,7 +10426,7 @@
   {
    "address": 2574,
    "type": "line",
-   "text": "PROCESS_TERM ($0A0E)\nPurpose: Interpret one compressed term stream with word wrapping until the '@' terminator. Bytes with bit 7 set are dictionary tokens and are expanded; other bytes begin a literal word whose length is measured before printing so that a word which would cross column 40 is preceded by a line break.\nInputs: TERM_DATA_PTR ($22/$23) points at the stream; CURRENT_COLUMN ($24) is the live column; UPPERCASE_LETTER_FLAG ($0AFF) selects capitalisation of the next letter.\nOutputs: The stream is rendered to the terminal with word wrapping and inter-word spaces; returns when the terminator is consumed.\nAssumptions: The wrap threshold is a hard-coded 41 ($29) compared against column plus word length. A word longer than forty characters would still overflow. The routine is re-entered recursively in effect through PROCESS_TOKEN, which saves and restores TERM_DATA_PTR on the stack.\nClobbers: A, X, Y, flags, WORD_REMAINING_LEN ($25), TERM_DATA_PTR, WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG, the terminal cursors and CURRENT_COLUMN.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "PROCESS_TERM ($0A0E)\nPurpose: Interpret one compressed term stream with word wrapping until the '@' terminator. Bytes with bit 7 set are dictionary tokens and are expanded; other bytes begin a literal word whose length is measured before printing so that a word which would cross column 40 is preceded by a line break.\nInputs: TERM_DATA_PTR ($22/$23) points at the stream; CURRENT_COLUMN ($24) is the live column; UPPERCASE_LETTER_FLAG ($0AFF) selects capitalisation of the next letter.\nOutputs: The stream is rendered to the terminal with word wrapping and inter-word spaces; returns when the terminator is consumed.\nAssumptions: The wrap threshold is a hard-coded 41 ($29) compared against column plus word length. A word longer than forty characters would still overflow. The routine is re-entered recursively in effect through PROCESS_TOKEN, which saves and restores TERM_DATA_PTR on the stack.\nClobbers: A, X, Y, flags, WORD_REMAINING_LEN ($25), TERM_DATA_PTR, WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG, the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2574,
@@ -10587,7 +10611,7 @@
   {
    "address": 2779,
    "type": "line",
-   "text": "PRINT_WORD ($0ADB)\nPurpose: Emit the characters of one literal word or expanded token, applying the inline control codes: '.' prints a full stop and arms capitalisation, '<' emits a line break, $FF takes the following byte as a new text colour, and A-Z are folded to lowercase unless the capitalisation flag is set.\nInputs: TERM_DATA_PTR ($22/$23) points at the first character; WORD_REMAINING_LEN ($25) is the character count; UPPERCASE_LETTER_FLAG ($0AFF) selects the case of the next letter.\nOutputs: The characters are printed, TERM_DATA_PTR is advanced past them, WORD_REMAINING_LEN reaches zero, and the capitalisation flag is cleared once it has been consumed.\nAssumptions: The $FF colour escape consumes one extra byte and decrements the length accordingly, so a stream that ends immediately after $FF would read past the word. Colour values are written straight to CURRENT_CHAR_COLOR without masking.\nClobbers: A, X, flags, TERM_DATA_PTR, WORD_REMAINING_LEN, UPPERCASE_LETTER_FLAG, CURRENT_CHAR_COLOR ($0286), the terminal cursors and CURRENT_COLUMN.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "PRINT_WORD ($0ADB)\nPurpose: Emit the characters of one literal word or expanded token, applying the inline control codes: '.' prints a full stop and arms capitalisation, '<' emits a line break, $FF takes the following byte as a new text colour, and A-Z are folded to lowercase unless the capitalisation flag is set.\nInputs: TERM_DATA_PTR ($22/$23) points at the first character; WORD_REMAINING_LEN ($25) is the character count; UPPERCASE_LETTER_FLAG ($0AFF) selects the case of the next letter.\nOutputs: The characters are printed, TERM_DATA_PTR is advanced past them, WORD_REMAINING_LEN reaches zero, and the capitalisation flag is cleared once it has been consumed.\nAssumptions: The $FF colour escape consumes one extra byte and decrements the length accordingly, so a stream that ends immediately after $FF would read past the word. Colour values are written straight to CURRENT_CHAR_COLOR without masking.\nClobbers: A, X, flags, TERM_DATA_PTR, WORD_REMAINING_LEN, UPPERCASE_LETTER_FLAG, CURRENT_CHAR_COLOR ($0286), the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, Y, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2781,
@@ -10742,12 +10766,12 @@
   {
    "address": 3025,
    "type": "line",
-   "text": "Screen-RAM destination base address for each of the ten illustration character rows."
+   "text": "SCREEN_ROW_ADDR_TABLE ($0BD1-$0BE4): the screen-RAM address of each of the ten picture rows, ten little-endian words from $CC00 (row 0) to $CD68 (row 9), 40 bytes apart. BLIT_ROOM_GRAPHIC reads it at $0616 and $061C, indexed by twice the row, and adds the column."
   },
   {
    "address": 3027,
    "type": "line",
-   "text": "Second word of the ten-row screen-address table at $0BD1: $CC28, screen row one. Remaining words are $CC50, $CC78, $CCA0, $CCC8, $CCF0, $CD18, $CD40, $CD68; the blitter indexes these row starts and adds its column offset."
+   "text": "Second word of SCREEN_ROW_ADDR_TABLE ($0BD1): $CC28, screen row one. The remaining words are $CC50, $CC78, $CCA0, $CCC8, $CCF0, $CD18, $CD40 and $CD68."
   },
   {
    "address": 3045,
@@ -11432,12 +11456,12 @@
   {
    "address": 4044,
    "type": "line",
-   "text": "ACTION_QUIT ($0FCC)\nPurpose: The QUIT handler: print the confirmation prompt, read one key, and either fall into the non-returning restart or return quietly.\nInputs: None in registers; the terminal and keyboard must be usable.\nOutputs: Sentence $34 printed. On uppercase 'Y' control falls into RESTART_GAME and does not return; on any other key a blank line is printed and the handler returns normally.\nAssumptions: CHECK_YES_KEY only accepts uppercase 'Y', and the fall-through into RESTART_GAME is deliberate, which is why the confirmation branch has no JMP.\nClobbers: A, X, Y, flags, keyboard workspace and renderer scratch.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY and GETIN; writes screen and colour RAM."
+   "text": "ACTION_QUIT ($0FCC)\nPurpose: The QUIT handler: print the confirmation prompt, read one key, and either fall into the non-returning restart or return quietly.\nInputs: None in registers; the terminal and keyboard must be usable.\nOutputs: Sentence $34 printed. On uppercase 'Y' control falls into RESTART_GAME and does not return; on any other key the line is ended and the handler returns normally.\nAssumptions: CHECK_YES_KEY only accepts uppercase 'Y', and the fall-through into RESTART_GAME is deliberate, which is why the confirmation branch has no JMP.\nClobbers: A, X, Y, flags, keyboard workspace and renderer scratch.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY and GETIN; writes screen and colour RAM."
   },
   {
    "address": 4044,
    "type": "side",
-   "text": "blank line"
+   "text": "end the line"
   },
   {
    "address": 4047,
@@ -11462,7 +11486,7 @@
   {
    "address": 4057,
    "type": "side",
-   "text": "no: blank line + return"
+   "text": "no: end the line and return"
   },
   {
    "address": 4061,
@@ -11477,7 +11501,7 @@
   {
    "address": 4067,
    "type": "side",
-   "text": "blank line"
+   "text": "end the line"
   },
   {
    "address": 4070,
@@ -11527,7 +11551,7 @@
   {
    "address": 4097,
    "type": "line",
-   "text": "ACTION_PRINT_MESSAGE ($1001)\nPurpose: Action opcode: fetch one event-text id from the bytecode stream and render that event paragraph.\nInputs: One operand byte at SCRIPT_PC: the event-text id.\nOutputs: SCRIPT_PC advanced by one; the event paragraph printed with a blank line and two-space indent.\nAssumptions: The event pointer table is found through the word at $2F02, part of each part's data, so the same id selects different prose after a part change.\nClobbers: A, X, Y, flags, SCRIPT_PC, TERM_DATA_PTR ($22/$23), WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG and terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
+   "text": "ACTION_PRINT_MESSAGE ($1001)\nPurpose: Action opcode: fetch one event-text id from the bytecode stream and render that event paragraph.\nInputs: One operand byte at SCRIPT_PC: the event-text id.\nOutputs: SCRIPT_PC advanced by one; the event paragraph printed on a new line with a two-space indent.\nAssumptions: The event pointer table is found through the word at $2F02, part of each part's data, so the same id selects different prose after a part change.\nClobbers: A, X, Y, flags, SCRIPT_PC, TERM_DATA_PTR ($22/$23), WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG and terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
   },
   {
    "address": 4097,
@@ -11792,12 +11816,12 @@
   {
    "address": 4438,
    "type": "side",
-   "text": "Install the low byte in CURRENT_OBJECT_GRAPHIC_PTR."
+   "text": "Install the low byte in COMPANION_SOURCE_PTR."
   },
   {
    "address": 4443,
    "type": "side",
-   "text": "Install the high byte in CURRENT_OBJECT_GRAPHIC_PTR."
+   "text": "Install the high byte in COMPANION_SOURCE_HI."
   },
   {
    "address": 4446,
@@ -11807,7 +11831,7 @@
   {
    "address": 4449,
    "type": "line",
-   "text": "SCRIPT_PRINT_SENTENCE ($1161)\nPurpose: Action opcode: fetch one common-sentence id from the bytecode stream and print it.\nInputs: One operand byte at SCRIPT_PC: the sentence id.\nOutputs: SCRIPT_PC advanced by one; a blank line and the selected sentence printed.\nAssumptions: The sentence table is resident engine data rather than overlay data, so these ids mean the same thing in every part.\nClobbers: A, X, Y, flags, SCRIPT_PC, TERM_DATA_PTR ($22/$23), WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG and terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
+   "text": "SCRIPT_PRINT_SENTENCE ($1161)\nPurpose: Action opcode: fetch one common-sentence id from the bytecode stream and print it.\nInputs: One operand byte at SCRIPT_PC: the sentence id.\nOutputs: SCRIPT_PC advanced by one; the selected sentence printed on a new line.\nAssumptions: The sentence table is resident engine data rather than overlay data, so these ids mean the same thing in every part.\nClobbers: A, X, Y, flags, SCRIPT_PC, TERM_DATA_PTR ($22/$23), WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG and terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
   },
   {
    "address": 4449,
@@ -11847,12 +11871,12 @@
   {
    "address": 4474,
    "type": "line",
-   "text": "SHOW_PAUSED_MESSAGE ($117A)\nPurpose: Action opcode: pause the narrative. Prints a blank line and the 'press space' prompt, waits for Space, then advances to a blank line.\nInputs: None in registers; terminal and keyboard must be usable.\nOutputs: Sentence $1D printed, the player has pressed Space, and the cursor is at the start of a fresh line.\nAssumptions: The wait is a busy KERNAL keyboard scan, so the raster-split interrupt continues to run and the display stays correct while the engine blocks here.\nClobbers: A, X, Y, flags, keyboard workspace, terminal cursors and CURRENT_COLUMN.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4); writes screen and colour RAM."
+   "text": "SHOW_PAUSED_MESSAGE ($117A)\nPurpose: Action opcode: pause the narrative. Ends the line, prints sentence $1D, \"Paused - hit space to continue!\", waits for Space, then ends that line.\nInputs: None in registers; terminal and keyboard must be usable.\nOutputs: Sentence $1D printed, the player has pressed Space, and the cursor is at the start of a fresh line.\nAssumptions: The wait is a busy KERNAL keyboard scan, so the raster-split interrupt continues to run and the display stays correct while the engine blocks here.\nClobbers: A, X, Y, flags, keyboard workspace, terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4); writes screen and colour RAM."
   },
   {
    "address": 4474,
    "type": "side",
-   "text": "blank line"
+   "text": "end the line"
   },
   {
    "address": 4477,
@@ -11872,7 +11896,7 @@
   {
    "address": 4485,
    "type": "side",
-   "text": "blank line"
+   "text": "end the line"
   },
   {
    "address": 4489,
@@ -12182,7 +12206,7 @@
   {
    "address": 4642,
    "type": "line",
-   "text": "COND_RANDOM ($1222)\nPurpose: Condition opcode $88: the engine's coin flip. Compares an operand threshold against the low eight bits of the VIC-II raster counter and returns the resulting carry, so the outcome depends on when in the frame the script happens to run.\nInputs: One operand byte at SCRIPT_PC: the threshold.\nOutputs: SCRIPT_PC advanced by one; carry set iff threshold >= the sampled raster value, i.e. roughly threshold/256 probability.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The stack is used for one balanced PHA/PLA, so the stack pointer is restored. Because the sample is taken during foreground code that is itself interrupted by three raster splits per frame, the distribution is neither uniform nor independent between consecutive calls.\nClobbers: A, flags, SCRATCH_BYTE ($02), SCRIPT_PC.\nHardware changes: Reads the VIC-II raster register $D012 through READ_RASTER_LINE. Nothing is written."
+   "text": "COND_RANDOM ($1222)\nPurpose: Condition opcode $88, the engine's one test of chance. Compares an operand threshold against the low eight bits of the VIC-II raster counter and returns the resulting carry, so the outcome depends on when in the frame the script happens to run.\nInputs: One operand byte at SCRIPT_PC: the threshold.\nOutputs: SCRIPT_PC advanced by one; carry set iff threshold >= the sampled raster value. A PAL frame is 312 lines, so the low bytes 0-55 come round twice a frame and the rest once: a threshold n passes on n + 1 + min(n, 55) + 1 of the 312 lines, 257 for 200 and 102 for 50, when the test is equally likely to fall anywhere in the frame.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The stack is used for one balanced PHA/PLA, so the stack pointer is restored. Two tests in one script read the raster a few hundred cycles apart, so their results are not independent.\nClobbers: A, flags, SCRATCH_BYTE ($02), SCRIPT_PC.\nHardware changes: Reads the VIC-II raster register $D012 through READ_RASTER_LINE. Nothing is written."
   },
   {
    "address": 4642,
@@ -12347,7 +12371,7 @@
   {
    "address": 4854,
    "type": "line",
-   "text": "Prints sentence $0 (\"I don't understand ...\") then echoes the offending word in quotes:\ncomputes its length (WORD_REMAINING_LEN) and pointer (TERM_DATA_PTR = $CBA0 + offset) and\nprints it via PRINT_WORD, then a blank line."
+   "text": "Prints sentence $0 (\"I don't understand ...\") then echoes the offending word in quotes:\ncomputes its length (WORD_REMAINING_LEN) and pointer (TERM_DATA_PTR = $CBA0 + offset) and\nprints it via PRINT_WORD, then ends the line."
   },
   {
    "address": 4854,
@@ -12387,7 +12411,7 @@
   {
    "address": 4898,
    "type": "side",
-   "text": "blank line + return"
+   "text": "end the line and return"
   },
   {
    "address": 4901,
@@ -12587,7 +12611,7 @@
   {
    "address": 5245,
    "type": "line",
-   "text": "PRINT_ROOM_DESCRIPTION ($147D)\nPurpose: The per-turn narrative pass. Sets the ordinary text colour, then runs three bytecode programs in order: the resident global turn script, the part's own turn script at $2F06, and the script belonging to the current room.\nInputs: CURRENT_PART_NO ($2940) and CURRENT_ROOM ($293F); the global turn script pointer is the word at $1C6D, and the room-script pointer table base is the word at $2F04.\nOutputs: All three scripts have run, so the room text, any daemon behaviour and any room-local events have been applied.\nAssumptions: The room index is made part-relative by subtracting PART_ROOM_BASE_IDS[CURRENT_PART_NO] ($0DCC), so the same global room number selects different scripts in different parts. Both the $2F06 script and the room table are part of each part's data.\nClobbers: A, X, Y, flags, CURRENT_CHAR_COLOR ($0286), SCRIPT_PC ($4E/$4F), WORK_PTR ($0C/$0D), SCRATCH_BYTE ($02), and all VM, parser and renderer scratch.\nHardware changes: Writes screen RAM, colour RAM and, when a script changes the picture, bitmap memory."
+   "text": "RUN_TURN_SCRIPTS ($147D)\nPurpose: The per-turn narrative pass. Sets the ordinary text colour, then runs three bytecode programs in order: the resident global turn script, the part's own turn script at $2F06, and the script belonging to the current room.\nInputs: CURRENT_PART_NO ($2940) and CURRENT_ROOM ($293F); the global turn script pointer is the word at $1C6D, and the room-script pointer table base is the word at $2F04.\nOutputs: All three scripts have run, so the room text, any daemon behaviour and any room-local events have been applied.\nAssumptions: The room index is made part-relative by subtracting PART_ROOM_BASE_IDS[CURRENT_PART_NO] ($0DCC), so the same global room number selects different scripts in different parts. Both the $2F06 script and the room table are part of each part's data.\nClobbers: A, X, Y, flags, CURRENT_CHAR_COLOR ($0286), SCRIPT_PC ($4E/$4F), WORK_PTR ($0C/$0D), SCRATCH_BYTE ($02), and all VM, parser and renderer scratch.\nHardware changes: Writes screen RAM, colour RAM and, when a script changes the picture, bitmap memory."
   },
   {
    "address": 5245,
@@ -13037,7 +13061,7 @@
   {
    "address": 6560,
    "type": "line",
-   "text": "Seventy-one ordered verb/noun pairs. The pair index selects the corresponding ACTION_SCRIPT_POINTERS entry; $FB is the any-noun rule and $FF/$FF terminates the table.\n$19BA: verb rule pair 13: verb id $15 (GET), noun id $57 (ARTAX). Selects ACTION_SCRIPT_GET_ARTAX_PTR at $29A0.\n$19BC: verb rule pair 14: verb id $15 (GET), noun id $37 (FALKOR). The pair selects ACTION_SCRIPT_GET_FALKOR_PTR at $29A2. Confirmed dynamically by entering \"get falkor\"."
+   "text": "Seventy ordered verb/noun pairs, then the end mark. The pair index selects the corresponding ACTION_SCRIPT_POINTERS entry; $FB is the any-noun rule and $FF/$FF terminates the table.\n$19BA: verb rule pair 13: verb id $15 (GET), noun id $57 (ARTAX). Selects ACTION_SCRIPT_GET_ARTAX_PTR at $29A0.\n$19BC: verb rule pair 14: verb id $15 (GET), noun id $37 (FALKOR). The pair selects ACTION_SCRIPT_GET_FALKOR_PTR at $29A2. Confirmed dynamically by entering \"get falkor\"."
   },
   {
    "address": 6586,
@@ -13132,7 +13156,7 @@
   {
    "address": 7279,
    "type": "line",
-   "text": "GLOBAL_TURN_SCRIPT ($1C6F-$1CAF) - resident every-turn housekeeping bytecode, the first\nscript PRINT_ROOM_DESCRIPTION runs ($148C) on each pass of MAIN_LOOP ($0409).\nThis is interpreted data, not 6510 code. RUN_SCRIPT ($1605) walks it through SCRIPT_PC\n($4E/$4F). Opcodes $80-$89 are conditions, dispatched through CONDITION_DISPATCH_TABLE\n($1193); each returns carry, and a false condition jumps to the skip loop at $169F, so\nconsecutive conditions AND together. Opcodes $00-$7F are actions via ACTION_DISPATCH_TABLE\n($0DE3). $FE separates rules, $FF ends the script.\nWhat it does each turn:\n- once only (OBJ_FLAGS[6]), sets Atreyu's strength OBJ_COUNTERS[1] = 50 and lights flag 7\n- warns at strength 10 (sentence $1B) and kills at 0 (sentence $1C, pause, RESTART)\n- grants OBJ_FLAGS[$11] while the Black Velvet Cape (object $1A) is carried\n- keeps flag 7 set while the Glowglobe (object $13) is carried; flag 7 is the same \"room\nlit\" flag DESCRIBE_CURRENT_ROOM ($107E) tests before printing anything\n- counts turns in the dark in OBJ_COUNTERS[6] and kills at 4 (sentence $41)\n- drains strength each turn while poisoned (OBJ_FLAGS[8], sentence $40)\nIt ends with action $07 (RETURN_SKIP_CALLER), which pops the interpreter's self-modified JSR\nframe and returns straight to PRINT_ROOM_DESCRIPTION, so the trailing $FF is unreachable.\nBeing below $2F00, it survives every part load: each part's file covers $2F00-$95FF\nonly."
+   "text": "GLOBAL_TURN_SCRIPT ($1C6F-$1CAF) - resident every-turn housekeeping bytecode, the first\nscript RUN_TURN_SCRIPTS runs ($148C) on each pass of MAIN_LOOP ($0409).\nThis is interpreted data, not 6510 code. RUN_SCRIPT ($1605) walks it through SCRIPT_PC\n($4E/$4F). Opcodes $80-$89 are conditions, dispatched through CONDITION_DISPATCH_TABLE\n($1193); each returns carry, and a false condition jumps to the skip loop at $169F, so\nconsecutive conditions AND together. Opcodes $00-$7F are actions via ACTION_DISPATCH_TABLE\n($0DE3). $FE separates rules, $FF ends the script.\nWhat it does each turn:\n- once only (OBJ_FLAGS[6]), sets Atreyu's strength OBJ_COUNTERS[1] = 50 and lights flag 7\n- warns at strength 10 (sentence $1B) and kills at 0 (sentence $1C, pause, RESTART)\n- grants OBJ_FLAGS[$11] while the Black Velvet Cape (object $1A) is carried\n- keeps flag 7 set while the Glowglobe (object $13) is carried; flag 7 is the same \"room\nlit\" flag DESCRIBE_CURRENT_ROOM ($107E) tests before printing anything\n- counts turns in the dark in OBJ_COUNTERS[6] and kills at 4 (sentence $41)\n- drains strength each turn while poisoned (OBJ_FLAGS[8], sentence $40)\nIt ends with action $07 (RETURN_SKIP_CALLER), which pops the interpreter's self-modified JSR\nframe and returns straight to RUN_TURN_SCRIPTS, so the trailing $FF is unreachable.\nBeing below $2F00, it survives every part load: each part's file covers $2F00-$95FF\nonly."
   },
   {
    "address": 7344,
@@ -13152,12 +13176,12 @@
   {
    "address": 7522,
    "type": "line",
-   "text": "Sentence $02: \"You can't go in that direction.\" Ends with @ at $1D76. Printed by action script for EAST, action script for WEST, action script for UP, action script for DOWN and action script for ENTER anything."
+   "text": "Sentence $02: \"You can't go in that direction.\" Ends with @ at $1D76. Printed by the code at $0E88, action script for EAST, action script for WEST, action script for UP, action script for DOWN and action script for ENTER anything."
   },
   {
    "address": 7543,
    "type": "line",
-   "text": "Sentence $03: \"You can't do that.\" Ends with @ at $1D81. Printed by the code at $144A, action script for GET ARTAX, action script for PULL THORN BUSHES, action script for OUT anything, action script for TIE ROPE and action script for UNLOCK DOOR."
+   "text": "Sentence $03: \"You can't do that.\" Ends with @ at $1D81. Printed by the code at $0F6B, the code at $144A, action script for GET ARTAX, action script for PULL THORN BUSHES, action script for OUT anything, action script for TIE ROPE and 1 more."
   },
   {
    "address": 7554,
@@ -13182,22 +13206,22 @@
   {
    "address": 7581,
    "type": "line",
-   "text": "Sentence $08: \"I don't see it here!\" Ends with @ at $1DAB. Printed by action script for GET KEY, action script for GET SPIDER'S WEB, action script for HIT GLASS BOX, action script for CUT SPIDER'S WEB, action script for UNLOCK CELL and action script for LOCK CELL."
+   "text": "Sentence $08: \"I don't see it here!\" Ends with @ at $1DAB. Printed by the code at $0F61, action script for GET KEY, action script for GET SPIDER'S WEB, action script for HIT GLASS BOX, action script for CUT SPIDER'S WEB, action script for UNLOCK CELL and 1 more."
   },
   {
    "address": 7596,
    "type": "line",
-   "text": "Sentence $09: \"You're already carrying it !\" Ends with @ at $1DC3. Nothing prints it."
+   "text": "Sentence $09: \"You're already carrying it !\" Ends with @ at $1DC3. Printed by the code at $0F5C."
   },
   {
    "address": 7620,
    "type": "line",
-   "text": "Sentence $0A: \"You're not carrying it !\" Ends with @ at $1DD7. Printed by action script for DROP KEY, action script for EAT APPLE, action script for EAT FOOD, action script for LIGHT BRANCH, action script for BLOW HORN, action script for CUT APPLE and 5 more."
+   "text": "Sentence $0A: \"You're not carrying it !\" Ends with @ at $1DD7. Printed by the code at $0EC0, action script for DROP KEY, action script for EAT APPLE, action script for EAT FOOD, action script for LIGHT BRANCH, action script for BLOW HORN and 6 more."
   },
   {
    "address": 7640,
    "type": "line",
-   "text": "Sentence $0B: \"You've got a full load already!\" Ends with @ at $1DF2. Nothing prints it."
+   "text": "Sentence $0B: \"You've got a full load already!\" Ends with @ at $1DF2. Printed by the code at $0F66."
   },
   {
    "address": 7667,
@@ -13267,7 +13291,7 @@
   {
    "address": 7825,
    "type": "line",
-   "text": "Sentence $19: \"There is no noun in that sentence!\" Ends with @ at $1EA4. Nothing prints it."
+   "text": "Sentence $19: \"There is no noun in that sentence!\" Ends with @ at $1EA4. Printed by the code at $0EB4 and the code at $0F06."
   },
   {
    "address": 7845,
@@ -13382,17 +13406,17 @@
   {
    "address": 8293,
    "type": "line",
-   "text": "Sentence $30: \"Part one!\" Ends with @ at $206D. Nothing prints it."
+   "text": "Sentence $30: \"Part one!\" Ends with @ at $206D. Printed by the code at $0447 (sentence $30 + CURRENT_PART_NO, when that is 0)."
   },
   {
    "address": 8302,
    "type": "line",
-   "text": "Sentence $31: \"Part two!\" Ends with @ at $2076. Nothing prints it."
+   "text": "Sentence $31: \"Part two!\" Ends with @ at $2076. Printed by the code at $0447 (sentence $30 + CURRENT_PART_NO, when that is 1)."
   },
   {
    "address": 8311,
    "type": "line",
-   "text": "Sentence $32: \"Part three!\" Ends with @ at $2081. Nothing prints it."
+   "text": "Sentence $32: \"Part three!\" Ends with @ at $2081. Printed by the code at $0447 (sentence $30 + CURRENT_PART_NO, when that is 2)."
   },
   {
    "address": 8322,
@@ -14237,42 +14261,42 @@
   {
    "address": 10563,
    "type": "line",
-   "text": "Six runtime RoomGraphicRecord overlays drawn on top of the base room illustration. A zero source-pointer high byte marks an unused record.\n$2963: Source pointer in the sixth visible graphic record. SCRIPT_SET_OBJECT_GRAPHIC points it at the selected object's $A560 graphics block or clears it."
+   "text": "Six six-byte records for the icons drawn over the backdrop at the right of the picture band: records 0-4 for the objects carried and record 5 for the companion. Each record is row, column, source address (low, high), height and width, in character cells, the layout of the picture records at $0BF9; a source high byte of 0 marks an unused record. TAKE puts the icon of the object taken into the first unused one of records 0-4 ($0F3A) and DROP clears the record that holds the dropped object's icon ($0EDA); RENDER_ROOM_GRAPHICS ($0570) draws every record in use. The records end the block SAVE writes ($28BF-$2966). Record 0: row 5, column 21 of the picture band, 4 by 4 cells."
   },
   {
    "address": 10566,
    "type": "line",
-   "text": "Remaining fields of the first mutable RoomGraphicRecord at $2943 and five subsequent six-byte records. Each record holds height, width, destination row, destination column, then little-endian source pointer. The engine's drawing and object routines rewrite these records; the records end at $2966."
+   "text": "Record 0's source high byte, then its height and width. INIT_GAME_STATE clears the high byte ($1506), so a new game starts with the record unused."
   },
   {
    "address": 10572,
    "type": "line",
-   "text": "Destination-column byte of the second mutable room-graphic descriptor beginning at $2949, followed by that descriptor source pointer and four more six-byte records. The whole runtime descriptor array spans $2943-$2966."
+   "text": "Record 1's source high byte, then its height and width. INIT_GAME_STATE clears the high byte ($1509), so a new game starts with the record unused."
   },
   {
    "address": 10578,
    "type": "line",
-   "text": "Column byte of runtime graphic descriptor 2 at $294F, followed by its source pointer and three more six-byte descriptors. The six-record mutable array ends at $2966."
+   "text": "Record 2's source high byte, then its height and width. INIT_GAME_STATE clears the high byte ($150C), so a new game starts with the record unused."
   },
   {
    "address": 10584,
    "type": "line",
-   "text": "Destination-column byte of runtime RoomGraphicRecord 3 beginning at $2955, followed by its source pointer and the final two six-byte descriptors through $2966."
+   "text": "Record 3's source high byte, then its height and width. INIT_GAME_STATE clears the high byte ($150F), so a new game starts with the record unused."
   },
   {
    "address": 10590,
    "type": "line",
-   "text": "High byte of the source pointer in visible graphic record 4 ($295B-$2960). The low byte is $295D; a zero high byte disables this overlay. INIT_GAME_STATE clears this field at $1512."
+   "text": "Record 4's source high byte, then its height and width. INIT_GAME_STATE clears the high byte ($1512), so a new game starts with the record unused."
   },
   {
    "address": 10595,
    "type": "line",
-   "text": "Low byte of the source pointer in visible graphic record 5 ($2961-$2966). SCRIPT_SET_OBJECT_GRAPHIC writes the computed pointer low byte here at $1156, or clears it at $1146."
+   "text": "Record 5's source address, low byte: SCRIPT_SET_OBJECT_GRAPHIC writes the icon's address here ($1156) or clears it ($1146)."
   },
   {
    "address": 10596,
    "type": "line",
-   "text": "High byte of the source pointer in visible graphic record 5 ($2961-$2966). SCRIPT_SET_OBJECT_GRAPHIC writes the computed pointer high byte here at $115B, or clears it at $1149. Width and height are the following bytes $2965/$2966."
+   "text": "Record 5's source high byte ($115B; cleared at $1149, and by INIT_GAME_STATE at $1515), then its height and width."
   },
   {
    "address": 10599,
@@ -14352,7 +14376,7 @@
   {
    "address": 10833,
    "type": "line",
-   "text": "The action for SOUTH (rule 4): if the player is in room $27 and flag 5 is clear and a 201-in-256 chance: print event 19 (\"Firey bolts burst forth from the sphinxes eyes a...\"), wait for a key, restart the game; if the player is in room $27 and Auryn is carried: print event 20 (\"You just made it !\"), show picture 12 (Atreyu caught in the sphinxes' fireball), wait for a key, move the player in the direction named, stop; if the player is in room $27: print event 19 (\"Firey bolts burst forth from the sphinxes eyes a...\"), wait for a key, restart the game; move the player in the direction named."
+   "text": "The action for SOUTH (rule 4): if the player is in room $27 and flag 5 is clear and the raster line's low byte is 200 or less (257 of the 312 lines in a frame): print event 19 (\"Firey bolts burst forth from the sphinxes eyes a...\"), print \"Paused - hit space to continue!\" and wait for Space, restart the game; if the player is in room $27 and Auryn is carried: print event 20 (\"You just made it !\"), show picture 12 (Atreyu caught in the sphinxes' fireball), print \"Paused - hit space to continue!\" and wait for Space, move the player in the direction named, stop; if the player is in room $27: print event 19 (\"Firey bolts burst forth from the sphinxes eyes a...\"), print \"Paused - hit space to continue!\" and wait for Space, restart the game; move the player in the direction named."
   },
   {
    "address": 10865,
@@ -14382,7 +14406,7 @@
   {
    "address": 11041,
    "type": "line",
-   "text": "The action for DROP AND (rule 19), DROP AND (rule 24) and DROP anything (rule 25): drop the object named."
+   "text": "The action for DROP with noun $FF (rule 19), DROP with noun $FF (rule 24) and DROP anything (rule 25): drop the object named. Rule 19 and rule 24 never match: $FF is the id of \"and\", which the parser takes as the start of a new command ($13DC), and no script sets the noun to it."
   },
   {
    "address": 11043,
@@ -14522,7 +14546,7 @@
   {
    "address": 11588,
    "type": "line",
-   "text": "The action for PAUSE (rule 51): wait for a key."
+   "text": "The action for PAUSE (rule 51): print \"Paused - hit space to continue!\" and wait for Space."
   },
   {
    "address": 11590,
@@ -15412,7 +15436,7 @@
   {
    "address": 40960,
    "type": "line",
-   "text": "ZERO_PAGE_BACKUP ($A000-$A0FF) - the game's shadow copy of zero page, swapped in and out\naround KERNAL calls by SWAP_ZERO_PAGE_AND_BACKUP ($053C).\nThe game keeps its own working variables in zero page, which the KERNAL also uses. Rather\nthan saving individual locations, $053C exchanges the two 256-byte images wholesale: for each\nindex it loads the live byte, loads the backup byte, writes the backup value live, and writes\nthe live value into the backup. One routine therefore serves both directions - calling it\ntwice restores the original state - and there is no separate \"restore\" entry point.\n053C  LDY #$FF\n053E  LDA $0000,Y     ; live zero-page byte\n0541  TAX\n0542  LDA $A000,Y     ; corresponding backup byte\n0545  STA $0000,Y     ; backup -> live\n0548  TXA\n0549  STA $A000,Y     ; live -> backup\n054C  DEY\n054D  CPY #$01        ; stop before index $01\n054F  BNE $053E\nC64 SPECIFIC, AND THE REASON FOR THE ODD LOOP BOUND: the loop runs Y = $FF down to $02 and\ndeliberately never touches $0000 and $0001. On a 6510 those two addresses are not RAM but the\nCPU's on-chip I/O port - $0001 is the bank-select register that decides whether BASIC, KERNAL,\nI/O or RAM is visible at $A000-$BFFF and $D000-$FFFF, and $0000 is its data-direction\nregister. Swapping a stale value into $0001 would change the memory map underneath the\nrunning code, most likely unmapping the very routine performing the swap. Banking is managed\nseparately, by explicit stores to $01.\nNote the backup lives at $A000-$BFFF RAM, i.e. underneath the BASIC ROM image, which is\nexactly the region the $01 value chosen by this game leaves as RAM.\nAt the opening, $A002-$A0FF holds zero page as OPENING_SETUP copied it there ($06B2), before the tune took over $10-$21."
+   "text": "ZERO_PAGE_BACKUP ($A000-$A0FF) - the KERNAL's zero page, kept here while the game works in\nthe real one. OPENING_SETUP copies it here ($06B2); SWAP_ZERO_PAGE_AND_BACKUP ($053C)\nexchanges the two around a part's load (PREPARE_DISK_IO $04FB, END_DISK_IO $0521), so the\nKERNAL's LOAD runs with its own zero page while the game's waits here. The game calls SCNKEY\nand GETIN with no swap. Rather than saving individual locations, $053C exchanges the two\nimages, $02-$FF, wholesale: for each\nindex it loads the live byte, loads the backup byte, writes the backup value live, and writes\nthe live value into the backup. One routine therefore serves both directions - calling it\ntwice restores the original state - and there is no separate \"restore\" entry point.\n053C  LDY #$FF\n053E  LDA $0000,Y     ; live zero-page byte\n0541  TAX\n0542  LDA $A000,Y     ; corresponding backup byte\n0545  STA $0000,Y     ; backup -> live\n0548  TXA\n0549  STA $A000,Y     ; live -> backup\n054C  DEY\n054D  CPY #$01        ; stop before index $01\n054F  BNE $053E\nC64 SPECIFIC, AND THE REASON FOR THE ODD LOOP BOUND: the loop runs Y = $FF down to $02 and\ndeliberately never touches $0000 and $0001. On a 6510 those two addresses are not RAM but the\nCPU's on-chip I/O port - $0001 is the bank-select register that decides whether BASIC, KERNAL,\nI/O or RAM is visible at $A000-$BFFF and $D000-$FFFF, and $0000 is its data-direction\nregister. Swapping a stale value into $0001 would change the memory map underneath the\nrunning code, most likely unmapping the very routine performing the swap. Banking is managed\nseparately, by explicit stores to $01.\nNote the backup lives at $A000-$BFFF RAM, i.e. underneath the BASIC ROM image, which is\nexactly the region the $01 value chosen by this game leaves as RAM.\nAt the opening, $A002-$A0FF holds zero page as OPENING_SETUP copied it there ($06B2), before the tune took over $10-$21."
   },
   {
    "address": 41216,
@@ -16943,6 +16967,31 @@
    "address": 64816,
    "type": "line",
    "text": "Final 90 eight-byte character-set cells, indexes 166-255, of the authored 256-cell font at $F800-$FFFF. The text raster phase selects this RAM character set with $D018=$3E at $A80A. These 720 bytes are glyph bitmap data; the field boundary at $FD30 begins cell 166."
+  },
+  {
+   "address": 10569,
+   "type": "line",
+   "text": "Record 1: row 5, column 35 of the picture band, 4 by 4 cells."
+  },
+  {
+   "address": 10575,
+   "type": "line",
+   "text": "Record 2: row 0, column 21 of the picture band, 4 by 4 cells."
+  },
+  {
+   "address": 10581,
+   "type": "line",
+   "text": "Record 3: row 0, column 35 of the picture band, 4 by 4 cells."
+  },
+  {
+   "address": 10587,
+   "type": "line",
+   "text": "Record 4: row 0, column 28 of the picture band, 4 by 4 cells."
+  },
+  {
+   "address": 10593,
+   "type": "line",
+   "text": "Record 5, the companion's: row 5, column 28 of the picture band, 4 by 4 cells, in the middle of the lower row. Only the scripts' icon action (SCRIPT_SET_OBJECT_GRAPHIC $113D) fills or clears it, with Artax's or Falkor's icon; TAKE and DROP look at records 0-4 only."
   }
  ]
 }

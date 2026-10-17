@@ -6,15 +6,17 @@ printer, the parser, the script interpreter, the resident scripts and
 the game's state. Every address here is the engine's, in its
 `listing.json`; how the engine reads a part's tables, and how the parts
 follow one another, is in the game's own `facts.md`. Unless marked
-*live*, a fact comes from the code in `work/opening.vsf`, stopped at
-$0400 with the whole game unpacked. Live tests are listed in the game's
+*live*, a fact comes from the code in `work/opening.vsf`, stopped in
+the opening's wait for a key ($0552, inside the KERNAL's GETIN) with
+the whole game unpacked and the title tune playing. Live tests are listed in the game's
 own `facts.md`.
 
 ## The opening
 
 - `OPENING_SETUP` ($069B) masks interrupts, sets $01 = $06, calls the
   KERNAL's IOINIT and SETMSG with 0 (no messages), stops CIA 1's timer
-  A, copies zero page $02-$FF to the game's copy at $A002, points the
+  A, copies zero page $02-$FF, as the KERNAL left it, to $A002-$A0FF for
+  the loads to swap back in ($053C), points the
   IRQ vector at $A880, turns on the raster interrupt and selects VIC
   bank 3 and the text screen at $CC00. With $01 = $05 it stops and
   starts the tune ($96A1, $96DA).

@@ -26,8 +26,9 @@ $00-$28. Unless marked *live*, a fact comes from the bytes of
 
 - On the first turn it sets flag 2, takes Gmork out of play ($FB) and
   sets counter 3 to 30.
-- Gmork's chase: while Gmork is in play, each turn a 51-in-256 chance
-  takes one from counter 3, and each step Atreyu takes adds one to it
+- Gmork's chase: while Gmork is in play, each turn a test that passes
+  on 102 of the frame's 312 raster lines (operand 50; the game's `facts.md`,
+  "Mechanics", Chance) takes one from counter 3, and each step Atreyu takes adds one to it
   (the engine's direction actions, $2A13 and $2A26 among them), so only
   turns spent standing still let him close in; at 10 Gmork "is gaining on you" (event 3), at
   1 "almost on top of you" (event 4), at 0 he catches Atreyu (event 5)
@@ -46,16 +47,16 @@ $00-$28. Unless marked *live*, a fact comes from the bytes of
   with Atreyu (flag 0), sinks (event 7, picture 8) and is gone.
 - Quicksand, room $0D: counter 2 counts the turns there and the third
   is fatal (event 12); room $12 sets it back to 0.
-- Morla, room $15: Atreyu is thrown off into room $16 on a 126-in-256
-  chance, otherwise into room $14 (event 8).
+- Morla, room $15: Atreyu is thrown off into room $16 on 182 of the 312
+  lines (operand 125), otherwise into room $14 (event 8).
 - Engywook, rooms $24 and $25: each room's script moves him to it, so
   he is wherever Atreyu is of the two. In room $25 he takes
   the crystal out of play and explains the oracle (event 14), refuses
   the crystal still in its box (event 16), and grabs back his telescope
   if Atreyu carries it, at a cost of one strength (event 18).
 - The sphinxes, room $27 ($3082): each turn prints "I hope you know
-  what you're doing!" (event 17), clears flag 5 and, on a 26-in-256
-  chance, sets it: "The sphinxes' eyes blink!" (event 26).
+  what you're doing!" (event 17), clears flag 5 and, on 52 of the 312
+  lines (operand 25), sets it: "The sphinxes' eyes blink!" (event 26).
 - The great mirror, room $28 ($3090): gives Atreyu Falkor if he is not
   already with him (flag 1), prints the oracle's message (event 25) with
   picture 17, and ends the part with action $1F (engine
@@ -64,11 +65,13 @@ $00-$28. Unless marked *live*, a fact comes from the bytes of
 ## Passing the sphinxes
 
 The engine's action for SOUTH (engine $2A51) decides it. In room $27:
-with flag 5 clear, a 201-in-256 chance kills Atreyu (event 19). If he
+with flag 5 clear, a test that passes on 257 of
+the 312 lines (operand 200) kills Atreyu (event 19). If he
 survives that, or flag 5 is set, Auryn carried takes him south ("You
 just made it !", event 20, picture 12); without Auryn he dies. So with
 Auryn, going south when the eyes have just blinked always passes, and
-going at any other time passes on 55 chances in 256.
+going at any other time passes only on the 55 lines whose low byte
+is 201-255, about one try in six.
 
 ## Route
 
