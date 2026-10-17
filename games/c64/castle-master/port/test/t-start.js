@@ -12,15 +12,15 @@ const standin = require('./standin.js');
 const { loadPort } = require('./port.js');
 const { IRQ_BYTES, IGNORE } = require('./lockstep.js');
 
-function run(lang, who, passes, seed) {
+function run(lang, who, passes, seed, o = {}) {
   const CM = loadPort();
   const m = lib.machine('entry');
   const P = CM.makePort(new Uint8Array(65536), {});
   standin.install(P, IRQ_BYTES);
+  if (o.onPort) o.onPort(P, m);
   const ls = new Lockstep({ machine: m, port: P, program: P => P.start(), checkpoints: P.CHECKPOINTS,
-    irqs: { 0xFF48: 'IRQ_DISPATCH' }, irqBytes: IRQ_BYTES, chips: ['colour', 'vic', 'sid'], ignore: IGNORE, maxFrames: 1500 });
+    irqs: { 0xFF48: 'IRQ_DISPATCH' }, irqBytes: IRQ_BYTES, chips: ['colour', 'vic', 'sid'], ignore: IGNORE, maxFrames: 1500, timing: o.timing });
   P.M[0] = m.cpu.pdir; P.M[1] = m.cpu.pdata;
-  // the menus' keys, one at a time where both stand at a stop, each held a few frames
   // each key where the game waits for it: the two menus, then the view's opening
   const steps = [[String(lang), 0x9B1C], ['RETURN', 0x9B1C], [String(who), 0x9C97], ['RETURN', 0x9C97], ['SPACE', 0x8333]];
   let step = 0, held = null, at = 0, s = seed;
@@ -41,6 +41,7 @@ function run(lang, who, passes, seed) {
     } });
   return res;
 }
+module.exports = { run };
 if (require.main === module) {
   const passes = +(process.argv[2] || 40);
   let bad = 0, n = 0;

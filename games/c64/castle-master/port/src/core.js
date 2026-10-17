@@ -40,6 +40,14 @@ function makePort(M, io, opts = {}) {
   Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
     set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
   P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
+  // The work inside routines whose length varies, counted for the page's pacing (the cost of a
+  // routine is its calls' and these): each row the painter looks at and each byte it fills, each
+  // step along an edge or a line, each line the viewport's opening and closing draw or clear. The
+  // page reads and clears them (page/runtime.js), as the fit's rows do (scripts/time-stretches.js,
+  // scripts/time-routines.js).
+  P.N = { row: 0, fill: 0, step: 0, xstep: 0, line: 0, vline: 0, vclear: 0 };
+  // and the interrupt's own: the view's colours filled in a sensor's flash
+  P.NI = { fill: 0 };
   // A read and a write through the processor's map as $01 has it: the I/O at $D000-$DFFF when its
   // bits say so. The port has no ROMs: reading one is an error, as it would be a byte the port
   // cannot know.

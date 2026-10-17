@@ -10,7 +10,7 @@
 'use strict';
 const G = root.CMGroups = root.CMGroups || {};
 G.raster = function (P) {
-  const M = P.M;
+  const M = P.M, N = P.N;
   const ptr = zp => M[zp] | M[zp + 1] << 8;
   const setp = (zp, v) => { M[zp] = v & 255; M[zp + 1] = (v >> 8) & 255; };
   const at = (zp, y) => (ptr(zp) + y) & 0xFFFF;
@@ -47,6 +47,7 @@ G.raster = function (P) {
     const plot = (yy, mask) => { const a = at(0x82, yy); M[a] = (M[a] & (mask ^ 0xFF)) | (M[0xB1 + (M[0xB0] & 3)] & mask); };
     let a;
     for (;;) {
+      N.row++;
       y = M[0xB0];
       const ends = M[0x11A3 + y];
       M[0x11A3 + y] = 0;
@@ -88,6 +89,7 @@ G.raster = function (P) {
             const to = (ptr(0x82) + M[0xB5]) & 0xFFFF;
             M[0x40BD] = to & 255; M[0x40BE] = to >> 8;
             const v = M[0xB1 + x];
+            N.fill += y + 1;
             for (; ; y = (y - 1) & 255) { M[(to + y) & 0xFFFF] = v; if (y === 0) { y = 0xFF; break; } }
           }
         }
@@ -332,7 +334,7 @@ G.raster = function (P) {
         if (z(0xC2) === z(0xC0)) {
           let d = (y0 - y1) & 255; if (d & 0x80) d = neg(d);
           M[0x82] = d;
-          do { mark(y, z(0xC0)); y = (y + 1) & 255; M[0x82] = (M[0x82] - 1) & 255; } while (!(M[0x82] & 0x80));
+          do { N.step++; mark(y, z(0xC0)); y = (y + 1) & 255; M[0x82] = (M[0x82] - 1) & 255; } while (!(M[0x82] & 0x80));
         } else {
           M[0x1231] = z(0xC0);
           a = (z(0xC2) - M[0x1231]) & 255;
@@ -343,6 +345,7 @@ G.raster = function (P) {
           if (M[0xB1] < M[0xB2]) {
             M[0xB7] = M[0xB2]; M[0xB8] = M[0xB2] >> 1;
             do {
+              N.step++;
               y = M[0x1232];
               mark(y, M[0x1231]);
               M[0x1232] = (M[0x1232] + M[0xB3]) & 255;
@@ -353,9 +356,11 @@ G.raster = function (P) {
           } else {
             M[0xB7] = M[0xB2]; M[0xB8] = M[0xB1] >> 1;
             do {
+              N.step++;
               y = M[0x1232];
               mark(y, M[0x1231]);
               do {
+                N.xstep++;
                 M[0x1231] = (M[0x1231] + M[0xB5]) & 255;
                 a = (M[0xB8] + M[0xB2]) & 255; M[0xB8] = a;
               } while (a < M[0xB1]);
@@ -389,7 +394,7 @@ G.raster = function (P) {
       x = M[0xC3]; y = M[0xC1]; a = (M[0xC3] - M[0xC1]) & 255;
       if (a & 0x80) { x = M[0xC1]; y = M[0xC3]; a = (M[0xC1] - M[0xC3]) & 255; }
       M[0x1054] = y; M[0x1053] = x; x = a;
-      do { M[0x10B1 + y] = M[0xC0]; M[0x11A3 + y] = 1; y = (y + 1) & 255; } while (y <= M[0x1053]);
+      do { N.line++; M[0x10B1 + y] = M[0xC0]; M[0x11A3 + y] = 1; y = (y + 1) & 255; } while (y <= M[0x1053]);
       return { a: 1, x, y, c: 1 };
     }
     M[0xB2] = 1; M[0xB3] = 1;
@@ -412,6 +417,7 @@ G.raster = function (P) {
       a = (M[0xB3] & 0x80) ? M[0xC2] : M[0xC0];
       M[0x10B1 + y] = a; x = a; M[0x11A3 + y] = 1;
       do {
+        N.line++;
         a = (M[0xB5] + M[0xB0]) & 255; M[0xB0] = a;
         a = (a - M[0xB4]) & 255;
         if (!(a & 0x80)) { M[0xB0] = a; x = (x + M[0xB2]) & 255; }
@@ -426,6 +432,7 @@ G.raster = function (P) {
     a = (x & 0x80) ? M[0xC2] : M[0xC0];
     M[0x84] = a; M[0x10B1 + y] = a; M[0x11A3 + y] = 1;
     do {
+      N.line++;
       M[0x84] = (M[0x84] + M[0xB2]) & 255;
       a = (M[0xB5] + M[0xB0]) & 255; M[0xB0] = a;
       a = (a - M[0xB4]) & 255;

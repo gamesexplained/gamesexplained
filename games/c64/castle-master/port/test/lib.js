@@ -81,9 +81,9 @@ function save(m, name) {
   return s;
 }
 function readState(name) { return JSON.parse(fs.readFileSync(path.join(STATES, name.endsWith('.json') ? name : name + '.json'), 'utf8')); }
-function restore(name) {
+function restore(name, opts = {}) {
   const s = typeof name === 'string' ? readState(name) : name;
-  const m = Machine.restore(s);
+  const m = Machine.restore(s, opts);
   m.hooks[0xFF90] = kernalSetmsg(m);
   return m;
 }

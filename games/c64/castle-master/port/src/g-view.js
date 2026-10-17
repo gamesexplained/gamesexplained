@@ -272,6 +272,7 @@ G.view = function (P) {
           }
         }
         nextLine();
+        P.N.vline++;
         M[0x82BB]--;
       } while (M[0x82BB]);
     }
@@ -281,6 +282,7 @@ G.view = function (P) {
       y = 0x1D; x = 0;
       do { M[(dst + x) & 0xFFFF] = M[at(0x7E, y)]; x = (x + 8) & 255; y = (y - 1) & 255; } while (x !== 0xF0);
       nextLine();
+      P.N.vclear++;
       M[0x82BE]--;
     }
     return { a: r.y, x, y: r.y };

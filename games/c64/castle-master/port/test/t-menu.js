@@ -6,6 +6,7 @@
 // load reads a file made from another moment, a file that is not a saved game, or none. The
 // menu's waits are let through on both sides.
 const { check, moments } = require('./check.js');
+const { kernalHooks } = require('./kernal.js');
 let f = 0, mismatch = 0, saves = 0;
 const t = o => { f += check(Object.assign({ cases: 1200, outs: [] }, o)).fails ? 1 : 0; };
 const w = (M, a) => M[a] | M[a + 1] << 8;
@@ -57,30 +58,7 @@ const hooks = {};
 for (const a of POLLS) hooks[a] = () => { press(cur.game, cur.keys[Math.min(cur.i++, cur.keys.length - 1)]); };
 for (const a of [0x79E5, 0x7A48, 0x7A72, 0x7310, 0x7331]) hooks[a] = c => { c.m[0x1063] = 0; };
 // the KERNAL's routines on the game's side: the same as the port's
-const name = c => { let s = ''; const a = c.m[0xBB] | c.m[0xBC] << 8; for (let i = 0; i < c.m[0xB7]; i++) s += String.fromCharCode(c.m[(a + i) & 0xFFFF]); return s; };
-hooks[0xFFF0] = c => { if (!c.c) { c.m[0xD6] = c.x; c.m[0xD3] = c.y; } c.rts(); };
-hooks[0xFFBA] = c => { c.m[0xB8] = c.a; c.m[0xBA] = c.x; c.m[0xB9] = c.y; c.rts(); };
-hooks[0xFFBD] = c => { c.m[0xB7] = c.a; c.m[0xBB] = c.x; c.m[0xBC] = c.y; c.rts(); };
-hooks[0xFFD5] = c => {
-  name(c);
-  const b = cur.file;
-  if (!b) { c.m[0x90] = 0x42; c.a = 4; c.c = 1; c.rts(); return; }
-  const start = c.m[0xB9] ? b[0] | b[1] << 8 : c.x | c.y << 8;
-  for (let i = 2; i < b.length; i++) c.m[(start + i - 2) & 0xFFFF] = b[i];
-  const end = (start + b.length - 2) & 0xFFFF;
-  c.m[0xC3] = start & 255; c.m[0xC4] = start >> 8; c.m[0xAE] = end & 255; c.m[0xAF] = end >> 8;
-  c.m[0x90] = 0x40; c.x = end & 255; c.y = end >> 8; c.c = 0; c.rts();
-};
-hooks[0xFFD8] = c => {
-  const start = c.m[c.a] | c.m[(c.a + 1) & 255] << 8, end = c.x | c.y << 8;
-  const out = new Uint8Array(Math.max(0, end - start) + 2);
-  out[0] = start & 255; out[1] = start >> 8;
-  for (let a = start; a < end; a++) out[a - start + 2] = c.m[a];
-  gameSaved = { name: name(c).replace(/^@?\d?:/, ''), out };
-  c.m[0x90] = 0; c.c = 0; c.rts();
-};
-// the KERNAL's vectors from its ROM: the port has no ROM, and neither does this test
-hooks[0x0634] = c => { c.pc = 0x063F; };
+Object.assign(hooks, kernalHooks(() => cur.file, (name, out) => { gameSaved = { name, out }; }));
 const all = moments();
 const onPort = P => {
   cur.i = 0;

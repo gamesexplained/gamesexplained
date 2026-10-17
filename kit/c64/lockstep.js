@@ -90,11 +90,17 @@
 //   P.io.irqByte(a), and gets, in turn, the values the game's main program read of it in the same
 //   stretch (a read past those, the port's own byte). The port runs a stretch before the game does,
 //   so what the game has not yet read comes from a copy of the machine run on ahead to its next
-//   checkpoint or wait's exit: its class's restore(save()), with the input as it stands. A machine
+//   checkpoint or wait's exit: its class's restore(save(), { rom }), with the input as it stands
+//   and the ROMs the machine was given. A machine
 //   class that keeps more than Machine does extends save() and restore(), or the copy is not the
 //   game. Input onFrame gives inside the stretch, after the copy is made, is not in it, and a copy
 //   made at the head of a raster wait's loop stops at that head the first time round. On the page,
 //   outside the lockstep, the port's io gives irqByte: a => M[a].
+// - hooks: the machine's own stand-ins, by address, as Machine's hooks take them (a KERNAL routine
+//   the game calls and the simulator holds no ROM for): put on the machine for the run and on the
+//   copies irqBytes runs on ahead, which a hook set on the machine alone never reaches. A hook acts
+//   on the cpu it is given (c.m, the registers), never on a machine it keeps, so that a copy's run
+//   leaves the game as it was.
 //
 // run({ passes, onPass, onFrame, stopOnDiff }) runs until passes more passes have started (default
 // 1) and returns { passes, ok, diffs, diverged, frames }. At the start of each pass, once the
@@ -163,6 +169,7 @@ class Lockstep {
     for (const a of this.waits) if (this.cps.has(a)) throw new Error('Lockstep: ' + hex(a) + ' is both a checkpoint and a wait\'s exit');
     this.irqs = o.irqs || {};
     this.maxFrames = o.maxFrames || 500;
+    this.hooks = o.hooks || {};
     const keep = new Uint8Array(65536);
     for (const [a, b] of o.compare || [[0x0002, 0x00FF], [0x0200, 0xFFFF]]) keep.fill(1, a, b + 1);
     for (const x of o.ignore || []) if (Array.isArray(x)) keep.fill(0, x[0], x[1] + 1); else keep[x] = 0;
@@ -234,12 +241,13 @@ class Lockstep {
   // The game's reads of irqBytes to the end of the stretch: those it has made since the last stop,
   // then a copy's, run on from here to the next stop outside its interrupts.
   lookahead() {
-    const m = this.m, g = m.constructor.restore(m.save());
+    const m = this.m, g = m.constructor.restore(m.save(), { rom: m.cpu.rom });
     if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
     g.sidw.set(m.sidw);
     const out = new Map(), B = this.irqBytes;
     for (const [a, vs] of this.ib.live) out.set(a, vs.slice());
     let depth = 0, stop = false, skip = g.cpu.pc;
+    Object.assign(g.hooks, this.hooks);
     for (const a of [...this.cps, ...this.waits]) {
       const prev = g.hooks[a];
       g.hooks[a] = c => {
@@ -292,9 +300,10 @@ class Lockstep {
     const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
     const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), run: own(cpu, 'run') };
     m.onPass = null;
+    for (const [a, h] of Object.entries(this.hooks)) { s.hooks[a] = m.hooks[a]; m.hooks[a] = h; }
     for (const a of [...this.cps, ...this.waits]) {
       const prev = m.hooks[a];
-      s.hooks[a] = prev;
+      if (!Object.prototype.hasOwnProperty.call(s.hooks, a)) s.hooks[a] = prev;
       m.hooks[a] = c => {
         if (ls.irq !== null) return prev ? prev(c) : false;            // an interrupt's code, not the main program
         if (ls.resume === a) { ls.resume = -1; return prev ? prev(c) : false; }

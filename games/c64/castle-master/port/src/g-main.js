@@ -377,6 +377,7 @@ G.main = function (P) {
       }
       if (colour === -2) { M[0x7355] = 0x0A; colour = ((M[0x2432] << 4) | M[0x2433]) & 255; }
       if (colour >= 0) {
+        P.NI.fill++;
         let at = 0xC4A5;
         for (let row = 0; row < 15; row++) { M.fill(colour, at, at + 0x1E); at += 0x28; }
         M[0x7417] = at & 255; M[0x7418] = at >> 8;

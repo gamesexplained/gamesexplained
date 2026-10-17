@@ -135,6 +135,14 @@ const input = (n, m) => {
     const r2 = lockstep(P, { irqBytes: [0x2005] }).run({ passes: 50, onPass: input });
     check('irqBytes read ' + lines + ' lines on: 50 passes identical', r2.ok && r2.passes === 50, true);
   }
+  // the machine's own hooks given to the lockstep: on the machine for the run, on each copy run
+  // on ahead too, and the machine's own again after
+  let calls = 0;
+  const lh = lockstep(withByte(), { irqBytes: [0x2005], hooks: { [ADDR.WORK]: () => { calls++; return false; } } });
+  const rh = lh.run({ passes: 20, onPass: input });
+  check('hooks: 20 passes identical', rh.ok && rh.passes === 20, true);
+  check('hooks: run on the copies run on ahead too', calls, 40);
+  check('hooks: off the machine after the run', lh.m.hooks[ADDR.WORK], undefined);
   let msg = '';
   try { lockstep(withByte()).run({ passes: 2 }); } catch (e) { msg = e.message; }
   check('irqByte of a byte not listed', /\$2005 through irqByte, and it is not in irqBytes/.test(msg), true);

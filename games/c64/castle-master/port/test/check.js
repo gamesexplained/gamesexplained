@@ -12,7 +12,8 @@
 // setup's rnd(n) is an integer below n (rnd() a fraction); it may change M and the chips, and gives
 // the registers (those it leaves out are random, the same on both sides). ignore lists addresses
 // or [first, last] ranges left out; states filters the moments by name; onPort(P) may change the
-// port once it is made; entry calls an address with no label.
+// port once it is made; entry calls an address with no label; timing({ cycles, N, st, regs }) gets
+// each identical case's cycles on the game and the port's counts of its work (scripts/time-routines.js).
 const path = require('path');
 const lib = require('./lib.js');
 const { CPU } = require(path.join(lib.REPO, 'kit/c64/cpu6502.js'));
@@ -105,6 +106,7 @@ function check(o) {
     const P = CM.makePort(MB, ioB);
     standin.install(P);
     if (o.onPort) o.onPort(P);
+    for (const k in P.N) P.N[k] = 0;
     let rB, perr = null;
     try {
       rB = P[o.name](Object.assign({}, regs));
@@ -124,6 +126,7 @@ function check(o) {
       if (la !== lb) diffs.push('chip writes: game [' + la.slice(0, 300) + '] port [' + lb.slice(0, 300) + ']');
       for (const k of outs) if (rB[k] === undefined || ((+rB[k]) & 0xFF) !== (rA[k] & 0xFF)) diffs.push('register ' + k + ': game ' + rA[k] + ' port ' + rB[k]);
     }
+    if (!diffs.length && o.timing) o.timing({ cycles: cpu.cycles, N: Object.assign({}, P.N), st: st.name, regs });
     if (diffs.length) {
       fails++;
       if (shown++ < (o.show || 3)) {

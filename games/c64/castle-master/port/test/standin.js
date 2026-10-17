@@ -60,10 +60,12 @@ function install(P, irqBytes = []) {
   }
   let cpu = null, depth = 0;
   P.standIns = new Set();
+  P.standInsUsed = new Set();
   for (const [label, a] of names) {
     if (ported.has(label)) continue;
     P.standIns.add(label);
     const run = function (r) {
+      P.standInsUsed.add(label);
       if (!cpu) cpu = standInCpu(P, irqBytes);
       const regs = { d: 0 };
       r = r || {};
