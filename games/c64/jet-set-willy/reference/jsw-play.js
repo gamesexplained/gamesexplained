@@ -92,7 +92,7 @@ globalThis.JSWPlay = (function () {
     const S = { clock: 0, frames: 0, passes: 0, shown: null, sound: [], keys, joy: 0x1F, vic, colour, sid, M };
     const bank = () => (3 - ((cia.pra2 | ~cia.ddra2) & 3)) << 14;
     const C = o.Collide.create(vic, (a) => M[bank() | a]);
-    let done = -1, latch = 0, inIrq = false, owed = 0, irqOwed = 0, badFrame = false, pending = false;
+    let done = -1, latch = 0, inIrq = false, owed = 0, irqOwed = 0, badFrame = false, pending = false, irqLeft = 0;
     // the memory the video chip reads, as each frame began and changed after (the node tests that
     // draw nothing load no C64, and their frames carry no memory)
     const vm = globalThis.C64 ? globalThis.C64.videoMemory(M, colour, { keep: o.keep }) : null;
@@ -100,7 +100,19 @@ globalThis.JSWPlay = (function () {
       const m = vm ? vm.begin() : {};
       return { frame: n, vic: Array.from(vic.subarray(0, 47)), cia2: [cia.pra2, cia.ddra2], writes: [], mem: m.mem, colour: m.colour };
     };
-    const moved = () => { if (vm) vm.at(S.clock, cur.writes, bank() >> 14); };
+    // The interrupt's handler runs at once, as it is taken, and its cycles are spent after it, while
+    // irqLeft counts them down; the memory it changes is logged where they end, not where they
+    // begin. The title's half at line $EA copies the ticker's row a character on after the video
+    // chip has fetched the row on line $EB, so the moved row shows from the next frame; logged at
+    // line $EA, it showed in this one, under the fine scroll for the row before it, and the text
+    // jumped left 9 pixels and back 7 every eighth frame.
+    const moved = () => { if (vm && irqLeft <= 0) vm.at(S.clock, cur.writes, bank() >> 14); };
+    const irqEnded = () => {
+      if (!vm) return;
+      const n = cur.writes.length, w = [line(), S.clock % LINE + 1];
+      vm.at(S.clock, cur.writes, bank() >> 14);
+      for (let i = n; i < cur.writes.length; i++) { cur.writes[i][0] = w[0]; cur.writes[i][1] = w[1]; }
+    };
     const slices = () => Array.from({ length: SLICES }, () => []);
     let cur = begin(0), curSound = slices();
 
@@ -189,7 +201,9 @@ globalThis.JSWPlay = (function () {
       const band = bandOf(M, line());
       inIrq = true; irqOwed = 0;
       try { f.call(P); } finally { inIrq = false; }
-      return (IRQ[band] || 0) + irqOwed;
+      const c = (IRQ[band] || 0) + irqOwed;
+      irqLeft += c;
+      return c;
     }
     // Run the processor through `work` cycles, taking the frames, the interrupts, the bad lines and
     // the sprites' fetches on the way; an interrupt's cycles and the video chip's while there is
@@ -207,19 +221,25 @@ globalThis.JSWPlay = (function () {
           if (bl > 48) bl += (ys - bl) & 7;
           if (bl <= 247) b = f0 + bl * LINE + 11;
         }
-        const e = Math.min(ls, b), end = S.clock + work;
+        const ie = irqLeft > 0 ? S.clock + irqLeft : Infinity;
+        const e = Math.min(ls, b, ie), end = S.clock + work;
         if (e > end) { S.clock = end; done = end; C.to(S.clock); moved(); return; }
-        if (e > S.clock) { work = Math.max(0, work - (e - S.clock)); S.clock = e; }
+        if (e > S.clock) {
+          work = Math.max(0, work - (e - S.clock));
+          if (irqLeft > 0 && (irqLeft -= e - S.clock) <= 0) { irqLeft = 0; S.clock = e; irqEnded(); }
+          S.clock = e;
+        }
         done = e;
         if (e === b) {
           const l = (e - f0 - 11) / LINE;
           if (l === 48) badFrame = (vic[0x11] & 0x10) !== 0;
-          if (badFrame && (l & 7) === ys && work > 0) work += 43;
+          if (badFrame && (l & 7) === ys && work > 0) { work += 43; if (irqLeft > 0) irqLeft += 43; }
           continue;
         }
+        if (e !== ls) continue;
         // a line begins: the one before worked out, its sprites' fetches, then the frame and the raster
         C.to(e);
-        if (o.dma !== false && work > 0) work += STEAL[C.mask];
+        if (o.dma !== false && work > 0) { work += STEAL[C.mask]; if (irqLeft > 0) irqLeft += STEAL[C.mask]; }
         moved();
         const l = (e % FRAME) / LINE;
         if (l === 0) newFrame(e / FRAME);

@@ -17,4 +17,6 @@ Everything here is shown or loaded by the game's pages.
   port of the whole game, the sprite collisions it reads, and the clock
   and chips it runs on. `test_play.js` holds the port against the
   game's code in lockstep and measures the costs `jsw-play.js` keeps;
-  `test_pace.js` holds the page's pace against the game's.
+  `test_pace.js` holds the page's pace against the game's, and
+  `test_screen.js` draws the title as the page does and holds the
+  ticker to a pixel a frame.

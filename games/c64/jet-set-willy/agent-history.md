@@ -104,3 +104,20 @@ interrupt's own switch of the processor port, and one did not: the
 census script it said was missing is in `kit/c64`. The second sample,
 seed 1122228220, found 1 comment of 60 wrong, and `tier` became
 `silver`.
+
+## 17 October 2026: the title's ticker
+
+Aaron saw the ticker on the Play tab's title jump. Drawn in node as the
+page draws it, the text moved left 9 pixels and back 7 once in eight
+frames. The page already drew memory as the beam meets it
+(`C64.videoMemory`, from Storm and Ghostbusters), so the cause was the
+clock's: it runs the interrupt's handler at once and spends its cycles
+after, and every change the handler made was logged at line `$EA`,
+where it began. The game copies the row a character on after the video
+chip has fetched it on line `$EB`, so the C64 shows the moved row a
+frame later, under the next fine scroll. The changes are now logged
+where the handler's cycles end, counted down with the bad lines and
+sprite fetches that hold it. Over 889 drawings the ticker moved 0 or 1
+pixel left each time (`test_screen.js`); `test_play.js` still finds
+40,000 passes identical and `test_pace.js` gives the same pace as
+before.
