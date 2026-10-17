@@ -88,6 +88,20 @@ details.nes-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;c
 .nes-unseen{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 .nes-unseen canvas{image-rendering:pixelated;border-radius:3px;background:#000}
 #nes-ucv{width:128px;height:128px}
+.nes-svgwrap{overflow-x:auto;margin:4px 0 8px}
+#nes-svg{display:block;width:100%;height:auto;font-family:var(--fm);font-size:12px}
+#nes-svg .nes-node{cursor:pointer}
+#nes-svg .nes-node rect:last-of-type{fill:var(--surface);stroke:#80838a;stroke-width:1.5}
+#nes-svg .nes-node text{fill:var(--ink)}
+#nes-svg .nes-node:hover rect:last-of-type,#nes-svg .nes-node:focus rect:last-of-type{stroke:#1f5fa8;stroke-width:2.5}
+#nes-svg .nes-node.nes-on rect:last-of-type{fill:#ff932f;stroke:#c25a00}
+#nes-svg .nes-node:focus{outline:none}
+.nes-gap{margin-top:10px}
+.nes-facts{margin-top:14px}
+.nes-h{font-family:var(--fm);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);margin:6px 0 0}
+.nes-tbl th[scope]{white-space:nowrap}
+.nes-bar label{max-width:100%;min-width:0}
+.nes-bar label select{min-width:0;flex:0 1 auto;text-overflow:ellipsis}
 @media (max-width:760px){.nes-pics,.nes-two{grid-template-columns:1fr}}
 @media (max-width:650px){:root{--gx:18px;--h1:36px;--sy:32px;--pp:14px}}
 </style>
@@ -591,7 +605,7 @@ function nesChanceLines(n) { let k = 0; for (let l = 0; l < 312; l++) if (nesCha
 // with one part's laid over $2F00-$95FF). Needs nes-text (nesPrinter).
 // nesPlain(m, part, fn) runs fn(P) on a printer for that part (P.room, P.event, P.sentence, as
 // nesPrinter) and gives back what it printed as one line of text: the drop capital as its letter,
-// line ends and runs of spaces as one space.
+// line ends (a word that fills a line's last column too) and runs of spaces as one space.
 // nesScript(m, p) reads the script at p as RUN_SCRIPT ($1605) steps through it: { ops: [{ at,
 // op, args }], end }, op the opcode, args its operands, end the address after the $FF. Tests
 // $80-$89 and actions $00-$20 take the operands the handlers fetch (FETCH_SCRIPT_BYTE, $15D8);
@@ -639,6 +653,7 @@ function nesPlain(m, part, fn) {
     else if (a === 0x20) { if (!glue && s && !s.endsWith(' ')) s += ' '; }
     else { s += String.fromCharCode(a); glue = false; }
     char(a);
+    if (st.column === 0 && !glue && s && !s.endsWith(' ')) s += ' ';   // a word that ended the line
   };
   fn(P);
   return s.trim();

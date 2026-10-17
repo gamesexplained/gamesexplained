@@ -2646,7 +2646,7 @@
   },
   {
    "address": 4468,
-   "name": "SCRIPT_SET_STATE_4D",
+   "name": "SCRIPT_SET_NOUN_ID",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10036,7 +10036,7 @@
   {
    "address": 2054,
    "type": "line",
-   "text": "READ_INPUT ($0806)\nPurpose: Read and edit one command line with echo, backspace and an idle timeout. Return finishes the line, Delete backspaces, Space and A-Z are appended after folding to lowercase, and everything else is ignored.\nInputs: None in registers. Uses the terminal cursors at $06-$09 and CURRENT_COLUMN ($24).\nOutputs: A lowercased command line of up to 78 characters at INPUT_TEXT_BUFFER ($CBA0) with its length in INPUT_LEN ($26); the line has been echoed on screen and the cursor moved to the start of the next line. On timeout the line is finished automatically and sentence $13 is printed.\nAssumptions: KERNAL ROM and the I/O page must be visible and the KERNAL's keyboard workspace usable, because the editor calls SCNKEY and GETIN directly rather than waiting on a timer interrupt. The buffer is 81 bytes and the editor stops appending at 78.\nClobbers: A, X, Y, flags, IDLE_COUNTDOWN ($60-$62), AUX_PTR ($0E/$0F), INPUT_LEN, KEYBOARD_BUFFER_LEN ($C6), CURRENT_CHAR_COLOR ($0286), KEY_REPEAT_COUNTDOWN ($028B), CURRENT_COLUMN, the terminal cursors, and the self-modified caret-gate operand at $0949.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4). Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "READ_INPUT ($0806)\nPurpose: Read and edit one command line with echo, backspace and an idle timeout. Return finishes the line, Delete backspaces, Space and A-Z are appended after folding to lowercase, and everything else is ignored.\nInputs: None in registers. Uses the terminal cursors at $06-$09 and CURRENT_COLUMN ($24).\nOutputs: A lowercased command line of up to 78 characters at INPUT_TEXT_BUFFER ($CBA0) with its length in INPUT_LEN ($26); the line has been echoed on screen and the cursor moved to the start of the next line. On timeout the line is finished automatically and sentence $13 is printed.\nAssumptions: KERNAL ROM and the I/O page must be visible and the KERNAL's keyboard workspace usable, because the editor calls SCNKEY and GETIN directly rather than waiting on a timer interrupt. The buffer is 81 bytes and the editor stops appending at 78.\nClobbers: A, X, Y, flags, IDLE_COUNTDOWN ($60-$62), AUX_PTR ($0E/$0F), INPUT_LEN, KEYBOARD_BUFFER_LEN ($C6), CURRENT_CHAR_COLOR ($0286), KEY_REPEAT_COUNTDOWN ($028B), CURRENT_COLUMN, the terminal cursors, the self-modified caret-gate operand at $0949, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E; on a timeout also what PRINT_SENTENCE changes: UPPERCASE_LETTER_FLAG ($0AFF), TERM_DATA_PTR ($22/$23) and WORD_REMAINING_LEN ($25).\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4). Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2054,
@@ -10056,7 +10056,7 @@
   {
    "address": 2087,
    "type": "side",
-   "text": "cursor color = 2 (red)"
+   "text": "text colour = 2 (red) for the prompt and the typed line"
   },
   {
    "address": 2097,
@@ -10166,7 +10166,7 @@
   {
    "address": 2267,
    "type": "line",
-   "text": "PRINT_CHARACTER ($08DB)\nPurpose: Write one screen code at the terminal cursor in the current colour, advance both cursors and the column, wrap at column 39, and scroll the text window when the cursor passes the last row. Every character the engine prints goes through here.\nInputs: A = screen code. SCREEN_CURSOR_PTR ($06/$07), COLOR_CURSOR_PTR ($08/$09), CURRENT_COLUMN ($24) and CURRENT_CHAR_COLOR ($0286).\nOutputs: One screen cell and its colour cell written; both sixteen-bit cursors incremented; CURRENT_COLUMN advanced or reset to zero; the window scrolled and the caret optionally repainted.\nAssumptions: The two cursors must stay in step and inside the text window at $CD90-$CFFF / $D990-$DBFF. The scroll test compares the screen cursor with $CFE8, one past the screen's last cell, so it triggers as soon as a character has been written in that cell.\nClobbers: A, X, Y, flags, both cursors, CURRENT_COLUMN, and, when scrolling, MEMCPY_SOURCE/WORK_PTR, SCRATCH_BYTE_2 ($04) and MEMCPY's self-modified tail operand.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF. Colour RAM is only four bits wide, so the stored colour reads back as the low nibble."
+   "text": "PRINT_CHARACTER ($08DB)\nPurpose: Write one screen code at the terminal cursor in the current colour, advance both cursors and the column, wrap at column 39, and scroll the text window when the cursor passes the last row. All the engine's text goes through here; only the caret and the opening's two corner glyphs ($15B2-$15C1) are stored straight into the screen.\nInputs: A = screen code. SCREEN_CURSOR_PTR ($06/$07), COLOR_CURSOR_PTR ($08/$09), CURRENT_COLUMN ($24) and CURRENT_CHAR_COLOR ($0286).\nOutputs: One screen cell and its colour cell written; both sixteen-bit cursors incremented; CURRENT_COLUMN advanced or reset to zero; the window scrolled and the caret optionally repainted.\nAssumptions: The two cursors must stay in step, on the same cell of the screen ($CC00) and colour RAM ($D800). In play they stay in the text window, $CD90-$CFE7 / $D990-$DBE7; the opening prints its title and credits from $CC00 / $D800. The scroll test compares the screen cursor with $CFE8, one past the screen's last cell, so it triggers as soon as a character has been written in that cell.\nClobbers: A, X, Y, flags, both cursors, CURRENT_COLUMN, and, when scrolling, MEMCPY_SOURCE/WORK_PTR, SCRATCH_BYTE_2 ($04) and MEMCPY's self-modified tail operand.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF. Colour RAM is only four bits wide, so the stored colour reads back as the low nibble."
   },
   {
    "address": 2267,
@@ -10271,7 +10271,7 @@
   {
    "address": 2335,
    "type": "side",
-   "text": "Scroll rows 12th..25th (2 * 512 + 48 bytes = 14 rows)"
+   "text": "Scroll rows 12th..25th (2 * 256 + 48 = 560 bytes = 14 rows)"
   },
   {
    "address": 2338,
@@ -10281,7 +10281,7 @@
   {
    "address": 2358,
    "type": "side",
-   "text": "Mirrors the copy above, for color RAM (D9B8h/D800h)"
+   "text": "Mirrors the copy above, for color RAM ($D9B8 to $D990)"
   },
   {
    "address": 2361,
@@ -10301,7 +10301,7 @@
   {
    "address": 2377,
    "type": "line",
-   "text": "Self-modified input-caret enable byte, the immediate operand of LDA at $0948. Zero skips DRAW_INPUT_CURSOR; nonzero proceeds to draw glyph $3D after clearing the final text row."
+   "text": "Self-modified input-caret enable byte, the immediate operand of LDA at $0948. Zero skips DRAW_INPUT_CURSOR; nonzero draws glyph $3D at the cursor after every character PRINT_CHARACTER prints (after the scroll and the clearing of the last row, when there was one)."
   },
   {
    "address": 2380,
@@ -10316,7 +10316,7 @@
   {
    "address": 2391,
    "type": "line",
-   "text": "PRINT_ROOM_TEXT_DROPCAP ($0957)\nPurpose: Render the first letter of a room description as a two-by-two drop capital built from four consecutive custom glyphs, in yellow (colour 7), then restore the previous text colour.\nInputs: A = the top-left glyph code. The caller derives it as $7B + 4*(letter - 'A') from the description's leading letter.\nOutputs: Four screen cells and their colour cells written: the top pair, then thirty-eight spaces in the caller's colour to reach the next row, then the bottom pair. CURRENT_CHAR_COLOR ($0286) is restored to its entry value.\nAssumptions: The gameplay character set at $F800 contains the four-cell drop-cap glyphs at $7B upwards, and the terminal cursor is at the start of a row so that the thirty-eight-space advance lands the bottom pair directly underneath the top pair.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SAVED_CHAR_COLOR ($05), the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "PRINT_ROOM_TEXT_DROPCAP ($0957)\nPurpose: Render the first letter of a room description as a two-by-two drop capital built from four consecutive custom glyphs, in yellow (colour 7), then restore the previous text colour.\nInputs: A = the top-left glyph code. The caller derives it as $7B + 4*(letter - 'A') from the description's leading letter.\nOutputs: Four screen cells and their colour cells written: the top pair, then thirty-eight spaces in the caller's colour to reach the next row, then the bottom pair. CURRENT_CHAR_COLOR ($0286) is restored to its entry value.\nAssumptions: The gameplay character set at $F800 contains the four-cell drop-cap glyphs at $7B upwards. Its one caller, PRINT_ROOM_TEXT, leaves the cursor at column 2 (a line end and two spaces); the top pair and thirty-eight spaces make exactly forty cells, so the bottom pair lands directly underneath the top pair from whatever column it starts.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SAVED_CHAR_COLOR ($05), the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2391,
@@ -10426,7 +10426,7 @@
   {
    "address": 2574,
    "type": "line",
-   "text": "PROCESS_TERM ($0A0E)\nPurpose: Interpret one compressed term stream with word wrapping until the '@' terminator. Bytes with bit 7 set are dictionary tokens and are expanded; other bytes begin a literal word whose length is measured before printing so that a word which would cross column 40 is preceded by a line break.\nInputs: TERM_DATA_PTR ($22/$23) points at the stream; CURRENT_COLUMN ($24) is the live column; UPPERCASE_LETTER_FLAG ($0AFF) selects capitalisation of the next letter.\nOutputs: The stream is rendered to the terminal with word wrapping and inter-word spaces; returns when the terminator is consumed.\nAssumptions: The wrap threshold is a hard-coded 41 ($29) compared against column plus word length. A word longer than forty characters would still overflow. The routine is re-entered recursively in effect through PROCESS_TOKEN, which saves and restores TERM_DATA_PTR on the stack.\nClobbers: A, X, Y, flags, WORD_REMAINING_LEN ($25), TERM_DATA_PTR, WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG, the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "PROCESS_TERM ($0A0E)\nPurpose: Interpret one compressed term stream with word wrapping until the '@' terminator. Bytes with bit 7 set are dictionary tokens and are expanded; other bytes begin a literal word whose length is measured before printing so that a word which would cross column 40 is preceded by a line break.\nInputs: TERM_DATA_PTR ($22/$23) points at the stream; CURRENT_COLUMN ($24) is the live column; UPPERCASE_LETTER_FLAG ($0AFF) selects capitalisation of the next letter.\nOutputs: The stream is rendered to the terminal with word wrapping and inter-word spaces; returns when the terminator is consumed.\nAssumptions: The wrap threshold is a hard-coded 41 ($29) compared against column plus word length. A word longer than forty characters would still overflow. The routine is not re-entered: PROCESS_TOKEN saves TERM_DATA_PTR on the stack, prints the dictionary word with PRINT_WORD, restores the pointer and rejoins this loop at TEST_ADD_SPACE.\nClobbers: A, X, Y, flags, WORD_REMAINING_LEN ($25), TERM_DATA_PTR, WORK_PTR ($0C/$0D), UPPERCASE_LETTER_FLAG, the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2574,
@@ -10461,12 +10461,12 @@
   {
    "address": 2598,
    "type": "side",
-   "text": "Before `a`?"
+   "text": "Before capital `A`?"
   },
   {
    "address": 2602,
    "type": "side",
-   "text": "Past `z`?"
+   "text": "Past capital `Z`? (lower case $61-$7A continues the word)"
   },
   {
    "address": 2613,
@@ -10486,7 +10486,7 @@
   {
    "address": 2624,
    "type": "side",
-   "text": ">= text width -> wrap"
+   "text": ">= 41, past the 40-column width -> wrap"
   },
   {
    "address": 2628,
@@ -10526,7 +10526,7 @@
   {
    "address": 2675,
    "type": "line",
-   "text": "Token id has bit7 set; (id & $7F)*2 indexes TOKEN_POINTERS_BASE_ADDR ($25DD) to get a pointer\nto the token's text. Saves the current TERM_DATA_PTR, points it at the token text, PRINT_WORDs\nthe expansion (capitalised if UPPERCASE_LETTER_FLAG), then restores TERM_DATA_PTR and resumes\nthe sentence. Tokens encode frequently-used words to compress the text."
+   "text": "Token id has bit7 set; (id & $7F)*2 indexes TOKEN_POINTERS_BASE_ADDR ($25DD) to get a pointer\nto the token's text. Saves the current TERM_DATA_PTR, points it at the token text, PRINT_WORDs\nthe expansion with UPPERCASE_LETTER_FLAG forced to 1 ($0ABF), so the word keeps the case it is\nstored in, then clears the flag, restores TERM_DATA_PTR and resumes the sentence. Tokens encode\nfrequently-used words to compress the text."
   },
   {
    "address": 2678,
@@ -10611,7 +10611,7 @@
   {
    "address": 2779,
    "type": "line",
-   "text": "PRINT_WORD ($0ADB)\nPurpose: Emit the characters of one literal word or expanded token, applying the inline control codes: '.' prints a full stop and arms capitalisation, '<' emits a line break, $FF takes the following byte as a new text colour, and A-Z are folded to lowercase unless the capitalisation flag is set.\nInputs: TERM_DATA_PTR ($22/$23) points at the first character; WORD_REMAINING_LEN ($25) is the character count; UPPERCASE_LETTER_FLAG ($0AFF) selects the case of the next letter.\nOutputs: The characters are printed, TERM_DATA_PTR is advanced past them, WORD_REMAINING_LEN reaches zero, and the capitalisation flag is cleared once it has been consumed.\nAssumptions: The $FF colour escape consumes one extra byte and decrements the length accordingly, so a stream that ends immediately after $FF would read past the word. Colour values are written straight to CURRENT_CHAR_COLOR without masking.\nClobbers: A, X, flags, TERM_DATA_PTR, WORD_REMAINING_LEN, UPPERCASE_LETTER_FLAG, CURRENT_CHAR_COLOR ($0286), the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, Y, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
+   "text": "PRINT_WORD ($0ADB)\nPurpose: Emit the characters of one literal word or expanded token, applying the inline control codes: '.' prints a full stop and arms capitalisation, '<' emits a line break, $FF takes the following byte as a new text colour, and, while UPPERCASE_FILTER_ENABLED ($0AF5) is nonzero, A-Z are folded to lowercase unless the capitalisation flag is set. The filter is zero in the opening, so the title and credits $1580 prints through here keep their stored case; $076A turns it on when play begins.\nInputs: TERM_DATA_PTR ($22/$23) points at the first character; WORD_REMAINING_LEN ($25) is the character count; UPPERCASE_LETTER_FLAG ($0AFF) selects the case of the next letter.\nOutputs: The characters are printed, TERM_DATA_PTR is advanced past them, WORD_REMAINING_LEN reaches zero, and the capitalisation flag is cleared once it has been consumed.\nAssumptions: The $FF colour escape consumes one extra byte and decrements the length accordingly, so a stream that ends immediately after $FF would read past the word. Colour values are written straight to CURRENT_CHAR_COLOR without masking.\nClobbers: A, X, flags, TERM_DATA_PTR, WORD_REMAINING_LEN, UPPERCASE_LETTER_FLAG, CURRENT_CHAR_COLOR ($0286), the terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, Y, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Writes screen RAM at $CC00-$CFFF and colour RAM at $D800-$DBFF through PRINT_CHARACTER."
   },
   {
    "address": 2781,
@@ -10716,12 +10716,12 @@
   {
    "address": 2904,
    "type": "line",
-   "text": "PRINT_ROOM_TEXT ($0B58)\nPurpose: Print one room description: convert the global room id to a part-relative index, resolve it through the room-text pointer table, emit two leading spaces, draw the first letter as a drop capital, then render the rest of the stream.\nInputs: A = global room id. CURRENT_PART_NO ($2940) selects the base in PART_ROOM_BASE_IDS ($0DCC); the room-text pointer table base is the word at $2F00.\nOutputs: The room description printed with its two-by-two initial; TERM_DATA_PTR advanced past the leading letter. Tail-jumps to PROCESS_TERM.\nAssumptions: The description's first character is an uppercase A-Z letter, because the drop-cap glyph index is computed as $7B + 4*(char - 'A'). The base table is in the engine; the pointer table, found through the word at $2F00, is part of each part's data.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), SCRATCH_BYTE_2 ($04), WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), CURRENT_CHAR_COLOR ($0286) which is left at 6, and the terminal state.\nHardware changes: Writes screen and colour RAM through the renderer."
+   "text": "PRINT_ROOM_TEXT ($0B58)\nPurpose: Print one room description: end the line the cursor is on, convert the global room id to a part-relative index, resolve it through the room-text pointer table, emit two leading spaces, draw the first letter as a drop capital, then render the rest of the stream.\nInputs: A = global room id. CURRENT_PART_NO ($2940) selects the base in PART_ROOM_BASE_IDS ($0DCC); the room-text pointer table base is the word at $2F00.\nOutputs: The room description printed with its two-by-two initial; TERM_DATA_PTR advanced past the leading letter. Tail-jumps to PROCESS_TERM.\nAssumptions: The description's first character is an uppercase A-Z letter, because the drop-cap glyph index is computed as $7B + 4*(char - 'A'). The base table is in the engine; the pointer table, found through the word at $2F00, is part of each part's data.\nClobbers: A, X, Y, flags, SCRATCH_BYTE ($02), SCRATCH_INDEX ($03), SCRATCH_BYTE_2 ($04), SAVED_CHAR_COLOR ($05), WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), WORD_REMAINING_LEN ($25), UPPERCASE_LETTER_FLAG ($0AFF), CURRENT_CHAR_COLOR ($0286) which is left at 6, the terminal cursors and CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B) and the byte at $079E.\nHardware changes: Writes screen and colour RAM through the renderer."
   },
   {
    "address": 2911,
    "type": "side",
-   "text": "base = PART_STRING_BASE_TABLE[CURRENT_PART_NO]"
+   "text": "base = PART_ROOM_BASE_IDS[CURRENT_PART_NO], the part's first room"
   },
   {
    "address": 2922,
@@ -10736,7 +10736,7 @@
   {
    "address": 2943,
    "type": "side",
-   "text": "+ PART_STRING_TABLE_PTR ($2F00)"
+   "text": "+ the part's ROOM_TEXT_TABLE_PTR ($2F00)"
   },
   {
    "address": 2957,
@@ -10811,7 +10811,7 @@
   {
    "address": 3543,
    "type": "line",
-   "text": "FILENAME_BUF \u2014 eight-byte mutable KERNAL save/load filename buffer, initialized to `FILENAME`. The active code hardcodes its eight-byte capacity; the following word UNUSED_FILENAME_BUFFER_SIZE is redundant metadata and is never read."
+   "text": "FILENAME_BUF \u2014 eight-byte mutable KERNAL save/load filename buffer, initialized to `FILENAME`. The save and load code that uses it, which nothing reaches, hardcodes its eight-byte capacity; the following word UNUSED_FILENAME_BUFFER_SIZE is redundant metadata and is never read."
   },
   {
    "address": 3551,
@@ -10836,7 +10836,7 @@
   {
    "address": 3621,
    "type": "line",
-   "text": "SCRIPT_GOTO_ACTION_SCRIPT_NOUN ($0E25)\nPurpose: Action opcode $1E: redirect the running script to the ordinary action stream of the direction the player named. Used by contextual verbs such as FLY and RIDE, which take a direction as their noun.\nInputs: NOUN_ID ($4D) holds the parsed direction token; valid values are $01-$0A.\nOutputs: On a valid direction, SCRIPT_PC is replaced with that direction's action stream through RUN_DIRECTION_ACTION_SCRIPT, so the current VM loop resumes there. On zero or a value of $0B or above, sentence $25 is printed and the handler returns.\nAssumptions: Direction tokens are one-based and dense; the check is a single unsigned comparison against $0B, so any token below $0B other than zero is treated as a direction.\nClobbers: A, flags, VERB_ID ($4C), SCRIPT_PC ($4E/$4F), and, on the error path, renderer scratch.\nHardware changes: None directly; the error path writes screen and colour RAM through the renderer."
+   "text": "SCRIPT_GOTO_ACTION_SCRIPT_NOUN ($0E25)\nPurpose: Action opcode $1E: redirect the running script to the ordinary action stream of the direction the player named. Used by contextual verbs such as FLY and RIDE, which take a direction as their noun.\nInputs: NOUN_ID ($4D) holds the parsed direction token; valid values are $01-$0A.\nOutputs: On a valid direction, SCRIPT_PC is replaced with that direction's action stream through RUN_DIRECTION_ACTION_SCRIPT, so the current VM loop resumes there. On zero or a value of $0B or above, sentence $25 is printed and the handler returns.\nAssumptions: Direction tokens are one-based and dense; the check is a single unsigned comparison against $0B, so any token below $0B other than zero is treated as a direction.\nClobbers: A, flags, VERB_ID ($4C), SCRIPT_PC ($4E/$4F), and on a valid direction Y and WORK_PTR ($0C/$0D) (RUN_ACTION_SCRIPT); on the error path, X, Y and renderer scratch.\nHardware changes: None directly; the error path writes screen and colour RAM through the renderer."
   },
   {
    "address": 3621,
@@ -10861,7 +10861,7 @@
   {
    "address": 3635,
    "type": "line",
-   "text": "SCRIPT_GOTO_ACTION_SCRIPT ($0E33)\nPurpose: Action opcode $1D: read one literal direction id from the bytecode stream and redirect the running script to that direction's ordinary action stream. Used by ENTER, CLIMB and OUT rules so that a contextual command inherits the real direction's barriers and room transition.\nInputs: One operand byte at SCRIPT_PC; every genuine emission site supplies $01-$0A.\nOutputs: SCRIPT_PC advanced past the operand, then replaced with the selected direction's action stream; the current VM loop resumes there.\nAssumptions: Unlike opcode $1E this path performs no range validation, so a malformed operand would index outside the ten-entry action-script pointer table.\nClobbers: A, flags, VERB_ID ($4C), SCRIPT_PC ($4E/$4F), WORK_PTR ($0C/$0D).\nHardware changes: None."
+   "text": "SCRIPT_GOTO_ACTION_SCRIPT ($0E33)\nPurpose: Action opcode $1D: read one literal direction id from the bytecode stream and redirect the running script to that direction's ordinary action stream. Used by ENTER, CLIMB and OUT rules so that a contextual command inherits the real direction's barriers and room transition.\nInputs: One operand byte at SCRIPT_PC; every genuine emission site supplies $01-$0A.\nOutputs: SCRIPT_PC advanced past the operand, then replaced with the selected direction's action stream; the current VM loop resumes there.\nAssumptions: Unlike opcode $1E this path performs no range validation. The action-script pointer table at $2986 has one entry for each of the 70 rules and the directions are its first ten, so an operand of 11-70 would run another rule's action script, and 0 or one above 70 would read past the table.\nClobbers: A, X (0, from FETCH_SCRIPT_BYTE), Y (1), flags, VERB_ID ($4C), SCRIPT_PC ($4E/$4F), WORK_PTR ($0C/$0D).\nHardware changes: None."
   },
   {
    "address": 3635,
@@ -10871,17 +10871,17 @@
   {
    "address": 3638,
    "type": "line",
-   "text": "RUN_DIRECTION_ACTION_SCRIPT ($0E36)\nPurpose: Shared tail of action opcodes $1D and $1E: cache a one-based direction id as the current verb and point SCRIPT_PC at that direction's action script.\nInputs: A = one-based direction id $01-$0A.\nOutputs: VERB_ID ($4C) = A; SCRIPT_PC ($4E/$4F) loaded from ACTION_SCRIPT_POINTERS entry A-1. It does not recursively run the VM; the caller's interpreter loop continues at the new address.\nAssumptions: The ten direction verbs occupy the first ten action-script slots, so subtracting one converts the verb id to a table index.\nClobbers: A, flags, VERB_ID, SCRIPT_PC, WORK_PTR ($0C/$0D).\nHardware changes: None."
+   "text": "RUN_DIRECTION_ACTION_SCRIPT ($0E36)\nPurpose: Shared tail of action opcodes $1D and $1E: cache a one-based direction id as the current verb and point SCRIPT_PC at that direction's action script.\nInputs: A = one-based direction id $01-$0A.\nOutputs: VERB_ID ($4C) = A; SCRIPT_PC ($4E/$4F) loaded from ACTION_SCRIPT_POINTERS entry A-1. It does not recursively run the VM; the caller's interpreter loop continues at the new address.\nAssumptions: The ten direction verbs occupy the first ten action-script slots, so subtracting one converts the verb id to a table index.\nClobbers: A, Y (left at 1), flags, VERB_ID, SCRIPT_PC, WORK_PTR ($0C/$0D).\nHardware changes: None."
   },
   {
    "address": 3638,
    "type": "side",
-   "text": "save count in $4C"
+   "text": "VERB_ID ($4C) = the direction id"
   },
   {
    "address": 3641,
    "type": "side",
-   "text": "count - 1"
+   "text": "direction id - 1 = index of its action script"
   },
   {
    "address": 3643,
@@ -10971,7 +10971,7 @@
   {
    "address": 3725,
    "type": "line",
-   "text": "SCRIPT_SET_CURRENT_ROOM ($0E8D)\nPurpose: Action opcode: teleport the player by storing one literal room id into CURRENT_ROOM without running any exit table or description.\nInputs: One operand byte at SCRIPT_PC.\nOutputs: SCRIPT_PC advanced by one; CURRENT_ROOM ($293F) = operand.\nAssumptions: No description or repaint happens here; the script is expected to follow up with a description or graphic opcode.\nClobbers: A, flags, SCRIPT_PC.\nHardware changes: None."
+   "text": "SCRIPT_SET_CURRENT_ROOM ($0E8D)\nPurpose: Action opcode: teleport the player by storing one literal room id into CURRENT_ROOM without running any exit table or description.\nInputs: One operand byte at SCRIPT_PC.\nOutputs: SCRIPT_PC advanced by one; CURRENT_ROOM ($293F) = operand.\nAssumptions: No description or repaint happens here. Four of its six uses follow with DESCRIBE_CURRENT_ROOM (rules 39 and 40, Part 2's rooms $2D and $39); Part 1's room $15 script follows SETROOM($16) and SETROOM($14) with an event text only.\nClobbers: A, X (0, from FETCH_SCRIPT_BYTE), flags, SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 3725,
@@ -10986,7 +10986,7 @@
   {
    "address": 3732,
    "type": "line",
-   "text": "SCRIPT_SET_OBJECT_LOCATION ($0E94)\nPurpose: Action opcode: assign an object's location or state. Reads a slot index and a value; the marker $FA is replaced by the current room, which lets one script move an object to wherever the player is.\nInputs: Two operand bytes at SCRIPT_PC: object slot index, then value or the $FA marker.\nOutputs: SCRIPT_PC advanced by two; OBJECT_LOCATIONS[slot] ($28BF + slot) set to the value, or to CURRENT_ROOM when the value was $FA.\nAssumptions: The slot index is not range checked against OBJECT_COUNT ($22A3). Values $FC (carried) and $FD (absent) are reserved states, not room numbers.\nClobbers: A, Y, flags, SCRIPT_PC.\nHardware changes: None."
+   "text": "SCRIPT_SET_OBJECT_LOCATION ($0E94)\nPurpose: Action opcode: assign an object's location or state. Reads a slot index and a value; the marker $FA is replaced by the current room, which lets one script move an object to wherever the player is.\nInputs: Two operand bytes at SCRIPT_PC: object slot index, then value or the $FA marker.\nOutputs: SCRIPT_PC advanced by two; OBJECT_LOCATIONS[slot] ($28BF + slot) set to the value, or to CURRENT_ROOM when the value was $FA.\nAssumptions: The slot index is not range checked against OBJECT_COUNT ($22A3). Values $FC (carried) and $FD (absent) are reserved states, not room numbers.\nClobbers: A, X (0, from FETCH_SCRIPT_BYTE), Y, flags, SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 3732,
@@ -11041,12 +11041,12 @@
   {
    "address": 3760,
    "type": "line",
-   "text": "ACTION_DROP_OBJECT ($0EB0)\nPurpose: The DROP handler. Requires the command state to permit acting and the resolved noun to be currently carried; moves the object into the current room, decrements the carried count, clears its icon from the visible-record table, and repaints.\nInputs: NOUN_ID ($4D) must be non-zero and must resolve through RESOLVE_NOUN; VERBOSE_FLAG ($63) selects the confirmation.\nOutputs: OBJECT_LOCATIONS[slot] set to CURRENT_ROOM; OBJ_COUNTERS[0] decremented; the matching six-byte record in VISIBLE_OBJECT_RECORDS ($2943) zeroed and the picture repainted. Sentence $19 for a blocked state, sentence $0A when the object is not carried, sentence $0D as confirmation.\nAssumptions: The record search matches on the object's computed $A560 graphics pointer, so an object whose icon is not currently installed simply falls out of the loop and no repaint occurs.\nClobbers: A, X, Y, flags, CURRENT_OBJECT_INDEX ($5C), GRAPHIC_RECORD_PTR ($5A/$5B), the visible-record table, and all renderer and blitter scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS when a record was cleared."
+   "text": "ACTION_DROP_OBJECT ($0EB0)\nPurpose: The DROP handler. Requires NOUN_ID to be nonzero and the resolved noun to be currently carried; moves the object into the current room, decrements the carried count, clears its icon from the visible-record table, and repaints.\nInputs: NOUN_ID ($4D) must be non-zero and must resolve through RESOLVE_NOUN; VERBOSE_FLAG ($63) selects the confirmation.\nOutputs: OBJECT_LOCATIONS[slot] set to CURRENT_ROOM; OBJ_COUNTERS[0] decremented; the source pointer (bytes 2-3) of the matching record in VISIBLE_OBJECT_RECORDS ($2943) zeroed and the picture repainted. Sentence $19 ('There is no noun in that sentence!') when NOUN_ID is 0, sentence $0A when the object is not carried, sentence $0D as confirmation. The parser stores $FA, not 0, for a missing noun, so a DROP without an object noun gets sentence $0A.\nAssumptions: The record search matches on the object's computed $A560 graphics pointer, so an object whose icon is not currently installed simply falls out of the loop and no repaint occurs.\nClobbers: A, X, Y, flags, CURRENT_OBJECT_INDEX ($5C), GRAPHIC_RECORD_PTR ($5A/$5B), the visible-record table, and all renderer and blitter scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS when a record was cleared."
   },
   {
    "address": 3760,
    "type": "side",
-   "text": "can the player act now? ($4D)"
+   "text": "noun given? (NOUN_ID $4D nonzero)"
   },
   {
    "address": 3764,
@@ -11061,7 +11061,7 @@
   {
    "address": 3769,
    "type": "side",
-   "text": "fetch parsed noun token"
+   "text": "map the noun to its object: A = location, Y = slot, $5C = icon slot"
   },
   {
    "address": 3772,
@@ -11071,7 +11071,7 @@
   {
    "address": 3776,
    "type": "side",
-   "text": "A=$0A \"I don't see it\""
+   "text": "A=$0A \"You're not carrying it!\""
   },
   {
    "address": 3781,
@@ -11111,12 +11111,12 @@
   {
    "address": 3807,
    "type": "side",
-   "text": "entry low == room ptr low?"
+   "text": "entry low == icon ptr low?"
   },
   {
    "address": 3815,
    "type": "side",
-   "text": "entry high == room ptr high?"
+   "text": "entry high == icon ptr high?"
   },
   {
    "address": 3817,
@@ -11136,22 +11136,22 @@
   {
    "address": 3832,
    "type": "side",
-   "text": "zero matched entry (remove from room)"
+   "text": "zero the matched record's source pointer (takes the icon off the band)"
   },
   {
    "address": 3839,
    "type": "side",
-   "text": "Redraw after adding the dropped object's graphic."
+   "text": "Redraw after removing the dropped object's icon."
   },
   {
    "address": 3842,
    "type": "line",
-   "text": "ACTION_TAKE_OBJECT ($0F02)\nPurpose: The TAKE handler. Requires the command state to permit acting, the noun to resolve, the object to be in the current room, and the carry capacity not to be exhausted; marks the object carried, increments the count, installs its icon in the first free visible record, and repaints.\nInputs: NOUN_ID ($4D); RESOLVE_NOUN supplies the slot, the location and the graphics index; OBJ_COUNTERS[0] ($292F) is the carried count and also the capacity gate.\nOutputs: OBJECT_LOCATIONS[slot] set to $FC; OBJ_COUNTERS[0] incremented; the icon pointer installed in a free record of VISIBLE_OBJECT_RECORDS and the picture repainted. Refusals use sentence $19 (cannot act), $03 (no noun), $09 (already carried), $08 (not here) and $0B (hands full at count 5).\nAssumptions: The capacity test compares OBJ_COUNTERS[0] against the literal 5 before the increment, so the practical limit is five carried objects. If every visible record is occupied the icon is silently not installed and no repaint occurs.\nClobbers: A, X, Y, flags, CURRENT_OBJECT_INDEX ($5C), GRAPHIC_RECORD_PTR ($5A/$5B), the visible-record table, and all renderer and blitter scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS."
+   "text": "ACTION_TAKE_OBJECT ($0F02)\nPurpose: The TAKE handler. Requires NOUN_ID to be nonzero, the noun to resolve, the object to be in the current room, and the carry capacity not to be exhausted; marks the object carried, increments the count, installs its icon in the first free visible record, and repaints.\nInputs: NOUN_ID ($4D); RESOLVE_NOUN supplies the slot, the location and the graphics index; OBJ_COUNTERS[0] ($292F) is the carried count and also the capacity gate.\nOutputs: OBJECT_LOCATIONS[slot] set to $FC; OBJ_COUNTERS[0] incremented; the icon pointer installed in a free record of VISIBLE_OBJECT_RECORDS and the picture repainted. Refusals use sentence $19 when NOUN_ID is 0 ('There is no noun in that sentence!'), $03 when the noun names no object ('You can't do that.'; a missing noun is stored as $FA, so it lands here too), $09 (already carried), $08 (not here) and $0B (hands full at count 5).\nAssumptions: The capacity test compares OBJ_COUNTERS[0] against the literal 5 before the increment, so the practical limit is five carried objects. If every visible record is occupied the icon is silently not installed and no repaint occurs.\nClobbers: A, X, Y, flags, CURRENT_OBJECT_INDEX ($5C), GRAPHIC_RECORD_PTR ($5A/$5B), the visible-record table, and all renderer and blitter scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS."
   },
   {
    "address": 3842,
    "type": "side",
-   "text": "can the player act now? ($4D)"
+   "text": "noun given? (NOUN_ID $4D nonzero)"
   },
   {
    "address": 3846,
@@ -11161,7 +11161,7 @@
   {
    "address": 3851,
    "type": "side",
-   "text": "fetch parsed noun"
+   "text": "map the noun to its object (carry set if it names one)"
   },
   {
    "address": 3854,
@@ -11201,7 +11201,7 @@
   {
    "address": 3877,
    "type": "side",
-   "text": "== 5 (blocked state)?"
+   "text": "== 5 (hands full)?"
   },
   {
    "address": 3879,
@@ -11266,7 +11266,7 @@
   {
    "address": 3929,
    "type": "side",
-   "text": "Redraw after removing the taken object's room graphic."
+   "text": "Redraw after installing the taken object's icon."
   },
   {
    "address": 3932,
@@ -11401,7 +11401,7 @@
   {
    "address": 4021,
    "type": "line",
-   "text": "STATE_SET_FLAG ($0FB5)\nPurpose: Action opcode: set a Boolean progression flag to one.\nInputs: One operand byte at SCRIPT_PC: the flag index.\nOutputs: SCRIPT_PC advanced by one; OBJ_FLAGS[index] ($290F + index) = 1.\nAssumptions: Flags occupy $290F-$293E; index 7 is the room-lit flag consulted by DESCRIBE_CURRENT_ROOM. The index is not range checked.\nClobbers: A, X, flags, SCRIPT_PC.\nHardware changes: None."
+   "text": "STATE_SET_FLAG ($0FB5)\nPurpose: Action opcode: set a Boolean progression flag to one.\nInputs: One operand byte at SCRIPT_PC: the flag index.\nOutputs: SCRIPT_PC advanced by one; OBJ_FLAGS[index] ($290F + index) = 1.\nAssumptions: Flags occupy $290F-$292E (32 bytes; the counters follow at $292F); index 7 is the room-lit flag consulted by DESCRIBE_CURRENT_ROOM. The index is not range checked.\nClobbers: A, X, flags, SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 4021,
@@ -11456,7 +11456,7 @@
   {
    "address": 4044,
    "type": "line",
-   "text": "ACTION_QUIT ($0FCC)\nPurpose: The QUIT handler: print the confirmation prompt, read one key, and either fall into the non-returning restart or return quietly.\nInputs: None in registers; the terminal and keyboard must be usable.\nOutputs: Sentence $34 printed. On uppercase 'Y' control falls into RESTART_GAME and does not return; on any other key the line is ended and the handler returns normally.\nAssumptions: CHECK_YES_KEY only accepts uppercase 'Y', and the fall-through into RESTART_GAME is deliberate, which is why the confirmation branch has no JMP.\nClobbers: A, X, Y, flags, keyboard workspace and renderer scratch.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY and GETIN; writes screen and colour RAM."
+   "text": "ACTION_QUIT ($0FCC)\nPurpose: The QUIT handler: print the confirmation prompt, read one key, and either branch to the non-returning restart or return quietly.\nInputs: None in registers; the terminal and keyboard must be usable.\nOutputs: Sentence $34 printed. On uppercase 'Y' control branches to RESTART_GAME and does not return; on any other key the line is ended and the handler returns normally.\nAssumptions: CHECK_YES_KEY only accepts uppercase 'Y'. The yes path is the BCS at $0FD7, which skips the no path's PRINT_EMPTY_LINE and RTS to reach RESTART_GAME, placed directly after them at $0FDD.\nClobbers: A, X, Y, flags, keyboard workspace and renderer scratch.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY and GETIN; writes screen and colour RAM."
   },
   {
    "address": 4044,
@@ -11491,7 +11491,7 @@
   {
    "address": 4061,
    "type": "line",
-   "text": "RESTART_GAME ($0FDD)\nPurpose: Abandon the current command entirely and restart the adventure. Pops three nested return addresses to unwind the handler, interpreter and dispatcher frames, prints the restart message, and jumps to the initialisation entry.\nInputs: Entered through the normal three-level command call stack: DISPATCH_COMMAND calls RUN_SCRIPT, which calls the handler through the self-modified JSR.\nOutputs: Six bytes popped from the stack; sentence $35 printed; control transferred to CALL_INIT_GAME. Non-returning.\nAssumptions: The exact stack depth is part of the contract; a caller that reached this code by any other route would return into rubbish. The stack pointer is not otherwise repaired, so the abandoned frames' contents are simply left behind.\nClobbers: A, X, Y, flags, six bytes of stack, and all game state through the reinitialisation.\nHardware changes: None directly; the reinitialisation path writes screen, colour and bitmap memory."
+   "text": "RESTART_GAME ($0FDD)\nPurpose: Abandon the current turn entirely and restart the adventure. Pops three return addresses (the handler's into RUN_SCRIPT, RUN_SCRIPT's into its caller, and that caller's), prints \"Game over!\", and jumps to the initialisation entry.\nInputs: Entered at an action handler's depth: as action opcode $14 through RUN_SCRIPT's self-modified JSR at $1699, or by ACTION_QUIT's BCS at $0FD7. Most of its scripts run from RUN_TURN_SCRIPTS (the resident and Part 1 turn scripts' deaths, and the room scripts of Part 1 room $0D, Part 2 rooms $29 and $49 and Part 3 room $7C), where the three frames are exactly those above MAIN_LOOP; the rule 4 (SOUTH) action script and QUIT run from DISPATCH_COMMAND, one frame deeper under PARSE_INPUT, so PARSE_INPUT's return address stays on the stack.\nOutputs: Six bytes popped from the stack; sentence $35, \"Game over!\", printed; control transferred to CALL_INIT_GAME. Non-returning.\nAssumptions: Nothing returns through the popped frames, so the depth only decides how much stack is reclaimed. No instruction in the engine resets the stack pointer, so each restart from a command leaves two bytes behind.\nClobbers: A, X, Y, flags, six bytes of stack, and all game state through the reinitialisation.\nHardware changes: None directly; the reinitialisation path writes screen, colour and bitmap memory."
   },
   {
    "address": 4061,
@@ -11506,7 +11506,7 @@
   {
    "address": 4070,
    "type": "side",
-   "text": "A=$35 = 'restarting' sentence"
+   "text": "A=$35 = 'Game over!' sentence"
   },
   {
    "address": 4072,
@@ -11521,7 +11521,7 @@
   {
    "address": 4081,
    "type": "line",
-   "text": "ACTION_NEXT_PART ($0FF1)\nPurpose: The story-advance handler: unwind the command dispatch, clear the progression flag that gates the transition, and jump into the multipart loader path.\nInputs: Entered through the same three-level command call stack as RESTART_GAME; the replacement disk part must be available.\nOutputs: Six bytes popped; OBJ_FLAGS[2] ($2911) cleared; control transferred to SWITCH_TO_NEXT_PART. Non-returning.\nAssumptions: As with RESTART_GAME the three-frame depth is load bearing. The load replaces $2F00-$95FF, the part's own tables, scripts, texts and pictures.\nClobbers: A, X, flags, six bytes of stack, and, through the callees, the part's data, display, IRQ, CIA and banking state.\nHardware changes: Through SHOW_PART_LOAD_SCREEN: VIC-II display enable ($D011), $D01A, CIA 1 timer A ($DC0E), and the serial bus through the KERNAL's LOAD."
+   "text": "ACTION_NEXT_PART ($0FF1)\nPurpose: The story-advance handler: unwind the turn-script calls, clear flag 2 so that the new part's turn script runs its first-turn setup, and jump into the multipart loader path.\nInputs: Entered as action opcode $1F through RUN_SCRIPT's self-modified JSR at $1699; both uses are room scripts (Part 1 room $28, Part 2 room $36), run by RUN_TURN_SCRIPTS from MAIN_LOOP, so the three frames popped are the handler's, RUN_SCRIPT's and RUN_TURN_SCRIPTS'; the replacement disk part must be available.\nOutputs: Six bytes popped; OBJ_FLAGS[2] ($2911) cleared; control transferred to SWITCH_TO_NEXT_PART, which ends in JMP MAIN_LOOP. Non-returning.\nAssumptions: The three frames are exactly those above MAIN_LOOP, so the stack is balanced when MAIN_LOOP resumes. Every part's turn script begins NOFLAG(02) SETFLAG(02), the clause that sets up its first turn. The load replaces $2F00-$95FF, the part's own tables, scripts, texts and pictures.\nClobbers: A, X, flags, six bytes of stack, and, through the callees, the part's data, display, IRQ, CIA and banking state.\nHardware changes: Through SHOW_PART_LOAD_SCREEN: VIC-II display enable ($D011), $D01A, CIA 1 timer A ($DC0E), and the serial bus through the KERNAL's LOAD."
   },
   {
    "address": 4081,
@@ -11566,7 +11566,7 @@
   {
    "address": 4104,
    "type": "line",
-   "text": "CMD_INVENTORY ($1008)\nPurpose: The INVENTORY handler: print the header sentence, then walk the object table and print the description of every object whose location byte is the carried marker $FC. If nothing is carried it prints the 'nothing' sentence instead.\nInputs: OBJECT_LOCATIONS ($28BF) and OBJECT_COUNT ($22A3); the object-description pointer table base is the word at $1C6B.\nOutputs: Sentence $0E, then one indented paragraph per carried object, or sentence $0F when none; finally a blank line.\nAssumptions: The scan bound is OBJECT_COUNT, 54, in the engine and the same for every part. Each description pointer addresses a length-prefixed token stream and the routine skips that length byte before rendering.\nClobbers: A, X, Y, flags, LOOP_COUNTER ($4B), WORK_PTR ($0C/$0D), AUX_PTR ($0E/$0F), TERM_DATA_PTR ($22/$23), UPPERCASE_LETTER_FLAG, and terminal state; the loop index is preserved across each item on the stack.\nHardware changes: Writes screen and colour RAM through the renderer."
+   "text": "CMD_INVENTORY ($1008)\nPurpose: The INVENTORY handler: print the header sentence, then walk the object table and print the description of every object whose location byte is the carried marker $FC. If nothing is carried it prints the 'nothing' sentence instead.\nInputs: OBJECT_LOCATIONS ($28BF) and OBJECT_COUNT ($22A3); the object-description pointer table base is the word at $1C6B.\nOutputs: Sentence $0E, then one indented paragraph per carried object, or sentence $0F when none; finally the line is ended through PRINT_EMPTY_LINE.\nAssumptions: The scan bound is OBJECT_COUNT, 54, in the engine and the same for every part. Each description starts with a prefix byte, the one DESCRIBE_CURRENT_ROOM uses (0, or sentence 4, 5 or 6 printed before the text, or $40 for an object it does not list); the inventory skips that byte unread and renders the text after it.\nClobbers: A, X, Y, flags, LOOP_COUNTER ($4B), WORK_PTR ($0C/$0D), AUX_PTR ($0E/$0F), TERM_DATA_PTR ($22/$23), UPPERCASE_LETTER_FLAG, and terminal state; the loop index is preserved across each item on the stack.\nHardware changes: Writes screen and colour RAM through the renderer."
   },
   {
    "address": 4104,
@@ -11626,7 +11626,7 @@
   {
    "address": 4148,
    "type": "side",
-   "text": "set up token print"
+   "text": "new line, two-space indent"
   },
   {
    "address": 4153,
@@ -11641,32 +11641,32 @@
   {
    "address": 4177,
    "type": "side",
-   "text": "+ TOKEN_POINTERS base ($1C6B) low"
+   "text": "+ OBJECT_DESCRIPTION_TABLE_PTR ($1C6B) low"
   },
   {
    "address": 4184,
    "type": "side",
-   "text": "+ TOKEN_POINTERS base high"
+   "text": "+ OBJECT_DESCRIPTION_TABLE_PTR high"
   },
   {
    "address": 4191,
    "type": "side",
-   "text": "read token ptr low ..."
+   "text": "read description ptr low ..."
   },
   {
    "address": 4196,
    "type": "side",
-   "text": "read token ptr high"
+   "text": "read description ptr high"
   },
   {
    "address": 4200,
    "type": "side",
-   "text": "point $22/$23 at token text (+1)"
+   "text": "skip the prefix byte; $22/$23 = description text"
   },
   {
    "address": 4214,
    "type": "side",
-   "text": "print the object name (token)"
+   "text": "print the object's description"
   },
   {
    "address": 4219,
@@ -11676,7 +11676,7 @@
   {
    "address": 4222,
    "type": "line",
-   "text": "DESCRIBE_CURRENT_ROOM ($107E)\nPurpose: Enter a room for presentation purposes: refuse everything if the room-lit flag is clear, otherwise print the room text, list the objects lying here, and synchronise the illustration with the room's default picture, repainting only if it changed.\nInputs: OBJ_FLAGS[7] ($2916) is the room-lit flag; CURRENT_ROOM ($293F); OBJ_ROOM_TABLE ($0D4F) maps room id to default picture id; CURRENT_ROOM_GRAPHIC_ID ($2942).\nOutputs: Either sentence $3F alone when dark, or the room description, the list of present objects, and a possibly updated CURRENT_ROOM_GRAPHIC_ID with a repaint.\nAssumptions: Darkness is checked before anything else, so a dark room hides both prose and object list but leaves the previous illustration on screen. The picture is only redrawn when the default id actually changes, which is what makes scripted overrides persist.\nClobbers: A, X, Y, flags, WORK_PTR ($0C/$0D), AUX_PTR ($0E/$0F), TERM_DATA_PTR ($22/$23), the self-modified operand at $1109, renderer and blitter scratch.\nHardware changes: Writes screen RAM, colour RAM and bitmap memory through the renderer and RENDER_ROOM_GRAPHICS."
+   "text": "DESCRIBE_CURRENT_ROOM ($107E)\nPurpose: Enter a room for presentation purposes: refuse everything if the room-lit flag is clear, otherwise print the room text, list the objects lying here, and synchronise the illustration with the room's default picture, repainting only if it changed.\nInputs: OBJ_FLAGS[7] ($2916) is the room-lit flag; CURRENT_ROOM ($293F); OBJ_ROOM_TABLE ($0D4F) maps room id to default picture id; CURRENT_ROOM_GRAPHIC_ID ($2942).\nOutputs: Either sentence $3F alone when dark, or the room description, the list of present objects, and a possibly updated CURRENT_ROOM_GRAPHIC_ID with a repaint.\nAssumptions: Darkness is checked before anything else, so a dark room hides both prose and object list but leaves the previous illustration on screen. The picture is only redrawn when the default id differs from CURRENT_ROOM_GRAPHIC_ID, which saves a redundant repaint; a picture a script set with SCRIPT_SET_ROOM_GRAPHIC is replaced by the room's default whenever this routine runs.\nClobbers: A, X, Y, flags, WORK_PTR ($0C/$0D), AUX_PTR ($0E/$0F), TERM_DATA_PTR ($22/$23), the self-modified operand at $1109, renderer and blitter scratch.\nHardware changes: Writes screen RAM, colour RAM and bitmap memory through the renderer and RENDER_ROOM_GRAPHICS."
   },
   {
    "address": 4224,
@@ -11711,7 +11711,7 @@
   {
    "address": 4261,
    "type": "side",
-   "text": "object's room from OBJ_ROOM_TABLE"
+   "text": "room's default picture from OBJ_ROOM_TABLE"
   },
   {
    "address": 4269,
@@ -11721,7 +11721,7 @@
   {
    "address": 4297,
    "type": "side",
-   "text": "+ TOKEN_POINTERS ($1C6B) -> name"
+   "text": "+ OBJECT_DESCRIPTION_TABLE_PTR ($1C6B) -> description"
   },
   {
    "address": 4361,
@@ -11731,7 +11731,7 @@
   {
    "address": 4389,
    "type": "line",
-   "text": "NOOP_ACTION_11 ($1125)\nPurpose: Action opcode $0B: a deliberate no-op verb body. Calls the RTS stub NOOP_0699 and returns, so the enclosing script's next opcode supplies the canned reply.\nInputs: None.\nOutputs: No semantic state change. Returns to the interpreter.\nAssumptions: A census of all 119 shipped scripts (1,909 bytes, 871 opcode emissions) finds two emissions of $0B, including $2B25 as '0B 11 1F FF', meaning no-op, print sentence $1F, end. The distinct opcode and stub are deliberate, not dead code.\nClobbers: Nothing beyond the JSR/RTS stack cycle; A, X, Y and flags are preserved.\nHardware changes: None."
+   "text": "NOOP_ACTION_11 ($1125)\nPurpose: Action opcode $0B: a deliberate no-op verb body. Calls the RTS stub NOOP_0699 and returns, leaving whatever follows in the enclosing script to act.\nInputs: None.\nOutputs: No semantic state change. Returns to the interpreter.\nAssumptions: A census of the 118 scripts the tables reach (1,892 bytes, 871 opcode emissions; 119, 1,909 and 882 with the unreferenced script at $2B2F) finds two emissions of $0B: $2B25 as '0B 11 1F FF', meaning no-op, print sentence $1F, end, and Part 3 room $7C's script, where PAUSE and RESTART follow it. The distinct opcode and stub are deliberate, not dead code.\nClobbers: Nothing beyond the JSR/RTS stack cycle; A, X, Y and flags are preserved.\nHardware changes: None."
   },
   {
    "address": 4389,
@@ -11751,7 +11751,7 @@
   {
    "address": 4397,
    "type": "line",
-   "text": "SCRIPT_SET_ROOM_GRAPHIC ($112D)\nPurpose: Action opcode: override the room illustration. Stores the operand into CURRENT_ROOM_GRAPHIC_ID and repaints; the marker $FA instead re-runs the default-picture synchronisation inside DESCRIBE_CURRENT_ROOM.\nInputs: One operand byte at SCRIPT_PC: a picture id or the $FA marker.\nOutputs: SCRIPT_PC advanced by one; CURRENT_ROOM_GRAPHIC_ID ($2942) updated and the band repainted, or the default picture restored via the $10A1 tail.\nAssumptions: Picture ids index the 57-entry RoomGraphicRecord table; only picture 0 and the loaded part's pictures have data in memory.\nClobbers: A, flags, SCRIPT_PC, CURRENT_ROOM_GRAPHIC_ID, and all blitter and copy scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS."
+   "text": "SCRIPT_SET_ROOM_GRAPHIC ($112D)\nPurpose: Action opcode: override the room illustration. Stores the operand into CURRENT_ROOM_GRAPHIC_ID and repaints; the marker $FA instead re-runs the default-picture synchronisation inside DESCRIBE_CURRENT_ROOM.\nInputs: One operand byte at SCRIPT_PC: a picture id or the $FA marker.\nOutputs: SCRIPT_PC advanced by one; CURRENT_ROOM_GRAPHIC_ID ($2942) updated and the band repainted, or the default picture restored via the $10A1 tail.\nAssumptions: Picture ids index the 57-entry RoomGraphicRecord table; only picture 0 and the loaded part's pictures have data in memory.\nClobbers: A, X, Y, flags, SCRIPT_PC, CURRENT_ROOM_GRAPHIC_ID, and all blitter and copy scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS."
   },
   {
    "address": 4397,
@@ -11781,12 +11781,12 @@
   {
    "address": 4413,
    "type": "line",
-   "text": "SCRIPT_SET_OBJECT_GRAPHIC ($113D)\nPurpose: Action opcode: install or clear the sixth visible-object record directly by icon slot index, bypassing the noun-to-object map. The marker $FA clears the record.\nInputs: One operand byte at SCRIPT_PC: an icon slot index or the $FA marker.\nOutputs: SCRIPT_PC advanced by one; the sixth record's source pointer at $2963/$2964 either zeroed or set to $A560 + index*$A0; the band repainted.\nAssumptions: Because the operand is a direct slot index, this opcode can display artwork that no vocabulary noun can select. Part 1's GET FALKOR script passes $17 and renders the Falkor icon at $B3C0.\nClobbers: A, flags, SCRIPT_PC, CURRENT_OBJECT_INDEX ($5C), GRAPHIC_RECORD_PTR ($5A/$5B), the sixth visible record, and blitter scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS."
+   "text": "SCRIPT_SET_OBJECT_GRAPHIC ($113D)\nPurpose: Action opcode: install or clear the sixth visible-object record directly by icon slot index, bypassing the noun-to-object map. The marker $FA clears the record.\nInputs: One operand byte at SCRIPT_PC: an icon slot index or the $FA marker.\nOutputs: SCRIPT_PC advanced by one; the sixth record's source pointer at $2963/$2964 either zeroed or set to $A560 + index*$A0; the band repainted.\nAssumptions: Because the operand is a direct slot index, this opcode can display artwork that no vocabulary noun can select. The GET FALKOR action script, rule 14's at $2B6C in the engine's resident scripts, passes $17 and renders the Falkor icon at $B3C0.\nClobbers: A, X, Y, flags, SCRIPT_PC, CURRENT_OBJECT_INDEX ($5C), GRAPHIC_RECORD_PTR ($5A/$5B), the sixth visible record, and blitter scratch.\nHardware changes: Writes colour RAM, screen RAM and bitmap memory through RENDER_ROOM_GRAPHICS."
   },
   {
    "address": 4413,
    "type": "side",
-   "text": "read room byte from script"
+   "text": "read icon slot index (or $FA) from script"
   },
   {
    "address": 4416,
@@ -11856,7 +11856,7 @@
   {
    "address": 4468,
    "type": "line",
-   "text": "SCRIPT_SET_STATE_4D ($1174)\nPurpose: Action opcode: write the command-state byte that the object handlers consult before acting. The byte is the same location the parser uses for NOUN_ID, so a script can suppress or re-arm the next TAKE or DROP.\nInputs: One operand byte at SCRIPT_PC.\nOutputs: SCRIPT_PC advanced by one; the byte at $4D set to the operand.\nAssumptions: Sharing storage with NOUN_ID is deliberate but fragile: any later parse overwrites it, so scripts use it only within one command.\nClobbers: A, flags, SCRIPT_PC, and $4D.\nHardware changes: None."
+   "text": "SCRIPT_SET_NOUN_ID ($1174)\nPurpose: Action opcode $19: overwrite NOUN_ID ($4D), the parsed noun, with a noun token from the script, so that the TAKE or DROP action after it moves that object rather than the one the player named.\nInputs: One operand byte at SCRIPT_PC: a noun token.\nOutputs: SCRIPT_PC advanced by one; NOUN_ID ($4D) set to the operand.\nAssumptions: All 16 uses in the scripts are followed at once by TAKE (4) or DROP (12), with operands from $32 to $59, the noun tokens; for example $2B40 tests INROOM(11), sets $43 and takes that object. The parser sets NOUN_ID afresh for every command ($13A2, $13ED).\nClobbers: A, X, flags, SCRIPT_PC, and NOUN_ID ($4D).\nHardware changes: None."
   },
   {
    "address": 4468,
@@ -11871,7 +11871,7 @@
   {
    "address": 4474,
    "type": "line",
-   "text": "SHOW_PAUSED_MESSAGE ($117A)\nPurpose: Action opcode: pause the narrative. Ends the line, prints sentence $1D, \"Paused - hit space to continue!\", waits for Space, then ends that line.\nInputs: None in registers; terminal and keyboard must be usable.\nOutputs: Sentence $1D printed, the player has pressed Space, and the cursor is at the start of a fresh line.\nAssumptions: The wait is a busy KERNAL keyboard scan, so the raster-split interrupt continues to run and the display stays correct while the engine blocks here.\nClobbers: A, X, Y, flags, keyboard workspace, terminal cursors, CURRENT_COLUMN, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), WORK_PTR ($0C/$0D), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4); writes screen and colour RAM."
+   "text": "SHOW_PAUSED_MESSAGE ($117A)\nPurpose: Action opcode: pause the narrative. Ends the line, prints sentence $1D, \"Paused - hit space to continue!\", waits for Space, then ends that line.\nInputs: None in registers; terminal and keyboard must be usable.\nOutputs: Sentence $1D printed, the player has pressed Space, and the cursor is at the start of a fresh line.\nAssumptions: The wait is a busy KERNAL keyboard scan, so the raster-split interrupt continues to run and the display stays correct while the engine blocks here.\nClobbers: A, X, Y, flags, keyboard workspace, terminal cursors, CURRENT_COLUMN, WORK_PTR ($0C/$0D), TERM_DATA_PTR ($22/$23), WORD_REMAINING_LEN ($25) and UPPERCASE_LETTER_FLAG ($0AFF) through PRINT_SENTENCE, and, when the screen scrolls, MEMCPY_SOURCE ($0A/$0B), SCRATCH_BYTE_2 ($04) and the byte at $079E.\nHardware changes: Reads the CIA 1 keyboard matrix through KERNAL SCNKEY ($FF9F) and GETIN ($FFE4); writes screen and colour RAM."
   },
   {
    "address": 4474,
@@ -11946,7 +11946,7 @@
   {
    "address": 4519,
    "type": "line",
-   "text": "COND_CURRENT_ROOM_IS ($11A7)\nPurpose: Condition opcode $89: true when the operand equals the room the player is in.\nInputs: One operand byte at SCRIPT_PC: a room id.\nOutputs: SCRIPT_PC advanced by one; carry set iff operand == CURRENT_ROOM ($293F).\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear.\nClobbers: A, flags, SCRIPT_PC.\nHardware changes: None."
+   "text": "COND_CURRENT_ROOM_IS ($11A7)\nPurpose: Condition opcode $89: true when the operand equals the room the player is in.\nInputs: One operand byte at SCRIPT_PC: a room id.\nOutputs: SCRIPT_PC advanced by one; carry set iff operand == CURRENT_ROOM ($293F).\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear.\nClobbers: A, X, flags, SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 4519,
@@ -11966,7 +11966,7 @@
   {
    "address": 4530,
    "type": "line",
-   "text": "COND_OBJECT_IN_ROOM ($11B2)\nPurpose: Condition opcode $80: true when the named object's location byte equals the current room.\nInputs: One operand byte at SCRIPT_PC: an object slot index.\nOutputs: SCRIPT_PC advanced by one; carry set iff OBJECT_LOCATIONS[slot] == CURRENT_ROOM. Falls through into COND_FALSE when not equal.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The slot index is not range checked.\nClobbers: A, Y, flags, SCRIPT_PC.\nHardware changes: None."
+   "text": "COND_OBJECT_IN_ROOM ($11B2)\nPurpose: Condition opcode $80: true when the named object's location byte equals the current room.\nInputs: One operand byte at SCRIPT_PC: an object slot index.\nOutputs: SCRIPT_PC advanced by one; carry set iff OBJECT_LOCATIONS[slot] == CURRENT_ROOM. Falls through into COND_FALSE when not equal.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The slot index is not range checked.\nClobbers: A, X, Y, flags, SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 4530,
@@ -11986,7 +11986,7 @@
   {
    "address": 4542,
    "type": "line",
-   "text": "COND_FALSE ($11BE)\nPurpose: Shared Boolean-false return used by every condition handler: clear carry and return.\nInputs: None. Entered by branch or jump from eight different condition handlers.\nOutputs: Carry clear; A, X, Y and the other flags are whatever the calling handler left.\nAssumptions: Reached from outside its textual neighbours, so it is a genuine shared exit rather than a fall-through label.\nClobbers: Carry only.\nHardware changes: None."
+   "text": "COND_FALSE ($11BE)\nPurpose: Shared Boolean-false return used by nine of the ten condition handlers (all but COND_RANDOM, which returns the carry of its own compare): clear carry and return.\nInputs: None. Entered by branch or jump from eight different condition handlers, and by falling through from COND_OBJECT_IN_ROOM.\nOutputs: Carry clear; A, X, Y and the other flags are whatever the calling handler left.\nAssumptions: Reached from outside its textual neighbours, so it is a genuine shared exit as well as COND_OBJECT_IN_ROOM's fall-through.\nClobbers: Carry only.\nHardware changes: None."
   },
   {
    "address": 4542,
@@ -11996,7 +11996,7 @@
   {
    "address": 4544,
    "type": "line",
-   "text": "COND_TRUE ($11C0)\nPurpose: Shared Boolean-true return used by every condition handler: set carry and return.\nInputs: None. Entered by branch or jump from nine different condition handlers.\nOutputs: Carry set; A, X, Y and the other flags are whatever the calling handler left.\nAssumptions: Reached from outside its textual neighbours, so it is a genuine shared exit.\nClobbers: Carry only.\nHardware changes: None."
+   "text": "COND_TRUE ($11C0)\nPurpose: Shared Boolean-true return used by nine of the ten condition handlers (all but COND_RANDOM, which returns the carry of its own compare): set carry and return.\nInputs: None. Entered by branch or jump from nine different condition handlers.\nOutputs: Carry set; A, X, Y and the other flags are whatever the calling handler left.\nAssumptions: Reached from outside its textual neighbours, so it is a genuine shared exit.\nClobbers: Carry only.\nHardware changes: None."
   },
   {
    "address": 4544,
@@ -12006,7 +12006,7 @@
   {
    "address": 4546,
    "type": "line",
-   "text": "COND_OBJECT_CARRIED ($11C2)\nPurpose: Condition opcode $81: true when the named object is in the player's hands, i.e. its location byte holds the reserved carried marker $FC.\nInputs: One operand byte at SCRIPT_PC: an object slot index.\nOutputs: SCRIPT_PC advanced by one; carry set iff OBJECT_LOCATIONS[slot] == $FC.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear.\nClobbers: A, Y, flags, SCRIPT_PC.\nHardware changes: None."
+   "text": "COND_OBJECT_CARRIED ($11C2)\nPurpose: Condition opcode $81: true when the named object is in the player's hands, i.e. its location byte holds the reserved carried marker $FC.\nInputs: One operand byte at SCRIPT_PC: an object slot index.\nOutputs: SCRIPT_PC advanced by one; carry set iff OBJECT_LOCATIONS[slot] == $FC.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear.\nClobbers: A, X, Y, flags, SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 4546,
@@ -12111,22 +12111,22 @@
   {
    "address": 4596,
    "type": "line",
-   "text": "COND_COUNTER_EQ ($11F4)\nPurpose: Condition opcode $85: true when the named counter holds exactly the given value.\nInputs: Two operand bytes at SCRIPT_PC: the value first, then the counter index.\nOutputs: SCRIPT_PC advanced by two; carry set iff OBJ_COUNTERS[index] == value.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. Note the operand order: value precedes index, the opposite of STATE_SET_COUNTER.\nClobbers: A, X, flags, SCRATCH_INDEX ($03), SCRIPT_PC.\nHardware changes: None."
+   "text": "COND_COUNTER_EQ ($11F4)\nPurpose: Condition opcode $85: true when the named counter holds exactly the given value.\nInputs: Two operand bytes at SCRIPT_PC: the counter index first, then the value.\nOutputs: SCRIPT_PC advanced by two; carry set iff OBJ_COUNTERS[index] == value.\nAssumptions: Invoked through the self-modified JSR at $1641, whose target is loaded from CONDITION_DISPATCH_TABLE ($1193). Carry is the entire return protocol: the interpreter continues the rule on carry set and skips to the next $FE or $FF on carry clear. The operand order, index then value, is the same as STATE_SET_COUNTER's.\nClobbers: A, X, flags, SCRATCH_INDEX ($03), SCRIPT_PC.\nHardware changes: None."
   },
   {
    "address": 4596,
    "type": "side",
-   "text": "read value"
+   "text": "read counter index"
   },
   {
    "address": 4599,
    "type": "side",
-   "text": "save value"
+   "text": "save counter index"
   },
   {
    "address": 4601,
    "type": "side",
-   "text": "read counter index"
+   "text": "read value"
   },
   {
    "address": 4606,
