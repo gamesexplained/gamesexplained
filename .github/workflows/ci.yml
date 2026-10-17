@@ -4,10 +4,17 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Once a day as well, so the activity page's periods move on (and count the issues closed)
+  # on a day when nothing is merged.
+  schedule:
+    - cron: "17 6 * * *"
 
 jobs:
   check-and-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read   # the build reads which issues are closed, for the activity page
     steps:
       - uses: actions/checkout@v4
         with:

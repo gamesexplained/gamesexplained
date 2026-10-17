@@ -50,7 +50,9 @@ Plus a home page with the catalogue and the games most recently added or changed
 (from site/platform.html: its catalogue alone, the page the platform in a game's
 breadcrumb links to), site/lib/ as lib/ (with lib/cpu6502.js from the kit:
 KIT_LIB), status.html (from site/status.html +
-site/status.json: which kits work on which computers, and the work needed)
+site/status.json: which kits work on which computers, and the work needed),
+activity.html (from site/activity.html: what landed on main each day, from git
+history and the issues GitHub has closed as completed; site/lib/activity.js draws it),
 about.html (from site/about-site.html: who runs the site and the
 principles it follows; static) and accuracy.html (from site/accuracy.html: how a
 listing's comments are checked, which every About tab's table of those steps
@@ -72,12 +74,13 @@ range ends), which open on that line with no note, and --addresses lists those t
 
 Usage: build.py [--out _site] [--addresses]
 With GITHUB_TOKEN (or GH_TOKEN) set, as in CI, the build asks GitHub which account
-an author's address belongs to when the address is not a GitHub noreply one; without
-it the build makes no request and shows that author's name unlinked.
+an author's address belongs to when the address is not a GitHub noreply one, and which
+issues are closed; without it the build makes no request, shows that author's name
+unlinked, and the activity page says the issues were not counted.
 Preview: python3 -m http.server -d _site 8000   (8000, or any free port)
 No dependencies. The markdown converter handles the subset the templates use.
 """
-import glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
+import datetime, glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import parts, load_game, started, under, above, ranges, left_out   # noqa: E402  a game of several loads
@@ -1390,7 +1393,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 # the simulator the kit's tests hold pages to (kit/c64/cpu6502.js, "On a page").
 KIT_LIB = {"cpu6502.js": "kit/c64/cpu6502.js"}
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js", "cpu6502.js")
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js", "bbc.js", "cpu6502.js", "activity.js")
 
 
 def lib_versions(out_root):
@@ -1687,6 +1690,152 @@ def recent_html(rows):
             f'<a href="{html.escape(repo)}/commits/main/games">All changes</a></div>'
             f'<div class="cards" tabindex="0" aria-label="New and updated games">{"".join(cards)}</div>'
             f'<div class="dots" aria-label="Pages"></div></div>')
+
+
+# --- the activity page: what landed on main each day, from git history and GitHub's issues
+KIT_BUMP = re.compile(r"kit (\d+\.\d+\.\d+)\b")   # the subject of kit-version.yml's commit
+SQUASHED = re.compile(r"\s*\(#(\d+)\)$")           # "Title (#123)": a pull request merged with "Squash and merge"
+MERGED = re.compile(r"Merge pull request #(\d+) from \S+$")   # one merged with a merge commit
+CLOSES = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+#(\d+)\b", re.I)   # GitHub's closing keywords
+
+
+def areas(paths):
+    """What a change touched, by the folders its files are in: "game", "kit" (kit/ but its
+    VERSION, which the bump workflow owns, and AGENTS.md, the kit's rules), "site", and
+    "other" for a change that touched none of them (the CI, admin/, the README)."""
+    out = []
+    if any(p.startswith("games/") for p in paths):
+        out.append("game")
+    if any((p.startswith("kit/") and p != "kit/VERSION") or p == "AGENTS.md" for p in paths):
+        out.append("kit")
+    if any(p.startswith("site/") for p in paths):
+        out.append("site")
+    return out or ["other"]
+
+
+def landed(games):
+    """Every change that landed on main, oldest first, and the kit's version bumps.
+
+    A change is a commit on main's first-parent line: a pull request merged with "Squash and
+    merge" (its title ends "(#N)"), one merged with a merge commit (whose message carries the
+    pull request's title on the line after "Merge pull request #N"), or a commit pushed to
+    main. It is dated when it landed, its committer time. kit-version.yml's bump is not a
+    change of its own; its number goes in the bumps, [time, version]. Each change is
+    {t, sha, pr, title, who, areas, games, added, removed, fixes}: games the folders it
+    touched, added and removed the game.json files it added and deleted (which is how the
+    total is counted), fixes the issues its message closes ("Closes #12", which a squash
+    merge copies from the pull request), and who its people, named as on the home page's
+    New and updated row (credit): agents and bots left out, and so is anyone a game it
+    touched lists as uncredited."""
+    by_key = {f'{g["platform"]}/{g["slug"]}': g for g in games}
+    git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
+    try:
+        out = git("log", "--first-parent", "--diff-merges=first-parent", "--no-renames", "--name-status",
+                  "--format=%x1e%H %P%x1f%ct%x1f%aN%x1f%aE%x1f%s%x1f%b%x1d", "HEAD")
+    except Exception:
+        return [], []
+    changes, bumps = [], []
+    for chunk in out.split("\x1e")[1:]:
+        head, _, files = chunk.partition("\x1d")
+        shas, t, name, email, subject, body = head.split("\x1f")
+        sha, *parents = shas.split()
+        t = int(t)
+        if KIT_BUMP.fullmatch(subject.replace(" [skip ci]", "")) and is_agent(email):
+            bumps.append([t, KIT_BUMP.match(subject).group(1)])
+            continue
+        paths, added, removed = [], [], []
+        for ln in files.strip("\n").split("\n"):
+            status, *ps = ln.split("\t")
+            paths += ps
+            m = re.fullmatch(r"games/([^/]+/[^/]+)/game\.json", ps[0]) if ps else None
+            if m and status == "A":
+                added.append(m.group(1))
+            elif m and status == "D":
+                removed.append(m.group(1))
+        touched = sorted({"/".join(p.split("/")[1:3]) for p in paths if p.startswith("games/") and p.count("/") >= 3})
+        pr, title = None, subject
+        m = SQUASHED.search(subject) or MERGED.match(subject)
+        if m:
+            pr = int(m.group(1))
+            title = SQUASHED.sub("", subject) if SQUASHED.search(subject) else next(
+                (ln.strip() for ln in body.splitlines() if ln.strip()), subject)
+        if len(parents) > 1:   # a merge: the people whose commits it brought in
+            authors = [ln.split("\x1f") for ln in git("log", "--no-merges", "--format=%aN%x1f%aE%x1f%H",
+                                                      f"{parents[0]}..{sha}").splitlines()]
+        else:
+            authors = [(name, email, sha)]
+        who = {}
+        for nm, em, at in authors:
+            if is_agent(em, at):
+                continue
+            login = github_login(em, at)
+            if any(uncredited(by_key[k], nm, login) for k in touched if k in by_key):
+                continue
+            who.setdefault(login or nm, [nm, login])
+        change = {"t": t, "sha": sha[:10], "pr": pr, "title": title, "who": list(who.values()),
+                  "areas": (["new"] if added else []) + areas(paths), "games": touched, "added": added, "removed": removed,
+                  "fixes": sorted({int(n) for n in CLOSES.findall(body)} - {pr})}
+        changes.append({k: v for k, v in change.items() if v or k in ("t", "sha", "title", "areas")})   # the page reads a field left out as empty
+    changes.reverse()
+    bumps.reverse()
+    return changes, bumps
+
+
+def github_get(url, token):
+    """(the decoded answer, the URL of its next page or None) for one GitHub API request.
+    GitHub's next page is at /repositories/<id>/...; the same query on the URL asked keeps
+    every request under /repos/<owner>/<name>/, as a token scoped to the repository needs."""
+    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json", "User-Agent": "gamesexplained-build",
+                                               "Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        nxt = re.search(r'<[^>?]+\?([^>]+)>;\s*rel="next"', r.headers.get("Link") or "")
+        return json.load(r), nxt and url.split("?")[0] + "?" + nxt.group(1)
+
+
+def fixed_issues():
+    """The issues GitHub has closed as completed, oldest first, as {t, n, title}; None when
+    GitHub was not asked or did not answer. An issue closed as not planned is not a fix, and
+    an issue reopened since is not closed. Like the authors (github_account), it is asked only
+    with a token (GITHUB_TOKEN or GH_TOKEN, as in CI), so a build on a contributor's computer
+    makes no request and the page says the issues were not counted."""
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token:
+        return None
+    url, out = f"https://api.github.com/repos/{github_repo()}/issues?state=closed&per_page=100", []
+    try:
+        while url:
+            batch, url = github_get(url, token)
+            for i in batch:
+                if "pull_request" not in i and i.get("state_reason") == "completed" and i.get("closed_at"):
+                    t = int(datetime.datetime.strptime(i["closed_at"], "%Y-%m-%dT%H:%M:%SZ")
+                            .replace(tzinfo=datetime.timezone.utc).timestamp())
+                    out.append({"t": t, "n": i["number"], "title": i["title"]})
+    except Exception as e:
+        warn(f"GitHub could not be asked which issues are closed ({getattr(e, 'code', None) or getattr(e, 'reason', e)}): "
+             "the activity page leaves the issues out of this build")
+        return None
+    return sorted(out, key=lambda i: i["t"])
+
+
+def activity_data(games, now=None):
+    """What the activity page draws, as one JSON object: the changes and the kit's version bumps
+    (landed), the issues fixed (fixed_issues, null when not asked), each game's title by
+    platform/slug, the repository, and the moment the build read them, which is where the
+    page's periods end."""
+    changes, bumps = landed(games)
+    return {"now": int(now if now is not None else datetime.datetime.now(datetime.timezone.utc).timestamp()),
+            "repo": json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"),
+            "changes": changes, "bumps": bumps, "issues": fixed_issues(),
+            "games": {f'{g["platform"]}/{g["slug"]}': g["title"] for g in games}}
+
+
+def activity_page(games):
+    """site/activity.html with activity_data embedded, which site/lib/activity.js draws: a
+    period to pick, a tile for each count, the chosen count day by day, and every day's
+    changes and fixes. "</" is escaped so no title can close the script element it sits in."""
+    data = json.dumps(activity_data(games), separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+    return fill(read(os.path.join(SITE, "activity.html")), site_title="Activity · Games Explained", lib="lib",
+                data=data, repo=html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/")))
 
 
 # --- the status page: which kits work on which computers, and the work needed
@@ -2026,6 +2175,7 @@ def main():
     open(os.path.join(out_root, "index.html"), "w").write(home)
     platform_pages(games, out_root)
     open(os.path.join(out_root, "status.html"), "w").write(status_page(games))
+    open(os.path.join(out_root, "activity.html"), "w").write(activity_page(games))
     # the site's About page; site/about.html is the About tab of a game
     repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
     open(os.path.join(out_root, "about.html"), "w").write(
