@@ -187,6 +187,12 @@ Hard to read: `kit: a run corrects the install notes in place, not with a row or
   data the game reads from a ROM, a page may carry that excerpt (the
   bytes the game reads, or the values it computes from them) and names
   the ROM, its revision and the addresses. Never a whole ROM.
+- **Publishing a game's source is the contributor's call.** The
+  repository keeps the listing whatever they decide, and
+  `"publish_source": false` in `game.json` keeps the site from serving
+  it (`kit/skills/core/70-minisite`). The guidance is to withhold the
+  source of a game that is still on sale. When the game is, tell the
+  contributor and ask which they want before the minisite step.
 - **Prefer "unknown" to a plausible guess.** An admitted gap costs nothing.
   A wrong claim is copied into every downstream document.
 - **Distrust your own negative results.** "It isn't there" is a claim about
