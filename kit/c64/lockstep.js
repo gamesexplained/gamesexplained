@@ -29,7 +29,7 @@
 //   points to.
 //
 // const { Machine } = require('kit/c64/machine.js');
-// const { Lockstep, standIn, describe } = require('kit/c64/lockstep.js');
+// const { Lockstep, standIn, standInGen, checkGen, describe } = require('kit/c64/lockstep.js');
 // const m = Machine.restore(JSON.parse(fs.readFileSync('games/c64/<slug>/work/walk.json', 'utf8')));
 // const ls = new Lockstep({ machine: m, port: P, program: P => P.main_loop(),
 //   checkpoints: [0x1027, 0x102A, 0x102D], waits: [0x1084], irqs: { 0x1100: 'irq_top' } });
@@ -109,23 +109,142 @@
 // diverged says where. passes counts pass starts, but not the one the lockstep was made at.
 // describe(result) gives a result as lines to print.
 //
-// standIn(P, address, { irq, port }) is the game's own routine at address, run on P.M through
-// P.io by the kit's simulator, for a port whose routine is not written yet: P.draw = standIn(P,
-// 0x9000) takes and returns registers ({ a, x, y, c ... }) as the port's routines do; with irq it
-// is an interrupt handler for irqs. The stack pointer starts at $FF each call. A routine that
-// waits for the raster or for an interrupt cannot stand in: nothing moves while it runs.
+// standIn(P, address, { irq, port, maxSteps }) is the game's own routine at address, run on P.M
+// through P.io by the kit's simulator, for a port whose routine is not written yet: P.draw =
+// standIn(P, 0x9000) takes and returns registers ({ a, x, y, c ... }) as the port's routines do;
+// with irq it is an interrupt handler for irqs. The stack pointer starts at $FF each call, or below
+// the stack of a standInGen that is waiting. A routine that waits for the raster or for an
+// interrupt cannot stand in this way, since nothing moves while it runs: standInGen can.
+//
+// standInGen(P, address, { polls, port, maxSteps }) is the game's routine at address standing in
+// for one that waits, as a generator: P.wait_frame = standInGen(P, 0x9000), called as r = yield*
+// P.wait_frame(regs). It runs the routine an instruction at a time on standIn's simulator and
+// yields where the game's code lets time pass, so the lockstep runs the game on to the same place:
+// - a bare yield at each turn of a polling loop: before an instruction that reads a poll address,
+//   when the instruction at that address has read one since the last yield. The routine then
+//   reads the line the game's loop reads, and the bytes the interrupts the game took have left.
+// - { cycles: n } before a read of a poll address, and before it returns, once it has run a line
+//   or more since the last yield (the first time, counted from the JSR that calls it). The game
+//   catches up to the start of the line the routine has reached, never past it, so a routine that
+//   works and then polls finds what the game found there. A turn that took two lines or more
+//   makes such a { cycles } before its bare yield.
+// The poll addresses are the raster's, $D011 and $D012 at every mirror; polls adds others, RAM
+// that an interrupt writes (a jiffy clock, a frame counter). The routine reads such a byte through
+// P.io.irqByte(a) where P.io has one (list the byte in irqBytes) until a turn of a loop has read
+// it, and from P.M after that: irqByte hands out the game's reads one at a time, and the game's
+// loop reads it many times a line, while the interrupts the lockstep runs at each yield keep P.M
+// as the game's. The address an instruction reads is worked out before it runs, in every mode that
+// reads data: zero page and absolute, both indexed, (zp,X) and (zp),Y. Stores, JMP and JSR read
+// nothing. The routine's registers and stack are kept while it waits. A raster wait inside it is
+// not one of the lockstep's waits: leave its exit out of waits. It returns registers as standIn
+// does, and stops with an error after maxSteps instructions (default 1,000,000).
+//
+// checkGen(P, routine, address, opts) checks a port's routine that waits, a generator (one of P's,
+// or its name), against the game's routine at address, alone: the port on P.M as it stands and
+// the game, by standInGen, on a copy, each with chips of its own (P.io becomes the port's, with
+// irqByte a => M[a]). Both are called with opts.regs. Each side runs to its next bare yield
+// ({ cp } and { cycles } are passed over, and a { wait } is refused); the memories are compared
+// there, the clock moves on by hand on both sides, and both go on. When both return, the memories
+// and the registers the port's routine returns are compared. The port yields where the game's
+// loop is about to read again: a loop that only polls is while (M[f] === v) yield, and the work of
+// a turn comes before its yield.
+// - frame: the clock, a RAM address an interrupt counts frames in, one up on both sides at each
+//   yield; or 'raster' (the default), the raster line, one line on.
+// - line: the raster line both start on (default 0).
+// - polls: more addresses the game's routine polls (frame is one); port and maxSteps as
+//   standInGen's.
+// - onYield(M, io, frame, line): runs on each side, the game's first, once the clock has moved:
+//   the place for whatever else the interrupt does there (the input it reads, a timer).
+// - compare, ignore and chips as the lockstep's; maxFrames, how long the routines may wait
+//   (default 1000).
+// It returns { ok, frames, diff }: frames, the frames passed (with the raster, the times the line
+// came round to 0); diff, the first difference, { frame, line, why, count, bytes, regs }, with why
+// a line to print: the bytes (the first 64 in bytes) and registers that differ, or the side that
+// returned while the other polled on.
 //
 // While a lockstep runs it owns the machine: it hooks the checkpoints and wraps the machine's irq
 // and ioRead, and it puts them back when run returns.
-const { Machine, LINES, FRAME } = require('./machine.js');
+const { Machine, LINE, LINES, FRAME } = require('./machine.js');
 const { CPU, OPCODES } = require('./cpu6502.js');
 // each opcode's length in bytes, from its addressing mode
 const LENGTH = Uint8Array.from(OPCODES, ([, mode]) => mode === 'imp' || mode === 'acc' ? 1 : ['abs', 'abx', 'aby', 'ind'].includes(mode) ? 3 : 2);
+// what each opcode does at the address it names: 0 reads nothing there, 1 reads it, 2 reads it and
+// writes it back
+const DATA = Uint8Array.from(OPCODES, ([name, mode]) => ['imp', 'acc', 'imm', 'rel', 'ind'].includes(mode) ||
+  ['sta', 'stx', 'sty', 'sax', 'sha', 'shx', 'shy', 'shs', 'jmp', 'jsr'].includes(name) ? 0 :
+  ['asl', 'lsr', 'rol', 'ror', 'inc', 'dec', 'slo', 'rla', 'sre', 'rra', 'dcp', 'isb'].includes(name) ? 2 : 1);
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const NONE = new Set();
 const LIST = 64;                                   // differing bytes kept per pass
+const CHIPS = ['colour', 'vic', 'sid', 'cia'];
+
+// The RAM compared, compare's ranges less ignore's (the header), as runs [first, last].
+function ranges(o) {
+  const keep = new Uint8Array(65536), runs = [];
+  for (const [a, b] of o.compare || [[0x0002, 0x00FF], [0x0200, 0xFFFF]]) keep.fill(1, a, b + 1);
+  for (const x of o.ignore || []) if (Array.isArray(x)) keep.fill(0, x[0], x[1] + 1); else keep[x] = 0;
+  for (let a = 0; a < 65536; a++) {
+    if (!keep[a]) continue;
+    let b = a;
+    while (b < 65535 && keep[b + 1]) b++;
+    runs.push([a, b]);
+    a = b;
+  }
+  return runs;
+}
+function chipNames(o) {
+  const list = o.chips || ['colour'];
+  for (const c of list) if (!CHIPS.includes(c)) throw new Error('no chip ' + c + ' to compare');
+  return list;
+}
+// What differs between the game's side (its RAM R and chips g) and the port's (M and p), in the
+// runs and chips compared: { count, bytes: [{ address, game, port, chip }] } (the first 64), or null.
+const view = (u, a, b) => Buffer.from(u.buffer, u.byteOffset + a, b - a + 1);
+function differ(R, g, M, p, runs, chips) {
+  const bytes = [];
+  let count = 0;
+  const add = (address, game, port, chip) => {
+    if (bytes.length < LIST) bytes.push(chip ? { address, game, port, chip } : { address, game, port });
+    count++;
+  };
+  for (const [a, b] of runs) {
+    if (Buffer.compare(view(R, a, b), view(M, a, b)) === 0) continue;
+    for (let i = a; i <= b; i++) if (M[i] !== R[i]) add(i, R[i], M[i]);
+  }
+  for (const chip of chips) {
+    if (chip === 'colour') {
+      for (let i = 0; i < 0x400; i++) if ((g.colour[i] & 15) !== (p.colour[i] & 15)) add(0xD800 + i, g.colour[i] & 15, p.colour[i] & 15, chip);
+    } else if (chip === 'vic') {
+      for (let r = 0; r < 0x40; r++) if (r !== 0x12 && r !== 0x19 && r !== 0x1A && g.vic[r] !== p.vic[r]) add(0xD000 + r, g.vic[r], p.vic[r], chip);
+      if (g.cmp !== p.cmp) add(0xD012, g.cmp, p.cmp, chip);
+      if (g.enable !== p.enable) add(0xD01A, g.enable, p.enable, chip);
+    } else if (chip === 'sid') {
+      for (let r = 0; r < 0x20; r++) if (g.sidw[r] !== p.sidw[r]) add(0xD400 + r, g.sidw[r], p.sidw[r], chip);
+    } else {
+      for (const [k, a] of [['pra', 0xDC00], ['ddra', 0xDC02], ['ddrb', 0xDC03]]) if (g[k] !== p[k]) add(a, g[k], p[k], chip);
+    }
+  }
+  return count ? { count, bytes } : null;
+}
+// A difference as words: "2 bytes differ: $2004 game $12 port $13, ..."
+function bytesLine(d) {
+  const shown = d.bytes.slice(0, 8).map(b => (b.chip ? b.chip + ' ' : '') + hex(b.address) + ' game ' + hex(b.game, 2) + ' port ' + hex(b.port, 2));
+  return d.count + (d.count === 1 ? ' byte differs: ' : ' bytes differ: ') + shown.join(', ') + (d.count > shown.length ? ', ...' : '');
+}
+// P.io's functions on a set of chips (a PortChips), reading through rd.
+function chipIO(c, rd = a => c.ioRead(a & 0xFFFF)) {
+  const wr = (a, v) => c.ioWrite(a & 0xFFFF, v & 0xFF);
+  return {
+    read: rd, write: wr,
+    vicRead: r => rd(0xD000 | (r & 0x3F)), vicWrite: (r, v) => wr(0xD000 | (r & 0x3F), v),
+    sidRead: r => rd(0xD400 | (r & 0x1F)), sidWrite: (r, v) => wr(0xD400 | (r & 0x1F), v),
+    colourRead: i => c.colour[i & 0x3FF], colourWrite: (i, v) => wr(0xD800 | (i & 0x3FF), v),
+    ciaRead: r => rd(0xDC00 | (r & 0x0F)), ciaWrite: (r, v) => wr(0xDC00 | (r & 0x0F), v),
+    cia2Read: r => rd(0xDD00 | (r & 0x0F)), cia2Write: (r, v) => wr(0xDD00 | (r & 0x0F), v),
+  };
+}
 
 // The port's chips: a second machine's, never run, whose raster line is the lockstep's and whose
 // keyboard and joystick are the game's machine's.
@@ -156,14 +275,8 @@ class Lockstep {
     for (const a of this.waits) if (this.cps.has(a)) throw new Error('Lockstep: ' + hex(a) + ' is both a checkpoint and a wait\'s exit');
     this.irqs = o.irqs || {};
     this.maxFrames = o.maxFrames || 500;
-    const keep = new Uint8Array(65536);
-    for (const [a, b] of o.compare || [[0x0002, 0x00FF], [0x0200, 0xFFFF]]) keep.fill(1, a, b + 1);
-    for (const x of o.ignore || []) if (Array.isArray(x)) keep.fill(0, x[0], x[1] + 1); else keep[x] = 0;
-    const addrs = [];
-    for (let a = 0; a < 65536; a++) if (keep[a]) addrs.push(a);
-    this.addrs = Int32Array.from(addrs);
-    this.chipList = o.chips || ['colour'];
-    for (const c of this.chipList) if (!['colour', 'vic', 'sid', 'cia'].includes(c)) throw new Error('Lockstep: no chip ' + c + ' to compare');
+    this.runs = ranges(o);
+    try { this.chipList = chipNames(o); } catch (e) { throw new Error('Lockstep: ' + e.message); }
     // the port starts as the game is
     P.M.set(m.ram);
     const c = this.chips = new PortChips();
@@ -203,16 +316,7 @@ class Lockstep {
 
   // --- the port's chips ---
   makeIO() {
-    const c = this.chips, rd = a => this.portRead(a & 0xFFFF), wr = (a, v) => c.ioWrite(a & 0xFFFF, v & 0xFF);
-    return {
-      read: rd, write: wr,
-      vicRead: r => rd(0xD000 | (r & 0x3F)), vicWrite: (r, v) => wr(0xD000 | (r & 0x3F), v),
-      sidRead: r => rd(0xD400 | (r & 0x1F)), sidWrite: (r, v) => wr(0xD400 | (r & 0x1F), v),
-      colourRead: i => c.colour[i & 0x3FF], colourWrite: (i, v) => wr(0xD800 | (i & 0x3FF), v),
-      ciaRead: r => rd(0xDC00 | (r & 0x0F)), ciaWrite: (r, v) => wr(0xDC00 | (r & 0x0F), v),
-      cia2Read: r => rd(0xDD00 | (r & 0x0F)), cia2Write: (r, v) => wr(0xDD00 | (r & 0x0F), v),
-      irqByte: a => this.irqByte(a & 0xFFFF),
-    };
+    return Object.assign(chipIO(this.chips, a => this.portRead(a & 0xFFFF)), { irqByte: a => this.irqByte(a & 0xFFFF) });
   }
   // A byte an interrupt writes, as the game's main program read it at this point of the stretch.
   irqByte(a) {
@@ -531,34 +635,11 @@ class Lockstep {
   }
 
   // --- comparing ---
-  compare() {
-    const M = this.P.M, R = this.m.ram, A = this.addrs, bytes = [];
-    let count = 0;
-    const add = (address, game, port, chip) => {
-      if (bytes.length < LIST) bytes.push(chip ? { address, game, port, chip } : { address, game, port });
-      count++;
-    };
-    for (let i = 0; i < A.length; i++) { const a = A[i]; if (M[a] !== R[a]) add(a, R[a], M[a]); }
-    const g = this.m, p = this.chips;
-    for (const chip of this.chipList) {
-      if (chip === 'colour') {
-        for (let i = 0; i < 0x400; i++) if ((g.colour[i] & 15) !== (p.colour[i] & 15)) add(0xD800 + i, g.colour[i] & 15, p.colour[i] & 15, chip);
-      } else if (chip === 'vic') {
-        for (let r = 0; r < 0x40; r++) if (r !== 0x12 && r !== 0x19 && r !== 0x1A && g.vic[r] !== p.vic[r]) add(0xD000 + r, g.vic[r], p.vic[r], chip);
-        if (g.cmp !== p.cmp) add(0xD012, g.cmp, p.cmp, chip);
-        if (g.enable !== p.enable) add(0xD01A, g.enable, p.enable, chip);
-      } else if (chip === 'sid') {
-        for (let r = 0; r < 0x20; r++) if (g.sidw[r] !== p.sidw[r]) add(0xD400 + r, g.sidw[r], p.sidw[r], chip);
-      } else {
-        for (const [k, a] of [['pra', 0xDC00], ['ddra', 0xDC02], ['ddrb', 0xDC03]]) if (g[k] !== p[k]) add(a, g[k], p[k], chip);
-      }
-    }
-    return count ? { count, bytes } : null;
-  }
+  compare() { return differ(this.m.ram, this.m, this.P.M, this.chips, this.runs, this.chipList); }
   // The port's compared memory and chips made the game's again.
   resync() {
-    const M = this.P.M, R = this.m.ram, A = this.addrs, g = this.m, p = this.chips;
-    for (let i = 0; i < A.length; i++) M[A[i]] = R[A[i]];
+    const M = this.P.M, R = this.m.ram, g = this.m, p = this.chips;
+    for (const [a, b] of this.runs) M.set(R.subarray(a, b + 1), a);
     for (const chip of this.chipList) {
       if (chip === 'colour') p.colour.set(g.colour);
       else if (chip === 'vic') { p.vic.set(g.vic); p.cmp = g.cmp; p.enable = g.enable; }
@@ -606,38 +687,169 @@ class Lockstep {
   }
 }
 
-// The game's routine at address, standing in for the port's (see the header).
-const standInCpus = new WeakMap();
+// --- the game's own code, standing in for the port's (see the header) ---
+// The simulator a port's stand-ins share, one for each P, and the stack pointer a call starts at:
+// $FF, or below the stack of a standInGen that is waiting.
+const simulators = new WeakMap();
+function simulator(P, opts) {
+  let s = simulators.get(P);
+  if (!s) {
+    s = { cpu: new CPU(P.M, { port: opts.port || { dir: 0x2F, data: 0x35 }, io: { read: a => P.io.read(a), write: (a, v) => P.io.write(a, v) } }), top: 0xFF };
+    simulators.set(P, s);
+  }
+  return s;
+}
+function regsIn(r) {
+  const regs = { d: 0 };
+  for (const k of ['a', 'x', 'y', 'n', 'v', 'd', 'i', 'z', 'c']) if (r && r[k] !== undefined) regs[k] = r[k];
+  return regs;
+}
+const regsOut = cpu => ({ a: cpu.a, x: cpu.x, y: cpu.y, n: cpu.n, v: cpu.v, z: cpu.z, c: cpu.c });
+
 function standIn(P, address, opts = {}) {
   return function (r) {
-    let cpu = standInCpus.get(P);
-    if (!cpu) {
-      cpu = new CPU(P.M, { port: opts.port || { dir: 0x2F, data: 0x35 }, io: { read: a => P.io.read(a), write: (a, v) => P.io.write(a, v) } });
-      standInCpus.set(P, cpu);
-    }
-    r = r || {};
-    const regs = { d: 0 };
-    for (const k of ['a', 'x', 'y', 'n', 'v', 'd', 'i', 'z', 'c']) if (r[k] !== undefined) regs[k] = r[k];
-    cpu.setRegs(regs);
-    cpu.sp = 0xFF;
-    if (opts.irq) cpu.irq(address, { maxSteps: opts.maxSteps });
-    else cpu.call(address, {}, { maxSteps: opts.maxSteps });
-    return { a: cpu.a, x: cpu.x, y: cpu.y, n: cpu.n, v: cpu.v, z: cpu.z, c: cpu.c };
+    const s = simulator(P, opts), cpu = s.cpu;
+    cpu.setRegs(regsIn(r));
+    if (opts.irq) { cpu.sp = s.top; cpu.irq(address, { maxSteps: opts.maxSteps }); }
+    else cpu.call(address, { sp: s.top }, { maxSteps: opts.maxSteps });
+    return regsOut(cpu);
   };
+}
+
+// The address the instruction at the program counter reads, worked out before it runs.
+function target(cpu, mode) {
+  const pc = cpu.pc, b = cpu.fb(pc + 1), m = cpu.m;
+  if (mode === 'zp') return b;
+  if (mode === 'zpx') return (b + cpu.x) & 0xFF;
+  if (mode === 'zpy') return (b + cpu.y) & 0xFF;
+  if (mode === 'izx') { const z = (b + cpu.x) & 0xFF; return m[z] | (m[(z + 1) & 0xFF] << 8); }
+  if (mode === 'izy') return ((m[b] | (m[(b + 1) & 0xFF] << 8)) + cpu.y) & 0xFFFF;
+  const w = b | (cpu.fb(pc + 2) << 8);
+  return mode === 'abx' ? (w + cpu.x) & 0xFFFF : mode === 'aby' ? (w + cpu.y) & 0xFFFF : w;
+}
+// What a stand-in polls: 1, the raster's registers at every mirror; 2, the addresses in polls.
+function pollTable(polls) {
+  const t = new Uint8Array(65536);
+  for (let a = 0xD000; a < 0xD400; a++) if ((a & 0x3F) === 0x11 || (a & 0x3F) === 0x12) t[a] = 1;
+  for (const a of polls || []) t[a & 0xFFFF] = 2;
+  return t;
+}
+
+// The game's routine at address, standing in for one of the port's that waits (see the header).
+function standInGen(P, address, opts = {}) {
+  const polls = pollTable(opts.polls);
+  return function* (r) { return yield* waiting(P, address & 0xFFFF, opts, polls, r); };
+}
+function* waiting(P, address, opts, polls, r) {
+  const s = simulator(P, opts), cpu = s.cpu, M = cpu.m, top = s.top, max = opts.maxSteps || 1e6;
+  // since the last yield: the addresses of the instructions that read a poll address, the RAM
+  // bytes of polls they read, and the routine's own cycles (the first time, from the JSR); and the
+  // bytes it has polled, which it reads from P.M from then on
+  const turned = new Set(), read = new Set(), direct = new Set();
+  let own = 6, steps = 0;
+  // a yield, the routine's registers and stack kept: what runs on the simulator meanwhile (a
+  // standIn handler) runs below its stack
+  function* pause(y) {
+    const saved = { a: cpu.a, x: cpu.x, y: cpu.y, sp: cpu.sp, p: cpu.p, pc: cpu.pc };
+    own = 0; turned.clear(); read.clear();
+    s.top = cpu.sp;
+    try { yield y; } finally { s.top = top; cpu.setRegs(saved); }
+  }
+  // the game run on to the start of the line the routine has reached, keeping back spare cycles
+  const catchUp = spare => (own - spare >= LINE ? pause({ cycles: own - spare - LINE + 1 }) : []);
+  cpu.setRegs(regsIn(r));
+  cpu.sp = top;
+  cpu.push(0xFF); cpu.push(0xFE);                    // its RTS lands on $FFFF
+  cpu.pc = address;
+  while (cpu.pc !== 0xFFFF) {
+    let op = cpu.fb(cpu.pc, true), e = DATA[op] ? target(cpu, OPCODES[op][1]) : -1;
+    if (e >= 0 && polls[e]) {
+      if (turned.has(cpu.pc)) {                      // a turn of a polling loop: a bare yield
+        for (const b of read) direct.add(b);
+        yield* catchUp(LINE);
+        yield* pause();
+      } else yield* catchUp(0);
+      op = cpu.fb(cpu.pc, true); e = DATA[op] ? target(cpu, OPCODES[op][1]) : -1;   // memory as the interrupts left it
+    }
+    let old = -1;
+    if (e >= 0 && polls[e]) {
+      turned.add(cpu.pc);
+      if (polls[e] === 2 && (e < 0x100 ? e > 1 : cpu.rk[e >>> 8] === cpu.rk[2])) {   // RAM: page 2 is RAM on any map
+        if (!direct.has(e) && P.io && typeof P.io.irqByte === 'function') { old = M[e]; M[e] = P.io.irqByte(e) & 0xFF; }
+        read.add(e);
+      }
+    }
+    own += cpu.step();
+    if (old >= 0 && DATA[op] === 1) M[e] = old;     // a read leaves the port's byte as it was
+    if (++steps > max) throw new Error('standInGen: the routine at ' + hex(address) + ' ran ' + max + ' instructions without returning');
+  }
+  yield* catchUp(0);
+  return regsOut(cpu);
+}
+
+// A port's routine that waits, checked against the game's at address, frame by frame (see the
+// header).
+function checkGen(P, routine, address, opts = {}) {
+  const f = typeof routine === 'string' ? P[routine] : routine;
+  if (typeof f !== 'function') throw new Error('checkGen: the port has no routine ' + routine);
+  const raster = opts.frame === undefined || opts.frame === 'raster', frame = raster ? -1 : opts.frame & 0xFFFF;
+  const runs = ranges(opts), max = opts.maxFrames || 1000, regs = opts.regs || {};
+  let chips;
+  try { chips = chipNames(opts); } catch (e) { throw new Error('checkGen: ' + e.message); }
+  const portChips = new PortChips(), gameChips = new PortChips();
+  let line = (opts.line || 0) % LINES, frames = 0;
+  portChips.raster = gameChips.raster = line;
+  P.io = Object.assign({}, P.io, chipIO(portChips), { irqByte: a => P.M[a & 0xFFFF] });
+  const G = { M: Uint8Array.from(P.M), io: chipIO(gameChips) };
+  const game = standInGen(G, address, { polls: raster ? opts.polls : [frame, ...(opts.polls || [])], port: opts.port, maxSteps: opts.maxSteps })(regs);
+  const port = f.call(P, regs);
+  if (!port || typeof port.next !== 'function') throw new Error('checkGen: the port\'s routine gave no generator');
+  // a side run on to its next bare yield, a turn of a polling loop, or its return
+  const turn = (it, who) => {
+    for (;;) {
+      const r = it.next();
+      if (r.done) return r;
+      const y = r.value;
+      if (y && y.wait !== undefined) throw new Error('checkGen: the ' + who + '\'s routine waits for line ' + y.wait + ': a raster wait is checked in a lockstep, or polled here with bare yields');
+      if (!(y && (y.cp !== undefined || y.cycles !== undefined))) return r;
+    }
+  };
+  const fail = (why, more) => ({ ok: false, frames, diff: Object.assign({ frame: frames, line, why: 'frame ' + frames + ', line ' + line + ': ' + why }, more) });
+  for (;;) {
+    const p = turn(port, 'port'), g = turn(game, 'game'), d = differ(G.M, gameChips, P.M, portChips, runs, chips);
+    if (p.done !== g.done) {
+      const [done, on] = p.done ? ['port', 'game'] : ['game', 'port'];
+      return fail('the ' + done + '\'s routine returned and the ' + on + '\'s polls on' + (d ? '; ' + bytesLine(d) : ''), d || {});
+    }
+    if (d) return fail(bytesLine(d), d);
+    if (p.done) {
+      const out = [];
+      if (p.value && typeof p.value === 'object') {
+        for (const k of Object.keys(p.value)) {
+          if (!(k in g.value)) continue;
+          const flag = k !== 'a' && k !== 'x' && k !== 'y', pv = flag ? (p.value[k] ? 1 : 0) : p.value[k] & 0xFF, gv = g.value[k];
+          if (pv !== gv) out.push({ register: k, game: gv, port: pv });
+        }
+      }
+      const shown = x => 'axy'.includes(x.register) ? ' game ' + hex(x.game, 2) + ' port ' + hex(x.port, 2) : ' game ' + x.game + ' port ' + x.port;
+      if (out.length) return fail('on return, ' + out.map(x => x.register + shown(x)).join(', '), { regs: out });
+      return { ok: true, frames, diff: null };
+    }
+    if (raster) { line = (line + 1) % LINES; if (!line) frames++; portChips.raster = gameChips.raster = line; }
+    else { G.M[frame] = (G.M[frame] + 1) & 0xFF; P.M[frame] = (P.M[frame] + 1) & 0xFF; frames++; }
+    if (opts.onYield) { opts.onYield(G.M, G.io, frames, line); opts.onYield(P.M, P.io, frames, line); }
+    if (frames >= max) return fail('neither routine returned in ' + max + ' frames');
+  }
 }
 
 // A run's result as lines to print.
 function describe(r) {
   const out = [];
-  for (const d of r.diffs) {
-    const shown = d.bytes.slice(0, 8).map(b => (b.chip ? b.chip + ' ' : '') + hex(b.address) + ' game ' + hex(b.game, 2) + ' port ' + hex(b.port, 2));
-    out.push('pass ' + d.pass + ' (frame ' + d.frame + '): ' + d.count + (d.count === 1 ? ' byte differs: ' : ' bytes differ: ') +
-      shown.join(', ') + (d.count > shown.length ? ', ...' : ''));
-  }
+  for (const d of r.diffs) out.push('pass ' + d.pass + ' (frame ' + d.frame + '): ' + bytesLine(d));
   if (r.diverged) out.push('pass ' + r.diverged.pass + (r.diverged.after >= 0 ? ', after ' + hex(r.diverged.after) : '') + ' (frame ' + r.diverged.frame + '): ' + r.diverged.why);
   out.push(r.passes + (r.passes === 1 ? ' pass' : ' passes') + ' in ' + r.frames + ' frames: ' +
     (r.ok ? 'identical' : (r.diffs.length ? r.diffs.length + ' with differences' : '') + (r.diffs.length && r.diverged ? ', then ' : '') + (r.diverged ? 'out of step' : '')));
   return out.join('\n');
 }
 
-module.exports = { Lockstep, standIn, describe, PortChips };
+module.exports = { Lockstep, standIn, standInGen, checkGen, describe, PortChips };

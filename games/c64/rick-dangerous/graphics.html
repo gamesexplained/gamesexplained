@@ -1,0 +1,393 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rick Dangerous</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a; --chip:#2f3136; --chip-ink:#ffffff;
+  --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2{font-weight:var(--hw);letter-spacing:-.01em;margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas.px{display:block;image-rendering:pixelated;max-width:100%;height:auto;background:#10131a;border-radius:4px}
+.rd-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
+.rd-ctl button,.rd-ctl select,.rd-ctl label{font:inherit;font-size:14px}
+.rd-ctl button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 10px;cursor:pointer}
+.rd-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.rd-ctl input[type=range]{width:220px}
+.rd-out{font-family:var(--fm);font-size:14px;margin-top:12px;line-height:1.6}
+.rd-row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.rd-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.rd-gal figure{margin:0;font-family:var(--fm);font-size:12px;color:var(--ink-soft);text-align:center}
+.rd-gal canvas{margin:0 auto 4px}
+table.rd-tab{border-collapse:collapse;width:100%;font-size:15px}
+table.rd-tab td,table.rd-tab th{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+table.rd-tab th{font-weight:700;color:var(--ink-soft)}
+table.rd-tab td.rd-n{font-family:var(--fm);white-space:nowrap}
+.rd-sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+@media (max-width:640px){:root{--gx:16px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1989 · Firebird</p>
+  <h1>Rick Dangerous</h1>
+  <p class="sub">The play area is made of characters, four by four to a block and eight blocks to a map row; Rick and everything that moves are sprites, and every enemy's left-facing frames are made by the game at the start of its level.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The video bank</p>
+  <h2 class="t">Everything on screen comes from one 16 KB bank</h2>
+  <p>The video chip can see 16 KB at a time, and Rick Dangerous gives it the top bank, <code>$C000</code>-<code>$FFFF</code> (<code>$DD00</code>, <code>$0847</code>). Everything the chip draws in play is in it: two screens, the tile set, the font of the score panel and every sprite frame. Three quarters of the bank is RAM the processor can only reach with the I/O chips or the KERNAL switched out, which suits graphics: the video chip always reads RAM there.</p>
+  <div class="plate"><table class="rd-tab" id="rd-bank"></table>
+    <p class="cap">The bank as the game uses it in play. A sprite frame's number is its address in the bank divided by 64, so frames <code>$40</code>-<code>$5F</code> would be the tile set and <code>$E0</code>-<code>$FF</code> the font: the game never shows those numbers as sprites.</p></div>
+</section>
+
+<section>
+  <p class="fig">02 · A room, tile by tile</p>
+  <h2 class="t">A map row of eight bytes is 128 tiles on screen</h2>
+  <p>The screen is the C64's text screen, 40 by 25 characters, in multicolour mode: each character is 4 by 8 pixels, two pixels wide, in the black background, two colours shared by the whole screen and one of its own. Row 0 holds the score panel in the font; the play area below is 32 columns of tiles, columns 4 to 35, with character 0 to either side of it. A map row is eight block numbers (<code>$9200</code>-<code>$A5BF</code>), a block is four rows of four tile codes (<code>$8200</code>), and a tile code is a character in the room's tile set. Six map rows make the 24 tile rows of a view, of which the screen shows the last 23: the top one is kept off screen at <code>$BFA0</code> for the scroll (<code>$2DA0</code>).</p>
+  <div class="plate"><div class="rd-row"><canvas id="rd-room" class="px" style="width:768px;cursor:crosshair"></canvas></div>
+    <div class="rd-ctl"><select id="rd-lvl"></select><label>View <input type="range" id="rd-view" min="0" max="10" value="4"></label><span id="rd-viewat" style="font-family:var(--fm);font-size:13px"></span></div>
+    <div class="rd-row" style="margin-top:14px"><canvas id="rd-zblock" class="px" style="width:256px"></canvas><canvas id="rd-zchar" class="px" style="width:128px"></canvas><div class="rd-out" id="rd-info" style="flex:1;min-width:240px;margin-top:0"></div></div>
+    <p class="cap">Drawn by this page from <code>listing.json</code>, the way <code>$2D59</code> decodes a map row. Click a tile: the block it comes from (left, the tile outlined), the character enlarged with its four colours (right), and where each piece is in memory. A tile's own colour is its entry in the tile colour table (<code>$8000</code>, or <code>$8100</code> with the second set): bit 3 set makes it multicolour, with the colour in the low three bits.</p></div>
+  <p>The level maps take 5,056 bytes for 632 map rows, 80,896 tiles. Written out as tiles they would fill 79 KB, more than the machine has. Blocks are what make the levels fit: 4 KB of them, shared by all four levels.</p>
+</section>
+
+<section>
+  <p class="fig">03 · Tile sets</p>
+  <h2 class="t">Two sets of 256 tiles, swapped under the I/O chips</h2>
+  <p>Levels 1 and 2 use the tile set at <code>$D000</code>, under the I/O chips, where the video chip reads it. Levels 3 and 4 use a second set that waits at <code>$7000</code>. When a room of the other set comes up, <code>$1911</code> switches the I/O chips out and exchanges the two 2 KB sets byte for byte, with the two colour tables at <code>$8000</code> and <code>$8100</code>. The order of the codes is also their behaviour: eight thresholds per set (<code>$185B</code>) divide them into background, ladders, deadly tiles and the rest (How it works, section 02).</p>
+  <div class="plate"><canvas id="rd-tiles" class="px" style="width:768px"></canvas>
+    <div class="rd-ctl" id="rd-tilebtn"></div>
+    <div class="rd-out" id="rd-tileout"></div>
+    <p class="cap">Each set in its levels' colours, 32 codes to a row, code <code>$00</code> top left. "Kinds" tints each code by its range; "Not in any map" marks the codes that no block any level's maps use holds.</p></div>
+</section>
+
+<section>
+  <p class="fig">04 · Blocks</p>
+  <h2 class="t">253 of the 256 blocks are used</h2>
+  <p>A block is 16 tile codes, so the same block can be drawn with either tile set: a block number means nothing until the room says which set is in. The first two levels' maps use 121 different blocks and the last two 132; three blocks appear in no map at all.</p>
+  <div class="plate"><canvas id="rd-blocks" class="px" style="width:768px"></canvas>
+    <div class="rd-ctl" id="rd-blockbtn"></div>
+    <div class="rd-out" id="rd-blockout"></div>
+    <p class="cap">All 256 blocks (<code>$8200</code>-<code>$91FF</code>, through the address tables <code>$B300</code> and <code>$B400</code>), drawn with the chosen level's tile set and colours, 16 to a row. Blocks the chosen level's maps do not use are dimmed; the three that no map uses are crossed.</p></div>
+  <p>The block address table shares its bytes with another table. Its high bytes run from <code>$B400</code>, and the last 48 of them, from <code>$B4D0</code>, are also the first 48 entries of the sprite frame colour table. No frame list names a frame below <code>$30</code>, so no object takes its colour from the shared part.</p>
+</section>
+
+<section>
+  <p class="fig">05 · Rick</p>
+  <h2 class="t">Rick is two sprites: a black outline over a coloured body</h2>
+  <p>Every frame of Rick is a pair of frames, shown on sprites 0 and 1 at the same place. The even frame is drawn in hires on sprite 0 in black; the odd one, in multicolour on sprite 1 in orange, sits under it and fills him in (<code>$B5A4</code>, <code>$B5A5</code>, <code>$D01C</code>). Sprite 0 has priority over sprite 1, so the outline is always on top. Each step the game copies both frames, masked by the scenery in front of him, into the image buffer the sprites show (<code>$0F83</code>).</p>
+  <div class="plate"><div class="rd-row"><canvas id="rd-rick" class="px" style="width:288px"></canvas><div style="flex:1;min-width:260px">
+    <div class="rd-ctl" id="rd-rickbtn" style="margin-top:0"></div>
+    <div class="rd-ctl" id="rd-rickopt"></div>
+    <div class="rd-out" id="rd-rickout"></div></div></div>
+    <p class="cap">Rick's frames <code>$AC</code>-<code>$DF</code> (<code>$EB00</code>-<code>$F7FF</code>), the right-facing ones first and the same moves facing left <code>$18</code> frames later; the lists come from <code>$4320</code>, <code>$4326</code> and <code>$4330</code> and the frames the code names (<code>$0D0C</code>-<code>$0D94</code>). The speeds are the game's: a walking frame every four steps, a crawling or climbing one every two, at 25 steps a second.</p></div>
+  <p>Climbing has one pair of frames, <code>$C2</code>, and its left-facing twin <code>$DA</code>: the climbing list alternates the two, so Rick climbs by being mirrored every other step. The walking list has five pairs, but in play Rick uses only the first two (<code>$0D65</code> keeps the place in the list at 0 or 1). The other three walk the figure across the story screens.</p>
+</section>
+
+<section>
+  <p class="fig">06 · Enemies</p>
+  <h2 class="t">Each level has ten enemy frames, and the game mirrors them</h2>
+  <p>The enemies are stored facing right only, ten frames a level from <code>$6600</code>. At the start of a level <code>$16D3</code> copies that level's ten into frames <code>$90</code>-<code>$A3</code>, each followed by its mirror image, made by reversing every row's three bytes and the four two-bit pixels in each byte. The same ten frames give two kinds of enemy: one walks with frames <code>$90</code>-<code>$99</code>, another with the same lists ten frames on (<code>$17A4</code>), each with its own colour (<code>$1780</code>, <code>$1784</code>).</p>
+  <div class="plate"><canvas id="rd-enemy" class="px" style="width:768px"></canvas>
+    <div class="rd-ctl" id="rd-enemybtn"></div>
+    <p class="cap">The twenty frames as <code>enemyFrames</code>, a port of <code>$16D3</code>, builds them; <code>test_mirror.js</code> holds it to the game's own routine for all four levels, every byte of every frame and its colour. Below them, the four lists (<code>$430C</code>-<code>$431F</code>) playing for both kinds: walking right, walking left, climbing, dying.</p></div>
+  <p>The climbing list is a frame and its own mirror image, <code>$96</code> <code>$97</code>, the same trick as Rick's.</p>
+</section>
+
+<section>
+  <p class="fig">07 · Traps and treasures</p>
+  <h2 class="t">Every object's frames, as its type plays them</h2>
+  <p>Each object type has a frame list (<code>$B780</code>, <code>$B800</code>): its frame at rest, then the frames it animates through, ended by <code>$FF</code>. Many traps rest on <code>$AB</code>, a blank frame, so they cannot be seen until they go off.</p>
+  <div class="plate"><div class="rd-gal" id="rd-objs"></div>
+    <p class="cap">The frame lists of every object type that the levels' object lists use, from <code>$42FA</code>-<code>$4416</code>, the traps (types 24 to 70) animating as they do once set off, a frame every fourth step. The treasures, boxes and bonus markers (types 16 to 23) show only the first frame of their list, which starts inside one shared run (<code>$42FA</code>); only a trap steps through its list. Colours from the frame colour table (<code>$B4D0</code>) and the two sprite colours the game sets for play (<code>$D025</code> = 11, <code>$D026</code> = 10).</p></div>
+</section>
+
+<section>
+  <p class="fig">08 · Fonts</p>
+  <h2 class="t">The story screens bring their own font</h2>
+  <p>The score panel, the title and the Hall of Fame use the font at <code>$F800</code>, at the very top of the bank. It stops eight bytes short of 2 KB: the last eight bytes of memory are the processor's vectors. Each story screen swaps in a second set from <code>$7800</code> (<code>$24DC</code>), whose characters draw both the story's text and the picture of the next place, and swaps it back after. The picture fades in a bit of every byte at a time, from a copy of its characters (<code>$254F</code>).</p>
+  <div class="plate"><canvas id="rd-fonts" class="px" style="width:768px"></canvas>
+    <p class="cap">The two sets, 32 characters to a row: the panel and text font (<code>$F800</code>-<code>$FFF7</code>), then the story set (<code>$7800</code>-<code>$7FFF</code>), drawn in one colour on black.</p></div>
+</section>
+
+<section>
+  <p class="fig">09 · Left over</p>
+  <h2 class="t">Tiles that no map uses</h2>
+  <p>Every sprite frame in the game is named by a frame list or by the code, but the tile sets hold graphics that no map places. Three of the 256 blocks appear in no map. The first tile set has seven codes no used block holds, two of them the bullet's, <code>$FE</code> and <code>$FF</code>, which <code>$2ABA</code> writes into the screen itself. The second set has 26 such codes, all with pixels in them.</p>
+  <div class="plate"><canvas id="rd-unused" class="px" style="width:768px"></canvas>
+    <p class="cap">The three unused blocks, in the first set's colours, then the tile codes of each set that no block in that set's maps holds, enlarged. Counted by this page from the maps; a code that the program writes into the screen itself, as the bullet's are, would not be counted.</p></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* rd-mirror */
+// The level's twenty enemy frames, as $16D3 builds them at the start of level l (0 to 3): the ten
+// right-facing frames of 64 bytes from the address in $1778/$177C ($6600, $6880, $6B00, $6D80),
+// each followed by its mirror image (every row's three bytes in reverse order, each byte's four
+// multicolour pixel pairs end for end, $1767), as frames $90 to $A3; and their colours, the first
+// ten from $1780 + l and the second ten from $1784 + l (by the level number $30, which is l). Returns {frames: twenty 64-byte arrays, colours}.
+function enemyFrames(ram, l) {
+  const src = ram[0x1778 + l] | (ram[0x177C + l] << 8);
+  const flip = (b) => ((b & 3) << 6) | ((b & 12) << 2) | ((b >> 2) & 12) | (b >> 6);
+  const frames = [], colours = [];
+  for (let k = 0; k < 10; k++) {
+    const f = ram.slice(src + 64 * k, src + 64 * k + 64), m = new Uint8Array(64);
+    for (let r = 0; r < 21; r++) for (let c = 0; c < 3; c++) m[r * 3 + c] = flip(f[r * 3 + 2 - c]);
+    m[63] = f[63];
+    frames.push(f, m);
+  }
+  for (let k = 0; k < 20; k++) colours.push(ram[(k < 10 ? 0x1780 : 0x1784) + l]);
+  return { frames, colours };
+}
+// end of enemyFrames
+</script>
+<script>
+(async function () {
+  if (!window.C64) return;
+  let L; try { L = await C64.load('listing.json'); } catch (e) { return; }
+  const ram = L.ram, P = C64.PAL, hx = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const NAMES = ['South America', 'Egypt', 'Schwarzendumpf Castle', 'Missile base'];
+  const firstRoom = [0, 1, 2, 3].map((l) => ram[0x1980 + l] | (ram[0x1984 + l] << 8));
+  const mapOf = (rec) => ram[rec + 1] | (ram[rec + 2] << 8);
+  const LV = firstRoom.map((rec, l) => ({ set: ram[rec], from: mapOf(rec), to: l < 3 ? mapOf(firstRoom[l + 1]) : 0xA5C0,
+    mc1: ram[0x1988 + l] & 15, mc2: ram[0x198C + l] & 15 }));
+  const chars = (set) => ram.subarray(set ? 0x7000 : 0xD000, (set ? 0x7000 : 0xD000) + 0x800);
+  const colTab = (set) => (set ? 0x8100 : 0x8000);
+  const blockAt = (b) => ram[0xB300 + b] | (ram[0xB400 + b] << 8);
+  const decodeRow = (row) => { const t = new Uint8Array(128); for (let b = 0; b < 8; b++) { const at = blockAt(ram[row + b]); for (let k = 0; k < 16; k++) t[(k >> 2) * 32 + b * 4 + (k & 3)] = ram[at + k]; } return t; };
+  const tile = (ctx, l, code, x, y, s) => {
+    const lv = LV[l], col = ram[colTab(lv.set) + code];
+    if (col & 8) C64.drawGlyphMC(ctx, chars(lv.set), code, x, y, s, [P[0], P[lv.mc1], P[lv.mc2], P[col & 7]]);
+    else C64.drawGlyph(ctx, chars(lv.set), code, x, y, s, P[col & 15], P[0]);
+  };
+  const KIND = ['background', 'ladder', 'deadly', 'in front of Rick', 'platform in front', 'springy floor', 'floor and wall', 'top of a ladder'];
+  const KC = ['rgba(0,0,0,0)', 'rgba(60,200,80,.55)', 'rgba(230,40,40,.7)', 'rgba(70,110,255,.5)', 'rgba(150,80,255,.55)', 'rgba(255,40,200,.7)', 'rgba(255,170,0,.55)', 'rgba(0,230,230,.7)'];
+  const kindOf = (set, code) => { if (code > 0xFD) return -1; let k = 0; for (let i = 0; i < 8; i++) if (code >= ram[0x185B + 8 * set + i]) k = i; return k; };
+  // which blocks and tiles the maps use
+  const usedBlocks = [new Set(), new Set(), new Set(), new Set()], anyBlock = new Set(), usedTiles = [new Set(), new Set()];
+  LV.forEach((lv, l) => { for (let a = lv.from; a < lv.to; a++) { usedBlocks[l].add(ram[a]); anyBlock.add(ram[a]); } });
+  LV.forEach((lv, l) => { for (const b of usedBlocks[l]) for (let k = 0; k < 16; k++) usedTiles[lv.set].add(ram[blockAt(b) + k]); });
+  const mc1 = 11, mc2 = 10;  // $D025 ($0936) and $D026 ($08D2), set once for play
+  const frame = (f) => ram.subarray(0xC000 + 64 * f, 0xC000 + 64 * f + 63);
+  const sprite = (ctx, data, x, y, s, colour, multi) => (multi ? C64.drawSpriteMC(ctx, data, x, y, s, P[colour & 15], P[mc1], P[mc2]) : C64.drawSprite(ctx, data, x, y, s, P[colour & 15]));
+
+  // 01 the bank
+  const BANK = [
+    ['$C000-$C3FF', 'screen A, and the sprite pointers at its end ($C3F8)'], ['$C400-$C7FF', 'screen B: the scroll draws on whichever is hidden'],
+    ['$C800-$C97F', 'frames $20-$25: the first set of image buffers for Rick and the masked objects ($0F83)'], ['$C980-$C9FF', 'frames $26, $27: the top of Rick on the title screen'],
+    ['$CA00-$CB7F', 'frames $28-$2D: the second set of image buffers'], ['$CB80-$CFFF', 'frames $2E-$3F: the title Rick\'s legs, six treasures, the story screens\' walking figures'],
+    ['$D000-$D7FF', 'the tile set in play, 256 characters, under the I/O chips'], ['$D800-$DFFF', 'frames $60-$7F: treasures, boxes and traps, under the I/O chips'],
+    ['$E000-$E3FF', 'frames $80-$8F: more traps, under the KERNAL'], ['$E400-$E8FF', 'frames $90-$A3: the level\'s enemies, built at each level\'s start'],
+    ['$E900-$EAFF', 'frames $A4-$AB: the dynamite\'s fuse and blast, and the blank frame $AB'], ['$EB00-$F7FF', 'frames $AC-$DF: Rick, 26 pairs'],
+    ['$F800-$FFF7', 'the font: the score panel and every text screen'], ['$FFF8-$FFFF', 'the processor\'s vectors'],
+  ];
+  document.getElementById('rd-bank').innerHTML = '<tr><th>Address</th><th>What the video chip finds there</th></tr>' + BANK.map(([a, w]) => `<tr><td class="rd-n">${a}</td><td>${w}</td></tr>`).join('');
+
+  // 02 the room explorer
+  {
+    const cv = document.getElementById('rd-room'), S = 1, ctx = C64.canvas(cv, 256, 184);
+    const zb = C64.canvas(document.getElementById('rd-zblock'), 128, 128), zc = C64.canvas(document.getElementById('rd-zchar'), 64, 64);
+    const sel = document.getElementById('rd-lvl'), view = document.getElementById('rd-view');
+    sel.innerHTML = NAMES.map((n, i) => `<option value="${i}">${i + 1}. ${n}</option>`).join('');
+    let l = 0, top = 4, pick = { x: 12, y: 13 };
+    const rows = () => (LV[l].to - LV[l].from) >> 3;
+    const draw = () => {
+      view.max = rows() - 6;
+      if (top > rows() - 6) top = rows() - 6;
+      view.value = top;
+      document.getElementById('rd-viewat').textContent = `map rows ${top}-${top + 5}, from ${hx(LV[l].from + 8 * top, 4)}`;
+      const tiles = [];
+      for (let r = 0; r < 6; r++) tiles.push(decodeRow(LV[l].from + 8 * (top + r)));
+      for (let ty = 1; ty < 24; ty++) for (let tx = 0; tx < 32; tx++) tile(ctx, l, tiles[ty >> 2][(ty & 3) * 32 + tx], tx * 8, (ty - 1) * 8, S);
+      // the picked tile
+      const ty = pick.y + 1, tx = pick.x, mr = ty >> 2, row = LV[l].from + 8 * (top + mr), blk = ram[row + (tx >> 2)];
+      const code = tiles[mr][(ty & 3) * 32 + tx], set = LV[l].set, col = ram[colTab(set) + code];
+      ctx.strokeStyle = '#fff'; ctx.strokeRect(tx * 8 + .5, pick.y * 8 + .5, 7, 7);
+      zb.fillStyle = '#000'; zb.fillRect(0, 0, 128, 128);
+      for (let k = 0; k < 16; k++) tile(zb, l, ram[blockAt(blk) + k], (k & 3) * 32, (k >> 2) * 32, 4);
+      zb.strokeStyle = '#fff'; zb.lineWidth = 2; zb.strokeRect((tx & 3) * 32 + 1, (ty & 3) * 32 + 1, 30, 30);
+      zc.fillStyle = '#000'; zc.fillRect(0, 0, 64, 64); tile(zc, l, code, 0, 0, 8);
+      zc.strokeStyle = 'rgba(255,255,255,.18)'; zc.lineWidth = 1;
+      for (let k = 1; k < 8; k++) { zc.beginPath(); zc.moveTo(0, k * 8 + .5); zc.lineTo(64, k * 8 + .5); zc.stroke(); }
+      for (let k = 1; k < (col & 8 ? 4 : 8); k++) { const w = col & 8 ? 16 : 8; zc.beginPath(); zc.moveTo(k * w + .5, 0); zc.lineTo(k * w + .5, 64); zc.stroke(); }
+      const k = kindOf(set, code);
+      document.getElementById('rd-info').innerHTML =
+        `Screen row ${ty + 1}, column ${tx + 4}<br>map row ${top + mr} at <code>${hx(row, 4)}</code>, byte ${tx >> 2}: block <b>${hx(blk)}</b> at <code>${hx(blockAt(blk), 4)}</code><br>` +
+        `place ${(ty & 3) * 4 + (tx & 3)} of 16 in the block: tile code <b>${hx(code)}</b>, the character at <code>${hx((set ? 0x7000 : 0xD000) + 8 * code, 4)}</code><br>` +
+        `colour ${hx(col)} from <code>${hx(colTab(set) + code, 4)}</code>: ${col & 8 ? `multicolour, its own colour ${col & 7}` : `hires, colour ${col & 15}`}<br>kind: ${k < 0 ? 'none' : KIND[k]}`;
+    };
+    cv.addEventListener('click', (e) => { const r = cv.getBoundingClientRect(); pick = { x: Math.min(31, Math.floor((e.clientX - r.left) / r.width * 32)), y: Math.min(22, Math.floor((e.clientY - r.top) / r.height * 23)) }; draw(); });
+    sel.addEventListener('change', () => { l = +sel.value; top = 0; draw(); });
+    view.addEventListener('input', () => { top = +view.value; draw(); });
+    draw();
+  }
+
+  // 03 the tile sets
+  {
+    const cv = document.getElementById('rd-tiles'), ctx = C64.canvas(cv, 256, 2 * 64 + 12);
+    const bx = document.getElementById('rd-tilebtn');
+    let kinds = false, unused = false;
+    bx.innerHTML = '<button type="button" data-k="kinds">Kinds</button><button type="button" data-k="unused">Not in any map</button>';
+    const draw = () => {
+      bx.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.k === 'kinds' ? kinds : unused)));
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, cv.width, cv.height);
+      [0, 2].forEach((l, n) => {
+        const set = LV[l].set, oy = n * 70;
+        for (let c = 0; c < 256; c++) {
+          const x = (c & 31) * 8, y = oy + (c >> 5) * 8;
+          tile(ctx, l, c, x, y, 1);
+          if (kinds) { const k = kindOf(set, c); if (k > 0) { ctx.fillStyle = KC[k]; ctx.fillRect(x, y, 8, 8); } }
+          if (unused && !usedTiles[set].has(c)) { ctx.strokeStyle = '#ff4fd8'; ctx.strokeRect(x + .5, y + .5, 7, 7); }
+        }
+      });
+      document.getElementById('rd-tileout').innerHTML = `Top: the first set, levels 1 and 2 (shown in level 1's colours). Bottom: the second, levels 3 and 4 (level 3's).` +
+        (unused ? ` Not in any map: ${256 - usedTiles[0].size} codes of the first set, ${256 - usedTiles[1].size} of the second.` : '') +
+        (kinds ? '<br>' + KIND.slice(1).map((k, i) => `<span class="rd-sw" style="background:${KC[i + 1]}"></span>${k}`).join(' &nbsp;') : '');
+    };
+    bx.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.k === 'kinds') kinds = !kinds; else unused = !unused; draw(); });
+    draw();
+  }
+
+  // 04 the blocks
+  {
+    const cv = document.getElementById('rd-blocks'), ctx = C64.canvas(cv, 16 * 34, 16 * 34);
+    const bx = document.getElementById('rd-blockbtn');
+    let l = 0;
+    bx.innerHTML = NAMES.map((n, i) => `<button type="button" data-l="${i}">${i + 1}. ${n}</button>`).join('');
+    const draw = () => {
+      bx.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.l === l)));
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, cv.width, cv.height);
+      for (let b = 0; b < 256; b++) {
+        const x = (b & 15) * 34 + 1, y = (b >> 4) * 34 + 1;
+        for (let k = 0; k < 16; k++) tile(ctx, l, ram[blockAt(b) + k], x + (k & 3) * 8, y + (k >> 2) * 8, 1);
+        if (!usedBlocks[l].has(b)) { ctx.fillStyle = 'rgba(16,19,26,.7)'; ctx.fillRect(x, y, 32, 32); }
+        if (!anyBlock.has(b)) { ctx.strokeStyle = '#ff4fd8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 32, y + 32); ctx.moveTo(x + 32, y); ctx.lineTo(x, y + 32); ctx.stroke(); ctx.lineWidth = 1; }
+      }
+      document.getElementById('rd-blockout').textContent = `${NAMES[l]} uses ${usedBlocks[l].size} blocks. Never used by any map: ${[...Array(256).keys()].filter((b) => !anyBlock.has(b)).map((b) => hx(b)).join(', ')}.`;
+    };
+    bx.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { l = +b.dataset.l; draw(); } });
+    draw();
+  }
+
+  // 05 Rick
+  {
+    const cv = document.getElementById('rd-rick'), S = 4, ctx = C64.canvas(cv, 24 * S * 2 + 24, 21 * S + 8);
+    const MOVES = { stand: ['Standing', [0xAC], 0], walk: ['Walking', [0xAE, 0xB0], 4], story: ['Walking, story screens', [0xAE, 0xB0, 0xB2, 0xB4, 0xB6], 4],
+      crawl: ['Crawling', [0xB8, 0xBA], 2], climb: ['Climbing', [0xC2, 0xDA], 2], air: ['In the air', [0xBC], 0], gun: ['Shooting', [0xBE], 0], stick: ['The stick', [0xC0], 0], dead: ['Dead', [0xDC, 0xDE], 4] };
+    let move = 'walk', left = false, part = 'both', k = 0, timer = null;
+    const bx = document.getElementById('rd-rickbtn'), ox = document.getElementById('rd-rickopt');
+    bx.innerHTML = Object.entries(MOVES).map(([key, m]) => `<button type="button" data-m="${key}">${m[0]}</button>`).join('');
+    ox.innerHTML = '<button type="button" data-f="1">Facing left</button><button type="button" data-p="outline">Outline only</button><button type="button" data-p="body">Body only</button><button type="button" data-p="both">Both</button>';
+    const frames = () => MOVES[move][1].map((f) => (left && f < 0xC4 && move !== 'climb' && move !== 'dead' ? f + 0x18 : f));
+    const paint = () => {
+      const fs = frames(), f = fs[k % fs.length];
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = '#3a3d45'; ctx.fillRect(0, 0, 24 * S, 21 * S);
+      if (part !== 'outline') sprite(ctx, frame(f + 1), 0, 0, S, ram[0xB5A5], true);
+      if (part !== 'body') sprite(ctx, frame(f), 0, 0, S, ram[0xB5A4], false);
+      ctx.fillStyle = '#3a3d45'; ctx.fillRect(24 * S + 24, 0, 24 * S, 21 * S);
+      sprite(ctx, frame(f), 24 * S + 24, 0, S, 1, false);
+      document.getElementById('rd-rickout').innerHTML = `Frames <b>${hx(f)}</b> (outline, sprite 0, colour ${ram[0xB5A4]}) and <b>${hx(f + 1)}</b> (body, sprite 1, colour ${ram[0xB5A5]}), at <code>${hx(0xC000 + 64 * f, 4)}</code>.<br>List: ${fs.map((x) => hx(x)).join(' ')}${MOVES[move][2] ? `, a frame every ${MOVES[move][2]} steps` : ''}. Right: the outline alone in white.`;
+    };
+    const run = () => {
+      clearInterval(timer); k = 0; paint();
+      bx.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === move)));
+      ox.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f ? left : b.dataset.p === part)));
+      if (MOVES[move][1].length > 1) timer = setInterval(() => { k++; paint(); }, 40 * MOVES[move][2]);
+    };
+    bx.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { move = b.dataset.m; run(); } });
+    ox.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.f) left = !left; else part = b.dataset.p; run(); });
+    run();
+  }
+
+  // 06 the enemies
+  {
+    const cv = document.getElementById('rd-enemy'), S = 2, W = 24 * S + 8, ctx = C64.canvas(cv, 10 * W, 3 * (21 * S + 8) + 12);
+    const bx = document.getElementById('rd-enemybtn');
+    let l = 0, k = 0;
+    bx.innerHTML = NAMES.map((n, i) => `<button type="button" data-l="${i}">${i + 1}. ${n}</button>`).join('');
+    const LISTS = [[0x90, 0x92, 0x90, 0x94], [0x91, 0x93, 0x91, 0x95], [0x96, 0x97, 0x96, 0x97], [0x98, 0x99, 0x98, 0x99]];
+    const paint = () => {
+      const E = enemyFrames(ram, l), H = 21 * S + 8;
+      ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, cv.width, cv.height);
+      E.frames.forEach((f, i) => sprite(ctx, f, (i % 10) * W + 4, Math.floor(i / 10) * H + 4, S, E.colours[i], true));
+      ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillRect(0, 2 * H + 5, cv.width, 1);
+      for (let look = 0; look < 2; look++) LISTS.forEach((li, j) => {
+        const f = li[k % 4] + 10 * look - 0x90;
+        sprite(ctx, E.frames[f], (j + 4 * look) * W + 4 + (look ? 2 * W : 0), 2 * H + 12 + 4, S, E.colours[f], true);
+      });
+      bx.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.l === l)));
+    };
+    bx.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { l = +b.dataset.l; paint(); } });
+    setInterval(() => { k++; paint(); }, 160);
+    paint();
+  }
+
+  // 07 the objects
+  {
+    const box = document.getElementById('rd-objs'), types = new Map();
+    for (let room = 0; room < 34; room++) {
+      const rec = 0x46AD + 7 * room;
+      let lv = 0; for (let x = 0; x < 4; x++) if (rec >= firstRoom[x]) lv = x;
+      let p = ram[rec + 5] | (ram[rec + 6] << 8);
+      while (ram[p] !== 0xFF && p < 0xACDC) { const t = ram[p + 1] & 0x7F; if (t >= 16) { if (!types.has(t)) types.set(t, new Set()); types.get(t).add(lv + 1); } p += 5; }
+    }
+    const cells = [];
+    for (const [t, lvs] of [...types].sort((a, b) => a[0] - b[0])) {
+      const at = ram[0xB780 + t] | (ram[0xB800 + t] << 8), list = [];
+      for (let i = 0; i < 12 && ram[at + i] !== 0xFF; i++) list.push(ram[at + i]);
+      const trap = t >= 24 && t <= 70;                          // only traps run their lists ($1ACF)
+      const show = !trap ? [list[0]] : list.length > 1 && list[0] === 0xAB ? list.slice(1) : list;
+      const fig = document.createElement('figure'), c = document.createElement('canvas'); c.className = 'px';
+      fig.appendChild(c); fig.insertAdjacentHTML('beforeend', `type ${t}<br>level ${[...lvs].join(', ')}<br>${trap ? list.map((f) => hx(f)).join(' ') : hx(list[0]) + (list[0] === 0xAB ? ', unseen' : '')}`);
+      box.appendChild(fig);
+      cells.push({ ctx: C64.canvas(c, 48, 42), show });
+    }
+    let k = 0;
+    const paint = () => cells.forEach(({ ctx, show }) => { const f = show[k % show.length]; ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, 48, 42); if (f !== 0xAB) sprite(ctx, frame(f), 0, 0, 2, ram[0xB4D0 + f], true); });
+    setInterval(() => { k++; paint(); }, 160);
+    paint();
+  }
+
+  // 08 the fonts
+  {
+    const cv = document.getElementById('rd-fonts'), ctx = C64.canvas(cv, 32 * 8, 16 * 8 + 8);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    const f1 = ram.subarray(0xF800, 0x10000), f2 = ram.subarray(0x7800, 0x8000);
+    for (let c = 0; c < 255; c++) C64.drawGlyph(ctx, f1, c, (c & 31) * 8, (c >> 5) * 8, 1, P[1], P[0]);
+    ctx.fillStyle = '#10131a'; ctx.fillRect(0, 64, cv.width, 8);
+    for (let c = 0; c < 256; c++) C64.drawGlyph(ctx, f2, c, (c & 31) * 8, 72 + (c >> 5) * 8, 1, P[7], P[0]);
+  }
+
+  // 09 left over
+  {
+    const cv = document.getElementById('rd-unused'), S = 2;
+    const un0 = [...Array(256).keys()].filter((c) => !usedTiles[0].has(c)), un1 = [...Array(256).keys()].filter((c) => !usedTiles[1].has(c));
+    const per = 26, ctx = C64.canvas(cv, per * 9 * S, 36 * S + 2 * 22 * S + 8);
+    ctx.fillStyle = '#10131a'; ctx.fillRect(0, 0, cv.width, cv.height);
+    [...Array(256).keys()].filter((b) => !anyBlock.has(b)).forEach((b, i) => { for (let k = 0; k < 16; k++) tile(ctx, 0, ram[blockAt(b) + k], (i * 40 + (k & 3) * 8) * S, ((k >> 2) * 8) * S, S); });
+    [[un0, 0], [un1, 2]].forEach(([codes, l], n) => codes.forEach((c, i) => tile(ctx, l, c, ((i % per) * 9) * S, (36 + n * 22) * S, S)));
+    void per;
+  }
+})();
+</script>

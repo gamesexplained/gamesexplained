@@ -65,7 +65,9 @@ It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
 fails on a Gold or Platinum page that still has one. It counts the links into a
 Source page at an address its listing holds no record of (a chip register, a
 stretch the coverage leaves out, another part's address): the page says so when
-one is followed, and --addresses lists them, page by page.
+one is followed, and --addresses lists them, page by page. It counts too the links
+that land inside a BASIC line, past its first byte and before its last (where a
+range ends), which open on that line with no note, and --addresses lists those too.
 
 Usage: build.py [--out _site] [--addresses]
 With GITHUB_TOKEN (or GH_TOKEN) set, as in CI, the build asks GitHub which account
@@ -1918,32 +1920,41 @@ class AddressLinks(html.parser.HTMLParser):
 
 
 _recorded = {}
+ITEMS = {"basic"}   # text types whose records each hold one item, a program line or a variable
 
 
 def recorded(listings):
     """The addresses that have a record in these listings, laid one over another as a part's
-    Source page lays them: an int with bit 8*a set for each address a a row covers or a label
-    stands at. A gap covers none."""
-    bits = 0
+    Source page lays them: (an int with bit 8*a set for each address a a row covers or a label
+    stands at, and one with the bit set for each address inside a BASIC line or variable, past
+    its first byte and before its last, which a range "$5CCB-$AD59" ends on). A gap covers none."""
+    bits = inside = 0
     for f in listings:
         if f not in _recorded:
-            got = bytearray(0x10000)
+            got, mid = bytearray(0x10000), bytearray(0x10000)
             for r in json.load(open(f))["records"]:
                 if r["t"] != "gap":
                     end = min(0x10000, r["a"] + max(1, len(r.get("b") or [])))
                     got[r["a"]:end] = b"\1" * (end - r["a"])
-            _recorded[f] = int.from_bytes(got, "little")
-        bits |= _recorded[f]
-    return bits
+                    if r.get("enc") in ITEMS and end - r["a"] > 2:   # its last byte ends a range
+                        mid[r["a"] + 1:end - 1] = b"\1" * (end - r["a"] - 2)
+            _recorded[f] = int.from_bytes(got, "little"), int.from_bytes(mid, "little")
+        bits |= _recorded[f][0]
+        inside |= _recorded[f][1]
+    return bits, inside
 
 
 def unrecorded(out_root):
-    """(links into a Source page, [(page, Source page, address)] for those that land on no record).
+    """(links into a Source page, [(page, Source page, address)] for those that land on no record,
+    the same for those that land inside a BASIC line or variable, past its first byte and
+    before its last).
 
     Every $XXXX on a game's pages links to a Source page, and one whose listing holds no
     record at it (a chip register, a stretch the coverage leaves out, an address of another
-    part) opens on the gap that holds it, with a note (#215). The count keeps them in sight."""
-    total, lost = 0, []
+    part) opens on the gap that holds it, with a note (#215). The count keeps them in sight.
+    In a BASIC listing every address is inside some line, so a wrong address opens on the
+    wrong line with no note; a link into a line is meant for its first byte (#356)."""
+    total, lost, inside = 0, [], []
     for out in sorted(glob.glob(os.path.join(out_root, "*", "*", ""))):
         held, again = {}, None
         for f in glob.glob(os.path.join(out, "source*.html")):
@@ -1963,9 +1974,11 @@ def unrecorded(out_root):
             for page, a in p.links:
                 if page in held:
                     total += 1
-                    if not held[page] >> (8 * a) & 1:
+                    if not held[page][0] >> (8 * a) & 1:
                         lost.append((os.path.relpath(f, out_root), page, a))
-    return total, lost
+                    elif held[page][1] >> (8 * a) & 1:
+                        inside.append((os.path.relpath(f, out_root), page, a))
+    return total, lost, inside
 
 
 def cut_blocks(games):
@@ -2022,16 +2035,22 @@ def main():
         sys.exit(f"{len(bad)} link(s) to nothing the build published. A game folder publishes its authored pages, "
                  "listing.json, symbols.json and reference/ (and for each of its parts, parts/<id>/listing.json and "
                  "symbols.json, and source-<id>.html), nothing else; site/lib/ is at ../../lib/")
-    total, lost = unrecorded(out_root)
+    total, lost, inside = unrecorded(out_root)
     if "--addresses" in argv:
         pages = {}
         for page, src, a in lost:
             pages.setdefault(page, []).append(f"{src}#{a:04X}")
+        for page, src, a in inside:
+            pages.setdefault(page, []).append(f"{src}#{a:04X} (inside a line)")
         for page, to in pages.items():
             print(f"{page}: {len(to)}: {', '.join(sorted(set(to)))}")
     if lost:
         print(f"{len(lost):,} of {total:,} links into a Source page land on no record there, and the page says so "
               "when one is followed" + ("" if "--addresses" in argv else "; build.py --addresses lists them"))
+    if inside:
+        print(f"{len(inside):,} of {total:,} links into a Source page land inside a BASIC line or variable, past "
+              "its first byte, and open on that line with no note: check each names the line it means"
+              + ("" if "--addresses" in argv else "; build.py --addresses lists them"))
     cut = cut_blocks(games)
     for page, tier, n in cut:
         warn(f"{page} has {n} block(s) hidden with the page editor; the cleanup pass in kit/START.md removes them")

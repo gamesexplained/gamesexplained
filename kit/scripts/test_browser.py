@@ -73,6 +73,40 @@ class BrowserTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, 'no installed Firefox'): browser.start()
             start.assert_not_called()
 
+    def test_mac_firefox_outside_path_is_found(self):
+        with tempfile.TemporaryDirectory() as folder:
+            exe = Path(folder) / 'Firefox.app/Contents/MacOS/firefox'
+            exe.parent.mkdir(parents=True)
+            exe.touch()
+            with patch.object(browser.sys, 'platform', 'darwin'), patch.object(browser, 'APPS', [folder]), patch.object(browser.shutil, 'which', return_value=None):
+                self.assertEqual(browser.firefox(), str(exe))
+            with patch.object(browser.sys, 'platform', 'linux'), patch.object(browser, 'APPS', [folder]), patch.object(browser.shutil, 'which', return_value=None):
+                self.assertIsNone(browser.firefox())
+
+    def test_no_firefox_names_the_chrome_it_found_and_starts_nothing(self):
+        # #331: a Mac with Chrome and Safari only. The choice is the contributor's.
+        chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        with patch.object(browser, 'firefox', return_value=None), patch.object(browser, 'installed_chromium', return_value=[chrome]), patch.object(browser.subprocess, 'Popen') as start:
+            with self.assertRaises(SystemExit) as stopped: browser.start()
+            start.assert_not_called()
+            self.assertIn("KIT_BROWSER_CHROMIUM='" + chrome + "'", str(stopped.exception.code))
+            self.assertIn('ask the contributor first', str(stopped.exception.code))
+
+    def test_mac_chrome_stop_matches_only_this_clones_browser(self):
+        with patch.object(browser, 'CHROMIUM_STATE', Path('/tmp/kit/tools/chromium')), patch.object(browser, 'APPS', ['/Applications', '/Users/me/Applications']):
+            owned = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --headless --user-data-dir=/tmp/kit/tools/chromium/profile --remote-debugging-port=9222 --no-first-run'
+            pattern = browser.stop_pattern()
+            self.assertRegex(owned, pattern)
+            self.assertRegex(owned.replace('/Applications/', '/Users/me/Applications/').replace('Google Chrome', 'Microsoft Edge'), pattern)
+            for foreign in (owned.replace('/tmp/kit/', '/tmp/other/'), '/bin/sh -c ' + owned,
+                            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --user-data-dir=/Users/me/personal'):
+                self.assertIsNone(re.search(pattern, foreign), foreign)
+            if shutil.which('grep'):
+                for command, expected in [(owned, 0), ('/bin/sh -c ' + owned, 1)]:
+                    result = subprocess.run(['grep', '-E', '--', pattern], input=command + '\n', text=True, capture_output=True)
+                    self.assertEqual(result.returncode, expected, result.stderr)
+                    self.assertEqual(result.stderr, '')
+
     def test_stop_matches_only_this_clones_browser(self):
         with patch.object(browser, 'STATE', Path('/tmp/kit [test]/tools/firefox')), patch.object(browser.subprocess, 'run') as run:
             run.side_effect = [SimpleNamespace(returncode=0), SimpleNamespace(returncode=1)]

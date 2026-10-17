@@ -1,0 +1,547 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+a{color:var(--link)} a:hover{color:var(--link-hover)}
+.cm-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.cm-seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.cm-seg button{font:inherit;background:var(--surface);color:var(--ink-soft);border:0;padding:5px 11px;cursor:pointer}
+.cm-seg button+button{border-left:1px solid var(--line)}
+.cm-seg button.cm-on{background:var(--ink);color:#fff}
+.cm-bar label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.cm-view{position:relative}
+.cm-view canvas{display:block;width:100%;height:auto;background:#fbfaf7;border:1px solid var(--line-soft);border-radius:6px;touch-action:none}
+.cm-view canvas.cm-turn{cursor:grab}
+.cm-tip{position:absolute;left:10px;bottom:10px;font-family:var(--fm);font-size:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--ink);pointer-events:none;max-width:calc(100% - 20px)}
+.cm-side{font-size:14px;line-height:1.5}
+.cm-side h3{font-size:19px;margin:0 0 4px}
+.cm-side .cm-sub{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin:0 0 12px}
+.cm-side dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0 0 14px;font-size:13.5px}
+.cm-side dt{color:var(--ink-mute)}
+.cm-side dd{margin:0}
+.cm-side h4{font-size:12px;font-family:var(--fm);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin:14px 0 6px;font-weight:500}
+.cm-links{display:flex;flex-wrap:wrap;gap:5px}
+.cm-go{font-family:var(--fm);font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;cursor:pointer;color:var(--link)}
+.cm-go:hover{border-color:var(--link)}
+.cm-key{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:10px 0 0}
+.cm-key i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.cm-tablewrap{margin-top:18px;overflow-x:auto}
+.cm-objs{border-collapse:collapse;width:100%;font-size:13.5px}
+.cm-objs th{font-family:var(--fm);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.cm-objs td{padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.cm-objs td.cm-n{font-family:var(--fm);font-size:12.5px;white-space:nowrap}
+.cm-objs tr.cm-hl td{background:var(--hl)}
+.cm-objs tr.cm-dim td{color:var(--ink-mute)}
+.cm-sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.cm-script{font-family:var(--fm);font-size:12px;line-height:1.55;margin:0;padding:0;list-style:none}
+.cm-script li{white-space:normal}
+.cm-script .cm-ev{display:inline-block;min-width:4.6em;color:var(--ink-mute)}
+.cm-script .cm-in{padding-left:1.4em}
+.cm-script .cm-if{color:var(--violet)}
+.cm-none{color:var(--ink-mute);font-size:13px}
+.cm-conds{margin-top:18px}
+.cm-conds h3,.cm-global h3{font-size:16px;margin:0 0 8px}
+.cm-global{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cm-global .plate{padding:16px 18px}
+.cm-ops{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px}
+.cm-ops td,.cm-ops th{padding:5px 8px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
+.cm-ops th{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.cm-err{color:var(--coral);font-family:var(--fm);font-size:13px}
+@media (max-width:860px){.cm-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:650px){:root{--gx:18px;--h1:36px;--sy:32px;--pp:14px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every area of the castle drawn from the game's own database: the Wilderness, the Courtyard, 26 rooms and five caverns, the 100 shared objects that dress them, and every script that opens a door, pays a reward, or moves the player on.</p>
+</header>
+<main class="wrap">
+<section id="cm-areas">
+  <p class="fig">01 · The areas</p>
+  <h2 class="t">The castle, area by area</h2>
+  <p class="lede">The database at <code>$9D00</code> holds 34 areas: the Wilderness, the Courtyard, 26 rooms, five caverns, and one list of shared objects. Each is drawn here from its own object records.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="cm-prev" aria-label="Previous area">‹</a><select id="cm-area" aria-label="Area"></select><a class="step" id="cm-next" aria-label="Next area">›</a></div>
+    <div class="cm-bar">
+      <span class="cm-seg" role="group" aria-label="View"><button type="button" id="cm-v-plan" class="cm-on" aria-pressed="true">From above</button><button type="button" id="cm-v-turn" aria-pressed="false">Turn it</button></span>
+      <label><input type="checkbox" id="cm-hidden"> objects hidden at the start</label>
+      <label><input type="checkbox" id="cm-shared" checked> shared objects this area shows</label>
+    </div>
+    <div class="cm-grid">
+      <div class="cm-view"><canvas id="cm-cv" width="640" height="640" aria-label="The area's objects"></canvas><div class="cm-tip" id="cm-tip" hidden></div></div>
+      <div class="cm-side" id="cm-side"></div>
+    </div>
+    <div class="cm-key" id="cm-key"></div>
+    <p class="cap">Every object is drawn from its record: its position and size in bytes 1-6, in the game's units of 64, and the bytes of its own shape after them. <b>From above</b> puts X to the right and Z up the page, the way a heading of 0 faces up and a heading of 90° to the right. <b>Turn it</b> shows the same edges in three dimensions; drag to turn the area. Pyramids are built as <code>QUEUE_PYRAMID_OBJECT</code> (<code>$2F21</code>) builds them, and <code>test_world.js</code> checks the page's corners against the game's code for all 62 of them. The arrows are entrances, at their position with their heading; the dashed ones are the shared entrances that scripts in other areas send the player to. Point at an object to see its record and its script.</p>
+  </div>
+  <div class="plate cm-tablewrap"><table class="cm-objs" id="cm-objs"></table></div>
+  <div class="plate cm-conds" id="cm-conds"></div>
+</section>
+
+<section id="cm-every">
+  <p class="fig">02 · Scripts in every area</p>
+  <h2 class="t">Five scripts the game runs everywhere</h2>
+  <p class="lede">Besides an area's own scripts, five global ones at the list <code>$9D44</code> points to run in every area, after the object the player touched or shot and before the area's own (<code>DISPATCH_FRAME_CONDITIONS</code>, <code>$4A58</code>).</p>
+  <div class="cm-global" id="cm-global"></div>
+  <p class="cap">The first three put up or take down three shared objects each, whenever a sensor with the id 125, 126 or 127 is visible in the area. The fourth is the potion of revitalisation's: once flag 29 is set, by drinking the potion in the cavern at area 22, every tick of the 10-second timer adds a point of strength, until variable 24 has counted to 64. The fifth does nothing.</p>
+</section>
+
+<section id="cm-lang">
+  <p class="fig">03 · Reading the scripts</p>
+  <h2 class="t">The words the scripts are written in</h2>
+  <p class="lede">The scripts above are the game's own tokens put into words. Each token waits for one of four events, and the page names it in the left margin.</p>
+  <div class="plate">
+    <table class="cm-ops"><thead><tr><th>Event</th><th>When the token runs</th></tr></thead><tbody>
+      <tr><td><b>move</b></td><td>The player moved this frame (<code>$6172</code>). In an object's own script, the move ran into that object (<code>$53CC</code> names it).</td></tr>
+      <tr><td><b>timer</b></td><td>The 10-second timer ticked (<code>$48B5</code>).</td></tr>
+      <tr><td><b>shot</b></td><td>A rock hit the object (<code>$646D</code>).</td></tr>
+      <tr><td><b>action</b></td><td>The player pressed A at the object (<code>$6598</code>).</td></tr>
+    </tbody></table>
+    <p class="cap">A test that fails skips every token after it until an <b>else</b> or an <b>end if</b>; there is no nesting, so two tests in a row must both pass. A <b>flag</b> is one bit of <code>$2439</code> onward and a variable <b>v</b> one byte of <code>$2438</code> onward, so the two overlap. An object named by its id alone is looked for among the shared objects first, then in the area. The full list of opcodes is in the Source tab's facts.</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+/* cm-world */
+// The castle's database ($9D00-$BF8F), read as the game reads it. castleWorld(ram) takes the
+// game's memory and returns { areas, global }:
+// - each area as SELECT_AREA ($76D0) finds it through the directory of offsets at $9D4F: its
+//   header (byte 0 the sky's fill in its high nibble and the floor's in its low one, 1 the object
+//   count, 2 its id, 3-4 the offset of its condition list from the header, 5 the area's scale, 6
+//   the attribute byte, 7 the index of its name, the message slot at $1500 + 16 x index), its
+//   objects from header + 8, and its counted list of condition scripts;
+// - each object with its type (the low nibble of byte 0) and flags (the high nibble: $40 hidden,
+//   $20 destroyed), position (bytes 1-3) and size (4-6) in units of 64, id (7) and total length
+//   (8); its own bytes from 9 up to the type's base size in OBJECT_BASE_SIZE_BY_TYPE ($13DF); and
+//   the script in any bytes past that. An area's type-0 object with id 255 is not a script but the
+//   list of shared objects the area shows, which $7C5A reads from bytes 1-6 and 9 onward;
+// - the five global scripts, the counted list $9D44 points at.
+// A script is split into tokens by FCL_TOKEN_LENGTHS ($13AE): the low six bits of a token's first
+// byte are its opcode and the top two the event that lets it run.
+// castleShape(o) gives an object's edges as lists of [x, y, z] points, in the same units: a
+// cuboid's box (type 1), a rectangle's face (3), a pyramid's base and apex faces as
+// QUEUE_PYRAMID_OBJECT ($2F21) builds them (4-9: its base fills the box at one end of the axis,
+// low for an even type and high for an odd one, X for 4 and 5, Y for 6 and 7, Z for 8 and 9; the
+// apex face at the other end spans the box's low corner plus bytes 12 and 14 on the first other
+// axis and 13 and 15 on the second), and a line or polygon's own points from byte 10 (types 10-13,
+// type - 8 points).
+// castleToken(t, world, area) says in words what a token does, as EXECUTE_FCL_STREAM ($68F5)
+// carries it out.
+function castleWorld(ram) {
+  const DB = 0x9D00, w = (a) => ram[a] | ram[a + 1] << 8;
+  const tokens = (at, n) => {
+    const out = [];
+    for (let p = at, end = at + n; p < end;) {
+      const op = ram[p] & 0x3F, len = ram[0x13AE + op];
+      if (!len) { out.push({ at: p, op, ev: ram[p] >> 6, args: [], bad: true }); break; }
+      out.push({ at: p, op, ev: ram[p] >> 6, args: Array.from(ram.slice(p + 1, p + len)) });
+      p += len;
+    }
+    return out;
+  };
+  const list = (at) => {
+    const streams = []; let p = at + 1;
+    for (let k = 0; k < ram[at]; k++) { const n = ram[p]; streams.push({ at: p + 1, len: n, tokens: tokens(p + 1, n) }); p += 1 + n; }
+    return { at, end: p, streams };
+  };
+  const text = (at) => String.fromCharCode(...ram.slice(at + 1, at + 16)).trim();
+  const areas = [];
+  for (let i = 0; i < ram[DB]; i++) {
+    const h = DB + w(0x9D4F + 2 * i), a = { slot: i, at: h, fill: ram[h], count: ram[h + 1], id: ram[h + 2],
+      scale: ram[h + 5], attr: ram[h + 6], nameIndex: ram[h + 7], objects: [] };
+    a.name = a.id === 255 ? 'Shared objects' : text(0x1500 + 16 * a.nameIndex);
+    let p = h + 8;
+    for (let k = 0; k < a.count; k++) {
+      const t = ram[p] & 0x0F, len = ram[p + 8], base = ram[0x13DF + t];
+      const o = { at: p, type: t, flags: ram[p] & 0xF0, pos: [ram[p + 1], ram[p + 2], ram[p + 3]],
+        ext: [ram[p + 4], ram[p + 5], ram[p + 6]], id: ram[p + 7], len, own: Array.from(ram.slice(p + 9, p + Math.min(base, len))) };
+      if (a.id !== 255 && t === 0 && o.id === 255) {
+        o.script = null; o.shows = [];
+        for (let y = 1; y < len; y++) if (y !== 7 && y !== 8 && ram[p + y]) o.shows.push(ram[p + y]);
+      } else o.script = len > base ? { at: p + base, len: len - base, tokens: tokens(p + base, len - base) } : null;
+      a.objects.push(o); p += len;
+    }
+    a.conditions = list(h + w(h + 3));
+    areas.push(a);
+  }
+  const message = (n) => text(0x1410 + 16 * (n - 1));
+  return { areas, global: list(DB + w(0x9D44)), message, byId: (id) => areas.find((a) => a.id === id) };
+}
+function castleShape(o) {
+  const [x, y, z] = o.pos, [ex, ey, ez] = o.ext, lo = [x, y, z], hi = [x + ex, y + ey, z + ez];
+  const quad = (q) => [q[0], q[1], q[2], q[3], q[0]];
+  if (o.type === 1) {
+    const c = (i, j, k) => [i ? hi[0] : lo[0], j ? hi[1] : lo[1], k ? hi[2] : lo[2]];
+    return [quad([c(0, 0, 0), c(1, 0, 0), c(1, 0, 1), c(0, 0, 1)]), quad([c(0, 1, 0), c(1, 1, 0), c(1, 1, 1), c(0, 1, 1)]),
+      [c(0, 0, 0), c(0, 1, 0)], [c(1, 0, 0), c(1, 1, 0)], [c(1, 0, 1), c(1, 1, 1)], [c(0, 0, 1), c(0, 1, 1)]];
+  }
+  if (o.type === 3) {
+    const flat = ex === 0 ? 0 : ey === 0 ? 1 : 2, [u, v] = [0, 1, 2].filter((k) => k !== flat);
+    const p = (i, j) => { const q = lo.slice(); q[u] = i ? hi[u] : lo[u]; q[v] = j ? hi[v] : lo[v]; return q; };
+    return [quad([p(0, 0), p(1, 0), p(1, 1), p(0, 1)])];
+  }
+  if (o.type >= 4 && o.type <= 9) {
+    const ax = (o.type - 4) >> 1, high = o.type & 1, [u, v] = [0, 1, 2].filter((k) => k !== ax);
+    const off = o.own.slice(3, 7);                       // bytes 12-15
+    const at = (end, cu, cv) => { const q = []; q[ax] = end; q[u] = cu; q[v] = cv; return q; };
+    const b = high ? hi[ax] : lo[ax], t = high ? lo[ax] : hi[ax];
+    const base = [at(b, lo[u], lo[v]), at(b, hi[u], lo[v]), at(b, hi[u], hi[v]), at(b, lo[u], hi[v])];
+    const apex = [at(t, lo[u] + off[0], lo[v] + off[1]), at(t, lo[u] + off[2], lo[v] + off[1]),
+      at(t, lo[u] + off[2], lo[v] + off[3]), at(t, lo[u] + off[0], lo[v] + off[3])];
+    return [quad(base), quad(apex), ...base.map((q, k) => [q, apex[k]])];
+  }
+  if (o.type >= 10 && o.type <= 14) {
+    const n = o.type - 8, pts = [];
+    for (let k = 0; k < n; k++) pts.push(o.own.slice(1 + 3 * k, 4 + 3 * k));
+    return [n > 2 ? [...pts, pts[0]] : pts];
+  }
+  return [];
+}
+const CASTLE_TYPES = ['entrance', 'cuboid', 'sensor', 'rectangle', 'pyramid', 'pyramid', 'pyramid', 'pyramid',
+  'pyramid', 'pyramid', 'line', 'triangle', 'quadrilateral', 'pentagon', 'hexagon'];
+const CASTLE_EVENTS = ['move', 'timer', 'shot', 'action'];
+const CASTLE_VARIABLES = { 28: 'spirits destroyed', 29: 'strength', 31: 'keys', 32: 'the key being collected' };
+function castleToken(t, world, area) {
+  const [a0, a1, a2] = t.args, v = (n) => CASTLE_VARIABLES[n] ? `v${n} (${CASTLE_VARIABLES[n]})` : `v${n}`;
+  const obj = (id) => `object ${id}`, there = (ar, id) => {
+    const a = world.byId(ar); return `object ${id} of area ${ar}${a ? ' (' + a.name + ')' : ''}`;
+  };
+  switch (t.op) {
+    case 0x01: return `score + ${(a0 | a1 << 8 | a2 << 16).toLocaleString('en-GB')}`;
+    case 0x03: return `toggle ${obj(a0)}`;
+    case 0x04: return `show ${obj(a0)}`;
+    case 0x05: return `hide ${obj(a0)}`;
+    case 0x06: return `toggle ${there(a0, a1)}`;
+    case 0x07: return `show ${there(a0, a1)}`;
+    case 0x08: return `hide ${there(a0, a1)}`;
+    case 0x09: return `${v(a0)} + 1`;
+    case 0x0A: return `${v(a0)} − 1`;
+    case 0x0B: return `if ${v(a0)} = ${a1}`;
+    case 0x0C: return `set flag ${a0}`;
+    case 0x0D: return `clear flag ${a0}`;
+    case 0x0E: return `if flag ${a0} is ${a1 ? 'set' : 'clear'}`;
+    case 0x0F: return `sound effect ${a0}`;
+    case 0x10: return `destroy ${obj(a0)}`;
+    case 0x11: return `destroy ${there(a0, a1)}`;
+    case 0x12: { const a = world.byId(a0); return `go to area ${a0}${a ? ' (' + a.name + ')' : ''}, entrance ${a1}`; }
+    case 0x13: return `strength ${a0 & 0x80 ? '− ' + (256 - a0) : '+ ' + a0}`;
+    case 0x14: return `${v(a0)} = ${a1}`;
+    case 0x1A: return 'redraw';
+    case 0x1B: return `wait ${a0} ticks (${(a0 / 60).toFixed(2).replace(/0$/, '')} s)`;
+    case 0x1C: return `sound effect ${a0}, with the next picture`;
+    case 0x1D: return `flip flag ${a0}`;
+    case 0x1E: return `if ${obj(a0)} is visible`;
+    case 0x1F: return `if ${obj(a0)} is hidden`;
+    case 0x20: return `if ${there(a0, a1)} is visible`;
+    case 0x21: return `if ${there(a0, a1)} is hidden`;
+    case 0x22: return a0 & 0x80 ? `riddle panel ${a0 & 0x7F}` : `print “${world.message(a0)}”`;
+    case 0x23: return 'nothing';
+    case 0x2C: return 'else';
+    case 0x2D: return 'end if';
+    case 0x2E: return `if ${v(a0)} > ${a1}`;
+    case 0x2F: return `if ${v(a0)} < ${a1}`;
+    case 0x30: return `run the script of ${obj(a0)}`;
+  }
+  return `opcode $${t.op.toString(16).toUpperCase().padStart(2, '0')}: ends the script`;
+}
+// end of cm-world
+</script>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const fail = (msg) => { $('cm-side').innerHTML = `<p class="cm-err">${msg}</p>`; };
+  if (!window.C64) { fail('The maps need the site’s shared script, ../../lib/c64.js, which is there only in the built site.'); return; }
+  const COL = { 1: '#1f5fa8', 3: '#2a8a4a', 4: '#c25a00', 10: '#4a5bd6', 0: '#d04a3a', shared: '#0f8a8a' };
+  const colour = (o) => o.type === 1 ? COL[1] : o.type === 3 ? COL[3] : o.type >= 4 && o.type <= 9 ? COL[4] : o.type >= 10 ? COL[10] : COL[0];
+  const title = (s) => s.toLowerCase().replace(/(^|[\s'])([a-z])/g, (m, a, b) => a + b.toUpperCase()).replace(/'S\b/g, "'s");
+  const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const hex = (n, d = 4) => '$' + n.toString(16).toUpperCase().padStart(d, '0');
+  let W, order, cur, shared, view = 'plan', hover = null, yawV = -0.6, pitchV = 0.55;
+
+  C64.load('listing.json').then((g) => {
+    W = castleWorld(g.ram);
+    shared = W.byId(255);
+    order = W.areas.slice().sort((a, b) => a.id - b.id);
+    // the scripts that move the player, for each area's ways in and out
+    const gotos = [];
+    const scan = (a, toks, src) => toks.forEach((t) => { if (t.op === 0x12) gotos.push({ from: a.id, src, to: t.args[0], entrance: t.args[1] }); });
+    for (const a of W.areas) {
+      for (const o of a.objects) if (o.script) scan(a, o.script.tokens, o.id);
+      for (const s of a.conditions.streams) scan(a, s.tokens, null);
+    }
+    W.gotos = gotos;
+    const sel = $('cm-area');
+    sel.innerHTML = order.map((a, i) => `<option value="${i}">${a.id} · ${a.id === 255 ? 'Shared objects' : title(a.name)}</option>`).join('');
+    const want = /area=(\d+)/.exec(location.hash);
+    const start = want ? order.findIndex((a) => a.id === +want[1]) : 0;
+    show(start < 0 ? 0 : start);
+    sel.addEventListener('change', () => show(+sel.value));
+    $('cm-prev').addEventListener('click', (e) => { e.preventDefault(); if (cur > 0) show(cur - 1); });
+    $('cm-next').addEventListener('click', (e) => { e.preventDefault(); if (cur < order.length - 1) show(cur + 1); });
+    $('cm-hidden').addEventListener('change', draw);
+    $('cm-shared').addEventListener('change', draw);
+    $('cm-v-plan').addEventListener('click', () => setView('plan'));
+    $('cm-v-turn').addEventListener('click', () => setView('turn'));
+    setupPointer();
+    drawGlobal();
+    $('cm-key').innerHTML = [['cuboid', COL[1]], ['rectangle', COL[3]], ['pyramid', COL[4]], ['line or polygon', COL[10]], ['entrance', COL[0]], ['shared object', COL.shared]]
+      .map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('');
+  }).catch((e) => fail('The listing could not be read: ' + esc(e.message)));
+
+  function setView(v) {
+    view = v;
+    $('cm-v-plan').classList.toggle('cm-on', v === 'plan'); $('cm-v-plan').setAttribute('aria-pressed', v === 'plan');
+    $('cm-v-turn').classList.toggle('cm-on', v === 'turn'); $('cm-v-turn').setAttribute('aria-pressed', v === 'turn');
+    $('cm-cv').classList.toggle('cm-turn', v === 'turn');
+    hover = null; draw();
+  }
+
+  // what the view draws: the area's objects, and the shared objects its list names
+  function items() {
+    const a = order[cur], showHidden = $('cm-hidden').checked, out = [];
+    for (const o of a.objects) {
+      if (o.type === 2 || o.shows) continue;
+      const hidden = o.type !== 0 && (o.flags & 0x40) !== 0;
+      if (hidden && !showHidden && a.id !== 255) continue;
+      out.push({ o, hidden: hidden && a.id !== 255, shared: false });
+    }
+    if (a.id !== 255 && $('cm-shared').checked) {
+      const list = a.objects.find((o) => o.shows);
+      for (const id of list ? list.shows : []) {
+        const o = shared.objects.find((s) => s.id === id);
+        if (o && o.type !== 2) out.push({ o, hidden: false, shared: true });
+      }
+      // the shared entrances that scripts send the player to in this area
+      const used = new Set(W.gotos.filter((gt) => gt.to === a.id).map((gt) => gt.entrance));
+      for (const o of shared.objects) if (o.type === 0 && used.has(o.id) && !a.objects.some((l) => l.type === 0 && l.id === o.id)) out.push({ o, hidden: false, shared: true, via: true });
+    }
+    return out;
+  }
+
+  const cv = $('cm-cv'), ctx = cv.getContext('2d');
+  const SIZE = 640, M = 34, S = (SIZE - 2 * M) / 128;
+  const px = (x) => M + x * S, pz = (z) => SIZE - M - z * S;
+
+  function arrow(x0, y0, ang, len, c, dashed, label) {
+    // ang: the heading, 0 up the page (+Z), clockwise
+    const dx = Math.sin(ang), dy = -Math.cos(ang), x1 = x0 + dx * len, y1 = y0 + dy * len;
+    ctx.save(); ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = 2; if (dashed) ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.arc(x0, y0, 3.2, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - dx * 7 - dy * 4.5, y1 - dy * 7 + dx * 4.5); ctx.lineTo(x1 - dx * 7 + dy * 4.5, y1 - dy * 7 - dx * 4.5); ctx.closePath(); ctx.fill();
+    if (label != null) { ctx.font = '11px IBM Plex Mono, monospace'; ctx.fillText(label, x0 + 6, y0 + 12); }
+    ctx.restore();
+  }
+
+  function frame() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, SIZE, SIZE);
+    ctx.fillStyle = '#fbfaf7'; ctx.fillRect(0, 0, SIZE, SIZE);
+  }
+
+  function drawPlan() {
+    frame();
+    ctx.strokeStyle = '#e4e1da'; ctx.lineWidth = 1; ctx.font = '11px IBM Plex Mono, monospace'; ctx.fillStyle = '#80838a';
+    for (let k = 0; k <= 128; k += 16) {
+      ctx.beginPath(); ctx.moveTo(px(k), pz(0)); ctx.lineTo(px(k), pz(128)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px(0), pz(k)); ctx.lineTo(px(128), pz(k)); ctx.stroke();
+      ctx.fillText(k, px(k) - 6, SIZE - M + 16); if (k) ctx.fillText(k, 4, pz(k) + 4);
+    }
+    ctx.fillText('X →', SIZE - M - 26, SIZE - 6); ctx.fillText('Z ↑', 4, M - 14);
+    const list = items().sort((p, q) => (p.o.pos[1] + p.o.ext[1]) - (q.o.pos[1] + q.o.ext[1]));
+    for (const it of list) {
+      const o = it.o;
+      if (o.type === 0) continue;
+      const c = it.shared ? COL.shared : colour(o), hl = hover && hover.o === o;
+      ctx.save();
+      if (it.hidden) ctx.setLineDash([4, 3]);
+      if ((o.type === 1 || (o.type >= 4 && o.type <= 9) || (o.type === 3 && o.ext[1] === 0)) && o.ext[0] && o.ext[2]) {
+        ctx.fillStyle = c; ctx.globalAlpha = hl ? 0.32 : it.hidden ? 0.04 : 0.1;
+        ctx.fillRect(px(o.pos[0]), pz(o.pos[2] + o.ext[2]), o.ext[0] * S, o.ext[2] * S);
+        ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = c; ctx.lineWidth = hl ? 2.6 : 1.3; ctx.globalAlpha = it.hidden ? 0.55 : 1;
+      for (const line of castleShape(o)) {
+        ctx.beginPath(); line.forEach((p, k) => k ? ctx.lineTo(px(p[0]), pz(p[2])) : ctx.moveTo(px(p[0]), pz(p[2]))); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    for (const it of list) {
+      if (it.o.type !== 0) continue;
+      const o = it.o, c = hover && hover.o === o ? '#7a1a10' : COL[0];
+      arrow(px(o.pos[0] + 0.5), pz(o.pos[2] + 0.5), o.ext[1] * 5 * Math.PI / 180, 22, c, it.via || it.hidden, o.id);
+    }
+  }
+
+  // the turning view: a perspective of the same edges, Y up
+  function project(p) {
+    const cx = 64, cy = 20, cz = 64, x = p[0] - cx, y = p[1] - cy, z = p[2] - cz;
+    const x1 = x * Math.cos(yawV) - z * Math.sin(yawV), z1 = x * Math.sin(yawV) + z * Math.cos(yawV);
+    const y2 = y * Math.cos(pitchV) - z1 * Math.sin(pitchV), d = y * Math.sin(pitchV) + z1 * Math.cos(pitchV);
+    const k = 520 / (300 + d);
+    return [SIZE / 2 + x1 * k * 1.8, SIZE / 2 + 30 - y2 * k * 1.8];
+  }
+  function drawTurn() {
+    frame();
+    ctx.strokeStyle = '#e4e1da'; ctx.lineWidth = 1;
+    for (let k = 0; k <= 128; k += 16) {
+      let a = project([k, 0, 0]), b = project([k, 0, 128]); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+      a = project([0, 0, k]); b = project([128, 0, k]); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+    }
+    ctx.fillStyle = '#80838a'; ctx.font = '11px IBM Plex Mono, monospace';
+    ctx.fillText('X', ...project([134, 0, 0])); ctx.fillText('Z', ...project([0, 0, 134]));
+    for (const it of items()) {
+      const o = it.o, c = it.shared ? COL.shared : colour(o), hl = hover && hover.o === o;
+      ctx.save(); ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = hl ? 2.6 : 1.2;
+      if (it.hidden || it.via) { ctx.setLineDash([4, 3]); ctx.globalAlpha = 0.6; }
+      if (o.type === 0) {
+        const p0 = [o.pos[0] + 0.5, o.pos[1] + 0.5, o.pos[2] + 0.5], h = o.ext[1] * 5 * Math.PI / 180;
+        const a = project(p0), b = project([p0[0] + Math.sin(h) * 8, p0[1], p0[2] + Math.cos(h) * 8]);
+        ctx.beginPath(); ctx.arc(a[0], a[1], 3, 0, 7); ctx.fill(); ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke();
+      } else for (const line of castleShape(o)) {
+        ctx.beginPath(); line.forEach((p, k) => k ? ctx.lineTo(...project(p)) : ctx.moveTo(...project(p))); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+  function draw() { if (view === 'plan') drawPlan(); else drawTurn(); markRow(); }
+
+  function setupPointer() {
+    let drag = null;
+    const at = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * SIZE / r.width, (e.clientY - r.top) * SIZE / r.height]; };
+    cv.addEventListener('pointerdown', (e) => { if (view === 'turn') { drag = at(e); cv.setPointerCapture(e.pointerId); } });
+    cv.addEventListener('pointerup', () => { drag = null; });
+    cv.addEventListener('pointermove', (e) => {
+      const p = at(e);
+      if (view === 'turn') {
+        if (drag) { yawV += (p[0] - drag[0]) * 0.01; pitchV = Math.max(0.05, Math.min(1.5, pitchV + (p[1] - drag[1]) * 0.01)); drag = p; draw(); }
+        return;
+      }
+      const x = (p[0] - M) / S, z = (SIZE - M - p[1]) / S;
+      let best = null;
+      for (const it of items()) {
+        const o = it.o;
+        if (o.type === 0) { const dx = x - o.pos[0] - 0.5, dz = z - o.pos[2] - 0.5; if (dx * dx + dz * dz < 4) { best = it; break; } continue; }
+        const ex = Math.max(o.ext[0], 1), ez = Math.max(o.ext[2], 1);
+        if (x >= o.pos[0] - 0.5 && x <= o.pos[0] + ex + 0.5 && z >= o.pos[2] - 0.5 && z <= o.pos[2] + ez + 0.5) {
+          if (!best || ex * ez < Math.max(best.o.ext[0], 1) * Math.max(best.o.ext[2], 1)) best = it;
+        }
+      }
+      if ((best && best.o) !== (hover && hover.o)) { hover = best; draw(); tip(); }
+    });
+    cv.addEventListener('pointerleave', () => { if (hover) { hover = null; draw(); tip(); } });
+  }
+  function tip() {
+    const t = $('cm-tip');
+    if (!hover) { t.hidden = true; return; }
+    const o = hover.o;
+    t.hidden = false;
+    t.textContent = `${hover.shared ? 'shared ' : ''}${CASTLE_TYPES[o.type]} ${o.id} at ${o.pos.join(', ')}` + (o.type === 0 ? `, heading ${o.ext[1] * 5}°` : `, size ${o.ext.join(' × ')}`) + (hover.hidden ? ', hidden at the start' : '');
+  }
+  function markRow() {
+    for (const tr of document.querySelectorAll('#cm-objs tr[data-at]')) tr.classList.toggle('cm-hl', !!hover && +tr.dataset.at === hover.o.at);
+  }
+
+  // a script in words, a token to a line, the tokens a test guards set in
+  function script(tokens, area) {
+    let inIf = false;
+    return '<ul class="cm-script">' + tokens.map((t) => {
+      const words = castleToken(t, W, area), test = /^if /.test(words);
+      if (t.op === 0x2D) inIf = false;
+      const cls = (inIf && t.op !== 0x2C && t.op !== 0x2D ? 'cm-in ' : '') + (test || t.op === 0x2C || t.op === 0x2D ? 'cm-if' : '');
+      if (test) inIf = true;
+      return `<li class="${cls}"><span class="cm-ev">${CASTLE_EVENTS[t.ev]}</span>${esc(words)}</li>`;
+    }).join('') + '</ul>';
+  }
+
+  function show(i) {
+    cur = i; hover = null;
+    const a = order[i], sel = $('cm-area');
+    sel.value = i;
+    $('cm-prev').classList.toggle('off', i === 0); $('cm-next').classList.toggle('off', i === order.length - 1);
+    if (history.replaceState) history.replaceState(null, '', '#area=' + a.id);
+    const name = a.id === 255 ? 'Shared objects' : title(a.name);
+    const counts = {};
+    for (const o of a.objects) { const k = o.shows ? 'list of shared objects' : CASTLE_TYPES[o.type]; counts[k] = (counts[k] || 0) + 1; }
+    const list = a.objects.find((o) => o.shows);
+    const go = (id) => { const k = order.findIndex((x) => x.id === id); return k < 0 ? id : `<button type="button" class="cm-go" data-go="${k}">${id} ${esc(title(order[k].name))}</button>`; };
+    const outs = [...new Set(W.gotos.filter((g) => g.from === a.id && g.to !== a.id).map((g) => g.to))];
+    const ins = [...new Set(W.gotos.filter((g) => g.to === a.id && g.from !== a.id).map((g) => g.from))];
+    const sensors = a.objects.filter((o) => o.type === 2);
+    let side = `<h3>${esc(name)}</h3><p class="cm-sub">area ${a.id} · entry ${a.slot + 1} of 34 in the directory · header at <code>${hex(a.at)}</code></p><dl>`;
+    side += `<dt>objects</dt><dd>${a.count}: ${Object.entries(counts).map(([k, n]) => n + ' ' + k + (n > 1 && !/s$/.test(k) ? 's' : '')).join(', ')}</dd>`;
+    if (a.id !== 255) {
+      side += `<dt>scale</dt><dd>${a.scale}</dd><dt>attribute</dt><dd>${a.attr}</dd><dt>sky and floor fills</dt><dd>${a.fill >> 4} and ${a.fill & 15}</dd>`;
+      side += `<dt>own scripts</dt><dd>${a.conditions.streams.length}</dd>`;
+      side += `<dt>sensors</dt><dd>${sensors.length ? sensors.map((o) => o.id + (o.flags & 0x40 ? ' (hidden)' : '')).join(', ') : 'none'}</dd>`;
+    }
+    side += '</dl>';
+    if (a.id !== 255) {
+      side += `<h4>Ways out</h4><div class="cm-links">${outs.length ? outs.map(go).join('') : '<span class="cm-none">none</span>'}</div>`;
+      side += `<h4>Ways in</h4><div class="cm-links">${ins.length ? ins.map(go).join('') : '<span class="cm-none">none</span>'}</div>`;
+      side += `<h4>Shared objects it shows</h4><p class="cm-none" style="margin:0">${list ? list.shows.join(', ') + ` (record at <code>${hex(list.at)}</code>)` : 'none'}</p>`;
+    } else {
+      side += '<p class="cm-none">The objects every area can show. Each area lists the ones it shows, and the rest are hidden when it is entered (<code>$7C5A</code>). The table says which areas show each one.</p>';
+    }
+    $('cm-side').innerHTML = side;
+    for (const b of document.querySelectorAll('#cm-side [data-go]')) b.addEventListener('click', () => show(+b.dataset.go));
+    // the objects
+    const shownIn = (id) => order.filter((x) => { const l = x.objects.find((o) => o.shows); return l && l.shows.includes(id); }).map((x) => x.id);
+    let rows = `<thead><tr><th>Id</th><th>Type</th><th>At</th><th>Size</th><th>${a.id === 255 ? 'Shown in areas' : 'State'}</th><th>Script</th></tr></thead><tbody>`;
+    for (const o of a.objects) {
+      if (o.shows) continue;
+      const c = o.type === 2 ? '#80838a' : colour(o), hidden = o.type !== 0 && o.flags & 0x40;
+      const state = a.id === 255 ? (shownIn(o.id).join(', ') || '<span class="cm-none">none</span>') : o.type === 0 ? '–' : (hidden ? 'hidden' : 'shown') + (o.flags & 0x20 ? ', destroyed' : '');
+      const where = o.type === 2 ? '–' : o.pos.join(', ');
+      const size = o.type === 0 ? `heading ${o.ext[1] * 5}°${o.ext[0] ? ', pitch ' + o.ext[0] : ''}` : o.type === 2 ? '–' : o.ext.join(' × ');
+      rows += `<tr data-at="${o.at}" class="${hidden && a.id !== 255 ? 'cm-dim' : ''}"><td class="cm-n">${o.id}</td><td><span class="cm-sw" style="background:${c}"></span>${CASTLE_TYPES[o.type]}</td>` +
+        `<td class="cm-n">${where}</td><td class="cm-n">${size}</td><td>${state}</td><td>${o.script ? script(o.script.tokens, a) : ''}</td></tr>`;
+    }
+    $('cm-objs').innerHTML = rows + '</tbody>';
+    // the area's own scripts
+    $('cm-conds').innerHTML = a.id === 255 ? '<h3>Scripts</h3><p class="cm-none">The shared objects carry their own scripts, in the table above; the list has no scripts of its own.</p>'
+      : '<h3>The area’s own scripts</h3>' + (a.conditions.streams.length ? a.conditions.streams.map((s) => script(s.tokens, a)).join('<hr style="border:0;border-top:1px solid var(--line-soft);margin:10px 0">')
+        : '<p class="cm-none">This area has no scripts of its own.</p>') + `<p class="cap">The counted list at <code>${hex(a.conditions.at)}</code>, run after the object's script and the global ones on every event.</p>`;
+    draw(); tip();
+  }
+
+  function drawGlobal() {
+    $('cm-global').innerHTML = W.global.streams.map((s, k) => `<div class="plate"><h3>Global script ${k + 1}</h3>${script(s.tokens, null)}<p class="cap"><code>${hex(s.at)}</code>, ${s.len} bytes</p></div>`).join('');
+  }
+})();
+</script>

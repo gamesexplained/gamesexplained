@@ -1,5 +1,20 @@
-# References
+# Reference material
 
-`original-menu.png` and `play-settled.png` are fresh VICE captures from the hard-reset disk boot described in `orientation.md`.
+VICE captures from the original Domark disk, booted as `orientation.md`
+describes:
 
-The original Ghidra export stays under `work/`; `game.json` records its hash and makers. `reference/import-audit.json` records the original import’s byte comparison, not verification of its descriptions.
+- `loading-screen.png`: the loading picture, drawn by the files `LPBMAP`,
+  `LPCOL1` and `LPCOL2` while the game loads.
+- `language-menu.png`: the first menu, the snapshot the listing is built
+  from.
+- `wilderness.png`: the first view of play, after English and the prince.
+- `magister.png`: the Magister's room, reached by a script jump
+  (`work/scripts/ending.py`).
+- `you-did-it.png` and `final-score.png`: the escape's message and the
+  score at the end of its tour, from the same script.
+- `escape-00-kings-solar.png` to `escape-08-wilderness.png`: the 3D view
+  (240 by 120, cut from the screen) as the escape's tour leaves each area
+  it draws (the Wilderness, where it ends, after it stops), in order: the King's Solar, the Ballroom, the Barracks, the
+  Carpenter's, the Great Hall, the Kitchen, the Hot Baths, the Courtyard
+  and the Wilderness (`work/scripts/tour.py`). The tour's Hospital is
+  never drawn.

@@ -27,8 +27,18 @@ ROM), as `SAVE` from BASIC writes them, and both load addresses are
 &0E00: each file was saved from a machine whose PAGE was &0E00, a Model B
 with no disc interface, or one that had moved the program there.
 
-Whether this is 4Mation's own disc is unknown. Acorn User (November 1983)
-lists the game at £10 on tape and £12 on disc. The files carry two marks
+This is most likely not 4Mation's own disc but the tape's two programs
+saved to one, though no disc of 4Mation's has been compared. Acorn User
+(November 1983) lists the game at £10 on tape and £12 on disc. The
+teacher's booklet (`features.md`, Sources) says the disc boots with
+SHIFT-BREAK and runs by itself, where this one has boot option 0; it names
+the programs GRANNY1 and GRANNY2, which DFS would take, where this disc
+has GRAN1 and GRAN2; on tape "The initial program will load and run
+followed, automatically, by the main program", and `Ready to start?`
+comes "following the title pages", where this disc has no first program
+and starts at `Ready to start?`; and it tells owners of a disc machine
+loading the tape to type `*TAPE` first, the case the programs' own move
+to &0E00 was written for. The files carry two marks
 of having been saved from memory after a run rather than as 4Mation
 wrote them: line 100 of each is a `REM` over a relocation test that line
 110 turns into a `REM` itself once the program runs at &0E00 (below), and

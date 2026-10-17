@@ -79,30 +79,23 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1983 · 4Mation Educational Resources</p>
   <h1>Granny's Garden</h1>
-  <p class="sub">An answer that fixes the magic tree, which nothing in the game mentions, and five bugs, the worst of which stops Part 1 of this disc before Tom can be found.</p>
+  <p class="sub">Four bugs, the worst of which stops Part 1 of this disc before Tom can be found, and the questions the teacher's booklet set for the classroom, answered from the code.</p>
 </header>
 <main class="wrap">
 
 <section data-part="part-1">
-  <p class="fig">01 · Ready to start?</p>
-  <h2 class="t">Secret: answer T before Y, and the magic tree is always a1</h2>
-  <p class="lede">The game's first question, <code>Ready to start?</code>, takes one more answer than yes. Type <code>T</code>, then <code>Y</code>, and the magic tree is the bottom tree on the left, one the game never picks otherwise.</p>
-  <p>Line 220 asks the question until the answer begins with Y, and line 230, in the same loop, sets a flag, <var>t%</var>, when it begins with T. The question comes back with nothing said. Line 290 then picks the tree as usual and, if <var>t%</var> is set, puts it at column 4, row 12: a1. On How it works, the second button under the trees, <b>Pick it after T</b>, picks it that way (<a href="index.html#the-magic-trees">the magic trees</a>). The flag is cleared each time the program starts again, so it holds for one game.</p>
-  <p>The flag has a variable of its own and a test of its own, so it was put there on purpose. Nothing on the screen mentions it, and neither does any review or guide to the game found online. The teacher's booklet that came with the game, which has not been found, may say what it was for.</p>
-</section>
-
-<section data-part="part-1">
-  <p class="fig">02 · Memory</p>
+  <p class="fig">01 · Memory</p>
   <h2 class="t">Bug: on this disc, Part 1 runs out of memory before Tom</h2>
   <p class="lede">Each program was written to move itself down to &amp;0E00 when it is loaded higher, as a disc system's workspace makes it. On this disc that test is turned off, and Part 1, left at &amp;1900, stops with <code>No room</code> before the end.</p>
   <div class="plate"><canvas id="mem" class="gg-chart"></canvas>
     <p class="cap">The bytes free between BASIC's variables and its stack at each of the game's waits, in jsbeeb, on the way to Tom. At &amp;0E00 the run reaches Tom with about 2,200 bytes to spare. Loaded at &amp;1900, as the disc puts it, the same answers stop at the pond with <code>No room at line 2670</code>.</p></div>
   <p>The first line of each program was a test, <code>IF PAGE&lt;&gt;&amp;E00 GOTO 3280</code> (2590 in Part 2). The lines it goes to select the tape filing system, copy the program down to &amp;0E00 four bytes at a time and run it there, which gives it 2,816 bytes more. The second line then writes a REM over the first, so that the program, running at &amp;0E00, does not test again. Both files on this disc were saved after such a run: their first lines are REMs, and <code>CHAIN</code> runs each program where the disc system loads it, at &amp;1900.</p>
-  <p>Part 1 has about 1,000 bytes there when it starts, and its variables and BASIC's stack need about 1,600 more as it goes. It stops at the pond, or on the stairs by the route through the house, and <code>No room</code> is the one error <code>ON ERROR</code> cannot catch (<a href="index.html#starting-again">starting again</a>), so the game ends at BASIC's prompt. Part 2 is smaller and runs to its end either way. Typing <code>LOAD"GRAN1"</code> and then <code>GOTO3280</code> runs the program's own move and gets round it. Whether this is 4Mation's own disc is unknown; no other copy was compared.</p>
+  <p>Part 1 has about 1,000 bytes there when it starts, and its variables and BASIC's stack need about 1,600 more as it goes. It stops at the pond, or on the stairs by the route through the house, and <code>No room</code> is the one error <code>ON ERROR</code> cannot catch (<a href="index.html#starting-again">starting again</a>), so the game ends at BASIC's prompt. Part 2 is smaller and runs to its end either way. Typing <code>LOAD"GRAN1"</code> and then <code>GOTO3280</code> runs the program's own move and gets round it.</p>
+  <p>This disc is most likely a copy of the tape, which would make the bug the copy's. The teacher's booklet says 4Mation's disc starts with SHIFT and BREAK and then <q>will load and run automatically</q>, but this disc has no boot file, and SHIFT-BREAK does nothing. The booklet calls the programs GRANNY1 and GRANNY2, names the disc system would have taken, where this disc has GRAN1 and GRAN2. On tape, it says, <q>The initial program will load and run followed, automatically, by the main program</q>, and <code>Ready to start?</code> comes <q>following the title pages</q>; this disc has no first program, and <code>Ready to start?</code> is its first screen. The booklet also tells the owner of a machine with a disc interface who is loading the tape to type <code>*TAPE</code> first, which is the machine the move down to &amp;0E00 was written for. The REM over each first line is what a run of the tape's programs leaves behind. No disc of 4Mation's has been compared, so this rests on the booklet.</p>
 </section>
 
 <section data-part="part-2">
-  <p class="fig">03 · The giant</p>
+  <p class="fig">02 · The giant</p>
   <h2 class="t">Bug: answer the giant "maybe" and the hill turns into the forest</h2>
   <div class="gg-pair">
     <div class="plate"><img src="reference/p2-16-the-hill-and-the-giant.png" alt="The hill, and the giant asking: Shall I eat you?"><p class="cap">The giant on the hill asks <q>Shall I eat you?</q></p></div>
@@ -111,23 +104,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>PROCgiant asks again when the answer is neither yes nor no, by calling itself. When the inner call ends at Y, it returns to the end of the outer call's last line, line 2090, and BASIC carries on to line 2100. That line is <code>DEF PROCfor</code>, the forest, and BASIC passes over a DEF it meets on the way as though it were a REM, so it runs the forest's lines inside PROCgiant: the words about the creepy forest appear under the hill, no stone is offered, and the map then says the player is at the hill.</p>
 </section>
 
-<section data-part="part-1">
-  <p class="fig">04 · The Giant's garden</p>
-  <h2 class="t">Bug: call the bee in the wood and Tom can never be found</h2>
-  <p class="lede">In the Giant's garden each creature helps at one stage of the way to Tom. The bee is the only one that can get past the Giant's dog, and if it was called in the wood before, it will not.</p>
-  <div class="plate"><table class="gg-table">
-    <tr><th>Stage</th><th>Who helps</th><th>What the bee does there</th></tr>
-    <tr><td>1, the pond</td><td>the butterfly</td><td>tries to fly the player over, who is far too heavy</td></tr>
-    <tr><td>2, the wood</td><td>the snail</td><td>stings the nut trees, and a nut hurts it (<code>be=1</code>)</td></tr>
-    <tr><td>3, the flower bed</td><td>the worm</td><td>a hurt bee brings the Witch</td></tr>
-    <tr><td>4, the Giant's dog</td><td>the bee, unhurt</td><td>hurt: <q>Have you forgotten what happened? A nut made my nose bleed.</q> and the Witch</td></tr>
-    <tr><td>5, the tall tree</td><td>the spider</td><td></td></tr></table>
-    <p class="cap">The stages are in Part 1 lines 2840-3060 (<code>$5CAB</code>). The route that calls the bee in the wood was played to the dog in jsbeeb.</p></div>
-  <p>Calling the bee in the wood sets <var>be</var> to 1 for the rest of the run. At the dog, only an unhurt bee chases the dog away, and every other creature brings the Witch, so a player who tried the bee in the wood can no longer reach Tom. The bee says it must go to the doctor, and the toadstool says <q>You will have to try again.</q>, as it does after any creature that cannot help in the wood. Nothing says that the bee is needed later, and the dog is two stages on.</p>
-</section>
-
 <section data-part="part-2">
-  <p class="fig">05 · Lost without being told</p>
+  <p class="fig">03 · Lost without being told</p>
   <h2 class="t">Bug: the Land of Mystery can be lost without the game saying so</h2>
   <p class="lede">The Land of Mystery has one key, one cake and one chance at the castle door. Three choices use one up, and the player can then walk the map for good without being able to finish.</p>
   <div class="plate"><table class="gg-table">
@@ -140,7 +118,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="part-1">
-  <p class="fig">06 · DELETE</p>
+  <p class="fig">04 · DELETE</p>
   <h2 class="t">Bug: one DELETE too many and the answer no longer matches the screen</h2>
   <p class="lede">A DELETE pressed when the answer is empty still counts, and PROCi's count of letters falls one behind the screen. From then on each DELETE takes a letter too many off the answer, or none at all.</p>
   <div class="plate"><table class="gg-table"><tr><th>Keys at <code>Ready to start?</code></th><th>On the screen</th><th>The answer</th><th>What happens</th></tr>
@@ -149,6 +127,36 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>DELETE <code>s n o x</code> DELETE <code>w</code></td><td>Snow</td><td>Snw</td><td></td></tr></table>
     <p class="cap">Typed in jsbeeb on 14 October 2026 at the first question of Part 1, the answer read from the game's variable <var>in$</var>. On How it works, the button <b>Type DELETE, X, DELETE, Y</b> above the black box types the second row (<a href="index.html#typing-an-answer">typing an answer</a>).</p></div>
   <p>PROCi, the input routine every answer goes through, keeps the number of letters in <var>l</var>, and a DELETE does <var>l</var>=<var>l</var>−1 and <code>in$=LEFT$(in$,l)</code>. A DELETE in an empty field still counts, so <var>l</var> becomes −1, and stays one less than the letters on the screen. Each later DELETE cuts the answer to <var>l</var> letters, one fewer than the screen keeps; when <var>l</var> is below zero it cuts nothing, because BBC BASIC's <code>LEFT$</code> with a negative length gives back the whole string (tried on its own: <code>LEFT$("AB",-1)</code> is <code>AB</code>). A child who presses DELETE once too often and then corrects a mistake sees the right word on the screen while the game reads another: <code>Snow</code>, typed that way at the password, is <code>Snw</code>, which holds no <code>no</code>.</p>
+</section>
+
+<section data-part="part-1">
+  <p class="fig">05 · The Giant's garden</p>
+  <h2 class="t">A bee hurt in the wood cannot chase off the dog</h2>
+  <p class="lede">In the Giant's garden each creature helps at one stage of the way to Tom. The bee is the only one that can get past the Giant's dog, and if it was called in the wood before, it will not.</p>
+  <div class="plate"><table class="gg-table">
+    <tr><th>Stage</th><th>Who helps</th><th>What the bee does there</th></tr>
+    <tr><td>1, the pond</td><td>the butterfly</td><td>tries to fly the player over, who is far too heavy</td></tr>
+    <tr><td>2, the wood</td><td>the snail</td><td>stings the nut trees, and a nut hurts it (<code>be=1</code>)</td></tr>
+    <tr><td>3, the flower bed</td><td>the worm</td><td>a hurt bee brings the Witch</td></tr>
+    <tr><td>4, the Giant's dog</td><td>the bee, unhurt</td><td>hurt: <q>Have you forgotten what happened? A nut made my nose bleed.</q> and the Witch</td></tr>
+    <tr><td>5, the tall tree</td><td>the spider</td><td></td></tr></table>
+    <p class="cap">The stages are in Part 1 lines 2840-3060 (<code>$5CAB</code>). The route that calls the bee in the wood was played to the dog in jsbeeb.</p></div>
+  <p>Calling the bee in the wood sets <var>be</var> to 1 until the program starts again. At the dog, only an unhurt bee chases the dog away, and every other creature brings the Witch, so a player who tried the bee in the wood cannot reach Tom until the Witch has sent them home. The bee says it must go to the doctor, and the toadstool says <q>You will have to try again.</q>, as it does after any creature that cannot help in the wood. Nothing says that the bee is needed later, and the dog is two stages on.</p>
+  <p>The trap is meant. The teacher's booklet warns that <q>Each creature can help once only although this information is not given to the children.</q> The code has a reply written for the hurt bee at each stage after the wood, <q>Have you forgotten what happened? A nut made my nose bleed. The doctor has told me to rest.</q> (line 2750), and the butterfly, which a nut can hurt there too, has one of its own (<q>I think you have forgotten something.</q>, line 2690). Once it has carried the player over the pond, the butterfly says <q>I have already helped you once.</q></p>
+</section>
+
+<section data-part="">
+  <p class="fig">06 · The booklet's questions</p>
+  <h2 class="t">The questions the teacher's booklet set, answered from the code</h2>
+  <p class="lede">The teacher's booklet ends with mysteries for a class to talk over. The code answers several of them, and the booklet's author answers one himself.</p>
+  <div class="plate"><table class="gg-table">
+    <tr><th>The booklet asks</th><th>The code</th></tr>
+    <tr><td>How does the computer know if you have taken an apple or a key?</td><td>A variable for each, set TRUE when it is taken: <var>ap%</var> at the apple tree (Part 1 line 1180), <var>key%</var> at the cottage (Part 2 line 1960). The snake asks for <var>ap%</var> (Part 1 line 1650), and the castle door and the lake, which eats the key, ask for <var>key%</var> (Part 2 lines 1830 and 2280).</td></tr>
+    <tr><td>How can an apple kill a snake?</td><td>With <var>ap%</var> set, any answer with <code>pl</code> after its first letter kills it: <q>What a good shot you are.</q> (Part 1 lines 1650-1670).</td></tr>
+    <tr><td>Where does the green broomstick come from?</td><td>The first visit to the cupboard sets <var>cup%</var> (Part 1 line 1580), and from the second visit on the green broomstick is there beside the red, whatever else the player has done.</td></tr>
+    <tr><td>Why is Ah-Choo always sneezing?</td><td>He sneezes at any food the player names: <code>Whenever I have</code>, the answer, <code>I start to sneeze.</code> (Part 2 line 990). The author's note gives the reason: Ah-Choo is <q>a total-allergy victim</q>.</td></tr>
+    <tr><td>How was it possible to take the Witch's cake safely?</td><td>Nothing in the cottage can hurt the player. Yes takes the cake (Part 2 line 1930). No, or going back inside once the cake is taken, gets <q>The Witch is coming! You had better go, quickly.</q> and the map again, and she never comes (lines 1900-1910, PROCwitchcome).</td></tr></table>
+    <p class="cap">The questions are from the booklet's <q>Additional ideas</q>, cut to the ones the code can answer; the snail's shell, the ants and the worm, and Redhorn's taste for keys have no reason in it beyond the story.</p></div>
 </section>
 
 </main>

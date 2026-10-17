@@ -1,6 +1,22 @@
-# Silver review and open work
+# Castle Master: what the next tier needs
 
-- A maintainer must check the run before Silver: its model is unproven and the imported models are unknown (`kit/CHECKING.md`). Tier remains Bronze pending that review.
-- Coverage is 52,770/52,770 tracked bytes, with no loaded-data audit stretches. This is annotation coverage; it does not mean every input/path has been exhaustively verified.
-- Open behavior: signed rotation/clipping boundaries, complete painter output, ordinary interaction routes, exact sustained audio, tape transfer and a complete rescue input route. Features.md records these explicitly; the article uses checked fixtures.
-- Open provenance/roles: retained text fragments at $0400,$3697,$4803; header parameters $9D4D/$9D4E; render-buffer capacity/overlap limits; full dynamic-face index boundary $1374-$1378. Do not convert these into absence/unreachable claims.
+## Gold
+
+- A human pass over every section of How it works, Discoveries and Maps /
+  levels: rewrite or cut the copy, and add what the run missed. Set `tier`
+  to `silver-claimed` and `steward` when it starts.
+
+## Open in the code
+
+- Header parameters `$9D4D` and `$9D4E`, after the turning step: what
+  reads them is not traced.
+- The render buffers' capacity and overlap limits, and the boundary of
+  the dynamic face index at `$1374-$1378`.
+- Tape saving and loading: traced, not exercised.
+- Effects 6 and 9 and message 9 are requested by nothing the run found;
+  a later search with another method would make the claim stronger.
+
+## Platinum
+
+- Reassemble the listing byte for byte to the original files and boot
+  the result.

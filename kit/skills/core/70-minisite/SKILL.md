@@ -30,7 +30,10 @@ One the listing holds no record of (a chip register, a stretch the coverage
 leaves out, another part's address) opens the Source tab on a note saying
 so. `build.py --addresses` lists them page by page: a chip register can
 stay, but an address of the wrong part, or one the listing should hold, is
-a mistake to fix.
+a mistake to fix. In a BASIC listing every address is inside some line,
+so a wrong one opens on the wrong line with no note; the list marks a
+link past a line's first byte "(inside a line)", and a line is cited by
+its first byte.
 
 # The How it works page
 
@@ -243,7 +246,10 @@ its music or its maps can put that first instead.
   listing's memory, and `kit/scripts/port_check.py` does the same for a
   test whose simulator is in Python. Open the block with a line
   `/* name */`, or end a function inside the page's own script with a
-  line `// end of name`; the header is the manual. On the C64 use the
+  line `// end of name`; the header is the manual. When more than one
+  page carries the block, `g.sameBlock(name)` fails when any copy
+  differs, so a page that gains a copy is checked without a change to
+  the test. On the C64 use the
   kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
   manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
   left it, the port's banking included, and `call(entry, regs)` runs a

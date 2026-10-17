@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Hold the Discoveries page to the game's code. Its storm-machine block must be index.html's, which
-// test_machine.js checks. Its storm-spell block (SPELL_STEPS) walks the spell bug on the page's
+// Hold the Discoveries page to the game's code. Its storm-machine block must be the one every page
+// carries, index.html's, which test_machine.js checks. Its storm-spell block (SPELL_STEPS) walks the spell bug on the page's
 // 6502; the same steps are run on the kit's simulator through a machine with the same calls
 // (enter, pass, hit, spell), over the bytes the page reads, and every byte of memory outside the
 // stack page must match after each step but the last. The last, the second scroll, must not return
@@ -12,8 +12,7 @@ const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'discoveries.html';
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
-if (g.block(page, 'storm-machine').text !== g.block('index.html', 'storm-machine').text)
-  fail('the storm-machine block is not the one index.html has');
+g.sameBlock('storm-machine', page);   // every page's copy, and the page tested
 const { stormRooms } = g.run(page, 'storm-machine', 'stormRooms');
 const { SPELL_STEPS } = g.run(page, 'storm-spell', 'SPELL_STEPS');
 

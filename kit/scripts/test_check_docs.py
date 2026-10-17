@@ -5,7 +5,8 @@ section of facts.md that reports what a sample of the listing found and what was
 own class that site.css also styles is caught before the built site collapses it (#143), an id
 on two elements of a page is caught before a button's handler lands on the other one, a
 platform's install notes keep one section per system and one row per build and kind of computer,
-and a skill names no game in the lines a branch adds, whatever it said before the game arrived."""
+a skill names no game in the lines a branch adds, whatever it said before the game arrived, and
+kit-feedback.md's placeholder fails only once the retrospective is reached or on a pull request."""
 import contextlib
 import io
 import os
@@ -232,6 +233,23 @@ class SkillGameNames(unittest.TestCase):
     def test_no_base_to_compare_fails_nothing(self):
         self.write(SPECTRUM, "# Spectrum\nArkanoid.\n")
         self.assertEqual(self.found(base="no-such-ref"), 0)
+
+
+
+class BeforeRetro(unittest.TestCase):
+    """kit-feedback.md's placeholder passes until the retrospective sets the tier, never on CI (#343)."""
+    def tier(self, tier, ci):
+        with tempfile.TemporaryDirectory() as d:
+            if tier is not None:
+                Path(d, 'game.json').write_text('{"tier": "%s"}' % tier, encoding='utf-8')
+            return check_docs.before_retro(d, ci=ci)
+
+    def test_a_run_before_its_retrospective(self):
+        self.assertTrue(self.tier('none', ci=False))
+
+    def test_a_tier_set_or_a_pull_request(self):
+        for tier, ci in (('bronze', False), ('silver', False), ('none', True), (None, False)):
+            self.assertFalse(self.tier(tier, ci), (tier, ci))
 
 
 if __name__ == '__main__':
