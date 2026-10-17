@@ -16,4 +16,4 @@ For a full-game Silver contribution:
 - Verify the documented encounters, map changes, failure conditions and puzzles. Forced scene captures establish initial imagery rather than reachability.
 - Complete feature verification and the independent accuracy workflow, with tune players and a built minisite for all parts.
 
-Possible follow-ups: a playable word wheel, a city map, audible tune players and a browser for the maze’s scene data.
+Possible follow-ups: a playable word wheel, a complete city map extending the cinema workflow, audible tune players and a browser for the maze’s scene data.

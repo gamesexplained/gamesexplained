@@ -93,3 +93,10 @@ The final opening ledger is 48,261/48,261 with no loaded-data audit warnings. It
 The contributor accepted the small counter puzzle as the next section. Re-read TAKE, GIVE and COMPLAIN, replayed two command orders from the initial saved setup, and preserved/restored the live emulator state. The counter snapshots confirm two initial quarters, a third from the second complaint, sequential quarter/nickel collection, and the first nickel return. The two preceding state-byte comments incorrectly claimed no direct references; they now describe the actual readers/writers. The later popcorn amount was checked with isolated original-code branches; full encounter timing remains open.
 
 Added the transition example, twelve selected live observations and a regression comparison across reachable and boundary cases. Copy was drafted after the code trace, then rewritten after the tests to explain the quarter mismatch, command choices and limits. The opening ledger remains 100%, overall Bronze and independently unmeasured. No graphical part was analysed. The contributor retains PR creation.
+
+
+## 18 October 2026 — clickable cinema workflow
+
+The contributor accepted the proposed workflow map. Compared its movement links with the actual direction tables and corrected the rough sketch: the popcorn stand is a side trip from lobby thirteen, with a return to the lobby before entering main theater nine. Added eight selectable place/state cards and eleven command connections, with conditions, results, stored text and source links. Blue moves, amber local actions and a gray multi-command sequence distinguish places from puzzle states. The ticket-buy loop leaves the player at the counter. The diagram is explicitly a cinema-route guide rather than the whole opening.
+
+Tests run the original parser/direction/GIVE routines for its displayed cases and reuse the checked counter model for the refund/return link. The final copy pass explains the map’s legend and its timing limits. No listing annotations or graphical parts changed; the tier and independent accuracy status are unchanged.

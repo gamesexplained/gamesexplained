@@ -240,3 +240,10 @@ The normal-input route was initial sidewalk → GO NORTH → GO WEST → GO THEA
 For a popcorn offer at location nine with nonnegative conversation state, `$9485` tests `$0575` for exact equality with one. One removes the whole box and selects `$80A7`; zero or `$FF` retains the box and selects `$80F6`. Nine original-code cases check these three values with three nonnegative conversation states. This establishes the isolated later offer, not its complete movie-transition timing or effects in graphical loads. The existing negative conversation branch rejects the offer rather than taking either amount.
 
 The phase and quarter-count comments name their verified readers, including `$95BB` and `$95E3`. No independent listing sample is claimed.
+
+
+## Cinema workflow diagram
+
+The clickable diagram separates location moves (solid blue), counter actions (dashed amber) and the later offer sequence (gray). Its movement edges are west sidewalk three → counter six (east), counter six → lobby thirteen (east with a ticket), lobby thirteen → counter seven (north), counter seven → lobby thirteen (south), and lobby thirteen → main theater nine (south). Later arrival/conversation effects remain outside this movement selection.
+
+`test_workflow.js` compares the eight displayed text records with the original parser, twenty movement/ticket cases with original direction handlers, eighteen ticket/popcorn purchase cases with the original GIVE routine, and the refund/return connection with the checked counter transition function. The diagram’s loop at the ticket counter buys a ticket without moving. The refund and coin cards represent states at location seven, rather than new rooms. It is a cinema-route guide, not a complete city map or a port of the opening.

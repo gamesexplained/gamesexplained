@@ -64,3 +64,8 @@ The tests caught an event-state field-name reversal, readonly constants describe
 ## Popcorn-change continuation
 
 `60-verify`’s “A negative result is a claim about your search” led to re-reading the phase and quarter bytes instead of accepting their existing no-reference comments; the comments were wrong and have been corrected in place. `70-minisite`’s “A widget that runs a mechanic is a claim too” led to comparing the page’s actual transition function with the original handlers over 7,995 cases and with twelve live observations. The existing rules cover both failures; no shared-kit change or maintainer ask is needed. The later popcorn-offer test isolates the branch and leaves complete transition timing explicit.
+
+
+## Workflow-diagram continuation
+
+`70-minisite`’s “A widget that runs a mechanic is a claim too” kept the map tied to original direction and purchase decisions. Checking the diagram’s proposed paths corrected the draft’s implied direct trip from the popcorn counter into the theater. Existing guidance covers this; no kit change or maintainer ask is needed.
