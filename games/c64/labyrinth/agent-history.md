@@ -75,3 +75,7 @@ The committed ticket test also requires the recovered command entry points to ap
 ## Popcorn-payment continuation
 
 Followed the neighboring GIVE branch from the ticket purchase. Established the two-dollar debit and repeat-payment flag, then added a money/flag example. Tested 2,304 starting states and three full reply streams. The first newline hook incorrectly returned from the parser; matching the existing passage test’s non-returning instruction hook corrected the test. Bounded the separate coin-giving entry with an undescribed label. Exported symbols and rebuilt the listing; coverage is 6,558 / 37,814 bytes (17.3%). Bronze remains partial and independently unmeasured.
+
+## Opening to about 25 percent
+
+The contributor requested about 25% coverage. Followed the largest unexplained dialogue runs and separated 54 consecutive records through `$A3D6`. The parser accepts all their bytes under the already traced literal/dictionary format. Generated exact expansions, typed only that bounded range, and retained the editable dictionary operand at `$9FBE` with continuation descriptions across the `$A000` boundary. Cleared regenerated hidden-RAM colour aliases after typing and exported the symbol map and listing. All record expansions and descriptions are checked against the real parser; a setup-input test also checks its changed word. Added a browser for the checked replies and rewrote its copy after the facts were fixed. The ledger measures 9,533 / 37,814 (25.2%); no exclusions changed, code explanation is unchanged, and no independent sample is claimed.

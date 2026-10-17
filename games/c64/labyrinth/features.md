@@ -39,3 +39,5 @@ Read on 17 October 2026:
 `wiki-title.png`, `wiki-gate.png`, and `wiki-hoggle.png` are independent C64-Wiki reference screenshots, from the image links on the cited page. They are game imagery, not evidence of states reached in this emulator session. Original game imagery © its owners. Emulator captures use state names and are identified separately in the orientation.
 
 Popcorn purchase: traced and simulator checked at `$93E1`. The first dollar payment costs two dollars and adds one box; a nonzero purchase flag refuses repeat payment. Coin collection remains open.
+
+Opening dialogue: 54 consecutive stored replies at `$9816-$A3D6` decoded and simulator checked. Includes descriptions, refusals, purchase text, and four one-word beggar hints. Individual trigger paths and the remaining dialogue remain open.

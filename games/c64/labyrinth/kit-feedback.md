@@ -48,3 +48,7 @@ The game’s ticket test now checks the recovered command entries are listed as 
 ## Popcorn continuation
 
 The verification skill’s instruction to test cheap claims led to executing the shared debit rather than stopping at the local subtraction. The existing passage test supplied the correct instruction-hook pattern for newlines. The failure was caught during the test; no kit rule or maintainer ask is needed.
+
+## Dialogue coverage continuation
+
+The coverage skill’s instruction to take the largest undescribed run led to the bounded text records rather than many small command branches. Its warning about `$A000` cutting a data description required a continuation label, and its rule that a generated comment is a repeated claim led to checking all 54 outputs against the original parser. Existing guidance covers the work; there is no shared-kit edit or maintainer ask.
