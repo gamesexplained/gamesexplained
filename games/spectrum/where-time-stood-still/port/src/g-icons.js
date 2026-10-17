@@ -352,9 +352,11 @@ G.icons = function (P) {
   P.def(0xCF1C, 'draw_icon_cf1c', r => bitmap(r.a & 255, r.hl));
   // draw_object_icon ($CF42): the empty slot, then the object's picture from bank 6 (its record
   // at $F1B1: width, height and the address of its rows) ORed over it, centred down the slot; a
-  // picture two bytes across is moved half a byte right, one of width 4 three across as it is
+  // picture two bytes across is moved half a byte right, one of width 4 three across as it is.
+  // The other A comes back changed (af_, which use_knife reads at $F8D6): $FF, left by
+  // copy_from_bank6, for a picture of width 4; otherwise the middle byte of the last row drawn
   P.def(0xCF42, 'draw_object_icon', r => {
-    let hl = r.hl;
+    let hl = r.hl, af_ = 0xFF00;
     bitmap(5, hl);
     const n = (r.a - 0x0D) & 255;
     P.copy_from_bank6({ de: (0xF1B1 + ((n * 6) & 255)) & 0xFFFF, c: 6, bc: 6 });
@@ -373,9 +375,10 @@ G.icons = function (P) {
       const v = (M[src] << 16 | M[(src + 1) & 0xFFFF] << 8) >>> 4;
       src = (src + 2) & 0xFFFF;
       M[de] |= (v >> 16) & 255; M[(de + 1) & 0xFFFF] |= (v >> 8) & 255; M[(de + 2) & 0xFFFF] |= v & 255;
+      af_ = M[(de + 1) & 0xFFFF] << 8;
       de = (de + 2 + ((M[0xAA75] - 2) & 255)) & 0xFFFF;
     }
-    return { b: 0 };
+    return { b: 0, af_ };
   });
   // draw_char_icon ($CFE3): an icon of characters, three across by three rows (two for pictures 5
   // on), from the list $D106 points to; the width written into $D9FF and eight times it into $D01A

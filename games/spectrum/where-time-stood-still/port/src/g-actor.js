@@ -401,6 +401,8 @@ G.actor = function (P) {
     M[iy + 4] = (M[iy + 4] & 0xF0) | 5;
     return { zf: false, a: M[iy + 4] };
   };
+  // $950A, where a bottle filled ($FA02) ends too
+  P.def(0x950A, 'actor_collide_950a', r => turned(r.iy));
   // $9533: a new action, its direction plus C (2, or 3 entered at $9531), as a walk 1 to 4 with
   // bit 7 set, unless it is falling or held (bit 6 of +1)
   const turnBy = (iy, c) => {

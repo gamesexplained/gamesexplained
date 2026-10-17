@@ -483,6 +483,25 @@ G.records = function (P) {
   P.def(0xE316, 'record_edges', r => edges(r.de));
   // entered from record_edges with DE at the across (and pushed): the leader's area's edges
   P.def(0xE2D2, 'edge_east', r => { across(0, r.hl, r.de); return down(r.de); });
+  // $E36B and $E370 (an object carried, $F72A): the down at DE-1 and the across at DE-2 moved by
+  // C, the area at DE-3 by B (four areas back or on); $E375 and $E37A: the area at DE-1 by B (one
+  // back or on), the across at DE by C and the down at DE+1 by -C
+  const move4 = (de, bc) => {
+    for (let k = 0; k < 2; k++) { de = (de - 1) & 0xFFFF; M[de] = (M[de] + (bc & 255)) & 255; }
+    de = (de - 1) & 0xFFFF; M[de] = (M[de] + (bc >> 8)) & 255;
+    return { a: M[de], de, bc };
+  };
+  const move1 = (de, bc) => {
+    const p = (de - 1) & 0xFFFF, q = (de + 1) & 0xFFFF;
+    M[p] = (M[p] + (bc >> 8)) & 255;
+    M[de] = (M[de] + (bc & 255)) & 255;
+    M[q] = (M[q] - (bc & 255)) & 255;
+    return { a: M[q], de: q, bc };
+  };
+  P.def(0xE36B, 'record_edges_e36b', r => move4(r.de, 0xFC94));
+  P.def(0xE370, 'record_edges_e370', r => move4(r.de, 0x046C));
+  P.def(0xE375, 'record_edges_e375', r => move1(r.de, 0xFF8E));
+  P.def(0xE37A, 'record_edges_e37a', r => move1(r.de, 0x0172));
 
   // route_point ($E399): the point of the route whose number is at HL and index after it (from
   // $ED68: first point, count; $EDB0: area, across, down): A $FF past the end; in another area
