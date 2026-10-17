@@ -71,3 +71,7 @@ The opcode-reference scan initially missed $90FB because the command handlers, r
 Added six descriptions and a ticket-state comparison on the page. Coverage is 6,428 / 37,814 bytes (17.0%). The percentage is below the preceding 17.4% because tracing recovered more code and changed the ledger’s boundaries; the newly exposed undescribed bytes remain in the denominator. The ticket inventory entry is bounded by an explicitly unclassified following byte, so its comment claims only that entry. Copy was written after the tests and revised for the house style. Bronze and the lack of an independent listing sample are unchanged.
 
 The committed ticket test also requires the recovered command entry points to appear as code in the listing, so later data retyping cannot silently undo that recovery.
+
+## Popcorn-payment continuation
+
+Followed the neighboring GIVE branch from the ticket purchase. Established the two-dollar debit and repeat-payment flag, then added a money/flag example. Tested 2,304 starting states and three full reply streams. The first newline hook incorrectly returned from the parser; matching the existing passage test’s non-returning instruction hook corrected the test. Bounded the separate coin-giving entry with an undescribed label. Exported symbols and rebuilt the listing; coverage is 6,558 / 37,814 bytes (17.3%). Bronze remains partial and independently unmeasured.

@@ -44,3 +44,7 @@ The dictionary regression also caught regenerated colour-RAM aliases cutting thr
 The reference scan exposed that the table-dispatched handlers had not been typed as code. Explicit disassembly from the verified command pointers recovered them. Existing `50-coverage` guidance on following computed dispatch already covers this case; no new rule is needed. The lower recalculated percentage is retained, with the newly exposed code left in scope.
 
 The game’s ticket test now checks the recovered command entries are listed as code as well as executing their bytes, making that regression visible without a new shared rule.
+
+## Popcorn continuation
+
+The verification skill’s instruction to test cheap claims led to executing the shared debit rather than stopping at the local subtraction. The existing passage test supplied the correct instruction-hook pattern for newlines. The failure was caught during the test; no kit rule or maintainer ask is needed.

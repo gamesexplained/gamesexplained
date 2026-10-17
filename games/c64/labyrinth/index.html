@@ -85,6 +85,10 @@
 <div class="lab-word-demo"><label><input id="lab-ticket-held" type="checkbox"> Carrying a ticket</label><p id="lab-ticket-kind"></p><div id="lab-ticket-output" class="lab-home-output" aria-live="polite"></div></div>
 <p>The purchase follows a shared payment path. Giving the dollar bill with at least five dollars available deducts four dollars in the ticket handler, then another dollar in the common give routine. The girl hands over one ticket.</p>
 <p class="sources">The east handler at <code>$90F4</code> checks the ticket entry at <code>$6740</code>. The purchase path starts at <code>$9327</code> and uses <code>$087F</code> to remove the final dollar. The eastward table decision is checked for every location index and every ticket byte; the purchase is checked with one through nine dollars. Arrival effects remain separate.</p>
+<h3>Two dollars for cold popcorn</h3>
+<p>At the popcorn stand, giving a dollar bill can spend two dollars: one in the counter’s branch and one in the shared GIVE routine. The first purchase adds a box of popcorn. After that, a purchase flag makes the woman refuse another dollar payment, leaving your money alone.</p>
+<div class="lab-word-demo"><label for="lab-popcorn-money">Dollars carried</label> <select id="lab-popcorn-money"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select><br><label><input id="lab-popcorn-bought" type="checkbox"> Already bought popcorn</label><p id="lab-popcorn-state"></p><div id="lab-popcorn-reply" class="lab-home-output" aria-live="polite"></div></div>
+<p class="sources">The dollar-payment branch at <code>$93E1</code> checks <code>$9688</code>, updates the dollar and popcorn inventory entries, and reaches the shared debit at <code>$087F</code>. The example is checked against the original GIVE handler with one through nine dollars and every purchase-flag byte. The response mentions change and a dropped nickel; collecting those coins is separate from this example.</p>
 <div class="pictures">
 <figure><img src="reference/popcorn.png" width="384" height="272" alt="A popcorn-counter conversation and the COMPLAIN command"><figcaption>The popcorn counter responds to a complaint. This scene was reached using ordinary commands.</figcaption></figure>
 <figure><img src="reference/corridor-play.png" width="384" height="272" alt="The player in the first brick corridor, with active command wheels"><figcaption>The first graphical corridor, reached by walking up through the gate. Its command wheels are visible below the scene.</figcaption></figure>
@@ -118,10 +122,29 @@
 <figure><img id="scene-picture" src="reference/room-07.png" width="384" height="272" alt="The Hedge Maze"><figcaption id="scene-caption">The Hedge Maze. Captured with a forced scene request.</figcaption></figure>
 </div>
 
-<p class="status">Bronze: 17.0% of the tracked opening image is explained. One of 22 identified parts has a partial listing; the graphical loads await analysis. The listing’s comments have no independent accuracy sample.</p>
+<p class="status">Bronze: 17.3% of the tracked opening image is explained. One of 22 identified parts has a partial listing; the graphical loads await analysis. The listing’s comments have no independent accuracy sample.</p>
 <p class="sources">Sources: the <a href="https://www.mocagh.org/activision/labyrinth-manual.pdf">disk Player’s Guide</a>, <a href="https://www.c64-wiki.de/wiki/Labyrinth">C64-Wiki</a>, and the supplied disks. The About tab carries the feature checklist and the recipe for rebuilding the saved state.</p>
 </section>
 </main>
+<script>
+/* labyrinth-popcorn */
+const labyrinthPopcornReplies={"41288": "The woman takes your two dollars,\ngives you a box of cold popcorn,\nand places two quarters in change on\nthe counter. At the same time she\naccidentally drops a nickel on the\nfloor by your feet.", "41456": "The woman says, \"I'm too busy\nto make change.\"", "43142": "You don't have enough money."};
+function labyrinthPopcornPurchase(dollars,flag) {
+ if(!Number.isInteger(dollars)||dollars<1||dollars>9||!Number.isInteger(flag)||flag<0||flag>255)throw new RangeError('Invalid purchase state');
+ if(flag!==0)return {dollars,popcorn:0,flag,reply:0xa1f0};
+ if(dollars<2)return {dollars,popcorn:0,flag,reply:0xa886};
+ return {dollars:dollars-2,popcorn:1,flag:1,reply:0xa148};
+}
+// end of labyrinth-popcorn
+const labPopcornMoney=document.getElementById('lab-popcorn-money'),labPopcornBought=document.getElementById('lab-popcorn-bought');
+function updateLabyrinthPopcorn(){
+ const result=labyrinthPopcornPurchase(Number(labPopcornMoney.value),labPopcornBought.checked?1:0);
+ document.getElementById('lab-popcorn-state').textContent=`Dollars remaining: ${result.dollars}. Popcorn added: ${result.popcorn}.`;
+ document.getElementById('lab-popcorn-reply').textContent=labyrinthPopcornReplies[result.reply];
+}
+labPopcornMoney.addEventListener('change',updateLabyrinthPopcorn);labPopcornBought.addEventListener('change',updateLabyrinthPopcorn);updateLabyrinthPopcorn();
+</script>
+
 <script>
 /* labyrinth-east */
 const labyrinthEastTable=[{"high": 0, "low": 0}, {"high": 152, "low": 22}, {"high": 0, "low": 1}, {"high": 0, "low": 6}, {"high": 0, "low": 1}, {"high": 0, "low": 10}, {"high": 0, "low": 13}, {"high": 156, "low": 89}, {"high": 155, "low": 20}, {"high": 155, "low": 20}, {"high": 155, "low": 20}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 8}];
