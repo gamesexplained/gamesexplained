@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // Hold the page's tune player against the game's code. index.html's cm-music block (createDriver)
-// runs Castle Master's sound driver on its own small 6502 over the bytes the page gives it. The
-// same calls on the kit's simulator over the listing's bytes must write the same values to the same
-// SID registers, in the same order, frame by frame, with the SID's data bus as kit/c64's machine
-// has it (site/lib/sid.js, createBus): every one of the 17 tunes in turn on one driver, as the
-// game plays them one after another, SID_PLAYER_INITIALIZE ($CF1B) with the tune in A and then
-// SID_PLAYER_TICK ($C885) once a frame until SID_STATE ($C806) says it has ended, and the clear
-// the game makes when the sound is turned off ($CFE4, SID_STATE 0), halfway through tune 0. Then
+// runs Castle Master's sound driver on the kit's 6502, handed in as sid.js hands it, over the bytes
+// the page gives it. The same calls on the simulator itself over the listing's bytes must write the
+// same values to the same SID registers, in the same order, frame by frame, with the SID's data
+// bus as kit/c64's machine has it (site/lib/sid.js, createBus): every one of the 17 tunes in turn
+// on one driver, as the game plays them one after another, SID_PLAYER_INITIALIZE ($CF1B) with the
+// tune in A and then SID_PLAYER_TICK ($C885) once a frame until SID_STATE ($C806) says it has
+// ended, and the clear the game makes when the sound is turned off ($CFE4, SID_STATE 0), halfway
+// through tune 0. Then
 // the sensors' alarm as the raster interrupt plays it ($73A1-$73B0): $CF1B with 16 and then $C885
 // on every frame, against the driver's init(17), reached through its map as the Discoveries tab
 // reaches it, for 300 frames. discoveries.html carries the same block, and must carry it unchanged.
@@ -14,7 +15,7 @@
 //   node games/c64/castle-master/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'cm-music', 'createDriver');
 g.lib('sid');
@@ -30,7 +31,7 @@ const io = {
 };
 const cpu = new CPU(m, { port: { dir: 0x2F, data: 0x35 }, io });
 // The page's side: the data the page gives the driver
-const drv = createDriver({ mem: [[0x065A, L.ram.slice(0x065A, 0x1047)], [0xC800, L.ram.slice(0xC800, 0xD000)]] });
+const drv = createDriver({ mem: [[0x065A, L.ram.slice(0x065A, 0x1047)], [0xC800, L.ram.slice(0xC800, 0xD000)]] }, kit);
 const same = (what) => { if (w.join() !== drv.writes.join()) fail(what, w.join(), '|', drv.writes.join()); w.length = 0; };
 let frames = 0;
 const lengths = [];
@@ -60,7 +61,7 @@ for (let t = 0; t < 17; t++) {
 }
 // the alarm: the game's interrupt on every frame, against the page's driver with the map of the
 // Discoveries tab's player, whose second button is init(17)
-const alarm = createDriver({ mem: [[0x065A, L.ram.slice(0x065A, 0x1047)], [0xC800, L.ram.slice(0xC800, 0xD000)]], map: [16, 17] });
+const alarm = createDriver({ mem: [[0x065A, L.ram.slice(0x065A, 0x1047)], [0xC800, L.ram.slice(0xC800, 0xD000)]], map: [16, 17] }, kit);
 alarm.init(1);
 const m2 = L.ram.slice(), bus2 = C64Sid.engine().createBus('8580');     // a machine fresh from the listing, as the page's driver is
 const io2 = {
