@@ -116,9 +116,10 @@ sound among it, is in that part's `parts/<id>/facts.md`.
   branch offset at $A7E2.
 - The title tune plays once a frame from the opening's interrupt at
   $A880. One pass of the tune is 11,328 frames, 3 minutes 46 seconds at
-  the PAL frame rate of 50.125 Hz: voice 1 returns to the start of its
-  stream at frames 10,944 and 22,272 when the driver is run on its own
-  from `MUSIC_INIT` (engine $96DA).
+  the PAL frame rate of 50.125 Hz. Run on its own from `MUSIC_INIT`
+  (engine $96DA), voice 1 reaches the four closing rests all three
+  voices share ($F247) at frames 10,944 and 22,272, and starts its
+  stream again ($F250) at frames 11,328 and 22,656.
 
 ## Controls
 

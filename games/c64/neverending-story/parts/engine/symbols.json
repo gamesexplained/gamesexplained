@@ -6894,7 +6894,7 @@
   },
   {
    "address": 43061,
-   "name": "RASTER_IRQ_SPLIT_TOP",
+   "name": "RASTER_SPLIT_BOTTOM",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8454,7 +8454,7 @@
   },
   {
    "address": 64816,
-   "name": "TEXT_FONT_CELLS_166_255",
+   "name": "KERNAL_VECTOR_TABLE",
    "type": "Field",
    "kind": "user"
   },
@@ -14716,12 +14716,12 @@
   {
    "address": 38618,
    "type": "line",
-   "text": "Starts the tune from the top, called at $0706. For voices 3, 2 and 1 (X = 2, 1, 0): $19 = $3F, the voice's ticks ($1A,X) = 1 so it reads its first event next frame, its stack index ($1D,X) = $0F, and in its 84-byte block (offset $F08B,X from $9EF3) transpose 0, vibrato flags 0, pulse flags 0 and $0F in byte $22. The six bytes $F085-$F08A go to $10-$15: the voices start at $F250, $F5F3 and $F6BE. The volume is not set: the tune's first command on voice 1 fades it in from whatever $F082 holds."
+   "text": "Starts the tune from the top, called at $0706. For voices 3, 2 and 1 (X = 2, 1, 0): $19 = $3F, the voice's ticks ($1A,X) = 1 so it reads its first event next frame, its stack index ($1D,X) = $0F, and in its 84-byte block (offset $F08B,X from $9EF3) transpose 0, vibrato flags 0, pulse flags 0 and $0F in byte $22. The six bytes $F085-$F08A go to $10-$15: the voices start at $F250, $F5F3 and $F6BE. The volume is not set: voice 1's fifth command, after its lengths, envelope and two pokes, runs $F400 (the $9C at $F25C), which fades it in from whatever $F082 holds."
   },
   {
    "address": 38656,
    "type": "line",
-   "text": "From here to $98FF the disk loader takes the driver's place when the opening ends ($0730 copies it from $C000), and $0453 calls $9700 to load each part. In the opening it is the middle of MUSIC_INIT: the high bytes of the voices' starts into $13,X, then the next voice."
+   "text": "From here to $98FF the disk loader takes the driver's place when the opening ends ($0730 copies it from $C000), and $0453 calls $9700 to load each part. In the opening it is the middle of MUSIC_INIT: the second half of the start words from $F088,X into $13,X (voice 2's high byte, then voice 3's low and high bytes), then the next voice."
   },
   {
    "address": 38664,
@@ -14886,12 +14886,12 @@
   {
    "address": 39132,
    "type": "line",
-   "text": "Command $9C: pushes $97A8 and jumps to the pointer, so the routine there runs as a subroutine and its RTS lands on $97A9, past the command. The tune uses it to fade in ($F400) and out ($F406) and to flip a note ($F495, $F553)."
+   "text": "Command $9C: pushes $97A8 and jumps to the pointer, so the routine there runs as a subroutine and its RTS lands on $97A9, past the command. Voice 1 uses it to fade in ($F400) and out ($F406) and to flip a note ($F495); voice 2's own handler ($9BB7) runs the matching flip at $F553."
   },
   {
    "address": 39141,
    "type": "line",
-   "text": "Never runs: the transposed call that voices 2 and 3 have (the fourth byte to the transpose $9F46, then the call with 4 as the command's length; the BIT at $98ED hides the LDA #$03). Voice 1's handler table has no entry for it."
+   "text": "Never runs: the transposed call that voices 2 and 3 have (the fourth byte to the transpose $9F46, then the call with 4 as the command's length; the BIT at $98EE hides the LDA #$03). Voice 1's handler table has no entry for it."
   },
   {
    "address": 39151,
@@ -14901,7 +14901,7 @@
   {
    "address": 39173,
    "type": "line",
-   "text": "Command $98: the command's third byte goes into voice 1's block at the offset in its second. The tune uses it to change one setting between notes: gate ticks, pulse width, sustain/release, a vibrato delta or flags."
+   "text": "Command $98: the command's third byte goes into voice 1's block at the offset in its second. The tune uses it to change one setting between notes: gate ticks, pulse width, attack/decay, sustain/release, a vibrato delta or flags."
   },
   {
    "address": 39187,
@@ -14916,7 +14916,7 @@
   {
    "address": 39217,
    "type": "line",
-   "text": "Voice 1's vibrato, every frame while its release counter $F01D is not 0, from the current frequency $F01F/$F020. Nothing changes unless bit 2 of the flags $F00E is set and the frequency is not 0. The delay $F00C counts down first, adding the fourth delta $F006/$F007 each frame when bit 1 is set (a slide into the note). Then the step timer $F027 waits $F00D frames between steps, and each step the first phase with steps left ($F023-$F026) adds its delta ($F000-$F007) and loses a step. When all four are spent, bit 7 starts them again from the note's frequency ($9747), bit 0 from where the pitch is ($9753); with neither the pitch stays."
+   "text": "Voice 1's vibrato, every frame while its release counter $F01D is not 0, from the current frequency $F01F/$F020. Nothing changes unless bit 2 of the flags $F00E is set and the frequency is not 0. The delay $F00C counts down first, adding the fourth delta $F006/$F007 each frame when bit 1 is set (a slide away from the written note: VIBRATO_SLIDE takes C#5 up to about D#5). Then the step timer $F027 waits $F00D frames between steps, and each step the first phase with steps left ($F023-$F026) adds its delta ($F000-$F007) and loses a step. When all four are spent, bit 7 starts them again from the note's frequency ($9747), bit 0 from where the pitch is ($9753); with neither the pitch stays."
   },
   {
    "address": 39395,
@@ -15056,7 +15056,7 @@
   {
    "address": 39908,
    "type": "line",
-   "text": "Command $96 on voice 2: the fourth byte becomes the transpose $9F9A, then the call with 4 as the command's length. Voice 2 plays its broken chords this way, one short pattern at many pitches."
+   "text": "Command $96 on voice 2: the fourth byte becomes the transpose $9F9A, then the call with 4 as the command's length. Voice 2 plays its broken chords this way, four eight-note patterns ($F562, $F579, $F58D, $F59E) each at many pitches, and the four-note $F692 of its closing chords."
   },
   {
    "address": 39919,
@@ -15276,7 +15276,7 @@
   {
    "address": 40774,
    "type": "line",
-   "text": "Voice 1's transpose: semitones added to every note but $5F and the rest $60. A transposed call or jump sets it."
+   "text": "Voice 1's transpose: semitones added to every note but $5F and the rest $60. MUSIC_INIT clears it and the tune never sets it: voice 1's handler table has no transposed call or jump, and the only other writer is the unreached $98E9."
   },
   {
    "address": 40775,
@@ -15436,7 +15436,7 @@
   {
    "address": 40960,
    "type": "line",
-   "text": "ZERO_PAGE_BACKUP ($A000-$A0FF) - the KERNAL's zero page, kept here while the game works in\nthe real one. OPENING_SETUP copies it here ($06B2); SWAP_ZERO_PAGE_AND_BACKUP ($053C)\nexchanges the two around a part's load (PREPARE_DISK_IO $04FB, END_DISK_IO $0521), so the\nKERNAL's LOAD runs with its own zero page while the game's waits here. The game calls SCNKEY\nand GETIN with no swap. Rather than saving individual locations, $053C exchanges the two\nimages, $02-$FF, wholesale: for each\nindex it loads the live byte, loads the backup byte, writes the backup value live, and writes\nthe live value into the backup. One routine therefore serves both directions - calling it\ntwice restores the original state - and there is no separate \"restore\" entry point.\n053C  LDY #$FF\n053E  LDA $0000,Y     ; live zero-page byte\n0541  TAX\n0542  LDA $A000,Y     ; corresponding backup byte\n0545  STA $0000,Y     ; backup -> live\n0548  TXA\n0549  STA $A000,Y     ; live -> backup\n054C  DEY\n054D  CPY #$01        ; stop before index $01\n054F  BNE $053E\nC64 SPECIFIC, AND THE REASON FOR THE ODD LOOP BOUND: the loop runs Y = $FF down to $02 and\ndeliberately never touches $0000 and $0001. On a 6510 those two addresses are not RAM but the\nCPU's on-chip I/O port - $0001 is the bank-select register that decides whether BASIC, KERNAL,\nI/O or RAM is visible at $A000-$BFFF and $D000-$FFFF, and $0000 is its data-direction\nregister. Swapping a stale value into $0001 would change the memory map underneath the\nrunning code, most likely unmapping the very routine performing the swap. Banking is managed\nseparately, by explicit stores to $01.\nNote the backup lives at $A000-$BFFF RAM, i.e. underneath the BASIC ROM image, which is\nexactly the region the $01 value chosen by this game leaves as RAM.\nAt the opening, $A002-$A0FF holds zero page as OPENING_SETUP copied it there ($06B2), before the tune took over $10-$21."
+   "text": "ZERO_PAGE_BACKUP ($A000-$A0FF) - the KERNAL's zero page, kept here while the game works in\nthe real one. OPENING_SETUP copies it here ($06B2); SWAP_ZERO_PAGE_AND_BACKUP ($053C)\nexchanges the two around a part's load (PREPARE_DISK_IO $04FB, END_DISK_IO $0521), so the\nKERNAL's LOAD runs with its own zero page while the game's waits here. The game calls SCNKEY\nand GETIN with no swap. Rather than saving individual locations, $053C exchanges the two\nimages, $02-$FF, wholesale: for each\nindex it loads the live byte, loads the backup byte, writes the backup value live, and writes\nthe live value into the backup. One routine therefore serves both directions - calling it\ntwice restores the original state - and there is no separate \"restore\" entry point.\n053C  LDY #$FF\n053E  LDA $0000,Y     ; live zero-page byte\n0541  TAX\n0542  LDA $A000,Y     ; corresponding backup byte\n0545  STA $0000,Y     ; backup -> live\n0548  TXA\n0549  STA $A000,Y     ; live -> backup\n054C  DEY\n054D  CPY #$01        ; stop before index $01\n054F  BNE $053E\nC64 SPECIFIC, AND THE REASON FOR THE ODD LOOP BOUND: the loop runs Y = $FF down to $02 and\ndeliberately never touches $0000 and $0001. On a 6510 those two addresses are not RAM but the\nCPU's on-chip I/O port - $0001 is the bank-select register that decides whether BASIC, KERNAL,\nI/O or RAM is visible at $A000-$BFFF and $D000-$FFFF, and $0000 is its data-direction\nregister. Swapping a stale value into $0001 would change the memory map underneath the\nrunning code, for instance banking BASIC ROM over the backup at $A000 that the loop is reading;\nthe routine itself, at $053C, is in RAM that no value of $01 hides. Banking is managed\nseparately, by explicit stores to $01.\nNote the backup lives at $A000-$BFFF RAM, i.e. underneath the BASIC ROM image, which is\nexactly the region the $01 value chosen by this game leaves as RAM.\nAt the opening, $A002-$A0FF holds zero page as OPENING_SETUP copied it there ($06B2), before the tune took over $10-$21."
   },
   {
    "address": 41216,
@@ -15451,7 +15451,7 @@
   {
    "address": 42336,
    "type": "line",
-   "text": "OBJECT_ICON_TABLE ($A560-$BBDF, 5760 bytes) - 36 fixed 160-byte slots originally allocated\nto inventory and scripted-scene icons, laid out back to back with no header.\nADDRESSING\nCALC_OBJECT_GRAPHIC_PTR ($0F70) computes the slot address as $A560 + $A0 * CURRENT_OBJECT_INDEX\nby repeated addition, leaving it in GRAPHIC_RECORD_PTR ($5A/$5B). For normal inventory icons the index is the position at which the resolver at $15E3 found the\nparsed noun key inside NOUN_TO_OBJECT_INDEX ($22A4). SCRIPT_SET_OBJECT_GRAPHIC ($113D) instead\nreads an icon index directly from action bytecode, so a scripted scene can select a slot that no\nparsed noun can reach. NOUN_TO_OBJECT_INDEX holds 36 entries before its $FF terminator at $22C8,\nand 36 * 160 = 5760 lands the last byte on $BBDF, immediately below SAVED_BITMAP ($BC00). Table\nextent and slot stride therefore corroborate each other.\nPAYLOAD FORMAT - identical to a RoomGraphicRecord payload with width = 4 cells and\nheight = 4 character rows. The source stream is interleaved per character row:\n32 bytes  bitmap      (4 cells x 8 scanlines)\n4 bytes  screen matrix\n4 bytes  colour RAM\n------------------------------------------------\n40 bytes per character row, 4 rows = 160 bytes per icon\nBLIT_ROOM_GRAPHIC ($05BF) / COPY_BLIT_ROW ($0676) scatter those three spans to three different\ndestinations, which is why they are interleaved rather than stored as three flat planes.\nC64 DISPLAY SEMANTICS (for a reader fluent in 6510 but not in VIC-II)\nThe picture band runs in multicolor bitmap mode: RASTER_SPLIT_PICTURE ($A7E3) sets $D011=$3B\n(BMM=1, bitmap mode), $D016=$D8 (MCM=1, multicolor), $D018=$38 (video matrix $CC00, bitmap\n$E000, both inside VIC bank 3) and $D021=$00. In that mode the VIC consumes TWO bitmap bits per\npixel, so horizontal resolution halves - each 8x8 cell is 4 double-wide pixels across - and the\ncolour of a pixel is selected by the bit pair:\n00 -> background register $D021\n01 -> high nybble of that cell's screen-matrix byte\n10 -> low  nybble of that cell's screen-matrix byte\n11 -> low  nybble of that cell's colour-RAM byte\nHence the 4 screen bytes and 4 colour bytes per row: they carry three of the four palette\nentries for the four cells in that row. An icon is 32 x 32 screen pixels (16 double-wide\nmulticolor pixels wide).\nWHERE THEY ARE DRAWN\nVISIBLE_OBJECT_RECORDS ($2943) is six 6-byte RoomGraphicRecords, all with height=4 width=4, at\n(row 0, col 21), (0,28), (0,35), (5,21), (5,28), (5,35) - a 3x2 inventory grid to the right of\nthe room illustration, which occupies columns 3-16. SHOW_OBJECT_ICON ($0F3A) scans those six\nrecords for one whose source_ptr high byte is zero, writes the computed icon address into it,\nand calls RENDER_ROOM_GRAPHICS ($0570) to repaint the band.\nSCRIPTED, UNUSED, AND OVERWRITTEN SLOTS\nNOUN_TO_OBJECT_INDEX holds 0 at positions 4, 5, 23, 24, 27, 29, 30 and 31. Because\nthe normal noun resolver searches linearly and position 0 legitimately holds key 0 (noun \"aur\"),\nthe resolver never finds the later zeros. That does not make every such slot dead: action opcode $17 reads the following byte as a slot\nindex directly.\nSlot 23 is Falkor. Dynamic execution of \"get falkor\" in part 1 at room $21 selected verb-rule\npair 14 and ACTION_SCRIPT_GET_FALKOR; bytes $17,$17 at $2B8F-$2B90 made\nSCRIPT_SET_OBJECT_GRAPHIC cache index $17 and COPY_BLIT_ROW read from $B3C0.\nSlot 24 is Artax. Vocabulary entry \"art\" has noun id $57, VERB_RULE_GET_ARTAX is pair 13\n($15,$57), its pointer selects ACTION_SCRIPT_GET_ARTAX at $2B55, and that script's successful\nroom-$25 branch contains $17,$18 at $2B5E-$2B5F. The horse artwork therefore has a direct,\nunambiguous code identity even though it is not selected by ordinary noun-to-icon mapping.\nSlot 27 is unused crucifix artwork. The image is a Latin cross and vocabulary entry \"cru\" has\nnoun id $5A, but the corresponding resolver key $28 is absent from NOUN_TO_OBJECT_INDEX.\nCURRENT_OBJECT_INDEX has only two writers: the noun resolver at $15FB and direct script action\n$17 at $114F. No action bytecode contains the required direct pair $17,$1B, and no decoded instruction or recorded reference reads $B640-$B6DF. The artwork is resident,\nrecognisable abandoned content, not a live part-specific remap.\nThe build reuses otherwise unreachable slot ranges:\nslot  4  $A7E0-$A87F  the play screen's raster split through $A847; artwork from $A848\nslot  5  $A880-$A91F  the opening's interrupt through $A892, two routines nothing\ncalls through $A8DE, and artwork from $A8DF\nslots 29-31 $B780-$B95F  the opening's texts through $B907, and artwork from $B908\nThe exact boundaries $A7E0 = $A560 + 4*160 and $B780 = $A560 + 29*160 corroborate the slot arithmetic.\nDecoding each 160-byte slot with the interleaved multicolor rule above yields 36 recognisable\nadventure objects, and they match the game's own three-letter noun stems: slot 0 (noun key $00,\nobject id $32, stem \"aur\") renders as the two-serpent AURYN amulet; \"kni\" is a dagger, \"web\" a\nspider web, \"dia\" a faceted diamond, \"app\" an apple, \"coi\" a coin, and so on."
+   "text": "OBJECT_ICON_TABLE ($A560-$BBDF, 5760 bytes) - 36 fixed 160-byte slots originally allocated\nto inventory and scripted-scene icons, laid out back to back with no header.\nADDRESSING\nCALC_OBJECT_GRAPHIC_PTR ($0F70) computes the slot address as $A560 + $A0 * CURRENT_OBJECT_INDEX\nby repeated addition, leaving it in GRAPHIC_RECORD_PTR ($5A/$5B). For normal inventory icons the index is the position at which the resolver at $15E3 found the\nparsed noun key inside NOUN_TO_OBJECT_INDEX ($22A4). SCRIPT_SET_OBJECT_GRAPHIC ($113D) instead\nreads an icon index directly from action bytecode, so a scripted scene can select a slot that no\nparsed noun can reach. NOUN_TO_OBJECT_INDEX holds 36 entries before its $FF terminator at $22C8,\nand 36 * 160 = 5760 lands the last byte on $BBDF, 32 bytes below SAVED_BITMAP ($BC00); ICON_TABLE_ALIGNMENT_RESIDUE\nfills $BBE0-$BBFF. Table extent and slot stride therefore corroborate each other.\nPAYLOAD FORMAT - identical to a RoomGraphicRecord payload with width = 4 cells and\nheight = 4 character rows. The source stream is interleaved per character row:\n32 bytes  bitmap      (4 cells x 8 scanlines)\n4 bytes  screen matrix\n4 bytes  colour RAM\n------------------------------------------------\n40 bytes per character row, 4 rows = 160 bytes per icon\nBLIT_ROOM_GRAPHIC ($05BF) / COPY_BLIT_ROW ($0676) scatter those three spans to three different\ndestinations, which is why they are interleaved rather than stored as three flat planes.\nC64 DISPLAY SEMANTICS (for a reader fluent in 6510 but not in VIC-II)\nThe picture band runs in multicolor bitmap mode: RASTER_SPLIT_PICTURE ($A7E3) sets $D011=$3B\n(BMM=1, bitmap mode), $D016=$D8 (MCM=1, multicolor), $D018=$38 (video matrix $CC00, bitmap\n$E000, both inside VIC bank 3) and $D021=$00. In that mode the VIC consumes TWO bitmap bits per\npixel, so horizontal resolution halves - each 8x8 cell is 4 double-wide pixels across - and the\ncolour of a pixel is selected by the bit pair:\n00 -> background register $D021\n01 -> high nybble of that cell's screen-matrix byte\n10 -> low  nybble of that cell's screen-matrix byte\n11 -> low  nybble of that cell's colour-RAM byte\nHence the 4 screen bytes and 4 colour bytes per row: they carry three of the four palette\nentries for the four cells in that row. An icon is 32 x 32 screen pixels (16 double-wide\nmulticolor pixels wide).\nWHERE THEY ARE DRAWN\nVISIBLE_OBJECT_RECORDS ($2943) is six 6-byte RoomGraphicRecords, all with height=4 width=4, at\n(row 0, col 21), (0,28), (0,35), (5,21), (5,28), (5,35) - a 3x2 inventory grid to the right of\nthe room illustration, which lies within columns 1-19 (picture 0 occupies columns 3-16). SHOW_OBJECT_ICON ($0F3A) scans the\nfirst five records (X = 3 to 27) for one whose source_ptr high byte is zero, writes the computed icon address into it,\nand calls RENDER_ROOM_GRAPHICS ($0570) to repaint the band. The sixth record, at (5,28), is filled only by\naction $17 (SCRIPT_SET_OBJECT_GRAPHIC), for Falkor and Artax.\nSCRIPTED, UNUSED, AND OVERWRITTEN SLOTS\nNOUN_TO_OBJECT_INDEX holds 0 at positions 4, 5, 23, 24, 27, 29, 30 and 31. Because\nthe normal noun resolver searches linearly and position 0 legitimately holds key 0 (noun \"aur\"),\nthe resolver never finds the later zeros. That does not make every such slot dead: action opcode $17 reads the following byte as a slot\nindex directly.\nSlot 23 is Falkor. Dynamic execution of \"get falkor\" in part 1 at room $21 selected verb-rule\npair 14 and ACTION_SCRIPT_GET_FALKOR; bytes $17,$17 at $2B8F-$2B90 made\nSCRIPT_SET_OBJECT_GRAPHIC cache index $17 and COPY_BLIT_ROW read from $B3C0.\nSlot 24 is Artax. Vocabulary entry \"art\" has noun id $57, VERB_RULE_GET_ARTAX is pair 13\n($15,$57), its pointer selects ACTION_SCRIPT_GET_ARTAX at $2B55, and that script's successful\nroom-$25 branch contains $17,$18 at $2B5F-$2B60. The horse artwork therefore has a direct,\nunambiguous code identity even though it is not selected by ordinary noun-to-icon mapping.\nSlot 27 is unused crucifix artwork. The image is a Latin cross and vocabulary entry \"cru\" has\nnoun id $5A, but the corresponding resolver key $28 is absent from NOUN_TO_OBJECT_INDEX.\nCURRENT_OBJECT_INDEX has only two writers: the noun resolver at $15FB and direct script action\n$17 at $114F. No action bytecode contains the required direct pair $17,$1B, and no decoded instruction or recorded reference reads $B640-$B6DF. The artwork is resident,\nrecognisable abandoned content, not a live part-specific remap.\nThe build reuses otherwise unreachable slot ranges:\nslot  4  $A7E0-$A87F  the play screen's raster split through $A847; artwork from $A848\nslot  5  $A880-$A91F  the opening's interrupt through $A892, two routines nothing\ncalls through $A8DE, and artwork from $A8DF\nslots 29-31 $B780-$B95F  the opening's texts through $B907, and artwork from $B908\nThe exact boundaries $A7E0 = $A560 + 4*160 and $B780 = $A560 + 29*160 corroborate the slot arithmetic.\nDecoding each 160-byte slot with the interleaved multicolor rule above yields a recognisable\nadventure object in every slot but 4, 5 and 29-31, whose code and text leave only artwork tails, and they match the game's own three-letter noun stems: slot 0 (noun key $00,\nobject id $32, stem \"aur\") renders as the two-serpent AURYN amulet; \"kni\" is a dagger, \"web\" a\nspider web, \"dia\" a faceted diamond, \"app\" an apple, \"coi\" a coin, and so on."
   },
   {
    "address": 42496,
@@ -15471,7 +15471,7 @@
   {
    "address": 42976,
    "type": "line",
-   "text": "RASTER_IRQ_DISPATCH ($A7E0)\nPurpose: The gameplay interrupt handler, installed in the KERNAL RAM vector CINV. A CLC followed by a BCC whose offset byte at $A7E2 is self-modified selects one of the three raster-split phase bodies, so successive interrupts cycle picture, text and bottom.\nInputs: The offset byte at $A7E2 holds $00, $27 or $52, selecting $A7E3, $A80A or $A835 respectively. The KERNAL's hardware IRQ entry at $FF48 has already pushed A, X, Y and the status register.\nOutputs: The selected phase reprograms the VIC, arms the next raster compare, rewrites the offset byte for the following interrupt, acknowledges the VIC interrupt latch and chains to the KERNAL epilogue at $EA81, which pulls the registers and executes RTI.\nAssumptions: Requires $01=$06 or another configuration in which $A000-$BFFF reads as RAM; banking BASIC back in while this vector is live would vector the interrupt into ROM. It relies entirely on the KERNAL prologue for register preservation, so it must never be entered by a foreground JSR.\nClobbers: A and flags within the handler; the interrupted A, X, Y, status, stack context and program counter are all restored by the KERNAL epilogue. The offset byte at $A7E2 is rewritten every interrupt.\nHardware changes: Through the selected phase: VIC-II $D011, $D016, $D018, $D021, $D012 and $D019. CINV itself is not modified here."
+   "text": "RASTER_IRQ_DISPATCH ($A7E0)\nPurpose: The gameplay interrupt handler, installed in the KERNAL RAM vector CINV. A CLC followed by a BCC whose offset byte at $A7E2 is self-modified selects one of the three raster-split phase bodies, so successive interrupts cycle picture, text and bottom.\nInputs: The offset byte at $A7E2 holds $00, $27 or $52, selecting $A7E3, $A80A or $A835 respectively. The processor has pushed the return address and status register, and the KERNAL's hardware IRQ entry at $FF48 has pushed A, X and Y.\nOutputs: The selected phase reprograms the VIC, arms the next raster compare, rewrites the offset byte for the following interrupt, acknowledges the VIC interrupt latch and chains to the KERNAL epilogue at $EA81, which pulls the registers and executes RTI.\nAssumptions: Requires $01=$06: $A000-$BFFF must read as RAM, and the KERNAL ROM must be in view for the hardware vector at $FFFE (to $FF48) and the exit at $EA81 (with $05 the CPU would take the vector from RAM, which holds $77AC, so the game writes $05 only with interrupts masked); banking BASIC back in while this vector is live would vector the interrupt into ROM. It relies entirely on the KERNAL prologue for register preservation, so it must never be entered by a foreground JSR.\nClobbers: A and flags within the handler; the interrupted A, X, Y, status, stack context and program counter are all restored by the KERNAL epilogue. The offset byte at $A7E2 is rewritten every interrupt.\nHardware changes: Through the selected phase: VIC-II $D011, $D016, $D018, $D021, $D012 and $D019. CINV itself is not modified here."
   },
   {
    "address": 42976,
@@ -15491,7 +15491,7 @@
   {
    "address": 42979,
    "type": "line",
-   "text": "RASTER_SPLIT_PICTURE ($A7E3)\nPurpose: Phase body for the top band. Switches the VIC-II into multicolor bitmap mode for the room illustration, arms the next split at raster line 130, selects the text phase for the following interrupt, then acknowledges and returns through the KERNAL epilogue.\nInputs: Entered from the dispatcher with offset $00, on the interrupt armed for raster line 49. The KERNAL register-save frame is present.\nOutputs: Background colour black; screen matrix at $CC00 and bitmap at $E000 within VIC bank 3; bitmap mode on; multicolor on; next compare at line 130; dispatch offset set to $27. The interrupted CPU state is restored by the epilogue at $EA81.\nAssumptions: VIC bank 3 has already been selected through CIA 2 port A by the earlier phase; this handler only programs the in-bank pointers. The routine falls through into its acknowledge tail at $A801 rather than jumping.\nClobbers: A and flags; the offset byte at $A7E2. The interrupted registers are preserved by the KERNAL frame.\nHardware changes: Writes VIC-II $D021 = $00 (black background), $D018 = $38 (screen $CC00, bitmap $E000), $D011 = $3B (BMM set, 25 rows, display enabled, Y scroll 3), $D016 = $D8 (MCM set, 40 columns), $D012 = $82 (line 130), then reads and rewrites $D019 to acknowledge."
+   "text": "RASTER_SPLIT_PICTURE ($A7E3)\nPurpose: Phase body for the top band. Switches the VIC-II into multicolor bitmap mode for the room illustration, arms the next split at raster line 130, selects the text phase for the following interrupt, then acknowledges and returns through the KERNAL epilogue.\nInputs: Entered from the dispatcher with offset $00, on the interrupt armed for raster line 49. The KERNAL register-save frame is present.\nOutputs: Background colour black; screen matrix at $CC00 and bitmap at $E000 within VIC bank 3; bitmap mode on; multicolor on; next compare at line 130; dispatch offset set to $27. The interrupted CPU state is restored by the epilogue at $EA81.\nAssumptions: VIC bank 3 was selected once through CIA 2 port A by OPENING_SETUP ($06D1-$06D6), and no phase changes it; this handler only programs the in-bank pointers. The routine falls through into its acknowledge tail at $A801 rather than jumping.\nClobbers: A and flags; the offset byte at $A7E2. The interrupted registers are preserved by the KERNAL frame.\nHardware changes: Writes VIC-II $D021 = $00 (black background), $D018 = $38 (screen $CC00, bitmap $E000), $D011 = $3B (BMM set, 25 rows, display enabled, Y scroll 3), $D016 = $D8 (MCM set, 40 columns), $D012 = $82 (line 130), then reads and rewrites $D019 to acknowledge."
   },
   {
    "address": 42979,
@@ -15546,12 +15546,12 @@
   {
    "address": 43004,
    "type": "side",
-   "text": "A=$27 = branch offset selecting RASTER_SPLIT_TEXT next"
+   "text": "A=$27 = branch offset selecting RASTER_SPLIT_TEXT_DELAY next"
   },
   {
    "address": 43006,
    "type": "side",
-   "text": "patch RASTER_DISPATCH_OFS (self-modify the BCC at $A7E1)"
+   "text": "patch IRQ_SPLIT_STATE (self-modify the BCC at $A7E1)"
   },
   {
    "address": 43009,
@@ -15641,7 +15641,7 @@
   {
    "address": 43049,
    "type": "side",
-   "text": "patch RASTER_DISPATCH_OFS (self-modify the BCC at $A7E1)"
+   "text": "patch IRQ_SPLIT_STATE (self-modify the BCC at $A7E1)"
   },
   {
    "address": 43052,
@@ -15681,7 +15681,7 @@
   {
    "address": 43068,
    "type": "side",
-   "text": "patch RASTER_DISPATCH_OFS (self-modify the BCC at $A7E1)"
+   "text": "patch IRQ_SPLIT_STATE (self-modify the BCC at $A7E1)"
   },
   {
    "address": 43071,
@@ -15711,17 +15711,17 @@
   {
    "address": 43155,
    "type": "line",
-   "text": "RESTORE_SYSTEM_TO_BASIC ($A893)\nPurpose: Hand the machine back to the KERNAL and BASIC ROMs in a state a stock C64 can survive: select a ROM-visible memory map, zero the low RAM pages, rebuild the KERNAL indirect vector block, re-run BASIC's vector and zero-page initialisation, and restore the stock IRQ handler.\nInputs: None. Physically located inside a dead object-icon slot, which is why it survives in the icon table region.\nOutputs: $01 = $06; $0002-$0101, $0200-$02FF and $0300-$03FF zeroed (the STA $0002,Y loop runs Y=$00..$FF, so it spills two bytes into the stack page); $B2/$B3 = $033C (the cassette-buffer pointer) and $C2 = 3; the 32-byte KERNAL default vector table copied from $FD30 to $0314-$0333; BASIC's indirect vectors and zero page reinitialised through KERNAL $E453 and $E3BF; CINV ($0314/$0315) = $EA31.\nAssumptions: $01 must be set first, because everything afterwards reads KERNAL ROM. Note the consequence for its own neighbourhood: with $06 selected, $A000-$BFFF still reads as RAM, so this code and the icon table around it remain reachable, while $E000-$FFFF is ROM, which is why the game's own character set at $F800 becomes invisible to the CPU though the VIC-II still sees it. Nothing in the engine or the three parts calls it.\nClobbers: A, X, Y, flags, the whole of zero page and pages 2 and 3, and BASIC's workspace. X is destroyed by the KERNAL calls to $E453 and $E3BF.\nHardware changes: Writes the 6510 port $01. Rewrites the KERNAL RAM vector block $0314-$0333 including CINV. Calls KERNAL $E453 and $E3BF. Does not itself touch VIC-II, SID or CIA registers, but restoring CINV to $EA31 hands interrupt-driven keyboard scanning and jiffy timing back to the KERNAL."
+   "text": "RESTORE_SYSTEM_TO_BASIC ($A893)\nPurpose: Hand the machine back to the KERNAL in a state a stock C64 can survive: select a memory map with the KERNAL ROM in view (BASIC's ROM at $A000-$BFFF stays banked out), zero the low RAM pages, rebuild the KERNAL indirect vector block, re-run BASIC's vector and zero-page initialisation, and restore the stock IRQ handler.\nInputs: None. Physically located inside a dead object-icon slot, which is why it survives in the icon table region.\nOutputs: $01 = $06; $0002-$0101, $0200-$02FF and $0300-$03FF zeroed (the STA $0002,Y loop runs Y=$00..$FF, so it spills two bytes into the stack page); $B2/$B3 = $033C (the cassette-buffer pointer) and $C2 = 3; the 32-byte KERNAL default vector table copied from $FD30 to $0314-$0333; BASIC's indirect vectors and zero page reinitialised through KERNAL $E453 and $E3BF; CINV ($0314/$0315) = $EA31.\nAssumptions: $01 must be set first, because everything afterwards reads KERNAL ROM. Note the consequence for its own neighbourhood: with $06 selected, $A000-$BFFF still reads as RAM, so this code and the icon table around it remain reachable, while $E000-$FFFF is ROM, which is why the game's own character set at $F800 becomes invisible to the CPU though the VIC-II still sees it. Nothing in the engine or the three parts calls it.\nClobbers: A, X, Y, flags, zero page from $02 (and $0100-$0101), pages 2 and 3, and BASIC's workspace. X is destroyed by the KERNAL calls to $E453 and $E3BF.\nHardware changes: Writes the 6510 port $01. Rewrites the KERNAL RAM vector block $0314-$0333 including CINV. Calls KERNAL $E453 and $E3BF. Does not itself touch VIC-II, SID or CIA registers, but restoring CINV to $EA31 hands interrupt-driven keyboard scanning and jiffy timing back to the KERNAL."
   },
   {
    "address": 43212,
    "type": "line",
-   "text": "INSTALL_GAME_IRQ ($A8CC)\nPurpose: Point the KERNAL RAM interrupt vector at the game's raster-split dispatcher and stop CIA 1 from raising its own interrupt. The exact inverse of the tail of RESTORE_SYSTEM_TO_BASIC.\nInputs: None. Also located inside a dead object-icon slot.\nOutputs: CINV ($0314/$0315) = $A7E0; CIA 1's FLAG interrupt mask cleared; any latched CIA 1 interrupt request discarded.\nAssumptions: Requires $01=$06 so that $A7E0 is the game's handler in RAM rather than BASIC ROM, and requires the raster source and initial compare to have been configured already. Nothing in the engine or the three parts calls it; $070F installs $A7E0 itself, at $076D.\nClobbers: A and flags.\nHardware changes: Writes the KERNAL RAM IRQ vector at $0314/$0315. Writes $10 to CIA 1 interrupt control $DC0D: with bit 7 clear the one bits are cleared, so this clears the FLAG mask and leaves the other sources alone. Then reads $DC0D, whose read side reports and clears the pending latch and releases the IRQ line, guaranteeing no stale CIA request fires when interrupts are re-enabled."
+   "text": "INSTALL_GAME_IRQ ($A8CC)\nPurpose: Point the KERNAL RAM interrupt vector at the game's raster-split dispatcher, clear CIA 1's FLAG interrupt mask and discard any pending CIA 1 request. It undoes the last step of RESTORE_SYSTEM_TO_BASIC, which points CINV back at $EA31 and leaves $DC0D alone.\nInputs: None. Also located inside a dead object-icon slot.\nOutputs: CINV ($0314/$0315) = $A7E0; CIA 1's FLAG interrupt mask cleared; any latched CIA 1 interrupt request discarded.\nAssumptions: Requires $01=$06 so that $A7E0 is the game's handler in RAM rather than BASIC ROM, and requires the raster source and initial compare to have been configured already. Nothing in the engine or the three parts calls it; $070F installs $A7E0 itself, at $076D.\nClobbers: A and flags.\nHardware changes: Writes the KERNAL RAM IRQ vector at $0314/$0315. Writes $10 to CIA 1 interrupt control $DC0D: with bit 7 clear the one bits are cleared, so this clears the FLAG mask and leaves the other sources alone. Then reads $DC0D, whose read side reports and clears the pending latch and releases the IRQ line, guaranteeing no stale CIA request fires when interrupts are re-enabled."
   },
   {
    "address": 43231,
    "type": "line",
-   "text": "ICON_SLOT_05_ARTWORK_TAIL ($A8DF-$A91F, 65 bytes) \u2014 surviving tail of OBJECT_ICON_TABLE slot 5.\nSlot 5 spans $A880-$A91F ($A560 + 5*160). Its first 19 bytes are the temporary startup IRQ, typed and described as code; the next 76 bytes contain the active system-handoff routines RESTORE_SYSTEM_TO_BASIC ($A893-$A8CB) and INSTALL_GAME_IRQ ($A8CC-$A8DE). These final 65 bytes are the remains of the overwritten icon. Slot 5 is unreachable through ordinary noun resolution because NOUN_TO_OBJECT_INDEX[5] is 0 behind the valid zero at index 0.\nICON_06 resumes exactly at the next slot boundary, $A920."
+   "text": "ICON_SLOT_05_ARTWORK_TAIL ($A8DF-$A91F, 65 bytes) \u2014 surviving tail of OBJECT_ICON_TABLE slot 5.\nSlot 5 spans $A880-$A91F ($A560 + 5*160). Its first 19 bytes are the temporary startup IRQ, typed and described as code; the next 76 bytes contain the system-handoff routines RESTORE_SYSTEM_TO_BASIC ($A893-$A8CB) and INSTALL_GAME_IRQ ($A8CC-$A8DE), which nothing calls. These final 65 bytes are the remains of the overwritten icon. Slot 5 is unreachable through ordinary noun resolution because NOUN_TO_OBJECT_INDEX[5] is 0 behind the valid zero at index 0.\nICON_06 resumes exactly at the next slot boundary, $A920."
   },
   {
    "address": 43296,
@@ -15751,7 +15751,7 @@
   {
    "address": 44096,
    "type": "line",
-   "text": "ICON_11_ANCIENT_PADLOCK \u2014 the ancient padlock inventory icon. Slot 11 of OBJECT_ICON_TABLE is a 4x4-cell multicolor payload of 160 bytes; it renders as a grey U-shaped padlock with a dark body and gold highlights.\nThe identification is independently consistent with the ordered object-description table: entry 11 is \"An Ancient Padlock.\" NOUN_TO_OBJECT_INDEX[11] = $16 and parser object id $48."
+   "text": "ICON_11_ANCIENT_PADLOCK \u2014 the ancient padlock inventory icon. Slot 11 of OBJECT_ICON_TABLE is a 4x4-cell multicolor payload of 160 bytes; it renders as a grey U-shaped padlock with a dark body and gold highlights.\nThe identification is independently consistent with the ordered object-description table at $22C9: NOUN_TO_OBJECT_INDEX[11] = $16 and parser object id $48, and entry $16 (22) of that table points at \"An Ancient Padlock\" ($23E6)."
   },
   {
    "address": 44256,
@@ -15771,7 +15771,7 @@
   {
    "address": 44736,
    "type": "line",
-   "text": "ICON_15 - cloak / cape (brown hooded garment on a dark-red ground). Slot 15 of\nOBJECT_ICON_TABLE: 4x4-cell multicolor payload, 160 bytes; see the plate at $A560.\nNOUN_TO_OBJECT_INDEX[15] = $1A, parser object id $4C, vocabulary stem \"cap\"."
+   "text": "ICON_15 - cloak / cape (black hooded cloak with red folds and two yellow dots in the hood, on a dark-red ground). Slot 15 of\nOBJECT_ICON_TABLE: 4x4-cell multicolor payload, 160 bytes; see the plate at $A560.\nNOUN_TO_OBJECT_INDEX[15] = $1A, parser object id $4C, vocabulary stem \"cap\"."
   },
   {
    "address": 44896,
@@ -15816,7 +15816,7 @@
   {
    "address": 46176,
    "type": "line",
-   "text": "Artax scripted-scene graphic. Slot 24 of OBJECT_ICON_TABLE: a 4x4-cell,\n160-byte interleaved multicolor payload depicting a dark horse on open brown ground.\nSTATIC IDENTITY PROOF: VOCAB_ARTAX at $1C2A is stem \"art\", noun id $57.\nVERB_RULE_GET_ARTAX at $19BA is pair 13 ($15 GET, $57 ARTAX), whose pointer at $29A0 selects\nACTION_SCRIPT_GET_ARTAX at $2B55. Its successful room-$25 branch contains action bytes\n$17,$18 at $2B5E-$2B5F; opcode $17 is SCRIPT_SET_OBJECT_GRAPHIC and operand $18 is slot 24,\nwhose address is $A560 + 24*$A0 = $B460. This scripted path bypasses NOUN_TO_OBJECT_INDEX."
+   "text": "Artax scripted-scene graphic. Slot 24 of OBJECT_ICON_TABLE: a 4x4-cell,\n160-byte interleaved multicolor payload depicting a dark horse on open brown ground.\nSTATIC IDENTITY PROOF: VOCAB_ARTAX at $1C2A is stem \"art\", noun id $57.\nVERB_RULE_GET_ARTAX at $19BA is pair 13 ($15 GET, $57 ARTAX), whose pointer at $29A0 selects\nACTION_SCRIPT_GET_ARTAX at $2B55. Its successful room-$25 branch contains action bytes\n$17,$18 at $2B5F-$2B60; opcode $17 is SCRIPT_SET_OBJECT_GRAPHIC and operand $18 is slot 24,\nwhose address is $A560 + 24*$A0 = $B460. This scripted path bypasses NOUN_TO_OBJECT_INDEX."
   },
   {
    "address": 46336,
@@ -15841,7 +15841,7 @@
   {
    "address": 46976,
    "type": "line",
-   "text": "The opening's texts and their lengths, six bytes read one by one by $1580. This is the low byte of the title's address, $B786. The texts fill icon slots 29 and 30 and most of 31 ($A560 + 29*160 = $B780), slots no noun or script selects."
+   "text": "The opening's texts and their lengths, six bytes read one by one by $1580. This is the low byte of the title's address, $B786. The texts fill icon slots 29 and 30 and the first 72 bytes of 31 ($A560 + 29*160 = $B780), slots no noun or script selects."
   },
   {
    "address": 46977,
@@ -15871,12 +15871,12 @@
   {
    "address": 46982,
    "type": "line",
-   "text": "The opening's first text, 214 characters: in grey ($FF $0B) the top corners of the panel (characters $5C and $5D at either end of the first row), then in red ($FF $02) THE NEVERENDING STORY in letters two characters wide and two rows tall from the game's character set (T is $C7 $C8 over $C9 $CA). '<' starts a new row. The '@' at $B85C after it is never printed."
+   "text": "The opening's first text, 214 characters: in dark grey ($FF $0B) the top corners of the panel (characters $5C and $5D at either end of the first row), then in red ($FF $02) THE NEVERENDING STORY in letters two characters wide and two rows tall from the game's character set (T is $C7 $C8 over $C9 $CA). '<' starts a new row. The '@' at $B85C after it is never printed."
   },
   {
    "address": 47197,
    "type": "line",
-   "text": "The opening's second text, 170 characters: in yellow ($FF $07) \"Game Design & Programming By Ian Weatherburn\", \"Graphics By Steve Cain\" and \"Music By Martin Galway\", then in blue ($FF $06) \"* 1985 Ocean Software Ltd.\", the '*' drawn as a copyright sign by the game's character set; $FF $0B at the end sets grey again. The '@' at $B907 is never printed."
+   "text": "The opening's second text, 170 characters: in yellow ($FF $07) \"Game Design & Programming By Ian Weatherburn\", \"Graphics By Steve Cain\" and \"Music By Martin Galway\", then in blue ($FF $06) \"* 1985 Ocean Software Ltd.\", the '*' drawn as a copyright sign by the game's character set; $FF $0B at the end sets dark grey again. The '@' at $B907 is never printed."
   },
   {
    "address": 47368,
@@ -15906,22 +15906,22 @@
   {
    "address": 48096,
    "type": "line",
-   "text": "ICON_TABLE_ALIGNMENT_RESIDUE ($BBE0-$BBFF, 32 bytes) \u2014 shipped non-addressed tail between OBJECT_ICON_TABLE and SAVED_BITMAP at the page boundary $BC00.\nICON_35 ends at $BBDF; another 160-byte icon cannot fit before the independently established picture buffer at $BC00. The 32 bytes are repeating $00,$00,$FF,$FF bitmap-like residue with two $00,$10,$FF,$FF variants and final $17. No resident instruction encodes this range and no recorded reference reaches it. Classification: inert alignment/artwork residue, excluded from the 36-slot icon table."
+   "text": "ICON_TABLE_ALIGNMENT_RESIDUE ($BBE0-$BBFF, 32 bytes) \u2014 shipped non-addressed tail between OBJECT_ICON_TABLE and SAVED_BITMAP at the page boundary $BC00.\nICON_35 ends at $BBDF; another 160-byte icon cannot fit before SAVED_BITMAP at $BC00, the saved copy of the play screen's bitmap. The 32 bytes are repeating $00,$00,$FF,$FF bitmap-like residue with two $00,$10,$FF,$FF variants and final $17. No resident instruction encodes this range and no recorded reference reaches it. Classification: inert alignment/artwork residue, excluded from the 36-slot icon table."
   },
   {
    "address": 48128,
    "type": "line",
-   "text": "Packed gameplay bitmap bytes restored to $E000 by RESTORE_GAMEPLAY_DISPLAY."
+   "text": "The play screen's bitmap bytes, a straight copy of the backdrop at $E000-$EC7F that $070F makes when the opening ends, restored to $E000 by RESTORE_GAMEPLAY_DISPLAY."
   },
   {
    "address": 49152,
    "type": "line",
-   "text": "The disk loader, waiting here until the opening ends: $0730 copies $C000-$C1FF to $9700-$98FF, over the music driver, and every address in it is the one it runs at. $9700 is the entry the game calls, at $0453, to load the next part: JMP $9709."
+   "text": "The disk loader, waiting here until the opening ends: $0730 copies $C000-$C1FF to $9700-$98FF, over the music driver, and every address in it is the one it runs at. $9700 is the entry the game calls, at $0453, to load the next part: JMP $9709, which once the loader is in place is its own STAGED_LOAD_PART (listed at $C009); the listing names the operand V1_PULSE_RESET only because the title tune holds $9709 in the opening's memory."
   },
   {
    "address": 49155,
    "type": "line",
-   "text": "The file name, \"PART 0\" at $9703-$9708. The loader adds one to its last character before each load, so the loads are PART 1, PART 2 and PART 3, the names in the disk's directory."
+   "text": "The file name, \"PART 0\" at $9703-$9708. The loader adds one to its last character before each load and never resets it, so the loads are PART 1, PART 2 and PART 3, the names in the disk's directory, until a restart: the reload of Part 1 then asks for the next name, PART 3 after Part 2 has loaded and PART 4, which the disk does not hold, after the win."
   },
   {
    "address": 49161,
@@ -15951,17 +15951,17 @@
   {
    "address": 51328,
    "type": "line",
-   "text": "Packed gameplay screen-code bytes restored to $CC00 by RESTORE_GAMEPLAY_DISPLAY."
+   "text": "The play screen's screen bytes, a straight copy of the backdrop's $EC80-$EE0F that $070F makes when the opening ends, restored to $CC00 by RESTORE_GAMEPLAY_DISPLAY."
   },
   {
    "address": 51728,
    "type": "line",
-   "text": "Packed gameplay color bytes restored to $D800 by RESTORE_GAMEPLAY_DISPLAY."
+   "text": "The play screen's colour bytes, a straight copy of the backdrop's $EE10-$EF9F that $070F makes when the opening ends, restored to $D800 by RESTORE_GAMEPLAY_DISPLAY."
   },
   {
    "address": 52128,
    "type": "line",
-   "text": "INPUT_TEXT_BUFFER ($CBA0-$CBF0, 81 bytes) \u2014 the player's PETSCII command line, space-padded one byte per character.\nREAD_INPUT ($0806) points $0E/$0F here, blanks all 81 bytes to $20, appends characters at INPUT_LEN ($0026), and caps input at 78 characters. PARSE_INPUT ($122F) points $0A/$0B to the same base and scans words; INPUT_LEN provides the bound, so there is no terminator.\nThe buffer occupies part of the 96-byte gap after SAVED_COLOR and before SCREEN_RAM. At the opening it holds leftovers; READ_INPUT blanks all 81 bytes before use."
+   "text": "INPUT_TEXT_BUFFER ($CBA0-$CBF0, 81 bytes) \u2014 the player's command line, space-padded one byte per character: READ_INPUT keeps only spaces and letters, which it stores as ASCII lower case ($61-$7A), the form of the vocabulary's stems.\nREAD_INPUT ($0806) points $0E/$0F here, blanks all 81 bytes to $20, appends characters at INPUT_LEN ($0026), and caps input at 78 characters. PARSE_INPUT ($122F) points $0A/$0B to the same base and scans words; INPUT_LEN provides the bound, so there is no terminator.\nThe buffer occupies part of the 96-byte gap after SAVED_COLOR and before SCREEN_RAM. At the opening it holds leftovers; READ_INPUT blanks all 81 bytes before use."
   },
   {
    "address": 52209,
@@ -16616,12 +16616,12 @@
   {
    "address": 61883,
    "type": "line",
-   "text": "Vibrato setting that bends a note up after a hold: deltas +72, +0, +0, +0, steps 10, 0, 0, 0, delay 12, step every 1 frame, flags $04. Voice 1's F4 at $F322."
+   "text": "Vibrato setting that bends a note up after a hold: deltas +72, +0, +0, +0, steps 10, 0, 0, 0, delay 12, step every 1 frame, flags $04. Voice 1's F4 at $F324."
   },
   {
    "address": 61898,
    "type": "line",
-   "text": "Vibrato setting that slides up into the note during its delay, then wobbles: deltas +30, -30, +30, +114, steps 3, 6, 3, 0, delay 10, step every 1 frame, flags $07. Voice 1's C#5 at $F346."
+   "text": "Vibrato setting that slides up from the note during its delay, to about two semitones above it, then wobbles there: deltas +30, -30, +30, +114, steps 3, 6, 3, 0, delay 10, step every 1 frame, flags $07. Voice 1's C#5 at $F346."
   },
   {
    "address": 61913,
@@ -16956,7 +16956,7 @@
   {
    "address": 63488,
    "type": "line",
-   "text": "Gameplay character set at $F800: 256 glyphs of eight bytes, read by the VIC in the text band. RASTER_SPLIT_TEXT at $A80A writes $D018=$3E with VIC bank $C000, selecting this RAM beneath KERNAL ROM. This lower half contains glyphs 0\u2013127, including ordinary text and the upper tiles of the enlarged capitals. The fresh font does not match either half of the machine character ROM."
+   "text": "Gameplay character set at $F800: 256 glyphs of eight bytes, read by the VIC in the text band. RASTER_SPLIT_TEXT_DELAY ($A80A) writes $D018=$3E at $A815 with VIC bank $C000, selecting this RAM beneath KERNAL ROM. This lower half contains glyphs 0\u2013127: ordinary text, and from $7B the first tiles of the enlarged capitals, which take four glyphs each ($7B + 4 x (letter - 'A'), at $0BAA), so only $7B-$7F lie in this half. The fresh font does not match either half of the machine character ROM."
   },
   {
    "address": 64512,
@@ -16966,7 +16966,7 @@
   {
    "address": 64816,
    "type": "line",
-   "text": "Final 90 eight-byte character-set cells, indexes 166-255, of the authored 256-cell font at $F800-$FFFF. The text raster phase selects this RAM character set with $D018=$3E at $A80A. These 720 bytes are glyph bitmap data; the field boundary at $FD30 begins cell 166."
+   "text": "The KERNAL ROM's table of default vectors, $FD30-$FD4F (IRQ $EA31, BRK $FE66, NMI $FE47, then OPEN $F34A and the other I/O vectors), which RESTORE_SYSTEM_TO_BASIC copies to $0314-$0333 at $A8B2 with $01 = $06, so the ROM is in view. The RAM beneath is the last 90 cells, 166-255, of the character set at $F800, which only the VIC reads."
   },
   {
    "address": 10569,
