@@ -359,7 +359,7 @@ const NES_DIR = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest'
 const NES_PICS = ['an open book on a desk', 'Nighthob', 'Teenyweeny in his top hat', 'Rockbiter',
   'the peoples of Fantasia at the Ivory Tower', 'Atreyu on the plains', 'a horseman crossing the plains at sunset',
   'Atreyu knee deep in the swamp', 'Artax sinking into the swamp', 'Morla', 'Gmork running through the forest',
-  'the two sphinxes', "Atreyu caught in the sphinxes' fire", 'Engywook and Urgl', "Engywook's telescope",
+  'the two sphinxes', "Atreyu leaping through the sphinxes' fire", 'Engywook and Urgl', "Engywook's telescope",
   'Atreyu before the great mirror', "Falkor's head", 'Falkor in flight', 'Atreyu on a forest path',
   'the silver mountains', 'the crystal in its glass box', "Gmork's head", 'Falkor in flight', 'Spook City from the air',
   'Atreyu falling', 'Atreyu among ruins in a beam of light', 'Atreyu blown off his feet', 'Atreyu in the fog',
@@ -424,7 +424,7 @@ function nesProse(m, part, p) {
       () => 'move in the direction typed', () => 'put ' + obj(a) + ' in ' + where(b), () => 'drop the object named',
       () => 'take the object named', () => 'set counter ' + a + ' to ' + b, () => 'set flag ' + a, () => 'clear flag ' + a,
       () => 'stop', () => 'print event ' + a + ' ' + quote(nesPlain(m, part, (P) => P.event(a))), () => 'list what is carried',
-      () => 'describe the room again', () => 'nothing', () => 'nothing', () => 'add 1 to counter ' + a,
+      () => 'describe the room the player is in', () => 'nothing', () => 'nothing', () => 'add 1 to counter ' + a,
       () => 'take 1 from counter ' + a, () => 'nothing',
       () => a === 0xFA ? "show the room's own picture" : 'show picture ' + a + (NES_PICS[a] ? ' (' + NES_PICS[a] + ')' : ''),
       () => 'print sentence ' + a + ' ' + quote(nesPlain(m, part, (P) => P.sentence(a))),
@@ -487,6 +487,18 @@ function nesRooms(m, part) {
     }));
     const label = (r) => hex(r) + ' ' + (NAME.get(r) || '');
     const BOOK = ROOMS.flat().filter((R) => R.pic === 0).length;
+    // the part's turn script, at $2F06, shows a picture each turn in clauses of one test, an object here
+    // ($80), and the picture action ($10): [object, picture] for each
+    const TURNPIC = M.map((m) => {
+      const out = []; let tests = [], acts = [];
+      for (const { op, args } of nesScript(m, 0x2F06).ops) {
+        if (op === 0xFE || op === 0xFF) {
+          if (tests.length === 1 && tests[0].op === 0x80) for (const x of acts) if (x.op === 0x10 && x.args[0] !== 0xFA) out.push([tests[0].args[0], x.args[0]]);
+          tests = []; acts = [];
+        } else (op >= 0x80 ? tests : acts).push({ op, args });
+      }
+      return out;
+    });
 
     // ---- 01 the map. A floor is the rooms the eight compass exits join; each floor is laid out on
     // its own grid, breadth first, and the floors are set side by side, joined by up and down
@@ -610,7 +622,8 @@ function nesRooms(m, part) {
       $('nes-rtitle').textContent = `Room ${hex(room)}, Part ${p + 1}`;
       const link = (t) => `<a href="#nes-room" data-r="${t}">${hex(t)}</a> ${esc(NAME.get(t) || '')}`;
       const rows = [
-        ['Picture', `${R.pic}, ${esc(NES_PICS[R.pic] || '')}` + (R.pic === 0 ? `: the picture of ${BOOK} rooms, those with none of their own` : '')],
+        ['Picture', `${R.pic}, ${esc(NES_PICS[R.pic] || '')}` + (R.pic === 0 ? `: the picture of ${BOOK} rooms, those with none of their own` : '')
+          + TURNPIC[p].filter(([o]) => R.objects.includes(o)).map(([o, n]) => `<br>then ${n}, ${esc(NES_PICS[n] || '')}, every turn while ${esc(NES_OBJ[o])} is here (the part's turn script, <code>$2F06</code>)`).join('')],
         ['Exits', R.exits.length ? R.exits.map(([d, t]) => `${NES_DIR[d]}: ${link(t)}`).join('<br>') : 'none in the tables'],
         ['At the start', R.objects.length ? R.objects.map((k) => esc(NES_OBJ[k])).join(', ') : 'nothing'],
         ['Script', `<code>${hex(R.script, 4)}</code>`],
