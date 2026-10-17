@@ -11075,7 +11075,7 @@
   {
    "address": 39552,
    "type": "line",
-   "text": "A scrap of the game's source, ASCII, to $9BFF: the source of the rope code at $1AED-$1B3E, written with macros (ADD, IFNOT, POKE, STZ, TRA), line for line the same as the machine code. It names the player state FLAGS ($33; 1 jumping, 2 falling), the fall counter FALLCNT ($51), the deadly-fall flag DEADFALL ($53), Willy's place on the rope RYCNTR ($1019), the room's upper exit SHEETUP ($1D) and the room ROOM ($0E), the jump request JUMPREQ ($4A), the direction held MANXDIR ($49), the jump direction JPDIR ($1013) and the jump index JUMPCNTR ($52). Nothing reads it."
+   "text": "A scrap of the game's source, ASCII, to $9BFF: the source of the rope code at $1AED-$1B3E, written with macros (ADD, IFNOT, POKE, STZ, TRA), line for line the same as the machine code except for one jump: the source has JMP NRPCHK twice, where the code jumps to $107B at $1B0B and to $107E at $1B34. It names the player state FLAGS ($33; 1 jumping, 2 falling), the fall counter FALLCNT ($51), the deadly-fall flag DEADFALL ($53), Willy's place on the rope RYCNTR ($1019), the room's upper exit SHEETUP ($1D) and the room ROOM ($0E), the jump request JUMPREQ ($4A), the direction held MANXDIR ($49), the jump direction JPDIR ($1013) and the jump index JUMPCNTR ($52). Nothing reads it."
   },
   {
    "address": 39553,
@@ -11100,17 +11100,17 @@
   {
    "address": 40874,
    "type": "line",
-   "text": "A scrap of the game's source, ASCII: part of a key-reading routine (\"GETIN2 JSR INPUT\", \"LDA KM0\", \"IFNOT 1,GETIN2\"), and \"JET MONITOR $C000\". Nothing reads it."
+   "text": "A scrap of the game's source, ASCII: part of a key-reading routine (\"GETIN2 JSR INPUT\", \"LDA KM0\", \"IFNOT 1,GETIN2\", \"LDA KM1\"), ending \"IFLEN0:JET MONITOR$C000\". Nothing reads it."
   },
   {
    "address": 40960,
    "type": "line",
-   "text": "Entry to the title screen: a jump to the initialiser at $A744. The BCS start-up stub at $080D jumps here once the file has loaded, and the game jumps here again when a game ends."
+   "text": "Entry to the title screen: a jump to the initialiser at $A744. The BCS start-up stub at $080D jumps here once the file has loaded (from $081B), and the game jumps here again when a game ends (from $38D5). The code card's restart stub at $0FA0 also jumps here (from $0FA6), but this release never runs the code card."
   },
   {
    "address": 40963,
    "type": "line",
-   "text": "Eight bytes, one per keyboard row: the title's scan at $A083 stores each row it reads from CIA 1 port B here, $A003 for the row with PA0 low up to $A00A for PA7. In the file as loaded, $A003 holds $FD, Return down in the last scan before the game's memory was saved; the first scan on the title screen replaces it with $FF, which is the one byte where the hand-over and title snapshots differ."
+   "text": "Eight bytes, one per keyboard row: the title's scan at $A083 stores each row it reads from CIA 1 port B here, $A003 for the row with PA0 low up to $A00A for PA7. In the file as loaded, $A003 holds $FD, Return down in the last scan before the game's memory was saved; the first scan on the title screen replaces it with $FF when no key in that row is down. With no key held, it is the only byte of the listing that the title changes; the title also rewrites the screen at $7C00-$7FFF, zero page and the interrupt vector at $0314, which the listing leaves out."
   },
   {
    "address": 40964,
@@ -11125,7 +11125,7 @@
   {
    "address": 41027,
    "type": "line",
-   "text": "The title's keyboard table, 64 PETSCII codes in matrix order: row (PA0 to PA7) times eight plus column, column 7 first. $A043 is CRSR down, $A049 is Return ($0D), $A04C to $A053 are LEFT SHIFT, E, S, Z, 4, A, W, 3. The scan at $A083 reads it with LDA $A043,Y."
+   "text": "The title's keyboard table, 64 PETSCII codes in matrix order: row (PA0 to PA7) times eight plus column, column 7 first. $A043 is CRSR down, $A049 is Return ($0D), $A04B to $A052 are LEFT SHIFT ($00), E, S, Z, 4, A, W, 3. The scan at $A083 reads it with LDA $A043,Y."
   },
   {
    "address": 41028,
@@ -11190,7 +11190,7 @@
   {
    "address": 41672,
    "type": "line",
-   "text": "The BCS crackers' part of the title message, which replaced whatever the original carried before the instructions at $A680. A different crack of the game keeps \"JET SET WILLY BY SHAHID AHMAD. BASED ON THE ORIGINAL SPECTRUM VERSION BY MATTHEW SMITH. THE MUSIC WAS ARRANGED BY GEORGE NEOPHYTOU USING A METHOD DEVISED BY S.AHMAD.\" at this address."
+   "text": "The BCS crackers' part of the title message, $A2C8-$A67F, which replaced whatever the original carried before the instructions at $A680. What that was is not in this image."
   },
   {
    "address": 42695,
@@ -11220,7 +11220,7 @@
   {
    "address": 43151,
    "type": "line",
-   "text": "Colours the top 768 cells of the screen ($D800-$DAFF, the logo and everything above the ticker) with one of the two colours at $A8A8, chosen by bit 2 of the ticker pointer's low byte. The logo therefore changes between red and green every four characters of the message, about every 32 frames."
+   "text": "Colours the first 768 cells of the screen ($D800-$DAFF: rows 0 to 18 and the first eight cells of row 19, which take in the logo on rows 6 to 16) with one of the two colours at $A8A8, chosen by bit 2 of the ticker pointer's low byte. The logo therefore changes between red and green every four characters of the message, about every 32 frames. The rest of row 19 and rows 20 to 22, which hold only spaces, are not coloured."
   },
   {
    "address": 43176,
@@ -11265,7 +11265,7 @@
   {
    "address": 43904,
    "type": "line",
-   "text": "A copy routine nothing calls: copies sixteen pages, $C000-$CFFF, to $A000-$AFFF, with its pointers in $50-$53. It sits inside its own destination, so it could only have run from a copy somewhere else."
+   "text": "A copy routine nothing calls: copies sixteen pages, $C000-$CFFF, to $A000-$AFFF, with its pointers in $50-$53. It sits inside its own destination: run here, it would copy over its own loop at $AB94-$ABA1 the bytes at $CB94-$CBA1, which in this image are room data. Whether it ever ran, and from where, is unknown."
   },
   {
    "address": 45056,
