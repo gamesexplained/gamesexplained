@@ -789,6 +789,16 @@
   },
   {
    "start": 43396,
+   "end": 43607,
+   "type": "Undefined"
+  },
+  {
+   "start": 43608,
+   "end": 43635,
+   "type": "Byte"
+  },
+  {
+   "start": 43636,
    "end": 48127,
    "type": "Undefined"
   },
@@ -12584,15 +12594,15 @@
   },
   {
    "address": 36058,
-   "name": "s_8CDA",
+   "name": "print_opening_text_at_yx",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36067,
-   "name": "s_8CE3",
+   "name": "print_opening_text_stream",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36073,
@@ -13057,6 +13067,36 @@
    "kind": "auto"
   },
   {
+   "address": 37050,
+   "name": "opening_go_north",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37062,
+   "name": "opening_destination_or_reply",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37078,
+   "name": "opening_go_south",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37093,
+   "name": "opening_go_west",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37140,
+   "name": "opening_go_home",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 37388,
    "name": "j_920C",
    "type": "Jump",
@@ -13137,6 +13177,18 @@
   {
    "address": 43366,
    "name": "welcome_heading",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43608,
+   "name": "go_home_high_bytes",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43622,
+   "name": "go_home_low_bytes",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -15339,6 +15391,41 @@
    "text": "Opening dialogue contains literal ASCII mixed with bytes above $7F. Literal spans include the teenage moviegoers and their clothing. The high-byte substitutions and control bytes have not been decoded."
   },
   {
+   "address": 36058,
+   "type": "line",
+   "text": "Set the message pointer from Y (low) and X (high), choose text colour three in $0341, then enter $8CE3 to start a fresh line and render the zero-terminated text stream."
+  },
+  {
+   "address": 36067,
+   "type": "line",
+   "text": "Finish the preceding text line through $6866, then tail-call $67B5 on the stream at $10/$11. Callers that arrive directly here retain the existing text colour."
+  },
+  {
+   "address": 37050,
+   "type": "line",
+   "text": "Use opening location $8C80 to read high and low bytes from the fourteen-entry tables $A9E8/$A9F6. Store the high byte in $11 and Y, load the low byte into A, and enter the shared destination-or-reply handler at $90C6."
+  },
+  {
+   "address": 37062,
+   "type": "line",
+   "text": "A is the table's low byte and Y its high byte; $11 already holds that high byte. Store A in $10. A zero high byte writes the low byte as the new opening location $8C80 and jumps to $8FD7 for arrival text. A nonzero high byte prints the pointed-to reply through $8CE3 and leaves the location unchanged."
+  },
+  {
+   "address": 37078,
+   "type": "line",
+   "text": "Index high and low tables $AA04/$AA12 with opening location $8C80, set $11 and Y from the high byte, and pass the low byte to $90C6. The shared handler interprets a zero high byte as a destination and a nonzero one as a reply pointer."
+  },
+  {
+   "address": 37093,
+   "type": "line",
+   "text": "Index high and low tables $AA3C/$AA4A with opening location $8C80, set $11 and Y from the high byte, and pass the low byte to $90C6. Later effects of entering the selected destination belong to its arrival logic."
+  },
+  {
+   "address": 37140,
+   "type": "line",
+   "text": "Index high and low tables $AA58/$AA66 with opening location $8C80 and pass the pair to $90C6. In the saved opening, street indices one through four select home index five; index five returns the already-home reply at $9B32; ticket counter six, popcorn stand seven, theater eight, and lobby thirteen select $9938, which refuses the move. This describes the table decision before arrival code runs."
+  },
+  {
    "address": 39015,
    "type": "line",
    "text": "Literal ASCII fragment: You are standing on the sidewalk on. The sentence continues through encoded bytes beyond this fragment."
@@ -15347,6 +15434,16 @@
    "address": 43366,
    "type": "line",
    "text": "Literal ASCII heading: Welcome to Labyrinth, preceded by spaces."
+  },
+  {
+   "address": 43608,
+   "type": "line",
+   "text": "Fourteen high bytes paired with $AA66. Zero means the paired low byte is a destination location number; a nonzero high byte makes the pair a pointer to a refusal or already-home reply. These mixed destination/pointer records are not a pure address table."
+  },
+  {
+   "address": 43622,
+   "type": "line",
+   "text": "Fourteen low bytes paired with $AA58. The opening's $9114 handler indexes both halves with location $8C80; the shared $90C6 handler chooses movement or text from the high byte. The page's test checks every stored pair against this snapshot's code."
   },
   {
    "address": 53504,

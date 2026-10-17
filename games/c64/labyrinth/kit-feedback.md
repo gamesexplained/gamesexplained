@@ -32,3 +32,9 @@ macOS arm64; installed VICE MCP release v3.13.2 GUI, 57 of 57 emulator checks; e
 ## Word-wheel continuation
 
 The coverage pass kept the quantity formatter’s colon boundary as an open reachability question, following `50-coverage`’s instruction to note inputs the player was never meant to supply. Direct simulator cases corrected the carry-dependent highlight description and single-byte quantity arithmetic before completion. These are covered by the existing boundary-checking and reachability rules; no kit change or maintainer ask is needed. The live probe preserved and restored the emulator state, and all raw state remained in ignored work files.
+
+## Opening response continuation
+
+The listing-backed GO HOME test caught missing bytes in an incompletely typed table before the viewer could ship. Naming and typing both halves made the full mixed destination/message records explicit. The failure was visible and existing table-typing guidance covers it; no shared-kit change is needed.
+
+The dictionary regression also caught regenerated colour-RAM aliases cutting through the hidden-RAM pointer table after the new data typing. The existing tool skill describes this alias behavior; clearing those aliases after typing restored the complete table. This is another visible regression caught by an existing test, not a reason for a new skill rule.
