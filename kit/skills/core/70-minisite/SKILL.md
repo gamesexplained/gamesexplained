@@ -30,7 +30,10 @@ One the listing holds no record of (a chip register, a stretch the coverage
 leaves out, another part's address) opens the Source tab on a note saying
 so. `build.py --addresses` lists them page by page: a chip register can
 stay, but an address of the wrong part, or one the listing should hold, is
-a mistake to fix.
+a mistake to fix. In a BASIC listing every address is inside some line,
+so a wrong one opens on the wrong line with no note; the list marks a
+link past a line's first byte "(inside a line)", and a line is cited by
+its first byte.
 
 # The How it works page
 
