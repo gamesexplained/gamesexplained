@@ -357,24 +357,38 @@ The record bears it out. Single agents took 20 to 22 KB of code to
 100 % in 30 to 40 minutes; runs of seven to twelve agents took 14 to 62
 minutes and then spent the difference on merging, naming collisions and
 reconciling reports in `60-verify`. Two nine-agent runs used up the
-account's session limit within minutes and sat idle for hours. Fanning
-out bought no quality either: what caught wrong readings was checking by
-an agent that did not write them, not parallel writing.
+account's session limit within minutes and sat idle for hours.
+
+**What a split buys is accuracy, paid for in tokens.** In a controlled
+test (18 October 2026), three copies of one run carried this step on
+from the same point, after the lead's first pass, and their comments
+were checked blind at the same 90 addresses. One agent took 40 minutes
+and left 17 of the 90 wrong. A lead and two helpers took 62 minutes and
+2.4 times the tokens, and left 7. A lead and four took 52 minutes and
+3.3 times the tokens, and left 9. Probably each helper reads a smaller
+range more closely, and the lead's merge is a second reading: there, one
+helper's reading corrected a variable the other had named for the wrong
+thing, and the lead renamed it. A full audit of the single agent's
+listing (`60-verify`) brought it to 8 wrong, but took more tokens than
+the two-helper split and twice its time. It was one run of each, on a
+game of 14 KB of code (`kit/lessons/2026-10-18-helpers-accuracy.md`).
 
 Split only when the contributor said, in the message that started the
-run, that it may use several agents (`kit/START.md`), and one of these
-holds:
-
-- **The game is several parts**: one agent to a part (below).
-- **What is left after your own first pass is too much for one
-  context**: as a guide, more than about 32 KB of code still undescribed.
+run, that it may use several agents (`kit/START.md`), whatever the
+size of the game: one agent to a part when the game is several parts
+(below), otherwise one to each range of what is left after your own
+first pass.
 
 Annotate first yourself, then split. Take the main loop, the interrupt
 handlers, the core variables and the naming conventions to described
 before anyone else starts: the brief's "Established" list is then short
 and checked, and the agents inherit names instead of inventing rival
 ones. Start at most four agents, and no more than the contributor
-allowed. When you do split, what matters:
+allowed; when they leave the number to you, start two, which did as
+well as four in the test above. Give the ranges about the same work,
+data to decode as well as code: in that test one helper's range held
+most of the level and sound data, and it took longer than the single
+agent did for the whole step. When you do split, what matters:
 
 - **One shared disassembler.** Concurrent reads are safe; concurrent
   writes are safe only if agents own **disjoint address ranges**. Assign

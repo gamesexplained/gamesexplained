@@ -11,6 +11,12 @@ or accept game binaries. Then paste one line into your agent:
 Clone https://github.com/gamesexplained/gamesexplained and follow kit/START.md.
 ```
 
+Unless you say otherwise, the agent works alone: that is the fastest way
+and uses the fewest tokens. To spend more tokens on a more accurate
+listing, add "You may use two helper agents." to the line. In one test,
+that took 2.4 times the tokens for the annotation and left fewer than
+half as many wrong comments (`kit/START.md`).
+
 **In a cloud session** (Claude Code on the web and the like), the agent
 works on the repository you pick when you start it and can push only
 where you can. Fork this repository on GitHub first, start the session

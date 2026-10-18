@@ -58,16 +58,22 @@ step needs something only they have.
    Either answer holds for the whole run; do not ask again at the end.
 
    **One agent does the work, unless they say otherwise.** Do not ask
-   about agents. The run writes everything with one agent: several at
-   once have used up a session's allowance in minutes and left runs
-   waiting hours for the reset, and splitting the writing made no run's
-   listing more accurate. It still starts the checker `60-verify` gives
-   a sample of the listing's comments to, without asking: one agent with
-   a short brief is not a fan-out. A contributor may say, in the message
-   that starts the run, that it may use several agents ("you may use up
-   to four agents"); then large work may be split as
+   about agents. The run writes everything with one agent: it is the
+   fastest way and uses the fewest tokens, and several agents at once
+   have used up a session's allowance in minutes and left runs waiting
+   hours for the reset. It still starts the checker `60-verify` gives a
+   sample of the listing's comments to, without asking: one agent with a
+   short brief is not a fan-out. A contributor may say, in the message
+   that starts the run, that it may use helpers ("you may use two helper
+   agents"); then the annotation is split as
    `kit/skills/core/50-coverage` says ("Splitting the work across
-   subagents"), never more than four at once. The run takes that one
+   subagents"), never across more than four at once. Helpers buy a more
+   accurate listing with tokens. In a controlled test on 18 October 2026
+   (one run of each way), a lead and two helpers took the annotation
+   1.5 times as long as one agent and used 2.4 times its tokens, and left
+   fewer than half as many wrong comments (7 of 90 checked, against 17);
+   four helpers did no better than two and used more tokens
+   (`kit/lessons/2026-10-18-helpers-accuracy.md`). The run takes that one
    sample and no audit: it recommends an audit at the end, for a later
    run to do when someone asks (`kit/skills/core/60-verify`).
 
