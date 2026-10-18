@@ -115,3 +115,8 @@ Traced the remaining waiting-sequence dispatch and seven headered messages. The 
 ## 18 October 2026 — fire latch
 
 Followed writes to `$030B` back through `$1993` to port-one sampler `$19AE`, consulted the C64 reference, and verified ordinary fire press/hold/release/re-press with a positive execution checkpoint. Added 8,192 original latch cases. Kept full live early-speech skipping distinct from the verified input producer.
+
+
+## 18 October 2026 — area reading views
+
+Reorganized the article into conditional text-adventure, entrance-gate and further-scenes views. Added area links, local contents and next/back transitions. Existing section hashes reveal their owning area; browser history restores the area. Without JavaScript all sections remain readable. Moved the corridor evidence image into the gate view.

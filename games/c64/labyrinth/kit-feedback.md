@@ -84,3 +84,8 @@ The tests caught an event-state field-name reversal, readonly constants describe
 ## Fire-latch continuation
 
 The C64 reference supplied port and bit meanings; `60-verify` required reading the producer and checking ordinary input with a positive checkpoint. No kit change or maintainer ask is needed.
+
+
+## Area presentation
+
+`70-minisite` supports interaction serving the explanation: the growing article now switches between areas rather than presenting every area in a single scroll. Area-local contents preserve detailed topics. This game-specific structure needs no shared-kit change or maintainer ask.
