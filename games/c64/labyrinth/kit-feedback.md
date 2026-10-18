@@ -98,3 +98,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Kit 0.0.200 review
 
 `60-verify`: “Both the sample and the audit are done by checkers” led to an independent 60-comment draw rather than treating passing widget tests as comment verification. It found two wrong details the earlier checks had left in place; both were reproduced and corrected. `70-minisite`: “A game with more than one level, map, room, stage or screen gets this tab” moved the reference collection to Maps / levels while retaining the distinction between screenshots and decoded maps. The new listing gap check keeps $07FE-$07FF open. Existing instructions cover these findings; no kit edit or maintainer ask is needed.
+
+## First-corridor continuation · 19 October 2026
+
+`70-minisite`, “Start each case where the game starts it, and feed it what the page feeds it”: compared the actual column-8/variant-0 page defaults and captured map mode with original execution. No shared-kit change was needed. The nonexistent `vice_step` call failed visibly; frame advance completed the observation. Shared classifier scratch bytes seen between player updates are not reliable player-state observations; the exit checkpoint supplied the player values. This is game-specific evidence, not a new general skill rule.

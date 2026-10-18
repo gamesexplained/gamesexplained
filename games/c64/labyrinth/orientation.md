@@ -92,3 +92,7 @@ A PAL frame captured from the natural corridor snapshot contains 133 register/ve
 ## Natural gate analysis
 
 The gate part uses the naturally reached `work/gate-steady.vsf`, copied to `parts/scene-01/work/play.vsf`. Forced snapshots remain separately named `play-forced.vsf` and `entry-forced.vsf`; a natural pre-initialization capture is still required. Joystick trials restored the natural gate and original emulator state. Aligned up entered scene 2; approaches beside the doorway stopped at depth 24. See `parts/scene-01/facts.md`.
+
+## First-corridor continuation · 19 October 2026
+
+Started scene-02 from the naturally reached `corridor-play.vsf`; its part play image has the same SHA-256. Ordinary right/up movement reached the first opening and the exit dispatcher wrote pending scene 3 / entry 35. The test restored the original emulator state. This establishes a requested route, not a completed natural load into scene 3.

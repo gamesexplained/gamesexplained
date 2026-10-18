@@ -54,3 +54,9 @@ The gate resource’s seven stored introduction messages and phase/countdown sel
 
 
 Joystick-port-one fire is **live** as the producer of the introduction interruption latch: press/hold/release/re-press checked. Its phase-below-seven skip is traced and tested in isolation; full speech replay remains open.
+
+## First-corridor route evidence
+
+- Confirmed live: ordinary movement along the corridor and into opening column 8 reaches the exit dispatcher and requests scene 3 / entry 35.
+- Traced and original-code checked: eight opening columns, wall/opening approach bounds, four route banks, and the PRNG bank selector. Every stored opening selects the Brick Hallway.
+- Open: the other seven complete walking approaches, completed loads and destination entry positions, reverse links and remaining corridor interactions.
