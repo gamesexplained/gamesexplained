@@ -574,6 +574,8 @@ function readMemory(args) {
 function writeMemory(args) {
     machine();
     const space = args.space ?? "cpu";
+    if (!["cpu", "ppu", "oam"].includes(space))
+        throw new Error(`space ${space}: cpu, ppu or oam (the cartridge's own ROM, prg and chr, is read only)`);
     const bytes = args.data != null ? Buffer.from(args.data, "base64") : Uint8Array.from(args.bytes ?? []);
     const start = address(args.address, space === "ppu" ? 0x3fff : space === "oam" ? 0xff : 0xffff);
     for (let i = 0; i < bytes.length; i++) {
@@ -805,8 +807,9 @@ function load(args) {
         if (!S.cartridge || S.cartridge.sha1 !== want.sha1) {
             const from = args.cartridge ?? want.path;
             if (!from || !fs.existsSync(from))
-                throw new Error(`the snapshot's cartridge, ${want.name}, is not in the machine and not at ${want.path}: ` +
-                    'put it in with `cartridge`, or pass "cartridge": <path>');
+                throw new Error(`the snapshot's cartridge, ${want.name}, is not in the machine` +
+                    (want.path ? ` and not at ${want.path}` : ", and the snapshot names no file for it") +
+                    ': put it in with `cartridge`, or pass "cartridge": <path>');
             const data = new Uint8Array(fs.readFileSync(from));
             const info = describe(data, path.basename(from), path.resolve(from));
             if (info.sha1 !== want.sha1) throw new Error(`${from} is not the snapshot's cartridge (its SHA-1 differs)`);

@@ -128,15 +128,15 @@ def test(keep=False):
     os.makedirs(OUT, exist_ok=True)
     rnd, bad = random.Random(6502), 0
     scroll_operand = ce.LABELS["nmidone"] + 1           # nmidone: lda #0, then two stores to $2005
-    for name, ctrl, mask, scroll in CASES:
+    for n, (name, ctrl, mask, scroll) in enumerate(CASES):
         m.write(0x0000, bytes(rnd.randrange(256) for _ in range(0x2000)), space="ppu")
         m.write(0x2000, bytes(rnd.randrange(256) for _ in range(0x1000)), space="ppu")
         pal = [rnd.randrange(64) for _ in range(32)]
         pal[0] = pal[16] = 0x21                           # a backdrop that is not black; $3F10 is $3F00
         m.write(0x3F00, bytes(pal), space="ppu")
         sprites = bytearray(rnd.randrange(256) for _ in range(256))
-        for i in range(12):                               # twelve sprites on line 100: four too many
-            sprites[i * 4 + 4 * rnd.randrange(8)] = 99
+        for i in range(12):                               # sprites 0 to 11 all on line 100: four too many
+            sprites[i * 4] = 99
         if ctrl & 0x20:                                   # jsnes draws an odd tile's 8 by 16 sprite wrongly
             for i in range(64):
                 sprites[i * 4 + 1] &= 0xFE
@@ -145,7 +145,7 @@ def test(keep=False):
         m.write(0x2000, bytes([ctrl]), io=True)
         m.write(0x2001, bytes([mask]), io=True)
         m.frames(2)
-        shot = os.path.join(OUT, f"case{CASES.index((name, ctrl, mask, scroll))}.png")
+        shot = os.path.join(OUT, f"case{n}.png")
         m.call("screenshot", path=shot)
         ppu, oam = m.read(0, 0x4000, space="ppu"), m.read(0, 256, space="oam")
         want = {"ctrl": ctrl, "mask": mask, "scrollX": scroll, "scrollY": scroll}

@@ -50,7 +50,7 @@ def _answer(r, rpc, tool):
     out = r.call(rpc, tool, {})
     if r.failed(out):
         sys.exit(f"{tool} came back as an error, not a result:\n{out}\n"
-                 "regenerator2000's crates.io release, 0.9.20, answers it (kit/skills/bbc/tool-regen2000)")
+                 "regenerator2000's crates.io release, 0.9.20, answers it (kit/skills/nes/tool-regen2000)")
     return json.loads(out)
 
 

@@ -265,12 +265,14 @@ def regions(game):
     exclude = [[hexint(a), hexint(b), n] for a, b, n in d["exclude"]]
     extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
     video = game.get("video") or {}
-    if video.get("screen"):
+    # a machine whose picture is not in the CPU's image (the NES's, in the PPU's own memory) gives
+    # both sizes as 0, and "video" then names nothing here
+    if video.get("screen") and ("screen_top" in d or d.get("screen_size", 0x400)):
         # a machine whose screen always ends at the top of RAM (the BBC's) gives that address
         # instead of a size: the start alone then says how much the screen takes
         a = hexint(video["screen"])
         exclude.append([a, d["screen_top"] if "screen_top" in d else a + d.get("screen_size", 0x400) - 1, "screen RAM"])
-    if video.get("charset"):
+    if video.get("charset") and d.get("charset_size", 0x800):
         a = hexint(video["charset"]); extra.append([a, a + d.get("charset_size", 0x800) - 1, "character set"])
     cov = game.get("coverage", {})
     exclude += [[hexint(a), hexint(b), n] for a, b, n in cov.get("exclude", [])]
