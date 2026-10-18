@@ -10,6 +10,7 @@ phase by phase, is `kit/EMULATOR.md`.
 |---|---|---|
 | Emulator with an agent interface | put in a cartridge, run, stop on an instruction, read and write the CPU's memory, the PPU's memory and the sprite table, read the cartridge's every bank, count checkpoints without stopping, advance a frame, hold the controllers' buttons, save and load a snapshot, save the screen, log the APU's writes | jsnes 2.1.0 (https://github.com/bfirsh/jsnes), run inside the kit's own server, `kit/nes/jsnes_server.mjs` |
 | A JavaScript runtime | run jsnes | Node, with npm |
+| Disassembler with an agent interface | read the kit's snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 0.9.20 from crates.io, in its NES mode: the C64's disassembler, installed once for every machine |
 
 The kit's server holds jsnes's machine in a Node process and answers on a
 local socket, one JSON object a line, in the BBC Micro's server's protocol;
@@ -23,6 +24,9 @@ no `node`, tell them, and let them decide whether to install it
 (https://nodejs.org, the project's own installers; npm comes with it).
 jsnes 2.1.0 names no Node version. Everything in this file was measured on
 Node 24.18.0.
+
+**Rust's `cargo`**, for the disassembler, as `kit/c64/INSTALL.md` says. A
+clone that has run a C64 or a BBC Micro game has it already.
 
 ## Where the emulator stands, by phase
 
@@ -91,7 +95,12 @@ python3 kit/scripts/tools.py jsnes                                 # no cartridg
 python3 kit/scripts/tools.py --platform nes check-emulator         # 36 named checks, about ten seconds
 python3 kit/scripts/tools.py --platform nes stop                   # this clone's servers
 python3 kit/scripts/tools.py --platform nes verify-footprint       # what it writes outside the repository
+python3 kit/scripts/tools.py r2000 games/nes/<slug>/work/<state>.json.gz   # the disassembler, on a snapshot
+KIT_JSNES_PORT=6856 python3 kit/nes/frame.py test                  # site/lib/nes.js against jsnes's picture
 ```
+
+`frame.py test` changes the machine it runs on, so give it a server of its
+own on another port, as its header says.
 
 `jsnes` and `get-jsnes` are the NES's alone, so they need no `--platform`.
 The server opens no window and makes no sound. `--port N` (or
@@ -109,6 +118,7 @@ Tell the contributor this before installing anything:
 | jsnes 2.1.0, from npm, one package with no dependencies | `tools/nes/` | 2 MB, 56 files |
 | The server's home directory and the kit's scratch snapshots | `tools/nes-home/` | small; a snapshot of the test cartridge measured 70 KB |
 | Logs | `tools/logs/` | small |
+| regenerator2000 0.9.20, when no other platform has installed it, and Rust's `cargo` to build it | `tools/cargo/`, `tools/cargo-home/`, `tools/rustup/` | as `kit/c64/INSTALL.md` gives them |
 
 What it is, and say so when you ask: jsnes is Ben Firshman's open-source NES
 emulator, Apache-2.0, published on npm by its author. `get-jsnes` runs `npm
@@ -124,16 +134,20 @@ starting the server. Node and jsnes wrote nothing to a home directory when
 measured, and this keeps a later release from doing so unnoticed.
 
 **Uninstall:** delete the repository folder. Node, if it was installed for
-this, is the only thing left outside it.
+this, is the only thing left outside it, with Rust if it was installed for
+the disassembler (`kit/c64/INSTALL.md`).
 
 ## macOS
 
 Run on macOS 27.0.1 on Apple silicon (arm64), Node 24.18.0 from Homebrew,
 on 17 and 18 October 2026, with jsnes 2.1.0 from npm: `check-emulator`
-passed 36 of 36 in each of four runs, the last after the final change to
-the server, and `verify-footprint` was clean, with nothing
+passed 36 of 36 in each of four runs on the first server, and in each of
+three runs on 18 October after the last change to it (the full-frame
+picture), and `verify-footprint` was clean after that change, with nothing
 written outside the repository either by the server or by `get-jsnes`'s
-install.
+install. `frame.py test` passed its four cases the same day, with the four
+differences in jsnes's picture its header gives left out. The disassembler
+was the regenerator2000 0.9.20 a C64 run had installed in `tools/cargo/`.
 
 ## Untried systems
 

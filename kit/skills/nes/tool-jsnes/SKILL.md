@@ -196,6 +196,19 @@ exactly. `kit/nes/snapshot.py` reads it: `read()` the CPU's 64 KB,
 - `screenshot` is the last whole frame, drawn by jsnes in its own palette of
   the 64 colours. Name it as jsnes's palette on a page; no palette is the
   console's (`nes-reference`, "Palettes").
+- **The screenshot is the whole 256 by 240.** jsnes blacks out 8 pixels
+  round the edge by default, as a television's frame would hide them; the
+  server turns that off, so the picture is what the PPU drew.
+- **jsnes 2.1.0 draws four things wrongly**, each found by
+  `kit/nes/frame.py test` on 18 October 2026: no background on the top
+  line (and a few more under a fine vertical scroll); the last pixels of a
+  line with a fine horizontal scroll; an 8 by 16 sprite from the `$1000`
+  table, drawn from the tile before the right one; and a clipped left
+  edge, painted black where the console shows the backdrop. The header of
+  `kit/nes/frame.py` gives each with the place in jsnes's source.
+  `site/lib/nes.js`, and `frame.py draw` on a snapshot, draw them as the
+  console does. When a screenshot and the game's code disagree on one of
+  these, believe the code.
 - `sound` with `start` and then `stop` records every write to `$4000-$4013`,
   `$4015` and `$4017` as `[cycle, address, value]`, with the clock, 1,789,773
   Hz. It is what the APU was sent, not a recording of its output.
@@ -229,8 +242,10 @@ from the server's run by those two cycles an IRQ. The kit never does that.
 - **jsnes keeps the PC one less than the next instruction** (its `REG_PC`);
   the server's replies and `set-registers` use the real address.
 - **RAM is the first 2 KB of jsnes's array.** It masks every access with
-  `& 0x7ff` and leaves stale bytes at `$0800-$1FFF` of the array, which
-  `read` and `snapshot.py` replace with the mirrors.
+  `& 0x7ff` and leaves stale bytes at `$0800-$1FFF` of the array. `read`
+  replaces them with the mirrors, as the CPU sees them; `snapshot.py`
+  replaces them with zero, since a mirror holds nothing of its own and the
+  listing would otherwise report the copy as data.
 - A write to `$4017` from a script is the APU's frame counter, not
   controller 2: the same address is two things (`nes-reference`, "Sound").
 - The buttons are held until released, through stops and runs. A load or

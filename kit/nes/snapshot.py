@@ -8,11 +8,13 @@ $0000-$07FF, the cartridge's RAM at $6000-$7FFF, and the PRG ROM banks the mappe
 selected at $8000-$FFFF (jsnes copies a bank into it when the mapper switches one in;
 jsnes, src/mappers/mapper0.js, loadRomBank).
 
-`read` returns 0x10000 bytes as the program saw them:
+`read` returns 0x10000 bytes, each address holding the bytes that are its own:
 
   $0000-$07FF  the 2 KB of RAM
-  $0800-$1FFF  its three mirrors, copied from $0000-$07FF (jsnes leaves stale bytes in its
-               array there, since it masks every access to the first 2 KB)
+  $0800-$1FFF  zero. These are the RAM's three mirrors, which hold nothing of their own: a
+               copy there would read to listing.py as data loaded into an excluded area,
+               and jsnes leaves stale bytes in its array there anyway, since it masks
+               every access to the first 2 KB
   $2000-$5FFF  zero: the PPU's and the APU's registers and the unused expansion area,
                never the game
   $6000-$7FFF  the cartridge's RAM, or zero on a board with none
@@ -27,6 +29,9 @@ and no game on the platform has needed one yet (kit/skills/nes/steps, "snapshot"
   read(path, bank=None) -> bytes, length 0x10000
   ppu(path)             -> bytes, length 0x4000
   oam(path)             -> bytes, length 0x100
+  registers(path)       -> {"ctrl", "mask", "scrollX", "scrollY"}: PPUCTRL and PPUMASK as last
+                           written, and the scroll the next frame starts from, what
+                           site/lib/nes.js's NES.frame takes
   header(path)          -> the registers, the cycle count, the frame count, the cartridge
                            and what else the kit's server recorded (snap["kit"])
 
@@ -70,10 +75,7 @@ def image(snap, bank=None):
     if len(mem) != RAM_SIZE:
         sys.exit(f"the snapshot's CPU array is {len(mem)} bytes, not 65,536")
     out = bytearray(mem)
-    ram = bytes(out[0:0x800])
-    for m in (0x800, 0x1000, 0x1800):
-        out[m:m + 0x800] = ram
-    out[0x2000:0x6000] = bytes(0x4000)
+    out[0x0800:0x6000] = bytes(0x5800)
     return bytes(out)
 
 
@@ -92,6 +94,20 @@ def ppu(path):
 
 def oam(path):
     return bytes(load(path)["state"]["ppu"]["spriteMem"])
+
+
+def registers(path):
+    """PPUCTRL and PPUMASK rebuilt from jsnes's flags (src/ppu/index.js, updateControlReg1 and
+    updateControlReg2), and the scroll from the PPU's temporary address, which jsnes keeps in
+    parts (regHT and regFH across, regVT and regFV down, regH and regV the nametable): what
+    the game last set with $2005 and $2000, unless a write to $2006 came after it. PPUCTRL's
+    nametable bits are those two, as the PPU keeps them."""
+    p = load(path)["state"]["ppu"]
+    ctrl = ((p["f_nmiOnVblank"] << 7) | (p["f_spriteSize"] << 5) | (p["f_bgPatternTable"] << 4)
+            | (p["f_spPatternTable"] << 3) | (p["f_addrInc"] << 2) | (p["regV"] << 1) | p["regH"])
+    mask = ((p["f_color"] << 5) | (p["f_spVisibility"] << 4) | (p["f_bgVisibility"] << 3)
+            | (p["f_spClipping"] << 2) | (p["f_bgClipping"] << 1) | p["f_dispType"])
+    return {"ctrl": ctrl, "mask": mask, "scrollX": p["regHT"] * 8 + p["regFH"], "scrollY": p["regVT"] * 8 + p["regFV"]}
 
 
 def header(path):

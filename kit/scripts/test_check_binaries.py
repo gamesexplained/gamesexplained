@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""check_binaries.py refuses the BBC Micro's, the Apple II's and the Commodore 16's disks, tapes and
+"""check_binaries.py refuses the BBC Micro's, the Apple II's, the Commodore 16's and the NES's disks, tapes and
 snapshots, whatever they are called.
 
 A jsbeeb snapshot is gzipped JSON whose name the kit chooses (`.json.gz`), so it is found by
@@ -8,7 +8,8 @@ other emulators' states by their magic. A gzip file that is not a snapshot passe
 snapshots are JSON (the kit's and Apple2TS's) or YAML (AppleWin's), found by what they hold; its
 disks by extension, size and magic. A JSON file that is not a snapshot passes. The C16's snapshot
 is plus4emu's own file, found by its magic under any name; its tapes and cartridges by their
-headers too.
+headers too. The NES's cartridges are found by extension and header, and the kit's NES
+snapshot, gzipped JSON like jsbeeb's, by what it holds.
 """
 import gzip
 import json
@@ -96,6 +97,18 @@ class C16(Files):
 
     def test_other_json_passes(self):
         self.assertIsNone(self.why("game.json", json.dumps({"platform": "c16", "slug": "x"}).encode()))
+
+
+class NES(Files):
+    def test_snapshot_by_content(self):
+        body = json.dumps({"format": "kit-nes-snapshot", "kit": {}, "state": {}}).encode()
+        self.assertEqual(self.why("play.json.gz", gzip.compress(body)), "NES snapshot")
+        self.assertEqual(self.why("renamed.dat", gzip.compress(body)), "NES snapshot")
+        self.assertEqual(self.why("plain.txt", body), "NES snapshot")
+
+    def test_cartridge(self):
+        self.assertIn(".nes", self.why("game.nes", b"\0" * 10))
+        self.assertEqual(self.why("game.dat", b"NES\x1a" + bytes(12)), "NES ROM")
 
 
 if __name__ == "__main__":

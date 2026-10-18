@@ -95,8 +95,10 @@ PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "bbc": "BBC 
                   "c16": "Commodore 16 and Plus/4", "nes": "NES"}
 # The footprint widget and the extra script it needs, per platform: a page loads only
 # its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
-PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap", "apple2": "Apple2Map", "c16": "C16Map"}
-PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"], "apple2": ["apple2.js"], "c16": ["c16.js"]}
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap", "apple2": "Apple2Map", "c16": "C16Map",
+                 "nes": "NESMap"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"], "apple2": ["apple2.js"], "c16": ["c16.js"],
+                     "nes": ["nes.js"]}
 # The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
 # sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
 # (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
@@ -110,7 +112,8 @@ PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000), "c1
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
 PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
                 "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it",
-                "apple2": "the Apple II's main 64 KB", "c16": "the Commodore 16's 16 KB of RAM"}
+                "apple2": "the Apple II's main 64 KB", "c16": "the Commodore 16's 16 KB of RAM",
+                "nes": "the NES's 64 KB address space: 2 KB of RAM, the chips' registers and the cartridge"}
 TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
         ("levels.html", "Maps / levels"), ("source.html", "Source code"), ("about.html", "About")]
 _warned = set()

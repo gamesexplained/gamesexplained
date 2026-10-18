@@ -405,7 +405,9 @@ def p1(m):
     head = snapshot.header(path)
     live = m.read(0, 0x10000)
     pc = m.registers()["pc"]
-    same = ram[:0x2000] == live[:0x2000] and ram[0x6000:] == live[0x6000:]
+    # the RAM and the cartridge's space as the CPU sees them; the RAM's mirrors and the chips' range
+    # are zero in the file, which holds only what is each address's own (kit/nes/snapshot.py)
+    same = ram[:0x800] == live[:0x800] and ram[0x800:0x6000] == bytes(0x5800) and ram[0x6000:] == live[0x6000:]
     pp = snapshot.ppu(path) == m.read(0, 0x4000, space="ppu") and snapshot.oam(path) == m.read(0, 256, space="oam")
     check("snapshot-python", same and pp and head["pc"] == pc,
           "a snapshot read by kit/nes/snapshot.py matches the live machine: the CPU's view, the PPU's memory and OAM",

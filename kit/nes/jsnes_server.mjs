@@ -383,6 +383,11 @@ function access(list, kind, addr, value) {
 // every access, and put back whenever jsnes replaces the CPU (a load, a reset).
 const READS = ["load", "loadDirect", "load16bit", "pull"];
 function hook() {
+    // jsnes blacks out 8 pixels round the edge of its picture to imitate a television's
+    // (src/ppu/index.js, clipToTvSize). The kit's picture is the PPU's whole 256 by 240, which
+    // is what site/lib/nes.js draws; the flag is the PPU object's, so it is set again whenever
+    // jsnes makes a new one.
+    nes.ppu.clipToTvSize = false;
     const cpu = nes.cpu;
     for (const m of [...READS, "write", "push"]) delete cpu[m];
     if (S.reads.length) {

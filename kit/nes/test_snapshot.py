@@ -2,7 +2,7 @@
 """kit/nes/snapshot.py reads the kit's NES snapshot into the flat 64 KB image the listing is built from.
 
 The files here are made in the test, in the format kit/nes/snapshot.py describes, so it needs no
-emulator: the CPU's image with RAM's mirrors filled and the chips' range blanked, the PPU's
+emulator: the CPU's image with RAM's mirrors and the chips' range blanked, the PPU's
 memory through its mirror table, the sprite table, the header, and the files it refuses, each
 with a message.
 """
@@ -51,8 +51,7 @@ class Snapshot(unittest.TestCase):
         img = snapshot.read(self.good())
         self.assertEqual(len(img), 0x10000)
         self.assertEqual(img[:0x800], bytes(MEM[:0x800]))
-        for m in (0x800, 0x1000, 0x1800):
-            self.assertEqual(img[m:m + 0x800], bytes(MEM[:0x800]), f"the mirror at ${m:04X}")
+        self.assertEqual(img[0x800:0x2000], bytes(0x1800), "the RAM's mirrors hold nothing of their own")
         self.assertEqual(img[0x2000:0x6000], bytes(0x4000))
         self.assertEqual(img[0x6000:], bytes(MEM[0x6000:]))
 
@@ -85,6 +84,15 @@ class Snapshot(unittest.TestCase):
         with self.assertRaises(SystemExit) as e:
             snapshot.read(self.good(), bank=1)
         self.assertIn("not in an NES snapshot", str(e.exception))
+
+    def test_registers(self):
+        flags = {"f_nmiOnVblank": 1, "f_spriteSize": 1, "f_bgPatternTable": 1, "f_spPatternTable": 0, "f_addrInc": 0,
+                 "f_color": 0, "f_spVisibility": 1, "f_bgVisibility": 1, "f_spClipping": 0, "f_bgClipping": 1,
+                 "f_dispType": 0, "regV": 1, "regH": 0, "regHT": 4, "regFH": 5, "regVT": 29, "regFV": 7}
+        s = snap()
+        s["state"]["ppu"].update(flags)
+        p = self.file("r.json.gz", gzip.compress(json.dumps(s).encode()))
+        self.assertEqual(snapshot.registers(p), {"ctrl": 0xB2, "mask": 0x1A, "scrollX": 37, "scrollY": 239})
 
 
 if __name__ == "__main__":
