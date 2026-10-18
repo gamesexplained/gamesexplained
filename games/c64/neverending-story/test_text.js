@@ -18,7 +18,7 @@
 //   node games/c64/neverending-story/test_text.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 g.sameBlock('nes-text');
 const { nesPrinter } = g.run(page, 'nes-text', 'nesPrinter');

@@ -67,21 +67,16 @@ address links into the Source tab, and the house style in `kit/style.md`.
    out of it. It is the one section with nothing to press.
 - **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
-   understood and it is the base for overlays. A screen split by raster
-   interrupts changes the video registers, and often the sprite pointers,
-   several times a frame, so one read of them draws the wrong picture. On
-   the C64 the kit records and draws the frame for you:
-   `python3 kit/c64/frame.py capture work/frame.json` records one whole
-   frame of the running game (every write to the video chip, the video
-   bank and the sprite pointers, with the line and cycle it happened on,
-   and memory as the frame began), `compare` draws it with
-   `C64.renderFrame` from `../../lib/c64.js` and counts the pixels that
-   differ from the emulator's picture of the same frame, line by line, and
-   `trim` keeps only the memory the drawing reads, which is what the page
-   embeds (`C64.drawFrame` puts it on a canvas). Say in the caption how
-   many pixels differ and why. If the renderer lacks something the game
-   does, extend it in `site/lib/c64.js` and in `frame.py test`, so that the
-   next game has it too.
+   understood and it is the base for overlays. A screen whose video
+   registers change during the frame (a split by interrupts, which often
+   moves the sprite pointers too) draws the wrong picture from one read
+   of them, so record the whole frame where the platform can, and draw
+   with the site's library for the machine
+   (`kit/skills/<platform>/steps`, "frame"). The comparison that counts
+   the pixels that differ from the emulator's picture of the same frame
+   is the drawing's test: say in the caption how many differ and why. If the renderer lacks something the game does,
+   extend it in the site's library and in its test, so that the next game
+   has it too.
 - **The player and the enemies.** What they are drawn with (character
    graphics, sprites, both), how they move, how they collide.
 - **Controls.** What the game reads and how, including anything the
@@ -97,37 +92,21 @@ address links into the Source tab, and the house style in `kit/style.md`.
    the bytes that produce each note. When the game has music, the player
    is required, with a button for every tune the game stores, unused
    ones too: a run that names the music driver and leaves the player to
-   `TODO.md` has not built the page. Port the game's own music driver
-   and play it through the site's model of the SID, `../../lib/sid.js`:
-   it runs the driver once a frame, plays it, and shows each voice on a
-   piano roll with the lines the port supplies about what the driver
-   read. When the game calls its driver from a CIA timer instead, pass
-   the timer's period in cycles (the latch plus 1) to `mount` as
-   `period`, and port one call to each `play()`: the player keeps the
-   game's tempo, where mapping calls to frames in the port makes a
-   note's length wander by up to a frame. The script's header gives the
-   driver's contract and what the model leaves out. The game's own driver,
-   run inside `createDriver` on the kit's 6502, counts as a port, its code
-   and tables embedded in the page as data like any widget's. Write no
-   6502 of your own: the page loads the kit's after `sid.js`, as
-   `../../lib/cpu6502.js`, and `sid.js` hands it to `createDriver` as its
-   second argument, `C64Cpu`, in the AudioWorklet too, where the driver
-   reaches nothing outside its own text.
-   `new C64Cpu.CPU(memory, { port: 0x35, io })` gives a 6502 whose `io`
-   answers the chips at `$D000`-`$DFFF`, and its `call(entry, regs)` runs
-   a routine to its return. What the test then checks is what the driver
-   adds: its entry points, its registers and its chips. Hand
-   `createDriver` the module, `require('<repo>/kit/c64/cpu6502.js')`, and
-   compare every write of every tune, frame by frame, with the same calls
-   made on the simulator as the game makes them. Say in the caption that
-   the page runs the game's own player. The filter is off
-   unless the page passes `filter: '6581'` (or `'8580'`) to `mount`,
-   which also shows a switch to compare it with no filter; pass it when
-   the game sets the filter,
-   and say in the caption that the cutoff is one chip's. Say beside a
-   sound below about 100 Hz that laptop and phone speakers barely play
-   it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
-   the model (`C64Sid.engine()` in node) and measure the output.
+   `TODO.md` has not built the page. It plays through the site's model
+   of the machine's sound chip, and what drives the model is the game's
+   own music: its driver ported, or run on the kit's processor, on the
+   page or ahead of time into a recording of what it wrote to the chip,
+   which a test beside the page makes again from the listing. The game's
+   own driver run on the kit's processor counts as a port, its code and
+   tables embedded in the page as data like any widget's. Music the
+   machine's own ROM plays for the game, from a queue the game fills, is
+   recorded at the chip in the emulator. The platform's steps skill names
+   the model and how its pages drive it (`kit/skills/<platform>/steps`,
+   "sound"). Say in the caption which it is and how it was checked
+   against the game. Say beside a sound below about 100 Hz that laptop
+   and phone speakers barely play it: a reader who hears nothing reports
+   it missing. Before believing such a report, render the writes through
+   the model in node and measure the output.
 - **Secrets, quirks and bugs.** These have a tab of their own,
    Discoveries (below). A section here whose mechanic leads to one links
    to it.
@@ -159,20 +138,20 @@ its music or its maps can put that first instead.
   build step; external resources only for fonts. It must open from disk,
   all but the widgets built on the site's shared scripts, which say so
   when the script is missing.
-- Any page may use the site's shared scripts: `../../lib/c64.js` draws
-  glyphs, screens and sprites, and rebuilds the game image from
-  `listing.json`, so a page draws from the bytes the Source tab shows;
-  `../../lib/sid.js` plays a music driver's port through a model of the
-  SID; `../../lib/cpu6502.js` is the kit's 6502 simulator,
-  `kit/c64/cpu6502.js`, as `C64Cpu`, for a widget that runs the game's
-  own code on the listing's bytes. A page never carries a 6502 of its
-  own, and a test hands a block the same one with `g.lib('cpu6502')`
+- Any page may use the site's shared scripts. Each machine has a library
+  that draws its glyphs and screens and rebuilds the game image from
+  `listing.json`, so a page draws from the bytes the Source tab shows,
+  and a model of its sound chip (`kit/skills/<platform>/steps`, "page"
+  and "sound"). `../../lib/cpu6502.js` is the kit's 6502 simulator,
+  `kit/cpu/cpu6502.js`, as `C64Cpu`, for a widget that runs the game's
+  own code on the listing's bytes. A page never carries a processor of
+  its own, and a test hands a block the same one with `g.lib('cpu6502')`
   (`kit/scripts/port_check.js`). Those work only in the built site,
   served as in "Check it in a browser" below. A widget the next game could use as it is belongs
   there, not in the page. One that grew inside a page moves there with a
   test that the page still gives the same result.
-- A page draws from the listing through the loaders:
-  `C64.load('listing.json')`, or `parts/<id>/listing.json` for a part,
+- A page draws from the listing through its machine library's loader,
+  such as `C64.load('listing.json')`, or `parts/<id>/listing.json` for a part,
   fetches the whole listing, one download the browser caches for every
   tab of the game, the Source tab included.
 - Only a game whose listing is withheld (`"publish_source": false`)
@@ -250,8 +229,8 @@ its music or its maps can put that first instead.
   runs, its objects alive and its counters moving, since a trace taken
   between waves passes any port (`60-verify`, "A test must contain cases
   that have to succeed"); or, for a routine that
-  only computes, against the original code run in a 6502 simulator on the
-  snapshot's memory. Write node tests that do the comparison and say in
+  only computes, against the original code run in the kit's simulator
+  for the machine's processor on the snapshot's memory. Write node tests that do the comparison and say in
   the caption how it was checked. A test that needs only the committed
   listing goes beside the page as `test_<what>.js`, where CI runs it, and
   takes the port from the page itself, so the two cannot drift apart:
@@ -262,17 +241,9 @@ its music or its maps can put that first instead.
   line `// end of name`; the header is the manual. When more than one
   page carries the block, `g.sameBlock(name)` fails when any copy
   differs, so a page that gains a copy is checked without a change to
-  the test. On the C64 use the
-  kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
-  manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
-  left it, the port's banking included, and `call(entry, regs)` runs a
-  routine to its return. The chips belong to the test: `io.write` sees
-  every write in order, which is how a music driver's port is checked
-  register by register, frame by frame. A read of a chip the test does not
-  answer stops the run, and so does a call into ROM unless a hook stands
-  in for the routine. `irq()` runs the game's interrupt, `cycles` times a
-  routine, and the `executed` map shows which instructions the cases
-  reached. For random cases in
+  the test. Use the kit's simulator rather than writing one
+  (`kit/skills/<platform>/steps`, "simulator"); its header is the
+  manual. For random cases in
   JavaScript, a generator written `seed * 1103515245 + 12345` overflows the
   doubles' 53 bits and loses its low bits, so its "random" inputs repeat far
   sooner than they seem to; use `Math.imul(seed, 1103515245)` or xorshift. A trace is a copy of game memory, so it
@@ -464,8 +435,8 @@ emulator is the original product shipped again, and it plays the same
 whether the listing is right or wrong. The maintainers have ruled on
 this: do not offer the choice to the contributor. The game's own code
 runs only in the tests, as the game the port is checked against (and a
-music driver run inside `createDriver` on the kit's 6502 counts as a
-port, as "The sound" above says).
+music driver run on the kit's processor counts as a port, as "The
+sound" above says).
 
 This is a first-class part of the minisite, not an extra: a reader who
 can play the game while reading how it works understands it better than

@@ -39,7 +39,7 @@
 //   folder of the last game() made, when a test makes more than one).
 // - g.lib(name, ...) loads site/lib/<name>.js, as the page's <script src> does: what it defines
 //   is on globalThis then (g.lib('c64') gives C64, and C64.load reads the folder).
-//   g.lib('cpu6502') gives C64Cpu, the 6502 the build serves from kit/c64/cpu6502.js (build.py,
+//   g.lib('cpu6502') gives C64Cpu, the 6502 the build serves from kit/cpu/cpu6502.js (build.py,
 //   KIT_LIB), for a block that runs the game's own code on it.
 // - g.listing(file) gives { ram, has, names, byName, listing, bytes(a, n), sym(label) } from the
 //   folder's listing.json (or file, a path from the folder: 'parts/engine/listing.json'), as
@@ -102,7 +102,7 @@ function findBlock(src, name, isScript) {
 }
 
 // The lib files the build serves from the kit (build.py, KIT_LIB), and the name each gives a page
-const KIT_LIB = { cpu6502: ['kit/c64/cpu6502.js', 'C64Cpu'] };
+const KIT_LIB = { cpu6502: ['kit/cpu/cpu6502.js', 'C64Cpu'] };
 
 function game(dir) {
   dir = path.resolve(dir);

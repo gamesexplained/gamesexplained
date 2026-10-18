@@ -1390,8 +1390,8 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 
 # The lib files the site serves from the kit instead of site/lib/, each with one source: the 6502
 # a page runs a game's own code on, which sid.js also hands to a music driver in its worklet, is
-# the simulator the kit's tests hold pages to (kit/c64/cpu6502.js, "On a page").
-KIT_LIB = {"cpu6502.js": "kit/c64/cpu6502.js"}
+# the simulator the kit's tests hold pages to (kit/cpu/cpu6502.js, "On a page").
+KIT_LIB = {"cpu6502.js": "kit/cpu/cpu6502.js"}
 
 def lib_versions(out_root):
     """{lib file: the first 8 hex digits of its SHA-1}, for every script and stylesheet in the

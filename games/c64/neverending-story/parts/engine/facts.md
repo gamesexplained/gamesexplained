@@ -83,7 +83,7 @@ is silent: nothing writes the SID after the opening.
 
 ### Register census
 
-From `kit/c64/census.py` on the engine's opening snapshot. The parts
+From `kit/cpu/census.py` on the engine's opening snapshot. The parts
 hold no code.
 
 | Register | What the game does with it | Where |

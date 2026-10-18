@@ -8,7 +8,7 @@
 //   node games/c64/jet-set-willy/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'jswMusic', 'createDriver');

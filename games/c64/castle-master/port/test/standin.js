@@ -6,7 +6,7 @@
 // nothing moves while it runs.
 const fs = require('fs'), path = require('path');
 const lib = require('./lib.js');
-const { CPU } = require(path.join(lib.REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(lib.REPO, 'kit/cpu/cpu6502.js'));
 
 // The listing's code labels, by name.
 let LABELS = null;

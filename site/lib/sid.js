@@ -28,18 +28,18 @@
 // driver's own last write. The player leaves the frame's last write on the bus when the driver
 // keeps writes, and otherwise the last register to change, in register order. Test such a
 // driver's port against its original with the bus, never with a copy of each register:
-// kit/c64/machine.js reads the SID through createBus, and a test on kit/c64/cpu6502.js alone
+// kit/c64/machine.js reads the SID through createBus, and a test on kit/cpu/cpu6502.js alone
 // passes it as io (createBus's comment).
 // data is anything that survives structured cloning, usually the driver's tables as the game
 // loads them. Test the port against the game's own code run in a 6502 simulator, every register
-// after every frame, before it goes on a page: kit/c64/cpu6502.js hands the driver's writes to the
+// after every frame, before it goes on a page: kit/cpu/cpu6502.js hands the driver's writes to the
 // test in order, so writes too can be compared.
-// C64Cpu is that simulator, kit/c64/cpu6502.js, which the site serves as ../../lib/cpu6502.js: a
+// C64Cpu is that simulator, kit/cpu/cpu6502.js, which the site serves as ../../lib/cpu6502.js: a
 // page that loads it before the player starts has it passed to createDriver, in the worklet (the
 // player puts its source text there beside the driver's) and on the page alike, and undefined
 // otherwise. A driver that runs the game's own code, its bytes from the listing, runs it on
 // new C64Cpu.CPU(memory, { port: 0x35, io }), never on a 6502 of its own, and keeps the SID's
-// writes as io.write receives them; its test passes require('<repo>/kit/c64/cpu6502.js') as the
+// writes as io.write receives them; its test passes require('<repo>/kit/cpu/cpu6502.js') as the
 // second argument, so the page runs on the simulator the test held it to.
 //
 // The model: three voices with triangle, sawtooth, pulse and noise (the 23-bit noise register),
@@ -147,7 +147,7 @@ globalThis.C64Sid = (function () {
     // createBus(chip) keeps the bus on the caller's clock t, in cycles:
     //   write(value, t)  read(register, t, own)  peek(t)  chip(model)  save()  load(state)
     // own is what $D41B or $D41C holds at t (read ignores it for the other registers). A test
-    // on kit/c64/cpu6502.js passes it as the SID's part of io:
+    // on kit/cpu/cpu6502.js passes it as the SID's part of io:
     //   const bus = C64Sid.engine().createBus('8580');
     //   io = { read: (a, cpu) => bus.read(a & 31, cpu.cycles, 0), write: (a, v, cpu) => bus.write(v, cpu.cycles) }
     const HOLD = { '6581': 0x1D00, '8580': 0xA2000 };

@@ -6,7 +6,7 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const REPO = path.resolve(ROOT, '../../../..');
 const { Lockstep, describe } = require(path.join(REPO, 'kit/c64/lockstep.js'));
-const { CPU } = require(path.join(REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(REPO, 'kit/cpu/cpu6502.js'));
 const { ChillerMachine } = require(path.join(ROOT, 'machine.js'));
 const lib = require('./lib.js');
 const K = globalThis.ChillerKernal;

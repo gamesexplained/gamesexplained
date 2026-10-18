@@ -173,7 +173,7 @@
 // While a lockstep runs it owns the machine: it hooks the checkpoints and wraps the machine's irq
 // and ioRead, and it puts them back when run returns.
 const { Machine, LINE, LINES, FRAME } = require('./machine.js');
-const { CPU, OPCODES } = require('./cpu6502.js');
+const { CPU, OPCODES } = require('../cpu/cpu6502.js');
 // each opcode's length in bytes, from its addressing mode
 const LENGTH = Uint8Array.from(OPCODES, ([, mode]) => mode === 'imp' || mode === 'acc' ? 1 : ['abs', 'abx', 'aby', 'ind'].includes(mode) ? 3 : 2);
 // what each opcode does at the address it names: 0 reads nothing there, 1 reads it, 2 reads it and

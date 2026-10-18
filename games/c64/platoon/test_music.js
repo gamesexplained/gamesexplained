@@ -4,7 +4,7 @@
 // started as the game starts it, for 3,000 frames, every SID write compared in order.
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
-const kit = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js')), { CPU } = kit;
+const kit = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 const { createDriver, PLATOON_TUNES, PLATOON_ENTRY } = g.run('music.html', 'createDriver', 'createDriver', 'PLATOON_TUNES', 'PLATOON_ENTRY');
 const loads = ['load1', 'load3', 'load4'].map(p => g.listing('parts/' + p + '/listing.json').ram);

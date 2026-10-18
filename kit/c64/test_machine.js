@@ -166,7 +166,7 @@ if (require.main === module) {
       return Buffer.concat([head, mod('MAINC64CPU', 1, 5, cpu), mod('C64MEM', 0, 1, mem), mod('CIA1', 2, 5, Buffer.alloc(77)),
         vic ? mod('VIC-IISC', 1, 4, v) : Buffer.alloc(0)]);
     };
-    const { readSnapshot } = require('./cpu6502.js');
+    const { readSnapshot } = require('../cpu/cpu6502.js');
     const file = path.join(os.tmpdir(), 'test_machine_' + process.pid + '.vsf');
     try {
       fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0xFB }));

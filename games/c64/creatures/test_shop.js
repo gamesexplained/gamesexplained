@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold the witch's shop widget (index.html: cr-cpu, cr-shop, SHOP) against the game.
-// 1. The page's 6502 (cr-cpu) against the kit's simulator, kit/c64/cpu6502.js: random documented
+// 1. The page's 6502 (cr-cpu) against the kit's simulator, kit/cpu/cpu6502.js: random documented
 //    instructions from random states, with the registers, the flags, the cycles and the memory
 //    compared after each.
 // 2. Every byte of the shop's code and tables the page carries is the shop's listing's (or the
@@ -17,7 +17,7 @@
 //   node games/c64/creatures/test_shop.js [page.html]
 const path = require('path'), crypto = require('crypto'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU, OPCODES } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU, OPCODES } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 globalThis.atob = globalThis.atob || ((s) => Buffer.from(s, 'base64').toString('binary'));
 const { crCPU } = g.run(page, 'cr-cpu', 'crCPU');

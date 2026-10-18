@@ -1,5 +1,5 @@
 'use strict';
-// The kit's 6502 in the sound player (#366, #383): kit/c64/cpu6502.js runs on a page as the site's
+// The kit's 6502 in the sound player (#366, #383): kit/cpu/cpu6502.js runs on a page as the site's
 // lib/cpu6502.js, and site/lib/sid.js hands it to a music driver as createDriver's second argument,
 // in the AudioWorklet too, where the player runs the driver from its source text. So:
 // - core(), the whole processor, runs in a context of its own, with nothing of node's in it;
@@ -12,7 +12,7 @@
 // node kit/c64/test_sid_cpu6502.js
 const path = require('path'), vm = require('vm');
 const ROOT = path.join(__dirname, '..', '..');
-const kit = require(path.join(ROOT, 'kit', 'c64', 'cpu6502.js'));
+const kit = require(path.join(ROOT, 'kit', 'cpu', 'cpu6502.js'));
 require(path.join(ROOT, 'site', 'lib', 'sid.js'));
 let fails = 0;
 const check = (ok, what) => { if (!ok) { fails++; console.log('FAIL ' + what); } else console.log('ok   ' + what); };

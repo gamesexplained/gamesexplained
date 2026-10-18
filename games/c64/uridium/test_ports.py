@@ -6,7 +6,7 @@ music.html plays the music and effects through a port of the sound driver
 build_message ($2415), index_pieces ($2C66) and build_map ($2CB2). A port is a
 claim about the game, so this runs both sides and compares them:
 
-  the game   the routines in the kit's 6502 simulator (kit/c64/cpu6502.js), on
+  the game   the routines in the kit's 6502 simulator (kit/cpu/cpu6502.js), on
              the bytes in the committed listing.json
   the pages  createDriver and buildMap cut from the pages, run by node
 
@@ -39,7 +39,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = HERE
-while not os.path.isfile(os.path.join(ROOT, "kit", "c64", "cpu6502.js")):
+while not os.path.isfile(os.path.join(ROOT, "kit", "cpu", "cpu6502.js")):
     parent = os.path.dirname(ROOT)
     if parent == ROOT:
         sys.exit("test_ports.py must run from inside the repository")
@@ -53,7 +53,7 @@ const fs = require('fs'), path = require('path');
 const GAME = process.argv[2], ROOT = process.argv[3], PAGES = process.argv.slice(4);
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js')); require(path.join(ROOT, 'site/lib/sid.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 function grab(src, name, end) {
   const a = src.indexOf('function ' + name), b = src.indexOf(end);
   if (a < 0 || b < a) throw new Error(name + ' not found');
@@ -173,7 +173,7 @@ const fs = require('fs'), path = require('path');
 const GAME = process.argv[2], ROOT = process.argv[3];
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
 const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
 const buildMap = new Function(grab('map.js', 'function buildMap', '// end of buildMap') + '\nreturn buildMap;')();
@@ -214,7 +214,7 @@ const fs = require('fs'), path = require('path');
 const GAME = process.argv[2], ROOT = process.argv[3];
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
 const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
 const src = PAGE;
@@ -262,7 +262,7 @@ const fs = require('fs'), path = require('path');
 const GAME = process.argv[2], ROOT = process.argv[3];
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
 const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
 const buildMap = new Function(grab('map.js', 'function buildMap', '// end of buildMap') + '\nreturn buildMap;')();
@@ -306,7 +306,7 @@ const fs = require('fs'), path = require('path');
 const GAME = process.argv[2], ROOT = process.argv[3];
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const PAGE = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
 const grab = (f, a, b) => { const i = PAGE.indexOf(a), j = PAGE.indexOf(b); if (i < 0 || j < i) throw new Error(a + ' not found in how-it-works.html'); return PAGE.slice(i, j); };
 const s = PAGE;
@@ -337,7 +337,7 @@ const fs = require('fs'), path = require('path');
 const GAME = process.argv[2], ROOT = process.argv[3];
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const s = fs.readFileSync(path.join(GAME, 'how-it-works.html'), 'utf8');
 if (s.indexOf('function flyMine') < 0) throw new Error('flyMine not found in how-it-works.html');
 const flyMine = new Function(s.slice(s.indexOf('function flyMine'), s.indexOf('// end of flyMine')) + '\nreturn flyMine;')();

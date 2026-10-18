@@ -19,7 +19,7 @@
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const REPO = path.resolve(ROOT, '../../../..');
-const { CPU } = require(path.join(REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(REPO, 'kit/cpu/cpu6502.js'));
 const { PortChips } = require(path.join(REPO, 'kit/c64/lockstep.js'));
 require(path.join(ROOT, 'src/kernal.js'));
 require(path.join(ROOT, 'src/core.js'));

@@ -4,13 +4,13 @@
 // - single instructions: ADC and SBC flags in both modes (decimal by the NMOS rules of Bruce Clark's
 //   "Decimal Mode", appendix A), compares, BIT, shifts and rotates, INC/DEC wrap, the stack, JSR/RTS,
 //   branches across a page, JMP ($xxFF), zero-page wrap, and each undocumented opcode;
-// - the opcode table against kit/c64/opcodes.py, and each instruction's length and cycles;
+// - the opcode table against kit/cpu/opcodes.py, and each instruction's length and cycles;
 // - the C64's map: the port read back and the banking table as VICE (x64sc, vice-mcp 3.13.1)
 //   gave them on 26 September 2026, I/O handed to the caller, ROM stops and hooks;
 // - call, run, irq, nmi, the KERNAL's interrupt paths, the address maps, a snapshot's modules;
 // - programs: multiply, BCD counting and conversion, copies, sorting, recursion, a jump table,
 //   self-modifying code, an LFSR, a frame loop with its interrupt.
-// Run: node kit/c64/test_cpu6502.js
+// Run: node kit/cpu/test_cpu6502.js
 // The simulator was also checked against Tom Harte's SingleStepTests and against VICE itself, which
 // need downloads and the emulator: kit/c64/check_cpu6502.js.
 
@@ -327,11 +327,11 @@ for (const [m, z, c, n] of [[0x40, 1, 1, 0], [0x41, 0, 0, 1], [0x3F, 0, 1, 0], [
       'import json, sys; sys.path.insert(0, sys.argv[1]); from opcodes import ALL; print(json.dumps(ALL))', __dirname],
       { encoding: 'utf8' }));
   } catch (e) {
-    expect('the table agrees with kit/c64/opcodes.py', { error: String(e).split('\n')[0] }, { error: null });
+    expect('the table agrees with kit/cpu/opcodes.py', { error: String(e).split('\n')[0] }, { error: null });
   }
   if (py) {
     const differ = OPCODES.map(([n, m], op) => (py[op] || []).join(' ') === n + ' ' + m ? null : hex(op)).filter(Boolean);
-    expect('the table agrees with kit/c64/opcodes.py', { differ: differ.join(' ') }, { differ: '' });
+    expect('the table agrees with kit/cpu/opcodes.py', { differ: differ.join(' ') }, { differ: '' });
   }
   const control = /^(brk|jmp|jsr|rts|rti|bcc|bcs|beq|bmi|bne|bpl|bvc|bvs|jam)$/;
   const wrong = [];

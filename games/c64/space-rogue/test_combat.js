@@ -7,7 +7,7 @@
 // load_model's own relocation). Each pass runs
 // everything the loop calls before its drawing, with no key pressed; the drawing is skipped as
 // frame_skip3 ($A470) skips it when a pass runs late. This test
-// - steps the page's 6502 and the kit's (kit/c64/cpu6502.js) through every documented opcode from
+// - steps the page's 6502 and the kit's (kit/cpu/cpu6502.js) through every documented opcode from
 //   random states, and compares the registers and the memory;
 // - runs fights in both: the page's on the bytes ships.html reads (the engine listing's, with the
 //   flight listing's maths at $A500-$BCFF and the display buffer at $4000-$63FF empty), the kit's on
@@ -17,7 +17,7 @@
 //   node test_combat.js
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
-const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
+const { CPU } = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const page = g.read('ships.html');
 const MODELS = JSON.parse(page.match(/<script type="application\/json" id="sr-models">([^<]*)<\/script>/)[1]);

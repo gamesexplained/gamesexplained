@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Hold the page's multiplex (the rd-mux block of index.html) against the game's own sprite sort
 // ($3559) and placing ($36D9), and the two raster handlers that reuse sprites ($3831, $387D) run
-// through the game's interrupt entry ($3A0D), in kit/c64/cpu6502.js over the committed listing:
+// through the game's interrupt entry ($3A0D), in kit/cpu/cpu6502.js over the committed listing:
 // 3,000 random rooms of ten objects. The order, the six sprites, the reused objects, the start of
 // the raster list, the split lines, every sprite X and $D010 at the top, after the first split and
 // after the second must agree. Needs no snapshot and no emulator. Exits 1 on any difference.
@@ -9,7 +9,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const ram = g.listing().ram;
 const { multiplex } = g.run('index.html', 'rd-mux', 'multiplex');

@@ -38,15 +38,18 @@ in order:
    to `80-retro`. `build.py` publishes every game folder, so an untouched
    template would go live as a page of placeholders.
 
-   Platform knowledge is in `kit/skills/<platform>/`. For the C64:
-   `kit/skills/c64/c64-reference` (facts about the machine — consult it, do not
-   recall from training), `kit/skills/c64/tool-vice-mcp` and
-   `kit/skills/c64/tool-regen2000` (how to drive the recommended tools).
+   Platform knowledge is in `kit/skills/<platform>/`. Its `steps` skill
+   says which tool does each step the core skills name on that machine.
+   For the C64: `kit/skills/c64/steps`, `kit/skills/c64/c64-reference`
+   (facts about the machine — consult it, do not recall from training),
+   `kit/skills/c64/tool-vice-mcp` and `kit/skills/c64/tool-regen2000` (how
+   to drive the recommended tools).
 4. **Export the symbol map** after every annotation session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`. This
    file, `symbols.json`, is the canonical technical result. Then build the
    listing the Source tab renders from it and your snapshot:
-   `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot.vsf>`.
+   `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot>`
+   (the platform's `steps` skill, "snapshot", names its format).
    Both are committed; the snapshot and disassembler project stay in
    `work/`. A game that is several loads has a symbol map and a listing
    for each part, and both scripts take the part's folder

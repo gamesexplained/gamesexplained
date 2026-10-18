@@ -22,7 +22,7 @@
 // VICE and the simulator agreed on 14,720 cases in 17 programs, to the byte and the cycle.
 
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
-const { CPU, OPCODES, readSnapshot } = require('./cpu6502');
+const { CPU, OPCODES, readSnapshot } = require('../cpu/cpu6502');
 
 // --- the vectors -----------------------------------------------------------------------------------
 const VECTORS = 'https://raw.githubusercontent.com/SingleStepTests/65x02/main/6502/v1/';

@@ -55,12 +55,12 @@ class ListingAlignment(unittest.TestCase):
             self.assertEqual(rows(p), before)
 
     def test_opcode_tool_reads_the_game(self):
-        # kit/c64/opcodes.py imports symbols_export only when it runs, so importing it proves nothing
+        # kit/cpu/opcodes.py imports symbols_export only when it runs, so importing it proves nothing
         with tempfile.TemporaryDirectory() as d:
             p = Path(d)
             fixture(p)
-            self.assertIn('lax $DC36,y', run(KIT / 'c64' / 'opcodes.py', p).stdout)
-            self.assertIn('$8000', run(KIT / 'c64' / 'opcodes.py', p, '--refs', '$DC36').stdout)
+            self.assertIn('lax $DC36,y', run(KIT / 'cpu' / 'opcodes.py', p).stdout)
+            self.assertIn('$8000', run(KIT / 'cpu' / 'opcodes.py', p, '--refs', '$DC36').stdout)
 
 
 if __name__ == '__main__':

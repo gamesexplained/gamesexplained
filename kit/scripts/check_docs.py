@@ -30,6 +30,8 @@
                      meant for the second never reaches it
   kit/*/INSTALL.md   one section per system, and one measurements row per build on each kind
                      of computer in site/status.json: a run corrects them in place
+  kit/skills/<platform>/steps   a row for every step the core skills hand to a platform's
+                     tool, and every row the core skills name is one of them (kit/PLATFORMS.md)
 
 Usage: check_docs.py      exit 1 on failure
 """
@@ -299,6 +301,40 @@ def platform_notes(paths=None, hosts=None):
     return bad
 
 
+# The rows of each platform's steps table (kit/skills/<platform>/steps): the core skills say
+# what a step needs and name the row; the platform's table says which tool does it there.
+STEP_ROWS = ("snapshot", "media", "disassembler", "census", "references", "cpu", "simulator",
+             "machine", "lockstep", "frame", "sound", "fixes", "page")
+STEP_NAMED = re.compile(r"/steps`?,\s+\"([a-z]+)\"")
+
+
+def steps_tables(root=ROOT):
+    """Every platform's steps table has every row, and every row the core skills name exists.
+    A machine without a tool for a step still has the row, saying so and what to do instead:
+    the core skills point at it rather than at one machine's tool (kit/PLATFORMS.md)."""
+    bad = 0
+    for d in sorted(glob.glob(os.path.join(root, "kit", "skills", "*", ""))):
+        if os.path.basename(os.path.dirname(d)) in ("core", "cpu"):
+            continue
+        path = os.path.join(d, "steps", "SKILL.md")
+        rel = os.path.relpath(path, root)
+        if not os.path.exists(path):
+            print(f"  x  {rel}  missing: a platform says which tool does each core step (kit/PLATFORMS.md)")
+            bad += 1
+            continue
+        rows = re.findall(r"^\|\s*`([a-z]+)`\s*\|", open(path, encoding="utf-8").read(), re.M)
+        missing = [r for r in STEP_ROWS if r not in rows]
+        if missing:
+            print(f"  x  {rel}  no row for {', '.join(missing)}: a step with no tool says \"none yet\" and what to do")
+            bad += 1
+    for f in sorted(glob.glob(os.path.join(root, "kit", "skills", "core", "*", "*.md"))):
+        for name in sorted(set(STEP_NAMED.findall(open(f, encoding="utf-8").read())) - set(STEP_ROWS)):
+            print(f"  x  {os.path.relpath(f, root)}  names a steps row, \"{name}\", that no table has:"
+                  f" {', '.join(STEP_ROWS)}")
+            bad += 1
+    return bad
+
+
 def before_retro(game, ci=None):
     """True while a game's run has not reached its retrospective: game.json's tier is still the
     template's "none" (80-retro, step 7 sets it), and this is not a pull request's CI, where the
@@ -362,6 +398,7 @@ def main():
     fails += class_collisions()
     fails += duplicate_ids()
     fails += platform_notes()
+    fails += steps_tables()
     notes = sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, "kit", "template", "*.md")))
     for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.md"))):
         if os.path.basename(f) not in notes:

@@ -208,7 +208,7 @@ extended colour mode.
 
 ## Hardware registers
 
-From `kit/c64/census.py` over every decoded instruction: 298 instructions
+From `kit/cpu/census.py` over every decoded instruction: 298 instructions
 name 67 registers.
 
 | Register | What the game does with it | Where |

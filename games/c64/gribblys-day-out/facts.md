@@ -355,7 +355,7 @@ interrupt handler) as the control in every count.
 
 ## The pages' ports
 
-Each runs the game's own routine in `kit/c64/cpu6502.js` on the bytes of
+Each runs the game's own routine in `kit/cpu/cpu6502.js` on the bytes of
 `listing.json` beside the port taken from `index.html`, and run in the
 kit's tests.
 

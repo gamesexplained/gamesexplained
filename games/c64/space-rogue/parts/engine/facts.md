@@ -114,7 +114,7 @@ flown (`$0838`) only the first 25 entries count, up to V.
   (`engine_damage`, `$75EE`).
 - The player's thrust is the engine's (`$073B`) times 8 / (8 + the
   cargo slots in use) (`frame_update`).
-- *Measured*, 15 October 2026, on the engine in `kit/c64/cpu6502.js`
+- *Measured*, 15 October 2026, on the engine in `kit/cpu/cpu6502.js`
   (`test_combat.js`): one pass of `turn_objects` (`$7634`) with a rate
   of 1 turns the player 1/1024 of a turn (keys reach 70, 24.6 degrees a
   pass; `joy_rates`, `$24A3`, reach 10) and a computer ship its type's
@@ -193,7 +193,7 @@ flown (`$0838`) only the first 25 entries count, up to V.
 - `ship_ai` (`$3689`) runs every 17th call (`ai_tick` counts 16 down
   to -1); each ship reconsiders its target, attitude and tactic every
   third of those. *Simulated*, 15 October 2026: the engine's own main
-  loop run in `kit/c64/cpu6502.js` changed tactics only on passes 17
+  loop run in `kit/cpu/cpu6502.js` changed tactics only on passes 17
   apart (`test_combat.js`). Ten tactics
   (`tactic_names`, `$0CAE`): cruise, follow, pursue, close, swerve,
   stand, circle, flee, elude, ram, each with a steering mode, an angle,

@@ -1,6 +1,6 @@
 /* Chiller: the page's widgets. Pictures are drawn from listing.json (the bytes the Source tab
    shows) with ../../lib/c64.js. createDriver() is the music driver ($60A0-$61F1), checked
-   write for write against the game's own code in kit/c64/cpu6502.js (work/test_music.js). */
+   write for write against the game's own code in kit/cpu/cpu6502.js (work/test_music.js). */
 (function () {
   'use strict';
   const NAMES = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',

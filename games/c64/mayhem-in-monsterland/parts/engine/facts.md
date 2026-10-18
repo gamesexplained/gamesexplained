@@ -150,7 +150,7 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   land's file chosen by the map's tune markers, and the ending's. The
   page's port of the driver reproduces the original's SID writes for all
   24, frame by frame from start to end (`work/music/test.js`, run in
-  `kit/c64/cpu6502.js`: 8,057,196 frames, 0 mismatches).
+  `kit/cpu/cpu6502.js`: 8,057,196 frames, 0 mismatches).
 - No tune uses the filter command (`$17`); `$D417` stays 0.
 - In play the driver works voice 3 alone (`$045E`, `$088F`): the land,
   sad and power-up tunes store only that voice. The volume shadow `$0965`

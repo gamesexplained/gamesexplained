@@ -35,6 +35,18 @@ for _i, _r in enumerate(VIA):
     NAMES[0xFE40 + _i] = f"sysvia_{_r}"
     NAMES[0xFE60 + _i] = f"uservia_{_r}"
 
+# For the register census (kit/cpu/census.py, whose header explains each). Repeats are
+# folded only where kit/skills/bbc/bbc-reference, "SHEILA", gives them: the CRTC every 2
+# bytes and the VIAs every 16. Every other address in the I/O pages is counted as itself.
+CENSUS_CHIPS = [(0xFE00, 0xFE07, 0x01, 0xFE01),    # 6845 CRTC
+                (0xFE40, 0xFE5F, 0x0F, 0xFE4F),    # system VIA
+                (0xFE60, 0xFE7F, 0x0F, 0xFE6F)]    # user VIA
+CENSUS_PAGES = [(0xFC00, 0xFCFF, "fred"), (0xFD00, 0xFDFF, "jim"),
+                (0xFE08, 0xFE0F, "acia"), (0xFE10, 0xFE1F, "serial_ula"),
+                (0xFE20, 0xFE2F, "video_ula"), (0xFE30, 0xFE3F, "romsel"),
+                (0xFE80, 0xFE9F, "fdc"), (0xFEA0, 0xFEBF, "econet"),
+                (0xFEC0, 0xFEDF, "adc"), (0xFEE0, 0xFEFF, "tube")]
+
 
 if __name__ == "__main__":
     for a, n in sorted(NAMES.items()):

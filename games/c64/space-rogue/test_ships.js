@@ -8,7 +8,7 @@
 // every code and its patterns and screen matrix nybble compared with the page's colour().
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
-const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
+const { CPU } = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const { SRShips } = g.run('ships.html', 'sr-ships', 'SRShips');
 const MODELS = JSON.parse(g.read('ships.html').match(/<script type="application\/json" id="sr-models">([^<]*)<\/script>/)[1]);

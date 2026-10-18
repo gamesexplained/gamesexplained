@@ -9,7 +9,7 @@
 //                                            port.js: a file holding createDriver, for drafts)
 const fs = require('fs');
 const path = require('path');
-const { CPU } = require(path.join(__dirname, '../../../../kit/c64/cpu6502'));
+const { CPU } = require(path.join(__dirname, '../../../../kit/cpu/cpu6502'));
 const L = require(path.join(__dirname, '../parts/engine/listing.json')).records;
 const N = +process.argv[2] || 30000;
 const src = process.argv[3] ? fs.readFileSync(process.argv[3], 'utf8')

@@ -6,7 +6,7 @@
 // when the game's code calls it. A routine that waits cannot stand in: nothing moves while it runs.
 const fs = require('fs'), path = require('path');
 const lib = require('./lib.js');
-const { CPU } = require(path.join(lib.REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(lib.REPO, 'kit/cpu/cpu6502.js'));
 
 // The code labels of the parts in memory together (flight: the engine and SEG0), by name.
 function labels(parts) {

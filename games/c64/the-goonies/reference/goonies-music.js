@@ -4,7 +4,7 @@
 // voices' data pointers at $BB1C, $BB20 and $BB24), so each function reads like the routine it is
 // named after. createDriver refers to nothing outside itself: the player runs its source text in
 // an AudioWorklet.
-// Checked against the game's own code run in kit/c64/cpu6502.js (tests/music.js): every SID
+// Checked against the game's own code run in kit/cpu/cpu6502.js (tests/music.js): every SID
 // register after every frame, for the four tunes.
 var GOONMUSIC = {
   createDriver: function (data) {

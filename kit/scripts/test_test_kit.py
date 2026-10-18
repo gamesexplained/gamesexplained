@@ -39,7 +39,7 @@ class Discovery(unittest.TestCase):
     def test_it_finds_the_kinds_of_test_that_exist(self):
         out = listed()
         for known in ("kit/c64/test_frame.py",            # unittest, run as a script
-                      "kit/c64/test_cpu6502.js",          # node
+                      "kit/cpu/test_cpu6502.js",          # node
                       "kit/scripts/test_tools.py",        # script with its own main
                       "kit/spectrum/test_z80.py",         # needs an external oracle
                       "kit/scripts/edit.py --test"):      # a legacy --test self-test

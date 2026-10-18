@@ -422,7 +422,7 @@ reads, the bank `cart` is the cartridge bank selected at that moment,
   `listing.py <part> --relabel`, after changing a row; `check_listing.py`
   fails until then.
 
-`kit/c64/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
+`kit/cpu/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
 having no cartridge map; check a port of such a game against a trace
 recorded in the emulator (`70-minisite`).
 
@@ -497,6 +497,35 @@ range back with `coverage.include` in `game.json` and describe it.
 `listing.py` names the range whenever it holds data and `game.json` has
 not said what it is.
 
+## Code and tables under the I/O area
+
+A game that banks the I/O chips out (`$01`) can run code and keep tables
+in the RAM beneath them, which the ledger's default excludes as I/O. Look
+for code in a register census of the traced code (instructions *located*
+in the I/O range) and for the bank switch around them; then give the
+range back with `coverage.include` in `game.json`. The disassembler will
+name those addresses after the chips' registers, so say in each comment
+which meaning is live.
+
+An address there has one label but two meanings, and each instruction
+sees one of them. `listing.py` names an operand there after the chip's
+register when the instruction lies outside the range, and after the
+game's symbol when it lies inside, since code there can only run with
+the chips banked out; a jump or a call always gets the code's symbol.
+That rule is wrong for code elsewhere that banks the chips out and reads
+or writes the RAM beneath, so go through every bank switch and list
+those instructions in `game.json` under `io`, one row per stretch,
+`["$B275", "$B2F0", "ram", "banked out from $B273 to $B2F1"]` (`registers`
+for code in the range that banks the chips back in; the last row that
+holds the instruction decides). `listing.py <game dir> --relabel` puts a
+change to `io` into `listing.json` without the snapshot. An instruction
+reached both ways keeps one name; say the other in its comment.
+
+A game can also keep graphics there without banking anything, for the
+video chip alone ("RAM the CPU cannot see", above); `listing.py` names
+that RAM whenever it holds data and `game.json` has not said what it is
+(`50-coverage`, "Data the ledger cannot see").
+
 ## Undocumented opcodes
 
 The 6510 runs the NMOS 6502's undocumented opcodes, and protection code
@@ -509,12 +538,12 @@ is unstable: A = X = (A OR a constant) AND the operand, and the constant
 differs between chips. VICE fixes it at `$EE`, so code that depends on it
 can behave differently on a real machine. `ANE` (`$8B`, A = (A OR a
 constant) AND X AND the operand) is unstable the same way, and VICE takes
-`$EF` for it. `kit/c64/cpu6502.js` runs all 256 opcodes as VICE's x64sc
+`$EF` for it. `kit/cpu/cpu6502.js` runs all 256 opcodes as VICE's x64sc
 does, these constants included. An absolute indexed address
 that passes `$FFFF` wraps round to zero page: `DCP $FF86,X` with X = `$FF`
 works on `$0085`. Before saying nothing reads an address, decode the gaps
 in the code with a decoder that knows these opcodes, and look for bases
-that an index can carry round. `kit/c64/opcodes.py` does both (`--refs`),
+that an index can carry round. `kit/cpu/opcodes.py` does both (`--refs`),
 with all 256 opcodes under the names VICE's monitor gives them; `--check`
 compares its table with the emulator's disassembler.
 
@@ -607,7 +636,7 @@ a block's layout garbled.
   `C64MEM` module header, and the RAM underneath them holds unrelated
   values. Screen memory is the second worst, because a running game has
   moved on since the save. Pick two bytes of the game's own code.
-  `readSnapshot` in `kit/c64/cpu6502.js` reads the modules by name: the
+  `readSnapshot` in `kit/cpu/cpu6502.js` reads the modules by name: the
   port (data at offset 205, direction at 206), the RAM, x64sc's
   registers and cycle count from its `MAINC64CPU` module, and the video
   chip's registers and interrupt latch from `VIC-IISC`.

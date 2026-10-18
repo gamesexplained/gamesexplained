@@ -15,7 +15,7 @@
 //   node games/c64/castle-master/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
+const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'cm-music', 'createDriver');
 g.lib('sid');

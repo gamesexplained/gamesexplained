@@ -128,7 +128,7 @@ try {
   // ---- the kit's 6502, as a page loads it -----------------------------------------------------
   g.lib('cpu6502');
   check('lib: cpu6502 gives C64Cpu, the kit\'s simulator', globalThis.C64Cpu
-        && globalThis.C64Cpu.CPU === require(path.join(__dirname, '..', 'c64', 'cpu6502.js')).CPU);
+        && globalThis.C64Cpu.CPU === require(path.join(__dirname, '..', 'cpu', 'cpu6502.js')).CPU);
   const served = spawnSync('python3', ['-c', 'import json, build; print(json.dumps(build.KIT_LIB))'],
                            { cwd: __dirname, encoding: 'utf8' });
   let kitLib = null;

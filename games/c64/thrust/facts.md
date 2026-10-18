@@ -117,7 +117,7 @@ Hubbard (`features.md`); nothing in the image names him.
 
 ## Hardware register census
 
-From `kit/c64/census.py` over `play.vsf`, 124 instructions naming 48
+From `kit/cpu/census.py` over `play.vsf`, 124 instructions naming 48
 registers. Grouped:
 
 | Registers | Accesses | First at | What for |

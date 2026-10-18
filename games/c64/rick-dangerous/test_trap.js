@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold the page's trapRun (the rd-trap block of index.html) against the game's own trap handler
-// ($1A72, which runs trap_run, $1ACF) in kit/c64/cpu6502.js over the committed listing: every trap
+// ($1A72, which runs trap_run, $1ACF) in kit/cpu/cpu6502.js over the committed listing: every trap
 // type 24 to 70 put in object slot 2 at six places (one fixed, five random), set off, and stepped
 // until its script ends. Position and frame must agree at every step, and the game must end the
 // run on the step the page does. Needs no snapshot and no emulator. Exits 1 on any difference.
@@ -8,7 +8,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const { trapRun } = g.run('index.html', 'rd-trap', 'trapRun');
 const ram = g.listing().ram;

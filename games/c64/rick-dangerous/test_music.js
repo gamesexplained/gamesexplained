@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold the page's music player (the rd-music block of index.html: the game's own player at
-// $5042-$5730 on the kit's simulator, kit/c64/cpu6502.js, as the site serves it to the page)
+// $5042-$5730 on the kit's simulator, kit/cpu/cpu6502.js, as the site serves it to the page)
 // against the same code run on the simulator directly, over the committed listing. For each of
 // the seven tunes: start it as play_tune does ($567D with A = the tune), then call tune_play
 // ($5042) once a frame until the tune ends and 50 frames after; every SID write of every call must
@@ -13,7 +13,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const kit = require(path.join(ROOT, 'kit/c64/cpu6502.js')), { CPU } = kit;
+const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname);
 const { createDriver } = g.run('index.html', 'rd-music', 'createDriver');
 const ram = g.listing().ram;

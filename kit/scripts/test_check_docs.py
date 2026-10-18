@@ -181,6 +181,40 @@ class PlatformNotes(unittest.TestCase):
         self.assertEqual(notes('## Linux\n\n## Linux — Ubuntu 26.04 desktop, 6 October 2026\n'), 1)
 
 
+def steps(files):
+    """How many problems check_docs.py finds in a kit/skills/ holding these files."""
+    with tempfile.TemporaryDirectory() as d:
+        for rel, text in files.items():
+            f = Path(d) / rel
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text(text, encoding='utf-8')
+        with contextlib.redirect_stdout(io.StringIO()):
+            return check_docs.steps_tables(d)
+
+
+ROWS = '| Row | Core step | On the machine |\n|---|---|---|\n' + \
+    ''.join(f'| `{r}` | a step | a tool |\n' for r in check_docs.STEP_ROWS)
+CORE = 'kit/skills/core/50-coverage/SKILL.md'
+
+
+class StepsTables(unittest.TestCase):
+    def test_every_row(self):
+        self.assertEqual(steps({'kit/skills/zx81/steps/SKILL.md': ROWS,
+                                'kit/skills/cpu/z80/SKILL.md': '# no table\n',
+                                CORE: 'the census (`kit/skills/<platform>/steps`,\n"census")\n'}), 0)
+        self.assertEqual(steps({'kit/skills/zx81/steps/SKILL.md': ROWS.replace('| `sound` |', '| sound |')}), 1)
+        self.assertEqual(steps({'kit/skills/zx81/zx81-reference/SKILL.md': '# ZX81\n'}), 1)
+
+    def test_core_names_a_row(self):
+        self.assertEqual(steps({'kit/skills/zx81/steps/SKILL.md': ROWS,
+                                CORE: 'the tune (`kit/skills/<platform>/steps`, "music")\n'}), 1)
+
+    def test_the_kit_itself(self):
+        self.assertEqual(steps({}), 0)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check_docs.steps_tables(), 0)
+
+
 SPECTRUM = "kit/skills/spectrum/zx-spectrum-reference/SKILL.md"
 NOTE = "Some games sync to the raster this way (the FAQ names Arkanoid).\n"
 

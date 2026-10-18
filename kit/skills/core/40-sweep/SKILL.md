@@ -13,7 +13,8 @@ snapshot.
 ## Hardware register census
 
 Extract every access to the I/O region from the disassembly, group by
-register, and demand an attributed feature for each. Registers *never*
+register, and demand an attributed feature for each; on a machine whose
+I/O is ports, those are its `IN` and `OUT` instructions. Registers *never*
 touched are as informative as those hammered. A game that writes no sound
 envelope register at all is doing its whole audio with frequency writes
 and a frequency of zero for silence; one census explains the entire sound
@@ -24,7 +25,7 @@ routine. Every row with a "?" is a work item.
 
 Take the accesses from every decoded instruction, not from a text search:
 a disassembler's search can stop at a fixed number of results and say
-nothing. On the C64, `python3 kit/c64/census.py <game or part dir> <snapshot.vsf>`
+nothing. The platform's census (`kit/skills/<platform>/steps`, "census")
 lists each register with its instructions, counts and first address, then
 the registers nothing names.
 
@@ -44,8 +45,8 @@ producers and consumers separately. Equality establishes a twin, not an
 unread copy: runtime dictionaries, buffers and saved frames can still match
 an initialization seed. A byte that differs is usually a variable written at
 run time, but an unchanged byte is not proof of non-use. When no instruction
-can write the bytes that differ (`opcodes.py --refs`, and no pointer built to
-them), they were changed from outside the game, often before a freezer saved
+can write the bytes that differ (the platform's references search, and no
+pointer built to them), they were changed from outside the game, often before a freezer saved
 it. Then the copy made earlier is the right one, and the next time the game
 copies again the damage reaches the screen: a bug the player sees, worth
 running live. Describe the copy the code reads, and name an unproved

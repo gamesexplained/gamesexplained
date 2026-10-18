@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold How it works' port of animate_face (animateFace in index.html, the face widget) against the
-// game's own routine at $6AAD, run in kit/c64/cpu6502.js on the bytes of the committed listing.json:
+// game's own routine at $6AAD, run in kit/cpu/cpu6502.js on the bytes of the committed listing.json:
 // every frame counter 0-255, eight times over, with random SID ($D41B) and raster ($D012) bytes and
 // points waiting to be added, taken off, both or neither. After every call the three sprite shapes,
 // $3040-$30FF, must agree byte for byte. Needs no snapshot and no emulator. Exits 1 on any difference.
@@ -8,7 +8,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64');
 

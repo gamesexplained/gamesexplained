@@ -16,7 +16,7 @@
 // each identical case's cycles on the game and the port's counts of its work (scripts/time-routines.js).
 const path = require('path');
 const lib = require('./lib.js');
-const { CPU } = require(path.join(lib.REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(lib.REPO, 'kit/cpu/cpu6502.js'));
 const { PortChips } = require(path.join(lib.REPO, 'kit/c64/lockstep.js'));
 const standin = require('./standin.js');
 const { loadPort } = require('./port.js');

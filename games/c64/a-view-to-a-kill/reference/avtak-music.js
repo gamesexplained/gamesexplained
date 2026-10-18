@@ -11,7 +11,7 @@
 //
 // data: { tunes: [intro, paris] }, each { notes: bytes from $E000 on, state: the driver's
 // variables as the program holds them (intro $C600-$C63F, Paris $7A18-$7A3F) }.
-// Checked against the game's own code run in kit/c64/cpu6502.js (work/t_music.js): every SID
+// Checked against the game's own code run in kit/cpu/cpu6502.js (work/t_music.js): every SID
 // register write, in order, every frame, for a whole pass of each tune and into the next.
 //
 // The games call the driver from the raster interrupt, once a frame. When voice 1 reaches the
@@ -128,7 +128,7 @@ if (typeof module !== 'undefined') module.exports = { createDriver };
 // play(mem, base) takes the memory as a function of address and returns every write to $D418 with
 // its time in cycles, counted from the first write, instruction by instruction as the routine
 // takes them (the reads of ($FB),Y that cross a page take one cycle more). Checked against the
-// game's routines run in kit/c64/cpu6502.js (work/t_music.js): every write, and the cycles
+// game's routines run in kit/cpu/cpu6502.js (work/t_music.js): every write, and the cycles
 // between writes, for each of the four samples.
 const AVSpeech = (function () {
   'use strict';

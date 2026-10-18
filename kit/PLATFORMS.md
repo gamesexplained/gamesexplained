@@ -11,13 +11,14 @@ and it is the worked example for the next one.
 |---|---|---|
 | `kit/skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `kit/skills/c64/c64-reference` |
 | `kit/skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |
+| `kit/skills/<platform>/steps/` | which tool does each step the core skills name, one row each: `snapshot`, `media`, `disassembler`, `census`, `references`, `cpu`, `simulator`, `machine`, `lockstep`, `frame`, `sound`, `fixes`, `page`. A row the machine has no tool for says "none yet" and what to do instead; `check_docs.py` requires every row | `kit/skills/c64/steps` |
 | `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system, and the emulator's pass/fail per phase of `kit/EMULATOR.md` | `kit/c64/INSTALL.md` |
 | `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it. It declares `COMMANDS` (what its `main()` accepts) and `TOOL_NAMES` (the tool names `stop` takes) as module-level tuples, which the dispatcher reads to pick the platform when there are several; `kit/scripts/test_tools.py` checks the declaration against `main()`. The platform's own scripts call the dispatcher with `--platform <name>`. What is not about a machine (port probing, the pseudo-terminal wrapper, starting and stopping a tool, telling this clone's tools from another clone's, the shared-library check, the macOS `.dmg` unpack, and `verify-footprint`'s walk and verdict) is in `kit/scripts/launcher.py`: import it rather than copy it | `kit/c64/tools.py` |
 | `kit/<platform>/<tool>.py` | a scripting client per tool, for the loops that are too slow as single calls | `vice.py`, `r2000.py` |
 | `kit/<platform>/registers.py` | the I/O registers by name, `NAMES`, for the operands of the Source tab; without it an operand that sees the chips shows its address | `kit/c64/registers.py` |
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |
 | `kit/skills/<platform>/tool-<emulator>/workarounds.md` | what to do instead, one section per check that fails on some build | `tool-vice-mcp/workarounds.md` |
-| `site/lib/<platform>.js` | what the page needs that is specific to the machine; a kit script a page runs as it is, such as the machine's processor, is served beside it from `kit/<platform>/` (`KIT_LIB` in `kit/scripts/build.py`) rather than copied | `c64.js`, and the memory map in `memmap.js`; `kit/c64/cpu6502.js` as `lib/cpu6502.js` |
+| `site/lib/<platform>.js` | what the page needs that is specific to the machine; a kit script a page runs as it is, such as the machine's processor, is served beside it from `kit/<platform>/` or `kit/cpu/` (`KIT_LIB` in `kit/scripts/build.py`) rather than copied | `c64.js`, and the memory map in `memmap.js`; `kit/cpu/cpu6502.js` as `lib/cpu6502.js` |
 | `site/status.json` | the machine's entry under `systems` (its library size, with the source and the date it was read), and its cell in every row of `hosts`: what was measured on each kind of computer, and when | the `c64` entries |
 
 ## Where the shared scripts branch on the platform
@@ -27,13 +28,17 @@ These already read `platform` from `game.json` and need one entry each:
 - `kit/scripts/build.py`, the platform's display name.
 - `kit/scripts/symbols_export.py`, the standard coverage exclusions (stack,
   I/O) and the screen and character set sizes. `coverage.py` and
-  `listing.py` take their regions from here. Two more entries serve
+  `listing.py` take their regions from here. `cpu` names the processor
+  (`6502`, `z80`), which the shared 6502 tools in `kit/cpu/` check before
+  they read a game, and `edges` the addresses where the ledger always
+  starts a new region, so that one region never spans two of the
+  machine's areas: the bottom of each memory bank, the screen, the ROMs. Two more entries serve
   `listing.py`'s check for data the ledger cannot see: `hidden`, RAM a
   default exclusion covers but a game can still use, and `system`, the
   machine's own work area, never reported as the game's. `hidden` is also
   where an operand has two meanings, the chips' and the RAM's, and
-  `listing.py` picks one per instruction (`kit/skills/core/50-coverage`,
-  "A game can live under its I/O"). `io_only` is where only the chips
+  `listing.py` picks one per instruction (on the C64,
+  `kit/skills/c64/c64-reference`, "Code and tables under the I/O area"). `io_only` is where only the chips
   answer, with no RAM beneath (the BBC Micro's $FC00-$FEFF), so an operand
   there always gets the register's name. A machine whose screen always
   ends at the top of RAM gives `screen_top`, that address, in place of
@@ -61,13 +66,18 @@ copy of the C64's.
 | `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else. A machine whose cartridges switch banks also takes `read(path, bank=n)`, the bank's chips at their addresses, for a bank's part (`kit/c64/crt.py`) | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
 | `project.py` or `skoolkit.py` | `read_file(path) -> (blocks, symbols, comments)`, `write(gdir, snapshot, out=None) -> path` | `symbols_export.py` (`read_file`, `--project`/`--ctl`), `symbols_import.py` (`write`) |
 | `r2000.py` or `skoolkit.py` | `read_live(gdir=None) -> (blocks, symbols, comments)` from the running disassembler; `gdir` is the game's folder or a part's (`kit/scripts/parts.py`), for a client that keeps a disassembler per part | `symbols_export.py` (`read_live`), `coverage.py --live` |
-| `registers.py` | `NAMES`, the I/O registers by name, so an operand that sees the chips shows one | `listing.py` |
+| `registers.py` | `NAMES`, the I/O registers by name, so an operand that sees the chips shows one; on a 6502 machine also `CENSUS_CHIPS`, `CENSUS_PAGES` and `CENSUS_OTHER`, the chips, pages and other addresses the register census groups its rows by | `listing.py`, `kit/cpu/census.py` |
 
 A processor that two machines share lives in `kit/cpu/`: `m6502.py`, the
-6502's opcode table, decoding and operand text, and `asm6502.py`, the
-assembler the C64's test programs and the BBC's are written in. Each
-machine's `cpu.py` re-exports it and adds its own text: the C64's PETSCII
-and screen codes, the BBC Micro's ASCII. The Spectrum's `cpu.py`
+6502's opcode table, decoding and operand text; `asm6502.py`, the
+assembler the C64's test programs and the BBC's are written in;
+`opcodes.py`, the undocumented opcodes and the references search;
+`census.py`, the register census, which takes the machine's chips from
+its `registers.py`; and `cpu6502.js`, the simulator the tests and the
+pages run. Each machine's `cpu.py` re-exports `m6502.py` and adds its
+own text: the C64's PETSCII and screen codes, the BBC Micro's ASCII. What
+the core skills say about the processor's idioms is in
+`kit/skills/cpu/<processor>/`. The Spectrum's `cpu.py`
 re-exports `z80.py`, which moves to `kit/cpu/` when a second Z80 machine
 arrives, and adds `basic.py`, the machine's BASIC as the ROM keeps it. Two pieces are still the C64's: `site/lib/memmap.js`
 is one drawing for every machine but `kit/template/index.html` still names

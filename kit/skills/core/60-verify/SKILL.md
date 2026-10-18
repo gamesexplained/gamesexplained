@@ -24,17 +24,15 @@ Before reporting that something is missing, ask what encoding, indirection
 or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
-every index that can reach it: on the C64,
-`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`; on
-the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
-<address>`, which also lists where the address is stored as a word.
+every index that can reach it, with the platform's references search
+(`kit/skills/<platform>/steps`, "references").
 
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived
 from the code misses what the code does off the path you read. Search
 with the game's own movement code instead: drive the player with input on
-the CPU simulator (on the C64, `kit/c64/machine.js`; on the 48K Spectrum,
-`kit/spectrum/machine.js`) and watch for the
+the kit's model of the machine (`kit/skills/<platform>/steps`,
+"machine") and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 
@@ -249,7 +247,7 @@ list what the test ignores, or what the deferred part requires, and try it.
 
 A value the player sets at the start, a password or a difficulty, is
 the same kind of test at a distance: find every reader of it
-(`opcodes.py --refs`), not only the routine that sets it. The one reader
+(the references search), not only the routine that sets it. The one reader
 may be at the end of the level, and decide whether it can be won at all.
 So is a value the start of a new game leaves alone. List the variables
 play changes that the new-game routine does not set, and read every

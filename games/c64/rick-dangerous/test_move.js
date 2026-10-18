@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold the page's rickStep (the rd-move block of index.html) against the game's own move_rick
-// ($0B2A) run in kit/c64/cpu6502.js over the committed listing. The room is laid out the game's
+// ($0B2A) run in kit/cpu/cpu6502.js over the committed listing. The room is laid out the game's
 // way: the tile flags built by $4081 from the level's eight thresholds, and the room map at $BA00
 // given open ground over a floor, either an ordinary one (code $C1, flags $48) or a springy one
 // ($BE, flags $60). 400 runs of 80 steps of random stick (up, left, right, nothing), kept inside
@@ -10,7 +10,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const { rickStep } = g.run('index.html', 'rd-move', 'rickStep');
 const ram = g.listing().ram;

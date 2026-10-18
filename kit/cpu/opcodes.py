@@ -1,31 +1,33 @@
 #!/usr/bin/env python3
-"""The 6510's whole instruction set, and the undocumented opcodes in a game's code.
+"""The NMOS 6502's whole instruction set, and the undocumented opcodes in a game's code.
 
-A disassembler that knows only the documented opcodes shows an undocumented
-one as a data byte, may decode the bytes after it as instructions they are
-not, and its cross-references miss whatever it touches. Protection code
-relies on exactly that (kit/skills/c64/c64-reference, "Undocumented
-opcodes"). This decodes with all 256 opcodes of the NMOS 6510, the table
-checked against VICE's own disassembler.
+For every machine built on the NMOS 6502: the C64's 6510 and the BBC Micro Model B's
+6502 run the same 256 opcodes. A disassembler that knows only the documented
+opcodes shows an undocumented one as a data byte, may decode the bytes after it as
+instructions they are not, and its cross-references miss whatever it touches.
+Protection code relies on exactly that (kit/skills/c64/c64-reference, "Undocumented
+opcodes"). This decodes with all 256, the table checked against VICE's own
+disassembler. It is also the references search the core skills name for a 6502
+machine (kit/skills/<platform>/steps, "references").
 
 Usage:
-  opcodes.py <game dir> [<snapshot.vsf>] [--live]
+  opcodes.py <game dir> [<snapshot>] [--live]
       every undocumented opcode inside a code block, decoded, with what a
       decoder of the documented set makes of the same bytes; then every byte
       block that sits between two code blocks, decoded as code
-  opcodes.py <game dir> [<snapshot.vsf>] [--live] --refs <address> [--reach N]
+  opcodes.py <game dir> [<snapshot>] [--live] --refs <address> [--reach N]
       every instruction in the code that can touch the address: by name, as
       a pointer, through an index of at most N (default 64), or through any
       index that carries it past $FFFF or round zero page
   opcodes.py --check
-      compare the table with the running emulator's disassembler, all 256
+      compare the table with the running C64 emulator's disassembler, all 256
       opcodes: size and addressing mode (needs `tools.py vice`; it writes
       1 KB at $C000, so not during a game you mean to keep)
 
-The bytes come from the snapshot when one is given, otherwise from the
-game's listing.json. The blocks come from symbols.json, or with --live from
-the running disassembler. Operands the game writes at run time are read as
-the image holds them.
+The bytes come from the snapshot when one is given (the platform's own form, read by
+kit/<platform>/snapshot.py), otherwise from the game's listing.json. The blocks come
+from symbols.json, or with --live from the running disassembler. Operands the game
+writes at run time are read as the image holds them.
 
 The documented set is listing.py's table; this adds the other 105.
 """
@@ -33,10 +35,11 @@ import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))   # symbols_export, read where it is needed
-sys.path.insert(0, HERE)                        # the tables moved here with the seam lift
-from cpu import OPS, LEN                       # the documented set, as the Source tab has it  # noqa: E402
-from snapshot import VSF_RAM_OFFSET            # noqa: E402
+# symbols_export, read where it is needed; appended, so that a caller's own tools.py
+# (kit/c64/codemap.py's) is found before kit/scripts/tools.py
+sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, HERE)
+from m6502 import OPS, LEN                     # the documented set, as the Source tab has it  # noqa: E402
 
 UNDOC = {}        # opcode: (mnemonic, mode), with VICE's names
 for base, name in ((0x00, "slo"), (0x20, "rla"), (0x40, "sre"), (0x60, "rra"),
@@ -113,12 +116,25 @@ def wrap_note(mode, base):
 
 
 # --- the game's bytes and blocks --------------------------------------------
-def image(gdir, vsf=None):
+def platform(gdir):
+    """The game's platform, refused unless the machine is a 6502 (symbols_export.PLATFORM_DEFAULTS)."""
+    from symbols_export import PLATFORM_DEFAULTS, platform_of
+    from parts import load_game       # a game's folder or, for a game of several loads, a part's
+    plat = platform_of(load_game(gdir))
+    cpu = PLATFORM_DEFAULTS.get(plat, {}).get("cpu")
+    if cpu != "6502":
+        sys.exit(f"{plat!r} is not a 6502 machine (its processor: {cpu or 'not given'}); its "
+                 f"references search is in kit/skills/{plat}/steps")
+    return plat
+
+
+def image(gdir, snap=None):
     """The 64 KB image and a mask of the bytes that are the game's: a snapshot's RAM, or
     listing.json's bytes, less what game.json and the platform exclude (the tracer follows
     calls into ROM through the RAM underneath, and that RAM is not the game's)."""
-    if vsf:
-        ram = open(vsf, "rb").read()[VSF_RAM_OFFSET:VSF_RAM_OFFSET + 0x10000]
+    if snap:
+        from symbols_export import platform_fn
+        ram = platform_fn(platform(gdir), "read", ("snapshot",))(snap)
         assert len(ram) == 0x10000, "snapshot too short"
         ram, known = bytearray(ram), bytearray(b"\x01" * 0x10000)
     else:
@@ -136,7 +152,7 @@ def image(gdir, vsf=None):
 def blocks_of(gdir, live):
     if live:
         from symbols_export import read_live
-        blocks, syms, _ = read_live("c64", gdir)
+        blocks, syms, _ = read_live(platform(gdir), gdir)
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms = s["blocks"], s["symbols"]
@@ -272,7 +288,7 @@ def refs(ram, known, blocks, target, reach):
 def check():
     """The table against VICE's monitor, which decodes every opcode: the same size and mode?"""
     import re
-    sys.path.insert(0, HERE)
+    sys.path.insert(0, os.path.join(os.path.dirname(HERE), "c64"))   # the C64 emulator's client
     from vice import connect, call, poke
     rpc = connect()
     call(rpc, "vice_execution_pause", {})
@@ -294,6 +310,12 @@ def check():
     return bad
 
 
+def snapshot_arg(argv):
+    """The snapshot named after the game's folder, or None: the second argument, unless it is
+    an option."""
+    return argv[1] if len(argv) > 1 and not argv[1].startswith("-") else None
+
+
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -301,10 +323,11 @@ def main():
     if argv[0] == "--check":
         sys.exit(1 if check() else 0)
     gdir = argv[0]
-    vsf = argv[1] if len(argv) > 1 and argv[1].endswith(".vsf") else None
-    ram, known = image(gdir, vsf)
+    snap = snapshot_arg(argv)
+    platform(gdir)
+    ram, known = image(gdir, snap)
     blocks, names = blocks_of(gdir, "--live" in argv)
-    source = f"bytes from {'the snapshot' if vsf else 'listing.json'}, blocks from " + \
+    source = f"bytes from {'the snapshot' if snap else 'listing.json'}, blocks from " + \
              ("the running disassembler" if "--live" in argv else "symbols.json")
     if "--refs" in argv:
         target = int(argv[argv.index("--refs") + 1].lstrip("$"), 16)

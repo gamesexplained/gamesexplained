@@ -58,6 +58,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.append(os.path.join(os.path.dirname(HERE), "cpu"))   # opcodes.py, the 6502's table
 from opcodes import END, operand  # noqa: E402
 from tools import MONITOR_PORT  # noqa: E402
 from opcodes import decode, LEN  # noqa: E402

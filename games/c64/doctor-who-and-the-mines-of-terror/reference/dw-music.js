@@ -2,7 +2,7 @@
 // site's SID player (../../lib/sid.js). createDriver refers to nothing outside itself: the player
 // runs its source text in an AudioWorklet. The game calls the player every frame and it works on
 // even frames only (music_update, $74EA); play() here is one frame, odd frames doing nothing.
-// Checked against the game's own code run in kit/c64/cpu6502.js (tests/music.js): every SID
+// Checked against the game's own code run in kit/cpu/cpu6502.js (tests/music.js): every SID
 // register after every frame, for the five tunes.
 const DWMUSIC = {
   createDriver: function (data) {

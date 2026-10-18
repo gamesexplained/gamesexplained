@@ -1,6 +1,6 @@
 // A C64 that runs a disk game's own code from the moment its boot program hands over, through
 // every load, for checking a port of a game that loads from disk as it plays: kit/c64/machine.js
-// (on kit/c64/cpu6502.js) with a disk drive, a stand-in for the KERNAL routines a game calls, and
+// (on kit/cpu/cpu6502.js) with a disk drive, a stand-in for the KERNAL routines a game calls, and
 // each frame kept for C64.renderFrame (site/lib/c64.js) and the SID's writes a frame at a time.
 // A Play tab never runs this: the page is a port (kit/skills/core/70-minisite, "Play"); this is the
 // game the port is checked against. Node only. Checked by kit/c64/test_c64run.js.

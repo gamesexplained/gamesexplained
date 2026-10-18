@@ -10,7 +10,7 @@
 //   node games/c64/creatures/test_gallery.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { crCreature } = g.run(page, 'cr-anim', 'crCreature');
 const mm = g.read(page).match(/const CREATURES = (\{.*?\});/);

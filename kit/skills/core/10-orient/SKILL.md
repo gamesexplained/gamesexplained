@@ -57,18 +57,18 @@ annotate it byte by byte.
    handler; that handler is the spine of the engine. Verify against a
    second known address before trusting it. A game whose interrupt
    handlers chain, each writing the next one's address into the vector,
-   shows only one of them in a vector read. Record a frame
-   (`kit/c64/frame.py capture` on the C64): its writes to the vector name
-   every handler in the chain, and tracing from all of them can reach code
-   that nothing else calls, such as the music driver. The line beside each
-   write is where the handler before it wrote the vector, usually a line
-   or a handler earlier than the one the named handler runs on; read the
-   handler's own write to the raster register for that.
+   shows only one of them in a vector read. Record a frame where the
+   platform has a recorder (`kit/skills/<platform>/steps`, "frame"): its
+   writes to the vector name every handler in the chain, and tracing from
+   all of them can reach code that nothing else calls, such as the music
+   driver. The line beside each write is where the handler before it
+   wrote the vector, usually a line or a handler earlier than the one the
+   named handler runs on; read the handler's own write to the register
+   that sets its line for that.
 4. **Save a snapshot** of the machine in play. Name it by state
-   (`work/play-round1.vsf`, not by timestamp) with the platform's own
-   snapshot extension (`kit/<platform>/INSTALL.md` and
-   `kit/skills/<platform>/` name it: a `.vsf` on the C64, a `.sna` on the
-   ZX Spectrum). This snapshot is the image
+   (`work/play-round1.<ext>`, not by timestamp) with the platform's own
+   snapshot extension (`kit/skills/<platform>/steps`, "snapshot"). This
+   snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
    more of the program. Save more at each distinct state you can reach:
    title, first frame of play, each interlude, death, game over.
@@ -97,11 +97,14 @@ annotate it byte by byte.
    interrupt vectors observed, what the loader appears to do in one
    paragraph. Someone else must be able to rebuild the snapshot from their
    own copy by following it.
-6. **Start the disassembler on the snapshot** and confirm it answers. Note
+6. **Start the disassembler on the snapshot** and confirm it answers, or
+   on a platform whose disassembler reads a control file, write the first
+   one (`kit/skills/<platform>/steps`, "disassembler"). Note
    which processor-port or banking configuration was active when the
    snapshot was taken: what is visible at a given address depends on it.
-7. **Map the disk's files onto memory.** Extract every file (on the C64,
-   `c1541` from the emulator's build reads a G64 or D64), then search the
+7. **Map the disk's files onto memory.** Extract every file (the
+   platform's tools for its disks and tapes: `kit/skills/<platform>/steps`,
+   "media"), then search the
    hand-over and play snapshots for each file's bytes in 16-byte pieces,
    take the offset most pieces agree on, and count the bytes equal there.
    A file that lands whole says what a region is before any code is read
@@ -238,5 +241,6 @@ original worth checking.
 ## Outputs
 
 `orientation.md` filled in; at least one steady-state snapshot in `work/`;
-the disassembler running on it; a first `work/annotations.jsonl` (the
-client script creates it on the first mutating call).
+the disassembler running on it, or its first control file; with a live
+disassembler, a first `work/annotations.jsonl` (the client script creates
+it on the first mutating call).

@@ -40,4 +40,4 @@ and load4's sprite table `$0F16`-`$0F24`). At 15 in 60 the 95 % interval for the
 - 7 October 2026, load1: holding Z, A, C, H and 1 changed `$2BC8` from `$EA` to `$60`
   (`parts/load1/facts.md`).
 - 15 October 2026: `test_music.js`, every SID write of nine tunes over 3,000 frames, port
-  against the driver on `kit/c64/cpu6502.js`: no difference.
+  against the driver on `kit/cpu/cpu6502.js`: no difference.

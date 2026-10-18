@@ -16,41 +16,29 @@ where the game reads the controls, and compare every pass. Menus,
 movement, fights and spells all come in one run, and a port that
 matches it byte for byte is the game's logic, not a likeness of it. For
 what the demonstration never does, write short input scripts in the same
-format and run them through both the port and the game's code in a 6502
-simulator. The port must count polls, not time: the game's delay loops do
+format and run them through both the port and the game's code in the
+kit's simulator for the machine's processor
+(`kit/skills/<platform>/steps`, "simulator"). The port must count polls, not time: the game's delay loops do
 not read the controls, so a port paced by the clock drifts off the
 recording within a menu or two.
 
 ## A whole game, checked against its own code
 
 With no demonstration to replay, run the game's own code beside the port
-and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
-machine for it: the simulator with a raster interrupt, the keyboard, the
-joystick and colour RAM around it (and with `collide: true` the sprite
-collisions), started from the listing's memory
-or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
-interrupt set as the game left it, counting passes where the main loop
-begins. On the 48K Spectrum,
-`kit/spectrum/machine.js` is: the Z80 with the frame's interrupt, the
-keyboard read through port `$FE` and contended memory around it, started
-from a `.sna` or the listing's memory, counting passes the same way; given
-`model: 128` it is the 128 instead, with its frame, its banks paged
-through `$7FFD` and its sound chip, and the lockstep compares the banks
-out of view as well.
-`kit/c64/lockstep.js` runs a port beside the C64's, and
-`kit/spectrum/lockstep.js` beside the Spectrum's, and each says what the
-port gives it: the checkpoints it yields, its raster waits (on the
-Spectrum, its HALTs), its polling loops and its interrupt handlers.
-Write the port to that from the start. A C64 game that keeps the KERNAL
-and reads whole lines through `CHRIN` needs neither:
-`kit/c64/kernal_lines.js` runs it a typed line at a time on the
-simulator, with the KERNAL's line routines as hooks, and the test
-compares the two sides at each line the game reads, with the same jiffy
-clock handed to both. A C64 game that loads from disk as it plays needs
-the drive: `kit/c64/c64run.js` runs it from where its boot program hands
-over, through every load, with the KERNAL's disk routines as hooks, on
-the files `kit/c64/disk.py pack` reads off its images in `work/`. Each
-file's header is its manual.
+and compare them pass by pass. The machine for it is the kit's simulator
+with the machine's interrupt, its keyboard and its other inputs around
+it, started from the listing's memory or a snapshot of play, counting
+passes where the main loop begins (`kit/skills/<platform>/steps`,
+"machine"). The platform's lockstep runs a port beside it and says what
+the port gives it: the checkpoints it yields, its waits for the display
+(a raster line on the C64, a `HALT` on the Spectrum), its polling loops
+and its interrupt handlers (`kit/skills/<platform>/steps`, "lockstep").
+Write the port to that from the start. A game that reads whole typed
+lines through the machine's ROM, or loads from disk as it plays, may
+need a different harness, and the same row says which. Each file's
+header is its manual. A platform with no machine yet has no lockstep:
+build one in `kit/<platform>/` first, or check the port by its
+demonstration.
 
 - **Port routine by routine, on the game's own memory.** One function per
   listing label, reading and writing the game's variables where the game

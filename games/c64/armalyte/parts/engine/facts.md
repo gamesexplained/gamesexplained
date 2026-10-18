@@ -431,7 +431,7 @@ read: S in the pause does nothing (*live*).
   (`$C4DF`).
 - **The port.** The How it works page plays the four tunes through a
   JavaScript port of `music_init`, `music_play` and `music_track_next`.
-  `tests/music.js` runs it beside the driver in `kit/c64/cpu6502.js` on
+  `tests/music.js` runs it beside the driver in `kit/cpu/cpu6502.js` on
   the engine's listing: every SID write of every frame, in order, and
   the driver's variables `$C4B2-$C554`, for each tune and for 200 random
   tunes, which with the four execute every instruction of

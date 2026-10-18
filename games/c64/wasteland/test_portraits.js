@@ -9,7 +9,7 @@
 //   node games/c64/wasteland/test_portraits.js [steps]     (default 400 a portrait)
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64');
 const P = g.run('pictures.html', 'pictures/pictures.js', 'WLPictures').WLPictures;

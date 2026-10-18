@@ -89,7 +89,7 @@
 //   the chip state, this.line and this.now (the SID's clock: there, the game's cycles).
 const fs = require('fs');
 const path = require('path');
-const { CPU, readSnapshot } = require('./cpu6502.js');
+const { CPU, readSnapshot } = require('../cpu/cpu6502.js');
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'sid.js'));
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'collide.js'));
 const { createBus } = globalThis.C64Sid.engine();

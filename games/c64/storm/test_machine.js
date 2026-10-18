@@ -16,7 +16,7 @@
 //   node games/c64/storm/test_machine.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 g.lib('cpu6502');                   // the 6502 the storm-machine block runs on, as the page loads it
 const { stormRooms, roomRecords, monsterRooms, stormEnergy, stormObjects, stormTouch } =

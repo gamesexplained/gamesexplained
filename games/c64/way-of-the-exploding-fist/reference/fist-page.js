@@ -1,7 +1,7 @@
 // The widgets of the Way of the Exploding Fist tabs, built by work/build_pages.py from the ports in
 // work/fist.js (tested in work/test_ports.js against the game) and the widgets in work/page.js.
 // Ports for the How it works page, each read from the game's own routine and tested in
-// work/test_ports.js against the snapshot or the game's code in kit/c64/cpu6502.js.
+// work/test_ports.js against the snapshot or the game's code in kit/cpu/cpu6502.js.
 // ram: a Uint8Array(65536) of the game's bytes (C64.load on the page, the snapshot in tests).
 var FIST = (function () {
   'use strict';

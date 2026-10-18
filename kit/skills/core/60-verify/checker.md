@@ -13,15 +13,14 @@ five things for this game:
   `fixes.json` beside the verdicts, a JSON list with one entry for each
   comment or label to change, `address`, `comment` (the whole new
   text), and `label` or `type` (`line` or `side`) only when they change.
-  On the C64, `kit/c64/r2000.py --apply fixes.json` sends such a file to
-  the disassembler, keeps each comment's kind, and refuses a label given
-  to two addresses before anything is sent;
+  The platform's steps skill says how such a file reaches the
+  disassembler (`kit/skills/<platform>/steps`, "fixes");
 - the game, its platform and its folder, and the snapshot the listing was
   built from;
 - the comments to check, each with its address, label and text (for an
   audit, its range of addresses instead);
 - the commands for this platform's references search and its simulator
-  (`60-verify`, "Negative results");
+  (`kit/skills/<platform>/steps`, "references" and "simulator");
 - what is established about the program, from `facts.md`: the memory
   map, the conventions the code keeps, and the routines that take their
   arguments from the bytes after a call, to be used rather than worked

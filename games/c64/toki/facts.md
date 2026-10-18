@@ -137,7 +137,7 @@ The packed entries all start at $8005 or later in banks 14 and 15, which leaves 
 
 ## Packed entries
 
-The kit's 6502 simulator (`kit/c64/cpu6502.js`) ran `unpack` from bank 0 on each packed entry after the copy, with the zero page set as $0AB6-$0AFB sets it (2026-10-15). Each run returned cleanly. The header's $EC/$ED is where the unpacked data starts and $EA/$EB is one past its end; the packed bytes sit at the top of that range and are expanded downwards in place.
+The kit's 6502 simulator (`kit/cpu/cpu6502.js`) ran `unpack` from bank 0 on each packed entry after the copy, with the zero page set as $0AB6-$0AFB sets it (2026-10-15). Each run returned cleanly. The header's $EC/$ED is where the unpacked data starts and $EA/$EB is one past its end; the packed bytes sit at the top of that range and are expanded downwards in place.
 
 | Entries | Packed | Unpacked to | Unpacked size |
 |---|---|---|---|

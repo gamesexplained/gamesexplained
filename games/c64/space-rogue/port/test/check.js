@@ -20,7 +20,7 @@
 // runs on past the limits on both sides pass uncompared.
 const fs = require('fs'), path = require('path');
 const lib = require('./lib.js');
-const { CPU } = require(path.join(lib.REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(lib.REPO, 'kit/cpu/cpu6502.js'));
 const { PortChips } = require(path.join(lib.REPO, 'kit/c64/lockstep.js'));
 const standin = require('./standin.js');
 const { loadPort, portDisk } = require('./lockstep.js');

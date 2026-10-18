@@ -37,8 +37,13 @@ KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PLATFORM_DEFAULTS = {
     "c64": {
+        "cpu": "6502",             # the 6510: kit/cpu/ (opcodes.py, census.py, cpu6502.js)
         "exclude": [["$0100", "$01FF", "stack"], ["$D000", "$DFFF", "I/O and colour RAM"]],
         "extra": [],
+        # the fixed edges of the memory map, where a data symbol's reach stops (kit/scripts/ledger.py):
+        # zero page, the stack, the KERNAL's work area, the screen, BASIC's start, and the ROMs and I/O
+        "edges": ["$0000", "$0100", "$0200", "$0400", "$0800", "$1000", "$4000", "$8000",
+                  "$A000", "$C000", "$D000", "$E000"],
         "screen_size": 0x400,      # 1000 cells plus the sprite pointers
         "charset_size": 0x800,
         "snapshot_ext": "vsf",     # the hand-over default, work/entry.<ext> (listing.py)
@@ -55,8 +60,13 @@ PLATFORM_DEFAULTS = {
         # video.screen below, so it is not repeated here. The printer buffer and the
         # system variables above it ($5B00-$5CB5) are not excluded: a game that runs
         # with the ROM's interrupt off keeps its own data there.
+        "cpu": "z80",
         "exclude": [["$0000", "$3FFF", "ROM"]],
         "extra": [],
+        # RAM's start, the top of contended RAM, and the 128's paged bank
+        # (kit/skills/spectrum/zx-spectrum-reference). Not the printer buffer or the system
+        # variables: a game that runs its own interrupt keeps tables across them.
+        "edges": ["$4000", "$8000", "$C000"],
         "screen_size": 0x1B00,     # $4000-$5AFF: the bitmap ($1800) and the attributes ($300)
         "charset_size": 0x300,     # the ROM font in $3D00-$3FFF
         "snapshot_ext": "sna",     # the hand-over default, work/entry.<ext> (listing.py)
@@ -68,9 +78,14 @@ PLATFORM_DEFAULTS = {
         # the MOS ($C000-$FFFF), with the I/O pages FRED, JIM and SHEILA ($FC00-$FEFF)
         # inside it. A game that loads into sideways RAM takes $8000-$BFFF back with
         # "include", or makes the bank a part (kit/skills/bbc/bbc-reference, "Memory map").
+        "cpu": "6502",
         "exclude": [["$0100", "$01FF", "stack"], ["$8000", "$BFFF", "paged ROM"],
                     ["$C000", "$FFFF", "MOS ROM and I/O"]],
         "extra": [],
+        # the stack, the MOS's pages, the language's workspace, the sound and buffer pages, the NMI
+        # page, PAGE without and with the DFS, the paged ROM and the MOS (kit/skills/bbc/bbc-reference)
+        "edges": ["$0100", "$0200", "$0300", "$0400", "$0800", "$0D00", "$0E00", "$1900",
+                  "$8000", "$C000"],
         "screen_top": 0x7FFF,      # every mode's screen runs from its start to the top of RAM
         "charset_size": 0x300,     # 96 characters of 8 bytes, the size of the MOS's own font
         "snapshot_ext": "json.gz", # the kit's jsbeeb server saves gzipped JSON (kit/bbc/snapshot.py)
@@ -185,7 +200,7 @@ def regions(game):
             if lo < a: carved.append([lo, a - 1, n])
             if hi > b: carved.append([b + 1, hi, n])
         exclude = carved
-    out = {"exclude": exclude, "extra": extra}
+    out = {"exclude": exclude, "extra": extra, "edges": [hexint(e) for e in d.get("edges", [])]}
     # a part of a game that is several loads: the addresses another part owns are not this
     # one's to count, whatever "include" says (kit/scripts/parts.py, load_game)
     if game.get("elsewhere"):

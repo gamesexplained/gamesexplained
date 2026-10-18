@@ -5,7 +5,7 @@
 // and effects started over the hum. The tunes are the page's.
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
-const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
+const { CPU } = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const { createDriver } = g.run('index.html', 'sr-sound', 'createDriver');
 const E = g.listing('parts/engine/listing.json');

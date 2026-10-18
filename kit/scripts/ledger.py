@@ -46,13 +46,14 @@ def compute(blocks, syms, comments, regions):
             if b["type"] in PROGRAM_TYPES:
                 program[a] = 1
     # A span ends at the edge of its block. A data span also ends at the fixed edges of the
-    # memory map, so that a table's reach cannot run on into the next region; a routine
-    # runs on across them, since code that crosses $1000 is still one routine, and so does a
-    # program in BASIC, whose line that crosses $1000 is still one line.
+    # memory map, the machine's own (symbols_export.PLATFORM_DEFAULTS, "edges"), so that a
+    # table's reach cannot run on into the next region; a routine runs on across them, since
+    # code that crosses an edge is still one routine, and so does a program in BASIC, whose
+    # line that crosses one is still one line.
     block_edges = set()
     for b in blocks:
         block_edges.add(b["start"]); block_edges.add(b["end"] + 1)
-    fixed = {0x0000, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x4000, 0x8000, 0xA000, 0xC000, 0xD000, 0xE000}
+    fixed = set(regions.get("edges", []))
     walls = {True: sorted(block_edges), False: sorted(block_edges | fixed)}
 
     def wall_after(a):

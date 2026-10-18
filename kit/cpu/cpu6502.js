@@ -1,15 +1,18 @@
 'use strict';
-// An NMOS 6502 simulator with the C64's memory map, for node and for the site's pages. In node it
-// runs a game's own routines on a snapshot's memory, to test a page's ports against the original
-// code (kit/skills/core/70-minisite) and a music driver's port against the driver (site/lib/sid.js).
+// An NMOS 6502 simulator, for node and for the site's pages, with the C64's memory map as an option:
+// every machine built on the NMOS 6502 uses it (the C64's 6510, and bare, as new CPU(mem), the BBC
+// Micro Model B's 6502). In node it runs a game's own routines on a snapshot's memory, to test a
+// page's ports against the original code (kit/skills/core/70-minisite) and a music driver's port
+// against the driver (site/lib/sid.js). The snapshot readers below read the C64's .vsf; another
+// machine hands new CPU its own memory.
 // The snapshots it reads, and the tests that read them, never leave the game's gitignored work/
 // folder. On a page it runs the game's own code that the page embeds, a music driver's or a
-// widget's ("On a page", below). Checked by kit/c64/test_cpu6502.js in CI, and against Tom Harte's
+// widget's ("On a page", below). Checked by kit/cpu/test_cpu6502.js in CI, and against Tom Harte's
 // test vectors and VICE itself by kit/c64/check_cpu6502.js.
 //
 // The processor
 // - All 256 opcodes of the 6510: the 151 documented and the 105 undocumented, with the names and
-//   addressing modes of kit/c64/opcodes.py (VICE's). The unstable ones do what VICE's x64sc does
+//   addressing modes of kit/cpu/opcodes.py (VICE's). The unstable ones do what VICE's x64sc does
 //   (vice-mcp 3.13.1): ANE is A = (A | $EF) & X & operand and LXA is A = X = (A | $EE) & operand
 //   (the options ane and lxa change the constants); SHA, SHX, SHY and SHS store the register ANDed
 //   with the base address's high byte + 1, and an index that crosses a page puts that value in the
@@ -43,7 +46,7 @@
 //   time (tools/vice-mcp/share/vice/C64/: Uint8Arrays of 8192, 8192 and 4096 bytes), never committed.
 //
 // Usage:
-//   const { CPU, readSnapshot } = require('<repo>/kit/c64/cpu6502');
+//   const { CPU, readSnapshot } = require('<repo>/kit/cpu/cpu6502');
 //   const cpu = CPU.fromSnapshot('games/c64/<slug>/work/<state>.vsf', { io });  // RAM, port, registers
 //   cpu.call(0x82FA, { x: 0x40, y: 0x0C });          // runs the routine until it returns
 //   cpu.a, cpu.x, cpu.m[0x08], cpu.cycles ...
@@ -59,7 +62,8 @@
 // On a page
 //   kit/scripts/build.py serves this file as the site's lib/cpu6502.js. A page that loads it,
 //   <script src="../../lib/cpu6502.js"></script>, has C64Cpu = { CPU, OPCODES, CYCLES, core }: the
-//   simulator the tests run, without the snapshot readers.
+//   simulator the tests run, without the snapshot readers. The name is the C64's, where it began;
+//   a page for another 6502 machine uses it bare, new C64Cpu.CPU(mem).
 //     const cpu = new C64Cpu.CPU(mem, { port: 0x35, io });   // RAM, and the chips at $D000-$DFFF
 //   Everything that runs instructions is inside core(), which refers to nothing outside itself, so
 //   that site/lib/sid.js can run its source text in the AudioWorklet that plays a music driver.
@@ -154,7 +158,7 @@
 }(function core() {
   'use strict';
   // --- the instruction set --------------------------------------------------------------------
-  // OPCODES[op] = [mnemonic, mode], as kit/c64/opcodes.py and kit/scripts/listing.py name them.
+  // OPCODES[op] = [mnemonic, mode], as kit/cpu/opcodes.py and kit/scripts/listing.py name them.
   const OPCODES = [];
   {
     const set = (op, name, mode) => { OPCODES[op] = [name, mode]; };

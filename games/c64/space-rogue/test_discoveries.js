@@ -4,7 +4,7 @@
 // after a typed answer, and the distress call's Morse.
 const path = require('path');
 const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_check.js'));
-const { CPU } = require(path.resolve(__dirname, '../../../kit/c64/cpu6502.js'));
+const { CPU } = require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 const PAGE = 'discoveries.html';
 const { rasterAfter } = g.run(PAGE, 'sr-raster', 'rasterAfter');
