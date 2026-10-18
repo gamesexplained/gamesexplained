@@ -318,7 +318,7 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   always shows all four I's of "FINISHED" and "MISSION" broken
   (`reference/end-screen.png`). These are the only bytes in which source and
   copy differ. Nothing in the game writes them: no instruction stores to
-  `$CE00`-`$CFFF` directly or through an index (`kit/c64/opcodes.py
+  `$CE00`-`$CFFF` directly or through an index (`kit/cpu/opcodes.py
   --refs`, reach 255); the indirect stores (`($FE),Y`, `($24),Y`) only
   ever get pointer high bytes of `$04`-`$06`, `$20`-`$37`, `$A0` and
   `$D8`, and the other pointers are Supermon's; the immediate loads of

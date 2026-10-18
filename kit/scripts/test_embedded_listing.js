@@ -1,0 +1,56 @@
+// Test of C64.load, BBC.load and Spectrum.load in site/lib/: a listing is fetched whole, except on
+// the page of a withheld game, which carries the pieces it names in <script
+// type="application/json" data-listing="url">, read from the page and never fetched; a tag the
+// build has not filled in, still the list of pieces, is passed over. Each is handed over once the
+// page's fonts have loaded, so text a widget draws into a canvas is in them.
+//   node kit/scripts/test_embedded_listing.js
+const path = require('path');
+const ROOT = path.resolve(__dirname, '..', '..');
+const fetched = [];
+globalThis.fetch = async (u) => {
+  fetched.push(u);
+  if (u.startsWith('gone/')) return { ok: false, status: 404 };
+  return { ok: true, json: async () => ({ records: [{ a: 0x2000, l: 'fetched', b: [9] }, { a: 0x1000, l: 'tune', b: [5, 6, 7] }] }) };
+};
+const tag = (url, body) => ({ getAttribute: k => k === 'data-listing' ? url : null, textContent: JSON.stringify(body) });
+let fontsLoaded;
+globalThis.document = {
+  body: { offsetHeight: 0 },
+  fonts: { ready: new Promise(r => { fontsLoaded = r; }) },
+  querySelectorAll: () => [
+    tag('parts/one/listing.json', { schema: 1, records: [{ a: 0x1000, t: 'data', l: 'tune', b: [1, 2, 3] }] }),
+    tag('parts/two/listing.json', ['tune']),
+  ],
+};
+for (const lib of ['c64.js', 'bbc.js', 'spectrum.js']) require(path.join(ROOT, 'site', 'lib', lib));
+
+let failed = 0;
+const check = (ok, what) => { if (!ok) { failed++; console.log('FAIL ' + what); } };
+
+(async () => {
+  const early = [];
+  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum]]) M.load('parts/one/listing.json').then(() => early.push(name));
+  await new Promise(r => setTimeout(r, 50));
+  check(early.length === 0, `${early.join(', ')}.load handed over an embedded listing before the page's fonts loaded`);
+  fontsLoaded();
+  await new Promise(r => setTimeout(r, 0));
+  check(early.length === 3, 'C64, BBC and Spectrum.load: an embedded listing once the fonts are in');
+  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum]]) {
+    fetched.length = 0;
+    const one = await M.load('parts/one/listing.json');
+    check(fetched.length === 0, `${name}.load fetched a listing the page carries`);
+    check(one.ram[0x1002] === 3 && one.has[0x1000] && !one.has[0x1003] && one.sym('tune') === 0x1000,
+          `${name}.load: the embedded listing's bytes and names`);
+    const two = await M.load('parts/two/listing.json');
+    check(fetched.join() === 'parts/two/listing.json', `${name}.load did not fetch a listing whose tag is unbuilt`);
+    check(two.sym('fetched') === 0x2000 && two.ram[0x1000] === 5, `${name}.load: the fetched listing`);
+    fetched.length = 0;
+    await M.load('elsewhere/listing.json');
+    check(fetched.join() === 'elsewhere/listing.json', `${name}.load did not fetch a listing the page lacks`);
+    let refused = null;
+    await M.load('gone/listing.json').catch(e => { refused = e; });
+    check(refused && /404/.test(refused.message), `${name}.load: a listing the site does not serve is an error`);
+  }
+  console.log(failed ? `${failed} failed` : 'C64, BBC and Spectrum.load: a listing fetched whole, or from the page for a withheld game, once its fonts are in: ok');
+  process.exit(failed ? 1 : 0);
+})();

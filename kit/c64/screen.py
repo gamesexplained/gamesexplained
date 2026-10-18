@@ -212,7 +212,9 @@ def vic_reader(rpc):
 
 def text(rpc, font=None):
     """The running machine's screen as 25 lines, trailing spaces cut (see the module's comment)."""
-    regs = ask(rpc, "vice_vicii_get_state")["registers"]
+    # the chip's registers through the io bank: vice_vicii_get_state reads $D000 where the
+    # processor does, the RAM when a game banks the I/O out (kit/c64/frame.py, Machine.vic)
+    regs = list(read_mem(rpc, 0xD000, 47, "io"))
     dd00 = read_mem(rpc, 0xDD00, 1, "io")[0]
     return decode(regs, dd00, vic_reader(rpc), font, font.load(rpc) if font else None)
 

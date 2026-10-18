@@ -11,7 +11,7 @@
 //                                              for drafts)
 const fs = require('fs');
 const path = require('path');
-const { CPU } = require(path.join(__dirname, '../../../../kit/c64/cpu6502'));
+const { CPU } = require(path.join(__dirname, '../../../../kit/cpu/cpu6502'));
 const L = require(path.join(__dirname, '../parts/warbles/listing.json')).records;
 const N = +process.argv[2] || 20000;
 const src = process.argv[3] ? fs.readFileSync(process.argv[3], 'utf8')

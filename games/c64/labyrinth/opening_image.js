@@ -1,7 +1,7 @@
 'use strict';
 // Recreate the opening wheel state from its authored descriptor, then apply the
 // recorded post-setup scratch values. Runtime arrays are excluded from coverage.
-const {CPU}=require('../../../kit/c64/cpu6502.js');
+const {CPU}=require('../../../kit/cpu/cpu6502.js');
 module.exports=function openingImage(g){
  const image=g.listing('parts/opening/listing.json');
  const c=new CPU(Uint8Array.from(image.ram));c.call(0x0d2d,{x:0x07,y:0xab,d:0});

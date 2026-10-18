@@ -239,19 +239,76 @@ def check_run_times_out_instead_of_hanging():
 
 def check_frames_is_bounded():
     """`frames` retries, then raises: it never spins (`kit/EMULATOR.md` phase 4)."""
-    f = Fake({"get-tstates-partial": "0", "run": "Running until a breakpoint, key press or data sent, menu opening or other event",
-              "reset-tstates-partial": "", "set-breakpoint": "", "set-breakpointpasscount": "",
-              "enable-breakpoints": "", "disable-breakpoint": ""})
+    for machine, frame in (("ZX Spectrum 48k", 69888), ("ZX Spectrum+ 128k", 70908)):
+        f = Fake({"get-tstates-partial": "0", "run": "Running until a breakpoint, key press or data sent, menu opening or other event",
+                  "reset-tstates-partial": "", "set-breakpoint": "", "set-breakpointpasscount": "",
+                  "enable-breakpoints": "", "disable-breakpoint": "", "get-current-machine": machine})
+        rpc = connect(port=f.port)
+        t0 = time.time()
+        try:
+            rpc.frames(1, timeout=1, tries=5)
+        except ZesaruxError as e:
+            assert f"did not reach {frame}" in str(e), (machine, e)
+        else:
+            raise AssertionError("frames must raise when the boundary is never reached")
+        assert time.time() - t0 < 10
+        assert sum(1 for c in f.seen if c.startswith("run")) == 5, f.seen
+        assert f"set-breakpoint 100 TSTATESP>{frame}" in f.seen, (machine, f.seen)
+        rpc.close(); f.close()
+
+
+def check_frames_says_when_the_machine_runs():
+    """A running machine refuses `run`: `frames` says to stop it, at once, rather than retrying."""
+    f = Fake({"get-tstates-partial": "0", "reset-tstates-partial": "", "set-breakpoint": "",
+              "set-breakpointpasscount": "", "enable-breakpoints": "", "disable-breakpoint": "",
+              "get-current-machine": "ZX Spectrum+ 128k",
+              "run": "Running until a breakpoint, menu opening or other event\nError. You must first enter cpu-step mode"})
     rpc = connect(port=f.port)
-    t0 = time.time()
     try:
         rpc.frames(1, timeout=1, tries=5)
     except ZesaruxError as e:
-        assert "did not reach 69888" in str(e), e
+        assert "enter_step" in str(e), e
     else:
-        raise AssertionError("frames must raise when the boundary is never reached")
-    assert time.time() - t0 < 10
-    assert sum(1 for c in f.seen if c.startswith("run")) == 5, f.seen
+        raise AssertionError("frames must raise when run is refused")
+    assert sum(1 for c in f.seen if c.startswith("run")) == 1, f.seen
+    rpc.close(); f.close()
+
+
+IO_48K = "ULA Data Bus value: FFH\nSpectrum FE port: 00\n"
+AY = (0x5D, 0x0A, 0xA7, 0x05, 0x3C, 0x06, 0x1B, 0x38, 0x0F, 0x0C, 0x10, 0xE8, 0x03, 0x0D, 0xFF, 0xFF)
+IO_128K = ("ULA Data Bus value: FFH\nSpectrum FE port: FF\nSpectrum 7FFD port: 13\n\nAY-3-8912 chip 0:\n\n"
+           "Selected register: 13\n" + "".join(f"{r:02X}:  {v:02X}\n" for r, v in enumerate(AY)))
+
+
+def check_ay_registers():
+    """`get-io-ports` on a 128K (13.0's shape): registers in hex, the selected one in decimal; a 48K has none."""
+    f = Fake({"get-io-ports": IO_128K})
+    rpc = connect(port=f.port)
+    assert rpc.ay_registers() == (list(AY), 13), rpc.ay_registers()
+    rpc.close(); f.close()
+    f = Fake({"get-io-ports": IO_48K, "get-current-machine": "ZX Spectrum 48k"})
+    rpc = connect(port=f.port)
+    try:
+        rpc.ay_registers()
+    except ZesaruxError as e:
+        assert "no AY-3-8912" in str(e), e
+    else:
+        raise AssertionError("a 48K has no AY: ay_registers must raise")
+    rpc.close(); f.close()
+
+
+def check_set_machine_moves_the_frame():
+    """A switch of machine changes the frame `frames` steps by; a cached 48K frame on a 128K drifts."""
+    now = {"machine": "ZX Spectrum 48k"}
+
+    def switch(cmd):
+        now["machine"] = {"128k": "ZX Spectrum+ 128k", "48k": "ZX Spectrum 48k"}[cmd.split()[1]]
+        return ""
+    f = Fake({"set-machine": switch, "get-current-machine": lambda cmd: now["machine"]})
+    rpc = connect(port=f.port)
+    assert rpc.frame() == 69888
+    assert rpc.set_machine("128k") == "ZX Spectrum+ 128k" and rpc.frame() == 70908, rpc.frame()
+    assert rpc.set_machine("48k") == "ZX Spectrum 48k" and rpc.frame() == 69888, rpc.frame()
     rpc.close(); f.close()
 
 

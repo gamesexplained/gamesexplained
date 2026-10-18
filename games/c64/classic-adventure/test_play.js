@@ -14,7 +14,7 @@
 //   node games/c64/classic-adventure/test_play.js [sessions]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const { KernalLines } = require(path.join(ROOT, 'kit/c64/kernal_lines.js'));
 const folder = game(__dirname);
 folder.lib('c64');

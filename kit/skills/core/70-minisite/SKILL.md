@@ -1,6 +1,6 @@
 ---
 name: 70-minisite
-description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the Discoveries tab of secrets, quirks and bugs; the listing behind the Source code tab; the Maps / levels tab for a game with more than one level; an optional Play tab. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
@@ -11,15 +11,18 @@ the writing is the spine but anything that explains the game can live
 game itself). If you can build it, build it.
 
 Every game is a small site with the same tabs in the same order: **How it
-works** (`index.html`, authored), **Source code** (`source.html`, generated
-from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
-(`levels.html`, authored, only when the game has level data worth a page),
-**Play** (`play.html`, authored, only when a JavaScript version exists),
-**About** (generated from `game.json`, `features.md`, `orientation.md`, git).
-`kit/scripts/build.py` assembles them; you write the authored ones. A game
-that needs other tabs lists all of its tabs, in order, as `[file, label]`
-pairs in `game.json`'s `"tabs"`; the build publishes the pages named there
-and warns about any other `.html` in the folder.
+works** (`index.html`, authored), **Play** (`play.html`, authored, only
+when a JavaScript version exists), **Discoveries** (`discoveries.html`,
+authored, the secrets, quirks and bugs), **Maps / levels** (`levels.html`,
+authored, for every game with more than one level, map, room, stage or
+screen), **Source code** (`source.html`, generated from `listing.json`
+plus `facts.md` and `cheats.md`), **About** (generated from `game.json`,
+`features.md`, `orientation.md`, git). `kit/scripts/build.py` assembles
+them; you write the authored ones. A game that needs other tabs lists all
+of its tabs as `[file, label]` pairs in `game.json`'s `"tabs"`; the build
+publishes the pages named there and warns about any other `.html` in the
+folder. The bar always opens with How it works, Play and Discoveries and
+closes with Source code and About; the list orders the tabs between.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
@@ -27,7 +30,10 @@ One the listing holds no record of (a chip register, a stretch the coverage
 leaves out, another part's address) opens the Source tab on a note saying
 so. `build.py --addresses` lists them page by page: a chip register can
 stay, but an address of the wrong part, or one the listing should hold, is
-a mistake to fix.
+a mistake to fix. In a BASIC listing every address is inside some line,
+so a wrong one opens on the wrong line with no note; the list marks a
+link past a line's first byte "(inside a line)", and a line is cited by
+its first byte.
 
 # The How it works page
 
@@ -61,28 +67,24 @@ address links into the Source tab, and the house style in `kit/style.md`.
    out of it. It is the one section with nothing to press.
 - **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
-   understood and it is the base for overlays. A screen split by raster
-   interrupts changes the video registers, and often the sprite pointers,
-   several times a frame, so one read of them draws the wrong picture. On
-   the C64 the kit records and draws the frame for you:
-   `python3 kit/c64/frame.py capture work/frame.json` records one whole
-   frame of the running game (every write to the video chip, the video
-   bank and the sprite pointers, with the line and cycle it happened on,
-   and memory as the frame began), `compare` draws it with
-   `C64.renderFrame` from `../../lib/c64.js` and counts the pixels that
-   differ from the emulator's picture of the same frame, line by line, and
-   `trim` keeps only the memory the drawing reads, which is what the page
-   embeds (`C64.drawFrame` puts it on a canvas). Say in the caption how
-   many pixels differ and why. If the renderer lacks something the game
-   does, extend it in `site/lib/c64.js` and in `frame.py test`, so that the
-   next game has it too.
+   understood and it is the base for overlays. A screen whose video
+   registers change during the frame (a split by interrupts, which often
+   moves the sprite pointers too) draws the wrong picture from one read
+   of them, so record the whole frame where the platform can, and draw
+   with the site's library for the machine
+   (`kit/skills/<platform>/steps`, "frame"). The comparison that counts
+   the pixels that differ from the emulator's picture of the same frame
+   is the drawing's test: say in the caption how many differ and why. If the renderer lacks something the game does,
+   extend it in the site's library and in its test, so that the next game
+   has it too.
 - **The player and the enemies.** What they are drawn with (character
    graphics, sprites, both), how they move, how they collide.
 - **Controls.** What the game reads and how, including anything the
    manual never mentioned.
-- **Levels and data.** Where the level lives, what format, a browser for
-   it. If placement is procedural, show the rule and let the reader roll
-   it.
+- **Levels and data.** Where the level lives and what format, shown on
+   one level, with a link to the Maps / levels tab, where every level is
+   drawn (below). If placement is procedural, show the rule and let the
+   reader roll it.
 - **Enemy movement and AI.** The actual decision rule, steppable.
 - **Progression and difficulty.** The tables, as tables, and what they
    do to play.
@@ -90,39 +92,24 @@ address links into the Source tab, and the house style in `kit/style.md`.
    the bytes that produce each note. When the game has music, the player
    is required, with a button for every tune the game stores, unused
    ones too: a run that names the music driver and leaves the player to
-   `TODO.md` has not built the page. Port the game's own music driver
-   and play it through the site's model of the SID, `../../lib/sid.js`:
-   it runs the driver once a frame, plays it, and shows each voice on a
-   piano roll with the lines the port supplies about what the driver
-   read. When the game calls its driver from a CIA timer instead, pass
-   the timer's period in cycles (the latch plus 1) to `mount` as
-   `period`, and port one call to each `play()`: the player keeps the
-   game's tempo, where mapping calls to frames in the port makes a
-   note's length wander by up to a frame. The script's header gives the
-   driver's contract and what the model leaves out. The game's own driver
-   run on a 6502 core inside `createDriver` counts as a port, its code and
-   tables embedded in the page as data like any widget's. Test the core as
-   a port is tested: every tune, frame by frame, against the same bytes
-   run on `kit/c64/cpu6502.js`, with every write compared. Say in the
-   caption that the page runs the game's own player. The filter is off
-   unless the page passes `filter: '6581'` (or `'8580'`) to `mount`,
-   which also shows a switch to compare it with no filter; pass it when
-   the game sets the filter,
-   and say in the caption that the cutoff is one chip's. Say beside a
-   sound below about 100 Hz that laptop and phone speakers barely play
-   it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
-   the model (`C64Sid.engine()` in node) and measure the output.
-- **Secrets, quirks and bugs.** The best part. Things a player who
-   finished the game would not know, each verified live, with the
-   evidence beside it. One kind deserves a special look: a state the code
-   accepts but the programmer never meant anyone to reach (the open
-   questions `50-coverage` notes and `60-verify`, "What a test lets
-   through", settles). It is classic tool-assisted-speedrun material,
-   invisible in play and plain in the listing. Landing while climbing, and
-   being paid more for it, is one. When you find one, do not stop at the
-   poke: prove a player could get there (`60-verify`, reachability), and
-   build the section around a stepper the reader can walk through. It is
-   one kind of interesting fact among several, not the point of the page.
+   `TODO.md` has not built the page. It plays through the site's model
+   of the machine's sound chip, and what drives the model is the game's
+   own music: its driver ported, or run on the kit's processor, on the
+   page or ahead of time into a recording of what it wrote to the chip,
+   which a test beside the page makes again from the listing. The game's
+   own driver run on the kit's processor counts as a port, its code and
+   tables embedded in the page as data like any widget's. Music the
+   machine's own ROM plays for the game, from a queue the game fills, is
+   recorded at the chip in the emulator. The platform's steps skill names
+   the model and how its pages drive it (`kit/skills/<platform>/steps`,
+   "sound"). Say in the caption which it is and how it was checked
+   against the game. Say beside a sound below about 100 Hz that laptop
+   and phone speakers barely play it: a reader who hears nothing reports
+   it missing. Before believing such a report, render the writes through
+   the model in node and measure the output.
+- **Secrets, quirks and bugs.** These have a tab of their own,
+   Discoveries (below). A section here whose mechanic leads to one links
+   to it.
 
 ## The order
 
@@ -151,18 +138,44 @@ its music or its maps can put that first instead.
   build step; external resources only for fonts. It must open from disk,
   all but the widgets built on the site's shared scripts, which say so
   when the script is missing.
-- Any page may use the site's shared scripts: `../../lib/c64.js` draws
-  glyphs, screens and sprites, and rebuilds the game image from
-  `listing.json`, so a page draws from the bytes the Source tab shows;
-  `../../lib/sid.js` plays a music driver's port through a model of the
-  SID. Those work only in the built site, served as in "Check it in a
-  browser" below. A widget the next game could use as it is belongs
+- Any page may use the site's shared scripts. Each machine has a library
+  that draws its glyphs and screens and rebuilds the game image from
+  `listing.json`, so a page draws from the bytes the Source tab shows,
+  and a model of its sound chip (`kit/skills/<platform>/steps`, "page"
+  and "sound"). `../../lib/cpu6502.js` is the kit's 6502 simulator,
+  `kit/cpu/cpu6502.js`, as `C64Cpu`, for a widget that runs the game's
+  own code on the listing's bytes. A page never carries a processor of
+  its own, and a test hands a block the same one with `g.lib('cpu6502')`
+  (`kit/scripts/port_check.js`). Those work only in the built site,
+  served as in "Check it in a browser" below. A widget the next game could use as it is belongs
   there, not in the page. One that grew inside a page moves there with a
   test that the page still gives the same result.
+- A page draws from the listing through its machine library's loader,
+  such as `C64.load('listing.json')`, or `parts/<id>/listing.json` for a part,
+  fetches the whole listing, one download the browser caches for every
+  tab of the game, the Source tab included.
+- Only a game whose listing is withheld (`"publish_source": false`)
+  names the pieces of the listing a page reads, because the site serves
+  none of it: `<script type="application/json"
+  data-listing="listing.json">["charset", "$4000-$43FF"]</script>`, a
+  label standing for its record and those after it up to the next label.
+  The build puts those records in the page with their addresses, types,
+  labels and bytes, and the loaders read them in place of a fetch
+  (`kit/scripts/build.py`, `embed_listings`). A byte the pieces leave out
+  reads as 0 with no error: a picture drawn black, text drawn as `@`. So
+  copy the game's `listing.json` into its folder under `_site/`, open each
+  built page with `?listing-reads` after its address and exercise every
+  widget, a slider through its values for each choice of the menu beside
+  it, and let every animation run its course: the console then names
+  each byte and label the page read that its pieces leave out, with the
+  line that read it, as the list to add (`site/lib/listing-reads.js`). Do
+  it again whenever a widget changes, and after merging `main` into a
+  branch that changed one.
 - The build publishes the authored pages, `listing.json`, `symbols.json`
-  and `reference/`, and nothing else from the game folder. A link to any
-  other file would build and then fail in the reader's browser, so
-  `build.py` stops on one. It reads every `src=` and `href=` in the page,
+  and `reference/`, and nothing else from the game folder; for a game
+  whose `game.json` has `"publish_source": false`, neither JSON file. A
+  link to any other file would build and then fail in the reader's
+  browser, so `build.py` stops on one. It reads every `src=` and `href=` in the page,
   the comments of an inlined script included, so a comment that names a
   file should not put it in an attribute.
 - The built page also loads the site's stylesheet, `site/lib/site.css`,
@@ -179,14 +192,18 @@ its music or its maps can put that first instead.
   players, table explorers.
 - Keep every section a top-level `<section>` with the template's label
   line (`<p class="fig">01 · label</p>`) and an `<h2>` heading, on the
-  Maps / levels and Play pages too. The build lists each page's sections
-  in its left margin by their headings (any further `<h2>` gets an entry
-  of its own, and so does a section or heading the page's script adds),
-  so the headings are what a reader scans to choose where to go. A
-  heading that begins `Bug:`, `Secret:`, `Music:` or `Sound:` is tagged
-  in that list, and nothing else is: the prefix is the only way to get a
-  tag. Head the section about the tunes `Music:` and the one about sound
-  effects `Sound:`.
+  Discoveries, Maps / levels and Play pages too. The build lists each
+  page's sections in its left margin by their headings (any further
+  `<h2>` gets an entry of its own, and so does a section or heading the
+  page's script adds), so the headings are what a reader scans to choose
+  where to go. A heading that begins `Bug:`, `Secret:`, `Music:` or
+  `Sound:` is tagged in that list, and nothing else is: the prefix is the
+  only way to get a tag. Head the section about the tunes `Music:` and the
+  one about sound effects `Sound:`. A section off the screen is skipped,
+  not laid out or painted (`section.cv` in `site.css`), which makes each
+  section a box its contents stay inside: nothing in it can be
+  `position: fixed`, and nothing it shows, a tooltip or a pop-up, can
+  reach more than 200px past its edges.
 - Embed the data a widget needs in the page: extracted character set,
   level data, tables, tune bytes, the pictures a viewer shows. That is
   not what "No binaries" (`AGENTS.md`) forbids, which is files holding
@@ -212,8 +229,8 @@ its music or its maps can put that first instead.
   runs, its objects alive and its counters moving, since a trace taken
   between waves passes any port (`60-verify`, "A test must contain cases
   that have to succeed"); or, for a routine that
-  only computes, against the original code run in a 6502 simulator on the
-  snapshot's memory. Write node tests that do the comparison and say in
+  only computes, against the original code run in the kit's simulator
+  for the machine's processor on the snapshot's memory. Write node tests that do the comparison and say in
   the caption how it was checked. A test that needs only the committed
   listing goes beside the page as `test_<what>.js`, where CI runs it, and
   takes the port from the page itself, so the two cannot drift apart:
@@ -221,17 +238,12 @@ its music or its maps can put that first instead.
   listing's memory, and `kit/scripts/port_check.py` does the same for a
   test whose simulator is in Python. Open the block with a line
   `/* name */`, or end a function inside the page's own script with a
-  line `// end of name`; the header is the manual. On the C64 use the
-  kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
-  manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
-  left it, the port's banking included, and `call(entry, regs)` runs a
-  routine to its return. The chips belong to the test: `io.write` sees
-  every write in order, which is how a music driver's port is checked
-  register by register, frame by frame. A read of a chip the test does not
-  answer stops the run, and so does a call into ROM unless a hook stands
-  in for the routine. `irq()` runs the game's interrupt, `cycles` times a
-  routine, and the `executed` map shows which instructions the cases
-  reached. For random cases in
+  line `// end of name`; the header is the manual. When more than one
+  page carries the block, `g.sameBlock(name)` fails when any copy
+  differs, so a page that gains a copy is checked without a change to
+  the test. Use the kit's simulator rather than writing one
+  (`kit/skills/<platform>/steps`, "simulator"); its header is the
+  manual. For random cases in
   JavaScript, a generator written `seed * 1103515245 + 12345` overflows the
   doubles' 53 bits and loses its low bits, so its "random" inputs repeat far
   sooner than they seem to; use `Math.imul(seed, 1103515245)` or xorshift. A trace is a copy of game memory, so it
@@ -249,6 +261,18 @@ its music or its maps can put that first instead.
   page's own inputs and returned 29 where the routine returns 285. A sweep
   of 789 cases found it in one run; reading the two implementations side by
   side had not.
+  **Start each case where the game starts it, and feed it what the page
+  feeds it.** Every value the test sets before it calls the routine, a
+  flag, a timer, the frame a request arrives on, is a case of its own
+  choosing, and the port is checked only for that choice. List what the
+  routine reads that the test sets, and take each from where the game sets
+  it (the object's spawn record, the routine that resets it) and from where
+  the page sends it (its own button data). One sound driver's port matched
+  the game on 99,762 calls while every effect button on its page stayed
+  silent: the test asked a frame after the mode change, and the page on the
+  same frame. One animation port matched the engine on every script while
+  the page ran two enemies that stand still until shot: the test started
+  every object running, and their spawn records start them stopped.
 - **Draw from the memory the game draws from.** A renderer fed from the
   listing reads the hand-over image, and a game that swaps character
   shapes per area or per level has different glyphs there than in play:
@@ -306,7 +330,10 @@ checklist mechanically, paragraph by paragraph:
    Three genuine items are fine; three arranged for a drumbeat are not.
 6. State it positively. A one-beat correction is fine when the reader would
    genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
-   but never "it's not X, it's Y" as the sentence's whole move.
+   but never "it's not X, it's Y" as the sentence's whole move. Search
+   for "no " as well: where "no X" is the one acting ("no gate leads to
+   it"), rewrite the sentence so a real thing acts, or say "there is no
+   X" (`kit/style.md`, the section on "no X" as the subject).
 7. Give every paragraph its purpose, in a line written to yourself
    (`kit/style.md`, "Paragraphs"). First check that purpose against the
    page's subtitle and the section's heading, and move the paragraph to the
@@ -357,23 +384,87 @@ a sentence or two, with the rest of the copy: leave it neither empty nor
 for the contributor. The home page shows it on the game's card unless
 `game.json` has a `blurb`, and the Gold pass may rewrite it.
 
-## Maps / levels, when there is one
+## Discoveries
 
-Render the level data the How it works page only excerpts: every maze, screen or
-room as a picture drawn from the extracted bytes, with the per-level
-parameter tables beside them. Reuse the page's renderers. Omit the page
-rather than pad it.
+Secrets, quirks and bugs are the best part of the minisite: things a
+player who finished the game would not know, each verified live, with the
+evidence beside it, one section each. Head each one `Secret:` or `Bug:`
+with the finding in the heading, so the section list tags it, and put the
+best first. Where a discovery rests on a mechanic the How it works page
+explains, link to that section rather than explaining it again.
+
+One kind deserves a special look: a state the code accepts but the
+programmer never meant anyone to reach (the open questions `50-coverage`
+notes and `60-verify`, "What a test lets through", settles). It is classic
+tool-assisted-speedrun material, invisible in play and plain in the
+listing. Landing while climbing, and being paid more for it, is one. When
+you find one, do not stop at the poke: prove a player could get there
+(`60-verify`, reachability), and build the section around a stepper the
+reader can walk through. It is one kind of discovery among several.
+
+When the run found none, leave the tab out and say so in
+`agent-history.md`.
+
+## Maps / levels
+
+A game with more than one level, map, room, stage or screen gets this
+tab: a shooter's stages, a platformer's rooms, an adventure's map, a
+puzzle game's boards, the bonus stages between levels. Draw every one
+of them as a picture from the extracted bytes, with the per-level
+parameter tables beside them, and reuse the How it works page's
+renderers. A scrolling level is drawn whole, or scrolled at the game's
+speed. The How it works page keeps the format, shown on one level, and
+links here for the rest, so the levels are never a run of sections on
+that page.
+
+Leave the tab out only when every level is the same screen (one arena,
+or one board whose contents a table changes), and say why in
+`agent-history.md`.
 
 ## Play
 
 A behavioural port of the full game in JavaScript, built from the
 documented mechanics and the extracted data, not a transpile.
 
+**The Play tab is always a port.** Never put the game's own code on the
+page to run on a model of the machine, even when that would be quicker
+and play exactly like the original. A port runs only if every routine in
+it was understood, and the lockstep shows it does what the original does,
+so it is new work that rests on the listing. The original code on an
+emulator is the original product shipped again, and it plays the same
+whether the listing is right or wrong. The maintainers have ruled on
+this: do not offer the choice to the contributor. The game's own code
+runs only in the tests, as the game the port is checked against (and a
+music driver run on the kit's processor counts as a port, as "The
+sound" above says).
+
 This is a first-class part of the minisite, not an extra: a reader who
 can play the game while reading how it works understands it better than
 one who only reads. The page's mechanic widgets are usually the seed.
 Omit the tab only if there is genuinely nothing playable to put on it.
 No tier requires the Play tab, so it never blocks Silver or Gold.
+
+Every Play tab that draws on a canvas offers the site's CRT screen:
+load `../../lib/crt.js`, put a "📺 CRT screen" button with `data-crt` in
+the page's bar, and call `CRT.attach(canvas, { button })` once the
+canvas exists. It draws the picture again on the GPU each time the page
+draws, so the page adds nothing to its loop; the header of
+`site/lib/crt.js` says what to pass for a picture scaled into the canvas
+from another (`source`), one drawn at twice the size (`pixel`), and a
+view at the screen's own resolution, which goes off when the CRT screen
+goes on (`onChange`). `kit/scripts/test_crt_screen.js` fails a Play page that
+leaves it out.
+
+Every Play tab whose game makes a sound offers the site's sound switch,
+on by default: load `../../lib/sound.js`, put
+`<button type="button" data-sound aria-pressed="true">🔊 Sound</button>`
+in the page's bar, and call `Sound.attach(button, set)` with the page's
+own `set(on)`, which starts or stops its sound and resolves to whether
+it is on. A browser lets a page start sound only inside a click or a key
+press, so the switch starts it at the viewer's first one and keeps the
+viewer's choice for every Play tab; the page starts no sound of its own,
+neither when its game starts nor in its key handlers.
+`kit/scripts/test_sound_switch.js` fails a Play page that leaves it out.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in
@@ -413,7 +504,9 @@ nothing and does not use the contributor's personal browser session. See
 `kit/INSTALL.md`, "Browser checks", for the tested host and containment.
 
 Check, at least: every canvas has drawn something; the console has no
-errors; every control does something when clicked; and the rebuilt screen
+errors, and for a withheld game none with `?listing-reads` after the
+address either; every control does
+something when clicked; and the rebuilt screen
 matches a reference screenshot from `reference/`. The reconstruction is
 the one section that is either right or obviously wrong the moment you
 see it, which makes it the best test that the data is understood.
@@ -421,6 +514,9 @@ see it, which makes it the best test that the data is understood.
 ## Outputs
 
 `index.html` opening cleanly from disk, loaded in a browser with every
-widget exercised, its best thing high on the page; `listing.json` built
-and passing `check_listing.py`; `game.json` with `copy` set; `build.py`
-producing the minisite without errors.
+widget exercised, its best thing high on the page; `discoveries.html`
+with every secret, quirk and bug; `levels.html` with
+every level, map or room drawn, or the line in `agent-history.md` saying
+why the game has none; `listing.json` built and passing
+`check_listing.py`; `game.json` with `copy` set; `build.py` producing the
+minisite without errors.

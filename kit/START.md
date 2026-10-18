@@ -21,13 +21,12 @@ step needs something only they have.
    opens the pull request, and the retrospective how the asks are filed.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
-3. **Ask the contributor seven things** if they have not already told you:
+3. **Ask the contributor six things** if they have not already told you:
    which game, which platform it is for, where their copy of it is on
    disk, **which run they want**, of the two below, **whether you may
    look the game up online**, and **whether you may open the pull request
    yourself when the run is done**, which covers filing the run's asks
-   for the maintainers as issues too, and **whether their plan's usage
-   limit is tight**. We never download game binaries;
+   for the maintainers as issues too. We never download game binaries;
    they supply their own.
 
    - **Silver** (recommended) aims to explain 100 % of the program and
@@ -58,19 +57,25 @@ step needs something only they have.
    full in `kit-feedback.md`, and the repository files them on merge.
    Either answer holds for the whole run; do not ask again at the end.
 
-   **The usage limit sets how many agents the run may start.** The run
-   works with one agent unless the work is large enough to split
-   (`kit/skills/core/50-coverage`, "Splitting the work across
-   subagents"). If they say the limit is tight, or do not know, it stays
-   at one agent throughout: several agents at once have used up a
-   session's allowance in minutes and left the run waiting hours for the
-   reset. If they say there is room, it may split large work across up to
-   four. The answer holds for the whole run. One agent throughout still
-   starts the checker `60-verify` gives a sample of the listing's
-   comments to: one agent with a short brief is not a fan-out, so the run
-   starts it without asking, whatever the answer here. The run takes
-   that one sample and no audit: it recommends an audit at the end, for
-   a later run to do when someone asks (`kit/skills/core/60-verify`).
+   **One agent does the work, unless they say otherwise.** Do not ask
+   about agents. The run writes everything with one agent: it is the
+   fastest way and uses the fewest tokens, and several agents at once
+   have used up a session's allowance in minutes and left runs waiting
+   hours for the reset. It still starts the checker `60-verify` gives a
+   sample of the listing's comments to, without asking: one agent with a
+   short brief is not a fan-out. A contributor may say, in the message
+   that starts the run, that it may use helpers ("you may use two helper
+   agents"); then the annotation is split as
+   `kit/skills/core/50-coverage` says ("Splitting the work across
+   subagents"), never across more than four at once. Helpers buy a more
+   accurate listing with tokens. In a controlled test on 18 October 2026
+   (one run of each way), a lead and two helpers took the annotation
+   1.5 times as long as one agent and used 2.4 times its tokens, and left
+   fewer than half as many wrong comments (7 of 90 checked, against 17);
+   four helpers did no better than two and used more tokens
+   (`kit/lessons/2026-10-18-helpers-accuracy.md`). The run takes that one
+   sample and no audit: it recommends an audit at the end, for a later
+   run to do when someone asks (`kit/skills/core/60-verify`).
 
    **A model for the checker, only if they name one.** Do not ask for it.
    A contributor may say, in the message that starts the run, which model

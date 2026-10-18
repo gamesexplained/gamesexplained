@@ -4,7 +4,7 @@
 // the next file back, or quits to $3000, by the line's first letter. It checks what the game
 // printed, the lines it read, the tape, the stops, a KERNAL routine with no hook, and that a
 // test's own hook wins. Exits 1 on any failure. node kit/c64/test_kernal_lines.js
-const { CPU } = require('./cpu6502.js');
+const { CPU } = require('../cpu/cpu6502.js');
 const { KernalLines } = require('./kernal_lines.js');
 
 let fails = 0;

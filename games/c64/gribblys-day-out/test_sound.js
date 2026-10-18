@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold How it works' port of the sound driver (createDriver in index.html, the tune and effects
-// players) against the game's own driver at $7554, run in kit/c64/cpu6502.js on the bytes of the
+// players) against the game's own driver at $7554, run in kit/cpu/cpu6502.js on the bytes of the
 // committed listing.json: every SID write of every call, in order, and the driver's zero-page state
 // after it. The title tune through two passes and more; every effect on both voices, flagged and
 // not, until both voices are idle; 300 runs of random requests on both voices, as play makes them.
@@ -11,7 +11,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64', 'sid');
 

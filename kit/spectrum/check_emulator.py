@@ -28,6 +28,22 @@ the input, and $9004 is a checkpoint that must stay at zero. One phase swaps it 
 variant that runs in IM 1 with interrupts on, so the ROM's interrupt can be counted
 and the machine has a clock the host cannot move; the two variants lay out identically.
 
+The 128K phase switches the machine to a Spectrum 128 (`set-machine 128k`), runs a
+program of its own there, and switches back to the 48K for the phases after it:
+
+  $8000  di ; ld sp,$A000 ; then for each RAM bank n, 0 to 7:
+           out ($7FFD),$10+n       bank n at $C000, the 48K ROM
+           ld ($FFF0),$B0+n        the bank's marker
+           ld ($FFF1),$C9 ; call $FFF1     a RET, run in that bank
+         then for each AY register r, 0 to 13: out ($FFFD),r ; out ($BFFD),its value
+  show:  out ($7FFD),($9020)     the bank the check asks for
+  done:  jr done
+
+Everything is read from outside: each bank's marker through ZRCP with the bank paged
+in, and in a 128K .sna read by kit/spectrum/snapshot.py; the bank the RET ran in, from
+the transaction log as kit/spectrum/bankmap.py reads it; the AY's registers from
+`get-io-ports`.
+
 Every check has a name. The summary lists the names that failed, and
 kit/skills/spectrum/tool-zesarux/workarounds.md says, per name, what to do instead.
 Run it after installing, and again after any new release or build.
@@ -37,7 +53,7 @@ import json, os, re, sys, threading, time, traceback
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
-from zesarux import ZesaruxError, connect, FRAME_TSTATES, DEFAULT_PORT   # noqa: E402
+from zesarux import ZesaruxError, connect, FRAME_TSTATES, FRAME_TSTATES_128K, DEFAULT_PORT   # noqa: E402
 
 SNAPDIR = os.path.join(ROOT, "tools", "zesarux-home", "snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
@@ -50,7 +66,15 @@ WATCH_LO = 0x9010        # a 16-bit variable the loop stores to and loads from, 
 FRAMES = 0x5C78          # the ROM's 3-byte frame counter: the ROM's ISR increments it once per interrupt
 STACK = 0xA000
 ROW0 = 0xFEFE            # port $FEFE: V C X Z CapsShift, with A = $FE in `in a,($fe)`
-SNAPS = ("zemutest_base", "zemutest_run", "zemutest_nocp", "zemutest_int")
+SNAPS = ("zemutest_base", "zemutest_run", "zemutest_nocp", "zemutest_int", "zemutest_128k_3", "zemutest_128k_5")
+
+PAGING = 0x7FFD          # 128K: bits 0-2 the RAM bank at $C000, bit 4 the ROM (kit/skills/spectrum/zx-spectrum-reference)
+MARK = 0xFFF0            # 128K: each bank's marker, at the same address in the $C000 window
+RET_AT = 0xFFF1          # 128K: a RET written into each bank and called there
+MARKER = 0xB0            # bank n's marker is $B0 + n
+SELECT = 0x9020          # the $7FFD value the 128K program's `show` writes
+AY_WRITES = ((0, 0x5D), (1, 0x0A), (2, 0xA7), (3, 0x05), (4, 0x3C), (5, 0x06), (6, 0x1B),   # each within
+             (7, 0x38), (8, 0x0F), (9, 0x0C), (10, 0x10), (11, 0xE8), (12, 0x03), (13, 0x0D))  # its register's bits
 
 try:                     # the lead's snapshot reader, when it is there
     from snapshot import read as snapshot_read, header as snapshot_header, SNA_48K_SIZE
@@ -138,6 +162,39 @@ CODE, LABELS = program()
 ICODE, ILABELS = program(interrupts=True)
 assert LABELS == ILABELS, "the interrupt variant must lay out identically to the plain one"
 LOOP, DEAD = LABELS["loop"], LABELS["dead"]
+
+
+def program128():
+    """The 128K phase's program: each RAM bank paged in, marked and run in, then the AY written.
+
+    The marker and the RET sit at $FFF0 and $FFF1, clear of the program: bank 2 is also at
+    $8000, where the program is, and bank 5 at $4000.
+    """
+    code = bytearray()
+    op = code.extend
+    op((0xF3,))                                             # di
+    op((0x31, STACK & 0xFF, STACK >> 8))                    # ld sp,$A000     in bank 2, which never moves
+    op((0x01, PAGING & 0xFF, PAGING >> 8))                  # ld bc,$7FFD
+    op((0x16, 0x00))                                        # ld d,0
+    bank = BASE + len(code)
+    op((0x7A, 0xF6, 0x10, 0xED, 0x79))                      # bank: ld a,d ; or $10 ; out (c),a   bank d, the 48K ROM
+    op((0x7A, 0xC6, MARKER, 0x32, MARK & 0xFF, MARK >> 8))  # ld a,d ; add a,$B0 ; ld ($FFF0),a    its marker
+    op((0x3E, 0xC9, 0x32, RET_AT & 0xFF, RET_AT >> 8))      # ld a,$C9 ; ld ($FFF1),a           a RET in it
+    op((0xCD, RET_AT & 0xFF, RET_AT >> 8))                  # call $FFF1                         run there
+    op((0x14, 0x7A, 0xFE, 0x08))                            # inc d ; ld a,d ; cp 8
+    op((0x20, (bank - (BASE + len(code) + 2)) & 0xFF))      # jr nz,bank
+    for r, v in AY_WRITES:
+        op((0x06, 0xFF, 0x3E, r, 0xED, 0x79))               # ld b,$FF ; ld a,r ; out (c),a    select it ($FFFD)
+        op((0x06, 0xBF, 0x3E, v, 0xED, 0x79))               # ld b,$BF ; ld a,v ; out (c),a    write it ($BFFD)
+    show = BASE + len(code)
+    op((0x01, PAGING & 0xFF, PAGING >> 8))                  # show: ld bc,$7FFD
+    op((0x3A, SELECT & 0xFF, SELECT >> 8, 0xED, 0x79))      # ld a,($9020) ; out (c),a
+    done = BASE + len(code)
+    op((0x18, 0xFE))                                        # done: jr done
+    return bytes(code), {"show": show, "done": done}
+
+
+CODE128, LABELS128 = program128()
 
 results = []
 speed = {}     # the host: what a frame step costs here, and how busy it was. Never a check
@@ -666,6 +723,103 @@ def p4(rpc):
              "kit/EMULATOR.md's frame-stepping loop allows")
 
 
+@phase("128K: paging through $7FFD, the banks in a snapshot and in the log, the AY's registers")
+def p_128k(rpc):
+    """A Spectrum 128 for the length of this phase, then the 48K again.
+
+    `CODE128` pages each RAM bank in at $C000, leaves its marker there and runs a RET
+    there, then writes fourteen of the AY's registers. The checks read all of it from
+    outside, the ways the kit reads a 128K game: `read-memory` with the bank paged in,
+    a .sna through kit/spectrum/snapshot.py, the transaction log through
+    kit/spectrum/bankmap.py, and `get-io-ports` for the AY.
+    """
+    import bankmap, snapshot
+    show, done = LABELS128["show"], LABELS128["done"]
+    rpc.bp_clear()
+    machine = rpc.set_machine("128k")
+    try:
+        check("machine-128k", machine == "ZX Spectrum+ 128k" and rpc.frame() == FRAME_TSTATES_128K,
+              "the machine switches to a 128K over ZRCP", f"{machine}, a frame of {rpc.frame()} T-states")
+        if "128" not in machine:
+            return
+        rpc.enter_step()
+        rpc.write_memory(BASE, CODE128)
+        rpc.write_memory(SELECT, bytes([0x10 | 3]))
+        rpc.set_register("PC", BASE)
+        rpc.bp_set(1, f"PC={done:04X}H")
+
+        # the program's one pass, logged in the form bankmap.py reads: the address first, then the registers
+        log = os.path.join(OUT, "zemutest_128k.log")
+        for k, v in (("logfile", log), ("truncate", "yes"), ("tstates", "no"), ("datetime", "no"),
+                     ("address", "yes"), ("registers", "yes"), ("enabled", "yes")):
+            rpc.cmd("cpu-transaction-log", k, v)
+        try:
+            rpc.run(timeout=10)
+        finally:
+            rpc.cmd("cpu-transaction-log", "enabled", "no")
+        tokens = {bankmap.token(line) for line in open(log, "rb").read().split(b"\n")}
+        os.remove(log)
+        ran = sorted(t for t in tokens if t and t.endswith(f":{RET_AT:04X}"))
+        check("bank-in-log", ran == [f"{n}:{RET_AT:04X}" for n in range(8)],
+              "the transaction log names the bank an instruction at $C000 ran in, as kit/spectrum/bankmap.py reads it",
+              f"the RET at ${RET_AT:04X} ran in banks {' '.join(t.split(':')[0] for t in ran) or 'none'}")
+
+        regs, sel = rpc.ay_registers()
+        want = [v for _, v in AY_WRITES]
+        check("ay-registers", regs[:len(want)] == want and sel == AY_WRITES[-1][0],
+              "get-io-ports reads back the values the program wrote to the AY, and the register it selected last",
+              f"R0-R13 {' '.join(f'{v:02X}' for v in regs[:len(want)])}, selected {sel}"
+              + ("" if regs[:len(want)] == want else f"; written {' '.join(f'{v:02X}' for v in want)}"))
+
+        def page(n):
+            """Have the program page bank n in at $C000, and stop."""
+            rpc.write_memory(SELECT, bytes([0x10 | n]))
+            rpc.set_register("PC", show)
+            rpc.run(timeout=10)
+
+        seen = []
+        for n in range(8):
+            page(n)
+            pages = rpc.cmd("get-memory-pages").split()
+            port = re.search(r"7FFD port:\s*([0-9A-F]{2})", rpc.cmd("get-io-ports"))
+            seen.append((rpc.read_memory(MARK, 1)[0], pages[3] if len(pages) > 3 else "?",
+                         int(port.group(1), 16) if port else -1))
+        fixed = rpc.read_memory(MARK - 0x8000, 1)[0], rpc.read_memory(MARK - 0x4000, 1)[0]
+        check("paging-7ffd", all(s == (MARKER + n, f"RA{n}", 0x10 | n) for n, s in enumerate(seen))
+              and fixed == (MARKER + 5, MARKER + 2),
+              "each RAM bank paged in at $C000 through $7FFD holds its own marker, read through ZRCP",
+              f"${MARK:04X} read {' '.join(f'{m:02X}' for m, _, _ in seen)} with banks 0-7 paged in, "
+              f"get-memory-pages said {' '.join(p for _, p, _ in seen)}, $7FFD "
+              f"{' '.join(f'{v:02X}' for _, _, v in seen)}; bank 5 at ${MARK - 0x8000:04X} read {fixed[0]:02X}, "
+              f"bank 2 at ${MARK - 0x4000:04X} {fixed[1]:02X}")
+
+        got = []
+        for n in (3, 5):          # a bank the CPU sees nowhere else, and bank 5, which the file then holds twice
+            page(n)
+            path = os.path.join(SNAPDIR, f"zemutest_128k_{n}.sna")
+            rpc.snapshot_save(path)
+            try:
+                b = snapshot.banks(path)
+                marks = [snapshot.read(path, bank=k)[MARK] for k in range(8)]
+                got.append((n, os.path.getsize(path), b["port"] == 0x10 | n and b["pc"] == done
+                            and marks == [MARKER + k for k in range(8)], f"$7FFD=${b['port']:02X} PC=${b['pc']:04X}"))
+            except SystemExit as e:          # snapshot.py exits, naming the size, on a file it cannot read
+                got.append((n, os.path.getsize(path), False, str(e)))
+        check("snapshot-128k", all(ok for _, _, ok, _ in got),
+              "a 128K .sna the emulator saves holds every bank's marker, read by kit/spectrum/snapshot.py",
+              "; ".join(f"bank {n} paged in: {size} bytes, {what}" + ("" if ok else ", markers wrong")
+                        for n, size, ok, what in got))
+    finally:
+        rpc.bp_clear()
+        back = rpc.set_machine("48k")
+        if back != "ZX Spectrum 48k":
+            raise ZesaruxError(f"set-machine 48k left a {back}: the 48K phases after this one cannot run")
+        # The switch resets the machine and leaves it running the ROM, out of cpu-step, while
+        # $9000 can still read non-zero (23386 measured on 13.0), so `fresh` would take the
+        # test program for running: set it up here, as the interrupt phase does.
+        setup(rpc)
+
+
 @phase("transport")
 def p_transport(rpc):
     rpc.bp_clear()
@@ -730,7 +884,7 @@ def main():
     if not any(n == "program-runs" and ok for n, ok in results):
         print("\nthe test program never ran; stopping here")
         sys.exit(1)
-    for step in (p1, p3, p_watch, p_interrupts, p4, p2):
+    for step in (p1, p3, p_watch, p_interrupts, p4, p_128k, p2):
         fresh(rpc)
         step(rpc)
     rpc = p2_restart(rpc)

@@ -25,3 +25,37 @@ separate the routines' direct contracts from hooked callee behavior.
 ## 4 October 2026 — the game in parts
 
 The kit gained a layout for a game that loads in parts (#202), and this game was one of the cases that asked for it (RFC #124). The analysed image became the part `part-1` as it stood, with no rebuild: its listing still matches its symbol map. The title, Part 2 and Part 3 were given folders that hold their names and nothing else, so the page counts them. The title is counted because Space there starts the Part-1 load. Nothing new was analysed; the review checks in `reference/review-checks.js` read the part's listing and still pass.
+
+## 17 October 2026: the Silver run
+
+Aaron Bell (air), a maintainer, took the game on from 64kramsystem's Bronze and asked for Silver,
+with the game images from the Internet Archive. The MrL and Dr Bakterius crack became the copy
+analysed, and Datasoft's 1987 disk, a different build, was set aside (`facts.md`, "Build").
+
+The four folders of 4 October were rebuilt as the engine and three story parts. The engine, the
+code and data that stay from the opening to the end, is listed from a snapshot at the opening;
+each part from its own snapshot at its first prompt, over $2F00-$95FF. Routes through all three
+parts were played live to reach those snapshots and the ending. The title's folder went: the
+opening is engine code.
+
+The three parts are almost all data, so they were described by decoders rather than by hand: the
+texts through the dictionary, the scripts through the interpreter's own operand counts, the
+pictures through their records. The decoders were checked by running the engine's routines on
+the kit's 6502 over the same memory, and the page tests keep those checks.
+
+The maintainer check ran on the run's own proven model, fresh checkers that wrote none of the
+listing. The first sample found 4 of 60 comments wrong, over the mark, so every comment was
+audited range by range and every claim in the facts files checked, before a second sample.
+The audit corrected 211 of 2,019 comments, almost all in a detail (a caller or a way in left
+out, a count, an offset, which memory is banked in); the worst read the icon map at $22A4 the
+wrong way round. The notes' checker found Gmork's count rising on moves the map refuses, and the
+mirror room failing to hand Atreyu Falkor. The second sample found 4 of 60 wrong, still over the
+mark, all in details of the same kinds; the check asks for one audit, and the Source tab reports
+what the second sample found.
+
+Building the Maps page found two room texts that cross $4000 cut short in the part listings: a
+data symbol's span ends at that edge, so the bytes after it were in no listing, and the page's
+port and its test, which read the same listing, were wrong together. They and the leftover
+filler at the ends of Parts 2 and 3 now have labels. The old `review-checks.js`, which read the
+engine out of Part 1's listing, and `import-audit.json` and `decoded-view.png`, which described
+the Bronze page, were removed.

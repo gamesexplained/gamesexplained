@@ -1,0 +1,241 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:17px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+table.t{border-collapse:collapse;width:100%;font-size:14.5px}
+table.t th,table.t td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.t th{font-weight:700;color:var(--ink-soft)}
+table.t td.n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+button.b{font-family:var(--fm);font-size:13px;padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+button.b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+button.b:hover{border-color:var(--ink-mute)}
+.jw-map-box{overflow:auto;border-radius:6px;background:#000}
+.jw-map-box canvas{display:block;width:100%;height:auto;cursor:pointer}
+.jw-map-box.full canvas{width:auto;max-width:none}
+.jw-scr{width:100%;max-width:768px;height:auto;display:block;image-rendering:pixelated;border-radius:4px;background:#000}
+.jw-odd{color:var(--amber);font-weight:700}
+.jw-self{color:var(--ink-mute)}
+.jw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 24px;margin-top:14px;font-size:14.5px}
+.jw-grid div b{display:inline-block;min-width:5.5em;color:var(--ink-soft)}
+tr.jw-on td{background:var(--hl)}
+table.t tr[data-room]{cursor:pointer}
+@media (max-width:760px){:root{--gx:20px;--h1:34px;--pp:16px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">All sixty rooms of the house, each drawn by a port of the game's own room builder, with its guardians, items, arrows and ropes moving at the game's pace.</p>
+</header>
+<main class="wrap">
+
+<section id="house">
+  <p class="fig">01 · The house</p>
+  <h2 class="t">The house, laid out by its exits</h2>
+  <p class="lede">Every room as the game draws it on entry. Click one to open it below.</p>
+  <div class="row"><button class="b" type="button" id="jw-full" aria-pressed="false">Full size</button></div>
+  <div class="jw-map-box" id="jw-map-box"><canvas id="jw-map"></canvas></div>
+  <p class="cap">Each room is placed by its exits, starting from The Bathroom, where a game begins: a room's left exit is drawn to its left, its up exit above it. Eleven exits do not lead to the room drawn beside them, and they carry an <span class="jw-odd">amber</span> bar on that edge. Most of them join the far ends of the house, so walking off the left of The Forgotten Abbey comes out in The Security Guard. A room's own number on a side (47 rooms have one) and 60 (in rooms 0 to 4) mean there is nothing there; no code checks either before taking an exit.</p>
+</section>
+
+<section id="room">
+  <p class="fig">02 · Room by room</p>
+  <h2 class="t">Each room, moving</h2>
+  <p class="lede">Step through the rooms, or pick one from the list. The guardians, the arrows, the rope, the conveyors and the items' colours move as the game moves them, with Willy left out.</p>
+  <div class="pick"><a class="step" id="jw-prev" role="button" tabindex="0" aria-label="Previous room">‹</a><select id="jw-sel" aria-label="Room"></select><a class="step" id="jw-next" role="button" tabindex="0" aria-label="Next room">›</a></div>
+  <div class="row">
+    <button class="b" type="button" id="jw-run" aria-pressed="true">Moving</button>
+    <button class="b" type="button" id="jw-g" aria-pressed="true">Guardians</button>
+    <button class="b" type="button" id="jw-i" aria-pressed="true">Items</button>
+  </div>
+  <div class="plate"><canvas class="jw-scr" id="jw-cv" width="256" height="144"></canvas>
+    <div class="jw-grid" id="jw-facts"></div>
+    <div id="jw-tabs"></div>
+    <p class="cap">Drawn by <code>jswScene</code> in <a href="reference/jsw-rooms.js">reference/jsw-rooms.js</a>, from the room record at <code>$B000</code> or <code>$E000</code>, the guardian records at <code>$2443</code>, the items at <code>$22C3</code> and the arrows at <code>$2403</code>. Its room builder, guardians, arrows, rope swing and conveyors are each checked against the game's own code for every room, by <code>test_rooms.js</code> on the kit's 6502 simulator. The main loop runs about three passes a frame (measured in The Bathroom), and the pace here assumes three in every room.</p>
+  </div>
+</section>
+
+<section id="exits">
+  <p class="fig">03 · Exits</p>
+  <h2 class="t">Exits that join the far ends of the house</h2>
+  <p>Leaving by a side, Willy goes to the room its exit names, and <code>$2DC6</code> then places him by which of the old room's exits names the new room, testing up, down, right and left in that order. So an exit back to the same room puts him wherever the first matching side says: leaving Entrance to Hades by any side brings him in at the bottom of Entrance to Hades, as if he had come up through its floor.</p>
+  <div class="table-scroll"><table class="t" id="jw-odd"></table></div>
+</section>
+
+<section id="all">
+  <p class="fig">04 · Every room</p>
+  <h2 class="t">Every room's record</h2>
+  <p>Each room is a 256-byte record: rooms 0 to 29 at <code>$B000</code> on, rooms 30 to 59 at <code>$E000</code> on, under the KERNAL ROM, which is why <code>$2E55</code> copies a room with the ROM banked out. Click a row to open the room above.</p>
+  <div class="table-scroll"><table class="t" id="jw-all"></table></div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/jsw-rooms.js"></script>
+<script>
+(async function () {
+  const say = why => { for (const id of ['jw-map-box', 'jw-sel', 'jw-odd']) document.getElementById(id).insertAdjacentHTML('afterend', `<p class="cap">${why}</p>`); };
+  if (typeof C64 === 'undefined' || typeof jswRoom === 'undefined') { say("This map needs the site's shared scripts, which only the published site serves."); return; }
+  let ram;
+  try { ({ ram } = await C64.load('listing.json')); } catch (e) { say("This map reads the game's listing, which only the published site serves."); return; }
+  const PAL = C64.PAL, rgb = PAL.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  const $ = id => document.getElementById(id);
+  const hex = (v, w = 4) => '$' + v.toString(16).toUpperCase().padStart(w, '0');
+  // Where each room sits on the map: laid out from The Bathroom by its exits, with the top row
+  // straightened by hand (On the Roof and its neighbours) and The Off Licence put beside The Bridge.
+  const AT = [[17,6],[16,6],[15,6],[14,6],[13,6],[12,6],[12,7],[15,5],[14,5],[13,5],[12,5],[11,5],[14,4],[13,4],[10,1],[9,1],[8,1],[7,1],[6,1],[5,6],[10,5],[9,5],[8,5],[7,5],[6,5],[5,5],[10,4],[9,4],[8,4],[7,4],[6,4],[5,4],[10,3],[9,3],[8,3],[7,3],[6,3],[5,3],[10,2],[9,2],[8,2],[7,2],[6,2],[5,2],[11,1],[13,7],[14,7],[5,1],[4,6],[8,0],[3,6],[4,5],[3,5],[4,4],[3,4],[4,3],[3,3],[2,6],[1,6],[0,6]];
+  const COLS = 18, ROWS = 8, SIDES = ['up', 'down', 'left', 'right'], D = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  const where = new Map(AT.map((p, n) => [p.join(), n]));
+  const small = new Set(['A', 'OF', 'THE', 'TO', 'ON', 'UP', 'OVER', 'IN']);
+  const name = n => {
+    const R = ram.subarray(jswRoom.record(n), jswRoom.record(n) + 32);
+    const s = Array.from(R, c => String.fromCharCode(c < 0x20 ? c + 0x40 : c)).join('').trim().replace(/\s+/g, ' ');
+    return s.split(' ').map((w, i) => i && small.has(w) ? w.toLowerCase() : w.charAt(0) + w.slice(1).toLowerCase().replace(/'([a-z])/, (m, c) => "'" + c)).join(' ').replace(/^Dr /, 'Dr ');
+  };
+  const NAMES = Array.from({ length: 60 }, (_, n) => name(n));
+  const exitKind = (n, i) => {
+    const e = jswRoom.build(ram, n).exits[i];
+    if (e >= 60) return 'none';
+    if (e === n) return 'self';
+    const [x, y] = AT[n];
+    return where.get([x + D[i][0], y + D[i][1]].join()) === e ? 'next' : 'odd';
+  };
+  const paint = (img, px, w, ox = 0, oy = 0, W = w) => {
+    for (let i = 0; i < px.length; i++) {
+      const c = rgb[px[i]], o = ((oy + Math.floor(i / w)) * W + ox + i % w) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+  };
+
+  // The house map, drawn at full size and scaled by the page.
+  const CW = 256 + 8, CH = 144 + 8, map = $('jw-map');
+  map.width = COLS * CW; map.height = ROWS * CH;
+  const mx = map.getContext('2d'), mimg = mx.createImageData(map.width, map.height);
+  for (let n = 0; n < 60; n++) {
+    const P = jswPicture(ram, n), [x, y] = AT[n];
+    paint(mimg, P.px, 256, x * CW + 4, y * CH + 4, map.width);
+  }
+  mx.putImageData(mimg, 0, 0);
+  mx.fillStyle = '#ff9a2e';
+  for (let n = 0; n < 60; n++) for (let i = 0; i < 4; i++) if (exitKind(n, i) === 'odd') {
+    const [x, y] = AT[n], X = x * CW + 4, Y = y * CH + 4;
+    if (i === 0) mx.fillRect(X, Y, 256, 6); else if (i === 1) mx.fillRect(X, Y + 138, 256, 6);
+    else if (i === 2) mx.fillRect(X, Y, 6, 144); else mx.fillRect(X + 250, Y, 6, 144);
+  }
+  $('jw-full').onclick = e => { const on = $('jw-map-box').classList.toggle('full'); e.target.setAttribute('aria-pressed', on); };
+  map.onclick = e => {
+    const r = map.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * COLS), y = Math.floor((e.clientY - r.top) / r.height * ROWS);
+    if (where.has([x, y].join())) { show(where.get([x, y].join())); $('room').scrollIntoView({ behavior: 'smooth' }); }
+  };
+
+  // One room at a time.
+  const sel = $('jw-sel'), cv = $('jw-cv'), cx = cv.getContext('2d'), cimg = cx.createImageData(256, 144);
+  NAMES.forEach((t, n) => sel.add(new Option(`${n} · ${t}`, n)));
+  let scene, room = 33, opts = { guardians: true, items: true }, running = true;
+  const exitText = (n, i) => {
+    const e = jswRoom.build(ram, n).exits[i], k = exitKind(n, i);
+    if (k === 'none') return `<span class="jw-self">60, no room</span>`;
+    if (k === 'self') return `<span class="jw-self">this room</span>`;
+    return `<a href="#room" data-go="${e}"${k === 'odd' ? ' class="jw-odd"' : ''}>${NAMES[e]}</a>`;
+  };
+  const cells = k => k === 1 ? "1 cell" : k + " cells";
+  function details(n) {
+    const B = jswRoom.build(ram, n), R = B.R;
+    const items = jswRoom.items(ram, n, 0), arrows = [];
+    for (let i = 0; i < 16; i++) { const a = ram.subarray(0x2403 + 4 * i, 0x2407 + 4 * i); if ((a[0] & 0x7F) === n) arrows.push({ i, a }); }
+    const f = [
+      ['Record', `<code>${hex(B.record)}</code>, room ${n}`],
+      ...SIDES.map((s, i) => [s[0].toUpperCase() + s.slice(1), exitText(n, i)]),
+      ['Conveyor', R[0xD0] ? `${cells(R[0xD0] & 0x3F)} from column ${R[0xD2]}, row ${R[0xD1]}, carrying ${R[0xD0] & 0x80 ? 'left' : 'right'}` : n === 32 ? 'the ramp\'s six cells, turned into conveyor by <code>$30E1</code>, carrying right' : 'none'],
+      ['Ramp', n === 32 ? 'six cells from column 6, row 2, down to the right, which <code>$30E1</code> turns into conveyor' : R[0xD3] & 0x80 ? 'every floor cell counts as a ramp' : R[0xD5] ? `${cells(R[0xD5] & 0x3F)} from column ${R[0xD4]}, row ${R[0xD3]}, down to the ${R[0xD5] & 0x80 ? 'left' : 'right'}` : 'none'],
+      ['Rope', R[0xE2] ? 'yes, sprites 5 to 7' : 'none'],
+      ['Items', items.length ? items.map(t => `${t.x},${t.y}`).join('; ') + ` (column, row)` : 'none'],
+      ['Arrows', arrows.length ? arrows.map(({ i, a }) => `row ${a[3]}, flying ${a[2] & 0x80 ? 'left' : 'right'}${i === 15 ? ', never fires' : ''}`).join('; ') : 'none'],
+    ];
+    $('jw-facts').innerHTML = f.map(([k, v]) => `<div><b>${k}</b> ${v}</div>`).join('');
+    const G = jswGuardians(ram, n).list;
+    $('jw-tabs').innerHTML = G.length ? `<h3>Guardians</h3><div class="table-scroll"><table class="t"><tr><th>Sprite</th><th>Record</th><th>Moves</th><th>Starts at</th><th>Between</th><th>Frames</th><th>Speed</th></tr>` + G.map(g => {
+      const r = g.rec, across = r[0] & 0x80, m = r[5] & 3;
+      const frames = across && r[5] >= 4 ? `${hex(r[3], 2)}-${hex(r[3] + 3, 2)} left, ${hex(r[3] + 4, 2)}-${hex(r[3] + 7, 2)} right` : across && m < 3 ? `${hex(r[3], 2)}-${hex(r[3] + m, 2)} right, ${hex(r[3], 2)}-${hex(r[3] + 3, 2)} left` : m ? `${hex(r[3], 2)}-${hex(r[3] + m, 2)}` : hex(r[3], 2);
+      return `<tr><td class="n">${g.n}${B.rope && g.n >= 5 ? ' (rope)' : ''}</td><td class="n">${hex(0x2443 + 8 * (R[0xE0] + g.n - 1))}</td><td>${across ? 'across' : 'up and down'}, ${r[0] & 0x40 ? (across ? 'left' : 'up') : (across ? 'right' : 'down')} first</td><td class="n">${r[1]}, ${r[2]}</td><td class="n">${across ? 'columns' : 'rows'} ${r[7]}-${r[4]}</td><td class="n">${frames}</td><td class="n">${across ? `a column every ${m + 1}` : `${r[6]} px`}</td></tr>`;
+    }).join('') + `</table></div>` : '';
+    for (const a of document.querySelectorAll('#jw-facts [data-go]')) a.onclick = e => { e.preventDefault(); show(+a.dataset.go); };
+  }
+  function draw() { paint(cimg, scene.draw(opts).px, 256); cx.putImageData(cimg, 0, 0); }
+  function show(n) {
+    room = n; sel.value = n; scene = jswScene(ram, n); details(n); draw();
+    $('jw-prev').classList.toggle('off', n === 0); $('jw-next').classList.toggle('off', n === 59);
+    for (const tr of document.querySelectorAll('#jw-all tr[data-room]')) tr.classList.toggle('jw-on', +tr.dataset.room === n);
+  }
+  sel.onchange = () => show(+sel.value);
+  const step = d => { const n = room + d; if (n >= 0 && n < 60) show(n); };
+  for (const [id, d] of [['jw-prev', -1], ['jw-next', 1]]) {
+    $(id).onclick = () => step(d);
+    $(id).onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); step(d); } };
+  }
+  const toggle = (id, set) => $(id).onclick = e => { const on = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on); set(on); draw(); };
+  toggle('jw-run', on => running = on);
+  toggle('jw-g', on => opts.guardians = on);
+  toggle('jw-i', on => opts.items = on);
+  let last = 0, seen = true;
+  new IntersectionObserver(es => { seen = es[0].isIntersecting; }).observe(cv);
+  (function tick(t) {
+    if (running && seen && scene) {
+      const k = Math.min(10, Math.floor((t - last) / 20));     // 50 frames a second, as on a PAL machine
+      if (k > 0) { for (let i = 0; i < k; i++) scene.frame(); last += k * 20; draw(); }
+      if (t - last > 200) last = t;
+    } else last = t;
+    requestAnimationFrame(tick);
+  })(0);
+
+  // The exits that lead elsewhere, and every room.
+  const odd = [];
+  for (let n = 0; n < 60; n++) for (let i = 0; i < 4; i++) if (exitKind(n, i) === 'odd') odd.push([n, i]);
+  $('jw-odd').innerHTML = '<tr><th>From</th><th>Side</th><th>To</th></tr>' + odd.map(([n, i]) => `<tr data-room="${n}"><td>${NAMES[n]} (${n})</td><td>${SIDES[i]}</td><td>${NAMES[jswRoom.build(ram, n).exits[i]]} (${jswRoom.build(ram, n).exits[i]})</td></tr>`).join('');
+  const cell = (n, i) => { const e = jswRoom.build(ram, n).exits[i], k = exitKind(n, i); return k === 'none' ? '·' : k === 'self' ? '·' : `<span${k === 'odd' ? ' class="jw-odd"' : ''}>${e}</span>`; };
+  let rows = '<tr><th>Room</th><th>Name</th><th>Record</th><th>Up</th><th>Down</th><th>Left</th><th>Right</th><th>Guardians</th><th>Items</th><th>Extras</th></tr>';
+  for (let n = 0; n < 60; n++) {
+    const B = jswRoom.build(ram, n), R = B.R, items = jswRoom.items(ram, n, 0).length;
+    let arrows = 0; for (let i = 0; i < 16; i++) if ((ram[0x2403 + 4 * i] & 0x7F) === n) arrows++;
+    const extra = [R[0xD0] || n === 32 ? 'conveyor' : '', (R[0xD3] & 0x80 || R[0xD5]) && n !== 32 ? 'ramp' : '', R[0xE2] ? 'rope' : '', arrows ? arrows + (arrows > 1 ? ' arrows' : ' arrow') : ''].filter(Boolean).join(', ');
+    rows += `<tr data-room="${n}"><td class="n">${n}</td><td>${NAMES[n]}</td><td class="n">${hex(B.record)}</td>${[0, 1, 2, 3].map(i => `<td class="n">${cell(n, i)}</td>`).join('')}<td class="n">${R[0xE1]}</td><td class="n">${items}</td><td>${extra}</td></tr>`;
+  }
+  $('jw-all').innerHTML = rows;
+  for (const tr of document.querySelectorAll('tr[data-room]')) tr.onclick = () => { show(+tr.dataset.room); $('room').scrollIntoView({ behavior: 'smooth' }); };
+  show(33);
+})();
+</script>

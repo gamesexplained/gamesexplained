@@ -3,7 +3,7 @@
 // processor itself, not the machine: the 64 KB of address space are all RAM (a Uint8Array(65536)
 // used in place), and I/O goes through the caller's hooks. The Spectrum's own map (ROM at
 // $0000-$3FFF, the ULA's port $FE and so on) is the machine model's to supply, exactly as the
-// C64's map lives in kit/c64/cpu6502.js around a bare 6502 core. Checked by kit/spectrum/check_z80.js
+// C64's map lives in kit/cpu/cpu6502.js around a bare 6502 core. Checked by kit/spectrum/check_z80.js
 // against SingleStepTests/z80 (github.com/SingleStepTests/z80, v1, MIT licence): one step per case,
 // every register, internal and RAM byte compared, 1,604,000 cases in all; and against ZEsarUX's Z80
 // by `check_z80.js zesarux`, instruction by instruction with the T-states, which the vectors do not

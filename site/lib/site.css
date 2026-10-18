@@ -116,6 +116,10 @@ h2.t{font-size:var(--h2);margin:0 0 12px}
   .pagenav-btn{display:inline-flex}
   html.pagenav-open .pagenav-scrim{display:block}
 }
+/* every tab but Source: a section off the screen is skipped, at the height site.js took (--cv-h); the
+   clip margin lets a plate's shadow and a tooltip reach past the section's edge as they did before */
+@supports (overflow-clip-margin:1px){section.cv{content-visibility:auto;contain-intrinsic-height:auto var(--cv-h);overflow-clip-margin:200px}}
+@media print{section.cv{content-visibility:visible}}
 /* a jump lands a section's label, or a heading, just clear of the sticky tab bar (site.js measures it) */
 html:has(.pagenav) section[id]{scroll-margin-top:calc(var(--tabs-h,48px) - var(--sy) + 16px)}
 html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
@@ -149,7 +153,7 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 /* home page: the split hero, the featured game, the catalogue */
 .hidden{display:none!important}
 .contribute .k,.showcol .k{font-family:var(--fm);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0 0 8px}
-.hero.split .m,.show .m,.tile .m,.contribute .m{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.hero.split .m,.show .m,.contribute .m{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
 .hero.split{display:grid;grid-template-columns:1fr 1.1fr;gap:44px;align-items:center;padding:44px var(--gx) 24px;border-bottom:1px solid var(--line-soft)}
 .hero.split .sub{color:var(--ink-soft)}
 .contribute{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px 12px;margin-top:18px;box-shadow:var(--plate-shadow)}
@@ -175,48 +179,84 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .cathead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin:26px 0 14px}
 .cathead h2{margin:0;font-size:18px;display:flex;align-items:baseline;gap:10px}
 .cathead h2 .n{font-family:var(--fm);font-size:12px;color:var(--ink-mute);font-weight:400;letter-spacing:.08em;text-transform:uppercase}
-.platforms{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--fm);font-size:12.5px}
-.platforms a{color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none}
-.platforms a .n{color:var(--ink-mute);margin-left:4px;font-size:11px}
-.platforms a:hover,.site .platforms a:hover{border-color:var(--accent);color:var(--ink);text-decoration:none}
-.platforms a.on{color:var(--amber);border-color:var(--amber)}
-.platforms a.empty{border-style:dashed;color:var(--ink-mute)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin:0 0 24px}
-.tile{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;text-decoration:none;box-shadow:var(--plate-shadow)}
-/* hover: the card lifts; no underline (.site a:hover would otherwise win) and no outline */
-.tile{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
-.tile:hover,.site a.tile:hover{text-decoration:none;color:var(--ink);transform:translateY(-2px);border-color:#c9c6be;
-  box-shadow:0 2px 4px rgba(0,0,0,.05),0 12px 28px rgba(0,0,0,.10)}
-.tile:hover b{color:var(--link-hover)}
-.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover,.site a.tile:hover{transform:none}}
-.tile .thumb{width:96px;border-radius:4px}
-.tile .body{display:flex;flex-direction:column;gap:4px;min-width:0}
-.tile b{font-weight:700;font-size:15px}
-.tile .strip{margin-top:4px}
-.tile .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.tile .stamp{flex:none}
-/* New and updated: the latest games added or changed, one quiet card each, above the catalogue.
-   The title's link covers the whole card; the author's link sits on top of it. */
+/* A game's card, in New and updated and in the catalogue (build.py tile_html): the tier up the left edge,
+   the title screen, the title, who, and a line in small type. The title's link covers the whole card; the
+   people's links sit on top. Four a row, two below 900px. */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 24px}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:8px 8px 10px 30px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--plate-shadow);
+  transition:transform .16s ease,border-color .16s ease}
+.tile:hover{border-color:#c9c6be;transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover{transform:none}}
+.tile .thumb{width:100%;border-radius:5px}
+.tile .body{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.tile a.g{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile a.g::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
+.tile a.g:hover,.tile a.g:focus-visible{text-decoration:none;outline:none}
+.tile:hover a.g{color:var(--link-hover)}
+.tile a.g:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
+.tile .v{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.tile .v a{position:relative;z-index:1}
+.tile time,.tile .m{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:3px}
+/* The tier up a card's left edge, in the tier's colour: gold, slate and bronze differ in lightness
+   as well as hue, so they part for a colour-blind reader too, and the word is always there. Only a
+   card's: the tab bar's .tier, the tier or build date at its right, stays in the bar. */
+.t-gold{--tc:#8f6a00}.t-silver{--tc:#68707c}.t-bronze{--tc:#8a4a1e}.t-none{--tc:#80838a}
+.tile>.tier{position:absolute;left:0;top:0;bottom:0;width:22px;display:flex;align-items:center;justify-content:center;
+  writing-mode:vertical-rl;transform:rotate(180deg);background:var(--tc);color:#fff;font-family:var(--fm);font-size:10px;
+  font-weight:500;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+/* New and updated: the latest games added or changed, four cards at a time. site.js moves the row on
+   every few seconds and fills the dots. */
 .recent .cathead{margin:18px 0 10px}
 .recent .cathead>a{font-size:13.5px}
-.recent .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.recent .card{position:relative;display:grid;grid-template-columns:60px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px 8px 8px;
-  border:1px solid var(--line);border-radius:var(--r);transition:background .15s ease,border-color .15s ease}
-.recent .card:hover{background:var(--surface);border-color:#c9c6be}
-.recent .thumb{width:60px;border-radius:3px}
-.recent .body{display:flex;flex-direction:column;min-width:0;line-height:1.3}
-.recent a.g{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.recent a.g::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
-.recent a.g:hover,.recent a.g:focus-visible{text-decoration:none;outline:none}
-.recent .card:hover a.g{color:var(--link-hover)}
-.recent a.g:focus-visible::after{outline:2px solid var(--accent);outline-offset:2px}
-.recent .v{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
-.recent .v a{position:relative;z-index:1}
-.recent time{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:3px}
-@media (max-width:900px){.recent .cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:700px){.recent .cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:6px}
-  .recent .card{flex:0 0 78%;scroll-snap-align:start}}
+.recent .cards{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 36px)/4);gap:12px;overflow-x:auto;
+  scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding:2px 2px 6px}
+.recent .cards::-webkit-scrollbar{display:none}
+.recent .tile{scroll-snap-align:start}
+.recent .dots{display:flex;justify-content:center;gap:6px;margin-top:8px;min-height:7px}
+.recent .dots button{width:7px;height:7px;padding:0;border:0;border-radius:4px;background:var(--line);cursor:pointer}
+.recent .dots button[aria-current=true]{width:18px;background:var(--ink)}
+@media (max-width:900px){.recent .cards{grid-auto-columns:calc((100% - 12px)/2)}}
+@media (prefers-reduced-motion:reduce){.recent .cards{scroll-behavior:auto}}
+/* The finder: search, sort, view and filters, pinned while the catalogue scrolls (site.js) */
+.finder{position:sticky;top:0;z-index:5;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--line);margin:0 0 16px;display:grid;gap:10px}
+.finder .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.finder .search{flex:1 1 260px;position:relative;min-width:0}
+.finder input{width:100%;font:15px var(--fb);padding:9px 40px 9px 36px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink)}
+.finder input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.finder .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--ink-mute);stroke-width:2.2}
+.finder kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:11px var(--fm);color:var(--ink-mute);border:1px solid var(--line);border-radius:4px;padding:0 5px;background:var(--surface-2)}
+.finder select,.finder .seg button,.finder .more,.finder .clear{font:12.5px var(--fm);color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.finder .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.finder .seg button{border:0;border-radius:0}
+.finder .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.finder .facets{display:flex;gap:8px;flex-wrap:wrap}
+.finder[hidden],.finder .facets[hidden],.recent .dots[hidden]{display:none}
+.finder .clear{border-style:dashed}
+.catgroup{margin:0 0 22px;scroll-margin-top:120px}
+.catgroup>h3{margin:0 0 10px;font-size:22px;color:var(--tc,var(--ink))}
+.catgroup>h3 .n{font-family:var(--fm);font-size:13px;font-weight:400;color:var(--ink-mute);margin-left:6px}
+.catgroup>h3 small{display:block;font-size:14px;font-weight:400;color:var(--ink-mute);margin-top:2px}
+.catgroup{position:relative}
+.catgroup>.tiles{margin-bottom:12px}
+.showall{display:flex;margin:0 auto;width:max-content;align-items:center;gap:6px;padding:7px 12px 7px 14px;font:500 12.5px var(--fm);
+  color:#fff;background:var(--tc,var(--ink));border:0;border-radius:999px;cursor:pointer;box-shadow:var(--plate-shadow);transition:filter .15s ease}
+.showall svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s ease}
+.showall:hover{filter:brightness(1.15)}
+.showall:hover svg{transform:translateX(2px)}
+.showall:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--ink-soft)}
+/* List view: one row a game, a small title screen beside the title */
+.list .tiles{grid-template-columns:1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list .tile{flex-direction:row;align-items:center;gap:12px;padding:6px 12px 6px 34px;border:0;border-top:1px solid var(--line-soft);border-radius:0;box-shadow:none}
+.list .tile:first-child{border-top:0}
+.list .tile:hover{transform:none;background:var(--surface-2)}
+.list .tile .thumb{width:56px;flex:none;border-radius:4px}
+/* the featured box's frames fade into one another (site.js) */
+.show .shots{position:relative;display:block}
+.show .shots img+img{position:absolute;inset:0}
+.show .shots img{transition:opacity 1.2s ease}
 .foot{margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid var(--line-soft);font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
 .foot .soc{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid var(--line-soft);border-radius:7px;background:var(--surface);color:var(--ink-mute);vertical-align:middle}
 .foot .soc:hover{color:var(--ink);border-color:var(--line)}
@@ -229,6 +269,7 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .srcnote{font-size:14.5px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:0 var(--r) var(--r) 0;padding:7px 14px;margin:0 0 14px}
 .srcnote b{font-weight:900;color:var(--coral)}
 .srcnote.ok{border-left-color:var(--green)}.srcnote.ok b{color:var(--green)}
+.withheld{font-size:17px;color:var(--ink-soft);margin:18px 0 48px}
 details.factsbox{scroll-margin-top:calc(var(--tabs-h,48px) + 12px);border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:6px 18px;margin:20px 0}
 details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;color:var(--ink-soft);padding:8px 0}
 .src{display:grid;grid-template-columns:280px 1fr;min-height:70vh;border-top:1px solid var(--line)}
@@ -373,6 +414,90 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 @media (max-width:900px){.about .who{grid-template-columns:1fr;gap:8px}.about .cards{grid-template-columns:1fr}}
 @media (max-width:700px){.about [id]{scroll-margin-top:110px}.about h2 .hash{position:static;margin-left:.3em;opacity:.35}}
 
+/* activity page: what landed each day (site/lib/activity.js draws it). A tile per count picks
+   the one the chart draws; below, every day of the period with what landed on it. */
+.activity .hero{padding-bottom:0}
+.activity [id]{scroll-margin-top:72px}
+.activity .act-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:18px 0 16px}
+.activity .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.activity .seg button{font:12.5px var(--fm);color:var(--ink-soft);background:none;border:0;padding:7px 14px;cursor:pointer}
+.activity .seg button:hover{color:var(--ink)}
+.activity .seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.activity .act-every{margin:0;color:var(--ink-soft);font-size:15px}
+.activity .act-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.activity .act-kpi{display:flex;flex-direction:column;align-items:stretch;gap:2px;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 10px;box-shadow:var(--plate-shadow)}
+.activity .act-kpi:hover{border-color:var(--ink-mute)}
+.activity .act-kpi.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent),var(--plate-shadow)}
+.activity .act-kpi .k{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);line-height:1.35}
+.activity .act-kpi .v{font-size:32px;font-weight:900;line-height:1.15;color:var(--ink);letter-spacing:-.01em}
+.activity .act-kpi .s{font-size:13px;line-height:1.35;color:var(--ink-soft);min-height:2.7em}
+.activity .act-kpi .spark{display:block;width:100%;height:28px;margin-top:6px}
+.activity .act-kpi .spark rect{fill:var(--ink-mute);opacity:.55}
+.activity .act-kpi .spark .line{fill:none;stroke:var(--ink-mute);stroke-width:2;vector-effect:non-scaling-stroke}
+.activity .act-kpi.on .spark rect{fill:var(--accent);opacity:1}
+.activity .act-kpi.on .spark .line{stroke:var(--accent)}
+.activity .act-chart{margin:0 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 6px;box-shadow:var(--plate-shadow)}
+.activity .act-chart figcaption{font-size:15px;margin:0 0 6px}
+.activity .act-plot{position:relative;min-height:220px}
+.activity .act-svg{display:block;font-family:var(--fm);outline:none}
+.activity .act-svg:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.activity .act-svg .grid{stroke:var(--line-soft);stroke-width:1}
+.activity .act-svg .base{stroke:var(--line);stroke-width:1}
+.activity .act-svg .tick{font-size:11px;fill:var(--ink-mute);font-variant-numeric:tabular-nums}
+.activity .act-svg .marks path{fill:var(--accent);transition:opacity .12s}
+.activity .act-svg .marks path.dim{opacity:.45}
+.activity .act-svg .marks .wash{fill:var(--accent);opacity:.1}
+.activity .act-svg .marks .line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.activity .act-svg .marks .dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.activity .act-svg .marks .end{font-size:12px;fill:var(--ink);font-weight:500}
+.activity .act-svg .cross{stroke:var(--ink-mute);stroke-width:1}
+.activity .act-svg .hit{fill:transparent;cursor:pointer}
+.activity .act-tip{position:absolute;top:4px;left:0;z-index:2;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);padding:8px 11px;font-size:13px;line-height:1.45;min-width:170px}
+.activity .act-tip[hidden]{display:none}
+.activity .act-tip .when{display:block;font-weight:700;margin:0 0 3px}
+.activity .act-tip .row{display:flex;gap:8px;color:var(--ink-soft)}
+.activity .act-tip .row b{min-width:2.2em;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+.activity .act-tip .row.on{color:var(--ink)}
+.activity .act-tip .row.on b{color:var(--accent)}
+.activity .act-none{padding:80px 0;text-align:center;margin:0}
+.activity .act-days{margin:0 0 20px;border-bottom:1px solid var(--line-soft)}
+.activity .act-day{border-top:1px solid var(--line-soft)}
+.activity .act-day .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:10px 0;list-style:none}
+.activity .act-day summary{cursor:pointer}
+.activity .act-day summary::-webkit-details-marker{display:none}
+.activity .act-day summary::before{content:"\25B8";color:var(--ink-mute);font-size:12px;width:12px;margin-right:-6px;transition:transform .12s}
+.activity .act-day[open] summary::before{transform:rotate(90deg)}
+.activity .act-day div.head{padding-left:20px}
+.activity .act-day time{font-weight:700}
+.activity .act-day .n{font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.activity .act-items{list-style:none;padding:0 0 12px 20px;margin:0}
+.activity .act-items li{display:grid;grid-template-columns:10.5em minmax(0,1fr);column-gap:12px;align-items:baseline;padding:5px 0;font-size:15px;line-height:1.45}
+.activity .act-items .tags{display:flex;flex-wrap:wrap;gap:0 8px}
+.activity .act-items .m{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:8px}
+.activity .act-items .m a{color:var(--ink-soft)}
+.activity .act-items .fix{display:block;font-size:14px;margin-top:2px}
+.activity .act-items .fix .act-tag{margin-right:8px}
+.activity .act-items code{background:none;color:inherit;padding:0;font-size:.86em}
+.activity .act-tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:11px;color:var(--ink-soft);white-space:nowrap}
+.activity .act-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink-mute)}
+.activity .act-tag.new::before{background:var(--amber)}
+.activity .act-tag.game::before{background:var(--accent)}
+.activity .act-tag.kit::before{background:var(--green)}
+.activity .act-tag.site::before{background:var(--violet)}
+.activity .act-tag.issue::before{background:var(--coral)}
+.activity dl.act-defs{margin:0 0 1em}
+.activity dl.act-defs dt{font-weight:700;margin:16px 0 2px}
+.activity dl.act-defs dd{margin:0;color:var(--ink-soft)}
+.activity .foot{margin-top:40px}
+@media (max-width:900px){.activity .act-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:700px){.activity .act-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.activity .act-kpi .v{font-size:26px}
+  .activity [id]{scroll-margin-top:110px}.activity .act-items{padding-left:0}.activity .act-day div.head{padding-left:0}
+  .activity .act-kpi:last-child:nth-child(odd){grid-column:span 2}
+  .activity .act-items li{grid-template-columns:minmax(0,1fr);padding:8px 0;border-top:1px solid var(--line-soft)}}
+@media (prefers-reduced-motion:reduce){.activity .act-svg .marks path,.activity .act-day summary::before{transition:none}}
+
 /* A game of several parts. Above its listing, the parts in the order they are played (.partpick).
    Beside it, the control that steps from one to the next (.pick): the one before, a list of them
    all, the one after. A levels page that steps through rooms uses the same three pieces. */
@@ -397,7 +522,7 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 .research-unknown,.annotate-run{--step:var(--ink-mute)}
 .sample-small{--step:var(--amber)}
 .audit-full,.audit-part{--step:var(--link)}
-.play-port{--step:var(--violet)}
+.play-port,.port-check{--step:var(--violet)}
 .site table.accuracy tr>th:first-child,.checking .ledger tr>th:first-child{border-left:3px solid var(--step,transparent);color:var(--step,var(--ink-mute));font-weight:700}
 .site table.accuracy tr.audit-part>th:first-child,.checking .ledger tr.audit-part>th:first-child{border-left-style:dashed}
 /* the bar that ends each ledger row (accuracy.ribbon): the whole listing as it stood after the step, so the

@@ -29,7 +29,7 @@ in order:
    | sweep | `kit/skills/core/40-sweep` | register census and string sweep |
    | annotate and measure | `kit/skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
-   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
+   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `discoveries.html` (Discoveries), `listing.json` (Source code), `levels.html` (Maps / levels) for a game with more than one level, optional `play.html` |
    | retrospective | `kit/skills/core/80-retro` | the skill text that helped, named; fixes to the kit; `kit-feedback.md`; `game.json` complete |
 
    A Bronze run stops after `40-sweep`. It exports the symbol map and
@@ -38,15 +38,18 @@ in order:
    to `80-retro`. `build.py` publishes every game folder, so an untouched
    template would go live as a page of placeholders.
 
-   Platform knowledge is in `kit/skills/<platform>/`. For the C64:
-   `kit/skills/c64/c64-reference` (facts about the machine — consult it, do not
-   recall from training), `kit/skills/c64/tool-vice-mcp` and
-   `kit/skills/c64/tool-regen2000` (how to drive the recommended tools).
+   Platform knowledge is in `kit/skills/<platform>/`. Its `steps` skill
+   says which tool does each step the core skills name on that machine.
+   For the C64: `kit/skills/c64/steps`, `kit/skills/c64/c64-reference`
+   (facts about the machine — consult it, do not recall from training),
+   `kit/skills/c64/tool-vice-mcp` and `kit/skills/c64/tool-regen2000` (how
+   to drive the recommended tools).
 4. **Export the symbol map** after every annotation session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`. This
    file, `symbols.json`, is the canonical technical result. Then build the
    listing the Source tab renders from it and your snapshot:
-   `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot.vsf>`.
+   `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot>`
+   (the platform's `steps` skill, "snapshot", names its format).
    Both are committed; the snapshot and disassembler project stay in
    `work/`. A game that is several loads has a symbol map and a listing
    for each part, and both scripts take the part's folder
@@ -135,6 +138,30 @@ requests knows what changed and why, without opening it:
 Good: `kit: Fix INSTALL.md growing with every game run`.
 Hard to read: `kit: a run corrects the install notes in place, not with a row or section of its own`.
 
+## Writing an issue or a pull request
+
+This applies to every issue, pull request description and comment an
+agent writes, on this repository or on another project's, such as a bug
+report to a tool's maintainer. The reader is a busy person who did not
+see the work. Write for someone clever who knows nothing about it.
+
+- Use plain words and full sentences, one idea to a sentence. Explain
+  a term the reader may not know in a few words.
+- Keep the exact facts: versions, commands, numbers, addresses.
+- Lay out a bug, even one mentioned in passing, as: what we did (with
+  the command), what we expected, what happened, why we think it
+  happened, how we checked, and a possible fix. Give each a sentence or
+  two of its own.
+- Leave out shorthand picked up during the work. Say what it stands for.
+- Before posting, or handing a draft to the contributor, read it again
+  against this list.
+
+Good: "We expected the two files to give the same machine at 600 million
+ticks. They don't: the original is at PC `E202` and the copy is at PC
+`E9EE`."
+Hard to read: "The copy is stamped 0.9.9, so the quirk is off and the
+copy drifts."
+
 ## Rules that are not negotiable
 
 - **Model.** Any model may run the kit, but only a proven one can take a
@@ -179,7 +206,10 @@ Hard to read: `kit: a run corrects the install notes in place, not with a row or
   annotations, and a page carries the data its widgets need, embedded in
   the page: a character set, a level, a tune, the pictures a viewer shows
   (`kit/skills/core/70-minisite`). What a page never carries is the
-  program, or enough of the game to rebuild it. The machine's ROMs are
+  program, or enough of the game to rebuild it. A Play tab is a port:
+  the game's logic written again in JavaScript and checked against the
+  game's own code, never that code run on a model of the machine, however
+  faithful (`kit/skills/core/70-minisite`, "Play"). The machine's ROMs are
   never committed either, with one exception: when a mechanic depends on
   data the game reads from a ROM, a page may carry that excerpt (the
   bytes the game reads, or the values it computes from them) and names
@@ -308,17 +338,57 @@ One agent is the default for every step. Each agent you start rereads
 the brief, the notes and the code around its work before it writes, so a
 fan-out multiplies the tokens a step costs and rarely shortens it much;
 nine agents at once have used up a contributor's session limit in
-minutes. Split only large, separable work (a game of several parts, or
-more code than one context holds once you have annotated the core
-yourself), with at most four agents, as `kit/skills/core/50-coverage`
-says, and only as far as the contributor's answer about their usage limit
-allows (`kit/START.md`). Judgement does not parallelise; independent
-checking does, which is why `60-verify` gives its sample to agents that
-wrote none of it. When you spawn agents:
+minutes. Split the annotation only when the contributor said, in the
+message that started the run, that it may use several agents
+(`kit/START.md`), with at most four, as `kit/skills/core/50-coverage`
+says. What a split buys is a more accurate listing, paid for in tokens,
+probably because each helper reads less code more closely and the
+lead's merge is a second reading. A second reading is also why
+`60-verify` gives its sample to agents that wrote none of it. When you spawn agents:
 force the model explicitly; give each a disjoint address range and say so
 in the prompt; give each its own output file; brief them cold with the
 facts established so far and the rules above; spot-check one substantive
 claim per agent against the source before believing the report.
+
+## Another provider's model
+
+A contributor may name a model from another provider for the checker
+(`kit/START.md`). Reach it through that provider's command-line tool,
+signed in with the contributor's own subscription: no API key is
+needed. In a hosted container the tool and the sign-in last as long as
+the container, and a new container signs in again.
+
+### Codex in a Claude Code container
+
+1. **Install it.** It is OpenAI's Codex CLI, open source under
+   Apache-2.0, from npm: `npm i -g @openai/codex`. On the contributor's
+   own computer, use the Codex they have signed in already; installing
+   one there follows "The footprint principle" in `kit/INSTALL.md`.
+2. **Sign in.** Start `codex login --device-auth` in the background: it
+   prints a web address and a one-time code, then waits. Give the
+   contributor each in a code block of its own, so they can copy it; the
+   code lasts 15 minutes. If the page refuses it, they turn on device
+   code sign-in for Codex in their ChatGPT security settings, and you
+   start the login again. `codex login status` says when it has gone
+   through. The sign-in is saved in `~/.codex/auth.json`, the
+   contributor's credential: never print, copy or commit it.
+3. **Run each checker** with its brief on standard input:
+
+   ```
+   codex exec --ephemeral -s workspace-write -C <clone> -m <model id> \
+     -c model_reasoning_effort=<level> --json -o <reply file> - < <brief>
+   ```
+
+   `-m` forces the model, and that id goes in the step's `models`;
+   `codex debug models` lists the ids and efforts the account has. Set
+   the effort too: the default model's default was low on 14 October
+   2026. An unknown level fails with the list the server accepts, which
+   on that day was none, minimal, low, medium, high, xhigh and max.
+   `workspace-write` lets the checker write its verdicts in the clone,
+   and `-o` keeps its last reply. A prompt given as an argument needs
+   `</dev/null` after it, because `codex exec` also reads standard input
+   when that is not a terminal. Outside a git repository it needs
+   `--skip-git-repo-check`.
 
 ## Finishing
 

@@ -180,7 +180,7 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
   tune 3 12-16; instrument 0 sweeps the filter from voice 3's envelope
   (`$D41C`, source 3).
 - The port in `reference/fist-music.js` matches the driver run in
-  `kit/c64/cpu6502.js`, all 25 SID registers after each of 30,000 frames
+  `kit/cpu/cpu6502.js`, all 25 SID registers after each of 30,000 frames
   of each tune (`tests/music.js`).
 - Sampled sounds: a CIA 1 timer B interrupt (`$3D8B`) flips the SID
   volume between two levels, each sample byte choosing the time to the

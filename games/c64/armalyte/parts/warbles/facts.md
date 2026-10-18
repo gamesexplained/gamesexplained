@@ -28,7 +28,7 @@ instruction (`$1825`).
   emulated time to the menu, `3`, and a checkpoint at `$1825` stopped
   the machine there; that is `work/entry.vsf`
   (`orientation.md`, "The parts"). Run from the loaded bytes at `$0812`
-  in the kit's simulator (`kit/c64/cpu6502.js`), the unpacker produced
+  in the kit's simulator (`kit/cpu/cpu6502.js`), the unpacker produced
   the same 64 KB as the emulator but for ten bytes: `$0000`, the stack
   the unpacker left (`$01F8-$01FB`, `$01FD`), two screen cells the
   gauge writes (`$0603`, `$0604`), and the gauge's own two bytes

@@ -35,6 +35,10 @@ addresses, the last row that holds the instruction deciding:
 
 with "registers" for code under the I/O area that banks the chips in.
 
+An address where only the chips answer (the platform's "io_only" ranges:
+on the BBC Micro, $FC00-$FEFF) has one meaning, and an operand there
+always gets the register's name, whatever code holds it.
+
 A game whose cartridge switches banks has a part for each bank
 (kit/scripts/parts.py), built from the bank's own image (on the C64, its
 work/bank.crt), and the data in it that the ledger does not count is named
@@ -215,6 +219,7 @@ def io_meaning(game):
     from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
     plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
     hidden = [(hexint(r[0]), hexint(r[1])) for r in plat.get("hidden", [])]
+    only = [(hexint(r[0]), hexint(r[1])) for r in plat.get("io_only", [])]     # no RAM beneath
     rows = []
     for r in game.get("io", []):
         if len(r) != 4 or r[2] not in ("ram", "registers"):
@@ -225,6 +230,8 @@ def io_meaning(game):
         return any(lo <= a <= hi for lo, hi in hidden)
 
     def chips(target, at):
+        if any(lo <= target <= hi for lo, hi in only):
+            return True
         if not two(target):
             return False
         for lo, hi, registers in reversed(rows):
@@ -344,7 +351,8 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
     if not found:
         return []
     found.sort(key=lambda f: -(f[1] - f[0]))
-    lines = ["", f"data the ledger does not count ({'hand-over and play snapshots' if entry else 'play snapshot only'}):"]
+    seen = "play snapshot only" if entry is None else "hand-over snapshot" if entry is ram else "hand-over and play snapshots"
+    lines = ["", f"data the ledger does not count ({seen}):"]
     for s, e, n, what in found[:top]:
         lines.append(f"  ${s:04X}-${e:04X} {e - s + 1:6} bytes  {what}")
     if len(found) > top:
@@ -375,16 +383,37 @@ def beneath(gdir, game, ram):
             continue
         # this part's load, and the loads of the parts between it and q, replace q's code in their own ranges
         mine = [r for p in [me] + chain[:n] for r in ranges(p)]
-        code = {r["a"] + i: b for r in json.load(open(lp))["records"] if r["t"] == "code" for i, b in enumerate(r["b"])
+        recs = [r for r in json.load(open(lp))["records"] if r["t"] == "code"
+                and not any(lo <= r["a"] <= hi for lo, hi in mine)]
+        code = {r["a"] + i: b for r in recs for i, b in enumerate(r["b"])
                 if not any(lo <= r["a"] + i <= hi for lo, hi in mine)}
         bad = sorted(a for a, b in code.items() if ram[a] != b)
-        if bad:
+        # A load that replaces code changes instruction after instruction; code that rewrites itself
+        # changes operands, and here and there one instruction (a branch it flips, a CLC made SEC).
+        # Every part of one game whose engine does that printed a hundred bytes or more (Creatures)
+        runs, n, end = [], 0, None
+        for r in recs:
+            if ram[r["a"]] == r["b"][0]:
+                n = 0
+            else:
+                n = n + 1 if n and r["a"] == end else 1
+                first = r["a"] if n == 1 else first
+                if n == 3:
+                    runs.append(first)
+            end = r["a"] + len(r["b"])
+        if runs:
             lines += ["", f"{len(bad)} of the {len(code)} code bytes of {q['id']}, the part beneath, "
                           + ("outside this load's ranges, " if mine else "")
-                          + f"differ in this snapshot: {', '.join(f'${a:04X}' for a in bad[:12])}"
-                          + (" ..." if len(bad) > 12 else ""),
-                      "A few are instructions that rewrite themselves. Many mean this load replaces that code:",
-                      'widen "ranges" in this part\'s part.json to take in every address its load writes.']
+                          + f"differ in this snapshot, among them three or more instructions in a row at "
+                          + f"{', '.join(f'${a:04X}' for a in runs[:12])}" + (" ..." if len(runs) > 12 else ""),
+                      "Code that rewrites itself changes an instruction here and there. Instructions in a row mean",
+                      'this load replaces that code: widen "ranges" in this part\'s part.json to take in every address its load writes.']
+        elif bad:
+            ops = [r["a"] for r in recs if ram[r["a"]] != r["b"][0]]
+            lines += ["", f"{len(bad)} of the {len(code)} code bytes of {q['id']}, the part beneath, "
+                          + ("outside this load's ranges, " if mine else "")
+                          + f"differ in this snapshot, {len(ops) or 'none'} of them an instruction's first byte and none in a row, as in code "
+                          + f"that rewrites itself: {', '.join(f'${a:04X}' for a in bad[:8])}" + (" ..." if len(bad) > 8 else "")]
     return lines
 
 
@@ -649,7 +678,9 @@ def main():
         if not ext:
             sys.exit(f"{platform!r} has no snapshot_ext in symbols_export.PLATFORM_DEFAULTS; see kit/PLATFORMS.md")
         epath = argv[argv.index("--entry") + 1] if "--entry" in argv else os.path.join(gdir, "work", f"entry.{ext}")
-        if os.path.exists(epath) and os.path.abspath(epath) != os.path.abspath(vsf):
+        if os.path.exists(epath) and os.path.abspath(epath) == os.path.abspath(vsf):
+            entry = ram         # built from the hand-over itself: every byte in it was loaded with the game
+        elif os.path.exists(epath):
             entry = snap.read(epath)
         elif not os.path.exists(epath) and "--entry" in argv:
             sys.exit(f"no hand-over snapshot at {epath}")
@@ -903,14 +934,28 @@ def main():
     # a short run of untyped bytes between two code records is usually a missed
     # instruction (the opcode byte of a BIT skip, an undocumented NOP), and the
     # page's interpreter reads its code from the listing: name them at build time (#229)
+    # A short run of untracked bytes between two data records is usually the last byte or two of
+    # a script or table (its terminator, a final entry) that no label's span reaches. uncounted()
+    # names only stretches of eight bytes or more, and the ledger counts neither the bytes nor
+    # their absence, so name these too: a page that reads the table needs them in the listing
+    away = [(lo, hi) for lo, hi, _ in game.get("elsewhere") or []]
     for i, r in enumerate(records):
-        if r["t"] == "gap" and not r.get("note") and r["n"] < 16:
-            prev = records[i - 1] if i else None
-            nxt = records[i + 1] if i + 1 < len(records) else None
-            if prev and nxt and prev["t"] == "code" and nxt["t"] == "code":
-                span = f"${r['a']:04X}" if r["n"] == 1 else f"${r['a']:04X}-${r['a'] + r['n'] - 1:04X}"
-                print(f"  {span}: {r['n']} byte(s) with no type between code: likely a missed "
-                      f"instruction; give it a type, or the page's interpreter reads a zero opcode there")
+        if r["t"] != "gap" or r.get("note") or r["n"] >= 16:
+            continue
+        prev = records[i - 1] if i else None
+        nxt = records[i + 1] if i + 1 < len(records) else None
+        if not (prev and nxt):
+            continue
+        span = f"${r['a']:04X}" if r["n"] == 1 else f"${r['a']:04X}-${r['a'] + r['n'] - 1:04X}"
+        if prev["t"] == "code" and nxt["t"] == "code":
+            print(f"  {span}: {r['n']} byte(s) with no type between code: likely a missed "
+                  f"instruction; give it a type, or the page's interpreter reads a zero opcode there")
+        elif (r["n"] < 8 and prev["t"] not in ("code", "gap") and nxt["t"] not in ("code", "gap")
+              and not any(L["excluded"](a) or any(lo <= a <= hi for lo, hi in away) for a in range(r["a"], r["a"] + r["n"]))):
+            before = L["owner"].get(r["a"] - 1)
+            print(f"  {span}: {r['n']} byte(s) between data records that no label reaches"
+                  f"{f' (after {before[0]})' if before else ''}: often a table's or script's last bytes; "
+                  "label and describe them, or the listing and the page leave them out")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
 //   node games/c64/spy-vs-spy/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const portCheck = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = portCheck.game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const html = g.read(page);
 const { createDriver } = g.run(page, 'svs-music', 'createDriver');

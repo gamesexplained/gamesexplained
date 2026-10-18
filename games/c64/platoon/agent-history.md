@@ -45,3 +45,12 @@ control included, showed it.
 
 Every web page fetch was refused by the proxy (403); `features.md` rests
 on search summaries and the game's own screens.
+
+## Silver run, October 2026
+
+Loads 2 to 4 were reached through the game's own disk loads and annotated to 100 %. Building
+the music page showed the listings of loads 3 and 4 lacked the tune data and parts of the
+driver; running the drivers on the simulator with read and execute maps found every byte they
+use. The maps page showed load 4's room maps and the ends of its tables were missing too; they
+were typed and listed under `coverage.extra`. The first sample found 15 of 60 comments wrong,
+and those and their copies were corrected.

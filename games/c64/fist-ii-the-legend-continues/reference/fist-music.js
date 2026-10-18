@@ -2,7 +2,7 @@
 // (../../lib/sid.js). The port keeps the driver's variables at their own addresses in a copy of
 // $F400-$FFFF, so each function below reads like the routine it is named after. createDriver
 // refers to nothing outside itself: the player runs its source text in an AudioWorklet.
-// Checked against the game's own code run in kit/c64/cpu6502.js (tests/music.js): every SID
+// Checked against the game's own code run in kit/cpu/cpu6502.js (tests/music.js): every SID
 // write of every frame, for the three tunes.
 const FISTMUSIC = {
   createDriver: function (data) {

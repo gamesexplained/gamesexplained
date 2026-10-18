@@ -24,17 +24,15 @@ Before reporting that something is missing, ask what encoding, indirection
 or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
-every index that can reach it: on the C64,
-`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`; on
-the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
-<address>`, which also lists where the address is stored as a word.
+every index that can reach it, with the platform's references search
+(`kit/skills/<platform>/steps`, "references").
 
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived
 from the code misses what the code does off the path you read. Search
 with the game's own movement code instead: drive the player with input on
-the CPU simulator (on the C64, `kit/c64/machine.js`; on the 48K Spectrum,
-`kit/spectrum/machine.js`) and watch for the
+the kit's model of the machine (`kit/skills/<platform>/steps`,
+"machine") and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 
@@ -121,11 +119,10 @@ with only their own comments corrected between them are two rows, an
 audit of some of the comments says how many of how many, and a second
 model is a row of its own.
 
-Start the sample check without asking, on a run that keeps to one agent
-as on any other: the contributor's answer about agents (`kit/START.md`)
-is about fanning work out, and by this step the run is meant to be
-unattended. An audit, in a run asked for one, runs on as many agents as
-that answer allows, and on one when it allows one.
+Start the sample check without asking: one checker is not a fan-out
+(`kit/START.md`), and by this step the run is meant to be unattended. An
+audit, in a run asked for one, gives its ranges to fresh checkers one at
+a time, unless whoever asked for it allowed several at once.
 
 Any proven model may check (`models.py`), but a checker finds only what
 its model can see, so use the strongest model the contributor has. On a
@@ -207,8 +204,11 @@ nobody recorded them): whether the run looked the game up online,
 "sample", "size": 60, "wrong": 2, "fixed": 2, "seed": ..., "models":
 [...]}`, where `fixed` is how many of the wrong ones were then
 corrected; each audit, `{"step": "audit", "checked": 640, "of": 640, "fixed": 90,
-"models": [...]}`; and a Play tab's port, `{"step": "play", "fixed": 16, "models": [...]}`
-(`70-minisite`, `play.md`). A sample or audit a maintainer makes for a
+"models": [...]}`; a Play tab's port, `{"step": "play", "fixed": 16, "models": [...]}`
+(`70-minisite`, `play.md`); and any other port or widget on a page that
+was checked against the game's code or the game running and showed
+comments wrong, `{"step": "port", "fixed": 15, "models": [...], "note":
+"the stage maps"}`, its note naming what was checked. A sample or audit a maintainer makes for a
 run on an unproven model adds their GitHub login as `"by"`
 (`kit/CHECKING.md`), and games checked before 12 October 2026 keep that
 older check as a `check` row. Any row may carry a short `note` about
@@ -247,8 +247,15 @@ list what the test ignores, or what the deferred part requires, and try it.
 
 A value the player sets at the start, a password or a difficulty, is
 the same kind of test at a distance: find every reader of it
-(`opcodes.py --refs`), not only the routine that sets it. The one reader
+(the references search), not only the routine that sets it. The one reader
 may be at the end of the level, and decide whether it can be won at all.
+So is a value the start of a new game leaves alone. List the variables
+play changes that the new-game routine does not set, and read every
+test of each with what the last game can leave there: a counter that
+carries over can pass, or fail for good, a test written for the counts
+one game reaches. One door opened only on exactly three of a
+collectable that carried over from game to game, so a second game that
+took the three again could never be won.
 
 ## Live verification
 

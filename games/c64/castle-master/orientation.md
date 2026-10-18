@@ -1,28 +1,97 @@
 # Castle Master — orientation
 
-## Disk and boot recipe
+How to get from the original disk to the analysed state. Someone else must
+be able to follow this exactly.
 
-The supplied RAM dump was captured at the language menu. The matching Dualis D 64 was recovered from the contributor’s repository history and kept privately as `work/castle-master-dualis.d 64`. Its first directory entry is `CASTLEMASTER/[D]`, 179 blocks. No game binaries or snapshots are published.
+## The image
 
-With VICE MCP 3.13.1 (PAL):
+`castle_master[domark_1990](!).g64` from the C64 Preservation Project's
+G64 collection on archive.org
+(`C64_Preservation_Project_10th_Anniversary_Collection`), kept as
+`work/original/castle-master-original.g64`. It is a 42-track G64 of the
+original Domark disk, marked `(!)` as a verified good dump. The directory
+reads `castle master` with id `90 2a`, 359 blocks free:
 
-1. Hard-reset the machine, resume execution, and autostart the D 64’s first entry. Wait for the animated Dualis intro. Fire on port 2 did not dismiss it in this run.
-2. Hold Space for 60 frames, release it, and advance 1,200 frames. The game unpacks and draws the language menu. Wait until the language choices are visible. Save `work/disk-menu.vsf` without ROMs using `pause()` from `kit/c64/vice.py` before saving.
-3. Hold `1` for 60 frames, release for 30; hold Return for 60, release for 30. Repeat `1`, Return for the character menu with the same holds and gaps.
-4. Advance 300 more frames. Confirm the castle exterior and WILDERNESS label, then save `work/disk-play.vsf` without ROMs.
+| File | Blocks | Loads to | Bytes | What it is |
+|---|---|---|---|---|
+| `CASTLE` | 1 | `$02A7-$0303` | 93 | the autostart stub |
+| `LOADER` | 2 | `$C200-$C3A7` | 424 | the loader and its file table |
+| `LPBMAP` | 32 | `$E000-$FF3F` | 8,000 | the loading picture's bitmap |
+| `LPCOL1` | 5 | `$C400-$C7F7` | 1,016 | the loading picture's screen colours |
+| `LPCOL2` | 4 | `$D800-$DBE7` | 1,000 | the loading picture's colour RAM |
+| `CMPRT1` | 192 | `$0410-$C1FF` | 48,624 | the game |
+| `CMPRT2` | 25 | `$C800-$DFFF` | 6,144 | the music driver, then zeros to the end |
+| `CNCOL1` | 5 | `$C400-$C7FF` | 1,024 | the control panel's screen colours |
+| `CNCOL2` | 5 | `$D800-$DBFF` | 1,024 | the control panel's colour RAM |
+| `CNBMAP` | 33 | `$E000-$FFFF` | 8,192 | the control panel's bitmap |
+| `BOOT` | 1 | `$0801` | 50 | a BASIC program that loads `LOADER`; nothing runs it |
 
-The emulator check on 30 September 2026 passed 55/57 checks. Failures: `pause-at-instruction` and `unpaced-calls`. This run uses `pause()` (which finishes the instruction by advancing a frame) and paced calls. The game was booted from disk for this recipe; no restored private snapshot is needed.
+Every byte of `CASTLE`, `CMPRT1`, `CMPRT2`, `CNCOL1` and `CNBMAP`, and 419
+of `LOADER`'s 424, sit unchanged in RAM at the hand-over to the game. The
+five that differ are the loader's own counters and pointers.
 
-## Comparison and listing image
+The game was first analysed from a Dualis crack, a single packed file
+with an intro. That analysis seeded this one, and every byte of the
+listing now comes from the original disk.
 
-The menu reached from disk matches all 27,968 code bytes and all 778 word-typed bytes in the original analysis. Of 36,790 byte-typed bytes, 57 differ, at processor-port backing RAM, stack/keyboard state, engine state and SID player state. The original text export seeds labels and comments; the Source bytes come from the newly booted snapshot.
+## From power-on to play
 
-Comparing menu with settled play, `$87CC–$95DB` changes in 3,552 bytes as menu storage becomes the linear viewport; `$E000–$FF3F` changes in 3,218 bytes as the bitmap is drawn. The world database `$9D00–$BF8F` and interpreter tables `$13AE–$13ED` agree byte for byte. There are 65 differing code-typed bytes across nine blocks. All are operand bytes and all have traced direct producer instructions; the private producer report identifies them. A cold hand-over capture at $476F is available as `work/entry.vsf`; Space must be held after the Dualis intro has reached its steady waiting loop. The menu retains the authored menu occupant that rendering replaces, so the listing uses `disk-menu.vsf`; verification uses the running game and `disk-play.vsf`. Generated viewport pixels and palette cells stay out of the denominator; the loaded surrounding HUD and its initial colour planes are authored data and remain in it.
+With VICE MCP release v3.13.2 (PAL C64, `x64sc`), started through
+`kit/scripts/tools.py`. On 16 October 2026 it passed all 54 of the kit's
+emulator checks.
 
-## Machine state and rebuilding
+1. Hard-reset, pause, and arm an execution checkpoint at `$473B`. Resume
+   and autostart the G64. Warp may be on: the loading picture appears
+   while `CMPRT1` loads, and the checkpoint stops the machine at the
+   loader's jump into the game.
+2. Save `work/entry.vsf` without ROMs. This is the hand-over: every file
+   loaded, `$01=$34`, interrupts masked.
+3. Clear the checkpoint, resume, pause, and advance 400 frames. The
+   language menu is up (1 English, 2 Français, 3 Deutsch). Save
+   `work/menu.vsf`. This is the snapshot the listing is built from.
+4. Hold `1` for 60 frames, release for 30, hold Return for 60, release
+   for 30: English. The second menu offers Prince (1) or Princess (2):
+   `1` and Return the same way.
+5. Advance 300 frames. The view of the castle from the Wilderness is
+   drawn, with `WILDERNESS` in the panel. Save `work/play.vsf`.
 
-The menu snapshot has processor port `$35`, DDR `$2F`. RAM vectors: `$0314=$737F`, `$0318=$7579`, `$FFFA=$7579`, `$FFFC=$476F`, `$FFFE=$FF48`; these agree with play. VIC bank `$C000`, screen `$C400`, bitmap `$E000`.
+`work/scripts/boot2.py` does steps 1 to 3 and `work/scripts/play.py`
+steps 4 and 5.
 
-Import the committed symbol map onto your own menu snapshot with `symbols_import.py`, start regenerator 2000 on the resulting project, then export with `symbols_export.py`. Build with `python 3 kit/scripts/listing.py games/c64/castle-master games/c64/castle-master/work/disk-menu.vsf --entry games/c64/castle-master/work/entry.vsf`. Compare with the play snapshot separately; `--entry` supplies the live capture at the loader’s hand-over.
+## Steady state
 
-Original export SHA-256: `79505396ccd9542c55e67fb381b42210284ceba0dc51aa3d7dd1d39df277753d`. Its maker’s model is unknown.
+At the menu and in play, the processor port is `$35` (I/O visible, no
+ROMs) with DDR `$2F`. The game installs its own vectors in RAM:
+`$FFFA=$7579` (NMI, a bare RTI), `$FFFC=$476F`, and `$FFFE=$FF48`, a
+copy of the KERNAL's interrupt entry that jumps through `$0314=$737F`.
+`$0318` is `$7579` too. At the hand-over these two still hold the
+KERNAL's `$EA31` and `$FE47`.
+
+The handler at `$737F` serves two sources. A raster interrupt at line
+`$28`, once per frame, ticks the music driver at `$C885`; a CIA 1 timer
+interrupt runs the game clock, the lightning, the panel's meters and the
+script delays. The VIC sees bank 3
+(`$C000-$FFFF`): screen at `$C400`, multicolour bitmap at `$E000`. The
+3D view is drawn first into a linear buffer at `$87CC-$95DB` and copied
+into the bitmap.
+
+The code runs from `$0410` to about `$9CEB`. The castle's database (34
+areas, their objects and their scripts) is at `$9D00-$BF8F`, the music
+driver and its state at `$C800-$CFFF`, and the save state at
+`$2406-$246F`. Nothing is loaded after the hand-over except a saved
+position, which the game reads and writes on tape or disk.
+
+## The loader, in a paragraph
+
+`LOAD"*",8,1` brings in `CASTLE`, which ends by overwriting the BASIC
+vectors at `$0300` and `$0302` with `$02A7`, so BASIC's main loop jumps
+into it. The stub loads `LOADER` to `$C200` with the KERNAL and jumps
+there. `LOADER` sets up the bitmap display the game keeps, then walks a
+table of eight files: for each, a flag blanks or shows the screen,
+another flashes the border, and a third is the processor port value
+used for every byte stored, which is how `CMPRT2` reaches the RAM under
+the I/O area. The bytes come in through the loader's own copy of the
+KERNAL's serial LOAD, at normal KERNAL speed: no fast loader and no
+protection check. With the last file in, it masks interrupts, sets
+`$01=$34` and jumps to `$473B`. Unlike most loaders it is annotated in
+full, because the listing covers every byte the disk puts in RAM.

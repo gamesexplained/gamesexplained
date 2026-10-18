@@ -1,6 +1,6 @@
 'use strict';
 // A game that keeps the KERNAL and reads whole lines through it, run on the kit's 6502
-// (kit/c64/cpu6502.js) one typed line at a time, for a test that holds a page's port of it against
+// (kit/cpu/cpu6502.js) one typed line at a time, for a test that holds a page's port of it against
 // the game's code. kit/c64/machine.js is the machine for a game that banks the KERNAL out and
 // reads the keyboard itself; a text game that prints with CHROUT and reads with CHRIN needs no
 // raster and no keyboard matrix, only the KERNAL's line routines, and the kit holds no ROM. So the
@@ -8,7 +8,7 @@
 // bytes each sent to CHROUT since the last one, and the memory kit/scripts/port_check.js's differ()
 // finds different. Checked by kit/c64/test_kernal_lines.js.
 //
-//   const { CPU } = require('<repo>/kit/c64/cpu6502.js');
+//   const { CPU } = require('<repo>/kit/cpu/cpu6502.js');
 //   const { KernalLines } = require('<repo>/kit/c64/kernal_lines.js');
 //   const cpu = new CPU(Uint8Array.from(L.ram), { port: { dir: 0x2F, data: 0x36 }, io });
 //   cpu.pc = 0x12B5; cpu.sp = 0xFF;                     // where the game starts

@@ -1,0 +1,26 @@
+<p class="lede">The two switches beside the screen change how the page draws the 3D view, the window above the cockpit's panel, and nothing else. The game runs underneath as it does without them: two copies of it, one with both switches on, keep every byte of memory the same at every frame.</p>
+<h3>Native resolution</h3>
+<p>The game draws the view into the cockpit's multicolour bitmap, 126 pixels across and 103 down, each pixel twice as wide as it is tall. Many of its colours are patterns: two of the C64's sixteen colours in alternating pixels, which the screen blurs into a shade between them.</p>
+<p>With <b>Native resolution</b> on, the page works the view out again from the numbers the game keeps at each pass it draws: where every object is and which way it faces, where the camera is, and how far the view is zoomed. It applies the game's own rules to them: which objects are in view, which are near enough for a model and which are drawn flat, the order from farthest to nearest, and which faces of each model turn towards the camera. Then it draws the same polygons, the same dots, rings and bursts, and the arrows that point to the target, as sharp shapes at the screen's own resolution. Each pattern becomes the shade the eye mixes from it.</p>
+<div class="pl-pair">
+  <figure class="pl-fig"><img src="reference/play-view-c64.png" alt="The 3D view in a fight, in the C64's pixels: two green ships, a blue and white ship near the camera, grey dots and four arrows" width="756" height="309"><figcaption class="cap">A pass of a fight in the cinematic view, as the game draws it.</figcaption></figure>
+  <figure class="pl-fig"><img class="pl-sharp" src="reference/play-view-native.png" alt="The same view drawn at three times the C64's resolution: the same ships, dots and arrows with straight edges and solid shades" width="756" height="309"><figcaption class="cap">The same pass with Native resolution on.</figcaption></figure>
+</div>
+<table>
+  <tr><th>At each pass the game drew, the page's view against the game's own drawing</th><th>The same</th></tr>
+  <tr><td>Polygons: which, in what order, in which colour</td><td>12,126 of 12,168</td></tr>
+  <tr><td>Dots, rings and bursts: where, how big, in which colour, to within a pixel</td><td>15,588 of 15,620</td></tr>
+  <tr><td>The corners of models: where, to within 2.5 pixels</td><td>36,315 of 36,315</td></tr>
+</table>
+<p>The passes are the 2,686 the game drew in 23,100 frames of play, from power-on and from 23 moments of flight, fights and docking, with the stick, the view and the target changed as the game ran. The game works out each corner with its tables of logarithms and rounds it to a whole pixel. The page works it out exactly, which moves a corner by up to 2.3 pixels.</p>
+<h3>Smooth motion</h3>
+<p>The game counts the frames its drawing takes and allows three for each pass. When a picture takes longer, the passes after it leave the drawing out, each paying back three frames, until the game has caught up (<code>frame_skip3</code>, $A470). So everything moves at every pass, and the view shows only some of the passes: in a fight it can change three times a second while the ships in it move nine times.</p>
+<table>
+  <tr><th>Twenty seconds flying straight, from each moment</th><th>Passes a second</th><th>Pictures a second</th></tr>
+  <tr><td>Flight, 9 moments</td><td>12.5 to 16.5</td><td>5.7 to 16.5</td></tr>
+  <tr><td>Near a base, 6 moments</td><td>11.8 to 16.1</td><td>4.7 to 16.1</td></tr>
+  <tr><td>A fight, 8 moments</td><td>8.4 to 11.1</td><td>3.1 to 11.1</td></tr>
+</table>
+<p>With <b>Smooth motion</b> on, the page draws the view at the screen's own frame rate, 60, 120 or 144 times a second. It keeps the numbers of every pass, the passes the game drew and the passes it left out, and draws each frame of the screen between two of them: every object and the camera part of the way from one pass to the next, and every turn part of the way round. In the chase and cinematic views the game moves the camera only at a pass it draws. For a pass in between, the page places the camera as the game would have: the chase camera at the same distance behind the ship, the cinematic camera where it was, each turned to face the ship.</p>
+<p>The view keeps a little behind the game, so that the next pass is always there to move towards: by the longest gap between the last few passes. The C64's picture is behind the game too, since it shows the last pass drawn while the next one is being drawn, but by less. Over the same 23,100 frames the smooth view showed the game 44 milliseconds later than the C64's picture, on average.</p>
+<p>What the game changes at once stays sudden: another view, a jump through a gate, a ship that arrives or is destroyed, and the dust that the game puts back near the camera as you fly on. Without Native resolution the page paints each view in the C64's pixels with the game's own drawing routines, run on a copy of its memory with the positions in between. At a pass the game drew, that picture is the game's own: in 468 such views every pixel of the window was the same.</p>

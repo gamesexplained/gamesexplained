@@ -216,11 +216,11 @@ class Fake:
 
     def rpc(self, method, params=None, notif=False):
         name, a = params["name"], params["arguments"]
-        if name == "vice_vicii_get_state":
-            self.reads += 1
+        if name == "vice_memory_read" and a.get("bank") == "io" and a["address"] == "$D000":
+            self.reads += 1                    # the video chip's registers: one read a screen
             if self.later and self.reads == self.later[0]:
                 self.mem.put(*self.later[1:])
-            out = {"registers": regs()}
+            out = {"data_hex": bytes(regs()[:a["size"]]).hex()}
         elif name == "vice_memory_read":
             start = int(a["address"].lstrip("$"), 16)
             self.asked.append((a["address"], a["size"], a.get("bank")))

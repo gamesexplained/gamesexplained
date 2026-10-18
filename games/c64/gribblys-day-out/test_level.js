@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Hold How it works' port of level_result (nextLevel in index.html, the level-choice widget)
-// against the game's own routine at $64F3, run in kit/c64/cpu6502.js on the bytes of the committed
+// against the game's own routine at $64F3, run in kit/cpu/cpu6502.js on the bytes of the committed
 // listing.json: every performance (0-14), saved count (0-8) and every seventh random byte, from
 // levels 0, 3 and 15, on 45 sets of levels done (all, none, all but the first, all but the last,
 // only the first, and 40 random). The next level, the performance, the sixteen done flags and
@@ -11,7 +11,7 @@
 'use strict';
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64');
 

@@ -10,7 +10,7 @@
 //   node games/c64/commando/test_table.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { insertScore, START_BYTES, startTable } = g.run(page, 'commando-table', 'insertScore', 'START_BYTES', 'startTable');
 const m = g.listing().ram;

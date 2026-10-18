@@ -1,0 +1,35 @@
+{
+  "title": "Engine",
+  "order": 1,
+  "video": {
+    "screen": "$CC00",
+    "charset": "$F800"
+  },
+  "coverage": {
+    "extra": [
+      ["$A100", "$A55F", "Room picture 0, an open book on a desk, always in memory: the picture OBJ_ROOM_TABLE gives every room that has none in its part's set, 8 rows of 14 cells"],
+      ["$E000", "$EF9F", "The play screen's backdrop, a sunset over the Ivory Tower: bitmap, screen bytes and colour bytes"]
+    ],
+    "include": [],
+    "exclude": [
+      ["$0000", "$03FF", "Zero page, stack and KERNAL work area; $0334-$03FF holds a copy of $0800-$08CB left by whatever ran before the game in this copy"],
+      ["$BC00", "$BFFF", "Display save area: $070F copies the backdrop's bitmap here when the opening ends; all zero at the opening"],
+      ["$C200", "$CB9F", "Rest of the display save area, which $070F overwrites before anything reads it. At the opening it holds what the crack's start-up used and left: the game's $0400-$07FF as the crack kept it ($C200-$C5FF), the loading picture's colours ($C600-$C9FF) and the crack's mover ($CA00-$CA4A), which copied both into place before the game started"],
+      ["$CBA0", "$CBFF", "Command line buffer and padding"],
+      ["$CC00", "$CFFF", "Screen RAM. This copy loads it already holding the opening's title and credits, the same characters $1580 prints after OPENING_SETUP clears it ($06F8)"],
+      ["$EFA0", "$EFFF", "Leftovers between the backdrop and the tune's data at $F000: $070F's copy stops at $EF9F and nothing reads them"]
+    ]
+  },
+  "io": [],
+  "regions": [
+    ["$A100", "$A55F", "graphics", "Room picture 0"],
+    ["$C000", "$C1FF", "code", "The disk loader as it waits to be copied to $9700"],
+    ["$F800", "$FFFF", "graphics", "The game's own character set"],
+    ["$A560", "$A7DF", "graphics", "Object icons 0-3"],
+    ["$A848", "$A87F", "graphics", "The end of icon 4"],
+    ["$A8DF", "$B77F", "graphics", "The end of icon 5, and icons 6-28"],
+    ["$B908", "$BBDF", "graphics", "The end of icon 31, and icons 32-35"],
+    ["$E000", "$EF9F", "graphics", "The play screen's backdrop"],
+    ["$F000", "$F768", "sound", "The title tune's state, frequency tables, settings and the three voices' streams"]
+  ]
+}

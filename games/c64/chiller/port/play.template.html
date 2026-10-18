@@ -78,7 +78,7 @@ section table{margin:6px 0 18px}
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">The whole game, playable in the browser: all five levels to the haunted house and the five on the way home, ported routine by routine from the game's own 6502 code and checked against it pass by pass. Pick any level to start on.</p>
+  <p class="sub">Play the full game in your browser, start on any screen, and see how this port was checked against the C64 original.</p>
 </header>
 <main class="wrap">
 <section class="pl-first" id="game">
@@ -91,7 +91,8 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
-      <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
@@ -129,7 +130,10 @@ section table{margin:6px 0 18px}
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/collide.js"></script>
 <script src="../../lib/sid.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
 <!-- port -->
 <script>
 /* the page: the port on a virtual PAL clock, drawn each frame, the keyboard and the joystick */
@@ -138,6 +142,7 @@ section table{margin:6px 0 18px}
 const $ = id => document.getElementById(id);
 const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272), px = new Uint8Array(384 * 272);
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = ChillerRuntime.FRAME, FRAME_MS = 1000 * FRAME / 985248;
 const LEVELS = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
@@ -191,6 +196,7 @@ const sound = (function () {
   }
   return { attach, set, frame, get on() { return on; } };
 })();
+Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;
@@ -269,8 +275,6 @@ function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = set
 function start(n) {
   over.hidden = true;
   boot(n);
-  const sb = document.querySelector('[data-act="sound"]');
-  if (sb.getAttribute('aria-pressed') === 'true' && !sound.on) sound.set(true).then(v => sb.setAttribute('aria-pressed', String(v)));
   running = true; paused = false; last = 0; acc = 0;
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
   screen.focus();
@@ -296,12 +300,11 @@ $('pl-cheats').addEventListener('click', e => {
   }
   screen.focus();
 });
-$('pl-bar').addEventListener('click', async e => {
+$('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && image) start(level || 0);
-  else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); }
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && image) start(0); });

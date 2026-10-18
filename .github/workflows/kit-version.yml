@@ -8,9 +8,10 @@ name: kit-version
 # It pushes as the repository's own GitHub App, which main's ruleset lets bypass
 # the pull request rule; the Actions token cannot. The app's id is the
 # repository variable KIT_BOT_APP_ID and its private key the secret
-# KIT_BOT_PRIVATE_KEY. Its push starts ci.yml like any other, which deploys
-# the site with the new number, and starts this workflow again, which the
-# job's condition stops.
+# KIT_BOT_PRIVATE_KEY. The bump commit says [skip ci]: nothing on the site
+# reads kit/VERSION as it builds, so the push needs no CI cycle or deploy,
+# and this workflow does not run again on its own push (the job's condition
+# would stop it anyway).
 on:
   push:
     branches: [main]
@@ -78,7 +79,7 @@ jobs:
             v=$(python3 -c "a = open('kit/VERSION').read().strip().split('.'); a[-1] = str(int(a[-1]) + 1); print('.'.join(a))")
             echo "$v" > kit/VERSION
             sed -i "s/^## next · /## $v · /" kit/lessons/*.md
-            git commit -qam "kit $v"
+            git commit -qam "kit $v [skip ci]"
             if git push -q origin HEAD:main; then done="$v"; break; fi
             sleep 5
           done

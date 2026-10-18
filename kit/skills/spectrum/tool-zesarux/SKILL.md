@@ -23,7 +23,10 @@ one machine at once".
 The emulator runs with `--vo null --ao null`: no window and no sound, the
 screen is saved to a file when needed. It runs at real speed — measured
 3.50 MHz of emulated clock in 3.53 MHz of wall clock on a 48K machine
-(29 September 2026) — which is what a tape loader wants.
+(29 September 2026) — which is what a tape loader wants. To measure the
+sound, start an emulator with `--aofile <file>.wav` added (the launcher
+passes it on, and `--ao null` stays): ZEsarUX 13.0 wrote what it played
+to the WAV, 15,600 samples a second, 8-bit stereo (17 October 2026).
 
 ## Connecting
 
@@ -82,8 +85,10 @@ lists all 129.
 | Load a game | `smartload <file>` | from the extension: `.tzx`/`.tap` plays the tape, `.sna`/`.z80` loads a snapshot; the loader then runs by itself. A tape plays at real speed, so wait for the game (poll the PC or save the screen) |
 | Screen | `save-screen <file>` | `.scr` is 6912 bytes, `.bmp` and `.pbm` too |
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
-| Machine | `get-current-machine` | `ZX Spectrum 48k` |
-| Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
+| Machine | `get-current-machine` | `ZX Spectrum 48k`, or `ZX Spectrum+ 128k` |
+| Switch machine | `set-machine 128k`, `set-machine 48k` | resets the machine and leaves it running, out of cpu-step. A program written before it is gone, though a variable of it can still read non-zero (`check-emulator`'s pass counter read 23386 on 13.0, 17 October 2026): stop, and write it again |
+| Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine; on a 128K the ROM, then the bank in each 16 KB, `RO0 RA5 RA2 RA0` |
+| Ports, the AY's registers among them | `get-io-ports` | on a 128K machine `Spectrum 7FFD port: 13`, then a block headed `AY-3-8912 chip 0`: `Selected register: 13` in decimal, then the 16 registers a line each in hex, `00:  34` |
 | Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler; see "From the map to a control file" below, and iterate that sweep - one pass under-reports |
 
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
@@ -124,7 +129,8 @@ One call per invocation for the agent, and the same calls from a script
 `bp_passcount`, `bp_counts`, `bp_count`, `bp_conditions`, `bp_action`,
 `bp_disable`, `bp_enable_all`, `bp_clear`, `set_input`, `get_input`,
 `release_input`, `key_event`, `type_ascii`, `evaluate`, `snapshot_save`,
-`snapshot_load`, `smartload`, `save_screen`, `machine`, `version`.
+`snapshot_load`, `smartload`, `save_screen`, `machine`, `set_machine`,
+`ay_registers`, `version`.
 
 Anything with a loop in it belongs in a script: a round trip is about
 0.13 ms, and 800 unpaced calls take 0.1 s (measured), but an agent
@@ -195,6 +201,16 @@ game did, and `kit/spectrum/codemap.py` turns the first into a check.
   runs, play, then `cpu-code-coverage get`: every address returned is the
   first byte of an instruction that ran, in hex with no prefix. Save it to
   a file in `work/`.
+- **On a 128K machine, which bank.** Code coverage gives addresses only,
+  and one at `$C000` or above can be in any of the banks `$7FFD` pages in
+  there. `kit/spectrum/bankmap.py` records the bank too, from the
+  transaction log, as `BANK:ADDR` tokens (`3:C123`) that
+  `kit/spectrum/codemap.py` reads; `kit/spectrum/banks.py` reports a
+  snapshot's paging and makes a part of the game for each bank the CPU
+  did not see. With a banked map, `codemap.py` follows a call into
+  `$C000` from below only where the map says that bank ran there, and
+  lists the targets it did not follow: each is a call into a bank the
+  session never paged in, to trace by hand.
 - **What was read and what was written.** `get-visualmem-read-dump compact`
   and `get-visualmem-written-dump compact` list every address read and
   written since the last dump (the dump clears the record, so call each
@@ -358,7 +374,7 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
 ```
 python3 kit/scripts/tools.py --platform spectrum stop
 python3 kit/scripts/tools.py --platform spectrum get-zesarux     # what this machine can have
-python3 kit/scripts/tools.py --platform spectrum check-emulator  # 45 named checks, about 20 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator  # 50 named checks, about 20 s
 ```
 
 `check-emulator`'s names are the ones `workarounds.md` is indexed by, and

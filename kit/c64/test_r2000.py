@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """r2000.py asks the disassembler who refers to each address in batches, and keeps the answers;
-and applies a file of annotations in batches, logging the calls that succeed (#306)."""
+and applies a file of annotations or an audit's corrections in batches, logging the calls that
+succeed (#306, #333, #386)."""
 import contextlib
 import importlib.util
 import io
@@ -115,6 +116,74 @@ class Apply(unittest.TestCase):
         finally:
             r2000.make_client = keep
             os.unlink(f.name)
+
+    def test_one_label_at_two_addresses_sends_nothing(self):
+        # #333: regenerator2000 refuses the second inside the batch and applies the rest
+        calls, problems = r2000.parse_annotations('$C000 draw : one\n$C010 draw\n$C000 draw : again\n')
+        self.assertEqual(problems, [])
+        self.assertEqual(r2000.same_label_twice(calls), [(2, 'draw is already given to $C000 at 1')])
+        with tempfile.NamedTemporaryFile('w', suffix='.txt', delete=False) as f:
+            f.write('$C000 draw\n$C010 draw\n')
+        keep, r2000.make_client = r2000.make_client, lambda gdir=None: self.fail('sent')
+        try:
+            with contextlib.redirect_stdout(io.StringIO()) as out, self.assertRaises(SystemExit):
+                r2000.apply(f.name)
+        finally:
+            r2000.make_client = keep
+            os.unlink(f.name)
+        self.assertIn(':2: draw is already given to $C000 at 1', out.getvalue())
+
+
+class Corrections(unittest.TestCase):
+    """An audit's corrections, a JSON list of {address, comment, label, type} (#386)."""
+    TYPES = {0xC000: {'line'}, 0xC003: {'side'}, 0xC006: {'line', 'side'}}
+
+    def test_each_entry_and_its_comment_type(self):
+        calls, problems = r2000.parse_fixes([
+            {'address': '$C000', 'comment': 'clears the screen', 'label': 'clear_screen'},
+            {'address': 0xC003, 'comment': 'the border'},          # a side comment stays one
+            {'address': 0xC006, 'comment': 'both kinds', 'type': 'line'},
+            {'address': 0xC009, 'comment': 'new'},                 # no comment yet: a line comment
+            {'address': 0xC00C, 'label': 'loop'}], self.TYPES)
+        self.assertEqual(problems, [])
+        self.assertEqual([n for n, _ in calls], [1, 1, 2, 3, 4, 5])
+        self.assertEqual(calls[0][1], {'name': 'r2000_set_label_name', 'arguments': {'address': 0xC000, 'name': 'clear_screen'}})
+        self.assertEqual([c['arguments'].get('type') for _, c in calls[1:5]], ['line', 'side', 'line', 'line'])
+
+    def test_what_is_refused(self):
+        _, problems = r2000.parse_fixes([
+            {'address': 0xC006, 'comment': 'which kind?'}, {'comment': 'no address'}, {'address': 0x10000, 'label': 'x'},
+            {'address': 0xC000}, {'address': 0xC000, 'label': '1st'}, {'address': 0xC000, 'comment': 'x', 'type': 'block'}],
+            self.TYPES)
+        self.assertEqual([n for n, _ in problems], [1, 2, 3, 4, 5, 6])
+        self.assertIn('a line and a side comment', problems[0][1])
+        self.assertEqual(r2000.parse_fixes({'address': 1}), ([], [(0, 'not a JSON list of {address, comment, label, type}')]))
+
+    def test_applied_from_a_json_file_with_the_games_types(self):
+        sent = []
+
+        def make_client(gdir=None):
+            def rpc(method, params=None, notif=False):
+                sent.extend(c['arguments'] for c in params['arguments']['calls'])
+                return {'result': text([{'status': 'success', 'result': text('ok')} for _ in params['arguments']['calls']])}
+            return rpc
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'game.json').write_text('{}', encoding='utf-8')
+            Path(d, 'symbols.json').write_text(json.dumps({'comments': [{'address': 0xC003, 'type': 'side', 'text': 'old'}]}),
+                                               encoding='utf-8')
+            f = Path(d, 'work', 'fixes.json')
+            os.makedirs(f.parent)
+            f.write_text(json.dumps([{'address': '$C003', 'comment': 'new'}, {'address': 49152, 'label': 'start'}]), encoding='utf-8')
+            keep, r2000.make_client = r2000.make_client, make_client
+            try:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    bad = r2000.apply(str(f), d)
+            finally:
+                r2000.make_client = keep
+            logged = Path(d, 'work', 'annotations.jsonl').read_text().splitlines()
+        self.assertEqual(bad, 0)
+        self.assertEqual(sent, [{'address': 0xC003, 'type': 'side', 'comment': 'new'}, {'address': 0xC000, 'name': 'start'}])
+        self.assertEqual(len(logged), 2)
 
 
 if __name__ == '__main__':

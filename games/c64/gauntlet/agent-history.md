@@ -63,3 +63,26 @@ clocks: the level jingle's is PAL-tuned, the treasure tune's NTSC-tuned.
 
 The first independent checker stopped at the contributor's session
 limit before it wrote anything; it was run again after the limit reset.
+
+## 16 October 2026, how the monsters move
+
+Asked for a closer look at the monster updates. Reading monster_aim, the
+sign handling after wrap_delta looked as if every distance came out
+negative, which would have sent every monster after the farther player.
+A live stop at the end of monster_target showed positive distances:
+wrap_delta's CMP leaves the flags inverted and monster_aim's BMI reads
+them that way on purpose. The same live run then showed the real slip:
+13 of 60 aims went to the farther player, all of them by monsters across
+the map's edge, where wrap_delta's EOR leaves the value's own sign. The
+listing's comment on monster_step said it stepped by one; the trace
+showed two, and the comment was corrected with monsters_run's.
+
+## 17 October 2026, the simulation's stray outlines
+
+The contributor saw monsters off screen marked as moved on level 1
+(passes 7, 13, 15, 18 and 22). The page had recorded slot numbers and
+drawn whatever monster held the slot after the pass. In each of those
+passes a ghost attacked the hero and vanished, and monster_remove moved
+the last monster in the table, far off screen, into its slot. The game
+was right; the page now records each turn where it ends ($BDB3), and no
+turn in 2,800 passes ends outside the window.

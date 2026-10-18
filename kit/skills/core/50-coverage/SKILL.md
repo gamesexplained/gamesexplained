@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
+Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game needs a maintainer's check (`kit/CHECKING.md`).
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric
@@ -24,23 +24,30 @@ same way, so tiers mean the same thing everywhere.
    address** that describes the whole thing: purpose, inputs, outputs,
    side effects, which tables it reads. Callers and readers, and any
    "only", "never" or "every", come from the platform's references
-   search (`60-verify`, "Negative results", names it), with how many
+   search (`kit/skills/<platform>/steps`, "references"), with how many
    there are; without the search, leave the claim out. They are the
    details a checker most often finds wrong: the routine in front of you
-   shows one caller, and it gets written up as the rule.
+   shows one caller, and it gets written up as the rule. So is a value
+   read off the snapshot: an immediate operand or a variable holds what
+   the last store left there, so before you call it fixed, or build a
+   table, a page or another comment on it, search for writes to that
+   address, the operand's byte included.
    While it is in front of you, note
    anything it would accept that the player was never meant to do: an
    exact match where a range was meant, a comparison that assumes a sign,
-   an eight-bit sum that can wrap, a test whose order leaves a gap. Put
+   an eight-bit sum that can wrap, an add or subtract with carry
+   straight after a call with nothing that sets the carry between (the
+   carry the routine returns, on each of its exits, is part of the sum;
+   the processor's note has its form, `steps`, "cpu"), a test whose
+   order leaves a gap. Put
    the note in `facts.md` as an open question; `60-verify` says how to
    settle it and `70-minisite` what to make of it.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
 4. Every 30 minutes or so, and at the end of every session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
    `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.<snapshot ext>`
-   (the platform's snapshot extension: a `.vsf` on the C64, a `.sna` on the
-   ZX Spectrum; `kit/skills/<platform>/` names it)
-   so the committed listing never drifts from the symbols.
+   (the platform's snapshot extension, `kit/skills/<platform>/steps`,
+   "snapshot") so the committed listing never drifts from the symbols.
    A later session that has neither the snapshot nor the disassembler
    project (a hosted one starts in a fresh container) can still correct a
    comment or rename a label: edit `symbols.json` by hand, then
@@ -133,30 +140,14 @@ format, how to check the result against it, and how to read it back
   set, a packed string block) is **added** through the `coverage` object
   in `game.json`. Get these two lists right early; they decide what 100 %
   means for this game.
-- **A game can live under its I/O.** A game that banks the I/O chips out
-  can run code and keep tables in the RAM beneath them, which the platform
-  default excludes as I/O. Look for code in a register census of the traced
-  code (instructions *located* in the I/O range) and for the bank switch
-  around them; then give the range back with `coverage.include` in
-  `game.json`. The disassembler will name those addresses after the chips'
-  registers, so say in each comment which meaning is live.
-  An address there has one label but two meanings, and each instruction
-  sees one of them. `listing.py` names an operand there after the chip's
-  register when the instruction lies outside the range, and after the
-  game's symbol when it lies inside, since code there can only run with
-  the chips banked out; a jump or a call always gets the code's symbol.
-  That rule is wrong for code elsewhere that banks the chips out and
-  reads or writes the RAM beneath, so go through every bank switch and
-  list those instructions in `game.json` under `io`, one row per stretch,
-  `["$B275", "$B2F0", "ram", "banked out from $B273 to $B2F1"]` (`registers`
-  for code in the range that banks the chips back in; the last row that
-  holds the instruction decides). `listing.py <game dir> --relabel` puts a
-  change to `io` into `listing.json` without the snapshot. An instruction
-  reached both ways keeps one name; say the other in its comment.
-  A game can also keep graphics there without banking anything, for the
-  video chip alone (on the C64, `c64-reference`, "RAM the CPU cannot
-  see"); `listing.py` names that RAM whenever it holds data and
-  `game.json` has not said what it is (below).
+- **A game can live under its I/O.** On a machine with RAM beneath its
+  chips (the platform's `hidden` range in `symbols_export.py`'s
+  `PLATFORM_DEFAULTS`), a game can bank the chips out and run code or
+  keep tables there, which the platform default excludes as I/O, or keep
+  graphics there for the video chip alone. The platform reference says
+  how to find it, how to give it back to the count, and how to tell
+  `listing.py` which meaning each instruction sees (on the C64,
+  `c64-reference`, "Code and tables under the I/O area").
 - **Is the picture loaded or drawn?** Compare a snapshot taken before the
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored
@@ -189,10 +180,10 @@ format, how to check the result against it, and how to read it back
   symbol: one you renamed in memory left undefined keeps the cap, so that
   a renamed variable does not take in the bytes after it. Block boundaries
   cut a span too. A data span also stops at the fixed edges of the memory
-  map, `$0100`, `$0200`, `$0400`, `$0800`, `$1000`, `$4000`, `$8000`,
-  `$A000`, `$C000`, `$D000` and `$E000`: a table that runs across one of
-  them needs a second symbol there, with a comment saying where the whole
-  starts. A routine runs on across them. A data table of a few hundred
+  map, the machine's own (`edges` in `symbols_export.py`'s
+  `PLATFORM_DEFAULTS`): a table that runs across one of them needs a
+  second symbol there, with a comment saying where the whole starts. A
+  routine runs on across them. A data table of a few hundred
   bytes under a 64-byte symbol therefore needs a data type and a name of
   your own, or a named symbol every 64 bytes or less, each with its own
   description,
@@ -261,8 +252,9 @@ extension is the platform's snapshot form, from `PLATFORM_DEFAULTS`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
 out. When the listing is built from the hand-over itself (the start-up
-code exists nowhere else), give it the play snapshot as the second image:
-`--entry work/<play>.<ext>`. Before calling 100 %, go through that list and say what each stretch
+code exists nowhere else), the list holds every untracked stretch in it;
+give it the play snapshot as the second image, `--entry work/<play>.<ext>`,
+to leave out what play overwrites. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
@@ -289,16 +281,11 @@ for operand decoding, branch checks and separate loaded-image meanings.
 ## Inline parameters: the reason a flow disassembler stalls
 
 When control-flow disassembly reaches a few thousand bytes and stops, and a
-scan of every `jsr`/`jmp` target inside the code it did find turns up
-nothing new, the rest is not all data. Look for a routine that pulls its
-own return address off the stack:
-
-```
-    pla / sta ptr / pla / sta ptr+1     ; the return address
-    ... read a word through (ptr) ...
-    inc ptr / inc ptr                   ; step past it
-    jmp (ptr)                           ; resume after the argument
-```
+scan of every call and jump target inside the code it did find turns up
+nothing new, the rest is not all data. Look for a routine that takes its
+own return address off the stack, reads what follows the call through it,
+steps past that and goes on from there. The processor's note shows the
+shape in its own instructions (`kit/skills/<platform>/steps`, "cpu").
 
 A call to that routine is followed by an **argument**, not an instruction,
 and the disassembler walks straight into it, decodes it as code and shifts
@@ -312,10 +299,12 @@ number of inline bytes it eats, which need not be the same.
 
 ### Inline jump tables that never come back
 
-A variant has no resume point: an "on n go to". The routine pulls its
-return address, picks the n-th word of the table that follows the call,
-pushes it and executes `RTS`, so each word is a handler's address **minus
-one** and control never returns to the call site. A state-machine game
+A variant has no resume point: an "on n go to". The routine takes its
+return address, picks the n-th word of the table that follows the call
+and goes to the handler it names, and control never returns to the call
+site. How a word names its handler is the processor's: on one it is the
+address itself, on another the address **minus one**, and a target read
+the wrong way lands a byte out (`steps`, "cpu"). A state-machine game
 can have a hundred such tables, one per behaviour, and flow tracing stalls
 at every one of them.
 
@@ -324,7 +313,7 @@ at every one of them.
   traced code.
 - The table's length is not stored. It ends where the next call site
   begins, at a handler that nearly every table ends with, or at the first
-  word whose target (word + 1) is not code. When testing a target, accept
+  word whose target is not code. When testing a target, accept
   a handler that itself opens with a call to the switch: its own table
   follows at once, so it will not decode as three clean instructions.
 - Type each table as words, then disassemble every target. **Never
@@ -337,10 +326,10 @@ at every one of them.
 
 ### Calls whose target is written at run time
 
-A raster interrupt that runs a different routine in each band of the
-screen often does it with one `JSR` whose operand it rewrites from a
-display list, and a music driver may dispatch its command bytes through
-`JMP (table)` with an operand it computes. The tracer reaches none of the
+An interrupt that runs a different routine in each band of the screen
+often does it with one call whose operand it rewrites from a display
+list, and a music driver may dispatch its command bytes through an
+indirect jump with an operand it computes. The tracer reaches none of the
 targets. Find what writes the operand, parse every table it reads (and
 every table of such tables), and seed the tracer with each entry, checking
 that it lands on code; an entry pointing at data is an unused slot. One
@@ -368,23 +357,38 @@ The record bears it out. Single agents took 20 to 22 KB of code to
 100 % in 30 to 40 minutes; runs of seven to twelve agents took 14 to 62
 minutes and then spent the difference on merging, naming collisions and
 reconciling reports in `60-verify`. Two nine-agent runs used up the
-account's session limit within minutes and sat idle for hours. Fanning
-out bought no quality either: what caught wrong readings was checking by
-an agent that did not write them, not parallel writing.
+account's session limit within minutes and sat idle for hours.
 
-Split only when one of these holds, and the contributor's answer about
-their usage limit (`kit/START.md`) allows it:
+**What a split buys is accuracy, paid for in tokens.** In a controlled
+test (18 October 2026), three copies of one run carried this step on
+from the same point, after the lead's first pass, and their comments
+were checked blind at the same 90 addresses. One agent took 40 minutes
+and left 17 of the 90 wrong. A lead and two helpers took 62 minutes and
+2.4 times the tokens, and left 7. A lead and four took 52 minutes and
+3.3 times the tokens, and left 9. Probably each helper reads a smaller
+range more closely, and the lead's merge is a second reading: there, one
+helper's reading corrected a variable the other had named for the wrong
+thing, and the lead renamed it. A full audit of the single agent's
+listing (`60-verify`) brought it to 8 wrong, but took more tokens than
+the two-helper split and twice its time. It was one run of each, on a
+game of 14 KB of code (`kit/lessons/2026-10-18-helpers-accuracy.md`).
 
-- **The game is several parts**: one agent to a part (below).
-- **What is left after your own first pass is too much for one
-  context**: as a guide, more than about 32 KB of code still undescribed.
+Split only when the contributor said, in the message that started the
+run, that it may use several agents (`kit/START.md`), whatever the
+size of the game: one agent to a part when the game is several parts
+(below), otherwise one to each range of what is left after your own
+first pass.
 
 Annotate first yourself, then split. Take the main loop, the interrupt
 handlers, the core variables and the naming conventions to described
 before anyone else starts: the brief's "Established" list is then short
 and checked, and the agents inherit names instead of inventing rival
-ones. Start at most four agents, and fewer on a tight limit. When you
-do split, what matters:
+ones. Start at most four agents, and no more than the contributor
+allowed; when they leave the number to you, start two, which did as
+well as four in the test above. Give the ranges about the same work,
+data to decode as well as code: in that test one helper's range held
+most of the level and sound data, and it took longer than the single
+agent did for the whole step. When you do split, what matters:
 
 - **One shared disassembler.** Concurrent reads are safe; concurrent
   writes are safe only if agents own **disjoint address ranges**. Assign
@@ -401,7 +405,8 @@ do split, what matters:
 - **Export every ten minutes while agents write.** A crash of the shared
   disassembler costs every agent's work since the last export;
   `symbols_import.py` rebuilds the session from that export (the tool
-  skill). Restart the emulator alone (`tools.py stop vice`). A bare
+  skill). Restart the emulator alone (`tools.py stop <emulator>`, by the
+  name `tools.py status` gives it). A bare
   `tools.py stop` leaves the disassembler up while its logs are newer
   than the export, and says so; `--force` is for a session you mean to
   lose.
@@ -453,8 +458,8 @@ do split, what matters:
 
 ## Declare what the bytes are
 
-The About tab draws the game's footprint in the 64 KB space (on the
-Spectrum, the 48 KB of RAM above the ROM) and counts code, graphics,
+The About tab draws the game's footprint in the machine's memory and
+counts code, graphics,
 level data, sound, text, tables and variables. The build classifies
 from the listing (code, text, data), the video bases in
 `game.json` (the character set) and symbol-name hints (`str_`, `tune_`,

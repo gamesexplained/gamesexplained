@@ -3,11 +3,15 @@
 
 For every games/<platform>/<slug>/game.json:
   index.html   copied through, tab bar injected  (How it works)
-  source.html  from site/source.html + facts.md + cheats.md   (Source code)
-  levels.html  copied through if authored          (Maps / levels)
   play.html    copied through if authored          (Play)
+  discoveries.html copied through if authored    (Discoveries)
+  levels.html  copied through if authored          (Maps / levels)
+  source.html  from site/source.html + facts.md + cheats.md   (Source code)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+Every tab but Source draws from the same listing.json: C64.load, BBC.load and
+Spectrum.load fetch it whole, one download the browser caches for all of a
+game's tabs.
 A game with no listing at all, at tier none, builds with no Source tab, no
 footprint on About and no memory strip or size in the catalogue; at any other
 tier the build stops and says how to make the listing.
@@ -17,17 +21,38 @@ parts above each listing, and a control beside it, step from one to the next.
 parts/<id>/ carries each part's listing and symbols. About draws one footprint,
 as for any game: the part the others are loaded over, with what they load
 marked as varying with the part.
-Those are the default tabs. A game that wants others lists all of its tabs, in
-order, in game.json's "tabs" as [file, label] pairs; every authored page it
-names is copied through, and a page in the folder that no tab names is left out
-with a warning (about-layout.html, the game's own About template, aside).
+A game whose maintainers withhold its annotated listing sets "publish_source":
+false in game.json. Its Source tab is one page with the line on the comments
+and a sentence saying the annotations are not published; no tab links an
+address into it, About's footprint opens nothing, and the site serves no
+listing.json and no symbols.json. A page of such a game names the pieces of
+the listing it reads in a tag the build fills in: <script
+type="application/json" data-listing="URL">, URL the listing as the page would
+fetch it (listing.json, parts/<id>/listing.json), holding a list of labels,
+each standing for its record and those up to the next label, or "$C000-$C3FF"
+ranges. The build replaces the list with those records, each cut to its
+address, type, label and bytes (embed_listings), and the loaders take the
+listing from the page. A byte a page reads and does not name reads as 0, which
+opening the page with ?listing-reads finds (site/lib/listing-reads.js). The
+repository keeps the whole listing.
+Those are the default tabs, in the order the bar shows them. A game that wants
+others lists all of its tabs in game.json's "tabs" as [file, label] pairs; every
+authored page it names is copied through, and a page in the folder that no tab
+names is left out with a warning (about-layout.html, the game's own About
+template, aside). Whatever the list's order, the bar starts with How it works
+(index.html, then any other tab labelled How it works), Play and Discoveries,
+and ends with Source code and About; the game's other tabs sit between them in
+the order it lists them (tab_order).
 Every tab but Source lists its sections in the left margin (pagenav), and every
 tab but the last ends with a link to the one after it (next_tab).
 Plus a home page with the catalogue and the games most recently added or changed
 (from git history), a page for each platform with games, <platform>/index.html
 (from site/platform.html: its catalogue alone, the page the platform in a game's
-breadcrumb links to), site/lib/, status.html (from site/status.html +
-site/status.json: which kits work on which computers, and the work needed)
+breadcrumb links to), site/lib/ as lib/ (with lib/cpu6502.js from the kit:
+KIT_LIB), status.html (from site/status.html +
+site/status.json: which kits work on which computers, and the work needed),
+activity.html (from site/activity.html: what landed on main each day, from git
+history and the issues GitHub has closed as completed; site/lib/activity.js draws it),
 about.html (from site/about-site.html: who runs the site and the
 principles it follows; static) and accuracy.html (from site/accuracy.html: how a
 listing's comments are checked, which every About tab's table of those steps
@@ -43,16 +68,19 @@ It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
 fails on a Gold or Platinum page that still has one. It counts the links into a
 Source page at an address its listing holds no record of (a chip register, a
 stretch the coverage leaves out, another part's address): the page says so when
-one is followed, and --addresses lists them, page by page.
+one is followed, and --addresses lists them, page by page. It counts too the links
+that land inside a BASIC line, past its first byte and before its last (where a
+range ends), which open on that line with no note, and --addresses lists those too.
 
 Usage: build.py [--out _site] [--addresses]
 With GITHUB_TOKEN (or GH_TOKEN) set, as in CI, the build asks GitHub which account
-an author's address belongs to when the address is not a GitHub noreply one; without
-it the build makes no request and shows that author's name unlinked.
+an author's address belongs to when the address is not a GitHub noreply one, and which
+issues are closed; without it the build makes no request, shows that author's name
+unlinked, and the activity page says the issues were not counted.
 Preview: python3 -m http.server -d _site 8000   (8000, or any free port)
 No dependencies. The markdown converter handles the subset the templates use.
 """
-import glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
+import datetime, glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import parts, load_game, started, under, above, ranges, left_out   # noqa: E402  a game of several loads
@@ -61,19 +89,22 @@ from accuracy import status as listing_status, table as accuracy_table, SILVER_U
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
-PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"}
+PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "bbc": "BBC Micro", "nes": "NES"}
 # The footprint widget and the extra script it needs, per platform: a page loads only
 # its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
-PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap"}
-PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"]}
 # The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
 # sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
 # (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
-PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000)}
+# The BBC Micro's MOS and I/O fill $C000-$FFFF; below them, its 32 KB of RAM and the 16 KB
+# sideways bank paged in at $8000, which may be RAM holding the game (kit/skills/bbc/bbc-reference).
+PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
-PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM"}
-TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
-        ("play.html", "Play"), ("about.html", "About")]
+PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
+                "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it"}
+TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
+        ("levels.html", "Maps / levels"), ("source.html", "Source code"), ("about.html", "About")]
 _warned = set()
 
 
@@ -313,9 +344,20 @@ def tier_name(t):
     return TIER_NAMES.get(t, t)
 
 
+def tab_place(f, n):
+    """Where a tab sits in the bar, whatever order game.json's "tabs" lists it in: How it works
+    (index.html, then a tab of the game's own of that name), Play and Discoveries lead, Source code
+    and About close it, and every other tab (4) keeps the game's order between them."""
+    if f == "index.html":
+        return 0
+    if n == "How it works":
+        return 1
+    return {"play.html": 2, "discoveries.html": 3, "source.html": 5, "about.html": 6}.get(f, 4)
+
+
 def tab_order(game, present):
     """The game's tabs as the bar shows them, in order: (file, label) for each one it has."""
-    return [(f, n) for f, n in game.get("tabs", TABS) if f in present]
+    return sorted(((f, n) for f, n in game.get("tabs", TABS) if f in present), key=lambda t: tab_place(*t))
 
 
 def tab_href(f):
@@ -329,8 +371,9 @@ def tabbar(game, present, lib):
     inner_class = "in many-tabs" if custom_tabs else "in"
     tabs = f'<span class="tab-list">{tabs}</span>' if custom_tabs else tabs
     plat = game.get("platform")
-    # a game with no listing has no Source page, so site.js links none of its addresses
-    nolink = "" if "source.html" in present else ' data-nolink="1"'
+    # a game with no listing has no Source page, and a withheld one shows none of it, so site.js
+    # links none of their addresses
+    nolink = "" if "source.html" in present and not withheld(game) else ' data-nolink="1"'
     return (f'<nav class="gametabs"{nolink}><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
             f'<a href="{lib}/../{plat}/">{html.escape(PLATFORM_NAMES.get(plat, plat))}</a> / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
@@ -385,6 +428,90 @@ def source_note(game):
     return (f'<p class="srcnote {"ok" if st["checked"] else "bad"}"><b>{html.escape(st["lead"])}</b> '
             f'{html.escape(st["note"])} See <a href="about.html#ledger">every step on the About tab</a>, '
             f'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>')
+
+
+def withheld(game):
+    """True for a game whose maintainers chose not to publish its annotated listing, game.json's
+    "publish_source": false. Its Source tab keeps the line on the comments (source_note) and
+    says no more; no address links into it, and the site serves none of its listings: its pages
+    carry only the pieces they name, cut to their bytes (embed_listings)."""
+    return game.get("publish_source", True) is False
+
+
+WITHHELD = "The annotations for this game are not published."
+
+
+def withheld_source(game, out, nav, ban, common, present):
+    """The Source tab of a game whose listing is withheld: its title, the banner, the line on the
+    comments and one sentence, with none of the listing, the facts or the part pages."""
+    tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
+    head = tpl[:tpl.index('<div class="facts">')]
+    body = ('<div class="facts">\n'
+            f'  <p class="eyebrow">{common["year"]} · {common["publisher"]}</p>\n'
+            f'  <h1 style="margin-top:0">{common["title"]}: the source</h1>\n'
+            f'  {source_note(game)}\n'
+            f'  <p class="withheld">{WITHHELD}</p>\n'
+            '</div>\n')
+    src = under_title(head + body, ban) + f'<script src="{LIB}/site.js"></script>\n'
+    src = at_end(src, next_tab(game, present, "source.html") + edit_footer(game, "source.html", "game.json"))
+    open(os.path.join(out, "source.html"), "w").write(src)
+
+
+LISTING_TAG = re.compile(r'(<script type="application/json" data-listing="([^"]+)"(?: data-fields="([^"]*)")?>)(.*?)(</script>)', re.S)
+RANGE = re.compile(r"^\$([0-9A-Fa-f]{1,4})-\$([0-9A-Fa-f]{1,4})$")
+
+
+def listing_pieces(L, want, where):
+    """The records of listing L that the pieces in want name: a label, its record and those after
+    it up to the next labelled one; or "$C000-$C3FF", every record with a byte in the range."""
+    recs, keep = L["records"], set()
+    starts = [i for i, r in enumerate(recs) if r.get("l")] + [len(recs)]
+    at = {recs[i]["l"]: n for n, i in enumerate(starts[:-1])}
+    for w in want:
+        m = RANGE.match(w) if isinstance(w, str) else None
+        if m:
+            lo, hi = int(m.group(1), 16), int(m.group(2), 16)
+            keep.update(i for i, r in enumerate(recs) if r["a"] <= hi and r["a"] + max(len(r.get("b") or []), 1) > lo)
+        elif w in at:
+            keep.update(range(starts[at[w]], starts[at[w] + 1]))
+        else:
+            sys.exit(f"{where} names {w!r}, which is neither a label of its listing nor a range like \"$C000-$C3FF\"")
+    return [recs[i] for i in sorted(keep)]
+
+
+LOADED = ("a", "t", "l", "b")    # what C64.load, BBC.load and Spectrum.load read from a record
+
+
+def embed_listings(page, gdir, game, where):
+    """The page with each <script type="application/json" data-listing="URL"> tag's list of pieces
+    replaced by those records of the listing at URL in the game folder, each cut to the address,
+    type, label and bytes the loaders read (LOADED). Only a game whose listing is withheld names
+    pieces: on any other game's page the tag is left out, and the loaders fetch the whole listing,
+    which the site serves."""
+    def one(m):
+        url = m.group(2)
+        if not withheld(game):
+            warn(f"{where}: the data-listing tag for {url} is left out of the built page, which fetches the whole "
+                 "listing; name pieces only for a game whose listing is withheld (\"publish_source\": false)")
+            return ""
+        try:
+            want = json.loads(m.group(4))
+        except ValueError:
+            want = None
+        if not isinstance(want, list):
+            sys.exit(f"{where}: the data-listing tag for {url} must hold a list of labels or ranges")
+        path = os.path.join(gdir, url)
+        if not os.path.isfile(path):
+            sys.exit(f"{where}: the data-listing tag names {url}, and the game folder has no such listing")
+        if m.group(3) is not None:
+            sys.exit(f"{where}: the data-listing tag for {url} names fields, and this game's pages carry only "
+                     "the addresses, types, labels and bytes of its listing (\"publish_source\": false)")
+        L = json.load(open(path))
+        recs = [{k: r[k] for k in LOADED if k in r} for r in listing_pieces(L, want, f"{where} ({url})")]
+        out = {k: v for k, v in L.items() if k not in ("records", "index")}
+        out["records"] = recs
+        return m.group(1) + json.dumps(out, separators=(",", ":")).replace("</", "<\\/") + m.group(5)
+    return LISTING_TAG.sub(one, page)
 
 
 def listing_row(game):
@@ -651,7 +778,7 @@ def pagenav(page):
     nav = ('<nav class="pagenav" id="pagenav" aria-label="On this page"><div class="in">'
            '<p class="hd">On this page</p><ol>' + "".join(items) + "</ol>"
            '<a class="top" href="#">↑ Back to the top</a></div></nav>')
-    m = re.search(r'<nav class="gametabs">.*?</nav>', page, re.S)
+    m = re.search(r'<nav class="gametabs"[^>]*>.*?</nav>', page, re.S)   # data-nolink="1" on a game with no listing to link
     return page[:m.end()] + "\n" + nav + page[m.end():] if m else nav + "\n" + page
 
 
@@ -904,6 +1031,7 @@ def authored_page(gdir, game, f, nav, ban, src=None, present=None):
     head = dict(title=html.escape(game.get("title", game["slug"])), platform=PLATFORM_NAMES.get(plat, plat),
                 year=game.get("year") or "", publisher=html.escape(game.get("publisher") or ""))
     page = drop_platform(fill(read(os.path.join(gdir, f)) if src is None else src, **head), plat)
+    page = embed_listings(page, gdir, game, os.path.join(os.path.relpath(gdir, ROOT), f))
     nxt = next_tab(game, present_tabs(gdir, game) if present is None else present, f)
     return pagenav(at_end(under_title(inject(page, nav, LIB), ban), nxt + edit_footer(game, f)))
 
@@ -1058,7 +1186,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
                 shutil.copy(os.path.join(p["dir"], f), dst)
 
 
-def game_footprint(P, out):
+def game_footprint(P, out, hidden=False):
     """The one map of a game of several parts, for the About tab and the catalogue: the part
     the others are loaded over (the first that lies over none), with the addresses the other
     parts own as one band, "varies with the part loaded". Which part holds what is the Source
@@ -1068,7 +1196,7 @@ def game_footprint(P, out):
     shown = [p for p in P if listed(p)]
     root = next((p for p in shown if not p["over"]), shown[0])
     runs, t, symbols, span = footprint(root["dir"], load_game(root["dir"]))
-    doc = {"runs": runs, "totals": t, "symbols": symbols, "source": part_page(root)}
+    doc = {"runs": runs, "totals": t, "symbols": symbols, "source": False if hidden else part_page(root)}
     if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
         doc.update(base=span[0], size=span[1] - span[0])
     json.dump(doc, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
@@ -1095,7 +1223,8 @@ def game_footprint(P, out):
     if cart:    # the map is the RAM; a bank switched in hides some of it, and is not drawn
         said += (f"The cartridge's banks, switched in at {span_text(cart)} one at a time, are not on this map, "
                  "though the RAM beneath them is. ")
-    said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
+    if not hidden:
+        said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
     return totals, f'<p class="mute" style="margin-top:12px">{said}</p>', span
 
 
@@ -1147,7 +1276,7 @@ def build_game(gdir, out_root):
     if P:
         game["_parts"] = (sum(1 for p in P if started(p)), len(P))
     present = present_tabs(gdir, game)
-    cons = credited(contributors(gdir), game)
+    cons = game["_cons"] = credited(contributors(gdir), game)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
     platform_scripts = "".join(f'<script src="{lib}/{f}"></script>' for f in PLATFORM_MAP_LIBS.get(plat, []))
@@ -1158,9 +1287,13 @@ def build_game(gdir, out_root):
                   platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
     for f in authored(gdir, game):
         open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban, present=present))
-    # source: one page, or one for each part of a game of several; none for a game with no listing
+    # source: one page, or one for each part of a game of several; none for a game with no listing,
+    # and for a game whose listing is withheld, one page that says so
     cheats = read(os.path.join(gdir, "cheats.md"))
-    if P and not bare:
+    hidden = withheld(game) and not bare
+    if hidden:
+        withheld_source(game, out, nav, ban, common, present)
+    elif P and not bare:
         part_sources(gdir, game, P, out, nav, ban, common, cheats, present)
     elif not bare:
         facts = markdown(read(os.path.join(gdir, "facts.md")))
@@ -1190,10 +1323,12 @@ def build_game(gdir, out_root):
     if bare:   # no byte described, so no map: the catalogue leaves out its strip and size too
         totals, foot, span = None, "", (0, 0x10000)
     elif P:
-        totals, foot, span = game_footprint(P, out)
+        totals, foot, span = game_footprint(P, out, hidden)
     else:
         runs, totals, symbols, span = footprint(gdir, game)
         memmap = {"runs": runs, "totals": totals, "symbols": symbols}
+        if hidden:   # nothing to open: memmap.js leaves the map unclickable
+            memmap["source"] = False
         if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
             memmap.update(base=span[0], size=span[1] - span[0])
         json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
@@ -1211,23 +1346,25 @@ def build_game(gdir, out_root):
     tpl = read(about_template)
     if bare:   # no map: the template's Footprint section goes, from its marker to the one that closes it
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
-    about = fill(tpl, **common, footprint=foot, data_links="" if bare else data_links(P), map_row=(span[1] - span[0]) // 128,
+    data = "" if bare else WITHHELD if hidden else data_links(P)
+    about = fill(tpl, **common, footprint=foot, data_links=data, map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov, listing_row=listing_row(game),
                  accuracy=accuracy_section(game, gdir),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
-                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare), shift=1, parts=part_pages(P),
-                                         urls=True)),
-                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare), shift=1,
-                                            parts=part_pages(P)))).replace("<!-- tabs -->", nav)
+                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare or hidden), shift=1,
+                                         parts={} if hidden else part_pages(P), urls=True)),
+                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare or hidden), shift=1,
+                                            parts={} if hidden else part_pages(P)))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
     about = at_end(about, next_tab(game, present, "about.html") + edit_footer(game, "about.html"))
     open(os.path.join(out, "about.html"), "w").write(pagenav(about))
-    for f in ("listing.json", "symbols.json"):
-        if os.path.exists(os.path.join(gdir, f)):
-            shutil.copy(os.path.join(gdir, f), out)
+    if not hidden:
+        for f in ("listing.json", "symbols.json"):
+            if os.path.exists(os.path.join(gdir, f)):
+                shutil.copy(os.path.join(gdir, f), out)
     ref = os.path.join(gdir, "reference")
     if os.path.isdir(ref):
         shutil.copytree(ref, os.path.join(out, "reference"), dirs_exist_ok=True)
@@ -1251,14 +1388,18 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js")
-
+# The lib files the site serves from the kit instead of site/lib/, each with one source: the 6502
+# a page runs a game's own code on, which sid.js also hands to a music driver in its worklet, is
+# the simulator the kit's tests hold pages to (kit/cpu/cpu6502.js, "On a page").
+KIT_LIB = {"cpu6502.js": "kit/cpu/cpu6502.js"}
 
 def lib_versions(out_root):
-    """{lib file: the first 8 hex digits of its SHA-1}, for the lib files the build versions."""
+    """{lib file: the first 8 hex digits of its SHA-1}, for every script and stylesheet in the
+    built lib/: a list of names left a new file out, and its pages kept the cached copy."""
     import hashlib
-    return {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
-            for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+    lib = os.path.join(out_root, "lib")
+    return {f: hashlib.sha1(open(os.path.join(lib, f), "rb").read()).hexdigest()[:8]
+            for f in sorted(os.listdir(lib)) if f.endswith((".js", ".css"))} if os.path.isdir(lib) else {}
 
 
 def version_lib(out_root):
@@ -1370,37 +1511,87 @@ def hook(g):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
 
 
-def strip_html(g, root=""):
-    """The one-dimensional memory map, drawn by C64Map.strip from memmap.json. Nothing for a
-    game with no listing: it has no memmap.json."""
+def strip_html(g):
+    """The one-dimensional memory map under the featured game, drawn by C64Map.strip from
+    memmap.json. Nothing for a game with no listing: it has no memmap.json."""
     if g["_totals"] is None:
         return ""
     total = sum(g["_totals"][k] for k in PROGRAM)
-    return f'<div class="strip" data-strip="{root}{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
+    return f'<div class="strip" data-strip="{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
 
 
-def stamp_html(g):
-    t = g.get("tier", "none")
-    return f'<span class="stamp {html.escape(t)}">{html.escape(tier_name(t))}</span>'
+def featured_frames(g):
+    """game.json's "featured_frames": more pictures from the game folder for the featured box to fade
+    through after the title image. Each must be a file in the game folder, as title_image must."""
+    gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
+    out = []
+    for p in g.get("featured_frames") or []:
+        ok = isinstance(p, str) and p and not os.path.isabs(p) and os.path.normpath(p) == p and ".." not in p.split(os.sep)
+        if ok and os.path.isfile(os.path.join(gdir, p)):
+            out.append(p)
+        else:
+            warn(f"{g['platform']}/{g['slug']} featured_frames entry {p!r} is not a file in the game folder")
+    return out
 
 
 def featured_html(g):
     """One game, large: title screen, memory strip, the title and its opening line."""
     plat, slug = g["platform"], g["slug"]
     meta = " · ".join(x for x in (PLATFORM_NAMES.get(plat, plat), str(g.get("year") or ""), g.get("publisher") or "") if x)
-    return (f'<a class="show" href="{plat}/{slug}/">{shot_html(g)}{strip_html(g)}'
+    shot = shot_html(g)
+    frames = [f"{plat}/{slug}/{p}" for p in featured_frames(g)]
+    if frames and shot.startswith("<img"):
+        shot = shot.replace("<img ", f'<img data-frames="{html.escape(" ".join(frames), quote=True)}" ', 1)
+    return (f'<a class="show" href="{plat}/{slug}/">{shot}{strip_html(g)}'
             f'<span class="cap"><b>{html.escape(g.get("title", slug))}</b><span class="m">{html.escape(meta)}</span></span>'
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
 
-def card_html(g, root=""):
-    """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier.
+TIER_GROUPS = {"platinum": "gold", "gold": "gold", "silver-claimed": "silver", "silver": "silver", "bronze": "bronze"}
+
+
+def tier_group(g):
+    """The tier a card is coloured and grouped by: Platinum with Gold, a claimed Silver with Silver."""
+    return TIER_GROUPS.get(g.get("tier", "none"), "none")
+
+
+def tier_edge(g):
+    """The tier written up the card's left edge, in the tier's colour."""
+    t = g.get("tier", "none")
+    word = {"platinum": "Platinum", "silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
+    return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t))}">{html.escape(word)}</span>'
+
+
+def names(people):
+    """People as a sentence: a; a and b; a, b and c."""
+    return ", ".join(people[:-1]) + " and " + people[-1] if len(people) > 1 else "".join(people)
+
+
+def tile_html(g, root, line, foot, data=""):
+    """A game's card, as New and updated and the catalogue show one: the tier up the left edge,
+    the title screen, the game's title (the card's link), a line on who, and a line in small type.
     root is the way up to the site's top from the page the card is on."""
     plat, slug = g["platform"], g["slug"]
-    kb = "" if g["_totals"] is None else f' · {sum(g["_totals"][k] for k in PROGRAM) / 1024:.0f} KB'
-    return (f'<a class="tile" href="{root}{plat}/{slug}/" data-platform="{html.escape(plat)}">{shot_html(g, "thumb", root)}'
-            f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b>{stamp_html(g)}</span>'
-            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")}{kb}</span>{strip_html(g, root)}</span></a>')
+    line = f'<span class="v">{line}</span>' if line else ""
+    return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}<span class="body">'
+            f'<a class="g" href="{root}{plat}/{slug}/">{html.escape(g.get("title", slug))}</a>{line}{foot}</span></div>')
+
+
+def card_html(g, root=""):
+    """Every game, in the catalogue: its card (tile_html), naming the people who contributed it,
+    as the About tab credits them, and the year and publisher. The data- attributes are what the
+    home page's search, filters and sorts read (site.js)."""
+    plat, slug = g["platform"], g["slug"]
+    cons = g["_cons"]
+    words = " ".join(str(x) for x in (g.get("title", slug), g.get("publisher"), g.get("developer"),
+                                       PLATFORM_NAMES.get(plat, plat), g.get("year"), hook(g),
+                                       *(login or name for _, name, login in cons)) if x)
+    data = (f' data-platform="{html.escape(plat)}" data-platform-name="{html.escape(PLATFORM_NAMES.get(plat, plat))}"'
+            f' data-tier="{tier_group(g)}" data-year="{g.get("year") or ""}" data-added="{html.escape(g.get("created") or "")}"'
+            f' data-title="{html.escape(g.get("title", slug))}" data-q="{html.escape(words.lower())}"')
+    who = names([person_html(name, login) for _, name, login in cons])
+    made = " · ".join(str(x) for x in (g.get("year"), g.get("publisher")) if x)
+    return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data)
 
 
 def platform_pages(games, out_root):
@@ -1412,23 +1603,6 @@ def platform_pages(games, out_root):
         open(os.path.join(out_root, plat, "index.html"), "w").write(
             fill(read(os.path.join(SITE, "platform.html")), site_title=f"{name} · Games Explained", lib="../lib",
                  platform_name=name, cards="".join(card_html(g, "../") for g in gs), n_games=len(gs)))
-
-
-def platforms_html(games):
-    """Chips that filter the catalogue. A platform with no games yet is listed anyway,
-    pointing at Contribute, so the reader knows it is wanted."""
-    counts = {}
-    for g in games:
-        counts[g["platform"]] = counts.get(g["platform"], 0) + 1
-    order = list(PLATFORM_NAMES) + sorted(p for p in counts if p not in PLATFORM_NAMES)
-    items = [f'<a href="#" class="on" data-filter="">All <span class="n">{len(games)}</span></a>']
-    for p in order:
-        name = html.escape(PLATFORM_NAMES.get(p, p))
-        if counts.get(p):
-            items.append(f'<a href="#" data-filter="{html.escape(p)}">{name} <span class="n">{counts[p]}</span></a>')
-        else:
-            items.append(f'<a href="#contribute" class="empty" title="No games yet. Be the first.">{name} <span class="n">none yet</span></a>')
-    return '<nav class="platforms">' + "".join(items) + "</nav>"
 
 
 def featured_game(games):
@@ -1443,7 +1617,7 @@ PUBLISHED = re.compile(r"(index|levels|play)\.html|(facts|cheats|features|orient
                        r"|parts/[^/]+/(facts\.md|(part|listing|symbols)\.json)")
 
 
-def recent_changes(games, n=4):
+def recent_changes(games, n=20):
     """The newest n changes to games, one row per game per day: {game, date, kind, who}.
 
     Walks main's first-parent line, so a merged pull request is one change. A change
@@ -1500,23 +1674,167 @@ def recent_changes(games, n=4):
 
 
 def recent_html(rows):
-    """One small card per change: title screen, the game (the card's link), who and when."""
+    """One card per change (tile_html): the game, who changed it and when. Four show at a time;
+    site.js turns the row into a carousel that moves on by itself."""
     if not rows:
         return ""
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
     cards = []
     for r in rows:
-        g = r["game"]
-        who = [person_html(nm, login) for nm, login in r["who"].values()]
-        by = " by " + (", ".join(who[:-1]) + " and " + who[-1] if len(who) > 1 else who[0]) if who else ""
+        who = names([person_html(nm, login) for nm, login in r["who"].values()])
         m, d = (int(x) for x in r["date"].split("-")[1:])
-        cards.append(f'<div class="card">{shot_html(g, "thumb")}<span class="body">'
-                     f'<a class="g" href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>'
-                     f'<span class="v">{r["kind"]}{by}</span>'
-                     f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time></span></div>')
+        cards.append(tile_html(r["game"], "", r["kind"] + (f" by {who}" if who else ""),
+                               f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time>'))
     return (f'<div class="recent"><div class="cathead"><h2>New and updated</h2>'
             f'<a href="{html.escape(repo)}/commits/main/games">All changes</a></div>'
-            f'<div class="cards">{"".join(cards)}</div></div>')
+            f'<div class="cards" tabindex="0" aria-label="New and updated games">{"".join(cards)}</div>'
+            f'<div class="dots" aria-label="Pages"></div></div>')
+
+
+# --- the activity page: what landed on main each day, from git history and GitHub's issues
+KIT_BUMP = re.compile(r"kit (\d+\.\d+\.\d+)\b")   # the subject of kit-version.yml's commit
+SQUASHED = re.compile(r"\s*\(#(\d+)\)$")           # "Title (#123)": a pull request merged with "Squash and merge"
+MERGED = re.compile(r"Merge pull request #(\d+) from \S+$")   # one merged with a merge commit
+CLOSES = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+#(\d+)\b", re.I)   # GitHub's closing keywords
+
+
+def areas(paths):
+    """What a change touched, by the folders its files are in: "game", "kit" (kit/ but its
+    VERSION, which the bump workflow owns, and AGENTS.md, the kit's rules), "site", and
+    "other" for a change that touched none of them (the CI, admin/, the README)."""
+    out = []
+    if any(p.startswith("games/") for p in paths):
+        out.append("game")
+    if any((p.startswith("kit/") and p != "kit/VERSION") or p == "AGENTS.md" for p in paths):
+        out.append("kit")
+    if any(p.startswith("site/") for p in paths):
+        out.append("site")
+    return out or ["other"]
+
+
+def landed(games):
+    """Every change that landed on main, oldest first, and the kit's version bumps.
+
+    A change is a commit on main's first-parent line: a pull request merged with "Squash and
+    merge" (its title ends "(#N)"), one merged with a merge commit (whose message carries the
+    pull request's title on the line after "Merge pull request #N"), or a commit pushed to
+    main. It is dated when it landed, its committer time. kit-version.yml's bump is not a
+    change of its own; its number goes in the bumps, [time, version]. Each change is
+    {t, sha, pr, title, who, areas, games, added, removed, fixes}: games the folders it
+    touched, added and removed the game.json files it added and deleted (which is how the
+    total is counted), fixes the issues its message closes ("Closes #12", which a squash
+    merge copies from the pull request), and who its people, named as on the home page's
+    New and updated row (credit): agents and bots left out, and so is anyone a game it
+    touched lists as uncredited."""
+    by_key = {f'{g["platform"]}/{g["slug"]}': g for g in games}
+    git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
+    try:
+        out = git("log", "--first-parent", "--diff-merges=first-parent", "--no-renames", "--name-status",
+                  "--format=%x1e%H %P%x1f%ct%x1f%aN%x1f%aE%x1f%s%x1f%b%x1d", "HEAD")
+    except Exception:
+        return [], []
+    changes, bumps = [], []
+    for chunk in out.split("\x1e")[1:]:
+        head, _, files = chunk.partition("\x1d")
+        shas, t, name, email, subject, body = head.split("\x1f")
+        sha, *parents = shas.split()
+        t = int(t)
+        if KIT_BUMP.fullmatch(subject.replace(" [skip ci]", "")) and is_agent(email):
+            bumps.append([t, KIT_BUMP.match(subject).group(1)])
+            continue
+        paths, added, removed = [], [], []
+        for ln in files.strip("\n").split("\n"):
+            status, *ps = ln.split("\t")
+            paths += ps
+            m = re.fullmatch(r"games/([^/]+/[^/]+)/game\.json", ps[0]) if ps else None
+            if m and status == "A":
+                added.append(m.group(1))
+            elif m and status == "D":
+                removed.append(m.group(1))
+        touched = sorted({"/".join(p.split("/")[1:3]) for p in paths if p.startswith("games/") and p.count("/") >= 3})
+        pr, title = None, subject
+        m = SQUASHED.search(subject) or MERGED.match(subject)
+        if m:
+            pr = int(m.group(1))
+            title = SQUASHED.sub("", subject) if SQUASHED.search(subject) else next(
+                (ln.strip() for ln in body.splitlines() if ln.strip()), subject)
+        if len(parents) > 1:   # a merge: the people whose commits it brought in
+            authors = [ln.split("\x1f") for ln in git("log", "--no-merges", "--format=%aN%x1f%aE%x1f%H",
+                                                      f"{parents[0]}..{sha}").splitlines()]
+        else:
+            authors = [(name, email, sha)]
+        who = {}
+        for nm, em, at in authors:
+            if is_agent(em, at):
+                continue
+            login = github_login(em, at)
+            if any(uncredited(by_key[k], nm, login) for k in touched if k in by_key):
+                continue
+            who.setdefault(login or nm, [nm, login])
+        change = {"t": t, "sha": sha[:10], "pr": pr, "title": title, "who": list(who.values()),
+                  "areas": (["new"] if added else []) + areas(paths), "games": touched, "added": added, "removed": removed,
+                  "fixes": sorted({int(n) for n in CLOSES.findall(body)} - {pr})}
+        changes.append({k: v for k, v in change.items() if v or k in ("t", "sha", "title", "areas")})   # the page reads a field left out as empty
+    changes.reverse()
+    bumps.reverse()
+    return changes, bumps
+
+
+def github_get(url, token):
+    """(the decoded answer, the URL of its next page or None) for one GitHub API request.
+    GitHub's next page is at /repositories/<id>/...; the same query on the URL asked keeps
+    every request under /repos/<owner>/<name>/, as a token scoped to the repository needs."""
+    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json", "User-Agent": "gamesexplained-build",
+                                               "Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        nxt = re.search(r'<[^>?]+\?([^>]+)>;\s*rel="next"', r.headers.get("Link") or "")
+        return json.load(r), nxt and url.split("?")[0] + "?" + nxt.group(1)
+
+
+def fixed_issues():
+    """The issues GitHub has closed as completed, oldest first, as {t, n, title}; None when
+    GitHub was not asked or did not answer. An issue closed as not planned is not a fix, and
+    an issue reopened since is not closed. Like the authors (github_account), it is asked only
+    with a token (GITHUB_TOKEN or GH_TOKEN, as in CI), so a build on a contributor's computer
+    makes no request and the page says the issues were not counted."""
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token:
+        return None
+    url, out = f"https://api.github.com/repos/{github_repo()}/issues?state=closed&per_page=100", []
+    try:
+        while url:
+            batch, url = github_get(url, token)
+            for i in batch:
+                if "pull_request" not in i and i.get("state_reason") == "completed" and i.get("closed_at"):
+                    t = int(datetime.datetime.strptime(i["closed_at"], "%Y-%m-%dT%H:%M:%SZ")
+                            .replace(tzinfo=datetime.timezone.utc).timestamp())
+                    out.append({"t": t, "n": i["number"], "title": i["title"]})
+    except Exception as e:
+        warn(f"GitHub could not be asked which issues are closed ({getattr(e, 'code', None) or getattr(e, 'reason', e)}): "
+             "the activity page leaves the issues out of this build")
+        return None
+    return sorted(out, key=lambda i: i["t"])
+
+
+def activity_data(games, now=None):
+    """What the activity page draws, as one JSON object: the changes and the kit's version bumps
+    (landed), the issues fixed (fixed_issues, null when not asked), each game's title by
+    platform/slug, the repository, and the moment the build read them, which is where the
+    page's periods end."""
+    changes, bumps = landed(games)
+    return {"now": int(now if now is not None else datetime.datetime.now(datetime.timezone.utc).timestamp()),
+            "repo": json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"),
+            "changes": changes, "bumps": bumps, "issues": fixed_issues(),
+            "games": {f'{g["platform"]}/{g["slug"]}': g["title"] for g in games}}
+
+
+def activity_page(games):
+    """site/activity.html with activity_data embedded, which site/lib/activity.js draws: a
+    period to pick, a tile for each count, the chosen count day by day, and every day's
+    changes and fixes. "</" is escaped so no title can close the script element it sits in."""
+    data = json.dumps(activity_data(games), separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+    return fill(read(os.path.join(SITE, "activity.html")), site_title="Activity · Games Explained", lib="lib",
+                data=data, repo=html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/")))
 
 
 # --- the status page: which kits work on which computers, and the work needed
@@ -1756,32 +2074,41 @@ class AddressLinks(html.parser.HTMLParser):
 
 
 _recorded = {}
+ITEMS = {"basic"}   # text types whose records each hold one item, a program line or a variable
 
 
 def recorded(listings):
     """The addresses that have a record in these listings, laid one over another as a part's
-    Source page lays them: an int with bit 8*a set for each address a a row covers or a label
-    stands at. A gap covers none."""
-    bits = 0
+    Source page lays them: (an int with bit 8*a set for each address a a row covers or a label
+    stands at, and one with the bit set for each address inside a BASIC line or variable, past
+    its first byte and before its last, which a range "$5CCB-$AD59" ends on). A gap covers none."""
+    bits = inside = 0
     for f in listings:
         if f not in _recorded:
-            got = bytearray(0x10000)
+            got, mid = bytearray(0x10000), bytearray(0x10000)
             for r in json.load(open(f))["records"]:
                 if r["t"] != "gap":
                     end = min(0x10000, r["a"] + max(1, len(r.get("b") or [])))
                     got[r["a"]:end] = b"\1" * (end - r["a"])
-            _recorded[f] = int.from_bytes(got, "little")
-        bits |= _recorded[f]
-    return bits
+                    if r.get("enc") in ITEMS and end - r["a"] > 2:   # its last byte ends a range
+                        mid[r["a"] + 1:end - 1] = b"\1" * (end - r["a"] - 2)
+            _recorded[f] = int.from_bytes(got, "little"), int.from_bytes(mid, "little")
+        bits |= _recorded[f][0]
+        inside |= _recorded[f][1]
+    return bits, inside
 
 
 def unrecorded(out_root):
-    """(links into a Source page, [(page, Source page, address)] for those that land on no record).
+    """(links into a Source page, [(page, Source page, address)] for those that land on no record,
+    the same for those that land inside a BASIC line or variable, past its first byte and
+    before its last).
 
     Every $XXXX on a game's pages links to a Source page, and one whose listing holds no
     record at it (a chip register, a stretch the coverage leaves out, an address of another
-    part) opens on the gap that holds it, with a note (#215). The count keeps them in sight."""
-    total, lost = 0, []
+    part) opens on the gap that holds it, with a note (#215). The count keeps them in sight.
+    In a BASIC listing every address is inside some line, so a wrong address opens on the
+    wrong line with no note; a link into a line is meant for its first byte (#356)."""
+    total, lost, inside = 0, [], []
     for out in sorted(glob.glob(os.path.join(out_root, "*", "*", ""))):
         held, again = {}, None
         for f in glob.glob(os.path.join(out, "source*.html")):
@@ -1801,9 +2128,11 @@ def unrecorded(out_root):
             for page, a in p.links:
                 if page in held:
                     total += 1
-                    if not held[page] >> (8 * a) & 1:
+                    if not held[page][0] >> (8 * a) & 1:
                         lost.append((os.path.relpath(f, out_root), page, a))
-    return total, lost
+                    elif held[page][1] >> (8 * a) & 1:
+                        inside.append((os.path.relpath(f, out_root), page, a))
+    return total, lost, inside
 
 
 def cut_blocks(games):
@@ -1831,16 +2160,21 @@ def main():
         shutil.rmtree(out_root)
     os.makedirs(out_root)
     shutil.copytree(os.path.join(SITE, "lib"), os.path.join(out_root, "lib"))
+    for f, src in KIT_LIB.items():
+        if os.path.exists(os.path.join(SITE, "lib", f)):
+            sys.exit(f"site/lib/{f} and {src} would both be lib/{f}: the site serves {src}, so delete site/lib/{f}")
+        shutil.copy(os.path.join(ROOT, *src.split("/")), os.path.join(out_root, "lib", f))
     games = []
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
         games.append(build_game(os.path.dirname(gj), out_root))
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
                 cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
-                recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
+                recent=recent_html(recent_changes(games)), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     platform_pages(games, out_root)
     open(os.path.join(out_root, "status.html"), "w").write(status_page(games))
+    open(os.path.join(out_root, "activity.html"), "w").write(activity_page(games))
     # the site's About page; site/about.html is the About tab of a game
     repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
     open(os.path.join(out_root, "about.html"), "w").write(
@@ -1860,16 +2194,22 @@ def main():
         sys.exit(f"{len(bad)} link(s) to nothing the build published. A game folder publishes its authored pages, "
                  "listing.json, symbols.json and reference/ (and for each of its parts, parts/<id>/listing.json and "
                  "symbols.json, and source-<id>.html), nothing else; site/lib/ is at ../../lib/")
-    total, lost = unrecorded(out_root)
+    total, lost, inside = unrecorded(out_root)
     if "--addresses" in argv:
         pages = {}
         for page, src, a in lost:
             pages.setdefault(page, []).append(f"{src}#{a:04X}")
+        for page, src, a in inside:
+            pages.setdefault(page, []).append(f"{src}#{a:04X} (inside a line)")
         for page, to in pages.items():
             print(f"{page}: {len(to)}: {', '.join(sorted(set(to)))}")
     if lost:
         print(f"{len(lost):,} of {total:,} links into a Source page land on no record there, and the page says so "
               "when one is followed" + ("" if "--addresses" in argv else "; build.py --addresses lists them"))
+    if inside:
+        print(f"{len(inside):,} of {total:,} links into a Source page land inside a BASIC line or variable, past "
+              "its first byte, and open on that line with no note: check each names the line it means"
+              + ("" if "--addresses" in argv else "; build.py --addresses lists them"))
     cut = cut_blocks(games)
     for page, tier, n in cut:
         warn(f"{page} has {n} block(s) hidden with the page editor; the cleanup pass in kit/START.md removes them")

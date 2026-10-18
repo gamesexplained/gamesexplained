@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
-const {CPU}=require(path.resolve(__dirname,'../../../kit/c64/cpu6502.js'));
+const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram,has}=require('./opening_image.js')(g);
 const {labyrinthHomeTable,labyrinthHomeMessages,labyrinthHomeOutcome}=g.run('index.html','labyrinth-home','labyrinthHomeTable','labyrinthHomeMessages','labyrinthHomeOutcome');
 assert.equal(labyrinthHomeTable.length,14);

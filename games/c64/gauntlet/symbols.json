@@ -13841,7 +13841,7 @@
   {
    "address": 18432,
    "type": "line",
-   "text": "The first of the three maze fonts (font select 2, from the file GAUNT CHR $4800): 256 multicolour glyphs. $00 is the floor and $01-$5A the maze's other pieces (the walls' brick joins, doors, treasure, food, potions, keys, generators, the trap, the transporter, the exits), four glyphs to a tile (tile_chars). $5B looks like floor and marks a cell as occupied (cell_mark). The rest are the monsters, four glyphs to a facing: the lobber $5C-$5F (one picture for every facing), ghosts $60-$7F, grunts $80-$9F, demons $A0-$BF, sorcerers $C0-$DF, Death $E0-$FF. panel_flash cycles the three fonts, which differ in the monsters' glyphs, so every monster on screen animates at once."
+   "text": "The first of the three maze fonts (font select 2, from the file GAUNT CHR $4800): 256 multicolour glyphs. $00 is the floor and $01-$5A the maze's other pieces (the walls' brick joins, doors, treasure, food, potions, keys, generators, the trap, the transporter, the exits), four glyphs to a tile (tile_chars). $5B looks like floor and marks a cell as occupied (cell_mark). The rest are the monsters, four glyphs to a facing: the lobber $5C-$5F (one picture for every facing), ghosts $60-$7F, grunts $80-$9F, demons $A0-$BF, sorcerers $C0-$DF, Death $E0-$FF. panel_flash cycles the three fonts, which differ in the monsters' glyphs and in the transporter ($34-$37), the trap ($38-$3B) and two of the treasure chest's glyphs ($1A, $1B), so all of these animate at once."
   },
   {
    "address": 18440,
@@ -13861,7 +13861,7 @@
   {
    "address": 20480,
    "type": "line",
-   "text": "The second maze font (font select 4): the same maze pieces with the monsters in their second frame."
+   "text": "The second maze font (font select 4): the same walls and floor, with the monsters, the transporter, the trap and the chest's glyphs $1A-$1B in their second frame."
   },
   {
    "address": 20488,
@@ -13881,7 +13881,7 @@
   {
    "address": 22528,
    "type": "line",
-   "text": "The third maze font (font select 6): the monsters in their third frame."
+   "text": "The third maze font (font select 6): the monsters, the transporter, the trap and the chest's glyphs $1A-$1B in their third frame."
   },
   {
    "address": 22536,
@@ -17496,7 +17496,7 @@
   {
    "address": 47918,
    "type": "line",
-   "text": "Moves the monsters on screen. With a potion's blast under way it goes to blast_hit. Otherwise, on three passes in four (bits 1-2 of $824B not both clear), it works through up to half the table from where it stopped last time ($BE6D), moving each monster that is on screen (monster_step), and stops early when the raster interrupt asks the main loop to redraw ($8264) or there are 192 monsters."
+   "text": "Moves the monsters on screen. With a potion's blast under way it goes to blast_hit. Otherwise, on three passes in four (bits 1-2 of pass_count $824B not both clear), it visits half the table and one more (monsters_left, from monster_count / 2), every second slot (monster_step), from where it stopped last time ($BE6D); past the last monster it starts again at slot 0 or slot 1, by bit 0 of pass_count, so each monster comes up on every second working pass. It stops early when the raster interrupt has given the go-ahead for the next pass (main_go, $8264) or there are 192 monsters. Only monsters on screen move (monster_on_screen)."
   },
   {
    "address": 48010,
@@ -17506,7 +17506,7 @@
   {
    "address": 48011,
    "type": "line",
-   "text": "Moves monster Y if it is on screen ($BD06); steps Y on by one, or by two when the monster was removed."
+   "text": "Moves monster Y if it is on screen (monster_on_screen, then monster_move $BD06) and steps Y on by two, to every second slot; when the move removed the monster, Y stays, for the monster moved into its slot."
   },
   {
    "address": 48027,
@@ -17541,7 +17541,7 @@
   {
    "address": 48327,
    "type": "line",
-   "text": "Takes monster Y out of the table: the last monster moves into its slot and the count goes down."
+   "text": "Takes monster Y out of the table: the last monster's X, Y, kind byte and flags ($0400, $04C0, $0580, $0640) move into its slot and the count goes down. Death's drain count ($0700) does not move with it, so a Death moved into the slot of a Death that drained its last touch takes over that count of 0, and its next touch (death_drain) wraps it to $FF."
   },
   {
    "address": 48362,
@@ -17616,7 +17616,7 @@
   {
    "address": 48979,
    "type": "line",
-   "text": "Picks which player monsters go for: the nearer when both are in the game, otherwise the one that is."
+   "text": "Picks which player monsters go for: the nearer by the two distances monster_aim added up (target_dist, short across the map's edge, wrap_delta) when both are in the game, otherwise the one that is. The table target_of is indexed by which players are in the game, and its fourth entry is target_far itself."
   },
   {
    "address": 49022,
@@ -17681,7 +17681,7 @@
   {
    "address": 49067,
    "type": "line",
-   "text": "Folds a difference on the 128-unit maze into -64 to 63, so that distances work across the edges of a maze that wraps."
+   "text": "Folds a difference on the 128-unit maze into -64 to 63, the short way round. The value is right; the flags it returns are not the value's: unfolded, they come from its CMP, which monster_aim's BMI reads as \"already positive\" and so takes the length right; folded, they come from the EOR, the value's own sign, and monster_aim then keeps that axis negative. A distance across the map's edge comes out short (the axis subtracted), which can make monster_target pick the farther player."
   },
   {
    "address": 49083,
@@ -17851,7 +17851,7 @@
   {
    "address": 50251,
    "type": "line",
-   "text": "Takes monster Y off the map (monster_unplot) and out of the table (the last monster into its slot, the count down); carry set."
+   "text": "Takes monster Y off the map (monster_unplot) and out of the table: the last monster's X, Y, kind byte and flags move into its slot (not Death's drain count at $0700, as in monster_remove) and the count goes down; carry set."
   },
   {
    "address": 50334,

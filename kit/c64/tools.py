@@ -9,7 +9,7 @@ Everything the kit installs lives under tools/ (gitignored):
   tools/src/         vice-mcp source and its build, when built here
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
   tools/r2000-home/  the disassembler's settings, where it follows the XDG paths (Linux)
-  tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000`
+  tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000 --version 0.9.20`
   tools/logs/        terminal logs of both
 Deleting the repository removes all of it. See kit/c64/INSTALL.md, "Uninstall".
 
@@ -28,7 +28,9 @@ Usage:
                                    A .vsf in a game's or part's folder that has exported annotations
                                    starts as the project symbols_import.py builds from them, in its
                                    work/, so a restarted session holds the work of the last export.
-                                   So does a cartridge bank's work/bank.crt, always (kit/c64/crt.py)
+                                   So does a cartridge bank's work/bank.crt, always (kit/c64/crt.py),
+                                   and another machine's snapshot in its game's folder, always, as
+                                   that machine's kit/<platform>/project.py builds it (the BBC's)
   tools.py stop [vice|r2000|all] [--force]
                                    the disassembler stays up while an annotation log written since
                                    it started is newer than the game's symbols.json: export first,
@@ -260,7 +262,14 @@ def seeded(path):
     stop comes back with the work of the last export, not with none. Built at every start, it can
     never hold older work than symbols.json. A cartridge bank's work/bank.crt always starts that
     way, since the disassembler cannot open a .crt. Anything else starts as it is: a project, a .prg, a
-    snapshot outside the games, the first session of a game, the top of a game of several parts."""
+    snapshot outside the games, the first session of a game, the top of a game of several parts.
+
+    A snapshot of another machine's game (game.json's platform, the BBC Micro's) always starts as
+    the project that machine's own writer builds, kit/<platform>/project.py, which names the machine
+    to the disassembler: it cannot open that machine's snapshots itself."""
+    other = other_machine(path)
+    if other:
+        return other
     crt = path.lower().endswith(".crt")
     gdir = game_folder(path) if path.lower().endswith(".vsf") or crt else None
     if not gdir:
@@ -283,6 +292,27 @@ def seeded(path):
     return out, gdir
 
 
+def other_machine(path):
+    """(project, folder) for a snapshot in the folder of a game, or of one part of a game, on a
+    machine other than the C64, built by that machine's writer from it and the last export; None
+    for anything else."""
+    gdir = None if path.lower().endswith(".regen2000proj") else game_folder(path)
+    if not gdir:
+        return None
+    from parts import load_game, parts
+    plat = load_game(gdir).get("platform")
+    if not plat or plat == "c64":
+        return None
+    if parts(gdir):
+        sys.exit(f"{path}: start the disassembler on the snapshot of one part, in its own folder "
+                 f"({os.path.join(os.path.relpath(gdir, ROOT), 'parts', '<id>', 'work')})")
+    from symbols_export import platform_fn
+    out = platform_fn(plat, "write", ("project",))(gdir, path)
+    print(f"starting on {os.path.relpath(out, ROOT)}: the {plat} snapshot {os.path.basename(path)}, with the "
+          f"annotations of the last export, as kit/{plat}/project.py builds it")
+    return out, gdir
+
+
 def logged_since_export(gdir):
     """The annotation logs in a game's work/ written after its symbols.json: what a session held
     that the last export did not."""
@@ -294,7 +324,7 @@ def logged_since_export(gdir):
 def r2000(path):
     exe = r2000_exe()
     if not exe:
-        sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000")
+        sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000 --version 0.9.20")
     port, part = R2000_PORT, part_dir(path)
     if part and not os.environ.get("KIT_R2000_PORT"):
         port = part_port(part)

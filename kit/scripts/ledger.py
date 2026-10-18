@@ -7,6 +7,7 @@ never disagree about what counts as the game. See coverage.py for the rules.
 import bisect, re
 
 MAX_SPAN = 64
+PROGRAM_TYPES = {"BASIC"}       # text that is a program, its spans crossing the map's edges as code's do
 BOUNDARY_TYPES = {"Subroutine", "UserDefined", "Field", "ZeroPageField",
                   "ZeroPagePointer", "AbsoluteAddress", "ZeroPageAbsoluteAddress"}
 
@@ -35,24 +36,28 @@ def compute(blocks, syms, comments, regions):
             commented.add(c["address"])
 
     # typed: data blocks given a shape (bytes, words, text, pointers), not left undefined
-    code, typed = bytearray(0x10000), bytearray(0x10000)
+    code, typed, program = bytearray(0x10000), bytearray(0x10000), bytearray(0x10000)
     for b in blocks:
         if b["type"] == "Undefined":
             continue
         grid = code if b["type"] == "Code" else typed
         for a in range(b["start"], b["end"] + 1):
             grid[a] = 1
+            if b["type"] in PROGRAM_TYPES:
+                program[a] = 1
     # A span ends at the edge of its block. A data span also ends at the fixed edges of the
-    # memory map, so that a table's reach cannot run on into the next region; a routine
-    # runs on across them, since code that crosses $1000 is still one routine.
+    # memory map, the machine's own (symbols_export.PLATFORM_DEFAULTS, "edges"), so that a
+    # table's reach cannot run on into the next region; a routine runs on across them, since
+    # code that crosses an edge is still one routine, and so does a program in BASIC, whose
+    # line that crosses one is still one line.
     block_edges = set()
     for b in blocks:
         block_edges.add(b["start"]); block_edges.add(b["end"] + 1)
-    fixed = {0x0000, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x4000, 0x8000, 0xA000, 0xC000, 0xD000, 0xE000}
+    fixed = set(regions.get("edges", []))
     walls = {True: sorted(block_edges), False: sorted(block_edges | fixed)}
 
     def wall_after(a):
-        edges = walls[bool(code[a])]
+        edges = walls[bool(code[a] or program[a])]
         i = bisect.bisect_right(edges, a)
         return edges[i] if i < len(edges) else 0x10000
 
@@ -84,7 +89,7 @@ def compute(blocks, syms, comments, regions):
     for a in range(0x10000):
         if excluded(a):
             state[a] = 0
-        elif state[a] == 0 and (code[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
+        elif state[a] == 0 and (code[a] or program[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
             state[a] = 1
     return {"state": state, "code": code, "owner": owner, "commented": commented,
             "dups": dups, "excluded": excluded, "stops": stops}

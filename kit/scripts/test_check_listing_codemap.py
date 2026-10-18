@@ -25,6 +25,20 @@ class CodeMap(unittest.TestCase):
             S["blocks"].append({"start": 0x8030, "end": 0x8031, "type": "Code"})
             self.assertEqual(untyped_code(d, S), ([], []))
 
+    def test_operand_of_an_instruction_from_the_part_beneath(self):
+        # a three-byte instruction at $A4FE, in the part beneath, ends at $A500, this part's first byte
+        S = {"blocks": [{"start": 0xA500, "end": 0xA500, "type": "Byte"},
+                        {"start": 0xA501, "end": 0xA503, "type": "Code"}],
+             "regions": {"exclude": [[0x0000, 0xA4FF, "Engine"]]}}
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "codemap.json").write_text(json.dumps(
+                {"starts": [0xA4FE, 0xA501], "code": [[0xA4FE, 0xA503]], "executed": [0xA4FE, 0xA501],
+                 "ran": [[0xA4FE, 0xA503]]}))
+            self.assertEqual(untyped_code(d, S), ([], []))
+            # the same byte reached by an instruction of this part's own is still held to Code
+            S["regions"]["exclude"] = [[0x0000, 0xA4FD, "Engine"]]
+            self.assertEqual(untyped_code(d, S), ([0xA4FE, 0xA4FF, 0xA500], []))
+
 
 if __name__ == "__main__":
     unittest.main()

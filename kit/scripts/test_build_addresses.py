@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The links into a Source page that build.py counts as landing on no record (#215): which
-addresses a page links, as site.js links them, and which of those the page's listing holds."""
+addresses a page links, as site.js links them, and which of those the page's listing holds;
+and those that land inside a BASIC line, past its first byte (#356)."""
 import json
 from pathlib import Path
 import sys
@@ -46,10 +47,30 @@ class Unrecorded(unittest.TestCase):
             (out / "listing.json").write_text(json.dumps({"records": records, "index": []}))
             (out / "source.html").write_text('<body data-nolink="1"><a href="source.html#E002">in a row</a>')
             (out / "index.html").write_text("<code>$E000</code> <code>$E004</code> <code>$D020</code>")
-            total, lost = build.unrecorded(tmp)
+            total, lost, inside = build.unrecorded(tmp)
         self.assertEqual(total, 4)
         self.assertEqual(lost, [("c64/fixture/index.html", "source.html", 0xE004),
                                 ("c64/fixture/index.html", "source.html", 0xD020)])
+        self.assertEqual(inside, [])
+
+    def test_links_inside_a_basic_line(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "bbc" / "fixture"
+            out.mkdir(parents=True)
+            records = [{"a": 0, "t": "gap", "n": 0x0E00},
+                       {"a": 0x0E00, "t": "text", "enc": "basic", "b": [13, 0, 10, 6, 241, 34], "d": "   10PRINT\""},
+                       {"a": 0x0E06, "t": "text", "enc": "basic", "b": [13, 0, 20, 5, 224], "d": "   20END"},
+                       {"a": 0x0E0B, "t": "text", "enc": "ascii", "b": [65, 66, 67], "d": "ABC"},
+                       {"a": 0x0E0E, "t": "gap", "n": 0xF1F2}]
+            (out / "listing.json").write_text(json.dumps({"records": records, "index": []}))
+            (out / "source.html").write_text('<body data-nolink="1">')
+            (out / "index.html").write_text("<code>$0E00</code> <code>$0E06</code> <code>$0E08</code>"
+                                            " <code>$0E04</code> <code>$0E0C</code> <code>$0E00</code>-<code>$0E0A</code>")
+            total, lost, inside = build.unrecorded(tmp)
+        self.assertEqual(total, 7)
+        self.assertEqual(lost, [])
+        self.assertEqual(inside, [("bbc/fixture/index.html", "source.html", 0x0E08),
+                                  ("bbc/fixture/index.html", "source.html", 0x0E04)])
 
 
 if __name__ == "__main__":

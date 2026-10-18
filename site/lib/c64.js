@@ -9,11 +9,45 @@ globalThis.C64 = (function () {
   // parses it once. Each call still gets ram and has of its own, which a widget may change; the
   // listing object is shared, and nothing should change it.
   const listings = new Map();
+  // A listing the build embedded in the page (kit/scripts/build.py, embed_listings), for a game
+  // whose listing the site withholds: the pieces of it the page names, in <script
+  // type="application/json" data-listing="url">. Before the build fills it in the tag holds only
+  // the list of pieces, and is passed over. Every other listing is fetched whole, one file the
+  // browser caches for all of a game's tabs.
+  function embedded(url) {
+    if (typeof document === 'undefined') return null;
+    for (const s of document.querySelectorAll('script[type="application/json"][data-listing]'))
+      if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
+    return null;
+  }
+  function fetched(url) {
+    return fetch(url).then(r => { if (r.ok === false) throw new Error(url + ': ' + r.status); return r.json(); });
+  }
+  // A page of a withheld game opened with ?listing-reads in its address gets the whole listing
+  // behind its pieces, with what it reads checked against them (listing-reads.js).
+  const READS = typeof document !== 'undefined' && document.currentScript && /[?&]listing-reads(?:[=&]|$)/.test(location.search)
+    ? new URL('listing-reads.js', document.currentScript.src).href : null;
+  let reads;
+  function watched(url, got) {
+    if (!READS || !embedded(url)) return got;
+    reads = reads || (globalThis.ListingReads ? Promise.resolve() : new Promise((ok, no) => {
+      const s = document.createElement('script'); s.src = READS; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+    return reads.then(() => ListingReads.watch(url, got));
+  }
+  // Text a widget writes into a canvas stays in the font it was drawn in. A listing in the page,
+  // or one the browser has cached, is in hand before the page's fonts have loaded, so a listing
+  // is handed over when they have, or after three seconds if they never do.
+  function fontsIn() {
+    if (typeof document === 'undefined' || !document.fonts || !document.body) return Promise.resolve();
+    void document.body.offsetHeight;          // lays the page out, which asks for its fonts
+    return Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 3000))]);
+  }
   // Rebuild a 64 KB image from listing.json records. Bytes the game does not use stay 0 and has[a] is false.
   async function load(url) {
     url = url || 'listing.json';
     if (!listings.has(url))
-      listings.set(url, fetch(url).then(r => r.json()).catch(e => { listings.delete(url); throw e; }));
+      listings.set(url, Promise.all([embedded(url) || fetched(url), fontsIn()]).then(([L]) => L)
+        .catch(e => { listings.delete(url); throw e; }));
     const L = await listings.get(url);
     const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
     for (const r of L.records) {
@@ -22,9 +56,9 @@ globalThis.C64 = (function () {
     }
     const names = new Map(L.records.filter(r => r.l).map(r => [r.a, r.l]));
     const byName = new Map(L.records.filter(r => r.l).map(r => [r.l, r.a]));
-    return { ram, has, names, byName, listing: L,
+    return watched(url, { ram, has, names, byName, listing: L,
              bytes: (a, n) => ram.subarray(a, a + n),
-             sym: n => { if (!byName.has(n)) throw new Error('no symbol ' + n); return byName.get(n); } };
+             sym: n => { if (!byName.has(n)) throw new Error('no symbol ' + n); return byName.get(n); } });
   }
 
   // One 8x8 glyph from an 8-byte-per-glyph character set at charset[code*8..].
@@ -104,7 +138,10 @@ globalThis.C64 = (function () {
   // and the sprite pointers as the frame began and at every write, and memory as it began.
   //   F.vic     the 47 registers $D000-$D02E        F.cia2    [$DD00, $DD02]
   //   F.writes  [[line, cycle, address, value], ...] in the order they happened: a register,
-  //             $DD00 or $DD02, or RAM (a sprite pointer); cycle 1 is the one in which the
+  //             $DD00 or $DD02, RAM (a sprite pointer; on a Play page any byte the chip
+  //             reads), RAM under the chips, $D000-$DFFF, as $20000 plus its address (which a
+  //             game that shows bank 3 can draw in), or colour RAM as $1D800 plus its index;
+  //             cycle 1 is the one in which the
   //             raster line steps, and a write in cycle c shows from the picture's 8-pixel
   //             column c - 13
   //   F.ram     RAM as the frame began, as base64 regions [{a, b}]: all 64 KB, or the bytes
@@ -124,13 +161,14 @@ globalThis.C64 = (function () {
   // the second drawn, so that what crosses the frame boundary (the border, a sprite) is as the
   // steady state leaves it. Not followed to the pixel: the few pixels after a mid-line change of
   // a mode bit or the scroll, and the grey pixel VICE draws where a colour register changes.
-  // Not modelled: sprite collisions; the characters on a late bad line and on the lines after it
-  // up to the next bad line, which the chip shows from the row's first character on, starting
-  // where its display came on, and this draws each in its own column (VSP games hide those lines
-  // in the top border, where it does not matter); and a bad line condition that comes and goes
-  // before cycle 14, which turns the display on in VICE.
+  // Not modelled: sprite collisions (collide.js works them out); the characters on a late bad
+  // line and on the lines after it up to the next bad line, which the chip shows from the row's
+  // first character on, starting where its display came on, and this draws each in its own
+  // column (VSP games hide those lines in the top border, where it does not matter); and a bad
+  // line condition that comes and goes before cycle 14, which turns the display on in VICE.
   // For a live display (a Play page) three more fields save the work of a recording:
   //   F.mem     a 64 KB Uint8Array used in place of F.ram     F.colourMem  1024 bytes, for F.colour
+  //             (both as the frame began, with the changes after in F.writes: videoMemory below)
   //   F.keep    an object kept from frame to frame: the chip's state carries over from the last
   //             call, so the frame is run once, not twice
   // Returns {w, h, px, x0, line0, reads, romReads}: px holds w * h colour indices of VICE's
@@ -159,6 +197,9 @@ globalThis.C64 = (function () {
     let romReads = 0;
     const byLine = [];
     for (const w of F.writes) (byLine[w[0]] = byLine[w[0]] || []).push(w);
+    // in cycle order within each line: a Play page logs a memory change after the register writes
+    // made since the clock last moved (videoMemory), though it was made before them
+    for (const ws of byLine) if (ws) ws.sort((a, b) => a[1] - b[1]);
     // what the chip keeps between lines, and between the two runs of the frame
     const S = K && K.S ? K.S : { vcbase: 0, vc: 0, rc: 0, display: false, den30: false, vborder: true, mborder: true,
       spr: [0, 1, 2, 3, 4, 5, 6, 7].map(() => ({ dma: false, on: false, mcbase: 0, mc: 0, ff: true,
@@ -167,7 +208,7 @@ globalThis.C64 = (function () {
     if (K) K.S = S;
     for (let pass = K ? 1 : 0; pass < 2; pass++) {
       const draw = pass === 1;
-      const R = F.vic.slice(), mem = start.slice();
+      const R = F.vic.slice(), mem = start.slice(), col = colour.slice();
       let pra = F.cia2[0], ddra = F.cia2[1];
       // the mode bits reach the chip later than a colour does: $D011's extended colour and bitmap
       // bits and $D016's X scroll a cycle later, $D016's multicolour bit half a cycle (measured
@@ -233,7 +274,7 @@ globalThis.C64 = (function () {
           if (c >= 15 && c <= 54 && badline) {
             const i = c - 15;
             buf[i] = vmem((R[0x18] >> 4) * 0x400 + ((S.vc + i) & 0x3FF));
-            cbuf[i] = colour[(S.vc + i) & 0x3FF] & 15;
+            cbuf[i] = col[(S.vc + i) & 0x3FF] & 15;
           }
           if (c >= 16 && c <= 55) {
             const i = c - 16, ecm = m11 & 0x40, bmm = m11 & 0x20;
@@ -318,12 +359,85 @@ globalThis.C64 = (function () {
             if (a >= 0xD000 && a <= 0xD02E) R[a - 0xD000] = v;
             else if (a === 0xDD00) pra = v;
             else if (a === 0xDD02) ddra = v;
+            else if (a >= 0x20000) mem[a - 0x20000] = v;
+            else if (a >= 0x1D800) col[a - 0x1D800] = v;
             else mem[a] = v;
           }
         }
       }
     }
     return { w: W, h: H, px, x0: X0, line0: LINE0, reads, romReads };
+  }
+
+  // A Play page's memory for renderFrame. The page runs the game on chips of its own, on a clock,
+  // and draws each whole frame once it has run; the video chip reads memory as the beam meets it.
+  // So a frame is drawn over memory as it began, with each later change applied where the game made
+  // it: a change made after the beam has passed shows in the next frame, one made before it in this
+  // one. Drawn over memory as it stood at either end of the frame instead, a game that moves text a
+  // character in memory and a pixel in the fine scroll, or that fills a row just before the beam
+  // reaches it, shows the text a character out for a frame. The page's port writes the game's
+  // memory directly, so the changes are found by comparison:
+  //   const vm = videoMemory(M, colour, o)   M the game's 64 KB, colour its 1024 colour nibbles;
+  //       o.keep    the object the page gives renderFrame as F.keep: only the bytes the chip has
+  //                 read in the frames drawn so far are compared at every line, and a change to
+  //                 any other shows from the next frame on. Without it the whole bank is compared,
+  //                 which costs a node test nothing it notices and a page too much
+  //       o.frames  how many frames' copies are kept at once (2)
+  //       o.lines, o.cycles   PAL's 312 of 63 unless NTSC's 263 of 65 are given
+  //   vm.at(t, writes, bank)   each time the clock moves: t the clock in cycles from the first
+  //                            frame's first cycle, writes the list of the frame the clock was in
+  //                            before it moved, bank the video bank (0-3). Once the clock has left
+  //                            the line it stood on, the memory is compared with what was last seen,
+  //                            and each change goes in writes where the clock stood before it moved:
+  //                            the port runs a stretch of code at once and then moves the clock by
+  //                            its cost, so that is where the code ran
+  //   vm.begin()               on the first cycle of each frame, after at(): {mem, colour}, copies
+  //                            of both as the frame begins, for F.mem and F.colourMem
+  function videoMemory(M, colour, o = {}) {
+    const n = o.frames || 2, cycles = o.cycles || 63, frame = (o.lines || 312) * cycles;
+    const seen = M.slice(), seenC = colour.slice(), ring = [];
+    for (let i = 0; i < n; i++) ring.push({ mem: new Uint8Array(0x10000), colour: new Uint8Array(0x400) });
+    // compared four bytes at a time
+    const words = a => a.byteOffset % 4 ? null : new Uint32Array(a.buffer, a.byteOffset, a.length >> 2);
+    const live = words(M), was = words(seen), liveC = words(colour), wasC = words(seenC);
+    if (!live || !liveC) throw new Error('videoMemory needs memory that starts on a multiple of 4 bytes');
+    let k = 0, last = -1, watch = null;
+    // each byte of word x that differs, logged at [line, cycle] as address to + its index and taken as
+    // seen; RAM under the chips as $20000 plus its address, so that renderFrame does not take a byte
+    // a game draws at $D000-$D02E, $DD00 or $DD02 in bank 3 for a write to the chip's register
+    function log(a, b, x, writes, line, cycle, to) {
+      for (let j = x * 4; j < x * 4 + 4; j++) if (a[j] !== b[j]) {
+        b[j] = a[j];
+        writes.push([line, cycle, to === 0 && j >= 0xD000 && j < 0xE000 ? 0x20000 + j : to + j, a[j]]);
+      }
+    }
+    function at(t, writes, bank) {
+      const t0 = last;
+      last = t;
+      if (t0 < 0 || Math.floor(t0 / cycles) === Math.floor(t / cycles)) return;
+      const line = Math.floor((t0 % frame) / cycles), cycle = t0 % cycles + 1;
+      if (watch) {
+        for (let i = 0; i < watch.length; i++) {
+          const x = watch[i];
+          if (live[x] !== was[x] && x >> 12 === bank) log(M, seen, x, writes, line, cycle, 0);
+        }
+      } else {
+        for (let x = bank << 12, e = x + 0x1000; x < e; x++) if (live[x] !== was[x]) log(M, seen, x, writes, line, cycle, 0);
+      }
+      for (let x = 0; x < 0x100; x++) if (liveC[x] !== wasC[x]) log(colour, seenC, x, writes, line, cycle, 0x1D800);
+    }
+    function begin() {
+      const f = ring[k = (k + 1) % n];
+      f.mem.set(M); f.colour.set(colour); seen.set(M); seenC.set(colour);
+      const r = o.keep && o.keep.reads;
+      if (r) {
+        const R = words(r), w = [];
+        for (let x = 0; x < 0x4000; x++) if (R[x]) w.push(x);
+        watch = Int32Array.from(w);
+      }
+      return f;
+    }
+    return { at, begin };
   }
 
   // A recorded frame drawn into a canvas with PAL, s pixels a pixel.
@@ -340,5 +454,5 @@ globalThis.C64 = (function () {
 
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
   return { PAL, load, drawGlyph, drawGlyphMC, drawScreen, drawSprite, drawSpriteMC, drawCharset, canvas, hex,
-           renderFrame, drawFrame };
+           renderFrame, drawFrame, videoMemory };
 })();

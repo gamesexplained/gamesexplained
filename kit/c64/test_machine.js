@@ -78,6 +78,20 @@ if (require.main === module) {
   m.releaseAll(); m.joy = 0x1F & ~16; m.runFrames(1);
   check('fire held: port A bit 4 low', ram[0x2003] & 0x10, 0);
   check('KEY.RETURN is row 0 column 1', KEY.RETURN, 1);
+  // CIA 1's port A as the KERNAL leaves it: a scan that writes a row to $DC00 and never sets $DC02
+  // reads its key. $1000: LDA $DC02; STA $2020; LDA $DC00; STA $2021; LDA #$FE; STA $DC00;
+  // LDA $DC01; STA $2022; JMP $1017 (itself)
+  {
+    const r = new Uint8Array(65536);
+    r.set([0xAD, 0x02, 0xDC, 0x8D, 0x20, 0x20, 0xAD, 0x00, 0xDC, 0x8D, 0x21, 0x20,
+      0xA9, 0xFE, 0x8D, 0x00, 0xDC, 0xAD, 0x01, 0xDC, 0x8D, 0x22, 0x20, 0x4C, 0x17, 0x10], 0x1000);
+    const k = new Machine({ ram: r, pc: 0x1000, port: { dir: 0x2F, data: 0x35 } });
+    k.press('DEL');
+    k.runCycles(100);
+    check('$DC02 starts as the KERNAL leaves it', r[0x2020], 0xFF);
+    check('$DC00 starts as the KERNAL leaves it', r[0x2021], 0x7F);
+    check('a row written to $DC00 alone reads DEL', r[0x2022], 0xFE);
+  }
   // stop at a pass and resume without counting it twice
   const n = m.passes;
   m.runUntilPass(q => q.passes >= n + 3);
@@ -152,7 +166,7 @@ if (require.main === module) {
       return Buffer.concat([head, mod('MAINC64CPU', 1, 5, cpu), mod('C64MEM', 0, 1, mem), mod('CIA1', 2, 5, Buffer.alloc(77)),
         vic ? mod('VIC-IISC', 1, 4, v) : Buffer.alloc(0)]);
     };
-    const { readSnapshot } = require('./cpu6502.js');
+    const { readSnapshot } = require('../cpu/cpu6502.js');
     const file = path.join(os.tmpdir(), 'test_machine_' + process.pid + '.vsf');
     try {
       fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0xFB }));

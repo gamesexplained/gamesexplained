@@ -59,3 +59,35 @@ frames. The old How it works text said eight shapes were mirrored "for walking l
 mirrored shapes are the proton stream's six and the two after them (`$4640`-`$483F`), and the
 men have their own left-facing frames, so the Graphics text says that instead. Item 4's shape,
 drawn for the first time, looks like the trap with its flaps raised.
+
+## 15 October 2026
+
+The Play tab's car jumped from side to side on the drive while it was
+steered. The page drew the last whole frame's registers, the fine scroll
+in `$D016` among them, over memory the next frame had already changed,
+and `road_scroll_left` and `road_scroll_right` move the road a character
+in memory every fourth step. Followed in Chromium over 900 drawings, the
+car moved by 6 and 10 pixels and turned back 132 times; drawn over the
+memory each frame began with, it moved in steps of 2 pixels and turned
+back 4 times, in a drive steered the other way 5 times. The same fault
+made the Storm title's message flicker.
+
+Drawn over memory as each frame began, the title's bottom row jumped
+right 7 pixels and back 9 every eighth frame: `bottom_scroller_text`
+writes the row at line $B8, before the beam shows it from $F3, and the
+frame drew the row as it was before. The page now gives each frame
+memory as the beam meets it (`C64.videoMemory` in `site/lib/c64.js`):
+memory as the frame began, with each change after logged where the game
+made it. Over 600 drawings the row moved 0 or 1 pixel left each time,
+and the car still moved in steps of 2.
+
+Every 45 frames the title's lower rows dropped about a row and the
+bottom row vanished for two frames, before this change too. The title
+loop polls for raster line $28 (`$6307`) and then sets `$D011` to $18;
+the runtime moved the clock a whole line for each turn of a polling loop
+on top of the 7 cycles its raster read takes, so every ninth turn
+stepped over a line, and in two frames of every 45 the skipped line was
+$28. Those frames kept the $1B the interrupt leaves, and the split at
+$C1 then moved the rows below. A turn now moves the clock to the start
+of the next line; over 400 frames the write came at line $28 in every
+one.

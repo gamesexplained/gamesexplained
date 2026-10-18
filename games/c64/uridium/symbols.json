@@ -5800,6 +5800,12 @@
    "kind": "auto"
   },
   {
+   "address": 14610,
+   "name": "rod_left_col_6",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 14611,
    "name": "rod_right_rows",
    "type": "Field",
@@ -7796,7 +7802,7 @@
   {
    "address": 108,
    "type": "line",
-   "text": "How many enemy sprites are in use; bit 7 set while waiting for the next wave."
+   "text": "Bit 7 set from the moment new_wave launches a wave until wave_control finds every sprite of it gone (then 0 until the next wave starts); the low bits count the enemy sprites in use, homing mines included, so a mine still flying holds back the next wave."
   },
   {
    "address": 109,
@@ -7901,7 +7907,7 @@
   {
    "address": 141,
    "type": "line",
-   "text": "How many places pick_star_row and pick_star_column try; set per screen."
+   "text": "The number of stars draw_stars draws, minus one, and how many places pick_star_row and pick_star_column try: 15 for the giant message ($0ADA), 9 in a game ($0B8F), 7 in the demo ($21CB)."
   },
   {
    "address": 142,
@@ -8441,7 +8447,7 @@
   {
    "address": 5139,
    "type": "line",
-   "text": "After a landing. The Manta drifts down onto the runway: frames run on autopilot (frame_autopilot), the height $3D lowered by one every fourth frame until it is below 5, then 160 frames more. The sprites go and the screen is wiped from both sides (shift_rows_left, shift_rows_right, 31 times) into the fuel rod chamber (fuel_rod_chamber). If the countdown ran out there ($A8 = 0) the Manta is lost (out_of_time). Otherwise \"Destruct sequence primed!\", then the formation annihilation bonus (one count for each formation destroyed, $87) and the ship destruct bonus (the chamber's $AD), each counted up in hundreds (count_bonus). Then the take-off: the Dreadnought's shapes and colours back, the Manta climbs out and turns, and flies the length of the Dreadnought while it vaporises behind it (vaporise_column) with random half-loops and effects, until the left end of the map; then the next level ($27) and the play loop ends ($32)."
+   "text": "After a landing. The Manta drifts down onto the runway: frames run on autopilot (frame_autopilot), the height $3D lowered by one every fourth frame until it is below 5, then 160 frames more. The sprites go and the screen is wiped from both sides (shift_rows_left, shift_rows_right, 31 times) into the fuel rod chamber (fuel_rod_chamber). If the countdown ran out there ($A8 = 0) the Manta is lost (out_of_time). Otherwise \"Destruct sequence primed!\", then the formation annihilation bonus (one count for each formation destroyed, $87) and the ship destruct bonus (the chamber's $AD), each counted up in hundreds (count_bonus). Then the take-off ($150F on): the Dreadnought's tiles and colours back, the autopilot pushes right ($5F = 1) and the Manta climbs one a frame to height $18; the turn at the map's end (manta_limits) half-loops it to face left; then, with its speed held at 7 and a random full roll one frame in 64, it flies back while the hull vaporises from column 480 (vaporise_column, once the map position is below $0E00), one column a frame, faster than the Manta, so the edge overtakes it. Below map position $0200 the next level ($27) and the play loop ends ($32). Recorded live: 568 frames from the start of the take-off to level 2."
   },
   {
    "address": 5565,
@@ -8476,12 +8482,12 @@
   {
    "address": 5842,
    "type": "line",
-   "text": "Destroys one column of the Dreadnought behind the departing Manta, at the map address $89/$8A (moving left by one each call, stopping at $8220): in each of the 17 rows, from the height $A4D0 for that row, three non-space characters become random wreckage ($F9-$FE) and the three above become spaces."
+   "text": "One frame of the vaporising: at the column of $89/$8A (row 0's map address, moving left by one each call, stopping below $8220), in each of the 17 rows from row 0 down, from that row's column offset ($A4D0 + 17 - row): the three cells there, if not a space, become wreckage, the first $F9 or $FA, the second $FB or $FC, the third $FD or $FE (bit 0 of the noise picks), and the three cells after them become spaces. As the band moves left each character passes through the three wrecks in three frames and goes."
   },
   {
    "address": 5947,
    "type": "line",
-   "text": "Sets the start of the vaporising ($89/$8A = $83E0) and a ragged edge for it: a random walk of 17 heights between 0 and 16, from 8, into $A4D1-$A4E1."
+   "text": "Starts the vaporising at $89/$8A = $83E0 (column 480) and gives each row a column offset for a ragged edge: a random walk over the rows from 8, kept within 0-16, where a noise byte below $55 keeps it, $55-$A9 adds one and $AA or more takes one, into $A4E1 (row 0) down to $A4D1 (row 16)."
   },
   {
    "address": 5998,
@@ -8541,7 +8547,7 @@
   {
    "address": 6808,
    "type": "line",
-   "text": "Launches a formation. Reads the next wave number from the level's list ($6D),$24 (and advances $24); $FF, the end of the list, gives one of the filler waves $12-$15 at random, marked in $68 so that it scores no formation bonus. The 16-byte record at $C200 + 16 x number holds six path numbers (0 for no fighter), the spacing in frames between fighters (byte 12), the entry side (byte 13: 0 the side the Manta faces, $FF behind it, anything else at random), the type (byte 14) and six start heights (bytes 6-11, 0 for the Manta's height). The type picks, from the tables at $36F3 on, the horizontal speed ($66, and $63 its negative), the vertical speed ($82, $80 its negative), the firing chance ($69, plus half the lives, the level and the difficulty), the bullet shape ($6A), the score ($7F) and the bullet's speed ($65). Each fighter gets its path pointer from $C120/$C190, state 2, a start delay and its sprite; requests effect $AE."
+   "text": "Launches a formation. Reads the next wave number from the level's list ($6D),$24 (and advances $24); $FF, the end of the list, gives one of the filler waves $12-$15 at random, marked in $68 so that it scores no formation bonus. The 16-byte record at $C200 + 16 x number holds six path numbers (0 for no fighter), six start heights (bytes 6-11, 0 for the Manta's height), the frames between fighters starting their paths (byte 12), the side byte (13) and the type (14). The type picks, from the tables at $36F3 on, the horizontal acceleration ($66, and $63 its negative), the vertical one ($82, $80 its negative), the firing chance ($69, plus half the lives, the level and the difficulty), the bullet shape ($6A), the score ($7F) and the bullet's speed ($65). Every fighter starts at the same sprite X in the band hidden between the borders: $1A4 with shapes $A0 + type ($1B4D), or $1A2 with the mirrored shapes $B0 + type, the two accelerations and the bullet speed swapped ($1B5B). Side byte 0: starting horizontal speed 0, mirrored when the Manta's speed is negative; $FF: starting speed minus the Manta's, mirrored when it is positive or 0; any other value: bit 7 of the noise picks one of the two. Each fighter gets its path pointer from $C120/$C190, state 2, a start delay and its sprite; requests effect $AE."
   },
   {
    "address": 7165,
@@ -8571,7 +8577,7 @@
   {
    "address": 7283,
    "type": "line",
-   "text": "State 2, a fighter. Moves it with the scroll and by its velocity (move_by_velocity), then follows its path: when its step timer $A4B0 runs out it reads the next path byte through ($70,x): $FF holds the last step; otherwise bits 0-6 are the step's flags ($A4B8) and with bit 7 set the next byte is the step's length (else 1 frame). Flags: 1 accelerate along $63/$64, 2 along $66/$67 (one way or the other), 4 down by $82, 8 up by $80, $10 fire once, $20 stop dead, $40 steer towards the Manta's height. Every eighth frame (on its own phase) it may fire, when a random byte is below the chance $69. Then finds the character under the sprite: one of the Manta's bullets ($10-$1F) means it is shot: the bullet is put out, the type's score added (none in a filler wave), effect $26, state 6 explosion and one fewer fighter left ($88). Off the visible screen it is either turned to face back (first time) or removed."
+   "text": "State 2, a fighter. Moves it with the scroll and by its velocity (move_by_velocity), then follows its path: when its step timer $A4B0 runs out it reads the next path byte through ($70,x): $FF holds the last step; otherwise bits 0-6 are the step's flags ($A4B8) and with bit 7 set the next byte is the step's length (else 1 frame). Flags: 1 accelerate by $63/$64, 2 by $66/$67, 4 down by $82, 8 up by $80; with none of those, $10 fire once, $20 stop dead, $40 steer towards the Manta's height (closing at up to 4 or 5 a frame, stopping dead past it). Every eighth frame (on its slot's phase), on screen, it fires when a noise byte is no higher than the chance $69. On screen, finds the four characters under the sprite: a code below $20, a shot's own character, means it is shot: that shot (the code's low four bits) is put out, the type's score added (none in a filler wave), effect $26, state 6 explosion and one fewer fighter left ($88). Off the visible screen it notes in $A4E8 which edge it left by ($FF the right, 0 the left) and is switched off once well past it."
   },
   {
    "address": 7846,
@@ -8601,7 +8607,7 @@
   {
    "address": 8063,
    "type": "line",
-   "text": "Called in turn from the play loop every eighth frame: while no formation is flying ($6C bit 7) and with a chance of a quarter of $69, takes a generator port that is on screen ($0240,x positive, from the last of the $54 found) and starts a mine materialising over it in a free sprite slot (state 8, shape $1D, effect $0D), with a lifetime from the level and difficulty."
+   "text": "Called in turn from the play loop every eighth frame: only while a wave is in progress ($6C bit 7 set) and when a noise byte is no higher than a quarter of the firing chance $69, takes the last generator port found ($0240,x positive, searching down from the $54th) that is on the screen and a free sprite slot, and starts a mine materialising over it (state 8, shape $1D, effect $0D, Y = row x 8 + $2C, X = (screen column + 2) x 8), still, with a homing lifetime of 128 + 4 x level + difficulty frames; it counts itself in $6C. The vertical fraction $A4C8 of the slot is not cleared."
   },
   {
    "address": 8176,
@@ -8611,12 +8617,12 @@
   {
    "address": 8225,
    "type": "line",
-   "text": "State 10, a homing mine: moves with the scroll and by its velocity, steers towards the Manta (home_in), counts down its lifetime (with effect $0E at intervals), and like a bullet destroys a low Manta it touches. At the end it explodes."
+   "text": "State 10, a homing mine: moves with the scroll and by its velocity, steers towards the Manta (home_in), counts down its lifetime (effect $0E every 16 frames, on its slot's phase), and like a bullet destroys a Manta flying below height $14 that it touches (hits_manta). It never tests the characters under it, so shots pass through it. At the end it bursts (state 6, shape $14, effect $0A)."
   },
   {
    "address": 8287,
    "type": "line",
-   "text": "Every fourth frame turns the mine's velocity towards the Manta: vertical by one towards $33, horizontal by one towards the Manta's screen column ($A0-$AA), the horizontal kept within -6..6 and the vertical within -4..4."
+   "text": "Every fourth frame turns the mine's velocity towards the Manta, by one each way: vertically towards its Y $33 (up when level with it or below it), horizontally towards the Manta's column, sprite X $AA (from the hidden band, X $1A0 up, to the right; from X $100-$19F, to the left); then the horizontal speed is kept within -6..6 and the vertical within -4..4. Nothing damps it, so the mine overshoots and swings back through the Manta."
   },
   {
    "address": 8428,
@@ -8871,7 +8877,7 @@
   {
    "address": 11799,
    "type": "line",
-   "text": "Scatters sixteen stars for the space around the Dreadnought from the random table at $0800: for each a row 7-22 (no two in a row while it can help it, over $8D tries, pick_star_row) and a column (pick_star_column), its address in $A400/$A410/$A480 and its character, $42 or $43, in $A420."
+   "text": "Places sixteen stars for the space around the Dreadnought from the random table at $0800: for each a screen row 7-22 (moved on to a row with no star yet, over $8D tries, pick_star_row) and a column 0-19 or 25-36 (columns 20-24 are marked as taken before the first star, pick_star_column), its screen address in $A400/$A410, its colour RAM page in $A480 and its character, $42 or $43, in $A420. draw_stars draws the first $8D + 1 of them."
   },
   {
    "address": 11941,
@@ -9669,6 +9675,11 @@
    "text": "The left column's screen columns for each step."
   },
   {
+   "address": 14610,
+   "type": "line",
+   "text": "The left column's screen column at the last step, the seventh byte of f_390C."
+  },
+  {
    "address": 14611,
    "type": "line",
    "text": "The chamber's right column for each step: row and column."
@@ -10086,7 +10097,7 @@
   {
    "address": 42192,
    "type": "line",
-   "text": "The ragged edge of the vaporising Dreadnought, one height per row (random_heights)."
+   "text": "The ragged edge of the vaporising Dreadnought: each row's column offset from $89/$8A, row 0 at $A4E1 down to row 16 at $A4D1 (random_heights, vaporise_column)."
   },
   {
    "address": 42216,

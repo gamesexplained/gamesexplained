@@ -46,7 +46,7 @@ const module = { exports: {} };
 // Ghostbusters (C64, Activision 1984): the music player at $93E1-$95A4, ported routine by routine
 // to a createDriver(data) for site/lib/sid.js. data is data.json: the tune's tables as the game
 // holds them at $A1F4-$A836 (made by extract.js), read here through the game's own addresses.
-// Checked against the game's code run in kit/c64/cpu6502.js on work/entry.vsf by test.js: every
+// Checked against the game's code run in kit/cpu/cpu6502.js on work/entry.vsf by test.js: every
 // SID register write, in order, every frame, for the whole tune.
 //
 // Tunes: init(0) is the title's sing-along ($20 game_mode = 0): the tune plays once at full

@@ -309,7 +309,7 @@ Zero-page object records:
 SID voice control registers are written at `$4BD3`–`$4BE1` in the title
 loop. Two effects sweep the filter cutoff by hand; both were ported and
 their every SID write checked against the game's own routines run in
-`kit/c64/cpu6502.js` on the listing's bytes (814 writes of a name entry at
+`kit/cpu/cpu6502.js` on the listing's bytes (814 writes of a name entry at
 the same cycle, 403 of a crash on the same tick, no mismatch).
 
 **Name entry has no clock.** `highscore_name_entry` (`$4CD6`–`$4D73`)

@@ -16,9 +16,10 @@ A person's pass over the page, section by section (`AGENTS.md`,
 
 ## Open work
 
-- A second, independent sample of 60 comments after the corrections: the
-  first measured 13 % wrong (`facts.md`), and only the claim types that
-  went wrong were audited across the whole listing.
+- A full audit of the listing's 1,064 comments, then a second sample of 60
+  with a new seed, checked by a model that wrote none of them: the first
+  sample measured 13 % wrong (`facts.md`), and two partial audits have
+  checked 72 comments between them.
 - The Elf's and Wizard's play: only the Warrior and the Valkyrie were
   played live; their shots, colours and magic values are traced only.
 - Whether the level jingle is a short form of the title music

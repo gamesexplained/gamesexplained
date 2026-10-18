@@ -19,7 +19,7 @@
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const REPO = path.resolve(ROOT, '../../../..');
-const { CPU } = require(path.join(REPO, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(REPO, 'kit/cpu/cpu6502.js'));
 const { PortChips } = require(path.join(REPO, 'kit/c64/lockstep.js'));
 require(path.join(ROOT, 'src/kernal.js'));
 require(path.join(ROOT, 'src/core.js'));
@@ -41,7 +41,7 @@ function states() {
   STATES = fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort().map(f => {
     const s = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
     return { name: f, ram: new Uint8Array(Buffer.from(s.ram, 'base64')), vic: s.vic, colour: new Uint8Array(Buffer.from(s.colour, 'base64')),
-      pra: s.pra, ddra: s.ddra, ddrb: s.ddrb, cmp: s.cmp, enable: s.enable, joy: s.joy, keys: s.keys || [], coll: s.coll || [0, 0] };
+      pra: s.pra, ddra: s.ddra, ddrb: s.ddrb, cmp: s.cmp, enable: s.enable, joy: s.joy, keys: s.keys || [] };
   });
   return STATES;
 }

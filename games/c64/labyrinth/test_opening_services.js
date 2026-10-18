@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
-const {CPU}=require(path.resolve(__dirname,'../../../kit/c64/cpu6502.js'));
+const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=require('./opening_image.js')(g);
 const pairs=[[0x13c8,0x13e8,0x81,0x63,0x1430],[0x1479,0x1499,0x85,0x77,0x14d7],[0x1520,0x1540,0x89,0x8b,0x157e],[0x15c7,0x15e7,0x8d,0x9f,0x1625],[0x166e,0x168e,0x91,0xb3,0x16cc],[0x1715,0x1735,0x95,0xcf,0x1773]];
 for(const [two,three,base,line,next] of pairs)for(const group of [2,3])for(const y of [0,93,255]){

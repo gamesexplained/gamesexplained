@@ -16,6 +16,8 @@ is the scripting client for the loops that are too slow as one call each
     rpc.bp_set(1, "PC=8004H")             # slot 1: stop there
     rpc.run(); print(rpc.registers()["PC"])
     print(rpc.frames(1))                  # one 48K frame: 69888 T-states
+    rpc.set_machine("128k")               # a Spectrum 128, reset and running; its frame is 70908
+    print(rpc.ay_registers())             # the AY's sixteen registers, and the one selected
 
 From the command line, one call per invocation (the agent's transport):
 
@@ -54,6 +56,12 @@ import json, os, re, socket, sys, time
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = int(os.environ.get("KIT_ZESARUX_PORT") or 10000)   # the launcher's --port sets it (kit/spectrum/tools.py)
 FRAME_TSTATES = 69888          # one 48K ZX Spectrum frame (kit/skills/spectrum/zx-spectrum-reference)
+FRAME_TSTATES_128K = 70908     # one frame of the 128K, +2, +2A and +3: 228 T-states a line, 311 lines
+
+
+def frame_tstates(machine):
+    """The frame of the machine `get-current-machine` names, in T-states."""
+    return FRAME_TSTATES_128K if "128" in machine or "+2" in machine or "+3" in machine else FRAME_TSTATES
 FRAME_SLOT = 100              # the breakpoint slot `frames` uses; slots are 1..100
 PROMPT = re.compile(r"^[^\n]*> $")
 
@@ -298,8 +306,14 @@ class Rpc:
             args.append(limit)
         return self.cmd("run", *args, timeout=timeout)
 
+    def frame(self):
+        """This machine's frame in T-states: 69888 on a 48K, 70908 on a 128K or later."""
+        if not getattr(self, "_frame", None):
+            self._frame = frame_tstates(self.machine())
+        return self._frame
+
     def frames(self, n, timeout=60.0, tries=20):
-        """Run until n * 69888 T-states have gone by, and stop there.
+        """Run until n frames of this machine (`frame`) have gone by, and stop there.
 
         A checkpoint on `TSTATESP>` fires at the frame boundary, so this is
         one round trip per frame, not a spin: each try arms the slot, runs,
@@ -307,13 +321,18 @@ class Rpc:
         rather than looping forever (`kit/EMULATOR.md` phase 4, "advance N
         frames ... one call").
         """
-        target = n * FRAME_TSTATES
+        target = n * self.frame()
         condition = f"TSTATESP>{target}"
         try:
             for _ in range(tries):
                 self.reset_tstates()
                 self.bp_set(FRAME_SLOT, condition)
                 reply = self.run(timeout=timeout)
+                if "must first enter cpu-step" in reply:
+                    # a load resumes a machine that was running when it loaded, and `run` is
+                    # refused while it runs: say so, instead of twenty silent tries
+                    raise ZesaruxError("the machine is running and `run` needs it stopped: call "
+                                       "enter_step() first (a load leaves it running if it was)")
                 got = self.tstates()
                 if "Breakpoint fired" in reply and condition not in reply:
                     # `run` stops on any checkpoint, so a caller's own stop ends it first:
@@ -421,6 +440,32 @@ class Rpc:
     # -- misc ---------------------------------------------------------------
     def machine(self):
         return self.cmd("get-current-machine").strip()
+
+    def set_machine(self, name):
+        """Switch the emulated machine by ZEsarUX's short name (`48k`, `128k`), and return the
+        name `get-current-machine` then gives. The switch resets the machine and leaves it
+        running, out of cpu-step, and `frames` steps by the new machine's frame from then on."""
+        self.strict("set-machine", name)
+        self._frame = None
+        return self.machine()
+
+    def ay_registers(self):
+        """The AY-3-8912's sixteen registers and the one selected, from `get-io-ports`.
+
+        Returns ([R0..R15], selected). ZEsarUX prints the registers in hex, `0D:  34`, and the
+        selected one in decimal, `Selected register: 13`. A machine with no AY, the 48K, has no
+        `AY-3-8912 chip 0` block, and this raises.
+        """
+        text = self.cmd("get-io-ports")
+        _, found, block = text.partition("AY-3-8912 chip 0")
+        if not found:
+            raise ZesaruxError(f"get-io-ports names no AY-3-8912 on a {self.machine()}")
+        block = block.split("AY-3-8912 chip", 1)[0]          # chip 0's block only, should another follow
+        regs = {int(a, 16): int(v, 16) for a, v in re.findall(r"^([0-9A-F]{2}):\s+([0-9A-F]{2})\s*$", block, re.M)}
+        sel = re.search(r"Selected register:\s*(\d+)", block)
+        if sorted(regs) != list(range(16)) or not sel:
+            raise ZesaruxError(f"get-io-ports' AY block is not sixteen registers and a selection: {block.strip()[:120]!r}")
+        return [regs[r] for r in range(16)], int(sel.group(1))
 
     def version(self):
         return self.cmd("get-version").strip()

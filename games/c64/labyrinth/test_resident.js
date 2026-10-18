@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
-const {CPU}=require(path.resolve(__dirname,'../../../kit/c64/cpu6502.js'));
+const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=require('./opening_image.js')(g);
 let seeds=0;
 for(let seed=0;seed<65536;seed++){

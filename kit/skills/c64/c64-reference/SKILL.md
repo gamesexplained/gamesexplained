@@ -80,7 +80,12 @@ port's lines, not the byte written: a bit that `$00` makes an input reads
 as 1 there. Read back, `$01` gives what was written on its output bits;
 an input bit reads 1 on bits 0-2 and 4, 0 on bit 5, and on bits 3, 6 and 7
 whatever was last driven on it, until bits 6 and 7 fade to 0 some 350,000
-cycles later (VICE x64sc, measured 26 September 2026). The Source tab names
+cycles later (VICE x64sc, measured 26 September 2026). Bits 3-5 are the
+cassette port, not banking: bit 3 the write line, bit 4 the sense line (an
+input, 0 while a key on the recorder is down) and bit 5 the motor, which
+runs while the bit is 0 (Commodore 64 Programmer's Reference Guide, the
+memory map at `$0001`). The values above all keep bit 5 at 1; `$05` and
+`$06` select the same banks as `$35` and `$36` with the motor on. The Source tab names
 the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 `sid_v1_control`, `cia1_port_a`) on the instructions that see the chips.
 
@@ -89,7 +94,7 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | Register | Meaning |
 |---|---|
 | `$D000`–`$D00F` | sprite 0–7 X, Y; `$D010` X high bits |
-| `$D011` | control 1: bit 4 screen on, bit 5 bitmap mode, bit 3 25/24 rows, bits 0–2 vertical scroll, bit 7 raster high bit |
+| `$D011` | control 1: bit 4 screen on, bit 5 bitmap mode, bit 3 25/24 rows, bits 0–2 vertical scroll, bit 7 raster high bit: read, bit 8 of the line being drawn; written, bit 8 of the raster compare. A read-modify-write that keeps bit 7 (`LDA $D011`, `ORA`, `STA $D011`) copies the beam's line into the compare: run on line 256 or later, it moves a raster interrupt set for line n to line 256 + n, which a PAL frame (lines 0–311) has only for n below 56 and an NTSC frame (0–262 on the 6567R8, 0–261 on the older 6567R56A) only for n below 7 or 6; past the frame the interrupt never comes again |
 | `$D012` | raster line |
 | `$D015` | sprite enable |
 | `$D016` | control 2: bit 4 multicolour, bit 3 40/38 columns, bits 0–2 horizontal scroll |
@@ -201,6 +206,33 @@ instruction. The record is `kit/c64/fixtures/vic-dma.json`, and
 | Sprite 0, Y-expanded | 210 | 1,285 |
 | All eight sprites | 399 | 1,474 |
 
+The sprite collisions were measured in VICE (x64sc, release v3.13.2) on
+17 October 2026 with `kit/c64/frame.py collide`, which `frame.py test`
+runs: 144 scenes, each register read to the cycle. The record is
+`kit/c64/fixtures/vic-collide.json`; `site/lib/collide.js` models it,
+and `kit/c64/machine.js` with `collide: true`.
+
+- A read of `$D01E` or `$D01F` in cycle r of a line sees what the beam
+  has drawn up to sprite X = 8(r − 14), on the line it is drawing; cycle
+  c draws X from 8(c − 15). The read clears the register, and the pixels
+  drawn after it set it again. A register written in cycle c counts from
+  the next cycle's pixels.
+- Two sprites' pixels on one place set both their bits in `$D01E`
+  anywhere they are drawn: in the border, past the right border (X 420)
+  and across the line's end (X 500). A sprite at X 504-511 is never
+  drawn and collides with nothing.
+- A sprite pixel is a set bit, or in a multicolour sprite a pair other
+  than `%00`. `$D01B`'s priority changes nothing.
+- `$D01F` counts the graphics' foreground: a set bit in text, bitmap and
+  extended colour modes (a glyph of the code's low six bits), a pair
+  `%10` or `%11` in multicolour text cells and multicolour bitmap. The
+  modes the chip draws black (extended colour with bitmap or
+  multicolour) still collide, the bitmap read with address bits 9 and
+  10 clear.
+- The 38-column side border hides graphics that still collide. Under
+  the 24-row border, and with the display off, there is no foreground.
+  The idle pattern (`$3FFF`, `$39FF` with extended colour) collides.
+
 ## SID essentials (`$D400`)
 
 Three voices, 7 registers each from `$D400`, `$D407`, `$D40E`: frequency
@@ -211,6 +243,11 @@ f = value × clock / 16777216 (PAL clock 985,248 Hz; NTSC 1,022,727 Hz).
 
 A game that never writes control or envelope registers is playing by
 frequency writes alone; frequency 0 is silence.
+
+`$D419` and `$D41A` are read-only: the positions of the two paddles,
+0 to 255. With nothing in the control ports both read `$FF` (VICE
+v3.13.2, measured 16 October 2026), and the emulator's server has no
+way to set them; `tool-vice-mcp`, "The paddles", says what does.
 
 ## CIA timers and the tick
 
@@ -246,7 +283,11 @@ CIA1 port A selects keyboard rows (and reads joystick port 2); port B
 `$DC01` reads keyboard columns **and joystick port 1**. A game polling a
 key on `$DC01` also sees the port-1 joystick. Bits, active low: 0 up, 1
 down, 2 left, 3 right, 4 fire. The KERNAL's own scan leaves the last key
-in `$C5`/`$CB` and the buffer at `$0277`.
+in `$C5`/`$CB` and the buffer at `$0277`. It leaves `$DC02` at `$FF`
+and `$DC00` at `$7F` (VICE, at the READY prompt, 17 October 2026), so
+a game that reads the keys or the stick without setting `$DC02` finds
+port A an output with row 7 selected, and `kit/c64/machine.js` starts
+there.
 
 The matrix. A row is the `$DC00` bit driven low, a column the `$DC01` bit
 that reads low; `vice_keyboard_matrix` takes the same `row` and `col`.
@@ -381,7 +422,7 @@ reads, the bank `cart` is the cartridge bank selected at that moment,
   `listing.py <part> --relabel`, after changing a row; `check_listing.py`
   fails until then.
 
-`kit/c64/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
+`kit/cpu/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
 having no cartridge map; check a port of such a game against a trace
 recorded in the emulator (`70-minisite`).
 
@@ -456,6 +497,35 @@ range back with `coverage.include` in `game.json` and describe it.
 `listing.py` names the range whenever it holds data and `game.json` has
 not said what it is.
 
+## Code and tables under the I/O area
+
+A game that banks the I/O chips out (`$01`) can run code and keep tables
+in the RAM beneath them, which the ledger's default excludes as I/O. Look
+for code in a register census of the traced code (instructions *located*
+in the I/O range) and for the bank switch around them; then give the
+range back with `coverage.include` in `game.json`. The disassembler will
+name those addresses after the chips' registers, so say in each comment
+which meaning is live.
+
+An address there has one label but two meanings, and each instruction
+sees one of them. `listing.py` names an operand there after the chip's
+register when the instruction lies outside the range, and after the
+game's symbol when it lies inside, since code there can only run with
+the chips banked out; a jump or a call always gets the code's symbol.
+That rule is wrong for code elsewhere that banks the chips out and reads
+or writes the RAM beneath, so go through every bank switch and list
+those instructions in `game.json` under `io`, one row per stretch,
+`["$B275", "$B2F0", "ram", "banked out from $B273 to $B2F1"]` (`registers`
+for code in the range that banks the chips back in; the last row that
+holds the instruction decides). `listing.py <game dir> --relabel` puts a
+change to `io` into `listing.json` without the snapshot. An instruction
+reached both ways keeps one name; say the other in its comment.
+
+A game can also keep graphics there without banking anything, for the
+video chip alone ("RAM the CPU cannot see", above); `listing.py` names
+that RAM whenever it holds data and `game.json` has not said what it is
+(`50-coverage`, "Data the ledger cannot see").
+
 ## Undocumented opcodes
 
 The 6510 runs the NMOS 6502's undocumented opcodes, and protection code
@@ -468,12 +538,12 @@ is unstable: A = X = (A OR a constant) AND the operand, and the constant
 differs between chips. VICE fixes it at `$EE`, so code that depends on it
 can behave differently on a real machine. `ANE` (`$8B`, A = (A OR a
 constant) AND X AND the operand) is unstable the same way, and VICE takes
-`$EF` for it. `kit/c64/cpu6502.js` runs all 256 opcodes as VICE's x64sc
+`$EF` for it. `kit/cpu/cpu6502.js` runs all 256 opcodes as VICE's x64sc
 does, these constants included. An absolute indexed address
 that passes `$FFFF` wraps round to zero page: `DCP $FF86,X` with X = `$FF`
 works on `$0085`. Before saying nothing reads an address, decode the gaps
 in the code with a decoder that knows these opcodes, and look for bases
-that an index can carry round. `kit/c64/opcodes.py` does both (`--refs`),
+that an index can carry round. `kit/cpu/opcodes.py` does both (`--refs`),
 with all 256 opcodes under the names VICE's monitor gives them; `--check`
 compares its table with the emulator's disassembler.
 
@@ -566,7 +636,7 @@ a block's layout garbled.
   `C64MEM` module header, and the RAM underneath them holds unrelated
   values. Screen memory is the second worst, because a running game has
   moved on since the save. Pick two bytes of the game's own code.
-  `readSnapshot` in `kit/c64/cpu6502.js` reads the modules by name: the
+  `readSnapshot` in `kit/cpu/cpu6502.js` reads the modules by name: the
   port (data at offset 205, direction at 206), the RAM, x64sc's
   registers and cycle count from its `MAINC64CPU` module, and the video
   chip's registers and interrupt latch from `VIC-IISC`.

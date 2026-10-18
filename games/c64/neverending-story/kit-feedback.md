@@ -1,28 +1,34 @@
 # The NeverEnding Story — kit feedback
 
-## Lessons and changes
+The Silver run of 17 October 2026, for Aaron Bell (air), on top of 64kramsystem's Bronze import.
+The Bronze run's own feedback is in this file's history in git.
 
-The imported CPU-view listing omitted the authored font beneath KERNAL and the parked loader beneath I/O. Fresh physical-memory snapshots and an entry capture found them. Cold-boot watches identified a retained hidden page as decompressor repair pointers plus a copied tail; watching play alone could not identify its owner. Native checks corrected pointer-field offsets and distinguished previous title-player calls from the installed loader’s instruction operands.
+## Skill text that changed what I did
 
-This branch adds a retained-phase producer check and positive bank-conditioned read/store controls to `60-verify`. The VICE workaround notes describe native memory conditions and reattaching disks after snapshots saved without embedded media. The shared imported-label and uncovered-project-block fixes are in kit PR #125.
+- `60-verify`: "Correcting only the comments a sample found wrong never brought a listing under the mark": with 4 of 60 wrong, every comment in every part was audited, range by range, before a second sample.
+- `50-coverage`: "Before calling 100 %, go through that list and say what each stretch": the stretches `listing.py` named after Parts 1-3 were labelled and described, two room texts and the leftover filler, where the 100 % figure had let them stand.
+- `10-orient`: "that is the same at the same address in every part is resident": the engine became a part of its own, with the three story parts listed over it, in place of the Bronze run's one Part 1 image.
+- `70-minisite`: "`g.sameBlock(name)` fails when any copy differs": the three pages carry their own copies of the shared ports, and every test checks the copies agree.
 
-## Scope and validation
+## What was changed in the kit
 
-One declared Part-1 command-prompt image, with its boot provenance. Tracked coverage is 49,311/49,311 bytes and the entry/play audit reports no untracked ranges. All 21 captured picture records passed the native blitter comparison; all browser pictures matched independent pixels. The full raster frame matched 104,448/104,448 emulator pixels. Parser outcomes, disabled SAVE/LOAD dispatch, and controlled TAKE/DROP state and overlays were checked live. Later parts and the boot trailer’s meaning remain explicitly open; no later chapter is inferred from a Part-1 slot. The imported models are unknown, so the required maintainer check remains before Silver.
+- `kit/skills/c64/c64-reference/SKILL.md`: bits 3-5 of `$01` are the cassette port, bit 5 the motor, which runs while the bit is 0, so `$05` and `$06` bank as `$35` and `$36` with the motor on. This game writes those values.
+- `kit/c64/disk.py`: `extract` writes a name holding $00, "/", "*" or another character a host refuses as $ and two hex digits (`file_name`), with a case in `kit/c64/test_disk.py`. It stopped with "embedded null byte" on Datasoft's disk of this game, whose directory names one file $00 and another "*".
+- `kit/lessons/2026-10-17-neverending-story.md`: a port tested over the listing cannot see a gap in the listing; and play the restart from a later part, since a loader may not load the part the game asks for.
 
-## Timings
+## Candidates
 
-| Step | Minutes | Model | Sessions | What dominated |
-|---|---:|---|---:|---|
-| 10-orient | 8 | gpt-6.1-sol | 1 | Booted disk into Part 1 command input; fresh code and word bytes match the import. Identified the missing high-RAM text font through the raster split and ROM comparison; rebuilt canonical symbols/listing. |
-| 50-coverage | 77 | gpt-6.1-sol | 3 | Single agent; dictionary and operand annotations, loader relocation and hidden-font tracing. Elapsed interval includes user-requested pause, discussion and work on another game; unsuitable as an active-work benchmark. |
-| 60-verify | 49 | gpt-6.1-sol | 3 | Bank-conditioned read/store watchpoints with positive controls; title snapshot disk reattachment; Part-1 entry capture and graphic-record pointer correction; Cold boot hidden-page producer and eight repair targets; parked loader and retained music tail; live parser outcomes; positive disabled SAVE/LOAD dispatch |
-| 70-minisite | 17 | gpt-6.1-sol | 3 | Restore verified 21-picture browser; native blitter and final pointer checks; independent Firefox pixels; explicit image extents and font-tail comments |
-| 80-retro | 5 | gpt-6.1-sol | 2 | Publication from the existing disassembly; one agent alternated between five contributions. No new full reverse-engineering run.; Retained boot data and bank-watch controls; snapshot disk attachment notes; complete metadata and verification limits |
-| total | 156 | gpt-6.1-sol | | 2.6 h of work, over 25.8 h |
-
-The first coverage interval includes a requested pause, discussion and another game’s work; its 77-minute sum is unsuitable as an active-work benchmark. A cold-boot producer watch with verified bank conditions would have saved the most time in this verification pass.
+- **Restart from a later part, live.** The lesson above holds for any game that loads in parts and can go back to its start. Only this game's folder shows it so far; the next multi-load run that meets a loader's order should move it into `10-orient`, "A game of several parts".
 
 ## Maintainer asks
 
-Existing discussions #113 (imports) and #124 (multiple states); no new rule or delivery change is requested. The PR requests the maintainer check required by `kit/CHECKING.md`.
+- #420: keep `listing.py`'s list of uncounted data in `listing.json`, where `coverage.py`, `check_listing.py` and the Source tab can show it.
+- #421: stop `listing.py` telling a part to widen its ranges for code the part beneath rewrote itself after its own snapshot.
+
+## What cost the most time
+
+The audit. Each address range went to one fresh checker at a time, about half an hour for every 400 comments, and the first range found one comment in eight wrong. A script that kept `listing.py`'s list of uncounted data in `listing.json`, where `check_listing.py` and the coverage table could show it, would have saved the most: the gaps it named were found late, by a page.
+
+## Tools
+
+VICE 3.13.2 (vice-mcp) under Xvfb in the cloud container, regenerator2000 0.9.20, and `kit/c64/cpu6502.js` for the decoders' checks and the page tests. Nothing new for the install notes.

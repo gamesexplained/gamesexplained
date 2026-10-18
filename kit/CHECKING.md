@@ -29,8 +29,10 @@ the analysis's own record of what it checked is not evidence here.
 
 ## Who checks
 
-A maintainer, or their agent running on a proven model. Never the model
-that made the run.
+A maintainer, or their agent, giving the work to checkers on a proven
+model: fresh agents that wrote none of the listing. The run's own model
+may check when it is proven, and the strongest model the maintainer has
+finds the most (`kit/skills/core/60-verify`).
 
 ## What to do
 

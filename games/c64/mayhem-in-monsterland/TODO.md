@@ -6,7 +6,7 @@ built and checked in a browser, copy `agent-draft`.
 
 ## For Gold
 
-A human pass over the How it works and Maps / levels pages, section by
+A human pass over the How it works, Discoveries and Maps / levels pages, section by
 section: cut what is dull, expand what is interesting, rewrite what reads
 as machine-made. Set `tier` to `silver-claimed` and `steward` when it
 starts (`kit/START.md`).

@@ -3,9 +3,9 @@
 // display of what the driver plays. No dependencies.
 // Exposes C64Sid (window.C64Sid on a page; globalThis.C64Sid in node, for tests).
 //
-// A game supplies its music driver, ported from the game's code: a function createDriver(data)
-// that refers to nothing outside itself (the player runs its source text in an AudioWorklet) and
-// returns an object with
+// A game supplies its music driver, ported from the game's code: a function createDriver(data,
+// C64Cpu) that refers to nothing outside itself (the player runs its source text in an
+// AudioWorklet) and returns an object with
 //   init(tune)  start a tune, as the game's own call does
 //   stop()      stop the music, as the game's own call does
 //   play()      one call of the driver, as the game's interrupt makes it: once a frame, or once
@@ -28,12 +28,19 @@
 // driver's own last write. The player leaves the frame's last write on the bus when the driver
 // keeps writes, and otherwise the last register to change, in register order. Test such a
 // driver's port against its original with the bus, never with a copy of each register:
-// kit/c64/machine.js reads the SID through createBus, and a test on kit/c64/cpu6502.js alone
+// kit/c64/machine.js reads the SID through createBus, and a test on kit/cpu/cpu6502.js alone
 // passes it as io (createBus's comment).
 // data is anything that survives structured cloning, usually the driver's tables as the game
 // loads them. Test the port against the game's own code run in a 6502 simulator, every register
-// after every frame, before it goes on a page: kit/c64/cpu6502.js hands the driver's writes to the
+// after every frame, before it goes on a page: kit/cpu/cpu6502.js hands the driver's writes to the
 // test in order, so writes too can be compared.
+// C64Cpu is that simulator, kit/cpu/cpu6502.js, which the site serves as ../../lib/cpu6502.js: a
+// page that loads it before the player starts has it passed to createDriver, in the worklet (the
+// player puts its source text there beside the driver's) and on the page alike, and undefined
+// otherwise. A driver that runs the game's own code, its bytes from the listing, runs it on
+// new C64Cpu.CPU(memory, { port: 0x35, io }), never on a 6502 of its own, and keeps the SID's
+// writes as io.write receives them; its test passes require('<repo>/kit/cpu/cpu6502.js') as the
+// second argument, so the page runs on the simulator the test held it to.
 //
 // The model: three voices with triangle, sawtooth, pulse and noise (the 23-bit noise register),
 // the test bit, sync and ring modulation; envelopes on reSID's rate table, with the exponential
@@ -54,7 +61,7 @@
 // waveforms (approximated by AND), samples played through the volume register (registers change
 // once a frame), the time between writes inside a frame (a frame's writes land at one instant, so
 // a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
-// cycles between). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
+// cycles between; the test bit set and cleared inside one frame still resets the oscillator). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
 // passes ntsc: true to mount or host (1,022,727 Hz, frames of 263 lines of 65 cycles).
 // The player calls the driver once a frame of that clock unless a page passes period, a number of
 // cycles (1 or more), to mount or host: then once a period, for a game that calls its driver from
@@ -67,6 +74,7 @@
 //   C64Sid.host(options)         the sound alone, for a page with its own controls
 //   C64Sid.engine()              the model, the bus and the frame player without a page, for
 //                                tests
+//   C64Sid.worklet(driver)       the source text host() runs in the AudioWorklet, for tests
 globalThis.C64Sid = (function () {
   'use strict';
 
@@ -139,7 +147,7 @@ globalThis.C64Sid = (function () {
     // createBus(chip) keeps the bus on the caller's clock t, in cycles:
     //   write(value, t)  read(register, t, own)  peek(t)  chip(model)  save()  load(state)
     // own is what $D41B or $D41C holds at t (read ignores it for the other registers). A test
-    // on kit/c64/cpu6502.js passes it as the SID's part of io:
+    // on kit/cpu/cpu6502.js passes it as the SID's part of io:
     //   const bus = C64Sid.engine().createBus('8580');
     //   io = { read: (a, cpu) => bus.read(a & 31, cpu.cycles, 0), write: (a, v, cpu) => bus.write(v, cpu.cycles) }
     const HOLD = { '6581': 0x1D00, '8580': 0xA2000 };
@@ -217,6 +225,9 @@ globalThis.C64Sid = (function () {
           case 2: o.pw = (o.pw & 0xF00) | val; break;
           case 3: o.pw = (o.pw & 0x0FF) | (val & 15) << 8; break;
           case 4:
+            // the test bit resets the oscillator at once, so a driver that sets it and clears it
+            // again within one frame (a frame's writes land at one instant) still restarts the wave
+            if (val & 8) { o.acc = 0; o.msbUp = false; }
             if ((val & 1) && !(o.ctrl & 1)) { o.state = ATTACK; o.period = RATE[o.ad >> 4]; o.hold = false; }
             else if (!(val & 1) && (o.ctrl & 1)) { o.state = RELEASE; o.period = RATE[o.sr & 15]; }
             o.ctrl = val; break;
@@ -417,7 +428,7 @@ class C64SidProcessor extends AudioWorkletProcessor {
   constructor(o) {
     super();
     const q = o.processorOptions;
-    this.p = E.createPlayer(createDriver(q.data), sampleRate, q.opts);
+    this.p = E.createPlayer(createDriver(q.data, C64Cpu), sampleRate, q.opts);
     this.post = q.frames ? (s) => this.port.postMessage(s) : null;
     this.port.onmessage = (e) => this.p.command(e.data);
   }
@@ -430,6 +441,15 @@ class C64SidProcessor extends AudioWorkletProcessor {
 }
 registerProcessor('c64-sid', C64SidProcessor);`;
 
+  // The worklet's module: the model, the 6502 when the page has loaded ../../lib/cpu6502.js, the
+  // page's driver and the processor, each from its source text.
+  function worklet(driver) {
+    const cpu = globalThis.C64Cpu;
+    return 'const E = (' + engine.toString() + ')();\n' +
+      'const C64Cpu = ' + (cpu && cpu.core ? '(' + cpu.core.toString() + ')()' : 'undefined') + ';\n' +
+      'const createDriver = (' + driver.toString() + ');\n' + WORKLET;
+  }
+
   // host({driver, data, gain, filter, ntsc, period, onFrame}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
   // {ctx, mode, send(command)}. onFrame(snapshot), if given, receives every driver frame when it
@@ -440,7 +460,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const ctx = new AC();
     ctx.resume();
     const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc, period: o.period }, post = o.onFrame || null;
-    const code = 'const E = (' + engine.toString() + ')();\nconst createDriver = (' + o.driver.toString() + ');\n' + WORKLET;
+    const code = worklet(o.driver);
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
     let node = null, local = null;
@@ -454,7 +474,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       } catch (e) { node = null; }
     }
     if (!node) {                                             // no worklet: the older ScriptProcessorNode
-      local = engine().createPlayer(o.driver(o.data), ctx.sampleRate, opts);
+      local = engine().createPlayer(o.driver(o.data, globalThis.C64Cpu), ctx.sampleRate, opts);
       node = ctx.createScriptProcessor(4096, 1, 1);
       node.onaudioprocess = (e) => {
         const out = e.outputBuffer.getChannelData(0);
@@ -604,7 +624,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           return false;
         };
         try {
-          const d = o.driver(o.data);
+          const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);
           for (; n < LONG; n++) { d.play(); f = f || routes(d); if (!d.playing()) break; }
         } catch (e) { n = LONG; f = true; }
@@ -771,5 +791,5 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     window.addEventListener('resize', draw);
   }
 
-  return { engine, host, mount, hex, bytes, noteName };
+  return { engine, host, mount, worklet, hex, bytes, noteName };
 })();

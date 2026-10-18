@@ -35,7 +35,7 @@ comes from, in this part's listing.
 
 ## The running order
 
-In frames of a whole-part run in `kit/c64/cpu6502.js` (no bad lines, so the
+In frames of a whole-part run in `kit/cpu/cpu6502.js` (no bad lines, so the
 real machine runs a little longer):
 
 | Frame | What |
@@ -75,7 +75,7 @@ real machine runs a little longer):
 - The driver reads its notes with `$01` = 0, all RAM (`$C773`), and
   restarts the tune when voice 1 reaches `$E1EC` (`$C786`). One pass is
   6,128 frames, about 122 s (the driver's port in `avtak-music.js`, checked
-  against this code in `kit/c64/cpu6502.js`).
+  against this code in `kit/cpu/cpu6502.js`).
 - `music_save` (`$C1B0`) and `music_restore` (`$C1C0`) park the driver's
   state at `$9F00` during the gunshot and the speech.
 - The driver's bytes `$C621`-`$C7FE` are the same, at the same addresses,

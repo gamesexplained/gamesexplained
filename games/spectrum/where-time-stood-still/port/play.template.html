@@ -1,0 +1,283 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
+.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.pl-pad button.on{background:var(--ink);color:#fff}
+@media (pointer:coarse){.pl-pad{display:grid}}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The whole game, playable in the browser: the title and the control selection, the plateau's sixteen areas, the party of four, the creatures, the menus and the music. Every routine is ported from the game's own Z80 code and was run beside it until the two agreed.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="320" height="256" role="img" aria-label="The ZX Spectrum 128 screen of Where Time Stood Still"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>2</kbd>, <kbd>0</kbd>, <kbd>Y</kbd> on the control selection: the arrow keys as a Kempston joystick</li>
+      <li><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> walk the leader; with fire held, run</li>
+      <li><kbd>Right Ctrl</kbd> or <kbd>Right Alt</kbd>: fire, which shoots the way the leader faces</li>
+      <li><kbd>Space</kbd> the menus: the arrows move the pointer and fire picks</li>
+      <li><kbd>1</kbd>, <kbd>3</kbd> or <kbd>4</kbd> on the control selection: keys of your own, Interface 2 or cursor, played on the Spectrum's keys</li>
+      <li><kbd>Shift</kbd> is CAPS SHIFT, <kbd>Left Ctrl</kbd> SYMBOL SHIFT and <kbd>Enter</kbd> ENTER</li>
+    </ul>
+    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
+      <button type="button" data-pad="10">↖</button><button type="button" data-pad="8">↑</button><button type="button" data-pad="9">↗</button>
+      <button type="button" data-pad="2">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="1">→</button>
+      <button type="button" data-pad="6">↙</button><button type="button" data-pad="4">↓</button><button type="button" data-pad="5">↘</button>
+    </div>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the Spectrum 128 would show it, at the 128's own pace: the game draws a new view six to eight times a second, into the screen it is not showing, and then shows it. The sound is the port's writes to the AY chip and the beeper, played by the site's model of them as each frame is shown.</p>
+  </div>
+</section>
+<section id="port">
+  <p class="fig">01 · The port</p>
+  <h2 class="t">Every routine of the game, checked against the original</h2>
+  <!-- port-results -->
+</section>
+<section id="differences">
+  <p class="fig">02 · Differences</p>
+  <h2 class="t">What differs from a Spectrum 128</h2>
+  <!-- differences -->
+</section>
+</main>
+<script src="../../lib/spectrum.js"></script>
+<script src="../../lib/ay.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<!-- port -->
+<script>
+/* the page: the port on a virtual 128 clock, drawn each frame, the keyboard and the joystick */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+// a 128's frame is 70,908 T-states of its 3.5469 MHz clock
+const FRAME = WTPage.FRAME, FRAME_MS = 1000 * FRAME / 3546900;
+// the picture: the paper, 256 by 192, inside a border of 32 pixels
+const W = 320, H = 256, BX = 32, BY = 32;
+let data = null, rt = null, running = false, paused = false;
+
+// --- drawing: the frame the clock finished last, the screen as the beam reached the paper
+const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
+function draw(F) {
+  F = F || (rt && rt.lastFrame());
+  if (!F) return;
+  const d = img.data, s = F.screen, b = RGB[F.border & 7];
+  for (let o = 0; o < d.length; o += 4) { d[o] = b[0]; d[o + 1] = b[1]; d[o + 2] = b[2]; d[o + 3] = 255; }
+  for (let y = 0; y < 192; y++) {
+    const row = ((y & 0xC0) << 5) | ((y & 7) << 8) | ((y & 0x38) << 2), at = 6144 + (y >> 3) * 32;
+    let o = ((y + BY) * W + BX) * 4;
+    for (let x = 0; x < 32; x++) {
+      const a = s[at + x], bright = (a >> 3) & 8;
+      let bits = s[row + x];
+      if ((a & 0x80) && F.flash) bits ^= 0xFF;
+      const ink = RGB[(a & 7) | bright], paper = RGB[((a >> 3) & 7) | bright];
+      for (let k = 7; k >= 0; k--, o += 4) { const c = (bits >> k) & 1 ? ink : paper; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: the AY's writes and the beeper's changes in each frame of 128 time, streamed to the
+// site's model of them (site/lib/ay.js) as each frame is shown (the clock can be ahead of it)
+const sound = (function () {
+  let host = null, on = false, pending = new Map(), sent = 0;
+  function attach() {
+    if (!rt) return;
+    pending.clear(); sent = rt.shown + 1;
+    rt.onAY((r, v, t) => {
+      if (!on) return;
+      const f = Math.max(sent, Math.floor(t / FRAME));
+      let w = pending.get(f); if (!w) pending.set(f, w = []);
+      w.push(Math.max(0, t - f * FRAME), r, v);
+    });
+  }
+  // the chip as it stands: every register, as a frame's writes at its start
+  const now = () => (rt ? Array.from(rt.ay.subarray(0, 14)).reduce((a, v, r) => (a.push(0, r, v), a), []) : []);
+  async function set(want) {
+    if (want && !on) { pending.clear(); sent = rt ? rt.shown + 1 : 0; }
+    on = want;
+    if (on && !host) {
+      try { host = await SpectrumAY.host({ gain: 0.5 }); }
+      catch (e) { on = false; say('No sound: ' + e.message); }
+    }
+    if (host) { if (on) { host.push([now()]); host.ctx.resume(); } else host.ctx.suspend(); }
+    return on;
+  }
+  function frame() {
+    if (!on || !host || !rt) return;
+    const frames = [];
+    for (; sent <= rt.shown; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
+    if (frames.length) host.push(frames);
+  }
+  return { attach, set, frame, get on() { return on; } };
+})();
+Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+
+// --- the loop: one frame of 128 time per frame of real time
+let acc = 0, last = 0;
+function boot() {
+  rt = WTPage.create({ data, cost: window.WT_COST });
+  sound.attach(); input();
+}
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  let n = 0, F = null;
+  try {
+    acc += Math.min(250, now - (last || now)); last = now;
+    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+    if (n === 10) acc = 0;
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
+  if (n) draw(F);
+}
+
+// --- input: the arrows and fire as a Kempston joystick, the other keys as the Spectrum's
+const JOY = { ArrowRight: 1, ArrowLeft: 2, ArrowDown: 4, ArrowUp: 8, ControlRight: 16, AltRight: 16, NumpadEnter: 16, Numpad0: 16 };
+const CODE = { Space: 'SPACE', Enter: 'ENTER', ShiftLeft: 'CAPS', ShiftRight: 'CAPS', ControlLeft: 'SYMBOL' };
+// A key is held for at least eight frames of the game's time: the game looks at the controls
+// once a pass, about six frames apart, and a shorter tap could fall between two looks
+const held = new Map(), since = new Map(), letGo = new Set();
+const HOLD = 8;
+let padBits = 0;
+function release() {
+  for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
+  input();
+}
+function input() {
+  if (!rt) return;
+  let bits = padBits;
+  const keys = new Set();
+  for (const k of held.values()) if (typeof k === 'number') bits |= k; else keys.add(k);
+  rt.input.joy = bits;
+  rt.input.keys = keys;
+}
+function zxKey(e) {
+  const c = e.code;
+  if (/^Key[A-Z]$/.test(c)) return c.slice(3);
+  if (/^Digit[0-9]$/.test(c)) return c.slice(-1);
+  return CODE[c] || null;
+}
+function onKey(e, down) {
+  if (!running || e.metaKey) return;
+  const k = JOY[e.code] !== undefined ? JOY[e.code] : zxKey(e);
+  if (k === null) return;
+  e.preventDefault();
+  if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.shown : 0); held.set(e.code, k); letGo.delete(e.code); }
+  else letGo.add(e.code);
+  release();
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+document.querySelectorAll('#pl-pad button').forEach(b => {
+  const bits = +b.dataset.pad;
+  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
+  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+
+// --- controls
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
+function start() {
+  over.hidden = true;
+  boot();
+  running = true; paused = false; last = 0; acc = 0;
+  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  screen.focus();
+}
+$('pl-bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
+  else if (act === 'restart' && data) start();
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && data) start(); });
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen (site/lib/crt.js)
+try {
+  data = JSON.parse(document.getElementById('wt-data').textContent);
+  overMsg.textContent = 'Where Time Stood Still from where its loader hands over: the title, then the control selection. Press 2, 0 and Y there to play with the arrow keys. Click, then use the keyboard.';
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(); };
+  over.appendChild(bt);
+  requestAnimationFrame(tick);
+} catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
+window.WTPlay = { get rt() { return rt; }, start };
+})();
+</script>

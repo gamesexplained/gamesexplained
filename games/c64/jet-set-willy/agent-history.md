@@ -34,3 +34,101 @@ headless/dummy-sound gameplay snapshot. Re-export preserved the previous
 auto symbols as well as the edited user annotations. Remaining loaded
 gaps and mechanics stay open; tier remains Bronze pending a fresh
 maintainer check.
+
+## 16-17 October 2026 — a fresh run on the BCS release
+
+The game's first contributor was not expected back, so Aaron asked for
+the game to be taken to Silver under kit 0.0.173, from his upload of
+the Berlin Cracking Service disk ("Jet Set Willy - BCS.d64"). The earlier
+listing was of another crack, whose boot, trainer and packer this release
+does not have: `LADER` loads `JET` and `SET WILLY` and hands over at the
+title, so orientation, the start-up comments and the coverage record were
+written again from this release, keeping the imported names and comments
+only where its own code bore them out.
+
+Annotation described all 172 sprites and 60 rooms from their bytes, traced
+the code card the crack bypasses and the room-select cheat it switches
+off, and named every untracked stretch the listing build reported. Five of
+those stretches are scraps of the programmers' source text, and four of
+them match the shipped code line for line.
+
+The run's own sample (seed 20261016) found 16 of 60 comments wrong; with
+them, all 87 routine headers written in one templated form were rewritten
+from the code. Aaron's maintainer sample (seed 1792191626), on a Codex
+checker, found 7 wrong, so the listing went to a full audit. Zero page was
+audited on Codex, which corrected 9; Codex's usage limit ran out there.
+The audit was briefly moved to Fable, read as a different model was what
+`kit/CHECKING.md` asked for; Aaron said a fresh agent on the run's own
+proven model is the baseline, so the rest went to fresh Opus agents, one
+range at a time, and `CHECKING.md` was reworded to say so.
+
+Live tests in VICE settled the Discoveries: one jump off the Watch Tower
+took all nine lives, because the restart point saved on entering We Must
+Perform a Quirkafleeg keeps the fall count; walking off the Security Guard's floor
+into the Entrance to Hades cost every life in ten entries; three rooms'
+arrows flew for 0, 83 and 51 frames of 600; standing on the bed did nothing;
+one conveyor's glyph changed and another's did not; no store reached $60;
+and the code card, run by hand from its entry, accepted the colours the
+game's own code gives for cell 252. A test of the Entrance to Hades first
+released the joystick too early and Willy stopped on the floor; holding it
+until room 6 reproduced the trap.
+
+`reference/` lost the earlier run's import audit, its review script and an
+unused picture, none of which a page loads. `kit-feedback.md` was
+rewritten for this run; the earlier run's version is in the history.
+
+After the pull request was opened Aaron asked for a Play tab. The port
+(`reference/jsw-port.js`) follows the game routine by routine and was
+held against the game's own code on the kit's C64 in lockstep, pass by
+pass, from the crackers' start-up. The kit's machine has no sprite
+collisions and the game finds its hits through them, so a model of the
+chip's collisions (`reference/jsw-collide.js`) was written for both
+sides. Two differences were the game's own races with its interrupt: the
+room build's sprite writes against the interrupt's rope copy, at pass
+250,471 of steered play, and every main-program load and store of
+`$D010` against the interrupt's update of Willy's bit, at pass 10,670 of
+a player who only wanders. The port now yields at both ends of each, and
+400,000 passes of steered play and 300,000 of wandering play run
+identical. The page's clock first ran 1.8 % slow, then 1.4 %: the
+measured costs counted the sound sweeps' waits twice, the routines the
+player update leaves by a jump had no cost, and the interrupt's cost was
+averaged per band of lines rather than per branch it takes. Measured
+again, the page keeps the game's pace within 0.04 % over 60,000 frames.
+
+The audit of the listing ended with 77 of its 781 comments corrected,
+most of them wrong in one detail of a count, a range or a caller list.
+The audit of `facts.md` marked 23 of its 93 claims wrong in a detail;
+22 held when read against the code and were corrected, among them the
+end of the player code, a fourth unused copy routine and the
+interrupt's own switch of the processor port, and one did not: the
+census script it said was missing is in `kit/c64`. The second sample,
+seed 1122228220, found 1 comment of 60 wrong, and `tier` became
+`silver`.
+
+## 17 October 2026: the title's ticker
+
+Aaron saw the ticker on the Play tab's title jump. Drawn in node as the
+page draws it, the text moved left 9 pixels and back 7 once in eight
+frames. The page already drew memory as the beam meets it
+(`C64.videoMemory`, from Storm and Ghostbusters), so the cause was the
+clock's: it runs the interrupt's handler at once and spends its cycles
+after, and every change the handler made was logged at line `$EA`,
+where it began. The game copies the row a character on after the video
+chip has fetched it on line `$EB`, so the C64 shows the moved row a
+frame later, under the next fine scroll. The changes are now logged
+where the handler's cycles end, counted down with the bad lines and
+sprite fetches that hold it. Over 889 drawings the ticker moved 0 or 1
+pixel left each time (`test_screen.js`); `test_play.js` still finds
+40,000 passes identical and `test_pace.js` gives the same pace as
+before.
+
+## 17 October 2026: the kit's sprite collisions
+
+`reference/jsw-collide.js` became the kit's `site/lib/collide.js`, with
+the multicolour and bitmap modes it lacked, and was held against VICE in
+144 scenes read to the cycle (#406). The test machine's own reads had
+gone to the model four cycles late, from the end of the instruction plus
+three; `machine.js` with `collide: true` reads in the access's cycle.
+`test_play.js` still finds 40,000 passes identical, and over 60,000
+frames `test_pace.js` gives the page 0.13 % faster than the game, where
+it gave 0.04 % before.

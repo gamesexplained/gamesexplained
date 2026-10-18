@@ -11,7 +11,7 @@
 //   node games/c64/commando/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
 const { createDriver } = g.run(page, 'commando-music', 'createDriver');
 const dm = g.read(page).match(/CM_MUSIC\s*=\s*\{\s*base:\s*0x([0-9A-Fa-f]+),\s*hex:\s*'([0-9a-f]*)'\s*\}/);

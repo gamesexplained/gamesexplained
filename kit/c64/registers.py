@@ -6,7 +6,7 @@ banked in, and RAM while it is out (kit/skills/c64/c64-reference, the
 memory map and "$01"). listing.py names an operand after the register
 when the instruction sees the chips, and after the game's own symbol when
 it sees the RAM; which one it sees is the rule in
-kit/skills/core/50-coverage, "A game can live under its I/O".
+kit/skills/c64/c64-reference, "Code and tables under the I/O area".
 
 Only each register's own address has a name. The chips repeat through
 their pages (the video chip every 64 bytes to $D3FF, the sound chip every
@@ -56,6 +56,14 @@ for _base, _cia in ((0xDC00, "cia1"), (0xDD00, "cia2")):
         NAMES[_base + _i] = f"{_cia}_{_r}"
 
 del _n, _v, _i, _r, _base, _cia
+
+# For the register census (kit/cpu/census.py, whose header explains each).
+CENSUS_CHIPS = [(0xD000, 0xD3FF, 0x3F, 0xD02E),    # the video chip, every 64 bytes
+                (0xD400, 0xD7FF, 0x1F, 0xD41C),    # the sound chip, every 32
+                (0xDC00, 0xDCFF, 0x0F, 0xDC0F),    # CIA 1, every 16
+                (0xDD00, 0xDDFF, 0x0F, 0xDD0F)]    # CIA 2
+CENSUS_PAGES = [(0xDE00, 0xDEFF, "io1"), (0xDF00, 0xDFFF, "io2")]   # the expansion port's
+CENSUS_OTHER = {0x00: "cpu_port_ddr", 0x01: "cpu_port"}
 
 
 if __name__ == "__main__":

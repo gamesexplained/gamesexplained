@@ -124,3 +124,8 @@ Reorganized the article into conditional text-adventure, entrance-gate and furth
 ## 18 October 2026 — reading UI review
 
 The area chooser disappeared above anchored content, leaving readers without a visible route to another area. Replaced it with a persistent compact area/topic bar; the topic jump menu preserves section hashes. Grouped the gate screenshots, folded source/check paragraphs and the corridor evidence behind disclosures, and started the gallery at the naturally reached first corridor. Existing mechanics and claims remain available. Reviewed area switching, topic jumps, browser Back and the narrow layout in the browser. Removed scroll-driven topic selection after it changed the menu during interaction; the control explicitly says “Jump to topic”.
+
+
+## 19 October 2026 — main kit update
+
+Merged canonical main at `a0e3e561` (kit 0.0.200). Updated the Labyrinth test/helper imports for the shared 6502 CPU move from `kit/c64` to `kit/cpu`. The existing analysis provenance in game.json retains the kit version used for that analysis.

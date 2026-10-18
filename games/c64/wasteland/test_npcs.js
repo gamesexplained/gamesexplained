@@ -15,7 +15,7 @@
 const fs = require('fs'), path = require('path');
 const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname);
 g.lib('c64');
 // The map window's block is on the Overview (index.html), the NPCs' on the party tab, and the

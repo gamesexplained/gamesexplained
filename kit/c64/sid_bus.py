@@ -31,7 +31,8 @@ import json, os, re, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from asm import assemble  # noqa: E402
+sys.path.append(os.path.join(os.path.dirname(HERE), "cpu"))   # the 6502's assembler, shared
+from asm6502 import assemble  # noqa: E402
 from vice import connect, call, ask, poke, read_mem, pause, reset  # noqa: E402
 
 FIXTURE = os.path.join(HERE, "fixtures", "sid-bus.json")

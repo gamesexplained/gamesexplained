@@ -3,7 +3,8 @@
 Read this when you build a Play tab (`70-minisite`, "Play"). The port is
 checked against the game itself, not against a reading of it, in one of
 two ways: by the game's own demonstration, or by running the game's code
-beside the port.
+beside the port. The game's code runs only there, in the tests: the page
+runs the port (`SKILL.md`, "Play").
 
 ## A demonstration is the test
 
@@ -15,33 +16,29 @@ where the game reads the controls, and compare every pass. Menus,
 movement, fights and spells all come in one run, and a port that
 matches it byte for byte is the game's logic, not a likeness of it. For
 what the demonstration never does, write short input scripts in the same
-format and run them through both the port and the game's code in a 6502
-simulator. The port must count polls, not time: the game's delay loops do
+format and run them through both the port and the game's code in the
+kit's simulator for the machine's processor
+(`kit/skills/<platform>/steps`, "simulator"). The port must count polls, not time: the game's delay loops do
 not read the controls, so a port paced by the clock drifts off the
 recording within a menu or two.
 
 ## A whole game, checked against its own code
 
 With no demonstration to replay, run the game's own code beside the port
-and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
-machine for it: the simulator with a raster interrupt, the keyboard, the
-joystick and colour RAM around it, started from the listing's memory
-or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
-interrupt set as the game left it, counting passes where the main loop
-begins. On the 48K Spectrum,
-`kit/spectrum/machine.js` is: the Z80 with the frame's interrupt, the
-keyboard read through port `$FE` and contended memory around it, started
-from a `.sna` or the listing's memory, counting passes the same way.
-`kit/c64/lockstep.js` runs a port beside the C64's, and
-`kit/spectrum/lockstep.js` beside the Spectrum's, and each says what the
-port gives it: the checkpoints it yields, its raster waits (on the
-Spectrum, its HALTs), its polling loops and its interrupt handlers.
-Write the port to that from the start. A C64 game that keeps the KERNAL
-and reads whole lines through `CHRIN` needs neither:
-`kit/c64/kernal_lines.js` runs it a typed line at a time on the
-simulator, with the KERNAL's line routines as hooks, and the test
-compares the two sides at each line the game reads, with the same jiffy
-clock handed to both. Each file's header is its manual.
+and compare them pass by pass. The machine for it is the kit's simulator
+with the machine's interrupt, its keyboard and its other inputs around
+it, started from the listing's memory or a snapshot of play, counting
+passes where the main loop begins (`kit/skills/<platform>/steps`,
+"machine"). The platform's lockstep runs a port beside it and says what
+the port gives it: the checkpoints it yields, its waits for the display
+(a raster line on the C64, a `HALT` on the Spectrum), its polling loops
+and its interrupt handlers (`kit/skills/<platform>/steps`, "lockstep").
+Write the port to that from the start. A game that reads whole typed
+lines through the machine's ROM, or loads from disk as it plays, may
+need a different harness, and the same row says which. Each file's
+header is its manual. A platform with no machine yet has no lockstep:
+build one in `kit/<platform>/` first, or check the port by its
+demonstration.
 
 - **Port routine by routine, on the game's own memory.** One function per
   listing label, reading and writing the game's variables where the game
@@ -53,7 +50,11 @@ clock handed to both. Each file's header is its manual.
   simulator (`cpu.call`) on thousands of random states made from real
   moments of play. Start calls with the stack pointer at `$FF`: a deep
   call chain started lower can run down into tables the game keeps in the
-  stack page, and the failures look like the game's.
+  stack page, and the failures look like the game's. A routine that waits
+  for a frame is tested the same way with `checkGen` on the C64
+  (`kit/c64/lockstep.js`): the port's generator and the game's routine
+  run side by side, each to its next poll, the frame counter moves on in
+  both, and their memories are compared at every poll.
 - **Then the whole loop in lockstep.** Make the port's main loop yield at
   checkpoints, the address of each call in its body. The lockstep runs the
   game to the same address and runs the interrupts it took on the way in
@@ -62,7 +63,10 @@ clock handed to both. Each file's header is its manual.
   passes, `onFrame` for a key the game waits for in the middle of one. A
   checkpoint the game reaches that the port did not yield stops the run
   with both named. While a group is unfinished, the game's own code stands
-  in for its routines (`standIn`). A polling loop in the port yields at
+  in for its routines (`standIn`). On the C64 a routine that waits stands
+  in as a generator (`standInGen`), which yields at each turn of the
+  game's polling loop, so the whole program runs in lockstep with one
+  group ported. A polling loop in the port yields at
   each turn and the game moves on a raster line, so the port sees the
   line and the flags the game's loop does. A wait for a line yields the
   line, and the game runs to the loop's exit; a HALT yields that it
@@ -129,14 +133,66 @@ clock handed to both. Each file's header is its manual.
   take their own time, not the wait's. Let the page move a target one
   frame per real frame and run the port until the clock reaches it. Never
   "run to the next frame boundary": one long stretch then carries the clock
-  frames ahead of real time and the game runs fast.
+  frames ahead of real time and the game runs fast. A turn of a polling
+  loop moves the clock to the start of the next line, not a line on from
+  wherever it stands: with a read of the raster that takes cycles of its
+  own, a whole line a turn steps over a line every few turns, and a loop
+  waiting for that line misses its frame.
 - **The page's own chips.** The page runs the port on chips of its own,
   not on `machine.js`, so it needs the chip behaviour the game leans on:
   the raster latch (the platform reference), the timers a speech or
   sample player counts on, sprite collisions if the game reads them.
+  On the C64 the collisions are `site/lib/collide.js`, the model
+  `machine.js` runs with `collide: true`, held against VICE: give it
+  the page's clock at each read and write of the chip, and never write
+  a model of your own.
   Run the page's runtime in node from the cold start before opening a
   browser: a game that stalls there (waiting for an interrupt the page
   never raises) stalls in the browser with nothing to say why.
+- **Memory as the beam meets it.** The page draws the last whole frame
+  while the port runs the next, so a frame needs memory of its own:
+  `C64.videoMemory` (`site/lib/c64.js`) keeps memory and colour RAM as
+  each frame began and puts each later change in the frame's writes
+  where the game made it, for `renderFrame` to apply as the beam gets
+  there. Call its `at` each time the clock moves and its `begin` as each
+  frame starts, and give it the `keep` the page draws with. Drawn over
+  memory as it stood at either end of the frame, a game that moves text
+  a character in memory and a pixel in the fine scroll, or fills a row
+  just before the beam reaches it, shows the text a character out for a
+  frame (in two games, two scrolling lines and a car steered across a
+  road).
+
+## Native resolution and smooth motion
+
+A 3D game's Play tab can offer two switches: the 3D view drawn at the
+screen's own resolution, and moved at the screen's frame rate from one
+of the game's pictures to the next (`port/page/modern.js`). They are
+views of the port, never changes to it.
+
+- **Read, never write.** Watch the port's routines and read the game's
+  memory. Hold that with two machines side by side, one with the view
+  attached and asked for a smooth view several times a frame: every
+  byte the same at every frame.
+- **Read the scene where the game builds it.** By the time the game
+  draws, what it drew from can be painted over (a game can keep its
+  objects' bounds in the view's own buffer) or old (a redraw with no
+  rebuild before it draws the last rebuild's objects).
+- **Take the game's choices.** Draw the objects the game queued for the
+  picture, sorted by its own sort on its own bounds, and leave a face
+  out by the game's own test on its corners as the game rounds them. A
+  sort that is not a strict order moves the others when the page keeps
+  one object more: in one game a sliver a pixel across reordered one
+  view in sixty until the page read the game's queue.
+- **Pace the glide by when the next picture is known and when it is
+  shown.** The page's machine runs a pass when its clock reaches it, so
+  the next picture is known only from then. Glide from that moment to
+  the first frame that shows it; paced by the blits alone, the view
+  stalls or jumps at every picture.
+- **Test it against the game's drawing.** At each picture the game
+  draws, the same objects in the same order, the same faces, corners
+  within the rounding and, in the C64's pixels, the game's own buffer
+  but for a pixel at the edges; the smooth view never moving back and
+  arriving as the C64 shows each picture.
 
 ## What the port finds in the listing
 

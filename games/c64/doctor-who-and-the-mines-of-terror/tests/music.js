@@ -6,7 +6,7 @@
 // the Doctor stands.
 //   node tests/music.js [frames]      (default 30000 frames a tune, ten minutes of music)
 const path = require('path');
-const { CPU } = require(path.join(__dirname, '../../../../kit/c64/cpu6502'));
+const { CPU } = require(path.join(__dirname, '../../../../kit/cpu/cpu6502'));
 const DWMUSIC = require(path.join(__dirname, '../reference/dw-music.js'));
 const L = require(path.join(__dirname, '../listing.json')).records;
 const N = +process.argv[2] || 30000;

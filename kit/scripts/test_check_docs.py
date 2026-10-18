@@ -5,7 +5,8 @@ section of facts.md that reports what a sample of the listing found and what was
 own class that site.css also styles is caught before the built site collapses it (#143), an id
 on two elements of a page is caught before a button's handler lands on the other one, a
 platform's install notes keep one section per system and one row per build and kind of computer,
-and a skill names no game in the lines a branch adds, whatever it said before the game arrived."""
+a skill names no game in the lines a branch adds, whatever it said before the game arrived, and
+kit-feedback.md's placeholder fails only once the retrospective is reached or on a pull request."""
 import contextlib
 import io
 import os
@@ -180,6 +181,40 @@ class PlatformNotes(unittest.TestCase):
         self.assertEqual(notes('## Linux\n\n## Linux — Ubuntu 26.04 desktop, 6 October 2026\n'), 1)
 
 
+def steps(files):
+    """How many problems check_docs.py finds in a kit/skills/ holding these files."""
+    with tempfile.TemporaryDirectory() as d:
+        for rel, text in files.items():
+            f = Path(d) / rel
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text(text, encoding='utf-8')
+        with contextlib.redirect_stdout(io.StringIO()):
+            return check_docs.steps_tables(d)
+
+
+ROWS = '| Row | Core step | On the machine |\n|---|---|---|\n' + \
+    ''.join(f'| `{r}` | a step | a tool |\n' for r in check_docs.STEP_ROWS)
+CORE = 'kit/skills/core/50-coverage/SKILL.md'
+
+
+class StepsTables(unittest.TestCase):
+    def test_every_row(self):
+        self.assertEqual(steps({'kit/skills/zx81/steps/SKILL.md': ROWS,
+                                'kit/skills/cpu/z80/SKILL.md': '# no table\n',
+                                CORE: 'the census (`kit/skills/<platform>/steps`,\n"census")\n'}), 0)
+        self.assertEqual(steps({'kit/skills/zx81/steps/SKILL.md': ROWS.replace('| `sound` |', '| sound |')}), 1)
+        self.assertEqual(steps({'kit/skills/zx81/zx81-reference/SKILL.md': '# ZX81\n'}), 1)
+
+    def test_core_names_a_row(self):
+        self.assertEqual(steps({'kit/skills/zx81/steps/SKILL.md': ROWS,
+                                CORE: 'the tune (`kit/skills/<platform>/steps`, "music")\n'}), 1)
+
+    def test_the_kit_itself(self):
+        self.assertEqual(steps({}), 0)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check_docs.steps_tables(), 0)
+
+
 SPECTRUM = "kit/skills/spectrum/zx-spectrum-reference/SKILL.md"
 NOTE = "Some games sync to the raster this way (the FAQ names Arkanoid).\n"
 
@@ -232,6 +267,23 @@ class SkillGameNames(unittest.TestCase):
     def test_no_base_to_compare_fails_nothing(self):
         self.write(SPECTRUM, "# Spectrum\nArkanoid.\n")
         self.assertEqual(self.found(base="no-such-ref"), 0)
+
+
+
+class BeforeRetro(unittest.TestCase):
+    """kit-feedback.md's placeholder passes until the retrospective sets the tier, never on CI (#343)."""
+    def tier(self, tier, ci):
+        with tempfile.TemporaryDirectory() as d:
+            if tier is not None:
+                Path(d, 'game.json').write_text('{"tier": "%s"}' % tier, encoding='utf-8')
+            return check_docs.before_retro(d, ci=ci)
+
+    def test_a_run_before_its_retrospective(self):
+        self.assertTrue(self.tier('none', ci=False))
+
+    def test_a_tier_set_or_a_pull_request(self):
+        for tier, ci in (('bronze', False), ('silver', False), ('none', True), (None, False)):
+            self.assertFalse(self.tier(tier, ci), (tier, ci))
 
 
 if __name__ == '__main__':

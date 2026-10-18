@@ -18,6 +18,9 @@ game.json's `accuracy` lists the steps in the order they happened, one row each:
   {"step": "play", "fixed": 16, "models": [...]}
       a port of the whole game for the Play tab, checked against the game's own code; "fixed"
       is how many comments the port showed wrong and the run corrected, left out when not recorded
+  {"step": "port", "fixed": 15, "models": [...], "note": "the stage maps"}
+      a page's port of some of the game's code, or a widget built from its data, checked against
+      the game's code or the game running; "fixed" as for play, and the note names what was checked
   {"step": "check", "by": "air", "checked": 39, "wrong": 0, "models": [...]}
       a maintainer's check as it was made before 12 October 2026, kept for the games that had
       one: claims from facts.md, names from symbols.json and the orientation, tested against
@@ -59,6 +62,7 @@ KEYS = {"research": {"step", "web", "models", "note"},
         "sample": {"step", "size", "wrong", "fixed", "models", "seed", "by", "note"},
         "audit": {"step", "checked", "of", "fixed", "models", "by", "note"},
         "play": {"step", "fixed", "models", "note"},
+        "port": {"step", "fixed", "models", "note"},
         "check": {"step", "by", "checked", "wrong", "models", "note"}}
 
 
@@ -107,8 +111,8 @@ def _bad(row):
         return '(check) needs "checked", the claims tested, and "wrong", how many of them were wrong'
     if "by" in row and not (isinstance(row["by"], str) and row["by"].strip()):
         return f'({step}) has an empty "by"'
-    if step == "play" and "fixed" in row and not _count(row["fixed"]):
-        return '(play) has a "fixed" that is not a count of comments'
+    if step in ("play", "port") and "fixed" in row and not _count(row["fixed"]):
+        return f'({step}) has a "fixed" that is not a count of comments'
     if step == "audit":
         for k in ("checked", "of", "fixed"):
             if k in row and not _count(row[k], 0 if k == "fixed" else 1):
@@ -246,7 +250,7 @@ def ribbon(row, before, total):
 
     An annotation leaves every comment written and not yet measured. A sample measures the whole
     listing: red for the share likely wrong, pale red for its range, green for the rest. An audit
-    or a Play tab port reaches part of it: what it corrected is blue, what it checked and found
+    or a port (the Play tab's, or a page's) reaches part of it: what it corrected is blue, what it checked and found
     right green, and the comments it did not reach stay as the bar before showed them, which is
     as the last sample measured them, since nothing has changed them."""
     pc = lambda x: f"{100 * x:.0f} %"
@@ -257,7 +261,7 @@ def ribbon(row, before, total):
         lo, hi = wilson(row["wrong"], row["size"])
         return (_bar(("wrong", lo), ("maybe", hi - lo), ("right", 1 - hi)),
                 f"{100 * lo:.0f} to {pc(hi)} of the listing likely wrong, at least {pc(1 - hi)} likely right")
-    if step not in ("audit", "play"):
+    if step not in ("audit", "play", "port"):
         return [], ""
     base = before or [("done", 1.0)]
     kinds = {k for k, _ in base}
@@ -271,7 +275,7 @@ def ribbon(row, before, total):
     right = (checked - (fixed or 0)) if checked is not None else 0
     bar = _bar(("fixed", (fixed or 0) / of), ("right", right / of), *((k, v * (1 - reached / of)) for k, v in base))
     rest = f"; the other {of - reached:,} {was}" if reached < of else ""
-    if step == "play":
+    if step in ("play", "port"):
         said = (f"Corrected {fixed:,} of the listing’s {of:,} comments{rest}" if fixed is not None else
                 f"How many it corrected is not recorded; the comments {was}")
     elif checked is not None:
@@ -302,7 +306,8 @@ def table(game, gdir):
         by = ", ".join("not recorded" if m == "unknown" else m for m in r["models"])
         if "by" in r:
             by = r["by"] if set(r["models"]) == {"unknown"} else f"{r['by']}, with {by}"
-        kind = {"annotate": "annotate-run", "play": "play-port", "audit": "audit-full"}.get(step, step)
+        kind = {"annotate": "annotate-run", "play": "play-port", "port": "port-check",
+                "audit": "audit-full"}.get(step, step)
         if step == "research":
             kind += {True: "-yes", False: "-no", "unknown": "-unknown"}[r["web"]]
             label, what = "Research", {True: "Looked the game up online (its manual, reviews or wiki pages) before reading its code.",
@@ -331,6 +336,12 @@ def table(game, gdir):
             what = ("Ported the whole game to JavaScript for the Play tab and corrected "
                     f"{r['fixed']:,} comment{'' if r['fixed'] == 1 else 's'} it showed wrong." if "fixed" in r else
                     "Ported the whole game to JavaScript for the Play tab; how many comments it corrected "
+                    "was not recorded.")
+        elif step == "port":
+            label = "Port check"
+            what = ("Checked a page’s port or widget against the game and corrected "
+                    f"{r['fixed']:,} comment{'' if r['fixed'] == 1 else 's'} it showed wrong." if "fixed" in r else
+                    "Checked a page’s port or widget against the game; how many comments it corrected "
                     "was not recorded.")
         else:
             label = f"Audit {seen[step]}"
