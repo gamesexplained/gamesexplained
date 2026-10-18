@@ -131,3 +131,14 @@ The area chooser disappeared above anchored content, leaving readers without a v
 Merged canonical main at `a0e3e561` (kit 0.0.200). Updated the Labyrinth test/helper imports for the shared 6502 CPU move from `kit/c64` to `kit/cpu`. The existing analysis provenance in game.json retains the kit version used for that analysis.
 
 Kit-update validation: all 206 discovered tests completed, with 199 passing and seven Spectrum/SkoolKit checks skipped because that optional tool is absent. The first suite run identified the moved opcode import and a macOS `/var` versus `/private/var` temporary-path alias; the import was fixed and the full suite passed using `TMPDIR=/private/tmp`. The binary, documentation and listing checks pass, and all 56 games build.
+
+
+## 19 October 2026 — review against kit 0.0.200
+
+Re-read verification, C64 step and minisite requirements. Both ignored snapshot hashes match their listings, and rebuilding through the updated listing script preserves the byte records. The updated audit exposes a two-byte gap after M1 at $07FE-$07FF; its ownership stays open. The 54.6% combined ledger still has provisional shared-resident scope, with 20 graphical parts unanalysed. All 15 Labyrinth tests pass.
+
+Drew 60 of 1,303 line comments with fixed seed 20261019 (59 opening, one gate) for a cold independent checker on gpt-6.1-sol. It marked 58 right and two wrong-detail: the $2984 three-depth sort claim and the $BCCF unconditional ten-byte name copy. Reproduced both against original instructions, corrected both through regenerator2000, and exported symbols/listing. Checked related descriptions; the other menu wrappers already state the bounded copy. Kept raw verdicts and probes ignored in work/reports. A full audit remains recommended, and the ordering counterexample has no established ordinary-player consequence.
+
+Added the port accuracy row for the two popcorn descriptions corrected by the earlier checked widget, and the sample row for this independent check. Updated kit_version to 0.0.200 for this review; the initial analysis used 0.0.158. Moved the existing screenshot collection to Maps / levels, keeping old gallery hashes and the area chooser working. Its scope explicitly leaves decoded maps, connections and puzzles open; no discoveries or full-map completion are claimed. Browser checks exercised the gate buttons, name/word and counter widgets, old gallery routing, and all 21 scene images without console errors. An old preview tab failed to connect; a fresh in-app-browser tab reached the same running server.
+
+Restarting the disassembler regenerated three automatic colour-RAM aliases inside the dictionary’s split pointer table. The dictionary test and listing round-trip check caught the resulting truncated table; removed those aliases through the disassembler using the existing tool guidance, then rebuilt and reran the checks.

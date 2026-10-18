@@ -1,6 +1,6 @@
 # Entrance gate — established facts
 
-This is a partial analysis of the naturally reached gate image. Its listing describes 2,116 of 43,949 tracked bytes (4.8%). There is no independent listing-comment sample. Shared resident/overlay ownership remains unresolved; the opening and gate are provisional independent image scopes, not a proved partition of shared code.
+This is a partial analysis of the naturally reached gate image. Its listing describes 2,116 of 43,949 tracked bytes (4.8%). One gate comment was included in the independent 60-comment sample of 19 October 2026 and was marked right; this does not measure gate accuracy separately. The two wrong details in that combined sample belong to the opening; the game’s Error rate section records their disposition. A full audit remains recommended. Shared resident/overlay ownership remains unresolved; the opening and gate are provisional independent image scopes, not a proved partition of shared code.
 
 ## Approach geometry
 
@@ -37,3 +37,6 @@ The part's ignored `work/play.vsf` is the natural `gate-steady.vsf` capture. Ear
 Joystick sampler `$19AE` reads CIA1 `$DC01`, inverts its low five active-low hardware bits and stores the active-high sample in `$030C`. `$1993` tests bit four: release clears `$030B`; a press with a zero latch sets it to `$FF` and calls `$18DB`; a held press retains a nonzero latch without another call. This supplies the negative latch tested by the early-phase interruption branch at `$8CD8`. The C64 platform reference identifies bit four of this port as joystick-port-one fire.
 
 An ordinary-input VICE trial from the natural gate snapshot applied release, press, hold, release and press for ten frames each. `$030C/$030B` were respectively 0/0,16/255,16/255,0/0,16/255. A non-stopping checkpoint at `$1993` recorded five hits, providing a positive control. The original emulator snapshot and running state were restored. This verifies the live input producer; skipping a phase below seven is checked by isolated original-code tests, not by a live replay of the full speech. `test_gate.js` adds all 32 sample values against all 256 latch bytes (8,192 cases), including the once-per-press call.
+
+
+The kit 0.0.200 listing rebuild reports a two-byte gap at `$07FE-$07FF` after M1 ends at `$07FD`. Its ownership remains open; this warning does not establish another authored M1 record. The original snapshot hash matches the listing metadata.

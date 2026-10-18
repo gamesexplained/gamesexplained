@@ -43,7 +43,7 @@ Generated state is excluded only with a producer or allocation boundary: process
 
 ## Error rate
 
-The listing comments describe inspected code, rendered data, and dictionary records decoded by a script from their RAM pointers. No independent sample or audit was performed. The error rate is unmeasured; a Silver continuation must run the kit’s verification workflow.
+The listing comments describe inspected code, rendered data, and dictionary records decoded by a script from their RAM pointers. The independent sample of 19 October 2026 drew 60 of 1,303 line comments across the opening and gate with seed 20261019; 59 drawn comments belong to the opening. Two opening comments had wrong details and were corrected: `$2984` does not consistently sort three depths, and `$BCCF` copies at most ten nonzero name bytes. The original-code counterexample for `$2984` uses depths [100,20,50] and returns slots [2,0,1,3], hence depths [50,100,20]. `$BCCF` was checked with name lengths 0,1,4,9,10 and 28; it leaves the destination tail unchanged. The sample result is two wrong of 60 before those corrections, within the kit’s mark. No full audit was performed; one remains recommended. The ordinary reachability and visual effect of the ordering counterexample remain open.
 
 ## Hardware register census
 
@@ -239,7 +239,7 @@ The normal-input route was initial sidewalk → GO NORTH → GO WEST → GO THEA
 
 For a popcorn offer at location nine with nonnegative conversation state, `$9485` tests `$0575` for exact equality with one. One removes the whole box and selects `$80A7`; zero or `$FF` retains the box and selects `$80F6`. Nine original-code cases check these three values with three nonnegative conversation states. This establishes the isolated later offer, not its complete movie-transition timing or effects in graphical loads. The existing negative conversation branch rejects the offer rather than taking either amount.
 
-The phase and quarter-count comments name their verified readers, including `$95BB` and `$95E3`. No independent listing sample is claimed.
+The phase and quarter-count comments name their verified readers, including `$95BB` and `$95E3`. The independent sample and its corrections are recorded under Error rate.
 
 
 ## Cinema workflow diagram

@@ -12,7 +12,7 @@
 <header class="hero">
 <p class="eyebrow">1986 · Activision · Commodore 64</p>
 <h1>Labyrinth</h1>
-<p class="sub">Follow the journey from the city to the maze. Choose an area to explore its commands, scenes and workings.</p>
+<p class="sub">Choose an area to explore the journey from the city to the maze.</p><p class="lab-area-summary">Scope: the text opening and gate entry. Later rooms are reference images on Maps / levels.</p>
 </header>
 <main>
 <nav class="lab-area-nav" aria-label="Explore Labyrinth by area" hidden>
@@ -171,39 +171,8 @@
 <p>The script keeps a phase and a countdown. When a countdown expires, it loads the next delay and advances the phase. Phases 0–6 select these messages; phases 7–13 continue the actor and gate sequence. Pressing fire on joystick port 1 sets the latch that can jump an early phase to 7. At phase 14, the script goes directly to checking the player’s approach depth. The remaining visual effects are open.</p>
 <details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">Message selection at <code>$8E09</code>, pointer tables at <code>$8ED4</code>/<code>$8EDB</code>, countdowns at <code>$8EC5</code>, and sequence dispatcher at <code>$8CD8</code>. The port-one sampler at <code>$19AE</code> supplies the fire latch at <code>$1993</code>; ordinary press, hold and release were checked live. The reader below normalizes whitespace and omits the stored formatting controls. All seven texts are checked against the original parser; phase/countdown decisions are checked separately against the original dispatcher.</p></details>
 </section>
-<div class="lab-area-next" data-reading-area="gate"><a href="#text-adventure">← Back to the text adventure</a><a href="#other-areas">Look further into the maze →</a></div>
-<section id="inside-the-labyrinth" data-reading-area="atlas">
-<span id="other-areas"></span><p class="lab-area-summary">Further areas · Reference gallery</p>
-<h2>Further into the maze</h2>
-<p>The disk guide describes a journey through Jareth’s maze, with objects to collect and puzzles to solve before the clock reaches thirteen. The pictures below show the game’s graphical settings. The gate and first corridor were reached through ordinary play; the other captures were made by selecting a scene in memory and letting the game load it. They show the artwork and initial state, while the puzzles remain unverified.</p>
-<div class="gallery"><label for="scene">Choose a captured scene</label>
-<select id="scene"><option value="0">The entrance gate</option>
-<option value="1" selected>The Labyrinth</option>
-<option value="2">The Brick Hallway</option>
-<option value="3">Alph and Ralph</option>
-<option value="4">The Wall of Hands</option>
-<option value="5">The Stone Corridor</option>
-<option value="6">The Hedge Maze</option>
-<option value="7">The Persecution of Ludo</option>
-<option value="8">The Wise Man's Garden</option>
-<option value="9">The Hedge Maze</option>
-<option value="10">The Door Knockers</option>
-<option value="11">The Forest</option>
-<option value="12">The Forest</option>
-<option value="13">The Stone Faces</option>
-<option value="14">The Bog of Eternal Stench</option>
-<option value="15">The Goblin Village</option>
-<option value="16">The Underground</option>
-<option value="17">The Castle of the Goblin King</option>
-<option value="18">The Secret Corridor</option>
-<option value="19">The Upside-Down Room</option>
-<option value="20">The Final Confrontation</option></select>
-<figure><img id="scene-picture" src="reference/corridor-play.png" width="384" height="272" alt="The Labyrinth"><figcaption id="scene-caption">The Labyrinth. Reached through ordinary play.</figcaption></figure>
-</div>
-
-<details class="lab-evidence"><summary>Analysis coverage</summary><p class="status">Opening ledger: 100% of 48,261 tracked bytes has a description. This includes 2,365 retained bytes described by their source and boundaries; their purpose is unknown. The game remains Bronze: the gate has a partial listing and 20 other graphical parts await analysis, and the listing’s comments have no independent accuracy sample.</p></details>
-<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">Sources: the <a href="https://www.mocagh.org/activision/labyrinth-manual.pdf">disk Player’s Guide</a>, <a href="https://www.c64-wiki.de/wiki/Labyrinth">C64-Wiki</a>, and the supplied disks. The About tab carries the feature checklist and the recipe for rebuilding the saved state.</p></details>
-</section>
+<div class="lab-area-next" data-reading-area="gate"><a href="#text-adventure">← Back to the text adventure</a><a href="levels.html">Browse the captured rooms →</a></div>
+<section id="inside-the-labyrinth" data-reading-area="atlas"><span id="other-areas"></span><h2>Scene gallery</h2><p>The captured rooms are on <a href="levels.html">Maps / levels</a>.</p></section>
 <div class="lab-area-next" data-reading-area="atlas"><a href="#entrance-gate">← Back to the entrance gate</a></div>
 </main>
 <script>
@@ -221,7 +190,7 @@
  function hashId(){try{return decodeURIComponent(location.hash.slice(1));}catch(e){return '';}}
  function areaForHash(){const id=hashId(),target=document.getElementById(id);return aliases[id]||(target&&target.closest('[data-reading-area]')?.dataset.readingArea)||'opening';}
  function showArea(){
-  const active=areaForHash();areaSelect.value=active;
+  const active=areaForHash();if(active==='atlas'){location.replace('levels.html');return;}areaSelect.value=active;
   blocks.forEach(block=>{block.hidden=block.dataset.readingArea!==active;});
   topicSelect.replaceChildren();
   document.querySelectorAll('section[data-reading-area="'+active+'"] h2,section[data-reading-area="'+active+'"] h3').forEach((heading,i)=>{
@@ -238,7 +207,7 @@
    requestAnimationFrame(()=>target.scrollIntoView({block:'start'}));
   }
  }
- areaSelect.addEventListener('change',()=>{location.hash=areaHashes[areaSelect.value];});
+ areaSelect.addEventListener('change',()=>{if(areaSelect.value==='atlas')location.href='levels.html';else location.hash=areaHashes[areaSelect.value];});
  topicSelect.addEventListener('change',()=>{location.hash=topicSelect.value;});
  addEventListener('hashchange',showArea);showArea();
 }
@@ -539,18 +508,7 @@ document.getElementById('lab-complete').addEventListener('click',()=>{labPassage
 updateLabyrinthPassage();
 </script>
 
-<script>
-const scenes=[{"title": "The entrance gate", "image": "room-01.png"}, {"title": "The Labyrinth", "image": "corridor-play.png"}, {"title": "The Brick Hallway", "image": "room-03.png"}, {"title": "Alph and Ralph", "image": "room-04-female.png"}, {"title": "The Wall of Hands", "image": "room-05.png"}, {"title": "The Stone Corridor", "image": "room-06.png"}, {"title": "The Hedge Maze", "image": "room-07.png"}, {"title": "The Persecution of Ludo", "image": "room-08.png"}, {"title": "The Wise Man's Garden", "image": "room-09.png"}, {"title": "The Hedge Maze", "image": "room-10.png"}, {"title": "The Door Knockers", "image": "room-11.png"}, {"title": "The Forest", "image": "room-12.png"}, {"title": "The Forest", "image": "room-14.png"}, {"title": "The Stone Faces", "image": "room-15.png"}, {"title": "The Bog of Eternal Stench", "image": "room-16.png"}, {"title": "The Goblin Village", "image": "room-18.png"}, {"title": "The Underground", "image": "room-20.png"}, {"title": "The Castle of the Goblin King", "image": "room-21.png"}, {"title": "The Secret Corridor", "image": "room-24.png"}, {"title": "The Upside-Down Room", "image": "room-25.png"}, {"title": "The Final Confrontation", "image": "room-26.png"}];
-const sceneSelect=document.getElementById('scene');
-sceneSelect.addEventListener('change',()=>{
- const scene=scenes[Number(sceneSelect.value)];
- const picture=document.getElementById('scene-picture');
- picture.src='reference/'+scene.image; picture.alt=scene.title;
- const natural=scene.image==='corridor-play.png';
- const female=scene.image==='room-04-female.png';
- document.getElementById('scene-caption').textContent=scene.title+'. '+(natural?'Reached through ordinary play.':'Captured with a forced scene request.')+(female?' Female avatar selected for this capture.':'');
-});
-</script>
+
 
 <footer><a href="https://github.com/gamesexplained/gamesexplained">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV">Discord</a><br>© Games Explained contributors. Write-ups, facts, and symbol maps: <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Code: <a href="https://opensource.org/licenses/MIT">MIT</a>.</footer>
 </html>

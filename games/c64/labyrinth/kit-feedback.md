@@ -93,3 +93,8 @@ The C64 reference supplied port and bit meanings; `60-verify` required reading t
 ## Reading UI review
 
 The minisite skill's requirement to inspect the built page exposed navigation disappearing above anchored content and screenshots delaying the interactive mechanic. The fixes stay in this game's presentation; no shared-kit edit or maintainer ask is needed.
+
+
+## Kit 0.0.200 review
+
+`60-verify`: “Both the sample and the audit are done by checkers” led to an independent 60-comment draw rather than treating passing widget tests as comment verification. It found two wrong details the earlier checks had left in place; both were reproduced and corrected. `70-minisite`: “A game with more than one level, map, room, stage or screen gets this tab” moved the reference collection to Maps / levels while retaining the distinction between screenshots and decoded maps. The new listing gap check keeps $07FE-$07FF open. Existing instructions cover these findings; no kit edit or maintainer ask is needed.
