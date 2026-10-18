@@ -120,3 +120,7 @@ Followed writes to `$030B` back through `$1993` to port-one sampler `$19AE`, con
 ## 18 October 2026 — area reading views
 
 Reorganized the article into conditional text-adventure, entrance-gate and further-scenes views. Added area links, local contents and next/back transitions. Existing section hashes reveal their owning area; browser history restores the area. Without JavaScript all sections remain readable. Moved the corridor evidence image into the gate view.
+
+## 18 October 2026 — reading UI review
+
+The area chooser disappeared above anchored content, leaving readers without a visible route to another area. Replaced it with a persistent compact area/topic bar; the topic jump menu preserves section hashes. Grouped the gate screenshots, folded source/check paragraphs and the corridor evidence behind disclosures, and started the gallery at the naturally reached first corridor. Existing mechanics and claims remain available. Reviewed area switching, topic jumps, browser Back and the narrow layout in the browser. Removed scroll-driven topic selection after it changed the menu during interaction; the control explicitly says “Jump to topic”.

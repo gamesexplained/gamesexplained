@@ -89,3 +89,7 @@ The C64 reference supplied port and bit meanings; `60-verify` required reading t
 ## Area presentation
 
 `70-minisite` supports interaction serving the explanation: the growing article now switches between areas rather than presenting every area in a single scroll. Area-local contents preserve detailed topics. This game-specific structure needs no shared-kit change or maintainer ask.
+
+## Reading UI review
+
+The minisite skill's requirement to inspect the built page exposed navigation disappearing above anchored content and screenshots delaying the interactive mechanic. The fixes stay in this game's presentation; no shared-kit edit or maintainer ask is needed.
