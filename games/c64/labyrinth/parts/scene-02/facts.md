@@ -42,3 +42,5 @@ A replay from the naturally reached loader snapshot stopped at `$543A` before pl
 For nonnegative mode, `$543A` skips slots whose entry is $FF. For other entries it sets world X to `64*entry+32`, player depth to six, other-slot depth to 24, clears fractional/depth-high fields and initializes the projected origins and active flags. The negative-mode grid/graph branches remain outside the widget’s claim. The placement bytes `$543A-$54CB` are identical in the opening listing, corridor snapshot and natural Brick Hallway play image; SHA-256 `c2874d5bb9d9612369a722f6788cb60a272fb64bc4c69ff2dd8fa261f4200207`.
 
 The page’s placement calculation is compared with original execution for all 256 entry bytes, including $FF skip, plus a companion slot using the observed entry 26. Only entry 35 has a completed ordinary journey established by these trials. The new placement comment has no independent sample.
+
+The published listing uses the name-only anonymized `work/publish-anonymous.vsf` copy. Its code and movement/route data match the natural play image; only the cached entered-name bytes differ within published records. Original captures remain private.

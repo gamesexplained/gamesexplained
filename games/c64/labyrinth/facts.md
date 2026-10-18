@@ -17,3 +17,7 @@ The complete game stays Bronze: the gate and first corridor are partially analys
 ## First corridor
 
 The natural first-corridor image has a partial listing (1,113/48,021 bytes). Its eight captured opening columns select scene 3, The Brick Hallway, across four entry-position banks. Ordinary movement through column 8 loaded scene 3 with entry 35, placing the player at world X=2272/depth 6. The remaining approaches remain open; see `parts/scene-02/facts.md`.
+
+## Published player name
+
+The published listings use `work/publish-anonymous.vsf`, a copy of each analysis snapshot with the entered player name replaced by ANON (or lowercase anon). Original emulator captures remain private. The opening’s named fields fall outside its published records; the gate and corridor listings change only cached name bytes, including the gate speech field. Code, route tables, and measured movement values are unchanged. The two setup screenshots containing the entered name were removed from publication.

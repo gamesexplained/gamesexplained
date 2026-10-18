@@ -14,8 +14,8 @@ Read on 17 October 2026:
 | Feature | Status | Evidence / question |
 |---|---|---|
 | Choose among three game slots with F1, F3, or F5 | live | `reference/title.png` shows the empty-slot menu. |
-| Enter a player name | live | EUAN was accepted; `reference/gender.png`. |
-| Choose gender and favorite color | live | M and BLUE were accepted; `reference/colour.png` and `reference/opening.png`. |
+| Enter a player name | live | A player name was accepted; its captured value is anonymized in the published listing. |
+| Choose gender and favorite color | live | M and BLUE were accepted; `reference/opening.png`; the setup screenshots were removed for privacy. |
 | Text opening before the graphical adventure | live | `reference/opening.png`; the cinema sequence leads to `reference/maze-intro.png`. Graphical gate movement and the first brick corridor were reached in the continuation. |
 | A theater ticket gates the eastward route past the counter | traced and simulator-checked | `$90F4` checks ticket inventory; `$9327` plus `$087F` charge five dollars. All location/ticket-byte decisions and owned-dollar purchase cases are checked by `test_ticket.js`. Arrival processing remains separate. |
 | Reach Jareth through the maze before thirteen hours expire | open | Disk guide pp. 2–3; clock rate and failure behavior untraced. |
