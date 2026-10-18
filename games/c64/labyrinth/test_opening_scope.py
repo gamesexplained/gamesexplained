@@ -2,7 +2,7 @@
 import hashlib,json,sys
 from pathlib import Path
 G=Path(__file__).resolve().parent
-sys.path[:0]=[str(G.parents[2]/'kit/c64')]
+sys.path[:0]=[str(G.parents[2]/'kit/cpu'),str(G.parents[2]/'kit/c64')]
 from opcodes import decode,operand
 S=json.loads((G/'parts/opening/symbols.json').read_text())
 L=json.loads((G/'parts/opening/listing.json').read_text())

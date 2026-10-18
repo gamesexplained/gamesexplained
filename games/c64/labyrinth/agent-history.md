@@ -129,3 +129,5 @@ The area chooser disappeared above anchored content, leaving readers without a v
 ## 19 October 2026 — main kit update
 
 Merged canonical main at `a0e3e561` (kit 0.0.200). Updated the Labyrinth test/helper imports for the shared 6502 CPU move from `kit/c64` to `kit/cpu`. The existing analysis provenance in game.json retains the kit version used for that analysis.
+
+Kit-update validation: all 206 discovered tests completed, with 199 passing and seven Spectrum/SkoolKit checks skipped because that optional tool is absent. The first suite run identified the moved opcode import and a macOS `/var` versus `/private/var` temporary-path alias; the import was fixed and the full suite passed using `TMPDIR=/private/tmp`. The binary, documentation and listing checks pass, and all 56 games build.
