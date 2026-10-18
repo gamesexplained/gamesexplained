@@ -32,3 +32,15 @@ for(const flag of [0,255]){
  const c=new CPU(Uint8Array.from(ram));c.m[0x343]=255;c.m[0xaf]=8;c.m[0x502]=0x5b;c.m[0x503]=0x43;c.call(0x4115,{d:0});assert.equal(c.m[0x530],3);assert.equal(c.m[0x532],35);
 }
 console.log('OK - captured wall/passage boundary branches and ordinary-input scene 3 / entry 35 request');
+const {labyrinthCorridorPlacement:placement}=g.run('index.html','labyrinth-corridor','labyrinthCorridorPlacement');
+const opening=g.listing('parts/opening/listing.json').ram;
+assert.deepStrictEqual(Array.from(ram.slice(0x543a,0x54cc)),Array.from(opening.slice(0x543a,0x54cc)));
+assert.equal(require('crypto').createHash('sha256').update(ram.slice(0x543a,0x54cc)).digest('hex'),'c2874d5bb9d9612369a722f6788cb60a272fb64bc4c69ff2dd8fa261f4200207');
+for(let entry=0;entry<256;entry++){
+ const c=new CPU(Uint8Array.from(ram));c.m[0x26]=0;c.m.set([entry,255,26],0x5080);c.m[0x532]=entry;
+ const oldX=c.m[0x538]+256*c.m[0x53c],oldDepth=c.m[0x544];c.call(0x543a,{d:0});
+ const a=placement(entry);assert.equal(c.m[0x538]+256*c.m[0x53c],a?a.x:oldX);assert.equal(c.m[0x544],a?a.depth:oldDepth);assert.equal(c.m[0x532],255);
+ assert.equal(c.m[0x53a]+256*c.m[0x53e],26*64+32);assert.equal(c.m[0x546],24);
+}
+assert.equal(placement(35).x,2272);assert.equal(placement(35).depth,6);
+console.log('OK - 256 continuous-mode entry placements, FF skip, companion slot and live entry-35 arrival');

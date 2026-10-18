@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,013/48,021 described bytes and 19 other graphical parts are untouched. The provisional image-ledger total is 51,390/140,231 bytes (36.6%) across three started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and 19 other graphical parts are untouched. The provisional image-ledger total is 51,490/140,231 bytes (36.7%) across three started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -33,6 +33,6 @@ Possible follow-ups: a playable word wheel, a complete city map extending the ci
 
 For the first corridor:
 
-- Walk and complete the load through each of the eight openings; the first ordinary approach has proved the pending scene/entry request only. Check reverse connections and entry placement in the Brick Hallway.
+- Walk and complete the loads through the other seven openings and the other route variants. The first opening’s ordinary route to scene 3 / entry 35 is confirmed, including placement at X=2272/depth 6. Check reverse connections and the other entry positions in the Brick Hallway.
 - Trace the other movement modes, object interactions, scene callbacks, drawing and sound. Capture the natural pre-initialization hand-over and resolve `$07FE-$07FF` ownership.
 - Independently sample the new corridor comments; the earlier combined sample predates them.

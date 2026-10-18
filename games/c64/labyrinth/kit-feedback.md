@@ -102,3 +102,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## First-corridor continuation · 19 October 2026
 
 `70-minisite`, “Start each case where the game starts it, and feed it what the page feeds it”: compared the actual column-8/variant-0 page defaults and captured map mode with original execution. No shared-kit change was needed. The nonexistent `vice_step` call failed visibly; frame advance completed the observation. Shared classifier scratch bytes seen between player updates are not reliable player-state observations; the exit checkpoint supplied the player values. This is game-specific evidence, not a new general skill rule.
+
+## Natural Brick Hallway arrival · 19 October 2026
+
+`60-verify`, “A live test in one room tests one room”: kept the completed arrival claim to the one ordinary first-opening route, with other entry variants remaining code-tested calculations. The captured placement routine uses shared resident bytes, so compared it across the corridor and naturally loaded room before reusing its result. No shared-kit change or maintainer ask arose.

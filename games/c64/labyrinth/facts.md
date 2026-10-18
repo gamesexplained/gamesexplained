@@ -12,8 +12,8 @@ An independent fixed-seed sample on 19 October 2026 checked 60 of the 1,303 line
 
 ## Scope
 
-The complete game stays Bronze: the gate and first corridor are partially analysed and 19 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 36.6% ledger is provisional rather than whole-game progress.
+The complete game stays Bronze: the gate and first corridor are partially analysed and 19 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 36.7% ledger is provisional rather than whole-game progress.
 
 ## First corridor
 
-The natural first-corridor image has a partial listing (1,013/48,021 bytes). Its eight captured opening columns select scene 3, The Brick Hallway, across four entry-position banks. Ordinary movement through column 8 produced pending scene 3 / entry 35. The remaining approaches and completed load remain open; see `parts/scene-02/facts.md`.
+The natural first-corridor image has a partial listing (1,113/48,021 bytes). Its eight captured opening columns select scene 3, The Brick Hallway, across four entry-position banks. Ordinary movement through column 8 loaded scene 3 with entry 35, placing the player at world X=2272/depth 6. The remaining approaches remain open; see `parts/scene-02/facts.md`.

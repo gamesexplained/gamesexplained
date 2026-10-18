@@ -1,6 +1,6 @@
 # First corridor — established facts
 
-Partial natural scene-2 image: 1,013/48,021 tracked bytes described (2.1%). This independent image scope overlaps retained resident code in other parts; shared ownership remains unresolved. The natural `work/corridor-play.vsf` and this part’s `work/play.vsf` have equal hashes. A natural pre-initialization image remains open.
+Partial natural scene-2 image: 1,113/48,021 tracked bytes described (2.3%). This independent image scope overlaps retained resident code in other parts; shared ownership remains unresolved. The natural `work/corridor-play.vsf` and this part’s `work/play.vsf` have equal hashes. A natural pre-initialization image remains open.
 
 ## Movement columns
 
@@ -29,8 +29,16 @@ The dispatcher writes entry to `$0532` and pending scene to `$0530`. Actual load
 
 Ordinary joystick trials restored the same natural snapshot at X=96, depth=9 before each direction. After 1,200 frames idle retained those coordinates; up settled at depth 24, down at zero. Left/right changed X. A non-stopping movement checkpoint at `$3423` fired in each trial, while `$4115` did not fire.
 
-A separate ordinary-input approach moved right, released, then pressed up. It reached X=546, depth=32 and stopped at `$4115` after 80 up frames. At that stop AF=8, B0=10, B2=32, B3=0, B7=4 and PRNG state=$435B. Continuing the dispatcher produced state $BC38, pending scene 3 and entry 35. This proves the first opening can request that destination by ordinary movement; complete loading and the other seven walking approaches remain open. Checkpoints and joystick input were cleared and the original emulator state restored.
+A separate ordinary-input approach moved right, released, then pressed up. It reached X=546, depth=32 and stopped at `$4115` after 80 up frames. At that stop AF=8, B0=10, B2=32, B3=0, B7=4 and PRNG state=$435B. Continuing the dispatcher produced state $BC38, pending scene 3 and entry 35. Continuing the same ordinary-input route reached loader `$5098` with pending scene 3 / entry 35, then main-loop continuation `$59DC` with current scene 3. After sixty frames without movement input, current scene remained 3, pending request was $FF and the player remained at X=2272, depth=6. `reference/brick-natural-entry.png` records that naturally loaded state. The other seven complete walking approaches remain open. Checkpoints and joystick input were cleared and the original emulator state restored.
 
-`test_corridor.js` runs the original code from the committed listing: 65,536 coordinate classifications, 256 column/bank exit choices, 65,536 PRNG updates, both captured flag branches and the observed scene/entry request. The page’s port and data come from its own script block. The tests cover captured modes, not every movement mode or complete scene loading.
+`test_corridor.js` runs the original code from the committed listing: 65,536 coordinate classifications, 256 column/bank exit choices, 65,536 PRNG updates, both captured flag branches and the observed scene/entry request. The page’s port and data come from its own script block. The tests cover captured modes, not every movement mode or all scene loads.
 
 The listing reports a two-byte gap at `$07FE-$07FF`. M2 ends at `$07FD`; the gap’s ownership remains open. Resource allocation scopes were compared with unpacked M2/P2/C2, U2, AV and JG extents, but natural pre-initialization ownership remains unresolved. The new comments follow the 19 October 2026 independent sample and have not received an independent sample.
+
+## Continuous-mode entry placement
+
+A replay from the naturally reached loader snapshot stopped at `$543A` before placement. Current scene was 3, mode `$26` was zero, slot entries `$5080-$5082` were [35,255,26], and entry request `$0532` was 35. At `$54CB`, the player was X=2272/depth=6 and the entry request was $FF. This replay retains the naturally produced request; it does not inject a scene or entry ID.
+
+For nonnegative mode, `$543A` skips slots whose entry is $FF. For other entries it sets world X to `64*entry+32`, player depth to six, other-slot depth to 24, clears fractional/depth-high fields and initializes the projected origins and active flags. The negative-mode grid/graph branches remain outside the widget’s claim. The placement bytes `$543A-$54CB` are identical in the opening listing, corridor snapshot and natural Brick Hallway play image; SHA-256 `c2874d5bb9d9612369a722f6788cb60a272fb64bc4c69ff2dd8fa261f4200207`.
+
+The page’s placement calculation is compared with original execution for all 256 entry bytes, including $FF skip, plus a companion slot using the observed entry 26. Only entry 35 has a completed ordinary journey established by these trials. The new placement comment has no independent sample.

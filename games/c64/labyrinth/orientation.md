@@ -95,4 +95,4 @@ The gate part uses the naturally reached `work/gate-steady.vsf`, copied to `part
 
 ## First-corridor continuation · 19 October 2026
 
-Started scene-02 from the naturally reached `corridor-play.vsf`; its part play image has the same SHA-256. Ordinary right/up movement reached the first opening and the exit dispatcher wrote pending scene 3 / entry 35. The test restored the original emulator state. This establishes a requested route, not a completed natural load into scene 3.
+Started scene-02 from the naturally reached `corridor-play.vsf`; its part play image has the same SHA-256. Ordinary right/up movement reached the first opening and the exit dispatcher wrote pending scene 3 / entry 35. The test restored the original emulator state. The same ordinary route continued to a natural scene-3 load, placing the player at X=2272/depth 6. Ignored captures are in `work/natural-brick/`; `reference/brick-natural-entry.png` shows the arrival. A replay from the naturally produced loader state captured `$543A` before placement, with mode zero and entries [35,255,26], then `$54CB` after placement.

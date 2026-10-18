@@ -57,6 +57,6 @@ Joystick-port-one fire is **live** as the producer of the introduction interrupt
 
 ## First-corridor route evidence
 
-- Confirmed live: ordinary movement along the corridor and into opening column 8 reaches the exit dispatcher and requests scene 3 / entry 35.
+- Confirmed live: ordinary movement along the corridor and into opening column 8 loads the Brick Hallway with entry 35, at X=2272/depth 6.
 - Traced and original-code checked: eight opening columns, wall/opening approach bounds, four route banks, and the PRNG bank selector. Every stored opening selects the Brick Hallway.
-- Open: the other seven complete walking approaches, completed loads and destination entry positions, reverse links and remaining corridor interactions.
+- Open: the other seven complete walking approaches, other destination entry positions, reverse links and remaining corridor interactions.
