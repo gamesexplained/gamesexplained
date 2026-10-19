@@ -22,8 +22,10 @@
 // - The main program, a generator (program below), which yields:
 //     { cp: a }     the game's program counter has reached the checkpoint a in the main program: a
 //                   JSR the main loop makes, the instruction after a loop that polls
+//     { cycles: n } n cycles of the game's own work that the port does not do (a delay loop): for
+//                   the page's clock; the lockstep only adds them up (declared, under timing)
 //     POLL          one turn of a polling loop, a loop that waits for an interrupt to change a byte
-//                   (anything without cp is one): the next interrupt the game took runs here
+//                   (anything else is one): the next interrupt the game took runs here
 // - The interrupt handlers, one for each address the game's handler starts at (irqs): functions,
 //   or generators that yield { cp: a } where the game's handler passes a checkpoint, so that an
 //   interrupt that comes in the middle of a handler (one that clears the I flag) runs there.
@@ -67,10 +69,11 @@
 //   ignore: addresses and ranges left out, for a race shown, not guessed (the skill). every: true
 //   compares at every checkpoint of the main program, not only at a pass's start.
 // - timing(part): called for every part of the run once the port has run it, with { pass, kind,
-//   at, from, to, cycles, calls, marks, stretches }: kind 'main' for the main program's stretch
-//   from the checkpoint from to to, 'irq' for an interrupt whose handler starts at at; cycles, the
-//   game's cycles in the part with the interrupts it let in taken out (an interrupt's own include
-//   the processor's seven and the KERNAL's way in); calls, how often the port called each of P's
+//   at, from, to, cycles, declared, calls, marks, stretches }: kind 'main' for the main program's
+//   stretch from the checkpoint from to to, 'irq' for an interrupt whose handler starts at at;
+//   cycles, the game's cycles in the part with the interrupts it let in taken out (an interrupt's
+//   own include the processor's seven and the KERNAL's way in); declared, the cycles the port's
+//   { cycles } yields gave in it; calls, how often the port called each of P's
 //   functions in it (P's functions are wrapped to count them when the lockstep is made); for an
 //   interrupt, marks, its own cycles at each checkpoint it passed, and stretches, the calls between
 //   them. These are the rows of the pacing fit.
@@ -138,7 +141,7 @@ function bytesLine(d) {
 function part(at, cycles, seq) {
   return { at, events: [], reads: [], writes: [], seen: new Map(), wrote: new Map(), all: null, irqb: new Map(),
     cycles0: cycles, child: 0, cycles: 0, own: 0, start: seq, end: seq, marks: [], ri: 0, wi: 0, ib: null,
-    calls: {}, stretches: [] };
+    calls: {}, stretches: [], declared: 0 };
 }
 
 class Lockstep {
@@ -344,6 +347,7 @@ class Lockstep {
       const y = this.next(this.it);
       if (y.done) throw new Diverged('the port\'s main program returned; the game went on to ' + hex(rec.stop));
       const v = y.value;
+      if (v && v.cycles !== undefined) { rec.declared += v.cycles; continue; }
       if (v && v.cp !== undefined) {
         while (k < rec.events.length) this.replay(rec.events[k++].child, rec);
         if (v.cp !== rec.stop) throw new Diverged('the port reached ' + hex(v.cp) + ' where the game reached ' + hex(rec.stop));
@@ -384,6 +388,7 @@ class Lockstep {
           const y = this.next(r);
           if (y.done) break;
           const v = y.value;
+          if (v && v.cycles !== undefined) { q.declared += v.cycles; continue; }
           if (!v || v.cp === undefined) {
             if (k < ev.length && ev[k].child) { this.replay(ev[k++].child, q); continue; }
             throw new Diverged(this.where(q) + ': the port\'s handler polls, and the game\'s took no interrupt more');
@@ -403,7 +408,8 @@ class Lockstep {
     for (let i = 0; i < keep.length; i += 2) M[keep[i]] = keep[i + 1];
     if (this.timing) {
       if (q.stretches.length) { q.stretches.push(q.calls); q.calls = {}; for (const s of q.stretches) for (const n in s) q.calls[n] = (q.calls[n] || 0) + s[n]; }
-      this.timing({ pass: this.passes, kind: 'irq', at: q.at, cycles: q.own, calls: q.calls, marks: q.marks, stretches: q.stretches });
+      this.timing({ pass: this.passes, kind: 'irq', at: q.at, cycles: q.own, declared: q.declared, calls: q.calls, marks: q.marks,
+        stretches: q.stretches });
     }
   }
   // A part the port has run to its end: every read and write of the chips the game made is made.
@@ -428,7 +434,9 @@ class Lockstep {
         const from = this.at, rec = this.record();
         this.replayMain(rec);
         this.cur = null; this.counter = null;
-        if (this.timing) this.timing({ pass: this.passes, kind: 'main', at: -1, from, to: rec.stop, cycles: rec.own, calls: rec.calls });
+        if (this.timing) {
+          this.timing({ pass: this.passes, kind: 'main', at: -1, from, to: rec.stop, cycles: rec.own, declared: rec.declared, calls: rec.calls });
+        }
         const atPass = rec.stop === this.passAt;
         if (atPass || this.every) {
           const d = differ(m.ram, this.P.M, this.runs);

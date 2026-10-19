@@ -145,7 +145,8 @@ function port(faults = {}) {
       M[0x2010] = 1;
       M[0x2006] = P.io.read(0xFF1D);
       P.io.cli();
-      yield { cp: L.c_p1 };                                // part1 only waits
+      yield { cp: L.c_p1 };
+      yield { cycles: 8975 };                              // part1 only waits
       if (!faults.noHandlerCp) yield { cp: L.c_p2 };
       P.part2();
     } else {
@@ -187,7 +188,8 @@ const input = (n, m) => { m.releaseAll(); if (n % 3 === 1) m.press('W'); if (n %
   check('the parts\' own cycles add up to the game\'s', sum === m.cpu.cycles - c0, sum + ' against ' + (m.cpu.cycles - c0));
   const top = rows.filter(x => x.kind === 'irq' && x.marks.length === 2);
   check('the interrupt at line 0 passes its two checkpoints, in three stretches', top.length > 20 &&
-    top.every(x => x.stretches.length === 3 && x.calls.part2 === 1 && x.marks[0] < x.marks[1] && x.marks[1] < x.cycles));
+    top.every(x => x.stretches.length === 3 && x.calls.part2 === 1 && x.marks[0] < x.marks[1] && x.marks[1] < x.cycles &&
+    x.declared === 8975));
   const work = rows.filter(x => x.kind === 'main' && x.from === L.c_work);      // passes 1 to 29: the 30th stops at its start
   check('the stretch through work is timed with work\'s call', work.length === 29 && work.every(x => x.calls.work === 1 && x.cycles > 19000),
     JSON.stringify(work.slice(0, 3)));
