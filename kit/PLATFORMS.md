@@ -20,6 +20,7 @@ and it is the worked example for the next one.
 | `kit/skills/<platform>/tool-<emulator>/workarounds.md` | what to do instead, one section per check that fails on some build | `tool-vice-mcp/workarounds.md` |
 | `site/lib/<platform>.js` | what the page needs that is specific to the machine; a kit script a page runs as it is, such as the machine's processor, is served beside it from `kit/<platform>/` or `kit/cpu/` (`KIT_LIB` in `kit/scripts/build.py`) rather than copied | `c64.js`, and the memory map in `memmap.js`; `kit/cpu/cpu6502.js` as `lib/cpu6502.js` |
 | `site/status.json` | the machine's entry under `systems` (its library size, with the source and the date it was read), and its cell in every row of `hosts`: what was measured on each kind of computer, and when | the `c64` entries |
+| `site/credits.json` | an entry for each tool the kit installs, with who made it and a link, for the About page's thanks and the platform's status cards; the build fails on a kit that has none | `VICE`, `vice-mcp`, `regenerator2000` |
 
 ## Where the shared scripts branch on the platform
 
@@ -101,7 +102,8 @@ its colour tokens after the C64.
 5. `site/lib/<platform>.js`, and whatever the memory map needs. Add the
    platform's cells to `site/status.json`: the build gives the status page
    a column for every kit it finds, and a host with no cell for yours reads
-   "No run recorded".
+   "No run recorded". Add the emulator and disassembler to
+   `site/credits.json`, with who made them.
 6. Run one game through the whole workflow to Silver. The retrospective on
    that game (`kit/skills/core/80-retro`) is where the seams you missed show
    up; fix them in the same pull request.
