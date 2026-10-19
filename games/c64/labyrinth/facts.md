@@ -32,10 +32,14 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 
 ## Opening the neighboring Brick Hallway door
 
-The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 972/48,587 described bytes; four provisional scopes total 52,462/188,818 (27.8%). Their retained resident ownership overlaps and is not whole-game completion.
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,049/48,587 described bytes; four provisional scopes total 52,539/188,818 (27.8%). Their retained resident ownership overlaps and is not whole-game completion.
 
 `reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.
 
 ## A door within the Brick Hallway
 
 Holding up through the opened column-36 door produced request 0 / entry 12 while current scene stayed 3. The resident path retained that room and placed the player at X=800/depth 6, column 12. The live journey and all 256 selector-source bytes are checked as described in `parts/scene-03/facts.md`. Other entry variants and reverse travel remain unverified.
+
+## Door-shaped panel at column 12
+
+At the checked doorway destination, map cell1 translates to type11. Ordinary OPEN DOOR replied “Nothing happens.” and ASK DOOR replied “There's no door here.” The ASK prerequisite accepts types2/3 in the captured negative map mode and bypasses the remaining handler on rejection. A 300-frame up approach retained scene3 and reached depth24 with positive movement hits and no exit/loader hits. The panel's artwork does not establish acceptance by these commands; other actions and return paths remain open. `parts/scene-03/facts.md` records the live observations and original-code comparison.

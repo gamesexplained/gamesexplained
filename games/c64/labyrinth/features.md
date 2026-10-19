@@ -68,3 +68,9 @@ Joystick-port-one fire is **live** as the producer of the introduction interrupt
 - Live: approaching the neighboring door at X=2348/depth 24 and using OPEN DOOR changes it from closed to open. The room stays scene 3.
 - Live: walking through that doorway reaches entry 12 / column 12 in the same Brick Hallway.
 - Open: the alternate entry 44, other door positions, and the route back to the first corridor.
+
+## Column-12 panel
+
+- Live: ASK DOOR says “There's no door here.” OPEN DOOR says “Nothing happens.” Up reaches depth24 while retaining scene3.
+- Traced and original-code checked: cell1/type11 fails ASK's type2/3 prerequisite; failure bypasses the handler continuation.
+- Open: other interactions at the panel and the route back.

@@ -106,3 +106,7 @@ From the naturally reached arrival, ordinary right/up input reached X=2348/depth
 ## Through the opened door · 19 October 2026
 
 Loaded the ordinary opened-door snapshot and held up to exit depth 40 at column 36. The actual request was scene zero / entry 12 with current scene 3. The retained-room path placed the player at X=800/depth 6 in the same Brick Hallway. Ignored captures live under `work/through-brick-door/`; the published destination image contains no setup name. The original emulator state and normal speed were restored.
+
+## Arrival-panel command checks · 19 October 2026
+
+Restored the naturally reached column-12 capture separately for up, OPEN DOOR and ASK DOOR. Up reached depth24 without exit; the commands displayed Nothing happens / There's no door here. Positive movement/dispatch/prerequisite counters accompany the observations in `work/arrival-door-probe.log`. Original emulator state and normal speed were restored.

@@ -1,6 +1,6 @@
 # Brick Hallway — established facts
 
-Partial analysis: 972/48,587 tracked bytes described (2.0%). The listing uses `work/play.vsf`, a name-only anonymized copy of the naturally reached `work/natural-brick/play.vsf`. Original captures remain private. The earlier forced `entry.vsf` was renamed `entry-forced.vsf`; it is not natural hand-over evidence. Shared resident ownership and loaded-data warnings remain unresolved. This independent image scope is provisional and overlaps other parts.
+Partial analysis: 1,049/48,587 tracked bytes described (2.2%). The listing uses `work/play.vsf`, a name-only anonymized copy of the naturally reached `work/natural-brick/play.vsf`. Original captures remain private. The earlier forced `entry.vsf` was renamed `entry-forced.vsf`; it is not natural hand-over evidence. Shared resident ownership and loaded-data warnings remain unresolved. This independent image scope is provisional and overlaps other parts.
 
 ## OPEN DOOR decision
 
@@ -35,3 +35,13 @@ This is a same-room connection. For negative `$0343`, `$4115` selects the first 
 At `$50EA`, zero request with current scene 3 jumps to `$53CE`. That path calls `$543A` to place entries while retaining the scene. The observed entry 12 becomes X=64*12+32=800/depth 6. Entry 44 would place X=2848/depth 6 in the isolated placement routine; its ordinary route remains unverified. A zero request therefore need not mean a new room: this checked route moves between positions in scene 3.
 
 `test_brick_route.js` compares the page's lookup with original `$4115`, the `$50EA` retained-room branch and `$543A` placement for every source byte (256 cases). It seeds current scene 3, map mode $FF, column 36 and continuous placement mode zero, matching the live route; it verifies the page button's source-zero input too. The PRNG is trapped as an error because selector 1 must not call it. This checks route/placement decisions, not rendering or the gameplay producer of `$0500`. New route annotations have no independent sample or audit.
+
+## Door commands at the destination panel
+
+The naturally reached column-12 destination has cell 1 at `$060C`, translating to type 11 through `$073F`. Its artwork is a door-shaped spiral panel. At X=800/depth 6, ordinary OPEN DOOR displayed “Nothing happens.” and ASK DOOR displayed “There's no door here.” The corresponding command fields were [37,45] and [30,45]. Each command recorded one generic dispatcher `$5F43` hit; ASK also recorded one prerequisite `$09E9` hit. Player position, current scene 3, and pending request $FF were retained. Screenshots: `reference/arrival-open.png` and `reference/arrival-ask.png`.
+
+A separate restored-state up trial ran 300 frames and reached depth 24 at X=800, retaining scene 3 and no pending request. Movement checkpoint `$3423` recorded 30 hits, with zero generic-exit `$4115` and loader `$5098` hits. This bounded test does not prove that other actions or routes cannot return. The original emulator state and normal speed were restored after the batches. Raw observations/screenshots are private in work/.
+
+ASK DOOR pair `$8B0C` selects `$8DD1`. The first call is to API `$082A`, whose prerequisite `$09E9` accepts types 2/3 only in negative map mode `$0343`. Failure selects resident message `$0D49`, pulls the helper caller's return address off the stack and tail-calls `$09DD`; the remainder of `$8DD1` is bypassed. Accepted types return normally and the handler selects `$94BB`, “Nothing happens.” OPEN DOOR has its separate type2/type3 logic described above; type11 selects its fallback. The two rejection texts were checked with original parser `$6782`.
+
+`test_brick_panel.js` executes the real ASK caller and prerequisite over all 256 map-mode bytes and 256 translated types (65,536 cases), checking both the response and whether the caller continuation runs. It also executes both original command paths with the real classifier at the page's X=800/depth6 arrival, matching button actions 30/37 and captured cell1/type11. Message drawing is intercepted after the selected text pointer is queued; this tests the control flow and reply choice, not rendering. Other actions at the panel and complete return routes remain unverified. These new comments have no independent sample.

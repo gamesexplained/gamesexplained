@@ -174,3 +174,7 @@ Visual review of the new overview exposed the original player name still visible
 ## 19 October 2026 · Trace the opened doorway's destination
 
 Ordinary up input through the opened door reached the generic exit and requested zero/entry12. Continued through the resident retained-room path to X800/depth6 in scene3; captured the destination and restored the original emulator. Traced all four banks for region11 and selector1, then tested all 256 source bytes against the original exit, retained-room branch and placement routine. Added a route stepper to Explore the game and updated the overview's traversal limit. One single-byte typing line was refused visibly; corrected it before applying the annotation batch. Exported the partial scene-03 map/listing; it has 972/48,587 described bytes. Independent scope total is 27.8%; ownership overlap remains unresolved.
+
+## 19 October 2026 · Arrival panel and the door prerequisite
+
+Compared the destination cell1/type11 with closed/open door types2/3. Traced ASK DOOR through $8DD1 to $09E9, including the two PLA instructions that bypass its caller continuation on rejection. Ordinary input confirmed There's no door here for ASK, Nothing happens for OPEN and a depth24 stop for 300 up frames, with positive control counters. Added an interactive response comparison and guarded the control flow against all 65,536 type/mode cases plus both real classifier paths at X800/depth6. Exported scene-03 symbols/listing; it has 1,049/48,587 described bytes. Other interactions and return travel remain open.

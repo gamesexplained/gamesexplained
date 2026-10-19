@@ -122,3 +122,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Brick Hallway doorway destination · 19 October 2026
 
 `60-verify`, “A live test in one room tests one room”: kept the entry-12 journey separate from the code-checked entry-44 branch and did not turn this same-room connection into a claim about every door. The positive exit and movement checkpoints accompanied the loader/arrival observations. No shared-kit change or maintainer ask arose.
+
+## Brick Hallway arrival panel · 19 October 2026
+
+`60-verify`, “A negative result is a claim about your search”: kept the absence of an exit bounded to the recorded trial, and traced the actual command prerequisite instead of concluding that a door-shaped picture must accept door commands. The original-code check enters the real ASK caller so the stack-discard path is exercised. No shared-kit change or maintainer ask arose.
