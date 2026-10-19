@@ -43,6 +43,8 @@ NAMES = {
     0xC040: "strobe",           # the game port's strobe output
     0xC050: "txtclr", 0xC051: "txtset", 0xC052: "mixclr", 0xC053: "mixset",
     0xC054: "txtpage1", 0xC055: "txtpage2", 0xC056: "lores", 0xC057: "hires",
+    # the annunciators by what they do (TRM 1987 Table 2-10); Apple's ROM listing names each pair
+    # the other way round, SETANn first (kit/skills/apple2/apple2-reference, "The soft switches")
     0xC058: "clran0", 0xC059: "setan0", 0xC05A: "clran1", 0xC05B: "setan1",
     0xC05C: "clran2", 0xC05D: "setan2",
     0xC05E: "clran3",           # annunciator 3 off: double hi-res on, with 80COL

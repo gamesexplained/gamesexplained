@@ -74,7 +74,7 @@ const WORKAROUNDS = [
     "Apple2TS's timers (the disk motor's spin-down) run on the machine's cycle count instead of the host's clock",
     "Math.random, which Apple2TS draws the floating bus and empty slots from, is a seeded generator whose state is in the snapshot",
     "the game patches are off: Apple2TS changes some twenty games when it recognises them (Robotron's lives, Lode Runner's and Snoggle's screens, keys)",
-    "slots: 3 the extended 80-column card (64K), 4 a Mockingboard, 6 a Disk II; no hard disk and no clock",
+    "slots: 3 the extended 80-column card (64K), 4 a Mockingboard, 6 a Disk II; no hard disk and no clock card, though Apple2TS's No-Slot Clock answers at $C300-$C3FF, with the computer's date and time, to a program that unlocks it",
     "a key goes into the keyboard latch directly: no auto-repeat and no remapping",
     "read and write checkpoints count through the call Apple2TS's debugger makes on each data access; exec checkpoints, frames, the speaker and the code map are the server's",
     "a snapshot is Apple2TS's own save state (JSON) with the generator's state, the inputs held and the disk controller's private state",

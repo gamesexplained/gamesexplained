@@ -29,7 +29,7 @@ game's (`kit/apple2/tools.py`).
 The machine is a 128K enhanced Apple IIe (its 65C02, NTSC): the extended
 80-column card in the auxiliary slot (64K more), a Mockingboard in slot
 4, a Disk II with two drives in slot 6, and nothing else: no hard disk,
-no clock, no mouse card. `kit/skills/apple2/apple2-reference` has its
+no clock card, no mouse card. `kit/skills/apple2/apple2-reference` has its
 facts. `hello` lists what the server changes in Apple2TS, as
 `workarounds`, and `kit/apple2/INSTALL.md` says why.
 
@@ -340,13 +340,18 @@ changes what ran.
 - **The speaker answers only at $C030.** On the IIe any address from $C030
   to $C03F clicks it; Apple2TS acts on $C030 alone, logs "Unknown
   softswitch" for the rest, and leaves those clicks out of the sound log;
-  it knows nothing at $C021-$C02F or $C041-$C04F either. A game that clicks
+  it knows nothing at $C021-$C02F or $C041-$C04E either, and $C04F reads $CD. A game that clicks
   at $C033 records silence: find its speaker accesses with the register
   census (`kit/cpu/census.py`) before trusting a sound log.
 - **The Mockingboard answers only at $C400-$C40E**, the first 6522, and
   **$C480-$C48E**, the second: Apple2TS acts on those addresses alone. $C40F
   and $C48F, port A without the handshake, and the rest of $C400-$C4FF do
   nothing there (`src/worker/devices/mockingboard.ts`).
+- **The No-Slot Clock tells the computer's time.** Apple2TS keeps one under
+  the internal ROM at $C300-$C3FF, which answers a program that unlocks it
+  with the date and time of the computer the server runs on
+  (`src/worker/nsc.ts`), not the machine's cycle count, so a run that
+  reads it does not repeat.
 - **A store the machine ignores is not counted.** A write checkpoint misses
   a store to the ROM, or to the language card with writing off, because
   Apple2TS discards it before its debugger sees it.

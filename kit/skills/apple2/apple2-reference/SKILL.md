@@ -1,6 +1,6 @@
 ---
 name: apple2-reference
-description: Enhanced Apple IIe facts for reverse engineering, where to read about a game, the memory map, aux memory and the language card, the soft switches, the screen, the keyboard, paddles and buttons, the speaker and the Mockingboard, timing and the floating bus, interrupts and reset, the Disk II and its disk images, DOS 3.3 and ProDOS 8, the Monitor ROM, Applesoft, the 65C02, where Apple2ts differs from a real IIe, the other Apple II models, and the mistakes that bite. Consult this instead of recalling from training.
+description: Enhanced Apple IIe facts for reverse engineering, where to read about a game, the memory map, aux memory and the language card, the soft switches, the screen, the keyboard, paddles and buttons, the speaker and the Mockingboard, timing and the floating bus, interrupts and reset, the Disk II and its disk images, DOS 3.3 and ProDOS 8, the Monitor ROM, Applesoft, the 65C02, where Apple2TS differs from a real IIe, the other Apple II models, and the mistakes that bite. Consult this instead of recalling from training.
 ---
 
 # Apple IIe reference for reverse engineering
@@ -13,7 +13,7 @@ NTSC. Its CPU is a 65C02 without Rockwell's bit instructions. An
 extended 80-column card with 64K of auxiliary memory sits in the
 auxiliary slot, a Mockingboard in slot 4, and a Disk II controller with
 two drives in slot 6. There is no hard disk and no clock card. The
-emulator is Apple2ts 3.7.0 (MIT) inside the kit's server,
+emulator is Apple2TS 3.7.0 (MIT) inside the kit's server,
 `kit/apple2/apple2ts_server.mjs`, driven with `kit/apple2/apple2ts.py`
 (`kit/skills/apple2/tool-apple2ts`). The Apple II, the II Plus, the
 unenhanced IIe, the IIc and the IIgs appear only in notes marked as
@@ -23,13 +23,13 @@ Addresses are written with `$`, as Apple's manuals write them.
 
 Each fact says how it was checked:
 
-- **"live"**: run on Apple2ts 3.7.0's IIe on 19 October 2026, with the
+- **"live"**: run on Apple2TS 3.7.0's IIe on 19 October 2026, with the
   kit's slots and settings (Sources says which server).
-- **"ROM $FA62"**: the enhanced IIe's ROM that Apple2ts 3.7.0 ships,
+- **"ROM $FA62"**: the enhanced IIe's ROM that Apple2TS 3.7.0 ships,
   disassembled as 65C02 code. **"Boot ROM $C65C"**: the Disk II's
   16-sector boot ROM, the same way. Both are byte for byte the ROMs MAME
   0.289 lists for those parts (Sources).
-- **"Apple2ts, src/worker/memory.ts:812"**: a line of Apple2ts's source
+- **"Apple2TS, src/worker/memory.ts:812"**: a line of Apple2TS's source
   at tag v3.7.0.
 - **"MAME 0.289, src/mame/apple/apple2e.cpp:2092"**: a line of MAME's
   source, the second emulator consulted. Its IIe driver records, in its
@@ -38,9 +38,9 @@ Each fact says how it was checked:
   "Sather p. 5-24", "BAD p. 3-8".
 
 A real IIe is what a game was written for. Where the documents and MAME
-agree and Apple2ts does something else, the entry says what each does,
-and "Where Apple2ts differs from a real IIe" lists every such case. A
-fact checked only live, or only in Apple2ts's source, was not checked on
+agree and Apple2TS does something else, the entry says what each does,
+and "Where Apple2TS differs from a real IIe" lists every such case. A
+fact checked only live, or only in Apple2TS's source, was not checked on
 a real IIe.
 
 ## Where to read about a game first
@@ -233,8 +233,8 @@ At a reset the MMU reads the ROM, enables writing to the RAM, picks bank
 2 and turns every memory switch above off (Sather pp. 5-24 and 5-25;
 TRM 1987 p. 83; MAME 0.289, src/mame/apple/apple2e.cpp:1237-1242). The
 ROM's reset code does not touch $C080-$C08F (ROM, every access to the
-range read). Apple2ts leaves writing disabled after a reset instead
-(Apple2ts, src/worker/motherboard.ts:467; live). So a program cannot
+range read). Apple2TS leaves writing disabled after a reset instead
+(Apple2TS, src/worker/motherboard.ts:467; live). So a program cannot
 keep its reset handler in the language card: the reset switches the ROM
 back in, and the CPU reads its reset vector from the ROM (TRM 1987,
 p. 83).
@@ -245,7 +245,7 @@ IRQ, BRK and NMI through the vectors in that RAM (in aux memory's, with
 ALTZP on), not through the ROM's handler (Interrupts and reset).
 
 $C100-$CFFF is the cards' ROM space, and three switches give parts of it
-to the IIe's internal ROM (Sather p. 5-28; Apple2ts,
+to the IIe's internal ROM (Sather p. 5-28; Apple2TS,
 src/worker/memory.ts:258-300; live):
 
 - **INTCXROM** ($C006 off, $C007 on; $C015): on, the internal ROM fills
@@ -299,7 +299,7 @@ $C010-$C01F are read: bit 7 is the status, and bits 0-6 are the
 keyboard's last key (MAME 0.289, src/mame/apple/apple2e.cpp:2056-2111;
 live: with `A` in the latch, each read $C1 for on and $41 for off). Any
 access to $C010, and a write to any of $C010-$C01F, clears the keyboard
-strobe (Sather chapter 7; MAME 0.289, apple2e.cpp:2404-2414; Apple2ts,
+strobe (Sather chapter 7; MAME 0.289, apple2e.cpp:2404-2414; Apple2TS,
 src/worker/softswitches.ts:290).
 
 | Address | Name | Bit 7 set when |
@@ -332,7 +332,7 @@ toggle ends where it began (p. 38).
 | Addresses | Name | Does |
 |---|---|---|
 | $C020-$C02F | tapeout | toggles the cassette output |
-| $C030-$C03F | spkr | toggles the speaker (Sound). Apple2ts acts on $C030 alone |
+| $C030-$C03F | spkr | toggles the speaker (Sound). Apple2TS acts on $C030 alone |
 | $C040-$C04F | strobe | pulses the game port's strobe output |
 
 $C050-$C05F work on a read or a write (a2audit, audit/softswitch.asm):
@@ -395,7 +395,7 @@ whichever card held it.
 An instruction can make more than one access. On the 65C02, `STA $C055`
 is one write, but `INC $C083` is two reads and a write (MAME 0.289,
 src/devices/cpu/m6502/ow65c02.lst:363-373). That matters for the
-language card's two reads and for the speaker (Where Apple2ts differs).
+language card's two reads and for the speaker (Where Apple2TS differs).
 
 ## The screen
 
@@ -475,7 +475,7 @@ down the screen.
   `LDA $C010` read $C2 and then $C000 read $42).
 - **The arrow keys** give $08 (left), $15 (right), $0B (up) and $0A
   (down), with bit 7 set at $C000 (TRM 1985, the 80-column firmware's
-  ESCTAB; Apple2ts, src/common/utility.ts:311-315).
+  ESCTAB; Apple2TS, src/common/utility.ts:311-315).
 - **Open Apple and Solid Apple** are buttons 0 and 1, $C061 and $C062.
   The extended-keyboard IIe wires Shift to button 2, $C063, and an older
   IIe with the shift-key modification does the same (TRM 1987 chapter 2).
@@ -485,7 +485,7 @@ down the screen.
   about 3 ms at the most (TRM 1987 p. 42). PREAD ($FB1E), with the paddle
   in X, counts in a loop of 11 cycles and returns 0-255 in Y (TRM 1987
   Appendix B; live: PREAD read back each value the server set, 0, 1, 50,
-  100, 128, 200, 254 and 255). Apple2ts times a full turn as 0.00278
+  100, 128, 200, 254 and 255). Apple2TS times a full turn as 0.00278
   seconds, 2,836 cycles (src/worker/devices/joystick.ts), and the kit's
   server turns a value into the time PREAD takes to count to it
   (`kit/apple2/apple2ts_server.mjs`). A game that times the paddles with
@@ -495,7 +495,7 @@ down the screen.
   hand control connector signals"). Read which a game polls from its code:
   the X it gives PREAD, or the $C064-$C067 address it reads.
 - **Retriggering.** MAME's driver says the paddle timers, a 558 chip,
-  cannot be restarted while they run (apple2e.cpp:2019). Apple2ts
+  cannot be restarted while they run (apple2e.cpp:2019). Apple2TS
   restarts them on every access (src/worker/devices/joystick.ts:88).
 
 ## Sound
@@ -508,14 +508,14 @@ position: two accesses make one cycle of a square wave (Sather chapter
 same to it. A tone of f Hz is an access every 1,020,484 / (2f) cycles.
 
 The number of accesses an instruction makes matters here. Live, in
-Apple2ts, these instructions touched $C030 this many times: `LDA abs`,
+Apple2TS, these instructions touched $C030 this many times: `LDA abs`,
 `STA abs`, `BIT abs`, `LDA abs,X` and `STA abs,Y` once; `STA abs,X` and
 `INC abs` twice; `INC abs,X` and `LSR abs` three times, all of an
 instruction's accesses on the same cycle. On a 65C02, `INC abs` is three
 accesses, read, read, write (MAME 0.289, ow65c02.lst:363-373), so it
-moves the cone where Apple2ts's two do not.
+moves the cone where Apple2TS's two do not.
 
-Apple2ts clicks only at $C030 itself (src/worker/softswitches.ts:128),
+Apple2TS clicks only at $C030 itself (src/worker/softswitches.ts:128),
 and the kit's sound log records those clicks. A game that clicks at
 $C031-$C03F is silent in the kit's machine and missing from its log:
 count its speaker accesses with the register census (`kit/cpu/census.py`).
@@ -568,7 +568,7 @@ Timer 1 free-running (ACR bit 6 set) interrupts every latch + 2 cycles
 counts down once a cycle, so a program can look for the card by reading
 one (live: three reads of T1C-L four cycles apart gave $FB, $F7, $F3).
 
-Apple2ts's Mockingboard (src/worker/devices/mockingboard.ts) answers
+Apple2TS's Mockingboard (src/worker/devices/mockingboard.ts) answers
 only at the exact addresses $C400-$C40E and $C480-$C48E: no repeats
 elsewhere in the page, and nothing at $C40F and $C48F. It cannot read
 the sound chip back, resets it only when ORB's low three bits are all 0,
@@ -592,13 +592,13 @@ whenever ORB's bit 2 is 0 (a2mockingboard.cpp:293-305, 345-358 and
 | WAIT ($FCA8) | (26 + 27A + 5A²) / 2 cycles from the JSR to the instruction after it: 29, 50, 398 and 26,363 for A = 1, 2, 10 and 100; A = 0 took 167,299 | live |
 
 The kit's server counts 1,020,484 cycles a second
-(`kit/apple2/apple2ts_server.mjs`, CLOCK). Apple2ts paces a frame at
+(`kit/apple2/apple2ts_server.mjs`, CLOCK). Apple2TS paces a frame at
 16.6881 ms, which its comment works out as 17,030 cycles at 1,020,488 a
 second (src/worker/motherboard.ts:74), and MAME 0.289 runs its IIe at
 1,021,800 Hz with no long cycle (apple2e.cpp:5019 and 5048). A count in
 cycles is the same in all three.
 
-In Apple2ts a frame begins with the blank: cycles 0-4,549 of each 17,030
+In Apple2TS a frame begins with the blank: cycles 0-4,549 of each 17,030
 are the blank, and the 192 lines of picture follow
 (src/worker/motherboard.ts:1088-1104). It runs whole instructions, so an
 instruction's accesses all happen on one cycle, and $C019 changes only
@@ -614,7 +614,7 @@ from whatever the screen shows, text, lo-res or hi-res, page 1 or 2
 (MAME 0.289, apple2e.cpp:3379-3390; src/mame/apple/apple2video.cpp:128-197).
 A program can follow the beam that way, without $C019.
 
-Apple2ts reads it differently (src/worker/softswitches.ts:337-355): a
+Apple2TS reads it differently (src/worker/softswitches.ts:337-355): a
 read of $C050-$C05F gives the byte of hi-res page 1 under the beam, or
 a random byte during the blank, whatever the screen shows; other
 addresses give a random value from 0 to $B3, and an empty slot a random
@@ -655,7 +655,7 @@ never runs: put the game's vectors at $FFFA-$FFFF of the bank it reads
 (in aux memory's with ALTZP on). The kit's emulator check runs its test
 program that way (`kit/apple2/check_emulator.py`). The 65C02 clears D
 when it takes an interrupt or a BRK (MAME 0.289, ow65c02.lst:255-283;
-Apple2ts, src/worker/instructions.ts:375); the 6502 left D as it was.
+Apple2TS, src/worker/instructions.ts:375); the 6502 left D as it was.
 
 **Reset.** The MMU turns every memory switch off and puts the language
 card to ROM read, write enabled, bank 2 (Aux memory and the language
@@ -1095,13 +1095,13 @@ The enhanced IIe's CPU is a 65C02 (TRM 1987 Appendix A, pp. 209-210,
 which reprints NCR's data sheet: "ten new instructions and two new
 addressing modes", 27 opcodes). It has none of Rockwell's bit
 instructions (RMB, SMB, BBR, BBS), nor WDC's WAI and STP: those opcodes
-are no-ops (MAME 0.289, src/devices/cpu/m6502/w65c02.cpp; Apple2ts,
+are no-ops (MAME 0.289, src/devices/cpu/m6502/w65c02.cpp; Apple2TS,
 src/worker/instructions.ts:795-841).
 
 **The listing decodes 65C02 code**: `kit/cpu/m65c02.py` holds the table,
 178 documented opcodes (the 6502's 151 and the 27 the 65C02 adds) and
 the other 78 as no-ops of fixed lengths, and `kit/scripts/listing.py`
-decodes an Apple II game with it. Its names and lengths match Apple2ts
+decodes an Apple II game with it. Its names and lengths match Apple2TS
 3.7.0's opcode for opcode (`python3 kit/cpu/opcodes.py --check apple2`:
 256 of 256 on 19 October 2026). **regenerator2000 0.9.20 does not know
 the 65C02**: a test of all 27 added opcodes on 18 October 2026 showed
@@ -1125,7 +1125,7 @@ The 27 opcodes:
 | $12, $32, $52, $72, $92, $B2, $D2, $F2 | ORA, AND, EOR, ADC, STA, LDA, CMP, SBC (zp) |
 
 The no-ops, with their lengths and cycles, which MAME 0.289 and
-Apple2ts agree on:
+Apple2TS agree on:
 
 | Opcodes | Bytes | Cycles | Reads in MAME |
 |---|---|---|---|
@@ -1136,7 +1136,7 @@ Apple2ts agree on:
 | $5C | 3 | 8 | its operand only |
 | $DC, $FC | 3 | 4 | the address with X added to its low byte only |
 
-Apple2ts's no-ops read nothing (src/worker/instructions.ts:795-841), so
+Apple2TS's no-ops read nothing (src/worker/instructions.ts:795-841), so
 a no-op aimed at a soft switch flips it on a 65C02, if MAME is right,
 and not in the kit's machine.
 
@@ -1148,43 +1148,43 @@ What a 6502 program does differently on the 65C02:
 - **JMP (abs)** takes the high byte from the next page when the pointer
   is at $xxFF: `JMP ($02FF)` reads $02FF and $0300, where the 6502 read
   $02FF and $0200. It takes 6 cycles, not 5 (TRM 1987 Appendix A, Table
-  A-1; Apple2ts, instructions.ts:510-512).
+  A-1; Apple2TS, instructions.ts:510-512).
 - **BIT #imm** sets Z only, and leaves N and V (TRM 1987 Appendix A;
-  Apple2ts, instructions.ts:354-355).
+  Apple2TS, instructions.ts:354-355).
 - **Interrupts and BRK clear D** (Interrupts and reset).
 - **ADC and SBC** take a cycle more in decimal mode (MAME 0.289,
-  ow65c02.lst:83-91; Apple2ts, instructions.ts:156-157).
+  ow65c02.lst:83-91; Apple2TS, instructions.ts:156-157).
 - **Read-modify-write** instructions read their address twice and write
   it once, where the 6502 read once and wrote twice (MAME 0.289,
-  ow65c02.lst:363-387). Apple2ts reads twice for ASL, LSR, ROL and ROR
+  ow65c02.lst:363-387). Apple2TS reads twice for ASL, LSR, ROL and ROR
   and for INC and DEC abs,X, but once for INC and DEC in their other
   modes and for TSB and TRB (instructions.ts:321-334, 450-498, 774-790).
 - **Shifts, INC and DEC abs,X.** TRM 1987 Table A-1 gives 6 cycles on the
   65C02 for ASL, LSR, ROL, ROR, INC and DEC abs,X (7 on the 6502). MAME
   0.289 takes 7 for all six (ow65c02.lst:150-161, 311-323, 375-387);
-  Apple2ts takes 6, or 7 across a page, for the shifts and 7 for INC and
+  Apple2TS takes 6, or 7 across a page, for the shifts and 7 for INC and
   DEC. Which a IIe's 65C02 takes was not checked.
 - **Extra reads.** MAME's 65C02 reads the address before the carry for
   `STA abs,X`, `STA abs,Y` and `STA (zp),Y`, and for a load that crosses
   a page (om6502.lst:751-761, 1294-1329), and for `STZ abs,X`
-  (ow65c02.lst:797-804). Apple2ts makes that read only for `STA abs,X`
+  (ow65c02.lst:797-804). Apple2TS makes that read only for `STA abs,X`
   and `STZ abs,X`, at the address after the carry (instructions.ts:733-737
   and 761-765). Where a real 65C02's extra read lands was not checked.
 
-## Where Apple2ts differs from a real IIe
+## Where Apple2TS differs from a real IIe
 
-Each of these was found in Apple2ts 3.7.0's source, and the live ones on
+Each of these was found in Apple2TS 3.7.0's source, and the live ones on
 the kit's machine. "A IIe" means what the documents and MAME agree on;
 none was checked on a real IIe.
 
 - **The language card after reset.** A IIe enables writing to the RAM;
-  Apple2ts disables it (src/worker/motherboard.ts:467; live). A program
+  Apple2TS disables it (src/worker/motherboard.ts:467; live). A program
   that writes to the RAM after a reset without the two reads works on a
   IIe and not in the kit's machine.
 - **INC, DEC, TSB and TRB read once.** A 65C02 reads twice, so `INC
-  $C083` write-enables the language card on a IIe and not in Apple2ts
+  $C083` write-enables the language card on a IIe and not in Apple2TS
   (live: no write), and `INC $C030` moves the speaker three times on a
-  IIe and twice in Apple2ts.
+  IIe and twice in Apple2TS.
 - **No extra reads** for `STA abs,Y`, `STA (zp),Y`, loads that cross a
   page, or the no-ops, and an instruction's accesses all fall on one
   cycle (The 65C02).
@@ -1207,20 +1207,22 @@ none was checked on a real IIe.
   6522's timers (Sound).
 - **A No-Slot Clock** answers at $C300-$C3FF whenever the internal ROM is
   there (src/worker/memory.ts:556-574, src/worker/nsc.ts), although the
-  profile has no clock. A game that looks for a clock finds one.
+  profile has no clock. A game that looks for a clock finds one, and it
+  tells the date and time of the computer the server runs on
+  (src/worker/nsc.ts), so a run that reads it does not repeat.
 - **Power-on memory** is all $FF, except $9E and $9F, which are 0
   (src/worker/memory.ts:427-456). What a real IIe's memory holds at
   power-on was not checked.
-- **The clock and the frame.** 1,020,488 Hz in Apple2ts's frame time, the
+- **The clock and the frame.** 1,020,488 Hz in Apple2TS's frame time, the
   blank at the start of each frame, and $C019 evaluated between
   instructions (Timing).
-- **Apple2ts's own picture** shows hi-res page 2 when 80STORE and PAGE2
+- **Apple2TS's own picture** shows hi-res page 2 when 80STORE and PAGE2
   are both on (src/worker/memory.ts:812), and draws Video-7 card modes
   for some switch settings (memory.ts:754-768, 791-793). The kit draws
-  its screenshots itself and shows page 1, so only Apple2ts's web page
+  its screenshots itself and shows page 1, so only Apple2TS's web page
   shows these.
 - **The server's changes.** The kit's server turns off the patches
-  Apple2ts makes to some twenty games it recognises, so the machine runs
+  Apple2TS makes to some twenty games it recognises, so the machine runs
   every program as it is; it also draws the random values from a seeded
   generator and puts keys straight into the latch, with no auto-repeat.
   Its `hello` reply lists every change (`kit/skills/apple2/tool-apple2ts`).
@@ -1230,7 +1232,7 @@ none was checked on a real IIe.
 Not the kit's machine; for a game that checks for, or needs, one of
 them.
 
-- **Apple II and II Plus** (ROM: Apple2ts ships the II Plus's). A 6502,
+- **Apple II and II Plus** (ROM: Apple2TS ships the II Plus's). A 6502,
   whose undocumented opcodes run. 48K, with an optional 16K language card
   in slot 0, whose $C080-$C08F switches are the IIe's; no aux memory, no
   80 columns without a card, no MouseText, and no $C011-$C01F status
@@ -1265,7 +1267,7 @@ them.
   listing (`sta set80store`), a load's the read's.
 - **One read does not write-enable the language card.** It takes two
   odd reads in a row; a store between them cancels it, and `INC $C083`
-  does it on a 65C02 and not in Apple2ts.
+  does it on a 65C02 and not in Apple2TS.
 - **Which $D000 bank.** Two 4K banks share $D000-$DFFF; $E000-$FFFF has
   one. Code at $D000 in one bank and data at $D000 in the other are two
   parts, and so is anything in aux memory (Memory map).
@@ -1366,15 +1368,15 @@ disagree, the entry above says so. Each was read on 19 October 2026.
   and addresses; Applesoft.sym65 credits *What's Where in the Apple* by
   William F. Luebbert and the S-C DocuMentor for Applesoft by Bob
   Sander-Cederlof. Read 19 October 2026.
-- **Apple2ts 3.7.0**, Chris Torrence's emulator (MIT,
+- **Apple2TS 3.7.0**, Chris Torrence's emulator (MIT,
   `https://github.com/ct6502/apple2ts`, tag v3.7.0, commit c900979). The
   kit installs its src/ folder in `tools/apple2/apple2ts/`
-  (`kit/apple2/tools.py`), so a line cited as "Apple2ts,
+  (`kit/apple2/tools.py`), so a line cited as "Apple2TS,
   src/worker/memory.ts:812" can be read there: src/worker/memory.ts,
   motherboard.ts, softswitches.ts, instructions.ts, nsc.ts,
   devices/joystick.ts, devices/mockingboard.ts, and
   src/common/utility.ts. Read 19 October 2026.
-- **The ROMs Apple2ts 3.7.0 ships** in src/worker/roms/: the enhanced
+- **The ROMs Apple2TS 3.7.0 ships** in src/worker/roms/: the enhanced
   IIe's (rom_2e.ts), whose halves match MAME 0.289's 342-0304-A
   ($C000-$DFFF) and 342-0303-A ($E000-$FFFF) by CRC-32 and SHA-1; the
   unenhanced IIe's and the II Plus's (rom_2e_unenhanced.ts, rom_2+.ts);
@@ -1388,7 +1390,7 @@ disagree, the entry above says so. Each was read on 19 October 2026.
   src/devices/sound/ay8910.cpp, and src/devices/cpu/m6502/w65c02.cpp,
   dw65c02.lst, ow65c02.lst and om6502.lst. Cited by file and line. Read
   19 October 2026.
-- **The kit's machine** ("live"): Apple2ts 3.7.0's IIe run headless under
+- **The kit's machine** ("live"): Apple2TS 3.7.0's IIe run headless under
   Node by the server of the platform's evaluation, the forerunner of
   `kit/apple2/apple2ts_server.mjs`, with the same slots (3: the extended
   80-column card, 4: Mockingboard, 6: Disk II) and the same changes

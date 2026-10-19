@@ -46,7 +46,8 @@ OPS.update({
 assert len(OPS) == 178, len(OPS)
 
 # The no-ops: one byte in columns 3, 7, B and F; two in column 2 and at $44, $54, $D4 and $F4
-# (which read zero page as they pass); three at $5C, $DC and $FC (which read an address).
+# (which read zero page as they pass); three at $5C, $DC and $FC. Which bytes each reads as it
+# passes is in kit/skills/apple2/apple2-reference, "The 65C02".
 NOPS = {}
 for _row in range(16):
     for _col in (0x3, 0x7, 0xB, 0xF):
