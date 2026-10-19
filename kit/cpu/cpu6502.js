@@ -37,6 +37,12 @@
 //   last driven on them (VICE lets 6 and 7 fade to 0 some 350,000 cycles after they stop being
 //   driven; the simulator does not).
 //   A cartridge's lines are not modelled.
+// - new CPU(mem, { ramSize, io, ioPages }): another machine's map. ramSize (a power of two, such as
+//   $4000 for a Commodore 16's 16 KB, $1000 at the least) folds every address above it onto the RAM below, as a machine
+//   with less RAM than the 64 KB repeats it: $4000 is the byte at $0000. ioPages, a list of page
+//   numbers ($FF for $FF00-$FFFF), sends every read, write and fetch in those pages to io, which
+//   serves its chips and whatever else is there (a ROM, the RAM beneath). A C16 machine passes the
+//   pages of TED and of its ROMs (kit/c16/machine.js). Without the port, $00 and $01 are RAM.
 // - io: the chips at $D000-$DFFF while they are banked in, colour RAM included:
 //   { read(address, cpu), write(address, value, cpu) }. Mirrors are the caller's to fold. A read or
 //   a write with no function for it stops the run and names the chip.
@@ -76,6 +82,8 @@
 // there). Returns the instructions run.
 // run(opts) runs from cpu.pc until it reaches opts.until, or until at least opts.cycles cycles have
 // run. A frame of play: cpu.run({ cycles: 19656 }); if (!cpu.i) cpu.irq();
+// cpu.onRti, when set, is called with the CPU after each RTI it runs: a machine that takes its
+// interrupts itself between runs (kit/c16/machine.js) counts their ends with it.
 // irq(handler, opts) and nmi(handler, opts) take an interrupt now, whatever I says: push the program
 // counter and the flags (B clear), set I, jump to handler (default: the vector at $FFFE or $FFFA as
 // the port maps it), and run until the return to the interrupted code. With opts.kernal they stand in
@@ -231,7 +239,7 @@
 
   // --- the memory map ---------------------------------------------------------------------------
   // What the processor sees in each 256-byte page.
-  const RAM = 0, ZP = 1, IO = 2, BASIC = 3, KERNAL = 4, CHAR = 5;
+  const RAM = 0, ZP = 1, IO = 2, BASIC = 3, KERNAL = 4, CHAR = 5, FOLD = 6;
   const ASL = 0, LSR = 1, ROL = 2, ROR = 3, INC = 4, DEC = 5;   // the read-modify-write operations
   const ROM_NAME = { [BASIC]: 'BASIC', [KERNAL]: 'KERNAL', [CHAR]: 'character' };
 
@@ -248,6 +256,7 @@
       this.n = 0; this.v = 0; this.d = 0; this.i = 1; this.z = 0; this.c = 0;
       this.steps = 0; this.cycles = 0;
       this.opc = 0;                                    // the address of the instruction running
+      this.onRti = null;                               // called after each RTI the processor runs
       this.writes = null; this.reads = null; this.executed = null;
       this.ane = opts.ane === undefined ? 0xEF : opts.ane;
       this.lxa = opts.lxa === undefined ? 0xEE : opts.lxa;
@@ -257,15 +266,20 @@
       this.rk = new Uint8Array(256);                   // per page: what a read or a fetch sees
       this.wk = new Uint8Array(256);                   // per page: where a write goes
       this.c64 = opts.port !== undefined;
-      if (!this.c64 && (opts.io || opts.rom)) {
-        throw new Error('io and rom need the C64 map: give port too ({ dir, data }, as readSnapshot returns it)');
+      this.ioPages = opts.ioPages ? Array.from(opts.ioPages, p => p & 0xFF) : null;
+      if (!this.c64 && (opts.rom || (opts.io && !this.ioPages))) {
+        throw new Error('io and rom need the C64 map: give port too ({ dir, data }, as readSnapshot returns it), or ioPages for io on another machine');
       }
+      if (this.c64 && this.ioPages) throw new Error('ioPages is for a machine without the C64 map: give port or ioPages, not both');
+      const size = opts.ramSize === undefined ? 0x10000 : opts.ramSize;
+      if (!(size >= 0x1000 && size <= 0x10000 && (size & (size - 1)) === 0)) throw new Error('ramSize: a power of two from $1000 to $10000');
+      this.ramMask = size - 1;
       if (this.c64) {
         const p = typeof opts.port === 'number' ? { dir: 0x2F, data: opts.port } : opts.port;
         this.pdir = p.dir & 0xFF; this.pdata = p.data & 0xFF;
         this.pout = (p.out === undefined ? p.data & p.dir : p.out) & 0xFF;
         this.mapPort();
-      }
+      } else this.mapBare();
     }
 
     get p() {
@@ -300,6 +314,19 @@
       if ((cfg & 3) === 3) r.fill(BASIC, 0xA0, 0xC0);
       if (cfg & 2) r.fill(KERNAL, 0xE0, 0x100);
       if ((cfg & 3) && (cfg & 4)) { r.fill(IO, 0xD0, 0xE0); w.fill(IO, 0xD0, 0xE0); } else if (cfg & 3) r.fill(CHAR, 0xD0, 0xE0);
+      this.fold();
+    }
+    // Another machine's map: RAM, io's pages, and the RAM above ramSize folded onto it.
+    mapBare() {
+      this.rk.fill(RAM); this.wk.fill(RAM);
+      if (this.ioPages) for (const p of this.ioPages) this.rk[p] = this.wk[p] = IO;
+      this.fold();
+    }
+    fold() {
+      for (let p = (this.ramMask + 1) >>> 8; p < 256; p++) {
+        if (this.rk[p] === RAM) this.rk[p] = FOLD;
+        if (this.wk[p] === RAM) this.wk[p] = FOLD;
+      }
     }
     portRead(a) {
       return a === 0 ? this.pdir : ((this.pdata & this.pdir) | (~this.pdir & (0x17 | (this.pout & 0xC8)))) & 0xFF;
@@ -313,17 +340,18 @@
       const img = k === BASIC ? this.rom.basic : k === KERNAL ? this.rom.kernal : this.rom.char;
       return img ? img[a & (k === CHAR ? 0x0FFF : 0x1FFF)] : undefined;
     }
+    chipAt(a) { return this.c64 ? chip(a) : 'io, page ' + hex2(a >>> 8); }
     ioRead(a) {
       const v = this.io && this.io.read ? this.io.read(a, this) : undefined;
       if (typeof v !== 'number') {
-        this.fail('read of ' + hex4(a) + ' (' + chip(a) + ') at ' + hex4(this.opc) + ': ' +
+        this.fail('read of ' + hex4(a) + ' (' + this.chipAt(a) + ') at ' + hex4(this.opc) + ': ' +
                   (this.io && this.io.read ? 'io.read gave no value' : 'no io.read'), { address: a });
       }
       return v & 0xFF;
     }
     ioWrite(a, v) {
       if (!this.io || !this.io.write) {
-        this.fail('write of ' + hex2(v) + ' to ' + hex4(a) + ' (' + chip(a) + ') at ' + hex4(this.opc) + ': no io.write', { address: a });
+        this.fail('write of ' + hex2(v) + ' to ' + hex4(a) + ' (' + this.chipAt(a) + ') at ' + hex4(this.opc) + ': no io.write', { address: a });
       }
       this.io.write(a, v, this);
     }
@@ -340,6 +368,7 @@
       if (this.reads !== null) this.reads[a] = 1;
       const k = this.rk[a >>> 8];
       if (k === RAM) return this.m[a];
+      if (k === FOLD) return this.m[a & this.ramMask];
       if (k === ZP) return a > 1 ? this.m[a] : this.portRead(a);
       if (k === IO) return this.ioRead(a);
       const b = this.romByte(a, k);
@@ -353,6 +382,7 @@
       if (this.writes !== null) this.writes[a] = 1;
       const k = this.wk[a >>> 8];
       if (k === RAM) this.m[a] = v;
+      else if (k === FOLD) this.m[a & this.ramMask] = v;
       else if (k === ZP) { if (a > 1) this.m[a] = v; else this.portWrite(a, v); }
       else this.ioWrite(a, v);
     }
@@ -360,6 +390,7 @@
     fb(a, first) { a &= 0xFFFF; return this.rk[a >>> 8] === RAM ? this.m[a] : this.fbx(a, first); }
     fbx(a, first) {
       const k = this.rk[a >>> 8];
+      if (k === FOLD) return this.m[a & this.ramMask];
       if (k === ZP) return a > 1 ? this.m[a] : this.portRead(a);
       if (k === IO) return this.ioRead(a);
       const b = this.romByte(a, k);
@@ -679,7 +710,7 @@
           break;
         }
         case 0x60: this.rts(); break;
-        case 0x40: this.rti(); break;
+        case 0x40: this.rti(); if (this.onRti !== null) this.onRti(this); break;
         case 0x00: {
           const r = (this.pc + 2) & 0xFFFF;
           this.push(r >> 8); this.push(r & 0xFF); this.push(this.p | 0x10); this.i = 1;

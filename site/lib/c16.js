@@ -208,7 +208,97 @@ globalThis.C16 = (function () {
   }
 
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-  return { PALETTE, rgb, css, render, rgba, draw, load, hex };
+
+  // --- TED's timing: where the processor gets its cycles --------------------------------------
+  // A PAL frame is 312 lines of 114 ticks of the double clock (1,773,447 a second). Tick 0 of a
+  // line is where TED steps its line count, plus4emu's column 98. The processor's cycle takes one
+  // tick at the double clock and two at the single clock, which starts on an even tick, and none
+  // while TED holds it to fetch the screen. Measured on plus4emu (939e652), 19 October 2026
+  // (kit/c16/fixtures/ted-timing.json):
+  //   a line outside the display (the border, or any line of a frame with the display off): the
+  //     single clock at ticks 92-101 (TED's refresh), 109 cycles;
+  //   a line of the display, 0 to 203 in a frame that began with $FF06's bit 4 set: the single
+  //     clock at ticks 4-101, 65 cycles;
+  //   a bad line, the line of the display whose low three bits are $FF06's vertical scroll (up to
+  //     202) and the line after it, where TED fetches the attributes and then the characters: the
+  //     single clock from tick 4, a cycle at tick 4, then TED holds the processor until tick 92,
+  //     22 cycles. A write goes on through the hold's first three cycles, ticks 6, 8 and 10, and
+  //     the processor stops at its next read: a store that reaches tick 4 lets the next
+  //     instruction start at 92 all the same (step, below).
+  // TED looks at $FF06's bit 4 once a frame, as line 0 begins: a display turned on or off takes
+  // effect at the next frame.
+  const LINE = 114, LINES = 312, FRAME = LINE * LINES;
+  const BORDER = 0, DISPLAY = 1, BAD = 2;
+  // For each kind of line, from the ticks of its single clock and of TED's hold: the tick each
+  // cycle starts on (start), its ticks (len), and for each tick the number of cycles that start
+  // before it (before).
+  const KINDS = [[92, 102, 0, 0], [4, 102, 0, 0], [4, 102, 6, 92]].map(([s0, s1, h0, h1]) => {
+    const start = [], len = [];
+    for (let t = 0; t < LINE;) {
+      if (t >= h0 && t < h1) { t = h1; continue; }
+      const single = t >= s0 && t < s1;
+      start.push(t); len.push(single ? 2 : 1); t += single ? 2 : 1;
+    }
+    const before = new Uint8Array(LINE + 1);
+    let k = 0;
+    for (let t = 0; t <= LINE; t++) { while (k < start.length && start[k] < t) k++; before[t] = k; }
+    return { start: Uint8Array.from(start), len: Uint8Array.from(len), before, cycles: start.length };
+  });
+  // The beam: which kind each line is, from the display and vertical scroll as the game left
+  // them. kind(line) for a line of the frame now being drawn; frames after it are taken as
+  // this one.
+  class Beam {
+    constructor(o = {}) {
+      this.ff06 = o.ff06 === undefined ? 0x1B : o.ff06;   // as the KERNAL leaves it
+      this.shown = o.shown === undefined ? (this.ff06 & 0x10) !== 0 : !!o.shown;   // this frame's display
+    }
+    kind(line) {
+      line %= LINES;
+      if (!this.shown || line > 203) return BORDER;
+      const v = this.ff06 & 7;
+      return ((line & 7) === v && line <= 202) || (((line - 1) & 7) === v && line >= 1 && line <= 203) ? BAD : DISPLAY;
+    }
+    // A frame begins: TED looks at the display bit.
+    frame() { this.shown = (this.ff06 & 0x10) !== 0; }
+    // The tick on which n cycles of the processor, the first at tick t or after, have ended.
+    after(t, n) {
+      let L = Math.floor(t / LINE), p = t - L * LINE;
+      for (;;) {
+        const K = KINDS[this.kind(L)], k = K.before[p], left = K.cycles - k;
+        if (n <= left) { if (n <= 0) return t; const i = k + n - 1; return L * LINE + K.start[i] + K.len[i]; }
+        n -= left; L++; p = 0; t = L * LINE;
+      }
+    }
+    // The tick on which the processor's next cycle at tick t or after starts.
+    next(t) {
+      let L = Math.floor(t / LINE), p = t - L * LINE;
+      for (;;) {
+        const K = KINDS[this.kind(L)], k = K.before[p];
+        if (k < K.cycles) return L * LINE + K.start[k];
+        L++; p = 0;
+      }
+    }
+    // The tick of the cycle after one at tick t, when that cycle is a write (write true) or a
+    // read: on a bad line a write after the cycle at tick 4 goes on at 6, 8 and 10.
+    step(t, write) {
+      const p = t % LINE;
+      if (write && (p === 4 || p === 6 || p === 8) && this.kind(Math.floor(t / LINE)) === BAD) return t + 2;
+      return this.next(t + 1);
+    }
+    // The processor's cycles that start in ticks t to u - 1.
+    cycles(t, u) {
+      let n = 0, L = Math.floor(t / LINE), p = t - L * LINE;
+      while (L * LINE < u) {
+        const K = KINDS[this.kind(L)], end = Math.min(LINE, u - L * LINE);
+        if (end > p) n += K.before[end] - K.before[p];
+        L++; p = 0;
+      }
+      return n;
+    }
+  }
+  const timing = { LINE, LINES, FRAME, BORDER, DISPLAY, BAD, KINDS, Beam };
+
+  return { PALETTE, rgb, css, render, rgba, draw, load, hex, timing };
 })();
 
 // The TED machines' names for the footprint categories; the drawing is makeMemMap in memmap.js.

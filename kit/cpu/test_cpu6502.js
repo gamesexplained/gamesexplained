@@ -742,5 +742,40 @@ patch:  lda #$00
   expect('signed compare', { wrong: wrong.join(' ') }, { wrong: '' });
 }
 
+{
+  // ramSize: a Commodore 16's 16 KB, repeated through the 64 KB. An index that runs past $3FFF
+  // reads the zero page again; a store at $C010 lands at $0010; code runs from a folded address.
+  const c = machine(0x1000, `
+        ldx #$03
+        lda $3FFE,x       ; $4001: the byte at $0001
+        sta $C010         ; $0010
+        lda $50
+        sta $7FFF         ; $3FFF
+        jmp $5100         ; $1100
+  `, { ramSize: 0x4000 });
+  c.m[0x0001] = 0x5A; c.m[0x50] = 0xA5;
+  c.m.set([0xA9, 0x77, 0x85, 0x20, 0x60], 0x1100);      // lda #$77, sta $20, rts
+  c.call(0x1000);
+  expect('ramSize folds reads, writes and fetches onto the 16 KB', { a: c.m[0x10], b: c.m[0x3FFF], c: c.m[0x20], hi: c.m[0xC010] + c.m[0x7FFF] },
+    { a: 0x5A, b: 0xA5, c: 0x77, hi: 0 });
+  throws('ramSize must be a power of two', () => new CPU(new Uint8Array(65536), { ramSize: 0x3000 }), /power of two/);
+}
+{
+  // ioPages: io serves the pages named, on a machine without the C64's map; the rest is RAM
+  const seen = [];
+  const io = { read: a => { seen.push('r' + a.toString(16)); return a & 0xFF; }, write: (a, v) => { seen.push('w' + a.toString(16) + '=' + v); } };
+  const c = machine(0x1000, `
+        lda $FF1E
+        sta $FF0B
+        lda $FD30
+        sta $D020
+        lda $D020
+        rts
+  `, { ramSize: 0x4000, io, ioPages: [0xFD, 0xFF] });
+  c.call(0x1000);
+  expect('ioPages sends those pages to io and folds the rest', { seen: seen.join(' '), a: c.a, ram: c.m[0x1020] }, { seen: 'rff1e wff0b=30 rfd30', a: 0x30, ram: 0x30 });
+  throws('io without the C64 map needs ioPages', () => new CPU(new Uint8Array(65536), { io }), /ioPages/);
+}
+
 console.log(bad ? `FAILED ${bad} of ${runs}` : `all ${runs} simulator checks pass`);
 process.exit(bad ? 1 : 0);
