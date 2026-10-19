@@ -24,8 +24,6 @@ minisite built (How it works, Discoveries, Maps / levels), copy
 
 ## Gaps
 
-- The sound section lists the seven effects and plays none: the site
-  has no player for TED's sound (#434).
 - The creatures are left out of the mine on How it works: it runs the
   level builder, Pete, the dynamite and the water, and not
   `move_creatures`, the scoring or the deaths.

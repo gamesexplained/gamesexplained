@@ -127,6 +127,7 @@ WORKAROUNDS = [
     "run cycles and frames: Run calls up to 300 half-cycles short, then a callback on every instruction until the count is passed",
     "code map: the library's own counters when it was built with codemap.patch (put back to the last stop's after an internal replay, load or reset), else a callback on every instruction; either way an instruction counts when it runs, so the one at a stop counts when the run goes on",
     "sound: write breakpoints on $FF0E-$FF12, each logged with the cycle",
+    "sound with audio: plus4emu's own output kept from its audio callback, its 15 kHz high shelf off and its volume at 1.0, and dropped while the server runs the machine for itself (a replay, the rest of a Run call after a stop), so that it is whole only across one run",
     "screenshot: replay to the stop, run 2.2 frames forward with the display on, decode TED's output stream, then load the stop back; with a tape or disk in, the display stays on (slower) and the screenshot is the last whole frame before the stop (going back after it would mean replaying the load again)",
     "type: the server fills the KERNAL's keyboard buffer ($0527, count at $EF) between Run calls whenever it is empty, ten characters at a time; each fill is logged, so a replay repeats it (the library's own paste keeps state a snapshot does not)",
     "program loads: Plus4VM_LoadProgram, logged at the stop so a replay repeats it",
@@ -156,6 +157,7 @@ class Regs(C.Structure):
 V = C.c_void_p
 BPCB = C.CFUNCTYPE(None, V, C.c_int, C.c_int, C.c_uint16, C.c_uint8)
 VIDCB = C.CFUNCTYPE(None, V, C.POINTER(C.c_uint8), C.c_size_t)
+AUDCB = C.CFUNCTYPE(None, V, C.POINTER(C.c_int16), C.c_size_t)
 PROTOS = [
     ("Plus4VM_Create", [], V), ("Plus4VM_GetLastErrorMessage", [V], C.c_char_p),
     ("Plus4VM_Run", [V, C.c_size_t], C.c_int), ("Plus4VM_Reset", [V, C.c_int], None),
@@ -163,6 +165,11 @@ PROTOS = [
     ("Plus4VM_LoadROM", [V, C.c_uint8, C.c_char_p, C.c_size_t], C.c_int),
     ("Plus4VM_SetEnableAudioOutput", [V, C.c_int], None), ("Plus4VM_SetEnableDisplay", [V, C.c_int], None),
     ("Plus4VM_SetVideoOutputCallback", [V, VIDCB, V], None),
+    ("Plus4VM_SetAudioOutputCallback", [V, AUDCB, V], None),
+    ("Plus4VM_SetAudioSampleRate", [V, C.c_float], C.c_int), ("Plus4VM_SetAudioOutputQuality", [V, C.c_int], C.c_int),
+    ("Plus4VM_SetAudioOutputFilters", [V, C.c_float, C.c_float], None),
+    ("Plus4VM_SetAudioOutputEqualizer", [V, C.c_int, C.c_float, C.c_float, C.c_float], None),
+    ("Plus4VM_SetAudioOutputVolume", [V, C.c_float], None),
     ("Plus4VM_SetBreakPointCallback", [V, BPCB, V], None),
     ("Plus4VM_AddBreakPoint", [V, C.c_int, C.c_uint16, C.c_int], C.c_int), ("Plus4VM_ClearBreakPoints", [V], None),
     ("Plus4VM_SetBPPriorityThreshold", [V, C.c_int], None), ("Plus4VM_SetSingleStepMode", [V, C.c_int], None),
@@ -360,8 +367,10 @@ class Emu:
         self.kept = {}            # keep and back: name -> file in self.tmp
         self.cb = BPCB(self._cb)
         self.vcb = VIDCB(self._vcb)
+        self.acb = AUDCB(self._acb)
         L.Plus4VM_SetBreakPointCallback(vm, self.cb, None)
         L.Plus4VM_SetVideoOutputCallback(vm, self.vcb, None)
+        L.Plus4VM_SetAudioOutputCallback(vm, self.acb, None)
         L.Plus4VM_SetEnableAudioOutput(vm, 0)
         L.Plus4VM_SetEnableDisplay(vm, 0)
         L.Plus4VM_SetBPPriorityThreshold(vm, 0)
@@ -443,6 +452,17 @@ class Emu:
             self.vlive_bytes += n
             while self.vlive_bytes > 800_000:
                 self.vlive_bytes -= len(self.vlive.popleft())
+
+    def _acb(self, ud, buf, n):
+        """plus4emu's audio, 16 samples at a time, kept while `sound` records it and the machine is
+        running for the client."""
+        cap = self.sound
+        if cap is None or cap.get("audio") is None or self.abandon or self.replay is not None:
+            return
+        g = self.goal
+        if g is None or g.get("internal"):
+            return
+        cap["audio"] += C.string_at(buf, 2 * n)
 
     def set_live_video(self, on):
         """TED's output kept while a tape or disk is in, where a screenshot cannot replay."""
@@ -1299,7 +1319,7 @@ class Emu:
         if cmd == "codemap":
             return reply(item, self.do_codemap(a.get("action") or "read", stopped))
         if cmd == "sound":
-            return reply(item, self.do_sound(a.get("action"), a.get("path")))
+            return reply(item, self.do_sound(a.get("action"), a.get("path"), a.get("audio")))
         if cmd == "quit":
             self.quitting = True
             reply(item, {"bye": True})
@@ -1518,19 +1538,37 @@ class Emu:
             out.append([a, d[2] if d else 1, n])
         return out
 
-    def do_sound(self, action, path):
+    def do_sound(self, action, path, audio=None):
         if action == "start":
             self.sound = {"start": self.parked["stamp"] if self.parked else self.stamp(), "writes": []}
+            if audio:
+                # plus4emu's own output as well, at `audio` samples a second (11,025 to 96,000): its
+                # low-quality converter and its DC filters at 5 and 15 Hz, as its program has them,
+                # with its high shelf off and its volume at 1.0 (a gain of 1.17)
+                rate = float(audio)
+                if not 11025 <= rate <= 96000:
+                    raise EmuError("audio: a sample rate from 11025 to 96000")
+                ok(L.Plus4VM_SetAudioSampleRate(vm, rate), "audio sample rate")
+                ok(L.Plus4VM_SetAudioOutputQuality(vm, 0), "audio quality")
+                L.Plus4VM_SetAudioOutputFilters(vm, 5.0, 15.0)
+                L.Plus4VM_SetAudioOutputEqualizer(vm, -1, 15000.0, 1.0, 0.5)
+                L.Plus4VM_SetAudioOutputVolume(vm, 1.0)
+                L.Plus4VM_SetEnableAudioOutput(vm, 1)
+                self.sound.update(audio=bytearray(), rate=rate)
             self.sync_bps()
-            return {"start": self.sound["start"]}
+            return {"start": self.sound["start"], "audio": self.sound.get("rate")}
         if action != "stop":
             raise EmuError('action: "start" or "stop"')
         if self.sound is None:
             raise EmuError("no capture running: sound start first")
         cap, self.sound = self.sound, None
+        L.Plus4VM_SetEnableAudioOutput(vm, 0)
         self.sync_bps()
         out = {"format": "kit-c16-sound", "clock": CLOCK, "frame": FRAME, "model": args.model, "start": cap["start"],
                "end": self.parked["stamp"] if self.parked else self.stamp(), "writes": cap["writes"]}
+        if cap.get("audio") is not None:
+            out["audio"] = {"rate": cap["rate"], "samples": base64.b64encode(bytes(cap["audio"])).decode(),
+                            "encoding": "16-bit signed, little-endian, mono"}
         if not path:
             return dict(out, count=len(cap["writes"]))
         full = inside_root(path)

@@ -43,8 +43,9 @@ either; one that needs more than 16 KB runs only on the Plus/4, and its
 and say which in `orientation.md`. A snapshot names its model, and a
 server of the other model refuses it.
 
-There is no window and no sound. The screen is drawn from TED's own
-output as a PNG, and the sound is a log of TED's sound registers. The
+There is no window and nothing comes out of a speaker. The screen is
+drawn from TED's own output as a PNG, and the sound is a log of TED's
+sound registers, with plus4emu's own output beside it when asked. The
 machine runs only when asked, and then as fast as the host goes: 1,500
 frames, thirty seconds of the machine's time, took 1.40 s on the C16,
 21.6 times real time, and 1.76 s on the Plus/4, 17.1 times (a four-core
@@ -120,7 +121,7 @@ all hexadecimal. A `path` is made absolute by the client.
 | | `checkpoints`, `delete` (`checkpoint`, or `"all": true`), `zero` (`checkpoint`, or all) | each with `hits` and `last`, below |
 | Snapshots | `save` (`path`), `load` (`path`), `keep` and `back` (`name`) | below |
 | Screen | `screenshot` (`path`) | a PNG of TED's picture, below |
-| Sound | `sound` (`action` start or stop, `path`) | every write to TED's sound registers, each with its cycle |
+| Sound | `sound` (`action` start or stop, `path`, `audio`) | every write to TED's sound registers, each with its cycle; with `audio`, plus4emu's own output too |
 | What ran | `codemap` (`action` start, read, zap or stop) | `[address, length, count]` for each address an instruction started at |
 | Quit | `quit` | the server exits |
 
@@ -383,9 +384,16 @@ m.keep(); ...; m.back()                         # a whole state, 55 ms a pair on
 - `sound` with `start`, then `stop`, records every write to TED's sound
   registers, $FF0E-$FF12, as `[cycle, address, value]`, in the format
   `kit-c16-sound` (`clock` 1,773,447 cycles a second, `frame` 35,568),
-  written to `path` when one is given (`sound-log`). A page needs a
-  player for that log written first (`kit/skills/c16/steps`, `sound`);
-  what the registers mean is `c16-reference`, "Sound".
+  written to `path` when one is given (`sound-log`). The site plays that
+  log (`kit/skills/c16/steps`, `sound`); what the registers mean is
+  `c16-reference`, "Sound". `audio`, a sample rate from 11,025 to
+  96,000 given with `start`, also keeps what plus4emu itself played
+  across the same run, returned with `stop` as `audio` (`rate`, and
+  `samples`, base64 of 16-bit signed little-endian mono): its
+  low-quality converter and its DC filters at 5 and 15 Hz, its 15 kHz
+  high shelf off, its volume at 1.0. What the server runs for itself (a
+  screenshot, a save's replay) is left out. `kit/c16/sound.py` compares
+  it with the site's model.
 
 ## What ran
 

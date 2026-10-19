@@ -252,10 +252,12 @@ class Machine:
         """The screen as a PNG, as TED drew it: the border included, one pixel to a dot."""
         return self.call("screenshot", path=os.path.abspath(path))
 
-    def sound(self, action, path=None):
+    def sound(self, action, path=None, audio=None):
         """start, then stop (with a path to write the capture): TED's sound register writes,
-        each with its cycle."""
-        return self.call("sound", action=action, path=os.path.abspath(path) if path else None)
+        each with its cycle. audio, a sample rate given to start, keeps plus4emu's own output
+        too, whole across one run (kit/skills/c16/tool-plus4emu, "The screen, the text and the
+        sound")."""
+        return self.call("sound", action=action, path=os.path.abspath(path) if path else None, audio=audio)
 
     def codemap(self, action="read"):
         return self.call("codemap", action=action)

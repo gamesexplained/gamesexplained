@@ -324,13 +324,29 @@ colour 2    29 29 29 19 19 19 21 01 01 01 11 11 19 19 29 29
 
 TED's two voices, effects only: the game has no music. `sound` runs
 once a frame from `irq_play` and plays the first effect that is going,
-in this order: the tones for the sticks left at the end of a level
-(noise, fading); the level's end (both square voices, voice 1
-warbling); a goodie collected (voice 1, its pitch wobbling at random);
-an explosion (noise on voice 2, fading twice); Pete's death (noise
-pulses rising and falling); a fuse burning (a hiss of noise at
-volume 1); Pete digging (a scratch of noise at volumes 0 to 3). Silence
-otherwise.
+in this order. Values are the 10-bit pitch values, voice 1's in `$FF0E`
+and bits 0-1 of `$FF12`, voice 2's in `$FF0F` and bits 0-1 of `$FF10`.
+
+| Effect | Started by | What TED plays | Frames |
+|---|---|---|---|
+| A stick left at a level's end | `main_loop`, `$18EE` | noise at `$3E5`, volume 8 fading to 0, then from 7, and so on down to 1 | 36 a stick |
+| The level's end | `main_loop`, `$18AA` | both squares from volume 12, a step quieter every other frame; voice 1 at `$33C` and `$33F` by turns, voice 2 taking the low byte voice 1 has just left, its top bits whatever `$FF10` holds | 24 |
+| A goodie | `pete_touches`, `$2E25` | voice 1 at `$138`, its low 3 bits random each frame, volume 0 up to 4, then `$238` and fading from 4, from 3, from 2 and from 1 | 14 |
+| An explosion | `dynamite`, `$2BE8` | noise at `$220` (low 3 bits random), volume 5 down to 0, then at `$000` from 12 down, a step in three frames of every four | 20 |
+| Pete's death | `death`, `$2A22` | noise at `$3E0` rising to the volume in `$C2` and at `$3F0` falling (low 3 bits random), `$C2` from 7 one less every second pulse | 112 |
+| A fuse | `dynamite`, `$2C06` | noise at `$3xx`, bits 1, 3, 5 and 7 of `$FF0F` turned over each frame and the rest random, volume 1 | the fuse |
+| Pete moving | a move under way (`$4A`) | noise at `$1xx`, `$FF0F` random each frame, volumes 0, 1, 2 and 3 in turn (`$C4`) | while he moves |
+
+TED plays volumes 9 to 15 as 8, so the level's end and the explosion's
+second fade hold their level for four steps before they fall. Each
+effect clears every flag and the volume when it ends (`$37D8`).
+
+`main_loop` loads `$FF10` at `$18BD` among stores to TED, so the
+level's end keeps voice 2's top bits from the last effect: 1 after
+Pete's moves (he has just climbed the shaft), voice 2 at `$13C`, 157
+Hz, under voice 1's 568 Hz; 0 after an explosion; 3 after a fuse. A
+store of the 3 it loads would have put the two voices 9 Hz apart
+(inferred from the code; the How it works page plays both).
 
 ## The listing's error rate
 
@@ -355,6 +371,12 @@ said the same things (`move_creatures`, `water_step`,
 `release_creature`, `chr_box_lines`) and `main_loop`'s, `release_count`'s,
 `chr_ladder`'s and `map_surface`'s. An audit of every comment is
 recommended (`TODO.md`).
+
+Later, playing the sound effects from the game's code
+(`reference/sound.js`) showed `sound`'s comment wrong about the
+explosion's second fade: it falls a step in three frames of every four,
+where the comment said a quarter of the speed. The comment is corrected,
+with its notes on the goodie, the level's end and Pete moving.
 
 ## Live tests
 
@@ -420,3 +442,18 @@ through `kit/c16/plus4emu.py`, reading memory frame by frame.
   game's screen memory in `irq_play`'s three bands matched plus4emu's
   picture in all 64,000 pixels. `test_pete.js` holds the engine to the
   tables and to the timings above in CI.
+- **The sound effects:** each started in plus4emu on 19 October 2026 by
+  the stores its trigger makes, poked at a stop in level 1 (the goodie,
+  the explosion, the death, a stick's tone), or for real (the big
+  charge's fuse and explosion; the level's end, goodies poked to 0 and
+  Pete held up at the top of the shaft, with 5 sticks left; Pete moving
+  left five cells with the big charge put out), with the server's sound
+  log. `sound`'s writes to `$FF0E`-`$FF12` were the same as
+  `reference/sound.js` makes on the kit's 6502, frame by frame, but for
+  the bits it takes from TED's timer and beam: 14 frames for the goodie,
+  20 for the explosion, 112 for the death, 36 for a stick's tone, the
+  level's end from the jingle to the next level (24 frames of jingle,
+  46 of pause, then for each stick 36 of tone and 2 before the next),
+  and the hiss at volume 1 in every frame of the fuse. plus4emu made
+  them 697 to 855 cycles into the frame, within 41 cycles of where the
+  6502's count puts them.

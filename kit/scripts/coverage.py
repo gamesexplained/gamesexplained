@@ -33,6 +33,10 @@ edge of the memory map, or there is none. The first two want a comment on
 that symbol, the rest a symbol of your own at the run's address, with its
 own comment.
 
+DATA THE LEDGER CANNOT SEE (nothing refers to it by address, so it is neither
+explained nor bare) is listed under the figure, as listing.json's last build found
+it (listing.py, "uncounted"): a figure of 100 % with that list is not the whole game.
+
 A GAME OF SEVERAL PARTS (kit/scripts/parts.py) has a ledger per part, read
 from the part's folder, and each part counts only the addresses it owns, so
 the game's figure, the sum, counts every byte once. Given the game's own
@@ -101,6 +105,21 @@ def reasons(L, syms):
     return out
 
 
+def uncounted_lines(gdir):
+    """The data the ledger does not count, as listing.py found it at the listing's last build
+    (listing.json's "uncounted"), as lines to print under the figure; none when there is none."""
+    lp = os.path.join(gdir, "listing.json")
+    left = (json.load(open(lp)).get("uncounted") or []) if os.path.isfile(lp) else []
+    if not left:
+        return []
+    lines = [f"  NOT COUNTED - {len(left)} stretch(es) of data, {sum(e - s + 1 for s, e, _ in left)} bytes, that "
+             "listing.json's last build found outside the ledger:"]
+    lines += [f"  ${s:04X}-${e:04X} {e - s + 1:6} bytes  {why}" for s, e, why in left]
+    lines += ["  Until each is labelled, or listed in game.json's coverage, the figure above leaves them out",
+              "  (kit/skills/core/50-coverage, \"Data the ledger cannot see\"). Build the listing again after.", ""]
+    return lines
+
+
 def tracked_count(gdir):
     """(tracked bytes, explained bytes) from symbols.json, for parts.py and build.py.
     A game of several parts counts the sum of the parts that have been started."""
@@ -127,7 +146,12 @@ def main():
             sys.exit(f"{gdir} is a game of several parts: the queue is a part's, "
                      f"{os.path.join(gdir, 'parts', '<id>')}")
         print("GAME IMAGE LEDGER  (a game of several parts: each counts the bytes it owns)")
-        print("\n".join(table(gdir)[0])); return
+        print("\n".join(table(gdir)[0]))
+        left = [p["id"] for p in parts(gdir) if uncounted_lines(p["dir"])]
+        if left:
+            print(f"\n  NOT COUNTED - the listings of {', '.join(left)} name data outside the ledger: "
+                  f"coverage.py {os.path.join(gdir, 'parts', left[0])} lists it")
+        return
     top = int(argv[argv.index("--top") + 1]) if "--top" in argv else 25
     only = "data" if "--data" in argv else ("code" if "--code" in argv else None)
     blocks, syms, comments, reg = load(gdir, "--live" in argv, argv[argv.index("--from") + 1] if "--from" in argv else None)
@@ -160,6 +184,8 @@ def main():
     print(f"  bare          : {len(tracked)-expl}  ({100*(len(tracked)-expl)/len(tracked):.1f}%)\n")
     print(f"  code  {cexpl:>5}/{ccount:<5} explained  ({100*cexpl/max(ccount,1):.1f}%)")
     print(f"  data  {dexpl:>5}/{dcount:<5} explained  ({100*dexpl/max(dcount,1):.1f}%)\n")
+    for line in uncounted_lines(gdir):
+        print(line)
     print(f"  {'REGION':<12} {'BYTES':>7} {'EXPL':>7} {'%':>6}")
     agg = {}
     for a in tracked:

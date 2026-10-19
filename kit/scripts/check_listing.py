@@ -12,6 +12,10 @@ format that moved under a listing fails here until the listing is rebuilt (#210)
 bytes the ledger counts that the listing has no snapshot for are named. It needs no
 snapshot. The empty symbols.json that new_game.py writes needs no listing yet.
 
+The data the ledger does not count, which listing.py keeps in listing.json as
+"uncounted", fails a game at Silver or above, whose listing is meant to be whole, and
+is named as a warning below it (#420).
+
 Where a game commits a code map (codemap.json, from kit/<platform>/codemap.py),
 every byte of it that ran, outside the ledger's exclusions, is typed Code in symbols.json: code typed as data
 has no cross-references and still reads as explained (#184). Code only the
@@ -34,6 +38,7 @@ import glob, hashlib, json, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import ID, EMPTY, LEDGER_KEYS, parts, under, ranges, started, load_game, owned, settings   # noqa: E402
+from accuracy import SILVER_UP   # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LISTING = os.path.join(os.path.dirname(os.path.abspath(__file__)), "listing.py")
@@ -111,6 +116,16 @@ def check(gdir):
     for c in S["comments"]:
         if c["type"] == "line" and c["text"].strip() and comments.get(c["address"]) != c["text"]:
             errs.append(f"line comment at ${c['address']:04X} missing or different in listing")
+    left = L.get("uncounted") or []
+    if left:
+        s, e, why = left[0]
+        said = (f"listing.json names {len(left)} stretch(es) of data the ledger does not count, "
+                f"{sum(b - a + 1 for a, b, _ in left)} bytes (the first ${s:04X}-${e:04X}: {why}). Say what each is "
+                "and build the listing again (kit/skills/core/50-coverage, \"Data the ledger cannot see\")")
+        if load_game(gdir).get("tier") in SILVER_UP:      # a Silver listing is meant to be whole (#420)
+            errs.append(said)
+        else:
+            notes.append(f"{gdir}: {said}")
     ran, traced = untyped_code(gdir, S)
     if ran:
         errs.append(f"{len(ran)} byte(s) that codemap.json records running as code are not typed Code in "

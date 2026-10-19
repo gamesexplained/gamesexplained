@@ -98,6 +98,12 @@ outside) and its SHA-256. A game's snapshots differ in the data it changes as it
 so building over a listing from another snapshot says so and names the old one (#214).
 --relabel and --recomment keep the field; --rebuild has no snapshot of its own.
 
+It also keeps the data the ledger does not count, the list printed after the build, as
+`uncounted`: [start, end, what] for each stretch, and no field when there is none.
+coverage.py prints it under the figure, check_listing.py fails a game at Silver or above
+that has any, and the Source tab says the listing leaves it out (#420). Only the snapshot
+shows it, so --rebuild, --relabel and --recomment keep it as the snapshot's build wrote it.
+
 Record fields (short, the file is large):
   a  address            t  kind: code | byte | word | addr | lohi | text | gap | note
   b  bytes              m  mnemonic (code)         o  operand text, symbolic
@@ -280,8 +286,10 @@ def copies(ram, entry, look, least=32):
     return out
 
 
-def uncounted(game, reg, L, ram, entry=None, top=12):
-    """The data the ledger does not count, as lines to print (none when there is nothing).
+def uncounted(game, reg, L, ram, entry=None):
+    """The data the ledger does not count: [start, end, bytes of data, what], sorted by address
+    (none when there is nothing). listing.json keeps it as "uncounted", [start, end, what], so
+    coverage.py, check_listing.py and the Source tab can say so after the build (#420).
 
     $00 and $FF are not counted as data anywhere here: the emulator fills unwritten RAM
     with them, and a stretch of that pattern is not the game's."""
@@ -348,10 +356,14 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
             (s, e, src), more = seen[0], len(seen) - 1
             hidden[i][3] += (f"; ${s:04X}-${e:04X} is copied there after the hand-over, which holds it at ${src:04X}"
                              + (f", and {more} more stretch{'es' if more > 1 else ''} the same way" if more else ""))
+    return sorted(found)
+
+
+def uncounted_lines(found, seen, top=12):
+    """uncounted()'s stretches as lines to print, the largest first (none when there are none)."""
     if not found:
         return []
-    found.sort(key=lambda f: -(f[1] - f[0]))
-    seen = "play snapshot only" if entry is None else "hand-over snapshot" if entry is ram else "hand-over and play snapshots"
+    found = sorted(found, key=lambda f: -(f[1] - f[0]))
     lines = ["", f"data the ledger does not count ({seen}):"]
     for s, e, n, what in found[:top]:
         lines.append(f"  ${s:04X}-${e:04X} {e - s + 1:6} bytes  {what}")
@@ -390,7 +402,9 @@ def beneath(gdir, game, ram):
         bad = sorted(a for a, b in code.items() if ram[a] != b)
         # A load that replaces code changes instruction after instruction; code that rewrites itself
         # changes operands, and here and there one instruction (a branch it flips, a CLC made SEC).
-        # Every part of one game whose engine does that printed a hundred bytes or more (Creatures)
+        # Every part of one game whose engine does that printed a hundred bytes or more (Creatures).
+        # Instructions in a row can also be the part beneath's own doing after its snapshot: an engine
+        # that copies its loader over its title tune's code (The NeverEnding Story, #421)
         runs, n, end = [], 0, None
         for r in recs:
             if ram[r["a"]] == r["b"][0]:
@@ -406,8 +420,11 @@ def beneath(gdir, game, ram):
                           + ("outside this load's ranges, " if mine else "")
                           + f"differ in this snapshot, among them three or more instructions in a row at "
                           + f"{', '.join(f'${a:04X}' for a in runs[:12])}" + (" ..." if len(runs) > 12 else ""),
-                      "Code that rewrites itself changes an instruction here and there. Instructions in a row mean",
-                      'this load replaces that code: widen "ranges" in this part\'s part.json to take in every address its load writes.']
+                      "Code that rewrites itself changes an instruction here and there. Instructions in a row mean either",
+                      'that this load replaces that code, so "ranges" in this part\'s part.json should take in every address',
+                      f"its load writes; or that {q['id']} wrote over its own code after its snapshot was taken (a routine it",
+                      "copies there, a screen it saves there), so the ranges are right. A store checkpoint over those",
+                      "addresses while the loader runs tells them apart."]
         elif bad:
             ops = [r["a"] for r in recs if ram[r["a"]] != r["b"][0]]
             lines += ["", f"{len(bad)} of the {len(code)} code bytes of {q['id']}, the part beneath, "
@@ -887,9 +904,10 @@ def main():
     })
     path = os.path.join(gdir, "listing.json")
     try:
-        was = json.load(open(path)).get("snapshot")
+        prev = json.load(open(path))
     except (OSError, ValueError):
-        was = None
+        prev = {}
+    was = prev.get("snapshot")
     if rebuild:   # the image is the listing's own bytes, so the snapshot is still the one it names
         shot = was
     else:
@@ -898,6 +916,11 @@ def main():
                 "sha256": hashlib.sha256(open(vsf, "rb").read()).hexdigest()}
     if shot:
         out["snapshot"] = shot
+    # only the snapshot shows what the ledger leaves out, so a rebuild keeps the list as built
+    found = None if rebuild else uncounted(game, reg, L, ram, entry)
+    left = prev.get("uncounted") if rebuild else [[s, e, what] for s, e, n, what in found]
+    if left:
+        out["uncounted"] = left
     out.update({"index": index, "records": records})
     if rebuild and "--write" not in argv:
         sys.exit(compare(json.load(open(path)), out))
@@ -929,7 +952,8 @@ def main():
         print(f"note: the listing was built from {was.get('file')} ({str(was.get('sha256'))[:12]}), and this one "
               f"from {shot['file']} ({shot['sha256'][:12]}). Data the game changes as it runs may have moved: "
               "read git diff before committing it.")
-    for line in uncounted(game, reg, L, ram, entry) + ([] if bank is not None else beneath(gdir, game, ram)):
+    seen = "play snapshot only" if entry is None else "hand-over snapshot" if entry is ram else "hand-over and play snapshots"
+    for line in uncounted_lines(found, seen) + ([] if bank is not None else beneath(gdir, game, ram)):
         print(line)
     # a short run of untyped bytes between two code records is usually a missed
     # instruction (the opcode byte of a BIT skip, an undocumented NOP), and the

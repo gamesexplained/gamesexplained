@@ -436,6 +436,22 @@ def source_note(game):
             f'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>')
 
 
+def uncounted_note(lpath):
+    """The Source tab's line on the data its listing leaves out: the stretches listing.py found
+    that the ledger does not count (listing.json's "uncounted", #420). None when there are none."""
+    try:
+        left = json.load(open(lpath)).get("uncounted") or []
+    except (OSError, ValueError):
+        return ""
+    if not left:
+        return ""
+    spans = [f"${s:04X}-${e:04X}" for s, e, _ in left[:3]] + ([f"{len(left) - 3} more"] if len(left) > 3 else [])
+    where = spans[0] if len(spans) == 1 else (", ".join(spans[:-1]) + ("," if len(spans) > 2 else "") + " and " + spans[-1])
+    n = sum(e - s + 1 for s, e, _ in left)
+    return (f'<p class="srcnote"><b>Some data is missing.</b> This listing leaves out {n:,} bytes the game loads, '
+            f'in {len(left)} stretch{"es" if len(left) > 1 else ""} its analysis has not described: {where}.</p>')
+
+
 def withheld(game):
     """True for a game whose maintainers chose not to publish its annotated listing, game.json's
     "publish_source": false. Its Source tab keeps the line on the comments (source_note) and
@@ -1174,7 +1190,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
         # pages: where an operand that reads a bank, or the RAM beneath one, links to (source.html)
         info = dict(part_card(p), under=[part_card(q) for q in beneath], pages=pages)
         src = tpl.replace("<!-- facts -->", facts + whole)
-        src = src.replace("<!-- parts -->", lead + pills + note)
+        src = src.replace("<!-- parts -->", lead + pills + note + uncounted_note(os.path.join(p["dir"], "listing.json")))
         src = src.replace("<!-- pick -->", part_step(P, p))
         src = src.replace("<!-- part -->", '<script type="application/json" id="part">'
                           + json.dumps(info).replace("</", "<\\/") + "</script>")
@@ -1306,7 +1322,7 @@ def build_game(gdir, out_root):
         if cheats.strip():
             facts += "<h2>Cheats</h2>" + markdown(cheats)
         src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
-        src = src.replace("<!-- accuracy -->", source_note(game))
+        src = src.replace("<!-- accuracy -->", source_note(game) + uncounted_note(os.path.join(gdir, "listing.json")))
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{lib}/site.js"></script>\n'
