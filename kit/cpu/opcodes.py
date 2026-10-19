@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The NMOS 6502's whole instruction set, and the undocumented opcodes in a game's code.
+"""The 6502's whole instruction set, and the undocumented opcodes in a game's code.
 
 For every machine built on the NMOS 6502: the C64's 6510 and the BBC Micro Model B's
 6502 run the same 256 opcodes. A disassembler that knows only the documented
@@ -9,6 +9,10 @@ Protection code relies on exactly that (kit/skills/c64/c64-reference, "Undocumen
 opcodes"). This decodes with all 256, the table checked against VICE's own
 disassembler. It is also the references search the core skills name for a 6502
 machine (kit/skills/<platform>/steps, "references").
+
+A machine built on the 65C02 (the enhanced Apple IIe, whose PLATFORM_DEFAULTS say "65c02")
+gets the 65C02's table (m65c02.py): its 178 documented opcodes, and its 78 no-ops in place
+of the undocumented ones, which are what a code block on that machine should not hold.
 
 Usage:
   opcodes.py <game dir> [<snapshot>] [--live]
@@ -23,6 +27,9 @@ Usage:
       compare the table with the running C64 emulator's disassembler, all 256
       opcodes: size and addressing mode (needs `tools.py vice`; it writes
       1 KB at $C000, so not during a game you mean to keep)
+  opcodes.py --check apple2
+      the same for the 65C02's table, against the kit's Apple II (needs `tools.py
+      --platform apple2 apple2ts`; it writes 1 KB at $4000 of main memory)
 
 The bytes come from the snapshot when one is given (the platform's own form, read by
 kit/<platform>/snapshot.py), otherwise from the game's listing.json. The blocks come
@@ -40,6 +47,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
 sys.path.insert(0, HERE)
 from m6502 import OPS, LEN                     # the documented set, as the Source tab has it  # noqa: E402
+import m65c02                                  # noqa: E402
 
 UNDOC = {}        # opcode: (mnemonic, mode), with VICE's names
 for base, name in ((0x00, "slo"), (0x20, "rla"), (0x40, "sre"), (0x60, "rra"),
@@ -68,14 +76,26 @@ for op in (0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0x62, 0x72, 0x92, 0xB2, 0xD2, 0xF
 assert len(UNDOC) == 105 and not set(UNDOC) & set(OPS)
 ALL = {**OPS, **UNDOC}     # sizes and modes match VICE's disassembler for all 256; the names are VICE's
 
+# each processor's documented set and the rest; use() picks one for the game's machine
+TABLES = {"6502": (OPS, UNDOC), "65c02": (m65c02.OPS, m65c02.NOPS)}
+
 # what an instruction does to the memory its operand names
-WRITE = {"sta", "stx", "sty", "sax", "shs", "sha", "shx", "shy"}
-RMW = {"asl", "rol", "lsr", "ror", "inc", "dec", "slo", "rla", "sre", "rra", "dcp", "isb"}
+WRITE = {"sta", "stx", "sty", "sax", "shs", "sha", "shx", "shy", "stz"}
+RMW = {"asl", "rol", "lsr", "ror", "inc", "dec", "slo", "rla", "sre", "rra", "dcp", "isb", "trb", "tsb"}
 JUMP = {"jmp", "jsr"}
 
 
-def decode(ram, a, table=ALL):
-    """(mnemonic, mode, bytes) of the instruction at a, or None for an opcode not in table."""
+def use(cpu):
+    """Decode as the processor `cpu` ("6502" or "65c02") from here on: OPS, UNDOC and ALL become its tables."""
+    global OPS, UNDOC, ALL
+    OPS, UNDOC = TABLES[cpu]
+    ALL = {**OPS, **UNDOC}
+
+
+def decode(ram, a, table=None):
+    """(mnemonic, mode, bytes) of the instruction at a, or None for an opcode not in table
+    (the whole table of the processor in use, unless another is given)."""
+    table = ALL if table is None else table
     op = ram[a]
     if op not in table:
         return None
@@ -85,9 +105,9 @@ def decode(ram, a, table=ALL):
 
 def operand(a, mode, bs):
     """The address the operand names (the base, for an indexed mode), or None."""
-    if mode in ("zp", "zpx", "zpy", "izx", "izy"):
+    if mode in ("zp", "zpx", "zpy", "izx", "izy", "zpi"):
         return bs[1]
-    if mode in ("abs", "abx", "aby", "ind"):
+    if mode in ("abs", "abx", "aby", "ind", "iax"):
         return bs[1] | bs[2] << 8
     if mode == "rel":
         return (a + 2 + (bs[1] - 256 if bs[1] > 127 else bs[1])) & 0xFFFF
@@ -104,7 +124,7 @@ def text(a, m, mode, bs):
     v = operand(a, mode, bs)
     return m + " " + {"zp": "${:02X}", "zpx": "${:02X},x", "zpy": "${:02X},y", "izx": "(${:02X},x)",
                       "izy": "(${:02X}),y", "abs": "${:04X}", "abx": "${:04X},x", "aby": "${:04X},y",
-                      "ind": "(${:04X})", "rel": "${:04X}"}[mode].format(v)
+                      "ind": "(${:04X})", "rel": "${:04X}", "zpi": "(${:02X})", "iax": "(${:04X},x)"}[mode].format(v)
 
 
 def wrap_note(mode, base):
@@ -117,14 +137,16 @@ def wrap_note(mode, base):
 
 # --- the game's bytes and blocks --------------------------------------------
 def platform(gdir):
-    """The game's platform, refused unless the machine is a 6502 (symbols_export.PLATFORM_DEFAULTS)."""
+    """The game's platform, refused unless the machine is a 6502 or a 65C02
+    (symbols_export.PLATFORM_DEFAULTS); the tables are that processor's from here on."""
     from symbols_export import PLATFORM_DEFAULTS, platform_of
     from parts import load_game       # a game's folder or, for a game of several loads, a part's
     plat = platform_of(load_game(gdir))
     cpu = PLATFORM_DEFAULTS.get(plat, {}).get("cpu")
-    if cpu != "6502":
+    if cpu not in TABLES:
         sys.exit(f"{plat!r} is not a 6502 machine (its processor: {cpu or 'not given'}); its "
                  f"references search is in kit/skills/{plat}/steps")
+    use(cpu)
     return plat
 
 
@@ -162,8 +184,9 @@ def blocks_of(gdir, live):
     return sorted(blocks, key=lambda b: b["start"]), names
 
 
-def walk(ram, known, lo, hi, table=ALL):
-    """Decode lo..hi in order; yields (address, decoded or None)."""
+def walk(ram, known, lo, hi, table=None):
+    """Decode lo..hi in order; yields (address, decoded or None). The table is the whole of
+    the processor's in use, unless another is given."""
     a = lo
     while a <= hi:
         if not known[a]:
@@ -178,7 +201,7 @@ def row(a, d, note=""):
     return f"  ${a:04X}  {' '.join('%02X' % v for v in bs):9} {text(a, m, mode, bs):18} {note}".rstrip()
 
 
-END = {"rts", "rti", "jmp", "brk", "jam"}       # instructions that never fall through to the next
+END = {"rts", "rti", "jmp", "brk", "jam", "bra"}       # instructions that never fall through to the next
 ALWAYS = [{"bcc", "bcs"}, {"beq", "bne"}, {"bmi", "bpl"}, {"bvc", "bvs"}]   # a pair that always branches
 
 
@@ -264,8 +287,12 @@ def refs(ram, known, blocks, target, reach):
                 how = "branches to it"
             elif mode == "ind" and target in (v, (v & 0xFF00) | ((v + 1) & 0xFF)):
                 how, rank = "takes its jump address from there", 1
-            elif mode in ("izx", "izy") and target in (v, (v + 1) & 0xFF):
+            elif mode in ("izx", "izy", "zpi") and target in (v, (v + 1) & 0xFF):
                 how, rank = "takes its pointer from there", 1
+            elif mode == "iax" and (target - v) % 0x10000 <= 0x100:
+                i = (target - v) % 0x10000      # the table's low byte at X = i, its high byte at X = i - 1
+                xs = " or ".join(f"${x:02X}" for x in (i - 1, i) if 0 <= x <= 0xFF)
+                how, rank = f"takes its jump address from there, with X = {xs}", 1
             elif mode in ("abx", "aby", "zpx", "zpy"):
                 size = 0x100 if mode in ("zpx", "zpy") else 0x10000
                 i = (target - v) % size
@@ -310,6 +337,37 @@ def check():
     return bad
 
 
+def check_apple2():
+    """The 65C02's table against the kit's Apple II (Apple2TS's disassembler): the same name, size and mode?
+    It prints a no-op as ???, and the accumulator's instructions with no operand."""
+    import re
+    sys.path.insert(0, os.path.join(os.path.dirname(HERE), "apple2"))   # the Apple II emulator's client
+    from apple2ts import connect
+    use("65c02")
+    m = connect()
+    m.write(0x4000, bytes(x for op in range(256) for x in (op, 0x34, 0x12, 0xEA)), space="main")
+    forms = [("imp", r""), ("imm", r"#\$.."), ("izx", r"\(\$..,X\)"), ("izy", r"\(\$..\),Y"), ("zpi", r"\(\$..\)"),
+             ("iax", r"\(\$....,X\)"), ("ind", r"\(\$....\)"), ("zpx", r"\$..,X"), ("zpy", r"\$..,Y"),
+             ("abx", r"\$....,X"), ("aby", r"\$....,Y"), ("zp", r"\$.."), ("abs", r"\$....")]
+    bad = 0
+    for op in range(256):
+        d = m.disassemble(0x4000 + 4 * op)[0]
+        ins = d["text"].split(None, 1)
+        mine, mode = ALL[op]
+        if ins[0] == "???":
+            ok = mine == "noop" and d["length"] == LEN[mode]
+        else:
+            seen = next(f for f, r in forms if re.fullmatch(r, ins[1] if len(ins) > 1 else ""))
+            ok = ins[0].lower() == mine and d["length"] == LEN[mode] and \
+                seen == {"rel": "abs", "acc": "imp"}.get(mode, mode)
+        if not ok:
+            bad += 1
+            print(f"  ${op:02X}: the emulator says {d['text']} ({d['length']} bytes); the table {mine} {mode}")
+    m.close()
+    print(f"{256 - bad} of 256 opcodes agree with the emulator's disassembler: name, size and mode")
+    return bad
+
+
 def snapshot_arg(argv):
     """The snapshot named after the game's folder, or None: the second argument, unless it is
     an option."""
@@ -321,7 +379,7 @@ def main():
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__); return
     if argv[0] == "--check":
-        sys.exit(1 if check() else 0)
+        sys.exit(1 if (check_apple2() if argv[1:2] == ["apple2"] else check()) else 0)
     gdir = argv[0]
     snap = snapshot_arg(argv)
     platform(gdir)

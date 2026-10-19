@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""check_binaries.py refuses the BBC Micro's discs, tapes and snapshots, whatever they are called.
+"""check_binaries.py refuses the BBC Micro's and the Apple II's disks, tapes and snapshots, whatever
+they are called.
 
 A jsbeeb snapshot is gzipped JSON whose name the kit chooses (`.json.gz`), so it is found by
 what it holds, not by its extension; the BBC's disc images by extension and by their sizes;
-other emulators' states by their magic. A gzip file that is not a snapshot passes.
+other emulators' states by their magic. A gzip file that is not a snapshot passes. The Apple II's
+snapshots are JSON (the kit's and Apple2TS's) or YAML (AppleWin's), found by what they hold; its
+disks by extension, size and magic. A JSON file that is not a snapshot passes.
 """
 import gzip
 import json
@@ -16,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import check_binaries                                                     # noqa: E402
 
 
-class BBC(unittest.TestCase):
+class Files(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -28,6 +31,8 @@ class BBC(unittest.TestCase):
             f.write(blob)
         return check_binaries.check(p)
 
+
+class BBC(Files):
     def test_snapshot_by_content(self):
         body = json.dumps({"format": "jsbeeb-snapshot", "version": 4, "state": {}}).encode()
         self.assertEqual(self.why("play.json.gz", gzip.compress(body)), "jsbeeb snapshot")
@@ -47,6 +52,31 @@ class BBC(unittest.TestCase):
     def test_other_gzip_passes(self):
         self.assertIsNone(self.why("notes.json.gz", gzip.compress(json.dumps({"format": "other"}).encode())))
         self.assertIsNone(self.why("broken.gz", b"\x1f\x8b" + bytes(10)))
+
+
+class Apple2(Files):
+    def test_snapshots_by_content(self):
+        kit = json.dumps({"format": "apple2ts-kit-snapshot", "version": 1, "state": {}}).encode()
+        own = json.dumps({"emulator": {"name": "Apple2TS"}, "state6502": {"s6502": {}}}).encode()
+        self.assertEqual(self.why("entry.json", kit), "Apple II snapshot")
+        self.assertEqual(self.why("renamed.txt", kit), "Apple II snapshot")
+        self.assertEqual(self.why("save.json", own), "Apple II snapshot")
+        self.assertEqual(self.why("state.yaml", b"%YAML 1.2\n---\nTag: AppleWin Save State\n"), "Apple II snapshot")
+
+    def test_disk_images(self):
+        for ext in (".woz", ".nib", ".do", ".po", ".2mg", ".a2r", ".a2ts"):
+            self.assertIn(ext, self.why("game" + ext, b"\0" * 10))
+        self.assertIn("size", self.why("game.img", b"\0" * 143360))
+        self.assertIn("size", self.why("game.dat", b"\0" * 232960))
+        self.assertEqual(self.why("x.dat", b"WOZ2\xff\n\r\n" + bytes(8)), "WOZ disk image")
+        self.assertEqual(self.why("y.dat", b"2IMG" + bytes(8)), "2MG disk image")
+
+    def test_other_json_passes(self):
+        self.assertIsNone(self.why("game.json", json.dumps({"platform": "apple2", "slug": "x"}).encode()))
+
+    def test_a_skill_describing_the_format_passes(self):
+        # front matter opens with "---", as YAML can, but only AppleWin's "%YAML" is a snapshot
+        self.assertIsNone(self.why("SKILL.md", b'---\nname: x\n---\nA save holds "state6502": {...}\n'))
 
 
 if __name__ == "__main__":

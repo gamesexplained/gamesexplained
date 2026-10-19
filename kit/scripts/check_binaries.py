@@ -5,7 +5,8 @@ Scans the working tree (or the paths given) and fails if it finds: a file
 with a game-image extension; a file whose size is a known disk-image size;
 a file starting with a known snapshot magic; a JSON file carrying a
 "raw_data_base64" field; a jsbeeb snapshot (the BBC Micro's), gzipped or
-not. work/ folders are skipped except their README.
+not; an Apple II snapshot, the kit's, Apple2TS's own or AppleWin's. work/
+folders are skipped except their README.
 Game data a page's widgets need, embedded in its HTML, is not a binary
 (AGENTS.md, "No binaries, ever").
 
@@ -19,18 +20,28 @@ EXT = {".d64", ".d71", ".d81", ".g64", ".prg", ".p00", ".t64", ".tap", ".crt", "
        ".tzx", ".adf", ".dsk", ".rom", ".bin",
        ".szx", ".zsf", ".pzx", ".scr", ".rzx", ".csw", ".trd", ".scl",
        # the BBC Micro's discs (DFS, ADFS, flux and bitstream images), tapes and other emulators' states
-       ".ssd", ".dsd", ".ads", ".adm", ".adl", ".hfe", ".fsd", ".scp", ".uef", ".snp", ".uefstate"}
+       ".ssd", ".dsd", ".ads", ".adm", ".adl", ".hfe", ".fsd", ".scp", ".uef", ".snp", ".uefstate",
+       # the Apple II's disks (bitstream, nibble, sector and flux images, and archives of them) and
+       # Apple2TS's own save state
+       ".woz", ".nib", ".nb2", ".do", ".po", ".d13", ".2mg", ".2img", ".hdv", ".a2r", ".edd",
+       ".shk", ".sdk", ".a2ts"}
 SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81",
          49179: "48K .sna snapshot", 131103: "128K .sna snapshot", 147487: "128K .sna snapshot with an extra bank",
          102400: "40-track .ssd", 204800: "80-track .ssd or 40-track .dsd", 409600: "80-track .dsd",
-         163840: "ADFS S disc", 327680: "ADFS M disc", 655360: "ADFS L disc"}
+         163840: "ADFS S disc", 327680: "ADFS M disc", 655360: "ADFS L disc",
+         143360: "16-sector Apple II disk", 116480: "13-sector Apple II disk",
+         232960: "Apple II .nib disk", 223440: "Apple II .nb2 disk"}
 MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge image"),
          (b"C64File", "P00 file"), (b"C64S tape image file", "T64 image"), (b"NES\x1a", "NES ROM"),
          (b"ZXST", "SZX snapshot"), (b"ZSF", "ZEsarUX snapshot"), (b"PZXT", "PZX tape image"),
          (b"ZXTape!", "TZX tape image"), (b"BEMSNAP", "B-em or beebjit snapshot"),
          (b"UEF File!", "UEF tape or BeebEm snapshot"), (b"HXCPICFE", "HFE disc image"),
-         (b"HXCHFEV3", "HFE disc image")]
+         (b"HXCHFEV3", "HFE disc image"), (b"WOZ1", "WOZ disk image"), (b"WOZ2", "WOZ disk image"),
+         (b"2IMG", "2MG disk image"), (b"A2R2", "A2R flux image"), (b"A2R3", "A2R flux image"),
+         (b"MAMESAVE", "MAME save state")]
 JSBEEB = re.compile(rb'"format"\s*:\s*"jsbeeb-snapshot"')   # the BBC Micro's snapshot, kit/bbc/snapshot.py
+# the Apple II's: the kit's (kit/apple2/snapshot.py), Apple2TS's own save state, and AppleWin's
+APPLE2 = re.compile(rb'"format"\s*:\s*"apple2ts-kit-snapshot"|"state6502"\s*:|AppleWin Save State')
 SKIP_DIRS = {".git", "__pycache__", "node_modules", "tools", "_site"}
 
 
@@ -62,6 +73,10 @@ def check(path):
                 return None
     if JSBEEB.search(head):
         return "jsbeeb snapshot"
+    if head.lstrip()[:1] == b"{" or head.startswith(b"%YAML"):   # JSON, or AppleWin's YAML
+        with open(path, "rb") as f:
+            if APPLE2.search(f.read(4096)):
+                return "Apple II snapshot"
     return None
 
 

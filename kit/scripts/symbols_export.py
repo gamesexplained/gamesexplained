@@ -95,6 +95,33 @@ PLATFORM_DEFAULTS = {
         # means the register (listing.py, io_meaning)
         "io_only": [["$FC00", "$FEFF", "FRED, JIM and SHEILA"]],
     },
+    "apple2": {
+        # The enhanced IIe: no RAM lies beneath the soft switches ($C000-$C0FF) or the cards' ROM
+        # ($C100-$CFFF). $D000-$FFFF is the Monitor's and Applesoft's ROM to most games and the
+        # language card's RAM to a game that loads there. kit/apple2/snapshot.py reads the RAM, so
+        # a game that keeps code or data there takes the range back with "include"; left out by
+        # default, since the disassembler's flow tracer, following a call into the ROM, types the
+        # RAM's unwritten bytes as code. The second 64K (aux memory) and the language card's other
+        # bank are parts with "bank" in their part.json (kit/skills/apple2/apple2-reference,
+        # "Memory map").
+        "cpu": "65c02",
+        "exclude": [["$0100", "$01FF", "stack"], ["$C000", "$CFFF", "I/O and the cards' ROM"],
+                    ["$D000", "$FFFF", "the ROM, or the language card's RAM"]],
+        "extra": [],
+        # zero page, the stack, the input buffer, page 3, the two text pages, the two hi-res pages,
+        # the I/O page and the language card's two areas (kit/skills/apple2/apple2-reference)
+        "edges": ["$0000", "$0100", "$0200", "$0300", "$0400", "$0800", "$0C00", "$2000",
+                  "$4000", "$6000", "$C000", "$D000", "$E000"],
+        "screen_size": 0x400,      # a text page; a hi-res game lists its 8 KB pages under coverage.exclude
+        "charset_size": 0x300,     # 96 characters of 8 bytes, a hi-res font's usual size
+        "snapshot_ext": "json",    # the kit's Apple2TS server saves JSON (kit/apple2/snapshot.py)
+        # the language card's RAM, which a game can use: the listing reports data there, and an
+        # operand there means the ROM unless game.json's "io" rows say the code sees the RAM
+        "hidden": [["$D000", "$FFFF", "the language card's RAM",
+                    "kit/skills/apple2/apple2-reference, \"Memory map\""]],
+        "system": [["$0000", "$03FF", "zero page, the stack, the input buffer and page 3's vectors"]],
+        "io_only": [["$C000", "$CFFF", "the soft switches, the slots' I/O and the cards' ROM"]],
+    },
 }
 
 
