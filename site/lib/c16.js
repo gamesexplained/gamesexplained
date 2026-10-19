@@ -6,6 +6,8 @@
 //   C16.rgba(picture)          -> Uint8ClampedArray, 4 bytes a pixel, for an ImageData
 //   C16.draw(canvas, mem, ted, opts)                    the same, onto a canvas, opts.s times
 //   C16.rgb(colour) -> [r, g, b];  C16.css(colour) -> '#rrggbb'
+//   C16.load(url) -> {ram, has, names, byName, listing, bytes(a, n), sym(label)}   listing.json, as
+//                                     C64.load reads it: the 64 KB the listing records, the rest 0
 //
 // mem is the RAM as the program addresses it: 16 KB on a C16, 64 KB on a Plus/4, or a 64 KB image
 // rebuilt from listing.json. RAM repeats through the 64 KB on a machine with less of it, so an
@@ -151,8 +153,62 @@ globalThis.C16 = (function () {
     return pic;
   }
 
+  // Listings fetched so far, by URL, as C64.load keeps them.
+  const listings = new Map();
+  // A listing the build embedded in the page (kit/scripts/build.py, embed_listings), for a game
+  // whose listing the site withholds: the pieces of it the page names, in <script
+  // type="application/json" data-listing="url">. Before the build fills it in the tag holds only
+  // the list of pieces, and is passed over. Every other listing is fetched whole, one file the
+  // browser caches for all of a game's tabs.
+  function embedded(url) {
+    if (typeof document === 'undefined') return null;
+    for (const s of document.querySelectorAll('script[type="application/json"][data-listing]'))
+      if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
+    return null;
+  }
+  function fetched(url) {
+    return fetch(url).then(r => { if (r.ok === false) throw new Error(url + ': ' + r.status); return r.json(); });
+  }
+  // A page of a withheld game opened with ?listing-reads in its address gets the whole listing
+  // behind its pieces, with what it reads checked against them (listing-reads.js).
+  const READS = typeof document !== 'undefined' && document.currentScript && /[?&]listing-reads(?:[=&]|$)/.test(location.search)
+    ? new URL('listing-reads.js', document.currentScript.src).href : null;
+  let reads;
+  function watched(url, got) {
+    if (!READS || !embedded(url)) return got;
+    reads = reads || (globalThis.ListingReads ? Promise.resolve() : new Promise((ok, no) => {
+      const s = document.createElement('script'); s.src = READS; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+    return reads.then(() => ListingReads.watch(url, got));
+  }
+  // Text a widget writes into a canvas stays in the font it was drawn in. A listing in the page,
+  // or one the browser has cached, is in hand before the page's fonts have loaded, so a listing
+  // is handed over when they have, or after three seconds if they never do.
+  function fontsIn() {
+    if (typeof document === 'undefined' || !document.fonts || !document.body) return Promise.resolve();
+    void document.body.offsetHeight;          // lays the page out, which asks for its fonts
+    return Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 3000))]);
+  }
+  // Rebuild a 64 KB image from listing.json records. Bytes the game does not use stay 0 and has[a] is false.
+  async function load(url) {
+    url = url || 'listing.json';
+    if (!listings.has(url))
+      listings.set(url, Promise.all([embedded(url) || fetched(url), fontsIn()]).then(([L]) => L)
+        .catch(e => { listings.delete(url); throw e; }));
+    const L = await listings.get(url);
+    const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
+    for (const r of L.records) {
+      if (!r.b) continue;
+      for (let i = 0; i < r.b.length; i++) { ram[r.a + i] = r.b[i]; has[r.a + i] = 1; }
+    }
+    const names = new Map(L.records.filter(r => r.l).map(r => [r.a, r.l]));
+    const byName = new Map(L.records.filter(r => r.l).map(r => [r.l, r.a]));
+    return watched(url, { ram, has, names, byName, listing: L,
+             bytes: (a, n) => ram.subarray(a, a + n),
+             sym: n => { if (!byName.has(n)) throw new Error('no symbol ' + n); return byName.get(n); } });
+  }
+
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-  return { PALETTE, rgb, css, render, rgba, draw, hex };
+  return { PALETTE, rgb, css, render, rgba, draw, load, hex };
 })();
 
 // The TED machines' names for the footprint categories; the drawing is makeMemMap in memmap.js.

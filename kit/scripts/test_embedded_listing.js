@@ -1,4 +1,4 @@
-// Test of C64.load, BBC.load and Spectrum.load in site/lib/: a listing is fetched whole, except on
+// Test of C64.load, BBC.load, Spectrum.load and C16.load in site/lib/: a listing is fetched whole, except on
 // the page of a withheld game, which carries the pieces it names in <script
 // type="application/json" data-listing="url">, read from the page and never fetched; a tag the
 // build has not filled in, still the list of pieces, is passed over. Each is handed over once the
@@ -22,20 +22,20 @@ globalThis.document = {
     tag('parts/two/listing.json', ['tune']),
   ],
 };
-for (const lib of ['c64.js', 'bbc.js', 'spectrum.js']) require(path.join(ROOT, 'site', 'lib', lib));
+for (const lib of ['c64.js', 'bbc.js', 'spectrum.js', 'c16.js']) require(path.join(ROOT, 'site', 'lib', lib));
 
 let failed = 0;
 const check = (ok, what) => { if (!ok) { failed++; console.log('FAIL ' + what); } };
 
 (async () => {
   const early = [];
-  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum]]) M.load('parts/one/listing.json').then(() => early.push(name));
+  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum], ['C16', C16]]) M.load('parts/one/listing.json').then(() => early.push(name));
   await new Promise(r => setTimeout(r, 50));
   check(early.length === 0, `${early.join(', ')}.load handed over an embedded listing before the page's fonts loaded`);
   fontsLoaded();
   await new Promise(r => setTimeout(r, 0));
-  check(early.length === 3, 'C64, BBC and Spectrum.load: an embedded listing once the fonts are in');
-  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum]]) {
+  check(early.length === 4, 'C64, BBC, Spectrum and C16.load: an embedded listing once the fonts are in');
+  for (const [name, M] of [['C64', C64], ['BBC', BBC], ['Spectrum', Spectrum], ['C16', C16]]) {
     fetched.length = 0;
     const one = await M.load('parts/one/listing.json');
     check(fetched.length === 0, `${name}.load fetched a listing the page carries`);
@@ -51,6 +51,6 @@ const check = (ok, what) => { if (!ok) { failed++; console.log('FAIL ' + what); 
     await M.load('gone/listing.json').catch(e => { refused = e; });
     check(refused && /404/.test(refused.message), `${name}.load: a listing the site does not serve is an error`);
   }
-  console.log(failed ? `${failed} failed` : 'C64, BBC and Spectrum.load: a listing fetched whole, or from the page for a withheld game, once its fonts are in: ok');
+  console.log(failed ? `${failed} failed` : 'C64, BBC, Spectrum and C16.load: a listing fetched whole, or from the page for a withheld game, once its fonts are in: ok');
   process.exit(failed ? 1 : 0);
 })();

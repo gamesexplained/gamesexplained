@@ -197,9 +197,11 @@ only counts. `ignore: n` lets the first n matches count without stopping,
 conditions: register values for any kind (`{"a": 5}`, `{"x": 0}`,
 `{"pc": 4096}`), and for a read or a write `{"value": n}`, the byte moved.
 
-- Checkpoints are the server's, not the machine's, so a `load` or `back`
-  leaves them as they are and they go on counting
-  (`checkpoints-survive-load`).
+- Checkpoints are the server's, not the machine's, so a `load`, a `back`
+  or a `reset` leaves them as they are and they go on counting
+  (`checkpoints-survive-load`; the reset seen on 19 October 2026, when a
+  second boot stopped at the first boot's checkpoint). A script that
+  starts again from a reset deletes them first (`delete`, `"all": true`).
 - An `exec` checkpoint is looked at before its instruction runs. A `read`
   or `write` checkpoint is looked at as the access is made, and stops the
   machine at the next instruction, after the one that made it. `last`
@@ -342,7 +344,12 @@ m.keep(); ...; m.back()                         # a whole state, 55 ms a pair on
   load replays it all, the image read again. Such a load takes as long as
   the replay. Saved mid-load, it loads on to the same machine
   (`tape-in-snapshot`, `disk-in-snapshot`). Eject the tape or the disk
-  once the game has loaded, and save after that.
+  once the game has loaded, and save after that. When the stop to keep
+  comes while the tape still runs, as a loader's hand-over does, eject at
+  the stop and save there: the server has no clean snapshot since the
+  eject to replay from, and says so with `exact: false`. On 19 October
+  2026 such a save of a C16 tape's hand-over loaded back to the same PC,
+  registers, cycle count and RAM.
 - **Every path is inside the repository.** The server refuses to write
   anywhere else.
 - **Other programs' snapshots.** `load` takes a snapshot plus4emu's own
@@ -393,6 +400,13 @@ the same address are counted together, and on a C16 the same RAM run at
 $1000 and at $5000 is counted at each. Measured on 19 October 2026: 67
 addresses read in 0.32 s (`code-map`). Clear and restart it after a
 `load`, since a load changes what ran.
+
+`python3 kit/c16/codemap.py <game> zap` clears the record and starts it;
+play the game through, then `dump` writes the game's `codemap.json`, the
+file `check_listing.py` holds `symbols.json` to (`--merge` adds a
+session's record to the map already there, so it can be built from
+several snapshots). The dump folds a C16's repeats of its 16 KB onto
+$0000-$3FFF and leaves out $8000-$FFFF, where the ROMs are paged in.
 
 ## Traps
 

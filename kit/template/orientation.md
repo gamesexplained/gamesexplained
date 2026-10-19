@@ -10,10 +10,12 @@ what the directory shows. Note anything that is not the original game.
 
 ## From power-on to play
 
-1. Attach and autostart.
+1. Attach the image and start it, as the platform's `steps` skill
+   (`media`) and its tool skill say.
 2. Loader / trainer / menu: what appears, what was chosen.
 3. Key or button that starts play, and how long to wait.
-4. Snapshot taken: `work/<state>.vsf`, at what point.
+4. Snapshot taken: `work/<state>` in the platform's snapshot format
+   (`steps`, `snapshot`), at what point.
 
 ## The parts
 
