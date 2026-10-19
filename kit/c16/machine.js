@@ -60,8 +60,8 @@
 // - hooks: { address: fn(cpu) }, run before the instruction there (a stand-in for a KERNAL routine
 //   the game calls): returning true stops the run, and moving cpu.pc skips the instruction.
 // - onIrq(machine, entry) and onRti(machine) are called as an interrupt is taken (entry is the
-//   handler's address) and as the RTI that ends one runs; depth counts the interrupts in progress.
-//   kit/c16/lockstep.js uses them.
+//   handler's address; irqStart, cpu.cycles as it began) and as the RTI that ends one runs; depth
+//   counts the interrupts in progress. kit/c16/lockstep.js uses them.
 // - ioRead and ioWrite may be wrapped by a test to watch the chips: they see every access in
 //   order, with this.now the tick of the access.
 // - save() and Machine.restore(state): the whole machine as JSON, for tests that start from a
@@ -386,6 +386,7 @@ class Machine {
   // processor's seven cycles, then the KERNAL's way in or the RAM's vector.
   interrupt() {
     const c = this.cpu;
+    this.irqStart = c.cycles;                 // the processor's cycles as the interrupt begins
     let t = this.tick;
     for (let j = 1; j < 7; j++) {
       const u = this.beam.step(t, IRQ_CYCLES[j]), i = j <= 4 ? c.i : 1;
