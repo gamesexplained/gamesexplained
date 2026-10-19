@@ -61,6 +61,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .pp-table th:first-child,.pp-table td:first-child{text-align:left}
 .pp-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
 .pp-table tr.now td{background:var(--hl)}
+#pp-sfx th,#pp-sfx td{text-align:left}
+#pp-sfx button{font:inherit;font-size:13px;padding:3px 10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;white-space:nowrap}
+#pp-sfx button:hover{border-color:var(--ink-mute)}
 .pp-scroll{overflow-x:auto}
 .pp-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
 .pp-legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
@@ -238,19 +241,22 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="sound">
   <p class="fig">11 · Sound</p>
   <h2 class="t">Sound: effects only, one at a time</h2>
-  <p class="lede">There is no music. Once a frame, <code>sound</code> plays the first effect that is going, in a fixed order.</p>
+  <p class="lede">There is no music. Once a frame, <code>sound</code> plays the first effect that is going, in a fixed order, and an effect higher in the list silences any below it for as long as it plays.</p>
   <div class="plate">
-    <table class="pp-table" style="max-width:640px"><tr><th>Order</th><th>Effect</th><th>Voices</th></tr>
-      <tr><td>1</td><td>the bonus for each stick left at the end of a level</td><td>noise, fading</td></tr>
-      <tr><td>2</td><td>the end of a level</td><td>both square voices, voice 1 warbling</td></tr>
-      <tr><td>3</td><td>a goodie collected</td><td>voice 1, its pitch wobbling at random</td></tr>
-      <tr><td>4</td><td>an explosion</td><td>noise on voice 2, fading twice</td></tr>
-      <tr><td>5</td><td>Pete's death</td><td>noise pulses rising and falling</td></tr>
-      <tr><td>6</td><td>a fuse burning</td><td>a hiss of noise at volume 1</td></tr>
-      <tr><td>7</td><td>Pete digging</td><td>a scratch of noise at volumes 0 to 3</td></tr></table>
-    <p class="cap">From <code>sound</code> (<code>$3689</code>). There is no player for TED's sound on this site, so none of them plays here.</p>
+    <div class="pp-scroll"><table class="pp-table" id="pp-sfx" style="max-width:760px"><tr><th>Order</th><th>Effect</th><th>What TED plays</th><th>Frames</th></tr>
+      <tr data-k="0"><td>1</td><td>a stick left at the end of a level</td><td>noise, fading from volume 8 to nothing, then from 7, and so on down to 1</td><td>36 a stick</td></tr>
+      <tr data-k="1"><td>2</td><td>the end of a level</td><td>both square voices, voice 1 warbling between two pitches, one step quieter every other frame</td><td>24</td></tr>
+      <tr data-k="2"><td>3</td><td>a goodie collected</td><td>voice 1, its pitch wobbling at random, louder to 4 and down, then fading from 3, 2 and 1</td><td>14</td></tr>
+      <tr data-k="3"><td>4</td><td>an explosion</td><td>noise on voice 2, fading from 5, then lower from 12, three steps in every four frames</td><td>20</td></tr>
+      <tr data-k="4"><td>5</td><td>Pete's death</td><td>pulses of noise rising and falling, each pair of pulses one step lower</td><td>112</td></tr>
+      <tr data-k="5"><td>6</td><td>a stick's fuse, then its explosion</td><td>a hiss of noise at volume 1</td><td>120 on level 1</td></tr>
+      <tr data-k="6"><td>7</td><td>Pete moving, here five cells</td><td>a scratch of noise at a random pitch, volumes 0, 1, 2 and 3 over and over</td><td>8 a cell</td></tr></table></div>
+    <div class="pp-bar" id="pp-sfxbar"><label><input type="checkbox" id="pp-meant"> The end of a level with <code>STA $FF10</code>, as meant</label></div>
+    <div id="pp-sfxroll"></div>
+    <p class="cap">Each effect is started by the game's own code from the listing, the code that starts it in the game, and then <code>sound</code> (<code>$3689</code>) runs once a frame, on the kit's 6502; the timer and beam readings it mixes into the pitch are this browser's random numbers, new each time. The writes it makes to TED's sound registers play through the site's model of TED, which matches plus4emu's output to within 1 %. Run so, all seven write what the game wrote in plus4emu, frame by frame (<code>test_pete.js</code>).</p>
   </div>
-  <p>TED has two voices: two square waves, and noise in place of the second. The game sets their pitches and the volume straight into TED's registers from the interrupt, and an effect higher in the list silences any below it for as long as it plays.</p>
+  <p>TED has two voices: two square waves, and noise in place of the second. The game sets their pitches and the volume straight into TED's registers from the interrupt. Volumes 9 to 15 play as loud as 8 on TED, so the explosion's second fade and the end of a level, which start at 12, hold their level for four steps before they fall.</p>
+  <p>The end of a level loads <code>$FF10</code> where the code around it stores, so voice 2's top two pitch bits keep whatever the last effect left in them (Discoveries). Pete has just climbed the shaft, and his steps leave 1 there: voice 2 plays near 157 Hz, almost two octaves under voice 1's 568 Hz. With 3, as a store would have left it, voice 2 takes the pitch voice 1 has just left, so the two voices sound 9 Hz apart and beat against each other.</p>
 </section>
 
 </main>
@@ -259,14 +265,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/c16.js"></script>
 <script src="../../lib/cpu6502.js"></script>
 <script src="reference/pete.js"></script>
+<script src="../../lib/ted-sound.js"></script>
+<script src="reference/sound.js"></script>
 <script>
 (function () {
   const $ = id => document.getElementById(id);
-  if (!window.C16 || !window.C64Cpu || !window.Pete) {
-    for (const id of ['pp-mine', 'pp-frame', 'pp-fig', 'pp-ring', 'pp-heads', 'pp-goods', 'pp-ltable', 'pp-tverdict']) {
+  if (!window.C16 || !window.C64Cpu || !window.Pete || !window.TEDSound) {
+    for (const id of ['pp-mine', 'pp-frame', 'pp-fig', 'pp-ring', 'pp-heads', 'pp-goods', 'pp-ltable', 'pp-tverdict', 'pp-sfxroll']) {
       const el = $(id); if (!el) continue;
       const p = document.createElement('p'); p.className = 'pp-need';
-      p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js): open the page from the built site.';
+      p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js, lib/ted-sound.js): open the page from the built site.';
       el.replaceWith(p);
     }
     return;
@@ -519,6 +527,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       for (let k = 0; k < 16; k++) h += `<tr data-k="${k}" style="cursor:pointer"><td>${k + 1}</td>` + names.map(([n]) => `<td>${val(n, k)}</td>`).join('') + '</tr>';
       T.innerHTML = h;
       T.addEventListener('click', e => { const tr = e.target.closest('tr[data-k]'); if (!tr) return; for (const x of T.querySelectorAll('tr')) x.classList.toggle('now', x === tr); });
+    })();
+
+    /* The sound effects: each run afresh from the game's code when it is played */
+    (function () {
+      const T = $('pp-sfx'), meant = $('pp-meant');
+      const log = k => TEDSound.pack(PeteSound.log(L, k, undefined, { meant: meant.checked }));
+      const rows = [...T.querySelectorAll('tr[data-k]')];
+      const player = TEDSound.mount($('pp-sfxroll'), {
+        tunes: PeteSound.EFFECTS.map((e, k) => ({ name: e.name, log: log(k) })),
+        buttons: false,
+        onTime(t, k) { rows.forEach((r, i) => r.classList.toggle('now', t !== null && i === k)); },
+      });
+      for (const r of rows) {
+        const k = +r.dataset.k, b = document.createElement('button');
+        b.textContent = '▶ ' + r.cells[0].textContent; b.title = 'Play ' + r.cells[1].textContent;
+        b.onclick = () => { player.set(k, log(k)); player.play(k); };
+        r.cells[0].textContent = ''; r.cells[0].appendChild(b);
+      }
+      meant.onchange = () => { player.set(1, log(1)); player.play(1); };
     })();
 
     /* The title's verdict */

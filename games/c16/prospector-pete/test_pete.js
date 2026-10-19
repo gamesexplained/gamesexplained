@@ -102,5 +102,50 @@ for (const [k, rows] of [[0, 8], [9, 16]]) {
   try { c.call(Pete.R.moveCreatures, { c: 1 }, { maxSteps: 100000 }); } catch (e) { looped = c.pc >= 0x281E && c.pc <= 0x2828; }
   if (!looped) fail('a creature boxed in: move_creatures returned, or stopped outside its loop at $281E-$2827');
 }
-console.log(bad ? `${bad} differences` : 'every level builds as its tables say, the flood, Pete and a stick keep the game\'s time, and the chase and the freeze are as the code reads');
+// The sound effects (reference/sound.js) against what the game wrote to TED's sound registers in
+// plus4emu (facts.md, "Live tests"): sound's writes, frame by frame, the same, leaving out the bits
+// it takes from TED's timer and beam. Each is the frames compared and a digest (FNV-1a, 32 bits) of
+// the writes plus4emu logged, from the frame named to the frame before the effect clears its flags:
+// the bonus's tone for one stick; the level's end from the jingle's first step to the next level,
+// with 5 sticks left; the goodie, the explosion and the death from their first frames; a stick's
+// explosion after its fuse, which before it is the hiss (FF0F, $41 into $FF11, 3 into $FF10) every
+// frame; and Pete moving five cells, from his first step.
+{
+  const { PeteSound } = g.run('reference/sound.js', 'sound.js', 'PeteSound');
+  const FRAME = 35568;
+  const fnv = s => { let h = 0x811C9DC5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };
+  // sound's writes in each frame, 600 to 1000 cycles into it, as "register=value", the masked bits 0
+  function frames(l, mask) {
+    const out = [];
+    let f0 = -1;
+    for (const [c, a, v] of l.writes) {
+      const t = c - l.start, r = a & 255;
+      if (t % FRAME < 600 || t % FRAME > 1000) continue;
+      if (Math.floor(t / FRAME) !== f0) { f0 = Math.floor(t / FRAME); out.push([]); }
+      out[out.length - 1].push(r.toString(16) + '=' + (v & (mask[r] === undefined ? 255 : mask[r])).toString(16));
+    }
+    return out.map(w => w.join(' '));
+  }
+  const EFFECTS = [
+    ['bonus', { sticks: 1 }, {}, '', 36, '39d20655'],
+    ['level end', { whole: true, sticks: 5 }, {}, 'e=3f', 248, '52497300'],
+    ['goodie', {}, { 0x0E: 0xF8 }, '', 14, '44ddf6b5'],
+    ['explosion', {}, { 0x0F: 0xF8 }, '', 20, 'dbba5e42'],
+    ['death', {}, { 0x0F: 0xF8 }, '', 112, '03f8143c'],
+    ['fuse', {}, { 0x0F: 0 }, '11=44', 20, '61ee1978'],
+    ['moving', {}, { 0x0F: 0 }, '11=41', 40, '87bbeec3'],
+  ];
+  EFFECTS.forEach(([name, o, mask, from, n, want], k) => {
+    if (PeteSound.EFFECTS[k].name !== name) { fail(`sound effect ${k} is ${PeteSound.EFFECTS[k].name}, not ${name}`); return; }
+    const all = frames(PeteSound.log(L, k, () => 0, o), mask), i = all.findIndex(s => s.includes(from));
+    const got = all.slice(i, i + n);
+    if (got.length !== n || fnv(got.join('|')) !== want) fail(`the ${name}'s sound: ${got.length} frames, digest ${fnv(got.join('|'))}; plus4emu's ${n}, ${want}`);
+    if (name === 'fuse' && all.slice(i - 100, i).some(s => s !== 'f=0 11=41 10=3')) fail('the fuse: not the hiss in every frame before the explosion');
+  });
+  // The level's end as its store to $FF10 was meant: 3 into $FF10 with the jingle's first writes
+  const meant = PeteSound.log(L, 1, () => 0, { meant: true }).writes.filter(([c, a, v]) => a === 0xFF10 && c > 0);
+  const as = PeteSound.log(L, 1, () => 0, {}).writes.filter(([c, a]) => a === 0xFF10 && c > 0);
+  if (meant.length !== 1 || meant[0][2] !== 3 || as.length) fail(`the level's end: $FF10 written ${as.length} times as the game has it, ${meant.length} as meant`);
+}
+console.log(bad ? `${bad} differences` : 'every level builds as its tables say, the flood, Pete and a stick keep the game\'s time, the chase and the freeze are as the code reads, and the sound effects write what the game wrote');
 process.exit(bad ? 1 : 0);
