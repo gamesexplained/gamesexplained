@@ -577,7 +577,7 @@ sheet does not), counts its timers down by whole instructions, and loses
 the cycles past zero when it reloads timer 1. MAME's card answers in
 the whole page, $C400-$C47F being the first 6522 and $C480-$C4FF the
 second, each repeating its sixteen registers, and resets a sound chip
-whenever ORB's bit 2 is 0 (a2mockingboard.cpp:293-303, 345-357 and
+whenever ORB's bit 2 is 0 (a2mockingboard.cpp:293-305, 345-358 and
 441-451). The kit's sound log records the sound chips' register writes.
 
 ## Timing
@@ -893,10 +893,10 @@ Apple ProDOS ("BAP"); no ProDOS disk was booted live.
 - **The global page**, $BF00-$BFFF, is at the same address on every
   machine (ProDOS TRM section 3.3.2). The system bit map, $BF58-$BF6F,
   has a bit for each page of $0000-$BFFF, bit 7 of $BF58 for page 0
-  (section 5.1.4). MACHID is at $BF98 (BAP chapter 8, and the listing in section 5.2.2,
-  whose text gives $BF96 once), and $BF30
-  holds the slot and drive last used (BAP chapter 8). The MLI cannot read
-  into or out of the language card or aux memory (section 5.1.4).
+  (section 5.1.4). MACHID is at $BF98, and $BF30 holds the slot and
+  drive last used (BAP chapter 8; the listing in section 5.2.2 has
+  $BF98, though its text gives $BF96 once). The MLI cannot read into
+  or out of the language card or aux memory (section 5.1.4).
 - **/RAM**: on a 128K IIe, ProDOS makes aux memory a RAM disk, /RAM,
   slot 3 drive 2. A program that uses aux memory for anything else must
   disconnect /RAM first (ProDOS TRM section 5.2.2).
@@ -1169,7 +1169,7 @@ What a 6502 program does differently on the 65C02:
   a page (om6502.lst:751-761, 1294-1329), and for `STZ abs,X`
   (ow65c02.lst:797-804). Apple2ts makes that read only for `STA abs,X`
   and `STZ abs,X`, at the address after the carry (instructions.ts:733-737
-  and 760-765). Where a real 65C02's extra read lands was not checked.
+  and 761-765). Where a real 65C02's extra read lands was not checked.
 
 ## Where Apple2ts differs from a real IIe
 
@@ -1242,9 +1242,11 @@ them.
   character set has inverse upper case where the enhanced IIe has
   MouseText (TRM 1987 Table 2-4).
 - **IIc**: a 65C02. $C019 reads VBLINT, an interrupt flag, rather than
-  the beam (MAME 0.289, apple2e.cpp:2257); IOUDIS at $C07E-$C07F exists,
-  and gates double hi-res and the mouse (apple2e.cpp:2279-2289,
-  2786-2789). Its $FFFE points to $C803 (TRM 1987 p. 155).
+  the beam (MAME 0.289, apple2e.cpp:2257). IOUDIS, at $C07E and $C07F,
+  exists, and decides whether $C058-$C05F are the annunciators and
+  double hi-res or the mouse's and the vertical blank's interrupt
+  switches (apple2e.cpp:1806-1850 and 2286-2292). Its $FFFE points to
+  $C803 (TRM 1987 p. 156).
 - **IIgs**: a 65C816. $C019's bit 7 is set during the blank, the
   opposite of the IIe's (MAME 0.289, src/mame/apple/apple2gs.cpp:1623,
   which cites Apple IIgs Technical Note #40). A IIe game that waits on
@@ -1383,8 +1385,9 @@ disagree, the entry above says so. Each was read on 19 October 2026.
 - **MAME 0.289** (tag mame0289; the files cited are BSD-3-Clause,
   `https://github.com/mamedev/mame`): src/mame/apple/apple2e.cpp,
   apple2video.cpp and apple2gs.cpp, src/devices/bus/a2bus/a2mockingboard.cpp,
-  and src/devices/cpu/m6502/w65c02.cpp, dw65c02.lst, ow65c02.lst and
-  om6502.lst. Cited by file and line. Read 19 October 2026.
+  src/devices/sound/ay8910.cpp, and src/devices/cpu/m6502/w65c02.cpp,
+  dw65c02.lst, ow65c02.lst and om6502.lst. Cited by file and line. Read
+  19 October 2026.
 - **The kit's machine** ("live"): Apple2ts 3.7.0's IIe run headless under
   Node by the server of the platform's evaluation, the forerunner of
   `kit/apple2/apple2ts_server.mjs`, with the same slots (3: the extended
