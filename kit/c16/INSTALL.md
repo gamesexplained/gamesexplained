@@ -67,18 +67,21 @@ the build.
 **Which build: git 939e652, and only after measuring another.** The kit
 compiles plus4emu's machine itself, 48 of its source files with the
 flags of plus4emu's own build, and leaves out the window, the sound and
-the menus; plus4emu's own build file (SCons) does not run on SCons 4. On
-19 October 2026 the newest release was 1.2.10.1, of 22 February 2017,
-and the newest commit 939e652, of 2 April 2020, whose NEWS file names it
-1.2.11. `get-plus4emu` fetches that commit alone and refuses anything
-else. The kit adds one patch, `kit/c16/codemap.patch`: the machine counts
-each instruction it runs, so `codemap` returns every address that ran,
-with its count, in one call. 300 frames of the check's test program ran
-and were mapped in 0.32 seconds; with a callback for each instruction,
-300 frames took 4.5 seconds when the emulators were compared. To move to
-another commit, change `PLUS4EMU_COMMIT` and `PLUS4EMU_VERSION` in
-`kit/c16/tools.py`, run `get-plus4emu`, `check-emulator` on both models
-and `frame.py test`, and change the rows here together.
+the menus. plus4emu's own build (SCons) stops on SCons 4 at its check
+for FLTK (the project's issue 5), and even past that, the library it
+builds leaves out four source files the library calls, so it does not
+load. On 19 October 2026 the newest release was 1.2.10.1, of 22 February
+2017, and the newest commit 939e652, of 2 April 2020, whose NEWS file
+names it 1.2.11. `get-plus4emu` fetches that commit alone and refuses
+anything else. The kit adds one patch, `kit/c16/codemap.patch`: the
+machine counts each instruction it runs, so `codemap` returns every
+address that ran, with its count, in one call. 300 frames of the check's
+test program ran and were mapped in 0.32 seconds; with a callback for
+each instruction, 300 frames took 4.5 seconds when the emulators were
+compared. To move to another commit, change `PLUS4EMU_COMMIT` and
+`PLUS4EMU_VERSION` in `kit/c16/tools.py`, run `get-plus4emu`,
+`check-emulator` on both models and `frame.py test`, and change the rows
+here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
