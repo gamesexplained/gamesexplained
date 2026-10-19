@@ -437,6 +437,33 @@ for (const [m, z, c, n] of [[0x40, 1, 1, 0], [0x41, 0, 0, 1], [0x3F, 0, 1, 0], [
   throws('io needs the map', () => new CPU(new Uint8Array(65536), { io: {} }), /need the C64 map/);
 }
 
+// --- RAM that repeats (the Commodore 16's 16 KB) -------------------------------------------------
+{
+  // An index that runs past the end of a table at $3FF0-$3FFF reads the zero page on a C16 (#435).
+  let c = run([0xA2, 0x10, 0xBD, 0xF0, 0x3F], {}, m => { m[0x00] = 0x77; m[0x4000] = 0x11; }, { ramSize: 0x4000 });
+  expect('$4000 reads $0000', { a: c.a }, { a: 0x77 });
+  c = run([0xA9, 0x5A, 0x8D, 0x34, 0xD2], {}, null, { ramSize: 0x4000 });
+  expect('a write to $D234 lands at $1234', { lo: c.m[0x1234], hi: c.m[0xD234] }, { lo: 0x5A, hi: 0 });
+  c = run([0xEE, 0x05, 0x80, 0xB1, 0xFB], { y: 2 }, m => { m[0x05] = 0x40; m[0xFB] = 0x03; m[0xFC] = 0xC0; },
+          { ramSize: 0x4000 });
+  expect('read-modify-write and a pointer through the repeats', { inc: c.m[0x05], a: c.a }, { inc: 0x41, a: 0x41 });
+  const mem = new Uint8Array(65536);
+  mem.set([0xA9, 0x42, 0x60], 0x0200);                              // LDA #$42 RTS at $0200, run from $C200
+  c = new CPU(mem, { ramSize: 0x4000 });
+  c.call(0xC200);
+  expect('code runs from a repeat', { a: c.a }, { a: 0x42 });
+  c = run([0xA9, 0x09, 0x8D, 0x0E, 0xFF, 0xAD, 0x0E, 0xFF], {}, null, { ramSize: 0x4000 });
+  expect('$FD00-$FFFF stays plain bytes (TED\'s registers)', { a: c.a, reg: c.m[0xFF0E], below: c.m[0x3F0E] }, { a: 0x09, reg: 0x09, below: 0 });
+  c = run([0xAD, 0x00, 0x40], {}, m => { m[0x00] = 0x77; m[0x4000] = 0x11; });
+  expect('without ramSize all 64 KB are RAM', { a: c.a }, { a: 0x11 });
+  const writes = new Uint8Array(65536);
+  c = new CPU(Object.assign(new Uint8Array(65536), { 0x1000: 0x8D, 0x1001: 0x00, 0x1002: 0x80, 0x1003: 0x60 }), { ramSize: 0x4000 });
+  c.call(0x1000, {}, { writes });
+  expect('the trackers mark the address the code used', { used: writes[0x8000], ram: writes[0x0000] }, { used: 1, ram: 0 });
+  throws('ramSize must be a power of two', () => new CPU(new Uint8Array(65536), { ramSize: 0x3000 }), /power of two/);
+  throws('ramSize is for a bare 6502', () => new CPU(new Uint8Array(65536), { ramSize: 0x4000, port: 0x37 }), /bare 6502/);
+}
+
 // --- call, run, the maps, hooks -------------------------------------------------------------------
 {
   let c = machine(0x1000, 'lda #1\nldx #2\nrts');

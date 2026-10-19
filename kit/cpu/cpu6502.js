@@ -29,6 +29,11 @@
 //
 // The memory
 // - new CPU(mem): all 64 KB are RAM (mem, a Uint8Array(65536), used in place), as on a bare 6502.
+// - new CPU(mem, { ramSize: 0x4000 }): a machine with less RAM than 64 KB that repeats it, as the
+//   Commodore 16 repeats its 16 KB: every read, write and fetch from ramSize to $FCFF reaches the
+//   byte at its address modulo ramSize, so $4000 is $0000. $FD00-$FFFF stays plain bytes, where the
+//   C16 has its chips' registers and its vectors, which a test sets. ramSize is a power of two from
+//   $0400 to $8000; the trackers (writes, reads, executed) mark the address the code used.
 // - new CPU(mem, { port, io, rom }): the C64's map. port is the 6510's port as $00 and $01 hold it,
 //   { dir, data } (readSnapshot gives it; a number is taken as data with dir $2F). $00 and $01 read
 //   and write the port, not RAM, and its bits 0-2 select what the processor sees at $A000-$BFFF,
@@ -231,7 +236,7 @@
 
   // --- the memory map ---------------------------------------------------------------------------
   // What the processor sees in each 256-byte page.
-  const RAM = 0, ZP = 1, IO = 2, BASIC = 3, KERNAL = 4, CHAR = 5;
+  const RAM = 0, ZP = 1, IO = 2, BASIC = 3, KERNAL = 4, CHAR = 5, MIRROR = 6;
   const ASL = 0, LSR = 1, ROL = 2, ROR = 3, INC = 4, DEC = 5;   // the read-modify-write operations
   const ROM_NAME = { [BASIC]: 'BASIC', [KERNAL]: 'KERNAL', [CHAR]: 'character' };
 
@@ -259,6 +264,14 @@
       this.c64 = opts.port !== undefined;
       if (!this.c64 && (opts.io || opts.rom)) {
         throw new Error('io and rom need the C64 map: give port too ({ dir, data }, as readSnapshot returns it)');
+      }
+      if (opts.ramSize !== undefined) {               // RAM that repeats through the map (the C16's 16 KB)
+        const n = opts.ramSize;
+        if (this.c64 || !(n >= 0x400 && n <= 0x8000 && (n & (n - 1)) === 0)) {
+          throw new Error('ramSize is a power of two from $0400 to $8000, on a bare 6502 (no port)');
+        }
+        this.ramMask = n - 1;
+        this.rk.fill(MIRROR, n >>> 8, 0xFD); this.wk.fill(MIRROR, n >>> 8, 0xFD);
       }
       if (this.c64) {
         const p = typeof opts.port === 'number' ? { dir: 0x2F, data: opts.port } : opts.port;
@@ -341,6 +354,7 @@
       const k = this.rk[a >>> 8];
       if (k === RAM) return this.m[a];
       if (k === ZP) return a > 1 ? this.m[a] : this.portRead(a);
+      if (k === MIRROR) return this.m[a & this.ramMask];
       if (k === IO) return this.ioRead(a);
       const b = this.romByte(a, k);
       if (b === undefined) {
@@ -354,6 +368,7 @@
       const k = this.wk[a >>> 8];
       if (k === RAM) this.m[a] = v;
       else if (k === ZP) { if (a > 1) this.m[a] = v; else this.portWrite(a, v); }
+      else if (k === MIRROR) this.m[a & this.ramMask] = v;
       else this.ioWrite(a, v);
     }
     // An instruction's bytes: the opcode (first) and its operands.
@@ -361,6 +376,7 @@
     fbx(a, first) {
       const k = this.rk[a >>> 8];
       if (k === ZP) return a > 1 ? this.m[a] : this.portRead(a);
+      if (k === MIRROR) return this.m[a & this.ramMask];
       if (k === IO) return this.ioRead(a);
       const b = this.romByte(a, k);
       if (b === undefined) {
