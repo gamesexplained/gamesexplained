@@ -118,3 +118,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Labyrinth page organization · 19 October 2026
 
 `70-minisite`, “The order serves the explanation and the reader’s attention at once”: the mechanics overview leads with the game, then keeps two checked interactive examples; the chronological area material has its own Explore the game tab. Existing custom-tab support handled the split without shared-site changes. The two duplicated mechanic blocks are guarded by sameBlock checks. No maintainer ask arose.
+
+## Brick Hallway doorway destination · 19 October 2026
+
+`60-verify`, “A live test in one room tests one room”: kept the entry-12 journey separate from the code-checked entry-44 branch and did not turn this same-room connection into a claim about every door. The positive exit and movement checkpoints accompanied the loader/arrival observations. No shared-kit change or maintainer ask arose.

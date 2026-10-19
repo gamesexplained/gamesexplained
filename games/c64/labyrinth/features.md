@@ -66,4 +66,5 @@ Joystick-port-one fire is **live** as the producer of the introduction interrupt
 - Live: up from the checked arrival reaches depth 24; down reaches depth 0. Both trials retain scene 3.
 - Live: OPEN DOOR at X=2272/depth 6 displays “Nothing happens.” One command dispatch was observed.
 - Live: approaching the neighboring door at X=2348/depth 24 and using OPEN DOOR changes it from closed to open. The room stays scene 3.
-- Open: traversing that doorway, other door positions, and the route back to the first corridor.
+- Live: walking through that doorway reaches entry 12 / column 12 in the same Brick Hallway.
+- Open: the alternate entry 44, other door positions, and the route back to the first corridor.

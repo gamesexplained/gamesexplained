@@ -102,3 +102,7 @@ The opening, gate, and first-corridor listings are built from `work/publish-anon
 ## Neighboring Brick Hallway door · 19 October 2026
 
 From the naturally reached arrival, ordinary right/up input reached X=2348/depth 24. OPEN DOOR changed column 36 from cell 7 to 6; handler and mutation checkpoints each fired once. The open-door snapshot stays private as `work/brick-door-opened.vsf`. Scene 3's disassembly runs on an anonymized natural-play copy under its own part folder. Its older forced entry capture is `entry-forced.vsf`; a natural pre-initialization hand-over remains open.
+
+## Through the opened door · 19 October 2026
+
+Loaded the ordinary opened-door snapshot and held up to exit depth 40 at column 36. The actual request was scene zero / entry 12 with current scene 3. The retained-room path placed the player at X=800/depth 6 in the same Brick Hallway. Ignored captures live under `work/through-brick-door/`; the published destination image contains no setup name. The original emulator state and normal speed were restored.

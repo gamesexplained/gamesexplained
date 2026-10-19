@@ -12,7 +12,7 @@ An independent fixed-seed sample on 19 October 2026 checked 60 of the 1,303 line
 
 ## Scope
 
-The complete game stays Bronze: the gate, first corridor, and Brick Hallway are partially analysed and 18 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 27.7% ledger is provisional rather than whole-game progress.
+The complete game stays Bronze: the gate, first corridor, and Brick Hallway are partially analysed and 18 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 27.8% ledger is provisional rather than whole-game progress.
 
 ## First corridor
 
@@ -32,6 +32,10 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 
 ## Opening the neighboring Brick Hallway door
 
-The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. This confirms opening one door, not traversing it or finding a route back. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 822/48,587 described bytes; four provisional scopes total 52,312/188,818 (27.7%). Their retained resident ownership overlaps and is not whole-game completion.
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 972/48,587 described bytes; four provisional scopes total 52,462/188,818 (27.8%). Their retained resident ownership overlaps and is not whole-game completion.
 
 `reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.
+
+## A door within the Brick Hallway
+
+Holding up through the opened column-36 door produced request 0 / entry 12 while current scene stayed 3. The resident path retained that room and placed the player at X=800/depth 6, column 12. The live journey and all 256 selector-source bytes are checked as described in `parts/scene-03/facts.md`. Other entry variants and reverse travel remain unverified.
