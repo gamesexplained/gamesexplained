@@ -1570,17 +1570,44 @@ def names(people):
     return ", ".join(people[:-1]) + " and " + people[-1] if len(people) > 1 else "".join(people)
 
 
-def tile_html(g, root, line, foot, data=""):
+_icons = {}
+
+
+def platform_icon(plat):
+    """The machine's icon, site/icons/platforms/<plat>.svg, inline: a 24-unit line drawing in the
+    stroke Lucide's icons use, so the set reads as one. "" and a warning for a platform with none."""
+    if plat not in _icons:
+        p = os.path.join(SITE, "icons", "platforms", f"{plat}.svg")
+        m = re.search(r"<svg\b[^>]*>(.*)</svg>", read(p), re.S) if os.path.isfile(p) else None
+        if not m:
+            warn(f"site/icons/platforms/{plat}.svg is missing, so the {plat} cards show no machine (kit/PLATFORMS.md)")
+        body = re.sub(r">\s+<", "><", m.group(1).strip()) if m else ""
+        _icons[plat] = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+                        f'stroke-linejoin="round" aria-hidden="true">{body}</svg>') if m else ""
+    return _icons[plat]
+
+
+def platform_badge(g, root):
+    """The machine a card's game runs on: its icon in the card's corner, named when hovered, and a
+    link to that platform's page. Nothing for a platform with no icon."""
+    plat = g["platform"]
+    icon, name = platform_icon(plat), html.escape(PLATFORM_NAMES.get(plat, plat))
+    return f'<a class="plat" href="{root}{plat}/" title="{name}" aria-label="{name}">{icon}</a>' if icon else ""
+
+
+def tile_html(g, root, line, foot, data="", badge=True):
     """A game's card, as New and updated and the catalogue show one: the tier up the left edge,
-    the title screen, the game's title (the card's link), a line on who, and a line in small type.
-    root is the way up to the site's top from the page the card is on."""
+    the title screen, the game's title (the card's link), a line on who, a line in small type, and
+    the machine's icon in the corner. root is the way up to the site's top from the page the card
+    is on; badge=False leaves the icon out, on a page of one platform's games."""
     plat, slug = g["platform"], g["slug"]
     line = f'<span class="v">{line}</span>' if line else ""
-    return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}<span class="body">'
+    return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}'
+            f'{platform_badge(g, root) if badge else ""}<span class="body">'
             f'<a class="g" href="{root}{plat}/{slug}/">{html.escape(g.get("title", slug))}</a>{line}{foot}</span></div>')
 
 
-def card_html(g, root=""):
+def card_html(g, root="", badge=True):
     """Every game, in the catalogue: its card (tile_html), naming the people who contributed it,
     as the About tab credits them, and the year and publisher. The data- attributes are what the
     home page's search, filters and sorts read (site.js)."""
@@ -1594,7 +1621,7 @@ def card_html(g, root=""):
             f' data-title="{html.escape(g.get("title", slug))}" data-q="{html.escape(words.lower())}"')
     who = names([person_html(name, login) for _, name, login in cons])
     made = " · ".join(str(x) for x in (g.get("year"), g.get("publisher")) if x)
-    return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data)
+    return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data, badge)
 
 
 def platform_pages(games, out_root):
@@ -1605,7 +1632,7 @@ def platform_pages(games, out_root):
         name = html.escape(PLATFORM_NAMES.get(plat, plat))
         open(os.path.join(out_root, plat, "index.html"), "w").write(
             fill(read(os.path.join(SITE, "platform.html")), site_title=f"{name} · Games Explained", lib="../lib",
-                 platform_name=name, cards="".join(card_html(g, "../") for g in gs), n_games=len(gs)))
+                 platform_name=name, cards="".join(card_html(g, "../", badge=False) for g in gs), n_games=len(gs)))
 
 
 def featured_game(games):
