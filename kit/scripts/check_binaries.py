@@ -5,8 +5,9 @@ Scans the working tree (or the paths given) and fails if it finds: a file
 with a game-image extension; a file whose size is a known disk-image size;
 a file starting with a known snapshot magic; a JSON file carrying a
 "raw_data_base64" field; a jsbeeb snapshot (the BBC Micro's), gzipped or
-not; an Apple II snapshot, the kit's, Apple2TS's own or AppleWin's. work/
-folders are skipped except their README.
+not; an Apple II snapshot, the kit's, Apple2TS's own or AppleWin's. A
+plus4emu snapshot (the Commodore 16's and Plus/4's) is caught by its magic,
+whatever its name. work/ folders are skipped except their README.
 Game data a page's widgets need, embedded in its HTML, is not a binary
 (AGENTS.md, "No binaries, ever").
 
@@ -24,7 +25,12 @@ EXT = {".d64", ".d71", ".d81", ".g64", ".prg", ".p00", ".t64", ".tap", ".crt", "
        # the Apple II's disks (bitstream, nibble, sector and flux images, and archives of them) and
        # Apple2TS's own save state
        ".woz", ".nib", ".nb2", ".do", ".po", ".d13", ".2mg", ".2img", ".hdv", ".a2r", ".edd",
-       ".shk", ".sdk", ".a2ts"}
+       ".shk", ".sdk", ".a2ts",
+       # the Commodore 16's and Plus/4's: the kit's snapshot (plus4emu's own file), YapeSDL's,
+       # and two of the formats TOSEC keeps their games in (its tapes are .tap, its disks .d64)
+       ".p4emu", ".yss", ".lnx", ".z64",
+       # a recording of a tape, which is the game whole (some C16 tapes are kept only as one)
+       ".wav"}
 SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81",
          49179: "48K .sna snapshot", 131103: "128K .sna snapshot", 147487: "128K .sna snapshot with an extra bank",
          102400: "40-track .ssd", 204800: "80-track .ssd or 40-track .dsd", 409600: "80-track .dsd",
@@ -38,7 +44,10 @@ MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge
          (b"UEF File!", "UEF tape or BeebEm snapshot"), (b"HXCPICFE", "HFE disc image"),
          (b"HXCHFEV3", "HFE disc image"), (b"WOZ1", "WOZ disk image"), (b"WOZ2", "WOZ disk image"),
          (b"2IMG", "2MG disk image"), (b"A2R2", "A2R flux image"), (b"A2R3", "A2R flux image"),
-         (b"MAMESAVE", "MAME save state")]
+         (b"MAMESAVE", "MAME save state"),
+         (bytes.fromhex("5D12E4F4C9DAB6420133DE07D234F222"), "plus4emu snapshot"),
+         (b"C16-TAPE-RAW", "C16 tape image"), (b"C64-TAPE-RAW", "tape image"),
+         (b"PLUS4 CARTRIDGE", "Plus/4 cartridge image")]
 JSBEEB = re.compile(rb'"format"\s*:\s*"jsbeeb-snapshot"')   # the BBC Micro's snapshot, kit/bbc/snapshot.py
 # the Apple II's: the kit's (kit/apple2/snapshot.py), Apple2TS's own save state, and AppleWin's
 APPLE2 = re.compile(rb'"format"\s*:\s*"apple2ts-kit-snapshot"|"state6502"\s*:|AppleWin Save State')

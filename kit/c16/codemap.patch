@@ -1,0 +1,108 @@
+diff --git a/plus4lib/plus4api.cpp b/plus4lib/plus4api.cpp
+index 494c654..62ef4a5 100644
+--- a/plus4lib/plus4api.cpp
++++ b/plus4lib/plus4api.cpp
+@@ -1103,6 +1103,11 @@ extern "C" PLUS4EMU_EXPORT void Plus4VM_SetSingleStepModeNextAddress(
+   vm->getVM().setSingleStepModeNextAddress(addr);
+ }
+ 
++extern "C" PLUS4EMU_EXPORT void Plus4VM_SetCodeMap(Plus4VM *vm, uint32_t *buf)
++{
++  vm->getVM().setCodeMap(buf);
++}
++
+ extern "C" PLUS4EMU_EXPORT void Plus4VM_SetBreakOnInvalidOpcode(
+     Plus4VM *vm, int isEnabled)
+ {
+diff --git a/plus4lib/plus4emu.h b/plus4lib/plus4emu.h
+index a28ade2..b7f31b9 100644
+--- a/plus4lib/plus4emu.h
++++ b/plus4lib/plus4emu.h
+@@ -629,6 +629,11 @@ PLUS4EMU_EXPORT void Plus4VM_SetSingleStepMode(Plus4VM *vm, int mode);
+  */
+ PLUS4EMU_EXPORT void Plus4VM_SetSingleStepModeNextAddress(
+     Plus4VM *vm, int32_t addr);
++/*!
++ * Count every opcode the main CPU fetches in buf[address], 65536 counters
++ * that the caller owns and clears; NULL stops counting.
++ */
++PLUS4EMU_EXPORT void Plus4VM_SetCodeMap(Plus4VM *vm, uint32_t *buf);
+ /*!
+  * Set if invalid (jam) CPU opcodes should be interpreted as NOPs with a
+  * breakpoint set (priority = 3).
+diff --git a/src/cpu.cpp b/src/cpu.cpp
+index a78115a..19cc567 100644
+--- a/src/cpu.cpp
++++ b/src/cpu.cpp
+@@ -63,7 +63,8 @@ namespace Plus4 {
+       haveBreakPoints(false),
+       breakPointPriorityThreshold(0),
+       singleStepModeNextAddr(int32_t(-1)),
+-      newPCAddress(int32_t(-1))
++      newPCAddress(int32_t(-1)),
++      codeMap((uint32_t *) 0)
+   {
+     try {
+       memoryReadCallbacks = new M7501MemoryReadCallback[65536];
+@@ -108,6 +109,9 @@ namespace Plus4 {
+           uint8_t opNum = readMemory(reg_PC);
+           if (uint8_t(haveBreakPoints) | singleStepMode)
+             checkOpcodeReadBreakPoint(reg_PC, opNum);
++          // counted after the breakpoint check, so a stop there has not counted it yet
++          if (PLUS4EMU_UNLIKELY(codeMap != (uint32_t *) 0))
++            codeMap[reg_PC]++;
+           reg_PC = (reg_PC + 1) & 0xFFFF;
+           currentOpcode = &(opcodeTable[size_t(opNum) << 4]);
+         }
+diff --git a/src/cpu.hpp b/src/cpu.hpp
+index 0733900..2503802 100644
+--- a/src/cpu.hpp
++++ b/src/cpu.hpp
+@@ -168,6 +168,7 @@ namespace Plus4 {
+     uint8_t     breakPointPriorityThreshold;
+     int32_t     singleStepModeNextAddr;
+     int32_t     newPCAddress;
++    uint32_t    *codeMap;
+     void checkOpcodeReadBreakPoint(uint16_t addr, uint8_t value);
+     void checkReadBreakPoint(uint16_t addr, uint8_t value);
+     void checkWriteBreakPoint(uint16_t addr, uint8_t value);
+@@ -288,6 +289,11 @@ namespace Plus4 {
+     // Note: setSingleStepMode() must be called first with a mode parameter
+     // of 2 or 4.
+     void setSingleStepModeNextAddress(int32_t addr);
++    // count every opcode fetch in buf[PC] (65536 counters), or stop counting with NULL
++    inline void setCodeMap(uint32_t *buf)
++    {
++      this->codeMap = buf;
++    }
+     inline void setBreakOnInvalidOpcode(bool isEnabled)
+     {
+       this->breakOnInvalidOpcode = isEnabled;
+diff --git a/src/plus4vm.cpp b/src/plus4vm.cpp
+index 2a5f02c..177ce31 100644
+--- a/src/plus4vm.cpp
++++ b/src/plus4vm.cpp
+@@ -2078,6 +2078,11 @@ namespace Plus4 {
+       p->setSingleStepModeNextAddress(addr);
+   }
+ 
++  void Plus4VM::setCodeMap(uint32_t *buf)
++  {
++    ted->setCodeMap(buf);
++  }
++
+   void Plus4VM::setBreakOnInvalidOpcode(bool isEnabled)
+   {
+     ted->setBreakOnInvalidOpcode(isEnabled);
+diff --git a/src/plus4vm.hpp b/src/plus4vm.hpp
+index 45b6f9e..d7d9cc8 100644
+--- a/src/plus4vm.hpp
++++ b/src/plus4vm.hpp
+@@ -526,6 +526,7 @@ namespace Plus4 {
+      * a breakpoint set (priority = 3).
+      */
+     virtual void setBreakOnInvalidOpcode(bool isEnabled);
++    void setCodeMap(uint32_t *buf);
+     /*!
+      * Set function to be called when a breakpoint is triggered.
+      * 'type' can be one of the following values:

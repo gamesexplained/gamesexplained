@@ -34,7 +34,7 @@ import subprocess
 import sys
 import urllib.request
 
-PLATFORM_LABELS = {"apple2": "Apple II", "bbc": "BBC Micro", "c64": "C64", "spectrum": "Spectrum"}
+PLATFORM_LABELS = {"apple2": "Apple II", "bbc": "BBC Micro", "c16": "C16", "c64": "C64", "spectrum": "Spectrum"}
 PROCESS_FILES = {"agent-history.md", "kit-feedback.md", "TODO.md"}
 NO_ANNOUNCE_LABEL = "no-announce"
 

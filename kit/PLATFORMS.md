@@ -104,9 +104,9 @@ its colour tokens after the C64.
    a column for every kit it finds, and a host with no cell for yours reads
    "No run recorded". Add the emulator and disassembler to
    `site/credits.json`, with who made them.
-6. Run one game through the whole workflow to Silver. The retrospective on
-   that game (`kit/skills/core/80-retro`) is where the seams you missed show
-   up; fix them in the same pull request.
+6. Open the platform's pull request as `AGENTS.md` says, with `[kit-bump]`
+   in its description, and merge it before any game is run on it. It adds no
+   entry to `kit/lessons/`.
 7. When the platform was written by a model that is not on the proven list
    (`kit/models.json`, `kit/scripts/models.py`), a maintainer checks the machine
    reference's facts and this platform's `INSTALL.md` measurements as
@@ -115,11 +115,12 @@ its colour tokens after the C64.
    the reference instead of recalling the machine, so a wrong fact there is
    copied into all of them. The games a platform produces prove its models, not
    its reference.
-8. Open the pull request as `AGENTS.md` says, with `[kit-bump]` in its
-   description. The
-   entry in `kit/lessons/` is not "added the platform" but what the
-   first game on the new platform taught the kit about reverse engineering that the
-   earlier machines did not.
+8. Run one game through the whole workflow to Silver, in a pull request of
+   its own, from a fresh start, as a contributor would. The retrospective on
+   that game (`kit/skills/core/80-retro`) is where the seams you missed show
+   up; fix them in that game's pull request. Its entry in `kit/lessons/` is
+   not "added the platform" but what the game taught the kit about reverse
+   engineering that the earlier machines did not.
 
 ## Two rules
 

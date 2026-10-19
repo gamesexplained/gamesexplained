@@ -122,6 +122,33 @@ PLATFORM_DEFAULTS = {
         "system": [["$0000", "$03FF", "zero page, the stack, the input buffer and page 3's vectors"]],
         "io_only": [["$C000", "$CFFF", "the soft switches, the slots' I/O and the cards' ROM"]],
     },
+    "c16": {
+        # The Commodore 16 and the Plus/4, one platform (kit/skills/c16/c16-reference, "Memory
+        # map"). A C16 has 16 KB of RAM, which shows four times over the 64 KB and which
+        # kit/c16/snapshot.py reads once, at $0000-$3FFF, so a C16 game is counted there. A Plus/4
+        # has 64 KB, with BASIC's and the KERNAL's ROMs over $8000-$FCFF and $FF40-$FFFF when they
+        # are paged in and the I/O at $FD00-$FF3F always: a game written for 32 or 64 KB takes
+        # back the RAM it uses above $3FFF with "include".
+        "cpu": "6502",             # the 7501 or 8501, an NMOS 6502 with the 6510's port
+        "exclude": [["$0100", "$01FF", "stack"], ["$4000", "$7FFF", "RAM a 16 KB C16 does not have"],
+                    ["$8000", "$FFFF", "the ROMs and I/O"]],
+        "extra": [],
+        # zero page, the stack, the KERNAL's and BASIC's work area, the screen's attributes and its
+        # characters, BASIC's start, the top of a C16's RAM, the ROMs, the I/O and the KERNAL's last page
+        "edges": ["$0000", "$0100", "$0200", "$0800", "$0C00", "$1000", "$4000", "$8000",
+                  "$C000", "$FD00", "$FF40"],
+        "screen_size": 0x800,      # TED's screen: 1000 attribute bytes, then 1000 character codes, $400 apart
+        "charset_size": 0x400,     # 128 characters, the KERNAL's mode; a game that turns on 256 lists the rest under coverage.extra
+        "snapshot_ext": "p4emu",   # the kit's plus4emu server saves plus4emu's own file (kit/c16/snapshot.py)
+        # the RAM under the ROMs, a 64 KB Plus/4's: the listing reports data there, and an operand
+        # there means the ROM unless game.json's "io" rows say the code sees the RAM
+        "hidden": [["$8000", "$FCFF", "the RAM under BASIC's and the KERNAL's ROMs",
+                    "kit/skills/c16/c16-reference, \"Memory map\""],
+                   ["$FF40", "$FFFF", "the RAM under the KERNAL's last page",
+                    "kit/skills/c16/c16-reference, \"Memory map\""]],
+        "system": [["$0000", "$07FF", "zero page, the stack, and the KERNAL's and BASIC's work area and vectors"]],
+        "io_only": [["$FD00", "$FF3F", "the ACIA, the 6529s, the ROM banking port, the disk drive's port and TED"]],
+    },
 }
 
 
