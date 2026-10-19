@@ -6,7 +6,7 @@ description: How to drive SkoolKit 10.1 for ZX Spectrum disassembly — the cont
 # SkoolKit
 
 SkoolKit is the open-source ZX Spectrum disassembly toolkit (GPLv3,
-`https://github.com/skoolkit/skoolkit`, docs at `https://skoolkit.ca`). The
+`https://github.com/skoolkid/skoolkit`, docs at `https://skoolkit.ca`). The
 kit runs one of its commands, `sna2skool.py`, and only to render
 annotations; `kit/spectrum/skoolkit.py` writes and reads the control file
 itself. It is installed under `tools/skoolkit/`:

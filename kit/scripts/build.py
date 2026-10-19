@@ -1864,6 +1864,36 @@ def kits():
                   if os.path.isfile(os.path.join(os.path.dirname(p), "INSTALL.md")))
 
 
+def credits():
+    """site/credits.json's tools and their makers, as the About and status pages print them. Fails on
+    an entry they cannot print, and on a kit that names no tool, so a new platform thanks its makers."""
+    cs = json.load(open(os.path.join(SITE, "credits.json"), encoding="utf-8"))["credits"]
+    for c in cs:
+        if not all(str(c.get(k) or "").strip() for k in ("name", "by", "url", "thanks")) \
+                or len(re.findall(r"\[[^\]]+\]", c.get("thanks") or "")) != 1:
+            sys.exit(f"site/credits.json: {c.get('name')!r} needs a name, by, url and a thanks with one [link]")
+    bare = [k for k in kits() if not any(k in (c.get("kits") or []) for c in cs)]
+    if bare:
+        sys.exit(f"site/credits.json: no tool names the {', '.join(bare)} kit; add its emulator and disassembler "
+                 "and who made them (kit/PLATFORMS.md)")
+    return cs
+
+
+def thanks_html(cs):
+    """The About page's Thank you list: each entry's own words, **bold** for the people, [..] its link."""
+    def line(c):
+        t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", html.escape(c["thanks"], quote=False))
+        return re.sub(r"\[(.+?)\]", lambda m: f'<a href="{html.escape(c["url"])}">{m.group(1)}</a>', t)
+    return '<ul class="plain">' + "".join(f"<li>{line(c)}</li>" for c in cs) + "</ul>"
+
+
+def runs_on(cs, kit):
+    """A kit's tools on its status cards, emulators first: 'Runs on VICE by the VICE team, ... and ...'."""
+    items = [f'<a href="{html.escape(c["url"])}">{html.escape(c["name"])}</a> by {html.escape(c["by"])}'
+             for c in sorted((c for c in cs if kit in (c.get("kits") or [])), key=lambda c: c.get("role") != "emulator")]
+    return f'<p class="tools">Runs on {" and ".join(filter(None, [", ".join(items[:-1]), items[-1]]))}.</p>' if items else ""
+
+
 TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
 
 
@@ -1903,6 +1933,7 @@ def status_page(games):
     repo = html.escape(raw_repo)
     blob = lambda path, text: f'<a href="{repo}/blob/main/{path}">{html.escape(text)}</a>'
     have = kits()
+    cs = credits()
     names = {s["id"]: s["name"] for s in S["systems"]}
     name = lambda k: names.get(k) or PLATFORM_NAMES.get(k, k)
     stamp = lambda cls, text: f'<span class="state {cls}">{html.escape(text)}</span>'
@@ -1932,7 +1963,7 @@ def status_page(games):
                 gs = [g for g in games if g["platform"] == k and pat.search(str((g.get("tools") or {}).get("host") or ""))]
                 made = ('<p class="made">Games made here: ' + ", ".join(
                     f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in gs) + '</p>') if gs else ""
-                works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), made, [], False,
+                works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), runs_on(cs, k) + made, [], False,
                                   c.get("prompt") or f'Clone {raw_repo} and follow kit/START.md. I am on {h["name"]}, {h["arch"]}, '
                                   f'and I want to explain a {name(k)} game.'))
             else:
@@ -1943,7 +1974,7 @@ def status_page(games):
                     'Nobody has run the kit here: follow "If you are the first on an operating system" in kit/INSTALL.md, '
                     f'run check-emulator, and record what works in kit/{k}/INSTALL.md and site/status.json.')
                 research.append((not c.get("wanted"), card(title, stamp(c["state"], HOST_STATES[c["state"]]), c.get("note", ""),
-                                                           c.get("seen"), "", start, c.get("wanted"), prompt)))
+                                                           c.get("seen"), runs_on(cs, k), start, c.get("wanted"), prompt)))
     rows = []
     for s in S["systems"]:
         if s["id"] in have:
@@ -2178,7 +2209,8 @@ def main():
     # the site's About page; site/about.html is the About tab of a game
     repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
     open(os.path.join(out_root, "about.html"), "w").write(
-        fill(read(os.path.join(SITE, "about-site.html")), site_title="About · Games Explained", lib="lib", repo=repo))
+        fill(read(os.path.join(SITE, "about-site.html")), site_title="About · Games Explained", lib="lib", repo=repo,
+             thanks=thanks_html(credits())))
     open(os.path.join(out_root, "accuracy.html"), "w").write(
         fill(read(os.path.join(SITE, "accuracy.html")), site_title="Accuracy of the Source · Games Explained", lib="lib",
              repo=repo))

@@ -15,7 +15,7 @@ phase by phase, is `kit/EMULATOR.md`.
 SkoolKit is installed under `tools/skoolkit/` by the launcher
 (`python3 kit/scripts/tools.py --platform spectrum get-skoolkit`). It is
 open source under the GNU General Public License v3
-(`https://github.com/skoolkit/skoolkit`), published on PyPI, and it is a
+(`https://github.com/skoolkid/skoolkit`), published on PyPI, and it is a
 virtual environment there: it needs nothing outside `tools/`. The version
 this file describes is SkoolKit 10.1, read from PyPI on 29 September 2026.
 
@@ -426,7 +426,7 @@ work was measured with.
 ## Get the disassembler
 
 SkoolKit is the Z80 disassembler, from its own project on PyPI
-(`skoolkit.ca`, `https://github.com/skoolkit/skoolkit`), open source under
+(`skoolkit.ca`, `https://github.com/skoolkid/skoolkit`), open source under
 GPLv3. The launcher creates `tools/skoolkit/` as a virtual environment and
 installs unconditionally, so the same command upgrades it:
 
