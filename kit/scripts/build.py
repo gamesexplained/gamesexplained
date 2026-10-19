@@ -1574,22 +1574,24 @@ _icons = {}
 
 
 def platform_icon(plat):
-    """The machine's icon, site/icons/platforms/<plat>.svg, inline: a 24-unit line drawing in the
-    stroke Lucide's icons use, so the set reads as one. "" and a warning for a platform with none."""
+    """The machine's logo, site/icons/platforms/<plat>.svg, inline: one colour, the text's, on a
+    24-unit square, with the file's own fill and stroke. "" and a warning for a platform with none."""
     if plat not in _icons:
         p = os.path.join(SITE, "icons", "platforms", f"{plat}.svg")
-        m = re.search(r"<svg\b[^>]*>(.*)</svg>", read(p), re.S) if os.path.isfile(p) else None
+        m = re.search(r"<svg\b([^>]*)>(.*)</svg>", read(p), re.S) if os.path.isfile(p) else None
         if not m:
             warn(f"site/icons/platforms/{plat}.svg is missing, so the {plat} cards show no machine (kit/PLATFORMS.md)")
-        body = re.sub(r">\s+<", "><", m.group(1).strip()) if m else ""
-        _icons[plat] = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
-                        f'stroke-linejoin="round" aria-hidden="true">{body}</svg>') if m else ""
+            _icons[plat] = ""
+        else:
+            attrs = [a for a in re.findall(r'[\w:-]+="[^"]*"', m.group(1)) if not a.startswith(("xmlns", "width=", "height="))]
+            body = re.sub(r">\s+<", "><", m.group(2).strip())
+            _icons[plat] = f'<svg {" ".join(attrs)} aria-hidden="true">{body}</svg>'
     return _icons[plat]
 
 
 def platform_badge(g, root):
-    """The machine a card's game runs on: its icon in the card's corner, named when hovered, and a
-    link to that platform's page. Nothing for a platform with no icon."""
+    """The machine a card's game runs on: its logo in the card's corner, named when hovered, and a
+    link to that platform's page. Nothing for a platform with no logo."""
     plat = g["platform"]
     icon, name = platform_icon(plat), html.escape(PLATFORM_NAMES.get(plat, plat))
     return f'<a class="plat" href="{root}{plat}/" title="{name}" aria-label="{name}">{icon}</a>' if icon else ""
@@ -1598,8 +1600,8 @@ def platform_badge(g, root):
 def tile_html(g, root, line, foot, data="", badge=True):
     """A game's card, as New and updated and the catalogue show one: the tier up the left edge,
     the title screen, the game's title (the card's link), a line on who, a line in small type, and
-    the machine's icon in the corner. root is the way up to the site's top from the page the card
-    is on; badge=False leaves the icon out, on a page of one platform's games."""
+    the machine's logo in the corner. root is the way up to the site's top from the page the card
+    is on; badge=False leaves the logo out, on a page of one platform's games."""
     plat, slug = g["platform"], g["slug"]
     line = f'<span class="v">{line}</span>' if line else ""
     return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}'

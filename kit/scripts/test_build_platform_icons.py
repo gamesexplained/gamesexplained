@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""The machine's icon on a game's card: every kit has one in site/icons/platforms/, drawn in Lucide's
-grammar (24 units, a 2-unit stroke in the text's colour) so the set reads as one; the card links it to
-the platform's page under the machine's name; a page of one platform's games leaves it out, and so
-does a platform with no icon."""
+"""The machine's logo on a game's card: every kit has one in site/icons/platforms/, in one colour (the
+text's) on a 24-unit square, saying where it comes from; the card links it to the platform's page under
+the machine's name; a page of one platform's games leaves it out, and so does a platform with no logo."""
 from pathlib import Path
 import re
 import sys
@@ -16,22 +15,20 @@ GAME = {"platform": "spectrum", "slug": "fixture", "title": "Fixture", "tier": "
 
 
 class PlatformIcons(unittest.TestCase):
-    def test_every_kit_has_an_icon(self):
+    def test_every_kit_has_a_logo(self):
         for plat in build.kits():
             self.assertTrue((ICONS / f"{plat}.svg").is_file(), f"site/icons/platforms/{plat}.svg (kit/PLATFORMS.md)")
 
-    def test_each_icon_is_drawn_like_the_others(self):
+    def test_each_logo_is_one_colour_on_24_units_and_names_its_source(self):
         for p in sorted(ICONS.glob("*.svg")):
             svg = p.read_text()
-            head = re.match(r"<svg\b([^>]*)>", svg).group(1)
-            for attr in ('viewBox="0 0 24 24"', 'fill="none"', 'stroke="currentColor"', 'stroke-width="2"',
-                         'stroke-linecap="round"', 'stroke-linejoin="round"'):
-                self.assertIn(attr, head, p.name)
+            self.assertRegex(svg, r"^<!-- [^\n]+ -->\n<svg\b", f"{p.name}: a comment above the <svg> says where it comes from")
+            self.assertIn('viewBox="0 0 24 24"', re.search(r"<svg\b([^>]*)>", svg).group(1), p.name)
             self.assertEqual(set(re.findall(r'(?:fill|stroke)="([^"]*)"', svg)) - {"none", "currentColor"}, set(),
                              f"{p.name}: a colour of its own would not follow the card's ink")
             self.assertNotRegex(svg, r"<(script|style|image|use|foreignObject)\b|href=", p.name)
 
-    def test_the_card_links_the_icon_to_the_platform(self):
+    def test_the_card_links_the_logo_to_the_platform(self):
         shot, build.shot_html = build.shot_html, lambda *a, **k: ""   # the fixture has no title screen
         try:
             card = build.tile_html(GAME, "", "", "")
@@ -40,11 +37,12 @@ class PlatformIcons(unittest.TestCase):
             build.shot_html = shot
         m = re.search(r'<a class="plat" href="spectrum/" title="ZX Spectrum" aria-label="ZX Spectrum"><svg ([^>]*)>(.*?)</svg></a>', card)
         self.assertTrue(m, card)
-        self.assertIn('aria-hidden="true"', m.group(1))
-        self.assertIn('<rect x="2" y="6.5"', m.group(2))
+        self.assertEqual(m.group(1), 'viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"')
+        self.assertTrue(m.group(2).startswith("<path d="), m.group(2))
+        self.assertNotIn("<!--", card)
         self.assertNotIn('class="plat"', bare)
 
-    def test_a_platform_with_no_icon_has_none_on_its_card(self):
+    def test_a_platform_with_no_logo_has_none_on_its_card(self):
         self.assertEqual(build.platform_icon("nosuchmachine"), "")
         shot, build.shot_html = build.shot_html, lambda *a, **k: ""
         try:
