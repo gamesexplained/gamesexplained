@@ -49,7 +49,7 @@ for(const length of [0,9,10]) {
 }
 console.log(`OK - G/Z/O rejection and prefix clearing; ${prefixes} prefixes across ${words} available wheel entries; case folding and append-limit boundaries`);
 
-const {labWheelReplay}=g.run('index.html','labyrinth-wheel-replay','labWheelReplay');
+const {labWheelReplay}=g.run('explore.html','labyrinth-wheel-replay','labWheelReplay');
 const recorded=machine();
 assert.equal(labWheelReplay.length,5);
 for(const row of labWheelReplay) {
@@ -75,3 +75,5 @@ for(const [value,suffix] of [[0,null],[1,'(2)'],[8,'(9)'],[9,'(:)'],[10,null]]) 
  else assert(!row.includes('('),`quantity byte ${value} should omit suffix`);
 }
 console.log('OK - inventory suffix bytes at zero, digit, colon, and omitted-suffix boundaries');
+
+g.sameBlock('labyrinth-wheel-replay');

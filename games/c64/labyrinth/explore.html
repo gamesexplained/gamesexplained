@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labyrinth</title>
+<style>
+*{box-sizing:border-box}html{background:#23262d}body{max-width:1080px;margin:0 auto;padding-bottom:48px;background:#e9e7e1;color:#2f3136;font:17px/1.6 system-ui,sans-serif}.hero,main,footer{padding-left:clamp(20px,6vw,68px);padding-right:clamp(20px,6vw,68px)}.hero{padding-top:44px}.eyebrow{font:12px/1.6 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:#55585f}h1{font-size:46px;line-height:1.15;margin:12px 0}h2{font-size:26px;line-height:1.3;margin:0 0 14px}.sub{color:#55585f;max-width:720px}section{padding:36px 0 8px}a,summary{color:#1f5fa8}.pictures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}figure{margin:0;padding:16px;background:white;border:1px solid #d5d3cc;border-radius:10px}figure img{display:block;width:100%;height:auto;image-rendering:pixelated;background:black}figcaption{font-size:14px;line-height:1.5;color:#55585f;margin-top:12px}.status{font-size:15px;border-left:3px solid #c25a00;padding:10px 16px;background:#fff8e8}li{margin:8px 0}details{margin-top:24px}select{font:inherit;max-width:100%;padding:8px;margin:8px 0 16px}.gallery{max-width:640px;margin:0 auto}.gallery label{display:block;font-weight:600}summary{cursor:pointer}.font{max-width:768px;margin:18px auto 0}.sources{font-size:14px;color:#55585f}footer{margin-top:40px;padding-top:20px;border-top:1px solid #d5d3cc;font-size:12px;color:#55585f}@media(max-width:650px){.pictures{grid-template-columns:1fr}h1{font-size:36px}}
+.lab-word-demo{background:#fff;border:1px solid #d5d3cc;border-radius:10px;padding:20px}.lab-word-controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.lab-word-controls label{display:block}.lab-word-result{font:24px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#171c28;color:#a4efd6;padding:16px;border-radius:6px;margin:12px 0}.lab-word-bytes{font:14px/1.6 ui-monospace,monospace;overflow-wrap:anywhere}.lab-word-note{font-size:14px;color:#55585f}.lab-passage-text{min-height:7em;font:18px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#171c28;color:#a4efd6;padding:16px;border-radius:6px}.lab-passage-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.lab-passage-actions button{font:inherit;padding:7px 12px;cursor:pointer}.lab-passage-actions button:disabled{cursor:default;opacity:.5}.lab-passage-bytes{font:14px/1.6 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.lab-glyph-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.lab-glyph-controls input[type=number]{width:80px;font:inherit;padding:6px}.lab-glyph-controls button{font:inherit;padding:7px 10px;cursor:pointer}.lab-glyph-controls button:disabled{opacity:.5;cursor:default}.lab-glyph-view{display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-top:20px}.lab-glyph-view svg{width:min(256px,100%);height:auto;display:block}.lab-glyph-view pre{margin:0;font:16px/1.75 ui-monospace,monospace}.lab-glyph-hide-grid .lab-glyph-grid{display:none}.lab-wheel-card{padding:20px;background:white;border:1px solid #d5d3cc;border-radius:10px}.lab-wheel-state{display:flex;gap:28px;flex-wrap:wrap;margin:16px 0}.lab-wheel-state dt{font-size:14px;color:#55585f}.lab-wheel-state dd{margin:0;font:24px/1.5 ui-monospace,monospace}.lab-wheel-rejected{border-left:4px solid #b42318;padding-left:12px}.lab-wheel-rejected #lab-wheel-message{color:#b42318}.lab-home-output{min-height:6em;white-space:pre-wrap;font:20px/1.5 ui-monospace,monospace;background:#171c28;color:#a4efd6;padding:16px;border-radius:6px}.lab-flow-scroll{overflow-x:auto;border:1px solid #d5d3cc;background:#fff;border-radius:10px}.lab-flow-svg{display:block;width:100%;min-width:680px;height:auto}.lab-flow-node rect{fill:#eef5fa;stroke:#1f5fa8;stroke-width:2}.lab-flow-node text{fill:#25384a;font-size:19px;font-weight:600}.lab-flow-edge path{fill:none;stroke-width:3}.lab-flow-edge text{font-size:14px;fill:#2f3136;paint-order:stroke;stroke:white;stroke-width:5px;stroke-linejoin:round}.lab-flow-edge[data-kind=move] path{stroke:#1f5fa8}.lab-flow-edge[data-kind=action] path{stroke:#a65a19;stroke-dasharray:7 4}.lab-flow-node:focus rect,.lab-flow-node:hover rect,.lab-flow-node[aria-current=true] rect{fill:#d2e9f9;stroke-width:4}.lab-flow-edge[data-kind=sequence] path{stroke:#59616b;stroke-dasharray:2 5}.lab-flow-edge:focus path,.lab-flow-edge:hover path,.lab-flow-edge[aria-current=true] path{stroke-width:6}.lab-flow-detail{margin-top:16px;padding:20px;background:#fff;border:1px solid #d5d3cc;border-radius:10px}.lab-flow-detail h3{margin-top:0}.lab-flow-detail blockquote{white-space:pre-wrap;margin:10px 0;font:16px/1.5 ui-monospace,monospace}.lab-flow-legend{font-size:14px}.lab-flow-detail:focus{outline:2px solid #1f5fa8}
+.lab-area-nav{position:sticky;top:var(--tabs-h,76px);z-index:20;display:grid;grid-template-columns:1fr 1.25fr;gap:12px;padding:12px 16px;background:#f8f7f3;border:1px solid #cbc9c2;border-radius:9px;margin:24px 0 12px;box-shadow:0 3px 10px #0000000d}.lab-area-nav[hidden]{display:none}.lab-area-nav label{font-size:12px;font-weight:650;letter-spacing:.03em;color:#55585f;min-width:0}.lab-area-nav select{display:block;width:100%;margin:4px 0 0;padding:8px;font-size:15px;color:#2f3136;background:#fff;border:1px solid #aaa;border-radius:5px}.lab-area-nav [hidden]{display:none}.lab-area-nav.lab-one-topic{grid-template-columns:1fr}.lab-area-nav label{display:block}.lab-area-next{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:32px 0}.lab-area-next a{display:inline-block;padding:10px 16px;border:1px solid #b8c5cf;border-radius:7px;text-decoration:none;background:#fff}.lab-area-mode [data-reading-area][hidden]{display:none!important}.lab-area-summary{font-size:13px;color:#55585f}.lab-area-mode [data-reading-area] [id],.lab-area-mode section[id]{scroll-margin-top:calc(var(--tabs-h,76px) + var(--lab-nav-h,105px) + 16px)}.lab-gate-pictures{margin:22px 0}.lab-evidence{margin:20px 0;font-size:14px;color:#55585f;border-top:1px solid #cfcdc7;padding-top:10px}.lab-evidence summary{font-size:14px}.lab-evidence .sources{margin-bottom:4px}.lab-corridor-details{margin:24px 0}.lab-corridor-details summary{margin-bottom:12px}@media(max-width:520px){.lab-area-nav{grid-template-columns:1fr;gap:8px;padding:10px 12px}.lab-area-nav select{padding:6px;margin-top:2px}.lab-gate-pictures{grid-template-columns:1fr 1fr;gap:8px}.lab-gate-pictures figure{padding:8px}.lab-gate-pictures figcaption{font-size:12px}[aria-label="Gate movement columns and approach-depth threshold"] text{font-size:22px}}
+#lab-corridor-strip{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:4px;margin:22px 0}#lab-corridor-strip button{padding:8px 0;background:#dddcd7;border:2px solid transparent;border-radius:4px;color:#333;cursor:pointer;font:12px ui-monospace,monospace}#lab-corridor-strip button.lab-passage{background:#b5d6bf}#lab-corridor-strip button[aria-pressed="true"]{border-color:#174b84;box-shadow:0 0 0 1px #174b84}#lab-corridor-result{min-height:5em;padding:16px;background:white;border-left:4px solid #174b84}#lab-corridor-column{vertical-align:middle;max-width:40%}
+.lab-brick-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px 0}.lab-brick-actions select,.lab-brick-actions button{font:inherit;font-size:15px;padding:9px 12px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#2f3136;max-width:100%;margin:0}.lab-brick-actions button{cursor:pointer}.lab-brick-actions button:hover{background:#e9eff5}#lab-brick-door-result{padding:12px 16px;background:white;border-left:4px solid #174b84}
+.lab-journey{margin:24px 0}.lab-journey ol{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.lab-journey li{margin:0}.lab-journey a{display:flex;flex-direction:column;height:100%;padding:18px;border:1px solid #bbc6ce;border-radius:8px;text-decoration:none;background:#fff;color:#2f3136}.lab-journey a:hover,.lab-journey a:focus{background:#edf4f8;border-color:#1f5fa8}.lab-journey span{font-size:12px;text-transform:uppercase;color:#55585f;letter-spacing:.04em}.lab-journey strong{font-size:18px;margin:4px 0}.lab-journey small{font-size:14px;line-height:1.5;color:#55585f}.lab-technical{padding:16px;border:1px solid #c9c7c1;border-radius:8px;background:#f7f6f2}.lab-technical>summary{font-weight:600}.lab-technical[open]>summary{margin-bottom:20px}@media(max-width:520px){.lab-journey ol{grid-template-columns:1fr}}</style>
+<!-- tabs -->
+<header class="hero">
+<p class="eyebrow">Labyrinth · Explore the game</p>
+<h1>Labyrinth</h1>
+<p class="sub">Follow the journey from the text adventure to the maze. Each area brings together its route, encounters, and checked mechanics.</p><p class="lab-area-summary">Scope: the text opening, gate entry, first-corridor exits, and a Brick Hallway door. Later rooms are reference images on Maps / levels.</p>
+</header>
+<main>
+<p class="lab-area-summary"><a href="index.html">← How the main mechanics work</a> · <a href="#journey-overview">Journey overview</a></p>
+<nav id="journey-overview" class="lab-journey" aria-label="Journey overview"><ol><li><a href="explore.html#text-adventure"><span>1 · The city</span><strong>The text adventure</strong><small>Reach the cinema through commands and inventory choices.</small></a></li><li><a href="explore.html#entrance-gate"><span>2 · Into the maze</span><strong>The entrance gate</strong><small>Align with the doorway and approach it.</small></a></li><li><a href="explore.html#first-corridor"><span>3 · Choose a passage</span><strong>The first corridor</strong><small>Openings choose an entry into the Brick Hallway.</small></a></li><li><a href="explore.html#brick-hallway"><span>4 · At the doors</span><strong>The Brick Hallway</strong><small>Move to a door before using OPEN DOOR.</small></a></li></ol></nav>
+<nav class="lab-area-nav" aria-label="Explore Labyrinth by area" hidden>
+<div><label for="lab-area-select">Area</label><select id="lab-area-select"><option value="opening">The text adventure</option><option value="gate">The entrance gate</option><option value="corridor">The first corridor</option><option value="brick">The Brick Hallway</option><option value="atlas">Further into the maze · gallery</option></select></div>
+<div id="lab-topic-label" hidden><label for="lab-topic-select">Jump to topic</label><select id="lab-topic-select"></select></div>
+</nav>
+
+<section id="the-city-before-the-maze" data-reading-area="opening">
+<span id="text-adventure"></span><p class="lab-area-summary">Area 1 · The text adventure</p>
+<h2 id="lab-opening-topic-0">The text adventure</h2>
+<p>Labyrinth begins with a text adventure. You name your character, answer the setup questions, and explore the streets outside a movie theater. Two word wheels hold the available actions and objects. Entering <em>go home</em> takes you from the sidewalk to a room with a television and a camcorder.</p>
+<div class="pictures">
+<figure><img src="reference/opening-anonymous.png" width="384" height="272" alt="The rainy sidewalk described in text, above the action and object wheels"><figcaption>The playable opening, before the first command. The active wheel shows neighboring choices around the selected word.</figcaption></figure>
+<figure><img src="reference/home.png" width="384" height="272" alt="The response to GO HOME describes a television and a video camera"><figcaption>The result of <em>go home</em>. Both pictures were captured from the supplied disk image.</figcaption></figure>
+</div>
+</section>
+<section data-reading-area="opening" data-part="opening">
+<h2 id="lab-opening-topic-1">The city as a workflow</h2>
+<p>The opening connects places with commands and gates some actions on what you carry. Select a place or an arrow to see its description, condition and result. Solid blue arrows move between locations. Dashed amber arrows show actions at the counter. The gray connection follows the coin choice into the later theater encounter.</p>
+<p class="lab-flow-legend">A route through the cinema, with optional change collection. Details appear below the diagram; on narrow screens, scroll the diagram sideways. The counter actions can be taken in either order. This is a guide to verified decisions, rather than a complete playable opening.</p>
+<div class="lab-flow-scroll"><svg class="lab-flow-svg" viewBox="0 0 880 610" role="group" aria-label="City and cinema workflow"><defs><marker id="lab-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#59616b"/></marker></defs><g id="lab-flow-edges"></g><g id="lab-flow-nodes"></g></svg></div>
+<label for="lab-flow-choice">Inspect a place or connection</label><br><select id="lab-flow-choice"></select>
+<div class="lab-flow-detail" id="lab-flow-detail" tabindex="-1" aria-live="polite"><h3 id="lab-flow-title"></h3><div id="lab-flow-description"></div><p id="lab-flow-evidence" class="sources"></p></div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">Movement selections are checked against the original direction handlers. The five-dollar ticket, two-dollar purchase and counter changes have original-code tests; the counter route also has live command observations. Later conversation timing and the graphical maze remain outside this diagram.</p></details>
+</section>
+<section data-reading-area="opening" data-part="opening">
+<h2 id="lab-opening-topic-3">Words stored once</h2>
+<details class="lab-technical"><summary>Explore the technical detail</summary>
+<p>Labyrinth can insert a dictionary word into a sentence using two bytes: a format code and a word number. The format can give the word a capital initial or add a following space. Choose a word to see the stored instruction expand.</p>
+<div class="lab-word-demo">
+<div class="lab-word-controls">
+<label for="lab-word">Dictionary word<br><select id="lab-word"><option value="16">boy</option><option value="17">girl</option><option value="18">he</option><option value="19">she</option><option value="20" selected>camcorder</option><option value="21">hello</option><option value="22">adumbrate</option><option value="23">complain</option><option value="24">inventory</option><option value="25">load game</option><option value="26">save game</option><option value="27">speak</option><option value="28">take</option><option value="29">time</option><option value="30">ask</option><option value="31">call</option><option value="32">close</option><option value="33">congratulate</option><option value="34">hit</option><option value="35">insult</option><option value="36">manicure</option><option value="37">open</option><option value="38">drop</option><option value="39">eat</option><option value="40">give</option><option value="41">insert</option><option value="42">throw</option><option value="43">use</option><option value="45">door</option><option value="46">elephant</option><option value="47">hat</option><option value="50">knocker</option><option value="52">nerd</option><option value="54">wall</option><option value="56">goblin</option><option value="57">arm</option><option value="58">crystal ball</option><option value="59">cup</option><option value="60">dollar bill</option><option value="61">head</option><option value="62">key</option><option value="63">nickel</option><option value="64">peach</option><option value="65">perfume</option><option value="66">plank</option><option value="67">popcorn</option><option value="68">quarter</option><option value="69">ring</option><option value="70">rock</option><option value="71">rule book</option><option value="72">shears</option><option value="73">spray bottle</option><option value="74">ticket</option><option value="75">look</option><option value="76">go</option><option value="77">beggar</option><option value="78">dinner</option><option value="79">east</option><option value="80">food</option><option value="81">home</option><option value="82">north</option><option value="83">outside</option><option value="84">south</option><option value="85">store</option><option value="87">theater</option><option value="88">west</option><option value="89">black</option><option value="90">white</option><option value="91">red</option><option value="92">aqua</option><option value="93">purple</option><option value="94">green</option><option value="95">blue</option><option value="96">yellow</option><option value="97">orange</option><option value="98">leg</option><option value="99">helmet</option><option value="100">bracelet</option><option value="101">log</option><option value="102">rocks</option><option value="103">plastics</option><option value="104">owl</option><option value="105">jaggies</option><option value="106">avocado</option><option value="112">elephants over me</option><option value="113">towels over me</option><option value="114">power over me</option></select></label>
+<label><input id="lab-capital" type="checkbox" checked> Capital initial</label>
+<label><input id="lab-space" type="checkbox" checked> Following space</label>
+</div>
+<p class="lab-word-bytes">Stored bytes: <output id="lab-token"></output></p>
+<div class="lab-word-result" id="lab-expanded" aria-live="polite"></div>
+<p class="lab-word-note">A visible ␣ marks a space in this display. These words come from the opening’s dictionary; the controls show combinations independently of a particular sentence.</p>
+</div>
+<h3 id="lab-opening-topic-4">A passage, piece by piece</h3>
+<p>The opening mixes ordinary letters with dictionary references. Step through a stored passage to see which words come from the dictionary and where the game starts a new line.</p>
+<div class="lab-word-demo">
+<label for="lab-passage">Opening passage</label><br>
+<select id="lab-passage"><option value="0">The sidewalk</option><option value="1">The rain and owl</option></select>
+<div class="lab-passage-actions"><button id="lab-restart" type="button">Restart</button><button id="lab-next" type="button">Next piece</button><button id="lab-complete" type="button">Show complete passage</button></div>
+<div id="lab-passage-output" class="lab-passage-text" aria-live="polite"></div>
+<p id="lab-passage-explanation"></p>
+<p id="lab-passage-raw" class="lab-passage-bytes"></p>
+</div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">Passages at <code>$9867</code> and <code>$98A7</code>, checked against the stored bytes and the game’s parser at each step. Line breaks follow the stored instructions; the display uses a browser font.</p></details>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">The <code>$67B5</code> parser chooses the format; <code>$68D4</code> reads the word through the pointer tables at <code>$D800</code> and <code>$D900</code>. All dictionary entries and four formats were checked against the game’s routine in a 6502 simulator: 1,024 cases.</p></details>
+</details>
+</section>
+<section data-reading-area="opening" data-part="opening">
+<h2 id="lab-opening-topic-5">The opening’s letters</h2>
+<details class="lab-technical"><summary>Explore the technical detail</summary>
+<p>The dialogue’s letters are eight pixels wide and eight high. Each stored byte supplies one row, with a set bit lighting a pixel. The same font holds graphical symbols and blank slots alongside the letters.</p>
+<div class="lab-word-demo">
+<div class="lab-glyph-controls"><button id="lab-glyph-prev" type="button">Previous glyph</button><label for="lab-glyph-number">Glyph number</label><input id="lab-glyph-number" type="number" min="0" max="255" step="1" value="65"><button id="lab-glyph-next" type="button">Next glyph</button><label><input id="lab-glyph-grid" type="checkbox" checked> Show pixel grid</label></div>
+<p id="lab-glyph-caption" aria-live="polite"></p>
+<div class="lab-glyph-view"><svg id="lab-glyph-picture" viewBox="0 0 8 8" width="256" height="256" role="img" aria-label="Enlarged opening glyph" shape-rendering="crispEdges"></svg><pre id="lab-glyph-rows" aria-label="Eight stored row bytes and their bits"></pre></div>
+</div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">The RAM font at <code>$D000</code>, extracted from the opening’s saved state. Every embedded byte is checked against the source listing; all 256 glyphs are compared with the site’s C64 character renderer. The viewer shows monochrome shapes.</p></details>
+<details><summary>View the opening’s letter shapes</summary><figure class="font"><img src="reference/opening-font.png" alt="The opening font rendered from RAM, with hexadecimal indices"><figcaption>The opening’s glyph sheet. Digits and letters occupy their ASCII positions; other slots include shapes and blank cells. The source listing documents the identified font data.</figcaption></figure></details>
+</details>
+</section>
+<section data-reading-area="opening" data-part="opening">
+<h2 id="lab-opening-topic-6">Words that change the scene</h2>
+<p>Typing selects words on the active wheel. Space changes wheels, and Return carries out the selected command. The opening route visits a beggar and a popcorn counter before the movie begins.</p>
+<ul>
+<li>The slot menu offers F1, F3, and F5.</li>
+<li>The setup accepts a name, sex, and favorite color.</li>
+<li>Commands such as <em>take camcorder</em> and <em>give nickel</em> produce different responses as the location changes.</li>
+<li>The cinema sequence leads from text descriptions to a picture of the character at a gate.</li>
+</ul>
+<h3 id="lab-opening-topic-7">A mistyped letter disappears</h3>
+<p>Typing <em>G</em> selects <em>give</em>. Adding <em>Z</em> matches nothing, so the game drops that letter and keeps <em>G</em>. Adding <em>O</em> then selects <em>go</em>. Delete clears the whole prefix while leaving the selected word in place.</p>
+<div id="lab-wheel-card" class="lab-wheel-card">
+<p id="lab-wheel-key"></p>
+<dl class="lab-wheel-state"><div><dt>Accepted prefix</dt><dd id="lab-wheel-prefix"></dd></div><div><dt>Selected word</dt><dd id="lab-wheel-word"></dd></div></dl>
+<p id="lab-wheel-message" aria-live="polite"></p>
+<div class="lab-passage-actions"><button id="lab-wheel-restart" type="button">Restart replay</button><button id="lab-wheel-next" type="button">Next key</button></div>
+</div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">A recorded sequence from the opening’s action wheel, checked in VICE and against the original routines at <code>$5F2C</code>, <code>$612C</code>, and <code>$61F7</code>. This replay preserves that saved state’s choices. A separate simulator check exercises 112 accepted prefixes across 23 available entries, with upper- and lowercase input.</p></details>
+<h3 id="lab-opening-topic-8">GO HOME checks where you are</h3>
+<p>The command stays the same, but its result depends on your location. On the street, <em>go home</em> selects the home location. At home, the command replies “You are home!” At the ticket counter, the command says you cannot go home from there.</p>
+<div class="lab-word-demo"><label for="lab-home-location">Try GO HOME from</label><br><select id="lab-home-location"><option value="1">East sidewalk</option><option value="2">North sidewalk</option><option value="3">West sidewalk</option><option value="4">South sidewalk</option><option value="5">Home</option><option value="6">Ticket counter</option><option value="7">Popcorn stand</option><option value="13">Theater lobby</option></select><p id="lab-home-kind"></p><div id="lab-home-output" class="lab-home-output" aria-live="polite"></div></div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">The opening’s handler at <code>$9114</code> reads the location’s entry from <code>$AA58</code> and <code>$AA66</code>. A zero high byte selects a destination; another value selects a reply. All 14 table entries are checked against the original handler. Destinations are shown before their arrival routine runs.</p></details>
+<h3 id="lab-opening-topic-9">The ticket changes GO EAST</h3>
+<p>At the ticket counter, <em>go east</em> checks whether you carry a ticket before consulting the movement table. Without a ticket, the reply is “You can't enter without a ticket.” With one, the table selects the lobby destination.</p>
+<div class="lab-word-demo"><label><input id="lab-ticket-held" type="checkbox"> Carrying a ticket</label><p id="lab-ticket-kind"></p><div id="lab-ticket-output" class="lab-home-output" aria-live="polite"></div></div>
+<p>The purchase follows a shared payment path. Giving the dollar bill with at least five dollars available deducts four dollars in the ticket handler, then another dollar in the common give routine. The girl hands over one ticket.</p>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">The east handler at <code>$90F4</code> checks the ticket entry at <code>$6740</code>. The purchase path starts at <code>$9327</code> and uses <code>$087F</code> to remove the final dollar. The eastward table decision is checked for every location index and every ticket byte; the purchase is checked with one through nine dollars. Arrival effects remain separate.</p></details>
+<h3 id="lab-opening-topic-10">Two dollars for cold popcorn</h3>
+<p>At the popcorn stand, giving a dollar bill can spend two dollars: one in the counter’s branch and one in the shared GIVE routine. The first purchase adds a box of popcorn. After that, a purchase flag makes the woman refuse another dollar payment, leaving your money alone.</p>
+<div class="lab-word-demo"><label for="lab-popcorn-money">Dollars carried</label> <select id="lab-popcorn-money"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select><br><label><input id="lab-popcorn-bought" type="checkbox"> Already bought popcorn</label><p id="lab-popcorn-state"></p><div id="lab-popcorn-reply" class="lab-home-output" aria-live="polite"></div></div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">The dollar-payment branch at <code>$93E1</code> checks <code>$9688</code>, updates the dollar and popcorn inventory entries, and reaches the shared debit at <code>$087F</code>. The example is checked against the original GIVE handler with one through nine dollars and every purchase-flag byte. The response mentions change and a dropped nickel; the complaint example below follows their collection.</p></details>
+
+<figure class="gallery"><img src="reference/popcorn.png" width="384" height="272" alt="A popcorn-counter conversation and the COMPLAIN command"><figcaption>The popcorn counter responds to a complaint. This scene was reached using ordinary commands.</figcaption></figure>
+
+
+</section>
+<section data-reading-area="opening" data-part="opening">
+<h2 id="lab-opening-topic-11">Two complaints recover the missing quarter</h2>
+<p>The popcorn menu asks $1.25, but the woman takes two dollars and leaves only two quarters in change. The first complaint gets an excuse. The second produces another quarter. Three quarters in change restore the advertised $1.25 price. Further complaints produce a rebuke.</p>
+<p>This example starts just after the purchase. TAKE collects the available quarters together, then exposes the dropped nickel. Complaining before collecting the change puts three quarters on the counter; complaining after collecting it adds one more to pick up.</p>
+<div class="lab-word-demo">
+<p id="lab-change-state" aria-live="polite"></p>
+<p id="lab-change-next"></p>
+<div class="lab-passage-actions"><button id="lab-change-take">TAKE</button><button id="lab-change-complain">COMPLAIN</button><button id="lab-change-return">GIVE NICKEL</button><button id="lab-change-reset">Restart purchase</button></div>
+<div id="lab-change-reply" class="lab-home-output" aria-live="polite"></div>
+<p id="lab-change-later"></p>
+<p class="lab-word-note">The starting inventory includes one nickel from character setup. The dropped nickel is an additional coin. This example follows a route that keeps the starting nickel.</p>
+</div>
+<p>Returning a nickel after picking up the dropped one gets the woman’s thanks. The game remembers the return. While the teenager in the main theater accepts popcorn, keeping the dropped nickel makes him take the whole box. Returning it makes him take a handful and leave the box in your inventory.</p>
+<figure class="gallery"><img src="reference/change-return-and-repeat.png" width="384" height="272" alt="The woman thanks the player for returning the nickel, followed by a repeated complaint"><figcaption>Returning the nickel gets the woman’s thanks. A further complaint gets “You sure complain a lot.” Both responses were reached with ordinary commands.</figcaption></figure>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">TAKE at <code>$927C</code>, the complaint branch at <code>$95B7</code>, and the return branch at <code>$943A</code> update the pickup slot, quarter count, and nickel flags. The later offer checks <code>$0575</code> at <code>$9485</code>. Counter sequences were replayed with ordinary inputs in VICE. The example is also compared with the original routines, including both later popcorn-offer branches; that later comparison isolates the offer before the movie transition.</p></details>
+</section>
+<section data-reading-area="opening" data-part="opening">
+<h2 id="lab-opening-topic-12">Replies from the city</h2>
+<p>The city’s replies mix ordinary letters with dictionary words. The same format carries street descriptions, shop transactions, and the beggar’s one-word hints. All 127 opening text streams are available below. Choose a stored reply to read its expansion. The text reflects the saved setup; a reply’s presence does not establish how to reach it in play.</p>
+<div class="lab-word-demo"><label for="lab-response">Stored opening reply</label><br><select id="lab-response"></select><p id="lab-response-address"></p><div class="lab-home-output" id="lab-response-text" aria-live="polite"></div></div>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">Text records at <code>$7910</code>, <code>$968E</code>, and <code>$9816</code> through <code>$A9E7</code>, checked against the original text parser at <code>$67B5</code>. The records include the menu asking $1.25 for popcorn, while the payment branch spends two dollar bills and its reply describes change. The complaint example follows coin collection and the missing-quarter refund. Pronoun substitutions reflect the captured setup; the game can change them.</p></details>
+</section>
+<div class="lab-area-next" data-reading-area="opening"><p>The cinema leads into the graphical adventure.</p><a href="#entrance-gate">Continue to the entrance gate →</a></div>
+<section id="entering-the-labyrinth" data-reading-area="gate" data-part="scene-01">
+<span id="entrance-gate"></span><p class="lab-area-summary">Area 2 · Entry mechanic verified · Other gate behavior remains open</p>
+<h2 id="lab-gate-topic-0">The entrance gate</h2>
+<p>After the cinema, the graphical adventure places you outside the gate. Holding up from the saved starting position begins the entry sequence. Moving to either side first leaves the character against the foreground boundary.</p>
+<p>The movement map divides the approach into horizontal columns. In the four columns shown here, the doorway column permits a deeper approach than its neighbors. Reaching depth 50 starts a script that changes the gate state and queues the first corridor. The diagram shows those world-coordinate checks, rather than a rectangle painted over the screen.</p>
+<div class="pictures lab-gate-pictures"><figure ><img src="reference/gate-idle.png" width="384" height="272" alt="The player standing at the entrance gate before the approach sequence"><figcaption>The naturally reached gate state before movement. With no input, the test remained here for 300 frames.</figcaption></figure>
+<figure ><img src="reference/gate-right_then_up.png" width="384" height="272" alt="The player beside the gate after moving right and approaching the wall"><figcaption>Moving right before approaching leaves the player beside the doorway, at depth 24.</figcaption></figure>
+</div>
+<h3 id="lab-gate-boundary">The doorway boundary</h3>
+<div class="lab-word-demo">
+<div class="lab-word-controls"><label>Horizontal position <input id="lab-gate-x" type="range" min="0" max="255" value="96"></label><label>Approach depth <input id="lab-gate-depth" type="range" min="0" max="80" value="6"></label></div>
+<div class="lab-passage-actions"><button id="lab-gate-aligned">Try the doorway</button><button id="lab-gate-side">Try beside the gate</button></div>
+<svg viewBox="0 0 600 410" style="width:100%;max-width:720px;display:block" role="img" aria-label="Gate movement columns and approach-depth threshold">
+<rect x="40" y="40" width="512" height="320" fill="#eee"/>
+<rect x="40" y="264" width="512" height="96" fill="#d9e5eb"/>
+<rect x="168" y="40" width="128" height="320" fill="#d3efdd"/>
+<path d="M40 264 H168 M296 264 H552" stroke="#526675" stroke-width="3"/>
+<path d="M168 160 H296" stroke="#27723e" stroke-width="3" stroke-dasharray="7 4"/>
+<path d="M40 40 V360 H552" fill="none" stroke="#333"/>
+<text x="8" y="165" font-size="14">50</text><text x="8" y="269" font-size="14">24</text><text x="20" y="365" font-size="14">0</text>
+<text x="40" y="386" font-size="14">0</text><text x="168" y="386" font-size="14">64</text><text x="296" y="386" font-size="14">128</text><text x="514" y="386" font-size="14">255</text>
+<text x="82" y="245" font-size="15">side boundary</text><text x="350" y="245" font-size="15">side boundary</text>
+<text x="232" y="120" text-anchor="middle" font-size="15">doorway</text><text x="232" y="145" text-anchor="middle" font-size="15">start script at 50</text>
+<circle id="lab-gate-point" cx="232" cy="336" r="8" fill="#1f5fa8" stroke="white" stroke-width="2"/>
+</svg>
+<p id="lab-gate-result" aria-live="polite"></p>
+<p class="lab-word-note">A candidate-position check before the gate script takes control. The gray area is beyond the neighboring columns’ movement limit. This example does not simulate walking, animation or the disk load.</p>
+</div>
+<p>In the live comparison, an aligned approach reached depth 51 after 150 frames and then entered the scripted sequence. Approaching from the left or right stopped at depth 24. A store watch caught the deferred request for scene 2; the ordinary route continued to its title card and the first brick corridor.</p>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">The classifier at <code>$4171</code> reads map cells at <code>$0600</code>, translates their type through <code>$073E</code>, and selects the depth bound from <code>$41F0</code>. The gate threshold is at <code>$8D92</code>. Gate stage <code>$8CC0</code> requests sound 5, waits through four sixty-tick intervals, and queues scene 2 for the resident dispatcher at <code>$59AF</code>. The diagram’s lookup and threshold are compared with the original code across every low horizontal-coordinate and depth byte. The gate listing is partial; its remaining code, art and shared-engine ownership remain open.</p></details>
+<details class="lab-corridor-details"><summary>See the corridor reached through the gate</summary><figure class="gallery"><img src="reference/corridor-play.png" width="384" height="272" alt="The player in the first brick corridor, with active command wheels"><figcaption>The first graphical corridor, reached by walking up through the gate. Its command wheels are visible below the scene.</figcaption></figure></details>
+<h3 id="lab-gate-topic-1">A speech stored beside the gate script</h3>
+<p>The same resource holds seven lines addressing the cinema audience, including the player by name. Choose a line to read it. The player name is shown as ANON for privacy. This is a viewer of stored text: the natural gate snapshot is already at sequence phase 14. In a nonzero scene, the phase-zero branch skips the seven speech records and starts phase 7. The complete route that presents the speech remains to be checked live.</p>
+<div class="lab-word-demo"><label for="lab-gate-speech">Stored speech line</label><select id="lab-gate-speech"></select><p id="lab-gate-speech-meta"></p><div class="lab-home-output" id="lab-gate-speech-text" aria-live="polite"></div></div>
+<p>The script keeps a phase and a countdown. When a countdown expires, it loads the next delay and advances the phase. Phases 0–6 select these messages; phases 7–13 continue the actor and gate sequence. Pressing fire on joystick port 1 sets the latch that can jump an early phase to 7. At phase 14, the script goes directly to checking the player’s approach depth. The remaining visual effects are open.</p>
+<details class="lab-evidence"><summary>Sources and checks</summary><p class="sources">Message selection at <code>$8E09</code>, pointer tables at <code>$8ED4</code>/<code>$8EDB</code>, countdowns at <code>$8EC5</code>, and sequence dispatcher at <code>$8CD8</code>. The port-one sampler at <code>$19AE</code> supplies the fire latch at <code>$1993</code>; ordinary press, hold and release were checked live. The reader below normalizes whitespace and omits the stored formatting controls. All seven texts are checked against the original parser; phase/countdown decisions are checked separately against the original dispatcher.</p></details>
+</section>
+<div class="lab-area-next" data-reading-area="gate"><a href="#text-adventure">← Back to the text adventure</a><a href="#first-corridor">Continue to the first corridor →</a></div>
+<section id="first-corridor" data-reading-area="corridor" data-part="scene-02">
+<p class="fig">03 · The Labyrinth</p><h2 id="lab-corridor-topic-0">Eight openings in the first corridor</h2>
+<p>The first corridor stretches past a repeating brick wall. Its movement map divides the wall into 64 columns. Eight columns permit a deeper approach and allow the exit routine to choose an entry into the Brick Hallway.</p>
+<figure class="gallery"><img src="reference/corridor-play.png" width="384" height="272" alt="The player in the first corridor beyond the entrance gate"><figcaption>The corridor reached through the entrance gate. The strip below shows movement columns in world coordinates.</figcaption></figure>
+<h3 id="corridor-passages">Where the openings lead</h3>
+<p>Choose a column, then change the exit variant. Each stored opening leads to the Brick Hallway. The variant changes the entry position within that room.</p>
+<div id="lab-corridor-strip" role="group" aria-label="First corridor movement columns"></div>
+<label for="lab-corridor-column">Column</label> <input id="lab-corridor-column" type="range" min="0" max="63" value="8">
+<label for="lab-corridor-variant">Exit variant</label> <select id="lab-corridor-variant"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option></select>
+<p id="lab-corridor-result" aria-live="polite"></p>
+<p class="sources">Green cells are openings; grey cells stop the approach. The single corridor strip wraps onto four rows for display. Each cell spans 64 world units. This is a lookup of the captured movement map, not a complete walking simulation. The position calculation uses the Brick Hallway’s captured continuous mode.</p>
+<h3 id="corridor-arrival">Through the first opening</h3>
+<p>The first opening leads into the Brick Hallway. In the checked journey, the exit selected entry position 35. The room loader converted that entry to world X=2272 and placed the player at depth 6.</p>
+<details class="lab-corridor-details"><summary>Compare departure and arrival</summary><div class="pictures lab-gate-pictures"><figure><img src="reference/corridor-play.png" width="384" height="272" alt="The first corridor before the checked walk"><figcaption>Departure: walk right to the first opening, then approach the wall.</figcaption></figure><figure><img src="reference/brick-natural-entry.png" width="384" height="272" alt="The player in the Brick Hallway after taking the first corridor opening"><figcaption>Arrival: the naturally loaded Brick Hallway, after 60 frames without movement input.</figcaption></figure></div></details>
+<p>The continuous-mode placement rule starts the player halfway through the selected column: entry × 64 + 32. The variant selector above includes this calculation. Other entries are checked against the placement routine; their complete journeys remain open.</p>
+<h3 id="corridor-exit-choice">The exit chooses an entry position</h3>
+<p>The exit uses a changing random state to select one of four route-table variants. Other activity advances that state, so the selector shows possible outcomes rather than predicting an outcome from walking time. Entry numbers identify positions inside the destination room.</p>
+<details class="lab-evidence"><summary>Evidence and limits</summary>
+<p>The natural corridor capture uses map mode <code>$0343</code> = $FF and column mask $3F. Classifier <code>$4171</code> reads the map at <code>$0600</code>, translates its cell through <code>$073E</code>, and obtains the depth limit from <code>$41F0</code>. Ordinary wall approach stopped at depth 24. An ordinary approach at world X=546 reached the first opening at depth 32 and called exit routine <code>$4115</code>. The dispatcher requested scene 3, entry position 35. The ordinary route loaded the Brick Hallway; player placement at <code>$543A</code> used entry 35 and mode zero to produce X=2272/depth 6. The entry request was then cleared.</p>
+<p>The route thresholds begin at <code>$074E</code>; scene and entry banks begin at <code>$077E</code> and <code>$078E</code>. All eight openings select scene 3, the Brick Hallway, across all four banks. The page’s classifier and route lookup are compared with the original routines in the committed test. The other seven openings have code-checked destinations; their complete walking routes remain open.</p>
+</details></section>
+<div class="lab-area-next" data-reading-area="corridor"><a href="#entrance-gate">← Back to the entrance gate</a><a href="#brick-hallway">Continue to the Brick Hallway →</a></div>
+<section id="brick-hallway" data-reading-area="brick" data-part="scene-03"><p class="fig">04 · The Brick Hallway</p><h2 id="lab-brick-topic-0">Opening a door</h2>
+<p>OPEN DOOR checks the map cell at the player’s position. At the arrival position the command replies “Nothing happens.” Walking right to the neighboring door and using the same command opens it.</p>
+<div class="lab-brick-actions"><label for="lab-brick-position">Position</label> <select id="lab-brick-position"><option value="2272">Arrival · column 35</option><option value="2348">Neighboring door · column 36</option></select> <button id="lab-brick-open" type="button">OPEN DOOR</button> <button id="lab-brick-reset" type="button">Reset example</button></div>
+<p id="lab-brick-door-result" aria-live="polite"></p>
+<figure class="gallery"><img id="lab-brick-door-image" src="reference/brick-natural-entry.png" width="384" height="272" alt="The player at the Brick Hallway arrival"><figcaption id="lab-brick-door-caption">Arrival: world X=2272, depth 6.</figcaption></figure>
+<p class="sources">This example reproduces the command decision and map-cell change. The pictures are live captures. Walking through the opened doorway remains unverified.</p>
+<h3 id="brick-door-rule">The map cell changes when the door opens</h3>
+<p>The closed door’s cell has value 7. OPEN DOOR replaces that value with 6, which the room’s type table treats as an open door. Using OPEN DOOR again selects “It's already opened.”</p>
+<details class="lab-evidence"><summary>Sources and checks</summary><p>The command pair at <code>$8B94</code> selects handler <code>$9053</code>. Its query at <code>$0998</code> returns the cell nibble and translated type. Type 2 uses replacement table <code>$071E</code>, then mutation routine <code>$58C8</code> records the new cell and a zero scene request refreshes the view. The handler also requests sound 1 and increments <code>$0569</code>; the sound’s audible identity remains open.</p><p>Ordinary input reached world X=2348, depth 24. OPEN DOOR changed column 36 from 7 to 6, while current scene stayed 3. The handler and mutation routine each recorded one live hit. The page’s command decision is compared with the original handler, including the actual initial positions and the repeated-command branch. This checks opening the door, not the destination behind it.</p></details>
+<h3 id="brick-arrival-checks">Trying the way back</h3>
+<p>The Brick Hallway arrival faces a wall cell. Holding up from that position approaches the brickwork; holding down moves into the foreground. Both trials remain in the Brick Hallway.</p>
+<table><thead><tr><th>Input from the arrival</th><th>Frames tested</th><th>Final depth</th><th>Room</th></tr></thead><tbody><tr><td>None</td><td>120</td><td>6</td><td>Brick Hallway</td></tr><tr><td>Up</td><td>300</td><td>24</td><td>Brick Hallway</td></tr><tr><td>Down</td><td>300</td><td>0</td><td>Brick Hallway</td></tr></tbody></table>
+<details class="lab-corridor-details"><summary>Compare the forward and backward approaches</summary><div class="pictures lab-gate-pictures"><figure><img src="reference/brick-up.png" width="384" height="272" alt="The player close to the brick wall after holding up"><figcaption>Up: the player stops at depth 24, against the brickwork.</figcaption></figure><figure><img src="reference/brick-down.png" width="384" height="272" alt="The player in the foreground after holding down"><figcaption>Down: the player reaches depth 0 and stays in the room.</figcaption></figure></div></details>
+<p>Selecting <code>OPEN DOOR</code> at the original arrival position produces “Nothing happens.” The neighboring door at column 36 opens after a separate approach, as shown above. The route through that doorway remains unverified.</p>
+<details class="lab-corridor-details"><summary>See the OPEN DOOR response</summary><figure class="gallery"><img src="reference/brick-open-door.png" width="384" height="272" alt="The Brick Hallway with OPEN DOOR selected and the reply Nothing happens"><figcaption>The command was executed at the arrival position, world X=2272 and depth 6.</figcaption></figure></details>
+<details class="lab-evidence"><summary>Checks behind these results</summary><p>Each trial restored the same naturally reached arrival. The movement routine ran in all three movement trials; neither the generic exit routine nor the scene loader was called. The command trial recorded one command dispatch. These observations apply to this position and these inputs; other positions and actions remain untested.</p></details>
+</section><div class="lab-area-next" data-reading-area="brick"><a href="#first-corridor">← Back to the first corridor</a><a href="levels.html">Browse the captured rooms →</a></div>
+<section id="inside-the-labyrinth" data-reading-area="atlas"><span id="other-areas"></span><h2 id="lab-atlas-topic-0">Scene gallery</h2><p>The captured rooms are on <a href="levels.html">Maps / levels</a>.</p></section>
+<div class="lab-area-next" data-reading-area="atlas"><a href="#entrance-gate">← Back to the entrance gate</a></div>
+</main><script>
+/* labyrinth-brick-door */
+const labyrinthBrickDoorData={"cells":[5,0,0,0,7,10,0,5,0,0,7,0,1,0,4,8,4,0,0,0,7,0,0,5,0,0,7,0,0,0,5,8,5,0,1,0,7,0,0,5,0,0,7,0,9,0,4,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8],"types":[0,11,242,237,3,2,3,2,1,252,243,0,0,0,0,0],"replacements":[0,1,2,3,4,4,6,6,8,9,10,11,12,13,14,15]};
+function labyrinthBrickOpenDoor(cell,mode=255){
+ const d=labyrinthBrickDoorData,type=d.types[cell&15];
+ if(mode<128||type!==2)return {cell,type,opened:false,message:mode>=128&&type===3?"It's already opened.":'Nothing happens.'};
+ return {cell:d.replacements[cell&15]&15,type,opened:true,message:'The door opens.'};
+}
+// end of labyrinth-brick-door
+{const select=document.getElementById('lab-brick-position'),result=document.getElementById('lab-brick-door-result'),image=document.getElementById('lab-brick-door-image'),caption=document.getElementById('lab-brick-door-caption');let cell;
+ function reset(){const x=Number(select.value);cell=labyrinthBrickDoorData.cells[(x>>>6)&63];image.src='reference/'+(x===2272?'brick-natural-entry.png':'brick-door-before.png');image.alt=x===2272?'The player at the Brick Hallway arrival':'The player beside the closed neighboring door';caption.textContent=x===2272?'Arrival: world X=2272, depth 6.':'Door approach: world X=2348, depth 24.';result.textContent='Map cell '+cell+'. Press OPEN DOOR.';}
+ document.getElementById('lab-brick-open').addEventListener('click',()=>{const old=cell,r=labyrinthBrickOpenDoor(cell);cell=r.cell;result.textContent=r.message+' Map cell '+old+' → '+cell+'.';if(r.opened){image.src='reference/brick-door-after.png';image.alt='The neighboring door open after OPEN DOOR';caption.textContent='Door opened at world X=2348, depth 24. The player remains in the Brick Hallway.';}});
+ select.addEventListener('change',reset);document.getElementById('lab-brick-reset').addEventListener('click',reset);reset();}
+</script>
+
+<script>
+/* labyrinth-corridor */
+const labyrinthCorridorData={"cells":[0,1,0,1,0,1,0,1,4,1,0,1,0,1,0,5,0,1,0,1,0,1,0,6,7,1,0,1,2,1,8,1,0,1,0,11,0,1,0,1,0,12,0,3,0,1,0,1,0,1,9,1,0,1,0,1,0,1,10,1,0,1,0,1],"types":[0,0,245,237,10,10,0,10,10,10,10,10,10,0,0,0],"limits":[24,24,24,40,24,24,40,70,24,24,32,24,120,120,255,128],"flags":[255,255,255,0,255,255,0,0,255,255,0,255,255,255,0,255],"thresholds":[8,15,24,30,35,40,50,255,255,255,255,255,255,255,255,255],"selectors":[3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0],"scenes":[[3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0],[3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0],[3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0],[3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0]],"entries":[[8,34,28,24,38,2,11,43,1,1,1,1,1,1,1,1],[35,27,22,40,3,12,44,9,1,1,1,1,1,1,1,1],[25,21,41,5,2,34,11,37,1,1,1,1,1,1,1,1],[19,43,6,3,35,12,38,24,1,1,1,1,1,1,1,1]]};
+function labyrinthCorridorLookup(worldX,variant){
+ const d=labyrinthCorridorData,column=(worldX>>>6)&63,cell=d.cells[column],type=d.types[cell&15],effective=type&128?0:type;
+ const limit=d.limits[effective],exitAllowed=d.flags[effective]<128;
+ let region=d.thresholds.findIndex(t=>t>=column);if(region<0)region=15;
+ return {column,cell,type,limit,exitAllowed,scene:d.scenes[variant][region],entry:d.entries[variant][region]};
+}
+function labyrinthCorridorPlacement(entry){return entry===255?null:{x:entry*64+32,depth:6};}
+// end of labyrinth-corridor
+{const strip=document.getElementById('lab-corridor-strip'),column=document.getElementById('lab-corridor-column'),variant=document.getElementById('lab-corridor-variant'),result=document.getElementById('lab-corridor-result');
+ for(let i=0;i<64;i++){const b=document.createElement('button');b.type='button';b.textContent=i;b.classList.toggle('lab-passage',labyrinthCorridorLookup(i*64,0).exitAllowed);b.setAttribute('aria-label','Column '+i);b.addEventListener('click',()=>{column.value=i;draw();});strip.append(b);}
+ function draw(){const n=Number(column.value),r=labyrinthCorridorLookup(n*64,Number(variant.value)),start=labyrinthCorridorPlacement(r.entry);Array.from(strip.children).forEach((b,i)=>b.setAttribute('aria-pressed',i===n?'true':'false'));result.textContent='Column '+n+' · world X '+n*64+'–'+(n*64+63)+'. Approach limit: '+r.limit+'. '+(r.exitAllowed?'Opening → The Brick Hallway (scene '+r.scene+'), entry position '+r.entry+'. Placement calculation: world X '+start.x+', depth '+start.depth+'.':'Wall: the captured movement rule blocks an exit here.');}
+ column.addEventListener('input',draw);variant.addEventListener('change',draw);draw();}
+</script>
+
+<script>
+/* labyrinth-area-navigation */
+{
+ const aliases={'text-adventure':'opening','entrance-gate':'gate','first-corridor':'corridor','brick-hallway':'brick','other-areas':'atlas'};
+ const areaHashes={opening:'text-adventure',gate:'entrance-gate',corridor:'first-corridor',brick:'brick-hallway',atlas:'other-areas'};
+ const blocks=Array.from(document.querySelectorAll('[data-reading-area]'));
+ if('scrollRestoration' in history)history.scrollRestoration='manual';
+ const areaSelect=document.getElementById('lab-area-select'),topicSelect=document.getElementById('lab-topic-select');
+ const nav=document.querySelector('.lab-area-nav');nav.hidden=false;
+ document.body.classList.add('lab-area-mode');document.getElementById('pagenav')?.remove();
+ function measureNav(){document.documentElement.style.setProperty('--lab-nav-h',nav.offsetHeight+'px');}
+ if(window.ResizeObserver)new ResizeObserver(measureNav).observe(nav);addEventListener('resize',measureNav);measureNav();
+ function hashId(){try{return decodeURIComponent(location.hash.slice(1));}catch(e){return '';}}
+ function areaForHash(){const id=hashId(),target=document.getElementById(id);return aliases[id]||(target&&target.closest('[data-reading-area]')?.dataset.readingArea)||'opening';}
+ function showArea(){
+  const active=areaForHash();if(active==='atlas'){location.replace('levels.html');return;}areaSelect.value=active;
+  blocks.forEach(block=>{block.hidden=block.dataset.readingArea!==active;});
+  topicSelect.replaceChildren();
+  document.querySelectorAll('section[data-reading-area="'+active+'"] h2,section[data-reading-area="'+active+'"] h3').forEach((heading,i)=>{
+   if(heading.closest('.lab-flow-detail')||heading.closest('.lab-technical'))return;
+   if(!heading.id)heading.id='lab-'+active+'-topic-'+i;
+   const option=document.createElement('option');option.value=heading.id;option.textContent=heading.textContent;topicSelect.append(option);
+  });
+  document.getElementById('lab-topic-label').hidden=topicSelect.options.length<2;nav.classList.toggle('lab-one-topic',topicSelect.options.length<2);
+  if(Array.from(topicSelect.options).some(o=>o.value===hashId()))topicSelect.value=hashId();
+  const target=document.getElementById(hashId());
+  if(target&&target.closest('[data-reading-area]')?.dataset.readingArea===active){
+   for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
+   const owner=target.closest('section');
+   if((target.tagName!=='H3'||target.closest('.lab-technical'))&&owner&&owner.querySelector('h2')){const option=Array.from(topicSelect.options).find(o=>o.value===owner.querySelector('h2').id);if(option)topicSelect.value=option.value;}
+   requestAnimationFrame(()=>target.scrollIntoView({block:'start'}));
+  }
+ }
+ areaSelect.addEventListener('change',()=>{if(areaSelect.value==='atlas')location.href='levels.html';else location.hash=areaHashes[areaSelect.value];});
+ topicSelect.addEventListener('change',()=>{location.hash=topicSelect.value;});
+ addEventListener('hashchange',showArea);showArea();
+}
+// end of labyrinth-area-navigation
+</script>
+
+<script>
+/* labyrinth-gate-speech */
+const labyrinthGateSpeech=[{"address": 36597, "end": 36606, "text": "You...", "countdown": 18}, {"address": 36607, "end": 36633, "text": "You in the first row...", "countdown": 28}, {"address": 36634, "end": 36647, "text": "YOU, ANON.", "countdown": 24}, {"address": 36672, "end": 36745, "text": "We have been watching you. We know all there is to know about you.", "countdown": 56}, {"address": 36746, "end": 36781, "text": "We even know of your weaknesses.", "countdown": 30}, {"address": 36782, "end": 36829, "text": "These weaknesses have made you my thrall.", "countdown": 42}, {"address": 36830, "end": 36927, "text": "To regain your freedom you must vanquish me in my castle at the heart of the Labyrinth.", "countdown": 72}];
+// end of labyrinth-gate-speech
+{const select=document.getElementById('lab-gate-speech');labyrinthGateSpeech.forEach((r,i)=>{const o=document.createElement('option');o.value=i;o.textContent=(i+1)+' · '+r.text;select.append(o);});function show(){const r=labyrinthGateSpeech[Number(select.value)];document.getElementById('lab-gate-speech-meta').textContent='$'+r.address.toString(16).toUpperCase()+' · phase '+select.value+' · countdown '+r.countdown;document.getElementById('lab-gate-speech-text').textContent=r.text;}select.addEventListener('change',show);show();}
+</script>
+
+<script>
+/* labyrinth-gate */
+const labyrinthGateCells=[1, 3, 1, 1],labyrinthGateTypes=[2, 0, 2, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],labyrinthGateLimits=[24, 24, 24, 40, 24, 24, 40, 70, 24, 24, 32, 24, 120, 120, 255, 128];
+function labyrinthGateApproach(x,depth){
+ if(!Number.isInteger(x)||x<0||x>255||!Number.isInteger(depth)||depth<0||depth>255)throw new RangeError('Invalid candidate position');
+ const column=x>>6,type=labyrinthGateTypes[labyrinthGateCells[column]&15],limit=labyrinthGateLimits[type<128?type:0],threshold=depth>=50&&depth<128;
+ return {column,type,limit,withinLimit:depth<=limit,threshold,canStart:depth<=limit&&threshold};
+}
+// end of labyrinth-gate
+function updateLabyrinthGate(){
+ const x=Number(document.getElementById('lab-gate-x').value),depth=Number(document.getElementById('lab-gate-depth').value),r=labyrinthGateApproach(x,depth),point=document.getElementById('lab-gate-point');
+ point.setAttribute('cx',40+x*2);point.setAttribute('cy',360-depth*4);point.setAttribute('fill',!r.withinLimit?'#b42318':r.canStart?'#27723e':'#1f5fa8');
+ document.getElementById('lab-gate-result').textContent=`Position ${x}, depth ${depth}. This column’s depth limit is ${r.limit}. `+(!r.withinLimit?'This candidate is beyond the movement limit.':r.canStart?'This position satisfies the gate’s start condition.':'This position is below the gate’s start threshold.');
+}
+for(const id of ['lab-gate-x','lab-gate-depth'])document.getElementById(id).addEventListener('input',updateLabyrinthGate);
+for(const [id,x,depth] of [['lab-gate-aligned',96,51],['lab-gate-side',182,24]])document.getElementById(id).addEventListener('click',()=>{document.getElementById('lab-gate-x').value=x;document.getElementById('lab-gate-depth').value=depth;updateLabyrinthGate();});updateLabyrinthGate();
+</script>
+
+<script>
+/* labyrinth-workflow */
+const labyrinthWorkflowNodes=[{"id": "street", "title": "West sidewalk", "location": 3, "address": 39383, "text": "You are standing on the west side\nof a city block.", "x": 10, "y": 20}, {"id": "ticket", "title": "Ticket counter", "location": 6, "address": 39802, "text": "You are standing in front of the\nticket counter in the theater lobby.\nThe ticket girl asks for five dollars.", "x": 300, "y": 20}, {"id": "lobby", "title": "Theater lobby", "location": 13, "address": 39653, "text": "You are standing in the lobby of the\nmovie theater.", "x": 600, "y": 20}, {"id": "counter", "title": "Popcorn counter", "location": 7, "address": 40073, "text": "You are standing in front of a\npopcorn stand.", "x": 600, "y": 210}, {"id": "purchase", "title": "Popcorn purchased", "location": 7, "address": 41288, "text": "The woman takes your two dollars,\ngives you a box of cold popcorn,\nand places two quarters in change on\nthe counter. At the same time she\naccidentally drops a nickel on the\nfloor by your feet.", "x": 300, "y": 210}, {"id": "refund", "title": "Missing quarter", "location": 7, "address": 42573, "text": "The woman blushes and says, \"I'm\nsorry, here's your other quarter.\"", "x": 10, "y": 390}, {"id": "coins", "title": "Collect the coins", "location": 7, "address": 38808, "text": "You have picked up the nickel\nwithout the woman noticing you.", "x": 300, "y": 500}, {"id": "offer", "title": "Offer popcorn", "location": 9, "address": 32119, "text": "You enter a large, packed theater,\nbut there are many seats left. You\nsit down. The lights dim, the curtain\nparts, and a commercial for popcorn\ncomes on the screen, \"You'll enjoy\nthe movie more with popcorn.\nAvailable in the lobby.\"", "x": 600, "y": 500}];
+const labyrinthWorkflowEdges=[{"id": "street-ticket", "source": "street", "target": "ticket", "title": "GO EAST", "kind": "move", "entry": 37108, "fromLocation": 3, "toLocation": 6, "condition": "West sidewalk. No ticket is needed to reach the counter.", "result": "Move to the ticket counter.", "path": "M190 52 H300", "x": 245, "y": 36}, {"id": "buy-ticket", "source": "ticket", "target": "ticket", "title": "GIVE DOLLAR", "kind": "action", "entry": 37671, "condition": "At the ticket counter, select a dollar bill and carry at least five dollars.", "result": "Pay five dollars and receive one ticket. You remain at the counter. Less money gets a refusal.", "path": "M350 84 V135 H430 V84", "x": 390, "y": 158}, {"id": "ticket-lobby", "source": "ticket", "target": "lobby", "title": "GO EAST \u00b7 ticket", "kind": "move", "entry": 37108, "fromLocation": 6, "toLocation": 13, "condition": "Carry a ticket. Without one, the game says you cannot enter.", "result": "Move into the theater lobby. The original handler checks ticket ownership before its movement table.", "path": "M480 52 H600", "x": 540, "y": 36}, {"id": "lobby-counter", "source": "lobby", "target": "counter", "title": "GO NORTH", "kind": "move", "entry": 37050, "fromLocation": 13, "toLocation": 7, "condition": "Start in the theater lobby.", "result": "Move to the popcorn counter.", "path": "M665 84 V210", "x": 608, "y": 156}, {"id": "counter-lobby", "source": "counter", "target": "lobby", "title": "GO SOUTH", "kind": "move", "entry": 37078, "fromLocation": 7, "toLocation": 13, "condition": "Start at the popcorn counter.", "result": "Return to the lobby. Buying, complaining and collecting coins leave you at the counter until you move.", "path": "M725 210 V84", "x": 778, "y": 156}, {"id": "buy-popcorn", "source": "counter", "target": "purchase", "title": "GIVE DOLLAR", "kind": "action", "entry": 37857, "condition": "At the popcorn counter, carry at least two dollars and have no earlier popcorn purchase.", "result": "Pay two dollars, receive popcorn and leave two quarters available in change. The woman drops a nickel. You remain at the counter.", "path": "M600 242 H480", "x": 540, "y": 226}, {"id": "complaint-refund", "source": "purchase", "target": "refund", "title": "COMPLAIN twice", "kind": "action", "entry": 38327, "condition": "After the purchase. The first complaint gets an excuse; the second adds the missing quarter.", "result": "One additional quarter becomes available. This works before or after collecting the original change. Further complaints add no quarters.", "path": "M300 265 L100 390", "x": 156, "y": 320}, {"id": "collect-change", "source": "purchase", "target": "coins", "title": "TAKE, then TAKE", "kind": "action", "entry": 37500, "condition": "Change is available at the counter.", "result": "The first TAKE collects the available quarters together. The next picks up the dropped nickel. You can still complain for the extra quarter and TAKE it afterward.", "path": "M390 274 V500", "x": 460, "y": 410}, {"id": "collect-refund", "source": "refund", "target": "coins", "title": "TAKE", "kind": "action", "entry": 37500, "condition": "The second complaint has made the extra quarter available.", "result": "Collect the available change. If the dropped nickel has not been taken, another TAKE collects it. Both orders can leave you with three quarters and the dropped nickel.", "path": "M100 454 V532 H300", "x": 200, "y": 516}, {"id": "lobby-theater", "source": "lobby", "target": "offer", "title": "GO SOUTH", "kind": "move", "entry": 37078, "fromLocation": 13, "toLocation": 9, "condition": "Start in the theater lobby.", "result": "Enter the main theater. Its conversation and arrival effects follow the movement decision; this map does not simulate their timing.", "path": "M780 52 H850 V532 H780", "x": 818, "y": 360}, {"id": "nickel-offer", "source": "coins", "target": "offer", "title": "Return or keep?", "kind": "sequence", "entry": 38021, "condition": "At the counter, GIVE NICKEL can return a coin after the dropped nickel has been picked up. Then GO SOUTH to the lobby, GO SOUTH to the main theater, and GIVE POPCORN while the teenager accepts it.", "result": "Keep the dropped nickel: the teenager takes the whole box. Return it: he takes a handful and the box stays in inventory. The counter path was checked live; the later offer was checked in the original code with accepting conversation states.", "path": "M480 532 H600", "x": 540, "y": 568}];
+// end of labyrinth-workflow
+const labFlowNS='http://www.w3.org/2000/svg',labFlowChoice=document.getElementById('lab-flow-choice');
+function labFlowElement(tag,attrs,text){const e=document.createElementNS(labFlowNS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);if(text!==undefined)e.textContent=text;return e;}
+function labFlowPick(kind,id){
+ const item=(kind==='node'?labyrinthWorkflowNodes:labyrinthWorkflowEdges).find(x=>x.id===id);
+ labFlowChoice.value=kind+':'+id;document.getElementById('lab-flow-title').textContent=item.title;
+ const body=document.getElementById('lab-flow-description');body.replaceChildren();
+ for(const [tag,value] of kind==='node'?[['p',(['purchase','refund','coins'].includes(id)?'A puzzle state at the popcorn counter.':'A location in the text opening.')],['blockquote',item.text]]:[['p','Condition: '+item.condition],['p','Result: '+item.result]]){const e=document.createElement(tag);e.textContent=value;body.append(e);}
+ const a=document.createElement('a'),address=kind==='node'?item.address:item.entry;a.href='source-opening.html#'+address.toString(16).toUpperCase().padStart(4,'0');a.textContent='$'+address.toString(16).toUpperCase();
+ const evidence=document.getElementById('lab-flow-evidence');evidence.replaceChildren(document.createTextNode(kind==='node'?'Stored text at ':'Decision code at '),a);
+ for(const e of document.querySelectorAll('[data-lab-flow]'))e.setAttribute('aria-current',e.dataset.labFlow===kind+':'+id?'true':'false');
+}
+for(const [kind,items] of [['node',labyrinthWorkflowNodes],['edge',labyrinthWorkflowEdges]]){
+ const group=document.createElement('optgroup');group.label=kind==='node'?'Places and states':'Command connections';
+ for(const item of items){const o=document.createElement('option');o.value=kind+':'+item.id;o.textContent=kind==='node'?item.title:`${item.title} · ${item.source} → ${item.target}`;group.append(o);}labFlowChoice.append(group);
+}
+for(const e of labyrinthWorkflowEdges){const a=labFlowElement('a',{href:'#lab-flow-detail',class:'lab-flow-edge','data-kind':e.kind,'data-lab-flow':'edge:'+e.id,'aria-label':e.title+': '+e.condition});a.append(labFlowElement('path',{d:e.path,'marker-end':'url(#lab-flow-arrow)'}),labFlowElement('text',{x:e.x,y:e.y,'text-anchor':'middle'},e.title));a.addEventListener('click',event=>{event.preventDefault();labFlowPick('edge',e.id);});document.getElementById('lab-flow-edges').append(a);}
+for(const n of labyrinthWorkflowNodes){const a=labFlowElement('a',{href:'#lab-flow-detail',class:'lab-flow-node','data-lab-flow':'node:'+n.id,'aria-label':n.title});a.append(labFlowElement('rect',{x:n.x,y:n.y,width:180,height:64,rx:8}),labFlowElement('text',{x:n.x+90,y:n.y+38,'text-anchor':'middle'},n.title));a.addEventListener('click',event=>{event.preventDefault();labFlowPick('node',n.id);});document.getElementById('lab-flow-nodes').append(a);}
+labFlowChoice.addEventListener('change',()=>{const [kind,id]=labFlowChoice.value.split(':');labFlowPick(kind,id);});labFlowPick('node','street');
+</script>
+
+<script>
+/* labyrinth-responses */
+const labyrinthOpeningResponses=[{"address": 30992, "end": 31194, "text": "A teenage boy with several pencils\nin a blue plastic pocket protector,\nwearing a button saying \"GEEK POWER\"\ntaps you on the shoulder. He begins\ntalking ,\"Hey have you seen this\nmovie? It's really great, ya know.\""}, {"address": 31195, "end": 31432, "text": "A teenage girl with greasy hair\npulled to the side in two pony tails,\nwearing a Worldcon '81 T-shirt and\nan \"I GROK SPOCK\" button taps you on\nthe shoulder. She begins talking,\n\"You probably haven't seen this film\nbefore. I'll tell you about it.\""}, {"address": 31433, "end": 31623, "text": "\"Like there's this deep\npsychological meaning and all.\nI mean the spiritualism is so awesome\nthat I've seen it 83 times. This is\nmy 84th time. The 83rd time was the\nlast show...  Can I have some\npopcorn?\""}, {"address": 31624, "end": 31836, "text": "\"So anyway, Jareth is this really\namazing character. I mean David\nBowie really knows how to play the\nrole. There's one part where Bowie,\nI mean Jareth, gets Hoggle to give\nSarah a peach, and like it's magic\nand she eats it then she...\""}, {"address": 31837, "end": 32001, "text": "\"...almost dies and she goes into this\nweird dream state and almost spends\neternity there forgetting about her\nbrother and you know she shouldn't\nhave eaten that peach and...\""}, {"address": 32002, "end": 32118, "text": "At this point the cute girl says,\n\"He drives me up a wall. I can't\ntake it any more, sorry.\" The girl \nstands up and walks away."}, {"address": 32119, "end": 32335, "text": "You enter a large, packed theater,\nbut there are many seats left. You\nsit down. The lights dim, the curtain\nparts, and a commercial for popcorn\ncomes on the screen, \"You'll enjoy\nthe movie more with popcorn.\nAvailable in the lobby.\""}, {"address": 32336, "end": 32482, "text": "You enter a large, packed theater.\nAfter looking for a while you find\na seat next to a very attractive\ngirl and immediately strike up a\nfriendly conversation."}, {"address": 32483, "end": 32537, "text": "You are in a dark theater with\na cute girl sitting next to you."}, {"address": 32538, "end": 32643, "text": "You are in a dark theater, a\ncommercial for popcorn is playing on\nthe screen, \"You'll enjoy the movie\nmore with popcorn.\""}, {"address": 32644, "end": 32698, "text": "The cute girl agrees, \"Yeah, it sure\nis crowded in here.\""}, {"address": 32699, "end": 32817, "text": "The teenage boy looks at you like\nhe's heard that remark before\nand says, \"Oh, wow, I'm sorry.\nI won't bother you any more.\""}, {"address": 32818, "end": 32877, "text": "The cute girl says, \"Thanks, I was\nstarting to climb the walls!\""}, {"address": 32878, "end": 32934, "text": "The lights dim, the curtain parts,\nand the movie begins."}, {"address": 32935, "end": 33013, "text": "The teenager grabs the entire box\nof popcorn and finishes it off in\na few big bites."}, {"address": 33014, "end": 33066, "text": "The teenager takes a handful of\npopcorn and then thanks you."}, {"address": 33067, "end": 33078, "text": "The Elephant Movie"}, {"address": 33079, "end": 33085, "text": "Elephant Wars"}, {"address": 33086, "end": 33103, "text": "Planet of the Elephants"}, {"address": 33104, "end": 33125, "text": "Return of the Pink Elephant"}, {"address": 33126, "end": 33145, "text": "Kiss of the Elephant Woman"}, {"address": 33146, "end": 33160, "text": "Elephant Strikes Back"}, {"address": 33161, "end": 33188, "text": "They Shoot Elephants, Don't They?"}, {"address": 33189, "end": 33202, "text": "Howard the Elephant"}, {"address": 33203, "end": 33306, "text": "The woman says, \"Oh thank you!\nYou can't imagine what the boss would\ndo to me if my money came up short.\""}, {"address": 33307, "end": 33338, "text": "You really don't want to drop that."}, {"address": 33339, "end": 33355, "text": "You can't eat that."}, {"address": 33356, "end": 33382, "text": "There is no food around here."}, {"address": 33383, "end": 33418, "text": "What TV?  There is no TV around here!"}, {"address": 33419, "end": 33437, "text": "You're already outside."}, {"address": 33438, "end": 33461, "text": "There is no theater in sight."}, {"address": 33462, "end": 33473, "text": "Store?  What Store?"}, {"address": 33474, "end": 33500, "text": "What beggar? There is no beggar here."}, {"address": 33501, "end": 33526, "text": "You are already in the theater"}, {"address": 33527, "end": 33546, "text": "Popcorn's all they have."}, {"address": 33547, "end": 33570, "text": "You have nothing to eat."}, {"address": 33571, "end": 33599, "text": "Oh come on, enter your name."}, {"address": 38542, "end": 38558, "text": "What is your name?"}, {"address": 38559, "end": 38574, "text": "What is your sex?"}, {"address": 38575, "end": 38601, "text": "What is your favorite color?"}, {"address": 38602, "end": 38628, "text": "I find that hard to believe."}, {"address": 38629, "end": 38658, "text": "Please answer male or female."}, {"address": 38659, "end": 38677, "text": "You now have a camcorder."}, {"address": 38678, "end": 38807, "text": "You grab the beggar's cup. You are\nsurprised to find it empty. He then\nseems to vanish before your eyes.\nYou put the cup in your pocket."}, {"address": 38808, "end": 38865, "text": "You have picked up the nickel\nwithout the woman noticing you."}, {"address": 38866, "end": 38897, "text": "You picked up the popcorn and change."}, {"address": 38898, "end": 38933, "text": "You put your change in your pocket."}, {"address": 38934, "end": 39000, "text": "There are lots of nondescript streets.\nYou don't want to go there."}, {"address": 39001, "end": 39014, "text": "The store is closed."}, {"address": 39015, "end": 39078, "text": "You are standing on the sidewalk on\nthe east side of a city block."}, {"address": 39079, "end": 39152, "text": "It is dark and raining.\nThere is a cigar store here.\nA white owl is flapping about."}, {"address": 39153, "end": 39223, "text": "You bump into the beggar. He glares\nat you and thrusts his cup in\nyour face."}, {"address": 39224, "end": 39249, "text": "You can't go home from here."}, {"address": 39250, "end": 39297, "text": "You are standing on the north side\nof a city block."}, {"address": 39298, "end": 39382, "text": "There is a beggar standing against\nthe wall. He gently rattles his\ntin cup in your direction."}, {"address": 39383, "end": 39430, "text": "You are standing on the west side\nof a city block."}, {"address": 39431, "end": 39479, "text": "It is dark and raining.\nThere is a movie theater here."}, {"address": 39480, "end": 39516, "text": "You crashed into the theater's\nouter walls."}, {"address": 39517, "end": 39623, "text": "You are standing on the south side\nof a city block. It is dark and\nraining. There are movie posters\non the wall."}, {"address": 39624, "end": 39652, "text": "There are two large posters."}, {"address": 39653, "end": 39699, "text": "You are standing in the lobby of the\nmovie theater."}, {"address": 39700, "end": 39729, "text": "You can't go in that direction."}, {"address": 39730, "end": 39741, "text": "You are home!"}, {"address": 39742, "end": 39801, "text": "You are home sitting in front of\nthe TV. There is a TV dinner here."}, {"address": 39802, "end": 39890, "text": "You are standing in front of the\nticket counter in the theater lobby.\nThe ticket girl asks for five dollars."}, {"address": 39891, "end": 39955, "text": "There are two large doors in front\nof you. You can smell popcorn inside."}, {"address": 39956, "end": 40024, "text": "You begin to climb over the counter.\nThe woman pushes you back down."}, {"address": 40025, "end": 40072, "text": "The other people in line for popcorn\nare in the way."}, {"address": 40073, "end": 40112, "text": "You are standing in front of a\npopcorn stand."}, {"address": 40113, "end": 40270, "text": "You enter a small empty theater, find\na seat and sit down. The lights dim,\nthe curtain parts, and the movie\nbegins. A herd of elephants sweep\nmajestically across the plain."}, {"address": 40271, "end": 40319, "text": "A herd of elephants sweep\nmajestically across the plain."}, {"address": 40320, "end": 40405, "text": "A commercial comes on for the movie\n\"Labyrinth\", now playing at your\nneighborhood theater."}, {"address": 40406, "end": 40456, "text": "You watch a show called \"The Making\nof the Elephant Movie\"."}, {"address": 40457, "end": 40549, "text": "A commercial comes on for the game\n\"Labyrinth\", \"the best graphic\nadventure game ever made.\""}, {"address": 40550, "end": 40569, "text": "There is no owl here."}, {"address": 40570, "end": 40696, "text": "You press your face into the TV\ndinner. The sensations of the\nmashed potatoes and gravy on\nyour cheeks are surprisingly\nenjoyable."}, {"address": 40697, "end": 40725, "text": "There is nothing here to take."}, {"address": 40726, "end": 40785, "text": "There is also a combination video\nrecorder and camera here."}, {"address": 40786, "end": 40815, "text": "You can't enter without a ticket."}, {"address": 40816, "end": 40841, "text": "Why, thank you very much!"}, {"address": 40842, "end": 40869, "text": "There is no one to give that to."}, {"address": 40870, "end": 40883, "text": "No thank you."}, {"address": 40884, "end": 40972, "text": "The cute girl smiles, \"No thank you,\nthe popcorn here is terrible! Nice of\nyou to offer, though.\""}, {"address": 40973, "end": 41020, "text": "The girl takes your five dollars and\nhands you a ticket."}, {"address": 41021, "end": 41218, "text": "There is a wide variety of things\nto order:\n      Chilled Popcorn\n      Popcorn Flavored Popcorn\n      Unpopped Popcorn\n      Charcoal Broiled Popcorn\n      Natural Organic Popcorn\nThe woman behind the counter asks you\nfor $1.25."}, {"address": 41219, "end": 41287, "text": "The woman behind the counter glances\nat you briefly then turns away."}, {"address": 41288, "end": 41455, "text": "The woman takes your two dollars,\ngives you a box of cold popcorn,\nand places two quarters in change on\nthe counter. At the same time she\naccidentally drops a nickel on the\nfloor by your feet."}, {"address": 41456, "end": 41502, "text": "The woman says, \"I'm too busy\nto make change.\""}, {"address": 41503, "end": 41529, "text": "There is a nickel on the floor."}, {"address": 41530, "end": 41558, "text": "The movie is about to begin."}, {"address": 41559, "end": 41628, "text": "There's some change on the counter and\na nickel on the floor by your feet."}, {"address": 41629, "end": 41691, "text": "There is a quarter on the counter and\na nickel on the floor by your feet."}, {"address": 41692, "end": 41737, "text": "You watch your dollar float away\nin the wind."}, {"address": 41738, "end": 41783, "text": "Your nickel vanishes into a\ncrack in the sidewalk."}, {"address": 41784, "end": 41840, "text": "You can't drop it. It seems\nto be glued inside your pocket!"}, {"address": 41841, "end": 41869, "text": "The beggar winks at you and says,"}, {"address": 41870, "end": 41875, "text": "\"Avocado.\""}, {"address": 41876, "end": 41881, "text": "\"Jaggies.\""}, {"address": 41882, "end": 41887, "text": "\"Owl.\""}, {"address": 41888, "end": 41893, "text": "\"Plastics.\""}, {"address": 41894, "end": 41942, "text": "The beggar's grin broadens and he\nnods his head at you."}, {"address": 41943, "end": 41980, "text": "Be patient, the game's just starting."}, {"address": 41981, "end": 42039, "text": "The beggar shrugs his shoulders and\nshuffles off into the rain."}, {"address": 42040, "end": 42079, "text": "There was no time to cook anything\nbetter."}, {"address": 42080, "end": 42112, "text": "Well, no one forced you to eat it."}, {"address": 42113, "end": 42205, "text": "After thinking about it you decide\nyou will need your money. You put it\nback in your pocket."}, {"address": 42206, "end": 42311, "text": "The girl sneers at you, \"Don't blame\nme if you can't hold on to your money!\nWhy don't you restart the game?\""}, {"address": 42312, "end": 42406, "text": "The girl says, \"I know it's\nexpensive, especially after you paid\nall that money for this computer.\""}, {"address": 42407, "end": 42458, "text": "You eat part of the dinner\nand feel sick to your stomach."}, {"address": 42459, "end": 42515, "text": "The woman says, \"I don't need to take \nthis kind of abuse!\""}, {"address": 42516, "end": 42572, "text": "The woman says, \"I'm sorry, we only\nhad Chilled Popcorn left.\""}, {"address": 42573, "end": 42635, "text": "The woman blushes and says, \"I'm\nsorry, here's your other quarter.\""}, {"address": 42636, "end": 42654, "text": "There is a quarter here."}, {"address": 42655, "end": 42672, "text": "You sure complain a lot."}, {"address": 42673, "end": 42726, "text": "If you don't like this movie\nthen go see \"Labyrinth\"."}, {"address": 42727, "end": 42750, "text": "Just buy the popcorn already!"}, {"address": 42751, "end": 42807, "text": "You take a handful of the worst \npopcorn that you have ever tasted."}, {"address": 42808, "end": 42882, "text": "A very annoyed young man with a broom\nrushes over and sweeps up your mess."}, {"address": 42883, "end": 42916, "text": "Your popcorn spills all over the\nplace!"}, {"address": 42917, "end": 42965, "text": "It is dark and raining.\nThere is a cigar store here."}, {"address": 42966, "end": 42992, "text": "It's stuck in your pocket."}, {"address": 42993, "end": 43066, "text": "There is a popcorn stand against the\nnorth wall, and two theaters against\nthe east and south walls."}, {"address": 43067, "end": 43141, "text": "Please choose one of the following:\nBlack, white, red, aqua, purple,\nblue, green, yellow, or orange."}, {"address": 43142, "end": 43170, "text": "You don't have enough money."}, {"address": 43171, "end": 43284, "text": "There are two posters on the wall:\n\nLABYRINTH\n\nStarring David Bowie,\nProduced by George Lucas,\nDirected by Jim Henson."}, {"address": 43285, "end": 43365, "text": "Starring Adam Braite,\nProduced by Activision,\nDirected by Lucasfilm Games Division."}, {"address": 43366, "end": 43495, "text": "         Welcome to Labyrinth\nTM and (c) 1986 Henson Associates,Inc.\n         All Rights Reserved.\n      Used Under Authorization."}];
+// end of labyrinth-responses
+const labResponse=document.getElementById('lab-response');
+labyrinthOpeningResponses.forEach((r,i)=>{const option=document.createElement('option');option.value=i;option.textContent='$'+r.address.toString(16).toUpperCase()+' · '+r.text.split('\n')[0];labResponse.appendChild(option);});
+function updateLabyrinthResponse(){const r=labyrinthOpeningResponses[Number(labResponse.value)];document.getElementById('lab-response-text').textContent=r.text;document.getElementById('lab-response-address').textContent='$'+r.address.toString(16).toUpperCase()+'–$'+r.end.toString(16).toUpperCase()+' · '+(r.end-r.address+1)+' stored bytes, including the terminator.';}
+labResponse.addEventListener('change',updateLabyrinthResponse);updateLabyrinthResponse();
+</script>
+
+<script>
+/* labyrinth-change */
+function labyrinthChangeStart(){return {quarterByte:255,nickelByte:0,phase:1,changeByte:2,pickup:17,nickelTaken:0,nickelReturned:0,karma:0,description:0xa257};}
+function labyrinthChangeStep(before,action){
+ const s={...before};let reply;
+ if(action==='take'){
+  if(s.pickup===0)reply=0x9ef9;
+  else if(s.pickup===12){s.pickup=0;s.description=0xa23a;s.nickelTaken=1;s.karma=1;s.nickelByte=(s.nickelByte+1)&255;reply=0x9798;}
+  else if(s.pickup===17){
+   if(s.nickelTaken===0){s.pickup=12;s.description=0xa21f;s.quarterByte=(s.quarterByte+s.changeByte)&255;s.changeByte=0;}
+   else{s.pickup=0;s.description=0xa23a;s.quarterByte=(s.quarterByte+1)&255;}
+   reply=0x97f2;
+  }else throw new RangeError('Unsupported local pickup');
+ }else if(action==='complain'){
+  reply=0xa3d7;
+  const phase=s.phase;
+  if(phase===0)reply=0xa5db;
+  if(phase===1){reply=0xa614;s.phase=(s.phase+1)&255;}
+  if(phase===2){
+   reply=0xa64d;
+   if(s.changeByte===0){s.pickup=17;s.description=0xa68c;}
+   s.phase=(s.phase+1)&255;s.changeByte=(s.changeByte+1)&255;
+   if(s.nickelTaken===0)s.description=s.changeByte<2?0xa29d:0xa257;
+  }
+  if(phase>=3)reply=0xa69f;
+ }else if(action==='return'){
+  if(s.nickelTaken!==0&&s.nickelReturned===0){s.nickelReturned=(s.nickelReturned+1)&255;s.karma=255;if(s.nickelByte<128)s.nickelByte=(s.nickelByte-1)&255;reply=0x81b3;}
+  else reply=0xa1f0;
+ }else throw new RangeError('Unknown counter action');
+ return {state:s,reply};
+}
+// end of labyrinth-change
+let labChange=labyrinthChangeStart();
+const labChangeText=new Map(labyrinthOpeningResponses.map(r=>[r.address,r.text]));
+const labChangeQuantity=b=>b<128?b+1:0;
+function updateLabyrinthChange(reply){
+ document.getElementById('lab-change-state').textContent=`Quarters carried: ${labChangeQuantity(labChange.quarterByte)}. Nickels carried: ${labChangeQuantity(labChange.nickelByte)}. Quarters waiting: ${labChange.pickup===17?labChange.changeByte:0}.`;
+ document.getElementById('lab-change-next').textContent=labChange.pickup===17?'TAKE will collect the change.':labChange.pickup===12?'TAKE will pick up the dropped nickel.':'There is nothing left here to TAKE.';
+ document.getElementById('lab-change-reply').textContent=reply?labChangeText.get(reply):'Purchase complete. The woman has left two quarters on the counter and dropped a nickel.';
+ document.getElementById('lab-change-later').textContent=labChange.karma===1?'Later popcorn offer: the teenager takes the whole box.':labChange.karma===255?'Later popcorn offer: the teenager takes a handful; you keep the box.':'The later popcorn offer depends on what happens to the dropped nickel.';
+ document.getElementById('lab-change-return').disabled=labChangeQuantity(labChange.nickelByte)===0;
+}
+for(const [id,action] of [['lab-change-take','take'],['lab-change-complain','complain'],['lab-change-return','return']])document.getElementById(id).addEventListener('click',()=>{const result=labyrinthChangeStep(labChange,action);labChange=result.state;updateLabyrinthChange(result.reply);});
+document.getElementById('lab-change-reset').addEventListener('click',()=>{labChange=labyrinthChangeStart();updateLabyrinthChange();});
+updateLabyrinthChange();
+</script>
+
+<script>
+/* labyrinth-popcorn */
+const labyrinthPopcornReplies={"41288": "The woman takes your two dollars,\ngives you a box of cold popcorn,\nand places two quarters in change on\nthe counter. At the same time she\naccidentally drops a nickel on the\nfloor by your feet.", "41456": "The woman says, \"I'm too busy\nto make change.\"", "43142": "You don't have enough money."};
+function labyrinthPopcornPurchase(dollars,flag) {
+ if(!Number.isInteger(dollars)||dollars<1||dollars>9||!Number.isInteger(flag)||flag<0||flag>255)throw new RangeError('Invalid purchase state');
+ if(flag!==0)return {dollars,popcorn:0,flag,reply:0xa1f0};
+ if(dollars<2)return {dollars,popcorn:0,flag,reply:0xa886};
+ return {dollars:dollars-2,popcorn:1,flag:1,reply:0xa148};
+}
+// end of labyrinth-popcorn
+const labPopcornMoney=document.getElementById('lab-popcorn-money'),labPopcornBought=document.getElementById('lab-popcorn-bought');
+function updateLabyrinthPopcorn(){
+ const result=labyrinthPopcornPurchase(Number(labPopcornMoney.value),labPopcornBought.checked?1:0);
+ document.getElementById('lab-popcorn-state').textContent=`Dollars remaining: ${result.dollars}. Popcorn added: ${result.popcorn}.`;
+ document.getElementById('lab-popcorn-reply').textContent=labyrinthPopcornReplies[result.reply];
+}
+labPopcornMoney.addEventListener('change',updateLabyrinthPopcorn);labPopcornBought.addEventListener('change',updateLabyrinthPopcorn);updateLabyrinthPopcorn();
+</script>
+
+<script>
+/* labyrinth-east */
+const labyrinthEastTable=[{"high": 0, "low": 0}, {"high": 152, "low": 22}, {"high": 0, "low": 1}, {"high": 0, "low": 6}, {"high": 0, "low": 1}, {"high": 0, "low": 10}, {"high": 0, "low": 13}, {"high": 156, "low": 89}, {"high": 155, "low": 20}, {"high": 155, "low": 20}, {"high": 155, "low": 20}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 8}];
+const labyrinthNoTicketReply="You can't enter without a ticket.";
+function labyrinthEastOutcome(location,ticketByte) {
+ if(!Number.isInteger(location)||location<0||location>=14)throw new RangeError('Unknown location');
+ if(!Number.isInteger(ticketByte)||ticketByte<0||ticketByte>255)throw new RangeError('Ticket byte must be 0–255');
+ if(location===6 && (ticketByte&128))return {kind:'reply',address:0x9f52};
+ const entry=labyrinthEastTable[location];
+ return entry.high===0?{kind:'move',destination:entry.low}:{kind:'reply',address:entry.high*256+entry.low};
+}
+// end of labyrinth-east
+const labTicketHeld=document.getElementById('lab-ticket-held');
+function updateLabyrinthTicket() {
+ const result=labyrinthEastOutcome(6,labTicketHeld.checked?0:255);
+ document.getElementById('lab-ticket-kind').textContent=result.kind==='move'?'The ticket check allows the table’s destination.':'The ticket check selects a refusal.';
+ document.getElementById('lab-ticket-output').textContent=result.kind==='move'?'Destination: Theater lobby':labyrinthNoTicketReply;
+}
+labTicketHeld.addEventListener('change',updateLabyrinthTicket);updateLabyrinthTicket();
+</script>
+
+<script>
+/* labyrinth-home */
+const labyrinthHomeTable=[{"high": 0, "low": 0}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 0, "low": 5}, {"high": 155, "low": 50}, {"high": 153, "low": 56}, {"high": 153, "low": 56}, {"high": 153, "low": 56}, {"high": 155, "low": 20}, {"high": 155, "low": 50}, {"high": 155, "low": 50}, {"high": 155, "low": 50}, {"high": 153, "low": 56}];
+const labyrinthHomeMessages={"39730": "You are home!", "39224": "You can't go home from here.", "39700": "You can't go in that direction."};
+function labyrinthHomeOutcome(location) {
+ if(!Number.isInteger(location)||location<0||location>=labyrinthHomeTable.length)throw new RangeError('Unknown location');
+ const entry=labyrinthHomeTable[location];
+ return entry.high===0?{kind:'move',destination:entry.low}:{kind:'reply',address:entry.high*256+entry.low};
+}
+// end of labyrinth-home
+const labHomeLocation=document.getElementById('lab-home-location');
+function updateLabyrinthHome() {
+ const outcome=labyrinthHomeOutcome(Number(labHomeLocation.value));
+ document.getElementById('lab-home-kind').textContent=outcome.kind==='move'?'The table selects a destination.':'The table selects a reply.';
+ document.getElementById('lab-home-output').textContent=outcome.kind==='move'?'Destination: Home':labyrinthHomeMessages[outcome.address];
+}
+labHomeLocation.addEventListener('change',updateLabyrinthHome);
+updateLabyrinthHome();
+</script>
+
+<script>
+/* labyrinth-wheel-replay */
+const labWheelReplay=[{"key": "initial", "prefix": "", "selected": 6, "word": "inventory", "rejected": false}, {"key": "G", "prefix": "G", "selected": 4, "word": "give", "rejected": false}, {"key": "Z", "prefix": "G", "selected": 4, "word": "give", "rejected": true}, {"key": "O", "prefix": "GO", "selected": 5, "word": "go", "rejected": false}, {"key": "Delete", "prefix": "", "selected": 5, "word": "go", "rejected": false}];
+// end of labyrinth-wheel-replay
+let labWheelStep=0;
+function updateLabyrinthWheelReplay() {
+ const row=labWheelReplay[labWheelStep];
+ document.getElementById('lab-wheel-key').textContent=labWheelStep===0?'Saved opening state':'Key: '+row.key;
+ document.getElementById('lab-wheel-prefix').textContent=row.prefix||'(empty)';
+ document.getElementById('lab-wheel-word').textContent=row.word;
+ const message=row.rejected?'Z was rejected. The accepted prefix and selection stay unchanged.':row.key==='Delete'?'The prefix is cleared; go stays selected.':labWheelStep===0?'Step through G, Z, O, and Delete.':'The wheel selects the first available word matching the prefix.';
+ document.getElementById('lab-wheel-message').textContent=message;
+ document.getElementById('lab-wheel-card').classList.toggle('lab-wheel-rejected',row.rejected);
+ document.getElementById('lab-wheel-next').disabled=labWheelStep===labWheelReplay.length-1;
+ document.getElementById('lab-wheel-restart').disabled=labWheelStep===0;
+}
+document.getElementById('lab-wheel-next').addEventListener('click',()=>{labWheelStep++;updateLabyrinthWheelReplay();});
+document.getElementById('lab-wheel-restart').addEventListener('click',()=>{labWheelStep=0;updateLabyrinthWheelReplay();});
+updateLabyrinthWheelReplay();
+</script>
+
+<script>
+/* labyrinth-font */
+const labyrinthFont = [0, 0, 0, 0, 0, 0, 0, 0, 1, 7, 15, 31, 31, 63, 63, 63, 63, 63, 63, 31, 31, 15, 7, 1, 128, 224, 240, 248, 248, 252, 252, 252, 252, 252, 252, 248, 248, 240, 224, 128, 63, 63, 63, 63, 63, 63, 63, 63, 252, 252, 252, 252, 252, 252, 252, 252, 15, 63, 127, 127, 127, 127, 63, 15, 240, 252, 254, 254, 254, 254, 252, 240, 102, 102, 102, 102, 102, 102, 102, 102, 0, 255, 255, 0, 0, 255, 255, 0, 0, 127, 127, 96, 96, 103, 103, 102, 0, 254, 254, 6, 6, 230, 230, 102, 102, 103, 103, 96, 96, 127, 127, 0, 102, 230, 230, 6, 6, 254, 254, 0, 102, 205, 155, 55, 111, 223, 191, 127, 102, 179, 217, 236, 246, 251, 253, 254, 255, 127, 191, 223, 111, 55, 155, 205, 255, 254, 253, 251, 246, 236, 217, 179, 254, 252, 241, 135, 255, 255, 255, 255, 63, 127, 255, 240, 199, 159, 63, 63, 63, 127, 255, 255, 255, 255, 255, 255, 7, 241, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 252, 127, 63, 143, 225, 255, 255, 255, 255, 252, 254, 255, 15, 227, 249, 252, 252, 252, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 231, 231, 231, 231, 231, 255, 231, 255, 153, 153, 153, 255, 255, 255, 255, 255, 147, 147, 1, 147, 1, 147, 147, 255, 231, 129, 39, 193, 228, 129, 231, 255, 255, 156, 153, 243, 231, 204, 156, 255, 255, 255, 255, 255, 255, 255, 255, 255, 231, 231, 223, 255, 255, 255, 255, 255, 243, 231, 207, 207, 207, 231, 243, 255, 207, 231, 243, 243, 243, 231, 207, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 231, 231, 239, 255, 255, 255, 129, 255, 255, 255, 255, 255, 255, 255, 255, 255, 231, 231, 255, 255, 255, 255, 255, 255, 255, 255, 255, 195, 153, 153, 153, 153, 153, 195, 255, 231, 199, 135, 231, 231, 231, 129, 255, 195, 153, 249, 243, 231, 207, 129, 255, 195, 153, 249, 227, 249, 153, 195, 255, 153, 153, 153, 129, 249, 249, 249, 255, 131, 159, 159, 195, 249, 153, 195, 255, 195, 153, 159, 131, 153, 153, 195, 255, 129, 249, 243, 231, 231, 231, 231, 255, 195, 153, 153, 195, 153, 153, 195, 255, 195, 153, 153, 193, 249, 153, 195, 255, 255, 255, 255, 231, 231, 255, 231, 231, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 207, 231, 243, 249, 243, 231, 207, 255, 195, 153, 249, 243, 231, 255, 231, 255, 255, 255, 255, 255, 255, 255, 255, 255, 231, 195, 153, 129, 153, 153, 153, 255, 131, 153, 153, 131, 153, 153, 131, 255, 195, 153, 159, 159, 159, 153, 195, 255, 131, 153, 153, 153, 153, 153, 131, 255, 129, 159, 159, 135, 159, 159, 129, 255, 129, 159, 159, 135, 159, 159, 159, 255, 195, 153, 159, 147, 153, 153, 195, 255, 153, 153, 153, 129, 153, 153, 153, 255, 129, 231, 231, 231, 231, 231, 129, 255, 249, 249, 249, 249, 153, 153, 195, 255, 153, 147, 135, 143, 135, 147, 153, 255, 159, 159, 159, 159, 159, 159, 129, 255, 189, 153, 129, 153, 153, 153, 153, 255, 185, 153, 137, 129, 145, 153, 157, 255, 195, 153, 153, 153, 153, 153, 195, 255, 131, 153, 153, 131, 159, 159, 159, 255, 195, 153, 153, 153, 153, 147, 196, 255, 131, 153, 153, 131, 153, 153, 153, 255, 195, 153, 159, 195, 249, 153, 195, 255, 129, 231, 231, 231, 231, 231, 231, 255, 153, 153, 153, 153, 153, 153, 195, 255, 153, 153, 153, 153, 153, 195, 231, 255, 153, 153, 153, 153, 129, 153, 189, 255, 153, 153, 195, 231, 195, 153, 153, 255, 153, 153, 153, 195, 231, 231, 231, 255, 129, 249, 243, 231, 207, 159, 129, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 195, 153, 153, 153, 196, 255, 159, 159, 131, 153, 153, 153, 131, 255, 255, 255, 195, 153, 159, 153, 195, 255, 249, 249, 193, 153, 153, 153, 193, 255, 255, 255, 195, 153, 129, 159, 193, 255, 227, 205, 207, 135, 207, 207, 207, 255, 255, 255, 193, 153, 153, 193, 249, 131, 159, 159, 131, 153, 153, 153, 153, 255, 231, 255, 199, 231, 231, 231, 195, 255, 249, 255, 249, 249, 249, 153, 153, 195, 159, 159, 153, 147, 135, 147, 153, 255, 143, 207, 207, 207, 207, 207, 135, 255, 255, 255, 153, 129, 153, 153, 153, 255, 255, 255, 131, 153, 153, 153, 153, 255, 255, 255, 195, 153, 153, 153, 195, 255, 255, 255, 131, 153, 153, 131, 159, 159, 255, 255, 193, 153, 153, 193, 249, 249, 255, 255, 131, 153, 159, 159, 159, 255, 255, 255, 195, 159, 195, 249, 195, 255, 207, 207, 135, 207, 207, 201, 227, 255, 255, 255, 153, 153, 153, 153, 195, 255, 255, 255, 153, 153, 153, 195, 231, 255, 255, 255, 153, 153, 153, 129, 153, 255, 255, 255, 153, 195, 231, 195, 153, 255, 255, 255, 153, 153, 153, 193, 249, 195, 255, 255, 129, 243, 231, 207, 129, 255, 255, 231, 231, 231, 231, 231, 231, 255, 255, 255, 231, 195, 195, 231, 255, 255, 255, 255, 198, 198, 198, 198, 198, 198, 255, 255, 24, 24, 24, 24, 24, 24, 255, 255, 99, 99, 99, 99, 99, 99, 198, 198, 198, 198, 198, 198, 255, 255, 24, 24, 24, 24, 24, 24, 255, 255, 99, 99, 99, 99, 99, 99, 255, 255, 255, 227, 227, 227, 247, 247, 247, 255, 94, 174, 94, 174, 94, 174, 94, 174, 117, 122, 117, 122, 117, 122, 117, 122, 85, 170, 245, 250, 245, 250, 245, 122, 85, 170, 95, 175, 95, 175, 95, 174, 85, 170, 255, 255, 255, 255, 255, 0, 254, 253, 254, 253, 254, 253, 254, 253, 127, 191, 127, 191, 127, 191, 127, 191, 170, 85, 254, 253, 254, 253, 254, 253, 170, 85, 191, 127, 191, 127, 191, 127, 170, 85, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 31, 31, 63, 15, 63, 31, 15, 31, 252, 248, 254, 252, 254, 248, 252, 254, 31, 7, 15, 31, 15, 31, 63, 31, 224, 240, 252, 248, 252, 248, 252, 252, 0, 1, 3, 1, 3, 7, 3, 7, 127, 63, 63, 127, 255, 127, 255, 255, 15, 63, 31, 63, 127, 63, 255, 63, 224, 240, 224, 240, 248, 248, 252, 248, 128, 192, 128, 192, 224, 240, 224, 240, 252, 254, 252, 248, 252, 240, 240, 248, 248, 224, 240, 224, 192, 224, 128, 0, 63, 31, 31, 63, 7, 31, 15, 7, 15, 3, 7, 3, 1, 3, 3, 1, 255, 63, 127, 63, 31, 63, 31, 15, 0, 0, 0, 0, 24, 152, 252, 255, 239, 134, 2, 0, 0, 0, 0, 0, 255, 93, 12, 0, 0, 0, 0, 0, 255, 254, 250, 226, 240, 192, 224, 128, 255, 127, 47, 35, 7, 3, 1, 3, 192, 192, 240, 192, 248, 242, 255, 255, 7, 3, 15, 3, 7, 47, 191, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 86, 86, 86, 86, 170, 0, 0, 0, 0, 0, 0, 0, 0, 0, 186, 176, 85, 85, 85, 85, 170, 0, 174, 14, 85, 85, 85, 85, 170, 0, 176, 176, 85, 85, 85, 85, 170, 0, 14, 14, 85, 85, 85, 85, 170, 0, 170, 170, 85, 93, 85, 85, 170, 0, 170, 170, 85, 117, 85, 85, 170, 0, 170, 170, 64, 76, 64, 85, 170, 0, 170, 170, 1, 49, 1, 85, 170, 0, 176, 176, 85, 85, 85, 85, 170, 0, 14, 14, 85, 85, 85, 85, 170, 0, 176, 176, 85, 85, 85, 85, 170, 0, 14, 14, 85, 85, 85, 85, 170, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 85, 84, 84, 85, 170, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 85, 85, 85, 85, 170, 0, 170, 170, 95, 85, 85, 85, 170, 0, 170, 170, 245, 85, 85, 85, 170, 0, 0, 0, 0, 0, 0, 0, 0, 0, 170, 170, 149, 149, 149, 149, 170, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 63, 31, 15, 7, 0, 0, 0, 254, 252, 248, 240, 224, 0, 0, 0];
+function labyrinthGlyph(index) {
+ if(!Number.isInteger(index) || index<0 || index>255) throw new RangeError('Glyph number must be 0–255');
+ const bytes=labyrinthFont.slice(index*8,index*8+8);
+ return {bytes,pixels:bytes.flatMap(row=>Array.from({length:8},(_,x)=>(row>>(7-x))&1))};
+}
+// end of labyrinth-font
+const labGlyphNumber=document.getElementById('lab-glyph-number');
+const labGlyphGrid=document.getElementById('lab-glyph-grid');
+function updateLabyrinthGlyph() {
+ const index=Math.max(0,Math.min(255,Math.trunc(Number(labGlyphNumber.value)||0)));
+ labGlyphNumber.value=index;
+ const glyph=labyrinthGlyph(index);
+ const hex=n=>n.toString(16).toUpperCase().padStart(2,'0');
+ const name=(index>=48&&index<=57)||(index>=65&&index<=90)||(index>=97&&index<=122)?' · '+String.fromCharCode(index):'';
+ document.getElementById('lab-glyph-caption').textContent='Glyph '+index+' ($'+hex(index)+')'+name;
+ document.getElementById('lab-glyph-rows').textContent='Byte   Pixels\n'+glyph.bytes.map(b=>hex(b)+'     '+b.toString(2).padStart(8,'0')).join('\n');
+ const svg=document.getElementById('lab-glyph-picture');
+ svg.setAttribute('aria-label','Opening glyph '+index+name);
+ svg.replaceChildren();
+ const rect=(x,y,w,h,fill)=>{const r=document.createElementNS('http://www.w3.org/2000/svg','rect');for(const [k,v] of Object.entries({x,y,width:w,height:h,fill}))r.setAttribute(k,v);svg.append(r);};
+ rect(0,0,8,8,'#171c28');
+ glyph.pixels.forEach((lit,i)=>{if(lit)rect(i%8,Math.floor(i/8),1,1,'#a4efd6');});
+ const grid=document.createElementNS('http://www.w3.org/2000/svg','path');
+ grid.setAttribute('d',Array.from({length:9},(_,i)=>'M'+i+' 0V8M0 '+i+'H8').join(''));
+ grid.setAttribute('stroke','#667085');grid.setAttribute('stroke-width','.025');grid.setAttribute('class','lab-glyph-grid');svg.append(grid);
+ svg.classList.toggle('lab-glyph-hide-grid',!labGlyphGrid.checked);
+ document.getElementById('lab-glyph-prev').disabled=index===0;
+ document.getElementById('lab-glyph-next').disabled=index===255;
+}
+labGlyphNumber.addEventListener('input',updateLabyrinthGlyph);
+labGlyphNumber.addEventListener('change',updateLabyrinthGlyph);
+labGlyphGrid.addEventListener('change',updateLabyrinthGlyph);
+document.getElementById('lab-glyph-prev').addEventListener('click',()=>{labGlyphNumber.value=Number(labGlyphNumber.value)-1;updateLabyrinthGlyph();});
+document.getElementById('lab-glyph-next').addEventListener('click',()=>{labGlyphNumber.value=Number(labGlyphNumber.value)+1;updateLabyrinthGlyph();});
+updateLabyrinthGlyph();
+</script>
+
+<script>
+/* labyrinth-dictionary */
+const labyrinthWords = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "    INVENTORY LIST    ", " ", "boy", "girl", "he", "she", "camcorder", "hello", "adumbrate", "complain", "inventory", "load game", "save game", "speak", "take", "time", "ask", "call", "close", "congratulate", "hit", "insult", "manicure", "open", "drop", "eat", "give", "insert", "throw", "use", "Alph", "door", "elephant", "hat", "Hoggle", "Jareth", "knocker", "Ludo", "nerd", "Ralph", "wall", "Wise Man", "goblin", "arm", "crystal ball", "cup", "dollar bill", "head", "key", "nickel", "peach", "perfume", "plank", "popcorn", "quarter", "ring", "rock", "rule book", "shears", "spray bottle", "ticket", "look", "go", "beggar", "dinner", "east", "food", "home", "north", "outside", "south", "store", "TV", "theater", "west", "black", "white", "red", "aqua", "purple", "green", "blue", "yellow", "orange", "leg", "helmet", "bracelet", "log", "rocks", "plastics", "owl", "jaggies", "avocado", "Sir Didymus", "Firey", "Do you have", "Throw some", "You have no", "elephants over me", "towels over me", "power over me", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+function expandLabyrinthWord(index, token) {
+ let word=labyrinthWords[index];
+ if ((token===0xfc || token===0xfe) && word.length) {
+  word=String.fromCharCode((word.charCodeAt(0)-0x20)&255)+word.slice(1);
+ }
+ return word+((token===0xfd || token===0xfe)?' ':'');
+}
+const labyrinthPassages = [{"title": "The sidewalk", "address": 39015, "bytes": [89, 111, 117, 32, 97, 114, 101, 32, 115, 116, 97, 110, 100, 105, 110, 103, 32, 111, 110, 32, 116, 104, 101, 32, 115, 105, 100, 101, 119, 97, 108, 107, 32, 111, 110, 255, 116, 104, 101, 32, 253, 79, 115, 105, 100, 101, 32, 111, 102, 32, 97, 32, 99, 105, 116, 121, 32, 98, 108, 111, 99, 107, 46, 0]}, {"title": "The rain and owl", "address": 39079, "bytes": [73, 116, 32, 105, 115, 32, 100, 97, 114, 107, 32, 97, 110, 100, 32, 114, 97, 105, 110, 105, 110, 103, 46, 255, 84, 104, 101, 114, 101, 32, 105, 115, 32, 97, 32, 99, 105, 103, 97, 114, 32, 253, 85, 104, 101, 114, 101, 46, 255, 65, 32, 253, 90, 253, 104, 105, 115, 32, 102, 108, 97, 112, 112, 105, 110, 103, 32, 97, 98, 111, 117, 116, 46, 0]}];
+function splitLabyrinthPassage(bytes) {
+ const pieces=[];
+ for(let i=0;i<bytes.length;) {
+  const offset=i, byte=bytes[i++];
+  if(byte===0) {pieces.push({offset,bytes:[0],text:'',kind:'end'});break;}
+  if(byte===0xff) {pieces.push({offset,bytes:[byte],text:'\n',kind:'line'});continue;}
+  if(byte>=0xfb && byte<=0xfe) {
+   if(i===bytes.length) throw new Error('Missing dictionary index');
+   const index=bytes[i++];
+   pieces.push({offset,bytes:[byte,index],text:expandLabyrinthWord(index,byte),kind:'word'});
+   continue;
+  }
+  if(byte<0x20 || byte>=0x7f || byte===0x40) throw new Error('Unsupported passage control');
+  while(i<bytes.length && bytes[i]>=0x20 && bytes[i]<0x7f && bytes[i]!==0x40) i++;
+  const literal=bytes.slice(offset,i);
+  pieces.push({offset,bytes:literal,text:String.fromCharCode(...literal),kind:'letters'});
+ }
+ return pieces;
+}
+// end of labyrinth-dictionary
+const labWord=document.getElementById('lab-word');
+const labCapital=document.getElementById('lab-capital');
+const labSpace=document.getElementById('lab-space');
+function updateLabyrinthWord() {
+ const token=labCapital.checked?(labSpace.checked?0xfe:0xfc):(labSpace.checked?0xfd:0xfb);
+ const index=Number(labWord.value);
+ const hex=n=>n.toString(16).toUpperCase().padStart(2,'0');
+ document.getElementById('lab-token').textContent=hex(token)+' '+hex(index);
+ document.getElementById('lab-expanded').textContent=expandLabyrinthWord(index,token).replace(/ /g,'␣');
+}
+for (const input of [labWord,labCapital,labSpace]) input.addEventListener('change',updateLabyrinthWord);
+updateLabyrinthWord();
+
+const labPassage=document.getElementById('lab-passage');
+let labPassagePosition=0;
+function updateLabyrinthPassage() {
+ const passage=labyrinthPassages[Number(labPassage.value)];
+ const pieces=splitLabyrinthPassage(passage.bytes);
+ const output=pieces.slice(0,labPassagePosition).map(p=>p.text).join('');
+ document.getElementById('lab-passage-output').textContent=labPassagePosition?output:'Press Next piece to begin.';
+ const piece=pieces[labPassagePosition-1];
+ const explanation=piece?({letters:'Ordinary letters, copied directly.',word:'A dictionary reference expands into this word.',line:'FF starts a new line.',end:'00 ends the passage.'})[piece.kind]:'The text is shown in the order the game reads it.';
+ document.getElementById('lab-passage-explanation').textContent=labPassagePosition+' / '+pieces.length+' pieces. '+explanation;
+ document.getElementById('lab-passage-raw').textContent=piece?'Bytes for this piece: '+piece.bytes.map(b=>b.toString(16).toUpperCase().padStart(2,'0')).join(' '):'';
+ document.getElementById('lab-next').disabled=labPassagePosition>=pieces.length;
+ document.getElementById('lab-complete').disabled=labPassagePosition>=pieces.length;
+ document.getElementById('lab-restart').disabled=labPassagePosition===0;
+}
+labPassage.addEventListener('change',()=>{labPassagePosition=0;updateLabyrinthPassage();});
+document.getElementById('lab-next').addEventListener('click',()=>{labPassagePosition++;updateLabyrinthPassage();});
+document.getElementById('lab-restart').addEventListener('click',()=>{labPassagePosition=0;updateLabyrinthPassage();});
+document.getElementById('lab-complete').addEventListener('click',()=>{labPassagePosition=splitLabyrinthPassage(labyrinthPassages[Number(labPassage.value)].bytes).length;updateLabyrinthPassage();});
+updateLabyrinthPassage();
+</script>
+
+
+
+<footer><a href="https://github.com/gamesexplained/gamesexplained">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV">Discord</a><br>© Games Explained contributors. Write-ups, facts, and symbol maps: <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Code: <a href="https://opensource.org/licenses/MIT">MIT</a>.</footer>
+</html>

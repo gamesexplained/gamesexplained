@@ -33,3 +33,5 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 ## Opening the neighboring Brick Hallway door
 
 The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. This confirms opening one door, not traversing it or finding a route back. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 822/48,587 described bytes; four provisional scopes total 52,312/188,818 (27.7%). Their retained resident ownership overlaps and is not whole-game completion.
+
+`reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.

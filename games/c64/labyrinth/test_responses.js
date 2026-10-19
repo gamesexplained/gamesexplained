@@ -3,7 +3,7 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram,has}=require('./opening_image.js')(g);
-const {labyrinthOpeningResponses:records}=g.run('index.html','labyrinth-responses','labyrinthOpeningResponses');
+const {labyrinthOpeningResponses:records}=g.run('explore.html','labyrinth-responses','labyrinthOpeningResponses');
 const symbols=g.json('parts/opening/symbols.json');
 function parse(memory,address){
  const c=new CPU(Uint8Array.from(memory),{port:{dir:0x2f,data:0x25}});

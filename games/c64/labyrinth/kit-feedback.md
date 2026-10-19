@@ -114,3 +114,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Brick Hallway OPEN DOOR · 19 October 2026
 
 `70-minisite`, “Start each case where the game starts it, and feed it what the page feeds it”: the new test runs the complete classifier/mutation path at the two actual page positions, including scene 3's zero refresh request, alongside the exhaustive isolated handler cases. The prior forced entry capture was renamed before using the natural play image for analysis. Remaining loaded-data warnings are recorded as open ownership work; no shared-kit change or maintainer ask arose.
+
+## Labyrinth page organization · 19 October 2026
+
+`70-minisite`, “The order serves the explanation and the reader’s attention at once”: the mechanics overview leads with the game, then keeps two checked interactive examples; the chronological area material has its own Explore the game tab. Existing custom-tab support handled the split without shared-site changes. The two duplicated mechanic blocks are guarded by sameBlock checks. No maintainer ask arose.
