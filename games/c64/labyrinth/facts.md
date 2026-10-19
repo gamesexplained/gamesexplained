@@ -12,7 +12,7 @@ An independent fixed-seed sample on 19 October 2026 checked 60 of the 1,303 line
 
 ## Scope
 
-The complete game stays Bronze: the gate and first corridor are partially analysed and 19 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 36.7% ledger is provisional rather than whole-game progress.
+The complete game stays Bronze: the gate, first corridor, and Brick Hallway are partially analysed and 18 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 27.7% ledger is provisional rather than whole-game progress.
 
 ## First corridor
 
@@ -20,7 +20,7 @@ The natural first-corridor image has a partial listing (1,113/48,021 bytes). Its
 
 ## Published player name
 
-The published listings use `work/publish-anonymous.vsf`, a copy of each analysis snapshot with the entered player name replaced by ANON (or lowercase anon). Original emulator captures remain private. The opening’s named fields fall outside its published records; the gate and corridor listings change only cached name bytes, including the gate speech field. Code, route tables, and measured movement values are unchanged. The two setup screenshots containing the entered name were removed from publication.
+The opening, gate, and first-corridor listings use `work/publish-anonymous.vsf`; the Brick Hallway uses an anonymized `work/play.vsf` copy. Each replaces the entered player name with ANON (or lowercase anon). Original emulator captures remain private. The opening’s named fields fall outside its published records; the gate and corridor listings change only cached name bytes, including the gate speech field. Code, route tables, and measured movement values are unchanged. The two setup screenshots containing the entered name were removed from publication.
 
 ## Brick Hallway arrival checks
 
@@ -29,3 +29,7 @@ Ordinary-input trials restored the natural scene-3 play capture at world X=2272/
 The arrival map cell at column 35 ($0623) is zero, translated through $073E to type zero with depth bound 24 at $41F0 and negative exit flag $FF at $4200. Classifier/bound-table bytes $4171-$420F match the first corridor’s retained copy. This is captured scene-3 data, not the first corridor’s map. The direction trials confirm the wall/foreground behavior at this arrival; other positions remain open.
 
 An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival. Prefixes reached OPEN and DOOR; dispatch fields $6691/$6692 became [37,45]. The wheel service $5D36 ran 52 times and command dispatcher $5F43 once. After another 120 frames, the screenshot showed “Nothing happens.” with OPEN DOOR selected. Current scene remained 3, pending scene $FF and player X=2272/depth 6. This response is established only at the arrival position, not at the visible doors. The original emulator state and normal speed were restored after both batches. Screenshots: `reference/brick-up.png`, `reference/brick-down.png`, `reference/brick-open-door.png`. Raw observations remain private in work/.
+
+## Opening the neighboring Brick Hallway door
+
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. This confirms opening one door, not traversing it or finding a route back. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 822/48,587 described bytes; four provisional scopes total 52,312/188,818 (27.7%). Their retained resident ownership overlaps and is not whole-game completion.

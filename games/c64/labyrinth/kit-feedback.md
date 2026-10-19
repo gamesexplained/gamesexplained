@@ -110,3 +110,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Brick Hallway arrival checks · 19 October 2026
 
 `tool-vice-mcp`, “Prove the machine is running before you believe a negative result”: movement and command-service hit counters accompanied the silent exit/loader counters, and OPEN DOOR had a positive dispatch hit. The duplicate snapshot basename was a visible refusal resolved with a uniquely named private copy; no shared-kit change was needed.
+
+## Brick Hallway OPEN DOOR · 19 October 2026
+
+`70-minisite`, “Start each case where the game starts it, and feed it what the page feeds it”: the new test runs the complete classifier/mutation path at the two actual page positions, including scene 3's zero refresh request, alongside the exhaustive isolated handler cases. The prior forced entry capture was renamed before using the natural play image for analysis. Remaining loaded-data warnings are recorded as open ownership work; no shared-kit change or maintainer ask arose.

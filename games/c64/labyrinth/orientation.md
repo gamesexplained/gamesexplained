@@ -97,4 +97,8 @@ The gate part uses the naturally reached `work/gate-steady.vsf`, copied to `part
 
 Started scene-02 from the naturally reached `corridor-play.vsf`; its part play image has the same SHA-256. Ordinary right/up movement reached the first opening and the exit dispatcher wrote pending scene 3 / entry 35. The test restored the original emulator state. The same ordinary route continued to a natural scene-3 load, placing the player at X=2272/depth 6. Ignored captures are in `work/natural-brick/`; `reference/brick-natural-entry.png` shows the arrival. A replay from the naturally produced loader state captured `$543A` before placement, with mode zero and entries [35,255,26], then `$54CB` after placement.
 
-Published listings are built from `work/publish-anonymous.vsf` copies, with the entered player name replaced by ANON/anon. These are publication copies of the original analysis snapshots, which remain private. Setup images showing the original name were removed.
+The opening, gate, and first-corridor listings are built from `work/publish-anonymous.vsf` copies, with the entered player name replaced by ANON/anon. The Brick Hallway listing uses a name-only anonymized `work/play.vsf` copy. These are publication copies of the original analysis snapshots, which remain private. Setup images showing the original name were removed.
+
+## Neighboring Brick Hallway door · 19 October 2026
+
+From the naturally reached arrival, ordinary right/up input reached X=2348/depth 24. OPEN DOOR changed column 36 from cell 7 to 6; handler and mutation checkpoints each fired once. The open-door snapshot stays private as `work/brick-door-opened.vsf`. Scene 3's disassembly runs on an anonymized natural-play copy under its own part folder. Its older forced entry capture is `entry-forced.vsf`; a natural pre-initialization hand-over remains open.
