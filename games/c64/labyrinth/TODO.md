@@ -33,6 +33,6 @@ Possible follow-ups: a playable word wheel, a complete city map extending the ci
 
 For the first corridor:
 
-- Walk and complete the loads through the other seven openings and the other route variants. The first opening’s ordinary route to scene 3 / entry 35 is confirmed, including placement at X=2272/depth 6. Check reverse connections and the other entry positions in the Brick Hallway.
+- Walk and complete the loads through the other seven openings and the other route variants. The first opening’s ordinary route to scene 3 / entry 35 is confirmed, including placement at X=2272/depth 6. Check reverse connections and the other entry positions in the Brick Hallway. At the checked arrival, 300-frame up/down trials remain in scene 3 and OPEN DOOR displays “Nothing happens”; test the visible doors from their own approach positions.
 - Trace the other movement modes, object interactions, scene callbacks, drawing and sound. Capture the natural pre-initialization hand-over and resolve `$07FE-$07FF` ownership.
 - Independently sample the new corridor comments; the earlier combined sample predates them.

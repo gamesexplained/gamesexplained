@@ -106,3 +106,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Natural Brick Hallway arrival · 19 October 2026
 
 `60-verify`, “A live test in one room tests one room”: kept the completed arrival claim to the one ordinary first-opening route, with other entry variants remaining code-tested calculations. The captured placement routine uses shared resident bytes, so compared it across the corridor and naturally loaded room before reusing its result. No shared-kit change or maintainer ask arose.
+
+## Brick Hallway arrival checks · 19 October 2026
+
+`tool-vice-mcp`, “Prove the machine is running before you believe a negative result”: movement and command-service hit counters accompanied the silent exit/loader counters, and OPEN DOOR had a positive dispatch hit. The duplicate snapshot basename was a visible refusal resolved with a uniquely named private copy; no shared-kit change was needed.

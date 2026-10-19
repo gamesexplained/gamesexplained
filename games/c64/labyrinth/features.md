@@ -60,3 +60,9 @@ Joystick-port-one fire is **live** as the producer of the introduction interrupt
 - Confirmed live: ordinary movement along the corridor and into opening column 8 loads the Brick Hallway with entry 35, at X=2272/depth 6.
 - Traced and original-code checked: eight opening columns, wall/opening approach bounds, four route banks, and the PRNG bank selector. Every stored opening selects the Brick Hallway.
 - Open: the other seven complete walking approaches, other destination entry positions, reverse links and remaining corridor interactions.
+
+## Brick Hallway arrival behavior
+
+- Live: up from the checked arrival reaches depth 24; down reaches depth 0. Both trials retain scene 3.
+- Live: OPEN DOOR at X=2272/depth 6 displays “Nothing happens.” One command dispatch was observed.
+- Open: door interactions at other positions and the route back to the first corridor.

@@ -21,3 +21,11 @@ The natural first-corridor image has a partial listing (1,113/48,021 bytes). Its
 ## Published player name
 
 The published listings use `work/publish-anonymous.vsf`, a copy of each analysis snapshot with the entered player name replaced by ANON (or lowercase anon). Original emulator captures remain private. The opening’s named fields fall outside its published records; the gate and corridor listings change only cached name bytes, including the gate speech field. Code, route tables, and measured movement values are unchanged. The two setup screenshots containing the entered name were removed from publication.
+
+## Brick Hallway arrival checks
+
+Ordinary-input trials restored the natural scene-3 play capture at world X=2272/depth 6 before each case. Idle for 120 frames retained depth 6; up for 300 frames reached depth 24; down for 300 reached depth 0. X stayed 2272, current scene stayed 3, and pending scene stayed $FF. Positive execute checkpoint $3423 recorded 12/30/30 hits respectively; $4115 and loader $5098 recorded zero hits in every trial. These bounded observations do not establish the absence of another return route.
+
+The arrival map cell at column 35 ($0623) is zero, translated through $073E to type zero with depth bound 24 at $41F0 and negative exit flag $FF at $4200. Classifier/bound-table bytes $4171-$420F match the first corridor’s retained copy. This is captured scene-3 data, not the first corridor’s map. The direction trials confirm the wall/foreground behavior at this arrival; other positions remain open.
+
+An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival. Prefixes reached OPEN and DOOR; dispatch fields $6691/$6692 became [37,45]. The wheel service $5D36 ran 52 times and command dispatcher $5F43 once. After another 120 frames, the screenshot showed “Nothing happens.” with OPEN DOOR selected. Current scene remained 3, pending scene $FF and player X=2272/depth 6. This response is established only at the arrival position, not at the visible doors. The original emulator state and normal speed were restored after both batches. Screenshots: `reference/brick-up.png`, `reference/brick-down.png`, `reference/brick-open-door.png`. Raw observations remain private in work/.

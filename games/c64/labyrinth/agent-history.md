@@ -156,3 +156,7 @@ Repeated the ordinary first-opening walk and continued through loader $5098 to $
 ## 19 October 2026 · Anonymize the published player name
 
 At the contributor’s request, replaced the visible speech example with ANON, removed identifying setup screenshots and their links, and removed the entered name from reference prose and the gate message comment. Original captures are retained privately in work/. Built all three listings from name-only anonymized snapshot copies; byte comparison found only cached name fields changed in the gate and corridor records, with no changed opening record bytes. Gate speech/scheduler tests and the opening scope check pass against the publication data.
+
+## 19 October 2026 · Check movement and OPEN DOOR at the arrival
+
+Restored the natural Brick Hallway arrival for idle/up/down trials. Positive movement hits were 12/30/30; generic-exit and loader hits were zero. Depths were 6/24/0, with X and scene unchanged. A separate ordinary keyboard OPEN DOOR trial produced one command dispatch and the visible reply “Nothing happens.” Kept all absence claims bounded to the captured position and trial lengths; return routes and door approaches remain open. Added screenshots and a reading topic to the existing corridor/arrival area. A first snapshot load failed visibly because another private capture had the same basename; a uniquely named private copy resolved it. Original emulator state and normal speed were restored. No new disassembler annotations or coverage scope were added.
