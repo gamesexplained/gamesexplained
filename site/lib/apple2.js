@@ -5,6 +5,8 @@
 //   Apple2.render(main, aux, sw, mode) -> {width: 560, height: 384, data}   RGBA, 4 bytes a pixel
 //   Apple2.draw(canvas, main, aux, sw, mode)                                  the same, onto a canvas
 //   Apple2.textBase(row), Apple2.hiresBase(y)                                 page 1's row addresses
+//   Apple2.text(main, aux, sw) -> 24 rows of {ch, inverse} cells             the text page, as text
+//   Apple2.load(url) -> {ram, has, names, byName, listing, bytes(a, n), sym(label)}   listing.json
 //
 // main and aux are the two 64Ks as arrays of bytes (aux may be null when the game never uses it);
 // sw holds the switches by the kit server's names (text, mixed, page2, hires, 80col, 80store,
@@ -12,6 +14,10 @@
 // picture is 560 x 384, each hi-res dot two by two, the colours the kit's approximation of NTSC
 // colour (kit/apple2/screen.py says which). Text is not drawn: the page shows a game's text as
 // text, and the four text rows of mixed mode stay black.
+// Apple2.text gives that text: each cell's letter as kit/apple2/screen.py's text_lines gives it, and
+// whether the IIe shows it in inverse (flashing counts as inverse, as screen.py draws it), so a page
+// can set the screen in its own font. kit/apple2/test_text.py holds the two to each other.
+// Apple2.load rebuilds the game image from listing.json, as C64.load and BBC.load do.
 globalThis.Apple2 = (function () {
   const W = 560, H = 384;
   const COLOURS = [[0, 0, 0], [227, 30, 96], [96, 78, 189], [255, 68, 253], [0, 163, 96], [156, 156, 156],
@@ -89,8 +95,72 @@ globalThis.Apple2 = (function () {
     return r;
   }
 
+  // A byte on the text page as the IIe's video ROM shows it: $00-$3F inverse, $40-$7F flashing (with
+  // the alternate set, $40-$5F MouseText, shown as a space, and $60-$7F inverse lower case), $80-$FF
+  // normal; $00-$1F and $80-$9F show the capitals again, and $7F and $FF a space.
+  function cell(b, altchar) {
+    if (altchar && b >= 0x40 && b < 0x60) return { ch: ' ', inverse: false };
+    let c = b & 0x7F;
+    if (b < 0x80 && !(altchar && b >= 0x60)) c = b & 0x3F;
+    if (c < 0x20) c += 0x40;
+    return { ch: c === 0x7F ? ' ' : String.fromCharCode(c), inverse: b < 0x80 };
+  }
+  function text(main, aux, sw) {
+    sw = sw || {};
+    const off = 0x400 * (page(sw) - 1), rows = [];
+    for (let row = 0; row < 24; row++) {
+      const a = textBase(row) + off, cells = [];
+      for (let c = 0; c < 40; c++) {
+        if (sw['80col'] && aux) cells.push(cell(aux[a + c], sw.altchar));
+        cells.push(cell(main[a + c], sw.altchar));
+      }
+      rows.push(cells);
+    }
+    return rows;
+  }
+
+  // Listings fetched so far, by URL, as C64.load keeps them; and one the build embedded in the page
+  // for a game whose listing the site withholds (kit/scripts/build.py, embed_listings), as BBC.load
+  // reads it.
+  const listings = new Map();
+  function embedded(url) {
+    if (typeof document === 'undefined') return null;
+    for (const s of document.querySelectorAll('script[type="application/json"][data-listing]'))
+      if (s.getAttribute('data-listing') === url) { const L = JSON.parse(s.textContent); return Array.isArray(L) ? null : L; }
+    return null;
+  }
+  function fetched(url) {
+    return fetch(url).then(r => { if (r.ok === false) throw new Error(url + ': ' + r.status); return r.json(); });
+  }
+  const READS = typeof document !== 'undefined' && document.currentScript && /[?&]listing-reads(?:[=&]|$)/.test(location.search)
+    ? new URL('listing-reads.js', document.currentScript.src).href : null;
+  let reads;
+  function watched(url, got) {
+    if (!READS || !embedded(url)) return got;
+    reads = reads || (globalThis.ListingReads ? Promise.resolve() : new Promise((ok, no) => {
+      const s = document.createElement('script'); s.src = READS; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+    return reads.then(() => ListingReads.watch(url, got));
+  }
+  // Rebuild a 64 KB image from listing.json records. Bytes the game does not use stay 0 and has[a] is 0.
+  async function load(url) {
+    url = url || 'listing.json';
+    if (!listings.has(url))
+      listings.set(url, (embedded(url) ? Promise.resolve(embedded(url)) : fetched(url)).catch(e => { listings.delete(url); throw e; }));
+    const L = await listings.get(url);
+    const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
+    for (const r of L.records) {
+      if (!r.b) continue;
+      for (let i = 0; i < r.b.length; i++) { ram[r.a + i] = r.b[i]; has[r.a + i] = 1; }
+    }
+    const names = new Map(L.records.filter(r => r.l).map(r => [r.a, r.l]));
+    const byName = new Map(L.records.filter(r => r.l).map(r => [r.l, r.a]));
+    return watched(url, { ram, has, names, byName, listing: L,
+             bytes: (a, n) => ram.subarray(a, a + n),
+             sym: n => { if (!byName.has(n)) throw new Error('no symbol ' + n); return byName.get(n); } });
+  }
+
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-  return { W, H, COLOURS, textBase, hiresBase, modeOf, render, draw, hex };
+  return { W, H, COLOURS, textBase, hiresBase, modeOf, render, draw, text, load, hex };
 })();
 
 // The Apple II's names for the footprint categories; the drawing is makeMemMap in memmap.js.

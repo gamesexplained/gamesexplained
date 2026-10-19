@@ -1,0 +1,505 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zork I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.zk-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.zk-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.zk-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.zk-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;max-width:100%}
+.zk-bar button:hover{border-color:var(--ink-mute)}
+.zk-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.zk-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
+.zk-label{display:block;font-size:14px;color:var(--ink-soft);margin:0 0 6px}
+.zk-input{width:100%;font-family:var(--fm);font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#000;color:#fff;margin:0 0 10px}
+.zk-input:focus{outline:2px solid var(--green)}
+.zk-table{border-collapse:collapse;font-size:14px;margin:10px 0;width:100%}
+.zk-table th,.zk-table td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.zk-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.zk-table code{white-space:normal}
+.zk-click tr[data-i],.zk-click tr[data-obj]{cursor:pointer}
+.zk-click tr[data-i]:hover td,.zk-click tr[data-obj]:hover td{background:var(--surface-2)}
+.zk-table tr.now td{background:var(--hl)}
+.zk-table tr.zk-sum td{font-weight:700;border-bottom:none}
+.zk-table tr.zk-dim td{color:var(--ink-mute)}
+.zk-mute{color:var(--ink-mute);font-size:.92em;margin-left:4px}
+.zk-warn{color:var(--amber)}
+.zk-mono{font-family:var(--fm);font-size:13px}
+.zk-note{font-size:14px;color:var(--ink-soft);margin:10px 0 0}
+.zk-words{overflow-x:auto}
+.zk-detail{margin-top:8px}
+.zk-enc{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
+.zk-chars{display:flex;gap:4px}
+.zk-ch{width:58px;border-radius:6px;padding:4px 0;text-align:center;font-family:var(--fm);color:#fff}
+.zk-ch b{display:block;font-size:17px}
+.zk-ch span{display:block;font-size:10.5px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.zk-bits{font-family:var(--fm);font-size:14px;letter-spacing:.02em}
+.zk-bits span{padding:1px 2px;border-radius:3px;color:#fff}
+.zk-bits .zk-end{background:#80838a}
+.zk-bytes{font-family:var(--fm);font-size:15px;font-weight:500}
+.zk-c0{background:#4a5bd6}.zk-c1{background:#2a8a4a}.zk-c2{background:#c25a00}.zk-c3{background:#7a4fb0}.zk-c4{background:#1f7a8c}.zk-c5{background:#d04a3a}
+.zk-card{min-height:200px}
+.zk-h3{font-size:19px;margin:4px 0 8px}
+.zk-kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:14px;margin:0 0 6px}
+.zk-kv dt{color:var(--ink-mute)}.zk-kv dd{margin:0}
+.zk-diskwrap{overflow-x:auto}
+.zk-disk{width:100%;max-width:700px;display:block}
+.zk-pages{width:100%;max-width:704px;display:block}
+.zk-info{font-family:var(--fm);font-size:13px;color:var(--ink-soft);min-height:3.2em;margin-top:8px}
+.zk-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin-top:8px}
+.zk-legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.zk-screen{background:#000;color:#fff;font-family:var(--fm);font-size:12.5px;line-height:1.32;padding:10px 12px;margin:0;border-radius:4px;overflow-x:auto;white-space:pre}
+.zk-screen .zk-inv{background:#fff;color:#000}
+.zk-screen .zk-addr{color:#7fb08f;margin-right:10px}
+.zk-shot{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+@media (max-width:760px){:root{--gx:16px;--pp:14px}.zk-pair{grid-template-columns:1fr}.zk-ch{width:46px}}
+.zk-rose{width:100%;max-width:760px;display:block;margin:4px auto 0;cursor:default}
+.zk-rooms td:first-child{white-space:nowrap}
+.zk-rooms a{text-decoration:none;color:var(--link)}
+.zk-rooms a:hover{text-decoration:underline}
+.zk-filter{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;width:100%;max-width:320px;margin:0 0 6px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1980 · Infocom</p>
+  <h1>Zork I</h1>
+  <p class="sub">The 110 rooms of the Great Underground Empire, and where each exit leads, read from the story's object table.</p>
+</header>
+<main class="wrap">
+
+<section id="rooms">
+  <p class="fig">01 · Room by room</p>
+  <h2 class="t">The map, room by room</h2>
+  <p class="lede">Each room's exits are its properties 19 to 31, one for each direction. The picture puts each exit where its direction points; click a room to walk there.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="zk-rprev" aria-label="Previous room">‹</a><select id="zk-room" aria-label="Room"></select><a class="step" id="zk-rnext" aria-label="Next room">›</a></div>
+    <canvas id="zk-rose" class="zk-rose" width="760" height="470"></canvas>
+    <div id="zk-roomcard"></div>
+    <p class="cap">Read from the listing: the rooms are the children of object 117, and each exit is decoded by its length, as the story's walking routine reads it (story <code>$6808</code>, <a href="index.html#objects">every room and every thing is one of 255 objects</a>). What the game starts with in each room is the room's children in the story as it lies on the disk. A message or a routine lives in the story's high memory, read from the disk as the game needs it, so its address is shown in place of its text.</p>
+  </div>
+  <p>Zork's map is not a grid. An exit need not lead back the way it came: west from West of House is a forest, and east from that forest is the Forest Path, not the house (live). The maze's rooms share their names and lead into one another in ways only a map drawn by hand makes sense of. Some exits are conditions. The trap door in the living room is a routine, the kitchen window is a door object that must be open, and the way south-west from West of House to the Stone Barrow is closed until global 30 is set, which happens when the score reaches 350.</p>
+</section>
+
+<section id="list">
+  <p class="fig">02 · Every room</p>
+  <h2 class="t">All 110 rooms and their exits</h2>
+  <p class="lede">The same exits for every room at once, with what each room holds at the start of the game.</p>
+  <div class="plate">
+    <input id="zk-filter" class="zk-filter" placeholder="Filter by name" spellcheck="false" autocomplete="off" aria-label="Filter the rooms by name">
+    <div id="zk-list" style="overflow-x:auto"></div>
+    <p class="cap">From the listing's object table. A room's number is its object number. An exit in italics is not a plain way through: a message, a routine, a condition or a door.</p>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/apple2.js"></script>
+<script>
+/* zork.js */
+// The story's resident part, read from the listing's bytes the way the interpreter reads it. Every
+// function here is a port of a routine of the interpreter, named beside it, and test_zork.js runs
+// the routine itself on the same bytes in the kit's 6502 simulator and compares the two.
+const Zork = (function () {
+  const BASE = 0x2C00;                 // story address 0 in memory ($BA-$BB)
+  const ALPHABET2 = 0x19B5;            // the punctuation alphabet, 24 characters
+  const w = (ram, s) => ram[BASE + s] << 8 | ram[BASE + s + 1];
+  // the exits' property numbers, which the direction words' dictionary entries give (north is 31)
+  const EXITS = { 31: 'north', 30: 'east', 29: 'west', 28: 'south', 27: 'north-east', 26: 'north-west',
+                  25: 'south-east', 24: 'south-west', 23: 'up', 22: 'down', 21: 'in', 20: 'out', 19: 'land' };
+  const header = ram => ({ dict: w(ram, 8), objects: w(ram, 10), globals: w(ram, 12), static: w(ram, 14), abbrevs: w(ram, 24) });
+
+  // $18D2 with $19D9, $19CD and $195F: the text of the string at story address s. Characters 2 and
+  // 3 shift the next one an alphabet on or back, 4 and 5 lock the shift; 1 prints an abbreviation.
+  function text(ram, s) {
+    const h = header(ram);
+    let out = '', lock = 0, shift = -1, word = 0, i = 0, done = false;
+    const next = () => {                                  // $19D9: null after the end bit
+      if (done) return null;
+      if (i === 0) { word = w(ram, s); s += 2; }
+      const c = i === 0 ? (word >> 10) & 31 : i === 1 ? (word >> 5) & 31 : word & 31;
+      if (i === 2) { i = 0; if (word & 0x8000) done = true; } else i++;
+      return c;
+    };
+    const alphabet = () => { if (shift >= 0) { const a = shift; shift = -1; return a; } return lock; };   // $19CD
+    for (let c = next(); c !== null; c = next()) {
+      if (c === 0) out += ' ';
+      else if (c === 1) {                                 // $195F
+        const n = next();
+        out += text(ram, 2 * w(ram, h.abbrevs + 2 * n));
+        shift = -1;
+      } else if (c < 4) shift = (alphabet() + 2 + c) % 3;
+      else if (c < 6) lock = (alphabet() + c) % 3;
+      else {
+        const a = alphabet();
+        if (a === 0) out += String.fromCharCode(c + 0x5B);
+        else if (a === 1) out += String.fromCharCode(c + 0x3B);
+        else if (c === 6) { const hi = next(), lo = next(); out += String.fromCharCode(((hi << 5) | lo) & 0xFF); }
+        else if (c === 7) out += '\n';
+        else out += String.fromCharCode(ram[ALPHABET2 + c - 8]);
+      }
+    }
+    return out;
+  }
+
+  // $1B1D: which alphabet a typed character is in; a byte of $80 or more comes back as it is.
+  const alphabetOf = c => (c >= 0x61 && c < 0x7B ? 0 : c >= 0x41 && c < 0x5B ? 1 : c === 0 || c >= 0x80 ? c : 2);
+
+  // $1A25 and $1B3C: the six 5-bit characters a word becomes, and the four bytes they pack into, as
+  // the dictionary holds them. $1B0B looks for punctuation from place 36 down, 13 places past the
+  // end of the table, so the search is made the same way on the same bytes.
+  function encode(ram, word) {
+    const ch = [];
+    for (let k = 0; k < 6; k++) ch.push(k < word.length ? word.charCodeAt(k) & 0xFF : 0);
+    ch.push(0xFF);                                      // $D9, set to $FF at start-up, read as a seventh
+    const z = [];
+    let lock = 0;
+    const put = v => { z.push(v & 0xFF); return z.length === 6; };
+    for (let k = 0; k < 6 && z.length < 6; k++) {
+      const c = ch[k];
+      if (c === 0) { if (put(5)) break; continue; }
+      const a = alphabetOf(c);
+      if (a !== lock) {
+        const after = alphabetOf(ch[k + 1]);
+        const step = ((a - lock + 3) & 0xFF) % 3;        // A67 and A91, in 8 bits as there
+        if (after === a) { lock = a; if (put(step + 3)) break; }
+        else if (put(step + 1)) break;
+      }
+      if (a === 0) { if (put(c - 0x5B)) break; }
+      else if (a === 1) { if (put(c - 0x3B)) break; }
+      else {
+        let x = 36;
+        while (x >= 0 && ram[ALPHABET2 + x] !== c) x--;
+        if (x >= 0) { if (put(x + 8)) break; }
+        else { if (put(6) || put((c >> 5) & 3) || put(c & 31)) break; }
+      }
+    }
+    while (z.length < 6) z.push(5);
+    const bytes = [((z[0] << 2) | ((z[1] >> 3) & 3)) & 0xFF, ((z[1] << 5) | z[2]) & 0xFF,
+                   (((z[3] << 2) | ((z[4] >> 3) & 3)) & 0xFF) | 0x80, ((z[4] << 5) | z[5]) & 0xFF];
+    return { z, bytes };
+  }
+
+  // $1432: the story address of the dictionary entry whose four bytes these are, or 0.
+  function lookup(ram, bytes) {
+    const d = header(ram).dict, seps = ram[BASE + d], size = ram[BASE + d + 1 + seps];
+    const count = w(ram, d + 2 + seps), first = d + 4 + seps;
+    for (let e = 0; e < count; e++) {
+      const a = first + size * e;
+      if ([0, 1, 2, 3].every(k => ram[BASE + a + k] === bytes[k])) return a;
+    }
+    return 0;
+  }
+  function dictionary(ram) {
+    const d = header(ram).dict, seps = ram[BASE + d], size = ram[BASE + d + 1 + seps];
+    const count = w(ram, d + 2 + seps), first = d + 4 + seps, out = [];
+    const separators = Array.from(ram.subarray(BASE + d + 1, BASE + d + 1 + seps), c => String.fromCharCode(c));
+    for (let e = 0; e < count; e++) { const a = first + size * e; out.push({ a, word: text(ram, a), data: Array.from(ram.subarray(BASE + a + 4, BASE + a + 7)) }); }
+    return { separators, size, entries: out };
+  }
+
+  // $16BB, $167D: an object's entry, and its property list in the order the list holds it.
+  function object(ram, n) {
+    const h = header(ram), a = h.objects + 62 + 9 * (n - 1);
+    const attrs = [];
+    for (let k = 0; k < 32; k++) if (ram[BASE + a + (k >> 3)] & (0x80 >> (k & 7))) attrs.push(k);
+    const p = w(ram, a + 7), len = ram[BASE + p];
+    const props = [];
+    for (let q = p + 1 + 2 * len; ram[BASE + q]; ) {
+      const b = ram[BASE + q], size = (b >> 5) + 1;
+      props.push({ num: b & 31, a: q, data: Array.from(ram.subarray(BASE + q + 1, BASE + q + 1 + size)) });
+      q += 1 + size;
+    }
+    return { n, a, attrs, parent: ram[BASE + a + 4], sibling: ram[BASE + a + 5], child: ram[BASE + a + 6],
+             name: len ? text(ram, p + 1) : '', props, propsAt: p };
+  }
+  function children(ram, n) {
+    const out = [];
+    for (let c = object(ram, n).child; c; c = object(ram, c).sibling) out.push(c);
+    return out;
+  }
+
+  // $1D69-$1D8F, the end of the line reader: the line GETLN1 left at $0200, with its RETURN, copied
+  // after the text buffer's size byte, no more than the size allows, capitals made small. Returns the
+  // count, which sread hands to the split below.
+  function type(ram, textAt, line) {
+    const typed = Array.from(line + '\r', ch => ch.charCodeAt(0) & 0x7F);
+    const count = Math.min(typed.length, ram[textAt]);
+    for (let k = 0; k < count; k++) {
+      const c = typed[k];
+      ram[textAt + 1 + k] = c >= 0x41 && c < 0x5B ? c | 0x20 : c;
+      if (c === 0x0D) break;
+    }
+    return count;
+  }
+
+  // $130B-$13CA, the half of sread after the line is read: the count characters at text + 1 split
+  // into words in the parse buffer, through ($84),Y as the interpreter writes them, so an offset past
+  // 255 wraps to the start of the buffer. ram is changed as the interpreter changes memory; the
+  // addresses are memory's. Returns the words as the interpreter found them.
+  function split(ram, textAt, parseAt, count) {
+    const h = header(ram), d = h.dict, seps = Array.from(ram.subarray(BASE + d + 1, BASE + d + 1 + ram[BASE + d]));
+    const breaks = [0x20, 0x2E, 0x2C, 0x3F, 0x0D, 0x0A, 0x09, 0x0C];          // $13E5
+    const isSep = c => c !== 0 && seps.includes(c);                         // $1404
+    const ends = c => isSep(c) || breaks.includes(c);                       // $13ED
+    const P = y => parseAt + (y & 0xFF);
+    let left = count, len = 0, pos = 1, off = 2, chars = [];
+    const words = [];
+    ram[P(1)] = 0;
+    for (;;) {
+      if (ram[P(0)] === ram[P(1)]) break;                                   // $131F
+      if ((left | len) === 0) break;
+      if (len === 6) while (left && !ends(ram[textAt + pos])) { pos++; left--; len++; }   // $13CD
+      let wordEnds = false;
+      if (len === 0) {
+        chars = [];
+        ram[P(off + 3)] = pos;                                              // $134D
+        const c = ram[textAt + pos];
+        if (isSep(c)) { chars = [c]; len = 1; left--; pos++; wordEnds = true; }
+        else if (breaks.includes(c)) { pos++; left--; continue; }
+      }
+      if (!wordEnds) {
+        if (left !== 0 && !ends(ram[textAt + pos])) {
+          if (chars.length < 6) chars.push(ram[textAt + pos]);
+          left--; len++; pos++;
+          continue;
+        }
+      }
+      if (len === 0) continue;                                              // $1395
+      ram[P(off + 2)] = len;
+      const enc = encode(ram, String.fromCharCode(...chars));
+      const at = lookup(ram, enc.bytes);
+      ram[P(off)] = at >> 8; ram[P(off + 1)] = at & 0xFF;
+      words.push({ text: String.fromCharCode(...chars), at, len, pos: ram[P(off + 3)], off: off & 0xFF });
+      off = (off + 4) & 0xFF;
+      ram[P(1)] = (ram[P(1)] + 1) & 0xFF;
+      len = 0;
+    }
+    return words;
+  }
+
+  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split };
+})();
+// end of zork.js
+</script>
+<script>
+// What every page of this game reads from the story the same way: names for its objects, its exits
+// as the story's walking routine reads them (story $6808), and its parts by address (the header).
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const h2 = v => v.toString(16).toUpperCase().padStart(2, '0');
+const h4 = v => v.toString(16).toUpperCase().padStart(4, '0');
+const h5 = h4;
+const hex = (v, n = 4) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+const word = (ram, s) => ram[Zork.BASE + s] << 8 | ram[Zork.BASE + s + 1];
+
+const EXITS = Zork.EXITS;
+
+// Rooms are the children of object 117; the objects with the walls, the air and the hands are
+// object 23's.
+function Objects(ram) {
+  const ROOMS = 117, list = [];
+  for (let n = 1; n <= 255; n++) {
+    const o = Zork.object(ram, n);
+    list.push({ n, o, label: o.name || (n === ROOMS ? '(no name: the rooms are inside it)' : n === 23 ? '(no name: things that are everywhere)' : '(no name)') });
+  }
+  return { ROOMS, list, byN: n => list[n - 1] };
+}
+const propOf = (o, num) => o.props.find(p => p.num === num);
+function propValue(o, num) {
+  const p = propOf(o, num);
+  return p ? (p.data.length === 2 ? p.data[0] << 8 | p.data[1] : p.data[0]) : 0;
+}
+
+// story $6808: what an exit does follows from its length
+function exits(o) {
+  return o.props.filter(p => p.num >= 19).map(p => {
+    const d = p.data, w = i => d[i] << 8 | d[i + 1], e = { dir: EXITS[p.num], num: p.num, len: d.length };
+    if (d.length === 1) e.room = d[0];
+    else if (d.length === 2) e.message = w(0) * 2;
+    else if (d.length === 3) e.routine = w(0) * 2;
+    else if (d.length === 4) { e.room = d[0]; e.variable = d[1]; e.message = w(2) * 2; }
+    else { e.room = d[0]; e.door = d[1]; e.message = w(2) * 2; }
+    return e;
+  });
+}
+function exitText(objects, e, link) {
+  const room = n => link(n, objects.byN(n).label);
+  if (e.len === 1) return room(e.room);
+  if (e.len === 2) return `blocked: a message at story <code>${hex(e.message)}</code>`;
+  if (e.len === 3) return `the routine at story <code>${hex(e.routine)}</code> decides`;
+  const g = e.variable >= 16 ? `global ${e.variable - 16}` : `local ${e.variable}`;
+  if (e.len === 4) return `${room(e.room)}, once ${g} is not 0`;
+  return `${room(e.room)}, through the ${link(e.door, objects.byN(e.door).label)} when it is open`;
+}
+
+// The story's parts, from its header (story $0000) and the decoder of the story file for the strings
+function storyPart(ram, a) {
+  const h = Zork.header(ram), himem = word(ram, 4);
+  const parts = [[0, 'the header'], [0x40, 'the abbreviations\' text'], [h.abbrevs, 'the abbreviation table'],
+                 [h.objects, 'the property defaults'], [h.objects + 62, 'the object table'],
+                 [h.objects + 62 + 9 * 255, 'the property tables'], [h.globals, 'the globals'],
+                 [h.globals + 2 * 168, 'the story\'s own tables, which it changes'], [h.static, 'the verb and sentence tables'],
+                 [h.dict, 'the dictionary'], [himem, 'routines'], [0xE926, 'strings']];
+  let name = parts[0][1];
+  for (const [s, n] of parts) if (a >= s) name = n;
+  return name;
+}
+
+// One object, as a card: where it is, what it holds, its attributes and properties.
+function objectHTML(ram, objects, o, page) {
+  const link = (n, label) => n ? `<a href="#" data-obj="${n}">${esc(label || objects.byN(n).label)}</a>` : '<span class="zk-mute">none</span>';
+  const dict = Zork.dictionary(ram), byA = new Map(dict.entries.map(e => [e.a, e.word]));
+  const adjectives = new Map();
+  for (const e of dict.entries) if (e.data[0] & 0x20) {
+    const v = (e.data[0] & 3) === 2 || !(e.data[0] & 0xD0) ? e.data[1] : e.data[2];
+    adjectives.set(v, (adjectives.get(v) || []).concat(e.word));
+  }
+  let h = `<h3 class="zk-h3">${o.n} · ${esc(objects.byN(o.n).label)}</h3><dl class="zk-kv">`;
+  h += `<dt>Inside</dt><dd>${o.parent ? link(o.parent) : '<span class="zk-mute">nothing: the object is nowhere</span>'}</dd>`;
+  h += `<dt>Next to it</dt><dd>${link(o.sibling)}</dd>`;
+  const kids = Zork.children(ram, o.n);
+  h += `<dt>Holds</dt><dd>${kids.length ? kids.map(n => link(n)).join(', ') : '<span class="zk-mute">nothing</span>'}</dd>`;
+  h += `<dt>Attributes</dt><dd>${o.attrs.length ? o.attrs.join(', ') : '<span class="zk-mute">none set</span>'}</dd>`;
+  h += `<dt>Entry</dt><dd>story <code>${hex(o.a)}</code>, properties at story <code>${hex(o.propsAt)}</code></dd></dl>`;
+  h += '<table class="zk-table"><tr><th>Property</th><th>Bytes</th><th>What the story does with it</th></tr>';
+  for (const p of o.props) {
+    let what = '';
+    if (p.num >= 19) what = `exit ${EXITS[p.num]}: ${exitText(objects, exits({ props: [p] })[0], link)}`;
+    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code>$5DFC</code>)';
+    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code>$5E19</code>)';
+    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code>${hex(2 * propValue(o, 17))}</code>` : 'no routine';
+    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code>$61EA</code>)`;
+    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code>$898C</code>)`;
+    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code>$E20C</code>)`;
+    h += `<tr><td>${p.num}</td><td class="zk-mono">${p.data.map(b => h2(b)).join(' ')}</td><td>${what}</td></tr>`;
+  }
+  h += '</table>';
+  return h;
+}
+</script>
+<script>
+(async () => {
+  const fail = msg => document.querySelectorAll('.plate div[id^="zk-"]').forEach(el => { if (!el.textContent) el.textContent = msg; });
+  if (!globalThis.Apple2) { fail('These widgets need the site\'s Apple II library: open the page from the built site.'); return; }
+  let L;
+  try { L = await Apple2.load('listing.json'); } catch (e) { fail('The listing did not load: ' + e.message); return; }
+  const ram = L.ram, objects = Objects(ram);
+  const rooms = Zork.children(ram, objects.ROOMS).map(n => objects.byN(n)).sort((a, b) => a.label.localeCompare(b.label) || a.n - b.n);
+  browser(ram, objects, rooms);
+  list(ram, objects, rooms);
+})();
+
+const contents = (ram, objects, n) => Zork.children(ram, n).filter(c => c !== 252).map(c => {
+  const inner = contents(ram, objects, c);
+  return objects.byN(c).label + (inner.length ? ' (holding ' + inner.join(', ') + ')' : '');
+});
+
+// where each direction is drawn round the room, in units of the canvas's half-size
+const PLACE = { north: [0, -1], south: [0, 1], east: [1, 0], west: [-1, 0], 'north-east': [1, -1], 'north-west': [-1, -1],
+                'south-east': [1, 1], 'south-west': [-1, 1], up: [0.62, -0.62], down: [-0.62, 0.62], in: [0.62, 0.62], out: [-0.62, -0.62], land: [0, 0.6] };
+
+function browser(ram, objects, rooms) {
+  const sel = $('zk-room'), cv = $('zk-rose'), ctx = cv.getContext('2d');
+  rooms.forEach(r => { const o = document.createElement('option'); o.value = r.n; o.textContent = `${r.label} · ${r.n}`; sel.appendChild(o); });
+  let boxes = [];
+  const at = () => rooms.findIndex(r => r.n === +sel.value);
+  const go = n => { sel.value = n; draw(); };
+  $('zk-rprev').onclick = () => { const i = at(); if (i > 0) go(rooms[i - 1].n); };
+  $('zk-rnext').onclick = () => { const i = at(); if (i < rooms.length - 1) go(rooms[i + 1].n); };
+  sel.onchange = draw;
+  cv.onclick = ev => {
+    const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * cv.width / r.width, y = (ev.clientY - r.top) * cv.height / r.height;
+    const b = boxes.find(b => b.to && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+    if (b) go(b.to);
+  };
+  cv.onmousemove = ev => {
+    const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * cv.width / r.width, y = (ev.clientY - r.top) * cv.height / r.height;
+    cv.style.cursor = boxes.some(b => b.to && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) ? 'pointer' : 'default';
+  };
+  function box(cx, cy, lines, style) {
+    ctx.font = (style.bold ? '700 ' : '') + '13px Lato, system-ui, sans-serif';
+    const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 18, h = 18 * lines.length + 10;
+    const x = cx - w / 2, y = cy - h / 2;
+    ctx.fillStyle = style.fill; ctx.strokeStyle = style.stroke; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, 7) : ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = style.ink; ctx.textAlign = 'center';
+    lines.forEach((l, i) => { ctx.font = (i === 0 && style.bold ? '700 ' : i > 0 ? 'italic ' : '') + (i === 0 ? '13px' : '11.5px') + ' Lato, system-ui, sans-serif'; ctx.fillText(l, cx, y + 19 + 18 * i); });
+    return { x, y, w, h };
+  }
+  function draw() {
+    const n = +sel.value, o = Zork.object(ram, n), i = at();
+    $('zk-rprev').classList.toggle('off', i === 0); $('zk-rnext').classList.toggle('off', i === rooms.length - 1);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const CX = cv.width / 2, CY = cv.height / 2, RX = 285, RY = 180;
+    boxes = [];
+    const ex = exits(o);
+    for (const e of ex) {
+      const [px, py] = PLACE[e.dir], x = CX + px * RX, y = CY + py * RY;
+      ctx.strokeStyle = '#b9b6ae'; ctx.lineWidth = 2; ctx.setLineDash(e.len === 1 ? [] : [5, 4]);
+      ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+    }
+    for (const e of ex) {
+      const [px, py] = PLACE[e.dir], x = CX + px * RX, y = CY + py * RY;
+      let lines, style = { fill: '#ffffff', stroke: '#1f5fa8', ink: '#1f5fa8' }, to = e.room;
+      if (e.len === 1) lines = [objects.byN(e.room).label, e.dir];
+      else if (e.len === 2) { lines = ['blocked', e.dir + ': a message']; style = { fill: '#f1efea', stroke: '#c9c6be', ink: '#80838a' }; to = 0; }
+      else if (e.len === 3) { lines = ['a routine decides', e.dir]; style = { fill: '#fff6e6', stroke: '#c25a00', ink: '#c25a00' }; to = 0; }
+      else if (e.len === 4) lines = [objects.byN(e.room).label, `${e.dir}, if global ${e.variable - 16}`];
+      else lines = [objects.byN(e.room).label, `${e.dir}, through the ${objects.byN(e.door).label}`];
+      const b = box(x, y, lines, style);
+      boxes.push({ ...b, to });
+    }
+    box(CX, CY, [objects.byN(n).label, `room ${n}`], { fill: '#2f3136', stroke: '#2f3136', ink: '#ffffff', bold: true });
+    const held = contents(ram, objects, n);
+    $('zk-roomcard').innerHTML = `<p class="zk-note"><b>At the start:</b> ${held.length ? held.map(esc).join(', ') : 'nothing'}.` +
+      ` <b>Attributes:</b> ${o.attrs.join(', ') || 'none'}. <b>Points for entering:</b> ${propValue(o, 13) || 'none'}.</p>`;
+  }
+  go(35);
+}
+
+function list(ram, objects, rooms) {
+  const link = (n, label) => `<a href="#rooms" data-room="${n}">${esc(label || objects.byN(n).label)}</a>`;
+  const rows = rooms.map(r => {
+    const ex = exits(r.o).map(e => (e.len === 1 ? '' : '<i>') + `${e.dir}: ` + exitText(objects, e, link) + (e.len === 1 ? '' : '</i>'));
+    const held = contents(ram, objects, r.n);
+    return { r, html: `<tr data-name="${esc(r.label.toLowerCase())}"><td>${link(r.n, r.label)} <span class="zk-mute">${r.n}</span></td><td>${ex.join('<br>') || '<span class="zk-mute">none</span>'}</td><td>${held.length ? held.map(esc).join(', ') : ''}</td></tr>` };
+  });
+  $('zk-list').innerHTML = '<table class="zk-table zk-rooms"><tr><th>Room</th><th>Exits</th><th>At the start</th></tr>' + rows.map(x => x.html).join('') + '</table>';
+  $('zk-list').querySelectorAll('[data-room]').forEach(a => a.onclick = ev => { ev.preventDefault(); $('zk-room').value = a.dataset.room; $('zk-room').onchange(); $('rooms').scrollIntoView({ behavior: 'smooth' }); });
+  $('zk-filter').oninput = () => {
+    const q = $('zk-filter').value.toLowerCase();
+    $('zk-list').querySelectorAll('tr[data-name]').forEach(tr => { tr.style.display = tr.dataset.name.includes(q) ? '' : 'none'; });
+  };
+}
+</script>
