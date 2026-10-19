@@ -134,3 +134,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Ralph's shared opening exchange · 20 October 2026
 
 `60-verify`, “A live test in one room tests one room”: tested both speaker starts and an actual switch rather than inferring Ralph's presentation from the common code. `70-minisite`, “Start each case where the game starts it”: the comparison includes the page's accepted CALL RALPH input and both real ASK prerequisite branches, stating the intercepted distance query. The successful wheel setup was reused without a new guessed delay. Existing guidance covers the work; no shared-kit edit or maintainer ask arose.
+
+## Opened-door threshold · 20 October 2026
+
+`60-verify`, “Poke the variable, watch the screen”: restored the same refusal state and changed only the counter for the14/15 comparison, identifying it as a controlled response check. Its reachability rule kept the complete fifteen-door route open. `70-minisite`'s requirement to test the page's actual inputs led to testing both displayed counter values alongside every byte value and valid opening index. The repeated-open trial supplied the cheap ordinary negative case with positive handler hits. Existing rules cover the work; no shared-kit edit or maintainer ask arose.

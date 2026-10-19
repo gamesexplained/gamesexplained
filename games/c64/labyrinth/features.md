@@ -82,3 +82,7 @@ CALL ALPH beside the left door made Alph visible; three ASK ALPH commands gave t
 ## Shared Alph and Ralph opening exchange
 
 Ordinary CALL RALPH and three ASK RALPH commands beside the right door displayed the same three opening replies. Calling Ralph after Alph's first answer kept the shared index1; the next ASK RALPH gave the second reply and advanced it to2. Both trials started inside the forced scene-four reference. Positive handler hits, captured command IDs and the four images `ralph-0-call.png`, `ralph-1-ask.png`, `shared-0-call.png`, and `shared-1-ask.png` support these observations. The later puzzle remains open.
+
+## Opened-door response threshold
+
+The captured Brick Hallway strip has15 door cells, three initially open, and the new-game counter starts at3. The checked first opening raises it to4; repeating OPEN DOOR at that opened door leaves4 unchanged. In a controlled scene-four comparison restoring the same refusal state, count14 retained Alph's refusal and count15 gave thanks for opening the doors. Positive ASK/acknowledgement-store checkpoints and an original-code comparison accompany the captures. The counter was set directly for this response comparison; the complete ordinary fifteen-door journey remains open.

@@ -32,7 +32,7 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 
 ## Opening the neighboring Brick Hallway door
 
-The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,049/48,587 described bytes; five provisional scopes total 53,397/237,523 (22.5%). Their retained resident ownership overlaps and is not whole-game completion.
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,049/48,587 described bytes; five provisional scopes total 53,462/237,523 (22.5%). Their retained resident ownership overlaps and is not whole-game completion.
 
 `reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.
 
@@ -46,10 +46,14 @@ At the checked doorway destination, map cell1 translates to type11. Ordinary OPE
 
 ## Alph and Ralph opening conversation
 
-Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. The shared opening conversation is checked for both speakers below; the connecting journey and door puzzle's solution remain open. See `parts/scene-04/facts.md`. Its partial listing adds858/48,705 described bytes; five overlapping scopes total53,397/237,523 (22.5%), not whole-game completion.
+Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. The shared opening conversation is checked for both speakers below; the connecting journey and door puzzle's solution remain open. See `parts/scene-04/facts.md`. Its partial listing adds923/48,705 described bytes; five overlapping scopes total53,462/237,523 (22.5%), not whole-game completion.
 
 The scene-four publication snapshot also replaces the entered name with ANON/anon. Its original forced reference captures remain private.
 
 ## Switching from Alph to Ralph
 
 Inside the same controlled room, ordinary CALL RALPH and three ASK RALPH commands beside the right door produced the same three opening replies as Alph, with shared index0→1→2→2. A separate trial restored Alph's first answer, walked to the right door and called Ralph. The call preserved index1; ASK RALPH then gave reply2 and advanced to2. Positive call/ask checkpoints accompany the live captures. The page's switch is checked against both real ASK prerequisite branches and the CALL RALPH path with the query intercepted. Later dialogue and door outcomes remain open. See `parts/scene-04/facts.md` and `test_ralph.js`.
+
+## Guards acknowledge a door count of fifteen
+
+The initial Brick Hallway strip has15 door cells:3 open and12 closed. New-game initialization sets $0569 to3; the checked closed-door OPEN DOOR path increments it. A repeated command at the already-open neighboring door kept count4 and replied “It's already opened.” In the controlled scene-four opening conversation, ASK ALPH at count14 retained the refusal and unacknowledged state; count15 produced thanks and stored15 as the acknowledgement. Each trial restored the same refusal state before changing only the count. Live handler/store checkpoints and1536 original-code comparisons support the page's threshold example; a complete ordinary fifteen-door journey remains unverified. See `parts/scene-04/facts.md` and `test_guard_progress.js`.
