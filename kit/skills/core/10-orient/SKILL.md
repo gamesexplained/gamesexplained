@@ -136,12 +136,12 @@ snapshot. The loader, a protection check and a cracker's menu are not
 parts either; they stand in front of the game. Nor is data the game
 fetches into a buffer during play, a portrait for each fight or a tune
 for each room: a widget that shows it carries its bytes in the page
-(`70-minisite`). When what it fetches is the program itself (an
-interpreter's story, overlays of code), no snapshot holds it whole and
-no listing holds it at all: give `game.json` a row for it under
-`coverage.paged`, `[bytes, what it is and where it comes from]`, and the
-About and Source tabs name it beside the figure, so that 100 % says what
-it is 100 % of.
+(`70-minisite`). When what it fetches is the program itself, a page at
+a time into whichever buffer is free (an interpreter's story), no
+snapshot holds it whole and no listing holds it at all: give `game.json`
+a row for it under `coverage.paged`, `[bytes, what it is and where it
+comes from]`, and the About and Source tabs name it beside the figure,
+so that 100 % says what it is 100 % of.
 
 1. **Give every part a folder**, in the order they are played, analysed
    or not: `python3 kit/scripts/parts.py add <game dir> <id> --title "..."`
