@@ -1,0 +1,591 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zork I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.zk-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.zk-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.zk-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.zk-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;max-width:100%}
+.zk-bar button:hover{border-color:var(--ink-mute)}
+.zk-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.zk-bar label{font-size:14px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
+.zk-label{display:block;font-size:14px;color:var(--ink-soft);margin:0 0 6px}
+.zk-input{width:100%;font-family:var(--fm);font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#000;color:#fff;margin:0 0 10px}
+.zk-input:focus{outline:2px solid var(--green)}
+.zk-table{border-collapse:collapse;font-size:14px;margin:10px 0;width:100%}
+.zk-table th,.zk-table td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.zk-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.zk-table code{white-space:normal}
+.zk-click tr[data-i],.zk-click tr[data-obj]{cursor:pointer}
+.zk-click tr[data-i]:hover td,.zk-click tr[data-obj]:hover td{background:var(--surface-2)}
+.zk-table tr.now td{background:var(--hl)}
+.zk-table tr.zk-sum td{font-weight:700;border-bottom:none}
+.zk-table tr.zk-dim td{color:var(--ink-mute)}
+.zk-mute{color:var(--ink-mute);font-size:.92em;margin-left:4px}
+.zk-warn{color:var(--amber)}
+.zk-mono{font-family:var(--fm);font-size:13px}
+.zk-note{font-size:14px;color:var(--ink-soft);margin:10px 0 0}
+.zk-words{overflow-x:auto}
+.zk-detail{margin-top:8px}
+.zk-enc{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
+.zk-chars{display:flex;gap:4px}
+.zk-ch{width:58px;border-radius:6px;padding:4px 0;text-align:center;font-family:var(--fm);color:#fff}
+.zk-ch b{display:block;font-size:17px}
+.zk-ch span{display:block;font-size:10.5px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.zk-bits{font-family:var(--fm);font-size:14px;letter-spacing:.02em}
+.zk-bits span{padding:1px 2px;border-radius:3px;color:#fff}
+.zk-bits .zk-end{background:#80838a}
+.zk-bytes{font-family:var(--fm);font-size:15px;font-weight:500}
+.zk-c0{background:#4a5bd6}.zk-c1{background:#2a8a4a}.zk-c2{background:#c25a00}.zk-c3{background:#7a4fb0}.zk-c4{background:#1f7a8c}.zk-c5{background:#d04a3a}
+.zk-card{min-height:200px}
+.zk-h3{font-size:19px;margin:4px 0 8px}
+.zk-kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:14px;margin:0 0 6px}
+.zk-kv dt{color:var(--ink-mute)}.zk-kv dd{margin:0}
+.zk-diskwrap{overflow-x:auto}
+.zk-disk{width:100%;max-width:700px;display:block}
+.zk-pages{width:100%;max-width:704px;display:block}
+.zk-info{font-family:var(--fm);font-size:13px;color:var(--ink-soft);min-height:3.2em;margin-top:8px}
+.zk-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin-top:8px}
+.zk-legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.zk-screen{background:#000;color:#fff;font-family:var(--fm);font-size:12.5px;line-height:1.32;padding:10px 12px;margin:0;border-radius:4px;overflow-x:auto;white-space:pre}
+.zk-screen .zk-inv{background:#fff;color:#000}
+.zk-screen .zk-addr{color:#7fb08f;margin-right:10px}
+.zk-shot{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+@media (max-width:760px){:root{--gx:16px;--pp:14px}.zk-pair{grid-template-columns:1fr}.zk-ch{width:46px}}
+.zk-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;font-family:var(--fm);font-size:10.5px;margin-top:8px}
+.zk-grid span{text-align:center;padding:3px 0;border-radius:2px;background:var(--surface-2);color:var(--ink-soft)}
+.zk-grid span.h{background:#9aa0a8;color:#fff}
+.zk-grid span.e0{background:#4a5bd6;color:#fff}.zk-grid span.e1{background:#7f8ce6;color:#fff}
+.zk-grid span.t{background:#f3d9a8;color:#2f3136}
+.zk-grid span.hit{background:#d04a3a;color:#fff}
+.zk-slider{width:100%;max-width:520px}
+.zk-big{font-family:var(--fm);font-size:15px;margin:10px 0 0}
+.zk-calc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--fm)}
+.zk-calc input{width:7em;font:inherit;font-size:16px;padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+.zk-calc select{font:inherit;font-size:16px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.zk-zcode{font-family:var(--fm);font-size:13px;color:var(--ink);background:var(--surface-2);border-radius:6px;padding:12px 14px;overflow-x:auto;white-space:pre;line-height:1.55;margin:0}
+.zk-zcode b{color:var(--coral)}
+.zk-cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.zk-cards{grid-template-columns:1fr}.zk-grid{grid-template-columns:repeat(10,1fr)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1980 · Infocom</p>
+  <h1>Zork I</h1>
+  <p class="sub">What the code does that the game never tells the player. A line of sixty commas leaves the game reading one letter of every line, until the disk is booted again.</p>
+</header>
+<main class="wrap">
+
+<section id="commas">
+  <p class="fig">01 · The parse buffer</p>
+  <h2 class="t">Bug: sixty commas leave the game reading one letter of every line</h2>
+  <p class="lede">A comma is a word, and the parse buffer has room for 59 words. The 60th writes over the text buffer's size, and from then on the interpreter keeps only the first letter of whatever the player types.</p>
+  <div class="plate">
+    <div class="zk-bar"><label for="zk-n">Commas on the line: <b id="zk-nv">60</b></label></div>
+    <input type="range" id="zk-n" class="zk-slider" min="0" max="110" value="60">
+    <div id="zk-buf"></div>
+    <div class="zk-bar" style="margin-top:14px"><label for="zk-next">Then type</label><input id="zk-next" class="zk-input" style="max-width:340px;margin:0" value="open mailbox" spellcheck="false" autocomplete="off"></div>
+    <div id="zk-after" class="zk-big"></div>
+    <p class="cap">The interpreter's own copy and split (<code>$1D69</code>, <code>$130B</code>), ported to the page and held byte for byte to the code in the kit's 6502 simulator for lines of 0 to 110 commas. The buffers are the story's (story <code>$2396</code> and <code>$2486</code>, memory <code>$4F96</code> and <code>$5086</code>), shown as the first line leaves them; the second line is split from that memory, as if the story changed none of it in between. Live, sixty commas and then <code>open mailbox</code> gave <code>I DON'T KNOW THE WORD 'O'.</code></p>
+  </div>
+  <p>The story tells the interpreter how many words it may write, in byte 0 of the parse buffer: 120. The buffer is 240 bytes long, though, and each word takes four after a two-byte head, so only 59 fit. The 60th word's length and position go into the two bytes after the buffer, which are the first two of the text buffer: its size, 100, becomes 1, the length of a comma.</p>
+  <p>Every later line is copied into the text buffer up to its size, so the game sees one letter. <code>open mailbox</code> arrives as <code>o</code>, and the story answers <code>I DON'T KNOW THE WORD 'O'.</code> Some one-letter words still work: <code>n</code> walks north, and <code>q</code> quits. <code>restart</code>, <code>restore</code>, and <code>save</code> arrive as <code>r</code> and <code>s</code>, and <code>s</code> means south, so the only way back to a working game is to quit and boot the disk again (live).</p>
+  <p>At 63 words the interpreter's index into the buffer goes past 255 and wraps to 0 (<code>$12EB</code>). The 64th word's length lands in byte 0, the limit, and its position in byte 1, the count of words, so the count can never equal the limit and the split never stops early again. With 63 commas the count comes out at 64, and the story reads a 64th word made of commas and memory: it prints a screenful of the game's memory as <code>I CAN'T USE THE WORD '...' HERE.</code> (live).</p>
+</section>
+
+<section id="trophy">
+  <p class="fig">02 · The trophy case</p>
+  <h2 class="t">Bug: a treasure inside a container in the trophy case scores nothing</h2>
+  <p class="lede">The routine that adds up the trophy case looks inside every container it finds, adds up what is in it, and throws the sum away. A treasure left inside the brown sack in the case earns no points.</p>
+  <div class="plate">
+    <pre class="zk-zcode" id="zk-zcode">routine story $898C, locals L00 = 183 (the trophy case), L01, L02
+$8993  get_child   L00 -> L01         the first thing in the case
+$8997  jz          L01 ?~$899C        nothing more?
+$899A  ret         L02                then the total
+$899C  get_prop    L01 #0C -> sp      its property 12
+$89A0  add         L02 sp -> L02      added to the total
+$89A4  get_child   L01 -> sp ?~$89AE  does it hold anything?
+<b>$89A8  call        $898C L01 -> sp    add up what is inside it ... onto the stack</b>
+$89AE  get_sibling L01 -> L01         the next thing in the case
+$89B2  jump        $8997</pre>
+    <p class="cap">Story <code>$898C</code>, disassembled from the story file with the interpreter's own operand rules (its dispatch tables at <code>$0921</code>); the story's high memory is read from the disk as the game needs it, so the listing does not hold it. Live, from the living room with the case open: the egg put straight into the case raised the score from 15 to 20; the egg put into the brown sack, and the sack into the case, left it at 15.</p>
+  </div>
+  <p>The case's total is worked out again after every <code>take</code> in the living room and every <code>put</code> into the case: the points scored elsewhere (global 129) plus whatever this routine returns (story <code>$8814</code>). For a container in the case it calls itself, which is right, but the result goes onto the Z-machine's stack and stays there: the next instruction moves on to the container's sibling. The routine keeps its total in L02, and only the treasures lying in the case itself are ever added to it.</p>
+  <p>The sack has no property 12, and the story's default for it is 0, so a sack full of treasures is worth nothing in the case. Taking the treasures out of the sack and putting them in the case one by one scores them. The points for finding them are paid either way, the first time each is taken (<a href="index.html#score">where the 350 points come from</a>).</p>
+</section>
+
+<section id="divide">
+  <p class="fig">03 · The interpreter's arithmetic</p>
+  <h2 class="t">Bug: the interpreter divides wrongly by a negative number</h2>
+  <p class="lede">Before a division the interpreter makes both numbers positive, and when the second is negative it negates the first one instead. 7 divided by -2 comes out as 0.</p>
+  <div class="plate">
+    <div class="zk-calc"><input id="zk-x" type="number" value="7" min="-32768" max="32767" aria-label="First number"><select id="zk-op" aria-label="Operation"><option value="div">÷ (div)</option><option value="mod">mod</option><option value="mul">× (mul)</option></select><input id="zk-y" type="number" value="-2" min="-32768" max="32767" aria-label="Second number"></div>
+    <div id="zk-res" class="zk-big"></div>
+    <div class="zk-bar" style="margin-top:12px" id="zk-sums"></div>
+    <p class="cap">This is the interpreter's own code, run on the page in the kit's 6502 simulator on the listing's bytes: the numbers go where the interpreter leaves an instruction's operands (<code>$82-$85</code>), and the run starts at the handler (<code>$111D</code>, <code>$114F</code> or <code>$10E8</code>) and stops where it stores the result (<code>$0B55</code>). Run the same way in the emulator, 17 sums gave the same answers as the page, and a test holds the page to them.</p>
+  </div>
+  <p>The Z-machine works in 16-bit signed numbers, and its division rounds towards zero. The interpreter divides without signs (<code>$15C1</code>), so it first counts the negative operands and makes them positive (<code>$160F</code>). The mistake is in the second step: for a negative divisor it negates the dividend instead (<code>$1633</code>). 7 ÷ -2 becomes -7 ÷ -2, which is 65,529 ÷ 65,534 without signs, which is 0. With both negative, the dividend is negated twice and the divisor not at all, so -7 ÷ -2 is 0 too.</p>
+  <p>A multiplication comes out right anyway, because a 16-bit product wraps the same way whatever the signs. <code>mod</code> never puts the sign back (<code>$114F</code>), and its remainder loses its top bit in the divide routine, so 7 mod -3 is 32,761, which is <code>$FFF9</code> without bit 15. Dividing by zero gives -1, with no error.</p>
+  <p>Zork I never notices. The story's six divisions divide by 2, 4, 5 or 70, and its two <code>mod</code>s take a counter that only goes up.</p>
+</section>
+
+<section id="cretin">
+  <p class="fig">04 · The player</p>
+  <h2 class="t">Secret: the player's object is called the cretin</h2>
+  <p class="lede">The player is object 252, and its short name is <code>cretin</code>. The word that names it is <code>adventurer</code>; the word <code>cretin</code> belongs to another object, <code>you</code>.</p>
+  <div class="plate">
+    <div class="zk-cards"><div id="zk-c252"></div><div id="zk-c75"></div></div>
+    <p class="cap">Objects 252 and 75 as the object table in the listing holds them. Live: <code>kill cretin</code> asks <code>WHAT DO YOU WANT TO KILL THE CRETIN WITH?</code>, and <code>hello cretin</code> answers <code>THE YOU BOWS HIS HEAD TO YOU IN GREETING.</code></p>
+  </div>
+  <p>Global 38 holds the player's object in play, 252. Its property 18, the nouns that name it, holds one word, <code>advent</code>, the first six letters of <code>adventurer</code>. The words a player is likelier to use for themselves (<code>me</code>, <code>myself</code>, <code>self</code>, and <code>cretin</code>) name object 75, whose short name is <code>you</code>. It is one of the objects inside object 23, with the walls, the air, and the pair of hands. Saying hello to it prints its short name where the player's name would go (<a href="#hello">hello</a>).</p>
+  <p><code>xyzzy</code> and <code>plugh</code>, words from the older Colossal Cave Adventure, both get <code>A HOLLOW VOICE SAYS 'CRETIN'.</code></p>
+</section>
+
+<section id="hello">
+  <p class="fig">05 · Greetings</p>
+  <h2 class="t">Secret: every tenth hello to the sailor gets a different answer</h2>
+  <p class="lede">Zork counts every <code>hello sailor</code>. Most get <code>Nothing happens here.</code>; the tenth, the twentieth and every tenth after get something else.</p>
+  <div class="plate">
+    <div class="zk-bar"><button type="button" id="zk-hi">hello sailor</button><button type="button" id="zk-hi10">ten more</button><button type="button" id="zk-hi0">start again</button><span class="zk-mono" id="zk-hic"></span></div>
+    <pre class="zk-zcode" id="zk-hiout" style="min-height:8em"></pre>
+    <p class="cap">The story's rule (story <code>$766E</code>): global 81 counts, and its remainders after dividing by 20 and by 10 choose the answer. Live, twenty in a row from West of House: the 10th and the 20th gave the two answers here, and the other eighteen <code>NOTHING HAPPENS HERE.</code></p>
+  </div>
+  <p>The sailor is object 22, another of the objects inside object 23 that are with the player everywhere, and the routine for <code>hello</code> gives the sailor a branch of its own. <code>hello</code> on its own gets a greeting from a table (<code>HELLO.</code>, live). An object with attribute 20, as the player and object 75 have, gets <code>The ... bows his head to you in greeting.</code> Anything else gets <code>I think that only schizophrenics say 'Hello' to a ...</code>, the mailbox included (live).</p>
+</section>
+
+<section id="fatal">
+  <p class="fig">06 · Errors</p>
+  <h2 class="t">Bug: a fatal error drops into the Monitor without its message</h2>
+  <p class="lede">The interpreter holds the text <code>ZORK INTERNAL ERROR!</code>, but nothing prints it. Every fatal error is a <code>BRK</code>, which stops the 6502 and leaves the player in the Apple II's Monitor.</p>
+  <div class="plate">
+    <div id="zk-err"></div>
+    <p class="cap">From the listing: the text at <code>$21D3</code>, which nothing refers to, and the one fatal error at <code>$21E7</code>, with the places that call it.</p>
+  </div>
+  <p>The interpreter calls <code>$21E7</code> for a story whose header says it needs something this interpreter lacks (bit 0 of header byte 1), an opcode it does not know, a <code>je</code> with one operand, a property too long for <code>get_prop</code> or <code>put_prop</code>, and a Z-machine stack that runs over or under. None of these happens with Zork I's own story. Eight places call the error, and each reaches the same single <code>BRK</code>, while the message that would explain it fills the twenty bytes just before it.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/apple2.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+/* zork.js */
+// The story's resident part, read from the listing's bytes the way the interpreter reads it. Every
+// function here is a port of a routine of the interpreter, named beside it, and test_zork.js runs
+// the routine itself on the same bytes in the kit's 6502 simulator and compares the two.
+const Zork = (function () {
+  const BASE = 0x2C00;                 // story address 0 in memory ($BA-$BB)
+  const ALPHABET2 = 0x19B5;            // the punctuation alphabet, 24 characters
+  const w = (ram, s) => ram[BASE + s] << 8 | ram[BASE + s + 1];
+  // the exits' property numbers, which the direction words' dictionary entries give (north is 31)
+  const EXITS = { 31: 'north', 30: 'east', 29: 'west', 28: 'south', 27: 'north-east', 26: 'north-west',
+                  25: 'south-east', 24: 'south-west', 23: 'up', 22: 'down', 21: 'in', 20: 'out', 19: 'land' };
+  const header = ram => ({ dict: w(ram, 8), objects: w(ram, 10), globals: w(ram, 12), static: w(ram, 14), abbrevs: w(ram, 24) });
+
+  // $18D2 with $19D9, $19CD and $195F: the text of the string at story address s. Characters 2 and
+  // 3 shift the next one an alphabet on or back, 4 and 5 lock the shift; 1 prints an abbreviation.
+  function text(ram, s) {
+    const h = header(ram);
+    let out = '', lock = 0, shift = -1, word = 0, i = 0, done = false;
+    const next = () => {                                  // $19D9: null after the end bit
+      if (done) return null;
+      if (i === 0) { word = w(ram, s); s += 2; }
+      const c = i === 0 ? (word >> 10) & 31 : i === 1 ? (word >> 5) & 31 : word & 31;
+      if (i === 2) { i = 0; if (word & 0x8000) done = true; } else i++;
+      return c;
+    };
+    const alphabet = () => { if (shift >= 0) { const a = shift; shift = -1; return a; } return lock; };   // $19CD
+    for (let c = next(); c !== null; c = next()) {
+      if (c === 0) out += ' ';
+      else if (c === 1) {                                 // $195F
+        const n = next();
+        out += text(ram, 2 * w(ram, h.abbrevs + 2 * n));
+        shift = -1;
+      } else if (c < 4) shift = (alphabet() + 2 + c) % 3;
+      else if (c < 6) lock = (alphabet() + c) % 3;
+      else {
+        const a = alphabet();
+        if (a === 0) out += String.fromCharCode(c + 0x5B);
+        else if (a === 1) out += String.fromCharCode(c + 0x3B);
+        else if (c === 6) { const hi = next(), lo = next(); out += String.fromCharCode(((hi << 5) | lo) & 0xFF); }
+        else if (c === 7) out += '\n';
+        else out += String.fromCharCode(ram[ALPHABET2 + c - 8]);
+      }
+    }
+    return out;
+  }
+
+  // $1B1D: which alphabet a typed character is in; a byte of $80 or more comes back as it is.
+  const alphabetOf = c => (c >= 0x61 && c < 0x7B ? 0 : c >= 0x41 && c < 0x5B ? 1 : c === 0 || c >= 0x80 ? c : 2);
+
+  // $1A25 and $1B3C: the six 5-bit characters a word becomes, and the four bytes they pack into, as
+  // the dictionary holds them. $1B0B looks for punctuation from place 36 down, 13 places past the
+  // end of the table, so the search is made the same way on the same bytes.
+  function encode(ram, word) {
+    const ch = [];
+    for (let k = 0; k < 6; k++) ch.push(k < word.length ? word.charCodeAt(k) & 0xFF : 0);
+    ch.push(0xFF);                                      // $D9, set to $FF at start-up, read as a seventh
+    const z = [];
+    let lock = 0;
+    const put = v => { z.push(v & 0xFF); return z.length === 6; };
+    for (let k = 0; k < 6 && z.length < 6; k++) {
+      const c = ch[k];
+      if (c === 0) { if (put(5)) break; continue; }
+      const a = alphabetOf(c);
+      if (a !== lock) {
+        const after = alphabetOf(ch[k + 1]);
+        const step = ((a - lock + 3) & 0xFF) % 3;        // A67 and A91, in 8 bits as there
+        if (after === a) { lock = a; if (put(step + 3)) break; }
+        else if (put(step + 1)) break;
+      }
+      if (a === 0) { if (put(c - 0x5B)) break; }
+      else if (a === 1) { if (put(c - 0x3B)) break; }
+      else {
+        let x = 36;
+        while (x >= 0 && ram[ALPHABET2 + x] !== c) x--;
+        if (x >= 0) { if (put(x + 8)) break; }
+        else { if (put(6) || put((c >> 5) & 3) || put(c & 31)) break; }
+      }
+    }
+    while (z.length < 6) z.push(5);
+    const bytes = [((z[0] << 2) | ((z[1] >> 3) & 3)) & 0xFF, ((z[1] << 5) | z[2]) & 0xFF,
+                   (((z[3] << 2) | ((z[4] >> 3) & 3)) & 0xFF) | 0x80, ((z[4] << 5) | z[5]) & 0xFF];
+    return { z, bytes };
+  }
+
+  // $1432: the story address of the dictionary entry whose four bytes these are, or 0.
+  function lookup(ram, bytes) {
+    const d = header(ram).dict, seps = ram[BASE + d], size = ram[BASE + d + 1 + seps];
+    const count = w(ram, d + 2 + seps), first = d + 4 + seps;
+    for (let e = 0; e < count; e++) {
+      const a = first + size * e;
+      if ([0, 1, 2, 3].every(k => ram[BASE + a + k] === bytes[k])) return a;
+    }
+    return 0;
+  }
+  function dictionary(ram) {
+    const d = header(ram).dict, seps = ram[BASE + d], size = ram[BASE + d + 1 + seps];
+    const count = w(ram, d + 2 + seps), first = d + 4 + seps, out = [];
+    const separators = Array.from(ram.subarray(BASE + d + 1, BASE + d + 1 + seps), c => String.fromCharCode(c));
+    for (let e = 0; e < count; e++) { const a = first + size * e; out.push({ a, word: text(ram, a), data: Array.from(ram.subarray(BASE + a + 4, BASE + a + 7)) }); }
+    return { separators, size, entries: out };
+  }
+
+  // $16BB, $167D: an object's entry, and its property list in the order the list holds it.
+  function object(ram, n) {
+    const h = header(ram), a = h.objects + 62 + 9 * (n - 1);
+    const attrs = [];
+    for (let k = 0; k < 32; k++) if (ram[BASE + a + (k >> 3)] & (0x80 >> (k & 7))) attrs.push(k);
+    const p = w(ram, a + 7), len = ram[BASE + p];
+    const props = [];
+    for (let q = p + 1 + 2 * len; ram[BASE + q]; ) {
+      const b = ram[BASE + q], size = (b >> 5) + 1;
+      props.push({ num: b & 31, a: q, data: Array.from(ram.subarray(BASE + q + 1, BASE + q + 1 + size)) });
+      q += 1 + size;
+    }
+    return { n, a, attrs, parent: ram[BASE + a + 4], sibling: ram[BASE + a + 5], child: ram[BASE + a + 6],
+             name: len ? text(ram, p + 1) : '', props, propsAt: p };
+  }
+  function children(ram, n) {
+    const out = [];
+    for (let c = object(ram, n).child; c; c = object(ram, c).sibling) out.push(c);
+    return out;
+  }
+
+  // $1D69-$1D8F, the end of the line reader: the line GETLN1 left at $0200, with its RETURN, copied
+  // after the text buffer's size byte, no more than the size allows, capitals made small. Returns the
+  // count, which sread hands to the split below.
+  function type(ram, textAt, line) {
+    const typed = Array.from(line + '\r', ch => ch.charCodeAt(0) & 0x7F);
+    const count = Math.min(typed.length, ram[textAt]);
+    for (let k = 0; k < count; k++) {
+      const c = typed[k];
+      ram[textAt + 1 + k] = c >= 0x41 && c < 0x5B ? c | 0x20 : c;
+      if (c === 0x0D) break;
+    }
+    return count;
+  }
+
+  // $130B-$13CA, the half of sread after the line is read: the count characters at text + 1 split
+  // into words in the parse buffer, through ($84),Y as the interpreter writes them, so an offset past
+  // 255 wraps to the start of the buffer. ram is changed as the interpreter changes memory; the
+  // addresses are memory's. Returns the words as the interpreter found them.
+  function split(ram, textAt, parseAt, count) {
+    const h = header(ram), d = h.dict, seps = Array.from(ram.subarray(BASE + d + 1, BASE + d + 1 + ram[BASE + d]));
+    const breaks = [0x20, 0x2E, 0x2C, 0x3F, 0x0D, 0x0A, 0x09, 0x0C];          // $13E5
+    const isSep = c => c !== 0 && seps.includes(c);                         // $1404
+    const ends = c => isSep(c) || breaks.includes(c);                       // $13ED
+    const P = y => parseAt + (y & 0xFF);
+    let left = count, len = 0, pos = 1, off = 2, chars = [];
+    const words = [];
+    ram[P(1)] = 0;
+    for (;;) {
+      if (ram[P(0)] === ram[P(1)]) break;                                   // $131F
+      if ((left | len) === 0) break;
+      if (len === 6) while (left && !ends(ram[textAt + pos])) { pos++; left--; len++; }   // $13CD
+      let wordEnds = false;
+      if (len === 0) {
+        chars = [];
+        ram[P(off + 3)] = pos;                                              // $134D
+        const c = ram[textAt + pos];
+        if (isSep(c)) { chars = [c]; len = 1; left--; pos++; wordEnds = true; }
+        else if (breaks.includes(c)) { pos++; left--; continue; }
+      }
+      if (!wordEnds) {
+        if (left !== 0 && !ends(ram[textAt + pos])) {
+          if (chars.length < 6) chars.push(ram[textAt + pos]);
+          left--; len++; pos++;
+          continue;
+        }
+      }
+      if (len === 0) continue;                                              // $1395
+      ram[P(off + 2)] = len;
+      const enc = encode(ram, String.fromCharCode(...chars));
+      const at = lookup(ram, enc.bytes);
+      ram[P(off)] = at >> 8; ram[P(off + 1)] = at & 0xFF;
+      words.push({ text: String.fromCharCode(...chars), at, len, pos: ram[P(off + 3)], off: off & 0xFF });
+      off = (off + 4) & 0xFF;
+      ram[P(1)] = (ram[P(1)] + 1) & 0xFF;
+      len = 0;
+    }
+    return words;
+  }
+
+  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split };
+})();
+// end of zork.js
+
+// The interpreter's own mul, div and mod on the listing's bytes: the operands go where the
+// dispatcher leaves them ($82-$85), and the run stops at $0B55, which stores the result from $E6-$E7.
+function calculate(ram, CPU, op, x, y) {
+  const m = new Uint8Array(ram), a = x & 0xFFFF, b = y & 0xFFFF;
+  m[0x82] = a & 0xFF; m[0x83] = a >> 8; m[0x84] = b & 0xFF; m[0x85] = b >> 8;
+  new CPU(m).call({ mul: 0x10E8, div: 0x111D, mod: 0x114F }[op], {}, { hooks: { 0x0B55: () => true } });
+  const v = m[0xE6] | m[0xE7] << 8;
+  return v & 0x8000 ? v - 0x10000 : v;
+}
+// end of calculate
+</script>
+<script>
+// What every page of this game reads from the story the same way: names for its objects, its exits
+// as the story's walking routine reads them (story $6808), and its parts by address (the header).
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const h2 = v => v.toString(16).toUpperCase().padStart(2, '0');
+const h4 = v => v.toString(16).toUpperCase().padStart(4, '0');
+const h5 = h4;
+const hex = (v, n = 4) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+const word = (ram, s) => ram[Zork.BASE + s] << 8 | ram[Zork.BASE + s + 1];
+
+const EXITS = Zork.EXITS;
+
+// Rooms are the children of object 117; the objects with the walls, the air and the hands are
+// object 23's.
+function Objects(ram) {
+  const ROOMS = 117, list = [];
+  for (let n = 1; n <= 255; n++) {
+    const o = Zork.object(ram, n);
+    list.push({ n, o, label: o.name || (n === ROOMS ? '(no name: the rooms are inside it)' : n === 23 ? '(no name: things that are everywhere)' : '(no name)') });
+  }
+  return { ROOMS, list, byN: n => list[n - 1] };
+}
+const propOf = (o, num) => o.props.find(p => p.num === num);
+function propValue(o, num) {
+  const p = propOf(o, num);
+  return p ? (p.data.length === 2 ? p.data[0] << 8 | p.data[1] : p.data[0]) : 0;
+}
+
+// story $6808: what an exit does follows from its length
+function exits(o) {
+  return o.props.filter(p => p.num >= 19).map(p => {
+    const d = p.data, w = i => d[i] << 8 | d[i + 1], e = { dir: EXITS[p.num], num: p.num, len: d.length };
+    if (d.length === 1) e.room = d[0];
+    else if (d.length === 2) e.message = w(0) * 2;
+    else if (d.length === 3) e.routine = w(0) * 2;
+    else if (d.length === 4) { e.room = d[0]; e.variable = d[1]; e.message = w(2) * 2; }
+    else { e.room = d[0]; e.door = d[1]; e.message = w(2) * 2; }
+    return e;
+  });
+}
+function exitText(objects, e, link) {
+  const room = n => link(n, objects.byN(n).label);
+  if (e.len === 1) return room(e.room);
+  if (e.len === 2) return `blocked: a message at story <code>${hex(e.message)}</code>`;
+  if (e.len === 3) return `the routine at story <code>${hex(e.routine)}</code> decides`;
+  const g = e.variable >= 16 ? `global ${e.variable - 16}` : `local ${e.variable}`;
+  if (e.len === 4) return `${room(e.room)}, once ${g} is not 0`;
+  return `${room(e.room)}, through the ${link(e.door, objects.byN(e.door).label)} when it is open`;
+}
+
+// The story's parts, from its header (story $0000) and the decoder of the story file for the strings
+function storyPart(ram, a) {
+  const h = Zork.header(ram), himem = word(ram, 4);
+  const parts = [[0, 'the header'], [0x40, 'the abbreviations\' text'], [h.abbrevs, 'the abbreviation table'],
+                 [h.objects, 'the property defaults'], [h.objects + 62, 'the object table'],
+                 [h.objects + 62 + 9 * 255, 'the property tables'], [h.globals, 'the globals'],
+                 [h.globals + 2 * 168, 'the story\'s own tables, which it changes'], [h.static, 'the verb and sentence tables'],
+                 [h.dict, 'the dictionary'], [himem, 'routines'], [0xE926, 'strings']];
+  let name = parts[0][1];
+  for (const [s, n] of parts) if (a >= s) name = n;
+  return name;
+}
+
+// One object, as a card: where it is, what it holds, its attributes and properties.
+function objectHTML(ram, objects, o, page) {
+  const link = (n, label) => n ? `<a href="#" data-obj="${n}">${esc(label || objects.byN(n).label)}</a>` : '<span class="zk-mute">none</span>';
+  const dict = Zork.dictionary(ram), byA = new Map(dict.entries.map(e => [e.a, e.word]));
+  const adjectives = new Map();
+  for (const e of dict.entries) if (e.data[0] & 0x20) {
+    const v = (e.data[0] & 3) === 2 || !(e.data[0] & 0xD0) ? e.data[1] : e.data[2];
+    adjectives.set(v, (adjectives.get(v) || []).concat(e.word));
+  }
+  let h = `<h3 class="zk-h3">${o.n} · ${esc(objects.byN(o.n).label)}</h3><dl class="zk-kv">`;
+  h += `<dt>Inside</dt><dd>${o.parent ? link(o.parent) : '<span class="zk-mute">nothing: the object is nowhere</span>'}</dd>`;
+  h += `<dt>Next to it</dt><dd>${link(o.sibling)}</dd>`;
+  const kids = Zork.children(ram, o.n);
+  h += `<dt>Holds</dt><dd>${kids.length ? kids.map(n => link(n)).join(', ') : '<span class="zk-mute">nothing</span>'}</dd>`;
+  h += `<dt>Attributes</dt><dd>${o.attrs.length ? o.attrs.join(', ') : '<span class="zk-mute">none set</span>'}</dd>`;
+  h += `<dt>Entry</dt><dd>story <code>${hex(o.a)}</code>, properties at story <code>${hex(o.propsAt)}</code></dd></dl>`;
+  h += '<table class="zk-table"><tr><th>Property</th><th>Bytes</th><th>What the story does with it</th></tr>';
+  for (const p of o.props) {
+    let what = '';
+    if (p.num >= 19) what = `exit ${EXITS[p.num]}: ${exitText(objects, exits({ props: [p] })[0], link)}`;
+    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code>$5DFC</code>)';
+    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code>$5E19</code>)';
+    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code>${hex(2 * propValue(o, 17))}</code>` : 'no routine';
+    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code>$61EA</code>)`;
+    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code>$898C</code>)`;
+    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code>$E20C</code>)`;
+    h += `<tr><td>${p.num}</td><td class="zk-mono">${p.data.map(b => h2(b)).join(' ')}</td><td>${what}</td></tr>`;
+  }
+  h += '</table>';
+  return h;
+}
+</script>
+<script>
+(async () => {
+  const fail = msg => document.querySelectorAll('.plate div[id^="zk-"]').forEach(el => { if (!el.textContent) el.textContent = msg; });
+  if (!globalThis.Apple2) { fail('These widgets need the site\'s Apple II library: open the page from the built site.'); return; }
+  let L;
+  try { L = await Apple2.load('listing.json'); } catch (e) { fail('The listing did not load: ' + e.message); return; }
+  const ram = L.ram, objects = Objects(ram);
+  commas(ram);
+  if (globalThis.C64Cpu) calculator(ram); else $('zk-res').textContent = 'The calculator needs the site\'s 6502 simulator: open the page from the built site.';
+  for (const n of [252, 75]) {
+    const el = $('zk-c' + n);
+    el.innerHTML = objectHTML(ram, objects, Zork.object(ram, n));
+    el.querySelectorAll('[data-obj]').forEach(a => { a.href = 'index.html#objects'; a.removeAttribute('data-obj'); });
+  }
+  hello();
+  fatal(L);
+})();
+
+// 01: the commas
+function commas(ram) {
+  const T = Zork.BASE + 0x2486, P = Zork.BASE + 0x2396;
+  function show() {
+    const n = +$('zk-n').value; $('zk-nv').textContent = n;
+    const m = new Uint8Array(ram);
+    const count = Zork.type(m, T, ','.repeat(n));
+    const words = Zork.split(m, T, P, count);
+    let h = '<div class="zk-grid">';
+    const entries = Math.min(words.length, 59);
+    for (let k = 0; k < 240; k++) {
+      const e = (k - 2) >> 2, hit = k === 0 && m[P] !== 120;
+      h += `<span class="${hit ? 'hit' : k < 2 ? 'h' : e < entries ? 'e' + (e & 1) : ''}" title="parse buffer byte ${k}">${h2(m[P + k])}</span>`;
+    }
+    for (let k = 0; k < 20; k++) {
+      const hit = (k === 0 && m[T] !== 100) || (k === 1 && n > 0 && m[T + 1] !== 0x2C);
+      h += `<span class="${hit ? 'hit' : 't'}" title="text buffer byte ${k}">${h2(m[T + k])}</span>`;
+    }
+    h += '</div>';
+    const state = `Limit ${m[P]}, count ${m[P + 1]} words; the text buffer's size is ${m[T]}.`;
+    $('zk-buf').innerHTML = `<p class="zk-note">The parse buffer's 240 bytes (grey: the limit and the count; blue: four bytes a word), then the start of the text buffer (yellow). Red: the limit, the text buffer's size or its first letter, changed by the line. ${state}</p>` + h;
+    const next = $('zk-next').value;
+    const c2 = Zork.type(m, T, next), w2 = Zork.split(m, T, P, c2);
+    $('zk-after').innerHTML = `The next line reaches the story as: ${w2.length ? w2.map(w => '<code>' + esc(w.text) + '</code>' + (w.at ? '' : ' <span class="zk-warn">(not a word it knows)</span>')).join(' ') : '<span class="zk-mute">nothing</span>'}`;
+  }
+  $('zk-n').oninput = show; $('zk-next').oninput = show;
+  show();
+}
+
+// 03: the calculator
+function calculator(ram) {
+  const sums = [[7, 'div', 2], [7, 'div', -2], [-7, 'div', 2], [-7, 'div', -2], [100, 'div', -7], [7, 'div', 0], [-7, 'mod', 3], [7, 'mod', -3], [7, 'mul', -3], [300, 'mul', 300]];
+  const right = (x, op, y) => {
+    if (op === 'mul') return ((x * y) << 16) >> 16;
+    if (y === 0) return null;
+    return op === 'div' ? Math.trunc(x / y) : x % y;
+  };
+  function show() {
+    const x = Math.max(-32768, Math.min(32767, Math.trunc(+$('zk-x').value || 0))), y = Math.max(-32768, Math.min(32767, Math.trunc(+$('zk-y').value || 0))), op = $('zk-op').value;
+    const got = calculate(ram, C64Cpu.CPU, op, x, y), want = right(x, op, y);
+    const sign = { div: '÷', mod: 'mod', mul: '×' }[op];
+    $('zk-res').innerHTML = `${x} ${sign} ${y} = <b>${got}</b> in the interpreter; ${got === want ? 'that is right' : want === null ? 'the Z-machine\'s rules forbid dividing by zero' : `the Z-machine's rules give <b>${want}</b>`}.`;
+  }
+  sums.forEach(([x, op, y]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = `${x} ${{ div: '÷', mod: 'mod', mul: '×' }[op]} ${y}`;
+    b.onclick = () => { $('zk-x').value = x; $('zk-op').value = op; $('zk-y').value = y; show(); };
+    $('zk-sums').appendChild(b);
+  });
+  ['zk-x', 'zk-y', 'zk-op'].forEach(id => $(id).oninput = show);
+  show();
+}
+
+// 05: hello sailor, story $766E
+function hello() {
+  let g81 = 0;
+  const lines = [];
+  const say = () => {
+    g81++;
+    const a = g81 % 20 === 0 ? 'You seem to be repeating yourself.' : g81 % 10 === 0 ? 'I think that phrase is getting a bit worn out.' : 'Nothing happens here.';
+    lines.push(`>hello sailor   (global 81 = ${g81})\n${a.toUpperCase()}`);
+  };
+  const show = () => { $('zk-hiout').textContent = lines.slice(-6).join('\n'); $('zk-hic').textContent = `said ${g81} times`; };
+  $('zk-hi').onclick = () => { say(); show(); };
+  $('zk-hi10').onclick = () => { for (let i = 0; i < 10; i++) say(); show(); };
+  $('zk-hi0').onclick = () => { g81 = 0; lines.length = 0; show(); };
+  show();
+}
+
+// 06: the error text nobody prints, and the BRK every error reaches
+function fatal(L) {
+  let text = '';
+  for (let a = 0x21D3; L.ram[a] && a < 0x21E7; a++) text += String.fromCharCode(L.ram[a] & 0x7F);
+  const callers = L.listing.records.filter(r => r.m && /^(jsr|jmp)$/i.test(r.m) && r.oa === 0x21E7).map(r => r.a);
+  $('zk-err').innerHTML = `<dl class="zk-kv"><dt><code>$21D3</code></dt><dd>${L.bytes(0x21D3, text.length).reduce((s, b) => s + h2(b) + ' ', '')}: <b>${esc(text)}</b>, in plain ASCII</dd>` +
+    `<dt><code>$21E7</code></dt><dd><code>${h2(L.ram[0x21E7])}</code>: <b>BRK</b>, reached from ${callers.length} places: ${callers.map(a => '<code>$' + h4(a) + '</code>').join(' ')}</dd></dl>`;
+}
+</script>

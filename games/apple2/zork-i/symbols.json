@@ -8195,12 +8195,12 @@
   {
    "address": 54,
    "type": "line",
-   "text": "The Monitor's output hook, low byte. The printer routine at $1BF2 swaps it with the interpreter's printer hook at $EE-$EF, sends its text through COUT, and swaps back, so the screen's hook is restored after each line sent to the printer."
+   "text": "The Monitor's output hook, low byte. The printer routine at $1BF2 swaps it with the interpreter's printer hook at $EE-$EF, sends its text through COUT, and swaps back, so the screen's hook is restored after each line sent to the printer; new_line does the same at $1CA3 to send the printer its carriage return."
   },
   {
    "address": 55,
    "type": "line",
-   "text": "The Monitor's output hook, high byte, swapped at $1BF2 with $EF in the same way as $36."
+   "text": "The Monitor's output hook, high byte, swapped with $EF in the same way as $36, at $1BF2 and at $1CA3."
   },
   {
    "address": 56,
@@ -8280,7 +8280,7 @@
   {
    "address": 128,
    "type": "line",
-   "text": "The opcode byte of the Z-machine instruction being executed, read at $09AF; the decoders at $0A4B and $0A86 take the operand types from its bits and $0AB6 and $0A6E the operation number."
+   "text": "The opcode byte of the Z-machine instruction being executed, read at $09AF; the decoders at $0A4B and $0A86 take the operand types from its bits, and $0AB6, $0A6E and $0A11 the operation number."
   },
   {
    "address": 129,
@@ -8310,7 +8310,7 @@
   {
    "address": 134,
    "type": "line",
-   "text": "Low byte of the third operand (storew's and put_prop's value)."
+   "text": "Low byte of the third operand: the value storew, storeb ($12AD) and put_prop write, and the third value je compares with ($1189)."
   },
   {
    "address": 135,
@@ -8355,7 +8355,7 @@
   {
    "address": 143,
    "type": "line",
-   "text": "$FF while $8D-$8E point at the program counter's page, 0 when the next fetch must look the page up again: cleared when the fetch crosses a page, after a jump or branch to another page, a call, a return, a restore, and when the page's buffer is reused for another page."
+   "text": "$FF while $8D-$8E point at the program counter's page, 0 when the next fetch must look the page up again: cleared when the fetch crosses a page, after every backward jump or branch and every forward one into another page ($0C3D), a call, a return, a restore, and when the page's buffer is reused for another page. print and print_ret copy the string reader's own flag, $96, into it ($0C7C)."
   },
   {
    "address": 144,
@@ -8660,7 +8660,7 @@
   {
    "address": 238,
    "type": "line",
-   "text": "The printer's output hook, $C100 (slot 1) from start-up: $1BF2 swaps it into CSW to print a line on the printer, and keeps whatever the printer card left in CSW for next time."
+   "text": "The printer's output hook, $C100 (slot 1) from start-up: $1BF2 swaps it into CSW to print a line on the printer, and $1CA3 to print a carriage return, and each keeps whatever the printer card left in CSW for next time."
   },
   {
    "address": 239,
@@ -8690,7 +8690,7 @@
   {
    "address": 2248,
    "type": "line",
-   "text": "Checks the story's header and sets the Z-machine going: if bit 0 of header byte 1 is set the interpreter stops with its fatal error ($091E). It sets the program counter from header word 6, the globals pointer from word $0C and the abbreviation pointer from word $18, puts the first buffer straight after the resident pages ($7400), finds the top of RAM ($1B6F) and makes one buffer of every page from there down to $7400 (76 on a 48K machine), the last of them the oldest. Less than one page free is the fatal error. Then it falls into the instruction loop at $099F."
+   "text": "Checks the story's header and sets the Z-machine going: if bit 0 of header byte 1 is set the interpreter stops with its fatal error ($091E). It sets the program counter from header word 6, the globals pointer from word $0C and the abbreviation pointer from word $18, puts the first buffer straight after the resident pages ($7400), finds the top of RAM ($1B6F) and makes one buffer of every page from there down to $7400 (76 on a 48K machine), the last of them the oldest. Less than one page free is the fatal error. Then it jumps to the instruction loop at $099F ($091B), past the dispatch tables."
   },
   {
    "address": 2334,
@@ -8780,7 +8780,7 @@
   {
    "address": 2986,
    "type": "line",
-   "text": "Ends a test instruction whose condition was true, and $0BB3 one whose condition was false. The branch byte that follows says in bit 7 whether to branch on true or on false; when the condition does not match, the branch bytes are skipped (one or two, by bit 6). When it matches, bit 6 set gives a 6-bit offset, clear a 14-bit signed one with the next byte. An offset of 0 returns false from the routine ($0C50), 1 returns true ($0C45), and anything else moves the program counter by the offset less 2 ($0C02), clearing $8F if that crosses into another page."
+   "text": "Ends a test instruction whose condition was true, and $0BB3 one whose condition was false. The branch byte that follows says in bit 7 whether to branch on true or on false; when the condition does not match, the branch bytes are skipped (one or two, by bit 6). When it matches, bit 6 set gives a 6-bit offset, clear a 14-bit signed one with the next byte. An offset of 0 returns false from the routine ($0C50), 1 returns true ($0C45), and anything else moves the program counter by the offset less 2 ($0C02), clearing $8F unless the move is forward within the page."
   },
   {
    "address": 3074,
@@ -8935,7 +8935,7 @@
   {
    "address": 3763,
    "type": "line",
-   "text": "jl: branches if the first operand is less than the second, both signed ($16F2). The shared tail at $0F04 also serves dec_chk and inc_chk, and $0F0C is the branch on true."
+   "text": "jl: branches if the first operand is less than the second, both signed ($16F2), through $0BAA on true and $0BB3 on false. dec_chk and inc_chk end in a copy of the same test, at $0F04."
   },
   {
    "address": 3787,
@@ -9040,12 +9040,12 @@
   {
    "address": 4381,
    "type": "line",
-   "text": "div: stores the quotient, truncated towards zero; a divisor of 2 or 4 is a shift, any other the general divide at $15C1. A negative divisor is never made positive ($160F negates the dividend in its place), so it gives a wrong quotient: 7 divided by -2 comes out 0. Nothing tests for a divisor of 0."
+   "text": "div: stores the quotient, truncated towards zero; a divisor of 2 or 4 is a shift, any other the general divide at $15C1. A negative divisor is never made positive ($160F negates the dividend in its place), so it gives a wrong quotient: run live, 7 / -2, -7 / -2 and 100 / -7 all give 0, while -7 / 2 gives -3 as it should. Nothing tests for a divisor of 0, which gives -1 (live). The story's six divisions divide by 2, 4, 5 or 70, so none of this shows in play."
   },
   {
    "address": 4431,
    "type": "line",
-   "text": "mod: stores the remainder of the division ($160F, then $15C1). It never fixes the sign afterwards, so a negative dividend gives a positive remainder, and a negative divisor, which $160F leaves negative, gives a wrong one."
+   "text": "mod: stores the remainder of the division ($160F, then $15C1). It never fixes the sign afterwards, so a negative dividend gives a positive remainder (live: -7 mod 3 gives 1), and a negative divisor, which $160F leaves negative, gives nonsense: 7 mod -3 gives 32,761 (live), $FFF9 with its top bit lost in $15C1. The story's two uses are a count mod 20 and mod 10, never negative."
   },
   {
    "address": 4464,
@@ -9075,7 +9075,7 @@
   {
    "address": 4843,
    "type": "line",
-   "text": "sread, the parser's front end: draws the status line ($1CD7), reads a line from the keyboard into the text buffer (first operand, $1D42), then splits it into words in the parse buffer (second operand). A space, question mark, carriage return, line feed, tab or form feed ends a word and is dropped (the list at $13E5); the dictionary's own separators, `,` `.` and `\"` in this story, end a word and are words of their own, since the dictionary's list is checked first. Only the first six letters of a word are kept ($13CD skips the rest). Each word is encoded ($1A25) and looked up ($1432), and its entry gets the dictionary address (0 if unknown), its length and its position in the text buffer. It stops when the line runs out or the parse buffer's limit (its byte 0) is reached, and keeps the count of words in byte 1."
+   "text": "sread, the parser's front end: draws the status line ($1CD7), reads a line from the keyboard into the text buffer (first operand, $1D42), then splits it into words in the parse buffer (second operand). A space, question mark, carriage return, line feed, tab or form feed ends a word and is dropped (the list at $13E5); the dictionary's own separators, `,` `.` and `\"` in this story, end a word and are words of their own, since the dictionary's list is checked first. Only the first six letters of a word are kept ($13CD skips the rest). Each word is encoded ($1A25) and looked up ($1432), and its entry gets the dictionary address (0 if unknown), its length and its position in the text buffer; the position is written first, as soon as a word begins ($134D). It stops when the line runs out or when the count in byte 1 equals the limit in byte 0 ($131F). The entries are reached through ($84),Y with Y the offset in $E0, so the offset wraps at 256 after the 63rd entry; what that does to a long line is told at the parse buffer, story $2396."
   },
   {
    "address": 5069,
@@ -9155,7 +9155,7 @@
   {
    "address": 5569,
    "type": "line",
-   "text": "Divides $E6-$E7 by $E4-$E5, unsigned, by 17 rounds of shift and subtract: the quotient in $E6-$E7 and the remainder in $E4-$E5. $E8-$E9 are kept. A divisor of 0 subtracts nothing each round, so it gives a quotient of $FFFF instead of stopping."
+   "text": "Divides $E6-$E7 by $E4-$E5, unsigned, by 17 rounds of shift and subtract: the quotient in $E6-$E7 and the remainder in $E4-$E5. $E8-$E9 are kept. A divisor of 0 subtracts nothing each round, so it gives a quotient of $FFFF instead of stopping. The partial remainder is only 16 bits and the last rotate brings in a clear carry, so the remainder comes back with bit 15 clear: one of $8000 or more, possible only when the divisor is over $8000, loses its top bit."
   },
   {
    "address": 5647,
@@ -9370,7 +9370,7 @@
   {
    "address": 7383,
    "type": "line",
-   "text": "Draws the status line on row 0 before each input: it clears the row in inverse, prints the short name of the object in global 0 (the room) at column 0, `SCORE:` at column 25, then global 1 (the score), a slash and global 2 (the moves), and puts the cursor back where it was."
+   "text": "Draws the status line on row 0 before each input: it sets the inverse flag and clears the row with CLREOL, which leaves normal spaces (the snapshots' row 0), then prints in inverse the short name of the object in global 0 (the room) at column 0, `SCORE:` at column 25, then global 1 (the score), a slash and global 2 (the moves), and puts the cursor back where it was."
   },
   {
    "address": 7476,
@@ -12345,12 +12345,12 @@
   {
    "address": 20374,
    "type": "line",
-   "text": "The parse buffer that every sread fills, 240 bytes, its address in global 54: byte 0 is the most words the interpreter may write, $78 (120); byte 1 the count it found; then four bytes for each word. 120 words of four bytes would need 482 bytes, so a line of more than 59 words would run on into the text buffer that follows."
+   "text": "The parse buffer that every sread fills, 240 bytes, its address in global 54: byte 0 is the most words the interpreter may write, $78 (120); byte 1 the count it found; then four bytes for each word, which leaves room for 59. The 60th word's length and position land on the text buffer's bytes 0 and 1, so its size becomes 1 and every later line is cut to its first letter: run live, sixty commas and then `open mailbox` give `I DON'T KNOW THE WORD 'O'.`. Only the one-letter words still work (`n` walks north, `q` quits); `restart`, `restore` and `save` arrive as `r` and `s`, so nothing short of booting the disk again puts it right. Past the 63rd entry the 6502's index wraps at 256 ($12EB): the next word's position goes into byte 1, the count, and its length into byte 0, the limit, so 63 commas leave a count of 64 and the story reads its last word from the commas in the text buffer, and prints a screen of memory as `I CAN'T USE THE WORD '...' HERE.` (live)."
   },
   {
    "address": 20614,
    "type": "line",
-   "text": "The text buffer that every sread fills, 200 bytes, its address in global 37: byte 0 is its size, 100, the most characters $1D42 copies from the player's line, carriage return included; the line follows from byte 1, in lower case."
+   "text": "The text buffer that every sread fills, 200 bytes, its address in global 37: byte 0 is its size, 100, the most characters $1D42 copies from the player's line, carriage return included; the line follows from byte 1, in lower case. A line of sixty words or more writes over byte 0 (the parse buffer's comment, story $2396)."
   },
   {
    "address": 20814,

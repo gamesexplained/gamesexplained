@@ -60,16 +60,18 @@ reads tracks 1-22, and the same without `--data` reads tracks 0 and 23-34.
 
 ## Steady state
 
-- **No interrupts.** The interpreter runs with the IIe's own vectors; what
-  it does with IRQ and BRK is in `facts.md` once traced.
+- **No interrupts.** The interpreter has no `SEI`, `CLI` or `RTI` and
+  leaves the IIe's vectors alone. Its one `BRK` is the fatal error at
+  $21E7, which drops into the Monitor (`facts.md`).
 - **Banking:** at the Z-machine start and at the prompt the language card
   is off for reading (`lcram` false), main memory is read and written
-  (`ramrd`, `ramwrt` false), 40 columns, text page 1.
+  (`ramrd`, `ramwrt` false), 40 columns, text page 1. Nothing in the
+  interpreter switches the language card on (`facts.md`).
 - **Where things are**, read from the snapshots and the disk:
 
   | Range | What | From |
   |---|---|---|
-  | $007C-$007E | a three-byte routine in zero page ($7C holds $60, `rts`) that the interpreter calls | written by the interpreter |
+  | $007C | an `RTS` ($60) the dispatcher calls before every Z-machine instruction ($0A2E) | written by the loader at $232F |
   | $0080-$00FF | the interpreter's variables; $0800 clears them first | |
   | $0356-$03FF | the 6-and-2 decoding table the IIe's boot ROM builds | the ROM |
   | $0800-$21FF | the interpreter, 26 pages | tracks 1-2 |
