@@ -114,3 +114,7 @@ Restored the naturally reached column-12 capture separately for up, OPEN DOOR an
 ## Alph and Ralph reference conversation · 19 October 2026
 
 The scene4 reference was a forced scene request with female-avatar setup, not a natural hand-over. Cleared restored input, let the wheel settle, selected the action wheel and cleared its prefix before each command. Moved left to X105, coasting to99/depth6. CALL ALPH and three ASK ALPH commands gave the four published captures; handlers had1/3 hits and the conversation counter became1/2/2. Private records are in `work/alph-left-dialogue/`. The publication image is anonymized `parts/scene-04/work/play.vsf`. Original emulator state, input and normal speed were restored.
+
+## Ralph and the shared exchange · 20 October 2026
+
+Restored the controlled scene-four female reference, released inputs, let the wheel settle, selected the action wheel and cleared its prefix before each command. Ordinary right movement/coasting reached X220/depth6. CALL RALPH and three ASK RALPH commands produced one call and three ask-handler hits, with shared index0→1→2→2. Restored the saved first ASK ALPH within that reference room separately, moved right to X225/depth6, then called and asked Ralph. The shared index remained1 across the call and became2 after the ask. Private records: `work/ralph-dialogue/`. This is ordinary input inside a controlled room, not a verified room crossing. Restored original emulator state, input and normal speed.

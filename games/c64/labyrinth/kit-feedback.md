@@ -130,3 +130,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Alph and Ralph opening exchange · 19 October 2026
 
 `60-verify`, “Prove reachability with inputs, not pokes”: kept the incomplete Brick Hallway crossing separate from the forced reference-room setup, and described ordinary input only within that room. `70-minisite`, “Start each case where the game starts it”: tested the three reachable opening conversation indices across every progress value below the branch threshold; arbitrary indices above2 remain outside the widget because the original lookup uses old Y even after clamping the stored counter. Restored input needed a settling interval and explicit wheel/prefix selection; command fields exposed invalid early trials. These were visible workflow corrections and need no shared-kit change or maintainer ask.
+
+## Ralph's shared opening exchange · 20 October 2026
+
+`60-verify`, “A live test in one room tests one room”: tested both speaker starts and an actual switch rather than inferring Ralph's presentation from the common code. `70-minisite`, “Start each case where the game starts it”: the comparison includes the page's accepted CALL RALPH input and both real ASK prerequisite branches, stating the intercepted distance query. The successful wheel setup was reused without a new guessed delay. Existing guidance covers the work; no shared-kit edit or maintainer ask arose.

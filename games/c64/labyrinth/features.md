@@ -77,4 +77,8 @@ Joystick-port-one fire is **live** as the producer of the introduction interrupt
 
 ## Alph and Ralph controlled-room check
 
-CALL ALPH beside the left door made Alph visible; three ASK ALPH commands gave the opening warning, the Brick Hallway door request, and the refusal to continue. Positive call/ask checkpoints accompany the live captures in `reference/alph-0-call.png` through `alph-3-ask.png`. The room was selected in memory, using the female avatar; ordinary entry, Ralph's exchange, later progress and door outcomes remain open. `parts/scene-04/facts.md` gives the bounded original-code comparison.
+CALL ALPH beside the left door made Alph visible; three ASK ALPH commands gave the opening warning, the Brick Hallway door request, and the refusal to continue. Positive call/ask checkpoints accompany the live captures in `reference/alph-0-call.png` through `alph-3-ask.png`. The room was selected in memory, using the female avatar; ordinary entry, later progress and door outcomes remain open. Ralph's corresponding opening exchange and the shared index across a speaker switch are checked in the continuation below. `parts/scene-04/facts.md` gives the bounded original-code comparison.
+
+## Shared Alph and Ralph opening exchange
+
+Ordinary CALL RALPH and three ASK RALPH commands beside the right door displayed the same three opening replies. Calling Ralph after Alph's first answer kept the shared index1; the next ASK RALPH gave the second reply and advanced it to2. Both trials started inside the forced scene-four reference. Positive handler hits, captured command IDs and the four images `ralph-0-call.png`, `ralph-1-ask.png`, `shared-0-call.png`, and `shared-1-ask.png` support these observations. The later puzzle remains open.

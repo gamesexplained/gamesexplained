@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,049/48,587 described bytes and Alph and Ralph has 854/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 53,393/237,523 bytes (22.5%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,049/48,587 described bytes and Alph and Ralph has 858/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 53,397/237,523 bytes (22.5%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -48,5 +48,5 @@ For the Brick Hallway:
 For Alph and Ralph:
 
 - Complete the ordinary crossing from the Brick Hallway. Column26 selects scene4/entry2 in the checked route data, but the attempted live approach did not complete that crossing. The reference scene was selected in memory.
-- Verify Ralph's presence/dialogue, the progress-byte producers and later dialogue branches, and both door outcomes. Alph's CALL and first three ASK replies beside the left door are live-checked inside the controlled room.
+- Verify the progress-byte producers, later dialogue branches, other presence outcomes, and both door outcomes. CALL and the first three ASK replies for both guards, plus the shared index when switching from Alph to Ralph, are live-checked inside the controlled room.
 - Resolve resident/overlay ownership, the $07FE-$07FF gap, drawing and animation consumers. Independently sample the new partial listing.
