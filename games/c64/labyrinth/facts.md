@@ -1,6 +1,6 @@
 # Labyrinth — established facts
 
-This Bronze contribution describes the playable text opening. The graphical continuation has captured room images; its source partition and annotations are incomplete. The opening listing is in `parts/opening/listing.json`; the partial gate listing and its checked approach/transition facts are in `parts/scene-01/`.
+This Bronze contribution describes the playable text opening. The graphical continuation has partial gate, corridor, Brick Hallway, and Alph and Ralph analyses plus captured room images; its source partition and annotations are incomplete. The opening listing is in `parts/opening/listing.json`; the partial gate listing and its checked approach/transition facts are in `parts/scene-01/`.
 
 Live screenshots establish the slot menu, character-setup questions, verb/object commands, several city locations, and the transition to a graphical gate scene. Controlled input also demonstrates movement and entry through the gate into the first graphical corridor. The later forced-room images do not establish player reachability or puzzle solutions. See `features.md` for the distinction between documented and observed behavior.
 
@@ -12,7 +12,7 @@ An independent fixed-seed sample on 19 October 2026 checked 60 of the 1,303 line
 
 ## Scope
 
-The complete game stays Bronze: the gate, first corridor, and Brick Hallway are partially analysed and 18 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 27.8% ledger is provisional rather than whole-game progress.
+The complete game stays Bronze: the gate, first corridor, Brick Hallway, and Alph and Ralph are partially analysed and 17 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 22.5% ledger is provisional rather than whole-game progress.
 
 ## First corridor
 
@@ -32,7 +32,7 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 
 ## Opening the neighboring Brick Hallway door
 
-The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,049/48,587 described bytes; four provisional scopes total 52,539/188,818 (27.8%). Their retained resident ownership overlaps and is not whole-game completion.
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,049/48,587 described bytes; five provisional scopes total 53,393/237,523 (22.5%). Their retained resident ownership overlaps and is not whole-game completion.
 
 `reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.
 
@@ -43,3 +43,9 @@ Holding up through the opened column-36 door produced request 0 / entry 12 while
 ## Door-shaped panel at column 12
 
 At the checked doorway destination, map cell1 translates to type11. Ordinary OPEN DOOR replied “Nothing happens.” and ASK DOOR replied “There's no door here.” The ASK prerequisite accepts types2/3 in the captured negative map mode and bypasses the remaining handler on rejection. A 300-frame up approach retained scene3 and reached depth24 with positive movement hits and no exit/loader hits. The panel's artwork does not establish acceptance by these commands; other actions and return paths remain open. `parts/scene-03/facts.md` records the live observations and original-code comparison.
+
+## Alph and Ralph opening conversation
+
+Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. This does not establish the connecting journey, Ralph's conversation, or the door puzzle's solution. See `parts/scene-04/facts.md`. Its partial listing adds854/48,705 described bytes; five overlapping scopes total53,393/237,523 (22.5%), not whole-game completion.
+
+The scene-four publication snapshot also replaces the entered name with ANON/anon. Its original forced reference captures remain private.

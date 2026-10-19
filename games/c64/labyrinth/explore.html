@@ -14,13 +14,13 @@
 <header class="hero">
 <p class="eyebrow">Labyrinth · Explore the game</p>
 <h1>Labyrinth</h1>
-<p class="sub">Follow the journey from the text adventure to the maze. Each area brings together its route, encounters, and checked mechanics.</p><p class="lab-area-summary">Scope: the text opening, gate entry, first-corridor exits, and a Brick Hallway door. Later rooms are reference images on Maps / levels.</p>
+<p class="sub">Follow the journey from the text adventure to the maze. Each area brings together its route, encounters, and checked mechanics.</p><p class="lab-area-summary">Scope: the text opening, gate entry, first-corridor exits, Brick Hallway doors, and Alph’s opening conversation. The Alph and Ralph check starts from a controlled room load; its connecting journey remains open.</p>
 </header>
 <main>
 <p class="lab-area-summary"><a href="index.html">← How the main mechanics work</a> · <a href="#journey-overview">Journey overview</a></p>
-<nav id="journey-overview" class="lab-journey" aria-label="Journey overview"><ol><li><a href="explore.html#text-adventure"><span>1 · The city</span><strong>The text adventure</strong><small>Reach the cinema through commands and inventory choices.</small></a></li><li><a href="explore.html#entrance-gate"><span>2 · Into the maze</span><strong>The entrance gate</strong><small>Align with the doorway and approach it.</small></a></li><li><a href="explore.html#first-corridor"><span>3 · Choose a passage</span><strong>The first corridor</strong><small>Openings choose an entry into the Brick Hallway.</small></a></li><li><a href="explore.html#brick-hallway"><span>4 · At the doors</span><strong>The Brick Hallway</strong><small>Move to a door before using OPEN DOOR.</small></a></li></ol></nav>
+<nav id="journey-overview" class="lab-journey" aria-label="Journey overview"><ol><li><a href="explore.html#text-adventure"><span>1 · The city</span><strong>The text adventure</strong><small>Reach the cinema through commands and inventory choices.</small></a></li><li><a href="explore.html#entrance-gate"><span>2 · Into the maze</span><strong>The entrance gate</strong><small>Align with the doorway and approach it.</small></a></li><li><a href="explore.html#first-corridor"><span>3 · Choose a passage</span><strong>The first corridor</strong><small>Openings choose an entry into the Brick Hallway.</small></a></li><li><a href="explore.html#brick-hallway"><span>4 · At the doors</span><strong>The Brick Hallway</strong><small>Move to a door before using OPEN DOOR.</small></a></li><li><a href="explore.html#alph-and-ralph"><span>5 · The two doors</span><strong>Alph and Ralph</strong><small>Call Alph and follow his opening conversation. Controlled room check.</small></a></li></ol></nav>
 <nav class="lab-area-nav" aria-label="Explore Labyrinth by area" hidden>
-<div><label for="lab-area-select">Area</label><select id="lab-area-select"><option value="opening">The text adventure</option><option value="gate">The entrance gate</option><option value="corridor">The first corridor</option><option value="brick">The Brick Hallway</option><option value="atlas">Further into the maze · gallery</option></select></div>
+<div><label for="lab-area-select">Area</label><select id="lab-area-select"><option value="opening">The text adventure</option><option value="gate">The entrance gate</option><option value="corridor">The first corridor</option><option value="brick">The Brick Hallway</option><option value="alph">Alph and Ralph</option><option value="atlas">Further into the maze · gallery</option></select></div>
 <div id="lab-topic-label" hidden><label for="lab-topic-select">Jump to topic</label><select id="lab-topic-select"></select></div>
 </nav>
 
@@ -228,10 +228,28 @@
 <p>Selecting <code>OPEN DOOR</code> at the original arrival position produces “Nothing happens.” The neighboring door at column 36 opens after a separate approach, as shown above. The checked doorway route is shown above; a return route to the first corridor remains unverified.</p>
 <details class="lab-corridor-details"><summary>See the OPEN DOOR response</summary><figure class="gallery"><img src="reference/brick-open-door.png" width="384" height="272" alt="The Brick Hallway with OPEN DOOR selected and the reply Nothing happens"><figcaption>The command was executed at the arrival position, world X=2272 and depth 6.</figcaption></figure></details>
 <details class="lab-evidence"><summary>Checks behind these results</summary><p>Each trial restored the same naturally reached arrival. The movement routine ran in all three movement trials; neither the generic exit routine nor the scene loader was called. The command trial recorded one command dispatch. These observations apply to this position and these inputs; other positions and actions remain untested.</p></details>
-</section><div class="lab-area-next" data-reading-area="brick"><a href="#first-corridor">← Back to the first corridor</a><a href="levels.html">Browse the captured rooms →</a></div>
+</section><div class="lab-area-next" data-reading-area="brick"><a href="#first-corridor">← Back to the first corridor</a><a href="#alph-and-ralph">Explore Alph and Ralph →</a></div>
+<section id="alph-and-ralph" data-reading-area="alph" data-part="scene-04"><p class="fig">05 · Alph and Ralph</p><h2>Calling Alph</h2>
+<p>Alph comes out when called beside the left door. CALL ALPH produces “I'm here! You don't have to shout!” ASK ALPH then begins a conversation about the two doors.</p>
+<p class="lab-area-summary">Controlled room check: the scene was selected in memory, using the female avatar. Movement and conversation inside the room used ordinary inputs. The crossing from the Brick Hallway remains unverified.</p>
+<h3 id="alph-opening-conversation">The first three replies</h3>
+<p>Alph warns that one door leads to the center of the Labyrinth and the other to certain death. A second question gets a demand to open every door in the Brick Hallway. The third gets “We're not saying another word.”</p>
+<div class="lab-word-demo"><div class="lab-passage-actions"><button type="button" id="lab-alph-ask">ASK ALPH</button><button type="button" id="lab-alph-reset">Restart conversation</button></div><p id="lab-alph-reply" aria-live="polite"></p><figure class="gallery"><img id="lab-alph-picture" src="reference/alph-0-call.png" width="384" height="272" alt="Alph appears beside the left door after being called"><figcaption id="lab-alph-caption">CALL ALPH beside the left door.</figcaption></figure></div>
+<p>The opening exchange advances through three replies. Once the third reply is selected, the conversation index stays there. Later dialogue has a separate progress condition; the demonstration covers this opening exchange.</p>
+<details class="lab-evidence"><summary>Sources and checks</summary><p>The ASK ALPH pair at <code>$8B0C</code> selects <code>$8FA8</code>. After the presence check, the shared conversation at <code>$8FB1</code> uses index <code>$8F04</code> and split pointer tables <code>$8FFE</code>/<code>$9001</code>. With progress byte <code>$0569</code> below 15 and nonnegative <code>$8F0C</code>, valid opening indices 0, 1, and 2 select these three replies. The routine keeps index 2 after the third question. Other seeded indices are outside this example.</p><p>From the controlled reference state, moving left reached world X=99, depth 6. CALL ALPH and three ASK ALPH commands recorded one call-handler hit and three ask-handler hits; the conversation index became 1, 2, and 2 while progress stayed 3. These pictures are live captures. The page’s three transitions are compared with the original caller across all progress values below 15, and the reply texts with the original parser. Ralph’s conversation, the later progress branch, and the outcomes behind the doors remain open.</p></details>
+</section><div class="lab-area-next" data-reading-area="alph"><a href="#brick-hallway">← Back to the Brick Hallway</a><a href="levels.html">Browse the other captured rooms →</a></div>
 <section id="inside-the-labyrinth" data-reading-area="atlas"><span id="other-areas"></span><h2 id="lab-atlas-topic-0">Scene gallery</h2><p>The captured rooms are on <a href="levels.html">Maps / levels</a>.</p></section>
 <div class="lab-area-next" data-reading-area="atlas"><a href="#entrance-gate">← Back to the entrance gate</a></div>
 </main><script>
+/* labyrinth-alph-conversation */
+const labyrinthAlphReplies=[{address:0x9a11,text:"One door leads to the center of the Labyrinth, the other leads to... CERTAIN DEATH!",image:'alph-1-ask.png'},{address:0x9adc,text:"I won't say more until you open every door in the Brick Hallway.",image:'alph-2-ask.png'},{address:0x9b1d,text:"We're not saying another word.",image:'alph-3-ask.png'}];
+function labyrinthAlphAsk(index){if(!Number.isInteger(index)||index<0||index>2)throw new RangeError('Outside the opening conversation');return {address:labyrinthAlphReplies[index].address,next:Math.min(index+1,2)};}
+// end of labyrinth-alph-conversation
+let labAlphIndex=0,labAlphAsks=0;
+function resetLabAlph(){labAlphIndex=0;labAlphAsks=0;document.getElementById('lab-alph-reply').textContent="CALL ALPH: I'm here! You don't have to shout!";document.getElementById('lab-alph-picture').src='reference/alph-0-call.png';document.getElementById('lab-alph-picture').alt='Alph appears beside the left door after being called';document.getElementById('lab-alph-caption').textContent='CALL ALPH beside the left door. The example begins after this call.';document.getElementById('lab-alph-reset').disabled=true;}
+document.getElementById('lab-alph-ask').addEventListener('click',()=>{const reply=labyrinthAlphReplies[labAlphIndex],result=labyrinthAlphAsk(labAlphIndex);labAlphIndex=result.next;labAlphAsks++;document.getElementById('lab-alph-reply').textContent=reply.text;document.getElementById('lab-alph-picture').src='reference/'+reply.image;document.getElementById('lab-alph-picture').alt=reply.text;document.getElementById('lab-alph-caption').textContent='ASK ALPH · question '+labAlphAsks+(labAlphAsks>3?' · the third reply repeats.':'.');document.getElementById('lab-alph-reset').disabled=false;});
+document.getElementById('lab-alph-reset').addEventListener('click',resetLabAlph);resetLabAlph();
+
 /* labyrinth-brick-panel */
 const labyrinthBrickPanel={cell:1,type:11,noDoor:"There's no door here."};
 function labyrinthBrickAskDoor(type,mode=255){return mode>=128&&(type===2||type===3)?'Nothing happens.':labyrinthBrickPanel.noDoor;}
@@ -284,8 +302,8 @@ function labyrinthCorridorPlacement(entry){return entry===255?null:{x:entry*64+3
 <script>
 /* labyrinth-area-navigation */
 {
- const aliases={'text-adventure':'opening','entrance-gate':'gate','first-corridor':'corridor','brick-hallway':'brick','other-areas':'atlas'};
- const areaHashes={opening:'text-adventure',gate:'entrance-gate',corridor:'first-corridor',brick:'brick-hallway',atlas:'other-areas'};
+ const aliases={'text-adventure':'opening','entrance-gate':'gate','first-corridor':'corridor','brick-hallway':'brick','alph-and-ralph':'alph','other-areas':'atlas'};
+ const areaHashes={opening:'text-adventure',gate:'entrance-gate',corridor:'first-corridor',brick:'brick-hallway',alph:'alph-and-ralph',atlas:'other-areas'};
  const blocks=Array.from(document.querySelectorAll('[data-reading-area]'));
  if('scrollRestoration' in history)history.scrollRestoration='manual';
  const areaSelect=document.getElementById('lab-area-select'),topicSelect=document.getElementById('lab-topic-select');

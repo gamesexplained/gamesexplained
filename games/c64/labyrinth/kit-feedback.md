@@ -126,3 +126,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Brick Hallway arrival panel · 19 October 2026
 
 `60-verify`, “A negative result is a claim about your search”: kept the absence of an exit bounded to the recorded trial, and traced the actual command prerequisite instead of concluding that a door-shaped picture must accept door commands. The original-code check enters the real ASK caller so the stack-discard path is exercised. No shared-kit change or maintainer ask arose.
+
+## Alph and Ralph opening exchange · 19 October 2026
+
+`60-verify`, “Prove reachability with inputs, not pokes”: kept the incomplete Brick Hallway crossing separate from the forced reference-room setup, and described ordinary input only within that room. `70-minisite`, “Start each case where the game starts it”: tested the three reachable opening conversation indices across every progress value below the branch threshold; arbitrary indices above2 remain outside the widget because the original lookup uses old Y even after clamping the stored counter. Restored input needed a settling interval and explicit wheel/prefix selection; command fields exposed invalid early trials. These were visible workflow corrections and need no shared-kit change or maintainer ask.

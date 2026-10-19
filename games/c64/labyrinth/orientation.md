@@ -110,3 +110,7 @@ Loaded the ordinary opened-door snapshot and held up to exit depth 40 at column 
 ## Arrival-panel command checks · 19 October 2026
 
 Restored the naturally reached column-12 capture separately for up, OPEN DOOR and ASK DOOR. Up reached depth24 without exit; the commands displayed Nothing happens / There's no door here. Positive movement/dispatch/prerequisite counters accompany the observations in `work/arrival-door-probe.log`. Original emulator state and normal speed were restored.
+
+## Alph and Ralph reference conversation · 19 October 2026
+
+The scene4 reference was a forced scene request with female-avatar setup, not a natural hand-over. Cleared restored input, let the wheel settle, selected the action wheel and cleared its prefix before each command. Moved left to X105, coasting to99/depth6. CALL ALPH and three ASK ALPH commands gave the four published captures; handlers had1/3 hits and the conversation counter became1/2/2. Private records are in `work/alph-left-dialogue/`. The publication image is anonymized `parts/scene-04/work/play.vsf`. Original emulator state, input and normal speed were restored.
