@@ -7,7 +7,7 @@ description: Which of the kit's tools each core step uses on the Apple II - the 
 
 The core skills (`kit/skills/core/`) say what each step needs and name a
 row of this table where a tool does it; this says which tool does it on
-the kit's Apple II, a 128K enhanced Apple IIe. The machine's facts are in
+the kit's Apple II, a 128K enhanced Apple IIe, or an Apple II Plus for a game that needs one (`tool-apple2ts`, "Models"). The machine's facts are in
 `apple2-reference`, and how to drive the emulator and the disassembler in
 `tool-apple2ts` and `tool-regen2000`. Every script prints its usage with
 `-h`, and every JavaScript file's header is its manual.
@@ -19,7 +19,7 @@ the kit's Apple II, a 128K enhanced Apple IIe. The machine's facts are in
 | `disassembler` | `10-orient`, step 6; `50-coverage`, the loop | regenerator2000, live, in its Apple II mode, through `kit/apple2/r2000.py` (`tool-regen2000`); `symbols_export.py <game>` reads the running session, and `coverage.py --live` its figure. It does not know the 65C02 (`tool-regen2000`, Traps) |
 | `census` | `40-sweep`, the register census | `python3 kit/cpu/census.py <game or part dir> [<snapshot.json>] [--live]`: the soft switches by page, each slot's I/O, the disk drive in slot 6 and the Mockingboard in slot 4, with the repeats folded where `kit/apple2/registers.py` gives them: the speaker, the cassette output, the game port's strobe and the paddle trigger anywhere in their sixteen addresses, and the language card's switches at +4 |
 | `references` | `50-coverage`, step 2; `60-verify`, "Negative results" | `python3 kit/cpu/opcodes.py <game> [<snapshot.json>] [--live] --refs <address>`, as on the C64, with the 65C02's table (`kit/cpu/m65c02.py`) |
-| `cpu` | `50-coverage`, inline arguments and jump tables | the enhanced IIe's 65C02. The NMOS 6502's idioms hold (`kit/skills/cpu/6502`), and `apple2-reference`, "The 65C02", has what it adds, `jmp (abs,x)` among them. A game written for the II or II+ is NMOS code, whose undocumented opcodes the 65C02 runs as no-ops |
+| `cpu` | `50-coverage`, inline arguments and jump tables | the enhanced IIe's 65C02. The NMOS 6502's idioms hold (`kit/skills/cpu/6502`), and `apple2-reference`, "The 65C02", has what it adds, `jmp (abs,x)` among them. A game written for the II or II+ is NMOS code, whose undocumented opcodes the 65C02 runs as no-ops, and so does the server's II Plus (`--model iiplus`, for a disk that will not run on a IIe): Apple2TS's II Plus has the NMOS 6502's decimal flags and the 65C02's opcodes (`apple2-reference`, "The II Plus in the kit") |
 | `simulator` | `60-verify`; `70-minisite`, a widget's test | `kit/cpu/cpu6502.js` bare, `new CPU(mem)`, with a snapshot's main memory: all 64 KB are RAM, so the soft switches are plain bytes the test sets, and a hook (`hooks`) stands in for each Monitor call the routine makes. It is the NMOS 6502 and knows none of the 65C02's 27 opcodes, so a routine that uses one runs in Apple2TS instead (`set-registers`, `until`, `tool-apple2ts`); `strict: true` stops on any undocumented opcode, which on this machine is a no-op |
 | `machine` | `60-verify`, "Unreachable"; `70-minisite`, Play | none yet: drive the game in Apple2TS through the kit's server (`tool-apple2ts`). A Play tab's lockstep needs a machine built first, in `kit/apple2/` |
 | `lockstep` | `70-minisite`, Play (`play.md`) | none yet |

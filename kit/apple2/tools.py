@@ -30,8 +30,9 @@ that one.
 
 Usage:
   tools.py status [--port N]
-  tools.py apple2ts [--port N]              start it: a 128K enhanced Apple IIe, powered on with no
-                                            disk, waiting on 127.0.0.1:6502, or N
+  tools.py apple2ts [--port N] [--model M]  start it: a 128K enhanced Apple IIe, powered on with no
+                                            disk, waiting on 127.0.0.1:6502, or N; `--model iiplus`
+                                            makes it an Apple II Plus, for a game that needs one
   tools.py stop [apple2ts] [--port N]       stop this clone's servers, or the one on N
   tools.py get-apple2ts                     clone Apple2TS 3.7.0's source and install esbuild into
                                             tools/apple2, then build the server
@@ -67,6 +68,7 @@ APPLE2TS_REPO = "https://github.com/ct6502/apple2ts.git"
 APPLE2TS_VERSION = "3.7.0"     # the release the checks in kit/apple2/INSTALL.md were measured on
 APPLE2TS_COMMIT = "c900979bb7cfdcbec193b2ae21760d8da9cda548"   # its tag, v3.7.0
 ESBUILD_VERSION = "0.25.12"
+MODELS = ("iie", "iiplus")    # the server's --model: the enhanced IIe, or the II Plus (apple2ts_server.mjs, MODELS)
 PORT = int(os.environ.get("KIT_APPLE2TS_PORT") or 6502)   # loopback only; `--port N` in main() sets both
 
 sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
@@ -222,6 +224,10 @@ def apple2ts(extra=()):
     if up(PORT):
         print(f"emulator already answering on :{PORT}")
         return
+    if "--model" in extra:
+        i = list(extra).index("--model")
+        if i + 1 >= len(extra) or extra[i + 1] not in MODELS:
+            sys.exit(f"--model takes one of {', '.join(MODELS)}: tools.py apple2ts --model iiplus")
     if bundle_stamp() != stamp():
         build_server()
     os.makedirs(SNAPSHOTS, exist_ok=True)

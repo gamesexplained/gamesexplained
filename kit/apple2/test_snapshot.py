@@ -59,8 +59,8 @@ class Snapshot(unittest.TestCase):
             f.write(blob)
         return p
 
-    def snap(self, name, st, fmt=snapshot.FORMAT):
-        return self.file(name, json.dumps({"format": fmt, "version": 1, "model": "APPLE2EE",
+    def snap(self, name, st, fmt=snapshot.FORMAT, model="APPLE2EE"):
+        return self.file(name, json.dumps({"format": fmt, "version": 1, "model": model,
                                            "apple2ts": "3.7.0", "state": st}).encode())
 
     def refused(self, path, words):
@@ -108,6 +108,18 @@ class Snapshot(unittest.TestCase):
         sp = snapshot.spaces(self.snap("s.json", state()))
         self.assertEqual(sorted(sp), ["aux", "auxlc1", "auxlc2", "main", "mainlc1", "mainlc2"])
         self.assertEqual((len(sp["main"]), len(sp["auxlc1"])), (0xC000, 0x3000))
+
+    def test_ii_plus(self):
+        """A snapshot of the server's II Plus (`--model iiplus`) has main memory and its language
+        card, and no aux memory to read."""
+        path = self.snap("p.json", state(aux=False), model="APPLE2P")
+        self.assertEqual(snapshot.model(snapshot.load(path)), "iiplus")
+        self.assertEqual(sorted(snapshot.spaces(path)), ["main", "mainlc1", "mainlc2"])
+        self.assertEqual(snapshot.read(path)[:0xC000], bytes(MAIN[:0xC000]))
+        for bank in ("aux", "auxlc2"):
+            with self.assertRaises(SystemExit) as e:
+                snapshot.read(path, bank=bank)
+            self.assertIn("II Plus", str(e.exception))
 
     def test_header(self):
         h = snapshot.header(self.snap("s.json", state()))

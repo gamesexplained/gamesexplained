@@ -226,14 +226,16 @@ class Machine:
     def back(self, name="default"):
         return self.call("back", name=name)
 
-    def reset(self, hard=True):
-        """hard=True is a power-on; hard=False is CONTROL-RESET."""
-        return self.call("reset", hard=hard)
+    def reset(self, hard=True, model=None):
+        """hard=True is a power-on, as `model` ("iie" or "iiplus") when one is given; hard=False is
+        CONTROL-RESET."""
+        return self.call("reset", hard=hard, model=model)
 
-    def boot(self, seconds=None, frames=None, until=None):
-        """Power on with the disks in, and run: `frames` (300 unless something else is given), or
-        `seconds`, or until an address."""
-        return self.call("boot", seconds=seconds, frames=frames, until=None if until is None else address(until))
+    def boot(self, seconds=None, frames=None, until=None, model=None):
+        """Power on with the disks in, as `model` when one is given, and run: `frames` (300 unless
+        something else is given), or `seconds`, or until an address."""
+        return self.call("boot", seconds=seconds, frames=frames, until=None if until is None else address(until),
+                         model=model)
 
     def disk(self, path=None, drive=1, eject=False):
         """Put a disk image in drive 1 or 2 (a .woz, or a 16-sector .dsk, .do or .po), or take
