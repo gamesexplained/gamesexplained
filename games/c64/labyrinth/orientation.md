@@ -138,3 +138,7 @@ From the controlled count15 thanks, up80frames then release20frames at X99 reach
 ## Left-door continuation · 20 October 2026
 
 From `work/guard-open-near/0-open.vsf`, ordinary up160frames in20-frame batches reached X96/depth45 and the entry reaction. `work/guard-enter/settled.vsf` is inside scene4, waiting in the successful sequence. Further no-movement frames advanced phase1→2 and entered the scene5/entry1 loader, saved under `work/guard-enter-finish/`. `work/guard-arrival/arrival.vsf` is the subsequent Wall of Hands arrival at X84/depth6, reached with ordinary loader input. It is a local continuation from the controlled room/count/selector1 setup. Original emulator state and normal speed were restored after probing.
+
+## Other guard door · 20 October 2026
+
+Private start: work/guard-progress/progress-15.vsf, controlled count15/phase1/selector1, X99/depth6. Ordinary right then up reaches X247/depth24; OPEN DOOR changes map column3 from1 to3. work/guard-right/open.vsf saves that state. Ordinary up reaches the alternate callback at$8EAE, X224/depth42. work/guard-right-finish holds instruction-boundary captures. work/guard-right-text/falling-complete.vsf and lied-complete.vsf follow the message waits; settled.vsf is the fully drawn loss panel after300 additional no-input frames. These snapshots are private; the page uses four anonymized PNG captures. Original machine state, input and normal speed were restored after every probe.

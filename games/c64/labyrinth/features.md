@@ -102,3 +102,7 @@ Confirmed within the controlled thanks room: walking up to depth24, opening the 
 ### Left doorway continuation
 
 Confirmed inside the controlled guard-room setup: ordinary up input through the opened left door with selector1 gives the entry reaction, advances guard phase1→2 and loads The Wall of Hands at entry1. Arrival at X84/depth6 is captured. The entry choice, phase advance, successful countdown and reaction text are compared with original code. Other door/selector outcomes, ordinary entry to the guards and Wall of Hands mechanics remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_entry.js`, and the three `guard-entry` reference captures.
+
+### Right doorway in the controlled guard setup
+
+Live-confirmed: ordinary movement and OPEN DOOR at the right doorway from the count15/phase1/selector1 setup reaches the falling message, “Ok, we lied. It wasn't endless,” and the loss panel. Original entry/countdown routines and all three text records are checked by test_guard_right.js. This complements the left-door Wall of Hands route within that setup. Other selector setups, the ordinary arrival from the Brick Hallway and post-loss restart remain open.
