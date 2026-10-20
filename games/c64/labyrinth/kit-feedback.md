@@ -234,3 +234,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Eighth manicure · 21 October 2026
 
 `60-verify`, “Poke the variable, watch the screen”: placed the zero-hour control before the actual decrement, then checked both stored state and the completed expiry panel. The normal sequence retained its own untouched clock evidence. The failed loader-return expectation was resolved by a direct post-event capture; existing negative-result and live-verification guidance cover it. No shared-kit change or maintainer ask arose.
+
+
+## Ninth manicure · 21 October 2026
+
+`60-verify`, “Poke the variable, watch the screen”: followed the movement state through the no-input descent and actual load, instead of publishing an indefinite text-repeat claim from the command branch. The timed-out next command exposed a scene transition rather than a failed input tool. Kept higher counter-byte checks separate from the reached ninth command. Existing verification and multi-part guidance cover this case; no shared-kit edit or maintainer ask arose.
