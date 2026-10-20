@@ -210,3 +210,9 @@ The broader kit tests caught editor incompatibilities in this game's map-pin and
 ## Guard departure reaction · 20 October 2026
 
 `60-verify`, “Force the rare state”: traced the difference between changing phase inside a room and entering with that phase. The latter sets different depth thresholds, so the page names the saved snapshots' retained values. “Carry a control” led to a generic unselected reaction beside both role replies. An early stop at a shared return did not prove countdown initialization; the probe then required the initializer's exact PC before releasing input. Existing rules cover this game-specific finding; no shared-kit edit or maintainer ask arose.
+
+## Later guard loads · 21 October 2026
+
+`60-verify`, “A number handed through a request byte”: followed queued5 into the service that defaults entry1 before publishing a destination claim. The code comparison intercepts the loader explicitly, while three actual loads supply the separate arrival evidence. `10-orient`, “A game of several parts”: guard-local addresses lose that meaning when scene5 replaces the overlay. Existing snapshot-name and ownership guidance covers these observations; no shared-kit edit or maintainer ask arose.
+
+The browser reload check also exposed a game-local navigation fault: generated topic IDs did not exist until their area was selected. Resolving the known area prefix before rebuilding the topic list fixes saved links without changing the shared site. The existing browser verification guidance catches it; no shared-kit edit was needed.
