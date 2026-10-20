@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'../../..');
 const {game}=require(path.join(root,'kit/scripts/port_check.js'));
 const {CPU}=require(path.join(root,'kit/cpu/cpu6502.js'));
 const g=game(__dirname);
-const {labyrinthWords,expandLabyrinthWord,labyrinthPassages,splitLabyrinthPassage}=g.run('explore.html','labyrinth-dictionary','labyrinthWords','expandLabyrinthWord','labyrinthPassages','splitLabyrinthPassage');
+const {labyrinthWords,expandLabyrinthWord,labyrinthPassages,splitLabyrinthPassage}=g.run('graphics.html','labyrinth-dictionary','labyrinthWords','expandLabyrinthWord','labyrinthPassages','splitLabyrinthPassage');
 const {ram,has}=require('./opening_image.js')(g);
 for(const [a,b] of [[0x67b5,0x67fd],[0x68d4,0x691d],[0xd800,0xdcd5]]) {
  for(let i=a;i<=b;i++)assert(has[i],`missing source byte $${i.toString(16)}`);

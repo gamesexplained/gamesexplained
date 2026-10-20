@@ -158,3 +158,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Page structure and evidence links · 20 October 2026
 
 `70-minisite`, “Every claim shows its evidence”: added primary code citations beside the readable mechanic while keeping detailed checks in disclosures. Its “A game of several parts” rule kept every new address link on its own part's Source page. Doctor Who supplied the overview/gameplay/Controls split, numbered About references and accessible location-pin pattern. Labyrinth's pins distinguish workflow and capture targets because full decoded maps remain open. These are game-specific presentation edits; no shared-kit change or maintainer ask arose.
+
+## Separate text and graphics page · 20 October 2026
+
+`70-minisite`, “The order serves the explanation”: moved the font and dictionary explanation into its own reading page, with the glyph viewer first and the journey left on Gameplay. The page's scope stays the opening's checked text and character data. Existing original-code tests follow the moved widgets. This is presentation work within the game; no shared-kit change or maintainer ask arose.
