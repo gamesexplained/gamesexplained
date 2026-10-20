@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,400/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 54,013/237,523 bytes (22.7%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,883/48,705 described bytes. The Wall of Hands has281/49,751 described bytes;16 other graphical parts are untouched. The provisional image-ledger total is54,777/287,274 bytes (19.1%) across six started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -56,3 +56,8 @@ For Alph and Ralph:
 - Check the remaining commands and count persistence across complete room crossings and disk save/load. The ordinary column36 CLOSE,CLOSE,OPEN,OPEN sequence is established: counts4→3→3→4→4, with no change on repeats.
 
 - Analyse The Wall of Hands from the checked local arrival at scene5/entry1, X84/depth6. Its image and route are captured, but its mechanics and code have no part analysis. The route into the guards still begins from a controlled room/count setup.
+
+For the Wall of Hands:
+
+- Trace MANICURE WALL, its queried inventory item and later counter branches. Resolve the producer of the command gate$0343, movement, hand animation and exits. ASK and its five-reply cycle have live/original-code checks.
+- Capture the natural pre-initialization hand-over; resolve resident ownership and the retained untracked extents named by the listing. Independently sample the new comments.

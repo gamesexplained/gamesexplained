@@ -32,7 +32,7 @@ The opening has its complete ledger annotation and listing, with opaque retained
 | `02` | The Labyrinth | ordinary input |
 | `03` | The Brick Hallway | forced scene request |
 | `04` | Alph and Ralph | forced scene request |
-| `05` | The Wall of Hands | forced scene request |
+| `05` | The Wall of Hands | checked local continuation from controlled guards |
 | `06` | The Stone Corridor | forced scene request |
 | `07` | The Hedge Maze | forced scene request |
 | `08` | The Persecution of Ludo | forced scene request |
@@ -146,3 +146,7 @@ Private start: work/guard-progress/progress-15.vsf, controlled count15/phase1/se
 ## Guard selector probe · 20 October 2026
 
 work/guard-selector/observations.json records the saved controlled scene4 loader-return entry, stopped at$8F15, $8F27 and$8F37, and after240 no-input frames. The unmodified entry seed is63287. Two additional trials explicitly replace the16-bit state before$8F27 with0 or7. Chosen-state snapshots stay in that folder; no new screenshots of the older male entry are published. All trials restored the original machine, input and normal speed.
+
+## Wall of Hands conversation · 21 October 2026
+
+The scene5 part uses parts/scene-05/work/wall-hands-play.vsf from the verified local arrival plus120 idle frames. The no-input automatic question and five isolated ASK WALL replies are recorded in that part’s facts/orientation. A first-instruction hand-over and the complete ordinary guard-room route remain open.

@@ -126,3 +126,11 @@ Live-checked: ordinary left-door movement inside the controlled phase4 snapshots
 ### Later left-door destination
 
 Live-confirmed from the three controlled phase4 reaction snapshots: unselected, Alph-lying and Alph-truth departures all request scene5/entry1 and arrive at the Wall of Hands at X84/depth6. Phase4 is retained by the capped increment. The resident request hand-off is compared with original code; the three real completed loads establish the destination. Ordinary phase4 arrival in the guard room, other full traversals and Wall of Hands mechanics remain open. Evidence: parts/scene-04/facts.md, test_guard_load.js and guard-later-arrival.png.
+
+### Wall of Hands: interaction checklist
+
+At the checked scene5/entry1 arrival, the live word wheels offer ASK and MANICURE, and the WALL object. ASK WALL and its automatic first question are checked below. MANICURE WALL, the command gate’s producer, hand movement, exits and destinations remain open. The steady snapshot remains scene5/X84/depth6 after120 idle frames; this follows the controlled phase4 guard departure. The arrival image and the available words establish the starting state, not the complete room's mechanics.
+
+### The hands’ conversation
+
+Live-confirmed: the room automatically asks the first of five questions, then five isolated ASK WALL commands cycle through the remaining replies and back to the opening. The original ASK handler, rejection gate, automatic prefix and all reply text are compared with the page. The part has its own snapshot/listing. MANICURE WALL, the gate’s producer, movement and exits remain open. Evidence: parts/scene-05/facts.md, test_wall_ask.js and wall-ask captures.

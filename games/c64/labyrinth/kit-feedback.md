@@ -216,3 +216,7 @@ The broader kit tests caught editor incompatibilities in this game's map-pin and
 `60-verify`, “A number handed through a request byte”: followed queued5 into the service that defaults entry1 before publishing a destination claim. The code comparison intercepts the loader explicitly, while three actual loads supply the separate arrival evidence. `10-orient`, “A game of several parts”: guard-local addresses lose that meaning when scene5 replaces the overlay. Existing snapshot-name and ownership guidance covers these observations; no shared-kit edit or maintainer ask arose.
 
 The browser reload check also exposed a game-local navigation fault: generated topic IDs did not exist until their area was selected. Resolving the known area prefix before rebuilding the topic list fixes saved links without changing the shared site. The existing browser verification guidance catches it; no shared-kit edit was needed.
+
+## Wall of Hands conversation · 21 October 2026
+
+`60-verify`, “It was going to happen anyway”: a no-input trial separated the automatic question from typed ASK. The earlier handler count of two was not sufficient to blame a repeated key; the callback calls the same handler. `10-orient`, “A game of several parts”: gave scene5 its own snapshot, listing and honest loaded-data scope. `50-coverage`, “Data the ledger cannot see”: kept the newly reported retained stretches as unresolved scope rather than labelling them padding. Existing guidance covers these observations; no shared-kit edit or maintainer ask arose.
