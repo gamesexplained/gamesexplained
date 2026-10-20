@@ -170,3 +170,9 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Compact Gameplay navigation · 20 October 2026
 
 `70-minisite`, “load it and look at it”: the first screen was dominated by journey cards, so the guide now expands on request and the active area's companion links stay by the selectors. Browser testing caught a guide link that reset the selected area. The existing build link check caught two incorrect part-page filenames before delivery. Existing checks cover these presentation changes; no shared-kit edit or maintainer ask arose.
+
+## Searchable city replies · 20 October 2026
+
+`70-minisite`, “Stepping through things of one kind”: used the shared previous/select/next pattern for the reply catalogue and kept its original-code test reading the moved data on Text & graphics. Text search makes the127 records usable without scanning the entire menu; browser checks cover empty results and endpoint disabling. This is game-specific presentation work; no shared-kit change or maintainer ask arose.
+
+The browser console exposed a reply-catalogue dependency outside the moved block that the routine-only tests could not see. Gameplay retains only its counter replies, checked against the catalogue; the original-handler sweep also requires a display string for every selected reply. Existing browser-verification guidance caught this failure; no shared-kit edit is needed.

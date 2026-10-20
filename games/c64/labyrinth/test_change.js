@@ -4,6 +4,7 @@ const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=require('./opening_image.js')(g);
 const {labyrinthChangeStart:start,labyrinthChangeStep:step}=g.run('explore.html','labyrinth-change','labyrinthChangeStart','labyrinthChangeStep');
+const {labyrinthChangeReplies:counterReplies}=g.run('explore.html','labyrinth-change-text','labyrinthChangeReplies');
 const fields={quarterByte:0x673a,nickelByte:0x6735,phase:0x968c,changeByte:0x968d,pickup:0xaab3,nickelTaken:0x968a,nickelReturned:0x9689,karma:0x575};
 const plain=x=>JSON.parse(JSON.stringify(x));
 function original(s,action){
@@ -12,7 +13,7 @@ function original(s,action){
  const state={};for(const [key,a] of Object.entries(fields))state[key]=c.m[a];state.description=c.m[0xaaa5]+256*c.m[0xaa97];return {state,reply:replies.at(-1)};
 }
 let checks=0;
-function check(s,action){const actual=original(s,action),expected=plain(step(s,action));assert.deepStrictEqual(expected,actual,JSON.stringify({s,action}));checks++;return expected.state;}
+function check(s,action){const actual=original(s,action),expected=plain(step(s,action));assert.deepStrictEqual(expected,actual,JSON.stringify({s,action}));assert.equal(typeof counterReplies[actual.reply],'string','missing displayed counter reply '+actual.reply);checks++;return expected.state;}
 // All states reachable by these counter actions after this purchased state.
 const todo=[plain(start())],seen=new Set();
 while(todo.length){const s=todo.shift(),key=JSON.stringify(s);if(seen.has(key))continue;seen.add(key);for(const action of ['take','complain','return'])todo.push(check(s,action));}
