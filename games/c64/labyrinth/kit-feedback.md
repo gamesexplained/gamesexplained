@@ -184,3 +184,9 @@ The browser console exposed a reply-catalogue dependency outside the moved block
 ## Cinema counter on Discoveries · 20 October 2026
 
 `70-minisite`, “These have a tab of their own”: gave the checked counter consequence a Discoveries page, keeping Gameplay focused on the journey. The page reuses the original checked widget and reply subset, with its tests following their moved blocks. The counter sequence remains a mechanic rather than an asserted bug or secret. Existing page, evidence and browser-check rules cover the work; no shared-kit change or maintainer ask arose.
+
+## Main update to kit0.0.210 · 20 October 2026
+
+`50-coverage`, “listing.json keeps the list”: rebuilt the five started listings from their exact saved snapshots rather than relying on a rebuild of the old listing bytes, so the new uncounted-data accounting could inspect memory. No new extents were reported and no listing fields changed. The graphical parts lack separate loader hand-over snapshots; that comparison remains a limit of the check. Existing upstream changes address the accounting and overwritten-code wording; no additional shared-kit edit or maintainer ask arose.
+
+The broader kit tests caught editor incompatibilities in this game's map-pin and thumbnail HTML. Fixed the authored markup and local CSS without changing the shared editor: masked the same pin SVG from a local asset, and wrapped thumbnails in figures with editable captions. The corridor test's successful output said “FF skip”, which the suite mistook for a skipped test; its output now says the placement is unchanged. Local fixture sockets/process inspection require sandbox permission, and the bridge path fixture needs a canonical temporary path on this macOS host. The existing tests exposed these issues; no shared-kit change or new maintainer ask arose. Seven Spectrum oracle checks still need SkoolKit, which this update did not install.

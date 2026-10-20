@@ -43,4 +43,4 @@ for(let entry=0;entry<256;entry++){
  assert.equal(c.m[0x53a]+256*c.m[0x53e],26*64+32);assert.equal(c.m[0x546],24);
 }
 assert.equal(placement(35).x,2272);assert.equal(placement(35).depth,6);
-console.log('OK - 256 continuous-mode entry placements, FF skip, companion slot and live entry-35 arrival');
+console.log('OK - 256 continuous-mode entry placements, FF leaves placement unchanged, companion slot and live entry-35 arrival');
