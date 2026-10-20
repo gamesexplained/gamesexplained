@@ -150,3 +150,7 @@ work/guard-selector/observations.json records the saved controlled scene4 loader
 ## Wall of Hands conversation · 21 October 2026
 
 The scene5 part uses parts/scene-05/work/wall-hands-play.vsf from the verified local arrival plus120 idle frames. The no-input automatic question and five isolated ASK WALL replies are recorded in that part’s facts/orientation. A first-instruction hand-over and the complete ordinary guard-room route remain open.
+
+## Stone Corridor analysis snapshot
+
+The analysed scene6 state follows the ninth MANICURE WALL and actual loader, with the controlled setup stated in parts/scene-06/orientation.md. That part keeps its earlier forced captures in work/forced-original; its canonical listing uses the actual play snapshot and an explicit matching later loader-return comparison. The first initialization instruction remains open.

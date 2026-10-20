@@ -239,3 +239,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Ninth manicure · 21 October 2026
 
 `60-verify`, “Poke the variable, watch the screen”: followed the movement state through the no-input descent and actual load, instead of publishing an indefinite text-repeat claim from the command branch. The timed-out next command exposed a scene transition rather than a failed input tool. Kept higher counter-byte checks separate from the reached ninth command. Existing verification and multi-part guidance cover this case; no shared-kit edit or maintainer ask arose.
+
+
+## Stone Corridor first door · 21 October 2026
+
+`10-orient`, “Never assemble an image from”: used the actual local route’s snapshot, with the earlier forced captures kept separate. `20-features`, “Test each control from a moment you have looked at”: restored the arrival before the approach and retained the coasting miss as a separate trial. The private probe’s log failure was visible; restoration now precedes its JSON writer. Existing snapshot-basename and negative-result guidance covers the other failures. No shared-kit change or maintainer ask arose.

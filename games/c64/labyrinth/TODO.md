@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,883/48,705 described bytes. The Wall of Hands has892/50,016 described bytes;16 other graphical parts have no analysed listing. The provisional image-ledger total is55,388/287,539 bytes (19.3%) across six started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,883/48,705 described bytes. The Wall of Hands has892/50,016 described bytes; the Stone Corridor has264/48,410. Fifteen other graphical parts have no analysed listing. The provisional image-ledger total is55,652/335,949 bytes (16.6%) across seven started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -59,5 +59,7 @@ For Alph and Ralph:
 
 For the Wall of Hands:
 
-- Trace ordinary shears acquisition/damage, other Wall of Hands interactions and routes, counter wrap/alternate entry, and Stone Corridor gameplay. The first-use refusals, first seven replies, eighth-command hour penalty, controlled expiry, and ninth-command local exit to scene6/entry7 are checked. Resolve the producer of the command gate$0343, movement, hand animation and exits. ASK and its five-reply cycle have live/original-code checks.
+- Trace ordinary shears acquisition/damage, other Wall of Hands interactions and routes, counter wrap/alternate entry, and Stone Corridor door traversal and other gameplay. The first-use refusals, first seven replies, eighth-command hour penalty, controlled expiry, and ninth-command local exit to scene6/entry7 are checked. Resolve the producer of the command gate$0343, movement, hand animation and exits. ASK and its five-reply cycle have live/original-code checks.
 - Capture the natural pre-initialization hand-over; resolve resident ownership and the retained untracked extents named by the listing. Independently sample the new comments.
+
+- Finish scene6 initialization provenance and seven retained uncounted regions. OPEN DOOR is checked at the arrival, nearby, and on the opened door. Check traversal, CLOSE, persistence, and other commands.
