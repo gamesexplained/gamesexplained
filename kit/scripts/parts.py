@@ -7,6 +7,8 @@ part is a load as the player meets it, the program as it stands when the
 loading is over and something happens. However many files arrive behind
 one loading screen, they are one part; an intro, each level that is loaded
 on its own and an ending are a part each.
+The kinds of part (a load, a bank) and what is not one are written up in
+kit/skills/core/10-orient, "A game of several parts".
 
 Each part is a folder, games/<platform>/<slug>/parts/<id>/, laid out as a
 small game folder, and the folder says everything about the part. No file
