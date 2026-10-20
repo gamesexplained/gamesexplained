@@ -133,9 +133,9 @@ screen are one part, so count what the player waits for, not what the
 disk holds.
 
 The kit holds what one image cannot in two kinds of part, a load and a
-bank, and names a third kind of code that it cannot hold. What tells
-them apart is how the bytes reach the CPU, and that fixes the addresses
-the listing uses:
+bank, and names a third, a virtual address space, that it cannot hold.
+What tells them apart is how the bytes reach the CPU, and that fixes the
+addresses the listing uses:
 
 - **A load is copied in.** The game's loader copies it to fixed addresses,
   often unpacking it on the way. It is listed at those addresses, from a
@@ -146,49 +146,55 @@ the listing uses:
 - **A bank is switched in.** The machine shows it in a window of the
   CPU's addresses, and the game reads it there instead of copying it:
   a cartridge's ROM banks, or the RAM banks a 128K machine shows one at
-  a time. A bank is a part with `bank` in its `part.json`, over the part
-  the code runs in. It is listed at the window's addresses, from the
-  cartridge image or the banks the snapshot holds. It does not take the
-  addresses of the part beneath, because they are different bytes, so
-  both are counted (item 6).
-- **Paged code is read on demand.** The program reads its own code or
-  text from the disk a page at a time, into whichever buffer is free, as
-  an interpreter reads its story. Its address in memory is an accident
-  of play and no snapshot holds it whole, so it is not a part, and the
-  kit cannot list it. Give `game.json` a row for it under
-  `coverage.paged`, `[bytes, what it is and where it comes from]`, and
+  a time. A bank is a part of its own kind, seen by the part whose code
+  reads it. It is listed at the window's addresses, from the cartridge
+  image or the banks the snapshot holds. It does not take those
+  addresses from the part that sees it, because they are different
+  bytes, so both are counted (item 6).
+- **A virtual address space is read on demand.** The program reads its
+  own code or text from the disk a page at a time, into whichever
+  buffer is free, as an interpreter reads its story, and its code
+  reaches each byte at the byte's own address, which the program
+  translates to wherever the page happens to be. Its address in memory
+  is an accident of play and no snapshot holds it whole, so it is not a
+  part, and the kit cannot list it. Give `game.json` a row for it under
+  `coverage.virtual`, `[bytes, what it is and where it comes from]`, and
   the About and Source tabs name it beside the figure, so that 100 %
-  says what it is 100 % of.
+  says what it is 100 % of. "Paged" is the other word for it, but the
+  machines already use that for banks (a paged ROM, the bank paged in
+  at $C000), so the kit says "virtual".
 
 Each byte has one owner, so a game's coverage, the sum over its parts,
 counts it once.
 
-The same files serve both kinds of part, and some of their fields mean
-different things in each:
+The same files serve both kinds of part, and what they hold depends on
+the kind:
 
-- **`part.json`.** A load over another part names it as `over`, and
-  gives as `ranges` the addresses its load writes, which it takes from
-  the part beneath. A bank gives its number as `bank`, names the part
-  its code runs in as `over`, and gives as `ranges` the window it shows
-  in, which the part beneath keeps, because its addresses there hold
-  its own RAM. A load that replaces the whole of memory has neither. A
-  game of one image has no `part.json`: its `game.json` holds the ledger
-  settings (`video`, `coverage`, `io`, `regions`) that a `part.json`
-  would.
+- **`part.json`.** A load is the kind a part is unless it says
+  otherwise. A load over another part names it as `over`, and gives as
+  `ranges` the addresses its load writes, which it takes from the part
+  beneath. A load that replaces the whole of memory has neither. A bank
+  says `"kind": "bank"`, gives its number as `bank`, names the part
+  whose code reads it as `seen_by`, and gives as `window` where it
+  shows, which the part that sees it keeps, because its addresses there
+  hold its own RAM. Each kind's fields are its own: `parts.py` stops on
+  a load with `window` or a bank with `ranges`. A game of one image has
+  no `part.json`: its `game.json` holds the ledger settings (`video`,
+  `coverage`, `io`, `regions`) that a `part.json` would.
 - **`symbols.json`.** Names, comments and blocks at the addresses the
   part owns: the machine's addresses for a load, the window's for a
   bank. A load over another part exports only its `ranges`. In the
-  window, the part beneath keeps the names of its RAM, and the bank's
-  names are those of the bank's bytes.
+  window, the part that sees the bank keeps the names of its RAM, and
+  the bank's names are those of the bank's bytes.
 - **`listing.json`.** A record for each instruction or data item the
   part owns, with its bytes from the part's own image: a snapshot for a
   load, the cartridge image or the snapshot's copy of the bank for a
   bank. In a load over another part, an operand that points out of it
-  takes that part's name. In the part a bank lies over, the instructions
-  its `banks` rows name see the bank: an operand of theirs into the
-  window, or a pointer in a row's range, takes the bank's name and
-  carries `pt`, the bank's part id. The Source tab lays each part over
-  the listings beneath it.
+  takes that part's name. In the part that sees a bank, the
+  instructions its `banks` rows name see the bank: an operand of theirs
+  into the window, or a pointer in a row's range, takes the bank's name
+  and carries `pt`, the bank's part id. The Source tab lays each part
+  over the listings beneath it.
 - **`work/`.** A load keeps its snapshots: the hand-over as
   `entry.<ext>`, and one in play. A bank keeps the image its listing is
   built from, which the platform's tool writes (item 6).
@@ -196,7 +202,8 @@ different things in each:
   the game's is the sum. A load over another part takes its `ranges`
   from the part beneath; a bank adds its bytes to those of the RAM.
 
-Paged code has no files of its own, only its row under `coverage.paged`.
+A virtual address space has no files of its own, only its row under
+`coverage.virtual`.
 
 Some things are none of these. A state that differs only in its
 variables is not a part: a title screen and play in one load are one,
@@ -256,8 +263,8 @@ bytes in the page (`70-minisite`).
    sees at once, and the game reads some of it where it shows: a
    cartridge's ROM banks, or a 128K machine's RAM banks. Each bank is
    then a part as well, made from the cartridge image or from the banks
-   the snapshot holds, and laid over the part the code runs in, without
-   taking its addresses; a range the game copies into RAM is counted in
+   the snapshot holds, and seen by the part the code runs in, which
+   keeps its addresses; a range the game copies into RAM is counted in
    the part it lands in. The platform's `steps` skill names the tool
    that makes them ("media" for a cartridge, "snapshot" for a machine's
    RAM banks).

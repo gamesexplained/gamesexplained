@@ -8,7 +8,7 @@ number, the load address and the size, every field big-endian, then the chip's b
 A cartridge that switches banks holds more than the machine's 64 KB, and the game reads
 some of its banks where they are, without copying them into RAM. Each bank is then a
 part of the game (kit/scripts/parts.py): its listing is built from the bank's bytes,
-laid over the RAM part the code runs in, and the coverage counts it once.
+seen by the RAM part the code runs in, and the coverage counts it once.
 
   info(path)                -> {"name", "type", "exrom", "game", "banks": {n: [(load, bytes)]}}
   image(path, bank=None)    -> 0x10000 bytes: the bank's chips at their load addresses,
@@ -17,9 +17,9 @@ laid over the RAM part the code runs in, and the coverage counts it once.
 Usage:
   crt.py <file.crt>                          the header, and each bank: where its chips load,
                                              and which hold one value throughout (blank)
-  crt.py parts <game dir> <file.crt> --over <id>
+  crt.py parts <game dir> <file.crt> --seen-by <id>
                                              a part for each bank the game has no part for yet,
-                                             bank-00, bank-01, ..., over the RAM part <id>, and
+                                             bank-00, bank-01, ..., seen by the RAM part <id>, and
                                              in each one's work/ a file of that bank alone,
                                              bank.crt, to start the disassembler on and build
                                              the listing from. Run it again in a new clone:
@@ -98,18 +98,18 @@ def one_bank(path, bank):
     return head + b"".join(p for b, _, _, p in chips if b == bank)
 
 
-def make_parts(gdir, path, over):
+def make_parts(gdir, path, seen_by):
     sys.path.insert(0, SCRIPTS)
     import parts as P
     found = P.parts(gdir)
     if not found:
-        sys.exit(f"{gdir} has no parts: the banks lie over the part the game runs in RAM, so add that "
+        sys.exit(f"{gdir} has no parts: the banks are seen by the part the game runs in RAM, so add that "
                  "first (parts.py add <game dir> <id>, with --adopt for an analysis there already is)")
     by = {p["id"]: p for p in found}
-    if over not in by:
-        sys.exit(f"--over {over}: no such part; the banks lie over the part the game runs in RAM")
-    if by[over].get("bank") is not None:
-        sys.exit(f"--over {over}: that is a bank; the banks lie over the part the game runs in RAM")
+    if seen_by not in by:
+        sys.exit(f"--seen-by {seen_by}: no such part; the banks are seen by the part the game runs in RAM")
+    if by[seen_by].get("bank") is not None:
+        sys.exit(f"--seen-by {seen_by}: that is a bank; the banks are seen by the part the game runs in RAM")
     c = info(path)
     added, wrote = [], []
     for n in sorted(c["banks"]):
@@ -118,11 +118,11 @@ def make_parts(gdir, path, over):
         f = os.path.join(d, "part.json")
         if pid not in by:
             with contextlib.redirect_stdout(io.StringIO()):
-                P.add(gdir, pid, title=f"Bank {n}", over=over)
+                P.add(gdir, pid, title=f"Bank {n}")
             own = json.load(open(f))
             chips = c["banks"][n]
-            own["ranges"] = [[f"${load:04X}", f"${load + len(data) - 1:04X}"] for load, data in chips]
-            out = {"title": own["title"], "order": own["order"], "bank": n}
+            out = {"title": own["title"], "order": own["order"], "kind": "bank", "bank": n, "seen_by": seen_by,
+                   "window": [[f"${load:04X}", f"${load + len(data) - 1:04X}"] for load, data in chips]}
             out.update({k: v for k, v in own.items() if k not in out})
             for load, data in chips:      # a chip of one value throughout holds nothing to explain
                 v = blank(data)
@@ -143,7 +143,7 @@ def make_parts(gdir, path, over):
             wrote.append(pid)
     rel = os.path.relpath(gdir)
     if added:
-        print(f"added {len(added)} part(s), {added[0]} to {added[-1]}, over {over}")
+        print(f"added {len(added)} part(s), {added[0]} to {added[-1]}, seen by {seen_by}")
     if wrote:
         print(f"wrote work/bank.crt in {len(wrote)} part folder(s), the bank's bytes alone")
     if not added and not wrote:
@@ -172,8 +172,8 @@ def main():
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__); return
     if argv[0] == "parts":
-        if len(argv) != 5 or argv[3] != "--over":
-            sys.exit("usage: crt.py parts <game dir> <file.crt> --over <id>")
+        if len(argv) != 5 or argv[3] != "--seen-by":
+            sys.exit("usage: crt.py parts <game dir> <file.crt> --seen-by <id>")
         make_parts(argv[1], argv[2], argv[4]); return
     show(argv[0])
 

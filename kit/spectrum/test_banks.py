@@ -53,13 +53,15 @@ with tempfile.TemporaryDirectory() as d:
     json.dump({"title": "Test"}, open(os.path.join(gdir, "game.json"), "w"))
     subprocess.run([sys.executable, os.path.join(HERE, "..", "scripts", "parts.py"), "add", gdir, "main"],
                    capture_output=True, check=True)
-    out = subprocess.run([sys.executable, os.path.join(HERE, "banks.py"), "parts", gdir, sna, "--over", "main"],
+    out = subprocess.run([sys.executable, os.path.join(HERE, "banks.py"), "parts", gdir, sna, "--seen-by", "main"],
                          capture_output=True, text=True)
     made = sorted(p for p in os.listdir(os.path.join(gdir, "parts")) if p.startswith("bank-"))
     check(out.returncode == 0 and made == ["bank-00", "bank-01", "bank-04", "bank-06", "bank-07"],
           f"banks.py parts: a part for banks 0, 1, 4, 6 and 7, none for 2, 3 and 5 ({made}) {out.stderr.strip()}")
     part = json.load(open(os.path.join(gdir, "parts", "bank-04", "part.json"))) if "bank-04" in made else {}
     check(part.get("bank") == 4, "a bank's part.json names its bank")
+    check((part.get("kind"), part.get("seen_by"), part.get("window")) == ("bank", "main", [["$C000", "$FFFF"]])
+          and not {"over", "ranges"} & set(part), "a bank's part.json says its kind, who sees it and its window")
     blank0 = json.load(open(os.path.join(gdir, "parts", "bank-00", "part.json"))) if "bank-00" in made else {}
     check(["$C000", "$FFFF", "blank: every byte is $01"] in blank0.get("coverage", {}).get("exclude", [])
           and not any("blank" in e[2] for e in part.get("coverage", {}).get("exclude", [])),

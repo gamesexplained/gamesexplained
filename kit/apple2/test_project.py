@@ -70,10 +70,14 @@ class Project(unittest.TestCase):
     def test_a_bank_part_is_built_from_its_bank(self):
         with open(os.path.join(self.game, "game.json"), "w") as f:
             json.dump({"slug": "demo", "platform": "apple2"}, f)
+        os.makedirs(os.path.join(self.game, "parts", "main"))
+        with open(os.path.join(self.game, "parts", "main", "part.json"), "w") as f:
+            json.dump({"title": "Main memory", "order": 1}, f)
         part = os.path.join(self.game, "parts", "aux")
         os.makedirs(os.path.join(part, "work"))
         with open(os.path.join(part, "part.json"), "w") as f:
-            json.dump({"title": "Aux memory", "order": 2, "bank": "aux"}, f)
+            json.dump({"title": "Aux memory", "order": 2, "kind": "bank", "bank": "aux", "seen_by": "main",
+                       "window": [["$0000", "$BFFF"]]}, f)
         with open(os.path.join(part, "symbols.json"), "w") as f:
             json.dump({"blocks": [], "symbols": [], "comments": []}, f)
         _, image = self.image(project.write(part, self.snap))

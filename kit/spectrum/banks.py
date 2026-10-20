@@ -6,8 +6,9 @@ at $4000, bank 2 at $8000 and, at $C000, whichever bank the last write to
 $7FFD named (kit/skills/spectrum/zx-spectrum-reference, "$7FFD"). A game that
 keeps code or data in the other banks holds more than one 64 KB image of the
 machine shows, so each of those banks is a part of the game
-(kit/scripts/parts.py): its listing is built from the bank's own bytes, laid
-over the part the CPU sees, at $C000-$FFFF, and the coverage counts it once.
+(kit/scripts/parts.py): its listing is built from the bank's own bytes, at
+$C000-$FFFF, the window where the CPU sees one bank at a time, and the coverage
+counts it once.
 
 The part beneath (the RAM part) keeps $4000-$FFFF as the snapshot shows it,
 the bank paged in at $C000 included: that bank is the RAM part's, and has no
@@ -16,9 +17,9 @@ part of its own. Banks 5 and 2 never do.
 Usage:
   banks.py <file.sna>                        the paging, and each bank: where the CPU saw it,
                                              and which hold one value throughout (blank)
-  banks.py parts <game dir> <file.sna> --over <id>
+  banks.py parts <game dir> <file.sna> --seen-by <id>
                                              a part for each bank the CPU did not see in this
-                                             snapshot, bank-0N, titled "Bank N", over the RAM
+                                             snapshot, bank-0N, titled "Bank N", seen by the RAM
                                              part <id>, and in each one's work/ a copy of the
                                              snapshot, entry.sna, to build the bank's listing
                                              from (listing.py reads its "bank" from part.json).
@@ -54,18 +55,18 @@ def show(path):
         print(f"  bank {n}: {where:9s}" + (f" blank (${v:02X})" if v is not None else ""))
 
 
-def make_parts(gdir, path, over):
+def make_parts(gdir, path, seen_by):
     sys.path.insert(0, SCRIPTS)
     import parts as P
     found = P.parts(gdir)
     if not found:
-        sys.exit(f"{gdir} has no parts: the banks lie over the part the CPU sees, so add that first "
+        sys.exit(f"{gdir} has no parts: the banks are seen by the part the CPU sees, so add that first "
                  "(parts.py add <game dir> <id>, with --adopt for an analysis there already is)")
     by = {p["id"]: p for p in found}
-    if over not in by:
-        sys.exit(f"--over {over}: no such part; the banks lie over the part the CPU sees")
-    if by[over].get("bank") is not None:
-        sys.exit(f"--over {over}: that is a bank; the banks lie over the part the CPU sees")
+    if seen_by not in by:
+        sys.exit(f"--seen-by {seen_by}: no such part; the banks are seen by the part the CPU sees")
+    if by[seen_by].get("bank") is not None:
+        sys.exit(f"--seen-by {seen_by}: that is a bank; the banks are seen by the part the CPU sees")
     b = snapshot.banks(path)
     added, wrote = [], []
     for n in unseen(b):
@@ -74,10 +75,10 @@ def make_parts(gdir, path, over):
         f = os.path.join(d, "part.json")
         if pid not in by:
             with contextlib.redirect_stdout(io.StringIO()):
-                P.add(gdir, pid, title=f"Bank {n}", over=over)
+                P.add(gdir, pid, title=f"Bank {n}")
             own = json.load(open(f))
-            own["ranges"] = [["$C000", "$FFFF"]]
-            out = {"title": own["title"], "order": own["order"], "bank": n}
+            out = {"title": own["title"], "order": own["order"], "kind": "bank", "bank": n, "seen_by": seen_by,
+                   "window": [["$C000", "$FFFF"]]}
             out.update({k: v for k, v in own.items() if k not in out})
             v = blank(b["banks"][n])
             if v is not None:          # a bank of one value throughout holds nothing to explain
@@ -95,7 +96,7 @@ def make_parts(gdir, path, over):
             wrote.append(pid)
     rel = os.path.relpath(gdir)
     if added:
-        print(f"added {len(added)} part(s), {', '.join(added)}, over {over}")
+        print(f"added {len(added)} part(s), {', '.join(added)}, seen by {seen_by}")
     if wrote:
         print(f"copied the snapshot to work/entry.sna in {len(wrote)} part folder(s)")
     if not added and not wrote:
@@ -111,8 +112,8 @@ def main():
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__); return
     if argv[0] == "parts":
-        if len(argv) != 5 or argv[3] != "--over":
-            sys.exit("usage: banks.py parts <game dir> <file.sna> --over <id>")
+        if len(argv) != 5 or argv[3] != "--seen-by":
+            sys.exit("usage: banks.py parts <game dir> <file.sna> --seen-by <id>")
         make_parts(argv[1], argv[2], argv[4]); return
     show(argv[0])
 

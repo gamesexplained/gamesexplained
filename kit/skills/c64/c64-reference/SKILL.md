@@ -390,10 +390,10 @@ reads, the bank `cart` is the cartridge bank selected at that moment,
   step 4). A store checkpoint on the bank register says which bank fed
   each range, for the route in `orientation.md`.
 - **Each bank is a part as well.** `kit/c64/crt.py parts <game dir>
-  <file.crt> --over <id>` gives the game a part for each bank, `bank-00`,
+  <file.crt> --seen-by <id>` gives the game a part for each bank, `bank-00`,
   `bank-01` and on (three digits on a cartridge of more than 100), titled
-  "Bank N", with `"bank"` and the chip's ranges in `part.json`, laid over
-  the part `<id>` the code runs in. It writes the bank alone to the part's
+  "Bank N", with `"kind": "bank"`, its `"bank"` and the chips' addresses
+  as `"window"` in `part.json`, seen by the part `<id>` the code runs in. It writes the bank alone to the part's
   `work/bank.crt`: start the disassembler on that file (`tools.py r2000`
   builds the project from it) and build the listing from it
   (`listing.py <part> <part>/work/bank.crt`). A bank does not take the

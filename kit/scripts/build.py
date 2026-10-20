@@ -452,24 +452,26 @@ def uncounted_note(lpath):
             f'in {len(left)} stretch{"es" if len(left) > 1 else ""} its analysis has not described: {where}.</p>')
 
 
-def paged(game, P=()):
-    """The code a game reads from the disk during play, which no snapshot holds whole and so no
-    listing holds: game.json's coverage.paged, or each part's, [[bytes, what it is], ...] (#428).
-    An interpreter's story is the usual case. The About tab and the Source tab name it beside the
+def virtual(game, P=()):
+    """The code a game keeps in a virtual address space: read from the disk during play into
+    whichever buffer is free, and reached at its own addresses, so no snapshot holds it whole
+    and no listing holds it at all (kit/skills/core/10-orient, "A game of several parts").
+    game.json's coverage.virtual, or each part's, [[bytes, what it is], ...] (#428). An
+    interpreter's story is the usual case. The About tab and the Source tab name it beside the
     figure, so that 100 % says what it is 100 % of."""
     from parts import settings
-    rows = list((game.get("coverage") or {}).get("paged") or [])
+    rows = list((game.get("coverage") or {}).get("virtual") or [])
     for p in P:
-        rows += (settings(p).get("coverage") or {}).get("paged") or []
+        rows += (settings(p).get("coverage") or {}).get("virtual") or []
     for r in rows:
         if not (isinstance(r, list) and len(r) == 2 and isinstance(r[0], int) and r[0] > 0 and isinstance(r[1], str)):
-            sys.exit(f'games/{game.get("platform")}/{game.get("slug")}: coverage.paged row {r!r} is not '
+            sys.exit(f'games/{game.get("platform")}/{game.get("slug")}: coverage.virtual row {r!r} is not '
                      '[bytes, what it is], the bytes a whole number')
     return rows
 
 
-def paged_note(rows):
-    """The Source tab's line on the code its listing cannot hold (paged); none when there is none."""
+def virtual_note(rows):
+    """The Source tab's line on the code its listing cannot hold (virtual); none when there is none."""
     if not rows:
         return ""
     what = "; ".join(html.escape(w) for _, w in rows)
@@ -1195,7 +1197,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
     if cheats.strip():
         whole += '<h2>Cheats</h2><div data-part="">' + markdown(cheats, addr=False, parts=pages) + "</div>"
     tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
-    tpl = tpl.replace("<!-- accuracy -->", source_note(game) + paged_note(paged(game, P)))
+    tpl = tpl.replace("<!-- accuracy -->", source_note(game) + virtual_note(virtual(game, P)))
     for p in shown:
         page, beneath = part_page(p), [q for q in reversed(under(P, p)) if listed(q)]
         facts = f"<h2>{html.escape(p['title'])}</h2>" + markdown(read(os.path.join(p["dir"], "facts.md")), addr=page, shift=1,
@@ -1349,7 +1351,7 @@ def build_game(gdir, out_root):
             facts += "<h2>Cheats</h2>" + markdown(cheats)
         src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
         src = src.replace("<!-- accuracy -->", source_note(game) + uncounted_note(os.path.join(gdir, "listing.json"))
-                          + paged_note(paged(game)))
+                          + virtual_note(virtual(game)))
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{lib}/site.js"></script>\n'
@@ -1389,7 +1391,7 @@ def build_game(gdir, out_root):
     cov = f"{game.get('coverage_percent') or 0:g} %"
     if P and game["_parts"][0] < game["_parts"][1]:
         cov = "In the %d of %d parts analysed, %s" % (*game["_parts"], cov)
-    away = sum(n for n, _ in paged(game, P))
+    away = sum(n for n, _ in virtual(game, P))
     if away:   # the template goes on "of the bytes the game uses have a description"
         from coverage import tracked_count
         held, said = tracked_count(gdir)

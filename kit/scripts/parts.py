@@ -17,8 +17,10 @@ adding two parts never write the same file.
 
   part.json      all a part needs to exist. What the part is: "title", as the page names it; "order",
                  a number, its place among the parts as they are played;
-                 "over", the id of the part it lies over, when it does, and
-                 then "ranges"; and what the scripts read for one image:
+                 "kind", "load" unless it says "bank"; for a load over
+                 another part, "over", the id of the part beneath, and
+                 "ranges"; for a bank, "bank", "seen_by" and "window"
+                 (below); and what the scripts read for one image:
                  "video", "coverage", "io", "regions"
   symbols.json, listing.json, facts.md, and a gitignored work/ with the
   part's snapshots (work/entry.<ext> is the hand-over, as for any game):
@@ -43,16 +45,21 @@ ranges even where a load over it writes some of them again: a program
 that replaces the first pages of the game for a while holds other bytes
 than the game does there, so each counts its own, in its own snapshot.
 
-A bank of ROM that the machine switches in over RAM, such as one bank of a
-cartridge, is a part too, with "bank" (its number) in its part.json: it
-lies "over" the part the code runs in, and its "ranges" are where the bank
-shows. Its bytes are not the RAM's, so the part beneath keeps those
-addresses: the RAM there is its own. The platform makes the bank parts
-from the cartridge image (on the C64, kit/c64/crt.py parts), and a RAM
-part says which of its instructions see a bank with "banks" rows in its
+A bank that the machine switches into a window of the CPU's addresses,
+such as one bank of a cartridge's ROM or of a 128K machine's RAM, is a part
+too, of another kind. Its part.json says "kind": "bank", gives the bank's
+number as "bank", the part whose code reads it as "seen_by", and where it
+shows as "window", as [["$C000", "$FFFF"]]; a load's "over" and "ranges"
+do not belong in it, and parts() refuses the mix either way. Its bytes are
+not the RAM's, so the part that sees it keeps the window's addresses: the
+RAM there is its own. The platform makes the bank parts (on the C64,
+kit/c64/crt.py parts; on the Spectrum, kit/spectrum/banks.py parts), and a
+RAM part says which of its instructions see a bank with "banks" rows in its
 part.json, [first, last, bank's id, why], as "io" rows do for the chips
 (kit/scripts/listing.py). A bank whose every byte is left out of its
-ledger, copied whole into RAM or blank, counts as analysed.
+ledger, copied whole into RAM or blank, counts as analysed. Inside the
+scripts a bank lies "over" the part that sees it and its window is its
+"ranges", so that one rule lays every part over the ones beneath it.
 
 Usage:
   parts.py <game dir>                  list the parts, with each one's coverage
@@ -69,6 +76,7 @@ import glob, json, os, re, shutil, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ID = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 LEDGER_KEYS = ("video", "coverage", "io", "regions")   # one image's ledger settings: a part's are in part.json
+KINDS = {"load": ("over", "ranges"), "bank": ("bank", "seen_by", "window")}   # the fields each kind may have
 EMPTY = {"video": {"screen": "", "charset": ""}, "coverage": {"exclude": [], "extra": [], "include": []},
          "io": [], "regions": []}
 
@@ -93,9 +101,35 @@ def parts(gdir):
     for f in glob.glob(os.path.join(gdir, "parts", "*", "part.json")):
         own, d = json.load(open(f)), os.path.dirname(f)
         pid = os.path.basename(d)
+        bank = kind(pid, own) == "bank"
         out.append({"id": pid, "title": own.get("title") or pid, "order": own.get("order", 0),
-                    "over": own.get("over") or None, "bank": own.get("bank"), "dir": d})
+                    "over": own.get("seen_by" if bank else "over") or None,
+                    "bank": own["bank"] if bank else None, "dir": d})
     return sorted(out, key=lambda p: (p["order"], p["id"]))
+
+
+def kind(pid, own):
+    """The kind of part a part.json describes, "load" or "bank", once its fields are those of
+    that kind and no other's; stops on a mix, which would leave "over" and "ranges" meaning one
+    thing to the writer and another to the scripts."""
+    k = own.get("kind", "load")
+    if k not in KINDS:
+        sys.exit(f'part {pid}: "kind" is "load" or "bank", not {k!r}')
+    alien = [f for other, fields in KINDS.items() if other != k for f in fields if f in own]
+    if alien:
+        say = ", ".join(f'"{f}"' for f in alien)
+        if k == "bank":
+            sys.exit(f"part {pid} is a bank, so {say} do not belong in its part.json: name the part whose "
+                     'code reads it as "seen_by", and where it shows as "window" (kit/skills/core/10-orient)')
+        sys.exit(f'part {pid} has {say}, which only a bank has: a bank says "kind": "bank", and a load '
+                 "has none of them (kit/skills/core/10-orient)")
+    if k == "bank":
+        missing = [f for f in KINDS["bank"] if own.get(f) in (None, "", [])]
+        if missing:
+            sys.exit(f"part {pid} is a bank, and its part.json has no " + ", ".join(f'"{f}"' for f in missing)
+                     + ': "bank" is its number, "seen_by" the part whose code reads it, and "window" where '
+                     'it shows, as [["$C000", "$FFFF"]]')
+    return k
 
 
 def under(P, p):
@@ -123,8 +157,10 @@ def settings(p):
 
 
 def ranges(p):
-    """The addresses a part's load owns, as (first, last) pairs; [] when it owns its whole image."""
-    return sorted((hexint(a), hexint(b)) for a, b in settings(p).get("ranges") or [])
+    """The addresses a part's load owns, as (first, last) pairs, or a bank's window; [] when it
+    owns its whole image."""
+    key = "window" if p.get("bank") is not None else "ranges"
+    return sorted((hexint(a), hexint(b)) for a, b in settings(p).get(key) or [])
 
 
 def started(p):

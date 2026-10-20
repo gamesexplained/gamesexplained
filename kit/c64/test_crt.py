@@ -80,7 +80,7 @@ def fixture(d, rows=True):
     edit(g / 'game.json', platform='c64', slug='fixture', title='Fixture', tier='bronze')
     image = cartridge(g / 'work' / 'fixture.crt')
     run(KIT / 'scripts' / 'parts.py', 'add', g, 'resident', '--title', 'Resident')
-    run(KIT / 'c64' / 'crt.py', 'parts', g, image, '--over', 'resident')
+    run(KIT / 'c64' / 'crt.py', 'parts', g, image, '--seen-by', 'resident')
     part = g / 'parts' / 'bank-02' / 'part.json'
     cov = json.loads(part.read_text())['coverage']
     cov['exclude'].append(['$8000', '$9FFF', 'copied to $8000 by the start-up, and Resident\'s from there'])
@@ -140,13 +140,15 @@ class Cartridge(unittest.TestCase):
             ids = [p['id'] for p in P.parts(str(g))]
             self.assertEqual(ids, ['resident', 'bank-00', 'bank-01', 'bank-02'])
             b0 = json.loads((g / 'parts' / 'bank-00' / 'part.json').read_text())
-            self.assertEqual((b0['bank'], b0['over'], b0['ranges']), (0, 'resident', [['$8000', '$9FFF']]))
+            self.assertEqual((b0['kind'], b0['bank'], b0['seen_by'], b0['window']),
+                             ('bank', 0, 'resident', [['$8000', '$9FFF']]))
+            self.assertFalse({'over', 'ranges'} & set(b0))
             b1 = json.loads((g / 'parts' / 'bank-01' / 'part.json').read_text())
             self.assertEqual(b1['coverage']['exclude'], [['$8000', '$9FFF', 'blank: every byte is $FF']])
             self.assertTrue((g / 'parts' / 'bank-00' / 'work' / 'bank.crt').is_file())
-            again = run(KIT / 'c64' / 'crt.py', 'parts', g, g / 'work' / 'fixture.crt', '--over', 'resident').stdout
+            again = run(KIT / 'c64' / 'crt.py', 'parts', g, g / 'work' / 'fixture.crt', '--seen-by', 'resident').stdout
             self.assertIn('already', again)
-            r = run(KIT / 'c64' / 'crt.py', 'parts', g, g / 'work' / 'fixture.crt', '--over', 'bank-00', ok=False)
+            r = run(KIT / 'c64' / 'crt.py', 'parts', g, g / 'work' / 'fixture.crt', '--seen-by', 'bank-00', ok=False)
             self.assertNotEqual(r.returncode, 0)
 
     def test_the_ram_beneath_a_bank_stays_its_parts(self):

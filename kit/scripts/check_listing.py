@@ -182,8 +182,8 @@ def check_parts(gdir):
             errs.append(f'part {p["id"]} has "ranges" but lies over no part: name the part beneath it as "over", '
                         "or drop the ranges")
         if p.get("bank") is not None and not p["over"]:
-            errs.append(f'part {p["id"]} is bank {p["bank"]} but lies over no part: name the part the code runs in '
-                        'as its "over"')
+            errs.append(f'part {p["id"]} is bank {p["bank"]} but no part sees it: name the part whose code reads it '
+                        'as its "seen_by"')
         banks = {q["id"] for q in P if q.get("bank") is not None}
         for r in settings(p).get("banks") or []:
             if not (isinstance(r, list) and len(r) == 4 and r[2] in banks):

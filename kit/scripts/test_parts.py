@@ -351,6 +351,28 @@ class Parts(unittest.TestCase):
             (g / 'game.json').write_text(json.dumps(dict(json.loads(before), parts=[{'id': 'engine'}])))
             self.assertIn('the parts are their folders', run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout)
 
+    def test_each_kind_has_its_own_fields(self):
+        # a load's "over" and "ranges" and a bank's "seen_by" and "window" mean different things,
+        # so a part.json that mixes them is stopped before anything reads it
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            run(KIT / 'scripts' / 'parts.py', 'add', g, 'bank-00')
+            f = g / 'parts' / 'bank-00' / 'part.json'
+            own = json.loads(f.read_text())
+            bank = dict(own, kind='bank', bank=0, seen_by='engine', window=[['$8000', '$9FFF']])
+            f.write_text(json.dumps(bank))
+            b0 = next(p for p in P.parts(str(g)) if p['id'] == 'bank-00')
+            self.assertEqual((b0['bank'], b0['over'], P.ranges(b0)), (0, 'engine', [(0x8000, 0x9FFF)]))
+            self.assertFalse(any(lo <= 0x8010 <= hi for lo, hi, _ in P.load_game(str(g / 'parts' / 'engine'))['elsewhere']))
+            for wrong, says in ((dict(bank, over='engine'), 'is a bank, so "over"'),
+                                ({k: v for k, v in bank.items() if k != 'window'}, 'has no "window"'),
+                                (dict(own, bank=0, window=[['$8000', '$9FFF']]), 'which only a bank has'),
+                                (dict(own, kind='overlay'), '"kind" is "load" or "bank"')):
+                f.write_text(json.dumps(wrong))
+                with self.assertRaises(SystemExit) as e:
+                    P.parts(str(g))
+                self.assertIn(says, str(e.exception))
+
     def test_adopt_makes_the_first_load_a_part(self):
         with tempfile.TemporaryDirectory() as d:
             g = Path(d) / 'one'
