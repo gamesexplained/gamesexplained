@@ -254,3 +254,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Stone Corridor archway · 21 October 2026
 
 `60-verify`, “It was going to happen anyway”: the300-frame no-input control distinguishes standing at the arch from walking through it. “A number handed through a request byte” keeps the new entry26 separate from a guessed return route. The existing corridor placement check was reusable after a byte-for-byte comparison, with the negative-mode branch left open. Existing guidance covers the work; no shared-kit edit or maintainer ask arose.
+
+
+## Stone Corridor ladder · 21 October 2026
+
+`60-verify`, “What a test lets through”: tested the full eight-position accepted interval rather than treating the drawn ladder width as its movement rule. “Prove reachability with inputs” led to two short ordinary left pulses, with misses retained separately. The reference search over annotated code reported no matches for3420; a raw operand search found its still-unannotated producer and consumers. Existing negative-result guidance covers that distinction. No shared-kit edit or maintainer ask arose.

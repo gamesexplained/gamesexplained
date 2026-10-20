@@ -172,4 +172,9 @@ Live-confirmed from the opened X147/depth6 state: CLOSE changes cell7→1 and vi
 
 ### Stone Corridor: through the archway
 
-Live-confirmed: up input at the reached column30 archway leads through depth70 to refresh0/entry26 and arrival X1696/depth6 in scene6, with a ladder visible on the left. A300-frame no-input control stays at the arch. The first opened cell remains7 across this in-room refresh. The original exit and nonnegative placement prefix agree with the page’s recorded route and reused placement calculation. A return to the first door, the ladder interaction and save/disk-load persistence remain open. Evidence: parts/scene-06/facts.md, test_stone_arch.js and stone-arch-threshold/arrival captures.
+Live-confirmed: up input at the reached column30 archway leads through depth70 to refresh0/entry26 and arrival X1696/depth6 in scene6, with a ladder visible on the left. A300-frame no-input control stays at the arch. The first opened cell remains7 across this in-room refresh. The original exit and nonnegative placement prefix agree with the page’s recorded route and reused placement calculation. A return to the first door and save/disk-load persistence remain open. The ladder is checked below. Evidence: parts/scene-06/facts.md, test_stone_arch.js and stone-arch-threshold/arrival captures.
+
+
+### Stone Corridor: climb the ladder
+
+Live-confirmed: ordinary movement aligns at X1633 in column25, then up input starts a ladder climb at depth24. Releasing input at the accepted branch still completes it. The actual exit requests5/1 and loads the Wall of Hands at X84/depth6, where the opening question reappears and the manicure counter is0. Off-centre X1641 and1637 trials remain at depth24 after600 up frames. The original alignment gate accepts offsets28–35 inclusive within this ladder column; its state dispatcher, climb completion and actual exit are checked. Ordinary acquisition, a complete return to the first door, and save/restart persistence remain open. Evidence: parts/scene-06/facts.md, parts/scene-05/facts.md, test_stone_ladder.js and ladder captures.
