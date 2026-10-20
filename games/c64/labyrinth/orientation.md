@@ -122,3 +122,7 @@ Restored the controlled scene-four female reference, released inputs, let the wh
 ## Door-count response comparison · 20 October 2026
 
 Restored the saved third ASK ALPH inside the controlled scene-four reference separately for counter14 and15. Changed only $0569, then entered ASK ALPH with the normalized wheel sequence. Count14 retained refusal/$056B=$FF; count15 gave thanks/$056B=15. Each had one ASK-handler hit, with zero/one acknowledgement-store hits. A separate trial restored the ordinary opened column36 Brick Hallway door, repeated OPEN DOOR and retained count4/cell6 with one handler and zero mutation hits. Captures and raw observations are private in `work/guard-progress/`. These trials do not establish the complete fifteen-door route. Original emulator state, input and normal speed were restored.
+
+## Brick Hallway close/reopen sequence · 20 October 2026
+
+Restored the ordinary opened column36 snapshot at X2348/depth24, count4/cell6, and entered CLOSE DOOR twice followed by OPEN DOOR twice with the normalized wheel-input sequence. Captured every resulting state and checkpoint count in `work/brick-cycle/`. Counts4→3→3→4→4 matched cells6→7→7→6→6, with a handler hit for every action and mutation hits only on the first close and reopening. Current scene3 and player coordinates remained unchanged. Original emulator state, input and normal speed were restored.

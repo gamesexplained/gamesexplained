@@ -233,6 +233,16 @@
   },
   {
    "start": 35598,
+   "end": 35629,
+   "type": "Undefined"
+  },
+  {
+   "start": 35630,
+   "end": 35631,
+   "type": "Byte"
+  },
+  {
+   "start": 35632,
    "end": 35731,
    "type": "Undefined"
   },
@@ -253,6 +263,16 @@
   },
   {
    "start": 35790,
+   "end": 35821,
+   "type": "Undefined"
+  },
+  {
+   "start": 35822,
+   "end": 35823,
+   "type": "Address"
+  },
+  {
+   "start": 35824,
    "end": 35923,
    "type": "Undefined"
   },
@@ -273,6 +293,16 @@
   },
   {
    "start": 36315,
+   "end": 36509,
+   "type": "Undefined"
+  },
+  {
+   "start": 36510,
+   "end": 36558,
+   "type": "Code"
+  },
+  {
+   "start": 36559,
    "end": 36946,
    "type": "Undefined"
   },
@@ -293,6 +323,16 @@
   },
   {
    "start": 37324,
+   "end": 37599,
+   "type": "Undefined"
+  },
+  {
+   "start": 37600,
+   "end": 37620,
+   "type": "Byte"
+  },
+  {
+   "start": 37621,
    "end": 65535,
    "type": "Undefined"
   }
@@ -572,6 +612,12 @@
    "address": 1822,
    "name": "brick_open_replacements",
    "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 1838,
+   "name": "brick_closed_cell_replacements",
+   "type": "Field",
    "kind": "user"
   },
   {
@@ -1031,6 +1077,12 @@
    "kind": "user"
   },
   {
+   "address": 35630,
+   "name": "brick_close_door_pair",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 35732,
    "name": "brick_open_door_pairs",
    "type": "UserDefined",
@@ -1039,6 +1091,12 @@
   {
    "address": 35788,
    "name": "brick_ask_door_target",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 35822,
+   "name": "brick_close_door_target",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1073,6 +1131,30 @@
    "kind": "user"
   },
   {
+   "address": 36510,
+   "name": "brick_close_door",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 36533,
+   "name": "b_8EB5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 36540,
+   "name": "b_8EBC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 36556,
+   "name": "j_8ECC",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
    "address": 36947,
    "name": "brick_open_door",
    "type": "AbsoluteAddress",
@@ -1098,8 +1180,20 @@
   },
   {
    "address": 37319,
-   "name": "brick_print_response",
+   "name": "brick_queue_mode5_reply",
    "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 37600,
+   "name": "brick_already_closed_reply",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37621,
+   "name": "brick_unannotated_after_closed_reply",
+   "type": "UserDefined",
    "kind": "user"
   }
  ],
@@ -1118,6 +1212,11 @@
    "address": 1822,
    "type": "line",
    "text": "Sixteen replacement cell nibbles indexed by the current cell's low nibble in OPEN DOOR's type-two branch. Captured index7 contains6, changing the neighboring closed door to open-door type3 through $073E."
+  },
+  {
+   "address": 1838,
+   "type": "line",
+   "text": "Sixteen replacements indexed by the original cell low nibble when CLOSE DOOR sees translated type3. In the captured map, open cell4 becomes closed5 and open6 becomes closed7. Mutation $58C8 masks the replacement to its low nibble. Live column36 closing used6 to7."
   },
   {
    "address": 1854,
@@ -1240,6 +1339,11 @@
    "text": "Action/object pair [30,45] for ASK DOOR; parallel pointer $8BCC selects $8DD1."
   },
   {
+   "address": 35630,
+   "type": "line",
+   "text": "CLOSE DOOR action/object pair [32,45]. Parallel pointer $8BEE selects $8E9E. Ordinary input at the opened column36 door reached this handler twice in the checked CLOSE,CLOSE,OPEN,OPEN sequence."
+  },
+  {
    "address": 35732,
    "type": "line",
    "text": "Action/object pairs [37,45] then [37,0]. The first matches OPEN DOOR and selects handler $9053 via $8C54; the second is the following OPEN wildcard response. The dispatcher scans in stored order."
@@ -1250,6 +1354,11 @@
    "text": "Pointer to ASK DOOR handler $8DD1, paired with $8B0C."
   },
   {
+   "address": 35822,
+   "type": "line",
+   "text": "Pointer to CLOSE DOOR handler $8E9E, paired with $8B2E."
+  },
+  {
    "address": 35924,
    "type": "line",
    "text": "Handler $9053 for OPEN DOOR, followed by fallback message selector $14BB for OPEN with another object. The pairs live at $8B94."
@@ -1258,6 +1367,11 @@
    "address": 36305,
    "type": "line",
    "text": "Call prerequisite $082A. Accepted door types2/3 return and select response $94BB, Nothing happens. A failed prerequisite bypasses this continuation and queues $0D49, There's no door here. Ordinary ASK DOOR at column12/type11 displayed that rejection, with one handler dispatch and one prerequisite hit."
+  },
+  {
+   "address": 36510,
+   "type": "line",
+   "text": "Nonnegative $0343 selects fallback $94BB through $8ECC. In negative mode, query $0818. Translated type3 selects replacement $072E+cellNibble, mutates through $081B, requests sound2 and decrements opened-door counter $0569. Type2 instead selects $92E0, It's already closed.; other types select $94BB, Nothing happens. Response path $8ECC jumps to $91C7. Ordinary column36 close changed cell6 to7/count4 to3; repeat close retained7/3. Reopening restored6/4; repeating OPEN retained6/4. This handler contains no depth comparison; ordinary reachability is checked only at the stated door approach."
   },
   {
    "address": 36947,
@@ -1272,7 +1386,12 @@
   {
    "address": 37319,
    "type": "line",
-   "text": "Set A five and tail-call $0827 with the selected X/Y response pointer."
+   "text": "Load mode5 in A and tail-call response API $0827 with the low/high pointer in Y/X. CLOSE DOOR reaches this through $8ECC for its already-closed and fallback messages; other callers remain outside this check."
+  },
+  {
+   "address": 37600,
+   "type": "line",
+   "text": "Headered message whose original-parser expansion is It's already closed. Live second CLOSE DOOR at column36 displayed this and retained counter3/cell7, with a handler hit but no new map mutation."
   }
  ]
 }

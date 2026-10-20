@@ -138,3 +138,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Opened-door threshold · 20 October 2026
 
 `60-verify`, “Poke the variable, watch the screen”: restored the same refusal state and changed only the counter for the14/15 comparison, identifying it as a controlled response check. Its reachability rule kept the complete fifteen-door route open. `70-minisite`'s requirement to test the page's actual inputs led to testing both displayed counter values alongside every byte value and valid opening index. The repeated-open trial supplied the cheap ordinary negative case with positive handler hits. Existing rules cover the work; no shared-kit edit or maintainer ask arose.
+
+## Brick Hallway close/reopen cycle · 20 October 2026
+
+`60-verify`, “A live test in one room tests one room”: used ordinary input for the complete local close/reopen sequence without treating it as persistence across other rooms or disk saves. `70-minisite`, “Start each case where the game starts it”: the cycle test passes the page's actual OPEN function and starts the full classifier/mutation comparison from the displayed cell6/count4 state. Count0/255 stress cases stay explicitly artificial. Existing guidance covers the work; no shared-kit change or maintainer ask arose.

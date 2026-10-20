@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,049/48,587 described bytes and Alph and Ralph has 923/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 53,462/237,523 bytes (22.5%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 923/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 53,536/237,523 bytes (22.5%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -53,4 +53,4 @@ For Alph and Ralph:
 
 - Complete the ordinary route opening all15 Brick Hallway doors. The map census, initial count3, checked closed-door increment, repeated-open non-increment and controlled14/15 response threshold are established. The controlled test restores an unacknowledged conversation; later acknowledged branches need their own checks.
 
-- Check CLOSE DOOR and any close/reopen effect on the opened-door counter. The established first-open and already-open cases do not establish every other command's effect on that count.
+- Check the remaining commands and count persistence across complete room crossings and disk save/load. The ordinary column36 CLOSE,CLOSE,OPEN,OPEN sequence is established: counts4→3→3→4→4, with no change on repeats.

@@ -86,3 +86,7 @@ Ordinary CALL RALPH and three ASK RALPH commands beside the right door displayed
 ## Opened-door response threshold
 
 The captured Brick Hallway strip has15 door cells, three initially open, and the new-game counter starts at3. The checked first opening raises it to4; repeating OPEN DOOR at that opened door leaves4 unchanged. In a controlled scene-four comparison restoring the same refusal state, count14 retained Alph's refusal and count15 gave thanks for opening the doors. Positive ASK/acknowledgement-store checkpoints and an original-code comparison accompany the captures. The counter was set directly for this response comparison; the complete ordinary fifteen-door journey remains open.
+
+## Closing and reopening a Brick Hallway door
+
+Ordinary CLOSE,CLOSE,OPEN,OPEN at the naturally opened column36 door changed counts4→3→3→4→4 and cells6→7→7→6→6. Successful actions had map-mutation hits; repeated commands had positive handler hits and already-closed/opened replies without another mutation. The page's cycle and CLOSE decision are checked against the original code. This establishes the checked door sequence, while other commands and complete persistence remain open.
