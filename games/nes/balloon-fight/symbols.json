@@ -6068,7 +6068,7 @@
   },
   {
    "address": 59313,
-   "name": "actor_ease_vx",
+   "name": "actor_sway",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -8102,13 +8102,13 @@
   },
   {
    "address": 63949,
-   "name": "fall_sfx_regs",
+   "name": "pop_sfx_regs",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 63953,
-   "name": "pop_sfx_regs",
+   "name": "fall_sfx_regs",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8791,7 +8791,7 @@
   {
    "address": 49,
    "type": "line",
-   "text": "One byte per player ($31 player 1, $32 player 2): bit 0 right, bit 1 left, bit 6 flap (A pressed or B held), bit 7 B held. For a bird it is the computer's steering, written by steer_actor."
+   "text": "One byte per player ($31 player 1, $32 player 2): bit 0 right, bit 1 left, bit 6 B, bit 7 A (B held flaps on every control pass, A once per press). For a bird it is the computer's steering, written by steer_actor, bit 6 its flap."
   },
   {
    "address": 58,
@@ -8991,7 +8991,7 @@
   {
    "address": 114,
    "type": "line",
-   "text": "Four palette bytes for the bonus round's sprite palette, copied from the round's entry in bonus_palettes."
+   "text": "Bytes 27 to 30 of text_buf while load_palette stages the palette block: sprite palette 2 ($3F18 to $3F1B), the birds' and the balloons' colours. A bonus round and Balloon Trip replace them from the round's entry in bonus_palettes (the balloons turn green), the phases keep the base palette's."
   },
   {
    "address": 127,
@@ -9266,7 +9266,7 @@
   {
    "address": 225,
    "type": "line",
-   "text": "The high byte of each channel's stream pointer in snd_channel_ptr (read in pairs)."
+   "text": "The high byte of square 1's stream pointer; the four pointers are pairs at $E0 to $E7, read with X twice the channel number."
   },
   {
    "address": 232,
@@ -9521,7 +9521,7 @@
   {
    "address": 688,
    "type": "line",
-   "text": "Sprites of the sparks and Balloon Trip balloons, one each (20)."
+   "text": "Sprites of Balloon Trip's sparks, one each (20); the phase's two sparks are drawn at $0200 and $0204 instead, and the balloons in sprite_bubbles."
   },
   {
    "address": 689,
@@ -9721,12 +9721,12 @@
   {
    "address": 1123,
    "type": "line",
-   "text": "The horizontal speed each actor's velocity is easing toward, fractional part."
+   "text": "The sway's displacement for actor_sway, fractional part: a parachuting bird's and a bubble's side-to-side swing."
   },
   {
    "address": 1132,
    "type": "line",
-   "text": "Whole part of the speed the horizontal velocity eases toward."
+   "text": "Whole part of the sway's displacement."
   },
   {
    "address": 1141,
@@ -9786,12 +9786,12 @@
   {
    "address": 1168,
    "type": "line",
-   "text": "X of each spark or Balloon Trip balloon (20 slots)."
+   "text": "X of each spark (20 slots: the phase's two, Balloon Trip's up to twenty)."
   },
   {
    "address": 1188,
    "type": "line",
-   "text": "Y of each spark or balloon; $F0 is hidden."
+   "text": "Y of each spark; $F0 is hidden."
   },
   {
    "address": 1208,
@@ -9826,7 +9826,7 @@
   {
    "address": 1328,
    "type": "line",
-   "text": "State of each spark or balloon: $FF none, otherwise its animation phase (0 to 7, the tile cycles)."
+   "text": "State of each spark: $FF none; for the phase's two sparks the animation step 0 to 7 that picks the tile; in Balloon Trip it stays 0 and the tile comes from frame_counter."
   },
   {
    "address": 1329,
@@ -10336,12 +10336,12 @@
   {
    "address": 50966,
    "type": "line",
-   "text": "Starts a phase's lightning: both spark slots empty, then lightning_set_phase, which falls into pick_lightning_cloud."
+   "text": "Starts a phase's lightning: both spark slots empty, pick_lightning_cloud, then lightning_set_phase."
   },
   {
    "address": 50982,
    "type": "line",
-   "text": "Sets the storm for the phase from phase_counter (capped at 24): spark_speed_level from spark_speed_by_phase and lightning_timer from lightning_delays; hides the bolt sprites; paints the clouds their resting colour (cloud_flash with 3)."
+   "text": "Sets the storm for the phase from phase_counter (capped at 24): spark_speed_level from spark_speed_by_phase and lightning_timer from lightning_delays; hides the bolt sprites; ends by painting the clouds their resting colour (a jump to cloud_flash with 3)."
   },
   {
    "address": 51016,
@@ -10601,7 +10601,7 @@
   {
    "address": 52783,
    "type": "line",
-   "text": "Draws a balloon or bubble with three sprites (two top tiles $A8, $A9 and a bottom tile animated from balloon_bottom_tiles and balloon_bottom_flips by the frame), its palette from balloon_palettes by state; a slot that is off hides them (Y $F0) with tiles $AC, $AD."
+   "text": "Draws a balloon with three sprites (two top tiles $A8, $A9 and a bottom tile animated from balloon_bottom_tiles and balloon_bottom_flips by the frame), its palette from balloon_palettes by state; a slot that is off hides them (Y $F0) with tiles $AC, $AD. The bonus round's and Balloon Trip's balloons, the results screen's icons and the title screen's cursor are all drawn here."
   },
   {
    "address": 52910,
@@ -10741,7 +10741,7 @@
   {
    "address": 54253,
    "type": "line",
-   "text": "Queues the whole palette: base_palette into text_buf, then the first background palette's three colours by phase group (phase_index and $0C, from phase_bg_palettes: the platforms change colour every four phases), or in a bonus round the round's own entry from bonus_palettes, which also sets bonus_palette."
+   "text": "Queues the whole palette: base_palette into text_buf, then for a phase the first four bytes (the backdrop and background palette 0) from phase_bg_palettes by phase group (phase_index and $0C: the platforms change colour every four phases). In a bonus round or Balloon Trip the round's entry in bonus_palettes replaces sprite palette 2 (bonus_palette, the balloons' colours) and, in the bonus round only, the first four bytes too."
   },
   {
    "address": 54327,
@@ -10766,7 +10766,7 @@
   {
    "address": 54388,
    "type": "line",
-   "text": "Five entries of eight bytes: four colours for bonus_palette (sprite palette) and four for background palette 0, one per bonus round."
+   "text": "Five entries of eight bytes, one per bonus round: four colours for the background palette (the backdrop and the chimneys) and four for sprite palette 2 (the balloons)."
   },
   {
    "address": 54412,
@@ -11316,7 +11316,7 @@
   {
    "address": 59313,
    "type": "line",
-   "text": "Moves an actor's horizontal velocity a sixteenth of the way toward its target (actor_vx_target): the bubble's drift and a bird knocked sideways."
+   "text": "A spring that swings an actor from side to side: each frame actor_vx_target (the sway's displacement) gains a sixteenth of the horizontal velocity and the velocity loses a sixteenth of the displacement, so the two chase each other without decaying. A bird on its parachute sways this way (actor_move_control), and so does the bubble of a sunk bird (actor_bubble_update)."
   },
   {
    "address": 59779,
@@ -11361,7 +11361,7 @@
   {
    "address": 60472,
    "type": "line",
-   "text": "Applies buttons: steer_actor first; a player who presses anything loses the invulnerability; a flap (bit 6, once per press through flap_latch): action 0, frame 1, the flap sound (a player's or a bird's), the vertical velocity reduced by flap_strength; from the ground (action 2 up) the actor lifts 2 pixels first. Bit 7 (B held) repeats the flap while flap_latch allows."
+   "text": "Applies buttons: steer_actor first; a player who presses A, B, left or right (mask $C3) loses the invulnerability. Bit 6 (B) flaps on every call, bit 7 (A) once per press through flap_latch. A flap is taken from the ground (action 2 up: the actor lifts 2 pixels and its vertical speed is cleared), while flapping (action 1), or idle in the air (action 0) only when the animation frame is 0: so after a flap three more control passes, nine frames, go by before the next is accepted. The flap: action 0, frame 1, the latch set, the flap sound (a player's or a bird's), and flap_strength taken off the vertical velocity."
   },
   {
    "address": 60590,
@@ -11616,7 +11616,7 @@
   {
    "address": 62724,
    "type": "line",
-   "text": "The music driver, once a frame: for each of the four channels (square 1, square 2, triangle, noise) with a stream pointer: counts the note down and, at 0, reads the stream. A byte $C0 to $FE starts a loop of (byte and $3F) repeats; $FF repeats from the loop start while repeats are left; $80 to $BF sets the note length from note_lengths by its low nibble plus snd_tempo; other bytes are notes: an index into note_periods (pairs), written to the channel's period registers, with the volume byte for the squares, the linear counter from the length for the triangle, and a noise entry (noise_periods) for noise. A note of 0 with the length is a rest."
+   "text": "The music driver, once a frame: for each of the four channels (square 1, square 2, triangle, noise) with a stream pointer: counts the note down and, at 0, reads the stream. A byte of 0 where a command is expected ends the channel's stream (music_channel_end); $C0 to $FE starts a loop of (byte and $3F) repeats; $FF repeats from the loop start while repeats are left; $80 to $BF sets the note length from note_lengths by its low nibble plus snd_tempo and reads the next byte as its note; other bytes are notes: an even index into note_periods (pairs), written to the channel's period registers, with the volume byte for the squares, the linear counter from the length for the triangle, and a noise entry (noise_periods) for noise. Note 2, whose period is 0, is the rest."
   },
   {
    "address": 62972,
@@ -11836,12 +11836,12 @@
   {
    "address": 63826,
    "type": "line",
-   "text": "The fall into the water (sfx_request_a bit 6): sfx_state_a $40, its flag, and the fall registers (fall_sfx_regs) to square 1."
+   "text": "The fall into the water (sfx_request_a bit 6): sfx_state_a $40, its flag, and fall_sfx_regs ($F9D1) on square 1."
   },
   {
    "address": 63845,
    "type": "line",
-   "text": "A balloon popped (sfx_request_a bit 5): the hit sound too, sfx_state_a $20, and pop_sfx_regs on square 1."
+   "text": "A balloon popped (sfx_request_a bit 5): the hit sound too, sfx_state_a $20, and pop_sfx_regs ($F9CD) on square 1."
   },
   {
    "address": 63863,
@@ -11851,17 +11851,17 @@
   {
    "address": 63891,
    "type": "line",
-   "text": "The fish effect: for 18 frames the two squares' periods rise, the first 6 by steps of 2 and then at random; then both are silenced."
+   "text": "The fish effect: counts snd_fish_count up to 18; for counts 1 to 5 the two squares' periods step up by 2 from whatever the last effect left in snd_fish_period1 and snd_fish_period2 (the start does not set them), from 6 on they take a random value; at 18 both squares are silenced."
   },
   {
    "address": 63949,
    "type": "line",
-   "text": "Register bytes for the fall effect on square 1: $B8, $D5, $20, $00."
+   "text": "Register bytes for the balloon pop on square 1 (pop_sfx_start loads this block): $B8, $D5, $20, $00."
   },
   {
    "address": 63953,
    "type": "line",
-   "text": "Register bytes for the balloon pop: $9F, $93, $80, $22."
+   "text": "Register bytes for the fall into the water on square 1 (fall_sfx_start_main loads this block): $9F, $93, $80, $22."
   },
   {
    "address": 63957,
@@ -11931,7 +11931,7 @@
   {
    "address": 64226,
    "type": "line",
-   "text": "A bird lands (sfx_request_b bit 6): sfx_state_b $40, the triangle and music cleared, square 2 and the noise off, the first landing step on the triangle."
+   "text": "A bird lands (sfx_request_b bit 6): bit 6 of sfx_state_b set (its low five bits kept), the triangle and music cleared, square 2 and the noise off, the first landing step on the triangle."
   },
   {
    "address": 64260,

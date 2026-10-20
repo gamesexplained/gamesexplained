@@ -97,9 +97,22 @@ parachute, 8 to 11 falling with nothing (`hit_next_type`, `$F05E`).
   vertical speed (`flap_strength`), a pink bird's 0.16; a player tops
   out at 1.25 pixels a frame sideways and down, a pink bird at 0.44 and
   0.31; falling with nothing is 2 pixels a frame (`max_vy_lo`).
-- A flap is one per press of A, through `flap_latch`; B held repeats it
-  (`actor_controls`, `$EC38`). Left and right move the actor on the
-  ground and accelerate it in the air; up and down are never read.
+- The pad is read every third frame: each actor's frame timer
+  (`actor_frame_timer`) reloads with 3, and only on the frame it reaches 0
+  do the animation, the steering and the controls run (`actors_update`,
+  `$E6B8`); the physics runs every frame. A press of A shorter than three
+  frames can go unseen.
+- A flap is one per press of A, through `flap_latch`; B held flaps on
+  every control pass (`actor_controls`, `$EC49`). After a flap the actor
+  is idle (action 0) with its frame at 1, and a flap is not taken again
+  until the frame has come round to 0 and the action back to flapping:
+  three passes later. So B gives a flap every 9 frames at most; 14 flaps
+  in 120 frames when measured (below). Left and right move the actor on
+  the ground and accelerate it in the air; up and down are never read.
+- A bird on its parachute sways from side to side on a spring
+  (`actor_sway`, `$E7B1`): the displacement gains a sixteenth of the
+  speed and the speed loses a sixteenth of the displacement each frame,
+  which never decays. A sunk bird's bubble drifts the same way.
 - Platforms: `actor_platforms` (`$ED28`) tests every platform from the
   phase's four tables against the actor's 16 by 24 box: landing within 3
   pixels of a top edge, a head bump under a bottom edge (the vertical
@@ -397,8 +410,42 @@ code on the play snapshot (`kit/cpu/census.py`, 19 October 2026).
 - Balloon Trip: `bonus_value` 30 (300 points a balloon) from the
   start; a 20-second trip ended with the rank in the status bar and the
   score inserted at its rank.
+- The flaps: with the player in the air and a counting checkpoint on the
+  flap at `$EC7E` for actor 0, B held for 120 frames gave 14 flaps, A held
+  gave 1, A tapped every 12 frames gave 10 of 10, every 18 frames 6 of
+  6, and 60 two-frame taps gave 10: the once-per-press latch, the 9-frame
+  limit and the three-frame sampling, as the code reads.
+- The page's flight port (the flap and the vertical physics) was run
+  against `actor_animate`, `actor_controls` and `actor_physics` on the
+  kit's 6502 over 35,358 frames of random taps and holds, 1,641 flaps,
+  with no difference in Y, velocity, action or frame.
+- The page's sound driver, the game's own code run on the kit's 6502,
+  was run against the emulator's recording of each of the 11 tunes and
+  14 effects, started by the same request bit from the same paused
+  state: every write to the APU matched, in order, frame by frame
+  (`work/sound/compare.js`).
+- The page's phase renderer, from the layout tables, was held to the
+  emulator's screen for all 16 layout indexes: every cell below the
+  status bar matches, and the palettes.
 
 ## The listing's error rate
 
-(The sample is drawn in the verify step; see `agent-history.md` until
-then.)
+Sample 1, seed 1985, 60 comments drawn from the 713 (30 on code, 30 on
+data and variables), checked by a fresh claude-fable-5-1 agent on
+19 October 2026: 13 were wrong, 3 in their main claim and 10 in a
+detail. The three: `actor_sway` was described as easing a velocity where
+it is an undamped spring; the fish's rising sound was called a bird's
+take-off and its five stepped frames six; the balloon pop's and the
+fall's register blocks were labelled the other way round. The details: a
+flap bit swapped (A is bit 7, B bit 6, and B flaps on every pass); "a
+note of 0 is a rest" where a 0 ends a channel's stream and the rest is
+note 2; sprite and spark arrays said to hold Balloon Trip's balloons,
+which `balloon_x` holds; `balloon_draw` said to draw bubbles; a flag's
+low bits said to be cleared; a jump misread as a fall-through; a high
+byte said to span four pairs. All 13 were corrected, and every other
+comment that said the same thing (the request bits in `buttons`, the
+spark arrays, `lightning_set_phase`). At 13 of 60 the sample is over the
+mark of 2, so the listing's comments should be taken as about one in
+five wrong in a detail until an audit: the rate is a lower bound on what
+a checker finds. An audit of every comment is recommended for a later
+run.
