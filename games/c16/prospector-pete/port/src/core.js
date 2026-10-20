@@ -30,6 +30,11 @@ const GEN = new Set(['main_loop', 'program', 'title', 'high_scores', 'start_leve
   'die_where_he_was', 'death', 'level_done', 'irq_play', 'move_creatures']);
 // Bytes the interrupt writes that the main program reads in the middle of its work.
 const IRQ_BYTES = [0x0A, 0x0B, 0x0C, 0x64, 0x7B, 0xBA, 0xBD, 0xC5];
+// Bytes the game reads that listing.json does not hold: the table beside each earth character at
+// $2970-$2972 (2, 1, 4; its last byte, 3, is earth_diagonal_base's first), untyped in symbols.json
+// and so a gap in the listing, as the listing's comment at $296F gives it. The memory the port
+// starts from is the listing's bytes and these.
+const MISSING = { 0x2970: [0x02, 0x01, 0x04] };
 
 // The 6502's ADC and SBC in decimal mode, as the NMOS part gives A and the carry.
 function adcD(a, b, c) {
@@ -61,5 +66,5 @@ function makePort(M, io, opts = {}) {
   for (const name of Object.keys(G)) G[name](P);
   return P;
 }
-root.PetePort = { makePort, POLL, GEN, IRQ_BYTES, adcD, sbcD };
+root.PetePort = { makePort, POLL, GEN, IRQ_BYTES, MISSING, adcD, sbcD };
 })(typeof window !== 'undefined' ? window : globalThis);

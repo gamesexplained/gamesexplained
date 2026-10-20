@@ -1,13 +1,14 @@
 'use strict';
 // Moments of play for the routine tests (port/test/lib.js): the game on the kit's C16
-// (kit/c16/machine.js), booted from listing.json and played by a script, its whole state saved at
-// the main loop's poll ($1852) now and then, on every level. The states hold the game's memory, so
-// they go in the gitignored work/states/ and nowhere else.
+// (kit/c16/machine.js), booted from listing.json (lib.js, boot) and played by a script, its whole
+// state saved at the main loop's poll ($1852) now and then, on every level. The states hold the
+// game's memory, so they go in the gitignored work/states/ and nowhere else.
 // node games/c16/prospector-pete/port/scripts/gen-states.js [games]
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const REPO = path.resolve(ROOT, '../../../..');
-const { Machine, KEY, loadListing } = require(path.join(REPO, 'kit/c16/machine.js'));
+const { Machine, KEY } = require(path.join(REPO, 'kit/c16/machine.js'));
+const { boot } = require('../test/lib.js');
 
 const OUT = path.join(ROOT, '../work/states');
 fs.mkdirSync(OUT, { recursive: true });
@@ -17,7 +18,7 @@ let seed = 12345;
 const rnd = n => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 8) % n; };
 const STICK = [0x1F, 0x1E, 0x1D, 0x1B, 0x17, 0x1F];      // still, up, down, left, right, still
 const games = +process.argv[2] || 32;
-const m = new Machine({ ram: loadListing(path.join(REPO, 'games/c16/prospector-pete/listing.json')), pc: 0x1800, passAt: 0x1852 });
+const m = new Machine({ ram: boot(), pc: 0x1800, passAt: 0x1852 });
 const vector = () => m.ram[0x0314] | m.ram[0x0315] << 8;
 let saved = 0;
 m.runFrames(60);

@@ -29,12 +29,14 @@ minisite built (How it works, Discoveries, Maps / levels), copy
   `move_creatures`, the scoring or the deaths.
 - Open in `features.md`: whether the up-and-down chase was meant to use
   the row, and whether other releases of the game differ from this tape.
+- Three bytes the game reads are missing from `listing.json`: the table
+  at $2970-$2972 beside each earth character (2, 1, 4), untyped in
+  `symbols.json`. Typing them as bytes and rebuilding the listing from
+  the snapshot fills the gap; the Play tab adds them meanwhile
+  (`port/corrections.md`). It needs the contributor's snapshot, which
+  the run that built the Play tab did not have.
 
 ## Ideas
 
-- A Play tab would be a port of the whole game in JavaScript, routine by
-  routine, held to the game in lockstep (`kit/skills/core/70-minisite`,
-  "Play"). The page's engine and its traces in `work/trace/` are a start
-  on the tests.
 - The freeze could get a recording: plus4emu's frames from the stick
   being laid to the creature coming out, as a strip or a GIF.

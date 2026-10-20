@@ -1,0 +1,297 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
+.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.pl-pad button.on{background:var(--ink);color:#fff}
+@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
+.pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.pl-levels button:hover{border-color:var(--ink-mute)}
+.pl-levels button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Play the whole game in your browser, start on any of its sixteen levels, and see how this port was checked against the Commodore 16 original.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 16 screen of Prospector Pete"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
+      <span>Start on</span>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> dig and climb</li>
+      <li><kbd>Space</kbd> lays a stick of dynamite, and starts a game</li>
+      <li><kbd>Enter</kbd> on the title switches between joystick and keyboard</li>
+      <li><kbd>Esc</kbd> goes back to the title</li>
+      <li><kbd>A</kbd> <kbd>S</kbd> <kbd>P</kbd> <kbd>L</kbd> are the game's own keys, with the keyboard chosen</li>
+    </ul>
+    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
+      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
+      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
+      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
+    </div>
+    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line. The arrows and Space are the joystick in port 2, or the game's own keys when the title is set to the keyboard. <b>Start on</b> begins a new game on that level the way the title does: the page taps right on the title until it shows the level, then presses fire.</p>
+  </div>
+</section>
+<section id="port">
+  <p class="fig">01 · The port</p>
+  <h2 class="t">Every routine of the game, checked against the original</h2>
+  <!-- port-results -->
+</section>
+<section id="differences">
+  <p class="fig">02 · Differences</p>
+  <h2 class="t">What differs from a Commodore 16</h2>
+  <!-- differences -->
+</section>
+</main>
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/ted-sound.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<!-- port -->
+<script>
+/* the page: the port on TED's clock, drawn each frame, the keyboard and the joystick */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const W = 384, H = 272, X0 = 32, Y0 = 36;                 // the 320 by 200 window in the border
+const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H), pic = new Uint8Array(320 * 200);
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
+const RGB = Array.from({ length: 128 }, (_, c) => C16.rgb(c));
+const FRAME_MS = 1000 * PetePage.FRAME / 1773447;           // a PAL TED's frame, 20.06 ms
+let image = null, rt = null, running = false, paused = false, level = null, plan = null;
+
+// --- the picture: the frame's bands as TED drew them, and the border's colour on each line ----
+const bandAt = new Array(200);
+function draw(fr) {
+  C16.renderBands(fr.bands, { size: 0x4000, px: pic });
+  for (const b of fr.bands) for (let y = b.y0; y <= b.y1; y++) bandAt[y] = b;
+  const d = img.data, top = RGB[fr.bands[0].ted[0x19] & 0x7F], bottom = RGB[fr.bands[fr.bands.length - 1].ted[0x19] & 0x7F];
+  for (let y = 0, o = 0; y < H; y++) {
+    const py = y - Y0, inside = py >= 0 && py < 200;
+    const edge = inside ? RGB[bandAt[py].ted[0x19] & 0x7F] : py < 0 ? top : bottom;
+    for (let x = 0; x < W; x++, o += 4) {
+      const px = x - X0, c = inside && px >= 0 && px < 320 ? RGB[pic[py * 320 + px] & 0x7F] : edge;
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: each frame's writes to TED's sound registers, played on site/lib/ted-sound.js -----
+const sound = (function () {
+  let host = null, on = false, fresh = true;
+  async function set(want) {
+    if (want && !host) {
+      try { host = await TEDSound.host({ gain: 0.5 }); } catch (e) { say('No sound: ' + e.message); return false; }
+    }
+    on = want; fresh = true;
+    hold();
+    return on;
+  }
+  // the registers as the frame began go first when the sound starts, so a voice already on sounds
+  function frame(fr) {
+    if (!on || !host || !fr) return;
+    let w = fr.sound;
+    if (fresh) {
+      const r = fr.ted0;
+      w = [0, 0xFF0E, r[0x0E], 0, 0xFF0F, r[0x0F], 0, 0xFF10, r[0x10], 0, 0xFF11, r[0x11], 0, 0xFF12, r[0x12]].concat(w);
+      fresh = false;
+    }
+    host.push([w]);
+  }
+  // quiet while the game is paused or going to a level
+  function hold() { if (host) { if (on && running && !paused && !plan) host.ctx.resume(); else host.ctx.suspend(); } }
+  return { set, frame, hold, reset() { fresh = true; } };
+})();
+Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+
+// --- input: the arrows and Space as the stick in port 2, or as the game's keys ---------------
+// The keys as the KERNAL numbers them, row times 8 plus column (kit/c16/machine.js, KEY).
+const KEY = { RETURN: 1, A: 10, S: 13, P: 41, L: 42, ESC: 52, SPACE: 60 };
+const STICK = { 1: 'up', 2: 'down', 4: 'left', 8: 'right', 16: 'fire' };
+const BIT = { up: 1, down: 2, left: 4, right: 8, fire: 16 };
+// the game's keys for the stick, with the keyboard chosen on the title (bit 7 of $A3)
+const AS_KEYS = { up: KEY.P, down: KEY.L, left: KEY.A, right: KEY.S, fire: KEY.SPACE };
+const ARROWS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Space: 'fire' };
+const TYPED = { KeyA: KEY.A, KeyS: KEY.S, KeyP: KEY.P, KeyL: KEY.L, Enter: KEY.RETURN, NumpadEnter: KEY.RETURN, Escape: KEY.ESC };
+const held = new Map(), typed = new Map();
+let padBits = 0;
+function apply(stick, keys) {
+  const kb = rt.M[0xA3] & 0x80, k = new Set(keys);
+  let joy = 0x1F;
+  for (const s of stick) if (kb) k.add(AS_KEYS[s]); else joy &= ~BIT[s];
+  rt.input.joy = joy; rt.input.keys = k;
+}
+function input() {
+  if (!rt) return;
+  const stick = new Set(held.values());
+  for (const b in STICK) if (padBits & b) stick.add(STICK[b]);
+  apply(stick, typed.values());
+}
+function onKey(e, down) {
+  if (!running || e.metaKey || e.altKey || e.ctrlKey) return;
+  const s = ARROWS[e.code], k = TYPED[e.code];
+  if (s === undefined && k === undefined) return;
+  e.preventDefault();
+  if (s !== undefined) { if (down) held.set(e.code, s); else held.delete(e.code); }
+  else if (down) typed.set(e.code, k); else typed.delete(e.code);
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); typed.clear(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+document.querySelectorAll('#pl-pad button').forEach(b => {
+  const bits = +b.dataset.pad;
+  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); screen.focus(); };
+  const off = () => { padBits &= ~bits; b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+
+// --- a level picked: the title's own way there, run as fast as it goes -----------------------
+// Right is tapped until the title shows the level ($A7, change_level), then fire starts the game.
+function* toLevel(n) {
+  for (let f = 0; f < 500 && (rt.M[0x0314] | rt.M[0x0315] << 8) !== 0x3080; f++) yield [];
+  for (let f = 0; f < 30; f++) yield [];
+  for (let i = 0; i < 40 && rt.M[0xA7] !== n; i++) { yield ['right']; yield ['right']; yield []; yield []; }
+  for (let f = 0; f < 3; f++) yield ['fire'];
+}
+
+// --- the loop: one frame of TED's time per frame of real time -------------------------------
+let acc = 0, last = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  try {
+    if (plan) {
+      const t0 = performance.now();
+      while (plan && performance.now() - t0 < 30) {
+        const r = plan.next();
+        if (r.done) { plan = null; over.hidden = true; acc = 0; last = now; sound.reset(); sound.hold(); break; }
+        apply(r.value, []); rt.runFrame();
+      }
+      return;
+    }
+    acc += Math.min(250, now - (last || now)); last = now;
+    let n = 0, fr = null;
+    while (acc >= FRAME_MS && n < 10) { input(); fr = rt.runFrame(); sound.frame(fr); acc -= FRAME_MS; n++; }
+    if (n === 10) acc = 0;
+    if (fr) draw(fr);
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+}
+
+// --- controls ----------------------------------------------------------------------------------
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
+function start(n) {
+  rt = PetePage.create({ ram: image, cost: window.PETE_COST });
+  level = n;
+  plan = n === null ? null : toLevel(n);
+  if (plan) { overMsg.textContent = 'Going to level ' + (n + 1) + '…'; over.hidden = false; } else over.hidden = true;
+  running = true; paused = false; last = 0; acc = 0;
+  sound.reset(); sound.hold();
+  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  document.querySelectorAll('#pl-levels button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.level === level)));
+  screen.focus();
+}
+const levels = $('pl-levels');
+for (let i = 0; i < 16; i++) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.level = i; b.textContent = String(i + 1);
+  b.setAttribute('aria-label', 'Start on level ' + (i + 1));
+  b.onclick = () => { if (image) start(i); };
+  levels.appendChild(b);
+}
+$('pl-bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); sound.hold(); }
+  else if (act === 'restart' && image) start(null);
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && image) start(null); });
+C16.load('listing.json').then(G => {
+  image = G.ram;
+  overMsg.textContent = 'Prospector Pete, from its first instruction: the title screen. Click, then press Space to play, or pick a level below.';
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(null); };
+  over.appendChild(bt);
+  requestAnimationFrame(tick);
+}, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
+window.PetePlay = { get rt() { return rt; } };
+})();
+</script>

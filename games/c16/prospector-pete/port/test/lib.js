@@ -22,8 +22,10 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const REPO = path.resolve(ROOT, '../../../..');
 const { CPU } = require(path.join(REPO, 'kit/cpu/cpu6502.js'));
+const { loadListing } = require(path.join(REPO, 'kit/c16/machine.js'));
 
-const LISTING = JSON.parse(fs.readFileSync(path.join(REPO, 'games/c16/prospector-pete/listing.json'), 'utf8'));
+const LISTING_FILE = path.join(REPO, 'games/c16/prospector-pete/listing.json');
+const LISTING = JSON.parse(fs.readFileSync(LISTING_FILE, 'utf8'));
 const ROUTINES = LISTING.records.filter(r => r.t === 'code' && r.l && !/^[bjr]_/.test(r.l)).map(r => [r.l, r.a]);
 const addrOf = Object.fromEntries(LISTING.records.filter(r => r.t === 'code' && r.l).map(r => [r.l, r.a]));
 const PAGES = [];
@@ -32,7 +34,15 @@ const isChip = a => a >= 0xFD00 && a < 0xFF40;
 
 require(path.join(ROOT, 'src/core.js'));
 for (const f of fs.readdirSync(path.join(ROOT, 'src')).sort()) if (/^g-.*\.js$/.test(f)) require(path.join(ROOT, 'src', f));
-const { makePort, GEN } = globalThis.PetePort;
+const { makePort, GEN, MISSING } = globalThis.PetePort;
+
+// The game's memory as the loader leaves it at $1800: the listing's bytes and those it lacks
+// (MISSING, src/core.js).
+function boot() {
+  const ram = loadListing(LISTING_FILE);
+  for (const [a, b] of Object.entries(MISSING)) ram.set(b, +a);
+  return ram;
+}
 
 let STATES = null;
 function states() {
@@ -160,4 +170,4 @@ function check(o) {
   return ok;
 }
 
-module.exports = { check, states, addrOf, ROUTINES, makePort, withStandIns, standIn, cpuOn, rng, hex };
+module.exports = { check, boot, MISSING, LISTING, REPO, states, addrOf, ROUTINES, makePort, withStandIns, standIn, cpuOn, rng, hex };
