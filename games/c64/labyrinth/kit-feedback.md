@@ -224,3 +224,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## First manicure · 21 October 2026
 
 `60-verify`, “A number handed through a request byte”: followed inventory slot21 through the actual reader and saved word-wheel dictionary mapping before naming shears. “Force the rare state” kept explicit inventory/damage changes separate from ordinary acquisition. The varied output-mode helper retries low nibbles14/15, so the comparison includes rejected random draws and accepted boundaries. Existing guidance covers this continuation; no shared-kit edit or maintainer ask arose.
+
+
+## Seven manicure replies · 21 October 2026
+
+`60-verify`, “Prove reachability with inputs, not pokes”: supplied the shears once, then used seven ordinary commands in one session instead of seeding each counter value. This establishes the local sequence after controlled item supply, while ordinary acquisition remains open. The bounded comparison stops before the eighth-count path and tests the selection prefix separately across its byte domain. Existing guidance covers this work; no shared-kit change or maintainer ask arose.

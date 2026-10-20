@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,883/48,705 described bytes. The Wall of Hands has506/50,014 described bytes;16 other graphical parts are untouched. The provisional image-ledger total is55,002/287,537 bytes (19.1%) across six started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,883/48,705 described bytes. The Wall of Hands has733/50,014 described bytes;16 other graphical parts are untouched. The provisional image-ledger total is55,229/287,537 bytes (19.2%) across six started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -59,5 +59,5 @@ For Alph and Ralph:
 
 For the Wall of Hands:
 
-- Trace later MANICURE WALL stages and ordinary acquisition/damage of shears. The first-use missing/usable/damaged comparisons are checked. Resolve the producer of the command gate$0343, movement, hand animation and exits. ASK and its five-reply cycle have live/original-code checks.
+- Trace the eighth-count MANICURE WALL path, later stages, and ordinary acquisition/damage of shears. The first-use missing/usable/damaged comparisons and first seven accepted commands are checked. Resolve the producer of the command gate$0343, movement, hand animation and exits. ASK and its five-reply cycle have live/original-code checks.
 - Capture the natural pre-initialization hand-over; resolve resident ownership and the retained untracked extents named by the listing. Independently sample the new comments.
