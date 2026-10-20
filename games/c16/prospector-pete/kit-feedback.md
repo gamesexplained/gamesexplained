@@ -9,7 +9,7 @@ time, operating system and tool versions.
 
 - `kit/skills/core/70-minisite`: "A widget that runs a mechanic is a claim too": the mine on How it works and the Levels tab run the game's own level builder and frame, so both were compared with plus4emu traces frame by frame before they went on the page, which found the zero-page read and the first frame's order.
 - `kit/skills/core/70-minisite/play.md`: "Run the page's runtime in node from the cold start before opening a browser": it found that levels 6 and 10 never started on the page, both times a loop reading TED's timers or the beam that never ended (Candidates).
-- `kit/skills/c16/steps`: "a routine that reaches its RAM above $3FFF needs the test to copy the bytes there": when level 16 built differently on the page, this pointed at the room check reading past the map; the engine copies the zero page to `$4000` before each check (#435).
+- `kit/skills/core/70-minisite`: "A screen whose video registers change during the frame": the frame section draws `irq_play`'s three bands and counts the pixels that differ from plus4emu's picture, 0, against 30,259 with one set of registers; the Play tab draws its frames in the same bands.
 - `kit/skills/core/70-minisite/play.md`: "Test each routine alone first": the Play tab, built after the Silver run, checked 67 of the port's functions on 432 moments of play before the lockstep began.
 - `kit/skills/core/60-verify`: "write down every value the test actually accepts": the values `move_creatures` takes as open (0, water, a stick, an explosion) leave debris out, which became the Discoveries section on debris walling the creatures in.
 
