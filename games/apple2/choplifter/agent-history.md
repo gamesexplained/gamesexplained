@@ -72,3 +72,25 @@ the levels shows as a table read from the listing. The comparison with
 the C64 version is from its `facts.md` and listing; both versions place
 a right-hand tank at the world's far left the same way (the C64's at
 `$9F54`).
+
+## 20 October 2026, the helicopter's tilt drawn
+
+The contributor asked for the helicopter section to be visual: it showed
+the landing heights as bars. The picture is now the helicopter itself,
+drawn at each tilt by the game's own object routine (`heli_object`,
+`$8276`) from the listing, after `rock` (`$7803`) has rocked it there.
+
+Tilting a level helicopter with the stick on the ground did nothing in
+Apple2TS, so the live test lands with a lean instead, from
+`play-sortie1.json`, and records the state the routine starts from. The
+first comparisons failed three ways, each a piece of state the page had
+not set: the state read after `heli_fly` had moved it on, the bounce flag
+that picks the squashed picture, and the graphics library's own copy of
+the view (`$C7`), which a left-facing helicopter's position is drawn
+against. With those, 18 frames matched byte for byte (`test_tilt.js`).
+
+Drawing it showed the old copy wrong. It said a tilted helicopter touches
+down up to three rows higher. The tilted pictures are taller than the
+level one, and the heights only lift each so the end of a skid stays on
+the ground: the lowest dots are on line 167 or 168 at every tilt, facing
+either way. `$7895`, `$0006` and `facts.md` are corrected.

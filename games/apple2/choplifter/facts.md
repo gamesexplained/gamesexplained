@@ -198,13 +198,19 @@ up to 21 dots a frame. The vertical speed closes on the stick's climb rate
 by half the difference a frame. The tilt follows the stick a step a frame,
 and the helicopter's highest height is 112 (`$701D`).
 
-**Landing.** The landing height goes by the tilt as the helicopter leans
-for the way it faces (`land_height_table`, `$7895`): 7 level, up to 10
-leaning one way, and 7 leaning the other way until the two steepest tilts,
-which give 8. It pivots on its skids (`rock`, `$7803`). Coming down at
-more than about 4.4 dots a frame it bounces (`bounce_speed`, `$7010`).
-Touching the ground at the top horizontal speed is a crash (`crash_speed`,
-`$7012`).
+**Landing.** A helicopter that comes down with a lean lands tilted, and on
+the ground it rocks back towards level on its skids (`rock`, `$7803`). The
+tilted pictures are taller than the level one's 13 rows: up to 18 nose
+down and 16 nose up. Each step of the rocking raises or lowers the
+helicopter by the difference between two heights from `land_height_table`
+(`$7895`: 7 level, up to 10 nose down and 8 nose up) and moves it along by
+the difference between two offsets from `rock_x_table` (`$787F`), so the
+end of one skid stays on the ground: at every tilt, facing either way, the
+helicopter's lowest dots are on screen line 167 or 168 (`test_tilt.js`).
+In Apple2TS one that landed at a tilt of 4 was level two frames later
+(*live*). Coming down at more than about 4.4 dots a frame it bounces
+(`bounce_speed`, `$7010`). Touching the ground at the top horizontal speed
+is a crash (`crash_speed`, `$7012`).
 
 **Boarding and crushing** (`boarding`, `$6139`) need the helicopter level
 on the ground (`door_open`, `$0D`), not hit, and outside the base's block.
@@ -288,7 +294,7 @@ helicopter lost with hostages aboard adds them to the killed
 |---|---|---|
 | `thrust_table` | `$7418` | thrust by stick lean |
 | `climb_table` | `$7424` | climb rate by vertical stick |
-| `land_height_table` | `$7895` | landing height by tilt |
+| `land_height_table` | `$7895` | height on the ground by tilt |
 | `heli_raise_table` | `$6CEE` | rows a sheared helicopter is lifted, 9 poses by 11 tilts |
 | `rotor_offset_table` | `$6D51` | the main rotor's offset, 11 by 11 pairs |
 | `gun_table` | `$6E9B` | where a shot starts, 11 by 11 pairs |
@@ -375,7 +381,12 @@ The 138 comments on the graphics library's inline arguments, written by a
 script from their bytes, came after the sample and are outside it.
 Building the Sound section, after the sample, found two more wrong: the
 noise routine (`$7373`, `$76CD`) was called an explosion's, when only a
-tank firing and a jet firing call it. Both are corrected.
+tank firing and a jet firing call it. Both are corrected. Drawing the
+helicopter at each tilt found two more: `$7895` said a tilted helicopter
+touches down up to three rows higher, when its heights only lift the
+taller tilted pictures so a skid stays on the ground, and `$0006` counted
+the helicopter's height from its landing height instead of from the row it
+stands on. Both are corrected.
 
 ## Live tests
 
@@ -395,6 +406,12 @@ snapshots in `work/`, with the scripts in `work/verify/`.
   flight.
 - *The barracks at the start* (`play-sortie1.json`): states 0, 0, 0, 1,
   left 16, 16, 16, 8, out 8, in the barracks 56.
+- *Tilted landings* (`work/verify/tilt.py`): six landings with a lean
+  from `play-sortie1.json`, four facing right and two facing left, three
+  frames each as the helicopter rocked level. In each frame the
+  helicopter, drawn alone on a blackened page, was the same 8,192 bytes as
+  the same state drawn by the same routines from the listing on the kit's
+  6502 (`reference/tilt.js`, `test_tilt.js`).
 - *The sound* (`work/verify/sound.py`): each of the nine effects in the
   Sound section, run from its first instruction to its last in Apple2TS
   with the sound on, clicked at the same spacings, click for click, as the
