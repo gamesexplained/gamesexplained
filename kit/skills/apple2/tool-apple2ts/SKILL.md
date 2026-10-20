@@ -30,7 +30,7 @@ The machine is a 128K enhanced Apple IIe (its 65C02, NTSC): the extended
 80-column card in the auxiliary slot (64K more), a Mockingboard in slot
 4, a Disk II with two drives in slot 6, and nothing else: no hard disk,
 no clock card, no mouse card. `kit/skills/apple2/apple2-reference` has its
-facts. `hello` lists what the server changes in Apple2TS, as
+facts. It can be a II Plus instead, for a game that needs one ("Models"). `hello` lists what the server changes in Apple2TS, as
 `workarounds`, and `kit/apple2/INSTALL.md` says why.
 
 There is no window and no sound. The screen is drawn from memory as a PNG,
@@ -83,8 +83,8 @@ all hexadecimal. A `path` is made absolute by the client.
 |---|---|---|
 | Who answers | `hello` | the server, its protocol, Apple2TS's version, the model, Node's version, the clock and the frame in cycles, the memory spaces, the commands, and `workarounds` |
 | State | `status` | running or not, typing or not, PC, the cycle and frame counts, how many checkpoints, whether the code map and the sound are recording, the disks in the drives, the keys and the game port as held |
-| Reset | `reset` (`hard`, true) | `hard` is a power-on, below; `"hard": false` is CONTROL-RESET. Neither runs the machine |
-| Boot | `boot` (`until`, `seconds`, `max_cycles`, `frames`) | a power-on with the disks in, then a run: `until` an address (for at most `seconds`, 30), or for `seconds`, or for `frames` (300). Returns the run's reply and the text page |
+| Reset | `reset` (`hard`, true; `model`) | `hard` is a power-on, below; `"hard": false` is CONTROL-RESET. Neither runs the machine. A power-on with `model` makes it that machine ("Models") |
+| Boot | `boot` (`until`, `seconds`, `max_cycles`, `frames`, `model`) | a power-on with the disks in, as `model` when given, then a run: `until` an address (for at most `seconds`, 30), or for `seconds`, or for `frames` (300). Returns the run's reply and the text page |
 | Disks | `disk` (`drive` 1 or 2, `path`, or `eject`) | below |
 | Run | `run` (`cycles`, `frames`, `seconds`, `until`, `max_cycles`) | returns `reason` (`cycles`, `frames`, `until`, `checkpoint`, `stopped`, `timeout`), `pc`, `ran`, `frames`, `cycles`, `hit` and the registers |
 | Step | `step` (`count`, 1) | the same, with `next`, the instruction at the new PC |
@@ -107,6 +107,33 @@ all hexadecimal. A `path` is made absolute by the client.
 
 The client adds `screenshot` (`path`, `mode`), which draws the screen
 itself (below); the server draws nothing.
+
+## Models
+
+The server is the enhanced IIe unless it is told otherwise. A game whose
+disk needs a II or II Plus (a WOZ image's `META` says `requires_machine
+2|2+`; `kit/apple2/disk.py info` prints it), or that stops on the IIe in
+its loader, runs on Apple2TS's II Plus:
+
+```
+python3 kit/scripts/tools.py apple2ts --model iiplus     # started as a II Plus
+python3 kit/apple2/apple2ts.py boot '{"model": "iiplus", "seconds": 20}'
+```
+
+`model` on `reset` (a power-on) or `boot` changes the machine, and it
+stays that one until changed again; `hello`, `status` and `chips` name it,
+`hello` lists both (`models`), and a snapshot records it, so a `load`
+makes the server the machine that saved. On the II Plus, `chips` has only
+the switches it has (no 80STORE, RAMRD, RAMWRT, INTCXROM, ALTZP,
+SLOTC3ROM, 80COL, ALTCHAR or DHIRES), `vbl` is null and the keyboard has
+no `akd`; the `aux` spaces are refused and `rom` starts at $D000.
+`apple2-reference`, "The II Plus in the kit", says what else differs, and
+the processor is the trap: it still runs the 65C02's opcodes.
+
+Record the model in the game's `orientation.md` and in `game.json`'s
+`tools.emulator`. `check-emulator` measures the IIe in its four phases
+and the II Plus in phase 5, whatever the server was started as, and
+leaves it as it was started.
 
 ## Running, and where a run stops
 

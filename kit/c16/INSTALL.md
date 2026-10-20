@@ -80,8 +80,8 @@ test program ran and were mapped in 0.32 seconds; with a callback for
 each instruction, 300 frames took 4.5 seconds when the emulators were
 compared. To move to another commit, change `PLUS4EMU_COMMIT` and
 `PLUS4EMU_VERSION` in `kit/c16/tools.py`, run `get-plus4emu`,
-`check-emulator` on both models and `frame.py test`, and change the rows
-here together.
+`check-emulator` on both models, `frame.py test` and `sound.py test`, and
+change the rows here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
@@ -102,6 +102,16 @@ the pixels a scroll uncovers in 40 columns or 25 rows, which TED fills
 with whatever it last held and the site leaves in the background colour.
 On 19 October 2026 nothing differed in any of its 18 cases. It needs a
 server, so CI runs only `kit/c16/test_frame.py`, the parts that need none.
+
+**The sound.** `python3 kit/c16/sound.py test` plays eleven short programs
+of its own that write TED's sound registers (each voice's square, both
+together, the noise at two pitches, the values 1022 and 1023, every
+volume, and D/A) and compares plus4emu's own output, kept by the server's
+`sound` with `audio`, with the site's model of TED (`site/lib/ted-sound.js`)
+sample by sample. On 19 October 2026 every case was within 0.65 % of
+plus4emu's level. It needs a server of its own, since it resets the
+machine; `--record` writes the cases to `kit/c16/fixtures/ted-sound.json`,
+which `kit/c16/test_ted_sound.js` holds the model to in CI.
 
 ## Why plus4emu, and VICE beside it
 

@@ -17,12 +17,15 @@ keeps the language card's bank 1 of $D000-$DFFF at $C000-$CFFF, and bank 2 in pl
                chose when the snapshot was saved (bank 2 unless BSRBANK2 was off). This is RAM
                whether or not the ROM was switched in over it: never the Monitor or Applesoft
 
-`read(path, bank="aux")` returns the same from the auxiliary 64K. `bank` may also name one bank
+`read(path, bank="aux")` returns the same from the auxiliary 64K, which a snapshot of the II Plus
+(`model`, below) does not have. `bank` may also name one bank
 of the language card, "mainlc1", "mainlc2", "auxlc1" or "auxlc2": that bank at $D000-$FFFF
 ($E000-$FFFF is the same in both banks of a 64K), zero elsewhere.
 
   read(path, bank=None) -> bytes, length 0x10000
-  spaces(path)          -> {"main", "aux": 48 KB from $0000; "mainlc1" ... "auxlc2": 12 KB from $D000}
+  spaces(path)          -> {"main", "aux": 48 KB from $0000; "mainlc1" ... "auxlc2": 12 KB from $D000},
+                           with no aux spaces for the II Plus
+  model(snap)           -> "iie" or "iiplus", the machine the server was (`--model`)
   header(path)          -> the registers, the cycle count, the switches, the disks, and what the
                            kit's server recorded
 
@@ -103,11 +106,19 @@ def _lc(mem, bank):
     return bytes(low + mem[0xE000:0x10000])
 
 
+def model(snap):
+    """The machine the snapshot was saved on: "iie", the enhanced IIe, or "iiplus" (the server's
+    `--model`, kit/apple2/apple2ts_server.mjs)."""
+    name = snap.get("model") or snap["state"]["state6502"].get("machineName") or "APPLE2EE"
+    return {"APPLE2EE": "iie", "APPLE2P": "iiplus"}.get(name, name)
+
+
 def spaces(path):
     snap = load(path)
     mem = memory(snap, path)
-    out = {"main": bytes(mem["main"][:0xC000]), "aux": bytes(mem["aux"][:0xC000])}
-    for name in ("main", "aux"):
+    banks = ("main", "aux") if model(snap) == "iie" else ("main",)
+    out = {name: bytes(mem[name][:0xC000]) for name in banks}
+    for name in banks:
         out[name + "lc1"] = _lc(mem[name], 1)
         out[name + "lc2"] = _lc(mem[name], 2)
     return out
@@ -118,6 +129,8 @@ def read(path, bank=None):
     snap = load(path)
     mem = memory(snap, path)
     image = bytearray(0x10000)
+    if isinstance(bank, str) and bank.startswith("aux") and model(snap) != "iie":
+        sys.exit(f"{path}: a snapshot of the II Plus, which has no auxiliary memory (bank {bank!r})")
     if bank in LC_SPACES:
         image[0xD000:] = _lc(mem[bank[:-3]], int(bank[-1]))
         return bytes(image)

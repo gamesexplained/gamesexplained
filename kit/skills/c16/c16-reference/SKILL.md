@@ -568,6 +568,15 @@ ted-sound.c, `0x400 - ((freq + 1) & 0x3FF)`). The documents give 1024 −
 value ("Where the sources disagree"). The noise is an 8-bit shift
 register with taps at bits 7, 5, 4 and 1 in both emulators.
 
+In plus4emu (ted_snd.cpp), which the site's model follows and
+`kit/c16/sound.py` checks it against: the counters tick every 8th cycle,
+221,680.9 times a second on PAL; the noise register shifts each time
+voice 2 turns over, bit 0 taking the parity of bits 7, 5, 4 and 1, and
+the noise sounds while bit 0 is 0; a value of 1022 runs out at every
+tick and never turns over; a voice that has not turned over for 188,416
+ticks (0.85 s) is held high; and while D/A is set the counters are held
+at their reloads and the noise register fills with 1s.
+
 BASIC's SOUND takes a voice (1, 2, or 3 for voice 2's noise), a value of
 0 to 1023 and a duration in jiffies, which the KERNAL's interrupt counts
 down at $04FC-$04FF (mtimlo, mtimhi) before switching the voice off

@@ -17,7 +17,9 @@ emulator is Apple2TS 3.7.0 (MIT) inside the kit's server,
 `kit/apple2/apple2ts_server.mjs`, driven with `kit/apple2/apple2ts.py`
 (`kit/skills/apple2/tool-apple2ts`). The Apple II, the II Plus, the
 unenhanced IIe, the IIc and the IIgs appear only in notes marked as
-theirs.
+theirs. A game whose disk will not run on a IIe runs on the server's
+II Plus instead (`--model iiplus`), and "The II Plus in the kit" says
+what changes then.
 
 Addresses are written with `$`, as Apple's manuals write them.
 
@@ -1232,7 +1234,8 @@ none was checked on a real IIe.
 Not the kit's machine; for a game that checks for, or needs, one of
 them.
 
-- **Apple II and II Plus** (ROM: Apple2TS ships the II Plus's). A 6502,
+- **Apple II and II Plus** (ROM: Apple2TS ships the II Plus's, and the
+  kit's server can be one: "The II Plus in the kit", below). A 6502,
   whose undocumented opcodes run. 48K, with an optional 16K language card
   in slot 0, whose $C080-$C08F switches are the IIe's; no aux memory, no
   80 columns without a card, no MouseText, and no $C011-$C01F status
@@ -1253,6 +1256,51 @@ them.
   opposite of the IIe's (MAME 0.289, src/mame/apple/apple2gs.cpp:1623,
   which cites Apple IIgs Technical Note #40). A IIe game that waits on
   $C019 waits on the wrong half of the frame there.
+
+### The II Plus in the kit
+
+`tools.py apple2ts --model iiplus`, or `"model": "iiplus"` on `reset` or
+`boot`, makes the kit's machine Apple2TS's II Plus (`tool-apple2ts`,
+"Models"). Use it for a game whose disk needs a II or II Plus, which a
+WOZ image's `META` chunk says as `requires_machine 2|2+`
+(`kit/apple2/disk.py info`): a copy protection or a loader that leans on
+the II Plus's I/O page stops on the IIe. `check-emulator`'s phase 5
+measures what follows, live on 20 October 2026:
+
+- **The ROM** is the II Plus's, Applesoft and the Monitor at
+  $D000-$FFFF: 601 of its 12,288 bytes differ from the enhanced IIe's
+  (`iiplus-model`). There is no ROM at $C100-$CFFF, so the `rom` space
+  starts at $D000.
+- **$C000-$C01F are the keyboard.** A write there changes nothing: `STA
+  $C005` and `STA $C009`, which send stores and the zero page to
+  auxiliary memory on a IIe, leave them in main memory
+  (`iiplus-switches`). A read of any of $C010-$C01F clears the strobe
+  (`iiplus-keyboard`), and $C011-$C01F read random values in Apple2TS
+  (src/worker/softswitches.ts:261-274), where a real II Plus returns the
+  floating bus. There is no vertical-blank flag, and `chips` gives `vbl`
+  as null.
+- **No auxiliary memory, no 80 columns:** slot 3 is empty, and the
+  `aux`, `auxlc1` and `auxlc2` spaces are refused. Slots 0 (the
+  language card, whose banks hold a marker each: `iiplus-language-card`),
+  4 and 6 are as on the IIe.
+- **Text has no lower case.** The server's `text` and the kit's
+  screenshots show $E0-$FF as the signs of $A0-$BF.
+- **Decimal mode follows the NMOS 6502:** $99 + $01 gives $00 with Z
+  clear, from the binary sum $9A, where the 65C02 sets Z
+  (`iiplus-decimal`), and a BRK leaves D as it was.
+- **The processor is still Apple2TS's 65C02.** BRA ($80) branched and
+  STZ ($64) stored zero on the II Plus, live, where a real 6502 takes
+  $80 as a two-byte no-op and $64 as one too; and $A7, the NMOS 6502's
+  `LAX zp`, ran as a one-byte no-op (src/worker/instructions.ts:812-841;
+  the model changes only the decimal flags and BRK's D, at 258, 375 and
+  658).
+  A II Plus game that uses an undocumented opcode does something else
+  here than on a real II Plus, so search its code for them
+  (`kit/cpu/opcodes.py`) before trusting a run.
+- **Snapshots keep the model.** A load makes the server the machine the
+  snapshot was saved on, and reads on as it would have
+  (`iiplus-snapshot`); a test disk boots byte for byte, at the same cycle
+  twice (`iiplus-disk-boots`).
 
 ## The mistakes that bite
 

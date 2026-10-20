@@ -46,6 +46,14 @@ class Letters(unittest.TestCase):
         self.assertEqual(screen.letter(0x41, True), " ", "MouseText reads as a space")
         self.assertEqual(screen.glyph(0x41, True)[0], screen.BOX)
 
+    def test_ii_plus_has_no_lower_case(self):
+        """The II Plus's video ROM shows $E0-$FF as the signs of $A0-$BF, and has no MouseText."""
+        for b in (0xE1, 0xF0, 0xFF):
+            self.assertEqual(screen.glyph(b, False, iiplus=True), screen.glyph(b - 0x40, False))
+        self.assertNotEqual(screen.glyph(0xE1, False), screen.glyph(0xA1, False))
+        self.assertEqual(screen.glyph(0x41, True, iiplus=True), screen.glyph(0x41, False))
+        self.assertEqual(screen.letter(0xE1, False, iiplus=True), "!")
+
     def test_text_lines(self):
         main, aux = blank()
         main[0x400:0x405] = bytes(c | 0x80 for c in b"HELLO")

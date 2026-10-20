@@ -1,7 +1,8 @@
 /* pete.js */
 // Prospector Pete's pages run the game's own routines on the kit's 6502 (C64Cpu, from
-// ../../lib/cpu6502.js, used bare: all 64 KB are RAM, so TED's registers are plain bytes) over the
-// 64 KB the listing records (C16.load), and draw the map with the site's TED screen (C16.render).
+// ../../lib/cpu6502.js, with the C16's 16 KB of RAM repeating through the 64 KB, { ramSize: 0x4000 },
+// and TED's registers at $FF00 plain bytes) over the memory the listing records (C16.load), and draw
+// the map with the site's TED screen (C16.render).
 // index.html, discoveries.html and levels.html load it after those two. test_pete.js beside the
 // pages holds it to the listing; the traces in work/ hold it to the game running in plus4emu.
 //
@@ -59,17 +60,14 @@ globalThis.Pete = (function () {
     }
     return h;
   }
-  function cpuFor(m) { const c = new C64Cpu.CPU(m); c.sp = 0xFF; return c; }
-
-  // On a C16 the 16 KB of RAM repeats through the 64 KB, and find_space's check for room round a
-  // goodie in row 21 reads row 23 below the map, at $4000, which is the zero page again: copied there
-  // before each check ($2DA3), as the machine shows it.
-  const mirror = m => () => { m.copyWithin(0x4000, 0x0000, 0x0100); };
+  // On a C16 the 16 KB of RAM repeats through the 64 KB: find_space's check for room round a goodie
+  // in row 21 reads row 23 below the map, at $4000, which is the zero page again
+  function cpuFor(m) { const c = new C64Cpu.CPU(m, { ramSize: 0x4000 }); c.sp = 0xFF; return c; }
   function startLevel(m, k, rnd = byte) {
     m[0xA7] = k;
     const c = cpuFor(m);
     c.pc = R.startLevel;
-    c.run({ until: R.built, hooks: hooks(m, rnd, { 0x2DA3: mirror(m) }) });
+    c.run({ until: R.built, hooks: hooks(m, rnd) });
     // $1E33-$1E3E: once the interrupt has counted down two seconds, the release count is set, the
     // level is on, and the big charge is laid in the bottom of the shaft
     m[0x7B] = m[0x7C]; m[0xA8] = m[0x7C];

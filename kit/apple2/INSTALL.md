@@ -20,7 +20,9 @@ which runs the web page in a browser), are not used.
 
 The machine is a 128K enhanced Apple IIe, NTSC: the extended 80-column card
 (64K more), a Mockingboard in slot 4 and a Disk II with two drives in slot
-6.
+6. For a game that needs an Apple II Plus, `tools.py apple2ts --model
+iiplus` makes it Apple2TS's II Plus instead, with the same slots but slot 3
+(`kit/skills/apple2/tool-apple2ts`, "Models").
 
 ## What you need first
 
@@ -65,7 +67,7 @@ here together.
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| Apple2TS 3.7.0 (tag v3.7.0), bundled with esbuild 0.25.12 into the kit's server, Node 22.22.0 | Linux x86_64 (Ubuntu 24.04, no display) | 19 October 2026 | 42 of 42, 8 to 9 s, two runs; `verify-footprint` clean |
+| Apple2TS 3.7.0 (tag v3.7.0), bundled with esbuild 0.25.12 into the kit's server, Node 22.22.0 | Linux x86_64 (Ubuntu 24.04, no display) | 20 October 2026 | 49 of 49, the II Plus's seven among them, 8 s, two runs; `verify-footprint` clean |
 
 | Phase | Passes | Fails | Workaround |
 |---|---|---|---|
@@ -139,7 +141,7 @@ shell made for a person, and neither has a saved state.
 python3 kit/scripts/tools.py --platform apple2 status
 python3 kit/scripts/tools.py get-apple2ts                             # clone Apple2TS and install esbuild into tools/apple2, then build the server
 python3 kit/scripts/tools.py apple2ts                                 # powered on with no disk, waiting on 127.0.0.1:6502
-python3 kit/scripts/tools.py --platform apple2 check-emulator         # 42 named checks, about nine seconds
+python3 kit/scripts/tools.py --platform apple2 check-emulator         # 49 named checks, about nine seconds
 python3 kit/scripts/tools.py --platform apple2 stop                   # this clone's servers
 python3 kit/scripts/tools.py --platform apple2 verify-footprint       # what it writes outside the repository
 python3 kit/scripts/tools.py r2000 games/apple2/<slug>/work/<state>.json    # the disassembler, on a snapshot
@@ -195,7 +197,9 @@ uninstall`), are the only things left outside it.
 
 Run on Linux x86_64 (Ubuntu 24.04 in a cloud container, no display, Node
 22.22.0) on 19 October 2026, with Apple2TS 3.7.0: `check-emulator` passed
-42 of 42 in each of two runs, `test_frame.py` found no pixel different,
+42 of 42 in each of two runs, and on 20 October 2026, with phase 5's
+seven checks of the II Plus added, 49 of 49 in each of two runs;
+`test_frame.py` found no pixel different,
 and `verify-footprint` was clean, with nothing written outside the
 repository either by the server or by `get-apple2ts`'s install. Nothing in
 the kit's server is particular to Linux.

@@ -31,7 +31,9 @@ the beam drew it: a game that changes modes partway down the screen shows one mo
 
 `switches` is a dict with the server's names (80store, 80col, altchar, text, mixed, page2,
 hires, dhires), as `chips()["switches"]` gives them; `mode` forces one of "text", "lores",
-"hires", "dhires" whatever the switches say.
+"hires", "dhires" whatever the switches say. On the II Plus (`"iiplus": True` in it, which a
+screenshot of a II Plus and its snapshot set) the text has no lower case: $E0-$FF show the signs
+of $A0-$BF, and $60-$7F flash those of $20-$3F, as its video ROM draws them.
 """
 import os, struct, sys, zlib
 
@@ -113,8 +115,13 @@ def hires_base(y):
     return 0x2000 + 0x400 * (y % 8) + 0x80 * ((y // 8) % 8) + 0x28 * (y // 64)
 
 
-def glyph(b, altchar):
-    """(the 7 rows of dots, inverse) for a byte on the text page, as the IIe's video shows it."""
+def glyph(b, altchar, iiplus=False):
+    """(the 7 rows of dots, inverse) for a byte on the text page, as the IIe's video shows it, or
+    the II Plus's, which has no lower case."""
+    if iiplus:
+        altchar = False
+        if b >= 0xE0:
+            b -= 0x40
     if b >= 0x80:
         c, inverse = b & 0x7F, False
         if c < 0x20:
@@ -134,8 +141,12 @@ def glyph(b, altchar):
     return FONT.get(chr(c), BOX), inverse
 
 
-def letter(b, altchar):
-    """A byte on the text page as a letter (MouseText as a space)."""
+def letter(b, altchar, iiplus=False):
+    """A byte on the text page as a letter (MouseText as a space); the II Plus has no lower case."""
+    if iiplus:
+        altchar = False
+        if b >= 0xE0:
+            b -= 0x40
     if altchar and 0x40 <= b < 0x60:
         return " "
     c = b & 0x7F
@@ -160,7 +171,7 @@ def text_lines(main, aux, sw):
         for c in range(40):
             if sw.get("80col"):
                 s += letter(aux[a + c], sw.get("altchar"))
-            s += letter(main[a + c], sw.get("altchar"))
+            s += letter(main[a + c], sw.get("altchar"), sw.get("iiplus"))
         out.append(s.rstrip())
     return out
 
@@ -177,7 +188,7 @@ def _text_rows(pix, main, aux, sw, rows):
                 cells.append(aux[a + c])
             cells.append(main[a + c])
         for i, b in enumerate(cells):
-            dots, inverse = glyph(b, sw.get("altchar"))
+            dots, inverse = glyph(b, sw.get("altchar"), sw.get("iiplus"))
             x0 = i * cw
             for line in range(8):
                 bits = dots[line] if line < 7 else 0
@@ -289,15 +300,19 @@ def png(path, width, height, pix):
 
 def screenshot(machine, path, mode=None):
     """The live machine's screen: the text, lo-res and hi-res pages of both 64Ks, and the switches."""
-    sw = machine.chips()["switches"]
+    chips = machine.chips()
+    sw = dict(chips["switches"])
+    sw["iiplus"] = chips["model"].startswith("Apple II Plus")   # no aux memory, no lower case
     main = bytearray(0x6000)
     aux = bytearray(0x6000)
     main[0x400:0xC00] = machine.read(0x400, 0x800, space="main")
-    aux[0x400:0xC00] = machine.read(0x400, 0x800, space="aux")
+    if not sw["iiplus"]:
+        aux[0x400:0xC00] = machine.read(0x400, 0x800, space="aux")
     m = mode or mode_of(sw)
     if m in ("hires", "dhires"):
         main[0x2000:0x6000] = machine.read(0x2000, 0x4000, space="main")
-        aux[0x2000:0x6000] = machine.read(0x2000, 0x4000, space="aux")
+        if not sw["iiplus"]:
+            aux[0x2000:0x6000] = machine.read(0x2000, 0x4000, space="aux")
     w, h, pix = render(main, aux, sw, mode)
     png(path, w, h, pix)
     return {"path": os.path.abspath(path), "mode": m, "width": w, "height": h}
@@ -309,6 +324,7 @@ def snapshot_switches(path):
     snap = snapshot.load(path)
     names = snap["state"]["state6502"].get("softSwitches") or {}
     sw = {k: bool(names.get(v)) for k, v in APPLE2TS_NAMES.items()}
+    sw["iiplus"] = snapshot.model(snap) == "iiplus"
     mem = snapshot.memory(snap, path)
     return mem["main"], mem["aux"], sw
 

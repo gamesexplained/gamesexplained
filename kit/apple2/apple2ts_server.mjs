@@ -2,7 +2,11 @@
 // Mockingboard) running in this Node process and driven over a local socket.
 // kit/apple2/apple2ts.py is its client; kit/apple2/tools.py builds, starts and stops it.
 //
-//   node tools/apple2/apple2ts-server.cjs [--port 6502] [--root <this repository>]
+//   node tools/apple2/apple2ts-server.cjs [--port 6502] [--root <this repository>] [--model iie|iiplus]
+//
+// The machine is the enhanced IIe unless --model (or KIT_APPLE2TS_MODEL) says the II Plus, for a
+// game whose disk needs one; `reset` and `boot` take a "model" too, and a `load` takes the
+// snapshot's (MODELS, below).
 //
 // This file is not run as it is. `tools.py get-apple2ts` bundles it, with
 // kit/apple2/apple2ts_clock.mjs and the worker sources of the Apple2TS release
@@ -50,7 +54,6 @@ import { clock, hooks, vclockInit, vFire, vClearAll, vPending } from "./apple2ts
 
 const PROTOCOL = 1;
 const APPLE2TS = "3.7.0";        // the release kit/apple2/tools.py clones; the bundle is built from it
-const MODEL = "APPLE2EE";         // the enhanced Apple IIe, 65C02
 const CLOCK = 1020484;            // cycles a second (kit/skills/apple2/apple2-reference)
 const FRAME = 17030;              // 65 cycles a line, 262 lines
 const VBL = 4550;                 // the vertical blank: the first 70 lines of Apple2TS's frame
@@ -65,6 +68,33 @@ function option(name, fallback) {
 }
 
 const PORT = Number(option("--port", process.env.KIT_APPLE2TS_PORT || 6502));
+
+// The machines the server can be. The enhanced IIe is the one the kit's checks measure
+// (kit/apple2/check_emulator.py); the II Plus is Apple2TS's own, for a game whose copy protection
+// stops it on a IIe: Apple's II Plus ROM, the II Plus's keyboard and bus noise at $C000-$C01F in
+// place of the IIe's memory switches, nothing in slot 3, and the NMOS 6502's flags after a decimal
+// add or subtract. Its processor still runs the 65C02's 27 extra opcodes (kit/skills/apple2/
+// apple2-reference, "The II Plus in the kit"). A language card is in slot 0 of both.
+const SLOTS = { 1: "none", 2: "none", 3: "aux", 4: "mockingboard", 5: "none", 6: "disk2", 7: "none" };
+const MODELS = {
+    iie: { name: "APPLE2EE", title: "Apple IIe enhanced, 128K", slots: SLOTS },
+    iiplus: { name: "APPLE2P", title: "Apple II Plus, 64K (48K and a language card)", slots: { ...SLOTS, 3: "none" } },
+};
+const modelKey = (k) => {
+    if (!Object.hasOwn(MODELS, k)) throw new Error(`model ${JSON.stringify(k)}: ${Object.keys(MODELS).join(" or ")}`);
+    return k;
+};
+const keyOfName = (name) => Object.keys(MODELS).find((k) => MODELS[k].name === name);
+let model = modelKey(option("--model", process.env.KIT_APPLE2TS_MODEL || "iie"));
+const isIIe = () => model === "iie";
+
+// Puts Apple2TS's machine in a model's configuration: its slots first, so that Apple2TS's own rule
+// for slot 3 (a II Plus gets an 80-column Videoterm unless slot 3 is empty) finds them set.
+function configureModel(k) {
+    model = modelKey(k);
+    doSetSlotConfig(MODELS[model].slots);
+    doSetMachineName(MODELS[model].name, false, false);
+}
 // tools/apple2/apple2ts-server.cjs is two folders below the repository
 const ROOT = path.resolve(option("--root", path.join(path.dirname(path.resolve(process.argv[1])), "..", "..")));
 
@@ -74,7 +104,7 @@ const WORKAROUNDS = [
     "Apple2TS's timers (the disk motor's spin-down) run on the machine's cycle count instead of the host's clock",
     "Math.random, which Apple2TS draws the floating bus and empty slots from, is a seeded generator whose state is in the snapshot",
     "the game patches are off: Apple2TS changes some twenty games when it recognises them (Robotron's lives, Lode Runner's and Snoggle's screens, keys)",
-    "slots: 3 the extended 80-column card (64K), 4 a Mockingboard, 6 a Disk II; no hard disk and no clock card, though Apple2TS's No-Slot Clock answers at $C300-$C3FF, with the computer's date and time, to a program that unlocks it",
+    "slots: 3 the extended 80-column card (64K) on the IIe and nothing on the II Plus, 4 a Mockingboard, 6 a Disk II; no hard disk and no clock card, though Apple2TS's No-Slot Clock answers at $C300-$C3FF, with the computer's date and time, to a program that unlocks it",
     "a key goes into the keyboard latch directly: no auto-repeat and no remapping",
     "read and write checkpoints count through the call Apple2TS's debugger makes on each data access; exec checkpoints, frames, the speaker and the code map are the server's",
     "a snapshot is Apple2TS's own save state (JSON) with the generator's state, the inputs held and the disk controller's private state",
@@ -97,8 +127,7 @@ Math.random = () => {
 setIsTesting();                   // Apple2TS's messages to its page go nowhere
 doSetAppMode("game");             // no checks for Apple2TS's own breakpoints on each instruction
 vclockInit(() => s6502.cycleCount);
-doSetSlotConfig({ 1: "none", 2: "none", 3: "aux", 4: "mockingboard", 5: "none", 6: "disk2", 7: "none" });
-doSetMachineName(MODEL, false, false);
+configureModel(model);
 
 const input = { key: null, buttons: [false, false], paddles: [128, 128, 128, 128] };
 
@@ -162,15 +191,17 @@ function swap(drive, file) {
 
 // A hard reset is a power-on: the generator from its seed, the disk controller's private state as
 // at start-up, and each drive's disk put in again (Apple2TS's insert starts a drive afresh: its
-// head, its bit position, its motor). Drive 1 last, so that it is the drive selected.
+// head, its bit position, its motor). Drive 1 last, so that it is the drive selected. Given a model,
+// the machine becomes that one first.
 let powerOn = null;
 const missing = [];
-function coldStart() {
+function coldStart(newModel) {
     vClearAll();
+    if (newModel != null && modelKey(newModel) !== model) configureModel(newModel);
     setCycleCount(0);
     rngState = SEED;
     memoryReset();
-    doSetRom(MODEL);
+    doSetRom(MODELS[model].name);
     configureMachine();
     missing.length = 0;
     if (powerOn) {
@@ -199,10 +230,12 @@ const frames = () => Math.floor(s6502.cycleCount / FRAME);
 // ---- memory, by space ------------------------------------------------------------------------
 
 const SPACES = ["cpu", "main", "aux", "mainlc1", "mainlc2", "auxlc1", "auxlc2", "rom"];
+const IIE_SPACES = ["aux", "auxlc1", "auxlc2"];   // the 80-column card's 64K, which a II Plus has none of
 
 // Where Apple2TS keeps an address of a space, or -1 where the space has none, -2 for the I/O page.
 // Apple2TS keeps the language card's bank 1 of $D000-$DFFF at $C000-$CFFF of each 64K.
 function physical(space, a) {
+    if (!isIIe() && IIE_SPACES.includes(space)) return -1;
     switch (space) {
         case "main": return a < 0xc000 ? a : -1;
         case "aux": return a < 0xc000 ? AUX + a : -1;
@@ -211,7 +244,7 @@ function physical(space, a) {
             const base = space.startsWith("aux") ? AUX : 0;
             return a < 0xe000 && space.endsWith("1") ? base + a - 0x1000 : base + a;
         }
-        case "rom": return a >= 0xc100 ? ROMmemoryStart + a - 0xc000 : -1;
+        case "rom": return a >= (isIIe() ? 0xc100 : 0xd000) ? ROMmemoryStart + a - 0xc000 : -1;   // the II Plus has no internal ROM at $C100-$CFFF
         case "cpu": return a >>> 8 === 0xc0 ? -2 : addressGetTable[a >>> 8] + (a & 0xff);
     }
     throw new Error(`space ${space}: one of ${SPACES.join(", ")}`);
@@ -314,17 +347,27 @@ function chips() {
             ay: Array.from({ length: 16 }, (_, k) => r(0x20 + k)),
         };
     };
-    return {
-        model: "Apple IIe enhanced, 128K",
-        frames: frames(),
-        vbl: !sw("VBLINV"),
-        switches: {
+    // The II Plus has neither the IIe's memory switches nor its status reads: its $C000-$C01F are the
+    // keyboard and bus noise, so it has no vertical-blank flag and no any-key-down bit.
+    const iie = isIIe();
+    const switches = iie
+        ? {
             "80store": sw("STORE80"), ramrd: sw("AUXRAMREAD"), ramwrt: sw("AUXRAMWRITE"), intcxrom: sw("INTCXROM"),
             altzp: sw("ALTZP"), slotc3rom: sw("SLOTC3ROM"), "80col": sw("COLUMN80"), altchar: sw("ALTCHARSET"),
-            text: sw("TEXT"), mixed: sw("MIXED"), page2: sw("PAGE2"), hires: sw("HIRES"), dhires: sw("DHIRES"),
-            lcram: sw("BSRREADRAM"), lcwrite: sw("BSR_WRITE"), lcbank2: sw("BSRBANK2"),
-        },
-        keyboard: { latch: memGetC000(0xc000) & 0x7f, strobe: (memGetC000(0xc000) & 0x80) !== 0, akd: (memGetC000(0xc010) & 0x80) !== 0 },
+        }
+        : {};
+    Object.assign(switches, {
+        text: sw("TEXT"), mixed: sw("MIXED"), page2: sw("PAGE2"), hires: sw("HIRES"), ...(iie ? { dhires: sw("DHIRES") } : {}),
+        lcram: sw("BSRREADRAM"), lcwrite: sw("BSR_WRITE"), lcbank2: sw("BSRBANK2"),
+    });
+    const keyboard = { latch: memGetC000(0xc000) & 0x7f, strobe: (memGetC000(0xc000) & 0x80) !== 0 };
+    if (iie) keyboard.akd = (memGetC000(0xc010) & 0x80) !== 0;
+    return {
+        model: MODELS[model].title,
+        frames: frames(),
+        vbl: iie ? !sw("VBLINV") : null,
+        switches,
+        keyboard,
         buttons: [sw("PB0"), sw("PB1"), sw("PB2")],
         paddles: [...input.paddles],
         disk: ds && !ds.hardDrive && ds.filename
@@ -341,9 +384,10 @@ function chips() {
 // The characters as the IIe's video ROM draws them: $00-$3F inverse, $40-$7F flashing (or, with the
 // alternate set on, MouseText and inverse lower case), $80-$FF normal; the text gives each its letter.
 function screenText() {
-    const page2 = SWITCHES.PAGE2.isSet && !SWITCHES.STORE80.isSet;
+    const iie = isIIe();
+    const page2 = SWITCHES.PAGE2.isSet && !(iie && SWITCHES.STORE80.isSet);
     const base = page2 ? 0x800 : 0x400;
-    const col80 = SWITCHES.COLUMN80.isSet;
+    const col80 = iie && SWITCHES.COLUMN80.isSet;
     const mixed = !SWITCHES.TEXT.isSet;
     const lines = [];
     for (let row = 0; row < 24; row++) {
@@ -351,7 +395,7 @@ function screenText() {
         let s = "";
         for (let c = 0; c < 40; c++) {
             if (col80) s += letter(memory[AUX + at + c]);
-            s += letter(memory[at + c]);
+            s += iie ? letter(memory[at + c]) : letterIIPlus(memory[at + c]);
         }
         lines.push(s.replace(/\s+$/, ""));
     }
@@ -369,6 +413,14 @@ function letter(b) {
     if (c < 0x20) c += 0x40;
     if (b >= 0x40 && b < 0x60 && SWITCHES.ALTCHARSET.isSet) return " "; // MouseText
     return String.fromCharCode(c === 0x7f ? 0x20 : c);
+}
+
+// The II Plus's video ROM has no lower case and no alternate set: $60-$7F flash the same signs as
+// $20-$3F, and $E0-$FF show them as $A0-$BF do.
+function letterIIPlus(b) {
+    let c = b & 0x3f;
+    if (c < 0x20) c += 0x40;
+    return String.fromCharCode(c);
 }
 
 // ---- the run: slices, the reason it stopped --------------------------------------------------
@@ -783,7 +835,11 @@ function state() {
 
 let quiet = false; // a restore passes the Mockingboard's registers on, which is not the game writing them
 function restore(k) {
+    // the machine the state was saved on: Apple2TS's restore sets the model, and its slots come first
+    const saved = keyOfName(k.state?.state6502?.machineName ?? "APPLE2EE");
+    if (!saved) throw new Error(`the snapshot is of an Apple2TS machine the kit has no model for (${k.state?.state6502?.machineName})`);
     vClearAll();
+    if (saved !== model) configureModel(saved);
     quiet = true;
     try {
         doRestoreSaveState(k.state, false, false, 2);
@@ -810,7 +866,7 @@ function save(args) {
         saved_by: "kit/apple2/apple2ts_server.mjs",
         protocol: PROTOCOL,
         apple2ts: APPLE2TS,
-        model: MODEL,
+        model: MODELS[model].name,
         pc: s6502.PC,
         cycles: cycles(),
         timers: vPending(),
@@ -917,7 +973,7 @@ function status() {
     return {
         running: S.running,
         typing: S.typing,
-        model: "Apple IIe enhanced, 128K",
+        model: MODELS[model].title,
         pc: s6502.PC,
         cycles: cycles(),
         frames: frames(),
@@ -934,30 +990,32 @@ const COMMANDS = {
         server: "kit Apple2TS server",
         protocol: PROTOCOL,
         apple2ts: APPLE2TS,
-        model: "Apple IIe enhanced, 128K",
+        model: MODELS[model].title,
+        models: Object.fromEntries(Object.entries(MODELS).map(([k, m]) => [k, m.title])),
         node: process.version,
         root: ROOT,
         clock: CLOCK,
         frame: FRAME,
-        spaces: SPACES,
+        spaces: SPACES.filter((sp) => isIIe() || !IIE_SPACES.includes(sp)),
         commands: Object.keys(COMMANDS),
         workarounds: WORKAROUNDS,
     }),
     status,
-    // hard: a power-on (the default); otherwise CONTROL-RESET
+    // hard: a power-on (the default), as `model` ("iie" or "iiplus") when given; otherwise CONTROL-RESET
     reset: (a) => replacing(async () => {
-        if (a.hard ?? true) coldStart();
+        if (a.hard ?? true) coldStart(a.model);
         else {
+            if (a.model != null && modelKey(a.model) !== model) throw new Error("a model changes only at a power-on: pass \"hard\": true");
             doReset();
             applyInputs();
         }
         S.countedAt = -1;
         return { ...registers(), missing: [...missing] };
     }),
-    // a power-on with the disks in, and a run: the disk in drive 1 boots
+    // a power-on with the disks in, as `model` when given, and a run: the disk in drive 1 boots
     // `until` an address (for at most `seconds`, 30 unless given), or for `seconds`, or `frames` (300)
     boot: (a) => replacing(async () => {
-        coldStart();
+        coldStart(a.model);
         S.countedAt = -1;
         const until = a.until != null ? address(a.until) : -1;
         const limit = until >= 0
@@ -1055,5 +1113,5 @@ const server = net.createServer((socket) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-    console.log(`kit Apple2TS server: Apple2TS ${APPLE2TS}, Apple IIe enhanced 128K, on 127.0.0.1:${PORT}`);
+    console.log(`kit Apple2TS server: Apple2TS ${APPLE2TS}, ${MODELS[model].title}, on 127.0.0.1:${PORT}`);
 });

@@ -8,8 +8,9 @@ The machine is Apple2TS inside the kit's server (kit/apple2/apple2ts_server.mjs)
 goes through kit/apple2/apple2ts.py, the client a script uses, so what passes here is what a script
 gets. Needs the server up (`tools.py apple2ts`) and nothing else: no game, no disk. It powers the
 machine on, types at BASIC, writes a test program of about three hundred bytes to $6000, points
-PC at it, and measures the four phases on that; then it writes a test disk and boots it. Anything
-the machine was doing is lost. It restarts the server once (phase 2, "after a restart") and leaves
+PC at it, and measures the four phases on that; then it writes a test disk and boots it. Last it
+makes the machine the II Plus (`--model iiplus`) and runs a second program there, which tells the
+two models apart, and boots the test disk on it. Anything the machine was doing is lost. It restarts the server once (phase 2, "after a restart") and leaves
 it running, powered on with no disk. `--keep` leaves this run's snapshots and the test disk in
 tools/apple2-home/snapshots.
 
@@ -60,7 +61,7 @@ OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
 RESULT = "apple2.json"     # each platform's check writes its own file here; `status` prints the last
 WORKAROUNDS = "kit/skills/apple2/tool-apple2ts/workarounds.md"
 SNAPS = ("emutest_p1", "emutest_stopped", "emutest_running", "emutest_c_stopped", "emutest_c_running",
-         "emutest_rollback", "emutest_disk")
+         "emutest_rollback", "emutest_disk", "emutest_iiplus")
 DISK = os.path.join(SNAPDIR, "emutest_disk.dsk")
 SHOT = os.path.join(SNAPDIR, "emutest_screen.png")
 
@@ -226,6 +227,56 @@ irqd:   pla
 nmi:    rti
 '''.replace("<period", f"<${IRQ_PERIOD:04X}").replace(">period", f">${IRQ_PERIOD:04X}")
 CODE, LABELS = assemble(SRC, org=BASE)
+
+# The II Plus's program (phase 5): the same bytes on the two models, and what each must do with them.
+# On the IIe, $C005 and $C009 send writes and the zero page to the 80-column card's memory, and
+# $C018 reads 80STORE; on the II Plus every address from $C000 to $C01F is the keyboard (a read
+# from $C010 to $C01F clears the strobe) and a write there changes nothing. The NMOS 6502 sets Z
+# after a decimal add from the binary sum ($99 + $01 is $9A: Z clear), the 65C02 from the decimal
+# one ($00: Z set).
+MODEL_SRC = r'''
+key1   = $70
+key2   = $71
+dsum   = $72
+dflags = $73
+start:  sei
+        cld
+        ldx #$ff
+        txs
+        sta $c005           ; IIe: RAMWRT on
+        sta $c009           ; IIe: ALTZP on
+        lda #$5a
+        sta $2000
+        lda #$a5
+        sta $ff
+        sta $c004           ; IIe: RAMWRT off
+        sta $c008           ; IIe: ALTZP off
+        lda $c000
+        sta key1
+        lda $c018           ; II Plus: clears the strobe. IIe: reads 80STORE
+        lda $c000
+        sta key2
+        sed
+        clc
+        lda #$99
+        adc #$01
+        php
+        sta dsum
+        pla
+        sta dflags
+        cld
+        lda $c08b           ; the language card: read and write RAM bank 1 (two reads)
+        lda $c08b
+        lda #$33
+        sta $d000
+        lda $c083           ; read and write RAM bank 2
+        lda $c083
+        lda #$44
+        sta $d000
+        lda $c082           ; the ROM again
+done:   jmp done
+'''
+MODEL_CODE, MODEL_LABELS = assemble(MODEL_SRC, org=BASE)
 START, LOOP, TOP, VBLL, KBD, NOKEY, CLICK, NEVERR, IRQ = (LABELS[k] for k in (
     "start", "loop", "top", "vbl", "kbd", "nokey", "click", "neverr", "irq"))
 PASSES, FRAMES, XPOS, KEY, AKD, BTN0, PDL0, IRQS, TICKS = (LABELS[k] for k in (
@@ -671,6 +722,83 @@ def p_disk(m):
     m.disk(drive=1, eject=True)
 
 
+def model_program(m, model):
+    """Power on as `model` with no disk, at BASIC, then run MODEL_SRC with a key waiting; returns
+    what it left in memory."""
+    m.delete()
+    m.release_keys()
+    for d in (1, 2):
+        m.disk(drive=d, eject=True)
+    m.reset(hard=True, model=model)
+    m.boot(seconds=1)
+    m.reset(hard=False)
+    m.run(seconds=0.3)
+    m.write(0x2000, bytes([0]), space="main")
+    m.write(BASE, MODEL_CODE)
+    m.key("A")
+    m.set_registers(pc=MODEL_LABELS["start"])
+    r = m.until(MODEL_LABELS["done"], max_cycles=1020484)
+    m.release_keys()
+    z = m.read(0x70, 4, space="main")
+    return {"reason": r["reason"], "main2000": m.read(0x2000, 1, space="main")[0], "zpff": m.read(0xFF, 1, space="main")[0],
+            "key1": z[0], "key2": z[1], "dsum": z[2], "dflags": z[3],
+            "lc": (m.read(0xD000, 1, space="mainlc1")[0], m.read(0xD000, 1, space="mainlc2")[0])}
+
+
+@phase("phase 5: the II Plus")
+def p_iiplus(m):
+    iie = model_program(m, "iie")
+    rom_iie = m.read(0xD000, 0x3000, space="rom")
+    plus = model_program(m, "iiplus")
+    h, st = m.call("hello"), m.status()
+    rom_plus = m.read(0xD000, 0x3000, space="rom")
+    check("iiplus-model", st["model"].startswith("Apple II Plus") and "aux" not in h["spaces"] and rom_plus != rom_iie,
+          "a power-on as the II Plus: the server says so, has no auxiliary memory, and the ROM at $D000-$FFFF is another",
+          f"{st['model']}; spaces {', '.join(h['spaces'])}; "
+          f"{sum(a != b for a, b in zip(rom_plus, rom_iie))} of 12,288 ROM bytes differ from the IIe's")
+    check("iiplus-switches", plus["reason"] == iie["reason"] == "until" and plus["main2000"] == 0x5A
+          and plus["zpff"] == 0xA5 and iie["main2000"] != 0x5A and iie["zpff"] != 0xA5,
+          "writes to $C005 and $C009 move nothing on the II Plus; on the IIe they send a store and the zero page "
+          "to auxiliary memory",
+          f"main $2000 and $FF: II Plus ${plus['main2000']:02X} ${plus['zpff']:02X}, IIe ${iie['main2000']:02X} ${iie['zpff']:02X}")
+    check("iiplus-keyboard", plus["key1"] & 0x80 and not plus["key2"] & 0x80 and iie["key2"] & 0x80,
+          "a read of $C018 clears the keyboard's strobe on the II Plus, as any of $C010-$C01F does, and not on the IIe",
+          f"$C000 before and after: II Plus ${plus['key1']:02X} ${plus['key2']:02X}, IIe ${iie['key1']:02X} ${iie['key2']:02X}")
+    check("iiplus-decimal", plus["dsum"] == iie["dsum"] == 0 and not plus["dflags"] & 0x02 and iie["dflags"] & 0x02,
+          "$99 + $01 in decimal mode: $00 on both, Z clear on the II Plus (the NMOS 6502's binary sum) and set on the IIe's 65C02",
+          f"II Plus A ${plus['dsum']:02X} P ${plus['dflags']:02X}, IIe A ${iie['dsum']:02X} P ${iie['dflags']:02X}")
+    check("iiplus-language-card", plus["lc"] == (0x33, 0x44),
+          "the II Plus's language card: bank 1 and bank 2 of $D000 each hold the program's marker",
+          f"${plus['lc'][0]:02X} ${plus['lc'][1]:02X}")
+
+    write_disk(DISK)
+    want = disk_track0()
+    m.disk(DISK, drive=1)
+    ends = []
+    for _ in range(2):
+        r = m.boot(until=DONE, seconds=20, model="iiplus")
+        ends.append((r["reason"], r["cycles"]))
+    got = m.read(0x0800, 0x1000, space="main")
+    check("iiplus-disk-boots", ends[0][0] == "until" and ends[0] == ends[1] and got == want,
+          "the test disk boots on the II Plus, byte for byte, and two power-ons reach the end at the same cycle",
+          f"ended on {ends[0][0]} at cycle {ends[0][1]}, then {ends[1][1]}; sectors {'all right' if got == want else 'WRONG'}")
+    total = ends[0][1]
+    mid = snap_path("emutest_iiplus")
+    m.boot(seconds=0.5 * total / 1020484, model="iiplus")
+    m.save(mid)
+    m.reset(hard=True, model="iie")
+    m.load(mid)
+    loaded_as = m.status()["model"]
+    b = m.until(DONE, max_cycles=20 * 1020484)
+    check("iiplus-snapshot", loaded_as.startswith("Apple II Plus") and b["reason"] == "until" and b["cycles"] == total
+          and m.read(0x0800, 0x1000, space="main") == want,
+          "a II Plus snapshot loaded into a server that is the IIe makes it the II Plus again, and reads on to the same "
+          "memory at the same cycle",
+          f"loaded as {loaded_as}; finished at cycle {b['cycles']} against {total}")
+    m.disk(drive=1, eject=True)
+    m.reset(hard=True, model="iie")
+
+
 @phase("phase 3: live measurement")
 def p3(m):
     m.delete()
@@ -946,7 +1074,9 @@ def main():
         sys.exit(f"{e}\nthen run check-emulator again.")
     build = f"Apple2TS {h['apple2ts']} in the kit's server (protocol {h['protocol']}), node {h['node']}, on {sys.platform}"
     print(build)
+    started_as = next((k for k, t in (h.get("models") or {}).items() if t == h["model"]), "iie")
     started = time.time()
+    m.reset(hard=True, model="iie")                # the four phases measure the enhanced IIe
     p_start(m)
     if not any(n == "program-runs" and ok for n, ok in results):
         print("\nthe test program never ran; stopping here")
@@ -955,13 +1085,14 @@ def main():
         fresh(m)
         step(m)
     p_disk(m)
+    p_iiplus(m)
     m = p2_restart(m)
     try:
         m.delete()
         m.release_keys()
         for d in (1, 2):
             m.disk(drive=d, eject=True)
-        m.reset(hard=True)                         # left powered on with no disk, as the server starts
+        m.reset(hard=True, model=started_as)      # left powered on with no disk, as the server started
     except Exception:
         pass
     m.close()

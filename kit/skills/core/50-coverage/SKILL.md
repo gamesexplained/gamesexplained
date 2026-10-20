@@ -295,6 +295,13 @@ everything after it. Find every call site of every such routine, type the
 argument bytes as data, and restart the disassembly at the resume point.
 One pass of this can double the tracked image.
 
+Give each argument a label or a comment of its own, saying what it is.
+Data typed with neither is not tracked: the ledger counts neither its
+bytes nor their absence, so coverage still reads 100 %, and the listing
+holds a gap where the argument is. A page or test that runs the code
+from the listing then reads zeros as every argument. `listing.py` names
+each such gap as a few untyped bytes between code. <!-- until #442 -->
+
 The same shape hides more than one routine: look for a family of wrappers
 built on one or two stack-unwinding primitives, and check each for the
 number of inline bytes it eats, which need not be the same.
