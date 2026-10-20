@@ -162,3 +162,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Separate text and graphics page · 20 October 2026
 
 `70-minisite`, “The order serves the explanation”: moved the font and dictionary explanation into its own reading page, with the glyph viewer first and the journey left on Gameplay. The page's scope stays the opening's checked text and character data. Existing original-code tests follow the moved widgets. This is presentation work within the game; no shared-kit change or maintainer ask arose.
+
+## City workflow on Maps / levels · 20 October 2026
+
+`70-minisite`, “The How it works page keeps the format”: gave the city workflow a home on Maps / levels and linked the player-facing explanations to it. Its shared section-navigation rule replaces the gallery-only area dropdown with the two sections actually on this page. The original-code test follows the moved data; browser checks cover bookmarks and the capture gallery. These are game-specific presentation changes; no shared-kit change or maintainer ask arose.
