@@ -168,6 +168,16 @@
   },
   {
    "start": 36606,
+   "end": 36628,
+   "type": "Byte"
+  },
+  {
+   "start": 36629,
+   "end": 36662,
+   "type": "Code"
+  },
+  {
+   "start": 36663,
    "end": 36775,
    "type": "Byte"
   },
@@ -371,8 +381,20 @@
    "kind": "auto"
   },
   {
+   "address": 2081,
+   "name": "s_0821",
+   "type": "Subroutine",
+   "kind": "auto"
+  },
+  {
    "address": 2087,
    "name": "s_0827",
+   "type": "Subroutine",
+   "kind": "auto"
+  },
+  {
+   "address": 2099,
+   "name": "s_0833",
    "type": "Subroutine",
    "kind": "auto"
   },
@@ -533,6 +555,12 @@
    "kind": "auto"
   },
   {
+   "address": 36611,
+   "name": "guard_setup_latch",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
    "address": 36612,
    "name": "alph_opening_reply_index",
    "type": "AbsoluteAddress",
@@ -546,9 +574,15 @@
   },
   {
    "address": 36614,
-   "name": "a_8F06",
+   "name": "guard_entry_selector",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
+  },
+  {
+   "address": 36615,
+   "name": "guard_second_random_bit_unanalysed",
+   "type": "AbsoluteAddress",
+   "kind": "user"
   },
   {
    "address": 36620,
@@ -577,6 +611,24 @@
   {
    "address": 36628,
    "name": "guard_unanalysed_state_after_door_flag",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36629,
+   "name": "guard_setup_prefix",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36635,
+   "name": "b_8F1B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 36663,
+   "name": "guard_setup_tail_unanalysed",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1015,7 +1067,7 @@
   {
    "address": 36319,
    "type": "line",
-   "text": "Reached from the room callback when depth is at least40 and no entry countdown is active. For column $AF=1, zero selector $8F06 jumps to $8EAE; nonzero continues $8DF8. For every other column, nonzero jumps to $8EAE and zero continues. The controlled left-door snapshot has column1/selector1. Ordinary up input from its opened door reached the continuation, displayed How did she figure it out, advanced phase1 to2 and loaded scene5 The Wall of Hands. In the same selector1 setup, ordinary right-door entry at column3 reached $8EAE and the loss sequence. Selector initialization and other playthroughs remain open."
+   "text": "Reached from the room callback when depth is at least40 and no entry countdown is active. For column $AF=1, zero selector $8F06 jumps to $8EAE; nonzero continues $8DF8. For every other column, nonzero jumps to $8EAE and zero continues. The controlled left-door snapshot has column1/selector1. Ordinary up input from its opened door reached the continuation, displayed How did she figure it out, advanced phase1 to2 and loaded scene5 The Wall of Hands. In the same selector1 setup, ordinary right-door entry at column3 reached $8EAE and the loss sequence. The setup prefix at $8F15 generates the selector once while its guard is negative. Complete ordinary return visits and other recorded playthroughs remain open."
   },
   {
    "address": 36464,
@@ -1038,14 +1090,29 @@
    "text": "Called when $8E70 decrements the entry countdown to zero with nonzero outcome $8F0D. Request sound18, queue $9E68 with A6, wait through $0839/Y10, request sound16, clear the message area via $0836, wait with Y3, queue $9E97 with A2 and wait with Y5. Set $0580=1 and request description $9F44 with A=$FF through $0857. Captured right-door route displayed the falling/lied messages then the loss panel; phase1 and scene4 persisted through the recorded loss. Delay arguments are not a measured wall-clock duration."
   },
   {
+   "address": 36611,
+   "type": "line",
+   "text": "Setup guard read by $8F15: nonnegative returns immediately; negative runs the initialization prefix and is changed to0 before command availability is installed and two random bits are stored. The saved controlled loader-return state has FF; the ordinary callback ran the prefix once and left0. After240 no-input frames both bits were unchanged while the random state advanced. Reset on a complete ordinary revisit remains open."
+  },
+  {
    "address": 36612,
    "type": "line",
    "text": "Shared mutable conversation index used by Alph and Ralph. Below count15, opening indices0,1,2 advance0 to1 to2 to2. Calling Ralph preserves it. After acknowledged count15 in phase1, $9004 increments then retains1 when old0; otherwise decrements back to the old byte and selects a detail reply. The controlled post-thanks trial kept2 through three asks. Higher phases remain open."
   },
   {
+   "address": 36614,
+   "type": "line",
+   "text": "First stored random bit, written by $8F2C as A AND1 after $0821 advances the random generator. Entry choice $8DDF continues for column1/nonzero or another column/zero, and takes the losing branch for the opposite combinations. Both recorded door traversals use value1. Controlled initializer trials with seeds0 and7 stored0 and1. These are seed-poked comparisons, not ordinary routes selecting a preferred bit. Later writes/initialization on ordinary return visits remain open."
+  },
+  {
    "address": 36627,
    "type": "line",
    "text": "Mutable local byte read by phase1 conversation at $9018, incremented by a changing phase1 OPEN at $92CC and decremented by a changing CLOSE at $9292. Controlled room's initial FF became0 on ordinary left-door OPEN, then FF on CLOSE. ASK replies changed Figure it out for yourself to the unsure response and back while Brick Hallway count15 stayed fixed. This establishes the local cycle, not initialization/persistence or all door outcomes."
+  },
+  {
+   "address": 36629,
+   "type": "line",
+   "text": "Return when $8F03 is nonnegative. Otherwise store0 there, pass X=$84/Y=$9F to command-availability API $0833, call random API $0821, mask A to bit0 and store $8F06, call it again and store bit0 at $8F07. $0821 returns the high byte of the updated 16-bit state at $0502/$0503: new=(37*old+17) modulo65536. The page/test starts from the state before these two generator calls. The following initialization tail at $8F37 is separate and unanalysed here; the second bit's gameplay role remains open."
   },
   {
    "address": 36776,

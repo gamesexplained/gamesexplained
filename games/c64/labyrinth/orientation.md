@@ -142,3 +142,7 @@ From `work/guard-open-near/0-open.vsf`, ordinary up160frames in20-frame batches 
 ## Other guard door · 20 October 2026
 
 Private start: work/guard-progress/progress-15.vsf, controlled count15/phase1/selector1, X99/depth6. Ordinary right then up reaches X247/depth24; OPEN DOOR changes map column3 from1 to3. work/guard-right/open.vsf saves that state. Ordinary up reaches the alternate callback at$8EAE, X224/depth42. work/guard-right-finish holds instruction-boundary captures. work/guard-right-text/falling-complete.vsf and lied-complete.vsf follow the message waits; settled.vsf is the fully drawn loss panel after300 additional no-input frames. These snapshots are private; the page uses four anonymized PNG captures. Original machine state, input and normal speed were restored after every probe.
+
+## Guard selector probe · 20 October 2026
+
+work/guard-selector/observations.json records the saved controlled scene4 loader-return entry, stopped at$8F15, $8F27 and$8F37, and after240 no-input frames. The unmodified entry seed is63287. Two additional trials explicitly replace the16-bit state before$8F27 with0 or7. Chosen-state snapshots stay in that folder; no new screenshots of the older male entry are published. All trials restored the original machine, input and normal speed.

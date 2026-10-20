@@ -106,3 +106,7 @@ Confirmed inside the controlled guard-room setup: ordinary up input through the 
 ### Right doorway in the controlled guard setup
 
 Live-confirmed: ordinary movement and OPEN DOOR at the right doorway from the count15/phase1/selector1 setup reaches the falling message, “Ok, we lied. It wasn't endless,” and the loss panel. Original entry/countdown routines and all three text records are checked by test_guard_right.js. This complements the left-door Wall of Hands route within that setup. Other selector setups, the ordinary arrival from the Brick Hallway and post-loss restart remain open.
+
+### Guard doorway selector
+
+Traced and live-checked in the controlled scene4 entry: a guarded setup prefix stores one bit from a random result at$8F06, then a second bit at$8F07. The guard changes$FF→0 and the bits stay fixed over240 idle frames while random state advances. Explicit seed0/seed7 comparisons give selectors0/1. Original-code tests sweep65,536 states and256 guard bytes. Reset on ordinary return visits, the second bit's role and complete selector0 door traversals remain open.

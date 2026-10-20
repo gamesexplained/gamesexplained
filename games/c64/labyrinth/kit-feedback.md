@@ -194,3 +194,7 @@ The broader kit tests caught editor incompatibilities in this game's map-pin and
 ## Other guard doorway · 20 October 2026
 
 `60-verify`, “A live test in one room tests one room”: kept the loss route limited to the captured selector1 controlled setup. “Something ran between the poke and the read” and the machine's asynchronous text output led to waiting past the queue call before capturing complete messages. Existing span-boundary checks prevented153 unanalysed bytes after the new message terminators being counted as understood. The strict frames helper correctly reported an early checkpoint stop; the probe used the raw result and exact PC. These are game-specific observations covered by existing rules; no shared-kit edit or maintainer ask arose.
+
+## Guard selector initialization · 20 October 2026
+
+`60-verify`, “Poke the variable, watch the screen”: compared the exact initialized bytes after explicitly controlled random-state changes, without calling those preferred-door routes. “A test must contain cases that have to succeed” led to checking the captured seed and both binary selector values alongside all65,536 states. Existing boundaries and byte-domain guidance kept the second bit's unknown role and the initializer tail out of the described span. No shared-kit edit or maintainer ask arose.
