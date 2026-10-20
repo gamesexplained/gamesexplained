@@ -49,29 +49,29 @@ Sources:
 |---|---|---|
 | Title screen with three options, A 1-player game, B 2-player game, C Balloon Trip, a balloon as the cursor; Select moves it, Start begins; both work on controller 1 only | live | `reference/title.png`, `reference/title-balloon-trip.png`; Select and Start checked from `work/title.json.gz` |
 | The title screen starts a demonstration game by itself after a while; Select or Start during it recalls the menu | live | `reference/demo.png` (the demo after the title, with both scores and `TOP`); the code's timer is open (Data Crystal says `$19` wrapping) |
-| Control pad left and right move the balloonist: he runs on the ground, accelerates in the air; up and down do nothing | open | |
-| A flaps once; B flaps continuously; the flap is the only lift | open | the eight A taps in `orientation.md` kept the player near the ground |
+| Control pad left and right move the balloonist: he runs on the ground, accelerates in the air; up and down do nothing | confirmed | `actor_controls` reads bits 0 and 1 of `buttons` only; up and down are never read (`read_joypads`, `actor_move_control`) |
+| A flaps once; B flaps continuously; the flap is the only lift | confirmed | `actor_controls` (`$EC38`): one flap per press through `flap_latch`, repeated while B is held; `flap_strength` by type |
 | The player has two balloons; an enemy hit pops one and the second makes rising harder; with both gone the player falls into the water and loses a life | live | `reference/one-balloon.png` (one balloon left, phase 1) |
-| Flying off one side of the screen brings the player back on the other | open | |
-| Enemies on the ground blow up a balloon, take off and fly around; hit from above, the balloon pops and the enemy parachutes down; hit again on the way down he drops into the water | open | |
-| A parachuting enemy that reaches land blows up another balloon and comes back "even stronger": three colours, pink, green, white, from slowest to fastest (StrategyWiki); a white one does not improve further | open | the three birds of phase 1 are pink in `reference/play-phase1.png` |
-| Kicking an enemy on the ground while he inflates boots him into the water | open | |
-| A bubble floats up from the water when an enemy sinks; popping it scores | open | |
-| The fish in the water eats a player, or an enemy, who flies too close to it | open | |
-| When a round goes on too long a thunder cloud throws lightning: a spark that bounces diagonally until it meets the water; at most two sparks at once (StrategyWiki) | open | |
-| Propellers (the booklet's name; "Flipper" in other sources) appear from later rounds: a spinning bar that throws whoever touches it; up to four in a stage (StrategyWiki) | open | |
-| A round is cleared when every enemy is gone; rounds add enemies and platforms | open | |
-| After every three rounds a bonus round: balloons rise from chimneys at the bottom, twenty of them; popping all twenty gives the perfect bonus; a popped player balloon comes back for the bonus round; falling there costs no life (two players) | open | |
+| Flying off one side of the screen brings the player back on the other | confirmed | `actor_move_x` lets X wrap; only Balloon Trip clamps it (`actor_physics`) |
+| Enemies on the ground blow up a balloon, take off and fly around; hit from above, the balloon pops and the enemy parachutes down; hit again on the way down he drops into the water | confirmed | `actor_think` (`$EBC4`) pumps and launches; `resolve_hit` pops and `hit_next_type` puts the bird on its parachute, then falling |
+| A parachuting enemy that reaches land blows up another balloon and comes back "even stronger": three colours, pink, green, white, from slowest to fastest (StrategyWiki); a white one does not improve further | confirmed | `actor_ground_state` lands it; `actor_think` relaunches one colour faster from `relaunch_types`; the three speeds are the physics tables by type |
+| Kicking an enemy on the ground while he inflates boots him into the water | confirmed | `resolve_hit` with the bird's action 2 up: `hit_scores` |
+| A bubble floats up from the water when an enemy sinks; popping it scores | confirmed | `actor_physics` turns a sunk bird into a bubble (`actor_balloons` `$80`); `actor_bubble_update` scores 500 |
+| The fish in the water eats a player, or an enemy, who flies too close to it | confirmed | `fish_update` and its routines (`$C5C3-$C716`); the fish fanfare |
+| When a round goes on too long a thunder cloud throws lightning: a spark that bounces diagonally until it meets the water; at most two sparks at once (StrategyWiki) | live | `reference/lightning.png` at 30 s in phase 1; `lightning_countdown`, two slots in `spark_state` |
+| Propellers (the booklet's name; "Flipper" in other sources) appear from later rounds: a spinning bar that throws whoever touches it; up to four in a stage (StrategyWiki) | live | none before phase 7 (`phase_layout_7`), four in phase 10; `propeller_touch`, `propeller_push`; up to 10 slots |
+| A round is cleared when every enemy is gone; rounds add enemies and platforms | confirmed | `phase_loop` (`$F327`); the phase table in `facts.md` |
+| After every three rounds a bonus round: balloons rise from chimneys at the bottom, twenty of them; popping all twenty gives the perfect bonus; a popped player balloon comes back for the bonus round; falling there costs no life (two players) | live | `reference/bonus-round.png`; `bonus_layout` at every fourth index; `bonus_round_play`; the second balloon comes back through `actor_physics` (`$EB62`) |
 | Phase number shown at the start of a round (`PHASE-01`) | live | `reference/play-phase1.png`, taken as the words fade |
 | 2-player game: both players on screen, cooperation or competition; a player can pop the other's balloon | live | `reference/two-player.png`; the popping is open |
 | Balloon Trip: one life, the scene drifts from left to right, balloons to pop and sparks to avoid; the rank out of 50 is shown at the top right; twenty balloons in succession give a "super high score", which StrategyWiki describes as the balloons' value rising a rank, up to three ranks | live | `reference/balloon-trip.png` (`RANK-47`); the ranking and the streak are open |
-| Lives: three in games A and B, one in C; lost by sinking, the fish, lightning, or both balloons popped | open | the booklet says "3 men"; two spare balloons are drawn under the score |
+| Lives: three in games A and B, one in C; lost by sinking, the fish, lightning, or both balloons popped | confirmed | `start_game` gives 2 spare (`lives`), the third is the one in play; Balloon Trip sets 0; `phase_loop` respawns and `game_over` ends |
 | Start pauses with a tone; the sprites are hidden while paused | live | `reference/pause.png` |
 | Top score resets to 10,000 (games A and B) or 25,000 (game C) at power-on | live | `TOP-010000` on `reference/play-phase1.png`, `TOP-025000` on `reference/balloon-trip.png` |
-| Scoring, games A and B: enemy balloon 500, 750 or 1,000 by colour; parachute 1,000, 1,500 or 2,000; kick 750, 1,000 or 1,500 (the colours' order from StrategyWiki, the ranges from the booklet); the other player's balloon 1,000; a bubble 500; a bonus-round balloon 300 to 700; the perfect bonus 10,000 to 30,000 | open | |
-| Scoring, Balloon Trip: a balloon 300 to 700, a bubble 500, twenty in succession "? points" (the booklet's own text) | open | |
-| Extra lives: the booklet says nothing; a search found no documented threshold | open | |
-| Game over text | open | the state was not held long enough to be seen on 19 October 2026 |
+| Scoring, games A and B: enemy balloon 500, 750 or 1,000 by colour; parachute 1,000, 1,500 or 2,000; kick 750, 1,000 or 1,500 (the colours' order from StrategyWiki, the ranges from the booklet); the other player's balloon 1,000; a bubble 500; a bonus-round balloon 300 to 700; the perfect bonus 10,000 to 30,000 | confirmed | `hit_scores`, `hit_scores_kicked`, `bonus_values`, `perfect_tens_table`: the table in `facts.md`; the colours match StrategyWiki's |
+| Scoring, Balloon Trip: a balloon 300 to 700, a bubble 500, twenty in succession "? points" (the booklet's own text) | confirmed | `set_balloon_value` (300, 500, 700 by `bonus_round`), 500 a bubble (`actor_bubble_update`), 10,000 for 20 in succession (`trip_loop`, `$C348`) |
+| Extra lives: the booklet says nothing; a search found no documented threshold | confirmed | there is none: nothing reads the score but `add_score`'s top-score compare and the ranking; `lives` is only ever decremented after `start_game` |
+| Game over text | live | `reference/game-over.png`; `show_game_over` |
 
 ## Beyond the documentation
 
@@ -101,16 +101,19 @@ Found in the code, not in the manual.
   mark); an unused sound effect; a title-screen difference between
   revisions.
 - Observed: after a Balloon Trip ends, the demonstration that follows the
-  title shows the Trip's top score, 25,000 (`reference/demo.png`).
+  title shows the Trip's top score, 25,000 (`reference/demo.png`): the
+  demonstration keeps the title option's top score pointer.
+- The reset button never keeps the scores, and the sound driver's
+  variables lie inside the Balloon Trip ranking table (`facts.md`,
+  "Quirks and bugs").
+- Phase 9 reuses phase 4's birds and platforms with two propellers added;
+  phase 12 is phase 6 again; from phase 13 the layouts of 4 to 12 repeat.
 
 ## Open questions
 
 - Which release is this image? The file is named as the North American
   cartridge and the title screen says ©1984, but no checksum database
   could be read.
-- What the two sparks, the propellers and the bonus round look like on
-  this image: the states need the phase set by hand, once the phase
-  variable is named.
-- Whether there is an extra life at all, and at what score.
-- How the Balloon Trip rank is computed from the score, and what "20 in
-  succession" does to the balloons' value.
+- The three bird speeds in frames: the physics tables are known
+  (`facts.md`); a timed run of each colour across the screen was not
+  made.
