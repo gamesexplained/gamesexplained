@@ -134,3 +134,7 @@ Restored the ordinary opened column36 snapshot at X2348/depth24, count4/cell6, a
 ## Local door and answer cycle · 20 October 2026
 
 From the controlled count15 thanks, up80frames then release20frames at X99 reaches depth24. OPEN DOOR, ASK ALPH, CLOSE DOOR, ASK ALPH yields left cell2/2/1/1 and flag0/0/$FF/$FF. The replies are the unsure response, then Figure it out for yourself. Count/acknowledgement15, phase1 and index2 are retained. The depth6 OPEN trial dispatches but is too far. Private route observations/snapshots: `work/guard-open-near/`. Original emulator state and normal speed were restored.
+
+## Left-door continuation · 20 October 2026
+
+From `work/guard-open-near/0-open.vsf`, ordinary up160frames in20-frame batches reached X96/depth45 and the entry reaction. `work/guard-enter/settled.vsf` is inside scene4, waiting in the successful sequence. Further no-movement frames advanced phase1→2 and entered the scene5/entry1 loader, saved under `work/guard-enter-finish/`. `work/guard-arrival/arrival.vsf` is the subsequent Wall of Hands arrival at X84/depth6, reached with ordinary loader input. It is a local continuation from the controlled room/count/selector1 setup. Original emulator state and normal speed were restored after probing.

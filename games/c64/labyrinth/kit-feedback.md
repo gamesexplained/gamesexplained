@@ -150,3 +150,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Guard left-door reply cycle · 20 October 2026
 
 `60-verify`, “Before reporting that something is missing”: searched the untyped U4 bytes when the decoded reference list showed only a read, exposing both changing handlers. Its “Prove reachability with inputs, not pokes” kept the depth6 refusal separate from the successful ordinary approach within a controlled room. The original proximity helper bypasses the public message API; the checked port intercepts its internal queue after the real stack discard. Existing code-comparison and boundary rules cover these details; no shared-kit edit or maintainer ask arose.
+
+## Left-door continuation · 20 October 2026
+
+`60-verify`, “The machine never stopped”: measured each stopped interval and kept the reaction, pending countdown and loader return distinct rather than calling the first screen a completed transition. `70-minisite`'s code comparison requirement caught the draft entry address one byte inside a preceding JMP; the spurious reference was removed before export. The successful arrival is ordinary input inside the documented controlled setup. Existing verification and bounds rules cover this work; no shared-kit change or maintainer ask arose.

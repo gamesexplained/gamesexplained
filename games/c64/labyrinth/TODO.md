@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,023/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 53,636/237,523 bytes (22.6%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,138/48,705 described bytes; 17 other graphical parts are untouched. The provisional image-ledger total is 53,751/237,523 bytes (22.6%) across five started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
 
 For the opening’s verification:
 
@@ -48,9 +48,11 @@ For the Brick Hallway:
 For Alph and Ralph:
 
 - Complete the ordinary crossing from the Brick Hallway. Column26 selects scene4/entry2 in the checked route data, but the attempted live approach did not complete that crossing. The reference scene was selected in memory.
-- Verify counter persistence through complete room crossings and disk saves, later dialogue phases, local-door state initialization/persistence, other presence outcomes, and both door outcomes. CALL and the first three ASK replies for both guards, plus the shared index when switching from Alph to Ralph, are live-checked inside the controlled room.
+- Verify counter persistence through complete room crossings and disk saves, later dialogue phases, local-door state initialization/persistence, other presence outcomes, and other door/selector outcomes. CALL and the first three ASK replies for both guards, plus the shared index when switching from Alph to Ralph, are live-checked inside the controlled room.
 - Resolve resident/overlay ownership, the $07FE-$07FF gap, drawing and animation consumers. Independently sample the new partial listing.
 
-- Complete the ordinary route opening all15 Brick Hallway doors. The map census, initial count3, checked closed-door increment, repeated-open non-increment and controlled14/15 response threshold are established. The controlled post-thanks phase-one reply is checked at index2/flag$FF. The ordinary in-room left-door OPEN/ASK/CLOSE/ASK cycle establishes flag$FF→0→$FF and the unsure/figure-it-out replies. Check initialization, persistence and later phase2/3/other branches.
+- Complete the ordinary route opening all15 Brick Hallway doors. The map census, initial count3, checked closed-door increment, repeated-open non-increment and controlled14/15 response threshold are established. The controlled post-thanks phase-one reply is checked at index2/flag$FF. The ordinary in-room left-door OPEN/ASK/CLOSE/ASK cycle establishes flag$FF→0→$FF and the unsure/figure-it-out replies. The captured selector1 left-door entry advances phase1→2 and reaches The Wall of Hands. Check selector initialization, persistence, the alternate entry outcome and later phase2/3/other branches.
 
 - Check the remaining commands and count persistence across complete room crossings and disk save/load. The ordinary column36 CLOSE,CLOSE,OPEN,OPEN sequence is established: counts4→3→3→4→4, with no change on repeats.
+
+- Analyse The Wall of Hands from the checked local arrival at scene5/entry1, X84/depth6. Its image and route are captured, but its mechanics and code have no part analysis. The route into the guards still begins from a controlled room/count setup.

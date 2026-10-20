@@ -97,4 +97,8 @@ Confirmed in a controlled room: after the count15 thanks, three ordinary ASK ALP
 
 ### The guard door changes the answer
 
-Confirmed within the controlled thanks room: walking up to depth24, opening the left door, asking Alph, closing it and asking again gives the unsure response then “Figure it out for yourself.” The local flag changes while the Brick Hallway count remains15. Original-code tests check the bounded left-door decision for all flag/depth bytes and the actual page sequence. Door destinations and higher phases remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_door.js`, and five `guard-door` captures.
+Confirmed within the controlled thanks room: walking up to depth24, opening the left door, asking Alph, closing it and asking again gives the unsure response then “Figure it out for yourself.” The local flag changes while the Brick Hallway count remains15. Original-code tests check the bounded left-door decision for all flag/depth bytes and the actual page sequence. The checked selector1 left-door continuation reaches The Wall of Hands, as recorded below. Other outcomes and higher phases remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_door.js`, and five `guard-door` captures.
+
+### Left doorway continuation
+
+Confirmed inside the controlled guard-room setup: ordinary up input through the opened left door with selector1 gives the entry reaction, advances guard phase1→2 and loads The Wall of Hands at entry1. Arrival at X84/depth6 is captured. The entry choice, phase advance, successful countdown and reaction text are compared with original code. Other door/selector outcomes, ordinary entry to the guards and Wall of Hands mechanics remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_entry.js`, and the three `guard-entry` reference captures.
