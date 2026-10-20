@@ -174,6 +174,20 @@ class Window(unittest.TestCase):
                         self.SETUP)
         self.assertEqual(got, [0x26, 0])
 
+    def test_bands(self):
+        got = node_eval("(() => { for (let i = 0; i < 1000; i++) { m[0x0800 + i] = 0x71; m[0x0C00 + i] = 1 + i % 2; }"
+                        " const t = ted({7: 0x0A}), whole = C16.render(m, t).px;"
+                        " const cut = [0, 7, 8, 63, 64, 199].reduce((b, y, i, a) => i % 2 ? b : b.concat([{y0: y, y1: a[i + 1], mem: m, ted: t}]), []);"
+                        " const same = C16.renderBands(cut).px.every((v, i) => v === whole[i]);"
+                        " const m2 = m.slice(); m2[0x0800 + 40 * 13] = 0x45;"
+                        " const two = C16.renderBands([{y0: 0, y1: 99, mem: m, ted: t}, {y0: 100, y1: 199, mem: m2, ted: ted({7: 0x08, 0x15: 0x22})}]);"
+                        " return [same, at(two, 1, 80), at(two, 0, 104), at(two, 2, 50), at(two, 0, 80), at(two, 8, 120)]; })()",
+                        self.SETUP)
+        # bands of one memory and registers draw the frame render() draws; two bands each draw from
+        # their own: the first scrolled two right, the second not, its row 13 recoloured and its
+        # background changed
+        self.assertEqual(got, [True, 0x32, 0x45, 0x71, 0x32, 0x22])
+
     def test_footprint_widget(self):
         self.assertTrue(node_eval("typeof C16Map === 'object' && typeof C16Map.render === 'function'"))
 

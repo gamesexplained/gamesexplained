@@ -3,6 +3,7 @@
 // (window.C16 on a page; globalThis.C16 in node, where kit/c16/frame.py tests it).
 //
 //   C16.render(mem, ted, opts) -> {w: 320, h: 200, px}   px: a TED colour byte for each pixel
+//   C16.renderBands(bands, opts) -> the same, for a frame whose memory or registers change down it
 //   C16.rgba(picture)          -> Uint8ClampedArray, 4 bytes a pixel, for an ImageData
 //   C16.draw(canvas, mem, ted, opts)                    the same, onto a canvas, opts.s times
 //   C16.rgb(colour) -> [r, g, b];  C16.css(colour) -> '#rrggbb'
@@ -82,9 +83,10 @@ globalThis.C16 = (function () {
     return { w: W, h: H, px };
   }
 
-  // 26 rows of cells, 320 by 208: the 1,000 places of the screen and the 40 after them.
-  function drawCells(ramAt, reg, opts) {
-    const W = 320, px = new Uint8Array(W * 208);
+  // 26 rows of cells, 320 by 208: the 1,000 places of the screen and the 40 after them; only
+  // rows from to to - 1 when they are given (renderBands), into px when it is given.
+  function drawCells(ramAt, reg, opts, from = 0, to = 26, px = new Uint8Array(320 * 208)) {
+    const W = 320;
     const c1 = reg(0x06), c2 = reg(0x07);
     const mode = (c2 & 0x10 ? 1 : 0) | (c1 & 0x20 ? 2 : 0) | (c1 & 0x40 ? 4 : 0) | (c2 & 0x80 ? 8 : 0);
     const bitmap = mode & 2, ecm = mode & 4, multi = mode & 1;
@@ -96,7 +98,7 @@ globalThis.C16 = (function () {
     const fetch = a => fromRom ? (a >= 0x8000 && rom ? rom[a - 0x8000] : 0) : ramAt(a);
     const bg = [0x15, 0x16, 0x17, 0x18].map(reg);
     const cursor = (reg(0x0C) & 3) << 8 | reg(0x0D), lit = opts.flash === 0 ? 0 : 1;
-    for (let n = 0; n < 1040; n++) {
+    for (let n = Math.max(0, from) * 40, end = Math.min(26, to) * 40; n < end; n++) {
       const p = n & 0x3FF, a = ramAt(screen + p), c = ramAt(screen + 0x400 + p);
       const x0 = (n % 40) * 8, y0 = Math.floor(n / 40) * 8;
       for (let line = 0; line < 8; line++) {
@@ -124,6 +126,32 @@ globalThis.C16 = (function () {
       }
     }
     return px;
+  }
+
+  // A frame whose memory or registers change as the beam goes down it (a Play tab's, from the
+  // port's clock), in bands of the picture's lines, each drawn as render() draws a whole frame
+  // from its own memory and registers: bands [{ y0, y1, mem, ted }], lines y0 to y1 of the 200,
+  // in order and covering them all. The display is on or off for the whole frame by the first
+  // band's $FF06, as TED looks at it once a frame. opts as render's, and opts.px a picture's px to
+  // draw into.
+  const bandCells = new Uint8Array(320 * 208);
+  function renderBands(bands, opts = {}) {
+    const W = 320, H = 200, px = opts.px || new Uint8Array(W * H);
+    const first = bands[0].ted;
+    if (!((first[0x06] | 0) & 0x10)) return { w: W, h: H, px: px.fill(first[0x19] | 0) };
+    for (const b of bands) {
+      const mem = b.mem, size = opts.size || mem.length, ramAt = a => mem[a & (size - 1)];
+      const reg = i => b.ted[i] | 0;
+      const c1 = reg(0x06), c2 = reg(0x07), border = reg(0x19);
+      const xs = c2 & 7, ys = c1 & 7, narrow = !(c2 & 0x08), short = !(c1 & 0x08), back = reg(0x15);
+      const cells = drawCells(ramAt, reg, opts, (b.y0 - ys + 3) >> 3, ((b.y1 - ys + 3) >> 3) + 1, bandCells);
+      for (let y = b.y0; y <= b.y1; y++) for (let x = 0; x < W; x++) {
+        const sx = x - xs, sy = y - ys + 3;
+        px[y * W + x] = (narrow && (x < 8 || x >= 312)) || (short && (y < 4 || y >= 196)) ? border
+          : sx < 0 || sy < 0 ? back : cells[sy * W + sx];
+      }
+    }
+    return { w: W, h: H, px };
   }
 
   function rgba(pic) {
@@ -298,7 +326,7 @@ globalThis.C16 = (function () {
   }
   const timing = { LINE, LINES, FRAME, BORDER, DISPLAY, BAD, KINDS, Beam };
 
-  return { PALETTE, rgb, css, render, rgba, draw, load, hex, timing };
+  return { PALETTE, rgb, css, render, renderBands, rgba, draw, load, hex, timing };
 })();
 
 // The TED machines' names for the footprint categories; the drawing is makeMemMap in memmap.js.
