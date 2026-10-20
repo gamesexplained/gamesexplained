@@ -200,10 +200,11 @@ and the helicopter's highest height is 112 (`$701D`).
 
 **Landing.** The landing height goes by the tilt as the helicopter leans
 for the way it faces (`land_height_table`, `$7895`): 7 level, up to 10
-leaning one way, and 7 leaning the other way until the two steepest
-tilts, which give 8. It pivots on its skids (`rock`, `$7803`). Coming down at more than about 4.4 dots a frame it bounces
-(`bounce_speed`, `$7010`). Touching the ground at the top horizontal speed
-is a crash (`crash_speed`, `$7012`).
+leaning one way, and 7 leaning the other way until the two steepest tilts,
+which give 8. It pivots on its skids (`rock`, `$7803`). Coming down at
+more than about 4.4 dots a frame it bounces (`bounce_speed`, `$7010`).
+Touching the ground at the top horizontal speed is a crash (`crash_speed`,
+`$7012`).
 
 **Boarding and crushing** (`boarding`, `$6139`) need the helicopter level
 on the ground (`door_open`, `$0D`), not hit, and outside the base's block.
@@ -313,7 +314,8 @@ Three routines make every sound:
   growing by A after each.
 - `noise` (`$7373`): pairs of clicks, the first after a delay read from the
   bytes of the game's own code at `$8100` onwards, the second after a
-  period that grows each pair.
+  period that grows each pair. Only a tank firing and a jet firing call
+  it.
 - `click` (`$736D`): one click.
 
 A tone's clicks come 5X + 30 cycles apart, so its pitch is 1,020,484 /
@@ -371,6 +373,9 @@ rate is a lower bound on the true rate.
 
 The 138 comments on the graphics library's inline arguments, written by a
 script from their bytes, came after the sample and are outside it.
+Building the Sound section, after the sample, found two more wrong: the
+noise routine (`$7373`, `$76CD`) was called an explosion's, when only a
+tank firing and a jet firing call it. Both are corrected.
 
 ## Live tests
 
