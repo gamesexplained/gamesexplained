@@ -29,6 +29,11 @@
 //
 // The memory
 // - new CPU(mem): all 64 KB are RAM (mem, a Uint8Array(65536), used in place), as on a bare 6502.
+// - new CPU(mem, { ramSize: 0x4000 }): a machine with less RAM than 64 KB that repeats it, as the
+//   Commodore 16 repeats its 16 KB: every read, write and fetch from ramSize to $FCFF reaches the
+//   byte at its address modulo ramSize, so $4000 is $0000. $FD00-$FFFF stays plain bytes, where the
+//   C16 has its chips' registers and its vectors, which a test sets. ramSize is a power of two from
+//   $0400 to $8000; the trackers (writes, reads, executed) mark the address the code used.
 // - new CPU(mem, { port, io, rom }): the C64's map. port is the 6510's port as $00 and $01 hold it,
 //   { dir, data } (readSnapshot gives it; a number is taken as data with dir $2F). $00 and $01 read
 //   and write the port, not RAM, and its bits 0-2 select what the processor sees at $A000-$BFFF,
@@ -37,12 +42,11 @@
 //   last driven on them (VICE lets 6 and 7 fade to 0 some 350,000 cycles after they stop being
 //   driven; the simulator does not).
 //   A cartridge's lines are not modelled.
-// - new CPU(mem, { ramSize, io, ioPages }): another machine's map. ramSize (a power of two, such as
-//   $4000 for a Commodore 16's 16 KB, $1000 at the least) folds every address above it onto the RAM below, as a machine
-//   with less RAM than the 64 KB repeats it: $4000 is the byte at $0000. ioPages, a list of page
+// - new CPU(mem, { ramSize, io, ioPages }): another machine's chips. ioPages, a list of page
 //   numbers ($FF for $FF00-$FFFF), sends every read, write and fetch in those pages to io, which
-//   serves its chips and whatever else is there (a ROM, the RAM beneath). A C16 machine passes the
-//   pages of TED and of its ROMs (kit/c16/machine.js). Without the port, $00 and $01 are RAM.
+//   serves its chips and whatever else is there (a ROM, the RAM beneath), with ramSize or without.
+//   A C16 machine passes the pages of TED and of its ROMs (kit/c16/machine.js). Without the port,
+//   $00 and $01 are RAM.
 // - io: the chips at $D000-$DFFF while they are banked in, colour RAM included:
 //   { read(address, cpu), write(address, value, cpu) }. Mirrors are the caller's to fold. A read or
 //   a write with no function for it stops the run and names the chip.
@@ -239,7 +243,7 @@
 
   // --- the memory map ---------------------------------------------------------------------------
   // What the processor sees in each 256-byte page.
-  const RAM = 0, ZP = 1, IO = 2, BASIC = 3, KERNAL = 4, CHAR = 5, FOLD = 6;
+  const RAM = 0, ZP = 1, IO = 2, BASIC = 3, KERNAL = 4, CHAR = 5, MIRROR = 6;
   const ASL = 0, LSR = 1, ROL = 2, ROR = 3, INC = 4, DEC = 5;   // the read-modify-write operations
   const ROM_NAME = { [BASIC]: 'BASIC', [KERNAL]: 'KERNAL', [CHAR]: 'character' };
 
@@ -271,9 +275,13 @@
         throw new Error('io and rom need the C64 map: give port too ({ dir, data }, as readSnapshot returns it), or ioPages for io on another machine');
       }
       if (this.c64 && this.ioPages) throw new Error('ioPages is for a machine without the C64 map: give port or ioPages, not both');
-      const size = opts.ramSize === undefined ? 0x10000 : opts.ramSize;
-      if (!(size >= 0x1000 && size <= 0x10000 && (size & (size - 1)) === 0)) throw new Error('ramSize: a power of two from $1000 to $10000');
-      this.ramMask = size - 1;
+      if (opts.ramSize !== undefined) {               // RAM that repeats through the map (the C16's 16 KB)
+        const n = opts.ramSize;
+        if (this.c64 || !(n >= 0x400 && n <= 0x8000 && (n & (n - 1)) === 0)) {
+          throw new Error('ramSize is a power of two from $0400 to $8000, on a bare 6502 (no port)');
+        }
+        this.ramMask = n - 1;
+      }
       if (this.c64) {
         const p = typeof opts.port === 'number' ? { dir: 0x2F, data: opts.port } : opts.port;
         this.pdir = p.dir & 0xFF; this.pdata = p.data & 0xFF;
@@ -314,19 +322,13 @@
       if ((cfg & 3) === 3) r.fill(BASIC, 0xA0, 0xC0);
       if (cfg & 2) r.fill(KERNAL, 0xE0, 0x100);
       if ((cfg & 3) && (cfg & 4)) { r.fill(IO, 0xD0, 0xE0); w.fill(IO, 0xD0, 0xE0); } else if (cfg & 3) r.fill(CHAR, 0xD0, 0xE0);
-      this.fold();
     }
-    // Another machine's map: RAM, io's pages, and the RAM above ramSize folded onto it.
+    // Another machine's map: RAM, its repeats from ramSize to $FCFF, and io's pages.
     mapBare() {
-      this.rk.fill(RAM); this.wk.fill(RAM);
-      if (this.ioPages) for (const p of this.ioPages) this.rk[p] = this.wk[p] = IO;
-      this.fold();
-    }
-    fold() {
-      for (let p = (this.ramMask + 1) >>> 8; p < 256; p++) {
-        if (this.rk[p] === RAM) this.rk[p] = FOLD;
-        if (this.wk[p] === RAM) this.wk[p] = FOLD;
-      }
+      const r = this.rk, w = this.wk;
+      r.fill(RAM); w.fill(RAM);
+      if (this.ramMask !== undefined) { r.fill(MIRROR, (this.ramMask + 1) >>> 8, 0xFD); w.fill(MIRROR, (this.ramMask + 1) >>> 8, 0xFD); }
+      if (this.ioPages) for (const p of this.ioPages) r[p] = w[p] = IO;
     }
     portRead(a) {
       return a === 0 ? this.pdir : ((this.pdata & this.pdir) | (~this.pdir & (0x17 | (this.pout & 0xC8)))) & 0xFF;
@@ -368,8 +370,8 @@
       if (this.reads !== null) this.reads[a] = 1;
       const k = this.rk[a >>> 8];
       if (k === RAM) return this.m[a];
-      if (k === FOLD) return this.m[a & this.ramMask];
       if (k === ZP) return a > 1 ? this.m[a] : this.portRead(a);
+      if (k === MIRROR) return this.m[a & this.ramMask];
       if (k === IO) return this.ioRead(a);
       const b = this.romByte(a, k);
       if (b === undefined) {
@@ -382,16 +384,16 @@
       if (this.writes !== null) this.writes[a] = 1;
       const k = this.wk[a >>> 8];
       if (k === RAM) this.m[a] = v;
-      else if (k === FOLD) this.m[a & this.ramMask] = v;
       else if (k === ZP) { if (a > 1) this.m[a] = v; else this.portWrite(a, v); }
+      else if (k === MIRROR) this.m[a & this.ramMask] = v;
       else this.ioWrite(a, v);
     }
     // An instruction's bytes: the opcode (first) and its operands.
     fb(a, first) { a &= 0xFFFF; return this.rk[a >>> 8] === RAM ? this.m[a] : this.fbx(a, first); }
     fbx(a, first) {
       const k = this.rk[a >>> 8];
-      if (k === FOLD) return this.m[a & this.ramMask];
       if (k === ZP) return a > 1 ? this.m[a] : this.portRead(a);
+      if (k === MIRROR) return this.m[a & this.ramMask];
       if (k === IO) return this.ioRead(a);
       const b = this.romByte(a, k);
       if (b === undefined) {
