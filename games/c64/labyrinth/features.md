@@ -109,4 +109,8 @@ Live-confirmed: ordinary movement and OPEN DOOR at the right doorway from the co
 
 ### Guard doorway selector
 
-Traced and live-checked in the controlled scene4 entry: a guarded setup prefix stores one bit from a random result at$8F06, then a second bit at$8F07. The guard changes$FF→0 and the bits stay fixed over240 idle frames while random state advances. Explicit seed0/seed7 comparisons give selectors0/1. Original-code tests sweep65,536 states and256 guard bytes. Reset on ordinary return visits, the second bit's role and complete selector0 door traversals remain open.
+Traced and live-checked in the controlled scene4 entry: a guarded setup prefix stores one bit from a random result at$8F06, then a second bit at$8F07. The guard changes$FF→0 and the bits stay fixed over240 idle frames while random state advances. Explicit seed0/seed7 comparisons give selectors0/1. Original-code tests sweep65,536 states and256 guard bytes. The second bit changes the later answer described below. Reset on ordinary return visits and complete selector0 door traversals remain open.
+
+### Later guard answer
+
+Traced: the later ASK branch has three fixed replies followed by a capped castle/death answer, selected by equality of the two stored random bits. Live controlled phase4/index3 ASK ALPH trials with doorway selector1 show death for second0 and castle for second1. The marked speaker flag and answer pointers are checked against original code for32 valid combinations, with five original text expansions. Ordinary phase4 arrival, the neighboring command and departure reaction remain open. Evidence: parts/scene-04/facts.md, test_guard_late.js and guard-later reference captures.

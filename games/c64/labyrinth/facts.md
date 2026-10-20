@@ -12,7 +12,7 @@ An independent fixed-seed sample on 19 October 2026 checked 60 of the 1,303 line
 
 ## Scope
 
-The complete game stays Bronze: the gate, first corridor, Brick Hallway, and Alph and Ralph are partially analysed and 17 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 22.7% ledger is provisional rather than whole-game progress.
+The complete game stays Bronze: the gate, first corridor, Brick Hallway, and Alph and Ralph are partially analysed and 17 other graphical parts have no analysis, and Silver also needs complete coverage and feature verification across its parts. Shared resident ownership is unresolved, so the combined 22.8% ledger is provisional rather than whole-game progress.
 
 ## First corridor
 
@@ -32,7 +32,7 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 
 ## Opening the neighboring Brick Hallway door
 
-The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,123/48,587 described bytes; five provisional scopes total 54,013/237,523 (22.7%). Their retained resident ownership overlaps and is not whole-game completion.
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,123/48,587 described bytes; five provisional scopes total 54,076/237,523 (22.8%). Their retained resident ownership overlaps and is not whole-game completion.
 
 `reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.
 
@@ -46,7 +46,7 @@ At the checked doorway destination, map cell1 translates to type11. Ordinary OPE
 
 ## Alph and Ralph opening conversation
 
-Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. The shared opening conversation is checked for both speakers below; the connecting journey and door puzzle's solution remain open. See `parts/scene-04/facts.md`. Its partial listing adds1,400/48,705 described bytes; five overlapping scopes total54,013/237,523 (22.7%), not whole-game completion.
+Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. The shared opening conversation is checked for both speakers below; the connecting journey and door puzzle's solution remain open. See `parts/scene-04/facts.md`. Its partial listing adds1,463/48,705 described bytes; five overlapping scopes total54,076/237,523 (22.8%), not whole-game completion.
 
 The scene-four publication snapshot also replaces the entered name with ANON/anon. Its original forced reference captures remain private.
 

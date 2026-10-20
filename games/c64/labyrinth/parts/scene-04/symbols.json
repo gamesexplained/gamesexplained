@@ -198,6 +198,16 @@
   },
   {
    "start": 36909,
+   "end": 36998,
+   "type": "Byte"
+  },
+  {
+   "start": 36999,
+   "end": 37048,
+   "type": "Code"
+  },
+  {
+   "start": 37049,
    "end": 37058,
    "type": "Byte"
   },
@@ -580,8 +590,26 @@
   },
   {
    "address": 36615,
-   "name": "guard_second_random_bit_unanalysed",
+   "name": "guard_second_answer_bit",
    "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 36616,
+   "name": "guard_alph_asked_late",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 36617,
+   "name": "guard_ralph_asked_late",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 36618,
+   "name": "guard_later_selection_unanalysed",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -724,9 +752,45 @@
   },
   {
    "address": 36999,
-   "name": "j_9087",
+   "name": "guard_late_ask",
    "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 37014,
+   "name": "guard_late_mark_speaker",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37027,
+   "name": "b_90A3",
+   "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 37030,
+   "name": "guard_late_answer_choice",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 37039,
+   "name": "b_90AF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 37049,
+   "name": "guard_late_reply_high",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 37054,
+   "name": "guard_late_reply_low",
+   "type": "Field",
+   "kind": "user"
   },
   {
    "address": 37059,
@@ -1105,6 +1169,21 @@
    "text": "First stored random bit, written by $8F2C as A AND1 after $0821 advances the random generator. Entry choice $8DDF continues for column1/nonzero or another column/zero, and takes the losing branch for the opposite combinations. Both recorded door traversals use value1. Controlled initializer trials with seeds0 and7 stored0 and1. These are seed-poked comparisons, not ordinary routes selecting a preferred bit. Later writes/initialization on ordinary return visits remain open."
   },
   {
+   "address": 36615,
+   "type": "line",
+   "text": "One bit stored by the second setup random call. The later ASK at $90A6 compares it with $8F06 to choose castle/death wording. Literal operand reads also occur at $8E2C and $911D; those surrounding reaction/command paths are not fully verified here."
+  },
+  {
+   "address": 36616,
+   "type": "line",
+   "text": "One-byte flag set to1 by $909D when the capped later ASK is addressed to speaker selector zero; read by $910D in another command whose full behavior remains open."
+  },
+  {
+   "address": 36617,
+   "type": "line",
+   "text": "One-byte flag set to1 by $90A3 for nonzero speaker selector; read by $9115 in another command whose full behavior remains open."
+  },
+  {
    "address": 36627,
    "type": "line",
    "text": "Mutable local byte read by phase1 conversation at $9018, incremented by a changing phase1 OPEN at $92CC and decremented by a changing CLOSE at $9292. Controlled room's initial FF became0 on ordinary left-door OPEN, then FF on CLOSE. ASK replies changed Figure it out for yourself to the unsure response and back while Brick Hallway count15 stayed fixed. This establishes the local cycle, not initialization/persistence or all door outcomes."
@@ -1112,7 +1191,7 @@
   {
    "address": 36629,
    "type": "line",
-   "text": "Return when $8F03 is nonnegative. Otherwise store0 there, pass X=$84/Y=$9F to command-availability API $0833, call random API $0821, mask A to bit0 and store $8F06, call it again and store bit0 at $8F07. $0821 returns the high byte of the updated 16-bit state at $0502/$0503: new=(37*old+17) modulo65536. The page/test starts from the state before these two generator calls. The following initialization tail at $8F37 is separate and unanalysed here; the second bit's gameplay role remains open."
+   "text": "Return when $8F03 is nonnegative. Otherwise store0 there, pass X=$84/Y=$9F to command-availability API $0833, call random API $0821, mask A to bit0 and store $8F06, call it again and store bit0 at $8F07. $0821 returns the high byte of the updated 16-bit state at $0502/$0503: new=(37*old+17) modulo65536. The page/test starts from the state before these two generator calls. The following initialization tail at $8F37 is separate and unanalysed here; the second bit chooses the later castle/death answer at $90A6."
   },
   {
    "address": 36776,
@@ -1163,6 +1242,31 @@
    "address": 36906,
    "type": "line",
    "text": "Tail jump to $9419 with selected message Y/X. The queue loads speaker mode from $0342. Does not itself change phase or acknowledgement."
+  },
+  {
+   "address": 36999,
+   "type": "line",
+   "text": "Later ASK branch reached after count15 acknowledgement when phase is neither1,2 nor3; live checked at phase4. For valid shared indices0..3, increment and cap next index at3. The first three old indices select fixed replies. Old index3 marks the selected speaker's asked flag, compares the second random bit with the doorway selector, and uses table entry4 when equal or3 when different. Live controlled phase4/index3/selector1 ASK ALPH gives death for second0 and castle for second1; each executes this branch once. Ordinary progression into phase4 remains unverified."
+  },
+  {
+   "address": 37014,
+   "type": "line",
+   "text": "Store1 at $8F08 for speaker selector zero, otherwise $8F09. This is done only after old index is at least3. Both flag choices are checked by the bounded original-code comparison; live ASK ALPH sets $8F08."
+  },
+  {
+   "address": 37030,
+   "type": "line",
+   "text": "Load second stored random bit $8F07, compare with doorway selector $8F06 and increment table index Y only when equal. For valid old index3, different selects $9B92 (certain death), equal selects $9B73 (castle). This comparison does not read the speaker selector. The byte-domain behavior outside valid shared indices is not modelled by the page."
+  },
+  {
+   "address": 37049,
+   "type": "line",
+   "text": "Five high bytes for reply pointers, indexed by Y; low bytes start at $90BE. Entries are $9A11,$9CB6,$9CE3,$9B92,$9B73. The first three are fixed replies; the final two share capped conversation index3."
+  },
+  {
+   "address": 37054,
+   "type": "line",
+   "text": "Five low bytes paired with $90B9. Original text parser expands the five records in test_guard_late.js."
   },
   {
    "address": 37059,

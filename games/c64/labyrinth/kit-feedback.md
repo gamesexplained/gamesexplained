@@ -198,3 +198,7 @@ The broader kit tests caught editor incompatibilities in this game's map-pin and
 ## Guard selector initialization · 20 October 2026
 
 `60-verify`, “Poke the variable, watch the screen”: compared the exact initialized bytes after explicitly controlled random-state changes, without calling those preferred-door routes. “A test must contain cases that have to succeed” led to checking the captured seed and both binary selector values alongside all65,536 states. Existing boundaries and byte-domain guidance kept the second bit's unknown role and the initializer tail out of the described span. No shared-kit edit or maintainer ask arose.
+
+## Later guard answer · 20 October 2026
+
+`60-verify`, “Before reporting absence”: the typed reference tool showed only a writer, while a raw operand search found three reads in untyped scene code. `60-verify`, “Force the rare state”: explicitly controlled phase4/index3 rather than presenting the later conversation as an ordinary reached route. The original-code comparison checks both bit outcomes and both speaker flags. Existing guidance covers these observations; no shared-kit edit or maintainer ask arose.
