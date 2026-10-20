@@ -168,3 +168,8 @@ Confirmed: OPEN DOOR at X480/depth6 gives Nothing happens. Ordinary movement sto
 ### Stone Corridor: close and cross the first door
 
 Live-confirmed from the opened X147/depth6 state: CLOSE changes cell7→1 and visibly shuts the door. Repeating CLOSE gives It's already closed. A separate continuation restores the opened state and uses up input, reaching X159/depth40 before requesting refresh0/entry30. The completed arrival is X1952/depth6 in scene6, beside an arch and bars. This route retains the earlier controlled setup and stored selector96. Other doors, return traversal, entry initialization and save/reload persistence remain open. Evidence: parts/scene-06/facts.md, test_stone_close.js and stone-door-closed/already-closed/crossed captures.
+
+
+### Stone Corridor: through the archway
+
+Live-confirmed: up input at the reached column30 archway leads through depth70 to refresh0/entry26 and arrival X1696/depth6 in scene6, with a ladder visible on the left. A300-frame no-input control stays at the arch. The first opened cell remains7 across this in-room refresh. The original exit and nonnegative placement prefix agree with the page’s recorded route and reused placement calculation. A return to the first door, the ladder interaction and save/disk-load persistence remain open. Evidence: parts/scene-06/facts.md, test_stone_arch.js and stone-arch-threshold/arrival captures.

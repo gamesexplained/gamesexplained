@@ -249,3 +249,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Stone Corridor close and crossing · 21 October 2026
 
 `60-verify`, “A number handed through a request byte”: stopped after the actual exit request stores before naming its destination. Request0/entry30 refreshes scene6 and reaches another coordinate in the same corridor. The stored selector was measured at the stop rather than inferred from the first table bank. Exact bare label boundaries prevent pair/table comments from describing adjacent unknown bytes. Existing guidance covers these checks; no shared-kit edit or maintainer ask arose.
+
+
+## Stone Corridor archway · 21 October 2026
+
+`60-verify`, “It was going to happen anyway”: the300-frame no-input control distinguishes standing at the arch from walking through it. “A number handed through a request byte” keeps the new entry26 separate from a guessed return route. The existing corridor placement check was reusable after a byte-for-byte comparison, with the negative-mode branch left open. Existing guidance covers the work; no shared-kit edit or maintainer ask arose.
