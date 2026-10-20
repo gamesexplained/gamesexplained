@@ -129,8 +129,12 @@ Live-confirmed from the three controlled phase4 reaction snapshots: unselected, 
 
 ### Wall of Hands: interaction checklist
 
-At the checked scene5/entry1 arrival, the live word wheels offer ASK and MANICURE, and the WALL object. ASK WALL and its automatic first question are checked below. MANICURE WALL, the command gate’s producer, hand movement, exits and destinations remain open. The steady snapshot remains scene5/X84/depth6 after120 idle frames; this follows the controlled phase4 guard departure. The arrival image and the available words establish the starting state, not the complete room's mechanics.
+At the checked scene5/entry1 arrival, the live word wheels offer ASK and MANICURE, and the WALL object. ASK WALL and its automatic first question are checked below. The first MANICURE WALL comparison is checked below. Its later stages, the command gate’s producer, hand movement, exits and destinations remain open. The steady snapshot remains scene5/X84/depth6 after120 idle frames; this follows the controlled phase4 guard departure. The arrival image and the available words establish the starting state, not the complete room's mechanics.
 
 ### The hands’ conversation
 
-Live-confirmed: the room automatically asks the first of five questions, then five isolated ASK WALL commands cycle through the remaining replies and back to the opening. The original ASK handler, rejection gate, automatic prefix and all reply text are compared with the page. The part has its own snapshot/listing. MANICURE WALL, the gate’s producer, movement and exits remain open. Evidence: parts/scene-05/facts.md, test_wall_ask.js and wall-ask captures.
+Live-confirmed: the room automatically asks the first of five questions, then five isolated ASK WALL commands cycle through the remaining replies and back to the opening. The original ASK handler, rejection gate, automatic prefix and all reply text are compared with the page. The part has its own snapshot/listing. Later MANICURE WALL stages, the gate’s producer, movement and exits remain open. Evidence: parts/scene-05/facts.md, test_wall_ask.js and wall-ask captures.
+
+### First MANICURE WALL
+
+Live-checked missing shears at the unchanged arrival, explicitly added usable shears, and explicitly added shears with a negative damage flag. Replies are no tools, A manicure? How nice of you!, and Your shears were damaged. Only the accepted first command advances the counter0→1; both item-present trials retain item0. Original-code comparisons retain the real gate and inventory reader. Ordinary shears acquisition/damage and later counter stages remain open. Evidence: parts/scene-05/facts.md, test_wall_manicure.js and wall-manicure captures.

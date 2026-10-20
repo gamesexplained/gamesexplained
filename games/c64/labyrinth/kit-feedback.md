@@ -220,3 +220,7 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Wall of Hands conversation · 21 October 2026
 
 `60-verify`, “It was going to happen anyway”: a no-input trial separated the automatic question from typed ASK. The earlier handler count of two was not sufficient to blame a repeated key; the callback calls the same handler. `10-orient`, “A game of several parts”: gave scene5 its own snapshot, listing and honest loaded-data scope. `50-coverage`, “Data the ledger cannot see”: kept the newly reported retained stretches as unresolved scope rather than labelling them padding. Existing guidance covers these observations; no shared-kit edit or maintainer ask arose.
+
+## First manicure · 21 October 2026
+
+`60-verify`, “A number handed through a request byte”: followed inventory slot21 through the actual reader and saved word-wheel dictionary mapping before naming shears. “Force the rare state” kept explicit inventory/damage changes separate from ordinary acquisition. The varied output-mode helper retries low nibbles14/15, so the comparison includes rejected random draws and accepted boundaries. Existing guidance covers this continuation; no shared-kit edit or maintainer ask arose.
