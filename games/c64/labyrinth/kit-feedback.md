@@ -154,3 +154,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Left-door continuation · 20 October 2026
 
 `60-verify`, “The machine never stopped”: measured each stopped interval and kept the reaction, pending countdown and loader return distinct rather than calling the first screen a completed transition. `70-minisite`'s code comparison requirement caught the draft entry address one byte inside a preceding JMP; the spurious reference was removed before export. The successful arrival is ordinary input inside the documented controlled setup. Existing verification and bounds rules cover this work; no shared-kit change or maintainer ask arose.
+
+## Page structure and evidence links · 20 October 2026
+
+`70-minisite`, “Every claim shows its evidence”: added primary code citations beside the readable mechanic while keeping detailed checks in disclosures. Its “A game of several parts” rule kept every new address link on its own part's Source page. Doctor Who supplied the overview/gameplay/Controls split, numbered About references and accessible location-pin pattern. Labyrinth's pins distinguish workflow and capture targets because full decoded maps remain open. These are game-specific presentation edits; no shared-kit change or maintainer ask arose.
