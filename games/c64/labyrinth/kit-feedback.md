@@ -166,3 +166,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## City workflow on Maps / levels · 20 October 2026
 
 `70-minisite`, “The How it works page keeps the format”: gave the city workflow a home on Maps / levels and linked the player-facing explanations to it. Its shared section-navigation rule replaces the gallery-only area dropdown with the two sections actually on this page. The original-code test follows the moved data; browser checks cover bookmarks and the capture gallery. These are game-specific presentation changes; no shared-kit change or maintainer ask arose.
+
+## Compact Gameplay navigation · 20 October 2026
+
+`70-minisite`, “load it and look at it”: the first screen was dominated by journey cards, so the guide now expands on request and the active area's companion links stay by the selectors. Browser testing caught a guide link that reset the selected area. The existing build link check caught two incorrect part-page filenames before delivery. Existing checks cover these presentation changes; no shared-kit edit or maintainer ask arose.

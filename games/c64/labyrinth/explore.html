@@ -15,15 +15,21 @@
 <header class="hero">
 <p class="eyebrow">Labyrinth · Gameplay</p>
 <h1>Labyrinth</h1>
-<p class="sub">Follow the journey from the text adventure to the maze. Each area brings together its route, encounters, and checked mechanics.</p><p class="lab-area-summary">Scope: the text opening, gate entry, first-corridor exits, Brick Hallway doors, and the shared Alph and Ralph opening conversation. The Alph and Ralph check starts from a controlled room load; its connecting journey remains open.</p>
+<p class="sub">Follow the journey from the text adventure to the maze. Each area brings together its route, encounters, and checked mechanics.</p>
 </header>
-<main><p class="lab-link-key">Code links sit beside the mechanic they explain. Numbered notes open the source register; amber pins open the city workflow or a room capture. “Sources and checks” holds the verification details.</p>
+<main>
 <p class="lab-area-summary"><a href="index.html">← Overview</a> · <a href="#journey-overview">Journey overview</a></p>
-<nav id="journey-overview" class="lab-journey" aria-label="Journey overview"><ol><li><a href="explore.html#text-adventure"><span>1 · The city</span><strong>The text adventure</strong><small>Reach the cinema through commands and inventory choices.</small></a></li><li><a href="explore.html#entrance-gate"><span>2 · Into the maze</span><strong>The entrance gate</strong><small>Align with the doorway and approach it.</small></a></li><li><a href="explore.html#first-corridor"><span>3 · Choose a passage</span><strong>The first corridor</strong><small>Openings choose an entry into the Brick Hallway.</small></a></li><li><a href="explore.html#brick-hallway"><span>4 · At the doors</span><strong>The Brick Hallway</strong><small>Move to a door before using OPEN DOOR.</small></a></li><li><a href="explore.html#alph-and-ralph"><span>5 · The two doors</span><strong>Alph and Ralph</strong><small>Call either guard and follow the shared opening exchange. Controlled room check.</small></a></li></ol></nav>
+<details id="journey-overview" class="lab-journey-guide"><summary>Journey guide and reading notes</summary><p class="lab-area-summary">Scope: the text opening, gate entry, first-corridor exits, Brick Hallway doors, and the shared Alph and Ralph opening conversation. The Alph and Ralph check starts from a controlled room load; its connecting journey remains open.</p><p class="lab-link-key">Code links sit beside the mechanic they explain. Numbered notes open the source register; amber pins open the city workflow or a room capture. “Sources and checks” holds the verification details.</p><nav class="lab-journey" aria-label="Journey overview"><ol><li><a href="explore.html#text-adventure"><span>1 · The city</span><strong>The text adventure</strong><small>Reach the cinema through commands and inventory choices.</small></a></li><li><a href="explore.html#entrance-gate"><span>2 · Into the maze</span><strong>The entrance gate</strong><small>Align with the doorway and approach it.</small></a></li><li><a href="explore.html#first-corridor"><span>3 · Choose a passage</span><strong>The first corridor</strong><small>Openings choose an entry into the Brick Hallway.</small></a></li><li><a href="explore.html#brick-hallway"><span>4 · At the doors</span><strong>The Brick Hallway</strong><small>Move to a door before using OPEN DOOR.</small></a></li><li><a href="explore.html#alph-and-ralph"><span>5 · The two doors</span><strong>Alph and Ralph</strong><small>Call either guard and follow the shared opening exchange. Controlled room check.</small></a></li></ol></nav></details>
 <nav class="lab-area-nav" aria-label="Explore Labyrinth by area" hidden>
 <div><label for="lab-area-select">Area</label><select id="lab-area-select"><option value="opening">The text adventure</option><option value="gate">The entrance gate</option><option value="corridor">The first corridor</option><option value="brick">The Brick Hallway</option><option value="alph">Alph and Ralph</option><option value="atlas">Further into the maze · gallery</option></select></div>
 <div id="lab-topic-label" hidden><label for="lab-topic-select">Jump to topic</label><select id="lab-topic-select"></select></div>
+<nav class="lab-area-links" data-reading-area="opening" aria-label="Related pages for The text adventure"><a href="levels.html#city-workflow">City workflow</a><a href="controls.html#word-wheels">Controls</a><a href="source-opening.html">Area source code</a></nav>
+<nav class="lab-area-links" data-reading-area="gate" aria-label="Related pages for The entrance gate"><a href="levels.html?scene=scene-01#captured-scene">Gate capture</a><a href="controls.html#control-reference">Controls</a><a href="source-scene-01.html">Area source code</a></nav>
+<nav class="lab-area-links" data-reading-area="corridor" aria-label="Related pages for The first corridor"><a href="levels.html?scene=scene-02#captured-scene">Corridor capture</a><a href="controls.html#control-reference">Controls</a><a href="source-scene-02.html">Area source code</a></nav>
+<nav class="lab-area-links" data-reading-area="brick" aria-label="Related pages for The Brick Hallway"><a href="levels.html?scene=scene-03#captured-scene">Brick Hallway capture</a><a href="controls.html#control-reference">Controls</a><a href="source-scene-03.html">Area source code</a></nav>
+<nav class="lab-area-links" data-reading-area="alph" aria-label="Related pages for Alph and Ralph"><a href="levels.html?scene=scene-04#captured-scene">Guard-room capture</a><a href="controls.html#control-reference">Controls</a><a href="source-scene-04.html">Area source code</a></nav>
 </nav>
+
 
 <section id="the-city-before-the-maze" data-reading-area="opening">
 <span id="text-adventure"></span><p class="lab-area-summary">Area 1 · The text adventure</p>
@@ -356,8 +362,11 @@ function labyrinthCorridorPlacement(entry){return entry===255?null:{x:entry*64+3
  function showArea(){
   if(['the-city-as-a-workflow','lab-opening-topic-1'].includes(hashId())){location.replace('levels.html#city-workflow');return;}
   if(['lab-opening-topic-3','lab-opening-topic-4','lab-opening-topic-5'].includes(hashId())){location.replace('graphics.html#'+hashId());return;}
-  const active=areaForHash();if(active==='atlas'){location.replace('levels.html');return;}areaSelect.value=active;
+  const guideRequested=hashId()==='journey-overview';
+  const active=guideRequested?areaSelect.value:areaForHash();if(active==='atlas'){location.replace('levels.html');return;}areaSelect.value=active;
   blocks.forEach(block=>{block.hidden=block.dataset.readingArea!==active;});
+  for(const link of document.querySelectorAll('.lab-journey a')){if(link.hash==='#'+areaHashes[active])link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}
+  if(guideRequested){const guide=document.getElementById('journey-overview');guide.open=true;requestAnimationFrame(()=>guide.scrollIntoView({block:'start'}));}
   topicSelect.replaceChildren();
   document.querySelectorAll('section[data-reading-area="'+active+'"] h2,section[data-reading-area="'+active+'"] h3').forEach((heading,i)=>{
    if(heading.closest('.lab-flow-detail')||heading.closest('.lab-technical'))return;
