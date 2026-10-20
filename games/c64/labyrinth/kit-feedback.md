@@ -176,3 +176,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 `70-minisite`, “Stepping through things of one kind”: used the shared previous/select/next pattern for the reply catalogue and kept its original-code test reading the moved data on Text & graphics. Text search makes the127 records usable without scanning the entire menu; browser checks cover empty results and endpoint disabling. This is game-specific presentation work; no shared-kit change or maintainer ask arose.
 
 The browser console exposed a reply-catalogue dependency outside the moved block that the routine-only tests could not see. Gameplay retains only its counter replies, checked against the catalogue; the original-handler sweep also requires a display string for every selected reply. Existing browser-verification guidance caught this failure; no shared-kit edit is needed.
+
+## Visual captured-scene index · 20 October 2026
+
+`70-minisite`, “Draw every one of them as a picture”: made the existing room captures visible in a thumbnail index rather than leaving them hidden in a dropdown. These remain captures with explicit provenance, while complete decoded maps remain open. Stable scene IDs distinguish repeated titles; the existing detailed viewer provides the full caption and checked-route link. This is game-specific presentation work; no shared-kit edit or maintainer ask arose.
