@@ -113,4 +113,8 @@ Traced and live-checked in the controlled scene4 entry: a guarded setup prefix s
 
 ### Later guard answer
 
-Traced: the later ASK branch has three fixed replies followed by a capped castle/death answer, selected by equality of the two stored random bits. Live controlled phase4/index3 ASK ALPH trials with doorway selector1 show death for second0 and castle for second1. The marked speaker flag and answer pointers are checked against original code for32 valid combinations, with five original text expansions. Ordinary phase4 arrival, the neighboring command and departure reaction remain open. Evidence: parts/scene-04/facts.md, test_guard_late.js and guard-later reference captures.
+Traced: the later ASK branch has three fixed replies followed by a capped castle/death answer, selected by equality of the two stored random bits. Live controlled phase4/index3 ASK ALPH trials with doorway selector1 show death for second0 and castle for second1. The marked speaker flag and answer pointers are checked against original code for32 valid combinations, with five original text expansions. The congratulations command is checked below. Ordinary phase4 arrival and the departure reaction remain open. Evidence: parts/scene-04/facts.md, test_guard_late.js and guard-later reference captures.
+
+### Congratulating a guard
+
+Live-checked with Alph in controlled room trials: phase4 requires his fourth later ASK before congratulations selects the lying/truth reply and remembers speaker0. Before asking, he says he hasn't done anything yet. INSULT then CONGRATULATE gives fickle and clears the insult flag. Earlier phase1 gives Don't mention it. Original-code comparisons cover both accepted speaker prerequisites and byte boundaries; live Ralph congratulations, ordinary phase4 arrival and the remembered selection's departure effect remain open. Evidence: parts/scene-04/facts.md, test_guard_congratulate.js and guard-congratulate reference captures.

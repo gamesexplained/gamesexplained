@@ -213,11 +213,11 @@
   },
   {
    "start": 37059,
-   "end": 37092,
+   "end": 37204,
    "type": "Code"
   },
   {
-   "start": 37093,
+   "start": 37205,
    "end": 37490,
    "type": "Byte"
   },
@@ -608,15 +608,21 @@
   },
   {
    "address": 36618,
-   "name": "guard_later_selection_unanalysed",
+   "name": "guard_congratulated_speaker",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 36619,
+   "name": "guard_entry_message_flag_unanalysed",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 36620,
-   "name": "a_8F0C",
+   "name": "guard_insult_flag",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 36621,
@@ -821,6 +827,90 @@
    "name": "j_90E1",
    "type": "Jump",
    "kind": "auto"
+  },
+  {
+   "address": 37093,
+   "name": "guard_congratulate_alph",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37099,
+   "name": "guard_congratulate_ralph",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37102,
+   "name": "guard_congratulate_reply",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 37119,
+   "name": "b_90FF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 37141,
+   "name": "b_9115",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 37146,
+   "name": "guard_congratulate_select",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 37161,
+   "name": "b_9129",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 37168,
+   "name": "b_9130",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 37172,
+   "name": "j_9134",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 37176,
+   "name": "guard_congratulate_before_ask",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 37183,
+   "name": "guard_insult_alph",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37189,
+   "name": "guard_insult_ralph",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 37192,
+   "name": "guard_insult_reply",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 37205,
+   "name": "guard_after_insult_unanalysed",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 37491,
@@ -1171,17 +1261,27 @@
   {
    "address": 36615,
    "type": "line",
-   "text": "One bit stored by the second setup random call. The later ASK at $90A6 compares it with $8F06 to choose castle/death wording. Literal operand reads also occur at $8E2C and $911D; those surrounding reaction/command paths are not fully verified here."
+   "text": "One bit stored by the second setup random call. Later ASK $90A6 compares it with $8F06 for castle/death wording. CONGRATULATE $911D compares it with selected speaker $8F05 for lying/truth wording after phase4 and asked-flag checks. The remaining literal read at $8E2C belongs to a departure reaction whose complete route remains open."
   },
   {
    "address": 36616,
    "type": "line",
-   "text": "One-byte flag set to1 by $909D when the capped later ASK is addressed to speaker selector zero; read by $910D in another command whose full behavior remains open."
+   "text": "One-byte flag set to1 by $909D for speaker selector0 at the capped later ASK. CONGRATULATE reads it at $910D in phase4: zero queues the haven't-done-anything reply; nonzero permits role wording and selection at $911A."
   },
   {
    "address": 36617,
    "type": "line",
-   "text": "One-byte flag set to1 by $90A3 for nonzero speaker selector; read by $9115 in another command whose full behavior remains open."
+   "text": "One-byte flag set to1 by $90A3 for nonzero speaker selector at the capped later ASK. CONGRATULATE reads it at $9115 in phase4, with zero refusing and nonzero permitting $911A. Original-code checks cover this branch; live congratulations trials use Alph."
+  },
+  {
+   "address": 36618,
+   "type": "line",
+   "text": "One byte written at $911A with the accepted phase4 congratulated speaker (0 for Alph,1 for Ralph), after its asked flag is nonzero and conversation flag is nonnegative. The departure reaction reads it at $8E05/$8E29; its full effect remains open. Controlled ASK then CONGRATULATE ALPH stores0, while premature congratulations leaves the captured $FF unchanged."
+  },
+  {
+   "address": 36620,
+   "type": "line",
+   "text": "One-byte conversation flag. INSULT stores $FF at $9151. CONGRATULATE sees a negative byte, clears it to0 and queues the fickle reply before other checks. ASK also reads it at $8FB1; full ordinary reset/persistence behavior remains open."
   },
   {
    "address": 36627,
@@ -1277,6 +1377,46 @@
    "address": 37068,
    "type": "line",
    "text": "CALL RALPH uses $93D1 and real speaker helper $9407, then CMP #1 at $90D2. Returned A exactly1 selects $97B1; all other bytes select $97D7. Unlike the neighboring Alph path, this path executes the compare. All256 query-result bytes are checked with the query intercepted, retaining the helper; none changes opening conversation index $8F04. Both right-door live calls displayed I'm here! You don't have to shout! and preserved the index."
+  },
+  {
+   "address": 37093,
+   "type": "line",
+   "text": "CONGRATULATE ALPH pair33/44 calls the existing Alph presence prerequisite, then joins $90EE. Live accepted at X99/depth6 in the controlled scene4 room. Prerequisite rejection paths retain their existing stack-discard behavior."
+  },
+  {
+   "address": 37099,
+   "type": "line",
+   "text": "CONGRATULATE RALPH pair33/53 calls the existing Ralph presence prerequisite and falls through to $90EE. Original-code tests retain the real prerequisite with its distance API intercepted; no live Ralph congratulations route is claimed here."
+  },
+  {
+   "address": 37102,
+   "type": "line",
+   "text": "Negative $8F0C is cleared to0 and selects $9D9C (You sure are fickle), taking priority over phase and asked flags. Otherwise phases other than4 select $9DB4 (Don't mention it). Phase4 reads the asked flag for speaker $8F05: zero uses $9D78 (But I haven't done anything yet); nonzero proceeds to $911A. Live controlled comparisons cover all five replies through ordinary commands inside the saved room."
+  },
+  {
+   "address": 37146,
+   "type": "line",
+   "text": "Store selected speaker $8F05 in $8F0A. Compare that value with second random bit $8F07: equal selects $9D2C (Thanks, I think I lie pretty well); different selects $9D52 (Yes, telling the truth's a virtue). This branch requires phase4, a nonnegative conversation flag and nonzero asked flag. The complete departure effect of $8F0A remains outside this check."
+  },
+  {
+   "address": 37176,
+   "type": "line",
+   "text": "Phase4 selected guard has a zero asked flag. Queue $9D78 through $9419; do not change selected speaker byte $8F0A."
+  },
+  {
+   "address": 37183,
+   "type": "line",
+   "text": "INSULT ALPH and HIT ALPH share this handler; it calls the existing Alph prerequisite then joins $9148. Ordinary INSULT ALPH followed by CONGRATULATE ALPH is checked in a controlled phase4 room."
+  },
+  {
+   "address": 37189,
+   "type": "line",
+   "text": "INSULT RALPH and HIT RALPH share this handler; it calls the existing Ralph prerequisite and falls through to $9148. Original-code tests check the accepted presence branch; a live Ralph route remains open."
+  },
+  {
+   "address": 37192,
+   "type": "line",
+   "text": "Queue $9E58 through the speaker output helper, then store $FF at $8F0C. A following accepted CONGRATULATE clears that byte and selects the fickle reply before checking phase or asked flags. Original-code checks retain this order and its output request."
   },
   {
    "address": 37491,

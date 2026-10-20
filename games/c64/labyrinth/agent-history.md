@@ -316,3 +316,7 @@ Validation: all28 Labyrinth checks passed, including65,536 original prefix cases
 ## Later guard answer · 20 October 2026
 
 Followed the second setup bit with a raw U4 operand scan after the typed reference search returned only its writer. Found three literal reads and bounded this continuation to the later ASK branch at$9087. Restored the same room twice, explicitly set phase4/index3 and second bit0/1, then used ordinary ASK ALPH. Both branches had positive hits and produced death/castle respectively. Restored the original machine afterward. Added a controlled comparison to Gameplay, original-code tests and bounded annotations; complete phase progression and the other two reader paths remain open.
+
+## Guard congratulations · 20 October 2026
+
+Followed the later ASK flags into CONGRATULATE. Read the action dictionary and dispatch pairs to identify the command; traced both original speaker prerequisites and the negative-flag priority. Five controlled-room live Alph trials confirmed the earlier reply, premature refusal, both role replies and INSULT/congratulations result. Each has positive handler counts; ordinary commands produce the asked/insult flags after explicit phase/index/bit setup. Captures are anonymous, and original state/input/speed were restored. Bounded annotations retain the unanalysed departure reaction and ordinary phase4 arrival as gaps.

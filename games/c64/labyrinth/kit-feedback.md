@@ -202,3 +202,7 @@ The broader kit tests caught editor incompatibilities in this game's map-pin and
 ## Later guard answer · 20 October 2026
 
 `60-verify`, “Before reporting absence”: the typed reference tool showed only a writer, while a raw operand search found three reads in untyped scene code. `60-verify`, “Force the rare state”: explicitly controlled phase4/index3 rather than presenting the later conversation as an ordinary reached route. The original-code comparison checks both bit outcomes and both speaker flags. Existing guidance covers these observations; no shared-kit edit or maintainer ask arose.
+
+## Guard congratulations · 20 October 2026
+
+`60-verify`, “A test must contain cases that have to succeed”: kept both accepted presence paths and all five reply branches in the original-code comparison, with a premature-command control. The live trial changes the phase explicitly but lets ASK and INSULT produce their own flags. `60-verify`, “A live test in one room tests one room”: Ralph's accepted path is code-checked while live recordings are attributed to Alph. Existing guidance covers this continuation; no shared-kit edit or maintainer ask arose.
