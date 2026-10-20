@@ -126,3 +126,7 @@ Restored the saved third ASK ALPH inside the controlled scene-four reference sep
 ## Brick Hallway close/reopen sequence · 20 October 2026
 
 Restored the ordinary opened column36 snapshot at X2348/depth24, count4/cell6, and entered CLOSE DOOR twice followed by OPEN DOOR twice with the normalized wheel-input sequence. Captured every resulting state and checkpoint count in `work/brick-cycle/`. Counts4→3→3→4→4 matched cells6→7→7→6→6, with a handler hit for every action and mutation hits only on the first close and reopening. Current scene3 and player coordinates remained unchanged. Original emulator state, input and normal speed were restored.
+
+## Post-thanks continuation · 20 October 2026
+
+`work/guard-progress/progress-15.vsf` is the controlled thanks state. Three ordinary ASK ALPH commands from it retained scene4/X99/depth6, index2, phase1, count15 and acknowledgement15, reaching $9004/$9015 and the figure-it-out reply. Private captures/observations are in `work/guard-after/`. The local flag is $FF; its producer and the route to other values remain open. Restore input and normal speed after probing.

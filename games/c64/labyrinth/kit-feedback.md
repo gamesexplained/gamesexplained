@@ -142,3 +142,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Brick Hallway close/reopen cycle · 20 October 2026
 
 `60-verify`, “A live test in one room tests one room”: used ordinary input for the complete local close/reopen sequence without treating it as persistence across other rooms or disk saves. `70-minisite`, “Start each case where the game starts it”: the cycle test passes the page's actual OPEN function and starts the full classifier/mutation comparison from the displayed cell6/count4 state. Count0/255 stress cases stay explicitly artificial. Existing guidance covers the work; no shared-kit change or maintainer ask arose.
+
+## Post-thanks continuation · 20 October 2026
+
+`60-verify`, “Prove reachability with inputs, not pokes”: the captured nonzero-flag response is live-checked, while the zero-flag response stays a traced alternative with reachability open. `70-minisite`'s instruction to check the actual initial widget state kept the page at index2/flag$FF. A newly split code block exposed an overextended preceding pointer-data description; the150 bytes of higher-phase logic now have a separate undescribed boundary. Existing bounds and verification rules cover this game-specific finding; no shared-kit change or maintainer ask arose.

@@ -32,7 +32,7 @@ An ordinary keyboard trial typed OPEN, Space, DOOR, Return from the same arrival
 
 ## Opening the neighboring Brick Hallway door
 
-The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,123/48,587 described bytes; five provisional scopes total 53,536/237,523 (22.5%). Their retained resident ownership overlaps and is not whole-game completion.
+The ordinary approach to column 36 (X=2348/depth 24) lets OPEN DOOR change map cell 7 to 6 and refresh the visible door from closed to open, retaining scene 3. The same door has a verified traversal to column 12 within the Brick Hallway; a route back to the first corridor remains unverified. `parts/scene-03/facts.md` records the handler, mutation and original-code tests. The new part has 1,123/48,587 described bytes; five provisional scopes total 53,500/237,523 (22.5%). Their retained resident ownership overlaps and is not whole-game completion.
 
 `reference/opening-anonymous.png` is an emulator capture of the anonymized publication state, with ANON/anon as the entered name. The original screenshot is private in work/.
 
@@ -46,7 +46,7 @@ At the checked doorway destination, map cell1 translates to type11. Ordinary OPE
 
 ## Alph and Ralph opening conversation
 
-Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. The shared opening conversation is checked for both speakers below; the connecting journey and door puzzle's solution remain open. See `parts/scene-04/facts.md`. Its partial listing adds923/48,705 described bytes; five overlapping scopes total53,536/237,523 (22.5%), not whole-game completion.
+Inside a controlled scene-four load with the female avatar, ordinary movement beside the left door followed by CALL ALPH made Alph visible. Three ASK ALPH commands produced the two-door warning, the request to open every Brick Hallway door, and the refusal to say more. The shared conversation index changed0→1→2→2 with progress3. Handler checkpoints, four live captures, 45 original-code decisions and three original reply parses support the bounded stepper. The shared opening conversation is checked for both speakers below; the connecting journey and door puzzle's solution remain open. See `parts/scene-04/facts.md`. Its partial listing adds887/48,705 described bytes; five overlapping scopes total53,500/237,523 (22.5%), not whole-game completion.
 
 The scene-four publication snapshot also replaces the entered name with ANON/anon. Its original forced reference captures remain private.
 
@@ -61,3 +61,7 @@ The initial Brick Hallway strip has15 door cells:3 open and12 closed. New-game i
 ## Closing a door reduces the count
 
 At the naturally reached neighboring Brick Hallway door, ordinary CLOSE,CLOSE,OPEN,OPEN produced counts4→3→3→4→4 and map cells6→7→7→6→6. Each command dispatched; only the successful close and reopening mutated the map. Repeats displayed already-closed/opened replies. The new example is compared with65,536 original CLOSE decisions and20 complete classifier/mutation calls, including the page's exact state and sequence. The repeated cycle restores its starting count; other commands, room crossings and disk persistence remain open. See `parts/scene-03/facts.md` and `test_brick_close.js`.
+
+## Alph's reply after the thanks
+
+Three ordinary follow-up ASK ALPH commands after the controlled count15 thanks selected “Figure it out for yourself.” The count, acknowledgement, phase1 and index2 stayed unchanged. This is an in-room continuation of the controlled threshold test. The phase-one decision and two response texts are checked against the original code; the source of the local flag, later phases, door outcomes and the complete ordinary door-opening journey remain open. See `parts/scene-04/facts.md` and `test_guard_after.js`.

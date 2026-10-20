@@ -90,3 +90,7 @@ The captured Brick Hallway strip has15 door cells, three initially open, and the
 ## Closing and reopening a Brick Hallway door
 
 Ordinary CLOSE,CLOSE,OPEN,OPEN at the naturally opened column36 door changed counts4→3→3→4→4 and cells6→7→7→6→6. Successful actions had map-mutation hits; repeated commands had positive handler hits and already-closed/opened replies without another mutation. The page's cycle and CLOSE decision are checked against the original code. This establishes the checked door sequence, while other commands and complete persistence remain open.
+
+### Post-thanks conversation
+
+Confirmed in a controlled room: after the count15 thanks, three ordinary ASK ALPH commands gave “Figure it out for yourself.” Phase1, index2 and the nonzero local flag were retained. Original-code comparisons check every phase-one index/flag pair and the two new texts. The complete ordinary door route, zero-flag reachability and later phases remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_after.js`, and the two `guard-after-thanks` reference captures.
