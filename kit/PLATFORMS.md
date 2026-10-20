@@ -19,6 +19,7 @@ and it is the worked example for the next one.
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |
 | `kit/skills/<platform>/tool-<emulator>/workarounds.md` | what to do instead, one section per check that fails on some build | `tool-vice-mcp/workarounds.md` |
 | `site/lib/<platform>.js` | what the page needs that is specific to the machine; a kit script a page runs as it is, such as the machine's processor, is served beside it from `kit/<platform>/` or `kit/cpu/` (`KIT_LIB` in `kit/scripts/build.py`) rather than copied | `c64.js`, and the memory map in `memmap.js`; `kit/cpu/cpu6502.js` as `lib/cpu6502.js` |
+| `site/icons/platforms/<platform>.svg` | the machine's logo, or its maker's, in the corner of its games' cards on the home page: one colour (`currentColor`) on a 24-unit square, legible at 18 pixels, with a comment above the `<svg>` saying where it comes from; `kit/scripts/test_build_platform_icons.py` fails on a kit without one | `c64.svg`, the Commodore logo |
 | `site/status.json` | the machine's entry under `systems` (its library size, with the source and the date it was read), and its cell in every row of `hosts`: what was measured on each kind of computer, and when | the `c64` entries |
 | `site/credits.json` | an entry for each tool the kit installs, with who made it and a link, for the About page's thanks and the platform's status cards; the build fails on a kit that has none | `VICE`, `vice-mcp`, `regenerator2000` |
 
@@ -104,9 +105,9 @@ its colour tokens after the C64.
    a column for every kit it finds, and a host with no cell for yours reads
    "No run recorded". Add the emulator and disassembler to
    `site/credits.json`, with who made them.
-6. Run one game through the whole workflow to Silver. The retrospective on
-   that game (`kit/skills/core/80-retro`) is where the seams you missed show
-   up; fix them in the same pull request.
+6. Open the platform's pull request as `AGENTS.md` says, with `[kit-bump]`
+   in its description, and merge it before any game is run on it. It adds no
+   entry to `kit/lessons/`.
 7. When the platform was written by a model that is not on the proven list
    (`kit/models.json`, `kit/scripts/models.py`), a maintainer checks the machine
    reference's facts and this platform's `INSTALL.md` measurements as
@@ -115,11 +116,12 @@ its colour tokens after the C64.
    the reference instead of recalling the machine, so a wrong fact there is
    copied into all of them. The games a platform produces prove its models, not
    its reference.
-8. Open the pull request as `AGENTS.md` says, with `[kit-bump]` in its
-   description. The
-   entry in `kit/lessons/` is not "added the platform" but what the
-   first game on the new platform taught the kit about reverse engineering that the
-   earlier machines did not.
+8. Run one game through the whole workflow to Silver, in a pull request of
+   its own, from a fresh start, as a contributor would. The retrospective on
+   that game (`kit/skills/core/80-retro`) is where the seams you missed show
+   up; fix them in that game's pull request. Its entry in `kit/lessons/` is
+   not "added the platform" but what the game taught the kit about reverse
+   engineering that the earlier machines did not.
 
 ## Two rules
 

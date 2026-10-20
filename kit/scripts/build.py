@@ -89,20 +89,26 @@ from accuracy import status as listing_status, table as accuracy_table, SILVER_U
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
-PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "bbc": "BBC Micro", "nes": "NES"}
+PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "bbc": "BBC Micro", "apple2": "Apple II",
+                  "c16": "Commodore 16 and Plus/4", "nes": "NES"}
 # The footprint widget and the extra script it needs, per platform: a page loads only
 # its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
-PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap"}
-PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"]}
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap", "bbc": "BBCMap", "apple2": "Apple2Map", "c16": "C16Map"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"], "bbc": ["bbc.js"], "apple2": ["apple2.js"], "c16": ["c16.js"]}
 # The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
 # sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
 # (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
 # The BBC Micro's MOS and I/O fill $C000-$FFFF; below them, its 32 KB of RAM and the 16 KB
 # sideways bank paged in at $8000, which may be RAM holding the game (kit/skills/bbc/bbc-reference).
-PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000)}
+# The Apple II's map is all 64 KB: its ROM at $D000-$FFFF has the language card's RAM beneath it,
+# which a game can load (kit/skills/apple2/apple2-reference, "Memory map").
+# The Commodore 16's 16 KB is $0000-$3FFF, where kit/c16/snapshot.py puts it. A game that uses the
+# Plus/4's other 48 KB needs this widened first (kit/skills/c16/steps, "page").
+PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000), "bbc": (0x0000, 0xC000), "c16": (0x0000, 0x4000)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
 PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM",
-                "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it"}
+                "bbc": "the BBC Micro's 32 KB of RAM and the 16 KB bank paged in above it",
+                "apple2": "the Apple II's main 64 KB", "c16": "the Commodore 16's 16 KB of RAM"}
 TABS = [("index.html", "How it works"), ("play.html", "Play"), ("discoveries.html", "Discoveries"),
         ("levels.html", "Maps / levels"), ("source.html", "Source code"), ("about.html", "About")]
 _warned = set()
@@ -428,6 +434,22 @@ def source_note(game):
     return (f'<p class="srcnote {"ok" if st["checked"] else "bad"}"><b>{html.escape(st["lead"])}</b> '
             f'{html.escape(st["note"])} See <a href="about.html#ledger">every step on the About tab</a>, '
             f'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>')
+
+
+def uncounted_note(lpath):
+    """The Source tab's line on the data its listing leaves out: the stretches listing.py found
+    that the ledger does not count (listing.json's "uncounted", #420). None when there are none."""
+    try:
+        left = json.load(open(lpath)).get("uncounted") or []
+    except (OSError, ValueError):
+        return ""
+    if not left:
+        return ""
+    spans = [f"${s:04X}-${e:04X}" for s, e, _ in left[:3]] + ([f"{len(left) - 3} more"] if len(left) > 3 else [])
+    where = spans[0] if len(spans) == 1 else (", ".join(spans[:-1]) + ("," if len(spans) > 2 else "") + " and " + spans[-1])
+    n = sum(e - s + 1 for s, e, _ in left)
+    return (f'<p class="srcnote"><b>Some data is missing.</b> This listing leaves out {n:,} bytes the game loads, '
+            f'in {len(left)} stretch{"es" if len(left) > 1 else ""} its analysis has not described: {where}.</p>')
 
 
 def withheld(game):
@@ -1168,7 +1190,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
         # pages: where an operand that reads a bank, or the RAM beneath one, links to (source.html)
         info = dict(part_card(p), under=[part_card(q) for q in beneath], pages=pages)
         src = tpl.replace("<!-- facts -->", facts + whole)
-        src = src.replace("<!-- parts -->", lead + pills + note)
+        src = src.replace("<!-- parts -->", lead + pills + note + uncounted_note(os.path.join(p["dir"], "listing.json")))
         src = src.replace("<!-- pick -->", part_step(P, p))
         src = src.replace("<!-- part -->", '<script type="application/json" id="part">'
                           + json.dumps(info).replace("</", "<\\/") + "</script>")
@@ -1300,7 +1322,7 @@ def build_game(gdir, out_root):
         if cheats.strip():
             facts += "<h2>Cheats</h2>" + markdown(cheats)
         src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
-        src = src.replace("<!-- accuracy -->", source_note(game))
+        src = src.replace("<!-- accuracy -->", source_note(game) + uncounted_note(os.path.join(gdir, "listing.json")))
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{lib}/site.js"></script>\n'
@@ -1567,17 +1589,46 @@ def names(people):
     return ", ".join(people[:-1]) + " and " + people[-1] if len(people) > 1 else "".join(people)
 
 
-def tile_html(g, root, line, foot, data=""):
+_icons = {}
+
+
+def platform_icon(plat):
+    """The machine's logo, site/icons/platforms/<plat>.svg, inline: one colour, the text's, on a
+    24-unit square, with the file's own fill and stroke. "" and a warning for a platform with none."""
+    if plat not in _icons:
+        p = os.path.join(SITE, "icons", "platforms", f"{plat}.svg")
+        m = re.search(r"<svg\b([^>]*)>(.*)</svg>", read(p), re.S) if os.path.isfile(p) else None
+        if not m:
+            warn(f"site/icons/platforms/{plat}.svg is missing, so the {plat} cards show no machine (kit/PLATFORMS.md)")
+            _icons[plat] = ""
+        else:
+            attrs = [a for a in re.findall(r'[\w:-]+="[^"]*"', m.group(1)) if not a.startswith(("xmlns", "width=", "height="))]
+            body = re.sub(r">\s+<", "><", m.group(2).strip())
+            _icons[plat] = f'<svg {" ".join(attrs)} aria-hidden="true">{body}</svg>'
+    return _icons[plat]
+
+
+def platform_badge(g, root):
+    """The machine a card's game runs on: its logo in the card's corner, named when hovered, and a
+    link to that platform's page. Nothing for a platform with no logo."""
+    plat = g["platform"]
+    icon, name = platform_icon(plat), html.escape(PLATFORM_NAMES.get(plat, plat))
+    return f'<a class="plat" href="{root}{plat}/" title="{name}" aria-label="{name}">{icon}</a>' if icon else ""
+
+
+def tile_html(g, root, line, foot, data="", badge=True):
     """A game's card, as New and updated and the catalogue show one: the tier up the left edge,
-    the title screen, the game's title (the card's link), a line on who, and a line in small type.
-    root is the way up to the site's top from the page the card is on."""
+    the title screen, the game's title (the card's link), a line on who, a line in small type, and
+    the machine's logo in the corner. root is the way up to the site's top from the page the card
+    is on; badge=False leaves the logo out, on a page of one platform's games."""
     plat, slug = g["platform"], g["slug"]
     line = f'<span class="v">{line}</span>' if line else ""
-    return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}<span class="body">'
+    return (f'<div class="tile t-{tier_group(g)}"{data}>{tier_edge(g)}{shot_html(g, "thumb", root)}'
+            f'{platform_badge(g, root) if badge else ""}<span class="body">'
             f'<a class="g" href="{root}{plat}/{slug}/">{html.escape(g.get("title", slug))}</a>{line}{foot}</span></div>')
 
 
-def card_html(g, root=""):
+def card_html(g, root="", badge=True):
     """Every game, in the catalogue: its card (tile_html), naming the people who contributed it,
     as the About tab credits them, and the year and publisher. The data- attributes are what the
     home page's search, filters and sorts read (site.js)."""
@@ -1591,7 +1642,7 @@ def card_html(g, root=""):
             f' data-title="{html.escape(g.get("title", slug))}" data-q="{html.escape(words.lower())}"')
     who = names([person_html(name, login) for _, name, login in cons])
     made = " · ".join(str(x) for x in (g.get("year"), g.get("publisher")) if x)
-    return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data)
+    return tile_html(g, root, f"contributed by {who}" if who else "", f'<span class="m">{html.escape(made)}</span>', data, badge)
 
 
 def platform_pages(games, out_root):
@@ -1602,7 +1653,7 @@ def platform_pages(games, out_root):
         name = html.escape(PLATFORM_NAMES.get(plat, plat))
         open(os.path.join(out_root, plat, "index.html"), "w").write(
             fill(read(os.path.join(SITE, "platform.html")), site_title=f"{name} · Games Explained", lib="../lib",
-                 platform_name=name, cards="".join(card_html(g, "../") for g in gs), n_games=len(gs)))
+                 platform_name=name, cards="".join(card_html(g, "../", badge=False) for g in gs), n_games=len(gs)))
 
 
 def featured_game(games):

@@ -4,7 +4,7 @@ operand text of the Source tab.
 
 A machine's own `kit/<platform>/cpu.py` imports this and adds what is the machine's: its
 text types, and anything its CPU adds to the NMOS 6502 (kit/PLATFORMS.md). The C64 and
-the BBC Micro use it.
+the BBC Micro use it; the enhanced Apple IIe's 65C02 is m65c02.py, this table and 27 more.
 
   decode(ram, a)                     -> (mnemonic, mode, nbytes) or None
   operand(a, m, mode, bs, names, regs, chips) -> (text, target)
@@ -49,7 +49,8 @@ OPS.update({0x24: ("bit", "zp"), 0x2C: ("bit", "abs"),
             0x86: ("stx", "zp"), 0x96: ("stx", "zpy"), 0x8E: ("stx", "abs"),
             0x84: ("sty", "zp"), 0x94: ("sty", "zpx"), 0x8C: ("sty", "abs")})
 LEN = {"imp": 1, "acc": 1, "imm": 2, "zp": 2, "zpx": 2, "zpy": 2, "rel": 2,
-       "abs": 3, "abx": 3, "aby": 3, "ind": 3, "izx": 2, "izy": 2}
+       "abs": 3, "abx": 3, "aby": 3, "ind": 3, "izx": 2, "izy": 2,
+       "zpi": 2, "iax": 3}     # the last two, (zp) and (abs,x), are the 65C02's (m65c02.py)
 assert len(OPS) == 151, len(OPS)
 
 # Explicitly code-typed NMOS instruction verified in a game. Keep it
@@ -66,7 +67,8 @@ def decode(ram, a):
 
 # --- operands ---------------------------------------------------------------
 FORMAT = {"zp": "{}", "zpx": "{},x", "zpy": "{},y", "izx": "({},x)", "izy": "({}),y",
-          "abs": "{}", "abx": "{},x", "aby": "{},y", "ind": "({})", "rel": "{}"}
+          "abs": "{}", "abx": "{},x", "aby": "{},y", "ind": "({})", "rel": "{}",
+          "zpi": "({})", "iax": "({},x)"}
 
 
 def operand(a, m, mode, bs, names, regs, chips):

@@ -259,7 +259,9 @@ is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
 game reached 100 % with 1.6 KB of its own tables and its picture's
-colours outside the count.
+colours outside the count. `listing.json` keeps the list as
+`uncounted`, `coverage.py` prints it under the figure, and
+`check_listing.py` fails a game at Silver or above that has any left.
 
 Data the start-up copies elsewhere (out of the way of the I/O area, under
 a ROM, into another bank) differs between the images at its own address,

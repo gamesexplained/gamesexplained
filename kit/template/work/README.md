@@ -7,9 +7,9 @@ this folder is ever committed or uploaded.
 
 To rebuild it from your own copy of the game, follow `../orientation.md`,
 then `python3 kit/scripts/symbols_import.py <this game> <your snapshot>`
-to recreate the disassembler project with all annotations. The snapshot's
-extension is the platform's own — a `.vsf` on the Commodore 64, a `.sna`
-on the ZX Spectrum — and `../orientation.md` names the file this game used.
+to recreate the disassembler project with all annotations. The snapshot is
+in the platform's own format, which its `steps` skill names under
+`snapshot`, and `../orientation.md` names the file this game used.
 
 Found this folder already here, left by an earlier session? It is a
 cache, not a record. `kit/START.md`, on a game folder that already
