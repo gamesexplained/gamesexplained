@@ -49,15 +49,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ch-tbl tr.on td{background:var(--hl)}
 .ch-scroll{overflow-x:auto}
 .ch-note{font-size:14px;color:var(--ink-soft)}
-.ch-land{display:flex;gap:4px;align-items:flex-end;height:120px;margin:8px 0 0}
-.ch-land div{flex:1;background:var(--violet);border-radius:3px 3px 0 0;position:relative;opacity:.45}
-.ch-land div.on{opacity:1}
-.ch-land span{position:absolute;top:-18px;left:0;right:0;text-align:center;font-family:var(--fm);font-size:11px;color:var(--ink-soft)}
-.ch-axis{display:flex;gap:4px;font-family:var(--fm);font-size:11px;color:var(--ink-mute)}
-.ch-axis span{flex:1;text-align:center}
+.ch-tilts{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin:10px 0 0}
+.ch-tilts button{padding:0 0 3px;border:2px solid transparent;background:#000;border-radius:5px;cursor:pointer;overflow:hidden}
+.ch-tilts button.on{border-color:var(--amber)}
+.ch-tilts canvas{width:100%;display:block;image-rendering:pixelated}
+.ch-tilts span{display:block;font-family:var(--fm);font-size:11px;color:#ccc;text-align:center}
 .ch-sound{background:#111;border-radius:6px;padding:8px 10px;color:#ddd}
 .ch-err{color:var(--coral);font-size:14px}
-@media (max-width:760px){:root{--gx:16px;--pp:14px}.ch-pair{grid-template-columns:1fr}.ch-stat{margin-left:0}}
+@media (max-width:760px){:root{--gx:16px;--pp:14px}.ch-pair{grid-template-columns:1fr}.ch-stat{margin-left:0}.ch-tilts{grid-template-columns:repeat(6,1fr)}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -125,14 +124,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section id="flight">
   <p class="fig">04 · The helicopter</p>
-  <h2 class="t">A tilted helicopter lands higher, on one side</h2>
+  <h2 class="t">A tilted helicopter rocks on its skids</h2>
   <p>The stick leans the helicopter, a step a frame, and the lean sets the thrust: 0, 96, 180, 264, 348 or 420 256ths of a dot a frame (<code>thrust_table</code>, <code>$7418</code>). Each frame a sixteenth of the speed is taken off as drag, so the top speed is 21 dots a frame. Up and down, the speed closes by half the difference a frame on the stick's climb rate, one of sixteen from -10 to +6 dots a frame (<code>climb_table</code>, <code>$7424</code>).</p>
-  <p>A helicopter touches the ground at a height that depends on its tilt (<code>land_height_table</code>, <code>$7895</code>). The table is read by the tilt taken the way the helicopter faces, so leaning one way it stands up to three rows higher on its skids, and leaning the other way it lands at the level height until the two steepest tilts.</p>
+  <p>A helicopter that comes down with a lean lands tilted, and the frames after rock it back to level on its skids (<code>rock</code>, <code>$7803</code>). Each tilt has a picture of its own, and the tilted ones are taller: 13 rows level, up to 18 with the nose right down. So each step of the rocking raises or lowers the helicopter by a table of heights (<code>land_height_table</code>, <code>$7895</code>) and slides it along by another (<code>rock_x_table</code>, <code>$787F</code>). Together they keep the end of one skid on the ground while the helicopter pivots: at every tilt, facing either way, its lowest dots are on the same screen line or the one above.</p>
   <div class="plate">
-    <div class="ch-bar"><label>Tilt <input type="range" id="ld-tilt" min="-5" max="5" value="0"></label><span class="ch-stat" id="ld-stat"></span></div>
-    <div class="ch-land" id="ld-bars"></div>
-    <div class="ch-axis" id="ld-axis"></div>
-    <p class="cap">The eleven landing heights, read from <code>$7895</code> in the listing (two bytes each, the high byte 0). The tilt is negated for a helicopter facing the other way (<code>$7720</code>). Only a level helicopter opens its door (<code>door_open</code>, <code>$0D</code>), so a tilted landing neither picks up nor crushes anyone.</p>
+    <div class="ch-bar">
+      <button type="button" id="ld-rock">▶ Rock it</button>
+      <label>Tilt <input type="range" id="ld-tilt" min="-5" max="5" value="-4"></label>
+      <button type="button" id="ld-right" class="on">Facing right</button>
+      <button type="button" id="ld-left">Facing left</button>
+      <label><input type="checkbox" id="ld-ghost" checked> Show it level</label>
+      <span class="ch-stat" id="ld-stat">loading the listing</span>
+    </div>
+    <canvas id="ld-cv" class="ch-screen" width="240" height="80"></canvas>
+    <div class="ch-tilts" id="ld-strip"></div>
+    <p class="cap">Every picture here is drawn by the game's own routines from the listing, on the kit's 6502 (<code>reference/tilt.js</code>). The demonstration flight runs to its first frame, with the helicopter level on its pad. Then <code>rock</code> tips it to the tilt, and the helicopter's object (<code>heli_object</code>, <code>$8276</code>) draws its body and both rotors on that frame's screen. The amber helicopter behind is the same one level. <b>Eighteen frames of helicopters landing with a lean in Apple2TS, facing either way, hold the same bytes as these routines draw from the same state</b> (<code>test_tilt.js</code>); there, a helicopter that landed at a tilt of 4 was level two frames later. Only a level helicopter opens its door (<code>door_open</code>, <code>$0D</code>), so a tilted landing neither picks up nor crushes anyone.</p>
   </div>
   <p>On the ground and level, the door opens and the hostages come. One that reaches 8 or 9 dots right of the helicopter's X, or 10 or 11 dots left, climbs in, up to sixteen aboard (<code>boarding</code>, <code>$6139</code>). One that is closer, from 7 dots right to 9 dots left, is under the helicopter and is crushed (<code>crush</code>, <code>$62D7</code>). Coming down at more than about 4.4 dots a frame bounces the helicopter, and touching the ground at full speed crashes it.</p>
 </section>
@@ -194,12 +200,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/apple2.js"></script>
 <script src="../../lib/apple2-speaker.js"></script>
 <script src="reference/demo.js"></script>
+<script src="reference/tilt.js"></script>
 <script src="reference/sound.js"></script>
 <script>
 (async function () {
   const $ = id => document.getElementById(id);
   const missing = [['C64Cpu', 'cpu6502.js'], ['Apple2', 'apple2.js'], ['Apple2Speaker', 'apple2-speaker.js'],
-    ['ChopDemo', 'reference/demo.js'], ['ChopSound', 'reference/sound.js']].filter(([g]) => !globalThis[g]).map(([, f]) => f);
+    ['ChopDemo', 'reference/demo.js'], ['ChopTilt', 'reference/tilt.js'], ['ChopSound', 'reference/sound.js']].filter(([g]) => !globalThis[g]).map(([, f]) => f);
   const say = msg => { $('dm-stat').textContent = msg; $('snd').innerHTML = '<span class="ch-err">' + msg + '</span>'; };
   if (missing.length) { say('This widget needs the built site (missing: ' + missing.join(', ') + ').'); }
 
@@ -255,21 +262,68 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     Apple2Speaker.mount($('snd'), { tunes });
   }
 
-  // --- 04: landing heights -------------------------------------------------------------------------
-  const land = [];
-  for (let t = -5; t <= 5; t++) land.push(L ? L.ram[0x7895 + 2 * (t + 5)] : [10, 9, 9, 8, 8, 7, 7, 7, 7, 8, 8][t + 5]);
-  const bars = $('ld-bars'), axis = $('ld-axis');
-  land.forEach((h, i) => {
-    const d = document.createElement('div'); d.style.height = (h / 10 * 100) + '%';
-    d.innerHTML = '<span>' + h + '</span>'; bars.appendChild(d);
-    const a = document.createElement('span'); a.textContent = (i - 5 > 0 ? '+' : '') + (i - 5); axis.appendChild(a);
-  });
-  function showTilt() {
-    const t = +$('ld-tilt').value, h = land[t + 5];
-    [...bars.children].forEach((d, i) => d.classList.toggle('on', i === t + 5));
-    $('ld-stat').textContent = `tilt ${t > 0 ? '+' : ''}${t}: lands at height ${h}, ${h - land[5]} row${h - land[5] === 1 ? '' : 's'} above level`;
+  // --- 04: the helicopter rocked on its skids --------------------------------------------------------
+  if (L) {
+    const st = ChopTilt.start(L), page2 = !!st.m[0x8D];
+    const PAD = 0x1293, SX = 96, SY = 136, CW = 120, CH = 40;      // the crop: dots and screen lines round the pad
+    const crop = (data, x0, y0, w, h) => {
+      const img = new ImageData(w * 2, h * 2);
+      for (let y = 0; y < h * 2; y++) img.data.set(data.subarray(((y0 * 2 + y) * 560 + x0 * 2) * 4, ((y0 * 2 + y) * 560 + (x0 + w) * 2) * 4), y * w * 8);
+      return img;
+    };
+    const screen = m => Apple2.render(m, null, { hires: true, page2 }, 'hires').data;
+    const bg = crop(screen(st.m), SX, SY, CW, CH).data;
+    const pics = { 1: [], '-1': [] };
+    for (const f of [1, -1]) for (let t = -5; t <= 5; t++) {
+      const d = ChopTilt.draw(st, t, f), all = screen(d.m);
+      pics[f].push({ d, big: crop(all, SX, SY, CW, CH), small: crop(all, SX + 12, SY + 4, 64, 34) });
+    }
+    let facing = 1, tilt = -4, rocking = false, timer = 0;
+    const cv = $('ld-cv'), cx = cv.getContext('2d'), strip = $('ld-strip');
+    function show() {
+      const p = pics[facing][tilt + 5], img = new ImageData(new Uint8ClampedArray(p.big.data), p.big.width, p.big.height);
+      if ($('ld-ghost').checked) {
+        // the level helicopter in amber, behind the tilted one: only where the tilted one leaves the screen as it was
+        const lv = pics[facing][5].big.data, same = (a, i) => a[i] === bg[i] && a[i + 1] === bg[i + 1] && a[i + 2] === bg[i + 2];
+        for (let i = 0; i < lv.length; i += 4) {
+          if (same(lv, i) || !same(img.data, i)) continue;
+          img.data[i] = 176; img.data[i + 1] = 112; img.data[i + 2] = 24;
+        }
+      }
+      cx.putImageData(img, 0, 0);
+      [...strip.children].forEach((b, i) => b.classList.toggle('on', i === tilt + 5));
+      $('ld-tilt').value = tilt;
+      const up = p.d.height - 7, along = p.d.x - PAD, down = facing > 0 ? tilt < 0 : tilt > 0;
+      $('ld-stat').textContent = tilt === 0 ? 'level: 7 rows up, on the pad'
+        : `tilt ${tilt > 0 ? '+' : ''}${tilt}, nose ${down ? 'down' : 'up'}: ${up ? `raised ${up} row${up > 1 ? 's' : ''}` : 'not raised'}, moved ${Math.abs(along)} dot${Math.abs(along) === 1 ? '' : 's'} ${along > 0 ? 'right' : 'left'}`;
+    }
+    function thumbs() {
+      strip.innerHTML = '';
+      pics[facing].forEach((p, i) => {
+        const b = document.createElement('button'), c = document.createElement('canvas'), n = document.createElement('span');
+        b.type = 'button'; c.width = p.small.width; c.height = p.small.height; c.getContext('2d').putImageData(p.small, 0, 0);
+        n.textContent = (i > 5 ? '+' : '') + (i - 5); b.append(c, n);
+        b.onclick = () => { stop(); tilt = i - 5; show(); };
+        strip.appendChild(b);
+      });
+    }
+    function turn(f) { facing = f; $('ld-right').classList.toggle('on', f > 0); $('ld-left').classList.toggle('on', f < 0); thumbs(); show(); }
+    // rocking from one steepest tilt to the other and back, at about the game's twelve frames a second
+    let dir = 1;
+    function stop() { rocking = false; clearInterval(timer); $('ld-rock').textContent = '▶ Rock it'; $('ld-rock').classList.remove('on'); }
+    $('ld-rock').onclick = () => {
+      if (rocking) return stop();
+      rocking = true; $('ld-rock').textContent = '❚❚ Stop'; $('ld-rock').classList.add('on');
+      timer = setInterval(() => { if (Math.abs(tilt + dir) > 5) dir = -dir; tilt += dir; show(); }, 85);
+    };
+    $('ld-tilt').oninput = () => { stop(); tilt = +$('ld-tilt').value; show(); };
+    $('ld-right').onclick = () => turn(1);
+    $('ld-left').onclick = () => turn(-1);
+    $('ld-ghost').onchange = show;
+    turn(1);
+  } else {
+    $('ld-stat').textContent = '';
   }
-  $('ld-tilt').oninput = showTilt; showTilt();
 
   // --- 05: enemies by level ------------------------------------------------------------------------
   const rd = (a, i, d) => (L ? L.ram[a + i] : d[i]);
