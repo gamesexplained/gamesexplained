@@ -132,6 +132,23 @@ the loading is over and something happens. Ten files behind one loading
 screen are one part, so count what the player waits for, not what the
 disk holds.
 
+The terms this section uses, in one place; the paragraphs after the
+table say more about each.
+
+| Term | Where | What it means |
+|---|---|---|
+| part | `parts/<id>/` | one of the things the same addresses hold at different times, with its own `part.json`, symbol map and listing |
+| load | a part's `"kind"`, the default | a part the game's loader copies to fixed addresses; listed at those addresses, from a snapshot |
+| bank | `"kind": "bank"` | a part the machine switches into a window of the CPU's addresses, read there and never copied; listed at the window's addresses, from the cartridge image or the snapshot's copy of the bank |
+| virtual address space | `coverage.virtual` in `game.json` | code or text the program reads on demand into whichever buffer is free, and reaches at its own addresses; not a part, and the kit cannot list it |
+| `over` | a load's `part.json` | the part beneath: the one whose addresses this load writes over |
+| `ranges` | a load's `part.json` | the addresses its load writes, which it takes from the part beneath |
+| `bank` | a bank's `part.json` | the bank's number, or its name where the machine names its banks |
+| `seen_by` | a bank's `part.json` | the part whose code reads the bank; it keeps the window's addresses for its own RAM |
+| `window` | a bank's `part.json` | where the bank shows among the CPU's addresses |
+| `banks` rows | the `part.json` of the part that sees a bank | which of its instructions see the bank, as `[first, last, bank's id, why]` |
+| owner | the coverage figure | the one part that counts a byte; a game's coverage, the sum over its parts, counts each byte once |
+
 The kit holds what one image cannot in two kinds of part, a load and a
 bank, and names a third, a virtual address space, that it cannot hold.
 What tells them apart is how the bytes reach the CPU, and that fixes the
