@@ -244,3 +244,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Stone Corridor first door · 21 October 2026
 
 `10-orient`, “Never assemble an image from”: used the actual local route’s snapshot, with the earlier forced captures kept separate. `20-features`, “Test each control from a moment you have looked at”: restored the arrival before the approach and retained the coasting miss as a separate trial. The private probe’s log failure was visible; restoration now precedes its JSON writer. Existing snapshot-basename and negative-result guidance covers the other failures. No shared-kit change or maintainer ask arose.
+
+
+## Stone Corridor close and crossing · 21 October 2026
+
+`60-verify`, “A number handed through a request byte”: stopped after the actual exit request stores before naming its destination. Request0/entry30 refreshes scene6 and reaches another coordinate in the same corridor. The stored selector was measured at the stop rather than inferred from the first table bank. Exact bare label boundaries prevent pair/table comments from describing adjacent unknown bytes. Existing guidance covers these checks; no shared-kit edit or maintainer ask arose.

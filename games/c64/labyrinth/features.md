@@ -152,14 +152,19 @@ Live-confirmed from the saved seventh-command sequence: the eighth command advan
 
 ### Ninth manicure: release into the Stone Corridor
 
-Live-confirmed from the saved eighth-command return: the ninth ordinary command repeats the first reply, advances count8→9 and sets movement state12. No further input is needed for the captured descent and scene6/entry7 request. The actual loader reaches X480/depth6 in the Stone Corridor. The command retains the supplied shears unit. This is a local route with controlled item supply and the earlier controlled guard-room setup; ordinary acquisition, other hand interactions, and Stone Corridor gameplay remain open. Evidence: parts/scene-05/facts.md, test_wall_release.js and the ninth-command/Stone Corridor arrival captures.
+Live-confirmed from the saved eighth-command return: the ninth ordinary command repeats the first reply, advances count8→9 and sets movement state12. No further input is needed for the captured descent and scene6/entry7 request. The actual loader reaches X480/depth6 in the Stone Corridor. The command retains the supplied shears unit. This is a local route with controlled item supply and the earlier controlled guard-room setup; ordinary acquisition, other hand interactions, and Stone Corridor gameplay beyond the checked first door remain open. Evidence: parts/scene-05/facts.md, test_wall_release.js and the ninth-command/Stone Corridor arrival captures.
 
 
 ### Stone Corridor: arrival checklist
 
-Live arrival from the ninth-manicure route is scene6/entry7, X480/depth6. The screenshot shows a closed door to the left and an archway to the right. The captured resident word wheels offer OPEN, CLOSE, ASK, and DOOR among their general entries; availability alone does not establish a useful local action. Confirmed: arrival and nearby OPEN DOOR, followed by its already-open response. Open: door/archway traversal, NPC encounters, items, and other routes. The shears and prior controlled setup remain part of this local route’s provenance.
+Live arrival from the ninth-manicure route is scene6/entry7, X480/depth6. The screenshot shows a closed door to the left and an archway to the right. The captured resident word wheels offer OPEN, CLOSE, ASK, and DOOR among their general entries; availability alone does not establish a useful local action. Confirmed: arrival and nearby OPEN DOOR, followed by its already-open response. The first-door crossing is checked below. Open: other door/archway traversals, NPC encounters, items, and other routes. The shears and prior controlled setup remain part of this local route’s provenance.
 
 
 ### Stone Corridor: first door
 
-Confirmed: OPEN DOOR at X480/depth6 gives Nothing happens. Ordinary movement stops at X147/depth6, column2, where OPEN changes cell1→7 and the door visibly opens. Repeating OPEN gives It’s already opened. The original query and mutation run in the comparison. Door traversal, CLOSE, the separate column24 check and persistence remain open. Evidence: parts/scene-06/facts.md, test_stone_door.js and stone-door captures.
+Confirmed: OPEN DOOR at X480/depth6 gives Nothing happens. Ordinary movement stops at X147/depth6, column2, where OPEN changes cell1→7 and the door visibly opens. Repeating OPEN gives It’s already opened. The original query and mutation run in the comparison. The first door’s CLOSE and local crossing are checked below. The separate column24 check and persistence remain open. Evidence: parts/scene-06/facts.md, test_stone_door.js and stone-door captures.
+
+
+### Stone Corridor: close and cross the first door
+
+Live-confirmed from the opened X147/depth6 state: CLOSE changes cell7→1 and visibly shuts the door. Repeating CLOSE gives It's already closed. A separate continuation restores the opened state and uses up input, reaching X159/depth40 before requesting refresh0/entry30. The completed arrival is X1952/depth6 in scene6, beside an arch and bars. This route retains the earlier controlled setup and stored selector96. Other doors, return traversal, entry initialization and save/reload persistence remain open. Evidence: parts/scene-06/facts.md, test_stone_close.js and stone-door-closed/already-closed/crossed captures.

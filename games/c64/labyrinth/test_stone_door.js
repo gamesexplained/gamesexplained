@@ -16,7 +16,7 @@ for(let x=0;x<65536;x++)run(x,1);
 for(let cell=0;cell<256;cell++)for(const x of [0,63,64,147,480,1536,1599,65535])run(x,cell);
 for(let depth=0;depth<256;depth++)for(const [x,cell]of [[480,0],[147,1],[147,7]])run(x,cell,depth);
 for(let mode=0;mode<128;mode++){c.m[0x343]=mode;const outputs=[];let delegated=false;c.call(0x8f30,{d:0},{hooks:{0x9c56:()=>{delegated=true;return true;},0x0827:c=>{outputs.push([c.y+256*c.x,c.a]);c.rts();}}});assert.equal(delegated,mode!==1);assert.deepStrictEqual(outputs,mode===1?[[0x93d0,5]]:[]);}
-for(const row of cases)if(row.command)run(row.x,row.cell);
+for(const row of cases)if(row.command&&row.action!=='close')run(row.x,row.cell);
 assert.equal(open(480,0).address,0x93d0);assert.equal(open(147,1).value,7);assert.equal(open(147,7).address,0x91ef);
 for(const [address,text]of [[0x93d0,'Nothing happens.'],[0x91ef,"It's already opened."]]){const c=new CPU(Uint8Array.from(ram),{port:{dir:47,data:37}});c.m[0x10]=address&255;c.m[0x11]=address>>8;let actual='';c.call(0x6782,{d:0},{hooks:{0x6942:c=>c.rts(),0x6891:c=>{if(c.a>=32&&c.a<127)actual+=String.fromCharCode(c.a);c.rts();},0x67c4:()=>actual+=' ',0x6866:c=>c.rts()}});assert.equal(actual.replace(/\s+/g,' ').trim(),text);}
 for(const bad of [-1,65536,.5,NaN])assert.throws(()=>open(bad,1),RangeError);for(const bad of [-1,256,.5,NaN])assert.throws(()=>open(147,bad),RangeError);

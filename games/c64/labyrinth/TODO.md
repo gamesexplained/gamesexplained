@@ -55,11 +55,9 @@ For Alph and Ralph:
 
 - Check the remaining commands and count persistence across complete room crossings and disk save/load. The ordinary column36 CLOSE,CLOSE,OPEN,OPEN sequence is established: counts4→3→3→4→4, with no change on repeats.
 
-- Analyse The Wall of Hands from the checked local arrival at scene5/entry1, X84/depth6. Its image and route are captured, but its mechanics and code have no part analysis. The route into the guards still begins from a controlled room/count setup.
-
 For the Wall of Hands:
 
 - Trace ordinary shears acquisition/damage, other Wall of Hands interactions and routes, counter wrap/alternate entry, and Stone Corridor door traversal and other gameplay. The first-use refusals, first seven replies, eighth-command hour penalty, controlled expiry, and ninth-command local exit to scene6/entry7 are checked. Resolve the producer of the command gate$0343, movement, hand animation and exits. ASK and its five-reply cycle have live/original-code checks.
 - Capture the natural pre-initialization hand-over; resolve resident ownership and the retained untracked extents named by the listing. Independently sample the new comments.
 
-- Finish scene6 initialization provenance and seven retained uncounted regions. OPEN DOOR is checked at the arrival, nearby, and on the opened door. Check traversal, CLOSE, persistence, and other commands.
+- Finish scene6 initialization provenance and seven retained uncounted regions. OPEN DOOR is checked at the arrival, nearby, and on the opened door. The first door’s CLOSE/repeat-CLOSE and local crossing to entry30/X1952 are checked. Check the return route, other doors, persistence, and other commands.
