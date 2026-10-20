@@ -146,3 +146,7 @@ The minisite skill's requirement to inspect the built page exposed navigation di
 ## Post-thanks continuation · 20 October 2026
 
 `60-verify`, “Prove reachability with inputs, not pokes”: the captured nonzero-flag response is live-checked, while the zero-flag response stays a traced alternative with reachability open. `70-minisite`'s instruction to check the actual initial widget state kept the page at index2/flag$FF. A newly split code block exposed an overextended preceding pointer-data description; the150 bytes of higher-phase logic now have a separate undescribed boundary. Existing bounds and verification rules cover this game-specific finding; no shared-kit change or maintainer ask arose.
+
+## Guard left-door reply cycle · 20 October 2026
+
+`60-verify`, “Before reporting that something is missing”: searched the untyped U4 bytes when the decoded reference list showed only a read, exposing both changing handlers. Its “Prove reachability with inputs, not pokes” kept the depth6 refusal separate from the successful ordinary approach within a controlled room. The original proximity helper bypasses the public message API; the checked port intercepts its internal queue after the real stack discard. Existing code-comparison and boundary rules cover these details; no shared-kit edit or maintainer ask arose.

@@ -93,4 +93,8 @@ Ordinary CLOSE,CLOSE,OPEN,OPEN at the naturally opened column36 door changed cou
 
 ### Post-thanks conversation
 
-Confirmed in a controlled room: after the count15 thanks, three ordinary ASK ALPH commands gave “Figure it out for yourself.” Phase1, index2 and the nonzero local flag were retained. Original-code comparisons check every phase-one index/flag pair and the two new texts. The complete ordinary door route, zero-flag reachability and later phases remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_after.js`, and the two `guard-after-thanks` reference captures.
+Confirmed in a controlled room: after the count15 thanks, three ordinary ASK ALPH commands gave “Figure it out for yourself.” Phase1, index2 and the nonzero local flag were retained. Original-code comparisons check every phase-one index/flag pair and the two new texts. The ordinary left-door cycle below reaches the zero flag. The complete ordinary door route and later phases remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_after.js`, and the two `guard-after-thanks` reference captures.
+
+### The guard door changes the answer
+
+Confirmed within the controlled thanks room: walking up to depth24, opening the left door, asking Alph, closing it and asking again gives the unsure response then “Figure it out for yourself.” The local flag changes while the Brick Hallway count remains15. Original-code tests check the bounded left-door decision for all flag/depth bytes and the actual page sequence. Door destinations and higher phases remain open. Evidence: `parts/scene-04/facts.md`, `test_guard_door.js`, and five `guard-door` captures.

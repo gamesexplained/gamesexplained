@@ -129,4 +129,8 @@ Restored the ordinary opened column36 snapshot at X2348/depth24, count4/cell6, a
 
 ## Post-thanks continuation · 20 October 2026
 
-`work/guard-progress/progress-15.vsf` is the controlled thanks state. Three ordinary ASK ALPH commands from it retained scene4/X99/depth6, index2, phase1, count15 and acknowledgement15, reaching $9004/$9015 and the figure-it-out reply. Private captures/observations are in `work/guard-after/`. The local flag is $FF; its producer and the route to other values remain open. Restore input and normal speed after probing.
+`work/guard-progress/progress-15.vsf` is the controlled thanks state. Three ordinary ASK ALPH commands from it retained scene4/X99/depth6, index2, phase1, count15 and acknowledgement15, reaching $9004/$9015 and the figure-it-out reply. Private captures/observations are in `work/guard-after/`. The local flag starts $FF; the left-door cycle below reaches0 and returns to$FF. Restore input and normal speed after probing.
+
+## Local door and answer cycle · 20 October 2026
+
+From the controlled count15 thanks, up80frames then release20frames at X99 reaches depth24. OPEN DOOR, ASK ALPH, CLOSE DOOR, ASK ALPH yields left cell2/2/1/1 and flag0/0/$FF/$FF. The replies are the unsure response, then Figure it out for yourself. Count/acknowledgement15, phase1 and index2 are retained. The depth6 OPEN trial dispatches but is too far. Private route observations/snapshots: `work/guard-open-near/`. Original emulator state and normal speed were restored.
