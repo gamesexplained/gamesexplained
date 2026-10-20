@@ -4,7 +4,7 @@ const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram,has}=require('./opening_image.js')(g);
 const {labyrinthOpeningResponses:records}=g.run('graphics.html','labyrinth-responses','labyrinthOpeningResponses');
-const {labyrinthChangeReplies:counterReplies}=g.run('explore.html','labyrinth-change-text','labyrinthChangeReplies');
+const {labyrinthChangeReplies:counterReplies}=g.run('discoveries.html','labyrinth-change-text','labyrinthChangeReplies');
 for(const [address,text] of Object.entries(counterReplies))assert.equal(text,records.find(r=>r.address===Number(address))?.text,'counter reply '+address);
 const symbols=g.json('parts/opening/symbols.json');
 function parse(memory,address){

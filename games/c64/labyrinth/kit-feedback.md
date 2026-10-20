@@ -180,3 +180,7 @@ The browser console exposed a reply-catalogue dependency outside the moved block
 ## Visual captured-scene index · 20 October 2026
 
 `70-minisite`, “Draw every one of them as a picture”: made the existing room captures visible in a thumbnail index rather than leaving them hidden in a dropdown. These remain captures with explicit provenance, while complete decoded maps remain open. Stable scene IDs distinguish repeated titles; the existing detailed viewer provides the full caption and checked-route link. This is game-specific presentation work; no shared-kit edit or maintainer ask arose.
+
+## Cinema counter on Discoveries · 20 October 2026
+
+`70-minisite`, “These have a tab of their own”: gave the checked counter consequence a Discoveries page, keeping Gameplay focused on the journey. The page reuses the original checked widget and reply subset, with its tests following their moved blocks. The counter sequence remains a mechanic rather than an asserted bug or secret. Existing page, evidence and browser-check rules cover the work; no shared-kit change or maintainer ask arose.
