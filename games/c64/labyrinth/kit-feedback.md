@@ -229,3 +229,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Seven manicure replies · 21 October 2026
 
 `60-verify`, “Prove reachability with inputs, not pokes”: supplied the shears once, then used seven ordinary commands in one session instead of seeding each counter value. This establishes the local sequence after controlled item supply, while ordinary acquisition remains open. The bounded comparison stops before the eighth-count path and tests the selection prefix separately across its byte domain. Existing guidance covers this work; no shared-kit change or maintainer ask arose.
+
+
+## Eighth manicure · 21 October 2026
+
+`60-verify`, “Poke the variable, watch the screen”: placed the zero-hour control before the actual decrement, then checked both stored state and the completed expiry panel. The normal sequence retained its own untouched clock evidence. The failed loader-return expectation was resolved by a direct post-event capture; existing negative-result and live-verification guidance cover it. No shared-kit change or maintainer ask arose.

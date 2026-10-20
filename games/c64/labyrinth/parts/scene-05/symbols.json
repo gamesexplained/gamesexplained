@@ -103,6 +103,16 @@
   },
   {
    "start": 2099,
+   "end": 2125,
+   "type": "Undefined"
+  },
+  {
+   "start": 2126,
+   "end": 2128,
+   "type": "Code"
+  },
+  {
+   "start": 2129,
    "end": 2727,
    "type": "Undefined"
   },
@@ -113,6 +123,46 @@
   },
   {
    "start": 2732,
+   "end": 3168,
+   "type": "Undefined"
+  },
+  {
+   "start": 3169,
+   "end": 3184,
+   "type": "Code"
+  },
+  {
+   "start": 3185,
+   "end": 27705,
+   "type": "Undefined"
+  },
+  {
+   "start": 27706,
+   "end": 27706,
+   "type": "Byte"
+  },
+  {
+   "start": 27707,
+   "end": 27766,
+   "type": "Undefined"
+  },
+  {
+   "start": 27767,
+   "end": 27767,
+   "type": "Byte"
+  },
+  {
+   "start": 27768,
+   "end": 29449,
+   "type": "Undefined"
+  },
+  {
+   "start": 29450,
+   "end": 29471,
+   "type": "Byte"
+  },
+  {
+   "start": 29472,
    "end": 35603,
    "type": "Undefined"
   },
@@ -193,11 +243,11 @@
   },
   {
    "start": 37090,
-   "end": 37178,
+   "end": 37185,
    "type": "Code"
   },
   {
-   "start": 37179,
+   "start": 37186,
    "end": 37204,
    "type": "Undefined"
   },
@@ -272,8 +322,20 @@
    "kind": "auto"
   },
   {
+   "address": 886,
+   "name": "a_0376",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
    "address": 1388,
    "name": "a_056C",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 1408,
+   "name": "a_0580",
    "type": "AbsoluteAddress",
    "kind": "auto"
   },
@@ -308,6 +370,24 @@
    "kind": "user"
   },
   {
+   "address": 2126,
+   "name": "wall_one_hour_penalty_api",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2129,
+   "name": "wall_after_hour_api_unanalysed",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2344,
+   "name": "s_0928",
+   "type": "Subroutine",
+   "kind": "auto"
+  },
+  {
    "address": 2728,
    "name": "wall_read_inventory_slot",
    "type": "Jump",
@@ -320,10 +400,64 @@
    "kind": "user"
   },
   {
+   "address": 3169,
+   "name": "wall_one_hour_penalty",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 3184,
+   "name": "r_0C70",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 3185,
+   "name": "wall_after_hour_penalty_unanalysed",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 26409,
    "name": "f_6729",
    "type": "Field",
    "kind": "auto"
+  },
+  {
+   "address": 27706,
+   "name": "wall_hour_event_high",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 27707,
+   "name": "wall_after_hour_event_high_unanalysed",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 27767,
+   "name": "wall_hour_event_low",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 27768,
+   "name": "wall_after_hour_event_low_unanalysed",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 29450,
+   "name": "wall_one_hour_event",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 29472,
+   "name": "wall_after_one_hour_event_unanalysed",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 35604,
@@ -543,7 +677,13 @@
   },
   {
    "address": 37179,
-   "name": "wall_manicure_later_effect_unanalysed",
+   "name": "wall_eighth_manicure_branch",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 37186,
+   "name": "wall_after_eighth_branch_unanalysed",
    "type": "Branch",
    "kind": "user"
   },
@@ -705,9 +845,34 @@
    "text": "Resident JMP $0AA8. The manicure calls it with Y21 to read the stored availability/count byte at $673E. The saved inventory wheel maps slot21 to dictionary72, shears. The first-use tests seed that excluded mutable byte explicitly and execute the real reader."
   },
   {
+   "address": 2126,
+   "type": "line",
+   "text": "Resident JMP $0C61, entered by the eighth accepted MANICURE WALL at $913F. The live command displays One hour later... and then decrements remaining hours from12 to11. Ordinary hour expiry and later commands require their own paths."
+  },
+  {
    "address": 2728,
    "type": "line",
    "text": "Return $6729,Y in A. The manicure's Y21 selects $673E; negative means absent and nonnegative passes that command's sign test. This reader itself does not change the item count."
+  },
+  {
+   "address": 3169,
+   "type": "line",
+   "text": "Load event request57 ($39), call $0928, then decrement remaining hours at $0376. After the event returns, a nonnegative result preserves $0580; a negative result stores0 there. The arithmetic is modulo256, with the signed branch tested over every input byte. $0375 minutes is untouched by this bounded helper. Live eighth command:12 hours51 minutes becomes11 hours51 minutes at the decrement; the shears unit remains0."
+  },
+  {
+   "address": 27706,
+   "type": "line",
+   "text": "Positive event request57 uses index56 in the resident high-byte pointer table at $6C02; this cell is $73. Paired low byte at $6C77 gives record$730A."
+  },
+  {
+   "address": 27767,
+   "type": "line",
+   "text": "Positive event request57 uses index56 in the resident low-byte pointer table at $6C3F; this cell is $0A. Paired high byte at $6C3A gives record$730A."
+  },
+  {
+   "address": 29450,
+   "type": "line",
+   "text": "Headered event record selected by positive request57 through the split resident pointers at $6C3A/$6C77. Header09/02/FF/FF precedes ASCII text One hour later... and terminating zero. The live eighth manicure displays this completed event panel."
   },
   {
    "address": 35604,
@@ -793,6 +958,11 @@
    "address": 37131,
    "type": "line",
    "text": "Following the counter increment, A is the new manicure count. Exact counts 2,3,4,5,6 replace Y/X with $9BF0,$9C07,$9C29,$9C45,$9C62. Counts at least 7 select $9C74. Counts 0/1 retain the incoming pointer. This bounded prefix ends before the count8 special branch at $913B; later output paths are not described here. Live sequential commands with an explicitly supplied shears unit check counts1..7."
+  },
+  {
+   "address": 37179,
+   "type": "line",
+   "text": "Compare the already incremented counter in A with8. Equal jumps through $084E to the one-hour penalty instead of the ordinary text queue. Other values fall through to $9142, whose later-stage behavior is outside this annotation. The live local sequence reaches this branch on its eighth command after supplying shears once."
   },
   {
    "address": 37205,
