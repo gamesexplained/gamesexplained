@@ -206,3 +206,7 @@ The broader kit tests caught editor incompatibilities in this game's map-pin and
 ## Guard congratulations · 20 October 2026
 
 `60-verify`, “A test must contain cases that have to succeed”: kept both accepted presence paths and all five reply branches in the original-code comparison, with a premature-command control. The live trial changes the phase explicitly but lets ASK and INSULT produce their own flags. `60-verify`, “A live test in one room tests one room”: Ralph's accepted path is code-checked while live recordings are attributed to Alph. Existing guidance covers this continuation; no shared-kit edit or maintainer ask arose.
+
+## Guard departure reaction · 20 October 2026
+
+`60-verify`, “Force the rare state”: traced the difference between changing phase inside a room and entering with that phase. The latter sets different depth thresholds, so the page names the saved snapshots' retained values. “Carry a control” led to a generic unselected reaction beside both role replies. An early stop at a shared return did not prove countdown initialization; the probe then required the initializer's exact PC before releasing input. Existing rules cover this game-specific finding; no shared-kit edit or maintainer ask arose.

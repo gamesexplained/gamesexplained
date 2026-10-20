@@ -320,3 +320,7 @@ Followed the second setup bit with a raw U4 operand scan after the typed referen
 ## Guard congratulations · 20 October 2026
 
 Followed the later ASK flags into CONGRATULATE. Read the action dictionary and dispatch pairs to identify the command; traced both original speaker prerequisites and the negative-flag priority. Five controlled-room live Alph trials confirmed the earlier reply, premature refusal, both role replies and INSULT/congratulations result. Each has positive handler counts; ordinary commands produce the asked/insult flags after explicit phase/index/bit setup. Captures are anonymous, and original state/input/speed were restored. Bounded annotations retain the unanalysed departure reaction and ordinary phase4 arrival as gaps.
+
+## Guard departure reaction · 20 October 2026
+
+Replayed unselected/lying/truth controlled phase4 conversation snapshots using ordinary approach, OPEN and up. The first probe stopped at the reaction routine's shared return below countdown depth; releasing up there left depth42 and never reached phase advance. Its observations were preserved privately and the original emulator restored. Changed the probe to stop at the actual countdown initializer before releasing. All three then completed the countdown and stopped before phase advance. The selected-Alph reactions use speaker1 and distinguish both role texts. Kept retained40/44 thresholds explicit; the original setup prefix shows54/64 for entry phases at least2. Left phase2/3 dispatch unannotated and bounded both new text records at their terminators.
