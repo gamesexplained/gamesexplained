@@ -12,7 +12,7 @@ is loaded over part of it. Each of those is a **part**, with its own
 snapshot, symbol map, listing and facts. Forced into one image, all but
 one of them is lost.
 
-What makes a part is the machine's. On one that loads from disk or tape,
+What makes something a part is a fact about the machine. On one that loads from disk or tape,
 a part is a load as the player meets it: the program as it stands when
 the loading is over and something happens. Ten files behind one loading
 screen are one part, so count what the player waits for, not what the
