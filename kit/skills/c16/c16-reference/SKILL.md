@@ -632,8 +632,15 @@ calls from one ROM bank into another.
 
 BASIC's program starts at $1001, after a 0 at $1000. `RUN` starts the
 BASIC program there, so machine code loaded at $1001 starts from `RUN`
-only behind a BASIC line that calls it with `SYS`. BASIC 3.5's
-tokens (live, the table at $818E: 126 keywords, $80-$FD):
+only behind a BASIC line that calls it with `SYS`. Each line starts
+with the address of the next, low byte first, and a link of $0000 ends
+the program. BASIC re-chains the links itself (the routine at $8818,
+read from the ROM): from each line's sixth byte it looks for the zero
+that ends the line, and points the link one past it. So the first two
+bytes of a game loaded at $1001 can hold such a link, over the game's
+own data; `kit/scripts/check_listing.py` asks that the listing say so.
+
+BASIC 3.5's tokens (live, the table at $818E: 126 keywords, $80-$FD):
 
 - $80-$CB as the C64's BASIC V2, $CB being `GO`.
 - $CC `RGR`, $CD `RCLR`, $CE `RLUM`, $CF `JOY`, $D0 `RDOT`, $D1 `DEC`,

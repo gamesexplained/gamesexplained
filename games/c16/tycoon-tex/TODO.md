@@ -18,8 +18,8 @@ to say what the pass did.
   5.8 to 22.2 %), all corrected.
 - **The kit's lessons from the authors' source.** The source showed the
   listing four things it missed (`agent-history.md`, "the authors'
-  source"). Change the kit to catch them without the source in view, then
-  have a fresh agent read `$19BE`, `$36E3`, `$1920` and `$1001` again. If
+  source"). Change the kit to catch them without the source in view
+  (`check_listing.py` catches `$1001`), then have a fresh agent read `$19BE`, `$36E3`, `$1920` and `$1001` again. If
   it now finds what the source says, the kit has learned it, and hosting
   the source, or replacing the listing with it, is the maintainer's
   decision.

@@ -53,6 +53,8 @@ PLATFORM_DEFAULTS = {
         "hidden": [["$D000", "$DFFF", "the RAM under the I/O area",
                     "kit/skills/c64/c64-reference, \"RAM the CPU cannot see\""]],
         "system": [["$0000", "$03FF", "zero page, stack and the KERNAL's work area"]],
+        # where BASIC's program starts: check_listing.py asks that a BASIC line's link there be named
+        "basic_start": "$0801",
     },
     "spectrum": {
         # The 48K machine's ROM owns $0000-$3FFF: the machine's own routines, never
@@ -148,6 +150,7 @@ PLATFORM_DEFAULTS = {
                     "kit/skills/c16/c16-reference, \"Memory map\""]],
         "system": [["$0000", "$07FF", "zero page, the stack, and the KERNAL's and BASIC's work area and vectors"]],
         "io_only": [["$FD00", "$FF3F", "the ACIA, the 6529s, the ROM banking port, the disk drive's port and TED"]],
+        "basic_start": "$1001",    # check_listing.py, as the C64's
     },
 }
 

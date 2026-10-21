@@ -14,7 +14,9 @@ snapshot. The empty symbols.json that new_game.py writes needs no listing yet.
 
 The data the ledger does not count, which listing.py keeps in listing.json as
 "uncounted", fails a game at Silver or above, whose listing is meant to be whole, and
-is named as a warning below it (#420).
+is named as a warning below it (#420). So, the same way, are two bytes at BASIC's start
+that hold a BASIC line's link with nothing there saying so ("basic_start" in
+symbols_export.PLATFORM_DEFAULTS).
 
 Where a game commits a code map (codemap.json, from kit/<platform>/codemap.py),
 every byte of it that ran, outside the ledger's exclusions, is typed Code in symbols.json: code typed as data
@@ -75,6 +77,29 @@ def untyped_code(gdir, S):
     return sorted(ran), sorted(loose - ran)
 
 
+def unnamed_basic_link(records, start):
+    """The link, when the listing's bytes at BASIC's start are the link of a BASIC line and
+    nothing there names BASIC, else None. Each line of a BASIC program begins with the address
+    of the next, which BASIC re-chains itself: from the line's sixth byte it finds the zero that
+    ends the line and points the link one past it. Two bytes that hold that link are BASIC's,
+    even inside a game's graphics (Tycoon Tex's $1001); a comment saying they only look like
+    one names BASIC too."""
+    mem = {}
+    for r in records:
+        for i, b in enumerate(r.get("b") or []):
+            mem[r["a"] + i] = b
+    if start not in mem or not mem.get(start + 1):
+        return None             # bytes the listing does not hold, or no line at all
+    y = 5
+    while mem.get(start + y):
+        y += 1
+    if start + y not in mem or mem[start] | mem[start + 1] << 8 != start + y + 1:
+        return None
+    said = [r.get(k) or "" for r in records for k in ("l", "c")
+            if r["a"] in (start, start + 1) or r["a"] < start < r["a"] + len(r.get("b") or [])]
+    return None if any("basic" in t.lower() for t in said) else start + y + 1
+
+
 def check(gdir):
     """(errors, notes) for one listing: errors fail the check, notes are printed as warnings."""
     lp, sp = os.path.join(gdir, "listing.json"), os.path.join(gdir, "symbols.json")
@@ -123,6 +148,17 @@ def check(gdir):
                 f"{sum(b - a + 1 for a, b, _ in left)} bytes (the first ${s:04X}-${e:04X}: {why}). Say what each is "
                 "and build the listing again (kit/skills/core/50-coverage, \"Data the ledger cannot see\")")
         if load_game(gdir).get("tier") in SILVER_UP:      # a Silver listing is meant to be whole (#420)
+            errs.append(said)
+        else:
+            notes.append(f"{gdir}: {said}")
+    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
+    start = PLATFORM_DEFAULTS.get(platform_of(load_game(gdir)), {}).get("basic_start")
+    link = start and unnamed_basic_link(L["records"], hexint(start))
+    if link:
+        said = (f"the two bytes at {start}, where BASIC's program starts, hold ${link:04X}, a BASIC line's link "
+                "(the address after the zero that ends the line). Say in the label or comment there that "
+                "they are BASIC's")
+        if load_game(gdir).get("tier") in SILVER_UP:
             errs.append(said)
         else:
             notes.append(f"{gdir}: {said}")

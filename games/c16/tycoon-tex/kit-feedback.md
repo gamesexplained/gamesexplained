@@ -15,6 +15,7 @@ time, operating system and tool versions.
 
 - `kit/lessons/2026-10-21-tycoon-tex.md`: sweep a timing from before it can work to after it cannot; count a loop's passes by running it at its limits.
 - `kit/scripts/build.py`, `site/source.html`: a game whose authors' source survives says what it shows of how the game was made in `original-source.md`, which the build renders as a section of the Source tab above the listing, `source.html#original-source`. The contributor asked for a section there, and the tab had no place for one. `kit/scripts/test_build_original_source.py` tests it, and `kit/scripts/check_docs.py` lets a game folder hold the file. `70-minisite` does not name it yet: the skill-edit bar wants a second game whose source survives.
+- `kit/scripts/check_listing.py`, `kit/scripts/symbols_export.py`, `kit/skills/c16/c16-reference`: two bytes at BASIC's start that hold the link a BASIC line there has are named BASIC's in the listing, an error at Silver. The source showed `$1001`-`$1002` were BASIC's link, not the skyline's pixels, and nothing in the graphics could tell. The check found one more, Alter Ego's BASIC line at `$0801`, now named. `kit/scripts/test_check_listing_basic.py` tests it, and `kit/lessons/2026-10-21-tycoon-tex-basic.md` records it.
 
 ## Candidates
 

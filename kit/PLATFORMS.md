@@ -44,7 +44,10 @@ These already read `platform` from `game.json` and need one entry each:
   answer, with no RAM beneath (the BBC Micro's $FC00-$FEFF), so an operand
   there always gets the register's name. A machine whose screen always
   ends at the top of RAM gives `screen_top`, that address, in place of
-  `screen_size`.
+  `screen_size`. `basic_start` is where BASIC's program starts, on a
+  machine whose BASIC links each line to the next as Commodore's does:
+  `check_listing.py` asks that a game's bytes there that hold such a
+  link be named BASIC's.
 - `kit/scripts/check_binaries.py`, the extensions and magic bytes of the
   platform's images and snapshots, so that none can ever be committed.
   Several platforms are listed already; check yours is.
