@@ -268,6 +268,20 @@ class SkillGameNames(unittest.TestCase):
         self.write(SPECTRUM, "# Spectrum\nArkanoid.\n")
         self.assertEqual(self.found(base="no-such-ref"), 0)
 
+    def paths(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return check_docs.skill_game_paths(self.root)
+
+    def test_a_path_to_the_game_passes(self):
+        self.write(SPECTRUM, "# Spectrum\n" + NOTE + "As `games/c64/arkanoid/game.json` shows.\n")
+        self.assertEqual(self.found(), 0)
+        self.assertEqual(self.paths(), 0)
+
+    def test_a_path_that_is_not_there_fails(self):
+        self.write(SPECTRUM, "# Spectrum\n" + NOTE + "See `games/c64/arkanoid/parts/`.\n")
+        self.assertEqual(self.found(), 0)
+        self.assertEqual(self.paths(), 1)
+
 
 
 class BeforeRetro(unittest.TestCase):

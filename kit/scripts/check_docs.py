@@ -5,7 +5,9 @@
   kit/skills/core/       workflow only: no game names
   kit/skills/<platform>/ platform facts only: no game names
                      (in the lines a branch adds: a game that gets a folder later does not
-                     fail a sentence written before it, such as a source's own example)
+                     fail a sentence written before it, such as a source's own example);
+                     a skill may give a game folder's path as a worked example, and the
+                     path must be there
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes; what the
                      game itself prints may be quoted as it appears (`...`, "...", or in capitals),
                      and facts.md's section on the listing's error rate says what was corrected
@@ -205,6 +207,10 @@ def added_lines(prefix, base=None, root=ROOT):
     return out
 
 
+# A game's folder or a file in it, as a skill gives one for a worked example.
+GAME_PATH = re.compile(r"games/[a-z0-9]+/[a-z0-9][a-z0-9-]*(?:/[\w./-]*[\w/])?")
+
+
 def skill_game_names(titles, base=None, root=ROOT):
     """A reusable skill names no game with a folder in games/, in the lines this branch adds.
     Every line was checked once, so a new game's folder failed whatever sentence already named
@@ -215,7 +221,25 @@ def skill_game_names(titles, base=None, root=ROOT):
     for sk in sorted(glob.glob(os.path.join(root, "kit", "skills", "*", "*", "*.md"))):
         lines = (added or {}).get(os.path.normpath(sk))
         if lines:
-            bad += scan(sk, titles, "a specific game named in a reusable skill", only=lines)
+            bad += scan(sk, titles, "a specific game named in a reusable skill", only=lines,
+                        blank=GAME_PATH)
+    return bad
+
+
+def skill_game_paths(root=ROOT):
+    """A game path a skill gives as a worked example is there. The path carries no knowledge
+    of the game, only where to look, so it may stand where the game's name may not; checking
+    every line, not only a branch's, fails it on the branch that moves or removes the folder."""
+    bad = 0
+    for sk in sorted(glob.glob(os.path.join(root, "kit", "skills", "*", "*", "*.md"))):
+        with open(sk, encoding="utf-8", errors="replace") as fh:
+            for n, line in enumerate(fh, 1):
+                for m in GAME_PATH.finditer(line):
+                    if not os.path.exists(os.path.join(root, m.group(0))):
+                        print(f"  x  {os.path.relpath(sk, root)}:{n}  a game path that is not there:"
+                              f" {m.group(0)!r}")
+                        print("        point the example at a folder or file that exists, or drop it")
+                        bad += 1
     return bad
 
 
@@ -370,6 +394,7 @@ def main():
             print(f"  x  {os.path.relpath(gj, ROOT)}  links with no title: {', '.join(bad)}")
             print('        write each as {"title": "<the page\'s own title>", "url": "..."} (kit/skills/core/20-features)')
             fails += 1
+    fails += skill_game_paths()
     if titles:
         fails += skill_game_names(titles)
         for f in sorted(glob.glob(os.path.join(ROOT, "kit", "lessons", "*.md"))):

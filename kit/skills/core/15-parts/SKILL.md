@@ -44,6 +44,11 @@ A part's symbol map uses the same addresses as its listing. A game of
 one image has no `part.json`: its `game.json` holds the ledger settings
 (`video`, `coverage`, `io`, `regions`) that a `part.json` would.
 
+To see each kind in a finished game: loads over a resident part, one of
+them over another load, in `games/c64/lemmings/parts/`; a bank in
+`games/spectrum/where-time-stood-still/parts/bank-01/`; a virtual
+address space in `games/apple2/zork-i/game.json`, under `coverage`.
+
 ## Steps
 
 1. **Give every part a folder**, in the order they are played, analysed

@@ -295,7 +295,9 @@ copy drifts."
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
-`check_docs.py` enforces that.
+A skill may give a game folder's path as a worked example, never the
+game's name. `check_docs.py` enforces both, and fails a path that is not
+there.
 
 ## Definition of done
 
