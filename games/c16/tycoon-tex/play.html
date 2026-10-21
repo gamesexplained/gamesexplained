@@ -1,0 +1,2621 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
+.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.pl-pad button.on{background:var(--ink);color:#fff}
+@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
+.pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.pl-levels button:hover{border-color:var(--ink-mute)}
+.pl-levels button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Play the whole game in your browser, from its menu to the high-score table, start on one of its 99 levels, and see how this port was checked against the Commodore 16 original.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 16 screen of Tycoon Tex"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-cheat="lives" aria-pressed="false" title="Plus/4 World's poke: the two DECs that take a life become loads">Unlimited lives</button>
+      <button type="button" data-cheat="tough" aria-pressed="false" title="Plus/4 World's poke: the enemies and the breaks no longer kill Tex">Tex can't be hurt</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
+      <span>Start on level</span>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>→</kbd> runs, <kbd>←</kbd> slows down, <kbd>↑</kbd> jumps</li>
+      <li><kbd>Space</kbd> shoots, and chooses on the menu</li>
+      <li><kbd>↑</kbd> <kbd>↓</kbd> move through the menu</li>
+      <li><kbd>J</kbd> or <kbd>K</kbd> on the menu chooses the joystick or the keyboard</li>
+      <li><kbd>P</kbd> pauses (the C16's SPACE), <kbd>C</kbd> carries on (C=)</li>
+      <li><kbd>Esc</kbd> ends the game</li>
+      <li><kbd>Z</kbd> <kbd>X</kbd> <kbd>;</kbd> <kbd>/</kbd> <kbd>Enter</kbd> are the game's own keys, with the keyboard chosen</li>
+    </ul>
+    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
+      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
+      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
+      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
+    </div>
+    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the five bands the raster interrupt makes, each with its own colours and scroll. The arrows and Space are a joystick in port 2, or the game's own keys when the menu is set to the keyboard. The game starts with its sound off; <b>Start again</b> and <b>Start on level</b> set SOUND to ON on the menu while the page's sound is on, and keep the lives, the difficulty and the controls you chose. <b>Start on level</b> plays the game's own way there: PLAY THE GAME, then each level before it finished at once, as Plus/4 World's poke of <code>$9D</code> does, so the score holds those levels' bonuses. The two cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
+  </div>
+</section>
+<section id="port">
+  <p class="fig">01 · The port</p>
+  <h2 class="t">Every routine of the game, checked against the original</h2>
+  <p class="lede">The game is a 6502 program of 6,645 bytes of code. The port is the same program written again in JavaScript, one function for each of the 105 routines the listing names, reading and writing the game's variables at the game's own addresses, its self-modified instructions included. The page runs only the port: the game's code is in the tests, as the original the port is held to.</p>
+<table>
+  <tr><th>Check</th><th>What it showed</th></tr>
+  <tr><td>Each routine alone</td><td>Seven test files call 97 of the port's functions and the game's own routines on the kit's 6502 simulator from the same state, 170,329 cases in all, and compare every byte of memory each one leaves, its writes to TED in order, and the registers it hands back. The states are 132 moments of play saved from ten games, on the menu, in the high-score table and on levels 1 to 10, with the registers, variables and controls changed at random. The other eight, the main loop, the menu, and the routines that start and end a game and a level, run in the lockstep.</td></tr>
+  <tr><td>The whole game in lockstep</td><td>The port runs beside the game's own code on the kit's Commodore 16, from the game's first instruction, and the two memories are compared at the start of every pass of the main loop. Four sessions of 40,000 frames each, about 13 minutes of play apiece, made 29,796 passes with every byte the same at each one, and every one of the game's routines ran in each. A scripted player drives both: on the menu it changes the difficulty, the lives and the sound, switches between the joystick and the keyboard, watches the demo, and types a name for the high scores; in play it moves the stick, or the keys, at random, shoots, pauses and carries on. In some games levels are finished, up to level 10, or the pressure is left to run out, or the score is set high enough for the table, or one of Plus/4 World's pokes keeps Tex alive or his lives unlimited; one game is left with ESC.</td></tr>
+  <tr><td>The interrupt's bytes</td><td>The game's main program reads 17 bytes that the interrupt writes, among them the controls, the random numbers and the flags for a death, a pause and a finished level. Where the C16 could take the interrupt between two of those reads, the lockstep gave the port the values the game read, so the check holds the port's logic and not the moment an interrupt happened to come.</td></tr>
+  <tr><td>The pace</td><td>The port executes no instructions, so the page charges each stretch of the main program and of the interrupt, and each call it makes, the cycles they cost the game, fitted on the kit's C16's timings of two sessions of 16,000 frames, some 354,000 stretches. On a third session, which the fit never saw, the page's cycles for its stretches are 0.9 % from the game's. The page's own test plays it beside the C16 from the same first instruction: the menu comes up in the same frame, level 1's first pass comes 195 frames after fire on both, and in play both run 134 passes in 522 frames.</td></tr>
+</table>
+</section>
+<section id="differences">
+  <p class="fig">02 · Differences</p>
+  <h2 class="t">What differs from a Commodore 16</h2>
+  <ul class="pl-list">
+    <li><b>The loading.</b> There is none: the page starts where the Novaload loader hands over, at the game's first instruction at <code>$1800</code>, which fills the skyline and the pipeline and goes to the menu.</li>
+    <li><b>The KERNAL.</b> The game takes TED's raster interrupt through the C16's ROM, which saves the registers and jumps through the vector at <code>$0314</code>; the game's handler puts the registers back and returns by itself. The page does not carry the ROM. It calls the game's handler itself and charges the ROM's cycles on the way in. The game's one other call into the ROM, at its start, clears the screen; the page fills the screen with spaces, as that call does.</li>
+    <li><b>The screen.</b> TED reads the screen as its beam meets it. The page keeps the memory as each row of characters began and TED's registers line by line, a write taking effect on the line after the one it was made on, and draws the frame from those. The game's raster interrupt changes the colours, the fine scroll and the character set five times a frame, for the HUD, the skyline, the play field, the pipe and the message row. The port makes each of those changes as its interrupt is taken, and the page puts each on the line where the game's own lands, from the cycles the game takes to reach it.</li>
+    <li><b>The interrupt.</b> On the C16 the raster interrupt can come between any two instructions. On the page it comes between the port's steps: at each call <code>main_loop</code> makes, at each turn of a loop that waits, and where the game lets it in itself, during Tex's death and as a level begins. The game's main program reads 17 bytes that the interrupt writes, among them the controls, the random numbers and the flags for a death, a pause and a finished level, and where the two could read different values the check gave the port what the game read (section 01).</li>
+    <li><b>Random numbers.</b> The game stirs its random numbers with TED's timers, read as the code reaches them. The page reads them on its own clock, so the enemies come and the breaks fall where a C16 would put them on some other run, never where one particular run did.</li>
+    <li><b>The sound.</b> The game's writes to TED's sound registers go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it. The game loads with SOUND OFF on its menu. While the page's sound is on, <b>Start again</b> and <b>Start on level</b> turn it on the way a player would, on the menu.</li>
+    <li><b>The joystick.</b> The game reads the joystick in port 2, or in port 1 when port 2 shows nothing. The page's stick, the arrows and Space or the pad on a touch screen, is in port 2.</li>
+    <li><b>Start on level.</b> The game has no way to choose a level. The page's buttons play the way there: on the menu they choose PLAY THE GAME, then each level before the one wanted is finished at once, as Plus/4 World's poke of <code>$9D</code> does. Each level gets its scene, its enemies and its pipe from the game's own <code>next_level</code>, and the score holds the bonus for each level finished, the pressure left on a full pipe. The page then waits, paused, for an arrow, Space or a click, since on the later levels the enemies come within a second. The high-score table lasts until <b>Start again</b> or another level, which start the game from its first instruction.</li>
+    <li><b>The cheats.</b> <b>Unlimited lives</b> and <b>Tex can't be hurt</b> are Plus/4 World's pokes: the page writes the same bytes into the game's code (cheats.md), and the port reads its instructions there, so the game does what it does on a C16 with the same pokes.</li>
+    <li><b>The keys.</b> The arrows and Space are the joystick, or, with the keyboard chosen on the menu, the game's own keys: Z, X, ; and / with RETURN to fire. The C16's SPACE pauses the game and C= carries on; on the page they are P and C, since Space fires. Enter is RETURN and Esc is ESC.</li>
+  </ul>
+</section>
+</main>
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/ted-sound.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script>
+/* port/src/core.js */
+// Tycoon Tex's port: P, the game's routines on the game's memory. Each group of routines is a
+// file of its own that adds its functions to P (TexGroups); this makes P and installs them.
+//
+// The conventions every routine keeps:
+// - P.M is the game's memory, the C16's 16 KB at $0000-$3FFF of a Uint8Array(65536), read and
+//   written at the game's addresses, its self-modified code included: the instruction at $1878
+//   that read_controls rewrites, the table address in draw_tex's and erase_tex's LDY that
+//   tex_death rewrites, and the operands Plus/4 World's pokes change (cheats.md), which the port
+//   reads where the game's code has them.
+// - P.io is TED and the keyboard: read(a) and write(a, v) for $FD30 and $FF00-$FF3F, irqByte(a),
+//   sei() and cli() (kit/c16/lockstep.js lists them).
+// - A routine is P.<its listing label>(r): r holds the registers it is entered with ({ a, x, y, c },
+//   those it reads), and it returns the registers its callers read. The carry is kept wherever the
+//   game's code carries it into an ADC or a ROL from an instruction before, across calls too:
+//   random adds the carry it is called with, which differs by caller.
+// - A routine that waits, or calls one that does, is a generator, called with yield*: it yields
+//   P.POLL at each turn of a loop that polls a byte an interrupt changes, { cycles: n } for a delay
+//   loop's time, and { cp: a } at the checkpoints test/lockstep.js lists, as kit/c16/lockstep.js
+//   describes. P.GEN lists them.
+// - A byte an interrupt writes and the main program reads is read through B(a), P.irqByte: on the
+//   page that is M[a]; in the lockstep it is what the game's code read there. Every read the
+//   game's code makes of one of them goes through it, in the game's order, so that each gets the
+//   value the game's read got (the bytes are P.IRQ_BYTES).
+// - N counts the work inside routines whose length varies, for the page's pacing (runtime.js):
+//   piece, the characters next_pipe_piece lays out; spin, the turns draw_hiscores waits on timer 1;
+//   cell and wipe, an enemy's cells drawn and wiped; ring, the explosion's cells; legs, logo and
+//   chars, the frames animate_legs, cycle_logo_colours and animate_menu_chars do their work.
+// - Each group keeps its helpers to itself (at, the address (pointer),y reaches), so that P holds
+//   only the game's routines, which the lockstep and the page count as calls.
+(function (root) {
+'use strict';
+const G = root.TexGroups = root.TexGroups || {};
+const POLL = Object.freeze({ poll: true });
+
+// The game's zero page, by the listing's names.
+const Z = Object.freeze({
+  message_ptr: 0x02, skyline_cols_left: 0x04, skyline_char: 0x05, skyline_scroll: 0x06, ctl_left: 0x07,
+  ctl_right: 0x08, ctl_up: 0x09, ctl_down: 0x0A, ctl_fire: 0x0B, ctl_any: 0x0C, rnd0: 0x0D, rnd1: 0x0E,
+  rnd2: 0x0F, rnd3: 0x10, text_cell: 0x11, tex_cell: 0x15, tex_colour_cell: 0x17, tex_colour: 0x19,
+  pipe_scroll: 0x1B, message_scroll: 0x1C, skyline_cell: 0x1D, char_counter: 0x1F, leg_delay: 0x20,
+  leg_frame: 0x21, bullet_flying: 0x22, jumping: 0x23, jump_steps: 0x24, tex_moved: 0x25, bullet_cell: 0x26,
+  pressure_fine: 0x28, pressure_cells: 0x29, completed_fine: 0x2A, completed_cells: 0x2B, work_ptr: 0x2C,
+  piece_index: 0x2E, piece_char: 0x2F, piece_length: 0x30, row_ptr: 0x33, colour_ptr: 0x35, refilling: 0x37,
+  menu_on: 0x38, name_colour_cell: 0x39, arrow_cell: 0x3B, jet_cell: 0x3D, arrow_colour_cell: 0x3F,
+  jet_colour_cell: 0x41, bouncy_cell: 0x43, bouncy_colour_cell: 0x45, bouncy_old_cell: 0x47,
+  jet_bomb_cell: 0x49, explosive_cell: 0x4B, explosive_old_cell: 0x4D, explosive_colour_cell: 0x4F,
+  explosion_cell: 0x51, explosion_colour_cell: 0x53, glyph_cell: 0x55, glyph_ptr: 0x57,
+  glyph_colour_cell: 0x59, break_cell: 0x5B, the_cell: 0x5D, end_cell: 0x5F, last_skyline: 0x61, level: 0x62,
+  break_parts: 0x64, star_step: 0x66, star_timer: 0x67, loop_pace: 0x68, drain_rate: 0x69,
+  message_colour: 0x6A, irq_band: 0x6B, skyline_speed: 0x6C, pipe_speed: 0x6D, move_timer: 0x6E,
+  pressure_gone: 0x6F, speed: 0x70, left_blocked: 0x72, right_blocked: 0x73, half_rate: 0x74, skyline_bg: 0x75,
+  pipe_bg: 0x76, jump_timer: 0x77, bullet_timer: 0x78, leg_timer: 0x79, dying: 0x7A, tex_hit: 0x7B,
+  sink_timer: 0x7C, sink_steps: 0x7D, game_ended: 0x7E, controls_off: 0x7F, lives: 0x80, hiscore_offset: 0x81,
+  hiscore_rank: 0x82, name_cursor: 0x83, entry_offset: 0x84, rank_digit: 0x85, name_offset: 0x86,
+  row_colour: 0x87, digit_seen: 0x88, count: 0x89, item_work: 0x8A, legs_still: 0x8B, demo_ran: 0x8C,
+  menu_done: 0x8D, menu_anim_timer: 0x8E, logo_timer: 0x90, unused_91: 0x91, roll3_count: 0x92,
+  piece_pick: 0x93, field_colour1: 0x94, field_colour2: 0x95, field_bg: 0x96, skyline_colour1: 0x97,
+  skyline_colour2: 0x98, skyline_cell_colour: 0x99, pipe_colour1: 0x9A, pipe_colour2: 0x9B,
+  pipe_cell_colour: 0x9C, level_done: 0x9D, arrow_active: 0x9E, arrow_gone: 0x9F, arrow_timer: 0xA0,
+  arrow_moved: 0xA1, jet_active: 0xA2, jet_gone: 0xA3, jet_timer: 0xA4, jet_moved: 0xA5, enemy_mask: 0xA6,
+  arrow_colour: 0xA7, jet_colour: 0xA8, bouncy_active: 0xA9, bouncy_colour: 0xAA, bouncy_height: 0xAB,
+  bouncy_moved: 0xAC, bouncy_gone: 0xAD, bouncy_steps: 0xAE, bouncy_down: 0xAF, bouncy_timer: 0xB0,
+  break_timer: 0xB1, jet_drop_column: 0xB2, jet_bomb_moved: 0xB3, jet_bomb_rows: 0xB4, jet_bomb_falling: 0xB5,
+  jet_bomb_colour: 0xB6, jet_bomb_timer: 0xB7, explosive_active: 0xB8, explosive_timer: 0xB9,
+  explosive_row: 0xBA, explosive_flight: 0xBB, explosive_moved: 0xBC, explosive_gone: 0xBD,
+  explosive_colour: 0xBE, explosive_level: 0xBF, tex_falling: 0xC1, exploding: 0xC2, explosion_step: 0xC3,
+  explosion_shown: 0xC4, explosion_timer: 0xC5, ring_count: 0xC6, hit_char: 0xC7, shot_down: 0xC8,
+  score_add: 0xC9, score_timer: 0xCA, scored: 0xCB, ring_colour: 0xCC, glyph_rows: 0xCD, countdown_step: 0xCE,
+  glyph_bits: 0xCF, zpa_D0: 0xD0, drain_timer: 0xD1, pressure_loss: 0xD2, the_down: 0xD4, end_down: 0xD5,
+  the_rows: 0xD6, end_rows: 0xD7, glyph_colour: 0xD8, paused: 0xD9, shot_playing: 0xDA, hit_playing: 0xDB,
+  shot_freq_hi: 0xDC, shot_frames: 0xDD, saved_mask: 0xDF, keep_hud: 0xE0, bouncy_delay_base: 0xE1,
+  explosive_delay_base: 0xE2, arrow_delay_base: 0xE3, jet_delay_base: 0xE4, spawn_threshold: 0xE5,
+  quit_pressed: 0xE6, last_ten_thousands: 0xE7, menu_turns: 0xE8,
+});
+// The settings and tables above zero page that the routines read or write, by the listing's names.
+const T = Object.freeze({
+  scene: 0x1826, lives_setting: 0x1827, sound_on: 0x1828, menu_item: 0x1829, joystick_mode: 0x182A,
+  difficulty: 0x182B, demo_mode: 0x182C, controls_fire_shift: 0x1878, raster_lines: 0x1880,
+  tex_layout_operand: 0x1EAE, erase_layout_operand: 0x1ECF, tex_hit_value: 0x1EB7, hole_hit_value: 0x1EEC,
+  completed_cells_full: 0x2255, digit_dec: 0x249D, lives_dec: 0x24A0, level_store: 0x2A0B,
+});
+
+// The routines that are generators: those whose code can reach a wait, or a checkpoint.
+const GEN = new Set(['program', 'start', 'menu', 'check_hiscore', 'enter_hiscore', 'delay', 'start_game', 'next_level',
+  'countdown', 'main_loop', 'level_complete', 'pressure_out', 'game_over', 'quit_game', 'the_end',
+  'irq', 'irq_field', 'tex_death']);
+// Bytes an interrupt writes that the main program reads while interrupts are let in: the controls
+// read_controls fills (menu_input and enter_hiscore read them), the random bytes irq_field's call
+// of random stirs (move_bombs draws on them), speed and enemy_mask, and the flags main_loop and
+// level_complete test (pressure_gone, tex_hit, game_ended, level_done, paused, quit_pressed).
+const IRQ_BYTES = [0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0D, 0x0E, 0x0F, 0x10, 0x6F, 0x70, 0x7B, 0x7E, 0x9D, 0xA6, 0xD9, 0xE6];
+
+// The 6502's ADC in decimal mode, as the NMOS part gives A and the carry.
+function adcD(a, b, c) {
+  let al = (a & 0x0F) + (b & 0x0F) + c;
+  if (al >= 0x0A) al = ((al + 0x06) & 0x0F) + 0x10;
+  let t = (a & 0xF0) + (b & 0xF0) + al;
+  if (t >= 0xA0) t += 0x60;
+  return { a: t & 0xFF, c: t >= 0x100 ? 1 : 0 };
+}
+
+function makePort(M, io, opts = {}) {
+  const P = { M, Z, T, POLL, GEN, IRQ_BYTES, adcD };
+  // P.io is one object for good, so that a routine may keep it: giving P a new set of chips (the
+  // lockstep does) replaces its members
+  const IO = Object.assign({}, io);
+  Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
+    set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
+  P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
+  P.N = { piece: 0, spin: 0, cell: 0, wipe: 0, ring: 0, legs: 0, logo: 0, chars: 0 };
+  for (const name of Object.keys(G)) G[name](P);
+  return P;
+}
+root.TexPort = { makePort, POLL, GEN, IRQ_BYTES, Z, T, adcD };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-enemies.js */
+// The four enemies and the breaks they make: the arrow and the jet with its bomb (move_arrow_and_jet,
+// drop_jet_bomb, move_jet_bomb, end_jet_bomb, draw_arrow, draw_jet, draw_jet_bomb), the bouncy bomb
+// and the explosive (move_bombs, move_bouncy_bomb, draw_bouncy_bomb, move_explosive,
+// explosive_lands, draw_explosive), a break in the pipe (break_pipe), the explosion a shot makes
+// (start_explosion, tick_explosion, draw_explosion), and clear_enemies.
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).enemies = function (P) {
+const M = P.M, io = P.io, Z = P.Z, B = P.irqByte;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+const step = (z, d) => {
+  const s = M[z] + d;
+  M[z] = s & 0xFF;
+  M[z + 1] = (M[z + 1] + (s > 0xFF ? 1 : s < 0 ? -1 : 0)) & 0xFF;
+};
+// the shape's characters at a cell by its table of offsets, in a colour at the cell $400 lower
+function shape(cell, colourCell, cells, n, char, colour) {
+  P.N.cell += n + 1;
+  M[colourCell] = M[cell]; M[colourCell + 1] = (M[cell + 1] - 0x04) & 0xFF;
+  for (let x = n; x >= 0; x--) {
+    const y = M[cells + x];
+    M[at(cell, y)] = char(x);
+    M[at(colourCell, y)] = M[colour];
+  }
+}
+
+// The arrow and the jet, once a frame from irq_field (move_arrow_and_jet, $2D64). Each, when its
+// bit of enemy_mask is set, waits for its timer while its random byte is at or above
+// spawn_threshold, then crosses the sky a column at a time: the arrow right to left a column a
+// frame, the jet left to right every other frame, dropping its bomb at a column timer 1 chose. The
+// jet's bomb falls a row every other frame.
+P.move_arrow_and_jet = function () {
+  if (M[Z.menu_on] !== 0 || M[Z.paused] !== 0) return;
+  if (M[Z.enemy_mask] & 0x01) {
+    if (M[Z.arrow_active] === 0) {
+      if (M[Z.rnd0] >= M[Z.spawn_threshold]) {
+        M[Z.arrow_timer] = (M[Z.arrow_timer] - 1) & 0xFF;
+        if (M[Z.arrow_timer] === 0) {
+          M[Z.arrow_cell] = 0x1C; M[Z.arrow_cell + 1] = 0x0F;
+          M[Z.arrow_moved] = 0x01; M[Z.arrow_active] = 0x01; M[Z.arrow_timer] = 0x01;
+          M[Z.arrow_gone] = 0;
+        }
+      }
+    } else {
+      M[Z.arrow_timer] = (M[Z.arrow_timer] - 1) & 0xFF;
+      if (M[Z.arrow_timer] === 0) {
+        M[Z.arrow_timer] = 0x01; M[Z.arrow_moved] = 0;
+        step(Z.arrow_cell, -1);
+        if (M[Z.arrow_cell] === 0xF8) {
+          M[Z.arrow_timer] = ((M[Z.rnd2] & 0x3F) + M[Z.arrow_delay_base]) & 0xFF;
+          M[Z.arrow_active] = 0; M[Z.arrow_gone] = 0x01;
+        } else M[Z.arrow_moved] = 0x01;
+      }
+    }
+  }
+  if (M[Z.jet_bomb_falling] !== 0) {
+    M[Z.jet_bomb_timer] = (M[Z.jet_bomb_timer] - 1) & 0xFF;
+    if (M[Z.jet_bomb_timer] === 0) { M[Z.jet_bomb_timer] = 0x02; P.move_jet_bomb(); }
+  }
+  if (!(M[Z.enemy_mask] & 0x04)) return;
+  if (M[Z.jet_active] === 0) {
+    if (M[Z.rnd2] < M[Z.spawn_threshold]) return;
+    M[Z.jet_timer] = (M[Z.jet_timer] - 1) & 0xFF;
+    if (M[Z.jet_timer] !== 0) return;
+    M[Z.jet_cell] = 0x40; M[Z.jet_cell + 1] = 0x0D;
+    M[Z.jet_drop_column] = ((io.read(0xFF00) & 0x1F) + 0x42) & 0xFF;
+    M[Z.jet_moved] = 0x01; M[Z.jet_active] = 0x01; M[Z.jet_timer] = 0x01;
+    M[Z.jet_gone] = 0;
+    return;
+  }
+  M[Z.jet_timer] = (M[Z.jet_timer] - 1) & 0xFF;
+  if (M[Z.jet_timer] !== 0) return;
+  M[Z.jet_timer] = 0x02; M[Z.jet_moved] = 0;
+  step(Z.jet_cell, 1);
+  if (M[Z.jet_cell] === 0x64) {
+    M[Z.jet_timer] = ((M[Z.rnd3] & 0x3F) + M[Z.jet_delay_base]) & 0xFF;
+    M[Z.jet_active] = 0; M[Z.jet_gone] = 0x01;
+    return;
+  }
+  if (M[Z.jet_cell] === M[Z.jet_drop_column]) P.drop_jet_bomb();
+  M[Z.jet_moved] = 0x01;
+};
+// The jet's bomb, under its tail (drop_jet_bomb, $2E4D).
+P.drop_jet_bomb = function () {
+  const s = M[Z.jet_cell] + 0x2B;
+  M[Z.jet_bomb_cell] = s & 0xFF;
+  M[Z.jet_bomb_cell + 1] = (M[Z.jet_cell + 1] + (s >> 8)) & 0xFF;
+  M[Z.jet_bomb_rows] = 0;
+  M[Z.jet_bomb_moved] = 0x01; M[Z.jet_bomb_falling] = 0x01; M[Z.jet_bomb_timer] = 0x01;
+};
+// The bomb a row down, until its 12th, where it lands (move_jet_bomb, $2E66).
+P.move_jet_bomb = function () {
+  if (M[Z.jet_bomb_falling] === 0) return;
+  M[Z.jet_bomb_moved] = 0;
+  M[Z.jet_bomb_rows] = (M[Z.jet_bomb_rows] + 1) & 0xFF;
+  if (M[Z.jet_bomb_rows] === 0x0C) return P.end_jet_bomb();
+  step(Z.jet_bomb_cell, 0x28);
+  M[Z.jet_bomb_moved] = 0x01;
+};
+// The bomb gone, and the pipe broken under it when it was not shot down and the level's breaks are
+// on (enemy_mask bit 4, from level 7) (end_jet_bomb, $2E89).
+P.end_jet_bomb = function () {
+  M[Z.jet_bomb_moved] = 0; M[Z.jet_bomb_falling] = 0;
+  M[at(Z.jet_bomb_cell, 0x28)] = 0x20; M[at(Z.jet_bomb_cell, 0x29)] = 0x20;
+  if (M[Z.shot_down] !== 0) return;
+  if (!(M[Z.enemy_mask] & 0x10)) return;
+  P.break_pipe({ x: (M[Z.jet_bomb_cell] - 1) & 0xFF, y: M[Z.jet_bomb_cell + 1] });
+};
+// The arrow drawn where it moved, or wiped when it has gone (draw_arrow, $2EAB).
+P.draw_arrow = function () {
+  if (M[Z.arrow_moved] !== 0) shape(Z.arrow_cell, Z.arrow_colour_cell, 0x2EE8, 7, x => M[0x2EE0 + x], Z.arrow_colour);
+  if (M[Z.arrow_gone] === 0) return;
+  P.N.wipe += 8;
+  for (let x = 7; x >= 0; x--) M[at(Z.arrow_cell, M[0x2EE8 + x])] = 0x20;
+  M[Z.arrow_gone] = 0;
+};
+// The jet's bomb, then the jet, drawn where they moved, or the jet wiped (draw_jet, $2EF0).
+P.draw_jet = function () {
+  if (M[Z.jet_bomb_moved] !== 0) P.draw_jet_bomb();
+  if (M[Z.jet_moved] !== 0) shape(Z.jet_cell, Z.jet_colour_cell, 0x2F38, 0x0B, x => M[0x2F2C + x], Z.jet_colour);
+  if (M[Z.jet_gone] === 0) return;
+  P.N.wipe += 12;
+  for (let x = 0x0B; x >= 0; x--) M[at(Z.jet_cell, M[0x2F38 + x])] = 0x20;
+  M[Z.jet_gone] = 0;
+};
+// The bomb's two characters a row lower, the row above wiped (draw_jet_bomb, $2F44).
+P.draw_jet_bomb = function () {
+  M[at(Z.jet_bomb_cell, 0)] = 0x20; M[at(Z.jet_bomb_cell, 0x01)] = 0x20;
+  M[at(Z.jet_bomb_cell, 0x28)] = 0x73; M[at(Z.jet_bomb_cell, 0x29)] = 0x74;
+  const hi = M[Z.jet_bomb_cell + 1];
+  M[Z.jet_bomb_cell + 1] = (hi - 0x04) & 0xFF;
+  M[at(Z.jet_bomb_cell, 0x29)] = M[Z.jet_bomb_colour]; M[at(Z.jet_bomb_cell, 0x28)] = M[Z.jet_bomb_colour];
+  M[Z.jet_bomb_cell + 1] = hi;
+};
+
+// The bombs that move in the main loop, by enemy_mask's bits 1 and 3 (move_bombs, $2F6B).
+P.move_bombs = function () {
+  if (B(Z.enemy_mask) & 0x02) P.move_bouncy_bomb();
+  if (B(Z.enemy_mask) & 0x08) P.move_explosive();
+};
+// Everything an enemy has going stopped (clear_enemies, $2F7E).
+P.clear_enemies = function () {
+  for (const z of [Z.enemy_mask, Z.bouncy_moved, Z.arrow_moved, Z.jet_moved, Z.jet_bomb_moved, Z.explosive_moved,
+    Z.bouncy_active, Z.arrow_active, Z.jet_active, Z.explosive_active, Z.jet_bomb_falling, Z.bouncy_gone]) M[z] = 0;
+};
+// The bouncy bomb wiped where it was and drawn where it is (draw_bouncy_bomb, $2F99).
+P.draw_bouncy_bomb = function () {
+  if (M[Z.bouncy_gone] !== 0) {
+    P.N.wipe += 6;
+    for (let x = 5; x >= 0; x--) M[at(Z.bouncy_old_cell, M[0x2FD4 + x])] = 0x20;
+    M[Z.bouncy_gone] = 0;
+  }
+  if (M[Z.bouncy_moved] === 0) return;
+  M[Z.char_counter] = 0x72;
+  shape(Z.bouncy_cell, Z.bouncy_colour_cell, 0x2FD4, 5, () => {
+    const c = M[Z.char_counter]; M[Z.char_counter] = (c - 1) & 0xFF; return c;
+  }, Z.bouncy_colour);
+};
+// The bouncy bomb, once a pass of the main loop (move_bouncy_bomb, $2FDA): it waits for its timer
+// while rnd2 is at or above spawn_threshold, starts at the right on one of seven rows two random
+// pairs of bits choose, and bounces left, a row down and a column left each move until its ninth
+// row, then up, for 38 moves.
+P.move_bouncy_bomb = function () {
+  if (M[Z.bouncy_active] === 0) {
+    if (B(Z.rnd2) < M[Z.spawn_threshold]) return;
+    M[Z.bouncy_timer] = (M[Z.bouncy_timer] - 1) & 0xFF;
+    if (M[Z.bouncy_timer] !== 0) return;
+    M[Z.bouncy_timer] = B(Z.rnd2) & 0x03;
+    const t = (B(Z.rnd1) & 0x03) + M[Z.bouncy_timer];
+    M[Z.bouncy_height] = (t + 0x02) & 0xFF;
+    const x = (t << 1) & 0xFF;
+    M[Z.bouncy_cell] = M[0x3080 + x]; M[Z.bouncy_cell + 1] = M[0x3081 + x];
+    M[Z.bouncy_down] = 0x01; M[Z.bouncy_moved] = 0x01; M[Z.bouncy_active] = 0x01;
+    M[Z.bouncy_gone] = 0; M[Z.bouncy_steps] = 0;
+    return;
+  }
+  M[Z.bouncy_moved] = 0;
+  M[Z.bouncy_old_cell] = M[Z.bouncy_cell]; M[Z.bouncy_old_cell + 1] = M[Z.bouncy_cell + 1];
+  M[Z.bouncy_steps] = (M[Z.bouncy_steps] + 1) & 0xFF;
+  if (M[Z.bouncy_steps] === 0x26) {
+    M[Z.bouncy_timer] = ((B(Z.rnd1) & 0x3F) + M[Z.bouncy_delay_base]) & 0xFF;
+    M[Z.bouncy_active] = 0; M[Z.bouncy_gone] = 0x01;
+    return;
+  }
+  if (M[Z.bouncy_down] !== 0) {
+    step(Z.bouncy_cell, 0x27);
+    M[Z.bouncy_height] = (M[Z.bouncy_height] + 1) & 0xFF;
+    if (M[Z.bouncy_height] === 0x09) M[Z.bouncy_down] ^= 0x01;
+  } else {
+    step(Z.bouncy_cell, -0x29);
+    M[Z.bouncy_height] = (M[Z.bouncy_height] - 1) & 0xFF;
+    if (M[Z.bouncy_height] === 0) M[Z.bouncy_down] ^= 0x01;
+  }
+  M[Z.bouncy_moved] = 0x01; M[Z.bouncy_gone] = 0x01;
+};
+// A break in the pipe at the cell in X, Y (break_pipe, $310B): when the pipe below already has a
+// break's character in the ten cells looked at, the pressure falls by two eighths; otherwise the
+// twelve characters of break_chars go in at break_cells and it falls by four.
+P.break_pipe = function (r) {
+  M[Z.break_cell] = r.x; M[Z.break_cell + 1] = r.y;
+  for (let x = 9, y = 0x4B; x >= 0; x--, y++) {
+    const ch = M[at(Z.break_cell, y)];
+    if (ch >= 0xD7 && ch < 0xEA) { P.lose_pressure({ a: 0x02 }); return; }
+  }
+  for (let x = 0; x !== 0x0C; x++) M[at(Z.break_cell, M[0x314B + x])] = M[0x313F + x];
+  P.lose_pressure({ a: 0x04 });
+};
+// The explosive, once a pass of the main loop (move_explosive, $3157): it waits for its timer
+// while rnd1 is at or above spawn_threshold, starts at the right on one of eight rows, flies left
+// for 3 to 10 moves, then falls a row down and a column left each move to the pipe, which it
+// breaks (explosive_lands).
+P.move_explosive = function () {
+  if (M[Z.explosive_active] === 0) {
+    if (B(Z.rnd1) < M[Z.spawn_threshold]) return;
+    M[Z.explosive_timer] = (M[Z.explosive_timer] - 1) & 0xFF;
+    if (M[Z.explosive_timer] !== 0) return;
+    M[Z.explosive_row] = B(Z.rnd1) & 0x07;
+    const x = M[Z.explosive_row] << 1;
+    M[Z.explosive_cell] = M[0x31F4 + x]; M[Z.explosive_cell + 1] = M[0x31F5 + x];
+    M[Z.explosive_flight] = (((B(Z.rnd0) | io.read(0xFF00)) & 0x07) + 0x03) & 0xFF;
+    M[Z.explosive_active] = 0x01; M[Z.explosive_moved] = 0x01; M[Z.explosive_level] = 0x01;
+    M[Z.explosive_gone] = 0;
+    return;
+  }
+  M[Z.explosive_moved] = 0;
+  M[Z.explosive_old_cell] = M[Z.explosive_cell]; M[Z.explosive_old_cell + 1] = M[Z.explosive_cell + 1];
+  if (M[Z.explosive_level] !== 0) {
+    M[Z.explosive_flight] = (M[Z.explosive_flight] - 1) & 0xFF;
+    if (M[Z.explosive_flight] === 0) M[Z.explosive_level] = 0;
+    step(Z.explosive_cell, -1);
+    M[Z.explosive_moved] = 0x01; M[Z.explosive_gone] = 0x01;
+    return;
+  }
+  M[Z.explosive_row] = (M[Z.explosive_row] + 1) & 0xFF;
+  if (M[Z.explosive_row] === 0x0B) return P.explosive_lands();
+  step(Z.explosive_cell, 0x27);
+  M[Z.explosive_moved] = 0x01; M[Z.explosive_gone] = 0x01;
+};
+// The explosive gone, its timer set again, and the pipe broken where it landed unless it was shot
+// down (explosive_lands, $31D8).
+P.explosive_lands = function () {
+  M[Z.explosive_active] = 0; M[Z.explosive_gone] = 0x01;
+  M[Z.explosive_timer] = ((B(Z.rnd0) & 0x3F) + M[Z.explosive_delay_base]) & 0xFF;
+  if (M[Z.shot_down] !== 0) return;
+  P.break_pipe({ x: M[Z.explosive_cell], y: M[Z.explosive_cell + 1] });
+};
+// The explosive wiped where it was and drawn where it is (draw_explosive, $3204).
+P.draw_explosive = function () {
+  if (M[Z.explosive_gone] !== 0) {
+    P.N.wipe += 6;
+    for (let x = 5; x >= 0; x--) M[at(Z.explosive_old_cell, M[0x323F + x])] = 0x20;
+    M[Z.explosive_gone] = 0;
+  }
+  if (M[Z.explosive_moved] === 0) return;
+  M[Z.char_counter] = 0x7A;
+  shape(Z.explosive_cell, Z.explosive_colour_cell, 0x323F, 5, () => {
+    const c = M[Z.char_counter]; M[Z.char_counter] = (c - 1) & 0xFF; return c;
+  }, Z.explosive_colour);
+};
+
+// An explosion centred two rows above the cell in X, Y (start_explosion, $3278).
+P.start_explosion = function (r) {
+  const s = r.x - 0x50;
+  M[Z.explosion_cell] = s & 0xFF; M[Z.explosion_colour_cell] = s & 0xFF;
+  const hi = (r.y - (s < 0 ? 1 : 0)) & 0xFF;
+  M[Z.explosion_cell + 1] = hi;
+  M[Z.explosion_colour_cell + 1] = (hi - 0x04) & 0xFF;
+  M[Z.exploding] = 0x01; M[Z.explosion_shown] = 0x01; M[Z.explosion_timer] = 0x01;
+  M[Z.explosion_step] = 0;
+};
+// The explosion's step every other frame, eight steps (tick_explosion, $3296).
+P.tick_explosion = function () {
+  if (M[Z.paused] !== 0) return;
+  if (M[Z.exploding] === 0) return;
+  M[Z.explosion_timer] = (M[Z.explosion_timer] - 1) & 0xFF;
+  if (M[Z.explosion_timer] !== 0) return;
+  M[Z.explosion_timer] = 0x02;
+  M[Z.explosion_step] = (M[Z.explosion_step] + 1) & 0xFF;
+  if (M[Z.explosion_step] !== 0x09) return;
+  M[Z.explosion_shown] = 0; M[Z.exploding] = 0;
+};
+// The explosion's ring for its step: the cells of explosion_rings' entry, in its colour, drawn
+// with the block character for steps 1 to 4 and wiped with spaces for 5 to 8 (draw_explosion, $32B8).
+P.draw_explosion = function () {
+  if (M[Z.explosion_shown] === 0) return;
+  let x = M[Z.explosion_step];
+  M[Z.char_counter] = x < 0x05 ? 0x7B : 0x20;
+  const y = (x - 1) & 0xFF, i = (y << 1) & 0xFF;
+  M[Z.ring_colour] = M[0x32ED + y];
+  M[Z.ring_count] = M[0x330A + i];
+  x = M[0x330B + i];
+  do {
+    P.N.ring++;
+    const c = M[(0x32F5 + x) & 0x3FFF];
+    M[at(Z.explosion_cell, c)] = M[Z.char_counter];
+    M[at(Z.explosion_colour_cell, c)] = M[Z.ring_colour];
+    x = (x + 1) & 0xFF;
+    M[Z.ring_count] = (M[Z.ring_count] - 1) & 0xFF;
+  } while (!(M[Z.ring_count] & 0x80));
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-hud.js */
+// The HUD: its text and colours (draw_hud), the two bars (draw_pressure_bar, lose_pressure,
+// draw_completed_bar, add_completed), the score and the lives it gives (add_score_units,
+// add_score); the big letters of the countdown and of THE END (countdown, draw_big_glyph, the_end,
+// bounce_the, bounce_end, draw_big_glyph_2); and the scene's colours and enemy shapes
+// (set_scene_colours, set_scene_graphics).
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).hud = function (P) {
+const M = P.M, Z = P.Z, T = P.T, B = P.irqByte;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+const step = (z, d) => {
+  const s = M[z] + d;
+  M[z] = s & 0xFF;
+  M[z + 1] = (M[z + 1] + (s > 0xFF ? 1 : s < 0 ? -1 : 0)) & 0xFF;
+};
+function* wait(a, x) { yield { cp: a }; yield* P.delay({ x }); yield { cp: a + 3 }; }
+
+// The HUD's three rows from hud_text and hud_colours (unless keep_hud), the colours of the pipe's
+// and message's rows and of the skyline's five, the bars' end characters and the high score
+// (draw_hud, $1BD2).
+P.draw_hud = function () {
+  for (let x = 0; x !== 0x78; x++) {
+    if (M[Z.keep_hud] === 0) { M[0x0C00 + x] = M[0x1C1D + x] & 0x3F; M[0x0800 + x] = M[0x1C95 + x]; }
+    M[0x0B70 + x] = x < 0x50 ? M[Z.pipe_cell_colour] : M[Z.message_colour];
+  }
+  for (let x = 0; x !== 0xC8; x++) M[0x0878 + x] = M[Z.skyline_cell_colour];
+  M[0x0C0C] = 0x53; M[0x0C34] = 0x53;
+  M[0x0C27] = 0x54; M[0x0C4F] = 0x54;
+  for (let x = 5; x >= 0; x--) M[0x0C72 + x] = M[0x1A4D + x];
+};
+// A bar of 26 cells at row, its fine part drawn into the character at part from bar_fill_patterns:
+// full cells, then the part, then empty cells (the 'part' and 'empty' characters).
+function bar(fine, cells, partChar, row, part, empty) {
+  let x = (M[fine] << 3) & 0xFF;
+  for (let y = 0; y !== 0x08; y++) { M[partChar + y] = M[0x21D1 + x]; x = (x + 1) & 0xFF; }
+  let a = 0x4F;
+  for (let y = 0; y !== 0x1A; y++) {
+    if (!((y - M[cells]) & 0x80)) a = a === part ? empty : a === empty ? empty : part;   // CPY, BPL
+    M[row + y] = a;
+  }
+}
+// OIL PRESSURE (draw_pressure_bar, $217C).
+P.draw_pressure_bar = function () { bar(Z.pressure_fine, Z.pressure_cells, 0x3E80, 0x0C0D, 0x50, 0x51); };
+// % COMPLETED (draw_completed_bar, $2219).
+P.draw_completed_bar = function () { bar(Z.completed_fine, Z.completed_cells, 0x3EB0, 0x0C35, 0x56, 0x51); };
+// The pressure down by A eighths of a cell; pressure_gone once the last cell is used up
+// (lose_pressure, $21B1).
+P.lose_pressure = function (r) {
+  M[Z.pressure_loss] = r.a;
+  if (B(Z.pressure_gone) !== 0) return;
+  const d = (M[Z.pressure_fine] - M[Z.pressure_loss]) & 0xFF;
+  M[Z.pressure_fine] = d;
+  if (!(d & 0x80)) return;
+  M[Z.pressure_cells] = (M[Z.pressure_cells] - 1) & 0xFF;
+  if (M[Z.pressure_cells] & 0x80) { M[Z.pressure_gone] = 0x01; M[Z.pressure_fine] = 0; }
+  else M[Z.pressure_fine] = 0x07;
+};
+// % COMPLETED up by A eighths of a cell; level_done once the cells reach the operand of the CMP at
+// $2254, 26 (add_completed, $224E).
+P.add_completed = function (r) {
+  const y = (r.a + M[Z.completed_fine]) & 0xFF;
+  if (M[Z.completed_cells] === M[T.completed_cells_full]) { M[Z.level_done] = 0x01; return; }
+  M[Z.completed_fine] = y & 0x07;
+  if (y & 0x08) M[Z.completed_cells] = (M[Z.completed_cells] + 1) & 0xFF;
+};
+// A points to the score's units (add_score_units, $3245).
+P.add_score_units = function (r) { return P.add_score({ a: r.a, y: 0x05 }); };
+// A points to the score's digit Y, 0 the highest, as screen codes at $0C56-$0C5B, carrying up; a
+// carry out of the top digit goes on into $0D55 (Y wraps to $FF). A life more, up to 9, each time
+// the ten-thousands digit changes (add_score, $3247).
+P.add_score = function (r) {
+  M[Z.score_add] = r.a;
+  let a = M[Z.score_add], y = r.y;
+  for (;;) {
+    a = (a + M[0x0C56 + y]) & 0xFF;
+    if ((a - 0x3A) & 0x80) break;                            // CMP #$3A, BMI
+    a = (a - 0x0A) & 0xFF;
+    M[0x0C56 + y] = a;
+    a = 0x01;
+    y = (y - 1) & 0xFF;
+    if (y & 0x80) break;
+  }
+  M[0x0C56 + y] = a;
+  const t = M[0x0C57] & 0x0F;
+  if (t === M[Z.last_ten_thousands]) return;
+  M[Z.last_ten_thousands] = t;
+  if (M[Z.lives] === 0x09) return;
+  M[Z.lives] = (M[Z.lives] + 1) & 0xFF;
+  M[0x0C65] = (M[0x0C65] + 1) & 0xFF;
+};
+
+// 5, 4, 3, 2, 1 in big letters, one a delay of 256 turns each (countdown, $331A).
+P.countdown = function* () {
+  M[Z.glyph_ptr] = 0x99; M[Z.glyph_ptr + 1] = 0x33;
+  M[Z.countdown_step] = 0;
+  do {
+    M[Z.glyph_cell] = 0xC5; M[Z.glyph_cell + 1] = 0x0D;
+    M[Z.glyph_colour] = M[0x3346 + M[Z.countdown_step]];
+    P.draw_big_glyph();
+    yield* wait(0x333A, 0);
+    M[Z.countdown_step] = (M[Z.countdown_step] + 1) & 0xFF;
+  } while (M[Z.countdown_step] !== 0x05);
+};
+// A letter 16 cells wide and 9 rows high from glyph_ptr, two bytes a row, a set bit a block
+// character ($7B), at glyph_cell in glyph_colour; glyph_ptr is left at the next letter
+// (draw_big_glyph, $334B, and its copy draw_big_glyph_2, $34CA).
+function bigGlyph() {
+  M[Z.glyph_rows] = 0x08;
+  do {
+    M[Z.glyph_bits] = M[at(Z.glyph_ptr, 0)]; M[Z.zpa_D0] = M[at(Z.glyph_ptr, 1)];
+    M[Z.glyph_colour_cell] = M[Z.glyph_cell]; M[Z.glyph_colour_cell + 1] = (M[Z.glyph_cell + 1] - 0x04) & 0xFF;
+    for (let y = 0x0F; y >= 0; y--) {
+      const b = M[Z.glyph_bits], d = M[Z.zpa_D0];
+      M[Z.glyph_bits] = b >> 1; M[Z.zpa_D0] = d >> 1 | (b & 1) << 7;
+      M[at(Z.glyph_cell, y)] = d & 1 ? 0x7B : 0x20;
+      M[at(Z.glyph_colour_cell, y)] = M[Z.glyph_colour];
+    }
+    step(Z.glyph_cell, 0x28); step(Z.glyph_ptr, 0x02);
+    M[Z.glyph_rows] = (M[Z.glyph_rows] - 1) & 0xFF;
+  } while (!(M[Z.glyph_rows] & 0x80));
+}
+P.draw_big_glyph = function () { bigGlyph(); };
+P.draw_big_glyph_2 = function () { bigGlyph(); };
+// THE and END bouncing in big letters, 80 steps of a delay of 20 turns each (the_end, $33F3).
+P.the_end = function* () {
+  M[Z.the_down] = 0x01; M[Z.end_down] = 0; M[Z.the_rows] = 0;
+  M[Z.the_cell] = 0x42; M[Z.the_cell + 1] = 0x0D;
+  M[Z.end_cell] = 0xF6; M[Z.end_cell + 1] = 0x0D;
+  M[Z.countdown_step] = 0x50;
+  M[Z.end_rows] = 0x04;
+  do {
+    M[Z.glyph_ptr] = 0x18; M[Z.glyph_ptr + 1] = 0x35;
+    M[Z.glyph_cell] = M[Z.the_cell]; M[Z.glyph_cell + 1] = M[Z.the_cell + 1];
+    M[Z.glyph_colour] = M[0x3458 + M[Z.the_down]];
+    P.draw_big_glyph_2();
+    M[Z.glyph_ptr] = 0x2A; M[Z.glyph_ptr + 1] = 0x35;
+    M[Z.glyph_cell] = M[Z.end_cell]; M[Z.glyph_cell + 1] = M[Z.end_cell + 1];
+    M[Z.glyph_colour] = M[0x3458 + M[Z.end_down]];
+    P.draw_big_glyph_2();
+    yield* wait(0x344A, 0x14);
+    P.bounce_the(); P.bounce_end();
+    M[Z.countdown_step] = (M[Z.countdown_step] - 1) & 0xFF;
+  } while (M[Z.countdown_step] !== 0);
+};
+// THE a row down or up, turning at its fifth row and its first (bounce_the, $345A).
+P.bounce_the = function () { bounce(Z.the_cell, Z.the_rows, Z.the_down); };
+// END the same (bounce_end, $3492).
+P.bounce_end = function () { bounce(Z.end_cell, Z.end_rows, Z.end_down); };
+function bounce(cell, rows, down) {
+  if (M[down] !== 0) {
+    step(cell, 0x28);
+    M[rows] = (M[rows] + 1) & 0xFF;
+    if (M[rows] === 0x05) M[down] ^= 0x01;
+  } else {
+    step(cell, -0x28);
+    M[rows] = (M[rows] - 1) & 0xFF;
+    if (M[rows] === 0) M[down] ^= 0x01;
+  }
+}
+
+// The scene's 15 colours from its row of scene_colours (set_scene_colours, $2CDE).
+P.set_scene_colours = function () {
+  const x = (M[T.scene] << 4) & 0xFF;
+  const to = [Z.pipe_colour1, Z.pipe_colour2, Z.pipe_cell_colour, Z.pipe_bg, Z.skyline_colour1, Z.skyline_colour2,
+    Z.skyline_cell_colour, Z.skyline_bg, Z.field_colour1, Z.field_colour2, Z.field_bg, Z.tex_colour, Z.message_colour,
+    0x3458, 0x3459];
+  to.forEach((a, i) => { M[a] = M[0x2D34 + x + i]; });
+};
+// The scene's enemy shapes, six characters each of the arrow, the bouncy bomb and the explosive,
+// into the character set; every enemy in colour $78 (set_scene_graphics, $36B6).
+P.set_scene_graphics = function () {
+  let x = M[0x19BB + M[T.scene]];
+  for (let y = 0; y !== 0x30; y++) {
+    M[0x3EE8 + y] = M[0x36F2 + x]; M[0x3F68 + y] = M[0x3782 + x]; M[0x3FA8 + y] = M[0x3812 + x];
+    x = (x + 1) & 0xFF;
+  }
+  for (const z of [Z.bouncy_colour, Z.arrow_colour, Z.jet_bomb_colour, Z.jet_colour, Z.explosive_colour]) M[z] = 0x78;
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-irq.js */
+// The raster interrupt (irq) and its five bands, a frame's work shared among them; the controls
+// (read_controls, read_keys, demo_controls, test_key and the keys check_play_keys and menu_keys
+// read); the random numbers (seed_random, random, random_byte); and the sound effects.
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).irq = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, B = P.irqByte;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+
+// irq ($18A9), entered through the KERNAL's vector at $0314 at each of the five raster lines in
+// raster_lines: the flag acknowledged, the band stepped on, its work, the next line set. It never
+// clears the I flag itself; only tex_death's call of refill_pipe does, which can let the next
+// interrupt in, at the checkpoints irq_field and the way out yield.
+P.irq = function* () {
+  io.write(0xFF09, io.read(0xFF09));
+  let x = (M[Z.irq_band] + 1) & 0xFF;
+  if (x === 0x05) x = 0;
+  M[Z.irq_band] = x;
+  const band = M[Z.irq_band];
+  if (band === 0) P.irq_frame();
+  else if (band === 1) P.irq_skyline();
+  else if (band === 2) yield* P.irq_field({ c: 1 });     // the carry from CMP #$02, equal
+  else if (band === 3) P.irq_pipe();
+  else if (band === 4) P.irq_scroller();
+  yield { cp: 0x18DD };                                    // b_18DD, every band's way out
+  io.write(0xFF0B, M[(T.raster_lines + M[Z.irq_band]) & 0x3FFF]);
+};
+
+// Line 204, below the message row: the HUD's colours and character set for the top of the next
+// frame, the three scrolls, then the HUD's bars and the enemies drawn, the bullet moved and the
+// keys read (in play), or the menu's keys and animation.
+P.irq_frame = function () {
+  io.write(0xFF07, (io.read(0xFF07) & 0x60) | 0x18);
+  io.write(0xFF15, 0x70); io.write(0xFF19, 0x70);
+  io.write(0xFF16, 0x51); io.write(0xFF17, 0x31);
+  P.scroll_pipe(); P.scroll_skyline(); P.scroll_message();
+  io.write(0xFF13, 0x3C);
+  if (M[Z.menu_on] === 0) {
+    P.draw_pressure_bar(); P.draw_completed_bar(); P.draw_explosion(); P.draw_arrow(); P.draw_jet();
+    P.draw_bouncy_bomb(); P.draw_explosive(); P.move_bullet(); P.check_play_keys();
+  } else { P.menu_keys(); P.menu_tick(); }
+};
+// Line 23, the skyline: its scroll, the RAM characters and its colours, after a wait to the line's
+// end (LDX #$24, DEX, BPL); then Tex's legs.
+P.irq_skyline = function () {
+  io.write(0xFF07, (io.read(0xFF07) & 0x70) | 0x80 | M[Z.skyline_scroll]);
+  io.write(0xFF13, 0x10);
+  io.write(0xFF15, M[Z.skyline_bg]); io.write(0xFF16, M[Z.skyline_colour1]); io.write(0xFF17, M[Z.skyline_colour2]);
+  P.animate_legs();
+};
+// Line 65, the play field: its colours, then the random numbers stirred (with the carry irq
+// leaves, 1 from the CMP #$02 that chose the band), Tex moved, his death, the explosion and two
+// enemies moved.
+P.irq_field = function* (r = {}) {
+  io.write(0xFF15, M[Z.field_bg]);
+  io.write(0xFF07, io.read(0xFF07) & 0x78);
+  io.write(0xFF13, 0x3C);
+  io.write(0xFF16, M[Z.field_colour1]); io.write(0xFF17, M[Z.field_colour2]);
+  P.random({ c: r.c });
+  P.move_tex();
+  yield* P.tex_death();
+  P.tick_explosion();
+  P.move_arrow_and_jet();
+};
+// Line 176, the pipe: its colours and scroll, then the controls read.
+P.irq_pipe = function () {
+  io.write(0xFF16, M[Z.pipe_colour1]); io.write(0xFF17, M[Z.pipe_colour2]);
+  io.write(0xFF07, (io.read(0xFF07) & 0x78) | 0x80 | M[Z.pipe_scroll]);
+  io.write(0xFF13, 0x10);
+  io.write(0xFF15, M[Z.pipe_bg]);
+  P.read_controls();
+};
+// Line 192, the message row: its scroll and the ROM-less character set, the sounds stepped, and the
+// star twinkled every fourth frame.
+P.irq_scroller = function () {
+  io.write(0xFF07, (io.read(0xFF07) & 0x78) | M[Z.message_scroll]);
+  io.write(0xFF13, 0x3C);
+  P.tick_sounds();
+  M[Z.star_timer] = (M[Z.star_timer] - 1) & 0xFF;
+  if (M[Z.star_timer] === 0) { M[Z.star_timer] = 0x04; P.twinkle_star(); }
+};
+
+// Points the KERNAL's vector at irq and starts the raster interrupt at the first band's line, once
+// (install_irq, $1885).
+P.install_irq = function () {
+  if (M[0x0314] === 0xA9) return;
+  io.sei();
+  M[0x0314] = 0xA9; M[0x0315] = 0x18;
+  io.write(0xFF0A, 0x02);
+  io.write(0xFF0B, M[T.raster_lines]);
+  M[Z.irq_band] = 0;
+  io.cli();
+};
+
+// The controls into $07-$0B, bit 7 each (read_controls, $182D): the demo's, the keyboard's, or the
+// joystick in port 2, else port 1. Each control's byte takes the new bit in at the top and keeps
+// the old ones shifted down, as ROR does. The instruction at $1878 is rewritten before each read:
+// LSR for port 2, whose fire is bit 7, NOP for port 1, whose fire is bit 6.
+P.read_controls = function () {
+  if (M[T.demo_mode] !== 0) return P.demo_controls();
+  if (M[T.joystick_mode] === 0) return P.read_keys();
+  io.write(0xFF08, 0xFD);
+  M[T.controls_fire_shift] = 0x4A;
+  let a = io.read(0xFF08) ^ 0xFF;
+  if (a === 0) {
+    io.write(0xFF08, 0xFA);
+    M[T.controls_fire_shift] = 0xEA;
+    a = io.read(0xFF08) ^ 0xFF;
+    if (a === 0) { for (let x = 4; x >= 0; x--) M[Z.ctl_left + x] = 0; return; }
+  }
+  const take = (z, bit) => { M[z] = bit << 7 | M[z] >> 1; };
+  take(Z.ctl_up, a & 1); take(Z.ctl_down, a >> 1 & 1); take(Z.ctl_left, a >> 2 & 1); take(Z.ctl_right, a >> 3 & 1);
+  take(Z.ctl_fire, M[T.controls_fire_shift] === 0x4A ? a >> 7 & 1 : a >> 6 & 1);
+  M[Z.ctl_any] = 0x01;
+};
+// The keys in key_columns and key_rows for the five controls (read_keys, $35B0).
+P.read_keys = function () {
+  M[Z.ctl_any] = 0;
+  for (let x = 4; x >= 0; x--) {
+    const c = P.test_key({ a: M[0x35D8 + x], y: M[0x35DD + x] }).c, z = (Z.ctl_left + x) & 0xFF;
+    M[z] = c << 7 | M[z] >> 1;
+  }
+};
+// One key: the row Y selected, the column bits A tested; the carry set when it is held
+// (test_key, $35C5).
+P.test_key = function (r) {
+  io.write(0xFD30, r.y);
+  io.write(0xFF08, r.y);
+  if ((r.a & io.read(0xFF08)) === 0) { M[Z.ctl_any] = 0x01; return { c: 1 }; }
+  return { c: 0 };
+};
+// The demo's player (demo_controls, $3B1E): right until Tex reaches column 16, then left now and
+// then near the right edge, right now and then, fire now and then, and a jump when the pipe two
+// rows under his feet shows the start of a break.
+P.demo_controls = function () {
+  for (let x = 4; x >= 0; x--) M[Z.ctl_left + x] = 0;
+  if (M[Z.demo_ran] === 0) {
+    M[Z.ctl_right] = 0x80;
+    if (M[Z.tex_cell] !== 0xB8) return;
+    M[Z.demo_ran] = 0x01;
+  }
+  if (M[Z.tex_cell] >= 0xB4 && M[Z.rnd1] < 0x20) M[Z.ctl_left] = 0x80;
+  else if (M[Z.rnd0] >= 0xE0) M[Z.ctl_right] = 0x80;
+  if (M[Z.rnd3] < 0x10) M[Z.ctl_fire] = 0x80;
+  const ch = M[at(Z.tex_cell, 0xCB)];
+  if (ch < 0xDD && ch >= 0xD6) M[Z.ctl_up] = 0x80;
+};
+// ESC quits; SPACE pauses and C= goes on (check_play_keys, $35E2).
+P.check_play_keys = function () {
+  if (M[Z.menu_on] !== 0) return;
+  if (M[Z.tex_hit] !== 0) return;
+  if (P.test_key({ a: 0x10, y: 0xBF }).c) { M[Z.quit_pressed] = 0x01; return; }
+  if (M[Z.paused] === 0) { if (P.test_key({ a: 0x10, y: 0x7F }).c) M[Z.paused] = 0x01; return; }
+  if (P.test_key({ a: 0x20, y: 0x7F }).c) M[Z.paused] = 0;
+};
+// J for the joystick and K for the keyboard at the menu, and the icon beside them (menu_keys, $353C).
+P.menu_keys = function () {
+  if (P.test_key({ a: 0x04, y: 0xEF }).c) M[T.joystick_mode] = 0x01;
+  if (P.test_key({ a: 0x20, y: 0xEF }).c) M[T.joystick_mode] = 0;
+  const x = (M[T.joystick_mode] << 5) & 0xFF;
+  for (let y = 0; y < 0x20; y++) M[0x3CD8 + y] = M[0x3570 + ((x + y) & 0xFF)];
+};
+
+// The random bytes rnd0 to rnd3 from TED's raster compare register, and the character set from RAM
+// (seed_random, $18EB).
+P.seed_random = function () {
+  io.write(0xFF12, io.read(0xFF12) & 0xFB);
+  for (let x = 3; x >= 0; x--) M[Z.rnd0 + x] = io.read(0xFF0B);
+};
+// The random bytes stirred (random, $18FE): a byte from two of TED's timers, with the carry the
+// caller leaves, shifts its bit 6 into the four bytes as one 32-bit number, then each byte becomes
+// the sum of itself and the one before (the first with $29), carrying on.
+P.random = function (r = {}) {
+  const s = (io.read(0xFF00) & 0x48) + io.read(0xFF02) + (r.c || 0);
+  let c = (s & 0xFF) >> 6 & 1;
+  for (let i = 3; i >= 0; i--) { const v = B(Z.rnd0 + i); M[Z.rnd0 + i] = (v << 1 | c) & 0xFF; c = v >> 7; }
+  let y = 0x29, a = 0;
+  c = 0;
+  for (let i = 0; i < 4; i++) {
+    const z = Z.rnd0 + i, old = y;
+    y = B(z);
+    const t = old + B(z) + c;
+    a = t & 0xFF; c = t >> 8;
+    M[z] = a;
+  }
+  return { a, x: 0, y, c };
+};
+// One of the four random bytes, chosen by timer 1 (random_byte, $25F9).
+P.random_byte = function () {
+  const x = io.read(0xFF00) & 0x03;
+  return { a: B(Z.rnd0 + x), x };
+};
+
+// The sounds, once a frame from irq_scroller, while SOUND is on (tick_sounds, $361B).
+P.tick_sounds = function () {
+  if (M[T.sound_on] === 0) return;
+  P.tick_shot_sound(); P.tick_hit_sound();
+};
+// A shot: voice 1 from $301 falling (shot_sound, $3628).
+P.shot_sound = function () {
+  if (M[T.sound_on] === 0) return;
+  M[Z.shot_freq_hi] = 0x03;
+  io.write(0xFF12, 0x03 | io.read(0xFF12));
+  io.write(0xFF0E, 0x01);
+  M[Z.shot_frames] = 0x14;
+  M[Z.shot_playing] = 0x01;
+  io.write(0xFF11, 0x1F | io.read(0xFF11));
+};
+// The shot's fall, 8 a frame for 20 frames; its high bits go into voice 2's register, $FF10
+// (tick_shot_sound, $364E).
+P.tick_shot_sound = function () {
+  if (M[Z.shot_playing] !== 0) {
+    M[Z.shot_frames] = (M[Z.shot_frames] - 1) & 0xFF;
+    if (M[Z.shot_frames] !== 0) {
+      const d = io.read(0xFF0E) - 0x08;
+      io.write(0xFF0E, d & 0xFF);
+      if (d < 0) {
+        M[Z.shot_freq_hi] = (M[Z.shot_freq_hi] - 1) & 0xFF;
+        io.write(0xFF10, (M[Z.shot_freq_hi] & 0x03) | io.read(0xFF10));
+      }
+      return;
+    }
+    M[Z.shot_playing] = 0;
+  }
+  io.write(0xFF11, 0xEF & io.read(0xFF11));
+};
+// A hit: voice 2 from $3FF, with noise (hit_sound, $367B).
+P.hit_sound = function () {
+  if (M[T.sound_on] === 0) return;
+  io.write(0xFF10, 0x03);
+  io.write(0xFF0F, 0xFF);
+  io.write(0xFF11, io.read(0xFF11) | 0x4F);
+  M[Z.hit_playing] = 0x01;
+};
+// The hit's fall, 14 a frame until it passes 0 (tick_hit_sound, $3698).
+P.tick_hit_sound = function () {
+  if (M[Z.hit_playing] === 0) return;
+  const d = io.read(0xFF0F) - 0x0E;
+  io.write(0xFF0F, d & 0xFF);
+  if (d >= 0) return;
+  io.write(0xFF11, io.read(0xFF11) & 0x9F);
+  M[Z.hit_playing] = 0;
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-main.js */
+// The main program: start, start_game and main_loop, the levels (next_level, level_complete) and
+// the end of a game (pressure_out, game_over, quit_game); delay and clear_zero_page.
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).main = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, B = P.irqByte, POLL = P.POLL;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+const step = (z, d) => {
+  const s = M[z] + d;
+  M[z] = s & 0xFF;
+  M[z + 1] = (M[z + 1] + (s > 0xFF ? 1 : 0)) & 0xFF;
+};
+// A JSR delay at a, with X = x: the checkpoints before it and after.
+function* wait(a, x) { yield { cp: a }; yield* P.delay({ x }); yield { cp: a + 3 }; }
+
+// X times 256 turns of three NOPs (delay, $1922): the game's only clock outside the interrupt.
+// 2,820 cycles a turn of X, with the JSR and RTS 13 more; X = 0 is 256.
+P.delay = function* (r) {
+  yield { cycles: 2820 * (r.x || 0x100) + 13 };
+  return { x: 0, y: 0 };
+};
+// Zero page from $07 up (clear_zero_page, $1964).
+P.clear_zero_page = function () { for (let x = 0x07; x <= 0xFF; x++) M[x] = 0; };
+
+// The game's start ($1800, where the loader jumps): the screen cleared through the KERNAL's CHROUT
+// (the kit's machine stands in for it with spaces in the screen), the message's start, and the
+// pipe and the skyline scrolled on 46 columns; then menu.
+P.start = function* () {
+  io.sei();
+  P.clear_zero_page();
+  M.fill(0x20, 0x0C00, 0x0FE8);                            // JSR $FFD2 with $93
+  M[Z.message_ptr] = 0xAA; M[Z.message_ptr + 1] = 0x22;
+  P.next_pipe_piece();
+  for (let y = 0x2D; y >= 0; y--) { P.shift_pipe(); P.shift_skyline(); }
+};
+P.program = function* () {
+  yield* P.start();
+  for (;;) { yield* P.menu(); yield* P.start_game(); yield* P.main_loop(); }
+};
+
+// A game's start (start_game, $29D3, where menu jumps): zero page cleared, the lives from the menu,
+// the HUD, Tex at the left of the pipe; the first level (or, with Plus/4 World's patch at $2A0B,
+// the level after the one its LDA at cheat_space loads) and the countdown.
+P.start_game = function* () {
+  P.erase_tex();
+  io.sei();
+  P.clear_zero_page();
+  M[Z.lives] = M[T.lives_setting];
+  for (const z of [Z.left_blocked, Z.move_timer, Z.break_timer, Z.score_timer, Z.drain_timer, Z.star_timer]) M[z] = 0x01;
+  P.clear_play_area();
+  P.draw_hud();
+  M[0x0C65] = M[0x28A1];
+  M[Z.tex_cell] = 0xA9; M[Z.tex_cell + 1] = 0x0E;
+  P.draw_tex();
+  io.cli();
+  M[Z.controls_off] = 0x01; M[Z.menu_on] = 0x01;
+  if (M[T.level_store] === 0x20 && M[T.level_store + 1] === 0xE3 && M[T.level_store + 2] === 0x36) M[Z.level] = M[0x36E4];
+  else M[Z.level] = 0;                                     // DEX, STX level
+  M[T.scene] = 0xFF;
+  yield* P.next_level();
+  P.draw_pressure_bar();
+  P.draw_completed_bar();
+  yield* P.countdown();
+  M[Z.controls_off] = 0; M[Z.menu_on] = 0;
+};
+
+// The main loop ($2A24): held while paused; the game's end, or ESC; then a delay of loop_pace
+// turns, the pressure down an eighth each drain_rate turns, the bombs moved, and while Tex runs a
+// point and some % COMPLETED (by his speed) each 24 turns; the level's end, or the pressure's.
+P.main_loop = function* () {
+  for (;;) {
+    while (B(Z.paused) !== 0) yield POLL;
+    yield { cp: 0x2A28 };
+    if (B(Z.game_ended) !== 0) return yield* P.game_over();
+    if (B(Z.quit_pressed) !== 0) return yield* P.quit_game();
+    yield* wait(0x2A35, M[Z.loop_pace]);
+    M[Z.drain_timer] = (M[Z.drain_timer] - 1) & 0xFF;
+    if (M[Z.drain_timer] === 0) {
+      M[Z.drain_timer] = M[Z.drain_rate];
+      yield { cp: 0x2A42 }; P.lose_pressure({ a: 0x01 });
+    }
+    yield { cp: 0x2A45 }; P.move_bombs();
+    if (B(Z.speed) !== 0) {
+      M[Z.score_timer] = (M[Z.score_timer] - 1) & 0xFF;
+      if (M[Z.score_timer] === 0) {
+        M[Z.score_timer] = 0x18;
+        yield { cp: 0x2A56 }; P.add_score_units({ a: 0x01 });
+        const x = B(Z.speed);
+        yield { cp: 0x2A5E }; P.add_completed({ a: M[0x2A99 + x] });
+      }
+    }
+    if (B(Z.level_done) !== 0) { yield { cp: 0x2A65 }; yield* P.level_complete(); }
+    if (B(Z.pressure_gone) !== 0) return yield* P.pressure_out();
+  }
+};
+
+// The next level (next_level, $3A31): its number up (in decimal), the next scene; the enemies:
+// one each on levels 1 to 3, a random pair on 4 to 6, three on 7 to 9 and all four from 10, the
+// jet's bombs from 7; how soon they come, by the level; the main loop's pace and the pressure's
+// drain, by the difficulty; the scene's colours and shapes, the pipe laid again and both bars
+// reset.
+P.next_level = function* () {
+  M[Z.level] = P.adcD(M[Z.level], 0x01, 0).a;
+  let x = (M[T.scene] + 1) & 0xFF;
+  if (x === 0x03) x = 0;
+  M[T.scene] = x;
+  const L = M[Z.level];
+  if (L < 0x04) { M[Z.spawn_threshold] = 0xB0; M[Z.break_parts] = 0x02; } else M[Z.break_parts] = 0x03;
+  if (L === 0x01) M[Z.enemy_mask] = 0x04;
+  else if (L === 0x02) M[Z.enemy_mask] = 0x02;
+  else if (L === 0x03) M[Z.enemy_mask] = 0x08;
+  else if (L < 0x07) {
+    let c = 0;                                             // the carry from CMP #$07, then CMP #$06
+    for (;;) {                                             // b_3A7D
+      io.sei(); P.random({ c }); io.cli();
+      const a = B(Z.rnd2) & 0x07;                          // read before the interrupt the CLI lets in
+      yield { cp: 0x3A84 };
+      if (a < 0x06) { M[Z.enemy_mask] = M[0x3B14 + a]; break; }
+      c = 1;
+    }
+    M[Z.spawn_threshold] = 0x80;
+  } else if (L < 0x0A) {
+    io.sei(); P.random({ c: 0 }); io.cli();
+    const a = B(Z.rnd3) & 0x03;
+    yield { cp: 0x3AA1 };
+    M[Z.enemy_mask] = M[0x3B1A + a];
+    M[Z.spawn_threshold] = 0x40;
+  } else { M[Z.enemy_mask] = 0x0F; M[Z.spawn_threshold] = 0x01; }
+  if (M[Z.level] >= 0x07) M[Z.enemy_mask] = B(Z.enemy_mask) | 0x10;
+  const d = M[0x3A27 + ((M[Z.level] & 0x60) >> 5)];
+  M[Z.bouncy_delay_base] = d; M[Z.explosive_delay_base] = d; M[Z.arrow_delay_base] = d; M[Z.jet_delay_base] = d;
+  x = M[T.difficulty];
+  M[Z.loop_pace] = M[0x3A2B + x]; M[Z.drain_rate] = M[0x3A2E + x];
+  P.set_scene_colours();
+  M[Z.keep_hud] = 0x01;
+  P.draw_hud();
+  M[Z.keep_hud] = (M[Z.keep_hud] - 1) & 0xFF;
+  P.set_scene_graphics();
+  yield { cp: 0x3AF4 }; P.refill_pipe(); yield { cp: 0x3AF7 };
+  M[Z.pressure_cells] = 0x19; M[Z.pressure_fine] = 0x07;
+  M[Z.pressure_gone] = 0; M[Z.completed_fine] = 0; M[Z.completed_cells] = 0; M[Z.demo_ran] = 0;
+  M[Z.bouncy_timer] = 0x0C; M[Z.explosive_timer] = 0x0C; M[Z.arrow_timer] = 0x0C; M[Z.jet_timer] = 0x0C;
+};
+
+// A level complete (level_complete, $38A2), once Tex is not being hit: the pipe laid, the play area
+// cleared but for Tex, CONGRATULATIONS ! and LEVEL nn COMPLETED in a box; then the pressure left
+// turned into points, a point an eighth, with a rising tone (voice 2) while SOUND is on; a pause of
+// six delays, and the next level.
+P.level_complete = function* () {
+  while (B(Z.tex_hit) !== 0) yield POLL;
+  yield { cp: 0x38A6 }; P.refill_pipe(); yield { cp: 0x38A9 };
+  io.sei();
+  M[Z.controls_off] = 0x01;
+  M[Z.skyline_speed] = 0; M[Z.pipe_speed] = 0; M[Z.jumping] = 0; M[Z.bullet_flying] = 0;
+  P.clear_enemies();
+  P.erase_tex();
+  M[Z.tex_cell] = 0xA9; M[Z.tex_cell + 1] = 0x0E;
+  M[Z.speed] = 0; M[Z.right_blocked] = 0; M[Z.level_done] = 0;
+  P.clear_play_area();
+  P.draw_tex();
+  io.cli();
+  for (let y = 0x14; y >= 0; y--) {
+    M[0x0DC2 + y] = 0x2A; M[0x0E62 + y] = 0x2A;
+    M[0x0E12 + y] = M[0x395F + y] & 0x3F;
+    M[0x0EB2 + y] = M[0x3974 + y] & 0x3F;
+  }
+  M[0x0DEA] = 0x2A; M[0x0E3A] = 0x2A; M[0x0DFE] = 0x2A; M[0x0E4E] = 0x2A;
+  M[0x0EBA] = (M[Z.level] >> 4) | 0x30;
+  M[0x0EBB] = (M[Z.level] & 0x0F) | 0x30;
+  if (M[T.sound_on] !== 0) { io.write(0xFF11, 0x23); io.write(0xFF10, 0x03); }
+  do {                                                     // b_3925
+    P.add_score_units({ a: 0x01 });
+    P.lose_pressure({ a: 0x01 });
+    io.write(0xFF0F, ((M[Z.pressure_cells] << 3) & 0xFF) | M[Z.pressure_fine]);
+    yield* wait(0x393B, 0x08);
+  } while (B(Z.pressure_gone) === 0);
+  io.write(0xFF11, 0);
+  M[Z.work_ptr] = 0x06;
+  do {
+    yield* wait(0x394D, 0);
+    M[Z.work_ptr] = (M[Z.work_ptr] - 1) & 0xFF;
+  } while (M[Z.work_ptr] !== 0);
+  yield* P.next_level();
+  P.clear_play_area();
+  M[Z.controls_off] = 0;
+};
+
+// The pressure gone (pressure_out, $3989): the pipe laid, the enemies and the play area cleared,
+// Tex standing in the middle, and the bad news told in a box a letter each delay of 32 turns; then
+// ten delays more, and the game is over.
+P.pressure_out = function* () {
+  yield { cp: 0x3989 }; P.refill_pipe(); yield { cp: 0x398C };
+  io.sei();
+  M[Z.controls_off] = 0x01; M[Z.menu_on] = 0x01;
+  M[Z.enemy_mask] = 0; M[Z.speed] = 0; M[Z.skyline_speed] = 0; M[Z.pipe_speed] = 0; M[Z.jumping] = 0; M[Z.bullet_flying] = 0;
+  P.clear_enemies();
+  P.clear_play_area();
+  M[Z.tex_cell] = 0xBA; M[Z.tex_cell + 1] = 0x0E;
+  P.draw_tex();
+  io.cli();
+  for (let y = 0x1D; y >= 0; y--) { M[0x0D6D + y] = 0x2A; M[0x0E5D + y] = 0x2A; }
+  for (let x = 5; x >= 0; x--) { const y = M[0x19A6 + x]; M[0x0D95 + y] = 0x2A; M[0x0DB2 + y] = 0x2A; }
+  M[Z.colour_ptr] = 0xC1; M[Z.colour_ptr + 1] = 0x19;    // bad_news_text
+  M[Z.text_cell] = 0x96; M[Z.text_cell + 1] = 0x0D;
+  for (let x = 4; x >= 0; x--) {
+    for (let y = 0; y !== 0x1C; y++) {
+      M[at(Z.text_cell, y)] = M[at(Z.colour_ptr, y)] & 0x3F;
+      yield* wait(0x39EE, 0x20);
+    }
+    step(Z.colour_ptr, 0x1C);
+    step(Z.text_cell, 0x28);
+  }
+  M[Z.work_ptr] = 0x0A;
+  do {
+    yield* wait(0x3A1D, 0);
+    M[Z.work_ptr] = (M[Z.work_ptr] - 1) & 0xFF;
+  } while (M[Z.work_ptr] !== 0);
+  yield* P.game_over();
+};
+
+// The game over (game_over, $2A72): from the demo, quit_game first; THE END, and the score kept
+// in final_score for the menu's check_hiscore.
+P.game_over = function* () {
+  if (M[T.demo_mode] !== 0) return yield* P.quit_game();
+  io.sei();
+  M[Z.controls_off] = 0x01; M[Z.menu_on] = 0x01;
+  M[Z.paused] = 0;
+  P.clear_enemies();
+  P.clear_play_area();
+  io.cli();
+  yield* P.the_end();
+  for (let x = 5; x >= 0; x--) M[0x261F + x] = M[0x0C56 + x];
+};
+// ESC, or the demo's end: the score set to 000000, and game_over (quit_game, $2AA1).
+P.quit_game = function* () {
+  io.sei();
+  for (let x = 5; x >= 0; x--) M[0x0C56 + x] = 0x30;
+  M[Z.quit_pressed] = 0; M[Z.bullet_flying] = 0; M[Z.jumping] = 0; M[T.demo_mode] = 0;
+  M[Z.refilling] = 0x01;
+  yield* P.game_over();
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-menu.js */
+// The menu (menu, menu_input, menu_choose, draw_menu, draw_menu_frame, show_logo_chars) and the
+// high scores (check_hiscore, enter_hiscore, colour_name_cursor, draw_hiscores).
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).menu = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, B = P.irqByte;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+const step = (z, d) => {
+  const s = M[z] + d;
+  M[z] = s & 0xFF;
+  M[z + 1] = (M[z + 1] + (s > 0xFF ? 1 : 0)) & 0xFF;
+};
+function* wait(a, x) { yield { cp: a }; yield* P.delay({ x }); yield { cp: a + 3 }; }
+
+// The menu ($2B65, where start and game_over jump): the scene's colours, Tex standing in the play
+// area, the frame, the menu and the high scores; a score that makes the table entered; then a
+// delay of 64 turns, the table redrawn and the controls read, until PLAY THE GAME or WATCH THE DEMO
+// is chosen or 255 turns have gone by, which starts the demo. The enemies' characters, which the
+// logo borrowed, go back, and start_game follows.
+P.menu = function* () {
+  io.sei();
+  M[Z.controls_off] = 0x01; M[Z.menu_on] = 0x01;
+  P.set_scene_colours();
+  P.seed_random();
+  M[Z.field_bg] = 0x70; M[Z.pipe_bg] = 0x70;
+  M[Z.tex_colour] = 0x71; M[Z.message_colour] = 0x71;
+  P.clear_play_area();
+  M[Z.field_colour1] = 0x32; M[Z.field_colour2] = 0x62;
+  M[Z.tex_cell] = 0xBB; M[Z.tex_cell + 1] = 0x0E;
+  P.draw_tex();
+  M[Z.pipe_speed] = 0x03; M[Z.leg_delay] = 0x07;
+  M[Z.menu_anim_timer] = 0x02; M[Z.logo_timer] = 0x02; M[Z.unused_91] = 0x02;
+  M[Z.skyline_speed] = 0x01; M[Z.leg_timer] = 0x01; M[Z.speed] = 0x01; M[Z.refilling] = 0x01;
+  M[Z.menu_done] = 0; M[Z.bullet_flying] = 0; M[T.demo_mode] = 0; M[Z.menu_turns] = 0;
+  P.draw_hud();
+  P.draw_menu_frame();
+  P.draw_menu();
+  P.install_irq();
+  io.cli();
+  yield { cp: 0x2BC3 };
+  yield* P.check_hiscore();
+  for (;;) {                                               // b_2BC6
+    M[Z.menu_turns] = (M[Z.menu_turns] + 1) & 0xFF;
+    if (M[Z.menu_turns] === 0) { M[T.demo_mode] = 0x01; break; }
+    yield* wait(0x2BCC, 0x40);
+    P.draw_hiscores();
+    yield { cp: 0x2BD2 };
+    P.menu_input();
+    if (M[Z.menu_done] !== 0) break;
+  }
+  for (let x = 0x6F; x >= 0; x--) M[0x3EE8 + x] = M[0x0560 + x];
+};
+
+// The last game's score against each entry of the table from the top, digit by digit; at the
+// first it beats, it is entered there (check_hiscore, $2625).
+P.check_hiscore = function* () {
+  M[Z.hiscore_offset] = 0; M[Z.hiscore_rank] = 0;
+  for (;;) {
+    let x = (M[Z.hiscore_offset] + 0x06) & 0xFF, c = 1;
+    for (let y = 0x06; y !== 0; y--) {                     // SBC down the six digits
+      const t = M[(0x1A4C + x) & 0x3FFF] - M[0x261E + y] - (1 - c);
+      c = t >= 0 ? 1 : 0;
+      x = (x - 1) & 0xFF;
+    }
+    if (!c) { yield* P.enter_hiscore(); P.draw_hiscores(); return; }
+    M[Z.hiscore_offset] = (M[Z.hiscore_offset] + 0x0E) & 0xFF;
+    M[Z.hiscore_rank] = (M[Z.hiscore_rank] + 1) & 0xFF;
+    if (M[Z.hiscore_rank] === 0x08) return;
+  }
+};
+// The table moved down from hiscore_rank (the first byte of each entry it moves stays), the score
+// put in and final_score set to 000000; then the name typed: up and down step its letter at the
+// cursor, left and right move the cursor, a delay of 48 turns each time round, until fire
+// (enter_hiscore, $266F).
+P.enter_hiscore = function* () {
+  M[Z.entry_offset] = M[0x2657 + M[Z.hiscore_rank]];
+  if (M[Z.hiscore_rank] !== 0x07) {
+    let x = 0x62;
+    do { M[0x1A5B + x] = M[0x1A4D + x]; x = (x - 1) & 0xFF; } while (x !== M[Z.entry_offset]);
+  }
+  let x = M[Z.entry_offset];
+  for (let y = 0; y !== 0x06; y++) { M[(0x1A4D + x) & 0x3FFF] = M[0x261F + y]; M[0x261F + y] = 0x30; x = (x + 1) & 0xFF; }
+  P.draw_hiscores();
+  const xi = (M[Z.hiscore_rank] << 1) & 0xFF;
+  M[Z.row_ptr] = M[0x265F + xi]; M[Z.name_colour_cell] = M[0x265F + xi];
+  M[Z.row_ptr + 1] = M[0x2660 + xi]; M[Z.name_colour_cell + 1] = (M[0x2660 + xi] - 0x04) & 0xFF;
+  for (let y = 6; y >= 0; y--) M[0x2755 + y] = 0x01;
+  M[Z.name_offset] = (M[Z.entry_offset] + 0x06) & 0xFF;
+  M[Z.name_cursor] = 0;
+  let first = true;                                        // JMP j_271E
+  for (;;) {
+    if (!first) {                                          // j_26CC
+      let y = M[Z.name_cursor];
+      if (B(Z.ctl_fire) & 0x80) return;
+      if (B(Z.ctl_up) & 0x80) {
+        let v = (M[0x2755 + y] + 1) & 0xFF;
+        if (v === 0x3B) v = 0x01; else if (v === 0x1B) v = 0x20;
+        M[0x2755 + y] = v;
+      }
+      if (B(Z.ctl_down) & 0x80) {
+        let v = (M[0x2755 + y] - 1) & 0xFF;
+        if (v === 0) v = 0x3A; else if (v === 0x1F) v = 0x1A;
+        M[0x2755 + y] = v;
+      }
+      if (B(Z.ctl_left) & 0x80) {
+        y = (y - 1) & 0xFF;
+        if (y & 0x80) y = 0;
+        M[Z.name_cursor] = y;
+      }
+      if (B(Z.ctl_right) & 0x80) {
+        y = (y + 1) & 0xFF;
+        if (y === 0x07) y = 0x06;
+        M[Z.name_cursor] = y;
+      }
+    }
+    first = false;
+    for (let y = 6; y >= 0; y--) M[at(Z.row_ptr, y)] = M[0x2755 + y];   // j_271E
+    P.colour_name_cursor();
+    let x = M[Z.name_offset];
+    for (let y = 0; y !== 0x07; y++) { M[(0x1A4D + x) & 0x3FFF] = M[0x2755 + y]; x = (x + 1) & 0xFF; }
+    yield* wait(0x273D, 0x30);
+  }
+};
+// The name's colours, white at the cursor (colour_name_cursor, $2743).
+P.colour_name_cursor = function () {
+  for (let y = 6; y >= 0; y--) M[at(Z.name_colour_cell, y)] = y === M[Z.name_cursor] ? 0x71 : 0x11;
+};
+// THE TYCOONS! and THE MENU, then the eight entries: each rank's number in a colour from TED's
+// timer 1 (taken again while its low three bits are 0), the score with its leading 0s blank and
+// the name in that colour (draw_hiscores, $2774).
+P.draw_hiscores = function () {
+  for (let x = 0x0B; x >= 0; x--) { M[0x0D94 + x] = M[0x275C + x] & 0x3F; M[0x0DA8 + x] = M[0x2768 + x] & 0x3F; }
+  M[Z.row_ptr] = 0x0A; M[Z.colour_ptr] = 0x0A; M[Z.row_ptr + 1] = 0x0E; M[Z.colour_ptr + 1] = 0x0A;
+  M[Z.rank_digit] = 0x01;
+  let x = 0;
+  do {
+    let y = 0;
+    M[Z.digit_seen] = 0;
+    let a = io.read(0xFF00) & 0x07;
+    while (a === 0) { P.N.spin++; a = io.read(0xFF00) & 0x07; }
+    a |= 0x50;
+    M[at(Z.colour_ptr, y)] = a;
+    M[at(Z.row_ptr, y)] = M[Z.rank_digit] | 0x30;
+    y++;
+    M[at(Z.colour_ptr, y)] = a; M[Z.row_colour] = a;
+    M[at(Z.row_ptr, y)] = 0x2E;
+    y++;
+    M[Z.count] = 0x05;
+    do {                                                   // the score
+      let d = M[0x1A4D + x];
+      M[Z.item_work] = d;
+      if (d !== 0x30) M[Z.digit_seen] = 0x01;
+      else if (y !== 0x06 && M[Z.digit_seen] === 0) d = 0x20;
+      M[at(Z.row_ptr, y)] = d;
+      y++; x = (x + 1) & 0xFF;
+      M[Z.count] = (M[Z.count] - 1) & 0xFF;
+    } while (!(M[Z.count] & 0x80));
+    M[at(Z.row_ptr, y)] = 0x2D;
+    y++;
+    M[Z.count] = 0x06;
+    do {                                                   // the name
+      M[at(Z.row_ptr, y)] = M[0x1A4D + x] & 0x3F;
+      M[at(Z.colour_ptr, y)] = M[Z.row_colour];
+      y++; x = (x + 1) & 0xFF;
+      M[Z.count] = (M[Z.count] - 1) & 0xFF;
+    } while (!(M[Z.count] & 0x80));
+    step(Z.row_ptr, 0x28);
+    M[Z.colour_ptr] = M[Z.row_ptr]; M[Z.colour_ptr + 1] = (M[Z.row_ptr + 1] - 0x04) & 0xFF;
+    x = (x + 1) & 0xFF;
+    M[Z.rank_digit] = (M[Z.rank_digit] + 1) & 0xFF;
+  } while (M[Z.rank_digit] !== 0x09);
+};
+// The five items from menu_item down, each 14 characters in a colour of its own, the first on
+// the menu's highlighted row (draw_menu, $2820).
+P.draw_menu = function () {
+  M[Z.item_work] = M[T.menu_item];
+  M[Z.row_ptr] = 0x47; M[Z.colour_ptr] = 0x47; M[Z.row_ptr + 1] = 0x0E; M[Z.colour_ptr + 1] = 0x0A;
+  M[Z.count] = 0x04;
+  do {
+    let x = (M[Z.item_work] << 4) & 0xFF;
+    for (let y = 0; y !== 0x0E; y++) {
+      M[at(Z.row_ptr, y)] = M[0x2884 + x] & 0x3F;
+      M[at(Z.colour_ptr, y)] = (M[Z.item_work] + 0x51) & 0xFF;
+      x = (x + 1) & 0xFF;
+    }
+    let i = (M[Z.item_work] + 1) & 0xFF;
+    if (i === 0x05) i = 0;
+    M[Z.item_work] = i;
+    M[Z.work_ptr] = M[0x287F + M[Z.count]];
+    step(Z.row_ptr, M[Z.work_ptr]);
+    M[Z.colour_ptr] = M[Z.row_ptr]; M[Z.colour_ptr + 1] = (M[Z.row_ptr + 1] - 0x04) & 0xFF;
+    M[Z.count] = (M[Z.count] - 1) & 0xFF;
+  } while (!(M[Z.count] & 0x80));
+};
+// Fire chooses the highlighted item; up and down turn the menu (menu_input, $28D4).
+P.menu_input = function () {
+  if (B(Z.ctl_fire) & 0x80) P.menu_choose();
+  if (B(Z.ctl_up) & 0x80) {
+    M[T.menu_item] = (M[T.menu_item] + 1) & 0xFF;
+    if (M[T.menu_item] === 0x05) M[T.menu_item] = 0;
+  }
+  if (B(Z.ctl_down) & 0x80) {
+    M[T.menu_item] = (M[T.menu_item] - 1) & 0xFF;
+    if (M[T.menu_item] & 0x80) M[T.menu_item] = 0x04;
+  }
+  P.draw_menu();
+};
+// The item chosen: PLAY THE GAME; the lives, 1 to 6; the sound off or on; the difficulty, EASY,
+// HARD or IMPOSSIBLE !; WATCH THE DEMO (menu_choose, $2ABD).
+P.menu_choose = function () {
+  const item = M[T.menu_item];
+  if (item === 0x03) { M[Z.menu_done] = 0x01; return; }
+  if (item === 0x01) {
+    let v = (M[T.lives_setting] + 1) & 0xFF;
+    if (v === 0x07) v = 0x01;
+    M[T.lives_setting] = v;
+    M[0x28A1] = v | 0x30;
+    return;
+  }
+  if (item === 0x02) {
+    M[T.sound_on] ^= 0x01;
+    const s = M[T.sound_on];
+    let x = (((s << 1) & 0xFF) + s + (s >> 7)) & 0xFF;     // ASL, ADC sound_on
+    for (let y = 0; y !== 0x03; y++) { M[0x28AD + y] = M[0x2B35 + x]; x = (x + 1) & 0xFF; }
+    return;
+  }
+  if (item === 0x00) {
+    let y = M[T.difficulty] + 1;
+    if (y === 0x03) y = 0;
+    M[T.difficulty] = y;
+    let x = M[0x2B62 + y];
+    for (y = 0; M[0x2B3B + x] !== 0; y++, x = (x + 1) & 0xFF) M[0x2885 + y] = M[0x2B3B + x];
+    return;
+  }
+  M[T.demo_mode] = 0x01; M[Z.menu_done] = 0x01;
+};
+// The menu's frame: the boxes round the high scores and the menu, the logo's row with its
+// characters in place of the enemies', and the controls drawn by the joystick's and the
+// keyboard's icon (draw_menu_frame, $2903).
+P.draw_menu_frame = function () {
+  for (let x = 0x0F; x >= 0; x--) {
+    M[0x0D6A + x] = 0x58; M[0x0DBA + x] = 0x58; M[0x0D7E + x] = 0x58; M[0x0DCE + x] = 0x58;
+    M[0x096A + x] = 0x1E; M[0x09BA + x] = 0x1E; M[0x097E + x] = 0x1E; M[0x09CE + x] = 0x1E;
+    M[0x0E1E + x] = 0x59;
+    M[0x0E6E + x] = 0x5A;
+  }
+  M[0x0E1E] = 0x20; M[0x0E2D] = 0x20; M[0x0E6E] = 0x20; M[0x0E7D] = 0x20;
+  M[0x0D92] = 0x58; M[0x0DA1] = 0x58; M[0x0DA6] = 0x58; M[0x0DB5] = 0x58;
+  M[0x0992] = 0x1E; M[0x09A1] = 0x1E; M[0x09A6] = 0x1E; M[0x09B5] = 0x1E;
+  M[0x0E46] = 0x5B; M[0x0E55] = 0x5C;
+  for (let x = 0x77; x >= 0; x--) { M[0x0C00 + x] = 0x58; M[0x0800 + x] = 0x19; }
+  P.show_logo_chars();
+  for (let x = 0; M[0x299B + x] !== 0; x++) { M[0x0C32 + x] = M[0x299B + x]; M[0x0832 + x] = 0x71; }
+  for (let x = 0x0B; x >= 0; x--) {
+    const y = M[0x29AF + x];
+    M[0x0D7A + y] = M[0x29BB + x]; M[0x097A + y] = M[0x29C7 + x];
+  }
+};
+// The enemies' 112 bytes of characters kept at $0560 and the logo's put in their place
+// (show_logo_chars, $3B71).
+P.show_logo_chars = function () {
+  for (let x = 0x6F; x >= 0; x--) { M[0x0560 + x] = M[0x3EE8 + x]; M[0x3EE8 + x] = M[0x3B83 + x]; }
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-scroll.js */
+// The scrolling: the skyline (scroll_skyline, shift_skyline, feed_skyline, next_skyline_piece), the
+// pipe and the pieces it is fed (scroll_pipe, shift_pipe, feed_pipe, next_pipe_piece, build_break,
+// refill_pipe) and the message row (scroll_message); and the frame's small animations (Tex's legs,
+// the star, the menu's frame and logo).
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).scroll = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, B = P.irqByte;
+
+// The skyline's fine scroll moved on by skyline_speed, at half the rate at speed 1; a column's
+// shift each time it passes 8 (scroll_skyline, $1D0D).
+P.scroll_skyline = function () {
+  if (M[Z.paused] !== 0) return;
+  if (M[Z.speed] === 0x01) {
+    M[Z.half_rate] = (M[Z.half_rate] + 1) & 0xFF;
+    if ((M[Z.half_rate] & 0x01) === 0) return;
+  }
+  const v = (M[Z.skyline_scroll] - M[Z.skyline_speed]) & 0xFF;
+  M[Z.skyline_scroll] = v & 0x07;
+  if (v & 0x08) P.shift_skyline();
+};
+// The skyline's five rows ($0C78-$0D3F) a column left, and the new right column (shift_skyline, $1D31).
+P.shift_skyline = function () {
+  for (let x = 0; x !== 0x27; x++) {
+    M[0x0C78 + x] = M[0x0C79 + x]; M[0x0CA0 + x] = M[0x0CA1 + x]; M[0x0CC8 + x] = M[0x0CC9 + x];
+    M[0x0CF0 + x] = M[0x0CF1 + x]; M[0x0D18 + x] = M[0x0D19 + x];
+  }
+  P.feed_skyline({ c: 1 });                                // the carry from CPX #$27, equal
+};
+// The right column of the skyline, five characters on from skyline_char, a building every eight
+// columns (feed_skyline, $1D86). The carry it is called with goes on into next_skyline_piece.
+P.feed_skyline = function (r = {}) {
+  M[Z.skyline_cols_left] = (M[Z.skyline_cols_left] - 1) & 0xFF;
+  if (M[Z.skyline_cols_left] & 0x80) P.next_skyline_piece({ c: r.c });
+  M[Z.skyline_cell] = 0x9F; M[Z.skyline_cell + 1] = 0x0C;
+  for (let x = 4; x >= 0; x--) {
+    M[(0x0C9F + M[0x19A6 + x]) & 0x3FFF] = M[Z.skyline_char];
+    M[Z.skyline_char] = (M[Z.skyline_char] + 1) & 0xFF;
+  }
+};
+// A building other than the last, one of eight, from a random byte picked by rnd2. The carry into
+// random is the one it is called with (1, from shift_skyline's CPX #$27), then 1 from the CPX here
+// (next_skyline_piece, $1DA4).
+P.next_skyline_piece = function (r = {}) {
+  let c = r.c;
+  for (;;) {
+    const i = B(Z.rnd2) & 0x03;
+    P.random({ c });
+    const x = B(Z.rnd0 + i) & 0x07;
+    c = 1;
+    if (x === M[Z.last_skyline]) continue;
+    M[Z.last_skyline] = x;
+    M[Z.skyline_char] = M[0x19AB + x];
+    M[Z.skyline_cols_left] = 0x07;
+    return;
+  }
+};
+
+// The pipe's fine scroll moved on by pipe_speed; a column's shift each time it passes 8
+// (scroll_pipe, $1D5A).
+P.scroll_pipe = function () {
+  if (M[Z.paused] !== 0) return;
+  const v = (M[Z.pipe_scroll] - M[Z.pipe_speed]) & 0xFF;
+  M[Z.pipe_scroll] = v & 0x07;
+  if (v & 0x08) P.shift_pipe();
+};
+// The pipe's two rows ($0F70-$0FBF) a column left, and the new right column (shift_pipe, $1D6F).
+P.shift_pipe = function () {
+  for (let x = 0; x !== 0x27; x++) { M[0x0F70 + x] = M[0x0F71 + x]; M[0x0F98 + x] = M[0x0F99 + x]; }
+  P.feed_pipe();
+};
+// The right column of the pipe from piece_buffer, two characters at a time, and the next piece
+// when this one is used up (feed_pipe, $2602).
+P.feed_pipe = function () {
+  const x = M[Z.piece_index];
+  M[0x0F97] = M[0x25E2 + x];
+  M[0x0FBF] = M[0x25E1 + x];
+  M[Z.piece_index] = (M[Z.piece_index] + 2) & 0xFF;
+  if (M[Z.piece_index] === M[Z.piece_length]) P.next_pipe_piece();
+};
+// The next piece of pipe into piece_buffer (next_pipe_piece, $2513): a break every 18 pieces
+// while rnd0's bit 7 is set (not while refilling); otherwise, in scenes 0 and 1, one of the scene's
+// three pieces, of which the third is re-drawn from timer 1 (scene 0) or its high byte (scene 1)
+// until it has come up nine times, and then one of the common pieces, of which the rare ones come
+// only every so often (rare_counts against rare_limits). Scene 2 takes only common pieces.
+P.next_pipe_piece = function () {
+  if (M[Z.refilling] === 0 && (B(Z.rnd0) & 0x80)) {
+    M[Z.break_timer] = (M[Z.break_timer] - 1) & 0xFF;
+    if (M[Z.break_timer] === 0) { M[Z.break_timer] = 0x12; return P.build_break(); }
+  }
+  const scene = M[T.scene];
+  if (scene === 0 || scene === 1) {
+    M[Z.piece_pick] = P.random_byte().a & 0x03;
+    let common = false;
+    if (M[Z.piece_pick] === 0x03) {
+      M[Z.roll3_count] = (M[Z.roll3_count] + 1) & 0xFF;
+      if (M[Z.roll3_count] === 0x09) common = true;
+      else M[Z.piece_pick] = io.read(scene === 0 ? 0xFF00 : 0xFF01) & 0x01;
+    }
+    if (!common) {
+      const x = M[Z.piece_pick] << 1, table = scene === 0 ? 0x25C7 : 0x25CD;
+      M[Z.piece_char] = M[table + x]; M[Z.piece_length] = M[table + 1 + x];
+      return lay();
+    }
+  }
+  M[Z.roll3_count] = 0;
+  let a = P.random_byte().a & 0x03;
+  if (a !== 0) {
+    const x = a - 1;
+    M[0x25DB + x] = (M[0x25DB + x] + 1) & 0xFF;
+    if (M[0x25DB + x] === M[0x25DE + x]) { M[0x25DB + x] = 0; a = x + 1; } else a = 0;
+  }
+  const x = a << 1;
+  M[Z.piece_char] = M[0x25D3 + x]; M[Z.piece_length] = M[0x25D4 + x];
+  lay();
+};
+// j_25B4: piece_length characters counting up from piece_char, into piece_buffer
+function lay() {
+  let x = 0;
+  do {
+    M[(0x25E1 + x) & 0x3FFF] = M[Z.piece_char];
+    M[Z.piece_char] = (M[Z.piece_char] + 1) & 0xFF;
+    x = (x + 1) & 0xFF;
+    P.N.piece++;
+  } while (x !== M[Z.piece_length]);
+  M[Z.piece_index] = 0;
+}
+// A break into piece_buffer (build_break, $308E): its left edge ($D6-$D9), one to three middles of
+// four characters each, each one of three kinds by two random bits, and its right edge ($DD down
+// to $DA). Only one middle until level 4 (break_parts 2); from then one to three.
+P.build_break = function () {
+  for (let x = 3, y = 0xD9; x >= 0; x--, y--) M[0x25E1 + x] = y;
+  M[Z.piece_length] = B(Z.rnd1) & 0x01;
+  let c;
+  if (M[Z.break_parts] === 0x02) c = 1;                   // the carry from CMP #$02, equal
+  else { M[Z.piece_length] = ((B(Z.rnd3) & 0x01) + M[Z.piece_length]) & 0xFF; c = 0; }
+  let x = M[Z.piece_length];
+  do {
+    P.random({ c });
+    M[Z.piece_index] = B(Z.rnd1) & 0x01;
+    const s = (B(Z.rnd2) & 0x01) + M[Z.piece_index];
+    M[(0x3107 + x) & 0x3FFF] = ((s << 2) + 0xDE) & 0xFF;
+    c = 0;                                                 // the carry from ADC #$DE
+    x = (x - 1) & 0xFF;
+  } while (!(x & 0x80));
+  let y = 4;
+  x = 0;
+  do {
+    M[Z.piece_char] = M[(0x3107 + x) & 0x3FFF];
+    for (let k = 3; k >= 0; k--) {
+      M[(0x25E1 + y) & 0x3FFF] = M[Z.piece_char];
+      M[Z.piece_char] = (M[Z.piece_char] + 1) & 0xFF;
+      y = (y + 1) & 0xFF;
+    }
+    x = (x + 1) & 0xFF;
+    M[Z.piece_length] = (M[Z.piece_length] - 1) & 0xFF;
+  } while (!(M[Z.piece_length] & 0x80));
+  M[Z.piece_char] = 0xDD;
+  for (let k = 3; k >= 0; k--) {
+    M[(0x25E1 + y) & 0x3FFF] = M[Z.piece_char];
+    M[Z.piece_char] = (M[Z.piece_char] - 1) & 0xFF;
+    y = (y + 1) & 0xFF;
+  }
+  M[Z.piece_index] = 0;
+  M[Z.piece_length] = y;
+};
+// The whole pipe laid again, 65 columns of new pieces with the interrupt held off, and no break
+// among them (refill_pipe, $196E). It ends with CLI, which can let an interrupt in at once.
+P.refill_pipe = function () {
+  io.sei();
+  P.next_pipe_piece();
+  M[Z.refilling] = 0x01;
+  for (let y = 0x40; y >= 0; y--) P.shift_pipe();
+  M[Z.refilling] = 0;
+  io.cli();
+};
+
+// The message row's fine scroll a pixel a frame, and the row a character left each time it passes
+// 8, the next character of message_text at its right; $FF ends the text (scroll_message, $226A).
+P.scroll_message = function () {
+  if (M[Z.paused] !== 0) return;
+  const v = (M[Z.message_scroll] - 0x01) & 0xFF;
+  M[Z.message_scroll] = v & 0x07;
+  if (!(v & 0x08)) return;
+  for (let x = 0; x !== 0x27; x++) M[0x0FC0 + x] = M[0x0FC1 + x];
+  M[Z.message_ptr] = (M[Z.message_ptr] + 1) & 0xFF;
+  if (M[Z.message_ptr] === 0) M[Z.message_ptr + 1] = (M[Z.message_ptr + 1] + 1) & 0xFF;
+  let ch;
+  for (;;) {
+    ch = M[(M[Z.message_ptr] | M[Z.message_ptr + 1] << 8) & 0x3FFF];
+    if (ch !== 0xFF) break;
+    M[Z.message_ptr] = 0xAA; M[Z.message_ptr + 1] = 0x22;
+  }
+  M[0x0FE7] = ch & 0x3F;
+};
+
+// Tex's legs, the next of four frames every leg_delay frames while he runs (animate_legs, $1EF2).
+P.animate_legs = function () {
+  if (M[Z.paused] !== 0) return;
+  if (M[Z.legs_still] !== 0) return;
+  if (M[Z.speed] === 0) return;
+  M[Z.leg_timer] = (M[Z.leg_timer] - 1) & 0xFF;
+  if (M[Z.leg_timer] !== 0) return;
+  M[Z.leg_timer] = M[Z.leg_delay];
+  P.N.legs++;
+  let x = (M[Z.leg_frame] + 1) & 0xFF;
+  if (x === 0x04) x = 0;
+  M[Z.leg_frame] = x;
+  let y = M[0x19B7 + M[0x19B3 + x]];
+  for (x = 0; x !== 0x30; x++) { M[0x3E48 + x] = M[0x1F2C + y]; y = (y + 1) & 0xFF; }
+};
+// The star in the sky, the next of six frames (twinkle_star, $2C68).
+P.twinkle_star = function () {
+  let y = (M[Z.star_step] + 1) & 0xFF;
+  if (y === 0x06) y = 0;
+  M[Z.star_step] = y;
+  let x = M[0x2C85 + y];
+  for (y = 0; y !== 0x08; y++) { M[0x3D50 + y] = M[0x2C8B + x]; x = (x + 1) & 0xFF; }
+};
+
+// The menu's animation, a frame at a time (menu_tick, $2CAB).
+P.menu_tick = function () { P.cycle_logo_colours(); P.animate_menu_chars(); };
+// The logo's colours stepped every 20 frames, black skipped, while the logo is up
+// (cycle_logo_colours, $2CB2).
+P.cycle_logo_colours = function () {
+  if (M[0x0C32] !== 0x5D) return;
+  M[Z.logo_timer] = (M[Z.logo_timer] + 1) & 0xFF;
+  if (M[Z.logo_timer] !== 0x14) return;
+  M[Z.logo_timer] = 0;
+  P.N.logo++;
+  for (let x = 0x13; x >= 0; x--) {
+    let v;
+    do { M[0x0832 + x] = (M[0x0832 + x] + 1) & 0xFF; v = M[0x0832 + x]; } while ((v & 0x07) === 0);
+    M[0x0832 + x] = v & 0x77;
+  }
+};
+// The menu frame's characters rolled every other frame: two scrolled down a line, one up, two
+// rotated a pixel each way, and the lettering strip at $3DE2 rotated a pixel left
+// (animate_menu_chars, $2BEE).
+P.animate_menu_chars = function () {
+  M[Z.menu_anim_timer] = (M[Z.menu_anim_timer] - 1) & 0xFF;
+  if (M[Z.menu_anim_timer] !== 0) return;
+  M[Z.menu_anim_timer] = 0x02;
+  P.N.chars++;
+  const a = M[0x3EC7], b = M[0x3ECF];
+  for (let x = 6; x >= 0; x--) { M[0x3EC1 + x] = M[0x3EC0 + x]; M[0x3EC9 + x] = M[0x3EC8 + x]; }
+  M[0x3EC8] = b; M[0x3EC0] = a;
+  const c = M[0x3ED0];
+  for (let x = 0; x !== 0x07; x++) M[0x3ED0 + x] = M[0x3ED1 + x];
+  M[0x3ED7] = c;
+  for (let x = 7; x >= 0; x--) {
+    let v = M[0x3ED8 + x];
+    M[0x3ED8 + x] = v >> 1;
+    if (v & 1) M[0x3ED8 + x] = (v >> 1) | 0x80;
+    v = M[0x3EE0 + x];
+    M[0x3EE0 + x] = (v << 1) & 0xFF;
+    if (v & 0x80) M[0x3EE0 + x] = ((v << 1) & 0xFF) | 0x01;
+  }
+  for (let x = 3; x >= 0; x--) {
+    let k = M[0x3DFA + x] >> 7;
+    M[0x3DFA + x] = (M[0x3DFA + x] << 1) & 0xFF;
+    for (const base of [0x3DF2, 0x3DEA, 0x3DE2]) { const v = M[base + x]; M[base + x] = (v << 1 | k) & 0xFF; k = v >> 7; }
+    if (k) M[0x3DFA + x] = 0x01 | M[0x3DFA + x];
+  }
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-tex.js */
+// Tex: his moves and speed (move_tex, move_divider, set_speed), his drawing and the hole under him
+// (draw_tex, erase_tex, check_hole), the jump (start_jump, step_jump), the bullet (fire_bullet,
+// move_bullet, bullet_stop), his death (tex_death, turn_tex, sink_tex) and the play area cleared.
+(function (root) {
+'use strict';
+(root.TexGroups = root.TexGroups || {}).tex = function (P) {
+const M = P.M, Z = P.Z, T = P.T;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+// a pointer in zero page moved on by d, -255 to 255, as the game's 16-bit ADC or SBC does
+const step = (z, d) => {
+  const s = M[z] + d;
+  M[z] = s & 0xFF;
+  M[z + 1] = (M[z + 1] + (s > 0xFF ? 1 : s < 0 ? -1 : 0)) & 0xFF;
+};
+
+// Tex in play, once a frame from irq_field (move_tex, $1DC3): right or left a column every third
+// frame either is held (move_divider), within columns 1 to 27 and not into a blocked side, his
+// speed from the column; a jump when up is held and he did not move; a shot when fire is held and
+// none is flying; then drawn, and his jump stepped on.
+P.move_tex = function () {
+  if (M[Z.paused] !== 0) return;
+  if (M[Z.controls_off] === 0) {
+    M[Z.tex_moved] = 0;
+    if (M[Z.jumping] === 0) {
+      if ((M[Z.ctl_right] & 0x80) && P.move_divider().c && M[Z.right_blocked] === 0 && M[Z.tex_cell] !== 0xC3) {
+        M[Z.tex_moved] = 0x01;
+        P.erase_tex();
+        step(Z.tex_cell, 1);
+        M[Z.left_blocked] = 0;
+        P.set_speed();
+      }
+      if ((M[Z.ctl_left] & 0x80) && P.move_divider().c && M[Z.left_blocked] === 0 && M[Z.tex_cell] !== 0xA9) {
+        M[Z.tex_moved] = 0x01;
+        P.erase_tex();
+        step(Z.tex_cell, -1);
+        M[Z.right_blocked] = 0;
+        P.set_speed();
+      }
+    }
+    if (M[Z.tex_moved] === 0 && (M[Z.ctl_up] & 0x80)) P.start_jump();
+    if ((M[Z.ctl_fire] & 0x80) && M[Z.bullet_flying] === 0) P.fire_bullet();
+    P.draw_tex();
+  }
+  P.step_jump();
+};
+// The carry set every third call (move_divider, $1E49).
+P.move_divider = function () {
+  M[Z.move_timer] = (M[Z.move_timer] - 1) & 0xFF;
+  if (M[Z.move_timer] !== 0) return { c: 0 };
+  M[Z.move_timer] = 0x03;
+  return { c: 1 };
+};
+// Tex's column sets the speed, the pipe's and the skyline's and his legs' pace, from the eight
+// columns in speed_columns (set_speed, $1E55).
+P.set_speed = function () {
+  const cell = M[Z.tex_cell];
+  for (let x = 7; x >= 0; x--) {
+    if (cell !== M[0x1E79 + x]) continue;
+    M[Z.speed] = x;
+    M[Z.pipe_speed] = M[0x1E81 + x]; M[Z.skyline_speed] = M[0x1E89 + x]; M[Z.leg_delay] = M[0x1E91 + x];
+    M[Z.leg_timer] = 0x01;
+    return;
+  }
+};
+// Tex's 15 characters, $40 on, at tex_cell by the layout table the LDY at $1EAD reads (tex_layout,
+// or tex_lying_layout while he dies), in tex_colour; tex_hit set to the operand at $1EB7 (1) when
+// one of them lands on a character from $5C, an enemy's (draw_tex, $1E99).
+P.draw_tex = function () {
+  M[Z.tex_colour_cell] = M[Z.tex_cell];
+  M[Z.tex_colour_cell + 1] = (M[Z.tex_cell + 1] - 0x04) & 0xFF;
+  P.check_hole();
+  M[Z.char_counter] = 0x40;
+  const layout = M[T.tex_layout_operand] | M[T.tex_layout_operand + 1] << 8;
+  for (let x = 0; x !== 0x0F; x++) {
+    const y = M[(layout + x) & 0x3FFF], a = at(Z.tex_cell, y);
+    if (M[a] >= 0x5C) M[Z.tex_hit] = M[T.tex_hit_value];
+    M[a] = M[Z.char_counter];
+    M[at(Z.tex_colour_cell, y)] = M[Z.tex_colour];
+    M[Z.char_counter] = (M[Z.char_counter] + 1) & 0xFF;
+  }
+};
+// Tex's 15 characters set to spaces, by the layout table the LDY at $1ECE reads (erase_tex, $1ECA).
+P.erase_tex = function () {
+  const layout = M[T.erase_layout_operand] | M[T.erase_layout_operand + 1] << 8;
+  for (let x = 0x0E; x >= 0; x--) M[at(Z.tex_cell, M[(layout + x) & 0x3FFF])] = 0x20;
+};
+// The pipe five rows under tex_cell: a break's characters ($D9-$E9, but $DB and $DD) set tex_hit
+// and tex_falling to the operand at $1EEC (1) (check_hole, $1ED7).
+P.check_hole = function () {
+  const ch = M[at(Z.tex_cell, 0xC8)];
+  if (ch < 0xD9 || ch === 0xDB || ch === 0xDD || ch >= 0xEA) return;
+  const v = M[T.hole_hit_value];
+  M[Z.tex_hit] = v; M[Z.tex_falling] = v;
+};
+// A jump begins, unless he is falling or in one (start_jump, $212B).
+P.start_jump = function () {
+  if (M[Z.tex_falling] !== 0 || M[Z.jumping] !== 0) return;
+  M[Z.jumping] = 0x01; M[Z.jump_timer] = 0x01; M[Z.jump_steps] = 0x0A;
+};
+// The jump a row every other frame: five up, five down, then over (step_jump, $213E).
+P.step_jump = function () {
+  if (M[Z.jumping] === 0) return;
+  M[Z.jump_timer] = (M[Z.jump_timer] - 1) & 0xFF;
+  if (M[Z.jump_timer] !== 0) return;
+  M[Z.jump_timer] = 0x02;
+  M[Z.jump_steps] = (M[Z.jump_steps] - 1) & 0xFF;
+  if (M[Z.jump_steps] & 0x80) { M[Z.jumping] = 0; return; }
+  P.erase_tex();
+  let down = M[Z.jump_steps] < 0x05;
+  if (down) { step(Z.tex_cell, 0x28); down = !(M[Z.tex_cell + 1] & 0x80); }   // BPL to b_2173
+  if (!down) step(Z.tex_cell, -0x28);
+  P.draw_tex();
+};
+
+// A shot from Tex's hand, two rows down and two columns on, unless an explosion is going
+// (fire_bullet, $1FEC).
+P.fire_bullet = function () {
+  if (M[Z.exploding] !== 0) return;
+  M[Z.bullet_flying] = 0x01; M[Z.bullet_timer] = 0x01;
+  const s = M[Z.tex_cell] + 0x52;
+  M[Z.bullet_cell] = s & 0xFF;
+  M[Z.bullet_cell + 1] = (M[Z.tex_cell + 1] + (s >> 8)) & 0xFF;
+  P.shot_sound();
+};
+// The bullet a column right each frame, from irq_frame (move_bullet, $2008). It stops on the
+// screen's zero bytes beyond the right edge (bullet_stop), passes over anything below $5C, and
+// hits what it meets from $5C: the arrow ($5C-$62), the bouncy bomb ($63-$72), the jet's bomb
+// ($73-$74) or the explosive ($75-$7A), each with its points and an explosion; a hit that scores
+// sounds and fills three eighths of % COMPLETED.
+P.move_bullet = function () {
+  if (M[Z.paused] !== 0) return;
+  if (M[Z.bullet_flying] === 0) return;
+  M[Z.bullet_timer] = (M[Z.bullet_timer] - 1) & 0xFF;
+  if (M[Z.bullet_timer] === 0) M[Z.bullet_timer] = 0x01;
+  P.bullet_stop();
+  M[at(Z.bullet_cell, 0)] = 0x20;
+  step(Z.bullet_cell, 1);
+  const ch = M[at(Z.bullet_cell, 0)];
+  if (ch === 0) return done();
+  if (ch < 0x5C) {
+    M[at(Z.bullet_cell, 0)] = 0x52;
+    const hi = M[Z.bullet_cell + 1];
+    M[Z.bullet_cell + 1] = (hi - 0x04) & 0xFF;
+    M[at(Z.bullet_cell, 0)] = M[Z.tex_colour];
+    M[Z.bullet_cell + 1] = hi;
+    return;
+  }
+  M[Z.hit_char] = ch;
+  if (ch < 0x63) {                                         // the arrow: 25 points
+    M[Z.arrow_active] = 0; M[Z.arrow_moved] = 0;
+    M[Z.arrow_gone] = 0x01; M[Z.scored] = 0x01;
+    M[Z.arrow_timer] = ((M[Z.rnd1] & 0x3F) + M[Z.arrow_delay_base]) & 0xFF;
+    P.add_score({ a: 0x02, y: 0x04 });
+    P.add_score_units({ a: 0x05 });
+    P.start_explosion({ x: M[Z.arrow_cell], y: M[Z.arrow_cell + 1] });
+  } else if (ch < 0x73) {                                  // the bouncy bomb: 50 points
+    M[Z.bouncy_active] = 0; M[Z.bouncy_moved] = 0;
+    M[Z.bouncy_old_cell] = M[Z.bouncy_cell]; M[Z.bouncy_old_cell + 1] = M[Z.bouncy_cell + 1];
+    M[Z.bouncy_gone] = 0x01; M[Z.scored] = 0x01;
+    M[Z.bouncy_timer] = ((M[Z.rnd2] & 0x3F) + M[Z.bouncy_delay_base]) & 0xFF;
+    P.add_score({ a: 0x05, y: 0x04 });
+    P.start_explosion({ x: M[Z.bouncy_cell], y: M[Z.bouncy_cell + 1] });
+  } else if (ch < 0x75) {                                  // the jet's bomb: 250 points
+    M[Z.shot_down] = 0x01;
+    P.end_jet_bomb();
+    M[Z.shot_down] = (M[Z.shot_down] - 1) & 0xFF;
+    P.add_score({ a: 0x02, y: 0x03 });
+    P.add_score({ a: 0x05, y: 0x04 });
+    M[Z.scored] = 0x01;
+    P.start_explosion({ x: M[Z.jet_bomb_cell], y: M[Z.jet_bomb_cell + 1] });
+  } else if (ch < 0x7B) {                                  // the explosive: 200 points
+    M[Z.shot_down] = 0x01;
+    M[Z.explosive_old_cell] = M[Z.explosive_cell]; M[Z.explosive_old_cell + 1] = M[Z.explosive_cell + 1];
+    P.explosive_lands();
+    M[Z.shot_down] = 0; M[Z.explosive_moved] = 0;
+    M[Z.scored] = 0x01;
+    P.add_score({ a: 0x02, y: 0x03 });
+    P.start_explosion({ x: M[Z.explosive_cell], y: M[Z.explosive_cell + 1] });
+  } else M[Z.scored] = 0;
+  done();
+  function done() {                                        // b_2045
+    M[Z.bullet_flying] = 0;
+    if (M[Z.scored] !== 0) { P.hit_sound(); P.add_completed({ a: 0x03 }); }
+    M[Z.scored] = 0;
+  }
+};
+// Zeros at the seven places in stop_rows beyond the right edge of the play field's rows, where a
+// bullet stops (bullet_stop, $2116).
+P.bullet_stop = function () {
+  for (let x = 6; x >= 0; x--) M[(0x0E57 + M[0x2124 + x]) & 0x3FFF] = 0;
+};
+
+// Tex's death, once a frame from irq_field while tex_hit is set (tex_death, $2406). At its start
+// the enemies are stopped and cleared, his characters saved at $0400 and turned on their side
+// (turn_tex), and the lying layout put into draw_tex's and erase_tex's LDY; then every other frame
+// he sinks a pixel (sink_tex), 23 times; then he is put back, a life taken (the two DECs at $249D
+// and $24A0, which Plus/4 World's poke makes loads), and the pipe laid again, which lets the next
+// interrupt in. With no life left the game is over.
+P.tex_death = function* () {
+  if (M[Z.menu_on] !== 0) return;
+  if (M[Z.tex_hit] === 0) return;
+  if (M[Z.game_ended] !== 0) return over();
+  if (M[Z.dying] === 0) {
+    M[Z.saved_mask] = M[Z.enemy_mask]; M[Z.enemy_mask] = 0;
+    M[Z.dying] = 0x01; M[Z.legs_still] = 0x01; M[Z.sink_timer] = 0x01;
+    M[Z.sink_steps] = 0x18;
+    P.erase_tex();
+    for (let x = 0; x !== 0xA8; x++) M[0x0400 + x] = M[0x3E00 + x];
+    M[T.tex_layout_operand] = 0x97; M[T.erase_layout_operand] = 0x97;
+    M[T.tex_layout_operand + 1] = 0x19; M[T.erase_layout_operand + 1] = 0x19;
+    M[Z.controls_off] = 0x01;
+    P.turn_tex(); P.clear_enemies(); P.clear_play_area(); P.draw_tex();
+  }
+  P.draw_tex();
+  M[Z.sink_timer] = (M[Z.sink_timer] - 1) & 0xFF;
+  if (M[Z.sink_timer] !== 0) return;
+  M[Z.sink_timer] = 0x02;
+  M[Z.sink_steps] = (M[Z.sink_steps] - 1) & 0xFF;
+  if (M[Z.sink_steps] !== 0) { P.sink_tex(); return; }
+  P.erase_tex();
+  for (let x = 0; x !== 0xA8; x++) M[0x3E00 + x] = M[0x0400 + x];
+  M[T.tex_layout_operand] = 0x88; M[T.erase_layout_operand] = 0x88;
+  M[T.tex_layout_operand + 1] = 0x19; M[T.erase_layout_operand + 1] = 0x19;
+  M[Z.legs_still] = 0; M[Z.tex_hit] = 0; M[Z.dying] = 0; M[Z.tex_falling] = 0;
+  if (M[T.digit_dec] === 0xCE) M[0x0C65] = (M[0x0C65] - 1) & 0xFF;
+  if (M[T.lives_dec] === 0xC6) M[Z.lives] = (M[Z.lives] - 1) & 0xFF;
+  if (M[Z.lives] === 0) return over();
+  M[Z.tex_cell] = 0xA9; M[Z.tex_cell + 1] = 0x0E;
+  M[Z.speed] = 0; M[Z.right_blocked] = 0; M[Z.game_ended] = 0; M[Z.controls_off] = 0;
+  M[Z.left_blocked] = 0x01;
+  P.refill_pipe();
+  yield { cp: 0x24BD };
+  M[Z.demo_ran] = 0;
+  M[Z.enemy_mask] = M[Z.saved_mask];
+  function over() { M[Z.game_ended] = 0x01; M[Z.controls_off] = 0x01; }   // j_24C6
+};
+// Tex's 15 characters at $3E00-$3E77 turned a quarter, each 8 by 8 through turn_buffer (turn_tex, $23CE).
+P.turn_tex = function () {
+  M[Z.work_ptr] = 0; M[Z.work_ptr + 1] = 0x3E;
+  do {
+    for (let x = 7; x >= 0; x--) {
+      for (let y = 7; y >= 0; y--) {
+        const a = at(Z.work_ptr, y), v = M[a];
+        M[a] = v >> 1;
+        M[0x23FE + x] = (M[0x23FE + x] << 1 | (v & 1)) & 0xFF;
+      }
+    }
+    for (let y = 7; y >= 0; y--) M[at(Z.work_ptr, y)] = M[0x23FE + y];
+    M[Z.work_ptr] = (M[Z.work_ptr] + 0x08) & 0xFF;
+  } while (M[Z.work_ptr] !== 0x78);
+};
+// Tex's lying characters a pixel lower each, and the pipe and skyline slowed every other step
+// (sink_tex, $24CD).
+P.sink_tex = function () {
+  if ((M[Z.sink_steps] & 0x01) === 0 && M[Z.pipe_speed] !== 0) {
+    M[Z.pipe_speed] = (M[Z.pipe_speed] - 1) & 0xFF;
+    M[Z.skyline_speed] = M[Z.pipe_speed] >> 1;
+  }
+  M[0x3E00] = 0; M[0x3E18] = 0; M[0x3E30] = 0; M[0x3E48] = 0; M[0x3E60] = 0;
+  for (let x = 0x16; x >= 0; x--) {
+    M[0x3E01 + x] = M[0x3E00 + x]; M[0x3E19 + x] = M[0x3E18 + x]; M[0x3E31 + x] = M[0x3E30 + x];
+    M[0x3E49 + x] = M[0x3E48 + x]; M[0x3E61 + x] = M[0x3E60 + x];
+  }
+};
+// The play field's 14 rows from $0D40, 39 columns, to spaces in tex_colour (clear_play_area, $192E).
+P.clear_play_area = function () {
+  M[Z.row_ptr] = 0x40; M[Z.colour_ptr] = 0x40;
+  M[Z.row_ptr + 1] = 0x0D; M[Z.colour_ptr + 1] = 0x09;
+  for (let x = 0x0D; x >= 0; x--) {
+    for (let y = 0x26; y >= 0; y--) { M[at(Z.row_ptr, y)] = 0x20; M[at(Z.colour_ptr, y)] = M[Z.tex_colour]; }
+    const s = M[Z.row_ptr] + 0x28;
+    M[Z.row_ptr] = s & 0xFF; M[Z.colour_ptr] = s & 0xFF;
+    M[Z.row_ptr + 1] = (M[Z.row_ptr + 1] + (s >> 8)) & 0xFF;
+    M[Z.colour_ptr + 1] = (M[Z.row_ptr + 1] - 0x04) & 0xFF;
+  }
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/page/runtime.js */
+// The Play page's machine: the port (src/) run as the Commodore 16 runs the game, on a TED of its
+// own. It runs in the browser and in node (../test_play.js), and needs TexPort and its groups,
+// and site/lib/c16.js for TED's beam.
+//
+//   const rt = TexPage.create({ ram, cost })
+//     ram    the game's memory as the loader leaves it at $1800, a Uint8Array of 64 KB: listing.json's
+//            bytes (C16.load)
+//     cost   what the program's stretches cost, fitted on the game (scripts/fit-cost.js, cost.json),
+//            and when each band of the interrupt writes TED's registers (writes)
+//   rt.runFrame()   runs the program until the clock reaches the end of the next frame, and returns
+//                   that frame: { n, bands, sound }, bands for C16.renderBands and sound the writes
+//                   to TED's sound registers in it, [tick in the frame, register, value, ...], for
+//                   TEDSound's host
+//   rt.input        { keys: Set of key numbers (kit/c16/machine.js's KEY), joy: port 2's stick,
+//                   active low: 1 up, 2 down, 4 left, 8 right, 16 fire }
+//   rt.M, rt.ted, rt.P, rt.beam, rt.t (the clock), rt.frame (the frame the clock is in),
+//   rt.passes (the main loop's passes, at $2A28)
+//
+// The clock is TED's: 312 lines of 114 ticks of the double clock a frame, the processor's cycles
+// placed on them as TED gives them (C16.timing.Beam: the single clock on the display's lines, the
+// bad lines' holds). Each stretch of the program between two checkpoints moves it on by what the
+// stretch cost the game (cost: its own cycles, by the checkpoints it runs between, and each
+// routine called and each count of work in it at its own), and a turn of a polling loop moves it to
+// the start of the next line. TED raises its raster interrupt as the beam reaches the compare line
+// ($FF0B, with $FF0A's bit 0); the processor takes it when its interrupt flag is clear, at the
+// port's next yield: the handler the KERNAL's vector at $0314 names runs then, its own stretches
+// costed the same way. irq never lets interrupts in itself; tex_death's call of refill_pipe does
+// (CLI), as the game's does, so the next raster interrupt can come in at one of its checkpoints.
+// The port's checkpoint after a CLI is the instruction after it, so a CLI takes effect once the
+// stretch it ends is paid: the game ran that stretch with interrupts off, its first eight frames
+// among them.
+//
+// The raster interrupt splits the screen into its five bands, and each band's colours, scroll and
+// character set take effect from the line its writes to TED land on. The port makes a handler's
+// writes all at once, as the interrupt is taken, so each is put at the moment the game's own makes
+// it: the interrupt's start and the cycles the game takes to reach that write, band by band
+// (cost.writes, measured by scripts/fit-cost.js).
+//
+// What the page shows is made as the beam goes: the memory as each row of the screen begins, and
+// TED's registers line by line, a write taking effect on the line after the one it was made on.
+// The timers count at the single clock (the game reads them only as random numbers, as it does
+// the beam's place, $FF1D and $FF1E), and only the raster interrupt is modelled: the game enables
+// no other.
+(function (root) {
+'use strict';
+const LINE = 114, LINES = 312, FRAME = LINE * LINES;
+const RASTER_AT = 1, HPOS_AT = 97;      // as kit/c16/machine.js has them, measured on plus4emu
+// TED's registers as the KERNAL leaves them, and the bits that read 1 whatever was written
+// (kit/c16/machine.js, KERNAL_TED and READ_ONES)
+const KERNAL_TED = [0xE1, 0x01, 0x71, 0x7E, 0x80, 0x7E, 0x1B, 0x08, 0xFF, 0x7D, 0x02, 0xCC, 0xFC, 0xA0, 0x00, 0x00,
+  0x7C, 0x00, 0x04, 0xD0, 0x08, 0x71, 0x5B, 0x75, 0x77, 0x6E, 0xFC, 0x00, 0xFE, 0x00, 0xC6, 0xA8];
+const READ_ONES = new Uint8Array(0x20);
+Object.assign(READ_ONES, { 0x0A: 0xA0, 0x0C: 0xFC, 0x10: 0x7C, 0x12: 0xC0, 0x14: 0x07, 0x15: 0x80, 0x16: 0x80,
+  0x17: 0x80, 0x18: 0x80, 0x19: 0x80, 0x1A: 0xFC, 0x1F: 0x80 });
+// the registers the picture is drawn from
+const SHOWN = new Set([0x06, 0x07, 0x0C, 0x0D, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19]);
+// the handlers, by the address the vector at $0314 holds
+const HANDLERS = { 0x18A9: 'irq' };
+// the least a stretch costs, for one the fit never saw
+const MIN_STRETCH = 10;
+// the start of a pass of the main loop
+const PASS = 0x2A28;
+// irq_band, which irq steps on as it begins
+const BAND = 0x6B;
+// the frames kept after the clock has passed them, for the one shown
+const KEPT = 4;
+
+function create(o) {
+  const C16 = root.C16, Beam = C16.timing.Beam;
+  const M = new Uint8Array(new ArrayBuffer(0x10000));
+  M.set(o.ram);
+  const ted = Uint8Array.from(KERNAL_TED);
+  const beam = new Beam({ ff06: ted[0x06] });
+  const input = { keys: new Set(), joy: 0x1F };
+  let t = 0, lineSeen = 0, rasterSeen = -1, rasterMatch = false, flags = ted[0x09] & 0x5E;
+  let keyLatch = 0xFF, ff08 = 0xFF, passes = 0;
+  // the timers: a count at tick t0, running or not
+  const timers = [0, 1, 2].map(i => ({ count: ted[2 * i] | ted[2 * i + 1] << 8, latch: ted[0] | ted[1] << 8, t0: 0, run: true }));
+  const timerAt = (i, x = t) => {
+    const T = timers[i];
+    if (!T.run) return T.count;
+    const n = Math.floor((x - T.t0) / 2), c = T.count;
+    if (i > 0) return ((c - n) % 0x10000 + 0x10000) % 0x10000;
+    if (n <= c) return c - n;
+    const P = T.latch || 0x10000;
+    return P - 1 - ((n - c - 1) % P);
+  };
+
+  // ---- the frames as the beam draws them: TED's registers as each began and the writes after,
+  // the memory as each of the screen's 25 rows began, and the writes to the sound registers
+  const pool = [];
+  function newFrame(n) {
+    const f = pool.pop() || { rows: Array.from({ length: 25 }, () => new Uint8Array(0x4000)) };
+    f.n = n; f.ted0 = ted.slice(0, 0x20); f.writes = []; f.sound = []; f.got = 0; f.bands = null;
+    return f;
+  }
+  let cur = newFrame(0);
+  const done = [];
+  function lineStart(L) {
+    const y = L % LINES;
+    if (y === 0) {
+      done.push(cur);
+      while (done.length > KEPT) pool.push(done.shift());
+      cur = newFrame(L / LINES);
+      beam.frame();
+    }
+    // the rows begin at lines 4, 12 ... 196 (25 rows with the vertical scroll at 3)
+    if (y >= 4 && y < 204 && (y - 4) % 8 === 0) { cur.rows[(y - 4) >> 3].set(M.subarray(0, 0x4000)); cur.got |= 1 << ((y - 4) >> 3); }
+  }
+  const compare = () => ted[0x0B] | (ted[0x0A] & 1) << 8;
+  function rasterCheck(line) {
+    const m = line === compare();
+    if (m && !rasterMatch) flags |= 0x02;
+    rasterMatch = m;
+  }
+  const nextEvent = () => Math.min((lineSeen + 1) * LINE, (rasterSeen + 1) * LINE + RASTER_AT);
+  // TED up to tick u: the lines begun, the raster flag raised as the count reaches the compare line
+  function events(u) {
+    for (;;) {
+      const a = (lineSeen + 1) * LINE, b = (rasterSeen + 1) * LINE + RASTER_AT;
+      if (Math.min(a, b) > u) return;
+      if (a <= b) { lineSeen++; lineStart(lineSeen); } else { rasterSeen++; rasterCheck(rasterSeen % LINES); }
+    }
+  }
+
+  // ---- the chips
+  function keyboard(w) {
+    let v = 0xFF;
+    for (const k of input.keys) if (!(keyLatch & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
+    if (!(w & 0x02)) v &= 0x70 | (input.joy & 0x0F) | (input.joy & 0x10 ? 0x80 : 0) | 0x40;
+    return v & 0xFF;
+  }
+  // The tick a read of the timers or the beam's place sees: the clock moved on by what the run
+  // owes so far (the routines it has called since its last checkpoint) and by the reads of TED it
+  // has made since then, four cycles each, so that a loop that draws random numbers from them
+  // (find_space, swap_face) sees them change from turn to turn, as the game does.
+  const now = () => { const run = top(), n = Math.round(run.owe + run.seen); return n > 0 ? beam.after(t, n) : t; };
+  function read(a) {
+    if (a < 0xFF00 || a >= 0xFF40) return 0xFF;               // the ACIA, the 6529: nothing there
+    const r = a & 0x3F;
+    if (r >= 0x20) return 0xFF;
+    top().seen += 4;
+    if (r <= 5) { const v = timerAt(r >> 1, now()); return r & 1 ? v >> 8 : v & 0xFF; }
+    if (r === 0x08) return ff08;
+    if (r === 0x09) { const f = flags | 0x25; return f | ((f & ted[0x0A] & 0x5E) ? 0x80 : 0); }
+    if (r === 0x13) return (ted[0x13] & 0xFE) | 1;
+    if (r === 0x1C || r === 0x1D) { const L = (Math.floor((now() - RASTER_AT) / LINE) % LINES + LINES) % LINES; return r === 0x1D ? L & 0xFF : 0xFE | (L >> 8); }
+    if (r === 0x1E) return (((now() + HPOS_AT) % LINE) * 2) & 0xFF;
+    return ted[r] | READ_ONES[r];
+  }
+  function write(a, v) {
+    v &= 0xFF;
+    if (a >= 0xFD30 && a < 0xFD40) { keyLatch = v; return; }
+    if (a < 0xFF00 || a >= 0xFF20) return;
+    const r = a & 0x1F;
+    if (r <= 5) {
+      const i = r >> 1, T = timers[i];
+      T.count = timerAt(i); T.t0 = t;
+      if (r & 1) { T.count = (T.count & 0xFF) | v << 8; if (i === 0) T.latch = (T.latch & 0xFF) | v << 8; T.run = true; }
+      else { T.count = (T.count & 0xFF00) | v; if (i === 0) T.latch = (T.latch & 0xFF00) | v; T.run = false; }
+      ted[r] = v;
+      return;
+    }
+    if (r === 0x08) { ff08 = keyboard(v); ted[r] = v; return; }
+    if (r === 0x09) { flags &= ~(v & 0x5E); return; }
+    ted[r] = v;
+    if (r === 0x06) beam.ff06 = v;
+    if (r === 0x0A || r === 0x0B) rasterCheck((rasterSeen % LINES + LINES) % LINES);
+    if (r >= 0x0E && r <= 0x12) cur.sound.push(t - cur.n * FRAME, 0xFF00 | r, v);
+    if (SHOWN.has(r)) cur.writes.push([Math.floor(placed(r) / LINE) % LINES, r, v]);
+  }
+
+  // The tick a write to one of the registers the picture is drawn from takes effect at: in a band
+  // of the interrupt, the k-th such write the band makes goes at the cycle the game's makes it,
+  // counted from the interrupt's start; anything else, now.
+  function placed(r) {
+    const run = top(), w = run.at && run.k >= 0 && WRITES[run.band];
+    if (!w || run.k >= w.length || w[run.k][0] !== r) { if (run.at) run.k = -1; return t; }
+    return beam.after(run.t0, w[run.k++][1]);
+  }
+
+  // ---- the program: the main program and the interrupts it lets in, a stack of runs, each a
+  // generator with its interrupt flag, the checkpoint it last passed, and the cycles it owes
+  // a CLI lets the interrupt in once the run's debt is paid (step)
+  const io = { read, write, irqByte: a => M[a], sei: () => { const r = top(); r.I = 1; r.cli = false; }, cli: () => { top().cli = true; } };
+  const P = root.TexPort.makePort(M, io);
+  const model = o.cost || { seg: {}, call: {} };
+  const WRITES = model.writes || {};
+  const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
+  const stack = [];
+  const top = () => stack[stack.length - 1];
+  for (const name of Object.keys(model.call)) {
+    const f = P[name];
+    if (typeof f !== 'function') continue;
+    const c = model.call[name];
+    P[name] = f instanceof GENERATOR
+      ? function* (...a) { top().owe += c; return yield* f.apply(this, a); }
+      : function (...a) { top().owe += c; return f.apply(this, a); };
+  }
+  // the stretch to checkpoint to: its own cycles, with the routines called in it (owed as they
+  // were called) and the counts of work since the last
+  function stretch(run, to) {
+    const key = (run.at ? run.at.toString(16) + ':' : '') + run.cp + '>' + to;
+    let c = model.seg[key];
+    if (c === undefined) c = MIN_STRETCH;
+    for (const k in P.N) { if (P.N[k]) c += (model.call['#' + k] || 0) * P.N[k]; P.N[k] = 0; }
+    run.cp = to;
+    return c;
+  }
+  const canTake = () => (flags & ted[0x0A] & 0x02) !== 0 && top().I === 0;
+  // the clock on to tick u, or to the tick an interrupt can be taken on, if that comes first
+  function runTo(u) {
+    for (;;) {
+      const ev = nextEvent();
+      if (ev > u) { if (u > t) t = u; return true; }
+      if (ev > t) t = ev;
+      events(t);
+      if (canTake()) return false;
+    }
+  }
+  // the cycles a run owes, paid on the clock a line at a time (the display switched off or on
+  // changes the cycles a line gives from the next frame): false when an interrupt came first.
+  // Where the debt ends is looked for only once it fits before the next event: delay owes some
+  // 20 frames at once, and looking each line for where that ends walks all of them every line.
+  function pay(run) {
+    for (;;) {
+      if (run.owe < 0.5) { run.owe = 0; return true; }
+      const ev = nextEvent(), c = beam.cycles(t, ev), n = Math.round(run.owe);
+      if (n <= c) { const u = beam.after(t, n); if (u <= ev) { if (u > t) t = u; run.owe = 0; return true; } }
+      run.owe -= c; t = ev; events(t);
+      if (canTake()) return false;
+    }
+  }
+  function take() {
+    const v = M[0x0314] | M[0x0315] << 8, name = HANDLERS[v];
+    if (!name) throw new Error('an interrupt with the vector at $' + v.toString(16).toUpperCase() + ', which the port has no handler for');
+    const f = P[name];
+    const gen = f instanceof GENERATOR ? f.call(P) : (function* () { f.call(P); })();
+    stack.push({ gen, at: v, I: 1, cp: 'in', owe: 0, seen: 0, done: false, poll: false, until: -1,
+      t0: t, band: (M[BAND] + 1) % 5, k: 0 });
+  }
+  function step() {
+    const run = top();
+    if (run.owe > 0) { if (!pay(run)) take(); return; }
+    if (run.cli) { run.cli = false; run.I = 0; }
+    if (run.poll) {                                         // a turn of a polling loop: to the next line
+      if (run.until < 0) run.until = (Math.floor(t / LINE) + 1) * LINE;
+      if (runTo(run.until)) { run.poll = false; run.until = -1; } else take();
+      return;
+    }
+    if (run.done) { stack.pop(); return; }
+    if (canTake()) { take(); return; }
+    const r = run.gen.next();
+    if (r.done) {
+      if (!run.at) throw new Error('the program ended');
+      run.done = true; run.owe += stretch(run, 'out');
+      return;
+    }
+    const y = r.value;
+    run.seen = 0;
+    if (y && y.cp !== undefined) { run.owe += stretch(run, y.cp.toString(16)); if (y.cp === PASS) passes++; }
+    else if (y && y.cycles !== undefined) run.owe += y.cycles;
+    else run.poll = true;                                   // the routines called in the turn are paid first
+  }
+  stack.push({ gen: P.program(), at: 0, I: 1, cp: 'start', owe: 0, seen: 0, done: false, poll: false, until: -1 });
+
+  let target = 0;
+  // one frame of time: the program runs until the clock reaches the frame's end
+  function runFrame() {
+    target += FRAME;
+    let guard = 0;
+    while (t < target) { step(); if (++guard > 5e6) throw new Error('runFrame: no progress'); }
+    return frameAt(target / FRAME - 1);
+  }
+  // the frame numbered n, its bands for C16.renderBands, or the nearest kept
+  function frameAt(n) {
+    let f = done.find(x => x.n === n) || done[done.length - 1];
+    if (!f) return null;
+    if (!f.bands) f.bands = bands(f);
+    return f;
+  }
+  // the frame's lines in bands, each with the memory its row began with and TED's registers then
+  function bands(f) {
+    const out = [], regs = f.ted0.slice();
+    let w = 0, start = 0, mem = null;
+    const rowOf = y => { const r = Math.min(24, y >> 3); return f.got & (1 << r) ? f.rows[r] : M; };
+    for (let y = 0; y < 200; y++) {
+      const L = y + 4;
+      let changed = false;
+      while (w < f.writes.length && f.writes[w][0] < L) { regs[f.writes[w][1]] = f.writes[w][2]; w++; changed = true; }
+      const m = rowOf(y);
+      if (y && (changed || m !== mem)) { out[out.length - 1].y1 = y - 1; start = y; }
+      if (!y || changed || m !== mem) out.push({ y0: start = y, y1: 199, mem: m, ted: regs.slice() });
+      mem = m;
+    }
+    return out;
+  }
+  return { M, ted, input, P, beam, runFrame, frameAt, get t() { return t; }, get frame() { return Math.floor(t / FRAME); }, get passes() { return passes; } };
+}
+root.TexPage = { create, LINE, LINES, FRAME };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+window.TEX_COST = {"seg":{"18a9:18dd>out":33,"18a9:24bd>18dd":0,"18a9:in>18dd":0,"18a9:in>24bd":2887.8,"273d>2740":0,"2740>273d":0,"2740>2bcc":36,"2a28>2a35":14,"2a28>344a":0,"2a35>2a38":0,"2a38>2a42":15,"2a38>2a45":8,"2a42>2a45":0,"2a45>2a28":21.5,"2a45>2a56":6.9,"2a45>2a65":0,"2a45>3989":0,"2a56>2a5e":57.2,"2a5e>2a28":16.2,"2a5e>2a65":0,"2a65>38a6":0,"2bc3>273d":0,"2bc3>2bcc":0,"2bcc>2bcf":0,"2bcf>2bd2":0,"2bd2>2bcc":0,"2bd2>3af4":0,"333a>333d":0,"333d>2a28":0,"333d>333a":0,"344a>344d":0,"344d>2bc3":0,"344d>344a":43.8,"38a6>38a9":176.2,"38a9>393b":957.4,"393b>393e":0,"393e>393b":79.4,"393e>394d":18,"394d>3950":0,"3950>394d":10,"3950>3a84":0,"3950>3aa1":5,"3950>3af4":1699.6,"3989>398c":0,"398c>39ee":567.6,"39ee>39f1":0,"39f1>39ee":45.4,"39f1>3a1d":65,"3a1d>3a20":0,"3a20>344a":4,"3a20>3a1d":10,"3a84>3af4":1653.2,"3aa1>3af4":1656.2,"3af4>3af7":108.9,"3af7>2a28":0,"3af7>333a":0,"start>2bc3":0},"call":{"#cell":26.1,"#chars":748.3,"#legs":903.2,"#logo":667,"#piece":24.4,"#ring":26.9,"#spin":10.5,"#wipe":19.5,"adcD":21.4,"add_completed":45,"animate_legs":260.6,"break_pipe":439.4,"build_break":345.7,"bullet_stop":94,"check_hiscore":1044,"check_hole":815.4,"clear_play_area":12590,"clear_zero_page":7246.7,"colour_name_cursor":427.8,"countdown":399.9,"demo_controls":11.9,"draw_big_glyph":5842.8,"draw_big_glyph_2":5902,"draw_completed_bar":1160.4,"draw_hiscores":5146.2,"draw_hud":6985.1,"draw_jet_bomb":51.8,"draw_menu":2839.7,"draw_menu_frame":9071.8,"drop_jet_bomb":81.5,"end_jet_bomb":3.2,"enter_hiscore":703.5,"erase_tex":192.8,"explosive_lands":80.6,"feed_pipe":954.3,"feed_skyline":2192.1,"fire_bullet":52.1,"hit_sound":308.3,"irq":77.5,"irq_frame":909.1,"irq_pipe":249.6,"irq_scroller":162.5,"level_complete":11,"lose_pressure":35,"main_loop":31,"menu_choose":134.1,"move_arrow_and_jet":107.6,"move_bombs":37.8,"move_bouncy_bomb":46.3,"move_divider":33,"move_explosive":31.1,"move_jet_bomb":67.8,"next_skyline_piece":35.1,"pressure_out":13.7,"quit_game":95,"random":189.9,"random_byte":86.2,"refill_pipe":6242.3,"set_speed":178.3,"shot_sound":54.5,"sink_tex":1199.8,"start_jump":13.8,"step_jump":37.1,"test_key":36.3,"tick_hit_sound":48.7,"turn_tex":29544.5,"twinkle_star":178.2},"writes":{"0":[[7,84],[21,90],[25,94],[22,100],[23,106],[19,236]],"1":[[7,277],[19,283],[21,290],[22,297],[23,304]],"2":[[21,88],[7,144],[19,150],[22,157],[23,164]],"3":[[22,93],[23,100],[7,206],[19,212],[21,219]],"4":[[7,205],[19,211]]}};
+</script>
+<script>
+/* plan */
+// The menu set and a level reached, the game's own way, for the page's Start again and Start on
+// level (and for ../test_play.js, which runs this block in node). TexPlan.toLevel(rt, want, n) is
+// a generator: each step yields one frame's controls, stick directions and key numbers, for the
+// page to give the game and run the frame. It waits for the menu to take the controls, sets it as
+// want has it ({ joystick, difficulty, lives, sound }, the bytes the game keeps them in), and
+// leaves the cursor on PLAY THE GAME; with a level n, it chooses PLAY THE GAME and finishes each
+// level before n at a pass of the main loop, as Plus/4 World's poke of level_done ($9D) does, and
+// ends as next_level steps the level to n. The menu reads the controls once a turn, at the turn's
+// end (a turn is about ten frames), so a control is let go until a turn starts and held through
+// it: the read at its end sees it, once.
+window.TexPlan = (function () {
+'use strict';
+const G = { level: 0x62, level_done: 0x9D, menu_on: 0x38, menu_done: 0x8D, menu_turns: 0xE8,
+  lives: 0x1827, sound: 0x1828, item: 0x1829, joystick: 0x182A, difficulty: 0x182B };
+const J = 34, K = 37;                                      // kit/c16/machine.js, KEY
+const bcd = n => (Math.floor(n / 10) << 4) | n % 10;
+function* toLevel(rt, want, n) {
+  const M = rt.M;
+  function* hold(what) {
+    for (let k = 0; k < 2; k++) {                          // to a turn's start, then held through it
+      const t = M[G.menu_turns];
+      for (let f = 0; f < 40 && M[G.menu_turns] === t; f++) yield k ? [what] : [];
+    }
+  }
+  function* toItem(i) {                                    // up steps the item on, down back
+    for (let k = 0; k < 10 && M[G.item] !== i; k++) yield* hold((M[G.item] - i + 5) % 5 <= 2 ? 'down' : 'up');
+  }
+  function* set(item, a, v) { for (let k = 0; k < 8 && M[a] !== v; k++) { yield* toItem(item); yield* hold('fire'); } }
+  // the menu taking the controls: two of its turns gone by
+  for (let f = 0; f < 900 && !(M[G.menu_on] && !M[G.menu_done] && M[G.menu_turns] >= 2); f++) yield [];
+  if (M[G.joystick] !== want.joystick) yield* hold(want.joystick ? J : K);
+  yield* set(0, G.difficulty, want.difficulty);
+  yield* set(1, G.lives, want.lives);
+  yield* set(2, G.sound, want.sound);
+  yield* toItem(3);
+  if (n === null || n === undefined) return;
+  // PLAY THE GAME, and play begun on level 1
+  for (let k = 0; k < 4 && !M[G.menu_done]; k++) yield* hold('fire');
+  for (let f = 0; f < 600 && M[G.menu_on]; f++) yield [];
+  // each level before the one wanted finished at a pass, until next_level reaches it
+  let p = -1;
+  for (let f = 0; f < 60000 && M[G.level] !== bcd(n); f++) {
+    if (rt.passes !== p && !M[G.level_done]) { M[G.level_done] = 0x01; p = rt.passes; }
+    yield [];
+  }
+}
+return { toLevel, G, bcd };
+})();
+</script>
+<script>
+/* the page: the port on TED's clock, drawn each frame, the keyboard, the joystick and the menu */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const W = 384, H = 272, X0 = 32, Y0 = 36;                 // the 320 by 200 window in the border
+const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H), pic = new Uint8Array(320 * 200);
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
+const RGB = Array.from({ length: 128 }, (_, c) => C16.rgb(c));
+const FRAME_MS = 1000 * TexPage.FRAME / 1773447;            // a PAL TED's frame, 20.06 ms
+let image = null, rt = null, running = false, paused = false, level = null, plan = null, ready = false;
+
+// The game's own bytes the page reads (TexPlan.G) and pokes (cheats.md).
+const G = TexPlan.G;
+const CHEATS = {
+  lives: [[0x249D, 0xAD, 0xCE], [0x24A0, 0xA5, 0xC6]],     // DEC $0C65 and DEC lives become loads
+  tough: [[0x1EB7, 0x00, 0x01], [0x1EEC, 0x00, 0x01]],     // the LDA #$01 before tex_hit, twice
+};
+const cheats = { lives: false, tough: false };
+function poke(name) { if (rt) for (const [a, on, off] of CHEATS[name]) rt.M[a] = cheats[name] ? on : off; }
+
+// --- the picture: the frame's bands as TED drew them, and the border's colour on each line ----
+const bandAt = new Array(200);
+function draw(fr) {
+  C16.renderBands(fr.bands, { size: 0x4000, px: pic });
+  for (const b of fr.bands) for (let y = b.y0; y <= b.y1; y++) bandAt[y] = b;
+  const d = img.data, top = RGB[fr.bands[0].ted[0x19] & 0x7F], bottom = RGB[fr.bands[fr.bands.length - 1].ted[0x19] & 0x7F];
+  for (let y = 0, o = 0; y < H; y++) {
+    const py = y - Y0, inside = py >= 0 && py < 200;
+    const edge = inside ? RGB[bandAt[py].ted[0x19] & 0x7F] : py < 0 ? top : bottom;
+    for (let x = 0; x < W; x++, o += 4) {
+      const px = x - X0, c = inside && px >= 0 && px < 320 ? RGB[pic[py * 320 + px] & 0x7F] : edge;
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: each frame's writes to TED's sound registers, played on site/lib/ted-sound.js -----
+const sound = (function () {
+  let host = null, on = false, fresh = true;
+  async function set(want) {
+    if (want && !host) {
+      try { host = await TEDSound.host({ gain: 0.5 }); } catch (e) { say('No sound: ' + e.message); return false; }
+    }
+    on = want; fresh = true;
+    hold();
+    return on;
+  }
+  // the registers as the frame began go first when the sound starts, so a voice already on sounds
+  function frame(fr) {
+    if (!on || !host || !fr) return;
+    let w = fr.sound;
+    if (fresh) {
+      const r = fr.ted0;
+      w = [0, 0xFF0E, r[0x0E], 0, 0xFF0F, r[0x0F], 0, 0xFF10, r[0x10], 0, 0xFF11, r[0x11], 0, 0xFF12, r[0x12]].concat(w);
+      fresh = false;
+    }
+    host.push([w]);
+  }
+  // quiet while the game is paused or going to a level
+  function hold() { if (host) { if (on && running && !paused && !plan) host.ctx.resume(); else host.ctx.suspend(); } }
+  return { set, frame, hold, reset() { fresh = true; } };
+})();
+const soundSwitch = Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+
+// --- input: the arrows and Space as the stick in port 2, or as the game's keys ---------------
+// The keys as the KERNAL numbers them, row times 8 plus column (kit/c16/machine.js, KEY).
+const KEY = { RETURN: 1, Z: 12, X: 23, J: 34, K: 37, SEMICOLON: 50, ESC: 52, SLASH: 55, SPACE: 60, CBM: 61 };
+const STICK = { 1: 'up', 2: 'down', 4: 'left', 8: 'right', 16: 'fire' };
+const BIT = { up: 1, down: 2, left: 4, right: 8, fire: 16 };
+// the game's keys for the stick, with the keyboard chosen on the menu (joystick_mode 0)
+const AS_KEYS = { up: KEY.SEMICOLON, down: KEY.SLASH, left: KEY.Z, right: KEY.X, fire: KEY.RETURN };
+const ARROWS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Space: 'fire' };
+const TYPED = { KeyZ: KEY.Z, KeyX: KEY.X, Semicolon: KEY.SEMICOLON, Slash: KEY.SLASH, Enter: KEY.RETURN, NumpadEnter: KEY.RETURN,
+  KeyJ: KEY.J, KeyK: KEY.K, Escape: KEY.ESC, KeyP: KEY.SPACE, KeyC: KEY.CBM };
+const held = new Map(), typed = new Map();
+let padBits = 0;
+function apply(stick, keys) {
+  const kb = rt.M[G.joystick] === 0, k = new Set(keys);
+  let joy = 0x1F;
+  for (const s of stick) if (kb) k.add(AS_KEYS[s]); else joy &= ~BIT[s];
+  rt.input.joy = joy; rt.input.keys = k;
+}
+function input() {
+  if (!rt) return;
+  const stick = new Set(held.values());
+  for (const b in STICK) if (padBits & b) stick.add(STICK[b]);
+  apply(stick, typed.values());
+}
+function onKey(e, down) {
+  if (!running || e.metaKey || e.altKey || e.ctrlKey) return;
+  const s = ARROWS[e.code], k = TYPED[e.code];
+  if (s === undefined && k === undefined) return;
+  e.preventDefault();
+  if (s !== undefined) { if (down) held.set(e.code, s); else held.delete(e.code); }
+  else if (down) typed.set(e.code, k); else typed.delete(e.code);
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); typed.clear(); });
+document.addEventListener('keydown', e => { if (!active) return; if (ready && ARROWS[e.code] !== undefined) go(); onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+document.querySelectorAll('#pl-pad button').forEach(b => {
+  const bits = +b.dataset.pad;
+  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); screen.focus(); };
+  const off = () => { padBits &= ~bits; b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+
+// --- the loop: one frame of TED's time per frame of real time -------------------------------
+let acc = 0, last = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  try {
+    if (plan) {
+      const t0 = performance.now();
+      let fr = null;
+      while (plan && performance.now() - t0 < 30) {
+        const r = plan.next();
+        if (r.done) {
+          plan = null; acc = 0; last = now; sound.reset(); sound.hold();
+          // on a level, the game waits for the player: its enemies come in a second
+          if (level !== null && fr) { draw(fr); wait('Level ' + level + '. Press an arrow or Space, or click, to play.'); } else over.hidden = true;
+          break;
+        }
+        const st = r.value.filter(v => typeof v === 'string'), ks = r.value.filter(v => typeof v === 'number');
+        apply(st, ks); fr = rt.runFrame();
+      }
+      if (plan && level !== null && !rt.M[G.menu_on]) { const L = rt.M[G.level]; overMsg.textContent = 'Going to level ' + level + '… level ' + ((L >> 4) * 10 + (L & 15)); }
+      return;
+    }
+    acc += Math.min(250, now - (last || now)); last = now;
+    let n = 0, fr = null;
+    while (acc >= FRAME_MS && n < 10) { input(); fr = rt.runFrame(); sound.frame(fr); acc -= FRAME_MS; n++; }
+    if (n === 10) acc = 0;
+    if (fr) draw(fr);
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+}
+
+// --- controls ----------------------------------------------------------------------------------
+const pauseButton = document.querySelector('[data-act="pause"]');
+function pause(on) { paused = on; pauseButton.setAttribute('aria-pressed', String(on)); sound.hold(); }
+// paused, with a message over the screen until the player goes on
+function wait(msg) { ready = true; pause(true); overMsg.textContent = msg; over.hidden = false; }
+function go() { ready = false; over.hidden = true; pause(false); }
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
+// A new game from the first instruction, the menu set as the last one had it (as the game loads,
+// the first time) with SOUND on while the page's sound is, and n the level to start on, or null.
+function start(n) {
+  const M = rt && rt.M;
+  const want = { joystick: M ? M[G.joystick] : 0x01, difficulty: M ? M[G.difficulty] : 0, lives: M ? M[G.lives] : 0x03, sound: soundSwitch.on ? 1 : 0 };
+  rt = TexPage.create({ ram: image, cost: window.TEX_COST });
+  poke('lives'); poke('tough');
+  level = n;
+  plan = TexPlan.toLevel(rt, want, n);
+  overMsg.textContent = n === null ? 'Starting…' : 'Going to level ' + n + '…'; over.hidden = false;
+  running = true; ready = false; last = 0; acc = 0;
+  sound.reset(); pause(false);
+  document.querySelectorAll('#pl-levels button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.level === level)));
+  screen.focus();
+}
+// the levels where something changes: the enemies, which come in by level, and how soon they
+// come back (facts.md, "Levels and scenes")
+const LEVELS = [[1, 'the jet alone'], [2, 'the bouncy bomb alone'], [3, 'the crash explosive alone'], [4, 'two kinds of enemy at random'],
+  [7, "three kinds, and the jet's bombs break the pipe"], [10, 'all four kinds'], [20, 'the enemies come back sooner'],
+  [40, 'sooner again'], [60, 'the enemies come back at once'], [80, 'as slow to come back as on level 10'],
+  [99, 'the last, and then level 00']];
+const levels = $('pl-levels');
+for (const [i, what] of LEVELS) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.level = i; b.textContent = String(i); b.title = 'Level ' + i + ': ' + what;
+  b.setAttribute('aria-label', 'Start on level ' + i + ', ' + what);
+  b.onclick = () => { if (image) start(i); };
+  levels.appendChild(b);
+}
+$('pl-bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act, cheat = b.dataset.cheat;
+  if (act === 'pause' && running) { if (ready) go(); else pause(!paused); }
+  else if (act === 'restart' && image) start(null);
+  else if (cheat) { cheats[cheat] = !cheats[cheat]; b.setAttribute('aria-pressed', String(cheats[cheat])); poke(cheat); }
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (ready) go(); else if (!running && image) start(null); });
+C16.load('listing.json').then(L => {
+  image = L.ram;
+  overMsg.textContent = 'Tycoon Tex, from its first instruction: the menu. Click, then press Space to play, or pick a level below.';
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(null); };
+  over.appendChild(bt);
+  requestAnimationFrame(tick);
+}, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
+window.TexPlay = { get rt() { return rt; }, start };
+})();
+</script>

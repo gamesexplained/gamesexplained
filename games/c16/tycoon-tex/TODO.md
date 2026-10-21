@@ -23,9 +23,6 @@ to say what the pass did.
   it now finds what the source says, the kit has learned it, and hosting
   the source, or replacing the listing with it, is the maintainer's
   decision.
-- **A Play tab**: a port of the game in JavaScript, checked in lockstep
-  against the game on `kit/c16/machine.js` (`kit/skills/core/70-minisite`,
-  "Play").
 
 ## Open
 
