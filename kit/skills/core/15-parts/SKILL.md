@@ -68,25 +68,29 @@ one image has no `part.json`: its `game.json` holds the ledger settings
    done in its place (a level code, the game's own level select, the
    level number set and the game's loader called), and add a part
    column to the table of files from `10-orient` step 7.
-4. **Find what stays.** Compare the parts' snapshots byte for byte. Code
-   that is the same at the same address in every part is resident: make
-   it a part of its own, and add each load with `--over <its id>`, giving
-   the addresses the load writes as `"ranges"` in its `part.json`. Find
-   them by watching the load (a store checkpoint over all of memory
-   while the loader runs), or by comparing the snapshots either side of
-   it. The part beneath then owns everything else. A load can also lie
-   over a part that has ranges of its own and write some of them again:
-   a program that replaces the game's first pages for a while, and
-   calls the rest of the game. The part beneath keeps its own ranges
-   then: its snapshot holds its own bytes there, the other part's holds
-   others, and each counts what its own load wrote. A stretch that matches
-   another part's where nothing calls it is a leftover of an earlier
-   build, not shared code. A load that several parts share and that
-   stays while they change (a tile set that comes in with the first
-   level to use it and stays for the next) is a part of its own, though
-   the player waits for it with that level: give it a folder `--over`
-   the part beneath, and give each part that uses it `--over` it. Kept
-   inside each of them, its bytes would be counted once for every part.
+4. **Find what stays.** Compare the parts' snapshots byte for byte.
+   - **Resident code.** Code that is the same at the same address in
+     every part is resident: make it a part of its own, and add each
+     load with `--over <its id>`, giving the addresses the load writes
+     as `"ranges"` in its `part.json`. Find them by watching the load (a
+     store checkpoint over all of memory while the loader runs), or by
+     comparing the snapshots either side of it. The part beneath then
+     owns everything else.
+   - **A leftover.** A stretch that matches another part's where nothing
+     calls it is a leftover of an earlier build, not shared code.
+   - **A load over a load.** A load can lie over a part that has ranges
+     of its own and write some of them again: a program that replaces
+     the game's first pages for a while, and calls the rest of the game.
+     The part beneath keeps its own ranges then: its snapshot holds its
+     own bytes there, the other part's holds others, and each counts
+     what its own load wrote.
+   - **A shared load.** A load that several parts share and that stays
+     while they change (a tile set that comes in with the first level to
+     use it and stays for the next) is a part of its own, though the
+     player waits for it with that level: give it a folder `--over` the
+     part beneath, and give each part that uses it `--over` it. Kept
+     inside each of them, its bytes would be counted once for every
+     part.
 5. **A program that replaces the whole of memory** needs no `over`. Run
    its file's unpacker in the simulator over memory filled with two
    different values before trusting its snapshot: whatever the unpacker
