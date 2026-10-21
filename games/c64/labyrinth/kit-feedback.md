@@ -11,6 +11,8 @@
 
 ## What was changed in the kit
 
+- `kit/skills/core/70-minisite`: preserve retired page URLs with the builder’s redirects option and check old bookmarks. This also applies to `games/c64/fist-ii-the-legend-continues`, whose mechanics.html was removed when its content was folded into other tabs in commit9eeaba9e.
+
 None. No kit or shared site file changed.
 
 ## Candidates
@@ -264,3 +266,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Reading structure · 21 October 2026
 
 `70-minisite`, “The page opens with the game”: moved the reader’s technical-link legend below the explanations and restored the How it works entry. `kit/style.md`, “Each tab has a purpose”: made Controls a lookup page, kept detailed local mechanics on Gameplay, and separated location coverage from capture provenance. The kit permits custom intermediate tabs and flexible section order; the catalogue’s coverage badges are a Labyrinth presentation choice. Existing guidance covers this review, so no shared-kit change or maintainer ask arose.
+
+
+## Preserve retired page links · 21 October 2026
+
+Merging reading tabs removed their old URLs, leaving open browser tabs and bookmarks with stale navigation or404 pages. This was a presentation regression introduced by the reorganisation. Added optional game.json redirects to the site builder so retired page paths forward to a published tab without joining its navigation. The forwarding page preserves query strings and fragments. A builder regression test executes that redirect logic and checks that aliases stay out of the tab bar. The minisite skill documents the option and requires checking an old bookmark when renaming or merging a page. Labyrinth declares its three retired paths. No maintainer issue is needed.
