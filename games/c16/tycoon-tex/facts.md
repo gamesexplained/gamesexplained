@@ -352,6 +352,36 @@ is OFF as loaded. Three effects:
 
 There is no music.
 
+## The authors' source
+
+Plus/4 World's "Source files" download for the game, read on 21 October
+2026 (93,378 bytes, SHA-256 `1a0d82c9`...`ed514`), is a copy of a
+Commodore disk named PLATFORM, id `B1 2A`, of 98 files. It is not in
+this repository; what it shows of how the game was made is on the
+Source tab, from `original-source.md`. Against the snapshot:
+
+- The program's source, 59 files that TYCOON-TEX chains with `.lib`,
+  assembles byte for byte to the disk's object file OBJ, `$1800`-`$3BF2`
+  in MOS hex, every record's checksum right. OBJ matches the game in
+  every byte but `$3262`: `$58` in OBJ and the source
+  (`lda scrpos+2 ;* thousands`, a life every 1,000 points), `$57` in the
+  game (`add_score`).
+- The character sources assemble to the disk's CHAR#1, `$1000`-`$17FF`,
+  which matches the game but `$1001`-`$1002`: `$3E $3A` on the disk,
+  `$09 $10` in the game, the BASIC line link `$1009`. Novaload writes
+  those two bytes from the tape *(live: a write checkpoint on
+  `$1001`-`$1002` stopped at Novaload's store at `$0395`)*.
+- `$3C00`-`$3FFF` is the disk's binary FRAK!, identical.
+- `$3BF3`-`$3BFF`, thirteen `$FF` bytes that nothing reads, are in no
+  file.
+- In the source, `$36E3`-`$36F1` (`marida`) holds the five enemies'
+  colours for each of the three scenes and `$19BE` (`tim5`) each scene's
+  offset into it; the lines that read them are commented out, and every
+  enemy gets `$78`. `$1920`, `LDX #$20`, is the first instruction of
+  `delay`, which every caller enters at `$1922`. `$C0` is `cheat`, set
+  and tested only by lines commented out. The picture `joystick_icon`
+  is a "kempston joystick".
+
 ## The listing's error rate
 
 One sample of 60 of the listing's 466 comments, drawn with the seed

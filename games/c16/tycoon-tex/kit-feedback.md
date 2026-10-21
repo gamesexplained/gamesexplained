@@ -14,6 +14,7 @@ time, operating system and tool versions.
 ## What was changed in the kit
 
 - `kit/lessons/2026-10-21-tycoon-tex.md`: sweep a timing from before it can work to after it cannot; count a loop's passes by running it at its limits.
+- `kit/scripts/build.py`, `site/source.html`: a game whose authors' source survives says what it shows of how the game was made in `original-source.md`, which the build renders as a section of the Source tab above the listing, `source.html#original-source`. The contributor asked for a section there, and the tab had no place for one. `kit/scripts/test_build_original_source.py` tests it, and `kit/scripts/check_docs.py` lets a game folder hold the file. `70-minisite` does not name it yet: the skill-edit bar wants a second game whose source survives.
 
 ## Candidates
 

@@ -16,13 +16,19 @@ to say what the pass did.
 - **An audit of the listing** on another model (`kit/CHECKING.md`): the
   sample found 7 of 60 comments wrong in a detail, 11.7 % (95 % interval
   5.8 to 22.2 %), all corrected.
-- **Plus/4 World's source files** (a 93 KB zip of 29 December 2020): with
-  the contributor's yes, compare them with the listing as a check.
+- **The kit's lessons from the authors' source.** The source showed the
+  listing four things it missed (`agent-history.md`, "the authors'
+  source"). Change the kit to catch them without the source in view, then
+  have a fresh agent read `$19BE`, `$36E3`, `$1920` and `$1001` again. If
+  it now finds what the source says, the kit has learned it, and hosting
+  the source, or replacing the listing with it, is the maintainer's
+  decision.
 - **A Play tab**: a port of the game in JavaScript, checked in lockstep
   against the game on `kit/c16/machine.js` (`kit/skills/core/70-minisite`,
   "Play").
 
 ## Open
 
-- The cover's "surface missiles": which enemy, if any, it means.
+- The cover's "surface missiles": which enemy, if any, it means. The
+  authors' plan for the aliens names four and no missiles.
 - How control first reaches Novaload's stub in the stack page.

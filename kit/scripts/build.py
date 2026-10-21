@@ -7,6 +7,7 @@ For every games/<platform>/<slug>/game.json:
   discoveries.html copied through if authored    (Discoveries)
   levels.html  copied through if authored          (Maps / levels)
   source.html  from site/source.html + facts.md + cheats.md   (Source code)
+               + original-source.md, for a game whose authors' source survives
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
 Every tab but Source draws from the same listing.json: C64.load, BBC.load and
@@ -478,6 +479,22 @@ def virtual_note(rows):
     return (f'<p class="srcnote"><b>Not all of the program is here.</b> The game reads '
             f'{sum(n for n, _ in rows):,} bytes of its program from the disk during play, which this listing does not '
             f'hold: {what}.</p>')
+
+
+ORIGINAL = "original-source.md"
+
+
+def original_source(gdir, addr=True):
+    """The Source tab's section on the authors' own source, for a game whose source survives:
+    what it shows of how the game was made, from original-source.md in the game folder. A section
+    of the page, above the listing, never folded away: its first heading is the section's, its
+    others one level below, and its id is the one the game's other pages link to
+    (source.html#original-source). None when the folder has no such file."""
+    text = read(os.path.join(gdir, ORIGINAL))
+    if not text.strip():
+        return ""
+    return ('<section class="origsrc" id="original-source">'
+            + markdown(text, drop_h1=False, addr=addr, shift=1) + "</section>")
 
 
 def withheld(game):
@@ -1198,6 +1215,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
         whole += '<h2>Cheats</h2><div data-part="">' + markdown(cheats, addr=False, parts=pages) + "</div>"
     tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
     tpl = tpl.replace("<!-- accuracy -->", source_note(game) + virtual_note(virtual(game, P)))
+    tpl = tpl.replace("<!-- original -->", original_source(gdir, addr=False))
     for p in shown:
         page, beneath = part_page(p), [q for q in reversed(under(P, p)) if listed(q)]
         facts = f"<h2>{html.escape(p['title'])}</h2>" + markdown(read(os.path.join(p["dir"], "facts.md")), addr=page, shift=1,
@@ -1352,6 +1370,7 @@ def build_game(gdir, out_root):
         src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
         src = src.replace("<!-- accuracy -->", source_note(game) + uncounted_note(os.path.join(gdir, "listing.json"))
                           + virtual_note(virtual(game)))
+        src = src.replace("<!-- original -->", original_source(gdir))
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{lib}/site.js"></script>\n'

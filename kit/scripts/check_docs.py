@@ -12,8 +12,9 @@
                      game itself prints may be quoted as it appears (`...`, "...", or in capitals),
                      and facts.md's section on the listing's error rate says what was corrected
                      (kit/skills/core/60-verify)
-  games/*/*/*.md     the template's notes and no others: a check's result goes in facts.md,
-                     its working record in work/ (kit/skills/core/60-verify)
+  games/*/*/*.md     the template's notes and no others, but original-source.md, which build.py
+                     renders on the Source tab: a check's result goes in facts.md, its working
+                     record in work/ (kit/skills/core/60-verify)
   games/*/*/kit-feedback.md   the skill text that changed what the run did, named in the
                      form skill_usage.py counts, or "None." (kit/skills/core/80-retro, step 1)
   kit/skills/core/   a game's branch that adds to a core skill names, in kit-feedback.md,
@@ -463,6 +464,7 @@ def main():
     fails += steps_tables()
     fails += skill_dated_records()
     notes = sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, "kit", "template", "*.md")))
+    notes.append("original-source.md")     # what the authors' own source shows, where it survives (build.py)
     for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.md"))):
         if os.path.basename(f) not in notes:
             print(f"  x  {os.path.relpath(f, ROOT)}  a game folder's notes are the template's: {', '.join(notes)}.")

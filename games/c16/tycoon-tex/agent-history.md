@@ -83,3 +83,39 @@ come and the arrow and the jet do; with them off he fell five times, so
 the tab runs without enemies and says so. A table cell given the class
 `pick` took the site's stepper layout and broke the jump table until it
 was renamed.
+
+## 21 October 2026: the authors' source
+
+After the run, Aaron answered the card: download Plus/4 World's "Source
+files" and use them as a check only. His rule is that the source is a
+way to learn where the kit's reverse engineering falls short, never an
+input: the listing stays as the analysis made it, nothing from the zip
+is committed, and hosting the source, or replacing our results with
+it, is his decision for later.
+
+The zip is a copy of the authors' C64 disk. A two-pass assembler for
+its dialect (Commodore's CBM Resident Assembler: `.lib` chaining by
+file name, `.byte`, `.word`, macros) rebuilt each part, which matched
+the disk's objects and, but for three bytes, the game (`facts.md`, "The
+authors' source"). The listing agreed with the source on code and data
+in 9,177 of its 9,179 bytes, with a label at every address the code
+refers to. Where it fell short: the colour table at `$36E3`, which it
+calls unused bytes; `delay`'s first instruction at `$1920`, listed as
+two data bytes; the BASIC link at `$1001`; and the joystick picture's
+name. The comparison, the scripts and what they suggest for the kit are
+in a document for Aaron, and the scripts in the project's shared files
+(`tycoon-tex-source-check/`), not in this repository. A source-built
+`symbols.json` went through `listing.py` with only two addresses
+refused, each given two names by the source.
+
+Aaron then asked for what the source shows of how the game was made to
+go on the site, without anything about our own process or accuracy: a
+section on the Source tab and a line in the page's opening. The build
+had no place for a game's own section on that tab, so
+`kit/scripts/build.py` now renders `original-source.md` there, as a
+section above the listing with the id `original-source` (Aaron asked
+for a plain section rather than a box that folds), and the How it works
+page links to it twice. Plus/4 World does not say who gave it the zip; Games That
+Weren't says Anthony Clarke donated his source files to Mark Hardisty,
+and his own comments there (June 2016) describe assembling on a C64 and
+sending the code to the C16, which the disk bears out.
