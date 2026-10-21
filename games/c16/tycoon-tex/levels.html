@@ -1,0 +1,189 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tycoon Tex: maps and levels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.tt-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.tt-pair img{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
+.tt-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;font-size:14px}
+.tt-bar>div{margin:0;min-width:190px}
+.tt-bar button,.tt-pad button,.tt-table button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer;touch-action:manipulation;user-select:none;white-space:nowrap}
+.tt-bar button:hover,.tt-pad button:hover,.tt-table button:hover{border-color:var(--ink-mute)}
+.tt-bar button.on,.tt-pad button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tt-bar label{display:flex;gap:6px;align-items:center;color:var(--ink-soft)}
+.tt-screen{width:100%;max-width:640px;display:block;image-rendering:pixelated;background:#000;margin:0 auto;border-radius:4px}
+.tt-screen:focus{outline:2px solid var(--accent);outline-offset:2px}
+.tt-wrapf{position:relative;max-width:640px;margin:0 auto}
+.tt-band{position:absolute;left:0;right:0;border-top:2px dashed #ffd23f;pointer-events:none}
+.tt-band span{position:absolute;right:4px;top:2px;font-family:var(--fm);font-size:11px;color:#ffd23f;background:rgba(0,0,0,.65);padding:0 4px;border-radius:3px}
+.tt-pad{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0 0;justify-content:center}
+.tt-pad button{min-width:46px;font-size:15px}
+.tt-state{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.5em}
+.tt-small{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end}
+.tt-small canvas{image-rendering:pixelated;background:#000;border-radius:4px;display:block}
+.tt-small figure{margin:0;text-align:center;font-size:12.5px;color:var(--ink-soft)}
+.tt-small figure.on canvas{outline:3px solid #ffd23f;outline-offset:2px}
+.tt-table{border-collapse:collapse;font-size:14px;margin:10px 0;width:100%}
+.tt-table th,.tt-table td{border-bottom:1px solid var(--line-soft);padding:4px 7px;text-align:right;vertical-align:top}
+.tt-table th:first-child,.tt-table td:first-child{text-align:left}
+.tt-table th{font-weight:700;color:var(--ink-soft);font-size:13px}
+.tt-table tr.now td,.tt-table td.now{background:var(--hl)}
+.tt-table.tt-left th,.tt-table.tt-left td{text-align:left}
+.tt-scroll{overflow-x:auto}
+.tt-strip{display:block;image-rendering:pixelated;background:#000;border-radius:3px;max-width:100%}
+.tt-pieces{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin:4px 0 12px}
+.tt-pieces figure{margin:0;font-size:12px;color:var(--ink-soft);text-align:center}
+.tt-need{font-size:14px;color:var(--coral)}
+@media (max-width:720px){:root{--gx:18px;--h1:36px;--pp:16px}.tt-pair{grid-template-columns:1fr}}
+.tt-levels td,.tt-levels th{text-align:left}
+.tt-levels tr{cursor:pointer}
+.tt-levels tr:hover td{background:var(--surface-2)}
+.tt-scene{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Gremlin Graphics</p>
+  <h1>Tycoon Tex</h1>
+  <p class="sub">Ninety-nine levels and a level 00, in three scenes. The pipe of every level is laid at random as Tex runs, so a level is not a map: it is a scene, a set of enemies, how soon they come back and how wide the breaks can be.</p>
+</header>
+<main class="wrap">
+
+<section id="scenes">
+  <p class="fig">01 · The scenes</p>
+  <h2 class="t">The desert, the ice and the surface pipe, in turn</h2>
+  <p class="lede">Level 1 is the desert, 2 the ice, 3 the grey surface pipe, and round again. Here each is played by the game's own demo.</p>
+  <div class="plate">
+    <div class="tt-bar">
+      <div class="pick"><a class="step" id="tt-sprev" aria-label="Previous scene">‹</a><select id="tt-sscene" aria-label="Scene"></select><a class="step" id="tt-snext" aria-label="Next scene">›</a></div>
+      <button type="button" id="tt-srun" class="on">Pause</button>
+    </div>
+    <canvas id="tt-demo" class="tt-screen" width="640" height="400" aria-label="The play screen in the chosen scene, Tex played by the demo."></canvas>
+    <p class="tt-state" id="tt-sstate"></p>
+    <p class="cap">The game's raster interrupts on the kit's 6502, as on the <a href="index.html#run">How it works</a> page, from the start of the scene's first level, or of the level clicked below, with <code>demo_mode</code> set, so that <code>read_controls</code> hands Tex to <code>demo_controls</code>: he runs to column 16, then wanders and jumps the breaks he sees coming. The main loop is left out, so no enemies are sent and the bars stand still, and Tex keeps his lives when he falls.</p>
+  </div>
+  <p>A scene sets the colours of every band (<code>scene_colours</code>), the skyline's characters, the pipe's decorated pieces (<code>scene0_pieces</code>, <code>scene1_pieces</code>; the surface pipe has only the four every scene shares) and the shapes of the arrow, the bouncing bomb and the crash explosive (<a href="index.html#enemies">How it works</a>). The skyline is five pictures of eight columns picked at random, and the pipe is a piece at a time, also at random, with a break every 18th piece made while a random byte is negative. No two plays of a level have the same pipe.</p>
+  <p>A level ends when % COMPLETED is full: 26 cells of eight eighths, filled by running and by scoring. Running right from the start of level 2 without a shot filled it in 5,462 frames on EASY, 110 seconds, and in 1,833 on IMPOSSIBLE, where the main loop that counts it runs faster.</p>
+</section>
+
+<section id="all">
+  <p class="fig">02 · Every level</p>
+  <h2 class="t">Every level, from 1 to 99 and 00</h2>
+  <p class="lede">What <code>next_level</code> sets for each. Click a level to show its scene above.</p>
+  <div class="plate">
+    <div class="tt-scroll"><table class="tt-table tt-levels" id="tt-all"></table></div>
+    <p class="cap">Each row is the game's <code>next_level</code> (<code>$3A31</code>) on the kit's 6502, called on the level before; where it chooses at random, every entry of <code>enemy_pairs</code> or <code>enemy_triples</code> was tried. Delay is the least time an enemy stays away after it has gone, in frames for the arrow and the jet and main-loop passes for the bombs (<code>enemy_delays</code>); threshold is the random byte a frame needs for that time to count down (<code>spawn_threshold</code>). In plus4emu, levels 2, 3, 4, 20, 40, 60, 80, 99 and 00 were entered and read back the same.</p>
+  </div>
+  <p>Levels 1 to 3 bring one enemy each, 4 to 6 two kinds and 7 to 9 three, picked at random when the level starts, and from 10 all four. From level 4 a break can have three middles, and from level 7 the jet's bombs break the pipe where they land. The delay falls at 20, 40 and 60 and goes back up at 80, and 00 follows 99 (<a href="discoveries.html#bcd">Discoveries</a>).</p>
+</section>
+
+</main>
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="reference/tex.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!window.C16 || !window.C64Cpu || !window.Tex) {
+    for (const id of ['tt-demo', 'tt-all']) {
+      const el = $(id); if (!el) continue;
+      const p = document.createElement('p'); p.className = 'tt-need';
+      p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js): open the page from the built site.';
+      el.replaceWith(p);
+    }
+    return;
+  }
+  const hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const SCENES = ['The desert', 'The ice', 'The surface pipe'];
+  const KINDS = [[1, 'arrow'], [4, 'jet'], [2, 'bouncing bomb'], [8, 'crash explosive']];
+  const names = mask => KINDS.filter(([b]) => mask & b).map(([, n]) => n).join(', ');
+  const label = k => k === 100 ? '00' : String(k);
+
+  C16.load('listing.json').then(L => {
+    const base = Tex.fresh(L);
+    const cv = $('tt-demo'), state = $('tt-sstate'), btn = $('tt-srun');
+    let m, run, running = true, acc = 0, last = 0, level = 1;
+    function start(k) {
+      level = k;
+      m = Tex.startLevel(base.slice(), k);
+      m[0x182C] = 1; m[0x8C] = 0;                       // demo_mode on, demo_ran clear: the demo's first run right
+      run = Tex.Run(m); run.step({});
+      draw();
+    }
+    function draw() {
+      Tex.draw(cv, run.picture(), 2);
+      state.textContent = `Level ${label(level)}, ${SCENES[(level - 1) % 3].toLowerCase()}: Tex at column ${(m[0x15] + (m[0x16] << 8) - 0x0C00) % 40}, speed ${m[0x70]}.`;
+    }
+    function loop(t) {
+      if (running && last) {
+        acc += Math.min(200, t - last);
+        let n = 0;
+        while (acc >= 1000 / 49.86 && n++ < 6) { run.step({}); acc -= 1000 / 49.86; }
+        if (n) draw();
+      }
+      last = t;
+      requestAnimationFrame(loop);
+    }
+    btn.onclick = () => { running = !running; btn.textContent = running ? 'Pause' : 'Run'; btn.classList.toggle('on', running); };
+    const go = (function (prev, sel, next) {
+      SCENES.forEach((t, i) => { const o = document.createElement('option'); o.value = i; o.textContent = t; sel.appendChild(o); });
+      const g = i => { i = Math.max(0, Math.min(2, i)); sel.value = i; prev.classList.toggle('off', i === 0); next.classList.toggle('off', i === 2); start(i + 1); };
+      prev.onclick = () => g(+sel.value - 1); next.onclick = () => g(+sel.value + 1); sel.onchange = () => g(+sel.value);
+      return g;
+    })($('tt-sprev'), $('tt-sscene'), $('tt-snext'));
+    go(0);
+    requestAnimationFrame(loop);
+
+    // every level
+    const T = $('tt-all');
+    const SWATCH = ['#a8a040', '#80d0d0', '#707070'];
+    let h = '<tr><th>Level</th><th>Scene</th><th>Enemies</th><th>Delay</th><th>Threshold</th><th>Break middles</th><th>Jet\'s bombs break the pipe</th></tr>';
+    for (let k = 1; k <= 100; k++) {
+      const seen = new Set();
+      let r;
+      for (let p = 0; p < 6; p++) { r = Tex.nextLevel(base.slice(), k, p); seen.add(names(r.mask & 15)); }
+      const en = seen.size > 1 ? `${seen.size === 6 ? 'two' : 'three'} of the four at random` : [...seen][0];
+      h += `<tr data-k="${k}"><td>${label(k)}</td><td><span class="tt-scene" style="background:${SWATCH[r.scene]}"></span>${SCENES[r.scene].replace(/^The /, '')}</td><td>${en}</td><td>${r.delay}</td><td>${hex(r.threshold)}</td><td>1 to ${r.breakParts}</td><td>${r.mask & 16 ? 'yes' : 'no'}</td></tr>`;
+    }
+    T.innerHTML = h;
+    T.onclick = e => {
+      const tr = e.target.closest('tr[data-k]'); if (!tr) return;
+      const k = +tr.dataset.k;
+      for (const x of T.querySelectorAll('tr.now')) x.classList.remove('now');
+      tr.classList.add('now');
+      $('tt-sscene').value = (k - 1) % 3; start(k);
+      $('scenes').scrollIntoView({ behavior: 'smooth' });
+    };
+  }).catch(e => { console.error(e); });
+})();
+</script>
