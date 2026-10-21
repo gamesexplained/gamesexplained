@@ -795,6 +795,11 @@ function labyrinthCorridorPlacement(entry){return entry===255?null:{x:entry*64+3
  function measureNav(){document.documentElement.style.setProperty('--lab-nav-h',nav.offsetHeight+'px');}
  if(window.ResizeObserver)new ResizeObserver(measureNav).observe(nav);addEventListener('resize',measureNav);measureNav();
  const oldScene=new URL(location.href).searchParams.get('scene');const sceneRoutes={"scene-01": "entrance-gate", "scene-02": "first-corridor", "scene-03": "brick-hallway", "scene-04": "alph-and-ralph", "scene-05": "wall-of-hands", "scene-06": "stone-corridor", "scene-07": "scene-07", "scene-08": "scene-08", "scene-09": "scene-09", "scene-10": "scene-10", "scene-11": "scene-11", "scene-12": "scene-12", "scene-14": "scene-14", "scene-15": "scene-15", "scene-16": "scene-16", "scene-18": "scene-18", "scene-20": "scene-20", "scene-21": "scene-21", "scene-24": "scene-24", "scene-25": "scene-25", "scene-26": "scene-26"};if(hashId()==='captured-scene'&&sceneRoutes[oldScene])history.replaceState(null,'','#'+sceneRoutes[oldScene]);if(['area-directory','inside-the-labyrinth','other-areas'].includes(hashId()))history.replaceState(null,'','#text-adventure');
+ const topicsByArea=new Map(Array.from(areaSelect.options,option=>{
+  const headings=Array.from(document.querySelectorAll('section[data-reading-area="'+option.value+'"] h2,section[data-reading-area="'+option.value+'"] h3'));
+  headings.forEach((heading,i)=>{if(!heading.closest('.lab-flow-detail')&&!heading.closest('.lab-technical')&&!heading.id)heading.id='lab-'+option.value+'-topic-'+i;});
+  return [option.value,headings.filter(heading=>!heading.closest('.lab-flow-detail')&&!heading.closest('.lab-technical'))];
+ }));
  function hashId(){try{return decodeURIComponent(location.hash.slice(1));}catch(e){return '';}}
  function areaForHash(){const id=hashId(),target=document.getElementById(id),generated=/^lab-(opening|gate|corridor|brick|alph|hands|stone|atlas)-topic-\d+$/.exec(id);return aliases[id]||(target&&target.closest('[data-reading-area]')?.dataset.readingArea)||(generated&&generated[1])||'opening';}
  function showArea(){
@@ -806,11 +811,10 @@ function labyrinthCorridorPlacement(entry){return entry===255?null:{x:entry*64+3
   for(const link of document.querySelectorAll('.lab-journey a')){if(link.hash==='#'+areaHashes[active])link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}
   if(guideRequested){const guide=document.getElementById('journey-overview');guide.open=true;requestAnimationFrame(()=>guide.scrollIntoView({block:'start'}));}
   topicSelect.replaceChildren();
-  document.querySelectorAll('section[data-reading-area="'+active+'"] h2,section[data-reading-area="'+active+'"] h3').forEach((heading,i)=>{
-   if(heading.closest('.lab-flow-detail')||heading.closest('.lab-technical'))return;
-   if(!heading.id)heading.id='lab-'+active+'-topic-'+i;
+  (topicsByArea.get(active)||[]).forEach(heading=>{
    const option=document.createElement('option');option.value=heading.id;option.textContent=heading.textContent;topicSelect.append(option);
   });
+  if(active==='opening'){const option=document.createElement('option');option.value='opening-text-details';option.textContent='How the text is stored and drawn';topicSelect.append(option);}
   document.getElementById('lab-topic-label').hidden=topicSelect.options.length<2;nav.classList.toggle('lab-one-topic',topicSelect.options.length<2);
   if(Array.from(topicSelect.options).some(o=>o.value===hashId()))topicSelect.value=hashId();
   const target=document.getElementById(hashId());
@@ -819,6 +823,7 @@ function labyrinthCorridorPlacement(entry){return entry===255?null:{x:entry*64+3
    for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
    const owner=target.closest('section');
    if((target.tagName!=='H3'||target.closest('.lab-technical'))&&owner&&owner.querySelector('h2')){const option=Array.from(topicSelect.options).find(o=>o.value===owner.querySelector('h2').id);if(option)topicSelect.value=option.value;}
+   if(target.closest('#opening-text-details'))topicSelect.value='opening-text-details';
    requestAnimationFrame(()=>target.scrollIntoView({block:'start'}));
   }
  }
