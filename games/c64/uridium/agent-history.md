@@ -198,3 +198,20 @@ The Gold Medal in ZZAP! 64 issue 11 went to Mercenary, and the advertisement the
 "gold medal winner" means Paradroid, so the page claims no ZZAP! award for Uridium. Spectrum
 Computing's "2nd Game of the Year" at the Golden Joysticks was left out: the C&VG report read here
 does not name the runner-up for that award.
+
+## Typed data no label reached (21 October 2026)
+
+The ledger once counted data only inside a label's span, and 544 bytes at
+`$75C8`-`$77E7`, typed as bytes, were past the 64-byte reach of the label
+before them: coverage read 100 % and the listing held none of them. They
+are the rest of the status font's bottom halves, `$B9` to `$FC`, which
+start-up builds after the hand-over, so they match nothing in the
+hand-over and the check for copied data did not find them either. They
+now have a label, `font_status_bottom_b`, and a comment of their own.
+The eight bytes at `$16B4`, never reached, are typed as code: they
+decode as four instructions that run into `land_now_flash`, which both
+branches into this code enter after them. The listing was rebuilt from
+a play snapshot remade from the archive.org copy of the disk image,
+whose SHA-1 matches the contributor's (`orientation.md`); 61 bytes of
+running state differ from the first snapshot (zero page, `$A401`-`$A48D`
+and `$FFFE`), because it was taken at another moment of play.
