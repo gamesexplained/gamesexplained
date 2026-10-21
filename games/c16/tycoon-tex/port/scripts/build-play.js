@@ -1,9 +1,9 @@
 'use strict';
 // Writes games/c16/tycoon-tex/play.html: port/play.template.html with, at <!-- port -->, the
 // port's sources (each file of port/src as a script of its own, core.js first), the page's machine
-// (page/runtime.js) and the pacing the fit wrote (cost.json); and the sections that describe the
-// port (page/port-results.html, page/differences.html). The page reads the game's memory from
-// listing.json, as every page of the game does.
+// (page/runtime.js) and the pacing the fit wrote (cost.json); and the section on what differs
+// from a C16 (page/differences.html). The page reads the game's memory from listing.json, as
+// every page of the game does.
 //   node build-play.js
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..'), OUT = path.join(ROOT, '../play.html');
@@ -15,7 +15,7 @@ for (const f of src) parts.push(script('src/' + f, fs.readFileSync(path.join(ROO
 parts.push(script('page/runtime.js', fs.readFileSync(path.join(ROOT, 'page', 'runtime.js'), 'utf8')));
 parts.push('<script>\nwindow.TEX_COST = ' + fs.readFileSync(path.join(ROOT, 'cost.json'), 'utf8').trim() + ';\n</script>');
 html = html.replace('<!-- port -->', () => parts.join('\n'));   // a function, so that $' in the code stays as it is
-for (const f of ['port-results', 'differences']) {
+for (const f of ['differences']) {
   const p = path.join(ROOT, 'page', f + '.html');
   if (fs.existsSync(p)) html = html.replace('<!-- ' + f + ' -->', () => fs.readFileSync(p, 'utf8').trim());
 }
