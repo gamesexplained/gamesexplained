@@ -245,6 +245,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">A joystick in either port, or five keys</h2>
   <p class="lede">K and J on the menu choose the keyboard or the joystick, and the picture between the two boxes shows which. The game reads both through TED itself, never through the KERNAL.</p>
   <div class="plate">
+    <div class="tt-pieces" id="tt-ctl"></div>
+    <p class="cap">The control picture as the menu draws it, twelve cells from <code>control_chars</code>, <code>control_colours</code> and the font at <code>$3C00</code>, with <code>menu_keys</code> copying <code>keyboard_icon</code> or <code>joystick_icon</code> into its middle four. The authors' source calls the joystick a "kempston joystick", and beside it holds a drawing of Commodore's own joystick for the C16 and Plus/4, commented out: on the right, drawn into the same cells, it is the one picture here the game never shows (<a href="source.html#original-source">the authors' source</a>).</p>
+  </div>
+  <div class="plate" style="margin-top:18px">
     <table class="tt-table tt-left" style="max-width:560px"><tr><th>In play</th><th>Joystick</th><th>Keyboard</th></tr>
       <tr><td>Left, right</td><td>left, right</td><td>Z, X</td></tr>
       <tr><td>Jump</td><td>up</td><td>;</td></tr>
@@ -283,7 +287,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 (function () {
   const $ = id => document.getElementById(id);
   if (!window.C16 || !window.C64Cpu || !window.Tex || !window.TEDSound) {
-    for (const id of ['tt-run', 'tt-frame', 'tt-legs', 'tt-break', 'tt-bar', 'tt-enemies', 'tt-ltable', 'tt-sfxroll']) {
+    for (const id of ['tt-run', 'tt-frame', 'tt-legs', 'tt-break', 'tt-bar', 'tt-enemies', 'tt-ltable', 'tt-sfxroll', 'tt-ctl']) {
       const el = $(id); if (!el) continue;
       const p = document.createElement('p'); p.className = 'tt-need';
       p.textContent = 'This needs the site\'s scripts (lib/c16.js, lib/cpu6502.js, lib/ted-sound.js): open the page from the built site.';
@@ -595,6 +599,39 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         h += `<tr><td>${a === b ? a : a + ' to ' + b}</td><td>${en}</td><td>${r.delay}</td><td>${hex(r.threshold)}</td><td>1 to ${r.breakParts}</td><td>${r.mask & 16 ? 'yes' : 'no'}</td></tr>`;
       }
       T.innerHTML = h;
+    })();
+
+    /* The control picture */
+    (function () {
+      const box = $('tt-ctl');
+      // the C16 joystick from the authors' source (JO/KE-SELECT), commented out there: the game holds only the other two
+      const C16JOY = [0, 0, 1, 1, 3, 3, 7, 7, 0, 240, 224, 224, 192, 192, 128, 128,
+                      15, 7, 2, 15, 31, 127, 127, 0, 0, 0, 0, 134, 222, 248, 224, 0];
+      const PICS = [['The keyboard, after K (keyboard_icon)', base.slice(0x3570, 0x3590)],
+                    ['The joystick, after J (joystick_icon): a "kempston joystick" in the source', base.slice(0x3590, 0x35B0)],
+                    ['Commodore\'s C16 joystick, drawn and commented out', C16JOY]];
+      const W = 32, H = 24, Z = 6, bg = C16.rgb(0);
+      for (const [label, icon] of PICS) {
+        const cv = document.createElement('canvas');
+        cv.width = W; cv.height = H; cv.className = 'tt-strip'; cv.style.width = W * Z + 'px';
+        const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
+        // control_cells: each cell's offset from row 9, column 18; control_chars and control_colours: what is drawn there
+        for (let k = 0; k < 12; k++) {
+          const at = base[0x29AF + k], x0 = at % 40 * 8, y0 = (at / 40 | 0) * 8;
+          const ch = base[0x29BB + k], fg = C16.rgb(base[0x29C7 + k]);
+          for (let y = 0; y < 8; y++) {
+            const bits = ch >= 0x1B && ch <= 0x1E ? icon[(ch - 0x1B) * 8 + y] : base[0x3C00 + ch * 8 + y];
+            for (let x = 0; x < 8; x++) {
+              const c = bits & (0x80 >> x) ? fg : bg, i = ((y0 + y) * W + x0 + x) * 4;
+              img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255;
+            }
+          }
+        }
+        ctx.putImageData(img, 0, 0);
+        const f = document.createElement('figure'), cap = document.createElement('figcaption');
+        cap.textContent = label; cap.style.maxWidth = W * Z + 'px';
+        f.append(cv, cap); box.appendChild(f);
+      }
     })();
   }).catch(e => { console.error(e); });
 })();

@@ -14,7 +14,7 @@ The game had a cheat, and the lines that made it are still in the source, commen
 
 Each enemy was to have a colour of its own, set for each scene from a table of fifteen bytes: five colours, for the four enemies and the jet's bomb, in each of the three scenes. The lines that read the table are commented out, and the routine gives every enemy the table's first colour instead. The table is still in the game, and Plus/4 World's starting-level cheat writes its patch over it (Cheats, in the reference below).
 
-The picture of a joystick on the menu is, in the source, a "kempston joystick". Beside it, commented out, is a drawing of Commodore's own joystick for the C16 and Plus/4.
+The picture of a joystick on the menu is, in the source, a "kempston joystick". Beside it, commented out, is a drawing of Commodore's own joystick for the C16 and Plus/4 ([both, drawn as the menu would](index.html#controls)).
 
 The drawings of Tex, the arrow, the jet, its bomb, and the kamikaze plane are on the disk as text as well, and the game's characters differ from them in 107 bytes, most of them in the jet and its bomb.
 
