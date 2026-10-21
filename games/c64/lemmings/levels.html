@@ -1,0 +1,166 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/lem-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">All 100 levels, each drawn from its own file on the disks, with the figures its briefing gives and the access code that leads to it.</p>
+</header>
+<main class="wrap" data-part="game">
+
+<section>
+  <p class="fig">01 · The maps</p>
+  <h2 class="t">Every level's terrain, as the game unpacks it</h2>
+  <p class="lede">A level is 312 multicolour pixels wide and 168 lines high: three and a half times the width of the play area, and its full height. Every other block of 48 pixels sits 8 lines lower, as the two halves of the sprites do on the screen.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="lm-prev" aria-label="previous level">‹</a><select id="lm-level" aria-label="level"></select><a class="step" id="lm-next" aria-label="next level">›</a></div>
+    <div class="lm-controls">
+      <label><input type="checkbox" id="lm-objs" checked> objects</label>
+      <label><input type="checkbox" id="lm-wet" checked> water</label>
+      <label><input type="checkbox" id="lm-marks"> markers on the entrances and exits</label>
+      <label><input type="checkbox" id="lm-view"> the play area's width, over the trap door</label>
+    </div>
+    <canvas id="lm-map" class="lm-canvas" width="624" height="176"></canvas>
+    <div class="lm-row" style="margin-top:14px">
+      <dl class="lm-dl lm-grow" id="lm-info"></dl>
+      <div class="lm-side" id="lm-skills"></div>
+    </div>
+    <p class="cap"><b>Drawn by this page from the level files.</b> Each file was unpacked by the game's own code on the kit's 6502: the loader's unpacker (<code>$CDFB</code>), then the routine every level file carries, which unpacks the terrain and lays it out as sprite shapes at <code>$8000</code> (<code>unpack_terrain</code>, <code>$E094</code>). The page reads the shapes back in the order that routine wrote them. For level 1 of Fun, the terrain and the 160-byte header match the game's memory at the briefing byte for byte. Colours are the level's own, from its header at <code>$E05C</code>-<code>$E06B</code>. The objects (trap doors, exits, traps, decoration) are ORed into the terrain as the game does it (<code>animate_objects</code>, <code>$2A48</code>): each entry of the level's object tables is a few bytes of graphics for one place in the sprite shapes, shown when the object's frame matches its own, and the map shows frame 0, the level as it starts. Water is characters in play (<code>animate_water</code>, <code>$2B96</code>), drawn here as a blue fill from each column's surface row down. The markers, when on, are where the header puts the trap door (yellow) and the exit (cyan).</p>
+  </div>
+  <p>Every pixel takes one of four colours: the background, two colours shared by all eight sprites (<code>$D025</code> and <code>$D026</code>), and the sprites' own colour, the same for all eight. A level picks its four from its header, which holds each of them four times, one step of the fade-in or fade-out at a time (<code>set_colours</code>, <code>$0E1C</code>). Most of the levels draw their earth in brown and orange with green grass, and a few use blues and greys.</p>
+  <p>The play area is 168 screen pixels wide, which shows 84 of the level's 312 multicolour pixels at a time, and scrolls sideways. How eight sprites cover it is on the <a href="index.html">How it works</a> tab.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The table</p>
+  <h2 class="t">The briefings of all 100 levels</h2>
+  <p class="lede">Each rating has 25 levels on its own side of a disk: Fun on disk 2 side A, Tricky on side B, Taxing on disk 3 side A and Mayhem on side B.</p>
+  <div class="plate">
+    <div class="lm-controls" id="lm-filter"></div>
+    <div class="lm-table-wrap"><table class="lm-table" id="lm-table"></table></div>
+    <p class="cap"><b>From the header each level's file unpacks to <code>$E000</code>.</b> "Save" is the number of lemmings the level asks for, which the header stores beside the percentage the briefing prints (<code>$E040</code> and <code>$E03D</code>). The skills are climber, floater, bomber, blocker, builder, basher, miner and digger, in the order of the panel. The release rate is the figure the briefing prints. The access code is the one the game shows at the end of the level before, and the one to type at the title's option 3 to start here. Click a row to see its map.</p>
+  </div>
+  <p>The number to save is always the percentage of the lemmings rounded up: 10 % of 25 lemmings asks for 3, and 83 % of 30 asks for 25. The header keeps the rounded number, so the game never works it out.</p>
+  <p>The 100 files hold their own level number, the next level's and both access codes. The end-of-level screen prints the next code from the level just played (<code>$E00F</code>), and the menu checks a typed code against its own table of all 100 (<code>access_codes</code>, menu part <a href="source-menu.html#9701"><code>$9701</code></a>). Level 1 of Fun has the code WANNABFREE, which at the menu does something else as well: see <a href="discoveries.html">Discoveries</a>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="reference/lem-levels.js"></script>
+<script>
+(function () {
+  const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const SKILLS = ['Climber', 'Floater', 'Bomber', 'Blocker', 'Builder', 'Basher', 'Miner', 'Digger'];
+  const L = window.LEM_LEVELS || [];
+  const $ = id => document.getElementById(id);
+  const sel = $('lm-level'), cv = $('lm-map'), ctx = cv.getContext('2d');
+  let terrain = null, cur = 0, rating = 'All';
+  const label = (l, i) => `${l.rating} ${l.num}: ${l.name}`;
+  L.forEach((l, i) => { const o = document.createElement('option'); o.value = i; o.textContent = label(l, i); sel.appendChild(o); });
+
+  /* unpack_maps */
+  // All 100 terrains are one deflated block of 100 x 13,104 bytes: 168 lines of 78 bytes a level,
+  // each byte four multicolour pixels, the left one in its top two bits.
+  function unpackMaps(b64) {
+    const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const ds = new DecompressionStream('deflate-raw');
+    return new Response(new Blob([bin]).stream().pipeThrough(ds)).arrayBuffer().then(b => new Uint8Array(b));
+  }
+  // end of unpack_maps
+
+  function draw() {
+    const l = L[cur];
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    if (!terrain) { ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.fillText(terrainMsg, 12, 24); return; }
+    // every other 48-pixel block of the level is kept 8 lines higher in the shapes, because the
+    // right-hand sprites stand 8 lines below the left-hand ones on screen; terrain_at ($28E8) adds
+    // the difference back through $4A00, and this drawing moves those blocks down 8 lines
+    const img = ctx.createImageData(624, 176), d = img.data;
+    for (let o = 3; o < d.length; o += 4) d[o] = 255;
+    const rgb = l.col.map(c => [1, 3, 5].map(k => parseInt(PAL[c & 15].substr(k, 2), 16)));
+    const base = cur * 13104;
+    const T = terrain.slice(base, base + 13104);
+    if ($('lm-objs').checked) for (let k = 0; k < l.obj.length; k += 3) T[l.obj[k + 1] * 78 + l.obj[k]] |= l.obj[k + 2];
+    for (let y = 0; y < 168; y++) for (let c = 0; c < 78; c++) {
+      const b = T[y * 78 + c];
+      for (let p = 0; p < 4; p++) {
+        const v = (b >> (6 - 2 * p)) & 3, col = rgb[v];   // 0 background, 1 $D025, 2 the sprites' colour, 3 $D026
+        const yy = y + (((c * 4 + p) / 48 | 0) & 1 ? 8 : 0);
+        for (let w = 0; w < 2; w++) {
+          const o = (yy * 624 + (c * 4 + p) * 2 + w) * 4;
+          d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255;
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    if ($('lm-wet').checked) for (const [c, row, below] of l.wet) {
+      // the surface's character row, screen row index + 6, as level lines (the sprites start one line down)
+      const top = 8 * (row + 6) - 1;
+      ctx.fillStyle = 'rgba(112,109,235,.75)'; ctx.fillRect(c * 8, top + 3, 8, below ? 176 - top - 3 : 5);
+      ctx.fillStyle = '#a9a7ff'; ctx.fillRect(c * 8, top + 2 + (c & 1), 8, 2);
+    }
+    if ($('lm-view').checked) {
+      ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+      const x0 = Math.max(0, Math.min(312 - 84, (l.ent[0] ? l.ent[0][0] - 8 : 0) - 42)) * 2;
+      ctx.strokeRect(x0 + .5, .5, 168 - 1, 175); ctx.setLineDash([]);
+    }
+    if ($('lm-marks').checked) {
+      // a lemming's X is the level's pixel plus 8 and its row the line plus 9, as terrain_at reads them
+      for (const [x, r] of l.ent) mark((x - 8) * 2, r - 9, '#ffe14a', 'down');
+      for (const [x, r] of l.ex) mark((x - 8) * 2, r - 9, '#4ae0ff', 'box');
+    }
+  }
+  function mark(x, y, col, kind) {
+    ctx.lineWidth = 2; ctx.strokeStyle = '#000'; ctx.fillStyle = col;
+    ctx.beginPath();
+    if (kind === 'down') { ctx.moveTo(x - 7, y - 10); ctx.lineTo(x + 7, y - 10); ctx.lineTo(x, y - 1); ctx.closePath(); }
+    else ctx.rect(x - 6, y - 12, 12, 12);
+    ctx.stroke(); ctx.fill();
+  }
+  let terrainMsg = 'unpacking the terrain…';
+  function info() {
+    const l = L[cur];
+    const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
+    $('lm-info').innerHTML = row('Level', `${l.rating} ${l.num}`) + row('Name', l.name) +
+      row('Lemmings', `${l.lem}, of which ${l.save} to save (${l.pct} %)`) + row('Release rate', l.rate) +
+      row('Time', `${l.min} minute${l.min === 1 ? '' : 's'}`) + row('Access code', `<span class="lm-mono">${l.code}</span>`) +
+      row('Files', `<span class="lm-mono">${l.file}</span> and <span class="lm-mono">${l.gfx}</span>`) +
+      row('Colours', `<span class="lm-swatches">${l.col.map((c, k) => `<span><i class="lm-key" style="background:${PAL[c]}"></i>${['bg', '$D025', 'sprites', '$D026'][k]}</span>`).join('')}</span>`);
+    $('lm-skills').innerHTML = '<table class="lm-table">' + SKILLS.map((s, k) =>
+      `<tr><td class="lm-l">${s}</td><td class="${l.skills[k] ? '' : 'lm-zero'}">${l.skills[k]}</td></tr>`).join('') + '</table>';
+    document.querySelectorAll('#lm-table tbody tr').forEach(tr => tr.classList.toggle('lm-on', +tr.dataset.i === cur));
+    $('lm-prev').classList.toggle('off', cur === 0); $('lm-next').classList.toggle('off', cur === L.length - 1);
+  }
+  function show(i) { cur = Math.max(0, Math.min(L.length - 1, i)); sel.value = cur; info(); draw(); }
+  sel.onchange = () => show(+sel.value);
+  $('lm-prev').onclick = () => show(cur - 1);
+  $('lm-next').onclick = () => show(cur + 1);
+  ['lm-marks', 'lm-view', 'lm-objs', 'lm-wet'].forEach(id => { $(id).onchange = draw; });
+
+  function table() {
+    const head = '<thead><tr><th>#</th><th class="lm-l">Rating</th><th class="lm-l">Name</th><th>Lem.</th><th>Save</th><th>%</th><th>Rate</th><th>Min.</th>' +
+      SKILLS.map(s => `<th title="${s}">${s.slice(0, 3)}</th>`).join('') + '<th class="lm-l">Access code</th></tr></thead>';
+    const rows = L.map((l, i) => (rating === 'All' || l.rating === rating) ?
+      `<tr data-i="${i}"><td>${l.num}</td><td class="lm-l">${l.rating}</td><td class="lm-l lm-name">${l.name}</td><td>${l.lem}</td><td>${l.save}</td><td>${l.pct}</td><td>${l.rate}</td><td>${l.min}</td>` +
+      l.skills.map(n => `<td class="${n ? '' : 'lm-zero'}">${n}</td>`).join('') + `<td class="lm-l lm-mono">${l.code}</td></tr>` : '').join('');
+    $('lm-table').innerHTML = head + '<tbody>' + rows + '</tbody>';
+    $('lm-table').querySelectorAll('tbody tr').forEach(tr => tr.onclick = () => { show(+tr.dataset.i); cv.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+    info();
+  }
+  ['All', 'Fun', 'Tricky', 'Taxing', 'Mayhem'].forEach(r => {
+    const b = document.createElement('button'); b.className = 'lm-btn'; b.type = 'button'; b.textContent = r;
+    b.setAttribute('aria-pressed', r === rating); b.onclick = () => {
+      rating = r; document.querySelectorAll('#lm-filter .lm-btn').forEach(x => x.setAttribute('aria-pressed', x === b)); table(); };
+    $('lm-filter').appendChild(b);
+  });
+  const want = /^#level-(\d+)$/.exec(location.hash);       // #level-4: the 4th level (Fun 4)
+  table(); show(want ? +want[1] - 1 : 0);
+  if (!window.LEM_TERRAIN) { terrainMsg = 'The level data (reference/lem-levels.js) did not load.'; draw(); }
+  else if (typeof DecompressionStream === 'undefined') { terrainMsg = 'This browser cannot unpack the maps (DecompressionStream is missing).'; draw(); }
+  else unpackMaps(window.LEM_TERRAIN).then(t => { terrain = t; draw(); }, e => { terrainMsg = 'Unpacking failed: ' + e; draw(); });
+})();
+</script>

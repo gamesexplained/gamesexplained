@@ -1,0 +1,245 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/lem-page.css">
+<style>
+.gx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.gx-card{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px;text-align:center;font-size:13px}
+.gx-card canvas{image-rendering:pixelated;background:#000;border-radius:4px;display:block;margin:0 auto 6px}
+.gx-card .gx-n{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.gx-strip{display:flex;flex-wrap:wrap;gap:4px}
+.gx-strip canvas{image-rendering:pixelated;background:#000;border-radius:3px}
+.gx-sets canvas{image-rendering:pixelated;max-width:100%;border-radius:4px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every lemming the game draws, frame by frame, the intro's larger lemmings, and the character sets of the play screen, with the frames no animation ever shows.</p>
+</header>
+<main class="wrap">
+
+<section data-part="game">
+  <p class="fig">01 · Lemmings in play</p>
+  <h2 class="t">Twenty-one animations from 300 frames</h2>
+  <p class="lede">A lemming in play is eight multicolour pixels wide and at most sixteen lines high, drawn into characters with the screen's three colours.</p>
+  <div class="plate">
+    <div class="lm-controls"><button type="button" class="lm-btn" id="gx-play" aria-pressed="true">Playing</button><span class="lm-small">ten steps a second, the fastest the play screen swaps</span></div>
+    <div class="gx-grid" id="gx-actions"></div>
+    <p class="cap"><b>Decoded by this page from the game part's listing.</b> Each action's frames are the ones the game shows, worked out by a port of the frame step at <code>$1FB1</code>-<code>$1FF2</code>: the action's first frame (<code>frame_base_lo</code>, <code>$12C9</code>), a counter that moves on by one or two frames a pass (<code>action_frame_step</code>, <code>$1308</code>) and starts again at <code>action_frame_restart</code> (<code>$131D</code>) when it reaches <code>action_frame_wrap</code> (<code>$12F3</code>), starting from the 0 that <code>restart_animation</code> (<code>$2160</code>) leaves. <code>test_graphics.js</code> runs the game's own step for every action and compares. A frame is two bytes a line, from the addresses in <code>frame_lo</code>/<code>frame_hi</code> (<code>$3C00</code>/<code>$3D2C</code>) and <code>frame2_lo</code>/<code>frame_ptr_hi</code> (<code>$3E58</code>/<code>$2EA0</code>) plus 16, as <code>or_frame_rows</code> (<code>$1D48</code>) reads them. Colours: light blue, green and white, the play screen's <code>$D022</code>, <code>$D023</code> and colour RAM.</p>
+  </div>
+  <p>The names are the labels of the action handlers in the Source tab. Pairs like 8 and 9, the walker, are one action in its two directions, each with frames of its own. The splat, the exit and the two deaths play once: their handlers end the lemming when the counter reaches a set value. The floater's counter starts its loop again at 32, its fifth frame, so the frames before it, the umbrella opening, play once.</p>
+</section>
+
+<section data-part="game">
+  <p class="fig">02 · Never shown</p>
+  <h2 class="t">Frames no animation reaches</h2>
+  <p class="lede">The frame table has 300 entries. Stepped as the game steps them, the animations show some of them and never the rest.</p>
+  <div class="plate">
+    <div class="gx-strip" id="gx-unused"></div>
+    <p class="cap"><b>Every frame of the table that none of the 21 animations shows</b>, by the same port, with its number. Frames whose graphics another frame also points at, and which are shown that way, are left out.</p>
+  </div>
+  <p id="gx-unused-text">…</p>
+  <p>Most of them are the in-between frames of the basher and the miner, which step two frames a pass. The counter starts at 0 and moves by 16 (two frames), and it starts again at 0, so the odd frames are skipped every time, although their graphics differ from their neighbours'. The builder and the digger step the same way, but their odd entries point at the same graphics as the even ones. Frames 189 to 195 lie between the shrugging builder (180-187) and the floater, and no action's frames include them. The floater's own first frame, 196, is never drawn either: its counter has already moved on to 8 when the first frame is chosen, and when it starts again it starts at 32.</p>
+</section>
+
+<section data-part="intro">
+  <p class="fig">03 · The intro's lemmings</p>
+  <h2 class="t">148 larger lemmings in pairs of sprites</h2>
+  <p class="lede">The intro draws its lemmings with sprites: a black hires outline over a multicolour body, 24 pixels wide and 21 lines high.</p>
+  <div class="plate">
+    <div class="gx-strip" id="gx-intro"></div>
+    <p class="cap"><b>Unpacked by this page</b> from the intro part's listing: 148 packed streams from <code>$5B40</code>, with their offsets (<code>image_offset_lo</code>, <code>$4F6A</code>) and starting literal counts (<code>image_literals</code>, <code>$5094</code>), by a port of the intro's unpacker (<code>intro_unpack</code>, <code>$4E13</code>). <code>test_graphics.js</code> unpacks all 148 with the game's own code on the kit's 6502 and compares them byte for byte. The body's colour is the image's 128th byte; the two shared colours are the intro's light red and blue (<code>sprites_init</code>, <code>$497F</code>).</p>
+  </div>
+  <p>All 148 images are named in the intro's frame list (<code>frame_list</code>, <code>$4B0E</code>), so none of them is spare.</p>
+</section>
+
+<section data-part="game">
+  <p class="fig">04 · Character sets</p>
+  <h2 class="t">Three character sets, two of them rewritten every pass</h2>
+  <p class="lede">The play screen's two buffers each have a character set for the lemmings, and the panel has a third.</p>
+  <div class="plate gx-sets">
+    <div class="pick"><a class="step" id="gx-prev" aria-label="previous set">‹</a><select id="gx-set" aria-label="character set"></select><a class="step" id="gx-next" aria-label="next set">›</a></div>
+    <canvas id="gx-chars"></canvas>
+    <p class="cap"><b>Drawn by this page from the game's memory 30 seconds into level 1</b> (<code>reference/lem-gfx.js</code>, made by <code>work/mkgfx.py</code> from a snapshot of play), in multicolour with the play screen's colours. Outlined: the codes the screen showed at that moment. The listing's snapshot is the briefing, when <code data-part="">$5000</code>-<code data-part="">$5FFF</code> hold the briefing's code, so these come from play.</p>
+  </div>
+  <p>The screen at <code data-part="">$4000</code> uses the set at <code data-part="">$5000</code>, and the screen at <code data-part="">$4400</code> the set at <code data-part="">$5800</code> (<code>screen_d018</code>, <code>$1349</code>). Character 0 is empty and character 1 fills the screen around the play area. From character 2 up the set is rewritten every pass, one character at a time as the lemmings need them (<code>next_char</code>, resident <a href="source-resident.html#0422"><code>$0422</code></a>), and the rest of the 2 KB keeps whatever was there: the briefing's code, which the loader puts back at <code data-part="">$5000</code>-<code data-part="">$64AF</code> before every level. The cursor takes <code>$FC</code>-<code>$FF</code> and water <code>$F4</code>-<code>$FB</code>.</p>
+  <p>The panel's set at <code>$7000</code> holds the skill icons, the digits and the letters of the line above them. Its last 256 bytes, <code>$73C0</code>-<code>$74BF</code>, are not characters the panel shows: they are the panel's four sprite shapes, <code>$CF</code>-<code>$D2</code> (<code>panel_sprite_ptr</code>, <code>$3F90</code>), one of them the highlight on the chosen skill.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/lem-gfx.js"></script>
+<script>
+/* lem_frames */
+// The frames an action shows, as the frame step at $1FB1-$1FF2 makes them: the counter (bits 3-7 of
+// $0456) starts at 0, as restart_animation leaves it; each pass it moves on by the action's step,
+// eight bits wide; when it reaches the wrap it becomes the restart value; the frame shown is the
+// action's first frame plus the counter over 8. Returns the frames of the first n passes.
+function shownFrames(base, step, wrap, restart, n) {
+  const out = [];
+  let c = 0;
+  for (let i = 0; i < n; i++) {
+    c = (c + step) & 255;
+    if (c >= wrap) c = restart;
+    out.push(base + (c >> 3));
+  }
+  return out;
+}
+// end of lem_frames
+</script>
+<script>
+/* intro_unpack */
+// The intro's unpacker ($4E13), the loader's scheme: bytes below $E0 are copied; while the literal
+// count runs (low byte, then a high byte), bytes of $E0 and up are copied too; otherwise a byte of
+// $E0-$EF is a command, and one of $F0-$FF first sets the literal count from the next byte (or, when
+// that is 0, from the two after it, high first) and then is the same command. A command's low nybble
+// n: 0 or 1, fill to an address (its high byte, and for 1 its low byte; for 0 the low byte is 0) with
+// the next byte; 2, a run of the next byte's count (0: 256) of the byte after; 3-15, a run of n of the
+// next byte.
+// mem holds the stream from start to end; returns the bytes written from the start of the output, whose
+// address out is needed for fills.
+function unpackStream(mem, start, end, lit, out) {
+  const res = [];
+  let p = start, litLo = lit & 255, litHi = lit >> 8, o = out;
+  const put = v => { res[o - out] = v; o++; };
+  while (p !== end) {
+    let c = mem[p];
+    if (c < 0xE0) { put(c); p++; continue; }
+    if (litLo || litHi) { if (!litLo) { litHi--; } litLo = (litLo - 1) & 255; put(c); p++; continue; }
+    if (c >= 0xF0) {
+      p++; const b = mem[p];
+      if (b) litLo = b;
+      else { p++; litHi = mem[p]; p++; litLo = mem[p]; }
+    }
+    const n = c & 15;
+    if (n < 2) {
+      p++; const hi = mem[p];
+      let lo = 0;
+      if (n === 1) { p++; lo = mem[p]; }
+      p++; const v = mem[p];
+      const stop = hi << 8 | lo;
+      do { put(v); } while ((o & 0xffff) !== stop);
+    } else {
+      let count = n;
+      if (n === 2) { p++; count = mem[p] || 256; }
+      p++; const v = mem[p];
+      for (let k = 0; k < count; k++) put(v);
+    }
+    p++;
+  }
+  return Uint8Array.from(res, v => v || 0);
+}
+// end of intro_unpack
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  if (typeof C64 === 'undefined') { $('gx-actions').textContent = 'The pictures are drawn with the site\'s shared script ../../lib/c64.js, which the built site serves.'; return; }
+  const PAL = C64.PAL, hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const PLAY = [PAL[0], PAL[14], PAL[5], PAL[1]];   // background, $D022, $D023, the cells' colour (9: white, multicolour)
+
+  // one lemming frame: two bytes a line, 16 lines, from the frame's two addresses plus 16
+  function drawFrame(ctx, ram, P1, P2, f, x, y, s) {
+    for (let r = 0; r < 16; r++) {
+      const bytes = [ram[P1[f] + 16 + r], ram[P2[f] + 16 + r]];
+      for (let h = 0; h < 2; h++) for (let k = 0; k < 4; k++) {
+        const v = (bytes[h] >> (6 - 2 * k)) & 3;
+        if (!v) continue;
+        ctx.fillStyle = PLAY[v]; ctx.fillRect(x + (h * 4 + k) * 2 * s, y + r * s, 2 * s, s);
+      }
+    }
+  }
+  C64.load('parts/game/listing.json').then(G => {
+    const m = G.ram, S = n => G.sym(n);
+    const P1 = [], P2 = [];
+    for (let f = 0; f < 300; f++) {
+      P1.push(m[S('frame_lo') + f] | m[S('frame_hi') + f] << 8);
+      P2.push(m[S('frame2_lo') + f] | m[S('frame_ptr_hi') + f] << 8);
+    }
+    const shown = new Set(), cards = [];
+    for (let a = 0; a < 21; a++) {
+      const base = m[S('frame_base_lo') + a] | m[S('frame_base_hi') + a] << 8;
+      const seq = shownFrames(base, m[S('action_frame_step') + a], m[S('action_frame_wrap') + a], m[S('action_frame_restart') + a], 64);
+      seq.forEach(f => shown.add(P1[f] + ':' + P2[f]));
+      const h = m[S('action_handler_lo') + a] | m[S('action_handler_hi') + a] << 8;
+      const card = document.createElement('div'); card.className = 'gx-card';
+      const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; cv.style.width = '96px'; cv.style.height = '96px';
+      const uniq = [...new Set(seq)].sort((p, q) => p - q);
+      card.append(cv);
+      card.insertAdjacentHTML('beforeend', `<div><b>${a}</b> · <span class="lm-mono">${G.names.get(h) || hex(h)}</span></div><div class="gx-n">frames ${uniq[0]}-${uniq[uniq.length - 1]}, ${uniq.length} shown</div>`);
+      $('gx-actions').append(card);
+      cards.push({ cv, seq });
+    }
+    let t = 0, on = true;
+    function tick() {
+      for (const c of cards) {
+        const ctx = c.cv.getContext('2d'); ctx.clearRect(0, 0, 64, 64);
+        drawFrame(ctx, m, P1, P2, c.seq[t % c.seq.length], 16, 16, 2);
+      }
+      t++;
+    }
+    tick(); setInterval(() => { if (on) tick(); }, 100);
+    $('gx-play').onclick = () => { on = !on; $('gx-play').setAttribute('aria-pressed', on); $('gx-play').textContent = on ? 'Playing' : 'Paused'; };
+    // the frames no animation shows
+    const unused = [];
+    for (let f = 0; f < 300; f++) if (!shown.has(P1[f] + ':' + P2[f])) unused.push(f);
+    for (const f of unused) {
+      const box = document.createElement('div'); box.style.textAlign = 'center';
+      const cv = document.createElement('canvas'); cv.width = 40; cv.height = 40;
+      drawFrame(cv.getContext('2d'), m, P1, P2, f, 4, 4, 2);
+      box.append(cv); box.insertAdjacentHTML('beforeend', `<div class="gx-n lm-small">${f}</div>`);
+      $('gx-unused').append(box);
+    }
+    const images = new Set(Array.from({ length: 300 }, (_, f) => P1[f] + ':' + P2[f]));
+    const unusedImages = new Set(unused.map(f => P1[f] + ':' + P2[f]));
+    $('gx-unused-text').textContent = `Of the 300 entries, ${unused.length} are never shown. They point at ${unusedImages.size} different images, out of ${images.size} the table points at in all.`;
+  });
+
+  // the intro's lemmings
+  C64.load('parts/intro/listing.json').then(I => {
+    const m = I.ram, S = n => I.sym(n);
+    const lo = S('image_offset_lo'), hi = S('image_offset_hi'), lit = S('image_literals');
+    for (let i = 0; i < 148; i++) {
+      const a = (m[lo + i] | m[hi + i] << 8) + 0x3B40, b = (m[lo + i + 1] | m[hi + i + 1] << 8) + 0x3B40;
+      const img = unpackStream(m, a, b, m[lit + i], 0x0400);
+      const cv = document.createElement('canvas'); cv.width = 48; cv.height = 42; cv.title = 'image ' + i;
+      const ctx = cv.getContext('2d'); ctx.fillStyle = PAL[0]; ctx.fillRect(0, 0, 48, 42);
+      C64.drawSpriteMC(ctx, img.subarray(64, 127), 0, 0, 2, PAL[img[127] >> 4], PAL[10], PAL[6]);
+      C64.drawSprite(ctx, img.subarray(0, 63), 0, 0, 2, PAL[0]);
+      ctx.fillStyle = PAL[1]; ctx.globalAlpha = .001; ctx.fillRect(0, 0, 1, 1); ctx.globalAlpha = 1;
+      cv.style.background = '#b8b6ae';
+      $('gx-intro').append(cv);
+    }
+  });
+
+  // the character sets
+  (function () {
+    const D = window.LEM_GFX, sel = $('gx-set'), cv = $('gx-chars');
+    if (!D) { cv.replaceWith(Object.assign(document.createElement('p'), { textContent: 'The character sets (reference/lem-gfx.js) did not load.' })); return; }
+    const sets = [['5000', 'with the screen at $4000'], ['5800', 'with the screen at $4400'], ['7000', 'the panel']];
+    sets.forEach(([k, what], i) => { const o = document.createElement('option'); o.value = i; o.textContent = `$${k}: ${what}`; sel.append(o); });
+    let cur = 0;
+    function draw() {
+      const [k] = sets[cur], cs = Uint8Array.from(atob(D.sets[k]), c => c.charCodeAt(0)), used = new Set(D.used[k]);
+      const ctx = C64.canvas(cv, 32 * 20, 8 * 20);
+      ctx.fillStyle = '#23262d'; ctx.fillRect(0, 0, cv.width, cv.height);
+      const cols = k === '7000' ? [PAL[0], PAL[14], PAL[5], PAL[1]] : PLAY;
+      for (let c = 0; c < 256; c++) {
+        const x = (c % 32) * 20 + 2, y = (c >> 5) * 20 + 2;
+        ctx.fillStyle = PAL[0]; ctx.fillRect(x, y, 16, 16);
+        C64.drawGlyphMC(ctx, cs, c, x, y, 2, cols);
+        if (used.has(c)) { ctx.strokeStyle = '#ffd34a'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, 18, 18); }
+      }
+      $('gx-prev').classList.toggle('off', cur === 0); $('gx-next').classList.toggle('off', cur === sets.length - 1);
+    }
+    sel.onchange = () => { cur = +sel.value; draw(); };
+    $('gx-prev').onclick = () => { if (cur > 0) { cur--; sel.value = cur; draw(); } };
+    $('gx-next').onclick = () => { if (cur < sets.length - 1) { cur++; sel.value = cur; draw(); } };
+    draw();
+  })();
+})();
+</script>

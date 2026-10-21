@@ -58,8 +58,8 @@
 // and they take smaller steps where reSID caps the cutoff for stability (at 16 kHz or 4 kHz). Each
 // curve is one chip's: real 6581s differ from each other in cutoff by large factors, and distort,
 // which this does not. Not modelled either way: combined
-// waveforms (approximated by AND), samples played through the volume register (registers change
-// once a frame), the time between writes inside a frame (a frame's writes land at one instant, so
+// waveforms (approximated by AND), the mixer's DC level unless a page asks for it (opts.digi,
+// below), the time between writes inside a frame (a frame's writes land at one instant, so
 // a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
 // cycles between; the test bit set and cleared inside one frame still resets the oscillator). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
 // passes ntsc: true to mount or host (1,022,727 Hz, frames of 263 lines of 65 cycles).
@@ -68,6 +68,14 @@
 // a CIA timer. A timer whose latch holds n runs out every n + 1 cycles. Each call comes a period
 // after the one before, at the first sample at or after its cycle, so the error never adds up.
 // Where this script says frame, it means one call of the driver, however it is timed.
+// Samples played through the volume register ($D418's low four bits, written from a timer's
+// interrupt) need two things: the writes at the timer's pace, which period gives when the driver
+// runs the game's interrupt itself (a period of a few dozen cycles, with the game's timer counted
+// down inside the driver), and the level the volume scales when no voice sounds. On a 6581 every
+// voice adds a DC level to the mixer, so a change of volume moves the output: opts.digi sets that
+// level, in units of one voice's full swing, on mount, host and createSID. reSID 0.16 gives each
+// 6581 voice a DC of $800 * $FF against a swing of ($FFF - $380) * $FF, about 0.64, so about 2 for
+// the three voices of a 6581; the 8580's is close to 0, and 0, the default, leaves it out.
 //
 //   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
 //                                per voice
@@ -193,6 +201,7 @@ globalThis.C64Sid = (function () {
       const kLP = 1 - Math.exp(-2 * Math.PI * 15900 / sampleRate);  // the C64's output stage:
       const kHP = 1 - Math.exp(-2 * Math.PI * 15.9 / sampleRate);   // 16 kHz low pass, 16 Hz high pass
       const gain = opts && opts.gain != null ? opts.gain : 0.6;   // the output level
+      const digi = opts && +opts.digi > 0 ? +opts.digi * 2048 * 255 : 0;   // the mixer's DC level (opts.digi)
       let vol = 0, frac = 0, lp = 0, dc = 0, now = 0;        // now: cycles run, the bus's clock
       const bus = createBus('8580');
       // the filter: chip 'none', '6581' or '8580'; state in the units of one voice's output
@@ -301,6 +310,7 @@ globalThis.C64Sid = (function () {
         for (let i = 0; i < 3; i++) clockEnv(V[i], c);
         let sum = 0;
         for (let k = 0; k < sub; k++) {
+          sum += digi;                                       // the DC the volume scales (opts.digi)
           for (let i = 0; i < 3; i++) {
             const o = V[i];
             if (o.ctrl & 8) { o.acc = 0; o.msbUp = false; continue; }   // test bit holds the oscillator
@@ -450,7 +460,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       'const createDriver = (' + driver.toString() + ');\n' + WORKLET;
   }
 
-  // host({driver, data, gain, filter, ntsc, period, onFrame}): an AudioContext playing the driver through the model.
+  // host({driver, data, gain, filter, ntsc, period, digi, onFrame}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
   // {ctx, mode, send(command)}. onFrame(snapshot), if given, receives every driver frame when it
   // is computed, ahead of the sound; show it once snapshot.t has reached ctx.currentTime.
@@ -459,7 +469,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     if (!AC) throw new Error('This browser has no Web Audio.');
     const ctx = new AC();
     ctx.resume();
-    const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc, period: o.period }, post = o.onFrame || null;
+    const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc, period: o.period, digi: o.digi }, post = o.onFrame || null;
     const code = worklet(o.driver);
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
@@ -530,7 +540,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   const noteName = (n) => NAMES[n % 12] + Math.floor(n / 12);  // note 0 = C0, 57 = A4
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-  // mount(root, {driver, data, tunes, rows, mark, gain, filter, ntsc, period, colors}) builds the player inside root.
+  // mount(root, {driver, data, tunes, rows, mark, gain, filter, ntsc, period, digi, colors}) builds the player inside root.
   //   ntsc    optional: true for a game whose driver runs once an NTSC frame, heard at the NTSC clock
   //   period  optional: the cycles between the driver's calls, for a game that calls it from a CIA
   //           timer (a latch of n: n + 1 cycles). The seek bar and onFrame then count calls, and
@@ -549,6 +559,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           player shows a switch between the three, heard at once, to compare them, and
   //           shows in its place that the chosen tune never routes a voice through the filter;
   //           left out, the filter is off and there is no switch
+  //   digi    optional: the mixer's DC level that volume-register samples move (engine, above);
+  //           about 2 for a 6581, 0 by default
   //   colors  optional: the three voices' colours
   //   onFrame optional: (frame, tune) => ..., called with each frame the reader hears, as the
   //           display shows it, for a page that draws something in step with the music (lyrics,
@@ -643,7 +655,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
 
     async function audio() {                                 // created on the first click only
-      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, ntsc: o.ntsc, period: o.period, onFrame: take });
+      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, ntsc: o.ntsc, period: o.period, digi: o.digi, onFrame: take });
       ctx = h.ctx; send = h.send;
       root.dataset.sidAudio = h.mode;
       muted.forEach((on, voice) => send({ cmd: 'mute', voice, on }));
