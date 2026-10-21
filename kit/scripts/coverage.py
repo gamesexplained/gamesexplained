@@ -4,10 +4,10 @@
 Same metric for every game, so tiers are comparable.
 
 DENOMINATOR: bytes the game uses. A byte counts if it lies in a block typed
-as code or as a program in BASIC, or in the span of any symbol (the
-disassembler mints a symbol for every referenced address), or in an "extra"
-region declared in game.json (authored data nothing references by address,
-such as a charset). Runtime
+as code or as data of any kind (bytes, words, text, a program in BASIC), or
+in the span of any symbol (the disassembler mints a symbol for every
+referenced address), or in an "extra" region declared in game.json (authored
+data nothing references by address, such as a charset). Runtime
 state is excluded: stack, screen RAM, I/O, and anything else listed under
 "exclude" in game.json. Platform defaults apply when game.json says nothing;
 a range under "include" is given back from them (the RAM under I/O, in a
@@ -16,7 +16,8 @@ game that runs code there).
 NUMERATOR: a byte is explained when the symbol whose span owns it carries a
 non-blank line comment. A description belongs to a routine, not to every
 branch target inside it, so only real boundaries (subroutines, data
-symbols, commented symbols) start a span. An identical description pasted
+symbols, commented symbols) start a span. A line comment on bytes no span
+reaches starts one too, as a label there would. An identical description pasted
 onto several symbols counts once, at its first address: thirty-two copies
 of "character set" explain nothing about glyphs 32 to 63. Say which glyphs
 a block holds and what they draw, and each description is its own.
@@ -33,8 +34,8 @@ edge of the memory map, or there is none. The first two want a comment on
 that symbol, the rest a symbol of your own at the run's address, with its
 own comment.
 
-DATA THE LEDGER CANNOT SEE (nothing refers to it by address, so it is neither
-explained nor bare) is listed under the figure, as listing.json's last build found
+DATA THE LEDGER CANNOT SEE (untyped, and nothing refers to it by address, so it
+is neither explained nor bare) is listed under the figure, as listing.json's last build found
 it (listing.py, "uncounted"): a figure of 100 % with that list is not the whole game.
 
 A GAME OF SEVERAL PARTS (kit/scripts/parts.py) has a ledger per part, read

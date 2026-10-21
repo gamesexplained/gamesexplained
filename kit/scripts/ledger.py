@@ -86,10 +86,33 @@ def compute(blocks, syms, comments, regions):
             if not excluded(x) and state[x] < val:
                 state[x] = val
             owner.setdefault(x, (s["name"], a))
+    # A line comment on bytes no span reaches describes them as a label would: it owns them
+    # up to the next boundary, with a label's reach. Without this, a run's comment on a stray
+    # instruction or a table's tail is shown with none of the bytes it explains (#442).
+    labelled = {s["address"] for s in syms}
+    loose = sorted(a for a in commented if a < 0x10000 and a not in labelled and a not in owner
+                   and not excluded(a))
+    starts = sorted(set(baddrs) | set(loose))
+    for a in loose:
+        i = bisect.bisect_right(starts, a)
+        nxt = starts[i] if i < len(starts) else 0x10000
+        reach = 0x400 if code[a] or typed[a] else MAX_SPAN
+        wall = wall_after(a)
+        end = min(nxt, a + reach, wall)
+        name = f"the comment at ${a:04X}"
+        stops[a] = (name, end, "next" if end == nxt else "reach" if end == a + reach
+                    else "block" if wall in block_edges else "edge", reach)
+        for x in range(a, end):
+            if not excluded(x):
+                state[x] = 2
+            owner.setdefault(x, (name, a))
+    # Code, a program, typed data and declared extras are the game's whether or not a span
+    # reaches them: typed data no label reaches is bare, so coverage asks for its description
+    # and the listing holds its bytes (#442).
     for a in range(0x10000):
         if excluded(a):
             state[a] = 0
-        elif state[a] == 0 and (code[a] or program[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
+        elif state[a] == 0 and (code[a] or typed[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
             state[a] = 1
     return {"state": state, "code": code, "owner": owner, "commented": commented,
             "dups": dups, "excluded": excluded, "stops": stops}

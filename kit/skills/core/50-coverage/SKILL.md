@@ -111,6 +111,12 @@ format, how to check the result against it, and how to read it back
   used to skip the next instruction) makes the disassembler mint a symbol
   for an "address" that is really an operand. Explain it as such rather
   than inventing a meaning for the address.
+- **The bytes just before a routine can be its unused start.** When they
+  decode as instructions that run straight into the routine, and every
+  caller enters past them, type them as code and say so: they are the
+  routine's own first instructions, which no caller runs. Left untyped,
+  the listing shows them as stray bytes, if at all (`listing.py` names
+  them at build time; `games/c64/uridium`, `$16B4`).
 - **Resolve every pointer table before excluding a region.** A relocating
   init can leave a block that looks like a stale copy of somewhere else;
   one run excluded 8 KB as "the leftover of the copy at $3E00" and it held
@@ -169,6 +175,12 @@ format, how to check the result against it, and how to read it back
   end and establish a consumer or a live execution check. A spare tuple
   after a counted record can also be a retained extra component: describe
   the read limit and keep its purpose open rather than guessing padding.
+- **Unused data is often a feature switched off.** Before calling bytes
+  nothing reads unused, test them against the code around them: whether
+  another unreferenced table indexes them (its step times its count is
+  their length), and whether their values match a constant nearby code
+  writes where they would have been read. A table whose reader was taken
+  out keeps the reader's shape, and says what the game was meant to do.
 - **Reading a region may disassemble it as a side effect** in some
   disassemblers. Log an explicit disassemble entry for every new code
   region you explore, or a replay under-restores.
@@ -183,11 +195,15 @@ format, how to check the result against it, and how to read it back
   map, the machine's own (`edges` in `symbols_export.py`'s
   `PLATFORM_DEFAULTS`): a table that runs across one of them needs a
   second symbol there, with a comment saying where the whole starts. A
-  routine runs on across them. A data table of a few hundred
+  routine runs on across them. A line comment on bytes no span reaches
+  starts a span of its own, as a label there would. Typed data that no
+  span reaches is counted bare, and untyped data is not counted at all.
+  A data table of a few hundred
   bytes under a 64-byte symbol therefore needs a data type and a name of
   your own, or a named symbol every 64 bytes or less, each with its own
   description,
-  or most of it stays out of the count however well you have explained
+  or most of it stays bare, or out of the count if it has no type,
+  however well you have explained
   the whole. The work queue says which rule left each run bare. "No
   comment on" names the symbol to describe; a run "past" a symbol's
   reach, or after one that "stops" at its block's end or an edge of the
@@ -233,12 +249,12 @@ it keeps them all: export from the live session.
 
 ## Data the ledger cannot see
 
-The ledger counts what code, symbols and `game.json` name. Data that
-nothing refers to by address is outside the count altogether, neither
-explained nor bare, so the work queue never shows it and a game can reach
-100 % without it: sprite shapes found through pointers, a picture's
-colours, the words of an inline table after a call, the tail of a table
-past its symbol's reach, and anything under a default exclusion.
+The ledger counts what code, symbols, data types and `game.json` name.
+Untyped data that nothing refers to by address is outside the count
+altogether, neither explained nor bare, so the work queue never shows it
+and a game can reach 100 % without it: sprite shapes found through
+pointers, a picture's colours, the tail of a table past its symbol's
+reach, and anything under a default exclusion.
 
 `listing.py` lists it after every build. It names the RAM a platform
 default excludes but a game can still use (on the C64, the RAM under the
@@ -292,11 +308,8 @@ argument bytes as data, and restart the disassembly at the resume point.
 One pass of this can double the tracked image.
 
 Give each argument a label or a comment of its own, saying what it is.
-Data typed with neither is not tracked: the ledger counts neither its
-bytes nor their absence, so coverage still reads 100 %, and the listing
-holds a gap where the argument is. A page or test that runs the code
-from the listing then reads zeros as every argument. `listing.py` names
-each such gap as a few untyped bytes between code. <!-- until #442 -->
+The ledger counts an argument typed as data as bare until it has one, so
+the work queue lists every argument still to describe.
 
 The same shape hides more than one routine: look for a family of wrappers
 built on one or two stack-unwinding primitives, and check each for the

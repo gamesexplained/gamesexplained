@@ -14,7 +14,8 @@ KIT = Path(__file__).resolve().parents[1]
 
 def build(exclude=()):
     """A game whose table at $9FF0 runs to $A001, past the $A000 edge where a data label's
-    span stops, with the next table at $A002: $A000-$A001 are left to no label."""
+    span stops, with the next table at $A002: $A000-$A001 are left to no label, and with no
+    type, so the ledger does not count them either (typed, they would be counted bare)."""
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
         game = {'platform': 'c64', 'slug': 'fixture'}
@@ -24,7 +25,8 @@ def build(exclude=()):
         (p / 'symbols.json').write_text(json.dumps({
             'schema': 1, 'platform': 'c64', 'game': 'fixture',
             'blocks': [{'start': 0x8000, 'end': 0x8003, 'type': 'Code'},
-                       {'start': 0x9FF0, 'end': 0xA00F, 'type': 'Byte'}],
+                       {'start': 0x9FF0, 'end': 0x9FFF, 'type': 'Byte'},
+                       {'start': 0xA002, 'end': 0xA00F, 'type': 'Byte'}],
             'symbols': [{'address': 0x8000, 'name': 'entry', 'kind': 'user', 'type': 'Subroutine'},
                         {'address': 0x9FF0, 'name': 'table_a', 'kind': 'user', 'type': 'UserDefined'},
                         {'address': 0xA002, 'name': 'table_b', 'kind': 'user', 'type': 'UserDefined'}],

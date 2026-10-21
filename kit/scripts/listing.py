@@ -15,9 +15,9 @@ exclusion covers but a game can still use (on the C64, the RAM under the
 I/O area) is named whenever it holds data and game.json has not said what
 it is. With the hand-over snapshot, so is every stretch of loaded data,
 the same bytes at the hand-over and in play, that the ledger neither
-tracks nor has been told to leave out: the tail of a table longer than
-its symbol's reach, a table no symbol starts, a picture nothing refers to
-by address. And so is data copied after the hand-over: a stretch of 32
+tracks nor has been told to leave out: the untyped tail of a table longer
+than its symbol's reach, an untyped table no symbol starts, a picture
+nothing refers to by address. And so is data copied after the hand-over: a stretch of 32
 bytes or more that nothing tracks in play and that the hand-over holds at
 another address is listed with both addresses.
 
@@ -979,7 +979,7 @@ def main():
             before = L["owner"].get(r["a"] - 1)
             print(f"  {span}: {r['n']} byte(s) between data records that no label reaches"
                   f"{f' (after {before[0]})' if before else ''}: often a table's or script's last bytes; "
-                  "label and describe them, or the listing and the page leave them out")
+                  "type and describe them, or the listing and the page leave them out")
 
 
 if __name__ == "__main__":
