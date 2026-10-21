@@ -72,3 +72,33 @@ by 2,160 pixels, all along edges; it matches at every pixel one line lower,
 so the emulator's picture of that state is offset, not the renderer wrong,
 and `frame.py compare` now says so. The sound driver was ported by a
 subagent and tested against the game's own code in a 6502 simulator.
+
+## Typed data no label reached (21 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then showed 2,097 bytes as missing (#460). 431 of them already
+had comments and only needed a build from the snapshot. The rest were
+the tails of four tables past their auto-named symbols' 64-byte reach
+(`$0AC1`, `$0B96`, `$0BEB`, `$ADBC`), which got a comment each, and
+`$B600`-`$BBFF`, 1.5 KB typed as data with no symbol at all. Load, store
+and execute checkpoints over it from the hand-over to the first view of
+landscape 0000 and a U-turn counted 0 hits, and no instruction names an
+address in it; it holds the same fill as the angle cache next to it
+before `$3700` fills that. It is labelled `unreferenced_b600` and left
+unknown: the missing pan code at `$B000` is the one thing that could not
+be run.
+
+The snapshot was remade from the same backup by `orientation.md`'s route.
+The new build listed 5.8 KB the ledger did not count, a check that did
+not exist on the first run. The tails of the three BBC BASIC pieces
+(`$9C03`, `$9D40`, `$9E80`) only needed their blocks typed so their
+comments reach them. The rest was never read, written or run in play, and
+the code at `$0800` gave it away: it copies 36 pages from `$0873` to
+`$4000` and shows them as a multicolour bitmap, and the stub at `$8080`
+first copies `$5C00`-`$80FF` down to `$0800`. Drawing the snapshot from
+`$5C73` as a bitmap showed Firebird's loading screen, the eye, in the
+parts the game never overwrites (`$6800`-`$6FFF`, `$7100`-`$7BFF`). The
+first run had noted those bytes as "what looks like a multicolour
+picture". They, the viewer at `$0800` and the stub's page at `$8000` are
+now excluded in `game.json` as not the game's, and the play screen's
+matrix at `$7C00` is excluded by name.

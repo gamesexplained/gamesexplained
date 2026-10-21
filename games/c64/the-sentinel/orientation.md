@@ -9,6 +9,11 @@ else must be able to follow this exactly.
 with no display, 25 September 2026. `check-emulator`: 56 of 56 passed, so
 none of `kit/skills/c64/tool-vice-mcp/workarounds.md` applies. PAL, 6581 SID.
 
+The snapshot the listing is built from, `work/entry.vsf`, was remade on 21
+October 2026 by the route below with the `v3.13.2` release. It differs
+from the first only in the angle cache at `$BC00`-`$CBFF`, which holds
+the emulator's fill until `$3700` runs.
+
 ## The image
 
 `SENTIN.D64`, 35 tracks, no error bytes. Disk name `P00 IMPORTS`, id `01 2A`.
@@ -39,6 +44,8 @@ difference matters in one place, below.
    two seconds (`reference/title.png`).
 5. Press SPACE (`vice_keyboard_matrix`, held 0.4 s). `LANDSCAPE NUMBER?`
    appears with an input field (`reference/landscape-number-prompt.png`).
+   Wait about three seconds before typing: digits typed 1.5 seconds after
+   the SPACE were lost.
 6. Type `0`, `0`, `0`, `0` (each held 0.3 s, 0.3 s apart), then RETURN.
    The screen goes blue for about three seconds, then shows the landscape
    from above: `LANDSCAPE 0000` / `PRESS ANY KEY`

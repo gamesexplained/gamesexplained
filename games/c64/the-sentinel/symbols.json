@@ -50,6 +50,31 @@
     65344,
     65535,
     "vectors and the BBC-style entry points, written by $8900 at start; $FF in this copy"
+   ],
+   [
+    2048,
+    2303,
+    "not the game's: what the release's loader left of its loading picture, the routine at $0816 that shows it (entered through JMP $8080 at $0800) and from $0873 the start of the picture it copies; the game never runs, reads or writes it"
+   ],
+   [
+    26624,
+    28671,
+    "not the game's: part of the Firebird loading picture, the eye, where the release's loader kept it before moving it (its bitmap at $5C73-$7BB2); the game never reads or writes it"
+   ],
+   [
+    28928,
+    31743,
+    "not the game's: more of the Firebird loading picture, as the release's loader left it; the game never reads or writes it"
+   ],
+   [
+    31744,
+    32767,
+    "the play screen's matrix: $9AAC fills it with the view's character codes before play, and $3F1F-$3F2E set the sprite pointers at $7FF8-$7FFB; the bytes between them and after are the loading picture's"
+   ],
+   [
+    32768,
+    33023,
+    "the font's first 32 characters, never drawn ($8100): they hold the end of the loading picture's data and, at $8080-$80A0, the release loader's routine that copies the picture's block from $5C00 to $0800 and jumps to its viewer at $0816; the game never runs, reads or writes them"
    ]
   ],
   "extra": []
@@ -758,7 +783,7 @@
   {
    "start": 39671,
    "end": 40095,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 40096,
@@ -768,7 +793,7 @@
   {
    "start": 40256,
    "end": 40415,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 40416,
@@ -778,7 +803,7 @@
   {
    "start": 40576,
    "end": 40735,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 40736,
@@ -11491,6 +11516,12 @@
    "kind": "user"
   },
   {
+   "address": 46592,
+   "name": "unreferenced_b600",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 48128,
    "name": "tile_corner_yaw_lo",
    "type": "UserDefined",
@@ -13053,6 +13084,11 @@
    "text": "draw_pitch_lo from entry 1 on: $27A8-$27AB copy an entry into the next one at the end of a row."
   },
   {
+   "address": 2753,
+   "type": "line",
+   "text": "draw_pitch_lo entries 65-95, the rest of the points of an object (entries 64-95): the object point loop stores one per point at $8522, at the index in $21 that it steps at $8527."
+  },
+  {
    "address": 2784,
    "type": "line",
    "text": "High byte of the screen pitch of each point being drawn, $0AE0-$0B3F, the same 96 entries as $0A80: $851D for object points, $386C in the C64 tile loop; read $2E1D-$30A1."
@@ -13083,6 +13119,11 @@
    "text": "draw_x_hi entries 22-85. The instruction that makes this symbol, LDA $0B56,X at $254F, is a disguise: X is $FF there, so it reads $0C55, the stash offset."
   },
   {
+   "address": 2966,
+   "type": "line",
+   "text": "draw_x_hi entries 86-95, the last ten of the 96 (see $0B40). Nothing reads or writes them from the hand-over to the first view of landscape 0000 and a U-turn (load and store checkpoints, 0 hits); the code that makes the table indexes it by point ($2DC0, $2E58, $2E5B)."
+  },
+  {
    "address": 2976,
    "type": "line",
    "text": "Low byte of the screen yaw of each point being drawn, $0BA0-$0BFF, the same 96 entries; the high bytes are at $A800. Written by the row code ($2896) and the C64 tile loop ($3856); read at $2945, $2D9C, $2DD2."
@@ -13091,6 +13132,11 @@
    "address": 2987,
    "type": "line",
    "text": "draw_yaw_lo entries 11-74. LDY $0BAB,X at $14AC is a disguised read of $0C55 (X = $AA), not of this table."
+  },
+  {
+   "address": 3051,
+   "type": "line",
+   "text": "draw_yaw_lo entries 75-95, object points like the entries from 64: the object point loop stores their low yaw bytes at $84E8."
   },
   {
    "address": 3072,
@@ -17153,6 +17199,11 @@
    "text": "Not a fixed reference: $2FAD is a STX whose operand $2F71-$2F74 set at run time, so the address in the image ($AD7C) is only where the last polygon edge was stored. The bytes from here are more of the left-edge table (see $AD00)."
   },
   {
+   "address": 44476,
+   "type": "line",
+   "text": "polygon_left_x + $BC to + $FF: the end of the 256-byte workspace that starts at $AD00 (see there), stored and read both while a landscape is made and in play."
+  },
+  {
    "address": 44544,
    "type": "line",
    "text": "Run-time workspace, 256 bytes, with two uses. In play: the right x-coordinate of the polygon being filled on each pixel line ($2EB7, and the edge tracer's self-modified STX at $2F5F), compared with the left edges at $AD00 by $22B7 and $2377. While a landscape is generated: the highest altitude in each 4x4 block of tiles at $AE10, and the x and z of that highest tile at $AE60 and $AEA0. The BBC original uses its $5B00 the same way. The image holds bytes left from an earlier run."
@@ -17221,6 +17272,16 @@
    "address": 45062,
    "type": "line",
    "text": "Missing from this copy ($B000-$B5FF holds a fill pattern; excluded in game.json). Called once per scroll step of a pan from the loop at $3668-$3692, which replaces the BBC original's wait for its interrupt-driven scroll: the interrupt sets bit 7 of $0CD8 each frame while the step counter $0CC1 is not 0 ($964F-$9656), $96A6 moves the view offsets ($94-$96) and counts $0CC1 down ($972A), the raster is checked against line 230 ($3670), then this is called. So it must move the picture for one step; what it moves, and where, is unknown."
+  },
+  {
+   "address": 46592,
+   "type": "line",
+   "text": "1.5 KB, $B600-$BBFF, that no instruction in this copy names, and that nothing reads, writes or runs from the hand-over to the first view of landscape 0000 and a U-turn (load, store and execute checkpoints, 0 hits each). It holds a page of $00, a page of $FF, then four pages that each start with four $00 bytes and are $FF after them: the pattern most of the angle cache at $BC00-$CBFF holds before $3700 first fills it. What the game keeps here, if anything, is unknown. The pan code missing from this copy ($B006) is the one part of the game that could not be run, so it may use these bytes."
+  },
+  {
+   "address": 47616,
+   "type": "line",
+   "text": "$BA00-$BBFF, the last two pages of the 1.5 KB at $B600, each four $00 bytes and then $FF like $B800 and $B900."
   },
   {
    "address": 48128,

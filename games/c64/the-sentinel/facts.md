@@ -80,6 +80,7 @@ game's How it works page reproduces all 10,000 codes.
 | Object flags (bit 7 free; bit 6 set: standing on the object in bits 0-5), pitches, drawing work area, in the stack page | `$0100`, `$0140`, `$0180`-`$01BF` |
 | Random bytes for the scanner's static | `$0200`-`$02FF` |
 | Landscape tiles, 32 × 32 corners, one byte each | `$0400`-`$07FF` |
+| Load-chain leftover: the loading picture's viewer, not called by the game | `$0800`-`$08FF` |
 | Object tables, 64 entries each: x, height, z, yaw, height fraction, type | `$0900`, `$0940`, `$0980`, `$09C0`, `$0A00`, `$0A40` |
 | Drawing tables, 96 entries each: pitch low and high, x high, yaw low | `$0A80`, `$0AE0`, `$0B40`, `$0BA0` |
 | Variables | `$0C00`-`$0CFF` |
@@ -88,6 +89,7 @@ game's How it works page reproduces all 10,000 codes.
 | Tables: play-screen rows, arctangent, half-angle tangent, bitmap rows, edge pixels, tile visibility | `$3A00`-`$3EFF` |
 | C64 entry | `$3F00`-`$3FB3` |
 | Play screen: five character sets | `$4000`-`$67FF` (VIC bank 1) |
+| Loading picture, the Firebird eye, as the load chain left it; not read by the game | `$6800`-`$6FFF`, `$7100`-`$7BFF` |
 | Sprite shapes: sights, scanner | `$7000`-`$70FF` |
 | Screen matrix and sprite pointers | `$7C00`-`$7FFF` |
 | Load-chain leftover, not called by the game | `$8000`-`$80FF` |
@@ -581,15 +583,21 @@ printable range.
   `$5300`) the gaps are the BBC version's screen-buffer rows and the
   routines the C64 moved to `$9280`.
 - **The load chain**: `$0800 JMP $8080`, and at `$8080` a stub that
-  copies `$5C00`-`$80FF` to `$0800`-`$2CFF` and jumps to `$0816`.
+  copies `$5C00`-`$80FF` to `$0800`-`$2CFF` and jumps to `$0816`, which
+  copies 36 pages from `$0873` to `$4000` and shows them: the loading
+  picture, a multicolour bitmap at `$4000` with its screen at `$6000`.
 - **Unread tables**: the BBC's sights tables (`$9A17`-`$9A3B`,
   `$9A45`-`$9A50`, `$9CC1`-`$9CCC`, `$3DE7`-`$3DFF`), a BBC-to-C64 colour
   table at `$8CF1`, the first character code of each screen row at
   `$3A60` (which only the missing code could use), and four glyphs that `$89C5` patches into the font
   (an arrow, a centred dash, two blocks) and nothing prints.
-- `$6800`-`$6FFF` and `$7100`-`$7BFF` hold what looks like a multicolour
-  picture that nothing in the image reads; the missing `$B000` code is
-  the only candidate.
+- **The loading picture.** Before that copy, the picture's bitmap lies at
+  `$5C73`-`$7BB2`. The play view's character sets and the sprites later
+  take parts of it, but `$6800`-`$6FFF` and `$7100`-`$7BFF` still hold
+  the rest: drawn as a multicolour bitmap from `$5C73`, they show
+  Firebird's loading screen, a huge eye above the Firebird logo. Nothing
+  in the game reads, writes or runs those bytes from the hand-over to
+  play.
 
 ## Open questions
 
