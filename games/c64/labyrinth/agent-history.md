@@ -460,3 +460,10 @@ Validation: all42 Labyrinth checks passed, including1,792 guarded-door branch ca
 Added the Lucasfilm Games loading screen (`reference/loading.png`, an emulator capture from the supplied disk) to the release section of the Overview. No kit change was needed.
 
 Validation: binary and document checks passed; the 58-game build produced 666 pages.
+
+
+## Copy pass: method language out of the prose · 22 October 2026
+
+Reviewed the Overview, Controls, and Areas against `kit/style.md`. Removed method narration from the visible Areas prose (about 40 paragraphs and four captions): comparisons, controlled setups, snapshots, and repeated "remains open" lines. The verification detail stays in the "Sources and checks" disclosures, the tests, and this history; each area keeps one plain statement of what is not yet explained. Rewrote colour-only wording: the corridor strip marks openings in bold and underline (and names them in each cell's label), the workflow arrows are described by line style, and the Overview's meta note about pins is gone. Linked the places and the word wheels named in the Overview's opening text. Added the Oxford comma and replaced one ambiguous "They". No kit change was needed.
+
+Validation: all Labyrinth tests passed; binary and document checks passed; the 58-game build produced 666 pages. Browser check: no console errors or failed requests on the three pages, the corridor strip marks column 8 as the first opening, and the new Overview links point at existing anchors.
