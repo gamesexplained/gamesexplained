@@ -26,7 +26,7 @@ for(const [id,location,price] of [['buy-ticket',6,5],['buy-popcorn',7,2]]){
   const raw=c.m[0x672f];assert.equal(raw<128?raw+1:0,dollars>=price?dollars-price:dollars,id);assert.equal(c.m[location===6?0x6740:0x6739],dollars>=price?0:255,id);
  }
 }
-const {labyrinthChangeStart:start,labyrinthChangeStep:step}=g.run('discoveries.html','labyrinth-change','labyrinthChangeStart','labyrinthChangeStep');
+const {labyrinthChangeStart:start,labyrinthChangeStep:step}=g.run('explore.html','labyrinth-change','labyrinthChangeStart','labyrinthChangeStep');
 let s=start();s=step(s,'complain').state;s=step(s,'complain').state;assert.equal(s.changeByte,3);s=step(s,'take').state;assert.equal(s.quarterByte,2);s=step(s,'take').state;assert.equal(s.nickelTaken,1);s=step(s,'return').state;assert.equal(s.karma,255);
 assert(edges.find(e=>e.id==='complaint-refund').entry===0x95b7);assert(edges.find(e=>e.id==='nickel-offer').entry===0x9485);
 console.log(`OK - eight workflow texts, ${moves} movement/ticket cases, 18 purchases and the linked refund/return sequence`);
