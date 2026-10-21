@@ -3,8 +3,8 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
-const {labyrinthGuardLeftDoorData:data,labyrinthGuardLeftDoor:door}=g.run('explore.html','labyrinth-guard-left-door','labyrinthGuardLeftDoorData','labyrinthGuardLeftDoor');
-const {labyrinthGuardAfter:ask}=g.run('explore.html','labyrinth-guard-after','labyrinthGuardAfter');
+const {labyrinthGuardLeftDoorData:data,labyrinthGuardLeftDoor:door}=g.run('levels.html','labyrinth-guard-left-door','labyrinthGuardLeftDoorData','labyrinthGuardLeftDoor');
+const {labyrinthGuardAfter:ask}=g.run('levels.html','labyrinth-guard-after','labyrinthGuardAfter');
 assert.deepStrictEqual([...ram.slice(0x8b30,0x8b32)],[32,45]);assert.equal(ram[0x8bf0]+256*ram[0x8bf1],0x9273);
 assert.deepStrictEqual([...ram.slice(0x8b8e,0x8b90)],[37,45]);assert.equal(ram[0x8c4e]+256*ram[0x8c4f],0x92b3);
 function seed(c,cell,flag,depth){for(const[a,v]of [[0x5e,255],[0x343,255],[0x531,4],[0x530,255],[0x538,99],[0x53c,0],[0x544,depth],[0x569,15],[0x56a,1],[0x56b,15],[0x8f04,2],[0x8f0c,0],[0x8f06,1],[0x8f13,flag],[0x601,cell]])c.m[a]=v;}

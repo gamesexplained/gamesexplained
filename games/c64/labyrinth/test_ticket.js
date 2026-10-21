@@ -6,7 +6,7 @@ const g=game(__dirname),image=require('./opening_image.js')(g),{ram,has}=image;
 for(const entry of [0x90ba,0x90d6,0x90e5,0x90f4,0x9114,0x9123,0x9327]) {
  assert.equal(image.listing.records.find(r=>r.a===entry)?.t,'code',`handler $${entry.toString(16)} must be listed as code`);
 }
-const {labyrinthEastTable,labyrinthNoTicketReply,labyrinthEastOutcome}=g.run('explore.html','labyrinth-east','labyrinthEastTable','labyrinthNoTicketReply','labyrinthEastOutcome');
+const {labyrinthEastTable,labyrinthNoTicketReply,labyrinthEastOutcome}=g.run('levels.html','labyrinth-east','labyrinthEastTable','labyrinthNoTicketReply','labyrinthEastOutcome');
 for(let i=0;i<14;i++) {
  assert(has[0xaa20+i]&&has[0xaa2e+i]);
  assert.equal(labyrinthEastTable[i].high,ram[0xaa20+i]);

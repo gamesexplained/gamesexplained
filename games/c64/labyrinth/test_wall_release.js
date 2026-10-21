@@ -3,7 +3,7 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=g.listing('parts/scene-05/listing.json');
-const {labyrinthWallNinth:ninth,labyrinthWallReleaseMove:move,labyrinthWallReleaseExit:data,labyrinthWallReleaseJourney:journey}=g.run('explore.html','labyrinth-wall-manicure','labyrinthWallNinth','labyrinthWallReleaseMove','labyrinthWallReleaseExit','labyrinthWallReleaseJourney');
+const {labyrinthWallNinth:ninth,labyrinthWallReleaseMove:move,labyrinthWallReleaseExit:data,labyrinthWallReleaseJourney:journey}=g.run('levels.html','labyrinth-wall-manicure','labyrinthWallNinth','labyrinthWallReleaseMove','labyrinthWallReleaseExit','labyrinthWallReleaseJourney');
 const c=new CPU(Uint8Array.from(ram));let commands=0,moves=0,exits=0;
 function command(gate,item,damage,animationCount=37){const d=ninth(gate,item,damage),outputs=[],sounds=[];
  for(const[a,v]of [[0x343,gate],[0x673e,item],[0x56c,damage],[0x8ea6,8],[0x8e9f,7],[0x356,3],[0x8ea3,4],[0x8eaa,animationCount],[0x376,11],[0x375,51]])c.m[a]=v;

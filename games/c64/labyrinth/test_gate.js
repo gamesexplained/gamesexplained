@@ -3,7 +3,7 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram,has}=g.listing('parts/scene-01/listing.json');
-const {labyrinthGateCells:cells,labyrinthGateTypes:types,labyrinthGateLimits:limits,labyrinthGateApproach:approach}=g.run('explore.html','labyrinth-gate','labyrinthGateCells','labyrinthGateTypes','labyrinthGateLimits','labyrinthGateApproach');
+const {labyrinthGateCells:cells,labyrinthGateTypes:types,labyrinthGateLimits:limits,labyrinthGateApproach:approach}=g.run('levels.html','labyrinth-gate','labyrinthGateCells','labyrinthGateTypes','labyrinthGateLimits','labyrinthGateApproach');
 for(const [start,values] of [[0x600,cells],[0x73e,types],[0x41f0,limits]])for(let i=0;i<values.length;i++){assert(has[start+i]);assert.equal(values[i],ram[start+i]);}
 const caps=[];
 for(let x=0;x<256;x++){
@@ -28,7 +28,7 @@ for(const pending of [255,0,3])for(const entry of [255,5]){
 }
 console.log('OK - 256 original column classifications, 256 original threshold cases, 65,536 combined candidates and seven deferred-scene cases');
 // Stored speech and the shared sequence scheduler, without simulating its artwork.
-const {labyrinthGateSpeech:speech}=g.run('explore.html','labyrinth-gate-speech','labyrinthGateSpeech');
+const {labyrinthGateSpeech:speech}=g.run('levels.html','labyrinth-gate-speech','labyrinthGateSpeech');
 assert.equal(speech.length,7);
 for(let i=0;i<7;i++){
  const r=speech[i];assert.equal(r.address,ram[0x8ed4+i]+256*ram[0x8edb+i]);assert.equal(r.countdown,ram[0x8ec5+i]);assert.equal(ram[r.end],0);

@@ -3,8 +3,8 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=g.listing('parts/scene-03/listing.json');
-const {labyrinthBrickCloseData:d,labyrinthBrickCloseDoor:close,labyrinthBrickDoorCycle:cycle}=g.run('explore.html','labyrinth-brick-close','labyrinthBrickCloseData','labyrinthBrickCloseDoor','labyrinthBrickDoorCycle');
-const {labyrinthBrickOpenDoor:open}=g.run('explore.html','labyrinth-brick-door','labyrinthBrickOpenDoor');
+const {labyrinthBrickCloseData:d,labyrinthBrickCloseDoor:close,labyrinthBrickDoorCycle:cycle}=g.run('levels.html','labyrinth-brick-close','labyrinthBrickCloseData','labyrinthBrickCloseDoor','labyrinthBrickDoorCycle');
+const {labyrinthBrickOpenDoor:open}=g.run('levels.html','labyrinth-brick-door','labyrinthBrickOpenDoor');
 for(const [address,values] of [[0x72e,d.replacements],[0x73e,d.types]])assert.deepStrictEqual([...ram.slice(address,address+values.length)],[...values]);
 assert.deepStrictEqual([...ram.slice(0x8b2e,0x8b30)],[32,45]);assert.equal(ram[0x8bee]+256*ram[0x8bef],0x8e9e);
 const texts={};for(const address of [0x92e0,0x92ca,0x94bb]){
@@ -31,6 +31,6 @@ for(const initialCount of [0,1,3,4,255]){
  }
  assert.equal(state.count,initialCount);assert.equal(state.cell,6);
 }
-const html=g.read('explore.html');assert(html.includes('data-initial-cell="6"'));assert(html.includes('data-initial-count="4"'));for(const action of ['close','open'])assert(html.includes('data-cycle-action="'+action+'"'));
+const html=g.read('levels.html');assert(html.includes('data-initial-cell="6"'));assert(html.includes('data-initial-count="4"'));for(const action of ['close','open'])assert(html.includes('data-cycle-action="'+action+'"'));
 assert.throws(()=>cycle({cell:6,count:4},'other',open),RangeError);
 console.log('OK - 65,536 original CLOSE decisions, original reply parses, decrement wrap, and 20 complete classifier/mutation calls across five cycle counters including the page’s live count4 sequence');

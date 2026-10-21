@@ -3,7 +3,7 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
-const {labyrinthGuardSceneRequest:request,labyrinthGuardLaterArrival:data}=g.run('explore.html','labyrinth-guard-load','labyrinthGuardSceneRequest','labyrinthGuardLaterArrival');
+const {labyrinthGuardSceneRequest:request,labyrinthGuardLaterArrival:data}=g.run('levels.html','labyrinth-guard-load','labyrinthGuardSceneRequest','labyrinthGuardLaterArrival');
 assert.deepStrictEqual([...ram.slice(0x59af,0x59dc)],[...g.listing('parts/opening/listing.json').ram.slice(0x59af,0x59dc)]);
 const c=new CPU(Uint8Array.from(ram));let count=0;
 function run(cell,pending,entry){c.m[0x2c3]=cell;c.m[0x530]=pending;c.m[0x532]=entry;const calls=[];let end;

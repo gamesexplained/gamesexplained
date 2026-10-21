@@ -3,7 +3,7 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
-const {labyrinthGuardAfterData:data,labyrinthGuardAfter:after}=g.run('explore.html','labyrinth-guard-after','labyrinthGuardAfterData','labyrinthGuardAfter');
+const {labyrinthGuardAfterData:data,labyrinthGuardAfter:after}=g.run('levels.html','labyrinth-guard-after','labyrinthGuardAfterData','labyrinthGuardAfter');
 let c=new CPU(Uint8Array.from(ram));
 for(let index=0;index<256;index++)for(let flag=0;flag<256;flag++){
  c.m[0x8f04]=index;c.m[0x8f13]=flag;c.m[0x569]=15;c.m[0x56a]=1;c.m[0x56b]=15;let pointer;

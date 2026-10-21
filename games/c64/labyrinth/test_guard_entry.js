@@ -3,7 +3,7 @@ const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
 const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
-const {labyrinthGuardEntryData:data,labyrinthGuardEntryChoice:choice,labyrinthGuardAdvancePhase:advance}=g.run('explore.html','labyrinth-guard-entry','labyrinthGuardEntryData','labyrinthGuardEntryChoice','labyrinthGuardAdvancePhase');
+const {labyrinthGuardEntryData:data,labyrinthGuardEntryChoice:choice,labyrinthGuardAdvancePhase:advance}=g.run('levels.html','labyrinth-guard-entry','labyrinthGuardEntryData','labyrinthGuardEntryChoice','labyrinthGuardAdvancePhase');
 const c=new CPU(Uint8Array.from(ram));
 for(let column=0;column<256;column++)for(let selector=0;selector<256;selector++){
  c.m[0xaf]=column;c.m[0x8f06]=selector;let result;
