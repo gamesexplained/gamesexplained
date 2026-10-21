@@ -49,7 +49,7 @@ for(const length of [0,9,10]) {
 }
 console.log(`OK - G/Z/O rejection and prefix clearing; ${prefixes} prefixes across ${words} available wheel entries; case folding and append-limit boundaries`);
 
-const {labWheelReplay}=g.run('explore.html','labyrinth-wheel-replay','labWheelReplay');
+const {labWheelReplay}=g.run('controls.html','labyrinth-wheel-replay','labWheelReplay');
 const recorded=machine();
 assert.equal(labWheelReplay.length,5);
 for(const row of labWheelReplay) {
