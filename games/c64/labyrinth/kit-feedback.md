@@ -259,3 +259,8 @@ The browser reload check also exposed a game-local navigation fault: generated t
 ## Stone Corridor ladder · 21 October 2026
 
 `60-verify`, “What a test lets through”: tested the full eight-position accepted interval rather than treating the drawn ladder width as its movement rule. “Prove reachability with inputs” led to two short ordinary left pulses, with misses retained separately. The reference search over annotated code reported no matches for3420; a raw operand search found its still-unannotated producer and consumers. Existing negative-result guidance covers that distinction. No shared-kit edit or maintainer ask arose.
+
+
+## Reading structure · 21 October 2026
+
+`70-minisite`, “The page opens with the game”: moved the reader’s technical-link legend below the explanations and restored the How it works entry. `kit/style.md`, “Each tab has a purpose”: made Controls a lookup page, kept detailed local mechanics on Gameplay, and separated location coverage from capture provenance. The kit permits custom intermediate tabs and flexible section order; the catalogue’s coverage badges are a Labyrinth presentation choice. Existing guidance covers this review, so no shared-kit change or maintainer ask arose.
