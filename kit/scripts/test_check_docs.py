@@ -5,8 +5,9 @@ section of facts.md that reports what a sample of the listing found and what was
 own class that site.css also styles is caught before the built site collapses it (#143), an id
 on two elements of a page is caught before a button's handler lands on the other one, a
 platform's install notes keep one section per system and one row per build and kind of computer,
-a skill names no game in the lines a branch adds, whatever it said before the game arrived, and
-kit-feedback.md's placeholder fails only once the retrospective is reached or on a pull request."""
+a skill names no game in the lines a branch adds, whatever it said before the game arrived, a
+core skill gains no dated record, and kit-feedback.md's placeholder fails only once the
+retrospective is reached or on a pull request."""
 import contextlib
 import io
 import os
@@ -298,6 +299,55 @@ class BeforeRetro(unittest.TestCase):
     def test_a_tier_set_or_a_pull_request(self):
         for tier, ci in (('bronze', False), ('silver', False), ('none', True), (None, False)):
             self.assertFalse(self.tier(tier, ci), (tier, ci))
+
+
+class SkillDatedRecords(unittest.TestCase):
+    """A date a branch writes into a core skill fails; a cutoff, a lesson's file name, a
+    platform skill and the lines already on main pass."""
+    CORE = "kit/skills/core/60-verify/SKILL.md"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        self.write(self.CORE, "# Verify\nOn a test (11 October 2026), the strongest model found 16.\n")
+        self.git("init", "-q", "-b", "main")
+        self.commit("base")
+        self.git("checkout", "-qb", "kit/trim")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write(self, rel, text):
+        os.makedirs(Path(self.root, rel).parent, exist_ok=True)
+        Path(self.root, rel).write_text(text, encoding="utf-8")
+
+    def git(self, *args):
+        subprocess.run(["git", "-C", self.root, *args], check=True)
+
+    def commit(self, msg):
+        self.git("add", "-A")
+        self.git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", msg)
+
+    def found(self, base="main"):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return check_docs.skill_dated_records(base, self.root)
+
+    def test_a_line_already_on_main_passes(self):
+        self.assertEqual(self.found(), 0)
+
+    def test_a_dated_record_the_branch_writes_fails(self):
+        for added in ("On 18 October 2026, three copies of one run were checked blind.\n",
+                      "A test on 2026-10-18 left 17 of 90 wrong.\n",
+                      "In a test of October 2026 the helpers did better.\n"):
+            self.write(self.CORE, "# Verify\nOn a test (11 October 2026), the strongest model found 16.\n"
+                       + added)
+            self.assertEqual(self.found(), 1, added)
+
+    def test_a_cutoff_a_lesson_and_a_platform_skill_pass(self):
+        self.write(self.CORE, "# Verify\nGames checked before 12 October 2026 keep a check row.\n"
+                   "The test is in `kit/lessons/2026-10-18-helpers-accuracy.md`.\n")
+        self.write("kit/skills/c64/tool-vice-mcp/SKILL.md", "# VICE\nMeasured on 10 October 2026.\n")
+        self.assertEqual(self.found(), 0)
 
 
 if __name__ == '__main__':

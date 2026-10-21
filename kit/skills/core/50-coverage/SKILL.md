@@ -195,15 +195,11 @@ format, how to check the result against it, and how to read it back
 
 ## A game of several parts
 
-Each part (`15-parts`) has a ledger of its
-own: give `coverage.py`, `symbols_export.py` and `listing.py` the part's
-folder. The game's figure is the sum, `coverage.py <game dir>`, and it
-counts each byte once, because each byte has one owner: a part that lies
-over another counts only its `"ranges"`, and the part beneath does not
-count them, unless they fall in ranges of its own (its snapshot holds its
-own bytes there). 100 % means every part the game has a folder for. A part
-with a folder and no analysis is not in the figure, and the page says so
-beside it.
+Each part (`15-parts`) has a ledger of its own: give `coverage.py`,
+`symbols_export.py` and `listing.py` the part's folder. The game's
+figure, `coverage.py <game dir>`, is the sum over its parts, each byte
+counted in the part that owns it, and 100 % means every part the game
+has a folder for.
 
 A part that lies over another is annotated in one session with it: the
 snapshot holds both. `symbols_import.py <part> <snapshot>` puts the
@@ -359,34 +355,13 @@ needs a guard inside the script or a background run you poll.
 
 ## Splitting the work across subagents
 
-**One agent is the default.** Every agent starts cold: it reads the
-brief, the game's notes and its neighbours' code before it writes
-anything, so tokens grow with the number of agents, not with the game.
-The record bears it out. Single agents took 20 to 22 KB of code to
-100 % in 30 to 40 minutes; runs of seven to twelve agents took 14 to 62
-minutes and then spent the difference on merging, naming collisions and
-reconciling reports in `60-verify`. Two nine-agent runs used up the
-account's session limit within minutes and sat idle for hours.
-
-**What a split buys is accuracy, paid for in tokens.** In a controlled
-test (18 October 2026), three copies of one run carried this step on
-from the same point, after the lead's first pass, and their comments
-were checked blind at the same 90 addresses. One agent took 40 minutes
-and left 17 of the 90 wrong. A lead and two helpers took 62 minutes and
-2.4 times the tokens, and left 7. A lead and four took 52 minutes and
-3.3 times the tokens, and left 9. Probably each helper reads a smaller
-range more closely, and the lead's merge is a second reading: there, one
-helper's reading corrected a variable the other had named for the wrong
-thing, and the lead renamed it. A full audit of the single agent's
-listing (`60-verify`) brought it to 8 wrong, but took more tokens than
-the two-helper split and twice its time. It was one run of each, on a
-game of 14 KB of code (`kit/lessons/2026-10-18-helpers-accuracy.md`).
-
-Split only when the contributor said, in the message that started the
-run, that it may use several agents (`kit/START.md`), whatever the
-size of the game: one agent to a part when the game is several parts
-(below), otherwise one to each range of what is left after your own
-first pass.
+One agent is the default, and a split buys accuracy, paid for in
+tokens (`AGENTS.md`, "Subagents", and the test in
+`kit/lessons/2026-10-18-helpers-accuracy.md`). Split only when the
+contributor said, in the message that started the run, that it may use
+several agents (`kit/START.md`), whatever the size of the game: one
+agent to a part when the game is several parts (below), otherwise one to
+each range of what is left after your own first pass.
 
 Annotate first yourself, then split. Take the main loop, the interrupt
 handlers, the core variables and the naming conventions to described
@@ -394,14 +369,13 @@ before anyone else starts: the brief's "Established" list is then short
 and checked, and the agents inherit names instead of inventing rival
 ones. Start at most four agents, and no more than the contributor
 allowed; when they leave the number to you, start two, which did as
-well as four in the test above. Give the ranges about the same work,
-data to decode as well as code: in that test one helper's range held
-most of the level and sound data, and it took longer than the single
-agent did for the whole step. When you do split, what matters:
+well as four for fewer tokens. Give the ranges about the same work,
+data to decode as well as code: a range that holds most of the level
+and sound data can take longer than one agent takes for the whole step.
+When you do split, what matters:
 
 - **One shared disassembler.** Concurrent reads are safe; concurrent
-  writes are safe only if agents own **disjoint address ranges**. Assign
-  them explicitly and say so in each prompt.
+  writes are safe only if agents own **disjoint address ranges**.
 - **One log per agent.** Parallel appends to one file interleave. Give
   each agent its own `work/annotations-<n>.jsonl`, merge afterwards.
 - **One scratch folder per agent**, `work/agent<n>/`, named in its prompt.
@@ -427,9 +401,8 @@ agent did for the whole step. When you do split, what matters:
   merging.
 - **Find the loaded data before you split the image.** Go through the
   list in "Data the ledger cannot see" before choosing the ranges, not
-  only before calling 100 %. One game's agents finished with 16 KB of map
-  and sprite images still outside the count, left for the lead alone;
-  found first, they are a range in a brief.
+  only before calling 100 %: found first, the data is a range in a brief,
+  and not work left at the end for the lead alone.
 - Brief them cold, from `brief.md` beside this file: copy it to the
   game's `work/BRIEF.md` and fill it in. It asks for the feature list,
   `facts.md` so far, the rules above, the exact client command with each
@@ -437,8 +410,6 @@ agent did for the whole step. When you do split, what matters:
 - **A brief carries only what has been checked**: each fact under
   "Established" names its evidence, and the rest goes under "Guesses"
   (the template's opening comment says why).
-- Force the model explicitly. Spot-check one claim per agent against the
-  source before believing the report.
 - **A game of several parts splits by part before it splits by range**:
   one agent to a part, each with a disassembler of its own on that
   part's snapshot. The platform's tool notes say how several run at
@@ -447,11 +418,10 @@ agent did for the whole step. When you do split, what matters:
   started last, and an export from the wrong session writes one part's
   names into another's map.
 - **An agent stopped by the account's usage limit keeps its context.**
-  Nine agents at once use up a session's allowance quickly; when they
-  stop on the limit, export at once, wait for the reset and resume each
-  agent with a message (the harness's resume, not a new agent), telling
-  it what is already in the disassembler. A new agent rereads its range
-  from nothing.
+  When agents stop on the limit, export at once, wait for the reset and
+  resume each agent with a message (the harness's resume, not a new
+  agent), telling it what is already in the disassembler. A new agent
+  rereads its range from nothing.
 - **An account that pays by credit can fail every agent at its first
   call**, and on every retry: one run's four agents got
   `402 payment_required` because the runner asked for 128,000 tokens the
@@ -461,9 +431,8 @@ agent did for the whole step. When you do split, what matters:
   `max_tokens` where it has the setting. An agent that failed at its
   first call left nothing to resume.
 - **Correct the brief the moment a fact in it turns out wrong**, and say
-  in it that it was corrected. Agents still running read the old line;
-  their reports will contradict it, which is how one run found that its
-  "Established" control had been read off a snapshot taken mid-jump.
+  in it that it was corrected. Agents still running read the old line,
+  and their reports will contradict it.
 
 ## Declare what the bytes are
 

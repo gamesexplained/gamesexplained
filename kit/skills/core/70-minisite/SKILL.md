@@ -496,9 +496,7 @@ is already installed, the shared launcher offers `python3 kit/scripts/tools.py
 browser`. It starts an isolated headless profile under `tools/firefox/`,
 with the WebDriver BiDi endpoint at `ws://127.0.0.1:9222/session`.
 Use a BiDi client to navigate, exercise controls and capture screenshots,
-and record its name/version and Firefox package origin. The 30 September
-2026 run did not record its client or package origin; see the containment
-limits in `kit/INSTALL.md`.
+and record its name/version and Firefox package origin.
 `tools.py stop browser` stops only this clone's test browser. It downloads
 nothing and does not use the contributor's personal browser session. See
 `kit/INSTALL.md`, "Browser checks", for the tested host and containment.

@@ -114,19 +114,15 @@ unnoticed.
      (`https://github.com/gamesexplained/gamesexplained/blob/main/games/<platform>/<slug>/kit-feedback.md`,
      live once the pull request is merged), and
      last, on a line of its own, the marker `<!-- kit-ask -->`.
-   - **The label comes from the marker.** GitHub silently drops a label
-     asked for by an author without triage access to the repository, so
-     `--label kit-ask` alone may leave the issue unlabelled and out of the
-     inbox. The marker makes the repository's `kit-ask` workflow
-     (`.github/workflows/kit-ask.yml`) add the label for anyone. Pass both.
-     A title starting `kit-ask:` works too, where a body cannot be set.
+   - **Pass the label and the marker.** GitHub silently drops a label
+     asked for by an author without triage access, and the marker makes
+     the repository's `kit-ask` workflow add it for anyone. Where a body
+     cannot be set, start the title `kit-ask:`.
    - **Search first**, open and closed:
      `gh issue list --repo gamesexplained/gamesexplained --label kit-ask --state all --search "<words>"`.
      An ask someone already filed gets a comment with this run's case,
      not a second issue. Without `gh`, list every issue that carries the
-     label and read the titles: a search tool is not a listing, and on
-     26 September 2026 one found none of the four `kit-ask` issues there
-     were.
+     label and read the titles: a search tool is not a listing.
 
    ```
    gh issue create --repo gamesexplained/gamesexplained --label kit-ask --title "<the ask>" --body-file <file>
@@ -178,9 +174,7 @@ unnoticed.
    status page counts the games made on each kind of computer from it), model (every model the run used,
    and the subagents' model if different), `step_models` (the models that
    ran `50-coverage` and `60-verify`, which `models.py` reads),
-   `accuracy` (every step behind the listing's comments, in order: the
-   research, the annotation, each sample, each audit and a Play tab's
-   port, with the models that did them: `60-verify`), copy
+   `accuracy` (every step behind the listing's comments: `60-verify`), copy
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.

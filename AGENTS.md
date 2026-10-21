@@ -99,7 +99,11 @@ they ask for a change, commit straight to `main` if they wish.
 `kit/lessons/` is not a list of changes: it records what the kit
 learned about reverse engineering, from which game and whom, one entry
 to a file (`kit/skills/core/80-retro`), and a change that does not alter
-what the next agent does when it opens a game stays out of it. When the
+what the next agent does when it opens a game stays out of it. A skill
+states the rule and, in a clause, why. The test or run that showed it,
+with its date and figures, is written once, in its lesson, and the skill
+may name the file: `check_docs.py` fails a date in a line a branch adds
+to a core skill. When the
 workflow changes, put `[kit-bump]` in the pull request's description (or
 the commit message, on a push to `main`) and leave `kit/VERSION` alone:
 after the merge, `.github/workflows/kit-version.yml` moves it on and

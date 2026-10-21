@@ -64,12 +64,10 @@ on to the end: 100 % coverage is most of what a page is worth, and the
 sample tells the reader, and the next run, how far to trust the
 comments. An audit of every comment, and a second sample after it, are
 later work that the run recommends and does not do. A run audits only
-when the contributor asked for an audit. Of 17 games whose first sample
-is on record, 16 had more than two wrong in 60, typically about one
-comment in eight; after a full audit, the next sample passed in four of
-the seven that drew one, and a fifth missed by one comment. Correcting
-only the comments a sample found wrong never brought a listing under the
-mark, because the sample's rate holds across the rest.
+when the contributor asked for an audit. A first sample is usually over
+the mark, with about one comment in eight wrong, and correcting only the
+comments it found does not bring a listing under it, because the
+sample's rate holds across the rest.
 
 Both the sample and the audit are done by checkers: agents that wrote
 none of the comments, with `checker.md` beside this file as their brief.
@@ -125,22 +123,13 @@ audit, in a run asked for one, gives its ranges to fresh checkers one at
 a time, unless whoever asked for it allowed several at once.
 
 Any proven model may check (`models.py`), but a checker finds only what
-its model can see, so use the strongest model the contributor has. On a
-test of 60 comments with 20 known errors (11 October 2026), the strongest
-model tried found 16 or 17 in every run and raised no false alarm; the
-weakest found 4 to 7 and raised false alarms. At the mark above, a
-listing with 10 % of its comments wrong would pass about one time in
-eight with the first and three times in four with the second. When the
-contributor has a model from a second provider, a second checker on it
-is worth its cost: on the same test it reported three errors that every
-run on the other provider's models had passed. A comment is wrong when
-either checker's finding holds. A second pass on a weaker model from the
-same provider is not worth its cost: on the same test it found about
-half an error more than the strongest model's pass alone, and none that
-the strongest model's runs had all missed. A second pass on the
-strongest model, in fresh agents, found about 1.3 more, and one on a
-second provider's model about 2.5 more, besides four errors the test's
-key had missed.
+its model can see: on the weakest model tried, a listing with 10 % of
+its comments wrong would pass the mark three times in four. So use the
+strongest model the contributor has. When the contributor has a model
+from a second provider, a second checker on it is worth its cost, since
+it finds errors that every model of the first provider passes; a
+comment is wrong when either checker's finding holds. A second pass on
+a weaker model from the same provider is not worth its cost.
 
 When the contributor named a model for checking as the run started
 (`kit/START.md`), every checker runs on it, for samples and audits
@@ -177,9 +166,7 @@ against the code on every path (a reader cited for a field it reads only
 for some values of a flag, a condition such as "when empty" or "nothing
 reads this"), then the records whose values change what the sentence
 means, and make the corrections with a script from the records' bytes,
-in the decoder too, or its next run puts the errors back. One run's
-decoder wrote 7,973 of its 11,532 comments, and the sample drew three of
-them and found two wrong; the audit that followed corrected 2,017.
+in the decoder too, or its next run puts the errors back.
 
 If the checking agent cannot run (its provider is out of credit, say:
 `50-coverage`, "Splitting the work across subagents"), run it on another

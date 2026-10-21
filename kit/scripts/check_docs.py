@@ -18,6 +18,8 @@
                      form skill_usage.py counts, or "None." (kit/skills/core/80-retro, step 1)
   kit/skills/core/   a game's branch that adds to a core skill names, in kit-feedback.md,
                      another game where it would have mattered (skill_edits.py)
+  kit/skills/core/   no date in the lines a branch adds: the rule stays, and the test or run
+                     behind it goes in its lesson (AGENTS.md, "Working on the kit")
   kit/lessons/       one entry a file, under one heading that names the game that taught it
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
@@ -179,6 +181,41 @@ def outside_error_rate(path):
             if inside is None:
                 keep.add(n)
     return keep
+
+
+MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
+DATE = re.compile(rf"\b(?:\d{{1,2}} )?(?:{MONTHS})(?: \d{{1,2}},)? \d{{4}}\b|\b\d{{4}}-\d{{2}}-\d{{2}}\b")
+# A cutoff is a rule ("games checked before 12 October 2026 keep that older check"), and a
+# lesson's file name is where the record went.
+CUTOFF = re.compile(r"\b(?:before|after|since|until)\s+$", re.I)
+LESSON_PATH = re.compile(r"kit/lessons/[\w.-]+")
+
+
+def skill_dated_records(base=None, root=ROOT):
+    """A core skill's lines that this branch adds carry no date. A dated test kept beside the
+    rule it produced is read by every run long after its record went in kit/lessons/: 50-coverage
+    kept the helpers' scores of 18 October 2026, 60-verify the checkers' of 11 October. Platform
+    skills date what a tool did, as AGENTS.md asks, so they are not read here."""
+    added = added_lines(os.path.join("kit", "skills", "core"), base, root)
+    bad = 0
+    for sk in sorted(glob.glob(os.path.join(root, "kit", "skills", "core", "*", "*.md"))):
+        lines = (added or {}).get(os.path.normpath(sk))
+        if not lines:
+            continue
+        with open(sk, encoding="utf-8", errors="replace") as fh:
+            for n, line in enumerate(fh, 1):
+                if n not in lines:
+                    continue
+                text = LESSON_PATH.sub(lambda q: " " * len(q.group(0)), line)
+                for m in DATE.finditer(text):
+                    if CUTOFF.search(text[:m.start()]):
+                        continue
+                    print(f"  x  {os.path.relpath(sk, root)}:{n}  a dated record in a core skill: {m.group(0)!r}")
+                    print("        keep the rule and its reason; the test or run behind it goes in its lesson,")
+                    print("        which the skill may name (AGENTS.md, \"Working on the kit\")")
+                    bad += 1
+                    break
+    return bad
 
 
 def added_lines(prefix, base=None, root=ROOT):
@@ -424,6 +461,7 @@ def main():
     fails += duplicate_ids()
     fails += platform_notes()
     fails += steps_tables()
+    fails += skill_dated_records()
     notes = sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, "kit", "template", "*.md")))
     for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.md"))):
         if os.path.basename(f) not in notes:

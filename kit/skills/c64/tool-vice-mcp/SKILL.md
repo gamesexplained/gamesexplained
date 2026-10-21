@@ -270,7 +270,7 @@ the batch.
 ### Recording what ran
 
 `kit/c64/codemap.py` builds the game's code map from VICE's executed-address
-record (#236): `zap` clears it at the start of a play session, `dump` writes
+record: `zap` clears it at the start of a play session, `dump` writes
 `games/c64/<slug>/codemap.json` at the end. The record is VICE's monitor
 memmap, a per-address access map that marks every address the CPU fetched an
 instruction from. Unlike the cpuhistory ring buffer (8,192 entries, ~28 ms)
@@ -320,15 +320,14 @@ addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
 
 ## Behaviours that waste time, on any build
 
-- **Prove the machine is running before you believe a negative result.**
-  An absence measured on a stopped machine is indistinguishable from an
-  absence in the game. The test is a hit count that grows on a routine
-  known to run, such as the loop or the interrupt handler. Two reads of the
-  program counter are not the test: a game idling in a two-instruction
-  delay loop returns the same address twice while running. Keep that
-  count in every batch as the control (`60-verify`, "Carry a control"): on
-  a build that fails `checkpoints-survive-load` it is the only thing that
-  tells you the instrument is dead.
+- **Prove the machine is running before you believe a negative result**,
+  with the control `60-verify` asks for ("Carry a control"): a hit count
+  that grows on a routine known to run, such as the loop or the interrupt
+  handler, in every batch. Two reads of the program counter are not the
+  test: a game idling in a two-instruction delay loop returns the same
+  address twice while running. On a build that fails
+  `checkpoints-survive-load` the control is the only thing that tells you
+  the instrument is dead.
 - **A store watch can stay silent where the code plainly writes.** On 2
   October 2026 a stopping store checkpoint on `$0200`-`$03FF`, armed
   straight after loading a hand-over snapshot, never fired, though the
