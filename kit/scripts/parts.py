@@ -8,7 +8,7 @@ loading is over and something happens. However many files arrive behind
 one loading screen, they are one part; an intro, each level that is loaded
 on its own and an ending are a part each.
 The kinds of part (a load, a bank) and what is not one are written up in
-kit/skills/core/10-orient, "A game of several parts".
+kit/skills/core/15-parts.
 
 Each part is a folder, games/<platform>/<slug>/parts/<id>/, laid out as a
 small game folder, and the folder says everything about the part. No file
@@ -120,9 +120,9 @@ def kind(pid, own):
         say = ", ".join(f'"{f}"' for f in alien)
         if k == "bank":
             sys.exit(f"part {pid} is a bank, so {say} do not belong in its part.json: name the part whose "
-                     'code reads it as "seen_by", and where it shows as "window" (kit/skills/core/10-orient)')
+                     'code reads it as "seen_by", and where it shows as "window" (kit/skills/core/15-parts)')
         sys.exit(f'part {pid} has {say}, which only a bank has: a bank says "kind": "bank", and a load '
-                 "has none of them (kit/skills/core/10-orient)")
+                 "has none of them (kit/skills/core/15-parts)")
     if k == "bank":
         missing = [f for f in KINDS["bank"] if own.get(f) in (None, "", [])]
         if missing:

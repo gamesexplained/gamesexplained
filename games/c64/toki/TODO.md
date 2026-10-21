@@ -18,7 +18,7 @@ For Silver:
   over it (`kit/c64/crt.py parts`), and exclude from each bank what is
   copied into RAM. Each stage is likely copied in from the cartridge
   (`stage_load`), which would make each stage a part as well
-  (`10-orient`, "A game of several parts").
+  (`15-parts`).
 - Text: the game reads its strings from bank 0 in place. They go in
   bank 0's listing, and the code that prints them takes their names
   through a `"banks"` row in its part's `part.json` (the same section).

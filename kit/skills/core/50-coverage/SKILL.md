@@ -195,7 +195,7 @@ format, how to check the result against it, and how to read it back
 
 ## A game of several parts
 
-Each part (`10-orient`, "A game of several parts") has a ledger of its
+Each part (`15-parts`) has a ledger of its
 own: give `coverage.py`, `symbols_export.py` and `listing.py` the part's
 folder. The game's figure is the sum, `coverage.py <game dir>`, and it
 counts each byte once, because each byte has one owner: a part that lies

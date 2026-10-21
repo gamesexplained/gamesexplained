@@ -139,8 +139,7 @@ switches chose when the snapshot was saved, never as the ROM.
 
 A game that keeps code or data in aux memory, or in the language card's
 other $D000 bank, makes each of those a part of its own
-(`kit/skills/core/10-orient`, "A game of several parts";
-`kit/scripts/parts.py`). The part's `part.json` says `"kind": "bank"`,
+(`kit/skills/core/15-parts`; `kit/scripts/parts.py`). The part's `part.json` says `"kind": "bank"`,
 and has `"bank"` set to one of `"aux"`, `"mainlc1"`, `"mainlc2"`, `"auxlc1"` or `"auxlc2"`, which
 `kit/apple2/snapshot.py` reads: aux memory's 64K, or one 4K bank of main
 or aux memory's language card at $D000-$DFFF with the 8K above it. The

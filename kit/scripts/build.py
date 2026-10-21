@@ -455,7 +455,7 @@ def uncounted_note(lpath):
 def virtual(game, P=()):
     """The code a game keeps in a virtual address space: read from the disk during play into
     whichever buffer is free, and reached at its own addresses, so no snapshot holds it whole
-    and no listing holds it at all (kit/skills/core/10-orient, "A game of several parts").
+    and no listing holds it at all (kit/skills/core/15-parts).
     game.json's coverage.virtual, or each part's, [[bytes, what it is], ...] (#428). An
     interpreter's story is the usual case. The About tab and the Source tab name it beside the
     figure, so that 100 % says what it is 100 % of."""

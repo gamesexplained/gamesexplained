@@ -24,6 +24,7 @@ in order:
    | Step | Skill | Produces |
    |---|---|---|
    | orient | `kit/skills/core/10-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
+   | parts | `kit/skills/core/15-parts` | a folder, snapshot and route for each part, when the game is more than one image |
    | features | `kit/skills/core/20-features` | `features.md` and `reference/` before any code is read |
    | text | `kit/skills/core/30-text` | the game's alphabets decoded, when it has a custom charset |
    | sweep | `kit/skills/core/40-sweep` | register census and string sweep |
@@ -53,7 +54,7 @@ in order:
    Both are committed; the snapshot and disassembler project stay in
    `work/`. A game that is several loads has a symbol map and a listing
    for each part, and both scripts take the part's folder
-   (`kit/skills/core/10-orient`, "A game of several parts"). Preview the
+   (`kit/skills/core/15-parts`). Preview the
    whole minisite with `python3 kit/scripts/build.py`
    and `python3 -m http.server -d _site 8000` (or any free port).
 5. **Check, commit on a branch, open a pull request.** Name the branch

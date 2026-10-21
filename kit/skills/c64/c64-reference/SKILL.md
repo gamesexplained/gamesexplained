@@ -384,9 +384,9 @@ reads, the bank `cart` is the cartridge bank selected at that moment,
   as well (an Ocean one's every bank, in a module named `CARTOCEAN`),
   and its RAM is where `kit/c64/snapshot.py` expects it. What the game
   copies from the banks over code that stays is a part `--over` the
-  resident one, as for a disk: `10-orient`'s rule applies unchanged,
+  resident one, as for a disk: `15-parts`' rule applies unchanged,
   count what the player waits for, and a store checkpoint over RAM while
-  the copy runs finds the ranges (`10-orient`, "A game of several parts",
+  the copy runs finds the ranges (`15-parts`,
   step 4). A store checkpoint on the bank register says which bank fed
   each range, for the route in `orientation.md`.
 - **Each bank is a part as well.** `kit/c64/crt.py parts <game dir>

@@ -211,7 +211,7 @@ its music or its maps can put that first instead.
   program. Data the game fetches into a buffer during play, a portrait
   for each fight or a tune for each room, goes in the page that shows
   it, from the game's own loads in the emulator, and not into a part made
-  to hold it (`10-orient`).
+  to hold it (`15-parts`).
 - A game can read the machine's ROM as data: a table, or code used as
   noise. When a mechanic on the page depends on it, embed only the bytes
   the game reads, or the values it computes from them, and never the
@@ -282,7 +282,7 @@ its music or its maps can put that first instead.
   picture claims to show.
 - Reference images go in `reference/`; the page refers to them by
   relative path from the game folder (`reference/<name>.png`).
-- **A game of several parts** (`10-orient`) gets a Source page for each
+- **A game of several parts** (`15-parts`) gets a Source page for each
   part that has a listing, `source-<id>.html`, with the parts named above
   the listing and a control beside it that steps from one to the next.
   `source.html` is the first part's. The build makes these; the page's

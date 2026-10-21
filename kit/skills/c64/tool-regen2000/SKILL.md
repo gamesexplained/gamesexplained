@@ -56,7 +56,7 @@ and a loopback bridge (`kit/c64/INSTALL.md`, "Another program on port
 3000"); the client, the exporter and the launcher find it through
 `tools/r2000-port`. Addresses in arguments are decimal integers.
 
-A game of several parts (`core/10-orient`) can have a disassembler
+A game of several parts (`core/15-parts`) can have a disassembler
 running for each part at once. Start each on a file in its part's
 folder (`tools.py r2000 games/<platform>/<slug>/parts/<id>/work/<state>.vsf`):
 the launcher gives the part the first free port from 3000 and keeps it

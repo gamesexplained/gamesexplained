@@ -14,8 +14,8 @@ its usage with `-h`, and every JavaScript file's header is its manual.
 
 | Row | Core step | On the ZX Spectrum |
 |---|---|---|
-| `snapshot` | `10-orient`, `50-coverage`: the image everything is read from | a `.sna`, saved by ZEsarUX (`tool-zesarux`, "Snapshots"); the hand-over is `work/entry.sna`. A 128K game's is the 128K `.sna`, and `python3 kit/spectrum/banks.py parts` makes a part of each bank the processor did not see |
-| `media` | `10-orient`, step 7: the files on the tape | SkoolKit's `tapinfo.py` lists a `.tzx` or `.tap`'s blocks; the kit has no script of its own that writes them out yet |
+| `snapshot` | `10-orient`, `15-parts`, `50-coverage`: the image everything is read from | a `.sna`, saved by ZEsarUX (`tool-zesarux`, "Snapshots"); the hand-over is `work/entry.sna`. A 128K game's is the 128K `.sna`, and `python3 kit/spectrum/banks.py parts` makes a part of each bank the processor did not see |
+| `media` | `10-orient`, step 7; `15-parts`, step 6: the files on the tape | SkoolKit's `tapinfo.py` lists a `.tzx` or `.tap`'s blocks; the kit has no script of its own that writes them out yet |
 | `disassembler` | `10-orient`, step 6; `50-coverage`, the loop | SkoolKit's control file, `work/<slug>.ctl`, written and read rather than a live session (`tool-skoolkit`); `symbols_export.py <game> --ctl work/<slug>.ctl` exports it. `50-coverage`, "When the disassembler does not follow control flow", applies from the start: `kit/spectrum/codemap.py` holds the typing against what ran |
 | `census` | `40-sweep`, the register census | none: the machine's I/O is ports, not addresses (`zx-spectrum-reference`, "Ports"), and `kit/cpu/census.py` refuses it. List every `IN` and `OUT` in the code and the port each reaches, from its operand or from `BC` for `IN r,(C)` and `OUT (C),r`; a game reads few, usually `$FE` and a joystick's |
 | `references` | `50-coverage`, step 2; `60-verify`, "Negative results" | `python3 kit/spectrum/codemap.py <game> <snapshot.sna> --refs <address>`, which also lists where the address is stored as a word |

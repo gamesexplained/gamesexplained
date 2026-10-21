@@ -19,7 +19,7 @@ what the directory shows. Note anything that is not the original game.
 
 ## The parts
 
-Only for a game of several parts (`kit/skills/core/10-orient`): each part
+Only for a game of several parts (`kit/skills/core/15-parts`): each part
 in the order it is played, the files it loads, and the route to its
 snapshot from power-on or from the part before. Delete this section for a
 game that is one load.

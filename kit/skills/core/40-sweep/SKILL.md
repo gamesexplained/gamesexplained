@@ -7,7 +7,7 @@ description: Cheap mechanical sweeps that convert large regions from unknown to 
 
 All of them are cheap and mechanical. Run them from the snapshot's RAM image
 directly (Python over the file) or through the disassembler. A game of
-several parts (`10-orient`) is swept part by part, each from its own
+several parts (`15-parts`) is swept part by part, each from its own
 snapshot.
 
 ## Hardware register census

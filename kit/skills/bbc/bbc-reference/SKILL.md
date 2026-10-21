@@ -120,8 +120,8 @@ on every interrupt and uses page 2 throughout. The ranges are the AUG's
 The kit's coverage leaves &8000-&BFFF out by default, as ROM
 (`kit/scripts/symbols_export.py`). A game that loads code or data into a
 sideways RAM bank takes the range back with `coverage.include` in
-`game.json`, or makes the bank a part of its own (`kit/skills/core/10-orient`,
-"A game of several parts").
+`game.json`, or makes the bank a part of its own
+(`kit/skills/core/15-parts`).
 
 Bytes worth knowing, in zero page and page 2:
 
