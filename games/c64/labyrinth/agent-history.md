@@ -453,3 +453,10 @@ Followed the saved door-and-arch route to player X1563/column24 and used ordinar
 The first disassembler pass followed$8F5A into resident routines outside this bounded check. Converted those automatically traced ranges back to undefined before export, leaving the new guard branch plus three named entries and three automatic variable labels. Scene6 now has763/48,410 described bytes and the seven overlapping image scopes have56,151/335,949 (16.7%). The seven retained uncounted stretches and lack of independent comment sampling remain. The saved emulator state, inputs and normal speed were restored. The existing tool skill's warning about automatic traces applied; no kit change was needed.
 
 Validation: all42 Labyrinth checks passed, including1,792 guarded-door branch cases and the original text expansion. Required binary, documentation and listing checks passed with the ten previously recorded uncounted stretches. The58-game build produced666 pages and372 listings. The browser loaded the new area bookmark, selected its topic, displayed its384×272 capture, and resolved both part-specific Source addresses. No full-game progress or cleared-door route is inferred.
+
+
+## Loading screen on Overview · 22 October 2026
+
+Added the Lucasfilm Games loading screen (`reference/loading.png`, an emulator capture from the supplied disk) to the release section of the Overview. No kit change was needed.
+
+Validation: binary and document checks passed; the 58-game build produced 666 pages.
