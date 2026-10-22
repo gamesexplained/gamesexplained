@@ -12,6 +12,10 @@
 //   keys      the C64's keys held, a Set of the KERNAL's numbers (row x 8 + column, kit/c64/machine.js)
 //   joy       joystick port 2: five bits, 0 for pressed (up 1, down 2, left 4, right 8, fire 16)
 //   shown     the last whole frame, for C64.drawFrame: { vic, cia2, writes, mem, colour }
+//   frameAt(t)  the whole frame to show when the clock is due at t: the one before shown, when the
+//             last stretch run carried the clock past the end of the frame t falls in. On the title
+//             the timer's interrupt holds the main program back until line $EE, so a stretch can end
+//             most of a frame past t, and showing the newest frame would skip one now and then
 //   sound     each frame's SID writes, in SLICES lists of [register, value, ...] by the part of the
 //             frame they came in, until the page takes them
 //   clock, frames, passes, vic, colour, sid, P
@@ -100,7 +104,7 @@ globalThis.MoMPlay = (function () {
     let latch = 0, inIrq = false, owed = 0, irqEnd = -1, badFrame = false, done = -1;
     // the memory the video chip reads, as each frame began and changed after (the node tests that
     // draw nothing load no C64, and their frames carry no memory)
-    const vm = globalThis.C64 && globalThis.C64.videoMemory ? globalThis.C64.videoMemory(M, colour, { keep: o.keep }) : null;
+    const vm = globalThis.C64 && globalThis.C64.videoMemory ? globalThis.C64.videoMemory(M, colour, { keep: o.keep, frames: 3 }) : null;
     const begin = (n) => {
       const m = vm ? vm.begin() : {};
       return { frame: n, vic: Array.from(vic.subarray(0, 47)), cia2: [cia.pra2, cia.ddra2], writes: [], mem: m.mem, colour: m.colour };
@@ -190,7 +194,7 @@ globalThis.MoMPlay = (function () {
     P.tally = (k, n) => { if (!inIrq) owed += (cost[k] || 0) * n; };
 
     function newFrame(n) {
-      S.shown = cur; S.frames = n;
+      S.before = S.shown; S.shown = cur; S.frames = n;
       cur = begin(n);
       S.sound.push(curSound); curSound = slices();
       if (S.sound.length > 100) S.sound.splice(0, S.sound.length - 100);
@@ -277,6 +281,7 @@ globalThis.MoMPlay = (function () {
         step();
       }
     };
+    S.frameAt = (t) => (S.before && S.before.frame === Math.floor(t / FRAME) - 1 ? S.before : S.shown);
     S.step = step;
     S.collide = C;
     S.cia = cia;
