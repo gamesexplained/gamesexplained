@@ -143,3 +143,23 @@ up to a third of a step: the next picture is known only once the page's
 machine runs its pass, a frame or two after the last one's blit. It now glides from that moment
 to the first frame that shows the next picture, eased over a frame, and
 is on average 1.4 % of a step behind as each picture comes on show.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 47 bytes (#474).
+Eight are the identity matrix at `$2C73`, which the code reads as
+`$2C72,X`, so only its last entry had a label; the other 39 are zeros
+no instruction refers to, after the `rts` at `$734D`, between the code
+and the database at `$9D00`, and from the end of the music driver to
+`$D000`. All four stretches are listed under `coverage.exclude` with
+those reasons. Comments would have suited the matrix better, but the
+imported analysis's model is unknown, so a comment written after the
+maintainer's last sample would undo it (`models.py check`). The Play
+page is unaffected: its machine keeps every data byte of the hand-over.
+
+The snapshot was made again from the same G64, downloaded from the C64
+Preservation Project, by the route in `orientation.md`. It differed
+from the listing in one byte of variables (`$1C64`), which was written
+back from the earlier listing into `work/menu.vsf`; the unpatched
+snapshot is `work/menu-raw.vsf`.
