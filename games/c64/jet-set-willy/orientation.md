@@ -15,6 +15,11 @@ Berlin Cracking Service (BCS), whose title message dates it
 | `JET` | 202 | $0801-$CFFF | the game, title and all, saved from memory after a game had begun |
 | `SET WILLY` | 33 | $E000-$FFFF | rooms 30 to 59, under the KERNAL ROM |
 
+archive.org's `Jet_Set_Willy_1984_Software_Projects_cr_Berlin_Cracking_Service.d64`
+holds the same three files on a disk with an empty name, so its SHA-256
+differs (`f47eca5a…0ce423cf`); booted the same way on 22 October 2026,
+its hand-over matched every byte of the listing.
+
 `LADER` counts up a variable each time it runs: it loads `SET WILLY`,
 then `JET`, each with `,8,1`, and loading in a running program starts it
 again. `JET` replaces `LADER` with its own line, `10 SYS2061`, so the
