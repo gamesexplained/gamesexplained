@@ -26,12 +26,17 @@ removed: `tail -c +27 encounter_0_original.p00 > encounter.prg`).
    loader depacks in under a second; the title screen appears with
    SCORE / LAST SCORE / HIGH SCORE and `F5 NOVICE`, `F7 BEGIN GAME`.
    Turn warp mode off (autostart leaves it on).
-2. No loader menu. Snapshot: `work/title.vsf` at the title screen.
+2. No loader menu. Snapshots: `work/entry.vsf`, the hand-over, from a
+   stopping checkpoint on `$9C00` (the game's first instruction, after
+   the depacker's relocation) on a machine power-cycled first
+   (`vice_machine_reset` with `mode: hard`); `work/title.vsf` at the
+   title screen.
 3. Press **F7** through the keyboard matrix, held about 2.5 s (the game
    scans the keyboard itself via the KERNAL `SCNKEY` and reads $C5; a
    short tap can be missed). Play begins immediately: a first-person
-   cockpit over a green plain with a blue sky, status row `0000000 L1 E11 54`
-   (score, level 1, enemies remaining, a countdown), crosshair in the
+   cockpit over a green plain with a blue sky, status row `0000000 L1 E11 S4`
+   (score, level 1, enemies remaining, shields; the enemy count varies
+   from run to run, 11 on one and 17 on another), crosshair in the
    centre, black pillars on the horizon.
 4. Snapshot: `work/play-level1.vsf`, taken a few seconds into level 1
    with no joystick input given yet. This is the image the disassembler

@@ -76,3 +76,29 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   a "game" started too late was the demo ($71 = $10, $68C8 = $20).
   The missile run ended in a game over after five hits and carried on
   into the demo; the clip is cut at pass 520.
+
+## 2026-10-22, typed data no label reached (Claude Opus 5.5)
+
+- #455 made the ledger count typed data that no label reaches, and the
+  listing then left out `$8004`-`$800F` (#479): the CBM80 signature
+  and seven spare zeros. A comment at `$8004` now owns them.
+- The snapshots were remade by `orientation.md`'s route, and this time
+  with the hand-over, `work/entry.vsf` at `$9C00`, which the run had
+  not made. Against it `listing.py` found the depacked image's own
+  screen at `$6000`: the status row and the console were already in
+  place before the game's first instruction. A store checkpoint from
+  the hand-over through the title and 45 seconds of level 1 counted no
+  writes to the console rows, row 1 or the 16 spare bytes, 36 to row 0
+  (the digits), and 305,819 to the view rows. So rows 0-1 and 18-24 are
+  counted under `coverage.include`, the view rows and the KERNAL's
+  screen at `$0400` are excluded, and the comments that called the
+  console "runtime" and the templates at `$8120`-`$825F` a possible
+  copy source are corrected: no code reads the templates.
+- Two older gaps closed on the way: `s_6A1A`, the seventh hook stub,
+  had no comment, and two others called it unreferenced, though `$AB9A`
+  calls it; and `$ABEA`-`$ABEC`, a stray `JMP $0000` after a `JMP`, had
+  no type.
+- The status row's last field is the shields, `S4`, not a countdown
+  `54`; `orientation.md` is corrected. The play snapshot has 17
+  enemies, so the run-time variables differ from the old listing in 48
+  bytes; no comment quoted their values.

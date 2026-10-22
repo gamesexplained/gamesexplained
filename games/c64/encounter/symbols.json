@@ -189,7 +189,7 @@
   {
    "start": 44010,
    "end": 44012,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 44013,
@@ -11005,12 +11005,42 @@
   {
    "address": 24576,
    "type": "line",
-   "text": "Screen buffer A row 0 = the status row, always displayed (rows 0-1 and 18-24 are shown from this buffer whichever view buffer is active): 7 wide-font score digits at cols 0-13 (drawn from score_bcd by $B8E1/$B8F0), 'L' + level digit at cols 18-21, 'E' + two enemy digits at cols 26-31 (from $8BA8 via $B8F0 at $9FA1/$A332), 'S' + shields digit at cols 36-39: the shield count exists only as the wide-digit code at $6026/$6027 ($80+2n; set to '4' at $9F8B, decremented by 2 at $ABDC, game over when it reaches $80). Initial contents = status_row_template ($8120). Runtime."
+   "text": "Screen buffer A row 0 = the status row, always displayed (rows 0-1 and 18-24 are shown from this buffer whichever view buffer is active): 7 wide-font score digits at cols 0-13 (drawn from score_bcd by $B8E1/$B8F0), 'L' + level digit at cols 18-21, 'E' + two enemy digits at cols 26-31 (from $8BA8 via $B8F0 at $9FA1/$A332), 'S' + shields digit at cols 36-39: the shield count exists only as the wide-digit code at $6026/$6027 ($80+2n; set to '4' at $9F8B, decremented by 2 at $ABDC, game over when it reaches $80). Loaded with the game, and only the digits are ever written; status_row_template ($8120) holds the same row with other digits, and no code reads it."
+  },
+  {
+   "address": 24577,
+   "type": "line",
+   "text": "Columns 1-19 of the status row: the score's seven wide digits to column 13, blanks ($D1) to column 17, and the 'L' at 18-19. The address is also the base of STA $6001,X at $B8FF and $B911, which stamp_digit_pair uses for each digit's right half ($81+2n)."
+  },
+  {
+   "address": 24596,
+   "type": "line",
+   "text": "The level digit's left half, column 20 ($80+2n): written at $A356 when a level starts, and moved on one digit by the two INCs at $A7BA."
+  },
+  {
+   "address": 24597,
+   "type": "line",
+   "text": "The level digit's right half ($81+2n), written at $A35B and moved on at $A7C0; then the row to column 37: blanks, 'E' at 26-27, the two enemy digits at 28-31 (stamp_digit_pair, from $8BA8), blanks, and 'S' at 36-37."
+  },
+  {
+   "address": 24614,
+   "type": "line",
+   "text": "The shields digit's left half, column 38 ($80+2n), the only place the shield count is kept: set to '4' at $9F8B, raised one digit at $A927 up to '9', and lowered one at $ABDF, where the game is over instead if $ABD8 finds it at $80 ('0')."
+  },
+  {
+   "address": 24615,
+   "type": "line",
+   "text": "The shields digit's right half ($81+2n), written with the left half at $9F90, $A92C and $ABE4."
   },
   {
    "address": 24616,
    "type": "line",
-   "text": "Screen buffer A row 1 (blank spacer between the status row and the view). Runtime."
+   "text": "Screen buffer A row 1 (blank spacer between the status row and the view): 40 blanks ($D1), loaded with the game and never written."
+  },
+  {
+   "address": 24655,
+   "type": "line",
+   "text": "Column 39 of row 1, a blank. The address is also the base of begin_frame's clear, STA $604F,X with X = $A0 down to 1 at $B1AC, which zeroes $6050-$60EF; this cell itself is never written."
   },
   {
    "address": 24656,
@@ -11095,37 +11125,37 @@
   {
    "address": 25296,
    "type": "line",
-   "text": "Screen buffer A row 18: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 18 at $8148. Runtime."
+   "text": "Screen buffer A row 18: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 18 at $8148 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25336,
    "type": "line",
-   "text": "Screen buffer A row 19: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 19 at $8170. Runtime."
+   "text": "Screen buffer A row 19: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 19 at $8170 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25376,
    "type": "line",
-   "text": "Screen buffer A row 20: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 20 at $8198. Runtime."
+   "text": "Screen buffer A row 20: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 20 at $8198 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25416,
    "type": "line",
-   "text": "Screen buffer A row 21: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 21 at $81C0. Runtime."
+   "text": "Screen buffer A row 21: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 21 at $81C0 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25456,
    "type": "line",
-   "text": "Screen buffer A row 22: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 22 at $81E8. Runtime."
+   "text": "Screen buffer A row 22: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 22 at $81E8 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25496,
    "type": "line",
-   "text": "Screen buffer A row 23: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 23 at $8210. Runtime."
+   "text": "Screen buffer A row 23: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 23 at $8210 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25536,
    "type": "line",
-   "text": "Screen buffer A row 24: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; initial contents = console_template row 24 at $8238. Runtime."
+   "text": "Screen buffer A row 24: console panel (scanner, warning lights, frames) in charset $7800 codes $D0-$EF; loaded with the game and never written in play. console_template row 24 at $8238 holds the same 40 bytes, and no code reads it."
   },
   {
    "address": 25576,
@@ -11136,6 +11166,11 @@
    "address": 25592,
    "type": "line",
    "text": "Sprite pointers for screen buffer A: sprite 0 = $90 (player's shot dot at $6400, set at $9F2C), sprite 1 = $9C (gun sight at $6700), sprites 2-7 = backdrop frames written by position_backdrop_sprites at $B9F2 from backdrop_sprite_ptrs ($8F40)."
+  },
+  {
+   "address": 25594,
+   "type": "line",
+   "text": "Sprite pointers 2-7 of screen buffer A, the scenery sprites: update_scenery_sprites writes each with STA $63FA,Y at $B9F2, and the same pointer to $67FA,Y."
   },
   {
    "address": 25600,
@@ -11375,12 +11410,17 @@
   {
    "address": 27156,
    "type": "line",
-   "text": "Stubs 4 to 6 ($6A14 from the end of the pass at $AB68, $6A17 from the raster wait at $A18E, $6A1A unreferenced), each JMP $6A1D to the RTS; no-ops in this build."
+   "text": "Stubs 4 to 6 ($6A14 from the end of the pass at $AB68, $6A17 from the raster wait at $A18E, $6A1A from $AB9A), each JMP $6A1D to the RTS; no-ops in this build."
   },
   {
    "address": 27159,
    "type": "line",
-   "text": "Stubs 5 and 6 ($6A17, called from the raster wait at $A18E every pass, and $6A1A, unreferenced): JMP $6A1D to the RTS. No-ops in this build."
+   "text": "Stubs 5 and 6 ($6A17, called from the raster wait at $A18E every pass, and $6A1A, called from $AB9A): JMP $6A1D to the RTS. No-ops in this build."
+  },
+  {
+   "address": 27162,
+   "type": "line",
+   "text": "Seventh stub, called from $AB9A: JMP $6A1D to the RTS, a no-op in this build."
   },
   {
    "address": 27165,
@@ -11888,6 +11928,11 @@
    "text": "High byte ($9C) of the warm-start vector; the CBM80 signature begins at the next byte."
   },
   {
+   "address": 32772,
+   "type": "line",
+   "text": "The CBM80 signature, C3 C2 CD 38 30, loaded with the game: the KERNAL's reset and NMI routines look for it here and then jump through $8000 or $8002. $8009-$800F, seven zeros, are unused; no instruction names any byte from $8004 to $800F."
+  },
+  {
    "address": 32784,
    "type": "line",
    "text": "Level display record for level index 0 ($63=$00, key 8 = level 8): 16 bytes copied to zero page $AB-$BA by load_level_display ($B920, Y = $63|$0F downward). +0 -> $AB, +1 -> $AC -> $BB (sky colour, $D021 in IRQ stage 1), +2 -> $AD (ground colour, $D021 at line 130), +3 -> $AE, +4 -> $AF = $D01D sprite X-expand, +5 -> $B0 = $D017 Y-expand, +6 -> $B1 = $D015 sprite enable, +7 -> $B2 -> $BC, +8 -> $B3 -> $BD, +9 -> $B4 -> $BE (horizon band colours), +10..+15 unused."
@@ -11955,42 +12000,42 @@
   {
    "address": 33056,
    "type": "line",
-   "text": "40-byte template of the status row in the wide font: '0000000    L1    E25    S4' (digit pairs $80+2n, letters $9A+2n, $D1 blanks). Identical layout to the live status row at $6000. No code reference found: the play screen already holds a copy when the game loads, so this is either the source of a copy made by code not yet disassembled or a build-time duplicate."
+   "text": "40-byte template of the status row in the wide font: '0000000    L1    E25    S4' (digit pairs $80+2n, letters $9A+2n, $D1 blanks). Identical layout to the live status row at $6000. No code reads it, and none copies it: the screen at $6000 already holds the status row and the console at the hand-over, and from there through the title and 45 seconds of level 1 no store reached the console rows or row 1, and row 0 took only its digits. The game never uses this copy."
   },
   {
    "address": 33096,
    "type": "line",
-   "text": "Console panel template, screen row 18 (40 cells of charset $7800 codes $D0-$EF: scanner frame top and light frames). Byte-identical to screen row 18 at $62D0 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 18 (40 cells of charset $7800 codes $D0-$EF: scanner frame top and light frames). Byte-identical to screen row 18 at $62D0 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33136,
    "type": "line",
-   "text": "Console panel template, screen row 19 (40 cells of charset $7800 codes $D0-$EF: light interiors and scanner rim). Byte-identical to screen row 19 at $62F8 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 19 (40 cells of charset $7800 codes $D0-$EF: light interiors and scanner rim). Byte-identical to screen row 19 at $62F8 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33176,
    "type": "line",
-   "text": "Console panel template, screen row 20 (40 cells of charset $7800 codes $D0-$EF: scanner middle row). Byte-identical to screen row 20 at $6320 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 20 (40 cells of charset $7800 codes $D0-$EF: scanner middle row). Byte-identical to screen row 20 at $6320 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33216,
    "type": "line",
-   "text": "Console panel template, screen row 21 (40 cells of charset $7800 codes $D0-$EF: scanner middle row). Byte-identical to screen row 21 at $6348 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 21 (40 cells of charset $7800 codes $D0-$EF: scanner middle row). Byte-identical to screen row 21 at $6348 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33256,
    "type": "line",
-   "text": "Console panel template, screen row 22 (40 cells of charset $7800 codes $D0-$EF: scanner lower rim and lights). Byte-identical to screen row 22 at $6370 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 22 (40 cells of charset $7800 codes $D0-$EF: scanner lower rim and lights). Byte-identical to screen row 22 at $6370 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33296,
    "type": "line",
-   "text": "Console panel template, screen row 23 (40 cells of charset $7800 codes $D0-$EF: frame bottoms). Byte-identical to screen row 23 at $6398 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 23 (40 cells of charset $7800 codes $D0-$EF: frame bottoms). Byte-identical to screen row 23 at $6398 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33336,
    "type": "line",
-   "text": "Console panel template, screen row 24 (40 cells of charset $7800 codes $D0-$EF: panel base). Byte-identical to screen row 24 at $63C0 in the play snapshot; no code reference found (see status_row_template)."
+   "text": "Console panel template, screen row 24 (40 cells of charset $7800 codes $D0-$EF: panel base). Byte-identical to screen row 24 at $63C0 which is loaded with the game; no code reads this copy (see status_row_template)."
   },
   {
    "address": 33376,
@@ -13191,6 +13236,11 @@
    "address": 44010,
    "type": "side",
    "text": "unreachable bytes: JMP $0000 after the JMP above"
+  },
+  {
+   "address": 44010,
+   "type": "line",
+   "text": "Three bytes nothing reaches, reading as JMP $0000: the JMP before them leaves, no branch or jump lands here, and no instruction names them."
   },
   {
    "address": 44013,

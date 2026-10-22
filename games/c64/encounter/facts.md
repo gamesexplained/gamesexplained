@@ -475,8 +475,12 @@ sequence; $80C8 voice 1 pitch loop.
 
 **Screens and templates.** $8120 is the status row template
 (`0000000 L1 E25 S4`) and $8148-$825F the seven console rows; no code
-in the image copies them, so they are either loaded straight into
-$6000-$63E7 by the depacker or left over from one that did. $6800 and
+in the image reads them. The depacked image already holds the status
+row and the console in the screen at $6000-$63E7 at the hand-over
+(`$9C00`). *Live:* from there through the title and 45 seconds of
+level 1, a store checkpoint found no writes to the console rows or to
+row 1, and only the digits written in row 0. The game shows the screen
+it loads, and the templates are copies it never uses. $6800 and
 $6C00 are the title and game-over screens. The title screen hides data
 in rows the colour table blanks: $68C8-$68CB (heading-alignment chance
 $68C8 with its default $68C9, and the highest level reached $68CB),
