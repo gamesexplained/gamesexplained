@@ -30,7 +30,7 @@ function irqStandIn(P) {
 
 function run(o) {
   lib.loadGroups();
-  const s = JSON.parse(fs.readFileSync(o.state, 'utf8'));
+  const s = typeof o.state === 'string' ? JSON.parse(fs.readFileSync(o.state, 'utf8')) : o.state;   // a file, or a moment made in memory
   const m = ChillerMachine.restore(s);
   const P = globalThis.ChillerPort.makePort(new Uint8Array(65536), {}, { standIn: lib.standIn, labels: lib.labels, only: o.groups });
   // the ported handler once the screens group is in (the KERNAL's entry leaves A = 0 for it)

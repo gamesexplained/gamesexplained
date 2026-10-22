@@ -5,7 +5,9 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Gold** (29 September 2026). The steward, unorig, went through the How
+**Diamond** (22 October 2026): Gold, and the Play tab is Platinum, with
+`test_play.js` holding the published page to the game's code in CI.
+Gold since 29 September 2026: the steward, unorig, went through the How
 it works page section by section and the copy is `human-edited`: sections
 reordered, the false "unreachable cross" bug replaced by the missing
 ending, the jump widget replaced by a picture of a real jump, the level
@@ -13,10 +15,6 @@ format folded into the screen section, and the shooting claim softened to
 what the code shows. A Play tab runs a JavaScript port of every routine,
 checked in lockstep against the game (357 of 366 sessions identical; the
 other 9 hit the line-16 interrupt race), with a level picker and cheats.
-
-For Diamond, the Play tab needs a `test_play.js` beside it to
-hold the published page in CI (`kit/skills/core/70-minisite/play.md`,
-"The page's test"), and no known bug in the port.
 
 ## Open
 
