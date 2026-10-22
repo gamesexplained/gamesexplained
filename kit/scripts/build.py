@@ -344,15 +344,13 @@ def read(p):
     return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
 
 
-# The tier of a game that is both Gold and Platinum, as game.json writes it.
-BOTH = "gold-platinum"
-TIER_NAMES = {"silver-claimed": "silver (claimed)", BOTH: "gold + platinum"}
-CURATED = ("gold", BOTH)        # a person has been through the copy
-PLAYABLE = ("platinum", BOTH)   # the Play tab is the whole game, held to the game's code
+TIER_NAMES = {"silver-claimed": "silver (claimed)"}
+CURATED = ("gold", "diamond")        # a person has been through the copy
+PLAYABLE = ("platinum", "diamond")   # the Play tab is the whole game, held to the game's code
 
 
 def tier_name(t):
-    """How a tier reads on the page: game.json's value, except silver-claimed and BOTH."""
+    """How a tier reads on the page: game.json's value, except silver-claimed."""
     return TIER_NAMES.get(t, t)
 
 
@@ -404,7 +402,7 @@ def proven_models():
 def banner(game, cons):
     """One line under the tabs: who curated it, or how to take it further.
 
-    Gold, and Gold and Platinum both, name the humans (git authors, linked). Silver is
+    Gold and Diamond (Gold and Platinum both) name the humans (git authors, linked). Silver is
     agent-generated and asks for a human editor, and credits the contributor (git authors,
     linked); so is Platinum, whose Play tab says nothing about its copy.
     Silver (claimed) is a Silver a human has started editing, and a Platinum with a steward
@@ -1659,7 +1657,7 @@ def featured_html(g):
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
 
-TIER_GROUPS = {BOTH: BOTH, "gold": "gold", "platinum": "platinum", "silver-claimed": "silver", "silver": "silver",
+TIER_GROUPS = {"diamond": "diamond", "gold": "gold", "platinum": "platinum", "silver-claimed": "silver", "silver": "silver",
                "bronze": "bronze"}
 
 
@@ -1671,7 +1669,7 @@ def tier_group(g):
 def tier_edge(g):
     """The tier written up the card's left edge, in the tier's colour."""
     t = g.get("tier", "none")
-    word = {BOTH: "Gold + Platinum", "silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
+    word = {"silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
     return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t))}">{html.escape(word)}</span>'
 
 
@@ -2036,11 +2034,11 @@ def runs_on(cs, kit):
     return f'<p class="tools">Runs on {" and ".join(filter(None, [", ".join(items[:-1]), items[-1]]))}.</p>' if items else ""
 
 
-TIER_ORDER = (BOTH, "gold", "platinum", "silver-claimed", "silver", "bronze", "none")
+TIER_ORDER = ("diamond", "gold", "platinum", "silver-claimed", "silver", "bronze", "none")
 
 
 def by_tier(games):
-    """The games best first, as the home page lists them: Gold and Platinum both, then each,
+    """The games best first, as the home page lists them: Diamond, Gold and Platinum,
     Bronze and no tier at the bottom; within a tier, the order they came in."""
     rank = lambda g: TIER_ORDER.index(g.get("tier", "none")) if g.get("tier", "none") in TIER_ORDER else len(TIER_ORDER)
     return sorted(games, key=rank)

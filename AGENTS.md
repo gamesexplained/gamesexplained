@@ -312,7 +312,7 @@ there.
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass. A Platinum game being curated keeps `platinum` and sets `steward` the same way |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | a Silver whose Play tab is the whole game: every routine ported to JavaScript and run in lockstep with the game's own code (`kit/skills/core/70-minisite/play.md`), `test_play.js` beside the page holding the published page in CI, and no bug known that stops a player finishing. It needs no human and says nothing about the copy, so it neither needs Gold nor follows it |
-| Gold + Platinum | Gold and Platinum both: `tier` is `gold-platinum`. A Gold game moves to it when its Play tab is Platinum, and a Platinum game when its curation is done |
+| Diamond | Gold and Platinum both: `tier` is `diamond`. A Gold game moves to it when its Play tab is Platinum, and a Platinum game when its curation is done |
 
 A game that is several loads is at a tier when every one of its parts
 is. Its coverage is the sum over its parts, each byte counted once, and

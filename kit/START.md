@@ -247,7 +247,7 @@ first edit pass begins, set `tier` in `game.json` to `silver-claimed`
 (a Platinum game keeps `platinum`) and `steward` to their GitHub login:
 the page then says who is editing
 it. The pass ends with `80-retro`, as a run does. Set `gold` when every
-section has had its pass, or `gold-platinum` when the game is Platinum.
+section has had its pass, or `diamond` when the game is Platinum.
 Set `copy` in `game.json` honestly, and open the pull request as
 `AGENTS.md` says. The two questions about the pull request
 and the commit identity in step 3 come first in this job too.

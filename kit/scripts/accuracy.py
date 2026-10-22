@@ -53,7 +53,7 @@ Usage:
 import glob, json, math, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SILVER_UP = ("silver", "silver-claimed", "gold", "platinum", "gold-platinum")
+SILVER_UP = ("silver", "silver-claimed", "gold", "platinum", "diamond")
 MIN_SIZE = 60
 SAMPLE_SINCE = "2026-10-12"   # games created from this day need a sample for Silver; older ones show "Not measured"
 FIXED_SINCE = "2026-10-14"    # games created from this day say on each sample with a wrong comment how many were corrected

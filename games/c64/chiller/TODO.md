@@ -14,7 +14,7 @@ what the code shows. A Play tab runs a JavaScript port of every routine,
 checked in lockstep against the game (357 of 366 sessions identical; the
 other 9 hit the line-16 interrupt race), with a level picker and cheats.
 
-For Gold + Platinum, the Play tab needs a `test_play.js` beside it to
+For Diamond, the Play tab needs a `test_play.js` beside it to
 hold the published page in CI (`kit/skills/core/70-minisite/play.md`,
 "The page's test"), and no bug known that stops a player finishing.
 

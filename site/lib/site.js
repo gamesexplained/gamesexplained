@@ -71,7 +71,7 @@
     if(!cat||!finder) return;
     var cards=[].slice.call(cat.querySelectorAll('.tile')), q=document.getElementById('q'), sort=document.getElementById('sort');
     var facets=document.getElementById('facets'), count=document.getElementById('count'), more=document.getElementById('more');
-    var TIERS=[['gold-platinum','Gold + Platinum','Edited by a person, and the whole game playable.'],
+    var TIERS=[['diamond','Diamond','Edited by a person, and the whole game playable.'],
                ['gold','Gold','Checked and edited by a person.'],['platinum','Platinum','The whole game, playable in the browser.'],
                ['silver','Silver','The whole program explained.'],
                ['bronze','Bronze','A first look: the features and a sweep of the code.'],['none','No tier','']];

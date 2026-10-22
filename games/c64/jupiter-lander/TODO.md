@@ -12,7 +12,7 @@ findings beyond the documentation verified live, and the copy read by the
 steward. `copy` stays `agent` until the steward edits the page; the
 steward would prune a section or two and trim the copy, later.
 
-## Missing for Gold + Platinum
+## Missing for Diamond
 
 A Play tab that is the whole game: every routine ported to JavaScript
 and run in lockstep with the game's own code, with `test_play.js`

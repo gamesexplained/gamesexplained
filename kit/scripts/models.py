@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import accuracy  # noqa: E402  the ledger a maintainer's check is recorded in
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SILVER_UP = ("silver", "silver-claimed", "gold", "platinum", "gold-platinum")
+SILVER_UP = ("silver", "silver-claimed", "gold", "platinum", "diamond")
 PROVING_STEPS = ("50-coverage", "60-verify")
 RULE_FROM = (0, 0, 33)
 CONTEXT_SUFFIX = re.compile(r"\[\d+(?:\.\d+)?[km]\]$", re.I)   # [1m], [200k]: the context window, not the model
