@@ -19,10 +19,14 @@ nobody starts it twice.
 
 ## For Platinum
 
-The Play tab is a port of the game, but it has no `test_play.js`
-beside it, so CI never holds the published page. Platinum
-needs that test (`kit/skills/core/70-minisite/play.md`, "The page's
-test"), and no known bug in the port.
+Platinum needs the whole game on the Play tab. The tab ports play, but
+it leaves out the title screen, the story scroller, the instruction
+pages, the recorder behind CTRL and R, and the footstep noise, and it
+does not run the interrupt: the frame in which a wall bump is seen comes
+from a cycle count instead (the Play tab, "What is left out"). With
+those ported it also needs a `test_play.js` beside the page, holding it
+to the game's code in CI (`kit/skills/core/70-minisite/play.md`, "The
+page's test"), and no known bug in the port.
 
 ## Open, and worth a few minutes each
 
