@@ -30,8 +30,8 @@ alphabet). No version string found.
 - `game_start` ($8000) sets CIA 2 timer A to $4CC7 ($8006-$800D) and
   `stage_load` ($5271) points the NMI vector at `nmi_frame` ($4D1D): a
   timer NMI once a PAL frame.
-- Two raster interrupts take turns through $FFFE: `irq_play` $837E
-  (written on line 248) and `irq_panel` $BCE1 (written on line 216) *live*
+- Two raster interrupts take turns through $FFFE: `irq_panel` $837E
+  (written on line 248 by `nmi_frame`, from `raster_vector` $07AB) and `irq_panel_on` $BCE1 (written on line 216 by `irq_panel`) *live*. Both serve the status panel: `irq_panel` sets $D011 = $57 with multicolour on, an invalid mode the VIC-II shows as black, for lines $D6-$DD while it switches video bank, character set, and colours; `irq_panel_on` sets $D011 = $17 (read from the code, 2026-10-22; the black band shows in a screenshot of stage 1)
   (frame capture).
 - `wait_frame` ($819B) spins on $08F7 until the interrupt changes it *live*.
 
@@ -50,10 +50,10 @@ From the disassembler's trace of the play snapshot (21,388 code bytes).
 
 | Register | What the game does | Where |
 |---|---|---|
-| $D000-$D00F sprite positions | set at start-up, in `irq_play` and by `nmi_frame` | $40AA-$40DE, $8398-$83AD, $81C5-$81DE, $4D5B, $4D61 |
+| $D000-$D00F sprite positions | set at start-up, in `irq_panel` and by `nmi_frame` | $40AA-$40DE, $8398-$83AD, $81C5-$81DE, $4D5B, $4D61 |
 | $D010 sprite X high bits | | $40B7, $40CA, $8395 |
 | $D011 control 1 | blank, scroll and mode | $4053, $4072, $4108, $801E, $806A, $8390, $4D3F |
-| $D012 raster | wait for line $EE; compare in `irq_play` | $8012, $838B, $40A1, $42D6 |
+| $D012 raster | wait for line $EE; compare in `irq_panel` | $8012, $838B, $40A1, $42D6 |
 | $D015 sprite enable | | $40F7, $8062, $8213, $4D70 |
 | $D017, $D01D sprite expand | set per split | $83B0, $83B3 |
 | $D018 memory control | | $405F |

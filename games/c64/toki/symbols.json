@@ -1946,9 +1946,9 @@
   },
   {
    "address": 1963,
-   "name": "a_07AB",
+   "name": "raster_vector",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 1964,
@@ -1958,9 +1958,9 @@
   },
   {
    "address": 1965,
-   "name": "a_07AD",
+   "name": "raster_line",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 1966,
@@ -2576,9 +2576,9 @@
   },
   {
    "address": 2279,
-   "name": "a_08E7",
+   "name": "stage",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2280,
@@ -2666,15 +2666,15 @@
   },
   {
    "address": 2294,
-   "name": "a_08F6",
+   "name": "frame_count",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2295,
-   "name": "a_08F7",
+   "name": "frame_flag",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2297,
@@ -2906,9 +2906,9 @@
   },
   {
    "address": 2715,
-   "name": "s_0A9B",
+   "name": "stage_load",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2722,
@@ -2930,9 +2930,9 @@
   },
   {
    "address": 2815,
-   "name": "s_0AFF",
+   "name": "stage_start",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2853,
@@ -2954,9 +2954,9 @@
   },
   {
    "address": 3042,
-   "name": "s_0BE2",
+   "name": "sound_frame",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 3046,
@@ -6620,15 +6620,15 @@
   },
   {
    "address": 32838,
-   "name": "j_8046",
+   "name": "stage_begin",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 32847,
-   "name": "j_804F",
+   "name": "round_start",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 32891,
@@ -6662,9 +6662,9 @@
   },
   {
    "address": 33017,
-   "name": "j_80F9",
+   "name": "main_loop",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33020,
@@ -6716,9 +6716,9 @@
   },
   {
    "address": 33076,
-   "name": "b_8134",
+   "name": "wait_nmi",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 33101,
@@ -6896,7 +6896,7 @@
   },
   {
    "address": 33662,
-   "name": "irq_play",
+   "name": "irq_panel",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10532,7 +10532,7 @@
   },
   {
    "address": 48353,
-   "name": "irq_panel",
+   "name": "irq_panel_on",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -13087,6 +13087,36 @@
    "text": "Copy one entry of the cartridge directory into RAM. Selects bank 0 ($80 to the Ocean bank register $DE00), reads the entry at $8009+X (source bank, source address, destination, length), then switches to the source bank and copies."
   },
   {
+   "address": 1963,
+   "type": "line",
+   "text": "The raster interrupt nmi_frame installs each frame: handler $07AB/$07AC into $FFFE, line $07AD into $D012. The main loop sets irq_panel at line $D5, or $95A4 when $6B is set."
+  },
+  {
+   "address": 2279,
+   "type": "line",
+   "text": "The stage, 0 to 4: zeroed by game_start, incremented at $81B1 when a stage is cleared."
+  },
+  {
+   "address": 2295,
+   "type": "line",
+   "text": "Set by the frame's interrupt, cleared by the main loop: the main loop runs once for each time it changes."
+  },
+  {
+   "address": 2715,
+   "type": "line",
+   "text": "Load one stage's set from the cartridge directory: copy entry X, then X+8, X+16 and on, until an entry whose flag bit 5 marks it packed; that one is unpacked in place by bank 0's unpacker at $8DA2, which returns to the caller. X comes from the per-stage table in bank 0 at $8127 ($88, $A0, $B8, $D0, $E8)."
+  },
+  {
+   "address": 2815,
+   "type": "line",
+   "text": "Start a stage: bring the cartridge into view ($01 = $37, bank 0), load the stage's set with stage_load, load directory entries 6 and 7, copy a page of bank 13 to $FD00, read the stage's record in bank 5 into $08E3-$08E6, point $3A and $3C at the tables named in the unpacked block's header ($0C1C, $0C1E), then hide the cartridge again."
+  },
+  {
+   "address": 3042,
+   "type": "line",
+   "text": "Once a frame, from irq_panel: unless $DF is set, play each sound effect queued in $91 onward ($90 counts them) through $6633, then run the sound driver at $6787."
+  },
+  {
    "address": 19741,
    "type": "line",
    "text": "NMI handler. CIA 2 timer A fires it once a frame ($4CC7 cycles, set at $8006); it keeps $01 at $35 and does the work flagged in $08B0."
@@ -13117,19 +13147,39 @@
    "text": "Start of a game: initialise, set the CIA 2 timer for the per-frame NMI, wait for raster line $EE, blank the screen and enter the stage."
   },
   {
+   "address": 32838,
+   "type": "line",
+   "text": "A stage begins: stage_start loads it from the cartridge, then the round starts."
+  },
+  {
+   "address": 32847,
+   "type": "line",
+   "text": "A round begins (at a stage's start and after losing a life): stop the interrupts, reset the frame state, count $089D down (below $C1 the game is over: $BD5D, then back to the title at $4000), start the sound, set the raster interrupt to irq_panel at line $DE, set up the stage, then wait 20 frames."
+  },
+  {
+   "address": 33017,
+   "type": "line",
+   "text": "The main loop, once a frame: count the frame, scan the keyboard ($5290) for as long as $02CA holds the game paused, run the game's updates ($A178 to $5B83), count down $0293 after a life is lost and restart the round at 0, then wait for the frame."
+  },
+  {
+   "address": 33076,
+   "type": "line",
+   "text": "Wait for the interrupt to set frame_flag, then choose next frame's raster interrupt and copy the sprite tables at $07B4-$07E6 into the set the interrupts draw from."
+  },
+  {
    "address": 33179,
    "type": "line",
-   "text": "Main loop wait: spins until the interrupt changes $08F7, once a frame; every PC sample in play lands here."
+   "text": "Wait for frame_flag to change once more, clear it and allow interrupts, then check for a cleared stage (bit 5 of $3592 at the current position $08CC): if so, increment stage and play the stage-clear sequence."
   },
   {
    "address": 33662,
    "type": "line",
-   "text": "Raster interrupt for the play area, written into $FFFE each frame on line 248; sets sprites, scroll and colours for the top of the screen."
+   "text": "Raster interrupt at line $D5, the top of the status panel. Waits for line $D6, then sets $D011 = $57: extended colour and multicolour together, a mode the VIC-II shows as black, which hides the switch to the panel's video bank ($DD00 = $02), screen and character set ($D018 = $FF) and colours. Moves all sprites to x = 0, out of sight, chains irq_panel_on for line $DE, and calls sound_frame."
   },
   {
    "address": 48353,
    "type": "line",
-   "text": "Raster interrupt for the status panel, written into $FFFE on line 216."
+   "text": "Raster interrupt at line $DE: after a short delay, $D011 = $17 turns the black mode off, so the status panel shows from here (24 rows)."
   }
  ]
 }

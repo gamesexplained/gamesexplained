@@ -1,18 +1,19 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 3.0 % of the play snapshot's ledger.
+Tier: Bronze (2026-10-08). Coverage 4.9 % of the play snapshot's ledger (2026-10-22).
 
 For Silver:
 
-- 50-coverage: the burn-down from 3 %. The directory in bank 0 is
-  decoded in `facts.md` (2026-10-15, static); `facts.md`, "Loading a
-  stage", names `stage_load`, `stage_sets`, and `unpack` statically:
-  (confirmed in VICE): add them to `symbols.json` with a fresh
-  play snapshot, find which object property each pointer table in the
-  stage block holds (`facts.md`, "Packed entries" and "After a stage
-  loads", which maps the block's header), and confirm in
-  VICE that entry 11 is never copied. Then the main loop at `wait_frame`, the
-  two raster handlers and `nmi_frame`.
+- 50-coverage: the burn-down from 4.9 %. Named and commented on
+  2026-10-22: `stage_load`, `stage_start`, `sound_frame`, the main loop
+  (`main_loop`, `round_start`, `stage_begin`, `wait_nmi`, `wait_frame`),
+  and the two panel interrupts (`irq_panel`, `irq_panel_on`). Next: the
+  game updates `main_loop` calls ($A178 to $5B83), `nmi_frame`, the
+  alternative raster handler $95A4 (when $6B is set), which object
+  property each pointer table in the stage block holds (`facts.md`,
+  "Packed entries" and "After a stage loads"), and confirming in VICE
+  that directory entry 11 is never copied. The routines in bank 0
+  (`unpack` $8DA2, `stage_sets` $8127) need the bank parts below.
 - Treat the cartridge's banks as `kit/skills/c64/c64-reference`,
   "Bank-switched cartridges", says: make the play snapshot's analysis a
   part (`parts.py add ... --adopt`), then a part for each of the 16 banks
