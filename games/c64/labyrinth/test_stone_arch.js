@@ -24,4 +24,4 @@ for(const [column,entry,x]of [[2,30,1952],[30,26,1696]]){
  c.m.set([entry,255,255],0x5080);c.call(0x543a,{d:0});assert.equal(c.m[0x538]+256*c.m[0x53c],x);assert.equal(c.m[0x544],6);assert.equal(placement(entry).x,x);
 }
 assert.equal(stages.length,3);assert.equal(stages[0].entry,30);assert.deepStrictEqual([stages[1].x,stages[1].depth],[1952,70]);assert.equal(stages[2].entry,26);assert.equal(stages[2].image,'stone-arch-arrival.png');
-console.log('OK - 256 original archway exit-bank cases, 256 original placements with skipped/companion slots, matching resident bytes and both live request/arrival pairs; retained scene6 and opened map cell checked');
+console.log('OK - 256 original archway exit-bank cases, 256 original placements including the companion-slot cases, matching resident bytes and both live request/arrival pairs; retained scene6 and opened map cell checked');
