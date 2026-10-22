@@ -28,7 +28,7 @@ alphabet). No version string found.
 ## Timing
 
 - `game_start` ($8000) sets CIA 2 timer A to $4CC7 ($8006-$800D) and
-  `stage_load` ($5271) points the NMI vector at `nmi_frame` ($4D1D): a
+  `nmi_and_first_copy` ($5271) points the NMI vector at `nmi_frame` ($4D1D): a
   timer NMI once a PAL frame.
 - Two raster interrupts take turns through $FFFE: `irq_panel` $837E
   (written on line 248 by `nmi_frame`, from `raster_vector` $07AB) and `irq_panel_on` $BCE1 (written on line 216 by `irq_panel`) *live*. Both serve the status panel: `irq_panel` sets $D011 = $57 with multicolour on, an invalid mode the VIC-II shows as black, for lines $D6-$DD while it switches video bank, character set, and colours; `irq_panel_on` sets $D011 = $17 (read from the code, 2026-10-22; the black band shows in a screenshot of stage 1)
@@ -60,7 +60,7 @@ From the disassembler's trace of the play snapshot (21,388 code bytes).
 | $D019, $D01A raster interrupt | acknowledge; enable | $809F, $80A2, $8030, $8055 |
 | $D01C sprite multicolour | | $8216 |
 | $D020 border | | $054F |
-| $D021 background | incremented once ($858B), purpose ? | $858B |
+| $D021 background | incremented by `update_player` ($858B) each frame the stage-skip combination is held, with `cheat_flag` $08F9 | $858B |
 | $D022, $D023 multicolours | | $83C6, $83CA |
 | $D025, $D026 sprite multicolours | | $8884, $8889 |
 | $D027-$D02A sprite colours | | $81EE-$8200, $4D67 |
@@ -68,7 +68,7 @@ From the disassembler's trace of the play snapshot (21,388 code bytes).
 | $D40B, $D412 voice 2 and 3 control | silenced together | $6ED1, $6ED4 |
 | $D415, $D416 filter cutoff | | $6E21, $6E3A |
 | $D417 resonance, $D418 volume | | $6615, $6CB5, $6620-$683C |
-| $DC00, $DC01 CIA 1 ports | keyboard scan `read_keys` $5290; more reads and writes at $8577-$8595, purpose ? | $4084-$4091, $5292-$52DF, $8577-$8595 |
+| $DC00, $DC01 CIA 1 ports | keyboard scan `read_keys` $5290; `update_player` ($8577-$8595) reads joystick 2 and joystick 1 together for the stage-skip combination | $4084-$4091, $5292-$52DF, $8577-$8595 |
 | $DD00 CIA 2 port A | video bank | $8034, $83BC |
 | $DD04-$DD0E CIA 2 timer A | the per-frame NMI | $8008, $800D, $8019, $404D, $8052, $8196, $824C, $8259 |
 | $DE00 Ocean bank register | cartridge bank select | see Memory layout |
