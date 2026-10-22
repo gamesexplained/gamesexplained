@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-03/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-03/listing.json');
 const {labyrinthBrickRouteEntries:entries,labyrinthBrickRoute:route}=g.run('levels.html','labyrinth-brick-route','labyrinthBrickRouteEntries','labyrinthBrickRoute');
 for(let bank=0;bank<4;bank++){assert.equal(entries[bank],ram[0x78e+11+32*bank]);assert.equal(ram[0x77e+11+32*bank],0);}
 assert.equal(ram[0x76e+11],1);assert(g.read('levels.html').includes('data-route-state="0"'));

@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-05/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-05/listing.json');
 const {labyrinthWallNinth:ninth,labyrinthWallReleaseMove:move,labyrinthWallReleaseExit:data,labyrinthWallReleaseJourney:journey}=g.run('levels.html','labyrinth-wall-manicure','labyrinthWallNinth','labyrinthWallReleaseMove','labyrinthWallReleaseExit','labyrinthWallReleaseJourney');
 const c=new CPU(Uint8Array.from(ram));let commands=0,moves=0,exits=0;
 function command(gate,item,damage,animationCount=37){const d=ninth(gate,item,damage),outputs=[],sounds=[];

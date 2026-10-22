@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-02/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-02/listing.json');
 const {labyrinthCorridorData:d,labyrinthCorridorLookup:lookup}=g.run('levels.html','labyrinth-corridor','labyrinthCorridorData','labyrinthCorridorLookup');
 for(const [a,v] of [[0x600,d.cells],[0x73e,d.types],[0x41f0,d.limits],[0x4200,d.flags],[0x74e,d.thresholds],[0x76e,d.selectors],...d.scenes.map((v,b)=>[0x77e+b*32,v]),...d.entries.map((v,b)=>[0x78e+b*32,v])])assert.deepStrictEqual(Array.from(ram.slice(a,a+v.length)),Array.from(v));
 for(let x=0;x<65536;x++){

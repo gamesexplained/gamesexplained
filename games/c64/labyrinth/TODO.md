@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The opening ledger has descriptions for 48,261 of 48,261 tracked bytes (100%). Code: 25,258 bytes; data: 23,003. The listing build reports no unaccounted loaded-data stretches. This includes provenance-only annotations of 2,365 retained opaque bytes; 100% is the ledger result, not a claim that their purpose is known. The game stays Bronze. The gate has a partial listing (2,116/43,949 bytes); the first corridor has 1,113/48,021 described bytes and the Brick Hallway has 1,123/48,587 described bytes and Alph and Ralph has 1,883/48,705 described bytes. The Wall of Hands has892/50,016 described bytes; the Stone Corridor has730/48,410. Fifteen other graphical parts have no analysed listing. The provisional image-ledger total is56,151/335,949 bytes (16.7%) across seven started parts. Shared resident ownership is unresolved, so this is not whole-game completion.
+The resident engine has descriptions for 32,525 of 32,781 tracked bytes (99.2 %); `python3 kit/scripts/coverage.py games/c64/labyrinth/parts/resident` lists the 256 left. The text adventure's own bytes are 15,480 of 15,480 (100 %), which is the ledger result, not a claim that the purpose of its retained opaque bytes is known. Scenes 1 to 6 are partly explained and scenes 7 to 26 have only a folder. The game stays Bronze. Next: finish the resident engine, compare scenes 7 to 26 against it as each is loaded, then annotate one scene at a time.
 
 For the opening’s verification:
 

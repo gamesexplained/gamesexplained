@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=require('./opening_image.js')(g);
+const g=require('./layered.js')(game(__dirname)),{ram}=require('./opening_image.js')(g);
 let seeds=0;
 for(let seed=0;seed<65536;seed++){
  const c=new CPU(Uint8Array.from(ram));c.m[0x502]=seed&255;c.m[0x503]=seed>>8;c.call(0x4210,{d:0});

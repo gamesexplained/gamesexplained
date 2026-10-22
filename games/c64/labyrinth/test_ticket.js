@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),image=require('./opening_image.js')(g),{ram,has}=image;
+const g=require('./layered.js')(game(__dirname)),image=require('./opening_image.js')(g),{ram,has}=image;
 for(const entry of [0x90ba,0x90d6,0x90e5,0x90f4,0x9114,0x9123,0x9327]) {
  assert.equal(image.listing.records.find(r=>r.a===entry)?.t,'code',`handler $${entry.toString(16)} must be listed as code`);
 }

@@ -4,11 +4,11 @@ from pathlib import Path
 G=Path(__file__).resolve().parent
 sys.path[:0]=[str(G.parents[2]/'kit/cpu'),str(G.parents[2]/'kit/c64')]
 from opcodes import decode,operand
-S=json.loads((G/'parts/opening/symbols.json').read_text())
-L=json.loads((G/'parts/opening/listing.json').read_text())
+S={'blocks':sum((json.loads((G/f'parts/{p}/symbols.json').read_text())['blocks'] for p in ('resident','opening')),[])}   # the opening lies over the resident engine
 r=bytearray(65536);known=bytearray(65536)
-for row in L['records']:
- for i,v in enumerate(row.get('b',[])):r[row['a']+i]=v;known[row['a']+i]=1
+for part in ('resident','opening'):   # the opening lies over the resident engine
+ for row in json.loads((G/f'parts/{part}/listing.json').read_text())['records']:
+  for i,v in enumerate(row.get('b',[])):r[row['a']+i]=v;known[row['a']+i]=1
 extents=json.loads((G/'analysis-scope.json').read_text())['retained_load_extents']
 for e in extents:
  a,b=e['start'],e['end'];assert all(known[a:b+1]);assert hashlib.sha256(r[a:b+1]).hexdigest()==e['sha256']

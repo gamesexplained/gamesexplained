@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=require('./opening_image.js')(g);
+const g=require('./layered.js')(game(__dirname)),{ram}=require('./opening_image.js')(g);
 const {labyrinthChangeStart:start,labyrinthChangeStep:step}=g.run('levels.html','labyrinth-change','labyrinthChangeStart','labyrinthChangeStep');
 const {labyrinthChangeReplies:counterReplies}=g.run('levels.html','labyrinth-change-text','labyrinthChangeReplies');
 const fields={quarterByte:0x673a,nickelByte:0x6735,phase:0x968c,changeByte:0x968d,pickup:0xaab3,nickelTaken:0x968a,nickelReturned:0x9689,karma:0x575};

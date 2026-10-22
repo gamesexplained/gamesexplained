@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const {ram}=game(__dirname).listing('parts/scene-06/listing.json');
+const {ram}=require('./layered.js')(game(__dirname)).listing('parts/scene-06/listing.json');
 const c=new CPU(Uint8Array.from(ram));
 let checked=0;
 function check(xLow,xHigh,depth){

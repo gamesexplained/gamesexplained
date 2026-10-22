@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-03/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-03/listing.json');
 const {labyrinthBrickCloseData:d,labyrinthBrickCloseDoor:close,labyrinthBrickDoorCycle:cycle}=g.run('levels.html','labyrinth-brick-close','labyrinthBrickCloseData','labyrinthBrickCloseDoor','labyrinthBrickDoorCycle');
 const {labyrinthBrickOpenDoor:open}=g.run('levels.html','labyrinth-brick-door','labyrinthBrickOpenDoor');
 for(const [address,values] of [[0x72e,d.replacements],[0x73e,d.types]])assert.deepStrictEqual([...ram.slice(address,address+values.length)],[...values]);

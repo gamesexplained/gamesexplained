@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-06/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-06/listing.json');
 const {labyrinthStoneLadderGate:gate,labyrinthStoneLadderStages:stages}=g.run('levels.html','labyrinth-stone-ladder','labyrinthStoneLadderGate','labyrinthStoneLadderStages');
 const c=new CPU(Uint8Array.from(ram));let checked=0;
 function run(x,type=4,mode=255,state=255){const d=gate(x,type,mode,state);c.m[0x538]=x&255;c.m[0x53c]=x>>8;c.m[0xb0]=type;c.m[0x343]=mode;c.m[0x3420]=state;let accepted=false;c.call(0x3796,{x:13,y:7,d:0},{hooks:{0x37ae:()=>{accepted=true;}}});assert.equal(accepted,d.accepted);assert.equal(c.m[0x3420],d.state);assert.equal(c.x,13);assert.equal(c.y,7);assert.equal(c.m[0x538]+256*c.m[0x53c],x);checked++;}

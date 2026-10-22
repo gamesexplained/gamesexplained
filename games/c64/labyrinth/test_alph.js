@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-04/listing.json');
 const {labyrinthAlphReplies:replies,labyrinthAlphAsk:ask}=g.run('levels.html','labyrinth-alph-conversation','labyrinthAlphReplies','labyrinthAlphAsk');
 assert.equal(ram[0x8b0c],30);assert.equal(ram[0x8b0d],44);assert.equal(ram[0x8bcc]+256*ram[0x8bcd],0x8fa8);
 for(let progress=0;progress<15;progress++)for(let index=0;index<3;index++){

@@ -60,6 +60,10 @@ Route exercised after the saved sidewalk state: `GO HOME`, `TAKE CAMCORDER`, `GO
 
 After the movie-start text the display loaded the character before an arched gate (`reference/maze-intro.png`). Black-screen intervals followed. `$0F10-$0F1C` is a ten-frame pacing loop using the IRQ counter at `$0353`, not a loader wait. A continuation dismissed the movie card with joystick-port-1 fire, saved `work/gate-steady.vsf`, and demonstrated movement with 100 frames of right input. From the initial gate position, 150 then 600 frames of up input entered the doorway and brought up The Labyrinth title card. Fire dismissed the card; with warp for the disk load, this reached the playable brick corridor in `work/corridor-play.vsf`. Side 2 was attached for the forced later-room captures described above. The graphical part folders are placeholders for those captured loads; their source partitions remain open.
 
+## What is resident · 22 October 2026
+
+The engine is its own part, `parts/resident`: `$0000-$05FF`, `$0800-$78FF` and `$D000-$DFFF`. The opening and every scene lie over it and own `$0600-$07FF`, `$7900-$CFFF` and `$E000-$FFFF`. These ranges are the whole of the engine's extent as compared across seven states (`parts/resident/facts.md`), not a record of each load's own writes: a store checkpoint across a load would narrow them. The replacement `play.vsf` files in each part's `work/` are the rebuilt captures with the counted bytes pinned to the values the earlier listings hold (`agent-history.md`).
+
 ## Steady-state memory
 
 In the opening snapshot, the RAM IRQ vector `$FFFE/$FFFF` is `$127C`; the NMI vector `$FFFA/$FFFB` is `$11C1`. RAM vectors `$0314` and `$0318` are zero. The captured CPU port reads `$00=$07`, `$01=$15`, leaving ROMs hidden and I/O visible. Interrupt code explicitly uses `$25` for I/O and restores the main program’s saved port value from `$61`.

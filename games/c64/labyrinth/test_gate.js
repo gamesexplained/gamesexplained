@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram,has}=g.listing('parts/scene-01/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram,has}=g.listing('parts/scene-01/listing.json');
 const {labyrinthGateCells:cells,labyrinthGateTypes:types,labyrinthGateLimits:limits,labyrinthGateApproach:approach}=g.run('levels.html','labyrinth-gate','labyrinthGateCells','labyrinthGateTypes','labyrinthGateLimits','labyrinthGateApproach');
 for(const [start,values] of [[0x600,cells],[0x73e,types],[0x41f0,limits]])for(let i=0;i<values.length;i++){assert(has[start+i]);assert.equal(values[i],ram[start+i]);}
 const caps=[];
