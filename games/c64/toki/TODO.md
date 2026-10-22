@@ -9,7 +9,8 @@ For Silver:
   stage", names `stage_load`, `stage_sets`, and `unpack` statically:
   (confirmed in VICE): add them to `symbols.json` with a fresh
   play snapshot, find which object property each pointer table in the
-  stage block holds (`facts.md`, "Packed entries"), and confirm in
+  stage block holds (`facts.md`, "Packed entries" and "After a stage
+  loads", which maps the block's header), and confirm in
   VICE that entry 11 is never copied. Then the main loop at `wait_frame`, the
   two raster handlers and `nmi_frame`.
 - Treat the cartridge's banks as `kit/skills/c64/c64-reference`,

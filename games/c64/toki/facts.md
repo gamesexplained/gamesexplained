@@ -152,3 +152,11 @@ The kit's 6502 simulator (`kit/cpu/cpu6502.js`) ran `unpack` from bank 0 on each
 Live check (VICE, 2026-10-15): at $0B11 after stage 1 loaded, RAM $0C01-$20DF matched the simulator's unpacked stage 1 byte for byte (5,343 of 5,343).
 
 What stage 1's block holds, from a load watch on $0C01-$20DF over a few seconds of play: nothing executes there, and the reads come through zero-page pointers into it ($36/$38 = $1B34/$1B71, $3A/$3C = $1AE3/$1AA1), each pair read as split low and high bytes at the same index ($B207/$B20B, $A23D/$A241, $B57D/$B581), with the index from a per-object table ($33CA,x), and one read at $4C2E adds to a per-object table ($38EC,x). So the block holds pointer tables and the data behind them that the object code uses for each stage. Which object property each table holds is unknown.
+
+## After a stage loads
+
+Read statically from the cartridge and the unpacked blocks, 2026-10-22.
+
+- `stage_start` goes on at $0B43: it takes a pointer for the stage from a table in bank 0 (low bytes $8113, high bytes $8118: bank 5 $815F, $8243, $82E5, $83C1, $848D), switches to bank 5, and copies bytes 0, 1, 4, and 5 of that record to $08E3-$08E6. Every record starts $E8 $FF; what the four variables hold is unknown.
+- It then copies the words at $0C1C and $0C1E, inside the stage block just unpacked, to the zero-page pointers $3A and $3C, calls $0500, and leaves with $01 = $35.
+- Each stage block starts with a header of pointers into itself, in the same layout for all five stages. In stage 1 the words at $0C18, $0C1A, $0C1C, and $0C1E are $1B34, $1B71, $1AE3, and $1AA1: the values found live in $36, $38, $3A, and $3C during play ("Packed entries"). Which code copies $0C18 and $0C1A to $36 and $38 is not traced.
