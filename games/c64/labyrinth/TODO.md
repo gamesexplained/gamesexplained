@@ -1,6 +1,6 @@
 # Labyrinth — next work
 
-The resident engine has descriptions for 32,525 of 32,781 tracked bytes (99.2 %); `python3 kit/scripts/coverage.py games/c64/labyrinth/parts/resident` lists the 256 left. The text adventure's own bytes are 15,480 of 15,480 (100 %), which is the ledger result, not a claim that the purpose of its retained opaque bytes is known. Scenes 1 to 6 are partly explained and scenes 7 to 26 have only a folder. The game stays Bronze. Next: finish the resident engine, compare scenes 7 to 26 against it as each is loaded, then annotate one scene at a time.
+The resident engine is fully described (32,781 of 32,781 bytes, 100 %) and has been checked against all 22 loads (`parts/resident/facts.md`). The text adventure's own bytes are 15,480 of 15,480 (100 %), which is the ledger result, not a claim that the purpose of its retained opaque bytes is known. Scenes 1 to 6 are partly explained (2 to 16 %); scenes 7 to 26 have a folder, a snapshot and the resident ranges, and no analysis. The game stays Bronze. Next: annotate one scene per session, starting with scene 2 (the corridor movement code is already traced), commit after each. Game coverage was 38.8 % over 8 of 23 parts and will fall as scenes are started. Cached snapshots and helpers: `/mnt/project-files/labyrinth/README.md`.
 
 For the opening’s verification:
 
