@@ -123,3 +123,19 @@ shapes and their places have to come from the same moment. On Fighters
 the joystick now drives the pose viewer, and the move's frames play in
 order. The keyboard table had X, N and slash for the drift check's third
 column; it is X, N and comma (row 5, column 7), as `facts.md` had it.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then left out 38 bytes it counted (#476), all three stretches
+already described. The snapshots were remade by `orientation.md`'s
+route; the protection passed on the fifth boot. Against the old listing
+only two bytes differ, `$0000` and a ball's speed at `$00A2`. The
+rebuild turned up two more things. `$E76F`, one zero byte between
+pattern `$13`'s closing `$FF` and pattern `$14`, was untyped: no
+instruction names it and no pattern address points at it, so it is
+typed and described as unused. And `listing.py` named `$D569`-`$D640`
+as data loaded with the game: it is the emulator's power-on pattern of
+`$00` and `$FF` under the I/O area, which this boot had flipped a bit
+in eight times. The game never banks the I/O area out, so the
+exclusion of `$D000`-`$D3FF` now runs to `$DFFF`.
