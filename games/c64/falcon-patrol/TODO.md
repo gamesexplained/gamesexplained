@@ -41,7 +41,7 @@ it to `human-edited`.
 
 ## For Platinum
 
-Not attempted. It needs the listing to reassemble byte-for-byte to the
-analysed image and the result to boot. `listing.json` is built from
-`symbols.json` and passes `check_listing.py`, which is the starting point,
-but no assembler has been run against it.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.

@@ -19,8 +19,9 @@ comments that repeated them.
 
 ## For Platinum
 
-- Reassemble the listing byte for byte to the four files and boot the
-  build.
+The Play tab and `test_play.js` are in place. Platinum needs the rest
+of the bar in `AGENTS.md` confirmed: that the port is the whole game,
+and that no bug known stops a player finishing.
 
 ## Open questions
 

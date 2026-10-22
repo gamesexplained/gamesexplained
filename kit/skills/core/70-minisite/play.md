@@ -194,6 +194,15 @@ views of the port, never changes to it.
   but for a pixel at the edges; the smooth view never moving back and
   arriving as the C64 shows each picture.
 
+## The page's test
+
+`test_play.js` (or `test_play.py`) beside `play.html` runs the page as it
+is published, on a clean checkout: beside the game's own code in the
+lockstep when the listing holds what that needs, or else against what the
+port's own tests measured on the game. `test_kit.py` finds it, so CI holds
+the published page. Platinum needs it, and `build.py` stops on a Platinum
+game without one.
+
 ## What the port finds in the listing
 
 Porting a routine means reading every instruction of it, and the

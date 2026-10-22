@@ -66,7 +66,8 @@ filled from game.json. A game page's eyebrow leaves out the platform, which its
 breadcrumb names: the build drops a platform name at the eyebrow's start. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
 It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
-fails on a Gold or Platinum page that still has one. It counts the links into a
+fails on a Gold page that still has one. It stops on a Platinum game without a
+Play tab and the test_play.js beside it that holds the published page. It counts the links into a
 Source page at an address its listing holds no record of (a chip register, a
 stretch the coverage leaves out, another part's address): the page says so when
 one is followed, and --addresses lists them, page by page. It counts too the links
@@ -343,11 +344,15 @@ def read(p):
     return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
 
 
-TIER_NAMES = {"silver-claimed": "silver (claimed)"}
+# The tier of a game that is both Gold and Platinum, as game.json writes it.
+BOTH = "gold-platinum"
+TIER_NAMES = {"silver-claimed": "silver (claimed)", BOTH: "gold + platinum"}
+CURATED = ("gold", BOTH)        # a person has been through the copy
+PLAYABLE = ("platinum", BOTH)   # the Play tab is the whole game, held to the game's code
 
 
 def tier_name(t):
-    """How a tier reads on the page: game.json's value, except silver-claimed."""
+    """How a tier reads on the page: game.json's value, except silver-claimed and BOTH."""
     return TIER_NAMES.get(t, t)
 
 
@@ -399,11 +404,12 @@ def proven_models():
 def banner(game, cons):
     """One line under the tabs: who curated it, or how to take it further.
 
-    Gold and Platinum name the humans (git authors, linked). Silver is agent-generated
-    and asks for a human editor, and credits the contributor (git authors, linked).
-    Silver (claimed) is a Silver a human has started editing: it names them (the
-    steward in game.json) as editing it to a Gold standard, with no prompt, so nobody
-    starts the same work twice.
+    Gold, and Gold and Platinum both, name the humans (git authors, linked). Silver is
+    agent-generated and asks for a human editor, and credits the contributor (git authors,
+    linked); so is Platinum, whose Play tab says nothing about its copy.
+    Silver (claimed) is a Silver a human has started editing, and a Platinum with a steward
+    is a Platinum one: it names them (the steward in game.json) as editing it to a Gold
+    standard, with no prompt, so nobody starts the same work twice.
     Bronze, or no tier, is unfinished and asks for a
     contributor. The prompt behind the button is the one line to paste into an agent.
     A run on a model not yet proven is published whole, and its banner says that it awaits
@@ -631,17 +637,17 @@ def ribbon_html(segments, said):
 def banner_body(game, cons, tier, repo):
     """The banner's text before any line about the listing (banner)."""
     where = f'games/{game["platform"]}/{game["slug"]}'
-    if tier in ("gold", "platinum"):
+    if tier in CURATED:
         who = ", ".join(person_html(n, l) for _, n, l in cons)
         body = f'This minisite was curated by {who}.' if who else 'This minisite was curated by hand.'
-    elif tier == "silver":
+    elif tier == "silver" or (tier == "platinum" and not game.get("steward")):
         who = ", ".join(person_html(n, l) for _, n, l in cons)
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         prompt = f"Clone {repo} and follow kit/START.md to curate {where} with me to Gold."
         body = (lead + 'It\u2019s agent-generated and needs a human editor. '
                 f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
                 '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
-    elif tier == "silver-claimed":
+    elif tier in ("silver-claimed", "platinum"):
         who = ", ".join(person_html(n, l) for _, n, l in cons)
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         st = game.get("steward") or ""
@@ -1321,6 +1327,13 @@ def data_links(P):
         f'<a href="parts/{p["id"]}/listing.json">listing.json</a>' for p in P if listed(p)) + "."
 
 
+def play_tested(gdir):
+    """True when the game has a Play tab and the test that holds the published page
+    (kit/skills/core/70-minisite/play.md, "The page's test"): test_kit.py runs it, so CI does too."""
+    return os.path.exists(os.path.join(gdir, "play.html")) and any(
+        os.path.exists(os.path.join(gdir, f"test_play.{x}")) for x in ("js", "py"))
+
+
 def build_game(gdir, out_root):
     game = json.load(open(os.path.join(gdir, "game.json")))
     plat, slug = game["platform"], game["slug"]
@@ -1341,6 +1354,10 @@ def build_game(gdir, out_root):
         sys.exit(f"{rel} has no listing.json. {why} Build it from the symbol map and a snapshot first:\n"
                  f"  python3 kit/scripts/symbols_export.py {rel}\n"
                  f"  python3 kit/scripts/listing.py {rel} <snapshot.vsf>")
+    if tier in PLAYABLE and not play_tested(gdir):
+        sys.exit(f"{os.path.relpath(gdir, ROOT)} is {tier_name(tier)}, which needs a Play tab, play.html, and "
+                 "test_play.js (or test_play.py) beside it, the test that holds the published page in CI "
+                 "(AGENTS.md, Definition of done; kit/skills/core/70-minisite/play.md, The page's test).")
     if P:
         game["_parts"] = (sum(1 for p in P if started(p)), len(P))
     present = present_tabs(gdir, game)
@@ -1623,18 +1640,19 @@ def featured_html(g):
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
 
-TIER_GROUPS = {"platinum": "gold", "gold": "gold", "silver-claimed": "silver", "silver": "silver", "bronze": "bronze"}
+TIER_GROUPS = {BOTH: BOTH, "gold": "gold", "platinum": "platinum", "silver-claimed": "silver", "silver": "silver",
+               "bronze": "bronze"}
 
 
 def tier_group(g):
-    """The tier a card is coloured and grouped by: Platinum with Gold, a claimed Silver with Silver."""
+    """The tier a card is coloured and grouped by: a claimed Silver with Silver."""
     return TIER_GROUPS.get(g.get("tier", "none"), "none")
 
 
 def tier_edge(g):
     """The tier written up the card's left edge, in the tier's colour."""
     t = g.get("tier", "none")
-    word = {"platinum": "Platinum", "silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
+    word = {BOTH: "Gold + Platinum", "silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
     return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t))}">{html.escape(word)}</span>'
 
 
@@ -1712,9 +1730,9 @@ def platform_pages(games, out_root):
 
 def featured_game(games):
     """The game the home page opens with: the one whose game.json says "featured": true,
-    else the first at Gold or better, else the first there is."""
+    else the first a person has curated, else the first there is."""
     return (next((g for g in games if g.get("featured")), None)
-            or next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None))
+            or next((g for g in games if g.get("tier") in CURATED), games[0] if games else None))
 
 
 # --- the home page's New and updated row: the latest games added or changed, from git history
@@ -1999,11 +2017,11 @@ def runs_on(cs, kit):
     return f'<p class="tools">Runs on {" and ".join(filter(None, [", ".join(items[:-1]), items[-1]]))}.</p>' if items else ""
 
 
-TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
+TIER_ORDER = (BOTH, "gold", "platinum", "silver-claimed", "silver", "bronze", "none")
 
 
 def by_tier(games):
-    """The games best first, as the home page lists them: Platinum and Gold at the top,
+    """The games best first, as the home page lists them: Gold and Platinum both, then each,
     Bronze and no tier at the bottom; within a tier, the order they came in."""
     rank = lambda g: TIER_ORDER.index(g.get("tier", "none")) if g.get("tier", "none") in TIER_ORDER else len(TIER_ORDER)
     return sorted(games, key=rank)
@@ -2350,9 +2368,9 @@ def main():
     cut = cut_blocks(games)
     for page, tier, n in cut:
         warn(f"{page} has {n} block(s) hidden with the page editor; the cleanup pass in kit/START.md removes them")
-    done = [page for page, tier, n in cut if tier in ("gold", "platinum")]
+    done = [page for page, tier, n in cut if tier in CURATED]
     if done:
-        sys.exit(f"{', '.join(done)}: a Gold or Platinum page with blocks still hidden with the page editor. "
+        sys.exit(f"{', '.join(done)}: a Gold page with blocks still hidden with the page editor. "
                  "Do the cleanup pass in kit/START.md before setting the tier.")
     if _unasked:
         print(f"{len(_unasked)} contributor(s) are unlinked in this build: GitHub says whose address a commit "

@@ -47,6 +47,7 @@ Sections the page could gain:
 
 ## For Platinum
 
-A listing that reassembles byte for byte to the analysed image, and a
-build that boots. With `$B000`-`$B5FF` missing, that needs a clean copy of
-the release first.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.

@@ -244,10 +244,12 @@ contributor's work with your hands: they say what is dull, what deserves
 more, and what reads like an agent wrote it; you cut, expand, verify
 anything new against the code, and rewrite to `kit/style.md`. When the
 first edit pass begins, set `tier` in `game.json` to `silver-claimed`
-and `steward` to their GitHub login: the page then says who is editing
+(a Platinum game keeps `platinum`) and `steward` to their GitHub login:
+the page then says who is editing
 it. The pass ends with `80-retro`, as a run does. Set `gold` when every
-section has had its pass. Set `copy` in `game.json` honestly, and open the pull
-request as `AGENTS.md` says. The two questions about the pull request
+section has had its pass, or `gold-platinum` when the game is Platinum.
+Set `copy` in `game.json` honestly, and open the pull request as
+`AGENTS.md` says. The two questions about the pull request
 and the commit identity in step 3 come first in this job too.
 
 A `work/` left from an earlier session is a cache, not a record: the

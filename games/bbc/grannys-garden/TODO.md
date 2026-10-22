@@ -22,9 +22,10 @@ the listing checked only when a sample after an audit is within the mark.
 
 ## For Platinum
 
-- Rebuild each part from its `listing.json` as a tokenised BBC BASIC file
-  and compare it byte for byte with `GRAN1` and `GRAN2`, then boot the
-  rebuilt disc.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.
 
 ## Open
 

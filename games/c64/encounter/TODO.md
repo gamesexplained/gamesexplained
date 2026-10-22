@@ -30,5 +30,7 @@ bare: the last two of the seven stub JMPs in the title screen).
 
 ## For Platinum
 
-- The listing reassembles only if the shape scripts are emitted from
-  $1E00 and the loader is reproduced; no attempt has been made.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.

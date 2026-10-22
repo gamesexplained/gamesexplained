@@ -32,4 +32,7 @@ confirmed, traced or explicitly open (`features.md`), facts verified
 
 ## For Platinum
 
-- Reassemble the listing byte for byte to the analysed image and boot it.
+The Play tab is a port of the game, but it has no `test_play.js`
+beside it, so CI never holds the published page. Platinum
+needs that test (`kit/skills/core/70-minisite/play.md`, "The page's
+test"), and no bug known that stops a player finishing.

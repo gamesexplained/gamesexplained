@@ -529,7 +529,6 @@ package installation was needed for that run.
   that reports success followed by a session that is not there, with no
   credential stored. If you do set it there, write every directory out in
   full.
-- **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
 ## Linux
 

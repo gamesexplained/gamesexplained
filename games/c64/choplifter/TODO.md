@@ -32,11 +32,10 @@ on one reading.
 
 ## For Platinum
 
-- The listing has never been reassembled. Platinum wants `listing.json` to
-  produce the analysed image byte for byte and the result to boot. Nothing
-  in this run tried it. The hard parts will be the 75 shape blobs, the
-  `address`-typed pointer table at `$8009`, and the inline parameter words,
-  all of which have to come back out as data in the right order.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.
 
 ## Left open
 

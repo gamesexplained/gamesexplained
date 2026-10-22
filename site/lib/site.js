@@ -71,7 +71,9 @@
     if(!cat||!finder) return;
     var cards=[].slice.call(cat.querySelectorAll('.tile')), q=document.getElementById('q'), sort=document.getElementById('sort');
     var facets=document.getElementById('facets'), count=document.getElementById('count'), more=document.getElementById('more');
-    var TIERS=[['gold','Gold','Checked and edited by a person.'],['silver','Silver','The whole program explained.'],
+    var TIERS=[['gold-platinum','Gold + Platinum','Edited by a person, and the whole game playable.'],
+               ['gold','Gold','Checked and edited by a person.'],['platinum','Platinum','The whole game, playable in the browser.'],
+               ['silver','Silver','The whole program explained.'],
                ['bronze','Bronze','A first look: the features and a sweep of the code.'],['none','No tier','']];
     var ERAS=[['1970s and before',0,1979],['1980 to 1984',1980,1984],['1985 to 1989',1985,1989],['1990s and after',1990,9999]];
     var era=function(c){ var y=+c.dataset.year; for(var i=0;i<ERAS.length;i++) if(y>=ERAS[i][1]&&y<=ERAS[i][2]) return ERAS[i][0]; return ''; };

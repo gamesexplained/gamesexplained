@@ -22,11 +22,11 @@ are wider than the column (#62).
 
 ## For Platinum
 
-Reassemble the listing byte for byte to the analysed image. The start-up
-code exists only at the hand-over, and the build is a crack: a Platinum
-build would reproduce the crack's image, or be made from the original
-disk's memory at the same point (`work/orig-entry-5000.vsf`: five places
-differ, `orientation.md`) (#64).
+The Play tab is a port of the game, but it has no `test_play.js`
+beside it, so CI never holds the published page (`test_skip.js` holds
+only the Skip intro button). Platinum needs that test
+(`kit/skills/core/70-minisite/play.md`, "The page's test"), and no bug
+known that stops a player finishing.
 
 ## Open questions
 
