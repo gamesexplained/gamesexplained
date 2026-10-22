@@ -483,3 +483,5 @@ Added an "All areas" view as the default of the Areas page: the route through th
 Validation: all Labyrinth tests passed; binary and document checks passed; the 58-game build produced 666 pages. Browser check: no console errors, the overview is the only visible section by default, bookmarks for four areas and the overview select the right entry, and the page has no horizontal scroll at 400 px.
 
 The route list, table, and separate gallery on the all-areas view were replaced the same day by one grid of small screenshots: each card has the area's name, a text and marker status (full, half, or empty circle), and a one-line purpose for the seven explained areas. The area selector bar is hidden on the overview, and the page's top line links back to it.
+
+The pull request's kit test run failed after the screenshot grid went in: `kit/scripts/edit.py --test` tried an edit on each card's list item and refused it because the item held an image beside its text. Each card is now a figure with a picture link and a caption, so only the caption is editable text. The full kit test run passes (251 passed, 8 skipped for the missing SkoolKit oracle).
