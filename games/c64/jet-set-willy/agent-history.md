@@ -132,3 +132,18 @@ three; `machine.js` with `collide: true` reads in the access's cycle.
 `test_play.js` still finds 40,000 passes identical, and over 60,000
 frames `test_pace.js` gives the page 0.13 % faster than the game, where
 it gave 0.04 % before.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 153 bytes (#465):
+`$0990`-`$09FF`, between the guardians' state (excluded as runtime) and
+the code card's sprites, and `$0FA9`-`$0FD1`, after the restart stub.
+Both are fill, `$FF` and `$00`, that no instruction refers to, and a
+watch on both ranges saw nothing read or write them in 8 seconds of the
+title and a minute of play, so they are excluded with that reason rather
+than described: new comments after the maintainer's last sample would
+have needed another one. The contributor's disk was not available to
+this session, so the hand-over was remade from archive.org's copy of the
+BCS disk (`orientation.md`); it matched every byte of the listing.
+

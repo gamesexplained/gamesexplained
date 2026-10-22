@@ -173,3 +173,21 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   colour). The four notes were corrected in `symbols.json` and the listing
   rebuilt from `work/entry.vsf`, which reproduces the earlier listing
   record for record.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then left out 282 bytes (#462). 128 of them, `$F4E0`-`$F55F`,
+were block 9 of the logo/rock store, past the 1,024 bytes that
+`store_logo_rocks` reaches; a line comment there describes it. The
+other 154 already had comments and only needed the listing rebuilt.
+
+The Reflex crack's `delta.prg` was not available to this session, so
+the hand-over was remade from the C64 Preservation Project's G64 of the
+Thalamus disk (`orientation.md`). It matched the listing in every byte
+of code and data and differed in 1,014 bytes of variables and sprite
+buffers. Those were written back from the earlier listing into a copy
+of the snapshot, `work/entry.vsf`, so the rebuilt listing keeps every
+byte it had and takes only the 282 new ones from the archived disk; the
+unpatched snapshot is `work/entry-thalamus.vsf`.
+

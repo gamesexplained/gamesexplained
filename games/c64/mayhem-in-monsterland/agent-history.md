@@ -90,3 +90,25 @@ intro in its own.
 - VICE ran at 3-4 % of real time twice more; with sound off (a `vicerc`
   under `tools/vice-home/` with `Sound=0`) it stayed at full speed for
   the rest of the run.
+
+## Typed data no label reached (22 October 2026)
+
+The ledger began counting typed data that no label's reach covers, which
+left two of the intro's bytes, both already described, missing from its
+listing: `$8E2F` and `$98AB`. The intro's listing was built again from a
+new hand-over snapshot. The contributor's images were not to hand; the
+C64 Preservation Project's `mayhem_in_monsterland_s1[apex_1993](pal)` is
+a different dump of side 1 (another SHA-256), but its `menu`, `boot` and
+`2` are the same files, and at the hand-over (`$52ED`) `menu` is in
+memory whole and agrees with every byte the listing held. 75 bytes
+outside it, the KERNAL's work area and scattered single bytes the
+listing held, differed and were written back, so the rebuilt listing
+keeps every byte it had and adds these two. The raw snapshot is kept as
+`parts/intro/work/entry-raw.vsf`.
+
+The rebuild also ran the check for data the ledger does not count, which
+is newer than the intro's first listing. It found four stretches of the
+machine's own state and they are excluded in `parts/intro/part.json`:
+the KERNAL's text screen at `$0400`-`$07FF`, which the start-up later
+covers with the music driver, and the copy of the KERNAL's vector table
+that RESTOR leaves in the RAM under the ROM at `$FD30`.

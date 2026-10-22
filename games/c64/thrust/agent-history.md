@@ -46,3 +46,19 @@ idle through game over and the high score table) recorded 9,796 bytes of
 code in 95 runs. Seeding the disassembler from each run's start left 33
 executed bytes untyped, at `$84D7` and `$AC8B`, until each was decoded
 on its own; `check_listing.py` caught it.
+
+## Typed data no label reached (22 October 2026)
+
+The ledger began counting typed data that no label reaches, and the
+listing lacked the 64 bytes of message text at `$9516`, already
+described (#486). The listing was built again from a capture of the
+Internet Archive's TCI copy, with the old listing's bytes written back,
+and now holds them. The rebuild also named the RAM under the I/O,
+4,096 bytes of data the ledger did not count: it is TCI's loading
+picture, whose code at `$D000` copies itself to `$0340` and then copies
+colours from `$D800`-`$DBFF` into colour RAM, and it is the same at the
+hand-over and in play. The only stores to `$01` in `$0800`-`$CFFF` are
+the depacker's at `$0844` and one at `$BEA0` that keeps the I/O and the
+KERNAL in. The RAM under the I/O is now excluded in
+`game.json` with that reason. Coverage reads 15.7 %, as the ledger has counted it
+since #455.

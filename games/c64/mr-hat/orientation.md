@@ -80,6 +80,7 @@ without ROMs:
 | `title.vsf` | the title screen, running |
 | `play-room1.vsf` | room 1 of stage 1, a second of play |
 | `entry.vsf`, `entry2.vsf`, `resume.vsf` | the depacker at `$0690`, the freezer restore at `$0948`, and the first IRQ after the resume; for the loader only |
+| `handover-bad.vsf` | the same stop at `$1773`, from GameBase64 v18's `MRHAT.T64` (27,297 bytes, SHA-256 `b87b8613ae5120b865f424e24bac53c689e4fe198499e7363ff37441c93df89c`), a crack by Bad Taste that reaches it at once; differs from `handover.vsf` only in zero page, `$0210`-`$0218`, `$033C`-`$0350`, `$B0B6`-`$B0B9`, the title's first line at `$C039`-`$C058` (the crack's own), `$C436`, the font at `$CE48`-`$CE55`, and the RAM under I/O and the KERNAL |
 
 The emulator was vice-mcp v3.13.1 (release zip, Linux x86_64, under
 `xvfb-run`), PAL, 6581 SID. `check-emulator` on 30 September 2026: 56 of

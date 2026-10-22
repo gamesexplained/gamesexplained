@@ -54,3 +54,34 @@ driver; running the drivers on the simulator with read and execute maps found ev
 use. The maps page showed load 4's room maps and the ends of its tables were missing too; they
 were typed and listed under `coverage.extra`. The first sample found 15 of 60 comments wrong,
 and those and their copies were corrected.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listings then left out 5,238 bytes that needed a description (#458),
+most of them in the last section. Two code maps, a minute of play with
+the joystick and a static trace from every routine the maps record
+reach none of load 4's untyped stretches, so they were read as code
+nothing calls: older joystick controls with a jump and a space-bar
+grenade, enemy routines and a script engine the finished game replaced,
+an old map scroller, and at `$28E2` a complete game of Space Invaders
+with its own raster interrupts, which ran when the program counter was
+set to it in the emulator (`reference/hidden-invaders.png`). Each is
+typed as code and described. Two labels on ROM addresses, `$FD30` and
+`$FFBA`, had been taken for RAM. `$FFBA` is now the KERNAL's `SETLFS`,
+`$FD30` (the KERNAL's table of vectors, which `kit/c64/kernal.py` does
+not name) has no label and is explained at the call that reads it, and
+the RAM under both is the end picture and the bytes after it.
+
+In load 3, `$B200`-`$B301` had been excluded as an older end screen
+read only by the dead routine at `$FFA1`. The pointer tables at `$C61F`,
+`$C659` and `$C693` name it: it holds attack picture 17 and the eight
+pictures of the attacker's death (`$C2D5`), which run to `$B486`. The
+exclusion is gone and the bytes are described. The same tables showed
+that the "bands" in their comments were the sprite positions, colours
+and frames, and that `$CBD0`-`$CEFF` is more records of the same form
+that no entry names. Load 3 has 14 sound effects, not 18, and the music
+driver's comments in loads 3 and 4 named addresses copied from loads 1
+and 2; both were corrected.
+
+New snapshots from the same image matched the listings byte for byte.

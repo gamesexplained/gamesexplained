@@ -5,7 +5,7 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier: Bronze
 
-Coverage 15.9 % (2,675 of 16,817 tracked bytes). The run stopped after
+Coverage 15.7 % (2,739 of 17,451 tracked bytes). The run stopped after
 `40-sweep`, as a Bronze run does. To reach Silver, continue from
 `50-coverage` (start the disassembler on `work/play.vsf`; the launcher
 rebuilds the project from `symbols.json`):
@@ -17,8 +17,8 @@ rebuilds the project from `symbols.json`):
 - Decode the start-up code at `$B773`-`$BA72`, which is assembled for
   `$0400` and so cannot be traced in place.
 - Say what the data the ledger does not count is: `$0F44`-`$2FFF`,
-  `$3003`-`$3FFF`, `$4D00`-`$52FF`, `$BE96`-`$CFFF`, `$E008`-`$E63F`, the
-  RAM under the I/O, and the tables copied to `$4000`-`$4CFF`
+  `$3003`-`$3FFF`, `$4D00`-`$52FF`, `$BE96`-`$CFFF`, `$E008`-`$E63F`, and
+  the tables copied to `$4000`-`$4CFF`
   (`listing.py` prints the list).
 - What `$3000`, run once in the code map, is.
 - Then `60-verify` (`facts.md`, a checked sample) and `70-minisite`.

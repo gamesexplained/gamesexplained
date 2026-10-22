@@ -41,3 +41,5 @@ and load4's sprite table `$0F16`-`$0F24`). At 15 in 60 the 95 % interval for the
   (`parts/load1/facts.md`).
 - 15 October 2026: `test_music.js`, every SID write of nine tunes over 3,000 frames, port
   against the driver on `kit/cpu/cpu6502.js`: no difference.
+- 22 October 2026, load4: setting the program counter to `$28E2` from the jungle started the
+  unused Space Invaders game, with its shields, rows and bombs (`reference/hidden-invaders.png`).

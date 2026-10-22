@@ -61,3 +61,17 @@ listing left it out. Four such gaps were typed and described, and every
 tune then matched the simulator's recording write for write. The play
 tick rate (two driver ticks a frame, one on the title) was measured live
 with checkpoints before recording.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 84 bytes (#468):
+the silver and gold brick table `metal_pos` runs from `$03AA` to
+`$0453`, and its labels' spans stop at the memory-map edge at `$0400`. A
+line comment at `$0400` describes slots 43 to 84. The original disk
+from the C64 Preservation Project, the same image as the contributor's,
+reached `$9400` with the listing's bytes except two in zero page (`$00`
+and the jiffy clock at `$A2`), which were written back from the earlier
+listing into `work/entry.vsf` before the rebuild; the unpatched snapshot
+is `work/entry-raw.vsf`.
+

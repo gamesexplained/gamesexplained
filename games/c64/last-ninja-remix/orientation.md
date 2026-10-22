@@ -14,6 +14,8 @@ The supplied Ghidra analysis was a composition, not a stopped machine. In active
 
 The listing uses the active `central-game.vsf`, whose bytes and CPU state existed together. Runtime screen `$0400`, bitmap `$2000–$3F3F`, low state and sprite output are excluded from coverage. The packed sprite source pool under I/O is retained as game data. Processor port `$35`, DDR `$2F`; vectors `$0314=$1E06`, `$0318=$1582`; VIC bank `$0000`.
 
+The contributor's disks were not to hand on 22 October 2026, so the 123 bytes the listing lacked then (the zero runs at `$11FD`, `$1781` and `$1FFE`, the NMI handler's `rti` at `$1582`, the unreached instructions at `$A523`, `$B11D` and `$BBD3`, the scene list at `$B444`, and the NMI and IRQ vectors) were taken from a capture of side A of another copy, cracked by The Force with Ikari+Talent's trainer, reached by the same route with The Force's intro in place of TSM's. In active Central Park it matched every byte the listing already held but one in `$4000–$4FFF`, and the listing keeps its own byte there.
+
 ## Scope and rebuilding
 
 The game is in seven parts (`kit/scripts/parts.py`), one for each level as it is loaded: Central Park, The Street, Sewers, Basement, Office, Mansion and Final Battle. One is analysed, `parts/central-park`, and its image holds the engine as well as the level: the two have not been told apart. The other six have a folder and nothing in it but their name; none has been loaded in this analysis, so this file gives no route to them. No composed binary image is published.

@@ -79,3 +79,22 @@ writing about them:
   overlapping a tune.
 
 The Play tab was left for a later pass on the same branch.
+
+## Typed data no label reached (22 October 2026)
+
+The ledger began counting typed data that no label's reach covers, and
+two bytes were bare, missing from the listing: `$CC43`-`$CC44`, the last
+of `effect_scripts`' twenty-one pointers ($CEF3, effect 20's script). The
+word block at `$CC1B` ended one pointer short, so the label at `$CC1C`
+stopped there; the block now runs to `$CC44`.
+
+The snapshots were made again by the route in `orientation.md`, from the
+C64 Preservation Project's `the_goonies[datasoft_1985](original_music)(!)`,
+the name the contributor's upload carried. Autostarting it with the file
+number 1 (`autostart(rpc, path, 1)`) left a blank screen and never loaded;
+autostarting with no file named, or typing `LOAD"*",8,1`, loads it, and
+the hand-over came 29 seconds after autostart. The new play snapshot
+agreed with every byte the listing held except 86 of the game's
+variables; those were written back, so the rebuilt listing keeps every
+byte it had and adds these two. The raw snapshot is kept as
+`work/play-scene1-raw.vsf`.

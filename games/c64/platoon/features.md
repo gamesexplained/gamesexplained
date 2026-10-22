@@ -51,6 +51,7 @@ Sources:
 | RUN/STOP leaves play | traced | `$0893` jumps to `$A709` with RUN/STOP held: the game-over path |
 | The opening line THE FIRST CASUALTY OF WAR IS INNOCENCE | traced | the film's tagline, in the messages at `$A9F4` with ENTERING THE COMBAT ZONE |
 | NTSC v1.1 only: keys 0, 9, 8 and 7 move the soldier to fixed places in the jungle | live | `$0832` in the NTSC build; not in the PAL build (`orientation.md`, "The three versions") |
+| A complete game of Space Invaders that nothing starts | live | load4 `$28E2`: three shields, four rows of six invaders, one shot and falling bombs; started by setting the program counter on 22 October 2026 (`reference/hidden-invaders.png`, `discoveries.html`) |
 | The search finds ordinary things too | traced | A SACK OF FLOUR, A STOOL, A TABLE, A POT OF RICE, A POT OF WATER, RUBBISH, PROVISIONS, EMPTY at `$C7FD` |
 
 ## Open questions

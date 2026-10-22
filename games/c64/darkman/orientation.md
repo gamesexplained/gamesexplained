@@ -62,7 +62,7 @@ with warp on, hold fire at the next-level prompt, and stop on $0424 for
 `work/entry-level2.vsf`. Then turn warp off, wait through the briefing
 ("LEVEL TWO. DARKMAN IS DISCOVERED..."), hold fire, and save
 `work/play-level2.vsf`. Both are in `parts/level2/work/`, the hand-over
-as `entry.vsf`; level 2 is not analysed.
+as `entry.vsf`, which level 2's listing is built from. Skipped from the title screen instead of play, level 2 hangs at $65BE.
 
 Snapshots are in `parts/resident/work/` and `parts/level1/work/` (copies
 of `work/play-level1.vsf`; `level1` also has `title.vsf`). The hand-over is `work/entry.vsf` (also
