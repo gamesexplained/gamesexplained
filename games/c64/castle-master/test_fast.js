@@ -4,8 +4,8 @@
 // - attached and off, it changes nothing: the machine is the same, byte for byte and cycle for
 //   cycle, as without it, every 25 frames of a session that walks, turns, looks and aims;
 // - on, the game runs a pass of its main loop for each tick of its timer, 60 a second;
-// - walking for 10 seconds covers the ground the C64 covers in 10 seconds, turning for 20 seconds
-//   turns as far, and the pointer moves as fast, each within a few per cent;
+// - walking 1,200 units, turning a whole turn and moving the pointer 30 pixels take the time they
+//   take the C64, within 2 % (the pointer 5 %);
 // - a press of U turns about once, and held, again each pass of the C64;
 // - the same controls, pass for pass, make the same game drawn at 60 frames a second, at 144, at
 //   uneven rates, and on a machine too slow to keep up; at 144 the view moves between passes;
@@ -67,50 +67,58 @@ function machine(watch) {
   else console.log(a.length + ' samples over 1,840 frames of play: the same machine with the fast CPU attached and off');
 }
 
-// ---- the speeds, against the C64's in the same place
+// ---- the speeds, against the C64's from the same place: the time each takes to walk 1,200 units,
+// to turn a whole turn, and to move the pointer 30 pixels. (Not how far each goes in a fixed time:
+// a C64 round lasts from a fifth of a second to nearly two by what is in view, so two windows of
+// the same length that end at different headings give different speeds.)
 {
-  // the C64: the distance and the turn between the starts of the first and the last pass of the
-  // walk, over the time between them
-  const c64 = (joy, keys, frames) => {
-    const m = machine(true), starts = [];
-    const up = m.rt.P.UPDATE_FRAME_INPUT_EVENTS;
-    m.rt.P.UPDATE_FRAME_INPUT_EVENTS = function* (r) { starts.push({ t: m.rt.t, p: at(m.rt.M), yaw: m.rt.M[0x2411], aim: m.rt.M[0x2465] }); return yield* up.call(this, r); };
-    m.run(frames, keys, joy);
-    const moved = starts.filter((s, i) => i && (s.p.x !== starts[i - 1].p.x || s.p.z !== starts[i - 1].p.z || s.yaw !== starts[i - 1].yaw || s.aim !== starts[i - 1].aim));
-    const a = starts[0], b = moved[moved.length - 1], secs = (b.t - a.t) / CYC;
-    let turned = 0;
-    for (let i = 1; i < starts.length && starts[i].t <= b.t; i++) { let d = starts[i].yaw - starts[i - 1].yaw; d -= 72 * Math.round(d / 72); turned += d; }
-    return { speed: Math.hypot(b.p.x - a.p.x, b.p.z - a.p.z) / secs, turn: turned / secs, aim: (b.aim - a.aim) / secs };
+  // what each move has done so far: the distance from where it began, the turn, the pointer's travel
+  const progress = m => {
+    const M = m.rt.M, p0 = at(M), x0 = M[0x2465];
+    let yaw = m.fx.on ? m.fx.yaw : M[0x2411], turned = 0;
+    return () => {
+      const p = at(M), y = m.fx.on ? m.fx.yaw : M[0x2411];
+      let d = y - yaw; d -= 72 * Math.round(d / 72); turned += Math.abs(d); yaw = y;
+      return { walk: Math.hypot(p.x - p0.x, p.z - p0.z), turn: turned, aim: M[0x2465] - x0 };
+    };
   };
-  const fast = (joy, keys, secs, pointer) => {
-    const m = machine(true);
+  // the seconds until a series first reaches v, from the start of the first round or pass that moved
+  const reach = (s, k, v) => {
+    let i0 = 0;
+    while (i0 + 1 < s.length && s[i0 + 1][k] === s[0][k]) i0++;
+    for (let i = i0 + 1; i < s.length; i++) if (s[i][k] >= v) { const a = s[i - 1], b = s[i]; return (a.t + (b.t - a.t) * (v - a[k]) / (b[k] - a[k]) - s[i0].t) / CYC; }
+    return Infinity;
+  };
+  // the C64: at the start of each round; the fast CPU: after each pass
+  const c64 = (joy, frames, pointer) => {
+    const m = machine(true), out = [];
+    if (pointer) { m.run(10, ['SPACE']); m.run(120); }
+    const now = progress(m), up = m.rt.P.UPDATE_FRAME_INPUT_EVENTS;
+    m.rt.P.UPDATE_FRAME_INPUT_EVENTS = function* (r) { out.push(Object.assign({ t: m.rt.t }, now())); return yield* up.call(this, r); };
+    m.run(frames, [], joy);
+    return out;
+  };
+  const fast = (joy, secs, pointer) => {
+    const m = machine(true), out = [];
     if (pointer) { m.run(10, ['SPACE']); m.run(120); }
     CMFast.set(m.fx, true);
-    const a = at(m.rt.M), x0 = m.rt.M[0x2465], n0 = m.fx.n;
-    let yaw = m.fx.yaw, turned = 0;
-    m.fast(secs, keys, joy, () => { let d = m.fx.yaw - yaw; d -= 72 * Math.round(d / 72); turned += d; yaw = m.fx.yaw; });
-    const b = at(m.rt.M);
-    return { speed: Math.hypot(b.x - a.x, b.z - a.z) / secs, turn: turned / secs, aim: (m.rt.M[0x2465] - x0) / secs, passes: (m.fx.n - n0) / secs };
+    const now = progress(m), n0 = m.fx.n, t0 = m.rt.t;
+    out.push(Object.assign({ t: m.rt.t }, now()));
+    m.fast(secs, [], joy, () => out.push(Object.assign({ t: m.rt.t }, now())));
+    out.passes = (m.fx.n - n0) / ((m.rt.t - t0) / CYC);
+    return out;
   };
-  const near = (what, got, want, tol) => {
-    const r = got / want - 1;
-    if (!(Math.abs(r) <= tol)) fail(what + ': ' + got.toFixed(2) + ' a second with the fast CPU, ' + want.toFixed(2) + ' on the C64');
-    else console.log(what + ': ' + got.toFixed(2) + ' a second with the fast CPU, ' + want.toFixed(2) + ' on the C64 (' + (100 * r).toFixed(1) + ' %)');
+  const same = (what, k, v, f, c, tol) => {
+    const tf = reach(f, k, v), tc = reach(c, k, v), r = tf / tc - 1;
+    const line = what + ': ' + tf.toFixed(2) + ' s with the fast CPU, ' + tc.toFixed(2) + ' s on the C64';
+    if (!(Math.abs(r) <= tol)) fail(line); else console.log(line + ' (' + (100 * r).toFixed(1) + ' %)');
   };
-  const walk = fast(1, [], 10), walkC = c64(1, [], 600);
+  const walk = fast(1, 12);
   if (Math.abs(walk.passes - CYC / 16422) > 0.5) fail('the fast CPU ran ' + walk.passes.toFixed(1) + ' passes a second, the timer ticks ' + (CYC / 16422).toFixed(1));
   else console.log('the fast CPU: ' + walk.passes.toFixed(1) + ' passes of the main loop a second, one each tick of the timer');
-  near('walking, in the game\'s units', walk.speed, walkC.speed, 0.05);
-  near('turning, in steps of 72 to a turn', -fast(4, [], 20).turn, -c64(4, [], 1200).turn, 0.05);
-  near('the pointer, in pixels', fast(8, [], 0.5, true).aim, pointerC64(), 0.12);
-}
-// the C64's pointer, on (Space) and moved right for 30 frames: a pixel each pass that moves it
-function pointerC64() {
-  const m = machine(true);
-  m.run(10, ['SPACE']); m.run(120);
-  const x0 = m.rt.M[0x2465], t0 = m.rt.t;
-  m.run(30, [], 8);
-  return (m.rt.M[0x2465] - x0) / ((m.rt.t - t0) / CYC);
+  same('walking 1,200 of the game\'s units', 'walk', 1200, walk, c64(1, 700), 0.02);
+  same('turning a whole turn', 'turn', 72, fast(4, 20), c64(4, 1000), 0.02);
+  same('moving the pointer 30 pixels', 'aim', 30, fast(8, 0.8, true), c64(8, 40, true), 0.05);
 }
 
 // ---- a press that sets an action off: once, and again each pass of the C64 it is held for

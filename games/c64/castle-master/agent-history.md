@@ -204,3 +204,11 @@ frames 4 to 40 ms apart, and with a frame each quarter second (four rounds
 a frame, so slower than the C64). In Chromium a round cost 1.3 to 2.1 ms
 and the painter 0.3 to 0.9 ms; with the frame rate unlimited (456 frames
 a second) the page still ran 60 rounds a second.
+
+The speed checks first compared how far each machine turned in a fixed
+time, 24 seconds of the C64 against 20 of the fast CPU, and turning came
+out 4 % slow. The two windows ended at different headings, and a C64
+round lasts from 0.2 s facing away from the castle to 1.76 s facing it,
+so they averaged different parts of the turn. Timed over a whole turn,
+the C64 takes 17.33 s and the fast CPU 17.24 s; `test_fast.js` now times
+a whole turn, 1,200 units of walking and 30 pixels of the pointer.
