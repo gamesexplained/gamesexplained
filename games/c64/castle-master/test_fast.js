@@ -4,9 +4,10 @@
 // - attached and off, it changes nothing: the machine is the same, byte for byte and cycle for
 //   cycle, as without it, every 25 frames of a session that walks, turns, looks and aims;
 // - on, the game runs a pass of its main loop for each tick of its timer, 60 a second;
-// - walking 1,200 units, turning a whole turn and moving the pointer 30 pixels take the time they
-//   take the C64, within 2 % (the pointer 5 %);
-// - a press of U turns about once, and held, again each pass of the C64;
+// - walking 1,200 units and turning a whole turn take as many seconds as the C64 takes rounds, a
+//   step a second whatever is in view, within 1 %; moving the pointer 30 pixels takes the time it
+//   takes the C64, within 5 %;
+// - a press of U turns about once, and held, again each second;
 // - the same controls, pass for pass, make the same game drawn at 60 frames a second, at 144, at
 //   uneven rates, and on a machine too slow to keep up; at 144 the view moves between passes;
 // - five minutes of random play, with a jump to another area every 20 seconds and the switch
@@ -67,10 +68,10 @@ function machine(watch) {
   else console.log(a.length + ' samples over 1,840 frames of play: the same machine with the fast CPU attached and off');
 }
 
-// ---- the speeds, against the C64's from the same place: the time each takes to walk 1,200 units,
-// to turn a whole turn, and to move the pointer 30 pixels. (Not how far each goes in a fixed time:
-// a C64 round lasts from a fifth of a second to nearly two by what is in view, so two windows of
-// the same length that end at different headings give different speeds.)
+// ---- the speeds, against the C64's from the same place: the time each takes to walk 1,200 units
+// and to turn a whole turn, against the C64's rounds for them at a second each, and to move the
+// pointer 30 pixels, against the C64's time. (A C64 round lasts from a fifth of a second to three by
+// what is in view; the fast CPU takes a step a second in any view.)
 {
   // what each move has done so far: the distance from where it began, the turn, the pointer's travel
   const progress = m => {
@@ -108,35 +109,38 @@ function machine(watch) {
     out.passes = (m.fx.n - n0) / ((m.rt.t - t0) / CYC);
     return out;
   };
-  const same = (what, k, v, f, c, tol) => {
-    const tf = reach(f, k, v), tc = reach(c, k, v), r = tf / tc - 1;
-    const line = what + ': ' + tf.toFixed(2) + ' s with the fast CPU, ' + tc.toFixed(2) + ' s on the C64';
+  // the C64's rounds, a pace's time each
+  const K = CMFast.PACE * 16422;
+  const paced = c => c.map((r, i) => Object.assign({}, r, { t: i * K }));
+  const same = (what, k, v, f, c, tol, pace) => {
+    const tf = reach(f, k, v), tc = reach(pace ? paced(c) : c, k, v), r = tf / tc - 1;
+    const line = what + ': ' + tf.toFixed(2) + ' s with the fast CPU, ' + (pace ? (tc * CYC / K).toFixed(2) + ' rounds (' + reach(c, k, v).toFixed(2) + ' s) on the C64' : tc.toFixed(2) + ' s on the C64');
     if (!(Math.abs(r) <= tol)) fail(line); else console.log(line + ' (' + (100 * r).toFixed(1) + ' %)');
   };
-  const walk = fast(1, 12);
+  const walk = fast(1, 7);
   if (Math.abs(walk.passes - CYC / 16422) > 0.5) fail('the fast CPU ran ' + walk.passes.toFixed(1) + ' passes a second, the timer ticks ' + (CYC / 16422).toFixed(1));
   else console.log('the fast CPU: ' + walk.passes.toFixed(1) + ' passes of the main loop a second, one each tick of the timer');
-  same('walking 1,200 of the game\'s units', 'walk', 1200, walk, c64(1, 700), 0.02);
-  same('turning a whole turn', 'turn', 72, fast(4, 20), c64(4, 1000), 0.02);
+  same('walking 1,200 of the game\'s units', 'walk', 1200, walk, c64(1, 700), 0.01, true);
+  same('turning a whole turn', 'turn', 72, fast(4, 26), c64(4, 1000), 0.01, true);
   same('moving the pointer 30 pixels', 'aim', 30, fast(8, 0.8, true), c64(8, 40, true), 0.05);
 }
 
-// ---- a press that sets an action off: once, and again each pass of the C64 it is held for
+// ---- a press that sets an action off: once, and again each second it is held for
 {
   const m = machine(true);
   CMFast.set(m.fx, true);
   m.fast(1);
   const y0 = m.rt.M[0x2411];
   let y = y0, turns = [];
-  const each = () => { if (m.rt.M[0x2411] !== y) turns.push({ t: m.rt.t, D: m.fx.D.draw }); y = m.rt.M[0x2411]; };
+  const each = () => { if (m.rt.M[0x2411] !== y) turns.push({ t: m.rt.goal }); y = m.rt.M[0x2411]; };
   m.fast(0.1, ['U'], 0, each); m.fast(2, [], 0, each);
   if (turns.length !== 1 || (m.rt.M[0x2411] - y0 + 72) % 72 !== 36) fail('U tapped for 0.1 s turned the view ' + turns.length + ' times');
   else console.log('U tapped for 0.1 s turns about once');
   turns = [];
   m.fast(4, ['U'], 0, each);
-  const early = turns.filter((r, i) => i && r.t - turns[i - 1].t < 0.95 * r.D);
-  if (turns.length < 2 || early.length) fail('U held for 4 s turned the view ' + turns.length + ' times, ' + early.length + ' sooner than a pass of the C64 after the last');
-  else console.log('U held for 4 s turns about ' + turns.length + ' times, each a pass of the C64 after the last');
+  const off = turns.filter((r, i) => i && r.t - turns[i - 1].t !== m.fx.K);
+  if (turns.length < 4 || off.length) fail('U held for 4 s turned the view ' + turns.length + ' times, ' + off.length + ' other than a second after the last');
+  else console.log('U held for 4 s turns about ' + turns.length + ' times, each a second after the last');
 }
 
 // ---- the same controls, pass for pass, make the same game at any rate the page is drawn at

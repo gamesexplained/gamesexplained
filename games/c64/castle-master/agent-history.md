@@ -212,3 +212,21 @@ round lasts from 0.2 s facing away from the castle to 1.76 s facing it,
 so they averaged different parts of the turn. Timed over a whole turn,
 the C64 takes 17.33 s and the fast CPU 17.24 s; `test_fast.js` now times
 a whole turn, 1,200 units of walking and 30 pixels of the pointer.
+
+Matched to the C64's own round, the fast CPU turned slower facing the
+castle than facing away, as the C64 does, though nothing in the game asks
+for it: its main loop never waits, so on a faster processor it would take
+whole steps as fast as it could go round. A step now takes one pace in
+every view, 60 ticks of the timer (a second). Over ten minutes of random
+play in 15 areas, the C64's rounds that drew a view took 0.20 to 3.02 s,
+the median 0.92 s and the mean 1.06 s. With the steps on the rounds and
+the scripts' timer, the strength drain and the spirit meter on the clock,
+the player now covers the same ground between two of the timer's events
+whichever way they face. The scripts that a step sets off still run each
+round, 60 a second while the player moves: of the five global scripts and
+the eleven areas' condition scripts, those on the step's event only show
+or hide objects by flags and variables, and score, strength and messages
+wait on the scripts' timer. The pointer keeps the C64's pace, since a C64
+round that moves it draws no view. A whole turn takes 24.04 s and 1,200
+units of walking from the start 5.05 s, against 24 and 5.01 of the C64's
+rounds.

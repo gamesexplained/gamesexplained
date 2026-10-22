@@ -1,32 +1,37 @@
 // The Play page's fast CPU: Castle Master as a C64 with a much faster processor would run it, a pass
-// of its main loop for each tick of its timer (60 a second), made to play at the C64's own pace.
+// of its main loop for each tick of its timer (60 a second), every step at one pace.
 //
 // The game moves the player a fixed step each pass of its main loop: each pass reads the controls,
 // takes a step, turns or looks a step, runs the scripts the step set off and draws the view, and a
-// pass takes the C64 from a fifth of a second to two seconds, by what the view holds. On a faster
-// processor the passes come faster and every step with them. What runs on the interrupt (the
-// clock, the sensors' drain on strength, the lightning's countdown, the scripts' timer, the music)
-// keeps its time, and so does every wait on it. So the page's machine runs the main loop's work a
-// thousand times faster and waits at the start of each pass for the timer's next tick (page/
-// runtime.js, runSteps), and this mod makes each pass do the share of a C64 pass that its time is.
-// Every pass is the same length, so the same controls make the same game at any rate the page is
-// drawn at, and the page draws the view between the last two passes (latest()).
+// pass takes the C64 from a fifth of a second to two seconds, by what the view holds. Nothing in
+// the loop waits, so on a faster processor the passes come as fast as it can run them, and every
+// step with them. What runs on the interrupt (the clock, the sensors' drain on strength, the
+// lightning's countdown, the scripts' timer, the music) keeps its time, and so does every wait on
+// it. So the page's machine runs the main loop's work a thousand times faster and waits at the
+// start of each pass for the timer's next tick (page/runtime.js, runSteps), and this mod makes each
+// pass do its share of a step, a step taking the same time, K, whatever the view. Every pass is the
+// same length, so the same controls make the same game at any rate the page is drawn at, and the
+// page draws the view between the last two passes (latest()).
 //
 // The rule, which depends on no address of this game:
-//   f = Δ / D, the share of a C64 pass a pass is given: Δ the clock from the pass's start to the
-//       clock it runs to (a tick on), D the time the C64 would take over a pass like it (one that
-//       works the view out and draws it, or one that moves the pointer), its work as the page's
-//       pacing counts it (rt.pass) over the part of the processor the interrupts leave the main
-//       program;
+//   K, the pace: the time a step takes, PACE ticks of the timer (a second, about the C64's time
+//       over a pass in play: from 0.2 to 3 seconds by the view, half of them under 0.92);
+//   f = Δ / K, the share of a step a pass is given: Δ the clock from the pass's start to the clock
+//       it runs to (a tick on);
 //   - a step the game takes each pass a control is held is taken f of, and what is left of a whole
-//     unit carried to the next (walking, turning, looking, the pointer's moves);
-//   - an action a control sets off is taken when the control is pressed, and again each D it is
+//     unit carried to the next (walking, turning, looking);
+//   - an action a control sets off is taken when the control is pressed, and again each K it is
 //     held, as the C64 takes it once a pass (a mode, a quarter turn, a turn about, a shot, a use);
-//   - what the game does each pass for as long as something lasts is done once each D (the script
+//   - what the game does each pass for as long as something lasts is done once each K (the script
 //     of an object the player pushes against);
-//   - what the game shows for a pass is shown for D (the lightning's streak).
-// So a control held for a second moves the player as far, and turns the view as far, as the C64
-// moves and turns it in that second, from wherever the player stands.
+//   - what the game shows for a pass is shown for K (the lightning's streak);
+//   - the pointer, which the C64 moves a pixel in a pass that draws no view, the same in every
+//     view, moves fc = Δ / D of a pixel a pass: D the C64's time over such a pass, its work as the
+//     page's pacing counts it (rt.pass) over the part of the processor the interrupts leave the
+//     main program.
+// So a control held for a second moves the player as far, and turns the view as far, wherever the
+// player stands and whatever is in view; times with K are counted on the clock each pass runs to,
+// a whole number of ticks.
 //
 // Castle Master's half. Its turns and looks are steps of 72 to a turn; a share of one is kept as
 // the fraction of the angle, and the view is drawn at it: the game's own BUILD_VIEW_PROJECTION_
@@ -40,7 +45,8 @@
 //                                  the passes in either mode, so that D is known when it goes on
 //   CMFast.set(fx, on)             the switch: rt.setFast too
 //   fx.yaw, fx.pitch               the view's angles, in steps and fractions (pitch -18 to 18)
-//   fx.D                           { draw, aim }: the C64's cycles over a pass of each kind
+//   fx.K                           the pace: the cycles a step takes
+//   fx.D                           { aim }: the C64's cycles over a pass that moves the pointer
 //   CMFast.paint(px, fx, F)        the view as the machine holds it now, in the C64's pixels, into
 //                                  px (frame F's palette indices), F's sprites left on top
 //   CMFast.latest(fx, st)          the modern view (page/modern.js, st its watch) at the page's
@@ -49,6 +55,8 @@
 (function (root) {
 'use strict';
 const VX = 72, VY = 67;
+// the pace, in ticks of the timer a step takes
+const PACE = 60;
 // the actions (the map at $1382) a press sets off once: the speeds, facing forward, turning about,
 // the cross-hair, a shot, a use, the pointer, the information screen
 const ONCE = new Set([9, 10, 11, 12, 13, 0x15, 0x16, 0x1B, 0x1E, 0x29]);
@@ -68,10 +76,11 @@ function attach(rt) {
   const setw = (a, v) => { M[a] = v & 255; M[a + 1] = (v >> 8) & 255; };
   const fx = {
     rt, on: false, yaw: M[0x2411], pitch: signed(M[0x2410]),
-    D: { draw: 1.2 * 985248, aim: 13000 }, f: 0, fc: 0, n: 0, prev: null,
+    D: { aim: 13000 }, f: 0, fc: 0, n: 0, prev: null,
     acc: { x: 0, z: 0 }, nudge: {}, held: new Map(), armed: false, touched: null, name: false, streak: null,
   };
   P.__cmFast = fx;
+  Object.defineProperty(fx, 'K', { get: () => PACE * rt.step });
   // the fine angles follow the game's own when it sets them (an entrance, a fall, a load)
   function sync() {
     if (M[0x2411] !== wrap72(Math.round(fx.yaw))) fx.yaw = M[0x2411];
@@ -86,28 +95,27 @@ function attach(rt) {
     return t ? v0 + (sb(M[0x123C + 2 * wrap72(i + 1) + k]) - v0) * t : v0;
   }
 
-  // ---- the passes, counted in either mode: a pass's start closes the last
+  // ---- the passes, counted in either mode (a pass's start closes the last), for the pointer's D
   const update = P.UPDATE_FRAME_INPUT_EVENTS;
   P.UPDATE_FRAME_INPUT_EVENTS = function* (r) {
     const now = { work: rt.pass.work, irq: rt.spent.irq, t: rt.t, draw: false, aim: 0 };
     const p = fx.prev;
-    // a pass that works the view out, or one that moves the pointer once and draws nothing
-    const kind = p && (p.draw ? 'draw' : p.aim === 1 && !p.drew ? 'aim' : null);
-    if (kind && now.t > p.t) {
+    // a pass that moves the pointer once and draws nothing
+    if (p && !p.draw && p.aim === 1 && !p.drew && now.t > p.t) {
       const share = Math.min(0.5, (now.irq - p.irq) / (now.t - p.t));
       const d = (now.work - p.work) / (1 - share);
-      if (d > 0) fx.D[kind] = d;
+      if (d > 0) fx.D.aim = d;
     }
     fx.prev = now; fx.n++;
     if (!fx.on) return yield* update.call(this, r);
     sync();
     const delta = Math.max(0, rt.goal - rt.t);
-    fx.f = Math.min(1, delta / fx.D.draw);
+    fx.f = Math.min(1, delta / fx.K);
     fx.fc = Math.min(32, delta / fx.D.aim);
-    // the lightning's streak, shown for a pass: held for D with play going on under it (the pass
+    // the lightning's streak, shown for a pass: held for K with play going on under it (the pass
     // that draws it reads no controls, as on the C64), then the flash
     const st = fx.streak;
-    if (st && (rt.t >= st.until || !M[0x2464])) fx.streak = null;
+    if (st && (rt.goal >= st.until || !M[0x2464])) fx.streak = null;
     // (the routine reads the countdown as its first thing: that read finds it neither run out
     // nor showing)
     const ib = P.irqByte, hold = fx.streak && M[0x2459] === 0;
@@ -118,7 +126,7 @@ function attach(rt) {
     finally { fx.armed = false; if (P.irqByte === once) P.irqByte = ib; }
   };
 
-  // ---- the controls: an action a press sets off, once a press and again each D it is held
+  // ---- the controls: an action a press sets off, once a press and again each K it is held
   const read = P.READ_CONTROL_INPUT;
   P.READ_CONTROL_INPUT = function (r) {
     const v = read.call(this, r);
@@ -131,9 +139,9 @@ function attach(rt) {
       const a = action(c);
       if (go.has(a) || !(ONCE.has(a) || (M[0x1380] && ONCE_CTRL.has(a)))) continue;
       const h = fx.held.get(a);
-      const ok = !h || h.n !== fx.n - 1 || rt.t - h.at >= fx.D.draw;
+      const ok = !h || h.n !== fx.n - 1 || rt.goal - h.at >= fx.K;
       go.set(a, ok);
-      if (ok) fx.held.set(a, { n: fx.n, at: rt.t }); else h.n = fx.n;
+      if (ok) fx.held.set(a, { n: fx.n, at: rt.goal }); else h.n = fx.n;
     }
     const keep = codes.filter(c => go.get(action(c)) !== false);
     if (keep.length === codes.length) return v;
@@ -227,17 +235,20 @@ function attach(rt) {
   };
 
   // ---- the script of an object the player keeps meeting (pushing against it, standing on it):
-  // once each D, as the C64 runs it once a pass
+  // once each K, as the C64 runs it once a pass. The global scripts and the area's run each pass a
+  // step sets them off, as on the C64: what they do on a step is show or hide objects by the flags,
+  // the same however often it is done (their score, strength and messages wait on the scripts'
+  // timer, which keeps its time)
   const conditions = P.DISPATCH_FRAME_CONDITIONS;
   P.DISPATCH_FRAME_CONDITIONS = function* (r) {
     const obj = M[0x1082];
     if (fx.on && obj && (M[0x1084] | M[0x1085]) === 1) {
       const t = fx.touched;
-      if (t && t.obj === obj && rt.t - t.at < fx.D.draw) {
+      if (t && t.obj === obj && rt.goal - t.at < fx.K) {
         M[0x1082] = 0;
         try { return yield* conditions.call(this, r); } finally { M[0x1082] = obj; }
       }
-      fx.touched = { obj, at: rt.t };
+      fx.touched = { obj, at: rt.goal };
     }
     return yield* conditions.call(this, r);
   };
@@ -313,12 +324,12 @@ function attach(rt) {
     return v;
   };
 
-  // ---- the lightning's streak, held for D: drawn again at its column by each view in that time
+  // ---- the lightning's streak, held for K: drawn again at its column by each view in that time
   const queue = P.DRAW_SORTED_VISIBLE_QUEUE;
   P.DRAW_SORTED_VISIBLE_QUEUE = function (r) {
     if (fx.prev) fx.prev.drew = true;
     if (!fx.on) return queue.call(this, r);
-    if (M[0x2459] === 1 && !fx.streak) fx.streak = { until: rt.t + fx.D.draw, clock: M[0x1C64] };
+    if (M[0x2459] === 1 && !fx.streak) fx.streak = { until: rt.goal + fx.K, clock: M[0x1C64] };
     const st = fx.streak;
     if (!st || M[0x2459] !== 0) return queue.call(this, r);
     const clock = M[0x1C64];
@@ -381,5 +392,5 @@ function latest(fx, st) {
   return { scene: MM.scene(st.P, pic, MM.between(e.pic.pose, f.pic.pose, h)), shown: f, phi: f.n - 1 + h, still: false };
 }
 
-root.CMFast = { attach, set, paint, latest, ONCE, ONCE_CTRL };
+root.CMFast = { attach, set, paint, latest, ONCE, ONCE_CTRL, PACE };
 })(typeof window !== 'undefined' ? window : globalThis);
