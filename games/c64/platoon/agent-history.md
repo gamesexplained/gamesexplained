@@ -68,8 +68,10 @@ an old map scroller, and at `$28E2` a complete game of Space Invaders
 with its own raster interrupts, which ran when the program counter was
 set to it in the emulator (`reference/hidden-invaders.png`). Each is
 typed as code and described. Two labels on ROM addresses, `$FD30` and
-`$FFBA`, had been taken for RAM; they are now the KERNAL's, and the RAM
-under them is excluded with the reason.
+`$FFBA`, had been taken for RAM. `$FFBA` is now the KERNAL's `SETLFS`,
+`$FD30` (the KERNAL's table of vectors, which `kit/c64/kernal.py` does
+not name) has no label and is explained at the call that reads it, and
+the RAM under both is the end picture and the bytes after it.
 
 In load 3, `$B200`-`$B301` had been excluded as an older end screen
 read only by the dead routine at `$FFA1`. The pointer tables at `$C61F`,
