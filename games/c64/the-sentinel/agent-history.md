@@ -102,3 +102,15 @@ first run had noted those bytes as "what looks like a multicolour
 picture". They, the viewer at `$0800` and the stub's page at `$8000` are
 now excluded in `game.json` as not the game's, and the play screen's
 matrix at `$7C00` is excluded by name.
+
+## The loading screen, whole (22 October 2026)
+
+Drawn from the backup, the loading picture had lost its top nine rows,
+a strip through the middle and the screen matrix that holds two of its
+four colours. The contributor asked for it on the page, and chose to
+fetch the 1986 Firebird tape for the whole picture. The Ultimate Tape
+Archive's copy loads in VICE and shows it while it loads; every byte
+of it that survives in the backup is equal to the tape's. A one-file
+crack in the contributor's own files (`SENTINEL.P00`, a Cyberpunx
+release with its own docs) was tried first and does not hold the
+picture.

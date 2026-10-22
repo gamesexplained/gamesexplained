@@ -595,9 +595,17 @@ printable range.
   `$5C73`-`$7BB2`. The play view's character sets and the sprites later
   take parts of it, but `$6800`-`$6FFF` and `$7100`-`$7BFF` still hold
   the rest: drawn as a multicolour bitmap from `$5C73`, they show
-  Firebird's loading screen, a huge eye above the Firebird logo. Nothing
-  in the game reads, writes or runs those bytes from the hand-over to
-  play.
+  Firebird's loading screen, a huge eye under the word SENTINEL, the
+  Firebird logo and the signature "Bob". Nothing in the game reads,
+  writes or runs those bytes from the hand-over to play. The 1986
+  Firebird tape (`orientation.md`, "The loading screen, from the Firebird tape") shows the same
+  picture while it loads, as a multicolour bitmap at `$4000` with its
+  screen at `$6000`: all 4,787 bitmap bytes that survive here are equal
+  to the tape's, and so are the colour bytes after the bitmap (`$7BB3`
+  = `$00`, the background; `$7BB6` = `$0F`, light grey for every cell's
+  colour RAM; `$7BB7` = `$00`, the border) and the screen's last 91
+  cells (`$8000`-`$805A`). The tape's loader shows a purple border.
+  *Live*, 22 October 2026 (`reference/loading-screen.png`).
 
 ## Open questions
 

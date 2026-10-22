@@ -131,6 +131,25 @@ on an illegal opcode at `$0008` before any of the game reaches memory: the
 loader's first chunk is the damaged one. So this image cannot supply the
 missing `$B000`-`$B5FF` either, and the analysis stays on the backup.
 
+### The loading screen, from the Firebird tape
+
+The loading picture survives only in part in the backup (`facts.md`,
+"The loading picture"). The 1986 Firebird tape shows it whole:
+`Sentinel, The.tap` from the folder `Sentinel, The (1986 Firebird)
+[2232]` of the Ultimate Tape Archive V4.0 on archive.org (454,434
+bytes, SHA-256
+`b1b8ee375b605adeee846fa7a82c8aff3548426dfc32c1e52fe4961f039ded5a`;
+`work/sentinel-firebird.tap`). Autostarted in warp mode, it prints a
+LOADING countdown on a text screen and then shows the picture, with
+`$D011` = `$3B`, `$D018` = `$81`
+and `$DD00` = `$C6`: bitmap `$4000`, screen `$6000`, colour RAM all
+`$0F`, background `$00`. `reference/loading-screen.png` is VICE's
+picture of it, and `reference/loading-screen-in-memory.png` keeps only
+the bitmap bytes the backup still holds. The load stalled with the
+picture on screen, the loader waiting at `$C86B` for bytes from the
+tape; it was not followed further, since the analysis stays on the
+backup.
+
 ## Steady state
 
 Measured on `work/play-l0000.vsf`, running:
