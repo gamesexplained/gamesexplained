@@ -258,3 +258,12 @@ share of a stride each tick with the remainder carried, every press is
 taken when the key goes down, and the page states the difference at
 walls and edges. The step-equivalence check left `test_fast.js` with
 them; the walk is timed over 1,200 units at each pace again.
+
+Aaron found that U turned him about twice and left him facing the same
+way. A held key set its action off again each pace, and at 5× a pace is
+a fifth of a second: in Chromium a press of 250 ms turned about twice and
+one of 400 ms three times (at 1× and 2×, once). A C64 with nothing in
+view goes round as fast and would do the same. The actions that switch
+something (the speeds, facing forward, turning about, the sights, act,
+the pointer and the information screen) now act once a press; a shot and
+Ctrl's quarter turns and looks still repeat each pace while held.

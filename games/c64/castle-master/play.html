@@ -175,7 +175,7 @@ section table{margin:6px 0 18px}
   <tr><td>Walking, crawling, running</td><td>A whole stride</td><td>The round's share of a stride (a sixtieth at 1×), the part of a unit left over carried to the next</td></tr>
   <tr><td>Turning, looking up and down</td><td>3 of the 72 steps of a turn</td><td>The round's share of 3 steps (a sixtieth at 1×), the view drawn at the angle in between</td></tr>
   <tr><td>Moving the pointer</td><td>A pixel, in a round that draws no view and so takes the same time anywhere</td><td>The round's share of that round, so that the pointer moves as fast as on a C64</td></tr>
-  <tr><td>A key that sets something off: a speed, facing forward, turning about, a quarter turn or a full look with Ctrl, a shot, act, the pointer, the sight, or the information screen</td><td>Again each round the key is held; a press shorter than what is left of the round is missed</td><td>When the key goes down, then again each pace it is held</td></tr>
+  <tr><td>A key that sets something off: a speed, facing forward, turning about, a quarter turn or a full look with Ctrl, a shot, act, the pointer, the sight, or the information screen</td><td>Again each round the key is held; a press shorter than what is left of the round is missed</td><td>When the key goes down. A shot, and a quarter turn or a full look with Ctrl, again each pace the key is held</td></tr>
   <tr><td>Pushing against an object that has a script, such as a door</td><td>The script runs each round</td><td>The script runs once each pace</td></tr>
   <tr><td>A message in the panel</td><td>The round waits 50 ticks for it, then puts the area's name back</td><td>Play goes on, and the area's name comes back when the 50 ticks are up</td></tr>
   <tr><td>The lightning's streak</td><td>Stays for the round that draws it</td><td>Stays for a pace</td></tr>
@@ -6320,8 +6320,9 @@ root.CMModern = { attach, onShow, scene, draw, paint, paintBuffer, capture, spri
 //     wall or leaves an edge at once, cutting it short and dropping the rest, so taken in shares it
 //     can end elsewhere than the whole step would: each cut step creeps a little along the wall,
 //     and 60 of them a second slide along it where a C64 stops;
-//   - an action a control sets off is taken when the control is pressed, and again each K it is
-//     held, as the C64 takes it once a pass (a mode, a quarter turn, a turn about, a shot, a use);
+//   - an action a control sets off is taken when the control is pressed (a mode, a turn about, a
+//     use), and one a player holds the control down for, again each K it is held, as the C64 takes
+//     it once a pass (a shot, a quarter turn);
 //   - what the game does each pass for as long as something lasts is done once each K (the script
 //     of an object the player pushes against);
 //   - what the game shows for a pass is shown for K (the lightning's streak);
@@ -6363,6 +6364,9 @@ const PACES = [60, 30, 12];
 const ONCE = new Set([9, 10, 11, 12, 13, 0x15, 0x16, 0x1B, 0x1E, 0x29]);
 // and those it sets off once with the control key ($1380): a quarter turn, the look to its end
 const ONCE_CTRL = new Set([5, 6, 7, 8]);
+// of them, those a held control sets off again each pace, as a C64 does each pass: a shot, the
+// control key's turns and looks. The rest switch something, and a press takes them once
+const REPEAT = new Set([0x16, 5, 6, 7, 8]);
 
 const wrap72 = v => ((v % 72) + 72) % 72;
 const pitchByte = p => wrap72(Math.round(p));
@@ -6427,7 +6431,8 @@ function attach(rt) {
     finally { fx.armed = false; if (P.irqByte === once) P.irqByte = ib; }
   };
 
-  // ---- the controls: an action a press sets off, once a press and again each K it is held
+  // ---- the controls: an action a press sets off, once a press, and again each K it is held when
+  // it repeats
   const read = P.READ_CONTROL_INPUT;
   P.READ_CONTROL_INPUT = function (r) {
     const v = read.call(this, r);
@@ -6440,7 +6445,7 @@ function attach(rt) {
       const a = action(c);
       if (go.has(a) || !(ONCE.has(a) || (M[0x1380] && ONCE_CTRL.has(a)))) continue;
       const h = fx.held.get(a);
-      const ok = !h || h.n !== fx.n - 1 || rt.goal - h.at >= fx.K;
+      const ok = !h || h.n !== fx.n - 1 || (REPEAT.has(a) && rt.goal - h.at >= fx.K);
       go.set(a, ok);
       if (ok) fx.held.set(a, { n: fx.n, at: rt.goal }); else h.n = fx.n;
     }
@@ -6697,7 +6702,7 @@ function latest(fx, st) {
   return { scene: MM.scene(st.P, pic, MM.between(e.pic.pose, f.pic.pose, h)), shown: f, phi: f.n - 1 + h, still: false };
 }
 
-root.CMFast = { attach, set, pace, paint, latest, ONCE, ONCE_CTRL, PACES };
+root.CMFast = { attach, set, pace, paint, latest, ONCE, ONCE_CTRL, REPEAT, PACES };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>

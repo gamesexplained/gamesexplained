@@ -8,7 +8,8 @@
 //   whole turn take the C64's rounds for them at the pace each, whatever is in view, within 1 % or
 //   the three ticks a press takes to show;
 //   moving the pointer 30 pixels takes the time it takes the C64, within 5 %;
-// - a press of U turns about once, and held, again each second;
+// - a press of U turns about once, and held for four seconds, still once; a quarter turn held with
+//   the control key turns again each second;
 // - the same controls, pass for pass, make the same game drawn at 60 frames a second, at 144, at
 //   uneven rates, and on a machine too slow to keep up, at the first pace and the last; at 144
 //   the view moves between passes;
@@ -133,7 +134,7 @@ function machine(watch) {
   same('moving the pointer 30 pixels', 'aim', 30, fast(8, 0.8, true), c64(8, 40, true), 0.05);
 }
 
-// ---- a press that sets an action off: once, and again each second it is held for
+// ---- a press that sets an action off: once, and again each second it is held for when it repeats
 {
   const m = machine(true);
   CMFast.set(m.fx, true);
@@ -145,10 +146,14 @@ function machine(watch) {
   if (turns.length !== 1 || (m.rt.M[0x2411] - y0 + 72) % 72 !== 36) fail('U tapped for 0.1 s turned the view ' + turns.length + ' times');
   else console.log('U tapped for 0.1 s turns about once');
   turns = [];
-  m.fast(4, ['U'], 0, each);
+  m.fast(4, ['U'], 0, each); m.fast(1, [], 0, each);
+  if (turns.length !== 1) fail('U held for 4 s turned the view ' + turns.length + ' times');
+  else console.log('U held for 4 s turns about once');
+  turns = [];
+  m.fast(4, ['CBM', 'X'], 0, each);
   const off = turns.filter((r, i) => i && r.t - turns[i - 1].t !== m.fx.K);
-  if (turns.length < 4 || off.length) fail('U held for 4 s turned the view ' + turns.length + ' times, ' + off.length + ' other than a second after the last');
-  else console.log('U held for 4 s turns about ' + turns.length + ' times, each a second after the last');
+  if (turns.length < 4 || off.length) fail('a quarter turn held for 4 s turned the view ' + turns.length + ' times, ' + off.length + ' other than a second after the last');
+  else console.log('a quarter turn held for 4 s turns ' + turns.length + ' times, each a second after the last');
 }
 
 // ---- the same controls, pass for pass, make the same game at any rate the page is drawn at

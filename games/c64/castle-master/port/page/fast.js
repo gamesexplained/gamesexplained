@@ -24,8 +24,9 @@
 //     wall or leaves an edge at once, cutting it short and dropping the rest, so taken in shares it
 //     can end elsewhere than the whole step would: each cut step creeps a little along the wall,
 //     and 60 of them a second slide along it where a C64 stops;
-//   - an action a control sets off is taken when the control is pressed, and again each K it is
-//     held, as the C64 takes it once a pass (a mode, a quarter turn, a turn about, a shot, a use);
+//   - an action a control sets off is taken when the control is pressed (a mode, a turn about, a
+//     use), and one a player holds the control down for, again each K it is held, as the C64 takes
+//     it once a pass (a shot, a quarter turn);
 //   - what the game does each pass for as long as something lasts is done once each K (the script
 //     of an object the player pushes against);
 //   - what the game shows for a pass is shown for K (the lightning's streak);
@@ -67,6 +68,9 @@ const PACES = [60, 30, 12];
 const ONCE = new Set([9, 10, 11, 12, 13, 0x15, 0x16, 0x1B, 0x1E, 0x29]);
 // and those it sets off once with the control key ($1380): a quarter turn, the look to its end
 const ONCE_CTRL = new Set([5, 6, 7, 8]);
+// of them, those a held control sets off again each pace, as a C64 does each pass: a shot, the
+// control key's turns and looks. The rest switch something, and a press takes them once
+const REPEAT = new Set([0x16, 5, 6, 7, 8]);
 
 const wrap72 = v => ((v % 72) + 72) % 72;
 const pitchByte = p => wrap72(Math.round(p));
@@ -131,7 +135,8 @@ function attach(rt) {
     finally { fx.armed = false; if (P.irqByte === once) P.irqByte = ib; }
   };
 
-  // ---- the controls: an action a press sets off, once a press and again each K it is held
+  // ---- the controls: an action a press sets off, once a press, and again each K it is held when
+  // it repeats
   const read = P.READ_CONTROL_INPUT;
   P.READ_CONTROL_INPUT = function (r) {
     const v = read.call(this, r);
@@ -144,7 +149,7 @@ function attach(rt) {
       const a = action(c);
       if (go.has(a) || !(ONCE.has(a) || (M[0x1380] && ONCE_CTRL.has(a)))) continue;
       const h = fx.held.get(a);
-      const ok = !h || h.n !== fx.n - 1 || rt.goal - h.at >= fx.K;
+      const ok = !h || h.n !== fx.n - 1 || (REPEAT.has(a) && rt.goal - h.at >= fx.K);
       go.set(a, ok);
       if (ok) fx.held.set(a, { n: fx.n, at: rt.goal }); else h.n = fx.n;
     }
@@ -401,5 +406,5 @@ function latest(fx, st) {
   return { scene: MM.scene(st.P, pic, MM.between(e.pic.pose, f.pic.pose, h)), shown: f, phi: f.n - 1 + h, still: false };
 }
 
-root.CMFast = { attach, set, pace, paint, latest, ONCE, ONCE_CTRL, PACES };
+root.CMFast = { attach, set, pace, paint, latest, ONCE, ONCE_CTRL, REPEAT, PACES };
 })(typeof window !== 'undefined' ? window : globalThis);
