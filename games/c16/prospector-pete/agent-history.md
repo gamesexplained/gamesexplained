@@ -57,3 +57,15 @@ start at `$3009`, where X and Y are set for a score of 0, and the
 message's pointer is the `$01` before it. A formula for the earth's
 tiling was wrong and was replaced by `start_level`'s own pattern,
 checked against a built level.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then left out 3 bytes (#481): `$2970`-`$2972`, the first three
+entries of the table beside. Its base label, `earth_beside_base`, is on
+the `RTS` at `$296F`, in a code block, so its span stopped there. A
+line comment at `$2970` now describes them. The route in
+`orientation.md`, run again from the same tape, gave a hand-over
+snapshot with the same SHA-256 as the first run's, so the listing's
+bytes are unchanged.
+
