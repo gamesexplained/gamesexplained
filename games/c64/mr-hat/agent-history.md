@@ -187,3 +187,22 @@ music counter, so botowrap's version was compared again against that.
 The agent also found that rooms 5, 6, 8, 9, 10 and 11 draw their ladders
 from the same row through the shared copy `$5713`, whose operand they
 patch, which the reference search cannot see. All were corrected.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 271 bytes (#463).
+Thirty of them, the zeros after the empty sound routines at `$1CC2` and
+`$1CE2`, were described only inside those routines' comments, whose
+spans end with their code blocks; each run now has a line comment of its
+own. The other 241 already had comments and only needed the rebuild.
+
+The contributor's image was not available to this session, so the
+hand-over was remade from GameBase64 v18's Bad Taste crack
+(`orientation.md`, `handover-bad.vsf`). It matched the listing in every
+byte of code and data except the crack's own title line and a few
+scattered bytes. A copy with the listing's bytes written back and the
+RAM under I/O and the KERNAL cleared, as in the frozen image, became
+`work/handover.vsf`, so the rebuilt listing keeps every byte it had and
+takes only the 271 new ones from the crack.
+
