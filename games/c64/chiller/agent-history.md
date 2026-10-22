@@ -126,3 +126,27 @@ states out of step at a raster wait, as before (3 of 693 runs, against 2
 of 675 on the old model). The passes `scripts/pace.js` counts
 in 400 frames, level by level, moved by at most 3.3 % on the game's
 machine and 1.1 % on the page.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 81 bytes (#469).
+`sprites_low_2` sat at `$0F01` and `charset_graveyard_2` at `$A010`, one
+byte and sixteen bytes past where the labels before them stop, so
+`$0F00` (the first byte of sprite `$3C`) and `$A000`-`$A00F` belonged to
+nothing; both labels now start where their data does. The 64 bytes
+under the comment at `$BBBB` are RAM the game never reads or writes,
+and they were not the power-on pattern the comment said in the copy
+used here (the loader had written to them), so they are excluded with
+the comment's reason instead.
+
+The contributor's program file was not available to this session. The
+C64 Preservation Project has no copy of it; archive.org's Antisoft crack
+(`Chiller_1985_Mastertronic_cr_Antisoft.d64`, a 50,689-byte `CHILLER`)
+was booted to play, and every byte of code in the listing matched; the
+3,904 bytes that differed were runtime state and the level store at
+`$E000`, which hold another moment of play. Those were written back
+from the earlier listing into `work/play-idle.vsf`, so the rebuilt
+listing keeps every byte it had and takes only the 17 new ones from
+that copy; the unpatched snapshot is `work/play-antisoft-archive.vsf`.
+
