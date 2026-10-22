@@ -159,3 +159,24 @@ fixed before it passed 56 of 56. That time is off the clock.
 The one change to the kit that would have saved the most minutes: a
 Linux path for the emulator from the start, which `tools.py build-vice`
 and the Linux section of `kit/c64/INSTALL.md` now are.
+
+## The Play tab's whole-game port (22 October 2026)
+
+What was changed in the kit:
+
+- `kit/c64/lockstep.js` replays a handler's reads of the sprite
+  collisions, `$D01E` and `$D01F`, as it replays the interrupt flags: the
+  port's handler gets the values the game's read. The play interrupt
+  copies `$D01F` into `$038D` each frame, and the port's own model of the
+  collisions, run at the moment of the replay rather than where the
+  game's handler ran, gave a different value 288 passes into the
+  demonstration. `kit/c64/test_lockstep.js` test 18 holds it.
+- The lockstep's header says that a register an interrupt writes and
+  the main program then writes in the same stretch needs a checkpoint
+  before the main program's write, since the replay lands at the port's
+  next yield. The title's SEI at `$5C19`, followed by the play screen's
+  modes, met it.
+
+## Maintainer asks
+
+- **Take a held interrupt line again as soon as its handler returns, in the kit's C64 machine.** `kit/c64/machine.js` takes an interrupt at most once per `tick()`, and ticks at a line's start or a CIA event, so a handler that returns while its source still holds the line (a CIA's timer left unread in `$DC0D`) lets the main program run on for up to a line before it is taken again. On a C64 the processor takes it again straight after the RTI. Master of Magic's title handler returns on CIA 1's timer without reading `$DC0D`, so its main program waits until the scroller's half of the handler reads it; the game's `test_play.js` overrides `tick()` with a loop to get that. The fix is the same loop in `Machine.tick`, with every game's `test_play.js` run again, since the machine's timing changes for any game whose handler leaves a source unread.

@@ -135,3 +135,52 @@ copy of the game: a stop on the second decruncher's first instruction
 `$6613`-`$FFFF` (from `$3F51`), with these bytes already as they are in
 play; the unpacked game stops at `$FF3F`, and nothing in it reads them.
 
+
+## The whole game on the Play tab (22 October 2026)
+
+The first Play tab ported play only, from a new game's first menu, and
+paced its wall tests by a count of cycles: no title, no story, no
+instructions, no recorder, no footsteps and no interrupt. For Platinum
+the port was written again as the whole program, from the entry at
+`$07F9`, in `reference/mom-port.js`, with the three interrupt handlers
+(`$5D08` on the title, `$2653` in play, the KERNAL's `$EA31` between)
+and the music driver (`reference/mom-music.js`, moved out of
+`index.html`) running on the game's own memory.
+
+`test_play.js` runs it in the kit's lockstep from the cold start. The
+kit's machine needed two things from the game's test: the ROM routines
+the game calls, as `MoMPort.ROM` (the screen clear, BASIC's RAM set-up,
+CHROUT and the KERNAL's interrupt work), and an interrupt line held for
+as long as its source holds it. The title's handler returns on CIA 1's
+timer without reading `$DC0D`, so on a C64 it is taken again at once
+until the scroller's half reads it; the kit's machine took it again only
+at its next line. With both, the machine played the game's demonstration
+as VICE's recording of it, at all 2,371 passes.
+
+What the lockstep found, in order: the title's picture copy wrote colour
+memory through the wrong path (pass 53); `$0385`-`$0386`, random_byte's
+save of its caller's X and Y, which the port has no registers for (left
+out, pass 234); the play handler's read of the collisions in `$D01F`,
+which the lockstep did not replay (pass 288: a kit change, below); and a
+fire on the title, where the title's interrupt wrote `$D016` between the
+port's checkpoint and the SEI at `$5C19`, so the replay landed after the
+port's own write (a checkpoint there). The scripted player then needed
+help to reach every verb: the backpack and the potions brought and
+picked up (PUT IN, TAKE OUT, LOOK IN, DRINK), the player put on doors
+(OPEN, CLOSE) and the shield cast (UNCAST). The game's own demonstration
+ends with the player's death and the game over's full wait, so part 1 of
+the test runs about 23,000 frames.
+
+The pacing was fitted on 2.1 million stretches between checkpoints with
+the video chip's cycles off, and charges the game's work to within
+0.12 %. The page's own clock then ran the demonstration 0.95 % fast: the
+band of the play interrupt that plays the music had one average cost,
+and the fit had averaged the theme's frames with the frames after a
+death or a win, where the tune has ended and the driver returns at once.
+Split by the driver's state (bit 7 of `$C41D`), the band's cost is the
+theme's, and the page ends the demonstration 30 of its 14,119 frames
+sooner than the machine (0.21 %). The test fails past 0.5 %.
+
+The page carried 27,849 bytes of the game's data regions for the first
+port. The new one loads the listing and carries only the 1,251 bytes
+that differ between the file as it loads and the listing's snapshot.

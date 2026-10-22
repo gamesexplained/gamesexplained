@@ -5,28 +5,21 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Silver.** 100 % coverage (57,826 of 57,826 tracked bytes), `facts.md`,
-every feature confirmed, traced, live or described as differing, the
-minisite built; all agent-authored, copy `agent-draft`.
+**Platinum**, 22 October 2026: the Play tab is the whole game, from the
+title and the story to the recorder behind CTRL and R, and
+`test_play.js` holds the published page in CI. Silver before it: 100 %
+coverage (57,826 of 57,826 tracked bytes), `facts.md`, every feature
+confirmed, traced, live or described as differing, the minisite built;
+all agent-authored, copy `agent-draft`.
 
-## For Gold
+## For Diamond
 
 A human's pass through the How it works page, section by section:
 rewrite the copy where it reads like an agent, cut what is dull, expand
-what is interesting, add what the agent missed. Set `tier` to
-`silver-claimed` and `steward` to your GitHub login when you start, so
-nobody starts it twice.
-
-## For Platinum
-
-Platinum needs the whole game on the Play tab. The tab ports play, but
-it leaves out the title screen, the story scroller, the instruction
-pages, the recorder behind CTRL and R, and the footstep noise, and it
-does not run the interrupt: the frame in which a wall bump is seen comes
-from a cycle count instead (the Play tab, "What is left out"). With
-those ported it also needs a `test_play.js` beside the page, holding it
-to the game's code in CI (`kit/skills/core/70-minisite/play.md`, "The
-page's test"), and no known bug in the port.
+what is interesting, add what the agent missed, with `copy` in
+`game.json` set to what it was. Set `steward` to your GitHub login when
+the pass begins; `tier` stays `platinum` until every section has had its
+pass, then becomes `diamond`.
 
 ## Open, and worth a few minutes each
 
@@ -37,10 +30,8 @@ page's test"), and no known bug in the port.
 
 ## Article ideas
 
-- The Play tab leaves out the title screen, the instruction pages, the
-  CTRL+R recorder and the footstep noise. In a player's own game its wall
-  collisions rest on an estimate of the cycle count (the demonstration
-  checks it; a player's route may not).
+- The Play tab's recorder: a page of recordings people have made with
+  CTRL and R, played back on the title.
 - The picture strip's slot allocation, with a stepper: what happens when
   more than twelve things are in sight, and the ninth dead creature that
   gets no DEAD label.
