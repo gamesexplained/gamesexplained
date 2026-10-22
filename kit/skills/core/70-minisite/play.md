@@ -137,7 +137,10 @@ demonstration.
   loop moves the clock to the start of the next line, not a line on from
   wherever it stands: with a read of the raster that takes cycles of its
   own, a whole line a turn steps over a line every few turns, and a loop
-  waiting for that line misses its frame.
+  waiting for that line misses its frame. Draw the frame due at the
+  target, not the newest one finished: a stretch that carries the clock
+  past the target (an interrupt that holds the main program back)
+  finishes a frame early, and showing it skips one.
 - **The page's own chips.** The page runs the port on chips of its own,
   not on `machine.js`, so it needs the chip behaviour the game leans on:
   the raster latch (the platform reference), the timers a speech or
@@ -160,7 +163,12 @@ demonstration.
   a character in memory and a pixel in the fine scroll, or fills a row
   just before the beam reaches it, shows the text a character out for a
   frame (in two games, two scrolling lines and a car steered across a
-  road).
+  road). Hold every line that scrolls with a test that draws the page's
+  frames in node, as the page does, and allows each line only the moves
+  the game makes from one drawing to the next
+  (`games/c64/storm/test_screen.js`): the lockstep compares memory and
+  never the picture, so it passes a page that draws a change a frame
+  late.
 
 ## Native resolution and smooth motion
 
