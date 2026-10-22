@@ -66,17 +66,20 @@ const topology = (M, at) => {
   return faces;
 };
 const TOPO = { cuboid: 0, pyr5: 0x25, pyr6a: 0x40, pyr6b: 0x5D, pyr8: 0x7A };
+// the view's angles, 72 steps to a turn: the game's, or with the fast CPU on, the fractions of a
+// step it turns by (page/fast.js, P.angles)
+const angles = (M, P) => (P && P.angles && P.angles()) || { yaw: M[0x2411], pitch: M[0x2410] };
 // what the scene is built from, read as the game's sort finishes: the place, the objects, the
 // objects the game queued and the tables; a draw with no rebuild before it (the game draws the
 // view again when only the sky or the sight changed) draws what the last rebuild queued
-function world(M) {
+function world(M, P) {
   const lists = [];
   if (M[0x1060]) lists.push(records(M, M[0x1060], w16(M, 0x1061)));
   if (M[0x242A]) lists.push(records(M, M[0x242A], w16(M, 0x242B)));
   const topo = {};
   for (const [k, at] of Object.entries(TOPO)) topo[k] = topology(M, at);
   // the place as the game's 16-bit sums take it, a step past the world's edge below 0
-  const pose = { x: s16(w16(M, 0x2407)), y: s16(w16(M, 0x2409)), z: s16(w16(M, 0x240B)), yaw: M[0x2411], pitch: M[0x2410] };
+  const pose = Object.assign({ x: s16(w16(M, 0x2407)), y: s16(w16(M, 0x2409)), z: s16(w16(M, 0x240B)) }, angles(M, P));
   const objects = [].concat(...lists);
   return {
     area: M[0x2429],
@@ -92,8 +95,8 @@ function world(M) {
 // reads as it starts: the sky, the floor and the scenery from the angles as they are then, the
 // patterns, the sight and the lightning
 function capture(M, P, built) {
-  return Object.assign({}, built || world(M), {
-    bg: { yaw: M[0x2411], pitch: M[0x2410] },
+  return Object.assign({}, built || world(M, P), {
+    bg: angles(M, P),
     sky: M[0x2464],                                // sky's pattern high, floor's low; 0: no sky
     patterns: Array.from(M.subarray(0x9D06, 0x9D06 + 64)),
     strip: M[0x2429] === 1 ? Array.from(M.subarray(0x21FA, 0x21FA + 18 * 16)) : null,
@@ -517,7 +520,7 @@ function attach(rt) {
   const st = { rt, P, flips: [], pending: null, start: null, built: null, n: 0, clock: { V: null, phi: 0 } };
   P.__cmModern = st;
   wrap(P, 'COMPUTE_COARSE_VIEW_BOUNDS', () => { st.start = rt.t; });
-  wrap(P, 'PAINTER_SORT_VISIBLE_ENTRIES', null, () => { st.built = world(M); });
+  wrap(P, 'PAINTER_SORT_VISIBLE_ENTRIES', null, () => { st.built = world(M, P); });
   wrap(P, 'DRAW_SORTED_VISIBLE_QUEUE', () => {
     const pic = capture(M, P, st.built);
     pic.t0 = st.start !== null ? st.start : rt.t;
@@ -811,6 +814,6 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, between, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, spritePixels, between, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -143,3 +143,30 @@ up to a third of a step: the next picture is known only once the page's
 machine runs its pass, a frame or two after the last one's blit. It now glides from that moment
 to the first frame that shows the next picture, eased over a frame, and
 is on average 1.4 % of a step behind as each picture comes on show.
+
+## 22 October 2026: the fast CPU
+
+A third switch on the Play tab runs the main loop once for every frame of
+the screen, each round doing the share of a C64 round that its time is
+(`port/page/fast.js`, `test_fast.js`). The page's machine runs the main
+loop's stretches at a thousandth of their cost and holds each round at its
+start for the next frame; it keeps counting the cycles each round would
+cost the C64, in either mode, and the mod divides a frame's time by that
+count to scale the round's steps.
+
+The first walk with the switch on covered about 6 % less ground than the C64's.
+The hold at a round's start ended past the frame by the interrupts that
+fell during it, so each round's share came out short; the hold now ends at
+the frame. A round that only redraws the view (the lightning) cost a fifth
+of one that works the view out, and the next round's share came out five
+times too big; only rounds that work the view out set the C64's round now.
+The pointer moved at least half as fast again as the C64's: a round that moves it costs
+the C64 12,083 cycles, but the mod measured it from rounds that moved it
+several times. It is now measured only from rounds that move it once.
+
+At angles between the game's 72, the game's own pictures put walls near
+the player a few pixels off at each change in the rounding of its 64ths:
+over a turn, 4 % of the view's pixels differed from the page's painter at
+the same angle, against 1.7 % at the game's own angles. The page paints the
+view at the exact angle, as smooth motion does, and the game's own
+picture stays for what the game uses it for.

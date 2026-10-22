@@ -90,6 +90,7 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="smooth" aria-pressed="false" title="Move the 3D view at the screen's own frame rate, from each of the game's pictures to the next">Smooth motion</button>
+      <button type="button" data-act="fast" aria-pressed="false" title="Run the game as a C64 with a much faster processor would, a new view for every frame of the screen, at the C64's own pace of play">Fast CPU</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
@@ -111,7 +112,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Smooth motion</b> moves the 3D view at the screen's own frame rate, from each of the game's pictures to the next (section 02).</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Smooth motion</b> moves the 3D view at the screen's own frame rate, from each of the game's pictures to the next (section 02). <b>Fast CPU</b> runs the game as a C64 with a much faster processor would, a new view for every frame of the screen, at the C64's pace of play (section 03).</p>
   </div>
 </section>
 <section id="port">
@@ -132,7 +133,7 @@ section table{margin:6px 0 18px}
 <section id="modern">
   <p class="fig">02 · The 3D view</p>
   <h2 class="t">Native resolution and smooth motion</h2>
-  <p class="lede">The two switches beside the screen change how the page draws the 3D view, the window in the middle of the castle's frame, and nothing else. The game runs underneath as it does without them: two copies of it, one with the view watching it, keep every byte of memory the same at every frame.</p>
+  <p class="lede">Native resolution and Smooth motion change how the page draws the 3D view, the window in the middle of the castle's frame, and nothing else. The game runs underneath as it does without them: two copies of it, one with the view watching it, keep every byte of memory the same at every frame.</p>
 <h3>Native resolution</h3>
 <p>The game draws the view into a buffer of 120 by 120 pixels, each twice as wide as it is tall on the screen, and copies the buffer into the bitmap when the picture is done. Many of its colours are patterns: two colours in alternating pixels, which the screen blurs into a shade between them.</p>
 <p>With <b>Native resolution</b> on, the page works each picture out again from what the game keeps for it: where the player stands and which way they look, and the records of the area's objects. It applies the game's own rules to them: the objects the game queued for the picture, each one's corners from its record, each face's colour from the side of it the player is on or from the way it winds, the faces that turn away left out by the game's own test on the corners as the game rounds them, and the order from farthest to nearest by the game's own bubble sort on the same bounds. Then it draws the same faces as sharp shapes at the screen's own resolution, each pattern as the shade the eye mixes from it, with the sky, the floor and the Wilderness's mountains where the game puts them, and the sight in the middle in the colours the game's XOR gives it.</p>
@@ -154,8 +155,29 @@ section table{margin:6px 0 18px}
 <p>With <b>Smooth motion</b> on, the page draws the view at the screen's own frame rate, 60, 120 or 144 times a second. The page runs the game a pass at a time, ahead of the frame on show, so the next picture is known before the C64 would show it. Each frame of the screen draws the view part of the way from the picture on show to the next: the player's place slid, the turn and the look turned the shorter way round, and an object that moved between them slid with them. The view gets to each picture at the frame the C64 first shows it: at the 1,253 pictures that came on show over the walks, it was on average 1.4 % of a step behind.</p>
 <p>What the game changes at once stays sudden: another area, or a jump of more than 1,024 of the game's units. The viewport's opening and the menus are the game's own frames, and when the view comes to rest it is the game's own picture. Without Native resolution the page paints each view between two pictures in the C64's pixels with its own painter, which follows the game's: each pattern row by row, the sky and the floor, the mountains, the lightning and the sight. At the game's own pictures it matches the game's drawing in 99.16 % of the view's pixels; the rest are at the edges of faces, a pixel either way.</p>
 </section>
+<section id="fast">
+  <p class="fig">03 · Fast CPU</p>
+  <h2 class="t">A new view for every frame of the screen</h2>
+  <p class="lede">The game moves the player a fixed step each time its main loop goes round, and on a C64 a round takes from a fifth of a second to two seconds, most of it spent drawing the view. So in the Wilderness the player walks in strides of 240 of the game's units, and turns 15 degrees at a time. With <b>Fast CPU</b> on, the page runs the main loop as a C64 with a much faster processor would, once for every frame the screen shows, and each round moves the player by the share of a step that its time is of a C64 round.</p>
+<h3>The interrupt keeps the C64's time</h3>
+<p>Only the main loop's own work goes faster. Everything the game times by its interrupt runs as before: the music, the drain on strength while a sensor watches, the countdown to the next lightning, and the scripts' timer every ten seconds. So does every wait on the interrupt: a door's animation, the viewport opening, the pause after a shot. A minute of play is a minute on either machine.</p>
+<h3>Each round does its share of a step</h3>
+<table>
+  <tr><th>Each round of the main loop</th><th>On a C64</th><th>With Fast CPU</th></tr>
+  <tr><td>Walking, crawling, running</td><td>A whole stride</td><td>The round's share of a stride, the remainder of a unit carried to the next</td></tr>
+  <tr><td>Turning, looking up and down</td><td>3 of the 72 steps of a turn</td><td>The round's share of 3 steps, the view drawn at the angle in between</td></tr>
+  <tr><td>Moving the pointer</td><td>A pixel</td><td>The round's share of a pixel</td></tr>
+  <tr><td>A key that sets something off: a speed, facing forward, turning about, a quarter turn or a full look with Ctrl, a shot, act, the pointer, the sight, or the information screen</td><td>Again each round the key is held</td><td>When the key goes down, then again each C64 round it is held</td></tr>
+  <tr><td>Pushing against an object that has a script, such as a door</td><td>The script runs each round</td><td>The script runs once each C64 round</td></tr>
+  <tr><td>A message in the panel</td><td>The round waits 50 ticks for it, then puts the area's name back</td><td>Play goes on, and the area's name comes back when the 50 ticks are up</td></tr>
+  <tr><td>The lightning's streak</td><td>Stays for the round that draws it</td><td>Stays for a C64 round</td></tr>
+</table>
+<p>A C64 round is the time the C64 would take over the view in front of the player now. The page counts what each round costs as the game runs, at the cycles of the C64's own routines (section 01), whether Fast CPU is on or off. Facing the castle from where the game starts, a round that draws the view takes 1.8 seconds; looking up into the sky, two-thirds of a second. So the player walks from the start at 132 of the game's units a second on either machine, and turns faster where the view is simpler, as on a C64.</p>
+<h3>The view between two of the game's angles</h3>
+<p>The game keeps the sines and cosines of its 72 angles in 64ths. At those angles each picture is the game's own. Between them the rounding of the 64ths jumps, and a wall close to the player moves a few pixels at once. So with Fast CPU on, the game works out each view at the angle between, for what it uses the view for (which objects are in sight, what a shot hits), and the page paints the picture from the same objects at that angle, as Smooth motion paints its views (section 02): in the C64's pixels, or with Native resolution at the screen's own. The page draws a view for every frame of the screen: 60 a second on most screens, and more on faster ones.</p>
+</section>
 <section id="differences">
-  <p class="fig">03 · Differences</p>
+  <p class="fig">04 · Differences</p>
   <h2 class="t">What differs from a C64</h2>
   <p class="lede">The game plays as it does on a C64, at the C64's pace. These are the places where the page cannot be the machine, and what it does instead.</p>
 <table>
@@ -165,6 +187,7 @@ section table{margin:6px 0 18px}
   <tr><td>Each instruction takes its cycles, and a view takes as long as its polygons do.</td><td>The port executes no instructions. Each routine and each row, byte and edge step it draws costs what it cost the game, fitted on the game's own timings, so a view takes about as long as on the C64 (01, The pace) and appears when its drawing is done.</td></tr>
   <tr><td>The SID plays the music and the effects.</td><td>The game's own music driver runs on the site's 6502 in the port, as the How it works page's tune player runs it, and the site's model of the SID plays what it writes, each frame of it as the frame is shown.</td></tr>
   <tr><td>The game draws the 3D view in its patterns, 120 pixels by 120, and changes it when a picture is done, about once a second.</td><td>With Native resolution on, the page draws the same faces from the game's own positions and rules as sharp shapes and solid shades. With Smooth motion on, it draws the view part of the way from one picture to the next at the screen's own frame rate. Neither ever appears on a C64 (02).</td></tr>
+  <tr><td>The main loop goes round when the C64 has drawn the view, and each round moves the player a whole step.</td><td>With Fast CPU on, the main loop goes round once for every frame of the screen, and each round moves the player by its share of a step, so that the player moves as far each second as on a C64 (03). No C64 was ever this fast.</td></tr>
   <tr><td>The video chip draws the screen.</td><td>The site's model of the video chip draws each frame from the port's memory, with each change the port makes during the frame applied where the beam meets it.</td></tr>
 </table>
 </section>
@@ -5081,6 +5104,12 @@ G.view = function (P) {
 //   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low }
 //   rt.onSid(f)        f(register, value, cycle) for every write to the SID
 //   rt.target          the clock at the end of the frame runFrame last ran to (null before the first)
+//   rt.runTo(c)        the program run until the clock reaches c, part of a frame or more (the fast
+//                      CPU's page runs to each frame of the screen); returns the last frame finished
+//   rt.fast            the fast CPU (below): set by rt.setFast(on), null when off
+//   rt.pass            { work }: the cycles the main loop's stretches have cost so far, as the C64
+//                      would spend them, kept in either mode
+//   rt.goal            the clock the program is being run to (runFrame's or runTo's)
 //   rt.restore(state, entry)   a machine saved by the tests (kit/c64/machine.js's save()), and the
 //                      program started at entry(P), a generator (test/t-page.js)
 //
@@ -5102,6 +5131,14 @@ G.view = function (P) {
 // plays the music's frame and leaves the timer's interrupt waiting, so it runs again at once for
 // the timer's own work. So the music has a frame each 50th of a second and the clock its tick each
 // 60th, as on the C64.
+//
+// The fast CPU (page/fast.js's switch). The main loop's stretches (between its checkpoints, PASS)
+// cost a FASTth of what they cost the C64, and each pass of play waits at its start for the clock
+// the page runs to (runTo), so that the program draws a view for each frame of the screen. The
+// interrupts and every wait on them keep the C64's time, and so does what runs outside the main
+// loop's stretches: the start, the title, the menus, a message held until a key. What the C64
+// would have spent on each pass is counted either way (rt.pass), for page/fast.js to scale the
+// pass's steps by.
 (function (root) {
 'use strict';
 const LINE = 63, LINES = 312, FRAME = LINE * LINES;
@@ -5125,6 +5162,11 @@ const IRQ_MUSIC = 1040, IRQ_TIMER = 250, IRQ_FILL = 4950;
 const AHEAD = 160;
 // the least a stretch between two checkpoints costs (step())
 const MIN_STRETCH = 10;
+// the main loop's checkpoints (src/g-main.js's main_loop), the first a pass's start; and how many
+// times faster the fast CPU runs the stretches between them: the longest pass, about two million
+// cycles, takes it two thousand, a tenth of a frame
+const PASS_START = 0x47F0, PASS = new Set([0x47C5, 0x47D7, PASS_START, 0x47F3, 0x47ED, 0x47FD]);
+const FAST = 1000;
 
 function create(o) {
   const CM = root.CMPort;
@@ -5284,6 +5326,9 @@ function create(o) {
   P.INSTALL_RUNTIME_VECTORS = function (r) { const v = install.call(this, r); irqsOn = true; return v; };
   const model = o.cost || { seg: {}, call: {} };
   let calls = Object.create(null), counting = true, owed = 0;
+  // the fast CPU, when on: { carry } the cycles it owes the clock, less than one
+  let fast = null;
+  const pass = { work: 0 };
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
   for (const name of Object.keys(model.call)) {
     const f = P[name];
@@ -5297,7 +5342,7 @@ function create(o) {
   function called(name, c) {
     calls[name] = (calls[name] || 0) + 1;
     owed += c;
-    if (owed >= LINE) { const d = callsCost(); if (d >= 1) advance(Math.round(d)); }
+    if (owed >= LINE) { const d = callsCost(); if (d >= 1) work(Math.round(d)); }
   }
   // the routines called and the work counted since the clock last moved, at their cost
   function callsCost() {
@@ -5313,8 +5358,19 @@ function create(o) {
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) {
-    if (counting) { const c = callsCost(); if (c >= 1) advance(Math.round(c)); }
+    if (counting) { const c = callsCost(); if (c >= 1) work(Math.round(c)); }
     return M[a];
+  }
+  // dt cycles of the main program's work: counted for the pass when it is the main loop's, and on
+  // the fast CPU a FASTth of them on the clock
+  function work(dt) {
+    if (lastCp === null || !PASS.has(lastCp)) return advance(dt);
+    pass.work += dt;
+    if (!fast) return advance(dt);
+    fast.carry += dt / FAST;
+    const d = Math.floor(fast.carry);
+    fast.carry -= d;
+    if (d) advance(d);
   }
 
   // ---- the interrupts: the timer's underflow (or the video chip's, were it enabled) runs the
@@ -5344,12 +5400,13 @@ function create(o) {
   }
   // the clock's cycles by what took them: the main program's work, its waits, the interrupts
   const spent = { work: 0, wait: 0, irq: 0 };
-  function advance(dt, wait) {
+  // (the interrupts that fall due take their time on top, but for a wait to a clock, `to`)
+  function advance(dt, wait, to) {
     spent[wait ? 'wait' : 'work'] += dt;
     let end = t + dt;
     for (;;) {
       ciaCatchUp();
-      if (irqsOn && pending()) { const t0 = t; runIrqs(); end += t - t0; spent.irq += t - t0; continue; }
+      if (irqsOn && pending()) { const t0 = t; runIrqs(); if (!to) end += t - t0; spent.irq += t - t0; continue; }
       const at = nextIrq();
       if (at > end) break;
       t = Math.max(t, at); roll();
@@ -5357,7 +5414,7 @@ function create(o) {
     t = Math.max(t, end); roll(); ciaCatchUp();
   }
 
-  let it = null, lastCp = null;
+  let it = null, lastCp = null, goal = 0;
   function step() {
     const r = it.next();
     if (r.done) throw new Error('the program ended');
@@ -5366,17 +5423,20 @@ function create(o) {
       // a stretch takes the game some cycles, whatever the fit gave it: a loop of nothing the fit
       // knows still lets the clock, and with it the keys, move on
       const dt = lastCp === null ? 0 : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
+      work(dt);
       lastCp = y.cp;
-      advance(dt);
+      // on the fast CPU a pass waits for the frame the page draws next
+      if (fast && y.cp === PASS_START && t < goal) advance(goal - t, true, true);
     } else {
       // a turn of a polling loop: what the stretch has cost so far, then on to the next line
       const c = callsCost();
-      if (c >= 1) advance(Math.round(c));
+      if (c >= 1) work(Math.round(c));
       advance(LINE - t % LINE, true);
     }
   }
   function runUntil(until) {
     let guard = 0;
+    goal = until;
     while (t < until) {
       step();
       if (++guard > 2e6) throw new Error('runUntil: no progress');
@@ -5394,6 +5454,13 @@ function create(o) {
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
+  function runTo(c) {
+    if (target === null) target = t;
+    target = Math.max(target, c);
+    if (t < target) runUntil(target);
+    return frameAt(Math.floor(target / FRAME) - 1);
+  }
+  function setFast(on) { fast = on ? fast || { carry: 0 } : null; }
 
   const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
   function restore(s, entry) {
@@ -5417,10 +5484,11 @@ function create(o) {
   }
   restore(o.data, p => p.start());
   return {
-    M, colour, vic, sidw, input, KEY, P, files, spent,
+    M, colour, vic, sidw, input, KEY, P, files, spent, pass, setFast,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
+    get goal() { return goal; }, get fast() { return fast; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    runFrame, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
+    runFrame, runTo, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onSid: f => sidListeners.push(f),
   };
 }
@@ -5497,17 +5565,20 @@ const topology = (M, at) => {
   return faces;
 };
 const TOPO = { cuboid: 0, pyr5: 0x25, pyr6a: 0x40, pyr6b: 0x5D, pyr8: 0x7A };
+// the view's angles, 72 steps to a turn: the game's, or with the fast CPU on, the fractions of a
+// step it turns by (page/fast.js, P.angles)
+const angles = (M, P) => (P && P.angles && P.angles()) || { yaw: M[0x2411], pitch: M[0x2410] };
 // what the scene is built from, read as the game's sort finishes: the place, the objects, the
 // objects the game queued and the tables; a draw with no rebuild before it (the game draws the
 // view again when only the sky or the sight changed) draws what the last rebuild queued
-function world(M) {
+function world(M, P) {
   const lists = [];
   if (M[0x1060]) lists.push(records(M, M[0x1060], w16(M, 0x1061)));
   if (M[0x242A]) lists.push(records(M, M[0x242A], w16(M, 0x242B)));
   const topo = {};
   for (const [k, at] of Object.entries(TOPO)) topo[k] = topology(M, at);
   // the place as the game's 16-bit sums take it, a step past the world's edge below 0
-  const pose = { x: s16(w16(M, 0x2407)), y: s16(w16(M, 0x2409)), z: s16(w16(M, 0x240B)), yaw: M[0x2411], pitch: M[0x2410] };
+  const pose = Object.assign({ x: s16(w16(M, 0x2407)), y: s16(w16(M, 0x2409)), z: s16(w16(M, 0x240B)) }, angles(M, P));
   const objects = [].concat(...lists);
   return {
     area: M[0x2429],
@@ -5523,8 +5594,8 @@ function world(M) {
 // reads as it starts: the sky, the floor and the scenery from the angles as they are then, the
 // patterns, the sight and the lightning
 function capture(M, P, built) {
-  return Object.assign({}, built || world(M), {
-    bg: { yaw: M[0x2411], pitch: M[0x2410] },
+  return Object.assign({}, built || world(M, P), {
+    bg: angles(M, P),
     sky: M[0x2464],                                // sky's pattern high, floor's low; 0: no sky
     patterns: Array.from(M.subarray(0x9D06, 0x9D06 + 64)),
     strip: M[0x2429] === 1 ? Array.from(M.subarray(0x21FA, 0x21FA + 18 * 16)) : null,
@@ -5948,7 +6019,7 @@ function attach(rt) {
   const st = { rt, P, flips: [], pending: null, start: null, built: null, n: 0, clock: { V: null, phi: 0 } };
   P.__cmModern = st;
   wrap(P, 'COMPUTE_COARSE_VIEW_BOUNDS', () => { st.start = rt.t; });
-  wrap(P, 'PAINTER_SORT_VISIBLE_ENTRIES', null, () => { st.built = world(M); });
+  wrap(P, 'PAINTER_SORT_VISIBLE_ENTRIES', null, () => { st.built = world(M, P); });
   wrap(P, 'DRAW_SORTED_VISIBLE_QUEUE', () => {
     const pic = capture(M, P, st.built);
     pic.t0 = st.start !== null ? st.start : rt.t;
@@ -6242,8 +6313,382 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, between, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, spritePixels, between, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/page/fast.js */
+// The Play page's fast CPU: Castle Master as a C64 with a much faster processor would run it, a pass
+// of its main loop for each frame of the screen, made to play at the C64's own pace.
+//
+// The game moves the player a fixed step each pass of its main loop: each pass reads the controls,
+// takes a step, turns or looks a step, runs the scripts the step set off and draws the view, and a
+// pass takes the C64 from a fifth of a second to two seconds, by what the view holds. On a faster
+// processor the passes come faster and every step with them. What runs on the interrupt (the
+// clock, the sensors' drain on strength, the lightning's countdown, the scripts' timer, the music)
+// keeps its time, and so does every wait on it. So the page's machine runs the main loop's work a
+// thousand times faster and waits at the start of each pass for the next frame of the screen
+// (page/runtime.js), and this mod makes each pass do the share of a C64 pass that its time is.
+//
+// The rule, which depends on no address of this game:
+//   f = Δ / D, the share of a C64 pass a pass is given: Δ the clock from the pass's start to the
+//       frame that shows it, D the time the C64 would take over a pass like it (one that works
+//       the view out and draws it, or one that moves the pointer), its work as the page's pacing
+//       counts it (rt.pass) over the part of the processor the interrupts leave the main program;
+//   - a step the game takes each pass a control is held is taken f of, and what is left of a whole
+//     unit carried to the next (walking, turning, looking, the pointer's moves);
+//   - an action a control sets off is taken when the control is pressed, and again each D it is
+//     held, as the C64 takes it once a pass (a mode, a quarter turn, a turn about, a shot, a use);
+//   - what the game does each pass for as long as something lasts is done once each D (the script
+//     of an object the player pushes against);
+//   - what the game shows for a pass is shown for D (the lightning's streak).
+// So a control held for a second moves the player as far, and turns the view as far, as the C64
+// moves and turns it in that second, from wherever the player stands.
+//
+// Castle Master's half. Its turns and looks are steps of 72 to a turn; a share of one is kept as
+// the fraction of the angle, and the view is drawn at it: the game's own BUILD_VIEW_PROJECTION_
+// MATRIX with the sine and cosine of the fine angle in its table for the call (the table's own,
+// part of the way from one step's to the next's), the horizon at 11 rows a step of pitch, the
+// Wilderness's scenery 8 pixels on for each step of yaw. A message in the panel stays its 50 ticks
+// while play goes on: the C64 holds the pass until it is gone, a second it spends drawing the view
+// anyway, and here it would stop the view.
+//
+//   const fx = CMFast.attach(rt)   the mod on the page's machine (again: the same one). It counts
+//                                  the passes in either mode, so that D is known when it goes on
+//   CMFast.set(fx, on)             the switch: rt.setFast too
+//   fx.yaw, fx.pitch               the view's angles, in steps and fractions (pitch -18 to 18)
+//   fx.D                           { draw, aim }: the C64's cycles over a pass of each kind
+//   CMFast.paint(px, fx, F)        the view as the machine holds it now, in the C64's pixels, into
+//                                  px (frame F's palette indices), F's sprites left on top
+//   CMFast.latest(fx, st)          the modern view's picture (page/modern.js, st its watch) that
+//                                  the machine's bitmap holds now, as smooth() gives one, or null
+(function (root) {
+'use strict';
+const VX = 72, VY = 67;
+// the actions (the map at $1382) a press sets off once: the speeds, facing forward, turning about,
+// the cross-hair, a shot, a use, the pointer, the information screen
+const ONCE = new Set([9, 10, 11, 12, 13, 0x15, 0x16, 0x1B, 0x1E, 0x29]);
+// and those it sets off once with the control key ($1380): a quarter turn, the look to its end
+const ONCE_CTRL = new Set([5, 6, 7, 8]);
+
+const wrap72 = v => ((v % 72) + 72) % 72;
+const pitchByte = p => wrap72(Math.round(p));
+const signed = b => (b < 36 ? b : b - 72);
+const sb = v => (v << 24) >> 24;
+
+function attach(rt) {
+  const P = rt.P;
+  if (P.__cmFast) return P.__cmFast;
+  const M = P.M;
+  const w = a => M[a] | M[a + 1] << 8;
+  const setw = (a, v) => { M[a] = v & 255; M[a + 1] = (v >> 8) & 255; };
+  const fx = {
+    rt, on: false, yaw: M[0x2411], pitch: signed(M[0x2410]),
+    D: { draw: 1.2 * 985248, aim: 13000 }, f: 0, fc: 0, n: 0, prev: null,
+    acc: { x: 0, z: 0 }, nudge: {}, held: new Map(), armed: false, touched: null, name: false, streak: null,
+  };
+  P.__cmFast = fx;
+  // the fine angles follow the game's own when it sets them (an entrance, a fall, a load)
+  function sync() {
+    if (M[0x2411] !== wrap72(Math.round(fx.yaw))) fx.yaw = M[0x2411];
+    if (M[0x2410] !== pitchByte(fx.pitch)) fx.pitch = signed(M[0x2410]);
+  }
+  // the angles for page/modern.js, while the switch is on
+  P.angles = () => (fx.on ? (sync(), { yaw: wrap72(fx.yaw), pitch: wrap72(fx.pitch) }) : null);
+  // the table's sine (k 0) or cosine (k 1) of angle a, the same part of the way from one step's
+  // value to the next's
+  function table(a, k) {
+    const i = Math.floor(a), t = a - i, v0 = sb(M[0x123C + 2 * wrap72(i) + k]);
+    return t ? v0 + (sb(M[0x123C + 2 * wrap72(i + 1) + k]) - v0) * t : v0;
+  }
+
+  // ---- the passes, counted in either mode: a pass's start closes the last
+  const update = P.UPDATE_FRAME_INPUT_EVENTS;
+  P.UPDATE_FRAME_INPUT_EVENTS = function* (r) {
+    const now = { work: rt.pass.work, irq: rt.spent.irq, t: rt.t, draw: false, aim: 0 };
+    const p = fx.prev;
+    // a pass that works the view out, or one that moves the pointer once and draws nothing
+    const kind = p && (p.draw ? 'draw' : p.aim === 1 && !p.drew ? 'aim' : null);
+    if (kind && now.t > p.t) {
+      const share = Math.min(0.5, (now.irq - p.irq) / (now.t - p.t));
+      const d = (now.work - p.work) / (1 - share);
+      if (d > 0) fx.D[kind] = d;
+    }
+    fx.prev = now; fx.n++;
+    if (!fx.on) return yield* update.call(this, r);
+    sync();
+    const delta = Math.max(0, rt.goal - rt.t);
+    fx.f = Math.min(1, delta / fx.D.draw);
+    fx.fc = Math.min(32, delta / fx.D.aim);
+    // the lightning's streak, shown for a pass: held for D with play going on under it (the pass
+    // that draws it reads no controls, as on the C64), then the flash
+    const st = fx.streak;
+    if (st && (rt.t >= st.until || !M[0x2464])) fx.streak = null;
+    // (the routine reads the countdown as its first thing: that read finds it neither run out
+    // nor showing)
+    const ib = P.irqByte, hold = fx.streak && M[0x2459] === 0;
+    const once = a => { P.irqByte = ib; return a === 0x2459 ? 0x80 : ib(a); };
+    if (hold) P.irqByte = once;
+    fx.armed = true;
+    try { return yield* update.call(this, r); }
+    finally { fx.armed = false; if (P.irqByte === once) P.irqByte = ib; }
+  };
+
+  // ---- the controls: an action a press sets off, once a press and again each D it is held
+  const read = P.READ_CONTROL_INPUT;
+  P.READ_CONTROL_INPUT = function (r) {
+    const v = read.call(this, r);
+    if (!fx.armed) return v;
+    fx.armed = false;
+    const action = code => { for (let i = 0; i < M[0x1381]; i++) if (M[0x1382 + 2 * i] === code) return M[0x1383 + 2 * i]; return 0x7F; };
+    const codes = Array.from(M.subarray(0x137A, 0x137A + M[0x1379]));
+    const go = new Map();
+    for (const c of codes) {
+      const a = action(c);
+      if (go.has(a) || !(ONCE.has(a) || (M[0x1380] && ONCE_CTRL.has(a)))) continue;
+      const h = fx.held.get(a);
+      const ok = !h || h.n !== fx.n - 1 || rt.t - h.at >= fx.D.draw;
+      go.set(a, ok);
+      if (ok) fx.held.set(a, { n: fx.n, at: rt.t }); else h.n = fx.n;
+    }
+    const keep = codes.filter(c => go.get(action(c)) !== false);
+    if (keep.length === codes.length) return v;
+    keep.forEach((c, i) => { M[0x137A + i] = c; });
+    M[0x1379] = keep.length;
+    return Object.assign({}, v, { a: M[0x137A], c: keep.length ? 1 : 0 });
+  };
+
+  // ---- walking, turning and looking: f of the game's step, along the fine yaw
+  const move = P.DISPATCH_PLAYER_MOVEMENT;
+  P.DISPATCH_PLAYER_MOVEMENT = function* (r) {
+    if (!fx.on) return yield* move.call(this, r);
+    sync();
+    const act = r.a;
+    if (act === 3 || act === 4) return walk(act);
+    if (act === 7 || act === 8) return look(act, r);
+    if (act === 5 || act === 6) {
+      // the game's own turn by none, from the angle f of its step (a quarter with the control
+      // key) has turned to
+      const step = M[0x1380] ? 0x12 : M[0x9D4C] * fx.f;
+      fx.yaw = wrap72(fx.yaw + (act === 5 ? -step : step));
+      M[0x2411] = wrap72(Math.round(fx.yaw));
+      const s0 = M[0x9D4C], s1 = M[0x1380];
+      M[0x9D4C] = 0; M[0x1380] = 0;
+      try { return yield* move.call(this, r); } finally { M[0x9D4C] = s0; M[0x1380] = s1; }
+    }
+    const was = fx.pitch;
+    const v = yield* move.call(this, r);
+    if (act === 13) fx.yaw = wrap72(fx.yaw + 36);
+    if (act === 12 && was) { fx.pitch = 0; M[0x2410] = 0; M[0x1059] |= 0x44; }
+    return v;
+  };
+  // DISPATCH_PLAYER_MOVEMENT's step forward (3) or back (4) (src/g-move.js): the speed (running
+  // backwards at the walk's) times the sine and the cosine of the fine yaw, f of it, the feet raised
+  // to a step's height for the solver and lowered after
+  function walk(act) {
+    let x = M[0x240D], y = M[0x240E];
+    M[0x5DD3] = 0; M[0x5DD4] = 0; M[0x7E] = 0xF0;
+    if (act === 4 && M[0x2456] === 2) {
+      P.MUL_S16_S8_TO_S24({ a: M[0x9D47], x: 0, y: M[0x2416] });
+      x = M[0x82]; y = M[0x83];
+    }
+    M[0x5DD6] = x; M[0x5DD7] = y;
+    // the game's (speed x table x 4) >> 8
+    const speed = ((x | y << 8) << 16 >> 16) * fx.f * (act === 4 ? -1 : 1) / 64;
+    fx.acc.x += speed * table(fx.yaw, 0); fx.acc.z += speed * table(fx.yaw, 1);
+    const dx = Math.trunc(fx.acc.x), dz = Math.trunc(fx.acc.z);
+    fx.acc.x -= dx; fx.acc.z -= dz;
+    M[0x5DD1] = (M[0x2411] << 1) & 255;
+    setw(0x1050, dz + w(0x240B));
+    P.PRESENT_ACTION_FEEDBACK({ y: act === 3 ? 9 : 10 });
+    setw(0x104C, dx + w(0x2407));
+    M[0x5DD2] = (M[0x2413] - 1) & 255;
+    const lift = (M[0x5DD2] << 6) | 0x20;
+    M[0x5DD2] = lift >> 8; M[0x5DD1] = lift & 255;
+    const feet = w(0x2409) - lift;
+    setw(0x2409, feet); setw(0x104E, feet);
+    if (P.SOLVE_PLAYER_COLLISION({ y }).x === 1) M[0x5DD3] = 0x34;
+    setw(0x2409, w(0x2409) + lift);
+    M[0x1084] |= 1;
+    M[0x1059] |= M[0x5DD3]; M[0x105A] |= M[0x5DD4];
+    return { a: M[0x105A], x, y };
+  }
+  // its look up (7) or down (8): f of the step, kept to 18 steps either way; with the control key
+  // all the way at once, as the game goes
+  function look(act, r) {
+    M[0x5DD3] = 0; M[0x5DD4] = 0; M[0x7E] = 0xF0;
+    P.PRESENT_ACTION_FEEDBACK({ y: act === 7 ? 1 : 2 });
+    if (M[0x1380]) fx.pitch = act === 7 ? -18 : 18;
+    else fx.pitch = Math.max(-18, Math.min(18, fx.pitch + (act === 7 ? -1 : 1) * M[0x9D4C] * fx.f));
+    M[0x2410] = pitchByte(fx.pitch);
+    M[0x5DD3] = 0x44;
+    M[0x1084] |= 1;
+    M[0x1059] |= M[0x5DD3]; M[0x105A] |= M[0x5DD4];
+    return { a: M[0x105A], x: r.x, y: r.y };
+  }
+
+  // ---- the pointer's moves, a pixel a pass on the C64: fc of them, the rest carried
+  const aim = P.DISPATCH_AIM_FIRE_ACTIVATE;
+  P.DISPATCH_AIM_FIRE_ACTIVATE = function* (r) {
+    if (!M[0x2467] || r.a < 0x17 || r.a > 0x1A) return yield* aim.call(this, r);
+    let n = 1, v = {};
+    if (fx.on) {
+      fx.nudge[r.a] = (fx.nudge[r.a] || 0) + fx.fc;
+      n = Math.floor(fx.nudge[r.a]);
+      fx.nudge[r.a] -= n;
+    }
+    if (fx.prev) fx.prev.aim += n;
+    while (n-- > 0) v = yield* aim.call(this, r);
+    return v;
+  };
+
+  // ---- the script of an object the player keeps meeting (pushing against it, standing on it):
+  // once each D, as the C64 runs it once a pass
+  const conditions = P.DISPATCH_FRAME_CONDITIONS;
+  P.DISPATCH_FRAME_CONDITIONS = function* (r) {
+    const obj = M[0x1082];
+    if (fx.on && obj && (M[0x1084] | M[0x1085]) === 1) {
+      const t = fx.touched;
+      if (t && t.obj === obj && rt.t - t.at < fx.D.draw) {
+        M[0x1082] = 0;
+        try { return yield* conditions.call(this, r); } finally { M[0x1082] = obj; }
+      }
+      fx.touched = { obj, at: rt.t };
+    }
+    return yield* conditions.call(this, r);
+  };
+
+  // ---- a message in the panel: the area's name back once its ticks have run out, at a later pass
+  const status = P.REFRESH_ACTION_STATUS;
+  P.REFRESH_ACTION_STATUS = function* (r) {
+    if (fx.on && (M[0x105A] & 0x20) && M[0x1063]) {
+      fx.name = true;
+      M[0x105A] &= ~0x20;
+      try { return yield* status.call(this, r); } finally { M[0x105A] |= 0x20; }
+    }
+    if (fx.name && !M[0x1063]) { fx.name = false; M[0x105A] |= 0x20; }
+    return yield* status.call(this, r);
+  };
+
+  // ---- the view at the fine angles
+  const matrix = P.BUILD_VIEW_PROJECTION_MATRIX;
+  P.BUILD_VIEW_PROJECTION_MATRIX = function (r) {
+    if (fx.prev) fx.prev.draw = true;
+    if (!fx.on) return matrix.call(this, r);
+    sync();
+    // each fine angle's sine and cosine put in the table at a step of its own for the call: the
+    // step it rounds to, or another when that is 0 (which the routine leaves out) or the other
+    // angle's; put back after
+    const want = [[0x2411, fx.yaw], [0x2410, wrap72(fx.pitch)]], used = new Set([0]), put = [];
+    for (const [at, a] of want) if (a === M[at]) used.add(a);
+    for (const [at, a] of want) {
+      if (a === M[at]) continue;
+      let i = M[at];
+      while (used.has(i)) i = (i % 71) + 1;
+      used.add(i);
+      const t = 0x123C + 2 * i;
+      put.push([at, M[at]], [t, M[t]], [t + 1, M[t + 1]]);
+      M[at] = i; M[t] = Math.round(table(a, 0)) & 255; M[t + 1] = Math.round(table(a, 1)) & 255;
+    }
+    try { return matrix.call(this, r); } finally { for (let k = put.length - 1; k >= 0; k--) M[put[k][0]] = put[k][1]; }
+  };
+  // the horizon, 11 rows a step of pitch from the view's middle: the fine product
+  const background = P.DRAW_SKY_FLOOR_BACKGROUND;
+  P.DRAW_SKY_FLOOR_BACKGROUND = function (r) {
+    if (!fx.on) return background.call(this, r);
+    sync();
+    const mul = P.MUL_S8_S8_TO_S16;
+    let first = true;
+    P.MUL_S8_S8_TO_S16 = function (q) {
+      const v = mul.call(this, q);
+      if (first && q.y === 0x0B) { first = false; setw(0x82, Math.round(fx.pitch * 11)); }
+      return v;
+    };
+    try { return background.call(this, r); } finally { P.MUL_S8_S8_TO_S16 = mul; }
+  };
+  // the Wilderness's scenery (FILL_LOWER_BACKGROUND_ROWS, src/g-view.js), its rows drawn again from
+  // the fine yaw: 64 pixels a row, 8 on for each step. A row's 30 bytes are on the screen in the
+  // other order (the blit turns them round), so screen byte s is the row's byte 29 - s, and
+  // screen pixel c shows the strip's pixel c + 8 x yaw
+  const scenery = P.FILL_LOWER_BACKGROUND_ROWS;
+  P.FILL_LOWER_BACKGROUND_ROWS = function (r) {
+    if (!fx.on || M[0x2429] !== 1) return scenery.call(this, r);
+    let row = w(0x7A), strip = 0x21FA + 0x10 * M[0x4B8A];
+    const n = M[0x4B89], o = Math.floor(8 * wrap72(fx.yaw) + 1e-6) & 63;
+    const v = scenery.call(this, r);
+    for (let k = 0; k < n; k++, strip += 0x10, row -= 0x1E) {
+      for (let s = 0; s < 30; s++) {
+        let b = 0;
+        for (let j = 0; j < 4; j++) {
+          const q = (4 * s + j + o) & 63;
+          b |= ((M[strip + (q >> 2)] >> (6 - 2 * (q & 3))) & 3) << (6 - 2 * j);
+        }
+        M[(row + 29 - s) & 0xFFFF] = b;
+      }
+    }
+    return v;
+  };
+
+  // ---- the lightning's streak, held for D: drawn again at its column by each view in that time
+  const queue = P.DRAW_SORTED_VISIBLE_QUEUE;
+  P.DRAW_SORTED_VISIBLE_QUEUE = function (r) {
+    if (fx.prev) fx.prev.drew = true;
+    if (!fx.on) return queue.call(this, r);
+    if (M[0x2459] === 1 && !fx.streak) fx.streak = { until: rt.t + fx.D.draw, clock: M[0x1C64] };
+    const st = fx.streak;
+    if (!st || M[0x2459] !== 0) return queue.call(this, r);
+    const clock = M[0x1C64];
+    M[0x2459] = 1; M[0x1C64] = st.clock;
+    try { return queue.call(this, r); }
+    finally { M[0x1C64] = clock; if (M[0x2459] === 1) M[0x2459] = 0; }
+  };
+  return fx;
+}
+
+function set(fx, on) {
+  if (!fx) return;
+  fx.on = !!on;
+  fx.rt.setFast(fx.on);
+  fx.streak = null; fx.armed = false; fx.touched = null;
+  if (fx.on) { fx.yaw = fx.rt.M[0x2411]; fx.pitch = signed(fx.rt.M[0x2410]); }
+}
+
+// The view in the C64's pixels as the machine's memory holds it now (the frame on show finished
+// up to a frame before): the bitmap's cells and colours, the background's colour from the chip,
+// and the pixels frame F's sprites put over the view left as F shows them
+function paint(px, fx, F) {
+  if (!fx || !F || !F.mem || !px) return false;
+  const rt = fx.rt, M = rt.M, col = rt.colour, bg = rt.vic[0x21] & 15;
+  const keep = root.CMModern ? new Set(root.CMModern.spritePixels(F, px)) : new Set();
+  for (let l = 0; l < 120; l++) {
+    const cr = 4 + (l >> 3), o = (VY + l) * 384 + VX;
+    for (let c = 0; c < 120; c++) {
+      const cc = 5 + (c >> 2), cell = cr * 40 + cc;
+      const v = (M[0xE000 + cr * 320 + cc * 8 + (l & 7)] >> (6 - 2 * (c & 3))) & 3;
+      const k = v === 0 ? bg : v === 1 ? M[0xC400 + cell] >> 4 : v === 2 ? M[0xC400 + cell] & 15 : col[cell] & 15;
+      if (!keep.has(o + 2 * c)) px[o + 2 * c] = k;
+      if (!keep.has(o + 2 * c + 1)) px[o + 2 * c + 1] = k;
+    }
+  }
+  return true;
+}
+
+// The modern view's last picture, if the bitmap holds it now, as smooth() gives a view between two
+// (not still, so that CMModern.paint paints it)
+function latest(fx, st) {
+  if (!fx || !st) return null;
+  const f = st.flips[st.flips.length - 1];
+  if (!f || !f.pic) return null;
+  const M = fx.rt.M;
+  for (let r = 0; r < 15; r++) {
+    const a = f.at + r * 320;
+    for (let k = 0; k < 240; k++) if (M[a + k] !== f.snap[r * 240 + k]) return null;
+  }
+  return { scene: f.scene || (f.scene = root.CMModern.scene(st.P, f.pic)), shown: f, phi: f.n, still: false };
+}
+
+root.CMFast = { attach, set, paint, latest, ONCE, ONCE_CTRL };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -6259,12 +6704,14 @@ const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = CMPage.FRAME, FRAME_MS = 1000 * FRAME / 985248;
 const SAVE_KEY = 'gamesexplained.castle-master.saves';
-let data = null, rt = null, running = false, paused = false, native = false, smooth = false, crt = null;
+let data = null, rt = null, fx = null, running = false, paused = false, native = false, smooth = false, fast = false, crt = null;
 
 // --- drawing: the frame the video chip would show, composed when the clock finishes one. With
 // native resolution or smooth motion the 3D view is drawn again over it (page/modern.js): with
 // smooth motion at every frame the browser paints, from the picture on show toward the next, in
-// the C64's pixels or, with native resolution too, at the screen's own
+// the C64's pixels or, with native resolution too, at the screen's own. With the fast CPU
+// (page/fast.js) the game draws a view for every frame the browser paints, and the view is the
+// last it drew
 const off = document.createElement('canvas'); off.width = 384; off.height = 272;
 const offCtx = off.getContext('2d'), img = offCtx.createImageData(384, 272);
 let frame = null, px = null, work = null, inOff = null;   // inOff: the pixels the off canvas holds
@@ -6281,15 +6728,21 @@ function compose(F) {
 const viewTime = () => (rt.target === null ? null : rt.target - FRAME + Math.min(acc, FRAME_MS) / FRAME_MS * FRAME);
 function present() {
   if (!px) return;
-  const MM = window.CMModern;
-  let view = null;
-  if (MM && (native || smooth)) {
+  const MM = window.CMModern, FX = fast && fx ? window.CMFast : null;
+  let view = null, p = px;
+  if (MM && (native || smooth || FX)) {
     const st = MM.attach(rt);
-    if (smooth) view = MM.smooth(st, viewTime(), frame);
+    if (FX) view = FX.latest(fx, st);
+    else if (smooth) view = MM.smooth(st, viewTime(), frame);
     else { const s = MM.onShow(st, frame); if (s) view = { scene: s.scene || (s.scene = MM.scene(rt.P, s.pic)), shown: s }; }
   }
-  if (native && MM) { rgb(px); MM.draw(cv, off, view, frame, px); return; }
-  let p = px;
+  // the fast CPU: the view the game drew last, which the frame on show can be a frame behind; in
+  // the C64's pixels painted at the pose's own angles, as smooth motion paints them
+  if (FX) {
+    work = work || new Uint8Array(px.length); work.set(px); p = work; inOff = null;
+    if (native || !view || !MM.paint(work, view, frame)) FX.paint(work, fx, frame);
+  }
+  if (native && MM) { rgb(p); MM.draw(cv, off, view, frame, px); return; }
   if (smooth && view) { work = work || new Uint8Array(px.length); work.set(px); if (MM.paint(work, view, frame)) { p = work; inOff = null; } }
   rgb(p);
   if (cv.width !== 384) { cv.width = 384; cv.height = 272; cv.classList.remove('pl-native'); }
@@ -6358,13 +6811,18 @@ function saved(name, bytes) {
   } catch (e) { say('Saved for this visit only: the browser keeps no storage for this page.'); }
 }
 
-// --- the loop: one frame of C64 time per frame of real time
+// --- the loop: one frame of C64 time per frame of real time; with the fast CPU, the clock run on
+// to each frame the browser paints
 let acc = 0, last = 0;
+const CYCLES_MS = 985248 / 1000;
 function boot() {
   rt = CMPage.create({ data, cost: window.CM_COST, files: readSaves(), onSave: saved });
   // the modern view watches every picture the game draws from the start, so that either switch
-  // has the game's pictures to draw from at once; it only reads the game's memory
+  // has the game's pictures to draw from at once; it only reads the game's memory. The fast CPU
+  // counts the game's passes from the start, so that it knows how long the C64 takes over one
   if (window.CMModern) CMModern.attach(rt);
+  fx = window.CMFast ? CMFast.attach(rt) : null;
+  if (fx) CMFast.set(fx, fast);
   sound.attach(); input();
 }
 function tick(now) {
@@ -6372,14 +6830,19 @@ function tick(now) {
   if (!running || paused || !rt) { last = now; return; }
   let n = 0, F = null;
   try {
-    acc += Math.min(250, now - (last || now)); last = now;
-    while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
-    if (n === 10) acc = 0;
-    if (n) compose(F);
+    const dt = Math.min(250, now - (last || now)); last = now;
+    if (fast) {
+      if (dt > 0) { F = rt.runTo((rt.target === null ? rt.t : rt.target) + dt * CYCLES_MS); sound.frame(); n = 1; if (letGo.size) release(); }
+    } else {
+      acc += dt;
+      while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
+      if (n === 10) acc = 0;
+    }
+    if (n && F !== frame) compose(F);
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
   if (n || smooth) {
     try { present(); }
-    catch (e) { console.error(e); setModern(false, false); say('The modern view stopped: ' + e.message); present(); }   // the view, never the game
+    catch (e) { console.error(e); setModern(false, false, false); say('The modern view stopped: ' + e.message); present(); }   // the view, never the game
   }
 }
 
@@ -6436,12 +6899,15 @@ document.querySelectorAll('#pl-pad button').forEach(b => {
 let sayTimer = 0;
 function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 20000); }
 const VIEW_KEY = 'gamesexplained.castle-master.view';
-function setModern(n, s) {
-  native = n; smooth = s;
+// smooth motion and the fast CPU go one at a time: the fast CPU draws a view for each frame itself
+function setModern(n, s, f = fast) {
+  native = n; smooth = s && !f; fast = f;
   if (native && crt) crt.set(false);
+  if (window.CMFast && fx) { CMFast.set(fx, fast); acc = 0; }
   document.querySelector('[data-act="render"]').setAttribute('aria-pressed', String(native));
   document.querySelector('[data-act="smooth"]').setAttribute('aria-pressed', String(smooth));
-  try { localStorage.setItem(VIEW_KEY, (native ? 'n' : '') + (smooth ? 's' : '')); } catch (e) { /* no storage: the switches last for this visit */ }
+  document.querySelector('[data-act="fast"]').setAttribute('aria-pressed', String(fast));
+  try { localStorage.setItem(VIEW_KEY, (native ? 'n' : '') + (smooth ? 's' : '') + (fast ? 'f' : '')); } catch (e) { /* no storage: the switches last for this visit */ }
 }
 function start() {
   over.hidden = true;
@@ -6458,11 +6924,12 @@ $('pl-bar').addEventListener('click', e => {
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && data) start();
   else if (act === 'render') { setModern(!native, smooth); draw(); }
-  else if (act === 'smooth') { setModern(native, !smooth); draw(); }
+  else if (act === 'smooth') { setModern(native, !smooth, false); draw(); }
+  else if (act === 'fast') { setModern(native, false, !fast); draw(); }
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });
-try { const v = localStorage.getItem(VIEW_KEY) || ''; setModern(v.includes('n'), v.includes('s')); } catch (e) { /* the switches start off */ }
+try { const v = localStorage.getItem(VIEW_KEY) || ''; setModern(v.includes('n'), v.includes('s'), v.includes('f')); } catch (e) { /* the switches start off */ }
 // The CRT screen (site/lib/crt.js) draws the C64's pixels again, so native resolution goes off with it
 crt = CRT.attach(cv, { button: document.querySelector('[data-crt]'), onChange: on => { if (on && native) { setModern(false, smooth); draw(); } } });
 if (crt.on && native) setModern(false, smooth);
