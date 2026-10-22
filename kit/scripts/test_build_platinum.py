@@ -2,8 +2,8 @@
 """Platinum and Diamond (AGENTS.md, "Definition of done"). Platinum is a Silver whose Play tab
 is the whole game, so the build stops on one with no play.html, or no test_play.js beside it to
 hold the published page. Its copy is still the agent's: the banner asks for an editor, or names
-the steward once one has claimed it. Diamond, Gold and Platinum both, is curated, as Gold is,
-and leads the home page."""
+the steward once one has claimed it, and its tier then reads platinum (claimed). Diamond, Gold
+and Platinum both, is curated, as Gold is, and leads the home page."""
 from pathlib import Path
 import json
 import sys
@@ -61,6 +61,21 @@ class Platinum(unittest.TestCase):
         self.assertIn("claimed by", build.banner(dict(game, steward="someone"), []))
         for tier in build.CURATED:
             self.assertIn("curated by hand", build.banner(dict(game, tier=tier), []))
+
+    def test_a_claimed_platinum_reads_platinum_claimed(self):
+        self.assertEqual(build.tier_name("platinum"), "platinum")
+        self.assertEqual(build.tier_name("platinum", "someone"), "platinum (claimed)")
+        self.assertEqual(build.tier_name("silver-claimed", "someone"), "silver (claimed)")
+        with tempfile.TemporaryDirectory() as d:
+            g, out = listed_game(d, publish=True), site(d)
+            game = at(g, "platinum", steward="someone")
+            (g / "play.html").write_text(PLAY)
+            (g / "test_play.js").write_text("// the lockstep\n")
+            build.build_game(str(g), str(out))
+            page = out / "c64" / "fixture"
+            self.assertIn("tier <b>platinum (claimed)</b>", (page / "play.html").read_text())
+            self.assertIn("<td>platinum (claimed)</td>", (page / "about.html").read_text())
+            self.assertIn('aria-label="Tier: platinum (claimed)">Platinum<', build.tier_edge(game))
 
     def test_the_home_page_puts_diamond_first_then_gold_then_platinum(self):
         games = [{"tier": t} for t in ("silver", "platinum", "gold", "diamond")]

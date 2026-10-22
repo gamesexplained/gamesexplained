@@ -17,7 +17,7 @@ section by section, cut what is dull, and say what deserves more.
   the cost of each, would land the interrupt closer to where it falls.
 - For Platinum, the page needs a `test_play.js` beside it to hold the
   published page in CI (`kit/skills/core/70-minisite/play.md`, "The
-  page's test"), and no bug known that stops a player finishing.
+  page's test"), and no known bug in the port.
 
 ## Gold
 

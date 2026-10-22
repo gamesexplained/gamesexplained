@@ -349,9 +349,10 @@ CURATED = ("gold", "diamond")        # a person has been through the copy
 PLAYABLE = ("platinum", "diamond")   # the Play tab is the whole game, held to the game's code
 
 
-def tier_name(t):
-    """How a tier reads on the page: game.json's value, except silver-claimed."""
-    return TIER_NAMES.get(t, t)
+def tier_name(t, steward=""):
+    """How a tier reads on the page: game.json's value, except silver-claimed, and a Platinum
+    with a steward, which a person is curating, reads platinum (claimed) to match it."""
+    return "platinum (claimed)" if t == "platinum" and steward else TIER_NAMES.get(t, t)
 
 
 def tab_place(f, n):
@@ -386,7 +387,7 @@ def tabbar(game, present, lib):
     nolink = "" if "source.html" in present and not withheld(game) else ' data-nolink="1"'
     return (f'<nav class="gametabs"{nolink}><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
             f'<a href="{lib}/../{plat}/">{html.escape(PLATFORM_NAMES.get(plat, plat))}</a> / {html.escape(game.get("title", ""))}</span>'
-            f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
+            f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier, game.get("steward")))}</b></span></div></nav>')
 
 
 _proven = {}
@@ -1456,7 +1457,7 @@ def build_game(gdir, out_root):
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
     data = "" if bare else WITHHELD if hidden else data_links(P)
     about = fill(tpl, **common, footprint=foot, data_links=data, map_row=(span[1] - span[0]) // 128,
-                 tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov, listing_row=listing_row(game),
+                 tier=html.escape(tier_name(game.get("tier", "none"), game.get("steward"))), coverage=cov, listing_row=listing_row(game),
                  accuracy=accuracy_section(game, gdir),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
@@ -1670,7 +1671,7 @@ def tier_edge(g):
     """The tier written up the card's left edge, in the tier's colour."""
     t = g.get("tier", "none")
     word = {"silver-claimed": "Silver"}.get(t, t.capitalize() if t != "none" else "No tier")
-    return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t))}">{html.escape(word)}</span>'
+    return f'<span class="tier" aria-label="Tier: {html.escape(tier_name(t, g.get("steward")))}">{html.escape(word)}</span>'
 
 
 def names(people):

@@ -3,11 +3,14 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-Silver, reached on 9 October 2026: 100 % of the tracked bytes
-explained, the facts verified and the minisite built, on a proven
-model, with the copy `agent-draft`.
+Platinum, on 22 October 2026: the Play tab is the whole game, and
+`test_play.js` holds the published page in CI. Silver since 9 October
+2026: 100 % of the tracked bytes explained, the facts verified and the
+minisite built, on a proven model, with the copy `agent-draft`.
 
-For Gold, a human editor goes through every section of the page.
+For Diamond, a human editor goes through every section of the page.
+Set `steward` to your GitHub login when the pass begins; `tier` stays
+`platinum` until every section has had its pass, then becomes `diamond`.
 
 Open, for anyone with the tape:
 

@@ -3,13 +3,17 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-**Tier: Silver** (21 October 2026). Coverage 100 %; no gaps.
+**Tier: Platinum** (22 October 2026): the Play tab is the whole game,
+and `test_play.js` holds the published page in CI.
+Silver since 21 October 2026. Coverage 100 %; no gaps.
 
-## For Gold
+## For Diamond
 
 A human pass over each section of the three pages: rewrite what reads
 as generic, cut what is dull, expand what is interesting, and set `copy`
-to say what the pass did.
+to say what the pass did. Set `steward` to your GitHub login when the
+pass begins; `tier` stays `platinum` until every section has had its
+pass, then becomes `diamond`.
 
 ## Recommended
 

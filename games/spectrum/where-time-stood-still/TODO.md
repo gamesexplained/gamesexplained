@@ -1,6 +1,8 @@
 # Where Time Stood Still — TODO
 
-Tier: Silver. Coverage is 100 % in each of the six parts
+Tier: Platinum, on 22 October 2026: the Play tab is the whole game, and
+`test_play.js` holds the published page in CI.
+Coverage is 100 % in each of the six parts
 (`coverage.py`), every feature in `features.md` is live, confirmed,
 traced, or open with what was tried, and the four tabs are built and
 checked in a browser. The copy is `agent-draft`.
@@ -15,12 +17,14 @@ comments of banks 1, 4, 6 and 7 were written after the draw and have not
 been sampled. **An audit of every comment is recommended**, then a new
 sample: the Source tab says the listing has not had one.
 
-## For Gold
+## For Diamond
 
 - A human pass over every section of the three tabs (`index.html`,
   `discoveries.html` and `levels.html`), cutting what is dull, expanding
   what is interesting and adding what the agent missed; `copy` in
-  `game.json` records what the pass did.
+  `game.json` records what the pass did. Set `steward` to your GitHub
+  login when the pass begins; `tier` stays `platinum` until every section has
+  had its pass, then becomes `diamond`.
 
 ## Open
 

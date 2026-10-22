@@ -25,8 +25,8 @@ are wider than the column (#62).
 The Play tab is a port of the game, but it has no `test_play.js`
 beside it, so CI never holds the published page (`test_skip.js` holds
 only the Skip intro button). Platinum needs that test
-(`kit/skills/core/70-minisite/play.md`, "The page's test"), and no bug
-known that stops a player finishing.
+(`kit/skills/core/70-minisite/play.md`, "The page's test"), and no
+known bug in the port.
 
 ## Open questions
 

@@ -3,10 +3,14 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-Tier: **Silver**, 12 October 2026. Coverage 100 % of the 8,192-byte ROM.
+Tier: **Platinum**, 22 October 2026: the Play tab is the whole game, and
+`test_play.js` holds the published page in CI.
+Silver since 12 October 2026. Coverage 100 % of the 8,192-byte ROM.
 
-For Gold: a human's pass through `index.html`, section by section, with
-`copy` in `game.json` set to what it was.
+For Diamond: a human's pass through `index.html`, section by section, with
+`copy` in `game.json` set to what it was. Set `steward` to your GitHub
+login when the pass begins; `tier` stays `platinum` until every section
+has had its pass, then becomes `diamond`.
 
 Open questions:
 

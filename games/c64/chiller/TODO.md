@@ -16,7 +16,7 @@ other 9 hit the line-16 interrupt race), with a level picker and cheats.
 
 For Diamond, the Play tab needs a `test_play.js` beside it to
 hold the published page in CI (`kit/skills/core/70-minisite/play.md`,
-"The page's test"), and no bug known that stops a player finishing.
+"The page's test"), and no known bug in the port.
 
 ## Open
 

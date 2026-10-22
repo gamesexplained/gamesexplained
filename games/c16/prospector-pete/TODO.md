@@ -5,9 +5,11 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver, on 19 October 2026: 100 % of the 10,395 bytes the ledger tracks,
-`facts.md`, one sample of 60 comments (5 wrong, all corrected), the
-minisite built (How it works, Discoveries, Maps / levels), copy
+Platinum, on 22 October 2026: the Play tab is the whole game, and
+`test_play.js` holds the published page in CI.
+Silver since 19 October 2026: 100 % of the 10,395 bytes the ledger
+tracks, `facts.md`, one sample of 60 comments (5 wrong, all corrected),
+the minisite built (How it works, Discoveries, Maps / levels), copy
 `agent-draft`.
 
 ## Recommended
@@ -17,10 +19,12 @@ minisite built (How it works, Discoveries, Maps / levels), copy
   all 202 comments and correct them, with `kit/scripts/accuracy.py`
   recording the audit (`kit/CHECKING.md`).
 
-## For Gold
+## For Diamond
 
 - A human pass over every section of the three pages, section by
   section, setting `copy` in `game.json` to what the pass was.
+  Set `steward` to your GitHub login when the pass begins; `tier` stays
+  `platinum` until every section has had its pass, then becomes `diamond`.
 
 ## Gaps
 

@@ -3,25 +3,22 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-Tier: Silver. Coverage is 100 %, and the sample of 80 comments found 8
+Tier: Platinum, on 22 October 2026: the Play tab is the whole game, and
+`test_play.js` holds the published page in CI.
+Coverage is 100 %, and the sample of 80 comments found 8
 wrong (10.0 %, over the mark of one in 30), all corrected with the
 comments that repeated them.
 
-## For Gold
+## For Diamond
 
 - A human pass over `index.html`, `discoveries.html` and `levels.html`,
   section by section: rewrite or cut the agent's copy, expand what is
-  interesting, add what it missed. Set `tier` to `silver-claimed` and
-  `steward` to your GitHub login when the pass begins.
+  interesting, add what it missed. Set `steward` to your GitHub login
+  when the pass begins; `tier` stays `platinum` until every section has
+  had its pass, then becomes `diamond`.
 - An audit of every comment in the listing on a proven model, then a
   second sample with a new seed (`kit/skills/core/60-verify`), since the
   first sample was over the mark and its rate is a lower bound.
-
-## For Platinum
-
-The Play tab and `test_play.js` are in place. Platinum needs the rest
-of the bar in `AGENTS.md` confirmed: that the port is the whole game,
-and that no bug known stops a player finishing.
 
 ## Open questions
 
