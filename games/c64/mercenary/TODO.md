@@ -1,14 +1,16 @@
 # Mercenary — TODO
 
-Tier: Silver (claimed by air; 100 % of 50,703 tracked bytes explained; facts, features,
-listing and minisite built; copy `human-edited`, the steward's pass under way).
+Tier: Platinum (claimed by air; 100 % of 50,703 tracked bytes explained; facts, features,
+listing and minisite built; copy `human-edited`, the steward's pass under way). Platinum on
+22 October 2026: the Play tab is the whole game, and `test_play.js` holds the published page
+to the game's code in CI.
 
-## For Gold
+## For Diamond
 
 A human pass over the How it works page and the Maps page, section by
 section: cut what is dull, expand what is interesting, rewrite the
 clichés, add what the agent missed. The pass is under way (`steward`: air,
-`tier: silver-claimed`); record the outcome in `copy`. Three parts arrived
+`tier: platinum`); record the outcome in `copy`, and set `tier` to `diamond`. Three parts arrived
 after it began and are agent-written, not yet read by the steward: section
 04 of the How it works page (the craft that fly without you), section 14
 (the sound) and the Play tab's four sections (the mod, the port, the
@@ -19,14 +21,6 @@ motion and its line in section 04.
 At a phone's width (390 px) the How it works page scrolls sideways by
 about 19 px: the Outside the city table and the lift section's code lines
 are wider than the column (#62).
-
-## For Platinum
-
-The Play tab is a port of the game, but it has no `test_play.js`
-beside it, so CI never holds the published page (`test_skip.js` holds
-only the Skip intro button). Platinum needs that test
-(`kit/skills/core/70-minisite/play.md`, "The page's test"), and no
-known bug in the port.
 
 ## Open questions
 
