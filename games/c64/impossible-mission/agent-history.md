@@ -136,3 +136,18 @@ the Zzap!64 readers' chart that put it first is issue 2's. The reception
 section was rewritten from the scans, with links to them. At the
 contributor's request the Overview no longer says the timing was written
 for American televisions.
+
+## Typed data no label reached (22 October 2026)
+
+The ledger began counting typed data that no label's reach covers, and
+two stretches of this game's turned out bare, missing from the listing:
+`$349D`-`$34A2`, the last six characters of the pocket computer's screen,
+past the 64-byte reach of the password letters' label at `$345D`; and
+`$A000`-`$A00B`, the last twelve of the terminal's fifteen line offsets,
+cut off from `tbl_terminal_lines` at `$9FFD` by the memory-map edge at
+`$A000`. Each has a line comment now. The snapshots were made again by
+the route in `orientation.md` from the same image (SHA-256 checked); the
+new play snapshot's bytes that the listing already held were written
+back over it (60 bytes, variables and zero page), so the rebuilt listing
+keeps every byte it had and adds these 18. The raw snapshot is kept as
+`work/play-room1-raw.vsf`.
