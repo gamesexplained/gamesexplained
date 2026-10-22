@@ -51,7 +51,8 @@ from the disk's own files. The scripts are in `GAME/work/agent-downhill/`
 - Controls: both joystick ports are read together (`$DC00 AND $DC01`,
   `$2B41`). Down pushes (+1 speed every 8 frames, up to `$10`). Left and
   right turn. Fire+up jumps, fire+left/right spins, fire+down ducks.
-  Goofy foot swaps up with down and left with right. The record comes from
+  Goofy foot swaps up with down and left with right, except that fire+up
+  still jumps and fire+down still ducks (`$3A8E`, `$3A9C`). The record comes from
   `control_records` `$3984` by stick bits, `+$16` with fire, `+$2C` when
   goofy. At the start, any direction toggles REGULAR/GOOFY FOOT every
   tenth frame (`$0998`). (traced)

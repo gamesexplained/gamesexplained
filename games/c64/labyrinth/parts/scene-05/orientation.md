@@ -1,0 +1,7 @@
+# Wall of Hands orientation
+
+Continue the controlled phase4 left-door route described in the root orientation. Start from work/guard-reaction/truth.vsf at$8E9E, resume to loader$5098, then use ordinary fire/Space input and the recorded disk-prompt helper until return$59DC. Scene5/entry1 places the player at X84/depth6. After60frames the arrival is saved under work/guard-later-arrival/truth-arrival.vsf. A further120 idle frames with all inputs released produced work/wall-hands-orient/steady.vsf, copied here as work/wall-hands-play.vsf. SHA-256: e3f3e6fdc8fb5130a244b33782a036c28eeb7a55296efb386850ebd1a050105c.
+
+The root orientation records the VICE release, passed capability checks, disk images and earlier boot route. This is a local continuation from a controlled guard setup, not a complete ordinary route from power-on. work/wall-hands-loader-return.vsf is the later loader return, not the first instruction of scene initialization. A natural pre-initialization hand-over remains open. Do not rerun the emulator reset check over this state.
+
+The part's disassembler was started through tools.py on this exact snapshot and answered on its own port3013. The processor port and interrupt vector are retained with the machine; their scene-specific consumers remain unanalysed. Each script names this part explicitly. Source is built through symbols_export.py and listing.py from this snapshot. The resource matches and limits are in facts.md.

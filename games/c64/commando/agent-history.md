@@ -110,3 +110,21 @@ The box stepper's test first failed on soldiers firing bullets into free
 slots during the pass; setting the fire mask to `$3F` and each soldier's
 timer to 1 kept the slots still, and comparing only the enemies the port
 keeps left one random spawn (`$2D63`) out of the comparison.
+
+## Typed data no label reached (22 October 2026)
+
+The ledger began counting typed data that no label's reach covers. One
+byte of this game's was bare, missing from the listing: `$1000`, the last
+of the logo's seven sprite blocks, cut off from `title_logo_blocks` at
+`$0FFA` by the memory-map edge at `$1000`. It has a line comment now. Six
+more bytes, the two unreachable jumps at `$5080` and `$50A7`, already had
+comments and needed only the rebuild.
+
+The contributor's image was not to hand. The Internet Archive's
+`Commando_1985_Elite_cr_REM_t_5_REM_Docs_035` holds a D64 with the same
+header, ID and two files; stopped at the hand-over (`$0850`) by the route
+in `orientation.md`, it agreed with every byte the listing held but six
+that the KERNAL and the loader leave behind: `$0001`, `$000E`-`$000F`,
+`$00A1`-`$00A2` (the jiffy clock) and `$00FB`. Those six were written back,
+so the rebuilt listing keeps every byte it had and adds these seven. The
+raw snapshot is kept as `work/entry-raw.vsf`.

@@ -59,3 +59,19 @@ port and its test, which read the same listing, were wrong together. They and th
 filler at the ends of Parts 2 and 3 now have labels. The old `review-checks.js`, which read the
 engine out of Part 1's listing, and `import-audit.json` and `decoded-view.png`, which described
 the Bronze page, were removed.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and Part 3's listing then left out 50 bytes
+(#471): `$95CE`-`$95FF`, the end of Part 1's filler past the 1,024
+bytes `FILLER_91CE` reaches. They are excluded in `part.json` with that
+reason rather than given a comment, because a comment written after
+the maintainer's last sample would undo it while the game counts a
+model that is not proven.
+
+The MrL copy on the Internet Archive has the same MD5 as the one this
+run used. Rather than play Parts 1 and 2 again, the snapshot was taken
+by making the loader's first load `PART 3` (`orientation.md`). Every one
+of the 26,318 bytes the listing held matched it, so it was used as it
+was, as `parts/part-3/work/part3-shortcut.vsf`.

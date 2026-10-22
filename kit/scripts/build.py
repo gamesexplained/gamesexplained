@@ -1073,6 +1073,22 @@ def no_listing(gdir, P=None):
     return not any(listed(p) for p in P) if P else not os.path.isfile(os.path.join(gdir, "listing.json"))
 
 
+def redirect_pages(game, present):
+    """Build former page URLs without putting them back into the tab bar."""
+    pages = {}
+    for old, target in game.get("redirects", {}).items():
+        destination = target.split("#", 1)[0] if isinstance(target, str) else ""
+        if not PAGE_NAME.fullmatch(old) or old in present or destination not in present:
+            raise ValueError(f"Invalid page redirect: {old!r} -> {target!r}; use an old .html name and a published tab")
+        encoded = json.dumps(target).replace("<", "\\u003c")
+        pages[old] = ('<!doctype html><meta charset="utf-8"><title>Page moved</title>'
+                      '<p>This page has moved. <a href="' + html.escape(target, quote=True) + '">Continue to the page</a>.</p>'
+                      '<script>const target=new URL(' + encoded + ',location.href);'
+                      'if(location.search)target.search=location.search;'
+                      'if(location.hash)target.hash=location.hash;location.replace(target.href);</script>')
+    return pages
+
+
 def check_tabs(gdir, game):
     """Warn about a tab whose page is missing, and a page no tab names: the build leaves both out."""
     where = os.path.relpath(gdir, ROOT).replace(os.sep, "/")
@@ -1344,6 +1360,7 @@ def build_game(gdir, out_root):
     if P:
         game["_parts"] = (sum(1 for p in P if started(p)), len(P))
     present = present_tabs(gdir, game)
+    redirects = redirect_pages(game, present)
     cons = game["_cons"] = credited(contributors(gdir), game)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
@@ -1441,6 +1458,8 @@ def build_game(gdir, out_root):
         for f in ("listing.json", "symbols.json"):
             if os.path.exists(os.path.join(gdir, f)):
                 shutil.copy(os.path.join(gdir, f), out)
+    for name, page in redirects.items():
+        open(os.path.join(out, name), "w").write(page)
     ref = os.path.join(gdir, "reference")
     if os.path.isdir(ref):
         shutil.copytree(ref, os.path.join(out, "reference"), dirs_exist_ok=True)

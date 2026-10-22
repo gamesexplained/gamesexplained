@@ -24,6 +24,12 @@ publishes the pages named there and warns about any other `.html` in the
 folder. The bar always opens with How it works, Play and Discoveries and
 closes with Source code and About; the list orders the tabs between.
 
+When merging or renaming a page, keep its old URL in `game.json`'s
+`"redirects"`, for example `{"old.html": "levels.html#area-name"}`. The target
+must be a published tab. The build creates a small forwarding page outside
+the tab bar; it carries the visitor's query and fragment to the target.
+Check an old bookmark as well as the new tab links in the browser.
+
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
 One the listing holds no record of (a chip register, a stretch the coverage

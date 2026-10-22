@@ -62,6 +62,17 @@ holds is the depackers' leftovers (the source of the relocated copy at
 screen and bitmap at `$5400`-`$7FFF`. No code exists only at the
 hand-over.
 
+The contributor's image was not to hand on 22 October 2026, so the
+listing was built again from a capture of the Internet Archive's
+`Thrust_1988_Firebird_cr_TCI.d64`: a blank disk name, ID `00`, and one
+file, `THRUST (TCI)`, of the same 100 blocks and length, whose BASIC line
+also reads `SYS 2082 THE SYNDICATE 1986`. Before the loading picture it
+shows a text screen, "THE SYNDICATE (TCI) PRESENTS THRUST", that waits
+for **Space**; the rest of the route is the same. Its play capture
+matched every byte the listing held, code included, except 101 bytes the
+game changes as it runs, which were written back, so the listing kept its bytes
+and gained the 64 at `$9516`.
+
 ## Steady state
 
 - **Interrupts.** `$0314` = `$8943`, steady over 25 reads; the hardware

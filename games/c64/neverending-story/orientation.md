@@ -60,6 +60,15 @@ parts, each a file that loads over $2F00-$95FF.
 | part-2 | `PART 2` | `parts/part-2/work/entry.vsf`, `part2-command.vsf` | from Part 1's first prompt, the route in `parts/part-1/facts.md`; at the sphinxes WAIT until the eyes blink (flag 5, $2914, set), then S. "Hit space to load part two!", Space; the load returns at $0456 with room $34; three introductory pictures follow, each ending with a pause for Space, then the room and prompt |
 | part-3 | `PART 3` | `parts/part-3/work/entry.vsf`, `part3-command.vsf` | from Part 2's first prompt, the route in `parts/part-2/facts.md`, ending GET AURYN, GET FALKOR; Space at the load screen; the load returns at $0456 with room $4D; one introductory picture and a pause for Space |
 
+Part 3's listing is built from `parts/part-3/work/part3-shortcut.vsf`,
+taken on 22 October 2026 without playing Parts 1 and 2. At the engine's
+load call ($0453, after Space at "Hit space to load part one!"), the
+loader's name digit $9708 was set to `2`, `CURRENT_PART_NO` ($2940) to 2
+and `CURRENT_ROOM` ($293F) to $4D; the loader then took `PART 3`, the
+hand-over at $0456 is `parts/part-3/work/entry.vsf`, and Space after the
+introductory picture reached the first prompt ($0806). Every byte of
+Part 3's load matched the snapshot taken by the routes.
+
 Each part's `entry.vsf` was taken with a checkpoint at $0456, and its
 command snapshot with one at $0806. The routes were typed into the
 KERNAL keyboard buffer ($0277, count at $C6) a command at a time, each

@@ -23,3 +23,35 @@ comparison is the evidence retained instead. Questionnaire harness calls
 are confirmed, not live UI completion. Compressed text uses two initial
 nine-bit codes before switching to ten-bit groups; the heap example now
 names the expression-stack pointer at the guard comparison.
+
+## Typed data no label reached (22 October 2026)
+
+The ledger began counting typed data that no label's reach covers, and
+4,426 bytes in twelve stretches were bare, missing from the listing.
+
+The contributor's disk ("male disk 01a", with an FNC introduction) was
+not to hand, and none of the archive's copies checked carries it: the
+C64 Preservation Project's original `alter_ego_male_s1[activision_1987](!)`
+has no crack stub at `$0801`, and the TNC and "Up" disks start with a
+different one. The original disk, taken by the same route to the name
+prompt, runs the same program: `$4000`-`$7FFF`, the MAP1 resources at
+`$E000`-`$E5FB` and `$E800`-`$EBFF`, and the program object at `$8466`
+agree with the listing byte for byte (but for `$9990`/`$9991`). The
+loader and stub at `$0800`-`$1FFF` and everything at `$C000`-`$CFFF` do
+not: there its name prompt leaves the power-on pattern, where the
+contributor's capture holds a decoded scene-26 descriptor.
+
+So the bytes were taken from it only where it can be trusted: the zeroed
+words of the state vector and the area before it (`$7E9F`-`$7FCA`, whose
+listed neighbours agree but for the month count at `$7FC4`), the last
+file-binding records (`$8000`-`$8018`), the last two question pointers
+(`$942A`-`$942D`, in the matching program object), and the rest of the
+MAP1 graphics resource (`$EC00`-`$F9CF`, found on the TNC and "Up" disks
+in 32-byte pieces beside the `$E800`-`$EBFF` that already matched). Each
+stretch has a line comment; the question pointers' word block now runs
+to `$942D`. The other 22,067 bytes of the new snapshot that differed were
+written back from the listing, then the listing was built from it and
+the two cache stretches, `$C29C`-`$C2A1` and `$C82C`-`$CAAA`, were taken
+out again (`listing.py --rebuild --write`), so they show as missing
+rather than as the original disk's power-on pattern. The raw snapshots
+are `work/entry.vsf` and `work/name-prompt-raw.vsf`.

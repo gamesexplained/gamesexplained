@@ -41,6 +41,18 @@ Also in `work/`: `crack-intro.vsf` (stopped on `$C000`) and
 `crack-exit.vsf` (stopped on `$CB00`), kept only to show the crack's
 layers.
 
+### From the archived disk
+
+The C64 Preservation Project's G64 of the Thalamus disk,
+`delta[thalamus_1987](pal)(!)`, reaches the same entry. Autostart it,
+answer Y to "Do you want to use the fast loader? (Y/N)", and at "What do
+you want to load?" press B (Delta). The game reaches `$1770` about ten
+seconds later with warp on. Its hand-over holds the same bytes as the
+Reflex crack's wherever the listing has code or data; 1,014 bytes
+differ, all in zero page, `$02A7`-`$02DD`, variables between `$0F2F` and
+`$12D9`, the sprite shapes at `$4000`-`$4BFF` that the game rebuilds,
+and music and wave state at `$A000`, `$BDDB` and `$C2ED`-`$C355`.
+
 ## Steady state
 
 - Emulator: VICE x64sc, release v3.13.1 (`v3.13.1-linux-x86_64-gui.zip`),

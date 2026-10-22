@@ -60,3 +60,20 @@ test that skips the caller's set-up can fail where the game does not. The intro'
 stall did not happen in four boots of the original, which reach the
 store with the beam near line 25 each time. Screenshots that differ were
 retaken, and the Paris and mine maps redrawn from the original's data.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the mine's listing then left out 44 bytes
+(#475). 29 were the zeros from the end of `hazards_and_belts` to
+`$2CFF`, which its comment mentions but its block did not reach; a line
+comment at `$2CE3` now describes them. The other 15 already had
+comments and only needed the listing rebuilt.
+
+The disk from the C64 Preservation Project has the same SHA-256 as this
+run's. The mine's snapshots were made again from it by the route in
+`orientation.md`, with the part's file taken from the image by
+`kit/c64/disk.py extract`. Play differed from the listing in 69 bytes of
+variables, sprite pointers and screen, which were written back from the
+earlier listing into `parts/mine/work/play.vsf`; the unpatched snapshot
+is `parts/mine/work/play-raw.vsf`.

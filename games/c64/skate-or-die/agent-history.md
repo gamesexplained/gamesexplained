@@ -114,3 +114,28 @@ The pages were first handed to seven agents at once; a restart lost them,
 and after main's kit asked for one agent by default the pages were written
 by the lead alone from the parts' facts, with one independent agent for the
 comment audit.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and three parts' listings then left out 80 bytes
+(#470). In the ramp, 69 were the tails of pose 153 and of sprite shapes
+251 and 469, cut at the memory-map edges `$8000`, `$A000` and `$C000`;
+a line comment at each edge describes them. In the race, `$3329` was the
+`rts` that ends `sound_op5_flow`, typed as data, and is now code;
+`$39C5` was past `f_3985`'s reach, and a label at `$39B0`,
+`control_records_goofy`, now starts the goofy entries. Reading that
+table showed that goofy foot swaps left with right too, and keeps fire
+with up and fire with down, so the comment at `$39C6`, `facts.md` and
+the controls page were corrected. The shop's 9 bytes already had
+comments and only needed the listing rebuilt.
+
+The two disks from the C64 Preservation Project have the same SHA-256
+as the contributor's. The shop's snapshot was taken by holding fire on
+port 1 at the title until the shop's `$0880`; the ramp's and the race's
+came from it by the manager's entry `$F99C` (`orientation.md`), let run
+to the skater waiting at the start. They differed from the listings
+only in variables, sprite buffers and the crowd's animation, and those
+were written back from the earlier listings into each part's
+`work/play.vsf`, so the rebuilt listings keep every byte they had and
+take only the new ones; the unpatched snapshots are `work/play-raw.vsf`.
