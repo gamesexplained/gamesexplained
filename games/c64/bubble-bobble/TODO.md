@@ -1,8 +1,12 @@
 # Bubble Bobble — TODO
 
-**Tier: Silver.** 100 % of the 58,532 bytes the ledger tracks are
-described (`coverage.py`). What Gold needs is a person: read the page
-section by section, cut what is dull, and say what deserves more.
+**Tier: Platinum** (22 October 2026): the Play tab is the whole game, and
+`test_play.js` holds the published page to the game's code in CI. 100 %
+of the 58,532 bytes the ledger tracks are described (`coverage.py`).
+What Diamond needs is a person: read the page section by section, cut
+what is dull, and say what deserves more. Set `steward` to your GitHub
+login when the pass begins; `tier` stays `platinum` until every section
+has had its pass, then becomes `diamond`.
 
 ## The Play tab
 
@@ -15,11 +19,8 @@ section by section, cut what is dull, and say what deserves more.
 - The 1.7 % of passes that differ from the C64 are the actor interrupt's
   race (`play.html`, section 01); a port that yields between objects, with
   the cost of each, would land the interrupt closer to where it falls.
-- For Platinum, the page needs a `test_play.js` beside it to hold the
-  published page in CI (`kit/skills/core/70-minisite/play.md`, "The
-  page's test"), and no known bug in the port.
 
-## Gold
+## Diamond
 
 - The page is ready for the steward's pass. The four sections added for
   it (Controls, Enemy movement, The sound, Discoveries) are agent-draft
