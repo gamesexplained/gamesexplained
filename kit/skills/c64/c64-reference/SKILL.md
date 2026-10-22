@@ -628,7 +628,12 @@ a block's layout garbled.
   repeating pattern of `$00` and `$FF` runs (the run length depends on its
   RAM-init settings; one build showed `FF FF 00 00 00 00 FF FF`). A region
   of a snapshot that reads like that over and over has never been written
-  by anything; do not go looking for the table that produced it.
+  by anything; do not go looking for the table that produced it. By
+  default VICE also flips random bits in the pattern at every power-on
+  and hard reset; `tools.py vice` turns that off, so two boots of one disk
+  differ only where the game wrote. A snapshot from a VICE started another
+  way has a few hundred such bits scattered through its unwritten RAM: a
+  stray `$01` or `$FB` in the pattern is one of them, not a value.
 - The RAM image in a VICE `.vsf` saved **without ROMs** starts at file
   offset 209; confirm by reading two known bytes before relying on it.
   Choose those two bytes carefully. `$0000` and `$0001` are the worst

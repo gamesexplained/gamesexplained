@@ -134,6 +134,18 @@ def virtual_display(cmd, env):
     return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd + ["-sounddev", "fs", "-soundarg", os.devnull]
 
 
+def vice_command(exe):
+    """The emulator with its MCP server, its monitor (#236), and RAM that powers on the same every time.
+
+    VICE fills RAM at power-on with a pattern of $00 and $FF runs and then flips random bits in it
+    (its RAMInitRandomChance), so two cold boots of one disk differ wherever nothing has written yet,
+    a few hundred bits over the whole RAM. At 0 the pattern is exact on every boot and hard reset, and
+    two captures of a game differ only where it did something."""
+    return [exe, "-mcpserver", "-mcpserverport", str(VICE_PORT),
+            "-remotemonitor", "-remotemonitoraddress", f"127.0.0.1:{MONITOR_PORT}",
+            "-raminitrandomchance", "0"]
+
+
 def vice(machine="x64sc"):
     exe = os.path.join(VICE_DIR, "bin", machine)
     if not os.path.exists(exe):
@@ -170,8 +182,7 @@ def vice(machine="x64sc"):
     data, share = os.path.join(env["XDG_DATA_HOME"], "vice"), os.path.join(VICE_DIR, "share", "vice")
     if os.path.isdir(share) and not os.path.lexists(data):
         os.symlink(os.path.relpath(share, env["XDG_DATA_HOME"]), data)
-    start(virtual_display([exe, "-mcpserver", "-mcpserverport", str(VICE_PORT),
-                           "-remotemonitor", "-remotemonitoraddress", f"127.0.0.1:{MONITOR_PORT}"], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
+    start(virtual_display(vice_command(exe), env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
           port=VICE_PORT, name="emulator")
     if not mcp_answers(VICE_PORT):
         print(f"but its MCP server did not answer a first call within 10 s: the port is open and the emulated machine is not\n"
