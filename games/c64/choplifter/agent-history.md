@@ -104,3 +104,27 @@ before it reached anything downstream.
 
 Both were caught by comparing bytes, not by reading the prose. The
 spot-check rule in `AGENTS.md` is worth the minute it costs.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then left out 86 bytes (#467). All of them were the inline
+words that follow a call to one of the drawing code's inline-argument
+routines (`$8BF9`, `$8BE0`, `$8BBA`, `$8B91`, `$8C17`): 43 two-byte
+`Word` blocks, most with a side comment and some with none. The label
+on each call sat in a code block, so its span stopped before the word,
+and a side comment does not count as a description. Each word now has
+a line comment saying what it points at, with the shape number where it
+is a shape table entry; the side comments became those lines.
+
+The contributor's image was not to hand, so the snapshots were made
+from an archive.org copy of the same program (`orientation.md`). Its
+cartridge matched every byte of the first listing, and the 86 bytes
+are the only ones the first listing did not show. The new hand-over
+snapshot, stopped on `$959C`, let `listing.py` find what the loader
+leaves behind: four stretches of the copy of the cartridge it makes
+from `$0900`-`$48FF`, the end of its copy loop, and the program file's
+last five bytes past the 16 KB it copies. Each is excluded with the
+reason. `$0E43`, one byte between display list B and the erase header,
+was untyped; it is now a byte with a comment.
+

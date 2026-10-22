@@ -28,6 +28,15 @@ decompression. Nothing identifies a cracking group.
 The game's own title screen is the only build marker: `BRODERBUND SOFTWARE
 PRESENTS`, `CHOPLIFTER!`, `DAN GORLIN`, `DANE BIGHAM`, `(C) 1982`.
 
+The snapshots were made again on 22 October 2026 from another copy of
+the same program, as the first image was not to hand:
+`Choplifter_1982_Broderbund_cr_1103.d64` from archive.org (item
+`Choplifter_1982_Broderbund_cr_1103`, SHA-256
+`c9c7ebf6caa8298c40dbd0977d4c927be4d88ec7d719989894a26949f3098678`). Its
+disk has no name, but its one program, `CHOPLIFTER`, 66 blocks, loads at
+`$0801` and ends at `$4904`, and the cartridge it copies matches every
+byte the first listing held.
+
 ## From power-on to play
 
 1. Attach the image to drive 8 and autostart it. On a PAL C64 with a 1541
@@ -64,7 +73,8 @@ read with.
 
 | File | State |
 |---|---|
-| `work/play-inflight.vsf` | first sortie, helicopter airborne over the base, nothing carried. **This is the snapshot everything downstream is read from.** |
+| `work/entry.vsf` | stopped on `$959C`, the loader's jump into the cartridge, on a machine reset first: **the loader's hand-over**, for telling loaded data from drawn |
+| `work/play-inflight.vsf` | first sortie, helicopter airborne over the base, nothing carried. **This is the snapshot everything downstream is read from.** Made again on 22 October 2026 by the same route: fire, then up held for 1.5 seconds |
 
 Saved without ROMs. The 64 KB RAM image then starts at file offset 209.
 Checked against two bytes of the game's own code at `$9760` and `$8010`

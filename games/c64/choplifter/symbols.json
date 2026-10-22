@@ -124,7 +124,7 @@
   {
    "start": 3651,
    "end": 3651,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 3652,
@@ -10058,6 +10058,11 @@
    "text": "Last entry of the display list that starts at $0DA3: bytes $0E40-$0E42 are the X high byte and row of entry 39, and $0E43 is the one byte of the page that belongs to neither list nor to the scratch word at $0E44."
   },
   {
+   "address": 3651,
+   "type": "line",
+   "text": "Not used: the one byte between display list B's last entry and the erase header at $0E44. $BF06 zeroes it with the rest of $0A00-$0EFF."
+  },
+  {
    "address": 3652,
    "type": "line",
    "text": "A two-byte synthetic shape header, width then height, used to erase one display-list entry. $BC84-$BC86 puts the (clipped) width from $7B here and $BC81 the clipped height from $0B52, then $BC89 passes the address $0E44 to $8BBA so the drawing code treats the pair as a shape header, $BC8E loads the position from $6A, and $BC93 calls the solid-rectangle drawer $8C5E. The cold start at $BF26 leaves $FF here."
@@ -12004,8 +12009,8 @@
   },
   {
    "address": 43681,
-   "type": "side",
-   "text": "inline argument: the destination $67/$68/$69 - world X of the left edge and the row"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the hill copy's world X and bitmap row."
   },
   {
    "address": 43683,
@@ -12014,8 +12019,8 @@
   },
   {
    "address": 43686,
-   "type": "side",
-   "text": "inline argument: $8089, the pointer-table slot for shape 64, the hill silhouette"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $8089, the shape table entry for shape 64, the hill silhouette."
   },
   {
    "address": 43688,
@@ -12104,8 +12109,8 @@
   },
   {
    "address": 44192,
-   "type": "side",
-   "text": "inline argument: $0065, holding the tail-rotor shape for phase $0B62"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $0065, the scratch word $65/$66, holding the tail-rotor shape for phase $0B62."
   },
   {
    "address": 44194,
@@ -12114,8 +12119,8 @@
   },
   {
    "address": 44206,
-   "type": "side",
-   "text": "inline argument: the destination $67/$68/$69 of the tail rotor"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the tail rotor's."
   },
   {
    "address": 44208,
@@ -12159,8 +12164,8 @@
   },
   {
    "address": 44506,
-   "type": "side",
-   "text": "inline argument: $0065, holding the jet shape the script picked"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $0065, the scratch word $65/$66, holding the jet shape the animation script picked."
   },
   {
    "address": 44508,
@@ -12169,8 +12174,8 @@
   },
   {
    "address": 44528,
-   "type": "side",
-   "text": "inline argument: the destination $67/$68/$69 of the jet"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the jet's."
   },
   {
    "address": 44530,
@@ -12218,9 +12223,19 @@
    "text": "Second half of the actor handler for type 0, the player's helicopter, whose entry is $AFD6. $AFD6 copied the live machine's position into the actor record ($55/$56 world X, $57 height, $58 base row), drew it, and queued its dirty rectangle with size code 0 (7x23 cells). Here: if bit 7 of $64 is set, the fire button latched at $97E7, the flag is cleared, the shot is counted in $0CF3, $A951 takes a slot off the free list and it is made actor type 6. $ACB7 looks the muzzle offset up in the table at $9391 by the current aim pair ($59, $5A); that offset plus one is subtracted from the helicopter's world X and its Y part added to the height, the base row is copied from $58, $AD24 sets the shot's velocity and $A95B links it in. Then $B04E: with $61 clear the routine just falls out through $B0CE, otherwise the helicopter has been destroyed and $5D picks the airborne death at $B059 or the burning wreck at $B08D."
   },
   {
+   "address": 45165,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $0065, the scratch word $65/$66, holding the explosion cloud $B059 picked at random from shapes 51 to 54."
+  },
+  {
    "address": 45167,
    "type": "line",
    "text": "Death sequence for a helicopter destroyed while still in the air ($61 set, $5D = 1). $B059 has just picked one of the four explosion-cloud shapes, table entries 51 to 54 read through $806F, using $DC04 as the random source. Its header gives the width and height in bits and rows; half of each goes to $A9A0 so the cloud is centred on the helicopter and its world X rounded to an even bitmap column, and $8BF9 hands the position to the blitter. Continues at $B084."
+  },
+  {
+   "address": 45186,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the airburst cloud's, centred on the helicopter by $A9A0."
   },
   {
    "address": 45188,
@@ -12238,9 +12253,19 @@
    "text": "Actor handler for types 1 and 2, the explosion cloud: type 1 is a burst in the air, type 2 a burst sitting on the ground, and $B2EA chooses between them from the height. $0B75 is the animation frame 0 to 3 and selects shape table entry 51 + frame through $806F, the four frames of the expanding and dissipating cloud. The type is compared with 2 and the flags pushed across the shape lookup, so that a ground burst gets four extra rows of lift and sits on the ground instead of half inside it. Continues at $B122."
   },
   {
+   "address": 45344,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $0065, the scratch word $65/$66, holding the cloud's shape for this frame, 51 + frame."
+  },
+  {
    "address": 45346,
    "type": "line",
    "text": "Reads the chosen cloud's header: half its width in bitmap columns into X and half its height in rows into A, plus the four rows of lift for a ground burst, then $A9A0 with the align flag set turns that into a screen position centred on the actor and rounded to an even bitmap column so the multicolour pixels line up. $8BF9 passes the position on. Continues at $B13E."
+  },
+  {
+   "address": 45372,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the cloud's, centred on the actor by $A9A0."
   },
   {
    "address": 45374,
@@ -12253,9 +12278,19 @@
    "text": "Actor handler for type 6, a shot fired by the player's helicopter and created at $B008. Draws shape table entry 46, the two-pixel bullet, one bitmap column left of the actor and one row above it, with dirty-rectangle size code $0E. Continues at $B181."
   },
   {
+   "address": 45434,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the helicopter shot's."
+  },
+  {
    "address": 45436,
    "type": "line",
    "text": "Inline parameter of the $8BE0 call above: $37/$38 is loaded with the word at $8065, which is entry 46 of the shape table at $8009 and points at the bullet bitmap at $8812."
+  },
+  {
+   "address": 45439,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $8065, the shape table entry for shape 46, the two-pixel bullet."
   },
   {
    "address": 45441,
@@ -12268,9 +12303,19 @@
    "text": "Actor handler for type 5, the single shell a jet lobs when the helicopter is on the ground; $B6ED creates it. Draws shape table entry 49, a flat four-pixel bar, four bitmap columns left of the actor, with dirty-rectangle size code $10. Continues at $B1FA."
   },
   {
+   "address": 45555,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the jet shell's."
+  },
+  {
    "address": 45557,
    "type": "line",
    "text": "Inline parameter of the $8BE0 call above: $37/$38 is loaded with the word at $806B, entry 49 of the shape table, the flat bar at $8824."
+  },
+  {
+   "address": 45560,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $806B, the shape table entry for shape 49, the flat bar."
   },
   {
    "address": 45562,
@@ -12283,9 +12328,19 @@
    "text": "Actor handler for type 4, one of the pair of rockets a jet fires head on while the helicopter is airborne; $B665 creates two at a time, one above and one below the aircraft. Draws shape table entry 48, a five-pixel finned round, four bitmap columns left of the actor and one row up, with dirty-rectangle size code $0F, blitted mirrored through $903E when the horizontal velocity $0B75 is negative so the rocket points the way it is going. Continues at $B233."
   },
   {
+   "address": 45612,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the jet rocket's."
+  },
+  {
    "address": 45614,
    "type": "line",
    "text": "Inline parameter of the $8BE0 call above: $37/$38 is loaded with the word at $8069, entry 48 of the shape table, the finned round at $881C."
+  },
+  {
+   "address": 45617,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $8069, the shape table entry for shape 48, the finned round."
   },
   {
    "address": 45619,
@@ -12298,9 +12353,19 @@
    "text": "Actor handler for type 8, the arcing shell. Two things fire it: a tank, at $A2C4, which launches it one row above and one base row in front of itself with a velocity triple taken from the tables at $A354, $A359 and $A35E, and the homing mine at $B848, which lets one go straight down. Draws shape table entry 47, a one-pixel vertical dash, on the actor's own position with dirty-rectangle size code $0D. Continues at $B27E."
   },
   {
+   "address": 45687,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the arcing shell's."
+  },
+  {
    "address": 45689,
    "type": "line",
    "text": "Inline parameter of the $8BE0 call above: $37/$38 is loaded with the word at $8067, entry 47 of the shape table, the vertical dash at $8817."
+  },
+  {
+   "address": 45692,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $8067, the shape table entry for shape 47, the vertical dash."
   },
   {
    "address": 45694,
@@ -12418,9 +12483,19 @@
    "text": "Actor handler for type 10, the single homing enemy the scheduler at $A38C releases from the third sortie onwards ($8D of 2 or more, one at a time, its slot in $0CE2 and its presence in $0CE1). $A044 launches it about 440 world units to one side of the helicopter at height $70. Draws shape table entry 50, a small blocky object ten rows tall, six bitmap columns left and seven rows above the actor position, with dirty-rectangle size code $19; it is blitted plain or mirrored on alternate frames according to bit 0 of the frame counter $89, so it looks as though it is turning, and on each of those frames it sounds one of two pitches on SID voice 3 through $A7C7 ($F0 or $FF), the warble that warns the player. $0B67 is set to $FF when it was actually drawn and $0B77 counts frames 0, 1, 2. Continues at $B755."
   },
   {
+   "address": 46926,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the homing mine's."
+  },
+  {
    "address": 46928,
    "type": "line",
    "text": "Inline parameter of the $8BE0 call above: $37/$38 is loaded with the word at $806D, entry 50 of the shape table, the mine bitmap at $8827."
+  },
+  {
+   "address": 46931,
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $806D, the shape table entry for shape 50, the mine."
   },
   {
    "address": 46933,
@@ -12439,8 +12514,8 @@
   },
   {
    "address": 47336,
-   "type": "side",
-   "text": "the draw position triple at $0067: X low, X high, bitmap row"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the shed's: X low, X high, bitmap row."
   },
   {
    "address": 47338,
@@ -12449,8 +12524,8 @@
   },
   {
    "address": 47359,
-   "type": "side",
-   "text": "$0065, the scratch word holding the shed body's shape pointer"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $0065, the scratch word $65/$66, holding the shed body's shape."
   },
   {
    "address": 47361,
@@ -12459,8 +12534,8 @@
   },
   {
    "address": 47376,
-   "type": "side",
-   "text": "the draw position triple at $0067, now with row $19"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the shed's again, now with row $19."
   },
   {
    "address": 47378,
@@ -12469,8 +12544,8 @@
   },
   {
    "address": 47381,
-   "type": "side",
-   "text": "$809B: shape table entry 73, the 27-bit by 2-row solid ground bar"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $809B, the shape table entry for shape 73, the 27-bit by 2-row solid ground bar."
   },
   {
    "address": 47383,
@@ -12479,8 +12554,8 @@
   },
   {
    "address": 47429,
-   "type": "side",
-   "text": "the draw position triple at $0067, six units right of the shed"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, six units right of the shed."
   },
   {
    "address": 47431,
@@ -12489,8 +12564,8 @@
   },
   {
    "address": 47434,
-   "type": "side",
-   "text": "$809D: shape table entry 74, the 15-bit by 3-row doorway figure"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $809D, the shape table entry for shape 74, the 15-bit by 3-row doorway figure."
   },
   {
    "address": 47436,
@@ -12504,8 +12579,8 @@
   },
   {
    "address": 47645,
-   "type": "side",
-   "text": "the draw position triple at $0067 for one parallax object"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, one parallax object's."
   },
   {
    "address": 47647,
@@ -12514,8 +12589,8 @@
   },
   {
    "address": 47650,
-   "type": "side",
-   "text": "$8095: shape table entry 70, the 4-pixel by 5-row blob"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $8095, the shape table entry for shape 70, the 4-pixel by 5-row blob."
   },
   {
    "address": 47652,
@@ -12534,8 +12609,8 @@
   },
   {
    "address": 47717,
-   "type": "side",
-   "text": "the draw position triple at $0067: base X + $0F, row $19"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the base apron's: base X + $0F, row $19."
   },
   {
    "address": 47719,
@@ -12544,8 +12619,8 @@
   },
   {
    "address": 47722,
-   "type": "side",
-   "text": "the literal value $BB25 - one of only two $8BBA sites; $37/$38 is left pointing at the local fill record there, not at a shape"
+   "type": "line",
+   "text": "Inline word of the $8BBA call: $BB25, the address of the apron's fill record itself, not of a shape pointer. One of the two $8BBA calls."
   },
   {
    "address": 47724,
@@ -12554,8 +12629,8 @@
   },
   {
    "address": 47740,
-   "type": "side",
-   "text": "the draw position triple at $0067: base X - 1, row $19"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the left-hand wedge's: base X - 1, row $19."
   },
   {
    "address": 47742,
@@ -12564,13 +12639,18 @@
   },
   {
    "address": 47745,
-   "type": "side",
-   "text": "$808D: shape table entry 66, the 8-pixel by 5-row sloping wedge"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $808D, the shape table entry for shape 66, the 8-pixel by 5-row sloping wedge."
   },
   {
    "address": 47747,
    "type": "line",
    "text": "Draws the left-hand wedge of the base mirrored ($903E) at base X - 1, row $19, after booking erase code $13 - 22 columns by 5 rows, the widest rectangle the game uses, covering the apron and both wedges at once. If the wedge is off screen the rest of the base is abandoned. Then moves the position to base X + $7F for the matching right-hand wedge."
+  },
+  {
+   "address": 47771,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the right-hand wedge's: base X + $7F, row $19."
   },
   {
    "address": 47773,
@@ -12579,8 +12659,8 @@
   },
   {
    "address": 47795,
-   "type": "side",
-   "text": "the draw position triple at $0067: base X + $48, row $22"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the bunker's left half: base X + $48, row $22."
   },
   {
    "address": 47797,
@@ -12589,13 +12669,18 @@
   },
   {
    "address": 47800,
-   "type": "side",
-   "text": "$808B: shape table entry 65, the 13-pixel by 11-row bunker half"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $808B, the shape table entry for shape 65, the 13-pixel by 11-row bunker half."
   },
   {
    "address": 47802,
    "type": "line",
    "text": "Books erase code $14 (9 columns by 9 rows) and blits the left half of the bunker at base X + $48, row $22. Then advances the position $1A units for its mirror image."
+  },
+  {
+   "address": 47825,
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the bunker's mirrored right half, $1A units right of the left one."
   },
   {
    "address": 47827,
@@ -12604,8 +12689,8 @@
   },
   {
    "address": 47849,
-   "type": "side",
-   "text": "the draw position triple at $0067: base X + $71, row $2E"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the flagpole's: base X + $71, row $2E."
   },
   {
    "address": 47851,
@@ -12614,8 +12699,8 @@
   },
   {
    "address": 47854,
-   "type": "side",
-   "text": "$808F: shape table entry 67, the 1-pixel wide, 12-row flagpole"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $808F, the shape table entry for shape 67, the 1-pixel wide, 12-row flagpole."
   },
   {
    "address": 47856,
@@ -12624,8 +12709,8 @@
   },
   {
    "address": 47877,
-   "type": "side",
-   "text": "the draw position triple at $0067: base X + $73, row $2E"
+   "type": "line",
+   "text": "Inline word of the $8BF9 call: $0067, so the position is read from $67/$68/$69, the flag's: base X + $73, row $2E."
   },
   {
    "address": 47879,
@@ -12634,8 +12719,8 @@
   },
   {
    "address": 47898,
-   "type": "side",
-   "text": "$0065, the scratch word holding the chosen flag shape's pointer"
+   "type": "line",
+   "text": "Inline word of the $8BE0 call: $0065, the scratch word $65/$66, holding the chosen flag shape."
   },
   {
    "address": 47900,
@@ -12664,8 +12749,8 @@
   },
   {
    "address": 48268,
-   "type": "side",
-   "text": "the literal value $0E44 - the second and last $8BBA site; $37/$38 points at the two-byte fill header this routine has just built in RAM"
+   "type": "line",
+   "text": "Inline word of the $8BBA call: $0E44, the two-byte fill header this routine has just built in RAM. The other of the two $8BBA calls."
   },
   {
    "address": 48270,
@@ -12674,8 +12759,8 @@
   },
   {
    "address": 48273,
-   "type": "side",
-   "text": "$006A: the inline pointer argument of $8B91, a fifth routine of the inline-parameter family, which loads $04/$05 and $03 from $6A/$6B/$6C"
+   "type": "line",
+   "text": "Inline word of the $8B91 call: $006A, so the draw position is the screen position $AA38 recorded in $6A/$6B/$6C when the shape was drawn last frame."
   },
   {
    "address": 48275,
@@ -12689,8 +12774,8 @@
   },
   {
    "address": 48590,
-   "type": "side",
-   "text": "$0075: the camera word, copied into the clip origin $3B/$3C"
+   "type": "line",
+   "text": "Inline word of the $8C17 call: $0075, the camera word $75/$76, copied into the clip origin $3B/$3C."
   },
   {
    "address": 48592,
