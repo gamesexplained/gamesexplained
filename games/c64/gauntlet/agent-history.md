@@ -86,3 +86,26 @@ passes a ghost attacked the hero and vanished, and monster_remove moved
 the last monster in the table, far off screen, into its slot. The game
 was right; the page now records each turn where it ends ($BDB3), and no
 turn in 2,800 passes ends outside the window.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 21 bytes in eight
+stretches (#477). Five are bytes between labelled variables that no
+instruction refers to (`$8835`, `$910A`, `$910E`, `$9BA9`, `$A43B`);
+two are calls in `unused_side2` typed as data (`$A69D`, `$A6A5`); and
+`$B65E` is the third idle count, `$FF`, which a shot puts back once the
+walls have become exits. Each has a line comment.
+
+Reading the idle counts showed that fight_back puts the timer back with
+the player's number as the index, where shot_fire uses the stage
+(`$C54E`). Running both tails from the play snapshot for each player
+and stage confirmed it; it is in `facts.md` and on Discoveries.
+
+The disk from the C64 Preservation Project has the same SHA-256 as the
+contributor's. The snapshots were made again from it by the route in
+`orientation.md`, the glove steered by reading `$38A2`/`$38A3` between
+short pushes. Play differed from the listing in 717 bytes, nearly all
+player two's sprite buffers and shot shapes, which were written back
+from the earlier listing into `work/play-level1.vsf`; the unpatched
+snapshot is `work/play-level1-raw.vsf`.

@@ -142,6 +142,16 @@ wall, crumbling wall and key becomes an exit (idle_walls_exit, sound
 `$10`). *Live*: from 129 seconds left, the walls became exits within
 6,250 frames (129 x 48 = 6,192).
 
+A shot puts the count back from idle_reload indexed by the stage the
+timer has reached: 30, 150, then `$FF` once the walls are exits, when
+nothing counts any more (shot_fire, `$A75E`). A hand-to-hand blow that
+does not kill puts it back too, but fight_back loads the stage into Y
+and indexes with X, the player (`$C54E`): player one's blow gives 30 and
+player two's 150, at any stage. *Live*: from the level 1 snapshot, the
+two tails run for each player and stage left idle_count `$1E`, `$96`,
+`$FF` by stage after a shot, and `$1E` for player one and `$96` for
+player two at every stage after a blow.
+
 ### Players
 
 - Health is four decimal digits (health_hi/lo), 2000 at the start. Food

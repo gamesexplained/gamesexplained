@@ -60,7 +60,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1986 · U.S. Gold</p>
   <h1>Gauntlet</h1>
-  <p class="sub">What the code does that the manual never said: poison that can leave a hero with hours of health, armour that does nothing, and a developers' tool left on the disk.</p>
+  <p class="sub">What the code does that the manual never said: poison that can leave a hero with hours of health, armour that does nothing, a timer that reads the wrong number, and a developers' tool left on the disk.</p>
 </header>
 <main class="wrap">
 
@@ -98,7 +98,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section>
-  <p class="fig">03 · Left on the disk</p>
+  <p class="fig">03 · Idle timer</p>
+  <h2 class="t">Bug: player two's blows keep the doors shut</h2>
+  <p class="lede">Stop shooting and the game helps you out: after 30 seconds the doors open, and 150 seconds later every wall becomes an exit. A hand-to-hand blow puts the timer back too, but how far back depends on who struck it, not on how far the timer had got.</p>
+  <p>After a shot, shot_fire looks up the count to put back by the stage the timer has reached: 30 before the doors open, 150 after, and 255 once the walls are exits, when nothing counts any more (<code>$A75E</code>). After a blow that does not kill, fight_back loads the stage the same way and then looks the count up by the player's number instead (<code>$C54E</code>). Player one's blows always put back 30, and player two's always 150. A second player who fights rather than shoots keeps the doors shut five times as long, and once the doors are open, player one's blows bring the exits sooner than a shot would. In the emulator, the two routines left exactly those counts for each player at each stage.</p>
+</section>
+
+<section>
+  <p class="fig">04 · Left on the disk</p>
   <h2 class="t">Secret: a cable link from the developers' desk</h2>
   <p class="lede">Among the files the game loads is a small program that sends and receives memory through the user port, and nothing in the game calls it.</p>
   <div class="plate"><p style="margin:0">PINN232 loads at <code>$1388</code>, 5000 in decimal. SYS 5000 receives a block, SYS 5003 several, SYS 5006 sends one, a bit at a time on the user port with a handshake, the border changing colour with each byte (pinn_send_byte, <code>$142A</code>).</p>
