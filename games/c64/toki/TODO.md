@@ -9,8 +9,8 @@ For Silver:
   stage", names `stage_load`, `stage_sets`, and `unpack` statically:
   (confirmed in VICE): add them to `symbols.json` with a fresh
   play snapshot, find which object property each pointer table in the
-  stage block holds (`facts.md`, "Packed entries"), and find who copies
-  entry 11. Then the main loop at `wait_frame`, the
+  stage block holds (`facts.md`, "Packed entries"), and confirm in
+  VICE that entry 11 is never copied. Then the main loop at `wait_frame`, the
   two raster handlers and `nmi_frame`.
 - Treat the cartridge's banks as `kit/skills/c64/c64-reference`,
   "Bank-switched cartridges", says: make the play snapshot's analysis a

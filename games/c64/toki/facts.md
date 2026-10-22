@@ -84,7 +84,7 @@ reach the other voices: an absence of named writes says nothing.
 
 ## Cartridge directory
 
-All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start; entries 8-10 from $51E7-$51F3; entry 16 and entries 12-15 from `stage_load` at $523D and $5242, just before `jsr $0C05`; each stage's three entries from `stage_load`. Who copies entry 11 is not traced.
+All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start; entries 8-10 from $51E7-$51F3; entry 16 and entries 12-15 from `stage_load` at $523D and $5242, just before `jsr $0C05`; each stage's three entries from `stage_load`. No caller of entry 11 was found: no code in any bank loads X with $58 before `cart_copy` or `stage_load`, and in the play snapshot only 7 of its 304 bytes match RAM $0812-$0941. Its bytes read as a cruncher's start-up stub (`sei`, $01 = $30, copy $082A and $08D0 onward to $00FA and $0333, `jmp $0100`), so it is probably left over from building the cartridge and never used (static check, 2026-10-22).
 
 | # | X | Bank | Flags | Source | Destination | Bytes |
 |---|---|---|---|---|---|---|
