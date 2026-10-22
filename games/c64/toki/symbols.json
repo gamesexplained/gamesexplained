@@ -3278,9 +3278,9 @@
   },
   {
    "address": 13537,
-   "name": "f_34E1",
+   "name": "obj_speed",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 13621,
@@ -3326,9 +3326,9 @@
   },
   {
    "address": 13984,
-   "name": "f_36A0",
+   "name": "obj_dir",
    "type": "Field",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 14068,
@@ -9673,6 +9673,66 @@
    "kind": "user"
   },
   {
+   "address": 43174,
+   "name": "object_type_reset_group",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43224,
+   "name": "object_reset_to_next_frame",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43232,
+   "name": "object_reset_motion",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43258,
+   "name": "object_type_launch_arc",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43266,
+   "name": "object_start_rise_arc",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43293,
+   "name": "object_reset_tail",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43325,
+   "name": "object_type_noop",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43326,
+   "name": "object_type_activate_pair",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43373,
+   "name": "object_type_poke_stage_ram",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 43393,
+   "name": "object_type_start_spawner",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
    "address": 43408,
    "name": "s_A990",
    "type": "Subroutine",
@@ -9871,8 +9931,20 @@
    "kind": "auto"
   },
   {
+   "address": 43918,
+   "name": "object_trigger_player_in_range",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
    "address": 43975,
    "name": "set_object_hitbox",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 44038,
+   "name": "object_timer_trigger",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -10483,6 +10555,36 @@
    "kind": "auto"
   },
   {
+   "address": 46016,
+   "name": "object_hop_at_player",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 46203,
+   "name": "object_trigger_player_on_side",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 46259,
+   "name": "object_walk_land_stop",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 46273,
+   "name": "object_walk_land_bounce",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 46276,
+   "name": "object_land_bounce",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
    "address": 46458,
    "name": "s_B57A",
    "type": "Subroutine",
@@ -10553,6 +10655,24 @@
    "name": "b_BD60",
    "type": "Branch",
    "kind": "auto"
+  },
+  {
+   "address": 48502,
+   "name": "stage_spawn_arc_object",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 48608,
+   "name": "stage_arc_object_step",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 48689,
+   "name": "stage_place_part_objects",
+   "type": "Subroutine",
+   "kind": "user"
   },
   {
    "address": 48930,
@@ -13689,12 +13809,72 @@
   {
    "address": 43150,
    "type": "line",
-   "text": "Queue sound $14, then jump through a table indexed by the low four bits of f_35EF,x (the object's type): the low bytes are at $A87A and the high bytes at $A884, ten entries in all, starting with $A8FA, $A8D8, $A8E0, $A93D, and $A0E1. Called from $A61A (the contact code, after the health test at $A600) and from $A72B. What the handlers do is not yet known."
+   "text": "Queue sound $14, then jump through a table indexed by the low four bits of f_35EF,x (the object's type): the low bytes are at $A87A and the high bytes at $A884, ten entries in all, starting with $A8FA, $A8D8, $A8E0, $A93D, and $A0E1. Called from $A61A (the contact code, after the health test at $A600) and from $A72B. By type, the handlers are $A8FA (0, launch up in an arc), $A8D8 (1), $A8E0 (2), $A93D (3, does nothing), $A0E1 (4, a stage-dependent address), $A93E (5), $A8A6 (6), $A96D (7), $A981 (8), and $A902 (9)."
+  },
+  {
+   "address": 43174,
+   "type": "line",
+   "text": "Handler for object type 6, run through object_run_type_handler ($A88E). Starting with object X, it handles each following object whose obj_flags ($364C) bit 6 is set (a follower) as well. For each object that has neither bit 4 of obj_flags nor bit 5 of obj_state ($3592) set, it calls $A8D8 and then sets bit 4 of obj_flags. X is left at the last object handled."
+  },
+  {
+   "address": 43224,
+   "type": "line",
+   "text": "Handler for object type 1, and also reached by a jump from $A96A. Replace obj_frame ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_reset_motion ($A8E0)."
+  },
+  {
+   "address": 43232,
+   "type": "line",
+   "text": "Handler for object type 2, and also reached by a jump from $A98D. Clear obj_arc_state ($3F19), copy the byte at $3376 to the motion byte at $32CE, clear bit 5 of obj_flags (the bit that makes $A2D9 call the table handlers of $B1F7), and set the animation countdown at $3A60 to $FF. Then continue at $A91D with A = $FF."
+  },
+  {
+   "address": 43258,
+   "type": "line",
+   "text": "Handler for object type 0, and also reached by a jump from $B432. Replace obj_frame ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_start_rise_arc ($A902)."
+  },
+  {
+   "address": 43266,
+   "type": "line",
+   "text": "Handler for object type 9, and the second half of type 0. Set the motion byte ($32CE) to $FE, obj_arc_state ($3F19) to $80, and obj_arc_counter ($3F76) to $10, so that object_arc_step ($88CE) makes the object rise. Set bit 4 and clear bit 5 of obj_flags, then continue at $A91D with A = $FF."
+  },
+  {
+   "address": 43293,
+   "type": "line",
+   "text": "Shared end of the handlers at $A8E0, $A8FA, and $A902. Store A (always $FF here) in obj_move_bits ($3484), clear bits 0, 4, and 6 of obj_state ($3592), clear bits 4 and 5 and set bit 7 of f_35EF, and zero the script position ($379C), the repeat count ($37F0), and the animation index ($3EBC). Bit 4 of obj_state gates the hit box in update_objects and bit 0 gates the animation step at $B585, so both are switched off."
+  },
+  {
+   "address": 43325,
+   "type": "line",
+   "text": "Handler for object type 3: a bare rts, which is also the end of the code at $A91D."
+  },
+  {
+   "address": 43326,
+   "type": "line",
+   "text": "Handler for object type 5. Set obj_flags ($364C) of objects 26 and 27 ($3666 and $3667) to $90, zero their obj_state, script position, and repeat count, set their obj_move_bits to $FF, and set their motion bytes ($32E8 and $32E9) to $36 and $37. Then reset the current object through $A8D8. This probably brings two linked objects into play."
+  },
+  {
+   "address": 43373,
+   "type": "line",
+   "text": "Handler for object type 7. Store $09 in $2D32, $CD in $2D56, and $CE in $2D46 (addresses in the per-stage area, probably patching stage code or data), set obj_state of object 51 ($35C5) to $FF, and return."
+  },
+  {
+   "address": 43393,
+   "type": "line",
+   "text": "Handler for object type 8. Set obj_state of object 51 ($35C5) to $FF, clear $48, and set $49 to $64 (the delay and count that the stage routine at $BD76 reads). Then continue at $A8E0."
+  },
+  {
+   "address": 43918,
+   "type": "line",
+   "text": "Table handler for index 0 of the table at $B382. Do nothing when bit 7 of f_35EF is set. Otherwise, when player_x ($08B7/$08B8) lies from about $40 pixels left of the object's X ($E7/$E8) to about $18 pixels right of it (the carry is not set explicitly, so the edges may be off by one), jump to $4C9D, which sets bit 7 of f_35EF and swaps the motion byte at $32CE with the one at $3322."
   },
   {
    "address": 43975,
    "type": "line",
    "text": "Set the hit box of object X from its new position (E7-EA) and the first four bytes of its current frame's part list (pointer $EB/$EC): left = X + byte 0 into $3BD4/$3C31, top = Y + byte 1 into $3D48/$3DA5, right = X + byte 2 into $3C8E/$3CEB, and bottom = Y + byte 3 into $3E02/$3E5F."
+  },
+  {
+   "address": 44038,
+   "type": "line",
+   "text": "Table handler for index 13. Count down obj_off_y ($3748), used here as a timer. When it reaches zero, reload it with $32 and jump to $4C9D, which sets bit 7 of f_35EF and swaps the motion byte at $32CE with the one at $3322."
   },
   {
    "address": 44852,
@@ -13704,12 +13884,52 @@
   {
    "address": 45559,
    "type": "line",
-   "text": "Jump through a table of handlers indexed by obj_off_x,x: the low bytes are at $B382 and the high bytes at $B3A1 (31 entries). Called from $A2D9 for an object whose obj_flags bit 5 is set and whose obj_state bit 3 is clear. What the handlers do is not yet known."
+   "text": "Jump through a table of handlers indexed by obj_off_x,x: the low bytes are at $B382 and the high bytes at $B3A1 (31 entries). Called from $A2D9 for an object whose obj_flags bit 5 is set and whose obj_state bit 3 is clear. By table index: 0 is $AB8E, 1 is $B3C0, 2 is $B47B, 3 is $B4B3, 6, 10, 20, 21, and 25 share $BD76, 9 is $BDE0, 13 is $AC06, 14 is $B4C4, 18 is $B4C1, and 30 is $BE31. Indexes 4, 5, 8, 11, 12, and 15 point into per-stage RAM ($243A, $23F7, $25E1, $24BA, $2469, and $2705). Indexes 7, 16, 17, 23, 24, and 28 ($BE73, $BF80, $BFCB, $BE91, $BEB3, and $BE8D) lie past the end of the first stage's code at $BE6A and are probably used by the later stages, which load different code from $BD76. Indexes 19 and 27 ($BDBD and $BE34) enter part-way through the routines at $BD76 and $BE31, and indexes 22, 26, and 29 ($BD86, $BD84, and $BE2E) land inside instructions of the first stage's code."
   },
   {
    "address": 45575,
    "type": "line",
-   "text": "Advance the movement script of object X. The script is found through the stage-block pointers ($36) and ($38) and the position f_379C,x. A byte below $80 is a command: it is looked up in the address tables at $B33C and $B35F and run through $88AF, and a carry means the command has finished, so the script position moves on. A byte with bit 7 set ($B23C) is a move: its low four bits are a direction in the joystick pattern ($0B left, $07 right, $0E up, $0D down, $06, $05, $09, and $0A for the diagonals, where the sideways steps count twice), the next byte is the repeat count (f_37F0,x), and each step adds or subtracts f_34E1,x on the position in $E7/$E8 and $E9/$EA. Then, when bit 6 of obj_flags is set, it stores the offset from $08DA and $08DC in obj_off_x and obj_off_y. The direction is also kept in f_36A0,x. Called from $A2B4."
+   "text": "Advance the movement script of object X. The script is found through the stage-block pointers ($36) and ($38) and the position f_379C,x. A byte below $80 is a command: it is looked up in the address tables at $B33C and $B35F and run through $88AF, and a carry means the command has finished, so the script position moves on. A byte with bit 7 set ($B23C) is a move: its low four bits are a direction in the joystick pattern ($0B left, $07 right, $0E up, $0D down, $06, $05, $09, and $0A for the diagonals, where the sideways steps count twice), the next byte is the repeat count (f_37F0,x), and each step adds or subtracts obj_speed ($34E1) on the position in $E7/$E8 and $E9/$EA. Then, when bit 6 of obj_flags is set, it stores the offset from $08DA and $08DC in obj_off_x and obj_off_y. The direction is also kept in obj_dir ($36A0). Called from $A2B4."
+  },
+  {
+   "address": 46016,
+   "type": "line",
+   "text": "Table handler for index 1. While obj_off_y ($3748) is nonzero it counts that down; when it reaches zero, it starts a rising arc (obj_arc_counter $30, obj_arc_state $80) and sets obj_frame and obj_dir ($36A0) to face the player (frame 0 and direction $07 when the object is left of player_x + $1F, otherwise frame 1 and $0B). At other times, with obj_speed ($34E1) nonzero it walks sideways through $B5D5, which moves the object by obj_speed according to bit 3 of obj_dir (left when set) and flips the direction bits $0C at ledges and walls. It then sets obj_frame from that bit. While falling (bit 6 of obj_arc_state), it tests the block under the object with block_property_at ($9400): a result of 2 or 3 jumps to $A8FA, 1 lands the object and sets obj_off_y to $0A (the wait before the next hop), and 0 changes nothing else. When bit 6 is clear, bit 0 of obj_state is set while obj_arc_counter is below $10."
+  },
+  {
+   "address": 46130,
+   "type": "line",
+   "text": "Block property 2 or 3: launch the object upward through $A8FA."
+  },
+  {
+   "address": 46203,
+   "type": "line",
+   "text": "Table handler for index 2. Do nothing when bit 7 of f_35EF is set or the animation index ($3EBC) is nonzero, and count obj_off_y ($3748) down when it is nonzero. Otherwise, compare player_box_left ($4C/$4D) with the object's X: when bit 3 of $18 is clear, jump to $4C9D if the player is left of the object by less than $40, and when it is set, if the player is right of it by less than $40. Before jumping it sets obj_off_y to $0A. $4C9D sets bit 7 of f_35EF and swaps the motion byte at $32CE with the one at $3322."
+  },
+  {
+   "address": 46259,
+   "type": "line",
+   "text": "Table handler for index 3. Walk sideways through $B5D5, then run object_land_bounce ($B4C4). When that reports a final landing (carry set), set the motion byte ($32CE) to zero."
+  },
+  {
+   "address": 46273,
+   "type": "line",
+   "text": "Table handler for index 18. Walk sideways through $B5D5, then fall into object_land_bounce ($B4C4)."
+  },
+  {
+   "address": 46276,
+   "type": "line",
+   "text": "Table handler for index 14, and the second half of indexes 3 and 18. While the object falls (bit 6 of obj_arc_state $3F19), test the block under it with block_property_at ($9400). On a hit, snap the object's Y ($E9/$EA) to a block boundary. If obj_off_y ($3748) is nonzero, it becomes the new obj_arc_counter and is halved, and obj_arc_state is set to $80 so the object bounces up again, with carry clear. Otherwise obj_arc_state is cleared, bit 5 of obj_flags is cleared (so $A2D9 stops calling the table handlers), and carry is set. With no hit, or when the object is not falling, carry is clear."
+  },
+  {
+   "address": 46306,
+   "type": "line",
+   "text": "Bounce: obj_off_y becomes the rise counter and is then halved."
+  },
+  {
+   "address": 46324,
+   "type": "line",
+   "text": "No bounce height left: land for good, and stop the table handler by clearing bit 5 of obj_flags."
   },
   {
    "address": 47311,
@@ -13720,6 +13940,21 @@
    "address": 48353,
    "type": "line",
    "text": "Raster interrupt at line $DE: after a short delay, $D011 = $17 turns the black mode off, so the status panel shows from here (24 rows)."
+  },
+  {
+   "address": 48502,
+   "type": "line",
+   "text": "Table handler for indexes 6, 10, 20, 21, and 25. The code at $BD76 and above is stage code loaded from the cartridge, and this description covers the code present in the snapshot, the first stage. When $49 with bit 7 masked off is zero it does nothing. Otherwise that value is the index Y, and $48 counts down; at zero, $49 is decremented and $48 reloaded with 5, and the entries at index Y + $47 of the object arrays are filled in: for example $3F60 is obj_arc_state plus $47, set to $80, with obj_arc_counter $10, obj_state $D0, obj_flags $20, obj_off_y $AC, and y $0016. If bit 7 of $49 is clear, obj_dir is $07, X is $01A8, and the frame is 0. Otherwise obj_dir is $0B, X is $02F0, and the frame is 1. It is started by object type 8 ($A981), which sets $49 to $64."
+  },
+  {
+   "address": 48608,
+   "type": "line",
+   "text": "Table handler for index 9, in the stage code of the first stage. Count down obj_off_y ($3748). At zero, set obj_state to $FF and stop. Otherwise move the object's X ($E7/$E8) by 4, left when bit 3 of obj_dir ($36A0) is set and right when clear. While it falls (bit 6 of obj_arc_state), it tests the block under it with block_property_at ($9400) and on a hit starts a new rise (obj_arc_state $80, obj_arc_counter $30). It is probably the handler for the objects that $BD76 creates, which have obj_off_y $AC and a direction of $07 or $0B."
+  },
+  {
+   "address": 48689,
+   "type": "line",
+   "text": "Table handler for index 30, in the stage code of the first stage. Take the object's Y minus $15 ($E9) and, for each of objects 27, 28, and 29 whose obj_state bit 0 is set ($35AD, $35AE, and $35AF), store it in their obj_y_lo ($39C1-$39C3) and store the low byte of the object's X ($E7) plus $18, $08, and $3E in their obj_x_lo ($3907-$3909). This places three attached objects relative to this one."
   }
  ]
 }

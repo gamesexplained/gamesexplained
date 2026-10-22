@@ -1,10 +1,10 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 30.5 % of the play snapshot's ledger (2026-10-22).
+Tier: Bronze (2026-10-08). Coverage 33.3 % of the play snapshot's ledger (2026-10-22).
 
 For Silver:
 
-- 50-coverage: the burn-down from 30.5 %. Named and commented on
+- 50-coverage: the burn-down from 33.3 %. Named and commented on
   2026-10-22: `stage_load`, `stage_start`, `sound_frame`, the main loop
   (`main_loop`, `round_start`, `stage_begin`, `wait_nmi`, `wait_frame`),
   and the two panel interrupts (`irq_panel`, `irq_panel_on`). Also named
@@ -17,8 +17,10 @@ For Silver:
   `set_idle_aim`, `track_stage_section` (with `load_section_record`,
   `point_in_section`), `block_property_at`, `object_run_type_handler`,
   `object_run_script_handler`, `object_script_step`, and what `player_mode`
-  0-2 do. Next: the handlers behind the tables at $A87A and $B382, the
-  jump targets of `player_mode_step` ($8603, $89A9, $9025, $919E, $8E88),
+  0-2 do. Then, on 2026-10-22, the handlers behind the tables at $A87A and
+  $B382 (the first stage's; table-2 indexes 7, 16, 17, 23, 24, and 28 point
+  into later stages' code, and 19, 22, 26, 27, and 29 enter other routines
+  part-way). Next: the later stages' handlers (needs their snapshots), the jump targets of `player_mode_step` ($8603, $89A9, $9025, $919E, $8E88),
   what the section record's settings (`load_section_record`) mean, the
   stage skip (`cheat_flag` $08F9) in `cheats.md`, `nmi_frame`, the
   alternative raster handler $95A4 (when $6B is set), which object
