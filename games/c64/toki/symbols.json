@@ -1232,9 +1232,9 @@
   },
   {
    "address": 658,
-   "name": "a_0292",
+   "name": "player_hit",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 659,
@@ -1262,15 +1262,15 @@
   },
   {
    "address": 663,
-   "name": "a_0297",
+   "name": "aim_dir",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 664,
-   "name": "a_0298",
+   "name": "section_index",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 665,
@@ -2324,9 +2324,9 @@
   },
   {
    "address": 2232,
-   "name": "a_08B8",
+   "name": "player_x_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2233,
@@ -2336,9 +2336,9 @@
   },
   {
    "address": 2234,
-   "name": "a_08BA",
+   "name": "player_y_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2235,
@@ -2408,9 +2408,9 @@
   },
   {
    "address": 2246,
-   "name": "a_08C6",
+   "name": "fire_flags",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 2247,
@@ -8504,9 +8504,9 @@
   },
   {
    "address": 37599,
-   "name": "j_92DF",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "track_stage_section",
+   "type": "Subroutine",
+   "kind": "user"
   },
   {
    "address": 37615,
@@ -8540,9 +8540,9 @@
   },
   {
    "address": 37742,
-   "name": "s_936E",
+   "name": "load_section_record",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 37816,
@@ -8558,9 +8558,9 @@
   },
   {
    "address": 37837,
-   "name": "s_93CD",
+   "name": "point_in_section",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 37887,
@@ -8570,9 +8570,9 @@
   },
   {
    "address": 37888,
-   "name": "s_9400",
+   "name": "block_property_at",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 37952,
@@ -8666,9 +8666,9 @@
   },
   {
    "address": 39155,
-   "name": "s_98F3",
+   "name": "player_animate",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 39185,
@@ -9032,9 +9032,9 @@
   },
   {
    "address": 40709,
-   "name": "s_9F05",
+   "name": "set_idle_aim",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 40732,
@@ -9668,9 +9668,9 @@
   },
   {
    "address": 43150,
-   "name": "s_A88E",
+   "name": "object_run_type_handler",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 43408,
@@ -10046,9 +10046,9 @@
   },
   {
    "address": 44852,
-   "name": "s_AF34",
+   "name": "player_fire",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 44873,
@@ -10286,15 +10286,15 @@
   },
   {
    "address": 45559,
-   "name": "s_B1F7",
+   "name": "object_run_script_handler",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45575,
-   "name": "s_B207",
+   "name": "object_script_step",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 45586,
@@ -13094,7 +13094,7 @@
   {
    "address": 9,
    "type": "line",
-   "text": "Which handler update_player runs through player_mode_step: 0, 1, or 2. The setup at $500A sets 2 when bit 7 of the stage record's byte is set; other writes are in the player code. What each mode means is not yet worked out."
+   "text": "Which handler update_player runs through player_mode_step: 0, 1, or 2. The setup at $500A sets 2 when bit 7 of the stage record's byte is set; other writes are in the player code. Mode 0 is walking and jumping: player_mode_step ($85DC) sets fire_flags and runs $8603 and $89A9, which read joy_bits, and $08FA is zero on the ground and non-zero in the air. Mode 1 runs $9025 and then $919E; $9055 reads joy_bits for up, down, left, and right, and the action number $0905 is 6. Mode 1 is entered at $8A2F and $8B09 (with $0B set to 1 and $0905 set to 5, when the tile checks at $9D3C all show bit 5, value $20) and at $881D and $8D4B (with $0B at 0), and the third sprite is switched on again when mode 0 returns at $90C8 and $9108. Mode 2 runs $8E88, which sets $0905 to 7, turns the eight joystick directions into the movement mask $0D, and calls the scroll requests $42E1 (left), $42F8 (right), $430F (up), and $4326 (down); it is entered at $8B37 when the tile check finds bit 6 (value $40), with $08FA at $FF and $08FB at $30, and the jump or fall step at $8F12 applies while $08FA is non-zero. Mode 0 is restored at $8FDD, $9237, $9258, $92A1, $92D2, $9B85, and $A632 (the last one when the player is hit). Also read by player_pose ($413A), set_idle_aim ($9F05), player_fire ($AF3E), and the contact code at $A5B7. What the tile bits in modes 1 and 2 stand for in the game is not yet known."
   },
   {
    "address": 14,
@@ -13185,6 +13185,21 @@
    "address": 287,
    "type": "line",
    "text": "Copy one entry of the cartridge directory into RAM. Selects bank 0 ($80 to the Ocean bank register $DE00), reads the entry at $8009+X (source bank, source address, destination, length), then switches to the source bank and copies."
+  },
+  {
+   "address": 658,
+   "type": "line",
+   "text": "Non-zero while the player is hit or dying. The value is set to 1 at $8B7A and $8E14 (the tile check finds bit 1, harmful) and to $FF at $82C9 and $A638, and cleared at $4F04 on stage start. While it is set, player_animate ($98F3) shows a fixed shape, player_fire ($AF34) does nothing, and $89A9 restores the previous position."
+  },
+  {
+   "address": 663,
+   "type": "line",
+   "text": "Aim direction of the player's shots, 0 to 9: 0 up (facing right), 1 up-right, 2 right, 3 down-right, 4 down (facing right), 5 down (facing left), 6 down-left, 7 left, 8 up-left, 9 up (facing left). Written by player_fire ($AF34), set_idle_aim ($9F05), and $B1CF; read by player_fire to place the shot with the offsets at $0334 and by $4154 and $4182."
+  },
+  {
+   "address": 664,
+   "type": "line",
+   "text": "Number of the stage section that holds the player. Set from the stage record at $500E, and changed by track_stage_section ($92DF) when the player moves into the next or previous section; the record address is in ($26). Also written at $884C."
   },
   {
    "address": 666,
@@ -13297,9 +13312,19 @@
    "text": "The player's X position in the stage in pixels (16 bits, high byte at $08B8)."
   },
   {
+   "address": 2232,
+   "type": "line",
+   "text": "High byte of player_x ($08B7). Used for the section probe at $930A, the sprite position at $9FC8, and the saved position code."
+  },
+  {
    "address": 2233,
    "type": "line",
    "text": "The player's Y position in the stage in pixels (16 bits, high byte at $08BA)."
+  },
+  {
+   "address": 2234,
+   "type": "line",
+   "text": "High byte of player_y ($08B9). Used for the section probe at $9319, the sprite position at $A016, and the moves at $9ADC and $9B7B."
   },
   {
    "address": 2235,
@@ -13310,6 +13335,11 @@
    "address": 2237,
    "type": "line",
    "text": "The player's Y saved by save_player_y ($08BE is the high byte); restore_player_y copies it back."
+  },
+  {
+   "address": 2246,
+   "type": "line",
+   "text": "The fire state of the player. Bit 6 is the fire button copied by update_player (1 means not pressed, 0 pressed) and bit 7 means the player is shooting. In mode 0 player_mode_step sets $40 when fire is not pressed, otherwise $00 while $08FA is non-zero and $80 when it is zero; player_fire sets $80 when it starts a shot. While bit 7 is set set_idle_aim ($9F05) is skipped and, in mode 1, the movement handler at $9055 returns at once."
   },
   {
    "address": 2254,
@@ -13592,9 +13622,39 @@
    "text": "Apply one frame of vertical motion to an object's new position (E9/EA) according to obj_arc_state ($3F19 for the object in X, passed in the flags). With bit 7 and bit 6 set it falls: the position moves down by a value from $02DF indexed by obj_arc_counter ($3F76), which rises by one up to 8 (so it speeds up). With bit 7 set and bit 6 clear it rises by a value from $02CE indexed by the counter (at most 16), the counter falls by the same amount, and when it runs out obj_arc_state becomes $C0 (falling). With bit 7 clear it works out a move along a path through the data at the pointer $32 and, for a follower, stores the offset from its parent in $36F4 and $3748; that path is not decoded."
   },
   {
+   "address": 37599,
+   "type": "line",
+   "text": "Last step of update_player. First it updates the energy bar: when $08CB is non-zero it takes the low 5 bits of the health of object $08CC into $08A1 and draws the bar with $831B; when $08CB is zero and player_hit ($0292) is zero it calls $470C, whose purpose is not yet known. Then, while the player is not hit, it takes a probe point (player_x plus $18, and player_y plus $031C, with their high bytes $08B8 and $08BA) and finds the stage section that holds it. The current section record is the one at ($26) and the section number is section_index ($0298); $93CD tests the point against the bounds in the record (offsets $0E to $15: x low and high, then y low and high, each as two bytes). When the point is outside, it tries the next section (up to the limit $0C06) and then the previous one, using the record addresses at $0D22, and on a match stores the new index and pointer and falls into $936E."
+  },
+  {
+   "address": 37742,
+   "type": "line",
+   "text": "Copy the settings of the section record at ($26) into working variables: bytes 0 to 5 to $0908, $0909, $0906, $0907, $090A, and $090B, byte $16 to $08FD, and bytes $17 and $18 to obj_first and obj_end. $08FE is cleared, and bit 2 of $08FD is cleared unless it is set and the low two bits of $08FD differ from $08A7, in which case those bits are stored in $08A7 and bits 2 and 3 of $08FD are set. Called when the player enters a new section, and from $5048 during stage setup. What the individual settings mean is not yet known."
+  },
+  {
+   "address": 37837,
+   "type": "line",
+   "text": "Test whether the point at $E1/$E2 (x) and $E3/$E4 (y) lies inside the section record at ($E5): it compares each coordinate with the 16-bit minimum and maximum at offsets $0E to $15. Returns with the carry set when the point is inside and clear when it is outside."
+  },
+  {
+   "address": 37888,
+   "type": "line",
+   "text": "Look up the block property at a position. The inputs are A (added to the x position $E7/$E8), Y (added to the y position $E9/$EA), and the 16-bit position itself. Both are divided by 16 to give a block column ($EB) and row ($EC); the row picks a row pointer from the tables at ($2A) and ($2C), the column picks a block number from that row, and the block number picks the property byte in the table at ($30), which comes back in A. A row above the top of the map ($EA negative) returns 0. Used by the object code at $84B5 and $AA3C; the same lookup idea gives the tile bits that the player code tests (for example bit 0 solid and bit 1 harmful)."
+  },
+  {
    "address": 38170,
    "type": "line",
    "text": "Copy the logical sprite list into the hardware sprite tables ($07B4-$07E6) in top-to-bottom order. It starts at slot 0, or slot 1 when place_third_sprite already used slot 0 (spr_enable $07B2 non-zero). It walks sprite_y_buckets ($7CBD) from the top: positions with bit 7 set are skipped, $7F ends the list, any other value is a logical sprite number, and each position it consumes (the $7F included) is reset to $FF. For each sprite it copies the pointer ($0838) to spr_pointer ($07C7), the colour ($0808) to spr_colour ($07B4), and the X low ($0850) and Y ($0880) to the X and Y pair at $07D7/$07D8 (two bytes per slot); it sets the slot's bit in spr_x_msb ($07B1) when the X high byte ($0868) is non-zero; and it sets spr_free_line ($07CF) to Y + $16, or Y + $2B when the colour's bit 7 is set, in which case the slot's bit is also set in spr_expand ($07B3). It stops after eight slots, leaving in sprite_more ($6B) the list position of the last sprite copied, or at the end of the list, leaving 0 there. Then it sets spr_enable from the table at $02A6 (one bit for each slot used). wait_nmi uses $6B to choose the raster interrupt at $95A4 when it is non-zero."
+  },
+  {
+   "address": 39155,
+   "type": "line",
+   "text": "Choose the player's two body sprite shapes and their offsets, once a frame, from the action number $0905 and the facing flag $18 (bit 3 set for left; the values used are $07 for right and $0B for left, with others such as $05, $06, $09, $0A, and $0E in some states). While player_hit ($0292) is non-zero it only switches the third sprite off and sets player_shape_1 and player_shape_2 to fixed shapes ($28 and $34, or $29 and $35 by bit 2 of $18). Otherwise $0905 below 5 uses the table at $0458, $046C, $0480, $0490, $04A0, $04AC, $04B6, $04C0, or $04CA by facing; 5 and 6 go to $9A2A, and 7 goes to $9BAB. Each table starts with its length, and the frame index $0902 steps by 2 and wraps at that length; the pair of shape numbers is read at offset 8 plus the index, and bytes 1 to 7 give the sprite offsets $0322 and $0323, the second-sprite flag $0900, and the offsets $031A to $031D. A change of state or facing restarts the sequence (the hold counters are $0901, $0903, and $0296). While $08FF is non-zero it plays a transition sequence from the frames at $04E8 and the offsets at $04EC, moves player_y, and for the value 6 (at $9B17) either sets $0B to 1 and the third sprite on or sets player_mode to 0 ($9B85)."
+  },
+  {
+   "address": 40709,
+   "type": "line",
+   "text": "Set aim_dir ($0297) when the player is not shooting; update_player skips it while bit 7 of fire_flags ($08C6) is set. In mode 1 with $0B equal to 0 it folds the direction to 0 (up, facing right) when it is below 5 and to 9 (up, facing left) otherwise. In the other cases it uses $AB74 when $0C and $0299 are both non-zero, which picks one of 1, 3, 6, or 8 from the facing flag $18, and otherwise sets 7 when bit 3 of $18 is set (left) or 2 (right). The result is the direction that player_fire ($AF34) uses for the next shot."
   },
   {
    "address": 40770,
@@ -13627,9 +13687,29 @@
    "text": "Once a frame, draw the stage's objects and test them against the player. It first builds the player's two hit boxes in zero page: box 1 ($4C/$4D left, $4E/$4F right, $50/$51 top, $52/$53 bottom) has left = player_x ($08B7) + $031A, right = left + $031B, top = player_y ($08B9) + $031C, and bottom = top + $031D; box 2 ($54-$5B, same order) has left and right = $08B3 + $031E and + $031F, top and bottom = $08B5 + $0320 and + $0321. Then for each object from obj_first to obj_end and afterwards from temp_first to temp_end (flag $F0 is $FF for the second group): unless bit 7 of obj_state or bit 6 of $35EF is set, it converts the object's position to screen coordinates and walks the part list of its current frame (pointer $3B1A/$3B77, part count in byte 4), adding one logical sprite entry to the tables at $0808-$0880 for each part that is on the screen (at most $16 entries in all, counted from sprite_count) and filing it into sprite_y_buckets at Y / 2 or the next free position; at the end it writes $7F after the highest position used. Every object, drawn or not, then goes to the hit tests. When its obj_state bits pass the check at $A54A, $0292 is zero, and $3427 is not negative, an object with $3427 below 2 is tested against box 2 and, if it misses, box 1; the others are tested against box 1 only. Objects with bit 7 of obj_state clear and bit 5 of $35EF set are tested against the six player shot slots at $06DD-$073D. A shot that overlaps is used up; it sets a short-lived object's obj_state to $FF, or for other objects calls $439B with the object's $327A byte (by the top three bits it adds a per-type amount, none for type 3, to five digits at $08D0-$08D4, probably the score) and takes 1 (2 when $08E0 is 1) off the hit points in the low five bits of $327A, calling $A88E when that would go below zero; sound 4 is queued with queue_sound. Contact leads, by $3427 and the group, to $A7A1 (retire and run the object's routine), $A88E, or $A5B2 and $A630, which among other things set $0292 and $08FA to $FF and queue sound $24; those paths are not fully traced."
   },
   {
+   "address": 43150,
+   "type": "line",
+   "text": "Queue sound $14, then jump through a table indexed by the low four bits of f_35EF,x (the object's type): the low bytes are at $A87A and the high bytes at $A884, ten entries in all, starting with $A8FA, $A8D8, $A8E0, $A93D, and $A0E1. Called from $A61A (the contact code, after the health test at $A600) and from $A72B. What the handlers do is not yet known."
+  },
+  {
    "address": 43975,
    "type": "line",
    "text": "Set the hit box of object X from its new position (E7-EA) and the first four bytes of its current frame's part list (pointer $EB/$EC): left = X + byte 0 into $3BD4/$3C31, top = Y + byte 1 into $3D48/$3DA5, right = X + byte 2 into $3C8E/$3CEB, and bottom = Y + byte 3 into $3E02/$3E5F."
+  },
+  {
+   "address": 44852,
+   "type": "line",
+   "text": "Fire a shot, called by update_player only while bit 6 of fire_flags ($08C6) is clear, which means the fire button is pressed. Nothing happens while $08FF or player_hit ($0292) is non-zero. Player_mode picks the way aim_dir ($0297) is chosen: mode 0 reads joy_bits ($08) on the ground (up, up-right, right, down-right, down, down-left, left, and up-left give the values 0, 1, 2, 3, 4/5, 6, 7, and 8, with 9 for up when the facing flag $18 has bit 3 set), mode 0 in the air uses only left or right from the facing flag, mode 2 goes straight to the shot with the direction already in aim_dir, and mode 1 goes to $B16B. A direction that is chosen sets fire_flags to $80 and $0902 to $FE. The shot itself is made only when bit 7 of the countdown $08DE is set: it reloads $08DE and $08DF from the weapon record at ($28) offsets $14 and $15, then fills a free slot among six (flag byte at $06DD, bit 7 means in use) with four speed bytes from the record, a start position taken from player_third_x and player_third_y plus the pair at $0334 for the aim direction (rounded down to a multiple of 8), and a second corner 8 further on. Weapon level $08E0 below 3 makes one shot and plays sound $1C (not when it is 2); level 3 or more takes two slots at once ($B088) and plays sound $20."
+  },
+  {
+   "address": 45559,
+   "type": "line",
+   "text": "Jump through a table of handlers indexed by obj_off_x,x: the low bytes are at $B382 and the high bytes at $B3A1 (31 entries). Called from $A2D9 for an object whose obj_flags bit 5 is set and whose obj_state bit 3 is clear. What the handlers do is not yet known."
+  },
+  {
+   "address": 45575,
+   "type": "line",
+   "text": "Advance the movement script of object X. The script is found through the stage-block pointers ($36) and ($38) and the position f_379C,x. A byte below $80 is a command: it is looked up in the address tables at $B33C and $B35F and run through $88AF, and a carry means the command has finished, so the script position moves on. A byte with bit 7 set ($B23C) is a move: its low four bits are a direction in the joystick pattern ($0B left, $07 right, $0E up, $0D down, $06, $05, $09, and $0A for the diagonals, where the sideways steps count twice), the next byte is the repeat count (f_37F0,x), and each step adds or subtracts f_34E1,x on the position in $E7/$E8 and $E9/$EA. Then, when bit 6 of obj_flags is set, it stores the offset from $08DA and $08DC in obj_off_x and obj_off_y. The direction is also kept in f_36A0,x. Called from $A2B4."
   },
   {
    "address": 47311,
