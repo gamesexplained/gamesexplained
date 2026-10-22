@@ -248,5 +248,13 @@ C64's do, at the same height and strength (`test_fast.js`).
 The pace became a choice of three, a step a second, half a second or a
 fifth (60, 30 or 12 ticks), each a round the C64 plays at in some view.
 Smooth motion, which drew the view between the C64's own pictures, was
-taken off the page: Fast CPU draws a view each tick and glides along
-each step.
+taken off the page, since Fast CPU draws a view each tick.
+
+Whole strides were taken back out after Aaron played them: the player
+glided on for the rest of the pace after the key came up, and a second
+tap inside the pace was let go, and controls that do not answer at once
+are worse than a walk that ends elsewhere at a wall. Walking is again a
+share of a stride each tick with the remainder carried, every press is
+taken when the key goes down, and the page states the difference at
+walls and edges. The step-equivalence check left `test_fast.js` with
+them; the walk is timed over 1,200 units at each pace again.
