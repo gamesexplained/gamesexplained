@@ -12,21 +12,12 @@ findings beyond the documentation verified live, and the copy read by the
 steward. `copy` stays `agent` until the steward edits the page; the
 steward would prune a section or two and trim the copy, later.
 
-## Missing for Platinum
+## Missing for Gold + Platinum
 
-Platinum needs the listing to reassemble byte for byte to the analysed image
-and the build to boot. Nothing has been attempted.
-
-- No assembler is installed (`64tass` or ACME, per `kit/INSTALL.md`).
-- The kit has no exporter from `symbols.json` to assembler source, so the
-  listing would have to be produced by hand or by a new script. That script
-  would be a kit contribution, not a game one.
-- The image to match is the analysed one: `$3800`–`$3FFF` and
-  `$E000`–`$F450`. It is about 6 KB and I found no self-modifying code, so a
-  byte-exact rebuild looks achievable.
-- The loader is out of scope by policy, so "the build boots" would mean
-  installing the two regions and jumping to `$E037`, not reproducing the
-  Remember release.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.
 
 ## Open questions carried forward
 

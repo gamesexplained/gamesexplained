@@ -17,7 +17,7 @@ Useful remaining investigations:
 - Establish a legal88-life route before presenting the final-award16-bit overflow as an exploit.
 - Compare SID bus decay and within-frame write timing with recorded hardware before claiming audio waveform fidelity.
 
-A full playable JavaScript port and byte-for-byte reassembly are separate work. Neither is required for this Silver result.
+A full playable JavaScript port, which Platinum needs, is separate work and is not required for this Silver result.
 
 A separate reviewer sampling facts and source interpretations under `kit/CHECKING.md` remains recommended; it is not a mandatory Silver gate for this proven-model run. `facts.md` records the self-checks and their limits, including the deliberate 20-fact/10-routine sample and its one routine-address failure. The fixes and follow-up checks are retained in `agent-history.md`; the detailed reports are private working records. These checks do not constitute independent certification.
 

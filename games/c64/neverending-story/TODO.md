@@ -15,4 +15,7 @@
 
 # Work toward Platinum
 
-- Reassemble each part and the engine from the listings, byte for byte, and boot the result.
+A Play tab that is the whole game: every routine ported to JavaScript
+and run in lockstep with the game's own code, with `test_play.js`
+beside the page (`kit/skills/core/70-minisite/play.md`), and no bug
+known that stops a player finishing.
