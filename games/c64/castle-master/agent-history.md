@@ -190,3 +190,17 @@ over a turn, 4 % of the view's pixels differed from the page's painter at
 the same angle, against 1.7 % at the game's own angles. The page paints the
 view at the exact angle, as smooth motion does, and the game's own
 picture stays for what the game uses it for.
+
+Each round then lasted as long as the browser's frame, so the same keys
+made a slightly different game at each frame rate. A round now lasts one
+tick of CIA 1's timer A, 16,422 cycles (the latch the KERNAL leaves,
+16,421, plus one), and starts at the same count of it: the timer moves on
+everything in play that is timed, while the music's frame (19,656 cycles)
+has only 42 cycles in common with it. The page banks real time, runs at
+most four rounds a frame and lets the rest go, and paints the view a round
+behind, between the last two pictures. 1,500 rounds of scripted controls
+gave the same machine byte for byte at 60 and 144 frames a second, with
+frames 4 to 40 ms apart, and with a frame each quarter second (four rounds
+a frame, so slower than the C64). In Chromium a round cost 1.3 to 2.1 ms
+and the painter 0.3 to 0.9 ms; with the frame rate unlimited (456 frames
+a second) the page still ran 60 rounds a second.

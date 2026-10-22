@@ -1,5 +1,5 @@
 // The Play page's fast CPU: Castle Master as a C64 with a much faster processor would run it, a pass
-// of its main loop for each frame of the screen, made to play at the C64's own pace.
+// of its main loop for each tick of its timer (60 a second), made to play at the C64's own pace.
 //
 // The game moves the player a fixed step each pass of its main loop: each pass reads the controls,
 // takes a step, turns or looks a step, runs the scripts the step set off and draws the view, and a
@@ -7,14 +7,17 @@
 // processor the passes come faster and every step with them. What runs on the interrupt (the
 // clock, the sensors' drain on strength, the lightning's countdown, the scripts' timer, the music)
 // keeps its time, and so does every wait on it. So the page's machine runs the main loop's work a
-// thousand times faster and waits at the start of each pass for the next frame of the screen
-// (page/runtime.js), and this mod makes each pass do the share of a C64 pass that its time is.
+// thousand times faster and waits at the start of each pass for the timer's next tick (page/
+// runtime.js, runSteps), and this mod makes each pass do the share of a C64 pass that its time is.
+// Every pass is the same length, so the same controls make the same game at any rate the page is
+// drawn at, and the page draws the view between the last two passes (latest()).
 //
 // The rule, which depends on no address of this game:
 //   f = Δ / D, the share of a C64 pass a pass is given: Δ the clock from the pass's start to the
-//       frame that shows it, D the time the C64 would take over a pass like it (one that works
-//       the view out and draws it, or one that moves the pointer), its work as the page's pacing
-//       counts it (rt.pass) over the part of the processor the interrupts leave the main program;
+//       clock it runs to (a tick on), D the time the C64 would take over a pass like it (one that
+//       works the view out and draws it, or one that moves the pointer), its work as the page's
+//       pacing counts it (rt.pass) over the part of the processor the interrupts leave the main
+//       program;
 //   - a step the game takes each pass a control is held is taken f of, and what is left of a whole
 //     unit carried to the next (walking, turning, looking, the pointer's moves);
 //   - an action a control sets off is taken when the control is pressed, and again each D it is
@@ -40,8 +43,9 @@
 //   fx.D                           { draw, aim }: the C64's cycles over a pass of each kind
 //   CMFast.paint(px, fx, F)        the view as the machine holds it now, in the C64's pixels, into
 //                                  px (frame F's palette indices), F's sprites left on top
-//   CMFast.latest(fx, st)          the modern view's picture (page/modern.js, st its watch) that
-//                                  the machine's bitmap holds now, as smooth() gives one, or null
+//   CMFast.latest(fx, st)          the modern view (page/modern.js, st its watch) at the page's
+//                                  time, between the last two pictures, when the machine's bitmap
+//                                  holds the last; as smooth() gives one, or null
 (function (root) {
 'use strict';
 const VX = 72, VY = 67;
@@ -354,17 +358,27 @@ function paint(px, fx, F) {
 }
 
 // The modern view's last picture, if the bitmap holds it now, as smooth() gives a view between two
-// (not still, so that CMModern.paint paints it)
+// (not still, so that CMModern.paint paints it). A pass's picture is the view at the clock the pass
+// ran to (its goal), and the clock owes the page part of a pass more (rt.phase): the view is drawn
+// a pass behind, that part of the way from the picture before to the last, so that it moves at
+// every frame of the screen whatever its rate
 function latest(fx, st) {
   if (!fx || !st) return null;
-  const f = st.flips[st.flips.length - 1];
+  const MM = root.CMModern, i = st.flips.length - 1, f = st.flips[i];
   if (!f || !f.pic) return null;
-  const M = fx.rt.M;
+  const rt = fx.rt, M = rt.M;
   for (let r = 0; r < 15; r++) {
     const a = f.at + r * 320;
     for (let k = 0; k < 240; k++) if (M[a + k] !== f.snap[r * 240 + k]) return null;
   }
-  return { scene: f.scene || (f.scene = root.CMModern.scene(st.P, f.pic)), shown: f, phi: f.n, still: false };
+  const last = { scene: f.scene || (f.scene = MM.scene(st.P, f.pic)), shown: f, phi: f.n, still: false };
+  const e = st.flips[i - 1];
+  if (!rt.fast || rt.fast.grid === null || !e || !e.pic || MM.cut(e.pic, f.pic)) return last;
+  const g = 1 - (f.goal - (rt.fast.grid - rt.step * (1 - rt.phase))) / rt.step;
+  if (!(g < 1)) return last;
+  const h = Math.max(0, g), base = h < 0.5 ? e.pic : f.pic;
+  const pic = Object.assign({}, base, MM.objectsBetween(e.pic, f.pic, h));
+  return { scene: MM.scene(st.P, pic, MM.between(e.pic.pose, f.pic.pose, h)), shown: f, phi: f.n - 1 + h, still: false };
 }
 
 root.CMFast = { attach, set, paint, latest, ONCE, ONCE_CTRL };

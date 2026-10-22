@@ -17,8 +17,13 @@
 //   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low }
 //   rt.onSid(f)        f(register, value, cycle) for every write to the SID
 //   rt.target          the clock at the end of the frame runFrame last ran to (null before the first)
-//   rt.runTo(c)        the program run until the clock reaches c, part of a frame or more (the fast
-//                      CPU's page runs to each frame of the screen); returns the last frame finished
+//   rt.runTo(c)        the program run until the clock reaches c, part of a frame or more; returns
+//                      the last frame finished
+//   rt.runSteps(c, most, each)   the fast CPU's clock (below): c more cycles of real time owed, and
+//                      the program run on by whole passes of rt.step cycles while it owes one, at
+//                      most `most` of them, each(n) after each; returns how many it ran
+//   rt.step            a pass on the fast CPU: the timer's period, 16,422 cycles
+//   rt.phase           how far the clock owes into the next pass, 0 to 1
 //   rt.fast            the fast CPU (below): set by rt.setFast(on), null when off
 //   rt.pass            { work }: the cycles the main loop's stretches have cost so far, as the C64
 //                      would spend them, kept in either mode
@@ -47,11 +52,14 @@
 //
 // The fast CPU (page/fast.js's switch). The main loop's stretches (between its checkpoints, PASS)
 // cost a FASTth of what they cost the C64, and each pass of play waits at its start for the clock
-// the page runs to (runTo), so that the program draws a view for each frame of the screen. The
+// the page runs to (runTo), so that the program draws a view for each pass the page runs. The
 // interrupts and every wait on them keep the C64's time, and so does what runs outside the main
 // loop's stretches: the start, the title, the menus, a message held until a key. What the C64
 // would have spent on each pass is counted either way (rt.pass), for page/fast.js to scale the
-// pass's steps by.
+// pass's steps by. The page runs the clock on a pass at a time (runSteps), each the timer's period,
+// so that a pass begins at the same count of the timer as the last and sees one tick of it: the
+// game is then the same, pass for pass, at whatever rate the page is drawn. A machine too slow to
+// keep up lets the time it owes go, and plays slower than the C64.
 (function (root) {
 'use strict';
 const LINE = 63, LINES = 312, FRAME = LINE * LINES;
@@ -239,7 +247,8 @@ function create(o) {
   P.INSTALL_RUNTIME_VECTORS = function (r) { const v = install.call(this, r); irqsOn = true; return v; };
   const model = o.cost || { seg: {}, call: {} };
   let calls = Object.create(null), counting = true, owed = 0;
-  // the fast CPU, when on: { carry } the cycles it owes the clock, less than one
+  // the fast CPU, when on: { carry } the cycles it owes the clock, less than one; { grid, bank }
+  // the clock its last pass ran to and the real time owed since (runSteps)
   let fast = null;
   const pass = { work: 0 };
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
@@ -373,7 +382,22 @@ function create(o) {
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
-  function setFast(on) { fast = on ? fast || { carry: 0 } : null; }
+  function runSteps(c, most, each) {
+    if (!fast) return 0;
+    if (target === null) target = t;
+    if (fast.grid === null) fast.grid = target;
+    const step = ta.lat + 1;
+    let n = 0;
+    fast.bank += c;
+    while (fast.bank >= step && n < most) {
+      fast.bank -= step; fast.grid += step;
+      runTo(fast.grid);
+      if (each) each(++n); else n++;
+    }
+    if (fast.bank >= step) fast.bank %= step;
+    return n;
+  }
+  function setFast(on) { fast = on ? fast || { carry: 0, grid: null, bank: 0 } : null; }
 
   const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
   function restore(s, entry) {
@@ -400,8 +424,9 @@ function create(o) {
     M, colour, vic, sidw, input, KEY, P, files, spent, pass, setFast,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
     get goal() { return goal; }, get fast() { return fast; },
+    get step() { return ta.lat + 1; }, get phase() { return fast ? fast.bank / (ta.lat + 1) : 0; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    runFrame, runTo, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
+    runFrame, runTo, runSteps, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onSid: f => sidListeners.push(f),
   };
 }

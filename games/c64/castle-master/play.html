@@ -90,7 +90,7 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="smooth" aria-pressed="false" title="Move the 3D view at the screen's own frame rate, from each of the game's pictures to the next">Smooth motion</button>
-      <button type="button" data-act="fast" aria-pressed="false" title="Run the game as a C64 with a much faster processor would, a new view for every frame of the screen, at the C64's own pace of play">Fast CPU</button>
+      <button type="button" data-act="fast" aria-pressed="false" title="Run the game as a C64 with a much faster processor would, a new view 60 times a second, at the C64's own pace of play">Fast CPU</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
@@ -112,7 +112,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Smooth motion</b> moves the 3D view at the screen's own frame rate, from each of the game's pictures to the next (section 02). <b>Fast CPU</b> runs the game as a C64 with a much faster processor would, a new view for every frame of the screen, at the C64's pace of play (section 03).</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Smooth motion</b> moves the 3D view at the screen's own frame rate, from each of the game's pictures to the next (section 02). <b>Fast CPU</b> runs the game as a C64 with a much faster processor would, a new view 60 times a second, at the C64's pace of play (section 03).</p>
   </div>
 </section>
 <section id="port">
@@ -157,10 +157,13 @@ section table{margin:6px 0 18px}
 </section>
 <section id="fast">
   <p class="fig">03 · Fast CPU</p>
-  <h2 class="t">A new view for every frame of the screen</h2>
-  <p class="lede">The game moves the player a fixed step each time its main loop goes round, and on a C64 a round takes from a fifth of a second to two seconds, most of it spent drawing the view. So in the Wilderness the player walks in strides of 240 of the game's units, and turns 15 degrees at a time. With <b>Fast CPU</b> on, the page runs the main loop as a C64 with a much faster processor would, once for every frame the screen shows, and each round moves the player by the share of a step that its time is of a C64 round.</p>
+  <h2 class="t">A new view each tick of the game's clock</h2>
+  <p class="lede">The game moves the player a fixed step each time its main loop goes round, and on a C64 a round takes from a fifth of a second to two seconds, most of it spent drawing the view. So in the Wilderness the player walks in strides of 240 of the game's units, and turns 15 degrees at a time. With <b>Fast CPU</b> on, the page runs the main loop as a C64 with a much faster processor would, 60 times a second, and each round moves the player by the share of a step that its time is of a C64 round.</p>
 <h3>The interrupt keeps the C64's time</h3>
 <p>Only the main loop's own work goes faster. Everything the game times by its interrupt runs as before: the music, the drain on strength while a sensor watches, the countdown to the next lightning, and the scripts' timer every ten seconds. So does every wait on the interrupt: a door's animation, the viewport opening, the pause after a shot. A minute of play is a minute on either machine.</p>
+<h3>Every round lasts one tick of the game's clock</h3>
+<p>The game's clock is timer A of the C64's first CIA chip, which interrupts the processor every 16,422 cycles, just under 60 times a second. Each tick moves on the scripts' delays, the lightning's countdown, the drain on strength and the scripts' timer. With Fast CPU on, each round of the main loop starts at the same count of that timer, one tick after the last unless the game waited on the interrupt in between. So the same keys, held for the same rounds, make the same game on any computer and at any frame rate.</p>
+<p>The page shows the view a round behind, part of the way from one round's picture to the next as Smooth motion draws it, so that the view moves at every frame of a screen that shows 120 or 144 a second. A computer too slow to run 60 rounds a second plays slower than the C64. Its rounds stay one tick long, so the player's steps stay the same size.</p>
 <h3>Each round does its share of a step</h3>
 <table>
   <tr><th>Each round of the main loop</th><th>On a C64</th><th>With Fast CPU</th></tr>
@@ -174,7 +177,7 @@ section table{margin:6px 0 18px}
 </table>
 <p>A C64 round is the time the C64 would take over the view in front of the player now. The page counts what each round costs as the game runs, at the cycles of the C64's own routines (section 01), whether Fast CPU is on or off. Facing the castle from where the game starts, a round that draws the view takes 1.8 seconds; looking up into the sky, two-thirds of a second. So the player walks from the start at 132 of the game's units a second on either machine, and turns faster where the view is simpler, as on a C64.</p>
 <h3>The view between two of the game's angles</h3>
-<p>The game keeps the sines and cosines of its 72 angles in 64ths. At those angles each picture is the game's own. Between them the rounding of the 64ths jumps, and a wall close to the player moves a few pixels at once. So with Fast CPU on, the game works out each view at the angle between, for what it uses the view for (which objects are in sight, what a shot hits), and the page paints the picture from the same objects at that angle, as Smooth motion paints its views (section 02): in the C64's pixels, or with Native resolution at the screen's own. The page draws a view for every frame of the screen: 60 a second on most screens, and more on faster ones.</p>
+<p>The game keeps the sines and cosines of its 72 angles in 64ths. At those angles each picture is the game's own. Between them the rounding of the 64ths jumps, and a wall close to the player moves a few pixels at once. So with Fast CPU on, the game works out each view at the angle between, for what it uses the view for (which objects are in sight, what a shot hits), and the page paints the picture from the same objects at that angle, as Smooth motion paints its views (section 02): in the C64's pixels, or with Native resolution at the screen's own.</p>
 </section>
 <section id="differences">
   <p class="fig">04 · Differences</p>
@@ -187,7 +190,7 @@ section table{margin:6px 0 18px}
   <tr><td>Each instruction takes its cycles, and a view takes as long as its polygons do.</td><td>The port executes no instructions. Each routine and each row, byte and edge step it draws costs what it cost the game, fitted on the game's own timings, so a view takes about as long as on the C64 (01, The pace) and appears when its drawing is done.</td></tr>
   <tr><td>The SID plays the music and the effects.</td><td>The game's own music driver runs on the site's 6502 in the port, as the How it works page's tune player runs it, and the site's model of the SID plays what it writes, each frame of it as the frame is shown.</td></tr>
   <tr><td>The game draws the 3D view in its patterns, 120 pixels by 120, and changes it when a picture is done, about once a second.</td><td>With Native resolution on, the page draws the same faces from the game's own positions and rules as sharp shapes and solid shades. With Smooth motion on, it draws the view part of the way from one picture to the next at the screen's own frame rate. Neither ever appears on a C64 (02).</td></tr>
-  <tr><td>The main loop goes round when the C64 has drawn the view, and each round moves the player a whole step.</td><td>With Fast CPU on, the main loop goes round once for every frame of the screen, and each round moves the player by its share of a step, so that the player moves as far each second as on a C64 (03). No C64 was ever this fast.</td></tr>
+  <tr><td>The main loop goes round when the C64 has drawn the view, and each round moves the player a whole step.</td><td>With Fast CPU on, the main loop goes round once each tick of the game's timer, 60 times a second, and each round moves the player by its share of a step, so that the player moves as far each second as on a C64 (03). No C64 was ever this fast.</td></tr>
   <tr><td>The video chip draws the screen.</td><td>The site's model of the video chip draws each frame from the port's memory, with each change the port makes during the frame applied where the beam meets it.</td></tr>
 </table>
 </section>
@@ -5104,8 +5107,13 @@ G.view = function (P) {
 //   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low }
 //   rt.onSid(f)        f(register, value, cycle) for every write to the SID
 //   rt.target          the clock at the end of the frame runFrame last ran to (null before the first)
-//   rt.runTo(c)        the program run until the clock reaches c, part of a frame or more (the fast
-//                      CPU's page runs to each frame of the screen); returns the last frame finished
+//   rt.runTo(c)        the program run until the clock reaches c, part of a frame or more; returns
+//                      the last frame finished
+//   rt.runSteps(c, most, each)   the fast CPU's clock (below): c more cycles of real time owed, and
+//                      the program run on by whole passes of rt.step cycles while it owes one, at
+//                      most `most` of them, each(n) after each; returns how many it ran
+//   rt.step            a pass on the fast CPU: the timer's period, 16,422 cycles
+//   rt.phase           how far the clock owes into the next pass, 0 to 1
 //   rt.fast            the fast CPU (below): set by rt.setFast(on), null when off
 //   rt.pass            { work }: the cycles the main loop's stretches have cost so far, as the C64
 //                      would spend them, kept in either mode
@@ -5134,11 +5142,14 @@ G.view = function (P) {
 //
 // The fast CPU (page/fast.js's switch). The main loop's stretches (between its checkpoints, PASS)
 // cost a FASTth of what they cost the C64, and each pass of play waits at its start for the clock
-// the page runs to (runTo), so that the program draws a view for each frame of the screen. The
+// the page runs to (runTo), so that the program draws a view for each pass the page runs. The
 // interrupts and every wait on them keep the C64's time, and so does what runs outside the main
 // loop's stretches: the start, the title, the menus, a message held until a key. What the C64
 // would have spent on each pass is counted either way (rt.pass), for page/fast.js to scale the
-// pass's steps by.
+// pass's steps by. The page runs the clock on a pass at a time (runSteps), each the timer's period,
+// so that a pass begins at the same count of the timer as the last and sees one tick of it: the
+// game is then the same, pass for pass, at whatever rate the page is drawn. A machine too slow to
+// keep up lets the time it owes go, and plays slower than the C64.
 (function (root) {
 'use strict';
 const LINE = 63, LINES = 312, FRAME = LINE * LINES;
@@ -5326,7 +5337,8 @@ function create(o) {
   P.INSTALL_RUNTIME_VECTORS = function (r) { const v = install.call(this, r); irqsOn = true; return v; };
   const model = o.cost || { seg: {}, call: {} };
   let calls = Object.create(null), counting = true, owed = 0;
-  // the fast CPU, when on: { carry } the cycles it owes the clock, less than one
+  // the fast CPU, when on: { carry } the cycles it owes the clock, less than one; { grid, bank }
+  // the clock its last pass ran to and the real time owed since (runSteps)
   let fast = null;
   const pass = { work: 0 };
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
@@ -5460,7 +5472,22 @@ function create(o) {
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
-  function setFast(on) { fast = on ? fast || { carry: 0 } : null; }
+  function runSteps(c, most, each) {
+    if (!fast) return 0;
+    if (target === null) target = t;
+    if (fast.grid === null) fast.grid = target;
+    const step = ta.lat + 1;
+    let n = 0;
+    fast.bank += c;
+    while (fast.bank >= step && n < most) {
+      fast.bank -= step; fast.grid += step;
+      runTo(fast.grid);
+      if (each) each(++n); else n++;
+    }
+    if (fast.bank >= step) fast.bank %= step;
+    return n;
+  }
+  function setFast(on) { fast = on ? fast || { carry: 0, grid: null, bank: 0 } : null; }
 
   const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
   function restore(s, entry) {
@@ -5487,8 +5514,9 @@ function create(o) {
     M, colour, vic, sidw, input, KEY, P, files, spent, pass, setFast,
     get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
     get goal() { return goal; }, get fast() { return fast; },
+    get step() { return ta.lat + 1; }, get phase() { return fast ? fast.bank / (ta.lat + 1) : 0; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    runFrame, runTo, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
+    runFrame, runTo, runSteps, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onSid: f => sidListeners.push(f),
   };
 }
@@ -6029,7 +6057,7 @@ function attach(rt) {
   wrap(P, 'CLEAR_LINEAR_30BYTE_ROWS', () => { st.pending = null; });
   const flip = () => {
     const at = w16(M, 0x1237);
-    st.flips.push({ pic: st.pending, t: rt.t, n: ++st.n, snap: viewBytes(M, at), at });
+    st.flips.push({ pic: st.pending, t: rt.t, goal: rt.goal, n: ++st.n, snap: viewBytes(M, at), at });
     if (st.flips.length > 24) st.flips.shift();
   };
   wrap(P, 'BLIT_LINEAR_VIEWPORT_TO_VIC_BITMAP', null, flip);
@@ -6313,14 +6341,14 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, spritePixels, between, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, spritePixels, between, objectsBetween, cut, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
 /* port/page/fast.js */
 // The Play page's fast CPU: Castle Master as a C64 with a much faster processor would run it, a pass
-// of its main loop for each frame of the screen, made to play at the C64's own pace.
+// of its main loop for each tick of its timer (60 a second), made to play at the C64's own pace.
 //
 // The game moves the player a fixed step each pass of its main loop: each pass reads the controls,
 // takes a step, turns or looks a step, runs the scripts the step set off and draws the view, and a
@@ -6328,14 +6356,17 @@ root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, captu
 // processor the passes come faster and every step with them. What runs on the interrupt (the
 // clock, the sensors' drain on strength, the lightning's countdown, the scripts' timer, the music)
 // keeps its time, and so does every wait on it. So the page's machine runs the main loop's work a
-// thousand times faster and waits at the start of each pass for the next frame of the screen
-// (page/runtime.js), and this mod makes each pass do the share of a C64 pass that its time is.
+// thousand times faster and waits at the start of each pass for the timer's next tick (page/
+// runtime.js, runSteps), and this mod makes each pass do the share of a C64 pass that its time is.
+// Every pass is the same length, so the same controls make the same game at any rate the page is
+// drawn at, and the page draws the view between the last two passes (latest()).
 //
 // The rule, which depends on no address of this game:
 //   f = Δ / D, the share of a C64 pass a pass is given: Δ the clock from the pass's start to the
-//       frame that shows it, D the time the C64 would take over a pass like it (one that works
-//       the view out and draws it, or one that moves the pointer), its work as the page's pacing
-//       counts it (rt.pass) over the part of the processor the interrupts leave the main program;
+//       clock it runs to (a tick on), D the time the C64 would take over a pass like it (one that
+//       works the view out and draws it, or one that moves the pointer), its work as the page's
+//       pacing counts it (rt.pass) over the part of the processor the interrupts leave the main
+//       program;
 //   - a step the game takes each pass a control is held is taken f of, and what is left of a whole
 //     unit carried to the next (walking, turning, looking, the pointer's moves);
 //   - an action a control sets off is taken when the control is pressed, and again each D it is
@@ -6361,8 +6392,9 @@ root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, captu
 //   fx.D                           { draw, aim }: the C64's cycles over a pass of each kind
 //   CMFast.paint(px, fx, F)        the view as the machine holds it now, in the C64's pixels, into
 //                                  px (frame F's palette indices), F's sprites left on top
-//   CMFast.latest(fx, st)          the modern view's picture (page/modern.js, st its watch) that
-//                                  the machine's bitmap holds now, as smooth() gives one, or null
+//   CMFast.latest(fx, st)          the modern view (page/modern.js, st its watch) at the page's
+//                                  time, between the last two pictures, when the machine's bitmap
+//                                  holds the last; as smooth() gives one, or null
 (function (root) {
 'use strict';
 const VX = 72, VY = 67;
@@ -6675,17 +6707,27 @@ function paint(px, fx, F) {
 }
 
 // The modern view's last picture, if the bitmap holds it now, as smooth() gives a view between two
-// (not still, so that CMModern.paint paints it)
+// (not still, so that CMModern.paint paints it). A pass's picture is the view at the clock the pass
+// ran to (its goal), and the clock owes the page part of a pass more (rt.phase): the view is drawn
+// a pass behind, that part of the way from the picture before to the last, so that it moves at
+// every frame of the screen whatever its rate
 function latest(fx, st) {
   if (!fx || !st) return null;
-  const f = st.flips[st.flips.length - 1];
+  const MM = root.CMModern, i = st.flips.length - 1, f = st.flips[i];
   if (!f || !f.pic) return null;
-  const M = fx.rt.M;
+  const rt = fx.rt, M = rt.M;
   for (let r = 0; r < 15; r++) {
     const a = f.at + r * 320;
     for (let k = 0; k < 240; k++) if (M[a + k] !== f.snap[r * 240 + k]) return null;
   }
-  return { scene: f.scene || (f.scene = root.CMModern.scene(st.P, f.pic)), shown: f, phi: f.n, still: false };
+  const last = { scene: f.scene || (f.scene = MM.scene(st.P, f.pic)), shown: f, phi: f.n, still: false };
+  const e = st.flips[i - 1];
+  if (!rt.fast || rt.fast.grid === null || !e || !e.pic || MM.cut(e.pic, f.pic)) return last;
+  const g = 1 - (f.goal - (rt.fast.grid - rt.step * (1 - rt.phase))) / rt.step;
+  if (!(g < 1)) return last;
+  const h = Math.max(0, g), base = h < 0.5 ? e.pic : f.pic;
+  const pic = Object.assign({}, base, MM.objectsBetween(e.pic, f.pic, h));
+  return { scene: MM.scene(st.P, pic, MM.between(e.pic.pose, f.pic.pose, h)), shown: f, phi: f.n - 1 + h, still: false };
 }
 
 root.CMFast = { attach, set, paint, latest, ONCE, ONCE_CTRL };
@@ -6710,8 +6752,8 @@ let data = null, rt = null, fx = null, running = false, paused = false, native =
 // native resolution or smooth motion the 3D view is drawn again over it (page/modern.js): with
 // smooth motion at every frame the browser paints, from the picture on show toward the next, in
 // the C64's pixels or, with native resolution too, at the screen's own. With the fast CPU
-// (page/fast.js) the game draws a view for every frame the browser paints, and the view is the
-// last it drew
+// (page/fast.js) the game draws a view each tick of its timer, and the page paints the view
+// between the last two at every frame the browser paints
 const off = document.createElement('canvas'); off.width = 384; off.height = 272;
 const offCtx = off.getContext('2d'), img = offCtx.createImageData(384, 272);
 let frame = null, px = null, work = null, inOff = null;   // inOff: the pixels the off canvas holds
@@ -6736,8 +6778,8 @@ function present() {
     else if (smooth) view = MM.smooth(st, viewTime(), frame);
     else { const s = MM.onShow(st, frame); if (s) view = { scene: s.scene || (s.scene = MM.scene(rt.P, s.pic)), shown: s }; }
   }
-  // the fast CPU: the view the game drew last, which the frame on show can be a frame behind; in
-  // the C64's pixels painted at the pose's own angles, as smooth motion paints them
+  // the fast CPU: the view between the game's last two, which the frame on show can be a frame
+  // behind; in the C64's pixels painted at the pose's own angles, as smooth motion paints them
   if (FX) {
     work = work || new Uint8Array(px.length); work.set(px); p = work; inOff = null;
     if (native || !view || !MM.paint(work, view, frame)) FX.paint(work, fx, frame);
@@ -6811,8 +6853,9 @@ function saved(name, bytes) {
   } catch (e) { say('Saved for this visit only: the browser keeps no storage for this page.'); }
 }
 
-// --- the loop: one frame of C64 time per frame of real time; with the fast CPU, the clock run on
-// to each frame the browser paints
+// --- the loop: one frame of C64 time per frame of real time; with the fast CPU, a pass of the
+// game for each tick of its timer that real time has reached, at most four a frame (a machine too
+// slow for them plays slower than the C64)
 let acc = 0, last = 0;
 const CYCLES_MS = 985248 / 1000;
 function boot() {
@@ -6832,7 +6875,8 @@ function tick(now) {
   try {
     const dt = Math.min(250, now - (last || now)); last = now;
     if (fast) {
-      if (dt > 0) { F = rt.runTo((rt.target === null ? rt.t : rt.target) + dt * CYCLES_MS); sound.frame(); n = 1; if (letGo.size) release(); }
+      n = rt.runSteps(dt * CYCLES_MS, 4, () => { if (letGo.size) release(); });
+      if (n) { F = rt.lastFrame(); sound.frame(); }
     } else {
       acc += dt;
       while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
@@ -6840,7 +6884,7 @@ function tick(now) {
     }
     if (n && F !== frame) compose(F);
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
-  if (n || smooth) {
+  if (n || smooth || fast) {
     try { present(); }
     catch (e) { console.error(e); setModern(false, false, false); say('The modern view stopped: ' + e.message); present(); }   // the view, never the game
   }

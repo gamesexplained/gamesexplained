@@ -3,10 +3,12 @@
 // carries, from the loader's jump:
 // - attached and off, it changes nothing: the machine is the same, byte for byte and cycle for
 //   cycle, as without it, every 25 frames of a session that walks, turns, looks and aims;
-// - on, the game runs a pass of its main loop for each frame of the screen (here 60 a second);
+// - on, the game runs a pass of its main loop for each tick of its timer, 60 a second;
 // - walking for 10 seconds covers the ground the C64 covers in 10 seconds, turning for 20 seconds
 //   turns as far, and the pointer moves as fast, each within a few per cent;
 // - a press of U turns about once, and held, again each pass of the C64;
+// - the same controls, pass for pass, make the same game drawn at 60 frames a second, at 144, at
+//   uneven rates, and on a machine too slow to keep up; at 144 the view moves between passes;
 // - five minutes of random play, with a jump to another area every 20 seconds and the switch
 //   turned off and on every minute, throw nothing and leave the angles in the game's ranges.
 //   node games/c64/castle-master/test_fast.js
@@ -41,11 +43,10 @@ function machine(watch) {
   };
   const tap = (k, hold, after) => { run(hold, [k]); run(after); };
   run(60); tap('1', 6, 54); tap('RETURN', 6, 54); tap('2', 6, 54); tap('RETURN', 6, 454); tap('SPACE', 6, 300);
-  // the fast CPU's page runs the clock to each frame of the screen
+  // the fast CPU's page, 60 frames a second: the passes real time has reached at each
   const fast = (secs, keys = [], joy = 0, each) => {
     rt.input.keys = new Set(keys); rt.input.joy = 0x1F & ~joy;
-    const end = rt.target + secs * CYC;
-    while (rt.target < end - 1) { rt.runTo(Math.min(end, rt.target + CYC / 60)); if (each) each(); }
+    for (let i = 0, n = Math.round(secs * 60); i < n; i++) { rt.runSteps(CYC / 60, 4); if (each) each(); }
     rt.input.keys = new Set(); rt.input.joy = 0x1F;
   };
   return { rt, st, fx, run, fast };
@@ -97,8 +98,8 @@ function machine(watch) {
     else console.log(what + ': ' + got.toFixed(2) + ' a second with the fast CPU, ' + want.toFixed(2) + ' on the C64 (' + (100 * r).toFixed(1) + ' %)');
   };
   const walk = fast(1, [], 10), walkC = c64(1, [], 600);
-  if (Math.abs(walk.passes - 60) > 1) fail('the fast CPU ran ' + walk.passes.toFixed(1) + ' passes a second at 60 frames a second');
-  else console.log('the fast CPU: ' + walk.passes.toFixed(1) + ' passes of the main loop a second at 60 frames a second');
+  if (Math.abs(walk.passes - CYC / 16422) > 0.5) fail('the fast CPU ran ' + walk.passes.toFixed(1) + ' passes a second, the timer ticks ' + (CYC / 16422).toFixed(1));
+  else console.log('the fast CPU: ' + walk.passes.toFixed(1) + ' passes of the main loop a second, one each tick of the timer');
   near('walking, in the game\'s units', walk.speed, walkC.speed, 0.05);
   near('turning, in steps of 72 to a turn', -fast(4, [], 20).turn, -c64(4, [], 1200).turn, 0.05);
   near('the pointer, in pixels', fast(8, [], 0.5, true).aim, pointerC64(), 0.12);
@@ -128,6 +129,52 @@ function pointerC64() {
   const early = turns.filter((r, i) => i && r.t - turns[i - 1].t < 0.95 * r.D);
   if (turns.length < 2 || early.length) fail('U held for 4 s turned the view ' + turns.length + ' times, ' + early.length + ' sooner than a pass of the C64 after the last');
   else console.log('U held for 4 s turns about ' + turns.length + ' times, each a pass of the C64 after the last');
+}
+
+// ---- the same controls, pass for pass, make the same game at any rate the page is drawn at
+{
+  // the controls by the pass: walk, turn, look, aim, a turn about, a run, the pointer moved
+  const PLAN = [[0, 1], [150, 1, 'R'], [240, 4], [330, 5], [420, 8], [480, 0, 'U'], [490, 1], [600, 2], [700, 0, 'P'],
+    [760, 9], [860, 0, 'L'], [900, 1, 'W'], [1000, 0, 'SPACE'], [1010, 8], [1100, 0, 'SPACE'], [1110, 6], [1300, 1]];
+  const N = 1500;
+  const play = (frames, onFrame) => {
+    const m = machine(true), rt = m.rt;
+    CMFast.set(m.fx, true);
+    const out = [];
+    let k = 0, p = 0;
+    const controls = () => {
+      while (p + 1 < PLAN.length && PLAN[p + 1][0] <= k) p++;
+      rt.input.joy = 0x1F & ~PLAN[p][1]; rt.input.keys = new Set(PLAN[p][2] && k - PLAN[p][0] < 6 ? [PLAN[p][2]] : []);
+    };
+    controls();
+    for (let i = 0; k < N; i++) {
+      rt.runSteps(frames(i) * CYC / 1000, 4, () => {
+        k++;
+        if (k % 25 === 0 && k <= N) out.push(crypto.createHash('md5').update(rt.M).update(rt.colour).digest('hex') + ':' + rt.t);
+        controls();
+      });
+      if (onFrame) onFrame(m);
+    }
+    return out;
+  };
+  let seed = 11;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF; return seed / 0x7FFFFFFF; };
+  let between = 0, frames144 = 0;
+  const runs = {
+    '60 frames a second': play(() => 1000 / 60),
+    '144 frames a second': play(() => 1000 / 144, m => { frames144++; const v = CMFast.latest(m.fx, m.st); if (v && v.phi % 1) between++; }),
+    'frames 4 to 40 ms apart': play(() => 4 + 36 * rnd()),
+    'a machine that keeps up with a pass in four, a frame each quarter second': play(() => 250),
+  };
+  const [first, ...rest] = Object.keys(runs);
+  let same = true;
+  for (const r of rest) {
+    const i = runs[r].findIndex((h, k) => h !== runs[first][k]);
+    if (i >= 0 || runs[r].length !== runs[first].length) { same = false; fail(r + ': the game differs from ' + first + ' at pass ' + 25 * (i + 1)); }
+  }
+  if (same) console.log(N + ' passes of walking, turning, looking and aiming: the same game, byte for byte, at ' + Object.keys(runs).join(', '));
+  if (between < frames144 / 3) fail('at 144 frames a second, ' + between + ' of ' + frames144 + ' frames showed a view between two passes');
+  else console.log('at 144 frames a second, ' + between + ' of ' + frames144 + ' frames show the view between two passes');
 }
 
 // ---- random play
@@ -163,7 +210,7 @@ function pointerC64() {
     }
     if (k % 1200 === 600) jump = pick(GOTO);
     if (k % 3600 === 3599) CMFast.set(m.fx, !m.fx.on);
-    try { if (m.fx.on) { rt.runTo(rt.target + CYC / 60); CMFast.latest(m.fx, m.st); } else rt.runFrame(); }
+    try { if (m.fx.on) { rt.runSteps(CYC / 60, 4); CMFast.latest(m.fx, m.st); } else rt.runFrame(); }
     catch (e) { threw = e; fail('random play, ' + t.toFixed(1) + ' s: ' + e.message); }
     areas.add(M[0x2429]);
     if (M[0x2411] >= 72) bad.add('yaw $' + M[0x2411].toString(16));

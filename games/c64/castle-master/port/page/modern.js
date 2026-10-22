@@ -530,7 +530,7 @@ function attach(rt) {
   wrap(P, 'CLEAR_LINEAR_30BYTE_ROWS', () => { st.pending = null; });
   const flip = () => {
     const at = w16(M, 0x1237);
-    st.flips.push({ pic: st.pending, t: rt.t, n: ++st.n, snap: viewBytes(M, at), at });
+    st.flips.push({ pic: st.pending, t: rt.t, goal: rt.goal, n: ++st.n, snap: viewBytes(M, at), at });
     if (st.flips.length > 24) st.flips.shift();
   };
   wrap(P, 'BLIT_LINEAR_VIEWPORT_TO_VIC_BITMAP', null, flip);
@@ -814,6 +814,6 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, spritePixels, between, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, spritePixels, between, objectsBetween, cut, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);
