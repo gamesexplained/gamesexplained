@@ -188,3 +188,21 @@ Discoveries tab of their own (`70-minisite`, "Discoveries"). The five
 sections: the witch's line for no lives, her unread message 4 with the
 five sound effects nothing asks for, and the ending's border stripe in
 `frame_music`. The sections they came from link to them.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+engine's listing then showed 133 bytes as missing (#466). The engine's
+snapshot was remade by `orientation.md`'s route, from side A to the
+hand-over at `$1000`; against the old one only 8 bytes of zero page
+differ. `$027C`-`$02FF`, past the 64 bytes the object table's auto
+label reaches, is the KERNAL's work area as the KERNAL left it: no
+instruction in the engine names an address there, and a store
+checkpoint on `$024B`-`$02FF` from the hand-over, through side B and
+level 1.1's load, into play counted none, while the same checkpoint on
+the object tables stopped at once. `$CFBC` is the first entry of
+`world1_ranges`' tables. It reads them as `LDA base,X` with X = 1 or 2,
+so each two-byte table starts one byte after the base the disassembler
+labelled, and the comments on `f_CFBD`, `f_CFBF` and `f_CFC1` had each
+named the table that starts after it: `$CFBD` is stage 2's value for
+`$51`, not the `$52` table. They are corrected.
