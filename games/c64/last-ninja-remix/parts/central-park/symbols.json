@@ -798,8 +798,23 @@
   },
   {
    "start": 53144,
-   "end": 65535,
+   "end": 65529,
    "type": "Byte"
+  },
+  {
+   "start": 65530,
+   "end": 65531,
+   "type": "Word"
+  },
+  {
+   "start": 65532,
+   "end": 65533,
+   "type": "Byte"
+  },
+  {
+   "start": 65534,
+   "end": 65535,
+   "type": "Word"
   }
  ],
  "symbols": [
@@ -18498,6 +18513,11 @@
    "text": "Purpose: synchronize three engine time baselines with the current 50 Hz tick. Inputs: tick byte `$E2`. Outputs: `$026C`, `$026E`, and `$0277` receive the same tick value. Assumptions: the gameplay IRQ maintains `$E2`. Clobbers: A and flags. Hardware changes: none."
   },
   {
+   "address": 4605,
+   "type": "line",
+   "text": "Three zero bytes after ResetEngineTickBaselines, up to the page boundary where reverse_multicolor_pairs starts at $1200; nothing in this load reads them."
+  },
+  {
    "address": 4608,
    "type": "line",
    "text": "Complete 256-entry byte lookup reversing two-bit pairs. Every table entry has been checked against the reversal formula. The renderer and sprite blitter use the original source byte as X; $1200 reverses four multicolor pixel pairs, while $1300 reverses eight high-resolution bits. This table covers $1200-$12FF."
@@ -18561,6 +18581,11 @@
    "address": 5427,
    "type": "line",
    "text": "Purpose: install and start the gameplay interrupt system. Inputs: CIA Timer A latch bytes `$028C/$028D`. Outputs: raster line zero armed, CIA 1 Timer A running continuously, underlying IRQ vector `$FFFE/$FFFF=$1E15`, KERNAL CINV `$0314/$0315=$1E06`, and `$0231=0`. Assumptions: I/O is visible while the underlying RAM vectors are writable under the selected banking state. Clobbers: A and flags; returns with interrupts enabled. Hardware changes: programs VIC-II `$D011/$D012/$D019/$D01A`, CIA 1 `$DC04/$DC05/$DC0D/$DC0E`, both IRQ vectors, and the processor interrupt mask."
+  },
+  {
+   "address": 5506,
+   "type": "line",
+   "text": "$40, an rti, and the whole NMI handler: the NMI vectors at $0318 and $FFFA both point here, so pressing RESTORE does nothing."
   },
   {
    "address": 5507,
@@ -18641,6 +18666,11 @@
    "address": 5999,
    "type": "line",
    "text": "Purpose: wait until the shared Space/control-port-1-fire line is released before displaying and accepting the disk-side prompt. Inputs: CIA 1 keyboard/control-port lines. Outputs: returns through the screen-renderer veneer when bit 4 is high. Assumptions: Space and control-port-1 fire are active low on the selected shared line. Clobbers: A and flags. Hardware changes: writes `$DC00=$7F` to select keyboard column 7, then polls CIA 1 port B `$DC01` bit 4 and jumps to `$140E` after release.\nfunction: undefined WaitForSpaceOrPort1FireRelease()"
+  },
+  {
+   "address": 6017,
+   "type": "line",
+   "text": "101 zero bytes between WaitForSpaceOrPort1FireRelease and CompressionCodingTable at $17E6; no instruction in this load names an address among them."
   },
   {
    "address": 6118,
@@ -18996,6 +19026,11 @@
    "address": 8053,
    "type": "line",
    "text": "Purpose: animate the status-panel reveal while preparing its five sprite columns. Inputs: retained templates `$3FB0-$3FF2` and gameplay IRQ handshake state `$0231/$0232`. Outputs: panel staging `$0C00-$0CBF`, sprite configuration, and a raster line that advances from `$1D` to `$BC`. Assumptions: the gameplay IRQ clears `$0231` once per accepted step and I/O is visible. Clobbers: A, X, Y, flags. Hardware changes: waits on VIC-II `$D011`, disables and configures sprites through `$D000-$D026`, then coordinates each reveal step with the IRQ."
+  },
+  {
+   "address": 8190,
+   "type": "line",
+   "text": "Two zero bytes after AnimateStatusPanelReveal, up to $2000, where the bitmap starts; nothing in this load reads them."
   },
   {
    "address": 16192,
@@ -21798,6 +21833,11 @@
    "text": "Purpose: translate the normalized Central Park input byte and current player state into facing, movement, pose, action, and animation requests\nInputs: normalized active-low/control byte $7C; death/condition latch $B6; player state $61,$65,$68/$69,$6C/$6D,$70,$89; decode tables beginning at $A69C\nOutputs: updates desired direction $68, facing $69, action/motion $6C/$6D, pose $65, dirty flag $9F, and may select/install a player animation\nAssumptions: an earlier input service has populated $7C and the control/animation tables are resident\nClobbers: A, X, Y, flags and player-control/animation scratch\nHardware changes: none; no CIA register is read or written here"
   },
   {
+   "address": 42275,
+   "type": "line",
+   "text": "lda #$00 and sta $02B8: two instructions between an rts and CentralParkContinueDirectionalControls that no branch, jump or pointer reaches. The same pair runs at $A569."
+  },
+  {
    "address": 42280,
    "type": "line",
    "text": "Continuation of $A4CB control interpretation: applies desired heading $68, allowing odd headings to replace $69 except an exact opposite; marks redraw $9F when changed. Sets movement $6C and derives facing/pose $65 and $6D. The $A567 idle path clears $02B8 and may select an idle animation; $A591 onward handles changes in the fire/action state $78, comparing direction to facing before selecting an action through $A600. Uses $A638 and $A69C direction lookups; no direct hardware writes. Entry is within the larger control routine, not an independent callable API."
@@ -22198,6 +22238,11 @@
    "text": "Purpose: Test the current area's persistent opponent record for subtype $2C and, when its spatial conditions apply, consume its high flag and start AI state 7 with a heading-selected animation.\nInputs: Area index $A2, persistent status array $012D+, player/opponent positions $54-$57, heading $6B, and animation pointers $C3ED/$C3E3.\nOutputs: On a qualifying record, clears status bit 7, sets $CF=7, installs one of two animations according to heading bit 2, and writes $0236=6; otherwise returns without transition.\nAssumptions: The Central Park PLAY occupant is active, its dispatch tables contain stored return addresses equal to target minus one, and the resident kernel and zero-page gameplay workspace match this phase.\nClobbers: A, X, flags, selected $012D+ status, $CF, enemy animation state $5A/$5E/$62/$63, and $0236.\nHardware changes: None directly; the entry changes RAM and/or delegates to gameplay helpers rather than writing C64 I/O registers."
   },
   {
+   "address": 45341,
+   "type": "line",
+   "text": "A second rts after the one at $B11C, never reached."
+  },
+  {
    "address": 45342,
    "type": "line",
    "text": "Purpose: Consume the Central Park playable phase's pending opponent target identifier and update the AI target history/state.\nInputs: $02B0 is the pending target ID or $FF; $02B3/$02A4/$02A5 and opponent AI state are current.\nOutputs: Reads then clears $02B0 to $FF, ignores the sentinel, otherwise rotates target history as needed and dispatches the matching target/approach behavior.\nAssumptions: Target IDs use the verified phase object/actor encoding.\nClobbers: A, X, Y, processor flags, $02B0, $02B3/$02A4/$02A5, and AI action/target scratch on non-sentinel paths.\nHardware changes: No direct hardware-register writes."
@@ -22301,6 +22346,11 @@
    "address": 46097,
    "type": "line",
    "text": "Purpose: draw a phase-local UI or status image record. Inputs: A is image index and X is placement variant. Outputs: the selected UI image is rendered. Assumptions: the image-table entry and renderer workspace are valid. Clobbers: A, X, Y, flags, $02-$05, and renderer scratch. Hardware changes: reads VIC-II control state at $D011 and changes hardware-visible bitmap, screen, and color RAM."
+  },
+  {
+   "address": 46148,
+   "type": "line",
+   "text": "The scene list that $B434-$B43A points $02/$03 at before jumping to CentralParkRenderUiSceneRecord, which takes the image from $04/$05 and its place from $25 and $26. Its one record, $00 $0E $0E, has bits 5 and 6 of its third byte clear, so no colour pairs follow (read at $8B80) and CentralParkAdvanceSceneRecordPointer steps three bytes on, to the $FF at $B447 that ends the list at $8A9A."
   },
   {
    "address": 46154,
@@ -22476,6 +22526,11 @@
    "address": 48064,
    "type": "line",
    "text": "Purpose: decode one actor frame descriptor into positioned logical sprite components, temporarily exposing RAM beneath KERNAL for high-memory source data\nInputs: A = frame attribute/modifier; Y = frame-descriptor index; X = first logical-sprite slot; actor state including $70,$72,$7D and frame pointer tables at $C4C2\nOutputs: writes component bitmap references, positions, flags, and ready state into logical sprite arrays $0200-$0258 and sets sprite-dirty state as required\nAssumptions: frame pointers/descriptors are valid and the caller enters with the normal $01 banking value expected by the matching INC restoration\nClobbers: A, X, Y, flags and sprite-composition scratch including $F1,$92,$9F\nHardware changes: decrements then restores CPU port $01 to expose high RAM transiently; does not directly write VIC-II sprite registers"
+  },
+  {
+   "address": 48083,
+   "type": "line",
+   "text": "sta $F1, never reached: CentralParkComposeSprites makes the same store at $BBC0 and jumps over these two bytes to $BBD5."
   },
   {
    "address": 48085,
@@ -26231,6 +26286,16 @@
    "address": 65192,
    "type": "line",
    "text": "UI image leaf at $FEA8: size byte $42 gives 4 columns by 2 rows, followed by 80 bytes for eight cells. Each cell uses eight bitmap bytes plus screen and colour bytes, consumed by the common leaf renderer at $8B49. The complete 81-byte record ends at $FEF8."
+  },
+  {
+   "address": 65530,
+   "type": "line",
+   "text": "The NMI vector, used while $01 maps the KERNAL out: $1582, an rti, the same address as the KERNAL's NMI vector at $0318."
+  },
+  {
+   "address": 65534,
+   "type": "line",
+   "text": "The IRQ vector, used while $01 maps the KERNAL out: GameplayIrqDispatcher at $1E15, stored by $1567-$1570."
   }
  ]
 }
