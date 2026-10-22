@@ -38,6 +38,7 @@
   "accuracy": [
     {"step": "research", "web": true, "models": ["claude-opus-5-5"]},
     {"step": "annotate", "models": ["claude-opus-5-5"], "note": "ten agents on disjoint ranges"},
+    {"step": "annotate", "models": ["claude-opus-5-5[1m]"], "note": "the pixel columns of objects 16-63 past $4000 described; the text screen and the packed copy's last bytes at $FF40 excluded with their reasons"},
     {"step": "play", "models": ["claude-opus-5-5"]}
   ],
   "kit_version": "0.0.16",
@@ -48,6 +49,11 @@
   },
   "coverage": {
     "exclude": [
+      [
+        "$0400",
+        "$07E7",
+        "the text screen: the KERNAL's screen clear the game calls first ($0806, JSR $E544) fills it with spaces, over the trainer's questions, before the game prints its windows into it"
+      ],
       [
         "$E3BF",
         "$E3BF",
@@ -66,7 +72,12 @@
       [
         "$FFD2",
         "$FFD2",
-        "KERNAL ROM entry the game calls (CHROUT); the RAM beneath is title data"
+        "KERNAL ROM entry the game calls (CHROUT); the RAM beneath is the crackers' packed copy, in the row below"
+      ],
+      [
+        "$FF40",
+        "$FFFF",
+        "RAM under the KERNAL past the title bitmap: the last bytes of the crackers' packed copy of the game, which the loader moves up to $6613-$FFFF ($3F40) and unpacks below $FF40; nothing in the game reads them"
       ]
     ],
     "extra": [],

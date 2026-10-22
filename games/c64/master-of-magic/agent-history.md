@@ -114,3 +114,24 @@ put on the player's cell), the DEAD label (a skeleton left with 10 and a
 missile), the weight limit (either side of 70) and the fire count. Each
 took a few minutes with the menu read from the screen and chosen by
 label.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then left out 48 bytes (#473): `obj_px`, the pixel columns of
+the 64 objects, runs past the memory map's edge at `$4000`, where a
+span stops, so objects 16-63 had no description. A comment at `$4000`
+now carries them.
+
+The snapshots were made again from the same image (`orientation.md`).
+With the hand-over to compare against, `listing.py` found two more
+stretches that hold the same bytes at the hand-over and in play. The
+text screen's spaces are the KERNAL's screen clear, the game's first
+call, written over the trainer's questions, so the screen is excluded
+with that reason. The 192 bytes at `$FF40`-`$FFFF`, past the title
+bitmap in the RAM under the KERNAL, are the end of the crackers' packed
+copy of the game: a stop on the second decruncher's first instruction
+(`$00FD`) showed the move at `$3F40` had put the packed copy at
+`$6613`-`$FFFF` (from `$3F51`), with these bytes already as they are in
+play; the unpacked game stops at `$FF3F`, and nothing in it reads them.
+

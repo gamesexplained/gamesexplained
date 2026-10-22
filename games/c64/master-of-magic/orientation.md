@@ -80,6 +80,14 @@ checked against the game's own code at `$07F9` (`78 D8 A2 FF 9A`) and at
 | `work/play-start-menu.vsf` | a new game, the first menu, clock 00:00:00 |
 | `work/play-run.vsf` | RUN chosen, the player moved up and left from the start, clock running. **The snapshot everything downstream is read from.** |
 
+On 22 October 2026 `handover-3884b.vsf`, `entry-07f9.vsf` and
+`play-run.vsf` were made again by the same route from the same image,
+the last with RUN chosen and the joystick held up and left for three
+seconds. **The listing is built from that `play-run.vsf`**, with
+`--entry work/entry-07f9.vsf`; its run-time state (variables, pointers,
+the clock) differs from the first run's, and no comment quotes a value
+from either.
+
 ## Steady state
 
 - **Emulator checks.** `tools.py check-emulator` on this build: 56 of 56,
