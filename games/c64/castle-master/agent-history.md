@@ -230,3 +230,23 @@ wait on the scripts' timer. The pointer keeps the C64's pace, since a C64
 round that moves it draws no view. A whole turn takes 24.04 s and 1,200
 units of walking from the start 5.05 s, against 24 and 5.01 of the C64's
 rounds.
+
+Taking a step in sixtieths, each through the game's collision code,
+was not the game's step. The solver settles a whole stride at once: a
+stride that meets a wall at an angle stops at it, and one that leaves an
+edge stops there and drops. Small pieces slide along the wall and go on
+past the edge. From 2,329 places met in ten minutes of random play, four
+headings each, three steps forward ended more than 64 units from the
+C64's three in 58 % of 9,316 walks, at another height in 0.4 %, and 20
+walks in the Stairwell fell off a ledge the C64 held the player at.
+A step is now the game's own whole stride, along the fine angle, taken
+when the key goes down and again each pace it is held, and the view
+glides along it over the pace; turning and looking, which meet nothing,
+stay continuous. 420 steps from 105 places in ten areas end where the
+C64's do, at the same height and strength (`test_fast.js`).
+
+The pace became a choice of three, a step a second, half a second or a
+fifth (60, 30 or 12 ticks), each a round the C64 plays at in some view.
+Smooth motion, which drew the view between the C64's own pictures, was
+taken off the page: Fast CPU draws a view each tick and glides along
+each step.

@@ -4,12 +4,18 @@
 // - attached and off, it changes nothing: the machine is the same, byte for byte and cycle for
 //   cycle, as without it, every 25 frames of a session that walks, turns, looks and aims;
 // - on, the game runs a pass of its main loop for each tick of its timer, 60 a second;
-// - walking 1,200 units and turning a whole turn take as many seconds as the C64 takes rounds, a
-//   step a second whatever is in view, within 1 %; moving the pointer 30 pixels takes the time it
-//   takes the C64, within 5 %;
-// - a press of U turns about once, and held, again each second;
+// - at each pace, walking takes the C64's own steps, ending where its rounds end, one each pace
+//   (a second, half, a fifth) whatever is in view; turning a whole turn takes the C64's rounds at
+//   the pace each, within 1 %; moving the pointer 30 pixels takes the time it takes the C64,
+//   within 5 %;
+// - a press of U turns about once, held, again each pace, and a second press before the pace is up
+//   and let go is not taken, as a C64 reads the controls once a round;
 // - the same controls, pass for pass, make the same game drawn at 60 frames a second, at 144, at
-//   uneven rates, and on a machine too slow to keep up; at 144 the view moves between passes;
+//   uneven rates, and on a machine too slow to keep up, at the first pace and the last; at 144
+//   the view moves between passes and along each step;
+// - from the places two minutes of random play on the C64's pace reaches, in ten areas, four steps
+//   each, forward and back along four headings: each step with the fast CPU ends where the C64's
+//   does, at the same height and strength, touching the same object;
 // - five minutes of random play, with a jump to another area every 20 seconds and the switch
 //   turned off and on every minute, throw nothing and leave the angles in the game's ranges.
 //   node games/c64/castle-master/test_fast.js
@@ -68,10 +74,10 @@ function machine(watch) {
   else console.log(a.length + ' samples over 1,840 frames of play: the same machine with the fast CPU attached and off');
 }
 
-// ---- the speeds, against the C64's from the same place: the time each takes to walk 1,200 units
-// and to turn a whole turn, against the C64's rounds for them at a second each, and to move the
-// pointer 30 pixels, against the C64's time. (A C64 round lasts from a fifth of a second to three by
-// what is in view; the fast CPU takes a step a second in any view.)
+// ---- the speeds, against the C64's from the same place: the steps of a walk, where each ends and
+// when, and the time to turn a whole turn, against the C64's rounds at the pace each, and the time
+// to move the pointer 30 pixels, against the C64's. (A C64 round lasts from a fifth of a second to
+// three by what is in view; the fast CPU takes a step each pace in any view.)
 {
   // what each move has done so far: the distance from where it began, the turn, the pointer's travel
   const progress = m => {
@@ -99,10 +105,10 @@ function machine(watch) {
     m.run(frames, [], joy);
     return out;
   };
-  const fast = (joy, secs, pointer) => {
+  const fast = (joy, secs, pointer, pace = CMFast.PACES[0]) => {
     const m = machine(true), out = [];
     if (pointer) { m.run(10, ['SPACE']); m.run(120); }
-    CMFast.set(m.fx, true);
+    CMFast.pace(m.fx, pace); CMFast.set(m.fx, true);
     const now = progress(m), n0 = m.fx.n, t0 = m.rt.t;
     out.push(Object.assign({ t: m.rt.t }, now()));
     m.fast(secs, [], joy, () => out.push(Object.assign({ t: m.rt.t }, now())));
@@ -110,18 +116,27 @@ function machine(watch) {
     return out;
   };
   // the C64's rounds, a pace's time each
-  const K = CMFast.PACE * 16422;
-  const paced = c => c.map((r, i) => Object.assign({}, r, { t: i * K }));
-  const same = (what, k, v, f, c, tol, pace) => {
-    const tf = reach(f, k, v), tc = reach(pace ? paced(c) : c, k, v), r = tf / tc - 1;
-    const line = what + ': ' + tf.toFixed(2) + ' s with the fast CPU, ' + (pace ? (tc * CYC / K).toFixed(2) + ' rounds (' + reach(c, k, v).toFixed(2) + ' s) on the C64' : tc.toFixed(2) + ' s on the C64');
+  const paced = (c, K) => c.map((r, i) => Object.assign({}, r, { t: i * K }));
+  const same = (what, k, v, f, c, tol, K) => {
+    const tf = reach(f, k, v), tc = reach(K ? paced(c, K) : c, k, v), r = tf / tc - 1;
+    const line = what + ': ' + tf.toFixed(2) + ' s with the fast CPU, ' + (K ? (tc * CYC / K).toFixed(2) + ' rounds (' + reach(c, k, v).toFixed(2) + ' s) on the C64' : tc.toFixed(2) + ' s on the C64');
     if (!(Math.abs(r) <= tol)) fail(line); else console.log(line + ' (' + (100 * r).toFixed(1) + ' %)');
   };
-  const walk = fast(1, 7);
-  if (Math.abs(walk.passes - CYC / 16422) > 0.5) fail('the fast CPU ran ' + walk.passes.toFixed(1) + ' passes a second, the timer ticks ' + (CYC / 16422).toFixed(1));
-  else console.log('the fast CPU: ' + walk.passes.toFixed(1) + ' passes of the main loop a second, one each tick of the timer');
-  same('walking 1,200 of the game\'s units', 'walk', 1200, walk, c64(1, 700), 0.01, true);
-  same('turning a whole turn', 'turn', 72, fast(4, 26), c64(4, 1000), 0.01, true);
+  // the walk's steps: the distance after each, and its time
+  const steps = s => s.filter((r, i) => i && r.walk !== s[i - 1].walk);
+  const c64walk = steps(c64(1, 700)).slice(0, 5), c64turn = c64(4, 1000);
+  for (const pace of CMFast.PACES) {
+    const K = pace * 16422, walk = fast(1, 6 * K / CYC, false, pace), fw = steps(walk).slice(0, 5);
+    if (pace === CMFast.PACES[0]) {
+      if (Math.abs(walk.passes - CYC / 16422) > 0.5) fail('the fast CPU ran ' + walk.passes.toFixed(1) + ' passes a second, the timer ticks ' + (CYC / 16422).toFixed(1));
+      else console.log('the fast CPU: ' + walk.passes.toFixed(1) + ' passes of the main loop a second, one each tick of the timer');
+    }
+    const at = fw.map(r => r.walk.toFixed(1)).join(', '), want = c64walk.map(r => r.walk.toFixed(1)).join(', ');
+    const gaps = fw.slice(1).map((r, i) => Math.round((r.t - fw[i].t) / 16422));
+    if (at !== want || gaps.some(g => g !== pace)) fail('pace ' + pace + ' ticks: the walk\'s steps end at ' + at + ' (the C64\'s at ' + want + '), ' + gaps.join(', ') + ' ticks apart');
+    else console.log('pace ' + pace + ' ticks: 5 steps of walking end where the C64\'s rounds end (' + at + ' units on), each ' + pace + ' ticks after the last');
+    same('pace ' + pace + ' ticks: turning a whole turn', 'turn', 72, fast(4, 24 * K / CYC + 2, false, pace), c64turn, 0.01, K);
+  }
   same('moving the pointer 30 pixels', 'aim', 30, fast(8, 0.8, true), c64(8, 40, true), 0.05);
 }
 
@@ -141,6 +156,12 @@ function machine(watch) {
   const off = turns.filter((r, i) => i && r.t - turns[i - 1].t !== m.fx.K);
   if (turns.length < 4 || off.length) fail('U held for 4 s turned the view ' + turns.length + ' times, ' + off.length + ' other than a second after the last');
   else console.log('U held for 4 s turns about ' + turns.length + ' times, each a second after the last');
+  // two taps a third of a second apart: the second comes before the pace is up and is let go
+  m.fast(2);
+  turns = [];
+  m.fast(0.1, ['U'], 0, each); m.fast(0.2, [], 0, each); m.fast(0.1, ['U'], 0, each); m.fast(2, [], 0, each);
+  if (turns.length !== 1) fail('U tapped twice a third of a second apart turned the view ' + turns.length + ' times');
+  else console.log('U tapped twice a third of a second apart turns about once, as a C64 reads the second tap no sooner than a round on');
 }
 
 // ---- the same controls, pass for pass, make the same game at any rate the page is drawn at
@@ -149,9 +170,9 @@ function machine(watch) {
   const PLAN = [[0, 1], [150, 1, 'R'], [240, 4], [330, 5], [420, 8], [480, 0, 'U'], [490, 1], [600, 2], [700, 0, 'P'],
     [760, 9], [860, 0, 'L'], [900, 1, 'W'], [1000, 0, 'SPACE'], [1010, 8], [1100, 0, 'SPACE'], [1110, 6], [1300, 1]];
   const N = 1500;
-  const play = (frames, onFrame) => {
+  const play = (frames, onFrame, pace = CMFast.PACES[0]) => {
     const m = machine(true), rt = m.rt;
-    CMFast.set(m.fx, true);
+    CMFast.pace(m.fx, pace); CMFast.set(m.fx, true);
     const out = [];
     let k = 0, p = 0;
     const controls = () => {
@@ -171,22 +192,88 @@ function machine(watch) {
   };
   let seed = 11;
   const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF; return seed / 0x7FFFFFFF; };
-  let between = 0, frames144 = 0;
-  const runs = {
+  // at 144 frames a second, the frames whose view is between two passes, or along a step
+  let between = 0, along = 0, frames144 = 0;
+  const watch = m => {
+    frames144++;
+    const v = CMFast.latest(m.fx, m.st);
+    if (v && v.phi % 1) between++;
+    const p = v && v.scene.pose, q = v && v.shown.pic.pose;
+    if (p && (p.x !== q.x || p.y !== q.y || p.z !== q.z)) along++;
+  };
+  const check = (runs, what) => {
+    const [first, ...rest] = Object.keys(runs);
+    let same = true;
+    for (const r of rest) {
+      const i = runs[r].findIndex((h, k) => h !== runs[first][k]);
+      if (i >= 0 || runs[r].length !== runs[first].length) { same = false; fail(what + ', ' + r + ': the game differs from ' + first + ' at pass ' + 25 * (i + 1)); }
+    }
+    if (same) console.log(what + ': ' + N + ' passes of walking, turning, looking and aiming, the same game, byte for byte, at ' + Object.keys(runs).join(', '));
+  };
+  check({
     '60 frames a second': play(() => 1000 / 60),
-    '144 frames a second': play(() => 1000 / 144, m => { frames144++; const v = CMFast.latest(m.fx, m.st); if (v && v.phi % 1) between++; }),
+    '144 frames a second': play(() => 1000 / 144, watch),
     'frames 4 to 40 ms apart': play(() => 4 + 36 * rnd()),
     'a machine that keeps up with a pass in four, a frame each quarter second': play(() => 250),
+  }, 'a step a second');
+  const last = CMFast.PACES[CMFast.PACES.length - 1];
+  check({ '60 frames a second': play(() => 1000 / 60, null, last), '144 frames a second': play(() => 1000 / 144, null, last) }, 'a step each ' + last + ' ticks');
+  if (between < frames144 / 3 || along < frames144 / 10) fail('at 144 frames a second, ' + between + ' of ' + frames144 + ' frames showed a view between two passes, ' + along + ' along a step');
+  else console.log('at 144 frames a second, ' + between + ' of ' + frames144 + ' frames show the view between two passes, ' + along + ' along a step');
+}
+
+// ---- a step from where random play leaves the player, on the C64 and with the fast CPU
+{
+  let seed = 5;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF; return seed / 0x7FFFFFFF; };
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const m = machine(true), rt = m.rt, M = rt.M, P = rt.P;
+  const GOTO = [[4, 216], [2, 7], [6, 215], [9, 224], [13, 219], [22, 222], [11, 19], [16, 214], [8, 226], [15, 7], [17, 222], [21, 216], [3, 174], [5, 164], [10, 221], [14, 215], [19, 226], [24, 2]];
+  let jump = null;
+  const cond = P.DISPATCH_FRAME_CONDITIONS;
+  P.DISPATCH_FRAME_CONDITIONS = function* (r) {
+    if (jump) {
+      const keep = Array.from(M.subarray(0x33C, 0x33F));
+      M.set([0x12, jump[0], jump[1]], 0x33C); M[0x1084] |= 1; M[0x7C] = 0x3C; M[0x7D] = 0x03;
+      jump = null;
+      yield* P.EXECUTE_FCL_STREAM({ a: 3 });
+      M.set(keep, 0x33C);
+    }
+    return yield* cond.call(this, r);
   };
-  const [first, ...rest] = Object.keys(runs);
-  let same = true;
-  for (const r of rest) {
-    const i = runs[r].findIndex((h, k) => h !== runs[first][k]);
-    if (i >= 0 || runs[r].length !== runs[first].length) { same = false; fail(r + ': the game differs from ' + first + ' at pass ' + 25 * (i + 1)); }
+  // the machine at the start of each pass, a quarter of a second of play apart at the most
+  const states = [], up = P.UPDATE_FRAME_INPUT_EVENTS;
+  let due = 0;
+  P.UPDATE_FRAME_INPUT_EVENTS = function* (r) { if (!M[0x109B] && rt.t >= due) { states.push(M.slice()); due = rt.t + CYC / 4; } return yield* up.call(this, r); };
+  const JOY = [0, 1, 2, 4, 8, 5, 9, 1, 1, 1, 6], KEYS = ['W', 'R', 'C', 'U', 'L'];
+  let next = 0;
+  for (let k = 0; k < 120 * 50; k++) {
+    if (k / 50 >= next) { rt.input.joy = 0x1F & ~pick(JOY); rt.input.keys = new Set(rnd() < 0.3 ? [pick(KEYS)] : []); next = k / 50 + 0.5 + 2.5 * rnd(); }
+    if (k % 500 === 250) jump = pick(GOTO);
+    rt.runFrame();
   }
-  if (same) console.log(N + ' passes of walking, turning, looking and aiming: the same game, byte for byte, at ' + Object.keys(runs).join(', '));
-  if (between < frames144 / 3) fail('at 144 frames a second, ' + between + ' of ' + frames144 + ' frames showed a view between two passes');
-  else console.log('at 144 frames a second, ' + between + ' of ' + frames144 + ' frames show the view between two passes');
+  P.UPDATE_FRAME_INPUT_EVENTS = up; P.DISPATCH_FRAME_CONDITIONS = cond;
+  const done = it => { let v; do v = it.next(); while (!v.done); return v.value; };
+  const keep = M.slice(), irq = P.irqByte;
+  P.irqByte = a => M[a];
+  const after = () => [M[0x2407], M[0x2408], M[0x2409], M[0x240A], M[0x240B], M[0x240C], M[0x2455], M[0x109B], M[0x1082]].join();
+  let n = 0, differ = 0;
+  const areas = new Set();
+  // from each, four steps: forward along its heading and two others, back along another
+  for (const S of states) for (let j = 0; j < 4; j++) {
+    const yaw = j ? Math.floor(rnd() * 72) : S[0x2411], act = j === 3 ? 4 : 3;
+    M.set(S); M[0x2411] = yaw; m.fx.on = false;
+    done(P.DISPATCH_PLAYER_MOVEMENT({ a: act, x: 0, y: 0 }));
+    const c = after();
+    M.set(S); M[0x2411] = yaw; m.fx.on = true; m.fx.yaw = yaw;
+    done(P.DISPATCH_PLAYER_MOVEMENT({ a: act, x: 0, y: 0 }));
+    m.fx.on = false;
+    if (after() !== c) differ++;
+    areas.add(S[0x2429]); n++;
+  }
+  P.irqByte = irq; M.set(keep);
+  if (differ || n < 300 || areas.size < 8) fail('a step from ' + n + ' places in ' + areas.size + ' areas: ' + differ + ' ended elsewhere than the C64\'s');
+  else console.log(n + ' steps from ' + states.length + ' places in ' + areas.size + ' areas, forward and back: each ends where the C64\'s does, at the same height and strength');
 }
 
 // ---- random play

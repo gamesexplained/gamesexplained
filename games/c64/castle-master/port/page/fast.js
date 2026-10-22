@@ -8,20 +8,25 @@
 // step with them. What runs on the interrupt (the clock, the sensors' drain on strength, the
 // lightning's countdown, the scripts' timer, the music) keeps its time, and so does every wait on
 // it. So the page's machine runs the main loop's work a thousand times faster and waits at the
-// start of each pass for the timer's next tick (page/runtime.js, runSteps), and this mod makes each
-// pass do its share of a step, a step taking the same time, K, whatever the view. Every pass is the
-// same length, so the same controls make the same game at any rate the page is drawn at, and the
-// page draws the view between the last two passes (latest()).
+// start of each pass for the timer's next tick (page/runtime.js, runSteps), and this mod makes the
+// game's rounds come at one pace, K, whatever the view: what the game decides once a round, it
+// decides once each K, and only what turns and looks, which meets nothing, goes on between. Every
+// pass is the same length, so the same controls make the same game at any rate the page is drawn
+// at, and the page draws the view between the last two passes, and along a step (latest()).
 //
 // The rule, which depends on no address of this game:
-//   K, the pace: the time a step takes, PACE ticks of the timer (a second, about the C64's time
-//       over a pass in play: from 0.2 to 3 seconds by the view, half of them under 0.92);
-//   f = Δ / K, the share of a step a pass is given: Δ the clock from the pass's start to the clock
-//       it runs to (a tick on);
-//   - a step the game takes each pass a control is held is taken f of, and what is left of a whole
-//     unit carried to the next (walking, turning, looking);
-//   - an action a control sets off is taken when the control is pressed, and again each K it is
-//     held, as the C64 takes it once a pass (a mode, a quarter turn, a turn about, a shot, a use);
+//   K, the pace: the time a step takes, a whole number of ticks of the timer (PACES: a second,
+//       about the C64's time over a pass in play, which runs from 0.2 to 3 seconds by the view,
+//       half of them under 0.92; half a second; a fifth, the C64's quickest);
+//   - a step the player takes, which meets walls, edges and floors, is the game's own whole step,
+//     taken when the control is pressed and again each K it is held, and the view glides from
+//     where it began to where the game put the player over K: where a step ends, and what it sets
+//     off (a fall, an object's script), is the C64's;
+//   - an action a control sets off is taken the same way, as the C64 takes it once a pass (a mode,
+//     a quarter turn, a turn about, a shot, a use): a press while one is under way is taken if it
+//     is still held when K is up, as the C64 reads the controls once a pass;
+//   - a turn or a look, which meets nothing, is taken f = Δ / K of a step each pass: Δ the clock
+//     from the pass's start to the clock it runs to (a tick on), what is left carried on;
 //   - what the game does each pass for as long as something lasts is done once each K (the script
 //     of an object the player pushes against);
 //   - what the game shows for a pass is shown for K (the lightning's streak);
@@ -30,13 +35,14 @@
 //     page's pacing counts it (rt.pass) over the part of the processor the interrupts leave the
 //     main program.
 // So a control held for a second moves the player as far, and turns the view as far, wherever the
-// player stands and whatever is in view; times with K are counted on the clock each pass runs to,
-// a whole number of ticks.
+// player stands and whatever is in view, and every step ends where a C64 whose passes all took K
+// would end it; times with K are counted on the clock each pass runs to, a whole number of ticks.
 //
 // Castle Master's half. Its turns and looks are steps of 72 to a turn; a share of one is kept as
 // the fraction of the angle, and the view is drawn at it: the game's own BUILD_VIEW_PROJECTION_
 // MATRIX with the sine and cosine of the fine angle in its table for the call (the table's own,
-// part of the way from one step's to the next's), the horizon at 11 rows a step of pitch, the
+// part of the way from one step's to the next's), and its own step forward or back the same way,
+// along the fine angle; the horizon at 11 rows a step of pitch, the
 // Wilderness's scenery 8 pixels on for each step of yaw. A message in the panel stays its 50 ticks
 // while play goes on: the C64 holds the pass until it is gone, a second it spends drawing the view
 // anyway, and here it would stop the view.
@@ -45,21 +51,24 @@
 //                                  the passes in either mode, so that D is known when it goes on
 //   CMFast.set(fx, on)             the switch: rt.setFast too
 //   fx.yaw, fx.pitch               the view's angles, in steps and fractions (pitch -18 to 18)
+//   CMFast.pace(fx, ticks)         the pace: the ticks of the timer a step takes (one of PACES)
 //   fx.K                           the pace: the cycles a step takes
 //   fx.D                           { aim }: the C64's cycles over a pass that moves the pointer
+//   fx.stride                      the last step: { at, to, before }, the clock of its pass, where
+//                                  it put the player and the picture from before it
 //   CMFast.paint(px, fx, F)        the view as the machine holds it now, in the C64's pixels, into
 //                                  px (frame F's palette indices), F's sprites left on top
 //   CMFast.latest(fx, st)          the modern view (page/modern.js, st its watch) at the page's
 //                                  time, between the last two pictures, when the machine's bitmap
-//                                  holds the last; as smooth() gives one, or null
+//                                  holds the last: { scene, shown, phi, still }, or null
 (function (root) {
 'use strict';
 const VX = 72, VY = 67;
-// the pace, in ticks of the timer a step takes
-const PACE = 60;
-// the actions (the map at $1382) a press sets off once: the speeds, facing forward, turning about,
-// the cross-hair, a shot, a use, the pointer, the information screen
-const ONCE = new Set([9, 10, 11, 12, 13, 0x15, 0x16, 0x1B, 0x1E, 0x29]);
+// the paces, in ticks of the timer a step takes: one step a second (the first), two, five
+const PACES = [60, 30, 12];
+// the actions (the map at $1382) a press sets off once: a step forward or back, the speeds, facing
+// forward, turning about, the cross-hair, a shot, a use, the pointer, the information screen
+const ONCE = new Set([3, 4, 9, 10, 11, 12, 13, 0x15, 0x16, 0x1B, 0x1E, 0x29]);
 // and those it sets off once with the control key ($1380): a quarter turn, the look to its end
 const ONCE_CTRL = new Set([5, 6, 7, 8]);
 
@@ -75,12 +84,12 @@ function attach(rt) {
   const w = a => M[a] | M[a + 1] << 8;
   const setw = (a, v) => { M[a] = v & 255; M[a + 1] = (v >> 8) & 255; };
   const fx = {
-    rt, on: false, yaw: M[0x2411], pitch: signed(M[0x2410]),
+    rt, on: false, pace: PACES[0], yaw: M[0x2411], pitch: signed(M[0x2410]),
     D: { aim: 13000 }, f: 0, fc: 0, n: 0, prev: null,
-    acc: { x: 0, z: 0 }, nudge: {}, held: new Map(), armed: false, touched: null, name: false, streak: null,
+    nudge: {}, held: new Map(), armed: false, touched: null, name: false, streak: null, stride: null,
   };
   P.__cmFast = fx;
-  Object.defineProperty(fx, 'K', { get: () => PACE * rt.step });
+  Object.defineProperty(fx, 'K', { get: () => fx.pace * rt.step });
   // the fine angles follow the game's own when it sets them (an entrance, a fall, a load)
   function sync() {
     if (M[0x2411] !== wrap72(Math.round(fx.yaw))) fx.yaw = M[0x2411];
@@ -126,7 +135,7 @@ function attach(rt) {
     finally { fx.armed = false; if (P.irqByte === once) P.irqByte = ib; }
   };
 
-  // ---- the controls: an action a press sets off, once a press and again each K it is held
+  // ---- the controls: an action a press sets off, once each K while it is held
   const read = P.READ_CONTROL_INPUT;
   P.READ_CONTROL_INPUT = function (r) {
     const v = read.call(this, r);
@@ -139,9 +148,9 @@ function attach(rt) {
       const a = action(c);
       if (go.has(a) || !(ONCE.has(a) || (M[0x1380] && ONCE_CTRL.has(a)))) continue;
       const h = fx.held.get(a);
-      const ok = !h || h.n !== fx.n - 1 || rt.goal - h.at >= fx.K;
+      const ok = !h || rt.goal - h.at >= fx.K;
       go.set(a, ok);
-      if (ok) fx.held.set(a, { n: fx.n, at: rt.goal }); else h.n = fx.n;
+      if (ok) fx.held.set(a, { at: rt.goal });
     }
     const keep = codes.filter(c => go.get(action(c)) !== false);
     if (keep.length === codes.length) return v;
@@ -156,7 +165,7 @@ function attach(rt) {
     if (!fx.on) return yield* move.call(this, r);
     sync();
     const act = r.a;
-    if (act === 3 || act === 4) return walk(act);
+    if (act === 3 || act === 4) return yield* stride.call(this, r);
     if (act === 7 || act === 8) return look(act, r);
     if (act === 5 || act === 6) {
       // the game's own turn by none, from the angle f of its step (a quarter with the control
@@ -174,36 +183,17 @@ function attach(rt) {
     if (act === 12 && was) { fx.pitch = 0; M[0x2410] = 0; M[0x1059] |= 0x44; }
     return v;
   };
-  // DISPATCH_PLAYER_MOVEMENT's step forward (3) or back (4) (src/g-move.js): the speed (running
-  // backwards at the walk's) times the sine and the cosine of the fine yaw, f of it, the feet raised
-  // to a step's height for the solver and lowered after
-  function walk(act) {
-    let x = M[0x240D], y = M[0x240E];
-    M[0x5DD3] = 0; M[0x5DD4] = 0; M[0x7E] = 0xF0;
-    if (act === 4 && M[0x2456] === 2) {
-      P.MUL_S16_S8_TO_S24({ a: M[0x9D47], x: 0, y: M[0x2416] });
-      x = M[0x82]; y = M[0x83];
-    }
-    M[0x5DD6] = x; M[0x5DD7] = y;
-    // the game's (speed x table x 4) >> 8
-    const speed = ((x | y << 8) << 16 >> 16) * fx.f * (act === 4 ? -1 : 1) / 64;
-    fx.acc.x += speed * table(fx.yaw, 0); fx.acc.z += speed * table(fx.yaw, 1);
-    const dx = Math.trunc(fx.acc.x), dz = Math.trunc(fx.acc.z);
-    fx.acc.x -= dx; fx.acc.z -= dz;
-    M[0x5DD1] = (M[0x2411] << 1) & 255;
-    setw(0x1050, dz + w(0x240B));
-    P.PRESENT_ACTION_FEEDBACK({ y: act === 3 ? 9 : 10 });
-    setw(0x104C, dx + w(0x2407));
-    M[0x5DD2] = (M[0x2413] - 1) & 255;
-    const lift = (M[0x5DD2] << 6) | 0x20;
-    M[0x5DD2] = lift >> 8; M[0x5DD1] = lift & 255;
-    const feet = w(0x2409) - lift;
-    setw(0x2409, feet); setw(0x104E, feet);
-    if (P.SOLVE_PLAYER_COLLISION({ y }).x === 1) M[0x5DD3] = 0x34;
-    setw(0x2409, w(0x2409) + lift);
-    M[0x1084] |= 1;
-    M[0x1059] |= M[0x5DD3]; M[0x105A] |= M[0x5DD4];
-    return { a: M[0x105A], x, y };
+  // DISPATCH_PLAYER_MOVEMENT's step forward (3) or back (4), whole: the game's own, along the fine
+  // yaw (its sine and cosine in the table at the step it rounds to, for the call), and where the
+  // player stood and the picture from there kept for the view's glide
+  function* stride(r) {
+    const st = P.__cmModern, e = st && st.flips[st.flips.length - 1];
+    const t = 0x123C + 2 * M[0x2411], keep = [M[t], M[t + 1]];
+    M[t] = Math.round(table(fx.yaw, 0)) & 255; M[t + 1] = Math.round(table(fx.yaw, 1)) & 255;
+    let v;
+    try { v = yield* move.call(this, r); } finally { M[t] = keep[0]; M[t + 1] = keep[1]; }
+    fx.stride = { at: rt.goal, to: [w(0x2407), w(0x2409), w(0x240B)], before: e && e.pic };
+    return v;
   }
   // its look up (7) or down (8): f of the step, kept to 18 steps either way; with the control key
   // all the way at once, as the game goes
@@ -340,11 +330,15 @@ function attach(rt) {
   return fx;
 }
 
+function pace(fx, ticks) {
+  if (fx && PACES.includes(ticks)) fx.pace = ticks;
+}
+
 function set(fx, on) {
   if (!fx) return;
   fx.on = !!on;
   fx.rt.setFast(fx.on);
-  fx.streak = null; fx.armed = false; fx.touched = null;
+  fx.streak = null; fx.armed = false; fx.touched = null; fx.stride = null;
   if (fx.on) { fx.yaw = fx.rt.M[0x2411]; fx.pitch = signed(fx.rt.M[0x2410]); }
 }
 
@@ -368,11 +362,14 @@ function paint(px, fx, F) {
   return true;
 }
 
-// The modern view's last picture, if the bitmap holds it now, as smooth() gives a view between two
-// (not still, so that CMModern.paint paints it). A pass's picture is the view at the clock the pass
-// ran to (its goal), and the clock owes the page part of a pass more (rt.phase): the view is drawn
-// a pass behind, that part of the way from the picture before to the last, so that it moves at
-// every frame of the screen whatever its rate
+// The modern view's last picture, if the bitmap holds it now, or a view between two (not still, so
+// that CMModern.paint paints it). A pass's picture is the view at the clock the pass ran to (its
+// goal), and the clock owes the page part of a pass more (rt.phase): the view is drawn a pass
+// behind, the angles that part of the way from the picture before to the last, so that it moves at
+// every frame of the screen whatever its rate. Over K from the pass that took a step, the place
+// glides from the picture before the step to where the step put the player, with the objects in
+// sight in either (the game holds the player there from the step's pass, as the C64 does from its
+// pass's start while it draws the view)
 function latest(fx, st) {
   if (!fx || !st) return null;
   const MM = root.CMModern, i = st.flips.length - 1, f = st.flips[i];
@@ -383,14 +380,30 @@ function latest(fx, st) {
     for (let k = 0; k < 240; k++) if (M[a + k] !== f.snap[r * 240 + k]) return null;
   }
   const last = { scene: f.scene || (f.scene = MM.scene(st.P, f.pic)), shown: f, phi: f.n, still: false };
+  if (!rt.fast || rt.fast.grid === null) return last;
+  const now = rt.fast.grid - rt.step * (1 - rt.phase);
+  let pic = f.pic, pose = f.pic.pose, phi = f.n;
   const e = st.flips[i - 1];
-  if (!rt.fast || rt.fast.grid === null || !e || !e.pic || MM.cut(e.pic, f.pic)) return last;
-  const g = 1 - (f.goal - (rt.fast.grid - rt.step * (1 - rt.phase))) / rt.step;
-  if (!(g < 1)) return last;
-  const h = Math.max(0, g), base = h < 0.5 ? e.pic : f.pic;
-  const pic = Object.assign({}, base, MM.objectsBetween(e.pic, f.pic, h));
-  return { scene: MM.scene(st.P, pic, MM.between(e.pic.pose, f.pic.pose, h)), shown: f, phi: f.n - 1 + h, still: false };
+  if (e && e.pic && !MM.cut(e.pic, f.pic)) {
+    const g = 1 - (f.goal - now) / rt.step;
+    if (g < 1) {
+      const h = Math.max(0, g);
+      pic = Object.assign({}, h < 0.5 ? e.pic : f.pic, MM.objectsBetween(e.pic, f.pic, h));
+      pose = MM.between(e.pic.pose, f.pic.pose, h); phi = f.n - 1 + h;
+    }
+  }
+  const s = fx.stride, p = f.pic.pose;
+  if (s && s.before && p.x === (s.to[0] << 16 >> 16) && p.y === (s.to[1] << 16 >> 16) && p.z === (s.to[2] << 16 >> 16) && s.before.area === f.pic.area) {
+    const k = (now - (s.at - rt.step)) / fx.K;
+    if (k < 1) {
+      const h = Math.max(0, k), b = s.before.pose;
+      pic = Object.assign({}, h < 0.5 ? s.before : pic, MM.objectsBetween(s.before, pic, h));
+      pose = Object.assign({}, pose, { x: b.x + (p.x - b.x) * h, y: b.y + (p.y - b.y) * h, z: b.z + (p.z - b.z) * h });
+    }
+  }
+  if (pose === f.pic.pose) return last;
+  return { scene: MM.scene(st.P, pic, pose), shown: f, phi, still: false };
 }
 
-root.CMFast = { attach, set, paint, latest, ONCE, ONCE_CTRL, PACE };
+root.CMFast = { attach, set, pace, paint, latest, ONCE, ONCE_CTRL, PACES };
 })(typeof window !== 'undefined' ? window : globalThis);
