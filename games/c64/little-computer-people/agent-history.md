@@ -110,3 +110,32 @@ addresses. The comments at `$B7FE`, `$B8C6`, `$B8DE` and
 them, and the simulator confirmed that no call reads `$FF00`–`$FF4F`. All
 of them were corrected.
 
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then left out 1,636 bytes (#461), 598 of them undescribed. The
+contributor's play snapshots were not to hand, so the route in
+`orientation.md` was run again from the same image: `entry.vsf` at the
+hand-over `$0340`, and `play-03.vsf` 75 seconds after `RETURN`, with the
+person once more in the attic chair. Against the old listing 852 bytes
+differ, all of them run-time state: variables, the sound driver's
+work areas, the sprite buffers, the frequency table music_start builds,
+and operands the code rewrites. The comments that gave a value from
+play-02 for one of those bytes now give play-03's too.
+
+Most of the 598 were 19 switch tables. Each activity or sub-machine is
+a `JSR $3F0C` or `JSR $3F11` followed by a table of handler addresses
+less one; the label sat on the `JSR`, in a code block, so its span
+stopped there and the table after it had none. Each table now has a
+label and a comment that points back at the machine, whose comment
+already listed the handlers. The other 100 were the open white closet
+door's frame past `$A000`, where the memory map's edge stops a span.
+
+With the hand-over snapshot, `listing.py` also found the house
+picture's colour matrix at `$5C00`-`$5FF7`, loaded with the program
+and outside the count as screen RAM. It is now included, with a label
+and comments on the cells the code rewrites (the text band, objects,
+the stove and the lamp). Four smaller stretches the listing left out
+got a type and a comment: `$0E`-`$0F`, the four bytes after
+`sprite_bit`, and two unreachable `RTS` bytes at `$20C1` and `$248C`.

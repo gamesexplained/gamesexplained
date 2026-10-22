@@ -39,7 +39,10 @@ else must be able to follow this exactly.
    appears: raster bars and "CRACKED BY MR Z...", 10 to 17 s after
    autostart in two boots. It has no trainer and no options. It waits at
    least seven seconds, or until any key or fire on port 1 is pressed, then hands over
-   by itself. No input is needed. Snapshot: `work/crack-screen.vsf`.
+   by itself. No input is needed. Snapshots: `work/crack-screen.vsf`,
+   and `work/entry.vsf`, the hand-over: a stopping checkpoint on `$0340`,
+   the game's first instruction (see "The loader" below), on a machine
+   power-cycled first.
 3. The game draws the house and asks, on the top line, "Enter time of day
    (HH:MM am/pm)". Snapshot at the prompt, before typing:
    `work/time-prompt.vsf`. The game scans the keyboard matrix itself.
@@ -55,8 +58,12 @@ else must be able to follow this exactly.
    - `work/play-01.vsf`, about a minute after `RETURN`. The person is out
      of sight beyond the attic door, and the dog is in the attic.
    - `work/play-02.vsf`, a little later. The person is sitting in the attic
-     chair and the dog is in the kitchen. **This is the snapshot the
-     disassembler reads.**
+     chair and the dog is in the kitchen. The disassembler read this one.
+   - `work/play-03.vsf`, made again by this route on 22 October 2026,
+     about 75 seconds after `RETURN`. The person is again in the attic
+     chair, with the TV off. **The listing is built from this one**; the
+     comments that quote play-01 and play-02 describe the first run's
+     files.
 
 ## Steady state
 
