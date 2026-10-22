@@ -36,7 +36,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">Commodore 64 · 1987 · Ocean</p><h1>Platoon: discoveries</h1><p class="sub">A programmer's cheat, a difficulty setting nobody can change, and an editor's placeholder left among the sprites.</p></header>
+<header class="hero"><p class="eyebrow">Commodore 64 · 1987 · Ocean</p><h1>Platoon: discoveries</h1><p class="sub">A programmer's cheat, a difficulty setting nobody can change, an editor's placeholder left among the sprites, and a game of Space Invaders that nothing starts.</p></header>
 <main class="wrap" data-part="load1">
 
 <section><p class="fig">01 · Cheat</p><h2 class="t">Secret: ZACH1 stops enemies and their bullets from killing the soldier</h2>
@@ -50,6 +50,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section><p class="fig">03 · Leftover</p><h2 class="t">An ICON among the sprites</h2>
 <p>Sprite shape <code>$A7</code>, stored at <code>$69C0</code> in the first section, is a filled block with the word ICON cut into it: an editor's placeholder that shipped with the game.</p>
+</section>
+
+<section id="invaders" data-part="load4"><p class="fig">04 · Leftover</p><h2 class="t">A game of Space Invaders inside the last section</h2>
+<p>The program for the last section carries a small, complete game of Space Invaders at <code>$28E2</code> that nothing in Platoon starts. It draws three shields, puts four rows of six invaders at the top of the screen and a gun at the bottom, and takes over the screen's interrupts: the top row uses the play sprites, and three more interrupts (<code>$0C1E</code>, <code>$0C60</code>, <code>$0CA2</code>) reuse the sprites for the rows below, turning the border red, cyan and purple as they go.</p>
+<p>The joystick moves the gun, and fire sends up one shot at a time (<code>$2B17</code>). The rows march sideways and step down at each edge, a little faster for every invader shot (<code>$2BA9</code>), while the invaders drop bombs in a fixed order of 25 turns (<code>$2CD6</code>) that wear the shields away (<code>$2E4F</code>). There is no score and there are no lives: a bomb on the gun, or the last invader shot, starts it all again (<code>$2F0D</code>).</p>
+<p>The finished game still makes room for it. The panel's interrupt shows the gun and marks each frame for the invaders whenever the game's mode byte is 7 (<code>$0E84</code>), and only the invaders' own start sets that mode.</p>
+<div class="plate"><img class="reference" src="reference/hidden-invaders.png" alt="Rows of small orange, white, cyan and purple sprites above three white shields and a gun at the bottom, with bombs falling, inside a purple border striped red and cyan"><p class="cap">The hidden game running, entered by jumping to <code>$28E2</code> from the middle of the jungle. Not every invader shows when it is started this way.</p></div>
 </section>
 
 </main>
