@@ -27,6 +27,11 @@ Each level side holds 25 level files named by its rating's letter (`FA`
 to `FY`, `TA` to `TY`, `XA` to `XY`, `MA` to `MY`) and the same nine tune
 files `SA` to `SI`.
 
+The C64 Preservation Project's G64s of disk 1 and disk 2 side A
+(`lemmings_s1_boot[psygnosis_1994](manual)(pal)(!).g64` and
+`lemmings_s2_fun[psygnosis_1994](manual)(pal)(!).g64`), read sector by
+sector with `kit/c64/disk.py`, give D64 files with the same SHA-1s.
+
 The same archive carries `Disk 1 - LEMMINGS patched.d64`, which differs
 from the original in two bytes (offsets 144,234 and 144,235) and, by the
 archive's notes, skips the code sheet. It is a crack and was not used.
@@ -73,7 +78,10 @@ loading, because the first stop after pressing 1 (`$5006`, the loader's
 failed-load call) held only part of the load. Its other snapshots:
 `briefing-fun1.vsf` and `play-fun1.vsf`, thirty seconds into level 1. The
 ending was reached by setting `$CB48` (the level number) to 99 at level 1's
-briefing and winning the level with diggers in warp (`work/toend.py`).
+briefing and winning the level with diggers in warp (`work/toend.py`). A
+shorter way to the same stop: at the briefing, attach disk 1 and set the
+PC to `$CD56`, the loader's call that brings `IC`; press fire when it asks
+for disk 1 side A, and it stops on `$C400`.
 
 Every file is stored with each byte EOR the byte before it and packed; the
 loader unpacks it to the extents above. `work/levels.js` and `work/maps.js`

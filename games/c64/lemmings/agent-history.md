@@ -95,3 +95,26 @@ character-set view, the panel's set was found at `$7000`, where the page
 and `facts.md` had said `$5800`, and the listing's "sprite shapes
 `$C0`-`$D2`" at `$7000` turned out to be the panel's characters with four
 real shapes at the end; all three were corrected.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data that no label reaches, and the
+listings then left out 3,831 bytes (#459). The intro's 3,022 were the
+bitmap every picture unpacks into, at `$2000`, and the bytes past it to
+`$3FFF`: each had a line comment, but the comment sat inside the span of
+the picture stream's label before it, so it owned nothing. `$2000`,
+`$2DA1` and `$3F40` now have labels of their own, and `$2DA1`-`$2DA8`
+turned out to be an eight-byte header in the packer's format before
+picture 0's screen colours, like the one at `$E000`. In the game part,
+the label the BIT at `$5235` gives `$80A2` cut the terrain shapes' span
+short; a line comment at `$80E2` takes the rest. The end sequence's first
+15 bytes, two zeros and thirteen `$FF` before the tune's player, are
+excluded: a run of the whole end sequence with a watch on them saw
+nothing read them before it restarts the machine.
+
+The snapshots were remade from the C64 Preservation Project's G64s,
+which give D64 files with the contributor's SHA-1s (`orientation.md`).
+Each new snapshot matched its listing byte for byte, except the
+resident's three bytes of zero page that change as the machine runs. The
+ending was reached by calling the loader's end-sequence entry from the
+briefing, which is quicker than winning the hundredth level.
