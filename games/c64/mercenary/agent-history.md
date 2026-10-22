@@ -314,3 +314,17 @@ stopping after the 3,677th frame (73.4 s), the first to end on foot:
 about half a second in Chromium. `test_skip.js` holds it against the
 intro watched frame by frame, all of memory and the chips at the
 hand-over and 800 frames of walking after.
+
+## 22 October 2026: typed data no label reached
+
+#455 made the ledger count typed data that no label reaches, and the
+listing then showed 49 bytes as missing (#472). The snapshots were
+remade by `orientation.md`'s route; against the old listing only one
+byte of zero page differs, `$00A2`. `$5598`-`$55C7` is rows 88-135 of
+the row high-byte table, past the 64 bytes `f_5558`'s auto label
+reaches: the hand-over holds `$AA` filler there, and after 25 seconds
+of warp from the hand-over all 136 rows of both tables matched their
+formula. `$BE9F` is the
+zero after `fill_row_left`'s `RTS`, which the routine's comment already
+called unread but which sits outside its block. No instruction names
+either address; both now have a comment of their own.
