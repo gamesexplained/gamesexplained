@@ -493,4 +493,34 @@ const TICK = (() => {
   check('and both came', m.ram[0x2000] !== n0[0] && m.ram[0x2001] !== n0[1], true);
 }
 
+// 18. A handler that adds up the sprite collisions it reads from $D01F: the game's machine finds
+// them as its beam draws the sprite over a character (collide), the port's chips draw nothing, and
+// the replay gives the port's handler what the game's read.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0xF0, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0,                            // the raster at line $F0
+    0xA9, 0x1C, 0x8D, 0x18, 0xD0, 0xA9, 0x01, 0x8D, 0x15, 0xD0, 0xA9, 0x80, 0x8D, 0x00, 0xD0,
+    0x8D, 0x01, 0xD0, 0x58, 0x4C, 0x40, 0x10);                                              // characters at $3000, sprite 0 at $80,$80
+  put(0x1040, 0x20, 0x50, 0x10, 0x4C, 0x40, 0x10);                                        // JSR work, JMP
+  put(0x1050, 0xA2, 0x00, 0xE8, 0xD0, 0xFD, 0xEE, 0x03, 0x20, 0x60);                      // 256 INX, INC $2003, RTS
+  put(0x1100, 0x48, 0xAD, 0x19, 0xD0, 0x8D, 0x19, 0xD0, 0xAD, 0x1F, 0xD0, 0x18, 0x6D, 0x00, 0x20, 0x8D, 0x00, 0x20,
+    0x68, 0x40);                                                                            // $2000 += $D01F
+  ram.fill(0xFF, 0x3000, 0x3008);                                                         // character 0, every pixel set
+  ram[0x07F8] = 0x0D; ram.fill(0xFF, 0x0340, 0x0380);                                     // the sprite's shape at $0340
+  const m = new Machine({ ram, pc: 0x1000, passAt: 0x1040, collide: true, port: { dir: 0x2F, data: 0x35 } });
+  m.runUntilPass(q => q.passes >= 3);
+  const M = new Uint8Array(65536), P = { M };
+  P.irq = function () {
+    P.io.vicWrite(0x19, P.io.vicRead(0x19));
+    M[0x2000] = (M[0x2000] + P.io.vicRead(0x1F)) & 255;
+  };
+  const program = function* () { for (;;) { yield { cp: 0x1040 }; yield { cycles: 1281 }; M[0x2003] = (M[0x2003] + 1) & 255; } };
+  const n0 = m.ram[0x2000];
+  const r = new Lockstep({ machine: m, port: P, program, checkpoints: [0x1040], irqs: { 0x1100: 'irq' } }).run({ passes: 400 });
+  check('the collisions a handler reads: 400 passes identical', r.ok && r.passes === 400, true);
+  check('and the sprite collided', m.ram[0x2000] !== n0, true);
+}
+
 process.exit(fails ? 1 : 0);

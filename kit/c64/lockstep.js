@@ -58,14 +58,18 @@
 //   aside), and go back to the port's after
 //   unless it wrote them. Its reads of the raster ($D012, and $D011's bit 7) get the values the
 //   game's did, in turn (a read past those, the line the game's handler ended on), and the raster's
-//   interrupt bit is latched. So do its reads of the interrupt flags, $D019, $DC0D and $DD0D, the
-//   port's chips' own after those: one handler for the raster and a CIA's timer, as many games
-//   have, takes the branch the game's took. At the next checkpoint or wait's exit, where the two stand at the same
+//   interrupt bit is latched. So do its reads of the interrupt flags, $D019, $DC0D and $DD0D, and
+//   of the sprite collisions, $D01E and $D01F, the port's chips' own after those: one handler for
+//   the raster and a CIA's timer, as many games have, takes the branch the game's took, and one
+//   that gathers the collisions gathers the game's. At the next checkpoint or wait's exit, where the two stand at the same
 //   place, a byte an interrupt wrote and the game's main program wrote again afterwards gets back
 //   the port's own value: the last writer of each byte is the game's. What no replay can give is
 //   the main program reading, in the middle of a stretch, what an interrupt wrote there: those are
 //   the game's own races (the skill says how to show one). Colour RAM and the chips' registers are
-//   replayed as they are: a handler reads the port's, and its writes stand.
+//   replayed as they are: a handler reads the port's, and its writes stand. So a register the main
+//   program writes after an interrupt has written it in the same stretch (a title's SEI and its
+//   new screen modes) needs a checkpoint before that write: replayed at the port's next yield, the
+//   interrupt's value would land after the main program's.
 // - The raster: between yields the port reads the line the game was on at the last one. A bare
 //   yield runs the game on to its next line, taking any interrupt that falls due, so a polling
 //   loop in the port sees the flags and lines the game's loop does, when it does.
@@ -183,10 +187,13 @@ const DATA = Uint8Array.from(OPCODES, ([name, mode]) => ['imp', 'acc', 'imm', 'r
   ['asl', 'lsr', 'rol', 'ror', 'inc', 'dec', 'slo', 'rla', 'sre', 'rra', 'dcp', 'isb'].includes(name) ? 2 : 1);
 
 const hex = (v, n = 4) => '$' + (v >>> 0).toString(16).toUpperCase().padStart(n, '0');
-// The chips' interrupt flags, by address: the video chip's $D019 and the CIAs' $DC0D and $DD0D,
-// wherever their registers repeat; -1 for any other address. A handler that serves more than one
-// source reads one of these to tell which came, so a replay gives it what the game's read.
-const flagRegister = a => (a >= 0xD000 && a < 0xD400 && (a & 0x3F) === 0x19 ? 0xD019
+// The registers a replay gives as the game's handler read them, by address: the interrupt flags,
+// the video chip's $D019 and the CIAs' $DC0D and $DD0D, and the video chip's collisions, $D01E and
+// $D01F, wherever their registers repeat; -1 for any other address. A handler that serves more than
+// one source reads a flag to tell which came, and the collisions are what the beam found where the
+// game's sprites were drawn, which the port's chips do not draw; a read empties each, so a replay
+// gives it what the game's read.
+const flagRegister = a => (a >= 0xD000 && a < 0xD400 && ((a & 0x3F) === 0x19 || (a & 0x3E) === 0x1E) ? 0xD000 | (a & 0x3F)
   : a >= 0xDC00 && a < 0xDE00 && (a & 0x0F) === 0x0D ? (a & 0xFF00) | 0x0D : -1);
 const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
 const NONE = new Set();
