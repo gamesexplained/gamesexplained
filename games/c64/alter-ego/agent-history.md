@@ -55,3 +55,18 @@ the two cache stretches, `$C29C`-`$C2A1` and `$C82C`-`$CAAA`, were taken
 out again (`listing.py --rebuild --write`), so they show as missing
 rather than as the original disk's power-on pattern. The raw snapshots
 are `work/entry.vsf` and `work/name-prompt-raw.vsf`.
+
+## The cache bytes from their twin (22 October 2026)
+
+The two cache stretches left missing above came from the contributor's
+capture after all. The bootstrap at `$0E98` copied `$1000`-`$1FFF` up to
+`$C000`-`$CFFF`, and `facts.md` records that in the contributor's
+name-prompt capture the two halves differ in 52 bytes, all in the VM
+stack tail from `$CF83`. The listing holds 3,451 of the 4,096 byte pairs,
+and they differ in exactly those 52, so the 645 missing bytes cannot
+differ from their twins either. They were written into
+`work/name-prompt.vsf` from `$129C`-`$12A1` (00 00 00 01 00 00) and
+`$182C`-`$1AAA` (zeros, then 02 08 07 05 0E 04 0C at `$1AA4`), the
+listing was built again, and it gained those 645 bytes with every other
+byte unchanged. Each stretch has a line comment. No 6502 instruction
+names either; their owners stay open.
