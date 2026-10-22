@@ -71,3 +71,24 @@ block `$23` is a booth that appears eight times, and D opened the save
 menu in two of them. The security gate is block `$20`, five times in the
 map. Positions written as address chips (x `$0C40` and the like) were
 unlinked.
+
+## Typed data no label reached (22 October 2026)
+
+#455 made the ledger count typed data, and bytes under a line comment,
+that no label reaches, and the listing then left out 190 bytes (#464).
+The automatic label at `$4B28`, the status rows the start-up also copies
+to `$7C00`, reached 64 bytes; it is now a label of its own, and a line
+comment at `$4BA0` describes the panel glyphs after the rows. The spare
+byte at `$9101` and the save file's name at `$94F9` had been described
+only inside their neighbours' comments, and now have their own. The RAM
+under the KERNAL at `$FF6F`-`$FFF9` had been split into blocks at the
+three ROM entry points the save calls, so their labels stopped short;
+it is one block again.
+
+The original disk, booted by the route in `orientation.md`, reached
+`$484D` with the same bytes as the listing except twelve in zero page
+(the jiffy clock, the keyboard buffer count and other KERNAL state the
+boot leaves). Those were written back from the earlier listing into
+`work/dw-disk-entry.vsf` before the rebuild; the unpatched snapshot is
+`work/dw-disk-entry-raw.vsf`.
+
