@@ -244,6 +244,15 @@ f = value × clock / 16777216 (PAL clock 985,248 Hz; NTSC 1,022,727 Hz).
 A game that never writes control or envelope registers is playing by
 frequency writes alone; frequency 0 is silence.
 
+`$D400`-`$D418` cannot be read. A read of one returns the data bus: the
+last value written to any SID register, until it fades (measured in VICE
+by `kit/c64/sid_bus.py`, readings in `kit/c64/fixtures/sid-bus.json`). A
+driver that reads back a register it writes, such as an `INC` of a
+control register to set the gate, gets that value. Test its port with
+the bus, `createBus` in `site/lib/sid.js`: a test that answers such reads
+with 0, or with the register's own last write, agrees with a port that
+plays the wrong waveform.
+
 `$D419` and `$D41A` are read-only: the positions of the two paddles,
 0 to 255. With nothing in the control ports both read `$FF` (VICE
 v3.13.2, measured 16 October 2026), and the emulator's server has no

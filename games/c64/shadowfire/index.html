@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}}</title>
+<title>Shadowfire</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -34,33 +34,517 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 
+.sf-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.sf-stack{position:relative}
+.sf-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent;pointer-events:none}
+.sf-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.sf-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.sf-btn:hover{border-color:var(--ink-mute)}
+.sf-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sf-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.sf-out b{font-weight:700}
+.sf-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.sf-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.sf-tbl th,.sf-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.sf-tbl th{font-weight:700;color:var(--ink-soft)}
+.sf-tbl td.sf-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.sf-meter{display:inline-block;height:9px;border-radius:2px;background:var(--accent);vertical-align:1px;margin-right:8px}
+.sf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.sf-grid button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
+.sf-grid button[aria-pressed="true"]{border-color:var(--amber)}
+.sf-grid canvas{image-rendering:pixelated;max-width:100%}
+.sf-strip{display:grid;grid-template-columns:repeat(25,minmax(0,1fr));gap:3px;margin:0 0 6px}
+.sf-strip button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
+.sf-strip button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.sf-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+.sf-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sf-code{font-family:var(--fm);font-size:12px;line-height:1.5;background:#1d1f24;color:#e9e7e1;padding:14px;border-radius:6px;overflow-x:auto;margin:0 0 14px;white-space:pre}
+.sf-mono{font-family:var(--fm);font-size:13px}
+@media (max-width:720px){.sf-two{grid-template-columns:1fr}.sf-strip{grid-template-columns:repeat(10,minmax(0,1fr))}}
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
--->
 <!-- tabs -->
 <header class="hero">
-  <p class="eyebrow">{{year}} · {{publisher}}</p>
-  <h1>{{title}}</h1>
-  <p class="sub">The standfirst, which the agent writes: the most interesting thing inside this game, in a sentence or two.</p>
+  <p class="eyebrow">1985 · Beyond Software</p>
+  <h1>Shadowfire</h1>
+  <p class="sub">A rescue played entirely through icons. Behind the one bitmap screen, the interrupt gives each of the ship's fifty people one frame in fifty, so every one of them lives its life a second at a time.</p>
 </header>
 <main class="wrap">
-<section>
-  <p class="fig">01 · What this section explains</p>
-  <h2 class="t">The finding, spelled out</h2>
-  <p class="lede">What a player would notice, in a sentence or two.</p>
-  <div class="plate"><canvas id="cv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
-  <p>The explanation, with the bytes, the table or the register beside each claim.</p>
+
+<section id="screen">
+  <p class="fig">01 · The screen</p>
+  <h2 class="t">The screen is one bitmap with windows cut in it</h2>
+  <p class="lede">The whole picture is a single multicolour bitmap from top to bottom, with no change of mode part way down. The upper thirteen cell rows are the command panel, loaded from tape as a finished picture, and in play the game draws only into its windows.</p>
+  <div class="plate">
+    <div class="sf-bar" id="sf-areas"></div>
+    <div class="sf-stack"><canvas id="sf-frame" class="sf-cv" width="384" height="272"></canvas><canvas id="sf-frame-hi" class="sf-cv" width="384" height="272"></canvas></div>
+    <p class="sf-out" id="sf-area-out"></p>
+    <p class="cap">One frame of the status screen with Syylk chosen, recorded in the emulator and drawn here from the bitmap at <code>$2000</code>, the colours at <code>$0C00</code>, colour RAM and the sprites, by the site's renderer. All 104,448 pixels of the drawing match the emulator's own picture of the frame.</p>
+  </div>
+  <p>The panel's frame and its lamps are never drawn by the program: they arrive in the bitmap as the tape loads it. In play the game changes only the status icons' colours, the clock, the ticker, the view screen and the portrait monitor.</p>
+  <p>The lower twelve rows are cleared for each of the nine screens and drawn again from a list of icons (<code>draw_screen</code>, <code>$4A63</code>). An icon in the list is a picture, a place on the screen, and the routine that runs when the player presses fire with the cursor on it.</p>
 </section>
+
+<section id="music">
+  <p class="fig">02 · The tunes</p>
+  <h2 class="t">Music: the title music is six tunes played in a ring</h2>
+  <p class="lede">Fred Gray's driver holds nine tunes. Six of them make the title music, each ending by asking for the next, and the one heard in play starts silent.</p>
+  <div class="plate">
+    <div id="sf-sid"></div>
+    <p class="cap">The page runs the game's own music driver, its bytes <code>$1600</code>-<code>$1FC5</code> from the listing, on the kit's 6502, and plays what it writes through a model of the SID. Each button past the first starts the title music where its ring reaches that tune. <code>test_music.js</code> checks every write of 6,000 frames of each button against the same driver run on the simulator.</p>
+  </div>
+  <p>Tune 7 sets voices 2 and 3 to a sawtooth and asks for tune 4 on its first frame. From there the ring runs 4, 5, 6, 2, 3, 8 and back to 4, 4,368 frames round, about 87 seconds. Tunes 2 and 3 play from the same three note tables, 3 for 144 steps where 2 stops at 96, and tune 5 is the first 72 steps of tune 4 again. Tune 9 sits in the driver with its own notes and effect, and nothing in the game asks for it.</p>
+  <p>Tune 1 is the music in play. Its voices 2 and 3 are pulse waves whose width is the byte at <code>$1603</code> times eight, and a new game finds it at 0, a pulse of no width, which is silence. Holding fire on the team screen's up arrow raises it a step at a time to <code>$40</code>, so the music fades in; the down arrow fades it out. The player's "In play" button has it turned all the way up.</p>
+  <p>The driver turns each note on by storing the waveform in the voice's control register and then incrementing the register, which adds the gate bit (<code>$1662</code>). The SID's registers cannot be read back: a read returns whatever is still on the data bus, which here is the waveform just written, so the increment works. A SID that read back 0 would turn every note into a gate with no waveform, so the player above keeps the bus's last value too.</p>
+</section>
+
+<section id="sound">
+  <p class="fig">03 · The effects</p>
+  <h2 class="t">Sound: the effects keep time with the in-game tune</h2>
+  <p class="lede">Voice 1 plays the sound effects, and the in-game tune starts each one on its beat, every eighth frame. Some effects repeat on every beat until the game changes them; one plays once.</p>
+  <div class="plate">
+    <div id="sf-sfx"></div>
+    <p class="cap">The same driver on the same 6502, playing tune 1 with its pulse width at 0 as a new game sets it, so that only voice 1 sounds. Each button sets the byte the game sets for that moment (<code>$1602</code>, or <code>$1601</code> for the icon). <code>test_music.js</code> checks these four as well.</p>
+  </div>
+  <p>On every beat the driver takes the byte at <code>$1602</code> and starts it as an effect. The game keeps it at <code>$30</code>, changes it to <code>$3E</code> while a message scrolls through the ticker, and to <code>$0F</code> while a character is weak: a heartbeat, whose low bit makes the driver flip another bit on every beat, so it alternates between two sounds. Choosing an icon puts <code>$DE</code> in <code>$1601</code>, played once at the next beat.</p>
+  <p>One byte describes a whole effect. Its bits choose the waveform, the envelope, the starting pitch, and how fast the pitch climbs (<code>voice1_effect</code>, <code>$1F6B</code>).</p>
+</section>
+
+<section id="view">
+  <p class="fig">04 · The view screen</p>
+  <h2 class="t">The view screen looks through a window on one map of the ship</h2>
+  <p class="lede">The whole ship is one map of 32 by 32 tiles. The view screen shows five tiles by five of it around the chosen character, drawn into the bitmap behind an iris.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous location">‹</button><select id="sf-loc" aria-label="Location"></select><button class="step" data-d="1" aria-label="Next location">›</button></div>
+    <div class="sf-two">
+      <canvas id="sf-view" class="sf-cv" width="240" height="240"></canvas>
+      <div><p class="sf-out" id="sf-loc-out"></p><table class="sf-tbl" id="sf-exits"></table></div>
+    </div>
+    <p class="cap">Drawn by a port of <code>draw_view_map</code> (<code>$6A50</code>) from the tile map at <code>$84CB</code>, the colour map at <code>$88CB</code>, the tile set at <code>$BF96</code> and the map's 235 characters at <code>$C288</code>. <code>test_map.js</code> checks every cell of all 164 windows against the routine itself run on the simulator. The outline marks the cell where the character's own icon goes. <a href="levels.html">Maps / levels</a> draws the whole ship.</p>
+  </div>
+  <p>A tile is two cells by two, each cell one of the map's own 235 multicolour characters, and a tile's four cells share one colour byte from the colour map. The routine copies the characters straight into the bitmap: the map is 1 KB of tile numbers and 1 KB of colours, and the tiles and characters add 2.6 KB.</p>
+  <p>A location is a record of a map position, its exits and its name. Each exit is two bytes: the location it leads to, and a byte holding the distance in its low three bits and a door in the other five, 0 for none. A character walks a unit of distance in a time set by its agility (section 05), and a locked door stops it until a key card of the door's colour opens it, or Sevrina picks the lock.</p>
+</section>
+
+<section id="team">
+  <p class="fig">05 · The team</p>
+  <h2 class="t">Five numbers tell the six characters apart</h2>
+  <p class="lede">Strength, agility and stamina in each record, a base added to agility and a factor that turns strength into damage and carrying: the six are the same code with different numbers.</p>
+  <div class="plate">
+    <div class="sf-bar" id="sf-team"></div>
+    <div class="sf-two">
+      <canvas id="sf-portrait" class="sf-cv" width="240" height="192"></canvas>
+      <table class="sf-tbl" id="sf-stats"></table>
+    </div>
+    <p class="cap">Portraits from the table at <code>$4A21</code> and the team screen's pictures from <code>$818F</code>, drawn from the listing by a port of <code>draw_picture</code> (<code>$42D9</code>). <code>test_pictures.js</code> checks it against the routine on every one of the 83 pictures these pages draw. The numbers are the records as a new game starts them: <code>$CA0E</code> onwards, <code>agility_base</code> at <code>$CFB7</code> and <code>strength_factor</code> at <code>$CF85</code>.</p>
+  </div>
+  <p>Strength and the factor decide what a character can carry and how hard it hits. Strength times factor over 256 is both the most weight a character can carry and the damage it deals before its weapon's strength scales it. Above that weight, agility drains by a sixteenth of the excess every second. Maul's factor is the largest, <code>$FF</code>.</p>
+  <p>Agility and the base decide how fast a character walks. The game takes a quarter of the two added together, subtracts that from 127, divides by 8 and makes the answer odd: the seconds each unit of an exit's distance takes, from 15 at the lowest agility to 1 at the highest. Torik, with a base of <code>$FF</code>, walks fastest, and Maul, with <code>$40</code>, slowest.</p>
+  <p>Stamina pays for strength. Strength recovers on its own, faster the weaker the character and the more stamina it has left, and each step of recovery uses stamina up.</p>
+</section>
+
+<section id="objects">
+  <p class="fig">06 · The objects</p>
+  <h2 class="t">Weapons that look alike hit differently</h2>
+  <p class="lede">The ship holds 54 objects: eighteen tools, keys and devices, and 36 weapons drawn with eighteen pictures between them.</p>
+  <div class="plate">
+    <div class="sf-grid" id="sf-objs"></div>
+    <p class="sf-out" id="sf-obj-out"></p>
+    <p class="cap">Every object's picture and record as a new game starts them (<code>$CD98</code>, seven bytes each), with its strength from <code>weapon_strength</code> (<code>$CF15</code>). The game names none of them.</p>
+  </div>
+  <p>An object is seven bytes: flags, where it is (a location, or the character carrying it), its weight, its picture and the routine that Activate runs. The flags say whether it is carried, whether it can be readied, whether it can be activated, and whether it can be picked up at all. A weapon fires by itself in combat, but only the one readied, and a character with none fights with bare hands, a strength of <code>$20</code>.</p>
+  <p>A weapon's strength byte holds two figures: the high four bits for an enemy in the same location and the low four for one next door. Weapons drawn alike do not share them: object 20 is <code>$83</code> and the four after it <code>$63</code>, object 25 <code>$63</code> and the four after it <code>$F1</code>. In combat the second figure is worked out and then never read, so every weapon hits the next location as hard as its own (<a href="discoveries.html#range">Discoveries</a>).</p>
+</section>
+
+<section id="people">
+  <p class="fig">07 · The people</p>
+  <h2 class="t">Each of the fifty people gets one frame in fifty</h2>
+  <p class="lede">The raster interrupt runs one of the ship's fifty people every frame, so each of them is simulated once every fifty frames: a second of its life each second.</p>
+  <div class="plate">
+    <div class="sf-strip" id="sf-ents"></div>
+    <div class="sf-key" id="sf-ent-key"></div>
+    <p class="sf-out" id="sf-ent-out"></p>
+    <p class="cap">The fifty records as a new game starts them, eighteen bytes each from <code>$CA0E</code>, in the order the interrupt runs them.</p>
+  </div>
+  <p>The interrupt fires at raster line <code>$F8</code>. After the input handler moves the cursor it plays a frame of music, then runs the next person's second (<code>irq_entity</code>, <code>$66D1</code>): a step of walking, a round of combat, a lock picked a little further, strength recovered. Then it rolls the clock's digits, scrolls the ticker, redraws one cell of the view screen's map and works out the places that person can reach. After the fiftieth, the time lock, the self-destruct and the mission clock each count one second.</p>
+  <p>Each person acts only in its own frame, so a fight between two people is one exchange a second each, and the six characters the player commands keep the same timetable as everyone else aboard.</p>
+  <p>The mission clock starts at 99:58 and counts down. Past 00:00 Kryxix is executed and the clock counts up instead (<a href="discoveries.html#clock">Discoveries</a>).</p>
+</section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+/* sf-data */
+// Reading Shadowfire's tables out of its memory, m (64 KB, as C64.load gives it from the listing).
+// Text is one byte a character (0-9 the digits, 10-35 A-Z, $24 a space, $39 a new line) ended by
+// $38; a byte from $80 is one of the 71 shared words, through the pointers at $81B1 (msg_words).
+// Locations: two pointer tables ($B1E4 for $00-$7F, $B2E4 for $80-$A3), each record the map
+// column and row, a mask of exits (bit 7 up, then clockwise), two bytes an exit (the location it
+// leads to; the distance in bits 0-2 and the door in bits 3-7), then the location's name.
+const SF = (function () {
+  const w = (m, a) => m[a] | m[a + 1] << 8;
+  const DIRS = ['up', 'up-right', 'right', 'down-right', 'down', 'down-left', 'left', 'up-left'];
+  const SPECIAL = { 0x24: ' ', 0x25: '.', 0x26: ',', 0x27: '%', 0x28: '|', 0x29: '|', 0x2A: ':', 0x39: '\n' };
+  function text(m, a, depth) {
+    let s = '';
+    for (let n = 0; n < 200 && m[a] !== 0x38; n++, a++) {
+      const c = m[a];
+      if (c >= 0x80) s += (depth || 0) < 4 ? text(m, w(m, 0x81B1 + 2 * (c & 0x7F)), (depth || 0) + 1) : '';
+      else if (c < 10) s += String.fromCharCode(48 + c);
+      else if (c < 36) s += String.fromCharCode(55 + c);
+      else s += SPECIAL[c] || '?';
+    }
+    return s;
+  }
+  const lines = (s) => s.split('\n').map((l) => l.replace(/ +/g, ' ').trim()).filter(Boolean);
+  const locPtr = (m, L) => L < 0x80 ? w(m, 0xB1E4 + 2 * L) : w(m, 0xB2E4 + 2 * (L - 0x80));
+  function location(m, L) {
+    const p = locPtr(m, L), mask = m[p + 2], exits = [];
+    let q = p + 3;
+    for (let d = 0; d < 8; d++) if (mask & (0x80 >> d)) { exits.push({ dir: DIRS[d], d, to: m[q], dist: m[q + 1] & 7, door: m[q + 1] >> 3 }); q += 2; }
+    return { L, at: p, x: m[p], y: m[p + 1], mask, exits, name: lines(text(m, q)).join(' ') };
+  }
+  const LOCATIONS = 0xA4;
+  const TEAM = ['Syylk', 'Sevrina', 'Manto', 'Maul', 'Zark', 'Torik'];
+  const who = (e) => e < 6 ? TEAM[e] : e === 6 ? 'Kryxix' : e === 7 ? 'Zoff' : 'Enemy ' + e;
+  // Entities: 50 records of 18 bytes from $CA0E. +0 status, +2 location, +4 strength, +5 agility,
+  // +6 stamina; an enemy's +5 to +8 hold its patrol (+7 bit 7 a script, +5 bit 7 a chain).
+  function entity(m, e) {
+    const p = 0xCA0E + 18 * e, r = m.slice(p, p + 18);
+    return { e, at: p, name: who(e), status: r[0], loc: r[2], strength: r[4], agility: r[5], stamina: r[6], r };
+  }
+  // Objects: 54 records of 7 bytes from $CD98: flags, location (or carrier), weight, picture, routine.
+  function object(m, k) {
+    const p = 0xCD98 + 7 * k;
+    return { k, at: p, flags: m[p], where: m[p + 1], weight: m[p + 2], picture: w(m, p + 3), routine: w(m, p + 5), strength: m[0xCF15 + k] };
+  }
+  // Patrol scripts: pointers at $BDC0; a script is its length, its start, then (time, location) pairs.
+  function patrol(m, i) {
+    const p = w(m, 0xBDC0 + 2 * i), n = m[p], steps = [];
+    for (let k = 1; k < n / 2; k++) steps.push({ time: m[p + 2 * k], to: m[p + 2 * k + 1] });
+    return { i, at: p, start: m[p + 1], steps };
+  }
+  return { w, DIRS, text, lines, location, LOCATIONS, entity, object, patrol, TEAM, who };
+})();
+// end of sf-data
+</script>
+<script>
+/* sf-picture */
+// draw_picture ($42D9): a picture is its width in cells and its height in cell rows, the bitmap
+// cell row by cell row (8 bytes a cell), then the colours packed three bytes to two cells, in one
+// run from the first cell to the last: the first of a pair takes byte 0 as its screen colours and
+// byte 1's low nibble as its colour RAM; the second takes byte 1's high nibble and byte 2's low
+// one as its screen colours, and byte 2's high nibble as its colour RAM.
+function sfPicture(m, p) {
+  const wd = m[p], ht = m[p + 1], n = wd * ht;
+  let q = p + 2;
+  const bits = m.slice(q, q + n * 8), scr = new Uint8Array(n), cram = new Uint8Array(n);
+  q += n * 8;
+  for (let i = 0; i < n; i++) {
+    if (!(i & 1)) { scr[i] = m[q]; cram[i] = m[q + 1] & 15; q += 1; }
+    else { scr[i] = (m[q] >> 4 | m[q + 1] << 4) & 255; cram[i] = m[q + 1] >> 4; q += 2; }
+  }
+  return { w: wd, h: ht, bits, scr, cram };
+}
+// Cells of the multicolour bitmap into an RGBA image: pixel pairs %00 the background, %01 the
+// screen byte's high nibble, %10 its low nibble, %11 the colour RAM nibble.
+function sfPaint(pic, bg, rgb) {
+  const W = pic.w * 8, H = pic.h * 8, px = new Uint8ClampedArray(W * H * 4);
+  for (let cy = 0; cy < pic.h; cy++) for (let cx = 0; cx < pic.w; cx++) {
+    const i = cy * pic.w + cx, cols = [bg, pic.scr[i] >> 4, pic.scr[i] & 15, pic.cram[i] & 15];
+    for (let y = 0; y < 8; y++) {
+      const b = pic.bits[i * 8 + y];
+      for (let x = 0; x < 4; x++) {
+        const c = rgb[cols[(b >> (6 - 2 * x)) & 3]];
+        for (let k = 0; k < 2; k++) {
+          const o = ((cy * 8 + y) * W + cx * 8 + x * 2 + k) * 4;
+          px[o] = c[0]; px[o + 1] = c[1]; px[o + 2] = c[2]; px[o + 3] = 255;
+        }
+      }
+    }
+  }
+  return { w: W, h: H, px };
+}
+// end of sf-picture
+</script>
+<script>
+/* sf-map */
+// draw_view_map ($6A50): the view screen's map, 5 x 5 tiles of 2 x 2 cells from map column x - 1,
+// row y - 1, into the window at cell column 15, row 1. A tile row is built in a 40-byte buffer
+// ($6C64): ten characters for the upper cell row, ten for the lower, then their twenty colours. The
+// map is 32 x 32 tile numbers at ($84C7) and their colours at ($84C9); a tile is four character
+// numbers in the tile set at ($BF94), and a character eight bytes of the map's own set at ($C286).
+// A column off the map is tile $31, empty space, its colour still read from the colour map at the
+// column's byte. A row off the map clears buffer bytes 1-20, not 0-19, so the upper row's first
+// character stays from the last row drawn and the first colour is cleared. buf is that buffer,
+// kept from draw to draw as the game keeps it. Location $A3, at $FF, $FF, is the attack craft:
+// two pictures, offmap_pictures ($6DC7), at rows 1 and 6.
+function sfViewMap(m, x, y, buf) {
+  const w = (a) => m[a] | m[a + 1] << 8;
+  const out = { bits: new Uint8Array(800), scr: new Uint8Array(100), cram: new Uint8Array(100).fill(0x0E) };
+  if (x === 0xFF && y === 0xFF) {
+    [[w(0x6DC7), 0], [w(0x6DC9), 5]].forEach(([p, r0]) => {
+      const pic = sfPicture(m, p);
+      for (let cy = 0; cy < pic.h; cy++) for (let cx = 0; cx < pic.w; cx++) {
+        const i = cy * pic.w + cx, o = (r0 + cy) * 10 + cx;
+        out.bits.set(pic.bits.subarray(i * 8, i * 8 + 8), o * 8);
+        out.scr[o] = pic.scr[i]; out.cram[o] = pic.cram[i];
+      }
+    });
+    return out;
+  }
+  const map = w(0x84C7), cmap = w(0x84C9), tiles = w(0xBF94), chars = w(0xC286);
+  for (let r = 0; r < 5; r++) {
+    const row = (y - 1 + r) & 255;
+    if (row >= 0x20) for (let k = 1; k <= 20; k++) buf[k] = 0;
+    else for (let t = 0; t < 5; t++) {
+      const col = (x - 1 + t) & 255, X = 2 * t;
+      const tile = col < 0x20 ? m[map + row * 32 + col] : 0x31, colour = m[cmap + row * 32 + col];
+      buf[20 + X] = buf[21 + X] = buf[30 + X] = buf[31 + X] = colour;
+      const T = tiles + tile * 4;
+      buf[X] = m[T]; buf[X + 1] = m[T + 1]; buf[10 + X] = m[T + 2]; buf[11 + X] = m[T + 3];
+    }
+    for (let X = 0; X < 20; X++) {
+      const o = (2 * r + (X >= 10 ? 1 : 0)) * 10 + X % 10;
+      out.bits.set(m.subarray(chars + buf[X] * 8, chars + buf[X] * 8 + 8), o * 8);
+      out.scr[o] = buf[20 + X];
+    }
+  }
+  return out;
+}
+// The whole map, 32 x 32 tiles, as the view screen would draw each one: 64 x 64 cells.
+function sfShip(m) {
+  const w = (a) => m[a] | m[a + 1] << 8;
+  const map = w(0x84C7), cmap = w(0x84C9), tiles = w(0xBF94), chars = w(0xC286);
+  const pic = { w: 64, h: 64, bits: new Uint8Array(64 * 64 * 8), scr: new Uint8Array(4096), cram: new Uint8Array(4096).fill(0x0E) };
+  for (let row = 0; row < 32; row++) for (let col = 0; col < 32; col++) {
+    const T = tiles + m[map + row * 32 + col] * 4, colour = m[cmap + row * 32 + col];
+    for (let k = 0; k < 4; k++) {
+      const o = (row * 2 + (k >> 1)) * 64 + col * 2 + (k & 1), c = m[T + k];
+      pic.bits.set(m.subarray(chars + c * 8, chars + c * 8 + 8), o * 8);
+      pic.scr[o] = colour;
+    }
+  }
+  return pic;
+}
+// end of sf-map
+</script>
+<script>
+/* sf-music */
+// createDriver for C64Sid: runs Shadowfire's own music driver, Fred Gray's ($1600-$1FC5 from the
+// listing), on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which sid.js passes to
+// createDriver). play() is play_music ($1606), called once a frame as the raster interrupt calls
+// it; each call starts with A, X and Y 0 and every flag clear. init(t) puts back the driver's bytes
+// as loaded and sets the four bytes the game sets: the tune ($1600), the effect to play once
+// ($1601), the effect repeated on every beat ($1602) and the in-game tune's pulse width ($1603).
+// The title music starts as the game starts it, with tune 7; a tune of the title's ring starts
+// where the ring reaches it, the driver run on silently until the frame that tune begins, and the
+// registers it left handed to the player as that frame's writes. A read of a SID register returns
+// the data bus, the last value written, which the driver's INC of a control register relies on.
+const SF_TUNES = [
+  { name: 'Title: 7 and 4', tune: 7 }, { name: 'Title: 5', tune: 7, from: 5 }, { name: 'Title: 6', tune: 7, from: 6 },
+  { name: 'Title: 2', tune: 7, from: 2 }, { name: 'Title: 3', tune: 7, from: 3 }, { name: 'Title: 8', tune: 7, from: 8 },
+  { name: 'In play: 1', tune: 1, beat: 0x30, pulse: 0x40 }, { name: 'Never played: 9', tune: 9 },
+];
+const SF_EFFECTS = [
+  { name: 'The beat', tune: 1, beat: 0x30 }, { name: 'A message', tune: 1, beat: 0x3E },
+  { name: 'Someone weak', tune: 1, beat: 0x0F }, { name: 'An icon chosen', tune: 1, once: 0xDE },
+];
+function createDriver(D, C64Cpu) {
+  const base = new Uint8Array(0x10000);
+  for (const [ad, bytes] of D.mem) base.set(bytes, ad);
+  const sid = new Uint8Array(25);
+  let m, cpu, writes = [], bus = 0, env3 = 0, osc3 = 0;
+  const io = {                                                  // the chips at $D000-$DFFF
+    read(ad) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; return r === 0x1B ? osc3 : r === 0x1C ? env3 : bus; } return m[ad]; },
+    write(ad, val) { if (ad >= 0xD400 && ad < 0xD800) { const r = ad & 0x1F; if (r < 25) { sid[r] = val; writes.push(r, val); } bus = val; return; } m[ad] = val; },
+  };
+  const play = () => { writes = []; cpu.call(0x1606, { a: 0, x: 0, y: 0, n: 0, v: 0, d: 0, z: 0, c: 0 }, { maxSteps: 200000 }); };
+  return {
+    sid,
+    get writes() { return writes; },
+    readback(e3, o3, b) { env3 = e3; osc3 = o3; bus = b; },
+    init(t) {
+      const c = D.tunes[t];
+      m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+      sid.fill(0); writes = []; bus = 0;
+      m[0x1600] = c.tune; m[0x1601] = c.once || 0; m[0x1602] = c.beat || 0; m[0x1603] = c.pulse || 0;
+      if (c.from) {
+        for (let n = 0; n < 20000 && m[0x1600] !== c.from; n++) play();
+        writes = [];
+        for (let r = 0; r < 25; r++) writes.push(r, sid[r]);
+      }
+    },
+    stop() { writes = []; m[0x1600] = 0; },
+    play,
+    playing() { return (m[0x1600] & 0x7F) !== 0; },
+    voice() { return { tune: m[0x161F], step: m[0x161C] }; },
+  };
+}
+// end of sf-music
+</script>
+<script>
+// The frame of section 01, as kit/c64/frame.py recorded and trimmed it.
+const SF_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[56,201,136,56,184,56,136,98,184,98,0,0,0,0,0,0,0,59,0,209,0,31,216,30,57,122,241,0,1,30,0,31,240,240,241,242,243,241,240,240,251,251,251,251,246,247,252],"cia2":[151,63],"cpu":[47,53],"writes":[],"colour":"Bg8GAQEPAQ8BAQYGDwEOAQEBAQEBAQEBAQYJAQENCQEBAQ0BDQEDDAEBAQ8BAQYBAQ8LCwEGDg4CAggCAggCAggGBgkMDAwMDw8PCwsLDAMBAQEPAQEMAQECCwwPCwEODgIFAgIFAgIIBgsLAQcHBAECAgIFAgMGDw8PBgwGAQIPAg8PAw8BCA4CDgICBQICBQMLCwcHAQgBBAYGAgYDBgYBAQYBAQ8BAQICCwsLBgICAg4CAg4CAgUDAgsIBwEBBwICBAICAwYGAQEGAQEPAQEGDwYPBgYCAgICAAACAgUCAwsLBwICAgICAggICAMGAQYBAQEGCQwMDAwDDAMGDgICAgAAAgICAgMLCwECAgQBAgICBQIDBgEPDwAPAQsHBwcHBwwLAQ4JAgICAgICAgIDCwsCAgICAQgCBgIGAwYBAg8CAgIPAg8PDw8JAgYCBwcOAgICAgICAw8LCAIBAQcCAggCAgMGDwUFBQUFBQUFBQUFBQ4BAgICDgcHDgMCBQMPCwcCAgICAgIICAgPBg8MDAwMDAwMDAwMDAwGBgICAg4FDgIODgIDBQwLCgoBCgoBAQEPDwYDAwMGBgMDBgMGBgMDAwkDBgYGCQkJAwkJCQMPDwYGBgMGBgYGDwYGDAYGDg4OBgYGBgYGBgYGBgIGBgYGAgYGBgICBQUFBQUFBQUFBQsLCwUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUDAwoFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFAgoKBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFDw8PBQUPDw8FBQUDAwMFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQ8LDwUFDwsPBQUFAwYGBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUCAgoFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQ8PDwUFBgMDBQUFAggFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUPCw8FBQYDAQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUDBwMFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBwcHBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQIPBg4JDQACDwgGBQgEAwUCCAAJDQANAQ==","ram":[{"a":2304,"b":"AAAAD///D//gD/8AD/wAD/gAD+AAD8AAD4AAD4AADwAADgAADgAADAAADAAADAAACAAACAAACAAACAAACAAA"},{"a":2368,"b":"AAAA///wB//wAf/wAH/wAB/wAA/wAAfwAAPwAAHwAADwAADwAABwAABwAAAwAAAwAAAwAAAQAAAQAAAQAAAQ"},{"a":2432,"b":"CAAACAAACAAACAAADAAADAAADAAADgAADgAADwAADwAAD4AAD8AAD+AAD/AAD/gAD/4AD/+AD//gD///AAAA"},{"a":2496,"b":"AAAQAAAQAAAQAAAQAAAQAAAwAAAwAAAwAABwAABwAADwAAHwAAHwAAPwAAfwAB/wAD/wAP/wB//w///wAAAA"},{"a":2560,"b":"AoIAEIIEEIIEBIIQBIIQAYJAAYJAqoKqAAAAAAAAAAAAAAAAqoKqAYJAAYJABIIQBIIQEIIEEIIEAIIAAAAA"},{"a":3072,"b":"wcbPxsbGxmzGxsHPxsZh5uZu5ubm5m7mbuHNycnJzcnJycnJycnJY2wREcYREfwREWz8HLy8FhXo5eXo6Ojl6OgT/CyiKqKiLCwsLMLComxsERHGERFiERFsHPE8bG4YMr7r4+Po4+HoMvz854HhJiiHh+gm56I8bGzGwRb8xsEs/BxsHGxu6LK+Yujo6Ohu6GL8/ImBhxaCYoSC6CgqPPwREfwREWwREby8LCws4ejrvmJogYJobuHy/M+SSIcogufo4kjoKjz8ERHPERFsERHLbM/G/OHo6Ou3AACHgSHo8vz8KIRo6ZPo5EJCJKI8z3zGxsbPbLm5aZPJk2zhEujl5wAA5+Xo6PL8z+eB4SYoh4foJueiw/z8/HGMPJzzV/f397n85oLyt+v/5ejj4+jy/PyJgYcWgmKEgugoosP8zyzP/Pyc/CwsLCz8/OHosrJi5+fo4+PoYpz8kkiHKILo6OJI6KLDxvj4+Pj4+Pn49vj4+Gxu6OvjYuiOguJu4WIs/CiEaOiT6ORCQiQqw8ZjY2NjY2NjY2NjY2M84ejo67foKI6BIegmbLr6+/v68fH6+vqhosPPbGw8PGxsPGw8PGxsbGNpk5M5NjY2ljZjY2xsbDw8PGw8PDw8bDw85j7jJoZo7Ozs7Ozs7C4sLGwsLCwsbCwsLGxstrZrtra2tra2tmVlZSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSmioiUpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpWhIlKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkp29slKSlLSyUpKSmioiUpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKcvPxSkpy88sKSkpVhIlKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSmhoSUpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKRsbJykp6OHhKSkpGhIoKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSnLz8cpKejh4ykpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSnnk+cpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpOJM4KSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKQ=="},{"a":4088,"b":"KCQlJic="},{"a":8192,"b":"VaqQk5CQkJBV/wCqABVfqlWqAP8AVar/Vf8AqgBV15ZV/wCqAFX/qlX/AKoAVf+qVf8AqgBV15aq/wBVAKr/VVX/AKoAVf+qVf8AqgBV1ZVVqgD/AFVVmVWqAP8AVVWqVf8AqgBVVf9V/wCqAFVV9f+qAFX/amBhVf8AqlX/AKpV/wCqVf8Aqqr/AFWq/wBVVf8AqlX/AKpV/wCqVf8AqlX/AKpV/wCqVf8AqlX/AKqq/wBVqv8AVVX/AKpV/wCqqv8AVar/AFVVqgPwUKAg4FWqAD8AFVVVVf8AqgBVVVVV/wCqAFVVVVX/AKoAVVVVVaoA/wBVVVVV/wCqAFVVVlX/AKoAVVWqVf8AqgBVVapV/wCqAFVVqVX/AKoAVVVVVf8AqgBVVVVV/wCqAFVVVVX/AKoAVVVV/aEhYSHh4eHh4eHh4eHh4QAAAwMDBAMPAEAwMPDE8PyWlpaWlpaWlgAAEAAQAxMAAAAEAATAxADr6+vr6+vr6wAAAwwPAA8PAADw/PzAPDxqaGpoaGpoaKoAD6oAP6oAqgD/qgD+qQCqAFSdAKXqAKoKGooKGooKmpqbm5ubm5v//////////1dXV1dfX19fVVVVVdXV1dVVVVVVVVVVVXx8fHx8/Pzw9fX19fX9/T1VVVVVVVVVVVdXV1dfX19fVVVVVdXV1dVVVVVVVVVVVdDg4ODg4+DjqqqqqqqqqqqqqqqAgICBg////wAAAKqq////AAAAVVX///8AAACqqv7+/wAAAKqqAP+qAAAAVVUA/6oAAABVVQb+qgAAAFVVqqqqAAAAVVVVVVUAAACqqlVVVQAAAKqq////AAIKqaWxsbGxsbGxseHh4eHh4eHhCjIyMjIyAAD88PAwMDAAAJaWlpaWlpaWKiIiACgoAAD8zMwAPDwAAH19fX1+fX5+DwADPz8/PwD8APD88Mw8AGpoaOro6OroP6oAOqkAKpn/2gD/qwD/t6rfAKpWAKpdOooKOooKGop2dnZ2dnZ2dv//////////+vr6+urq6unq6urq6ur6+lVVVVVVVVVV8MrKysrA/8A9jY2NjQ39DVVVVVVVVVVVX19fX19ff37V1dXV9fX19VVVVVVVVVVVk5OTk5OSkpOqqqqqqqqqqoODg4ODg4OD//////+/q6q8vK+vq6qqqgAAAADA8PC8AAAAAAAAAAAAAAADDg46OcLCFV9///zwoKBV//8PAADw8DyP8/Pw/AAAAAAAQEBQAAAAAAAAAAAnJycnJycnJ5OTk5OTk5OT4ODg4OLi4uBVAACqqqqvVaoAAFVVVf+q1xQUVVVVlteqAAD///9Vqv8AAKqqqlX/lhQUVVVV15b/AABVVVWq/1UAAKqqqv9V6CooqKqoaOgAKmUAKlYAAACq/gBZ/gAAAKr6AKrVAAAKGooKGooKCnZ2dnZ2dnZ2VVVVVVVVVVXq6urqqqqqqvr6+vr6+vr6/v7+/v7+/v4///////////P/////////VVVVVVVVVVV/f39/f39/f/r6+vr+/v7+VVVVVVVVVVWysrGysrGysqqqqqqqqqqqg4ODg4ODg4MPDwMAAwMPA/7++uvvq/v+6uqooICQkKQAAAABAQEDB9ra2lhoaFWQAAAAAAAAAIAAAAAAAAAAACoqCgggAAAAMDA8PDz8+KgAAAAAAAAAABsbGxsbGxsbk5OTk5OTk5NjY2NjY2NjYwgqKKOPjIyMAADA8Dw8PAzr6+vr6+vr6wAAAgoKKgAFAACAoKCoAMxpaWlpaWlpaQAAAAIKCgoqAAAAoCioiIDo6+rq6uppacz/qqqqqlUARFWqqqqq/wBEVaqqqqr/AEpaqqqqqvo67e3t7e3t7e1VVVVVV1dXV////////////v7+///////+/v74urq4KP////8A/wAA/////AP/AAD///++urq6ov///////////v7+/v////9VVVVVVVVVVbKysrKysrKyqqqqqqqqqqpDQ0NDQ0NDQwAAAAAAAAAALy8LAgAAAACpqapqWhQEAQoKOSklpZVVgICAAAAAAADAwAAAAAAAAAAAAAAMIwMAAgICAgICAqrAwMDAwMDAwAAAAAAAAAAAGxsbGxsbGxuTk5OTk5OTk2NjY2NjY2NjjD8zM4MICgAoKCAgoAw8ANfX19fX19fXKAA/Dw8DAABUAPzw8MAAAGlpaWlpaWlpKioiIAAAAACAoKCgoCAAANbW1dXV19fXAP+qqqpVAAAAqlVVVf8AAAD/VVVVqgAAOlqqqqr6Ojrt7e3t7e3t7VdXV1dfX19f/////////////////////zAwsDAwMDAwAAAAAAAAAAAAAAAAAAAAAPMzOzMzMzMz//////////9VVVVVVVVVVVVVVdXV1dXVsrKysrKysrKqqqqqqqqqqoODg4ODg4ODAAD8qpVUQAAAAAFX3wQBAS8vv/wA8DwAPDwAAAAAAADAwPAAAAAAACgoo4CAADyDAAA88Dw///xLSw8ICAgICAAAAAAAAAAAAAAAAAAAAAAnJycnJycnJ5OTk5OTk5OTkJCQ0JGRkdH/AACqqqqqqqoAAFVVVVVXlhQUVVVVVf+qAABVVVVV1f8AAFVVVlRVaSgoqqBgY6OqAAD/AACqAKoAAP8AAKoAvT8//wAAqgCq////AABVAP9VVVUAAKoAqv///wMDUxP6qqqqqtoaqu3t7e3t7e3t+vr6+urq6ur/////////////////////MDAwMLA8PD8AAAAAAAAAAAAAAAAAAAAAMzMzMzvz8/P/////////////////////1dXV9fX19fWysrKysrKysqqqqqqqqqqqQ0NDQ0NDQ0MAAAAAAAAAAAMDAAAAAAAAwMDAwMDw8PAAAAAAAAABAQICAgIBUVRRAAAAAAAAwzM8PDw8///99Tw8/PjggIAAAAAAAAAAAAAAAAAAAAAAACcnJycnJycnY2NjY2NjY2Pi4uLi4uLi4qqqqqqqqqqqq6urq6urq6v//////////+rq6urq6urqqqqqqqqqqqqhoaGhoaGhoQAADzMzDwMDAAA/AwMDAwMAAAwMAAAMDAAAPzA8AwM8AAA/MDwDAzwjIyMjIyMjI6qqqqqqqqqqubm5ubm5ubnq6urqqqmppqq6uubmlZVV///////8/LzAz88/P////wD//8DKysrKAP//D4+Pj48Pz8/z8/z8/P//+vv7+vv6////+vr//7r19fX9/f39/bKysrKysrKyqqqqqqqqqqqDg4ODg4ODgwAAAAAAwD8AAAAAAAMDD//w8Pz8zMPDwA8PPzw8PDzwAgIAAAAAAAAiIooLKywusE9PTzw88QUVAAAAAEBAUFQAAAAAAAAAAAAAAAAAAAAAJycnJycnJydjY2NjY2NjY+LiYuJi4GBgVbU1VVUAAD+rqKqqqgAAVaoAVVVVAAD/aiqqqqoAAP+qqaiqqgAA/6FhYaKvAABVAACqqlUAAP8AAKqq/wAAVQAAqqr/AABVAACqqv8AAFUAAKqq/wAAVTIysqJWAAD/qno6qqoCAvLt7e3t7e3t7fv///9/X1dV/6qqqqqqqqrqqqqqqqqqqioqioqvr6yswP///1VVAIgP////VVUAiPPzz89/f39/+v/////////6/////////f39/f311VVVsrKysnKysrKqvZWAoqqqqoODg4ODg4ODAAAAAAAAAAAAAAwADAwMDAAAAAAAAAAAUFBQUGBQIBQCAgAAAAAAAICAAAAAAAAAAgIAAAAAAAD///8/DwMAAAAAgICgqKgqAAAAAAAAAAAnJycnJycnJ2NjY2NjY2Nj0NLS0tLS0tIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASEhISEhISEnZ2dnZ2dnZ2VVVVVVVVVVV/X1dVVVVVVfv7//9/VVVVvLy8///////u7u7ubl5WVdzc3N7a6qqq+vr6/v7////q6qqppVVVVfrqqqqqqqqqVVVVVVVVVVWxcrKycXKysb2VgKKqqqq9g4ODg4ODg4MAAAAAAAAAADw8PDw8PDw8AAAAAAAAAAA4ODg4ODo+DgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMAAAAAAADAwPA8DAMAABsbGxsbGxsbY2NjY2NjY2PS0NDR0dPR0QAAVf//qv//AABV//+q//8AAFX//6r//wAAVf//qv//AABV//+q//8AAFX//6r//wAAVf//qv//AABV//+q//8AAFX//6r//wAAVf//qv//AABV//+q//8AAFX//6r//zIy8rKiUqqq7e3t7e3t7e1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX//////////1VVVVVVVVVV//////////+qqqqqqqqqqv////////////////////9VVVVVVVVVVbKxcbKysbKylYCiqqqqqqrBwcHBwcHGygAAAP/qqaWVAAAA//1VVVUAAAD/3VVVVQAAAKqVVVVVAAAA/1VVVVUAAAD/VVVVVQAAAKpVVVVVAAAAqlVVVVUAAACqVVVVVQAAAFX/////JycnZ9f3//9jY2NjY2NjY5GRkZGRkZD/qqqqqqqqVf+qqqqqqqpV/6qqqqqqqv9Vqqqqqqqq/1WqqqqqqqpV/6qqqqqqqlX/qqqqqqqq/1WqqqqqqqpV/6qqqqqqqv9Vqqqqqqqq/1WqqqqqqqpV/6qqqqqqqlX/qqqqqqqqVf9lalV/QFX/qlX/VaoAVar//6r/VQD/Var/qv9VAP9Vqv9V/6oA/6pVqlWq/wCq/1WqVar/AKr/VapVqv8Aqv9Vqv+qVQCqVf+qVar/AKr/VVWqVf8AVf+qYaFR8QFV/aqqqqqqqqpV/6qqqqqqqlX/qqraGqqqVf+qqqqqqqr/Vaqqqqqqqv9Vqqqqqqqq/1WqqqqqqqpV/6qqqqqqqv9Vqqqqqqqq/1Wqqqqqqqr/Vaqqqqqqqv9VqqqrqKqqVf+qqurqqqr/VZOTk5OTk9NTVaoAqgAAAACq/wD/AAAAAFX/AP8AAAAA/6oAqgAAAAD/qgCqAAAAAP9VAFUAAAAAVf8A/wAAAABV/wD/AAAAAFX/AP8AAAAAVf8A/wAAAABV/wD/AAAAAFX/AP8AAAAAVf8A/wAAAACq1QD/AAAAAKpVAP8AAAAAqlUA/wAAAACq/wBVAAAAAKpVAP8AAAAAqlUA/wAAAACqVQD/AAAAAKpVAP8AAAAAqv8AVQAAAACqVQD/AAAAAKpVAP8AAAAAqlUA/wAAAACq/wBVAAAAAKr/AFUAAAAA/1UAqgAAAAD/VQCqAAAAAP+qAFUAAAAA/1UAqgAAAAD/VQCqAAAAAP9VAKoAAAAA/1UAqgAAAAD/VQCqAAAAAP9VAKoAAAAA/1UAqgAAAACq/wBVAAAAAKr/AFUAAAAAofEBVQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFBQWFVVWWZlAAICQEBQUJnw/Hx8PPDw8AAAAAAAAAAA//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Dw8PDw8PDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+sqCgIAAAAC77///PwwAAMDAwAAAAAAAAAAAAAAAAAD/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8PDw8PDw8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFRRQQEBAQFVVAAAAAAAAVVUAAAAAAABVVQAAAAAAAFVVAAAAAAAAVVUAAAAAAABVVQAAAAAAAFVVAAAAAAAAVVUAAAAAAABAVBQFAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBA//DCycrJysn/A6BoqFiomMDg4Ojo6OjoAAAAAAAAAAAAAAAAAAAAAP/wwsnKycrJ/wOgaKhYqJjA0NDU1NTU1AEBAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAADAwMAAAI6AMDACqqoqgoAAABcAAAAAAAAAAAAAAAA///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8/Pz8/Pz8/AAAAAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQEDKwvD/BQA/P/zwAqpVAKen6Ojo6EAAYGAAAAAAAAAAAAAAAAAAAAAAysLw/wUAPz/88AKqVQCnp9TU1NSAAJCQAQEBAQEBAQEAAAAAAAAAAAAAAAAAAAAAMAACCiAAVFU//8AAAAAAAMDwPA8DDCqqAAAAAAAAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////z8/Pz8/Pz8AAAAAAAAAAAAAAAAAAAAAAAAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBAQEBAAAAAAAAAAAAAAAAAAAAAAA876dXX9/3AAADzs319/8AUNTUVFRUVAAAAAAAAAAA/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Pz8/Pz8/PwAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQEBAQED/8MLJysnKyf8DoGioWKiYwODg6Ojo6OgAAAAAAAAAAAAAAAAAAAAAAAAFBPf39/cA/9XBwcDCygD/AwMDAyOjAQEBAQEBAQEAAAAAAAAAAAAAAAAAAAAAPj8PAwAAAACqqqqqqKggIFBQQAAAAAAAAAAAAAAAAAD////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8/Pz8/Pz8/AAAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQEBAQEBAQMrC8P8FAD8//PACqlUAp6fo6OjoQABgYAAAAAAAAAAAAAAAAAAAAAD39/cEBQAAAMLAwcHVwP8AMgICAgICqgABAQEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEBQFBUBAAAAAAAAVVUAAAAAAABVVQAAAAAAAFVVAAAAAAAAVVUAAAAAAABVVQAAAAAAAFVVAAAAAAAAVVUAAAAAAABVVQEBAQEFFFRAAAAAAAAAAAAAAAAAAAAAAAAAAD8ACAgiAAwqhAwMDAwAAAD/AAgIIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMwApJQAAAAMMjAwMDAQ23zOAKhkAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"a":16383,"b":"QA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19653,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":38,"colour_cells_changed_during_frame":0}};
+</script>
+<script>
+/* sf-page */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function paint(cv, img, s) {
+  const k = s || 1;
+  cv.width = img.w * k; cv.height = img.h * k;
+  const ctx = cv.getContext('2d');
+  if (k === 1) { ctx.putImageData(new ImageData(img.px, img.w, img.h), 0, 0); return ctx; }
+  const t = document.createElement('canvas'); t.width = img.w; t.height = img.h;
+  t.getContext('2d').putImageData(new ImageData(img.px, img.w, img.h), 0, 0);
+  ctx.imageSmoothingEnabled = false; ctx.drawImage(t, 0, 0, img.w * k, img.h * k);
+  return ctx;
+}
+function pressed(box, b) { box.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }
+
+// ---- 01 the screen
+const AREAS = [
+  ['Status icons', 1, 1, 8, 5, 'One icon for each character. Its colours say what the character is doing: white idle, blue moving, purple attacking, orange defending, yellow retreating, green picking a lock, grey when weak and black when dying (<code>status_colours</code>, <code>$68B7</code>).'],
+  ['Clock', 7, 7, 11, 7, 'The mission clock, starting at 99:58 and counting down a second every fifty frames. Each new digit rolls in over eight frames (<code>$5F81</code>).'],
+  ['Ticker', 1, 9, 12, 9, 'Messages scroll through it two pixels every fourth frame (<code>$5FEF</code>), and the red light at the left of the clock flashes while one runs.'],
+  ['View screen', 15, 1, 24, 10, 'The map around the chosen character, five tiles by five (section 04), behind an iris of four grey sprites that opens in growing circles. Here Syylk is still aboard the attack craft, which has a picture of its own.'],
+  ['Portrait monitor', 28, 2, 37, 9, 'The chosen character, rolled onto the monitor a line at a time like a television (<code>show_portrait</code>, <code>$48B1</code>).'],
+  ['Screen of icons', 0, 13, 39, 24, 'Cleared and drawn again for each of the nine screens. This is the status screen: agility, strength, stamina and weight as bars, and the monitor icons that lead to the objects, movement and battle screens.'],
+];
+function frameWidget() {
+  C64.drawFrame($('sf-frame'), SF_FRAME, 1);
+  const hi = $('sf-frame-hi'), ctx = hi.getContext('2d'), bar = $('sf-areas');
+  AREAS.forEach((a) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'sf-btn'; b.textContent = a[0]; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => {
+      pressed(bar, b);
+      ctx.clearRect(0, 0, 384, 272);
+      ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, 384, 272);
+      const x = 32 + 8 * a[1], y = 35 + 8 * a[2], w = 8 * (a[3] - a[1] + 1), h = 8 * (a[4] - a[2] + 1);
+      ctx.clearRect(x, y, w, h);
+      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+      $('sf-area-out').innerHTML = '<b>' + esc(a[0]) + '</b>, cell columns ' + a[1] + '-' + a[3] + ', rows ' + a[2] + '-' + a[4] + '. ' + a[5];
+    };
+    bar.appendChild(b);
+  });
+}
+
+// ---- 02 and 03 the music and the effects
+function soundWidgets(ram) {
+  const mem = [[0x1600, ram.slice(0x1600, 0x1FC6)]];
+  const rows = [{ k: 'Tune', f: (v) => String(v.tune) }, { k: 'Step', f: (v) => String(v.step) }];
+  C64Sid.mount($('sf-sid'), { driver: createDriver, data: { mem, tunes: SF_TUNES }, tunes: SF_TUNES.map((c) => c.name), rows });
+  C64Sid.mount($('sf-sfx'), { driver: createDriver, data: { mem, tunes: SF_EFFECTS }, tunes: SF_EFFECTS.map((c) => c.name), rows });
+}
+
+// ---- 04 the view screen
+function locLabel(ram, L) { return hex(L) + ' ' + SF.location(ram, L).name; }
+function viewWidget(ram) {
+  const sel = $('sf-loc'), cv = $('sf-view'), buf = ram.slice(0x6C64, 0x6C8C);
+  for (let L = 0; L < SF.LOCATIONS; L++) sel.add(new Option(locLabel(ram, L), L));
+  function show() {
+    const loc = SF.location(ram, +sel.value), v = sfViewMap(ram, loc.x, loc.y, buf);
+    const ctx = paint(cv, sfPaint({ w: 10, h: 10, bits: v.bits, scr: v.scr, cram: v.cram }, 0, RGB), 3);
+    if (loc.x !== 0xFF) { ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 2; ctx.strokeRect(4 * 24 - 1, 4 * 24 - 1, 50, 50); }
+    $('sf-loc-out').innerHTML = loc.x === 0xFF
+      ? '<b>' + esc(loc.name) + '</b>, location ' + hex(loc.L) + ', is off the map: the team\'s own craft, which the view screen shows as a picture. Only the transporter leaves it.'
+      : '<b>' + esc(loc.name) + '</b>, location ' + hex(loc.L) + ', record at ' + hex(loc.at, 4) + ': map column ' + loc.x + ', row ' + loc.y + '.';
+    $('sf-exits').innerHTML = loc.exits.length ? '<tr><th>Exit</th><th>To</th><th>Distance</th><th>Door</th></tr>' + loc.exits.map((e) =>
+      `<tr><td>${e.dir}</td><td>${esc(locLabel(ram, e.to))}</td><td class="sf-n">${e.dist}</td><td class="sf-n">${e.door ? e.door : '-'}</td></tr>`).join('') : '';
+  }
+  sel.onchange = show;
+  sel.parentNode.querySelectorAll('.step').forEach((b) => b.onclick = () => { sel.value = (+sel.value + +b.dataset.d + SF.LOCATIONS) % SF.LOCATIONS; show(); });
+  sel.value = 0x40; show();
+}
+
+// ---- 05 the team
+function teamWidget(ram) {
+  const bar = $('sf-team'), w = (a) => ram[a] | ram[a + 1] << 8;
+  SF.TEAM.forEach((name, e) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'sf-btn'; b.setAttribute('aria-pressed', 'false'); b.title = name;
+    const c = document.createElement('canvas');
+    paint(c, sfPaint(sfPicture(ram, w(0x818F + 2 * e)), 0, RGB), 1);
+    c.style.cssText = 'display:block;height:48px;width:auto;image-rendering:pixelated;margin:0 auto 4px;background:#000';
+    b.appendChild(c); b.appendChild(document.createTextNode(name));
+    b.onclick = () => { pressed(bar, b); show(e); };
+    bar.appendChild(b);
+  });
+  function show(e) {
+    paint($('sf-portrait'), sfPaint(sfPicture(ram, w(0x4A21 + 4 * e) - 2), 0, RGB), 3);
+    const r = SF.entity(ram, e), base = ram[0xCFB7 + e], factor = ram[0xCF85 + e];
+    const row = (k, v, what) => `<tr><th>${k}</th><td class="sf-n"><span class="sf-meter" style="width:${Math.round(v / 255 * 90) + 2}px"></span>${hex(v)}</td><td>${what}</td></tr>`;
+    $('sf-stats').innerHTML = row('Strength', r.strength, 'record +4') + row('Agility', r.agility, 'record +5') +
+      row('Stamina', r.stamina, 'record +6') + row('Agility base', base, hex(0xCFB7 + e, 4)) + row('Factor', factor, hex(0xCF85 + e, 4));
+  }
+  bar.querySelector('button').click();
+}
+
+// ---- 06 the objects
+const FLAGS = ['carried', 'can be readied', 'can be activated', 'cannot be picked up'];
+function objectWidget(ram) {
+  const grid = $('sf-objs');
+  for (let k = 0; k < 54; k++) {
+    const o = SF.object(ram, k), b = document.createElement('button'), c = document.createElement('canvas');
+    b.type = 'button'; b.title = 'Object ' + k; b.setAttribute('aria-pressed', 'false');
+    paint(c, sfPaint(sfPicture(ram, o.picture), 0, RGB), 1);
+    c.style.height = '40px';
+    b.appendChild(c);
+    b.onclick = () => {
+      pressed(grid, b);
+      const f = FLAGS.filter((x, i) => o.flags & (1 << i));
+      const where = o.flags & 1 ? 'carried by ' + SF.who(o.where) : 'in location ' + esc(locLabel(ram, o.where));
+      $('sf-obj-out').innerHTML = `<b>Object ${k}</b>, record at ${hex(o.at, 4)}: ${where}; weight ${hex(o.weight)}; picture at ${hex(o.picture, 4)}` +
+        (f.length ? '; ' + f.join(', ') : '') + `. Strength ${hex(o.strength)}: ${o.strength >> 4} in its own location, ${o.strength & 15} next door` +
+        (o.strength === 0x20 ? ', the same as bare hands.' : '.');
+    };
+    grid.appendChild(b);
+  }
+  grid.children[20].click();
+}
+
+// ---- 07 the people
+const KINDS = [
+  ['The team', '#2a8a4a', (e) => e < 6], ['Kryxix and Zoff', '#4a5bd6', (e) => e === 6 || e === 7],
+  ['Entities 8 to 10', '#c25a00', (e) => e >= 8 && e <= 0x0A], ['The squad', '#6b8e23', (e) => e >= 0x0B && e <= 0x12],
+  ['Guards', '#8b5a2b', (e) => e >= 0x13 && e <= 0x19], ['Robots', '#7b7b7b', (e) => e >= 0x1A && e <= 0x25],
+  ['Horned guards', '#8e3c97', (e) => e >= 0x26],
+];
+function peopleWidget(ram) {
+  const strip = $('sf-ents'), kind = (e) => KINDS.find((k) => k[2](e));
+  $('sf-ent-key').innerHTML = KINDS.map((k) => `<span><i style="background:${k[1]}"></i>${k[0]}</span>`).join('');
+  for (let e = 0; e < 50; e++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = e; b.style.background = kind(e)[1]; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => { pressed(strip, b); show(e); };
+    strip.appendChild(b);
+  }
+  function show(e) {
+    const r = SF.entity(ram, e), x = r.r;
+    let walk;
+    if (e < 8) walk = e < 6 ? 'goes where the player sends it' : e === 6 ? 'waits to be found, then follows Zark' : 'waits until a team member reaches location $4E, then walks patrol script $15 to escape';
+    else if (x[5] & 0x80) walk = 'walks patrol chain ' + (x[6] & 0x7F) + ', starting with script ' + hex(x[8]);
+    else if (x[7] & 0x80) walk = 'walks patrol script ' + hex(x[8]) + ' forwards and back';
+    else if (e === 0x27) walk = 'was given patrol script ' + hex(x[8]) + ' but never walks it, its +7 being ' + hex(x[7]) + ' with bit 7 clear';
+    else if (e === 8 || e === 9) walk = 'waits until a team member reaches one of its trigger locations, which sends it along a patrol script';
+    else if (x[8]) walk = 'waits until a team member reaches location $41, then walks patrol script ' + hex(x[8]);
+    else walk = 'has no patrol of its own';
+    $('sf-ent-out').innerHTML = `<b>${esc(e < 8 ? r.name : 'Entity ' + hex(e))}</b>, ${kind(e)[0].toLowerCase()}, record at ${hex(r.at, 4)}: ` +
+      `in ${esc(locLabel(ram, r.loc))}, strength ${hex(r.strength)}. It ${walk}.<br><span class="sf-mono">${[...x].map((v) => hex(v).slice(1)).join(' ')}</span>`;
+  }
+  strip.children[0].click();
+}
+
+frameWidget();
+C64.load('listing.json').then((L) => {
+  soundWidgets(L.ram); viewWidget(L.ram); teamWidget(L.ram); objectWidget(L.ram); peopleWidget(L.ram);
+}).catch((e) => { for (const id of ['sf-sid', 'sf-loc-out', 'sf-stats', 'sf-obj-out', 'sf-ent-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
+// end of sf-page
 </script>

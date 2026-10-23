@@ -1,0 +1,340 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shadowfire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.sf-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.sf-stack{position:relative}
+.sf-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent;pointer-events:none}
+.sf-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.sf-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.sf-btn:hover{border-color:var(--ink-mute)}
+.sf-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.sf-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.sf-out b{font-weight:700}
+.sf-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.sf-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.sf-tbl th,.sf-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.sf-tbl th{font-weight:700;color:var(--ink-soft)}
+.sf-tbl td.sf-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.sf-meter{display:inline-block;height:9px;border-radius:2px;background:var(--accent);vertical-align:1px;margin-right:8px}
+.sf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.sf-grid button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
+.sf-grid button[aria-pressed="true"]{border-color:var(--amber)}
+.sf-grid canvas{image-rendering:pixelated;max-width:100%}
+.sf-strip{display:grid;grid-template-columns:repeat(25,minmax(0,1fr));gap:3px;margin:0 0 6px}
+.sf-strip button{font-family:var(--fm);font-size:10px;padding:5px 0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:#fff}
+.sf-strip button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.sf-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+.sf-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sf-code{font-family:var(--fm);font-size:12px;line-height:1.5;background:#1d1f24;color:#e9e7e1;padding:14px;border-radius:6px;overflow-x:auto;margin:0 0 14px;white-space:pre}
+.sf-mono{font-family:var(--fm);font-size:13px}
+@media (max-width:720px){.sf-two{grid-template-columns:1fr}.sf-strip{grid-template-columns:repeat(10,minmax(0,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Beyond Software</p>
+  <h1>Shadowfire</h1>
+  <p class="sub">Zoff's ship, Zoff V, is one map of 32 by 32 tiles holding 164 locations, and the view screen only ever shows five tiles by five of it.</p>
+</header>
+<main class="wrap">
+
+<section id="ship">
+  <p class="fig">01 · The ship</p>
+  <h2 class="t">Zoff V is one map of 164 locations</h2>
+  <p class="lede">Every tile of the map as the view screen draws it, with each location where the character's icon would stand. Choose a location to see its exits, or a patrol to see the route a guard walks.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous location">‹</button><select id="sf-loc" aria-label="Location"></select><button class="step" data-d="1" aria-label="Next location">›</button></div>
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous patrol">‹</button><select id="sf-pat" aria-label="Patrol script"></select><button class="step" data-d="1" aria-label="Next patrol">›</button></div>
+    <div class="sf-bar">
+      <label class="sf-mono"><input type="checkbox" id="sf-show-locs" checked> Locations</label>
+      <label class="sf-mono"><input type="checkbox" id="sf-show-people"> Where people start</label>
+    </div>
+    <div class="sf-stack"><canvas id="sf-ship" class="sf-cv" width="512" height="512"></canvas><canvas id="sf-ship-top" class="sf-cv" width="512" height="512"></canvas></div>
+    <p class="sf-out" id="sf-loc-out"></p>
+    <table class="sf-tbl" id="sf-exits"></table>
+    <p class="cap">The tile map at <code>$84CB</code> drawn whole with the tiles, colours and characters the view screen uses, by the port <code>test_map.js</code> checks against <code>draw_view_map</code> (<code>$6A50</code>) in all 164 windows. The marks stand on the tile at the centre of each location's window, one right of and one below the map position in its record. People and objects are where a new game puts them (<code>$CA0E</code>, <code>$CD98</code>). The <a href="index.html#view">How it works</a> page takes the view screen apart.</p>
+  </div>
+  <p>The ship's 30 patrol scripts are lists of locations with a time for each step. A guard on a script walks it to the end and back again; walking out, each step takes the time given times four seconds, and walking back the time as it stands, so every guard returns four times as fast as it went. Six guards walk chains of scripts instead, one after another.</p>
+  <p>Location <code>$A3</code>, the Enigma attack craft, has the map position <code>$FF</code>, <code>$FF</code> and no exits: it is the team's own ship, and only the transporter goes to it or leaves it.</p>
+</section>
+
+<section id="locations">
+  <p class="fig">02 · The locations</p>
+  <h2 class="t">Every location's record</h2>
+  <div class="plate" style="max-height:520px;overflow:auto">
+    <table class="sf-tbl" id="sf-all"></table>
+  </div>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* sf-data */
+// Reading Shadowfire's tables out of its memory, m (64 KB, as C64.load gives it from the listing).
+// Text is one byte a character (0-9 the digits, 10-35 A-Z, $24 a space, $39 a new line) ended by
+// $38; a byte from $80 is one of the 71 shared words, through the pointers at $81B1 (msg_words).
+// Locations: two pointer tables ($B1E4 for $00-$7F, $B2E4 for $80-$A3), each record the map
+// column and row, a mask of exits (bit 7 up, then clockwise), two bytes an exit (the location it
+// leads to; the distance in bits 0-2 and the door in bits 3-7), then the location's name.
+const SF = (function () {
+  const w = (m, a) => m[a] | m[a + 1] << 8;
+  const DIRS = ['up', 'up-right', 'right', 'down-right', 'down', 'down-left', 'left', 'up-left'];
+  const SPECIAL = { 0x24: ' ', 0x25: '.', 0x26: ',', 0x27: '%', 0x28: '|', 0x29: '|', 0x2A: ':', 0x39: '\n' };
+  function text(m, a, depth) {
+    let s = '';
+    for (let n = 0; n < 200 && m[a] !== 0x38; n++, a++) {
+      const c = m[a];
+      if (c >= 0x80) s += (depth || 0) < 4 ? text(m, w(m, 0x81B1 + 2 * (c & 0x7F)), (depth || 0) + 1) : '';
+      else if (c < 10) s += String.fromCharCode(48 + c);
+      else if (c < 36) s += String.fromCharCode(55 + c);
+      else s += SPECIAL[c] || '?';
+    }
+    return s;
+  }
+  const lines = (s) => s.split('\n').map((l) => l.replace(/ +/g, ' ').trim()).filter(Boolean);
+  const locPtr = (m, L) => L < 0x80 ? w(m, 0xB1E4 + 2 * L) : w(m, 0xB2E4 + 2 * (L - 0x80));
+  function location(m, L) {
+    const p = locPtr(m, L), mask = m[p + 2], exits = [];
+    let q = p + 3;
+    for (let d = 0; d < 8; d++) if (mask & (0x80 >> d)) { exits.push({ dir: DIRS[d], d, to: m[q], dist: m[q + 1] & 7, door: m[q + 1] >> 3 }); q += 2; }
+    return { L, at: p, x: m[p], y: m[p + 1], mask, exits, name: lines(text(m, q)).join(' ') };
+  }
+  const LOCATIONS = 0xA4;
+  const TEAM = ['Syylk', 'Sevrina', 'Manto', 'Maul', 'Zark', 'Torik'];
+  const who = (e) => e < 6 ? TEAM[e] : e === 6 ? 'Kryxix' : e === 7 ? 'Zoff' : 'Enemy ' + e;
+  // Entities: 50 records of 18 bytes from $CA0E. +0 status, +2 location, +4 strength, +5 agility,
+  // +6 stamina; an enemy's +5 to +8 hold its patrol (+7 bit 7 a script, +5 bit 7 a chain).
+  function entity(m, e) {
+    const p = 0xCA0E + 18 * e, r = m.slice(p, p + 18);
+    return { e, at: p, name: who(e), status: r[0], loc: r[2], strength: r[4], agility: r[5], stamina: r[6], r };
+  }
+  // Objects: 54 records of 7 bytes from $CD98: flags, location (or carrier), weight, picture, routine.
+  function object(m, k) {
+    const p = 0xCD98 + 7 * k;
+    return { k, at: p, flags: m[p], where: m[p + 1], weight: m[p + 2], picture: w(m, p + 3), routine: w(m, p + 5), strength: m[0xCF15 + k] };
+  }
+  // Patrol scripts: pointers at $BDC0; a script is its length, its start, then (time, location) pairs.
+  function patrol(m, i) {
+    const p = w(m, 0xBDC0 + 2 * i), n = m[p], steps = [];
+    for (let k = 1; k < n / 2; k++) steps.push({ time: m[p + 2 * k], to: m[p + 2 * k + 1] });
+    return { i, at: p, start: m[p + 1], steps };
+  }
+  return { w, DIRS, text, lines, location, LOCATIONS, entity, object, patrol, TEAM, who };
+})();
+// end of sf-data
+</script>
+<script>
+/* sf-picture */
+// draw_picture ($42D9): a picture is its width in cells and its height in cell rows, the bitmap
+// cell row by cell row (8 bytes a cell), then the colours packed three bytes to two cells, in one
+// run from the first cell to the last: the first of a pair takes byte 0 as its screen colours and
+// byte 1's low nibble as its colour RAM; the second takes byte 1's high nibble and byte 2's low
+// one as its screen colours, and byte 2's high nibble as its colour RAM.
+function sfPicture(m, p) {
+  const wd = m[p], ht = m[p + 1], n = wd * ht;
+  let q = p + 2;
+  const bits = m.slice(q, q + n * 8), scr = new Uint8Array(n), cram = new Uint8Array(n);
+  q += n * 8;
+  for (let i = 0; i < n; i++) {
+    if (!(i & 1)) { scr[i] = m[q]; cram[i] = m[q + 1] & 15; q += 1; }
+    else { scr[i] = (m[q] >> 4 | m[q + 1] << 4) & 255; cram[i] = m[q + 1] >> 4; q += 2; }
+  }
+  return { w: wd, h: ht, bits, scr, cram };
+}
+// Cells of the multicolour bitmap into an RGBA image: pixel pairs %00 the background, %01 the
+// screen byte's high nibble, %10 its low nibble, %11 the colour RAM nibble.
+function sfPaint(pic, bg, rgb) {
+  const W = pic.w * 8, H = pic.h * 8, px = new Uint8ClampedArray(W * H * 4);
+  for (let cy = 0; cy < pic.h; cy++) for (let cx = 0; cx < pic.w; cx++) {
+    const i = cy * pic.w + cx, cols = [bg, pic.scr[i] >> 4, pic.scr[i] & 15, pic.cram[i] & 15];
+    for (let y = 0; y < 8; y++) {
+      const b = pic.bits[i * 8 + y];
+      for (let x = 0; x < 4; x++) {
+        const c = rgb[cols[(b >> (6 - 2 * x)) & 3]];
+        for (let k = 0; k < 2; k++) {
+          const o = ((cy * 8 + y) * W + cx * 8 + x * 2 + k) * 4;
+          px[o] = c[0]; px[o + 1] = c[1]; px[o + 2] = c[2]; px[o + 3] = 255;
+        }
+      }
+    }
+  }
+  return { w: W, h: H, px };
+}
+// end of sf-picture
+</script>
+<script>
+/* sf-map */
+// draw_view_map ($6A50): the view screen's map, 5 x 5 tiles of 2 x 2 cells from map column x - 1,
+// row y - 1, into the window at cell column 15, row 1. A tile row is built in a 40-byte buffer
+// ($6C64): ten characters for the upper cell row, ten for the lower, then their twenty colours. The
+// map is 32 x 32 tile numbers at ($84C7) and their colours at ($84C9); a tile is four character
+// numbers in the tile set at ($BF94), and a character eight bytes of the map's own set at ($C286).
+// A column off the map is tile $31, empty space, its colour still read from the colour map at the
+// column's byte. A row off the map clears buffer bytes 1-20, not 0-19, so the upper row's first
+// character stays from the last row drawn and the first colour is cleared. buf is that buffer,
+// kept from draw to draw as the game keeps it. Location $A3, at $FF, $FF, is the attack craft:
+// two pictures, offmap_pictures ($6DC7), at rows 1 and 6.
+function sfViewMap(m, x, y, buf) {
+  const w = (a) => m[a] | m[a + 1] << 8;
+  const out = { bits: new Uint8Array(800), scr: new Uint8Array(100), cram: new Uint8Array(100).fill(0x0E) };
+  if (x === 0xFF && y === 0xFF) {
+    [[w(0x6DC7), 0], [w(0x6DC9), 5]].forEach(([p, r0]) => {
+      const pic = sfPicture(m, p);
+      for (let cy = 0; cy < pic.h; cy++) for (let cx = 0; cx < pic.w; cx++) {
+        const i = cy * pic.w + cx, o = (r0 + cy) * 10 + cx;
+        out.bits.set(pic.bits.subarray(i * 8, i * 8 + 8), o * 8);
+        out.scr[o] = pic.scr[i]; out.cram[o] = pic.cram[i];
+      }
+    });
+    return out;
+  }
+  const map = w(0x84C7), cmap = w(0x84C9), tiles = w(0xBF94), chars = w(0xC286);
+  for (let r = 0; r < 5; r++) {
+    const row = (y - 1 + r) & 255;
+    if (row >= 0x20) for (let k = 1; k <= 20; k++) buf[k] = 0;
+    else for (let t = 0; t < 5; t++) {
+      const col = (x - 1 + t) & 255, X = 2 * t;
+      const tile = col < 0x20 ? m[map + row * 32 + col] : 0x31, colour = m[cmap + row * 32 + col];
+      buf[20 + X] = buf[21 + X] = buf[30 + X] = buf[31 + X] = colour;
+      const T = tiles + tile * 4;
+      buf[X] = m[T]; buf[X + 1] = m[T + 1]; buf[10 + X] = m[T + 2]; buf[11 + X] = m[T + 3];
+    }
+    for (let X = 0; X < 20; X++) {
+      const o = (2 * r + (X >= 10 ? 1 : 0)) * 10 + X % 10;
+      out.bits.set(m.subarray(chars + buf[X] * 8, chars + buf[X] * 8 + 8), o * 8);
+      out.scr[o] = buf[20 + X];
+    }
+  }
+  return out;
+}
+// The whole map, 32 x 32 tiles, as the view screen would draw each one: 64 x 64 cells.
+function sfShip(m) {
+  const w = (a) => m[a] | m[a + 1] << 8;
+  const map = w(0x84C7), cmap = w(0x84C9), tiles = w(0xBF94), chars = w(0xC286);
+  const pic = { w: 64, h: 64, bits: new Uint8Array(64 * 64 * 8), scr: new Uint8Array(4096), cram: new Uint8Array(4096).fill(0x0E) };
+  for (let row = 0; row < 32; row++) for (let col = 0; col < 32; col++) {
+    const T = tiles + m[map + row * 32 + col] * 4, colour = m[cmap + row * 32 + col];
+    for (let k = 0; k < 4; k++) {
+      const o = (row * 2 + (k >> 1)) * 64 + col * 2 + (k & 1), c = m[T + k];
+      pic.bits.set(m.subarray(chars + c * 8, chars + c * 8 + 8), o * 8);
+      pic.scr[o] = colour;
+    }
+  }
+  return pic;
+}
+// end of sf-map
+</script>
+<script>
+/* sf-levels */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function shipWidget(ram) {
+  const img = sfPaint(sfShip(ram), 0, RGB), cv = $('sf-ship');
+  cv.getContext('2d').putImageData(new ImageData(img.px, img.w, img.h), 0, 0);
+  const top = $('sf-ship-top').getContext('2d'), locSel = $('sf-loc'), patSel = $('sf-pat');
+  const locs = [], label = (L) => hex(L) + ' ' + locs[L].name;
+  for (let L = 0; L < SF.LOCATIONS; L++) locs.push(SF.location(ram, L));
+  const at = (L) => locs[L].x === 0xFF ? null : [(locs[L].x + 1) * 16 + 8, (locs[L].y + 1) * 16 + 8];
+  const people = new Map(), things = new Map();
+  for (let e = 0; e < 50; e++) { const r = SF.entity(ram, e); (people.get(r.loc) || people.set(r.loc, []).get(r.loc)).push(e); }
+  for (let k = 0; k < 54; k++) { const o = SF.object(ram, k); if (!(o.flags & 1)) (things.get(o.where) || things.set(o.where, []).get(o.where)).push(k); }
+  const pats = [];
+  for (let i = 0; i < 30; i++) pats.push(SF.patrol(ram, i));
+  for (let L = 0; L < SF.LOCATIONS; L++) locSel.add(new Option(label(L), L));
+  patSel.add(new Option('No patrol shown', -1));
+  pats.forEach((p) => patSel.add(new Option('Patrol ' + hex(p.i) + ': from ' + label(p.start), p.i)));
+  const who = (e) => e < 8 ? SF.who(e) : 'entity ' + hex(e);
+  function draw() {
+    top.clearRect(0, 0, 512, 512);
+    if ($('sf-show-people').checked) for (const [L, es] of people) {
+      const p = at(L); if (!p) continue;
+      es.forEach((e, i) => { top.fillStyle = e < 6 ? '#3ddc6e' : e < 8 ? '#9fa8ff' : '#ff5a4a'; top.fillRect(p[0] - 7 + (i % 4) * 4, p[1] + 4 + (i >> 2) * 4, 3, 3); });
+    }
+    if ($('sf-show-locs').checked) for (let L = 0; L < SF.LOCATIONS; L++) {
+      const p = at(L); if (!p) continue;
+      top.fillStyle = 'rgba(255,255,255,.85)'; top.fillRect(p[0] - 2, p[1] - 2, 4, 4);
+    }
+    const pi = +patSel.value;
+    if (pi >= 0) {
+      const p = pats[pi], route = [p.start, ...p.steps.map((s) => s.to)].map(at).filter(Boolean);
+      top.strokeStyle = '#ff9f1c'; top.lineWidth = 3; top.beginPath();
+      route.forEach((q, i) => i ? top.lineTo(q[0], q[1]) : top.moveTo(q[0], q[1])); top.stroke();
+    }
+    const L = +locSel.value, loc = locs[L], p = at(L);
+    if (p) {
+      top.strokeStyle = '#ffd34d'; top.lineWidth = 2; top.strokeRect(p[0] - 9, p[1] - 9, 18, 18);
+      top.strokeStyle = 'rgba(255,211,77,.6)'; top.lineWidth = 1;
+      for (const e of loc.exits) { const q = at(e.to); if (q) { top.beginPath(); top.moveTo(p[0], p[1]); top.lineTo(q[0], q[1]); top.stroke(); } }
+    }
+    const here = (people.get(L) || []).map(who), objs = (things.get(L) || []).map((k) => 'object ' + k);
+    let t = '<b>' + esc(loc.name) + '</b>, location ' + hex(L) + ', record at ' + hex(loc.at, 4) +
+      (loc.x === 0xFF ? ': off the map.' : ': map column ' + loc.x + ', row ' + loc.y + '.');
+    if (here.length) t += ' A new game starts ' + here.join(', ') + ' here.';
+    if (objs.length) t += ' Objects here: ' + objs.join(', ') + '.';
+    if (pi >= 0) {
+      const q = pats[pi];
+      t += '<br>Patrol ' + hex(q.i) + ', at ' + hex(q.at, 4) + ': from ' + esc(label(q.start)) + ', then ' +
+        q.steps.map((s) => (s.time * 4) + ' s to ' + esc(label(s.to))).join(', ') + '.';
+    }
+    $('sf-loc-out').innerHTML = t;
+    $('sf-exits').innerHTML = loc.exits.length ? '<tr><th>Exit</th><th>To</th><th>Distance</th><th>Door</th></tr>' + loc.exits.map((e) =>
+      `<tr><td>${e.dir}</td><td>${esc(label(e.to))}</td><td class="sf-n">${e.dist}</td><td class="sf-n">${e.door || '-'}</td></tr>`).join('') : '';
+  }
+  for (const sel of [locSel, patSel]) {
+    sel.onchange = draw;
+    const n = sel.options.length;
+    sel.parentNode.querySelectorAll('.step').forEach((b) => b.onclick = () => { sel.selectedIndex = (sel.selectedIndex + +b.dataset.d + n) % n; draw(); });
+  }
+  $('sf-show-locs').onchange = draw; $('sf-show-people').onchange = draw;
+  $('sf-ship-top').style.pointerEvents = 'none';
+  cv.style.cursor = 'pointer';
+  cv.onclick = (ev) => {
+    const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * 512, y = (ev.clientY - r.top) / r.height * 512;
+    let best = -1, d = 1e9;
+    for (let L = 0; L < SF.LOCATIONS; L++) { const p = at(L); if (p) { const k = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (k < d) { d = k; best = L; } } }
+    if (best >= 0) { locSel.value = best; draw(); }
+  };
+  locSel.value = 0x40; patSel.value = 1; draw();
+  $('sf-all').innerHTML = '<tr><th>Location</th><th>Name</th><th>Column, row</th><th>Exits</th></tr>' + locs.map((l) =>
+    `<tr><td class="sf-n">${hex(l.L)}</td><td>${esc(l.name)}</td><td class="sf-n">${l.x === 0xFF ? 'off the map' : l.x + ', ' + l.y}</td><td>${l.exits.map((e) => e.dir + ' ' + hex(e.to) + ' (' + e.dist + (e.door ? ', door ' + e.door : '') + ')').join('; ') || 'none'}</td></tr>`).join('');
+}
+C64.load('listing.json').then((L) => shipWidget(L.ram))
+  .catch((e) => { $('sf-loc-out').textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
+// end of sf-levels
+</script>
