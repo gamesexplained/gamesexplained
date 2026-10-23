@@ -1189,25 +1189,25 @@
   },
   {
    "address": 251,
-   "name": "iris_y0",
+   "name": "iris_x_lo",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 252,
-   "name": "iris_r",
+   "name": "iris_x",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 253,
-   "name": "iris_px",
+   "name": "iris_y_lo",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 254,
-   "name": "iris_py",
+   "name": "iris_y",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
@@ -13363,7 +13363,7 @@
   {
    "address": 49,
    "type": "line",
-   "text": "The picture draw_picture draws, high byte at $32; also the icon pictures the list routines hand on."
+   "text": "The picture draw_picture draws, high byte at $32. show_portrait also reads the portrait's bitmap through it ($4958), and draw_view_map points it at the row of the tile map it is drawing ($6AD5)."
   },
   {
    "address": 50,
@@ -13423,7 +13423,7 @@
   {
    "address": 63,
    "type": "line",
-   "text": "The location record build_directions and the door routines read, high byte at $40."
+   "text": "The location record build_directions points at, the chosen character's location, high byte at $40. find_view_locations, move_by_exit, location_scan, attack, retreat, count_exits and the door routines read it."
   },
   {
    "address": 64,
@@ -13548,22 +13548,22 @@
   {
    "address": 251,
    "type": "line",
-   "text": "iris_circle's starting angle (Y)."
+   "text": "iris_circle's across coordinate, its fraction byte: with $FC the whole part, an 8.8 number. The Y it is entered with starts each circle that much beyond the radius at the same angle: half a pixel for $80."
   },
   {
    "address": 252,
    "type": "line",
-   "text": "iris_circle's radius (X)."
+   "text": "iris_circle's across coordinate, its whole part: the radius X it is entered with, plotted at canvas column $FC + 24."
   },
   {
    "address": 253,
    "type": "line",
-   "text": "iris_circle's coordinate across, 16 bits with $FE."
+   "text": "iris_circle's coordinate down, its fraction byte, with $FE the whole part; 0 at the start of each circle."
   },
   {
    "address": 254,
    "type": "line",
-   "text": "iris_circle's coordinate down."
+   "text": "iris_circle's coordinate down, its whole part, plotted at canvas row $FE + 21; 0 at the start of each circle."
   },
   {
    "address": 768,
@@ -13778,7 +13778,7 @@
   {
    "address": 5489,
    "type": "line",
-   "text": "The demonstration's script: points the cursor walks to, two bytes each, X then Y. input_demo reads point n at $1571 + 2n, waits at each with fire held, and starts the \"Shadowfire demonstration\" message again every fourth point. 54 points to $15DC."
+   "text": "The demonstration's script: points the cursor walks to, two bytes each, X then Y. input_demo reads point n at $1571 + 2n, waits at each with fire held, and starts the \"Shadowfire demonstration\" message again every fourth point. 55 points, to $15DE: the last two are Quit on the team screen (point $35, (16, 162)) and Quit on the start menu (point $36), which goes back to the control menu and ends the demonstration."
   },
   {
    "address": 5490,
@@ -13788,7 +13788,7 @@
   {
    "address": 5597,
    "type": "line",
-   "text": "Point $36, ($98, $DA): where a key sends the cursor (X = $6C) as it ends the demonstration. No point has Y = $FF, the end mark input_demo looks for."
+   "text": "Point $36, ($98, $DA): the start menu's Quit icon, the script's last point, and where a key sends the cursor (X = $6C) to end the demonstration early. No point has Y = $FF, the end mark input_demo tests for."
   },
   {
    "address": 5599,
@@ -13808,7 +13808,7 @@
   {
    "address": 5634,
    "type": "line",
-   "text": "A sound effect repeated on every beat of the in-game tune, bit 1 flipped each time: $30 normally, $3E while a message scrolls, $0F for the weak character's heartbeat; 1 stops it."
+   "text": "A sound effect repeated on every beat of the in-game tune: $30 normally (set at $4204), $3E while a message scrolls, $0F for a weak character's heartbeat, whose bit 0 makes the driver flip bit 1 each beat, so that it alternates $0E and $0C. 1 silences voice 1 and stops it."
   },
   {
    "address": 5635,
@@ -14043,7 +14043,7 @@
   {
    "address": 8032,
    "type": "line",
-   "text": "Tune 9's last RTS, after the step that has not reached the end."
+   "text": "Tune 9's RTS, reached three ways: on every frame that starts no step (the BNE at $1F38), after a step short of the end ($1F59), and after the last step has requested tune 6."
   },
   {
    "address": 8033,
@@ -14593,7 +14593,7 @@
   {
    "address": 17983,
    "type": "line",
-   "text": "For iris_open and iris_close: one more halving of each step ($4729) and twice as many steps ($4728), so that the bigger circles have no gaps."
+   "text": "For iris_open: one more halving of each step ($4729) and twice as many steps ($4728), so that the bigger circles have no gaps. iris_close undoes it through iris_coarser."
   },
   {
    "address": 17990,
@@ -14608,12 +14608,12 @@
   {
    "address": 18072,
    "type": "line",
-   "text": "Clears (or with $4A0E set, sets) the canvas pixels on a circle of radius X around the canvas centre (24, 21) by the shift-and-add rotation: x += y >> k, y -= x >> k for $4728 steps, with k in $4729. Y = 0 or $80 starts it at a different angle, and $45E2 draws both."
+   "text": "Clears (or with $4A0E set, sets) the canvas pixels on a circle of radius X around the canvas centre (24, 21), by the shift-and-add rotation on the 8.8 coordinates at $FB-$FE: x -= y >> k, then y += x >> k (s_46ED returns the shift negated), for $4728 steps, with k in $4729. Y is the fraction the across coordinate starts with: 0, or $80 for a circle half a pixel further out, and the iris routines alternate the two."
   },
   {
    "address": 18157,
    "type": "line",
-   "text": "Arithmetic shift right by $4729 of the 16-bit value $F7/$F8, keeping its sign."
+   "text": "Returns, in $F7/$F8, minus the 16-bit value there shifted right by $4729, rounded toward zero: a positive value is shifted and then negated ($470D), a negative one negated, shifted and left positive. $0500 shifted by 3 gives $FF60."
   },
   {
    "address": 18193,
@@ -14628,7 +14628,7 @@
   {
    "address": 18213,
    "type": "line",
-   "text": "The starting angle, $00 or $80."
+   "text": "The fraction each circle's across coordinate starts with, $00 or $80 in turn ($4613), so that every other circle is half a pixel larger."
   },
   {
    "address": 18214,
@@ -14703,7 +14703,7 @@
   {
    "address": 18609,
    "type": "line",
-   "text": "Puts the portrait of character $5436 on the right-hand monitor (cell column 28, row 2, 10 x 8 cells): blanks the area, rolls it down in steps through $49A3, then copies the portrait's bitmap from the table at $4A21 a cell row at a time, rolling each line in, and colours it from the colour pointer through $4324."
+   "text": "Puts the portrait of character $5436 on the right-hand monitor (cell column 28, row 2, 10 x 8 cells): blanks the area, clearing each cell's top line and rolling it down through $49A3; then, in seven passes, copies one pixel line of all 80 cells, line 7 first and line 1 last, into the top line of each cell and rolls the rows down a line, so the picture rolls on like a television; then colours it from the colour pointer through $4324. Line 0 of each cell is never copied: the monitor repeats line 1 there (live)."
   },
   {
    "address": 18851,
@@ -15178,7 +15178,7 @@
   {
    "address": 21743,
    "type": "line",
-   "text": "The operand of the JMP at $54EE, the input handler chosen on the control menu: low byte."
+   "text": "The operand of the JMP at $54EE, low byte: the input handler. It is the one chosen on the control menu, written from input_handlers at $425F, or input_demo ($5570), written at $4221 when the demonstration starts."
   },
   {
    "address": 21744,
@@ -15203,7 +15203,7 @@
   {
    "address": 21872,
    "type": "line",
-   "text": "The demonstration's input: any key ends the demonstration ($6932 = 1, the script restarts at entry $6C). Otherwise the cursor walks one pixel a frame towards the next point of the demo script at $1571 (X in $692E, Y in $692F); there it waits $78 frames with fire pressed ($6933), then takes the next point, every fourth point starting the \"Shadowfire demonstration\" message again. A point with Y = $FF ends the script ($6932)."
+   "text": "The demonstration's input: any key ends the demonstration ($6932 = 1, the script restarts at entry $6C). Otherwise the cursor walks one pixel a frame towards the next point of the demo script at $1571 (X in $692E, Y in $692F); there it waits $78 frames with fire pressed ($6933), then takes the next point, every fourth point starting the \"Shadowfire demonstration\" message again. A point with Y = $FF would end the script ($6932), but none has one: the script ends by clicking Quit on the team screen and then on the start menu, which goes back to the control menu (live)."
   },
   {
    "address": 22060,
@@ -15223,7 +15223,7 @@
   {
    "address": 22356,
    "type": "line",
-   "text": "The game's own part of the interrupt, every frame after the input handler. Plays a frame of music ($1606). While the game is not running ($68B0 set: the menus and the start) it does only the message ticker. Otherwise, in order: grows or shrinks the status screen's bars one step, runs one entity's second of simulation (entity $66D1, record at ($45): one of the fifty each frame, so each one once a second), rolls the clock digits, scrolls the ticker, updates one cell of the view screen's map, rebuilds the entity's list of reachable locations, and after the fiftieth entity counts down the time lock, the self-destruct and the mission clock. Ends by restoring everything at $637E."
+   "text": "The game's own part of the interrupt, every frame after the input handler. Plays a frame of music ($1606). While the game is not running ($68B0 set: the menus and the start) it skips the status bars, the entity's second of simulation and the clock's roll, and jumps to the ticker ($5FEF), which goes on as in play to the view map's cell, the entity's list of reachable locations and the step to the next entity; after the fiftieth entity it stops there. Otherwise, in order: grows or shrinks the status screen's bars one step, runs one entity's second of simulation (entity $66D1, record at ($45): one of the fifty each frame, so each one once a second), rolls the clock digits, scrolls the ticker, updates one cell of the view screen's map, rebuilds the entity's list of reachable locations, and after the fiftieth entity counts down the time lock, the self-destruct and the mission clock. Ends by restoring everything at $637E."
   },
   {
    "address": 22369,
@@ -15273,7 +15273,7 @@
   {
    "address": 22958,
    "type": "line",
-   "text": "Under the limit, agility rises by (limit - weight) x stamina / 4096 a second, to at most $FF; a second in which it rises by a whole point costs stamina through $CFC3 as recovery does."
+   "text": "Under the limit: with P = (limit - load) x stamina, agility (+5) rises each second by P / 4096 in whole points, to at most $FF, and bits 8-11 of P, reversed by the LSR/ROL pairs, go into the fraction at $CFBD (at most 15/256 of a point), which carries into agility when it overflows. Stamina is charged through $CFC3, as recovery charges it, in a second whose fraction bits are not all 0: the BEQ at $59D4 tests the last ROL, whether or not a whole point was gained."
   },
   {
    "address": 23048,
@@ -15338,12 +15338,12 @@
   {
    "address": 23551,
    "type": "line",
-   "text": "The damage dealt: strength x $CF85 / 256. An enemy hits the six team members with it, the same in its own location and in each adjacent one. A team member hits entities 8-$31 with the weapon held ready (+8): $CF15 gives its strength, high nibble for the same location and low nibble for adjacent ones, $20 being bare hands. Each nibble x 16 x the damage / 256 goes into $68D7 (same location) and $68D8-$68DE (the seven adjacent). Kryxix and Zoff (6 and 7) are on neither list, so nobody can harm them."
+   "text": "The damage dealt: strength x $CF85 / 256. An enemy hits the six team members with it, the same in its own location and in each adjacent one. A team member hits entities 8-$31 with the weapon held ready (+8): $CF15 gives its strength, the high nibble meant for the same location and the low nibble for adjacent ones, $20 being bare hands. Each nibble x 16 x the damage / 256 goes into $68D7 (same location) and $68D8-$68DE (the seven adjacent), but only $68D7 is read ($5CB3): the high nibble decides the damage in every location in reach. Kryxix and Zoff (6 and 7) are on neither list, so nobody can harm them."
   },
   {
    "address": 23687,
    "type": "line",
-   "text": "For each living target standing in one of the attacker's reachable locations (+10 onwards; the first is its own): the damage for that location x 4, or x 8 when attacking into the attacker's own destination, comes off the target's strength (+4) and its fraction at $68FC. Strength below 0 kills it through $64CD."
+   "text": "For each living target standing in one of the attacker's reachable locations (+10 onwards; the first is its own): the same-location damage ($68D7: X stays 0 through the loop) x 4, or x 8 when attacking into the attacker's own destination, comes off the target's strength (+4) and its fraction at $68FC. Strength below 0 kills it through $64CD."
   },
   {
    "address": 23832,
@@ -15433,7 +15433,7 @@
   {
    "address": 25041,
    "type": "line",
-   "text": "The self-destruct, armed ($CA06): $CA07 counts down the seconds. At 0: the music stops, $CA05 bit 2 is set, \"ZOFF V HAS BEEN DESTROYED\" is queued, the kill count $CF67/$CF68 becomes 42, and the first eight entities (the team, Kryxix and Zoff) die through $64CD unless they are aboard the attack craft ($A3) or dead already; then bit 3 is cleared, so the ship counts as destroyed, not captured."
+   "text": "The self-destruct, armed ($CA06): $CA07 counts down the seconds. At 0: the music stops, $CA05 bit 2 is set, \"ZOFF V HAS BEEN DESTROYED\" is queued, the kill count $CF67/$CF68 is set to 42, and the first eight entities (the team, Kryxix and Zoff) die through kill_entity unless they are aboard the attack craft ($A3) or dead already. kill_entity counts Kryxix and Zoff as they die, so the count ends at 44 when both were alive aboard Zoff V. Then bit 3 is cleared, so the ship counts as destroyed, not captured."
   },
   {
    "address": 25134,
@@ -15508,7 +15508,7 @@
   {
    "address": 25922,
    "type": "line",
-   "text": "Anyone else adds one to the count of enemies killed or captured, two decimal digits in $CF67 (tens) and $CF68 (units). That counts Kryxix rescued and Zoff captured or escaped as well. When the forty-fourth goes, every entity from 6 to $31, $CA05 gets bits 2 and 3: Zoff V captured."
+   "text": "Anyone else adds one to the count of enemies killed or captured, two decimal digits in $CF67 (tens) and $CF68 (units), so Kryxix rescued and Zoff captured or escaped count too. When the count reaches 44, $CA05 gets bits 2 and 3: Zoff V captured. Kryxix's execution ($62BB) sets his status without coming here, so after it kills alone reach only 43; the self-destruct sets the count to 42 before Kryxix and Zoff die."
   },
   {
    "address": 25962,
@@ -15863,7 +15863,7 @@
   {
    "address": 26839,
    "type": "line",
-   "text": "Combat: the damage for each of the attacker's eight reachable locations, the first its own."
+   "text": "Combat: the damage for each of the attacker's eight reachable locations, the first its own: $68D7 the same-location damage, $68D8-$68DE the adjacent. Only $68D7 is read: the loop at $5CB3 reads it with X 0 for every location, so every target in reach takes the same-location damage, and a weapon's adjacent strength is never used."
   },
   {
    "address": 26847,
@@ -16548,7 +16548,7 @@
   {
    "address": 29264,
    "type": "line",
-   "text": "Returns carry set when a living entity of number 8 or more stands in location $5446. The loop runs fifty records from entity 8, so its last eight are the bytes after the entity table, $CD92-$CE21: the object records, read as if they were entities."
+   "text": "Returns carry set when a living entity of number 8 or more stands in location $5446; attack ($71EB) and retreat ($7225) call it. The loop runs fifty records from entity 8, so its last eight are the bytes after the entity table, $CD92-$CE21: the three unused pointers at $CD92, then the object records, read as if they were entities. The first gives status $D0 (alive) and location $80, so enemy_at always finds an enemy in location $80; as loaded, the bytes of the object records add $0C, $A2, $08 and $54."
   },
   {
    "address": 29311,
@@ -18778,7 +18778,7 @@
   {
    "address": 38968,
    "type": "line",
-   "text": "Portrait 2 (Manto), the bitmap, 640 bytes for 10 x 8 cells: Manto, a droid's head and body in purple and white. show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 2 (Manto), the bitmap, 640 bytes for 10 x 8 cells: Manto, a droid's head and body in purple and white. show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 39608,
@@ -18793,7 +18793,7 @@
   {
    "address": 39730,
    "type": "line",
-   "text": "Portrait 4 (Zark), the bitmap, 640 bytes for 10 x 8 cells: Zark, bald, with a spacecraft behind him. show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 4 (Zark), the bitmap, 640 bytes for 10 x 8 cells: Zark, bald, with a spacecraft behind him. show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 40370,
@@ -18808,7 +18808,7 @@
   {
    "address": 40492,
    "type": "line",
-   "text": "Portrait 3 (Maul), the bitmap, 640 bytes for 10 x 8 cells: a glass dome above a sandy floor. show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 3 (Maul), the bitmap, 640 bytes for 10 x 8 cells: a glass dome above a sandy floor. show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 40960,
@@ -20903,7 +20903,7 @@
   {
    "address": 53013,
    "type": "line",
-   "text": "Each object's strength as a weapon, by object number (the +8 held ready): the high nibble for the attacker's own location, the low for adjacent ones. $20 for objects 0-18, bare hands. Objects that share a picture do not all share a strength: 20 is $83 and 21-24 $63, 25 is $63 and 26-29 $F1, 35 is $8E and 36-37 $EC."
+   "text": "Each object's strength as a weapon, by object number (the +8 held ready): the high nibble for the attacker's own location, the low for adjacent ones, though combat uses only the high nibble's damage, in every location in reach ($68D7). $20 for objects 0-18, bare hands. Objects that share a picture do not all share a strength: 20 is $83 and 21-24 $63, 25 is $63 and 26-29 $F1, 35 is $8E and 36-37 $EC."
   },
   {
    "address": 53067,
@@ -21203,7 +21203,7 @@
   {
    "address": 60065,
    "type": "line",
-   "text": "Portrait 1 (Sevrina), the bitmap, 640 bytes for 10 x 8 cells: Sevrina's face, half in light and half in blue shadow. show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 1 (Sevrina), the bitmap, 640 bytes for 10 x 8 cells: Sevrina's face, half in light and half in blue shadow. show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 60600,
@@ -21223,7 +21223,7 @@
   {
    "address": 60827,
    "type": "line",
-   "text": "Portrait 5 (Torik), the bitmap, 640 bytes for 10 x 8 cells: Torik's hawk-like head. show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 5 (Torik), the bitmap, 640 bytes for 10 x 8 cells: Torik's hawk-like head. show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 61467,
@@ -21238,7 +21238,7 @@
   {
    "address": 61589,
    "type": "line",
-   "text": "Portrait 6 (nobody), the bitmap, 640 bytes for 10 x 8 cells: a figure in purple seated at a console, shown when no character is chosen (portrait 7 points to the same picture). show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 6 (nobody), the bitmap, 640 bytes for 10 x 8 cells: a figure in purple seated at a console, shown when no character is chosen (portrait 7 points to the same picture). show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 62229,
@@ -21253,7 +21253,7 @@
   {
    "address": 62351,
    "type": "line",
-   "text": "Portrait 0 (Syylk), the bitmap, 640 bytes for 10 x 8 cells: Syylk's insect head against a lightning bolt, in red. show_portrait copies it into the right-hand monitor a cell row at a time."
+   "text": "Portrait 0 (Syylk), the bitmap, 640 bytes for 10 x 8 cells: Syylk's insect head against a lightning bolt, in red. show_portrait copies lines 1-7 of each cell onto the right-hand monitor; line 0 is never shown, the monitor repeating line 1 there."
   },
   {
    "address": 62991,
