@@ -163,3 +163,107 @@ Preservation Project, by the route in `orientation.md`. It differed
 from the listing in one byte of variables (`$1C64`), which was written
 back from the earlier listing into `work/menu.vsf`; the unpatched
 snapshot is `work/menu-raw.vsf`.
+
+## 22 October 2026: the fast CPU
+
+A third switch on the Play tab runs the main loop once for every frame of
+the screen, each round doing the share of a C64 round that its time is
+(`port/page/fast.js`, `test_fast.js`). The page's machine runs the main
+loop's stretches at a thousandth of their cost and holds each round at its
+start for the next frame; it keeps counting the cycles each round would
+cost the C64, in either mode, and the mod divides a frame's time by that
+count to scale the round's steps.
+
+The first walk with the switch on covered about 6 % less ground than the C64's.
+The hold at a round's start ended past the frame by the interrupts that
+fell during it, so each round's share came out short; the hold now ends at
+the frame. A round that only redraws the view (the lightning) cost a fifth
+of one that works the view out, and the next round's share came out five
+times too big; only rounds that work the view out set the C64's round now.
+The pointer moved at least half as fast again as the C64's: a round that moves it costs
+the C64 12,083 cycles, but the mod measured it from rounds that moved it
+several times. It is now measured only from rounds that move it once.
+
+At angles between the game's 72, the game's own pictures put walls near
+the player a few pixels off at each change in the rounding of its 64ths:
+over a turn, 4 % of the view's pixels differed from the page's painter at
+the same angle, against 1.7 % at the game's own angles. The page paints the
+view at the exact angle, as smooth motion does, and the game's own
+picture stays for what the game uses it for.
+
+Each round then lasted as long as the browser's frame, so the same keys
+made a slightly different game at each frame rate. A round now lasts one
+tick of CIA 1's timer A, 16,422 cycles (the latch the KERNAL leaves,
+16,421, plus one), and starts at the same count of it: the timer moves on
+everything in play that is timed, while the music's frame (19,656 cycles)
+has only 42 cycles in common with it. The page banks real time, runs at
+most four rounds a frame and lets the rest go, and paints the view a round
+behind, between the last two pictures. 1,500 rounds of scripted controls
+gave the same machine byte for byte at 60 and 144 frames a second, with
+frames 4 to 40 ms apart, and with a frame each quarter second (four rounds
+a frame, so slower than the C64). In Chromium a round cost 1.3 to 2.1 ms
+and the painter 0.3 to 0.9 ms; with the frame rate unlimited (456 frames
+a second) the page still ran 60 rounds a second.
+
+The speed checks first compared how far each machine turned in a fixed
+time, 24 seconds of the C64 against 20 of the fast CPU, and turning came
+out 4 % slow. The two windows ended at different headings, and a C64
+round lasts from 0.2 s facing away from the castle to 1.76 s facing it,
+so they averaged different parts of the turn. Timed over a whole turn,
+the C64 takes 17.33 s and the fast CPU 17.24 s; `test_fast.js` now times
+a whole turn, 1,200 units of walking and 30 pixels of the pointer.
+
+Matched to the C64's own round, the fast CPU turned slower facing the
+castle than facing away, as the C64 does, though nothing in the game asks
+for it: its main loop never waits, so on a faster processor it would take
+whole steps as fast as it could go round. A step now takes one pace in
+every view, 60 ticks of the timer (a second). Over ten minutes of random
+play in 15 areas, the C64's rounds that drew a view took 0.20 to 3.02 s,
+the median 0.92 s and the mean 1.06 s. With the steps on the rounds and
+the scripts' timer, the strength drain and the spirit meter on the clock,
+the player now covers the same ground between two of the timer's events
+whichever way they face. The scripts that a step sets off still run each
+round, 60 a second while the player moves: of the five global scripts and
+the eleven areas' condition scripts, those on the step's event only show
+or hide objects by flags and variables, and score, strength and messages
+wait on the scripts' timer. The pointer keeps the C64's pace, since a C64
+round that moves it draws no view. A whole turn takes 24.04 s and 1,200
+units of walking from the start 5.05 s, against 24 and 5.01 of the C64's
+rounds.
+
+Taking a step in sixtieths, each through the game's collision code,
+was not the game's step. The solver settles a whole stride at once: a
+stride that meets a wall at an angle stops at it, and one that leaves an
+edge stops there and drops. Small pieces slide along the wall and go on
+past the edge. From 2,329 places met in ten minutes of random play, four
+headings each, three steps forward ended more than 64 units from the
+C64's three in 58 % of 9,316 walks, at another height in 0.4 %, and 20
+walks in the Stairwell fell off a ledge the C64 held the player at.
+A step is now the game's own whole stride, along the fine angle, taken
+when the key goes down and again each pace it is held, and the view
+glides along it over the pace; turning and looking, which meet nothing,
+stay continuous. 420 steps from 105 places in ten areas end where the
+C64's do, at the same height and strength (`test_fast.js`).
+
+The pace became a choice of three, a step a second, half a second or a
+fifth (60, 30 or 12 ticks), each a round the C64 plays at in some view.
+Smooth motion, which drew the view between the C64's own pictures, was
+taken off the page, since Fast CPU draws a view each tick.
+
+Whole strides were taken back out after Aaron played them: the player
+glided on for the rest of the pace after the key came up, and a second
+tap inside the pace was let go, and controls that do not answer at once
+are worse than a walk that ends elsewhere at a wall. Walking is again a
+share of a stride each tick with the remainder carried, every press is
+taken when the key goes down, and the page states the difference at
+walls and edges. The step-equivalence check left `test_fast.js` with
+them; the walk is timed over 1,200 units at each pace again.
+
+Aaron found that U turned him about twice and left him facing the same
+way. A held key set its action off again each pace, and at 5× a pace is
+a fifth of a second: in Chromium a press of 250 ms turned about twice and
+one of 400 ms three times (at 1× and 2×, once). A C64 with nothing in
+view goes round as fast and would do the same. The actions that switch
+something (the speeds, facing forward, turning about, the sights, act,
+the pointer and the information screen) now act once a press; a shot and
+Ctrl's quarter turns and looks still repeat each pace while held.

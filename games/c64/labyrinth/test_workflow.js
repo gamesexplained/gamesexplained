@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=require('./opening_image.js')(g);
+const g=require('./layered.js')(game(__dirname)),{ram}=require('./opening_image.js')(g);
 const {labyrinthWorkflowNodes:nodes,labyrinthWorkflowEdges:edges}=g.run('levels.html','labyrinth-workflow','labyrinthWorkflowNodes','labyrinthWorkflowEdges');
 assert.equal(nodes.length,8);assert.equal(edges.length,11);
 const ids=new Set(nodes.map(n=>n.id));assert.equal(ids.size,nodes.length);

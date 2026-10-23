@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-04/listing.json');
 const {labyrinthAlphAsk:ask,labyrinthRalphCall:call,labyrinthGuardSwitchActions:actions}=g.run('levels.html','labyrinth-alph-conversation','labyrinthAlphAsk','labyrinthRalphCall','labyrinthGuardSwitchActions');
 for(const [pair,target,address,action] of [[0x8b14,0x8bd4,0x8fae,30],[0x8b28,0x8be8,0x90cc,31]]){assert.equal(ram[pair],action);assert.equal(ram[pair+1],53);assert.equal(ram[target]+256*ram[target+1],address);}
 for(const [handler,column,presence,speaker,mode] of [[0x8fa8,1,0,0,6],[0x8fae,3,1,1,32]])for(let progress=0;progress<15;progress++)for(let index=0;index<3;index++){

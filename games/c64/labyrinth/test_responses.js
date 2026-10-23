@@ -2,11 +2,11 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram,has}=require('./opening_image.js')(g);
+const g=require('./layered.js')(game(__dirname)),{ram,has}=require('./opening_image.js')(g);
 const {labyrinthOpeningResponses:records}=g.run('levels.html','labyrinth-responses','labyrinthOpeningResponses');
 const {labyrinthChangeReplies:counterReplies}=g.run('levels.html','labyrinth-change-text','labyrinthChangeReplies');
 for(const [address,text] of Object.entries(counterReplies))assert.equal(text,records.find(r=>r.address===Number(address))?.text,'counter reply '+address);
-const symbols=g.json('parts/opening/symbols.json');
+const symbols={comments:[...g.json('parts/resident/symbols.json').comments,...g.json('parts/opening/symbols.json').comments]};
 function parse(memory,address){
  const c=new CPU(Uint8Array.from(memory),{port:{dir:0x2f,data:0x25}});
  c.m[0x10]=address&255;c.m[0x11]=address>>8;

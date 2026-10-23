@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path'),crypto=require('crypto');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-06/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-06/listing.json');
 const {labyrinthStoneArchStages:stages}=g.run('levels.html','labyrinth-stone-arch','labyrinthStoneArchStages');
 const {labyrinthCorridorPlacement:placement}=g.run('levels.html','labyrinth-corridor','labyrinthCorridorPlacement');
 assert.equal(crypto.createHash('sha256').update(ram.slice(0x543a,0x54cc)).digest('hex'),'c2874d5bb9d9612369a722f6788cb60a272fb64bc4c69ff2dd8fa261f4200207');

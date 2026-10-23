@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-05/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-05/listing.json');
 const {labyrinthWallManicureStep:step,labyrinthWallManicureSequence:sequence}=g.run('levels.html','labyrinth-wall-manicure','labyrinthWallManicureStep','labyrinthWallManicureSequence');
 const c=new CPU(Uint8Array.from(ram));let checked=0;
 function run(count,gate,item,damage){

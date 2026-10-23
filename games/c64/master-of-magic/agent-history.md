@@ -184,3 +184,24 @@ sooner than the machine (0.21 %). The test fails past 0.5 %.
 The page carried 27,849 bytes of the game's data regions for the first
 port. The new one loads the listing and carries only the 1,251 bytes
 that differ between the file as it loads and the listing's snapshot.
+
+## The story line, the Music switch and the mouse (22 October 2026)
+
+On the published Play tab the title's story line jumped a character
+back and forth every fourth frame. `C64.videoMemory` compared only the
+video bank on show, and the title's picture half moves the line in bank
+0 while bank 3 is shown, so the move was found after the scroller half,
+past the line. It now compares every bank (`site/lib/c64.js`), and
+`test_screen.js` draws the title as the page does: 0 or 2 pixels left
+per drawing, where it had moved 6 right and 10 left. The page also
+skipped a frame now and then, since the title's timer interrupt holds
+the main program back to line `$EE` and a stretch could end most of a
+frame past the page's target; `MoMPlay.frameAt` gives the frame due.
+
+The Music button held M for four frames, which the game reads only in
+play, and the game turns its music on again at each new game and game
+over. It is now a switch the page holds the game to: the game's own M in
+play, and the SID's volume turned down elsewhere. W, A, S and D are the
+stick, and a click on a menu's word steers the cursor there with the
+stick and holds fire until the chooser reads it, so a recording made
+with CTRL and R records it.

@@ -5,8 +5,10 @@
 // reaches the row (line 131), and one in row 5 at line 200, after the beam has passed it (line 91).
 // The first shows in that frame and the second from the next on, as on the machine; a colour RAM
 // change goes in the frame's writes as $1D800 plus its index and is drawn; once a frame has been
-// drawn with the page's keep, only the bytes the chip read are compared; and in bank 3 a change to
-// RAM under the chips is drawn as memory, not taken for a write to a register.
+// drawn with the page's keep, only the bytes the chip read are compared; a change to a bank other
+// than the one on show, which a game that changes banks within the frame shows later in it, is
+// logged where it was made; and in bank 3 a change to RAM under the chips is drawn as memory, not
+// taken for a write to a register.
 //   node kit/c64/test_video_memory.js
 const path = require('path');
 require(path.join(__dirname, '../../site/lib/c64.js'));
@@ -56,6 +58,31 @@ vm.at(2 * FRAME + LINE, writes, 0);
 check(writes.length === 1 && writes[0][2] === 0x0400 + 600 && writes[0][0] === 0,
   'with the page\'s keep, a change to the screen is logged where it was made and one to $0300 is not');
 check(f.mem[0x0300] === 0 && vm.begin().mem[0x0300] === 7, 'the change to $0300 is in the next frame\'s copy');
+
+// a game that shows bank 3 above line 200 and bank 0 below it moves bank 0's row 24 while bank 3
+// is on show: the change is logged where it was made, and drawn in the frame
+{
+  const B = new Uint8Array(0x10000), C = new Uint8Array(0x400).fill(1);
+  for (let i = 0; i < 8; i++) B[0x2000 + 8 + i] = 0xFF;          // character 1 at $2000: solid
+  const v = vic.slice(), kb = {};
+  const vmb = C64.videoMemory(B, C, { keep: kb });
+  for (let n = 0; n < 2; n++) {                                    // a frame drawn first, for keep's reads
+    const w = [], f = vmb.begin();
+    w.push([0, 1, 0xDD00, 0x94]);                                   // bank 3 from the top
+    for (let l = 0; l < 312; l++) {
+      vmb.at(n * FRAME + l * LINE, w, l < 200 ? 3 : 0);   // the bank on show, as the first pages give it
+      if (n === 1 && l === 60) B[0x0400 + 960] = 1;                  // row 24, in bank 0
+    }
+    w.push([200, 1, 0xDD00, 0x97]);                                 // bank 0 from line 200
+    w.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    vmb.at((n + 1) * FRAME, w, 0);
+    const px = C64.renderFrame({ vic: v, cia2: [0x97, 0x3F], writes: w, mem: f.mem, colourMem: f.colour, keep: kb }).px;
+    if (n === 1) {
+      check(w.some((x) => x[2] === 0x0400 + 960 && x[0] === 60), 'a change to bank 0 made while bank 3 is on show is logged at its line');
+      check(cell(px, 24, 0) === 1, 'and row 24, shown from bank 0 after line 200, shows it that frame');
+    }
+  }
+}
 
 // a game that shows bank 3 can keep its picture under the chips: a change to RAM at $D011 is
 // logged as $20000 plus the address, and renderFrame draws it as memory, not as the register

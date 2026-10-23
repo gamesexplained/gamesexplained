@@ -1,6 +1,6 @@
 // The Play page's modern view of Castle Master: the 3D view drawn at the screen's own resolution,
-// and, with smooth motion, between the game's pictures. The game is not changed: the routines
-// below are watched, and its memory is only read.
+// and, for the fast CPU (page/fast.js), between the game's pictures. The game is not changed: the
+// routines below are watched, and its memory is only read.
 //
 // Each picture the game draws, the page keeps what the drawing works from. As the game's painter's
 // sort finishes (PAINTER_SORT_VISIBLE_ENTRIES): where the player stands and which way the view
@@ -15,19 +15,11 @@
 // on the same bounds. Drawn sharp, each of the game's dither patterns is the shade the eye mixes
 // from it.
 //
-// Smooth motion draws the view part of the way from the picture on show to the next. The page's
-// machine runs each pass of the program as its clock reaches the pass, a pass at a time, ahead of
-// the frame on show, so the next picture is known while the last is still on the screen: the view
-// glides from one to the other, from the moment the next is known to the frame that first shows
-// it, eased over a frame, and so reaches each picture as the C64 shows it.
-//
 //   const st = CMModern.attach(rt)        watch the port's routines (again: the same watch; after
 //                                          the clock goes back, what was kept is dropped)
 //   CMModern.onShow(st, F)                 the picture on show in frame F ({pic, t, n}), or null when
 //                                          the view shows anything else (a menu, the viewport
 //                                          opening, a message)
-//   CMModern.smooth(st, V, F)              the view to draw at cycle V of the machine's clock, in
-//                                          frame F: {scene, shown, phi, still}, or null
 //   CMModern.scene(P, pic, pose)           a picture's scene, from its own pose or one given: the
 //                                          background's line and the faces in drawing order, in
 //                                          the view's coordinates (0-120 across from the left,
@@ -66,17 +58,20 @@ const topology = (M, at) => {
   return faces;
 };
 const TOPO = { cuboid: 0, pyr5: 0x25, pyr6a: 0x40, pyr6b: 0x5D, pyr8: 0x7A };
+// the view's angles, 72 steps to a turn: the game's, or with the fast CPU on, the fractions of a
+// step it turns by (page/fast.js, P.angles)
+const angles = (M, P) => (P && P.angles && P.angles()) || { yaw: M[0x2411], pitch: M[0x2410] };
 // what the scene is built from, read as the game's sort finishes: the place, the objects, the
 // objects the game queued and the tables; a draw with no rebuild before it (the game draws the
 // view again when only the sky or the sight changed) draws what the last rebuild queued
-function world(M) {
+function world(M, P) {
   const lists = [];
   if (M[0x1060]) lists.push(records(M, M[0x1060], w16(M, 0x1061)));
   if (M[0x242A]) lists.push(records(M, M[0x242A], w16(M, 0x242B)));
   const topo = {};
   for (const [k, at] of Object.entries(TOPO)) topo[k] = topology(M, at);
   // the place as the game's 16-bit sums take it, a step past the world's edge below 0
-  const pose = { x: s16(w16(M, 0x2407)), y: s16(w16(M, 0x2409)), z: s16(w16(M, 0x240B)), yaw: M[0x2411], pitch: M[0x2410] };
+  const pose = Object.assign({ x: s16(w16(M, 0x2407)), y: s16(w16(M, 0x2409)), z: s16(w16(M, 0x240B)) }, angles(M, P));
   const objects = [].concat(...lists);
   return {
     area: M[0x2429],
@@ -92,8 +87,8 @@ function world(M) {
 // reads as it starts: the sky, the floor and the scenery from the angles as they are then, the
 // patterns, the sight and the lightning
 function capture(M, P, built) {
-  return Object.assign({}, built || world(M), {
-    bg: { yaw: M[0x2411], pitch: M[0x2410] },
+  return Object.assign({}, built || world(M, P), {
+    bg: angles(M, P),
     sky: M[0x2464],                                // sky's pattern high, floor's low; 0: no sky
     patterns: Array.from(M.subarray(0x9D06, 0x9D06 + 64)),
     strip: M[0x2429] === 1 ? Array.from(M.subarray(0x21FA, 0x21FA + 18 * 16)) : null,
@@ -510,14 +505,14 @@ function attach(rt) {
   if (was) {
     // a machine restored to another moment: what was kept belongs to another run
     const last = was.flips[was.flips.length - 1];
-    if (last && last.t > rt.t) { was.flips = []; was.pending = null; was.start = null; was.built = null; was.clock.V = null; }
+    if (last && last.t > rt.t) { was.flips = []; was.pending = null; was.start = null; was.built = null; }
     return was;
   }
   const M = P.M;
-  const st = { rt, P, flips: [], pending: null, start: null, built: null, n: 0, clock: { V: null, phi: 0 } };
+  const st = { rt, P, flips: [], pending: null, start: null, built: null, n: 0 };
   P.__cmModern = st;
   wrap(P, 'COMPUTE_COARSE_VIEW_BOUNDS', () => { st.start = rt.t; });
-  wrap(P, 'PAINTER_SORT_VISIBLE_ENTRIES', null, () => { st.built = world(M); });
+  wrap(P, 'PAINTER_SORT_VISIBLE_ENTRIES', null, () => { st.built = world(M, P); });
   wrap(P, 'DRAW_SORTED_VISIBLE_QUEUE', () => {
     const pic = capture(M, P, st.built);
     pic.t0 = st.start !== null ? st.start : rt.t;
@@ -527,7 +522,7 @@ function attach(rt) {
   wrap(P, 'CLEAR_LINEAR_30BYTE_ROWS', () => { st.pending = null; });
   const flip = () => {
     const at = w16(M, 0x1237);
-    st.flips.push({ pic: st.pending, t: rt.t, n: ++st.n, snap: viewBytes(M, at), at });
+    st.flips.push({ pic: st.pending, t: rt.t, goal: rt.goal, n: ++st.n, snap: viewBytes(M, at), at });
     if (st.flips.length > 24) st.flips.shift();
   };
   wrap(P, 'BLIT_LINEAR_VIEWPORT_TO_VIC_BITMAP', null, flip);
@@ -585,55 +580,6 @@ function objectsBetween(a, b, f) {
 // two pictures the motion does not slide across: another area, or a jump in place
 function cut(a, b) {
   return a.area !== b.area || Math.abs(a.pose.x - b.pose.x) > 1024 || Math.abs(a.pose.y - b.pose.y) > 1024 || Math.abs(a.pose.z - b.pose.z) > 1024;
-}
-
-// ---- smooth motion. The game shows a new picture when a pass has drawn one, which takes it a
-// second or two; the page's machine runs a pass at once and the frames it has finished are shown
-// as their time comes, so a pass's picture is known from the moment the pass begins. Smooth
-// motion draws the view moving from the picture on show toward the next, from the picture's
-// arrival (or the next pass's start, if the game waited in between, and never before the next
-// picture is known) to the frame that first shows the next: a phase of a picture's number and a
-// fraction, eased over a frame, so the view arrives at each picture as the C64 shows it
-// the clock at the start of the first frame that shows a picture: the frame of its blit when the
-// blit is done by the middle of the view, the next when it is not (onShow)
-function shownFrom(f) {
-  const start = Math.floor(f.t / FRAME) * FRAME;
-  return f.t <= start + MID * LINE ? start : start + FRAME;
-}
-function smooth(st, V, F) {
-  const s = onShow(st, F), c = st.clock;
-  if (!s) { c.V = null; return null; }
-  if (!(V >= 0)) V = (F.frame + 1) * FRAME;
-  const i = st.flips.indexOf(s), nx = st.flips[i + 1];
-  let g = s.n;
-  if (nx && nx.pic && !cut(s.pic, nx.pic)) {
-    // from the picture's arrival, or the next pass's start if the game waited in between; but
-    // not before the next picture was known (the machine runs a pass when its clock reaches it)
-    if (nx.seen === undefined) nx.seen = V;
-    const pass = nx.t - nx.pic.t0, b = shownFrom(nx);
-    const a = Math.max(nx.pic.t0 - s.t < 0.25 * pass ? shownFrom(s) : nx.pic.t0, nx.seen);
-    if (b > a) g = s.n + Math.min(1, Math.max(0, (V - a) / (b - a)));
-  }
-  let phi;
-  if (c.V === null || V < c.V || V - c.V > 8 * FRAME || c.phi < s.n - 1 || c.phi > g) phi = g;
-  else phi = c.phi + (g - c.phi) * (1 - Math.exp(-(V - c.V) / FRAME));
-  // behind the picture on show only while gliding to it: after a cut, or with the picture before
-  // it gone, the view is on show at once
-  if (phi < s.n) {
-    const a = st.flips.find(f => f.n === Math.floor(phi)), b = st.flips.find(f => f.n === Math.floor(phi) + 1);
-    if (!a || !a.pic || !b || !b.pic || cut(a.pic, b.pic)) phi = g;
-  }
-  // within a five-hundredth of the picture on show, the view is that picture, and still: the page
-  // shows the game's own pixels
-  if (Math.abs(phi - s.n) < 0.002) phi = s.n;
-  c.V = V; c.phi = phi;
-  const n0 = Math.floor(phi), a = st.flips.find(f => f.n === n0), b = st.flips.find(f => f.n === n0 + 1);
-  const still = f => ({ scene: f.scene || (f.scene = scene(st.P, f.pic)), shown: s, phi, still: f === s });
-  if (!a || !a.pic) return still(s);
-  if (!b || !b.pic || cut(a.pic, b.pic) || phi === n0) return still(a);
-  const f = phi - n0, base = f < 0.5 ? a.pic : b.pic;
-  const pic = Object.assign({}, base, objectsBetween(a.pic, b.pic, f));
-  return { scene: scene(st.P, pic, between(a.pic.pose, b.pic.pose, f)), shown: s, phi };
 }
 
 // ---- colours. A pixel's two bits are the background ($D021), its cell's high nibble or low
@@ -724,7 +670,7 @@ function stripImage(pic, cols) {
   return cv;
 }
 // Draws the faithful frame (a canvas of 384 by 272) scaled to cv's pixels, and the view over it
-// from view (smooth's, or the picture on show's scene); the sprites over the view stay on top.
+// from view (the fast CPU's, or the picture on show's scene); the sprites over the view stay on top.
 // F is the frame on show, px its pixels
 function draw(cv, faithful, view, F, px) {
   const dpr = root.devicePixelRatio || 1, css = cv.getBoundingClientRect();
@@ -794,7 +740,7 @@ function draw(cv, faithful, view, F, px) {
   for (const o of spritePixels(F, px)) { g.fillStyle = pal[px[o]]; g.fillRect((o % 384) * k, Math.floor(o / 384) * k, k, k); }
 }
 
-// ---- smooth motion in the C64's own pixels: the view painted as the game would paint the pose,
+// ---- a view between two pictures in the C64's own pixels: painted as the game would paint the pose,
 // into px, the frame of palette indices on show, the sprites over the view left as they are; a
 // still view is the frame's own, and is left as it is (false)
 function paint(px, view, F) {
@@ -811,6 +757,6 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, smooth, scene, draw, paint, paintBuffer, capture, between, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, scene, draw, paint, paintBuffer, capture, spritePixels, between, objectsBetween, cut, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);

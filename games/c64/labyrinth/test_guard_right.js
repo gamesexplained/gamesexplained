@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-04/listing.json');
 const {labyrinthGuardRightDoorData:d}=g.run('levels.html','labyrinth-guard-right','labyrinthGuardRightDoorData');
 const {labyrinthGuardEntryChoice:choice}=g.run('levels.html','labyrinth-guard-entry','labyrinthGuardEntryChoice');
 assert.equal(d.column,3);assert.equal(d.selector,1);assert.equal(choice(d.column,d.selector),'alternate');assert.equal(d.phase,1);assert.equal(d.countdown,9);

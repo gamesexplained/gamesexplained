@@ -2,7 +2,7 @@
 const assert=require('assert');
 const path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
-const g=game(__dirname);
+const g=require('./layered.js')(game(__dirname));
 const {labyrinthFont,labyrinthGlyph}=g.run('levels.html','labyrinth-font','labyrinthFont','labyrinthGlyph');
 const {ram,has}=require('./opening_image.js')(g);
 g.lib('c64');

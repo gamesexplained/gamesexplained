@@ -4,7 +4,7 @@ const assert=require('assert');
 const path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname), L=require('./opening_image.js')(g);
+const g=require('./layered.js')(game(__dirname)), L=require('./opening_image.js')(g);
 function machine(wheel=0) {
  const writes=[];
  const cpu=new CPU(Uint8Array.from(L.ram),{port:{dir:0x2f,data:0x25},io:{write(a,v){writes.push([a,v]);}}});

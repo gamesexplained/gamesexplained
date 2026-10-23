@@ -1,16 +1,11 @@
 'use strict';
-// Holds the Play tab's two switches for the 3D view, Native resolution and Smooth motion
-// (port/page/modern.js), to the port they watch. The page's own blocks run in node: the port, the
+// Holds the Play tab's modern view (port/page/modern.js), which Native resolution and the fast CPU
+// draw with, to the port it watches. The page's own blocks run in node: the port, the
 // page's machine (port/page/runtime.js) and the modern view, on the memory the page carries. Two
 // machines start from the loader's jump and go through the title, the language and the character
 // to the Wilderness, then walk on a script: forward, back, turning both ways, looking up and down.
-// One has the modern view attached and asks it for a smooth view four times a frame, as a fast
-// screen would; the other runs alone. At every frame
-// - the two machines' memory, colour RAM, chips and clocks are the same: the modern view only
-//   reads the game;
-// - the smooth view never moves back, and when a new picture comes on show it is on average less
-//   than a twentieth of a step behind it, and never half: it arrives at each picture as the C64
-//   shows it.
+// One has the modern view attached; the other runs alone. At every frame the two machines'
+// memory, colour RAM, chips and clocks are the same: the modern view only reads the game.
 // At every pass the game draws the view
 // - the painter's order modern.js works out from the bounds the game sorts is the game's own;
 // - the scene modern.js works out from what the drawing reads is the game's: the same objects in
@@ -40,7 +35,6 @@ const { CMPage, CMModern, C64 } = globalThis;
 const cost = JSON.parse(/^window\.CM_COST = (.*);$/m.exec(page)[1]);
 const data = JSON.parse(/<script type="application\/json" id="cm-data">([^<]*)<\/script>/.exec(page)[1]);
 const FRAMES = +process.argv[2] || 3000, FILTER = process.argv[3] || '';
-const FRAME = CMPage.FRAME, SUB = 4;
 
 let fails = 0;
 const fail = (...w) => { fails++; console.log('FAIL', ...w); };
@@ -84,8 +78,7 @@ function directory(M) {
 }
 
 const T = { frames: 0, passes: 0, sorts: 0, sortBad: 0, objects: 0, objBad: 0, extra: 0, unmatched: 0, orderBad: 0, faces: 0, faceBad: 0, dropped: 0,
-  near: 0, far: 0, farCut: 0, ptMax: 0, px: 0, pxBad: 0, pxMax: 0, smooth: 0, back: 0, none: 0, still: 0, arrive: 0, lag: 0, lagMax: 0,
-  turned: 0, slid: 0, looked: 0 };
+  near: 0, far: 0, farCut: 0, ptMax: 0, px: 0, pxBad: 0, pxMax: 0, turned: 0, slid: 0, looked: 0 };
 // Watches A's drawing of each pass, inside the modern view's own watch
 function record(A, st) {
   const P = A.P, M = A.M, sort = P.PAINTER_SORT_VISIBLE_ENTRIES, draw = P.DRAW_SORTED_VISIBLE_QUEUE;
@@ -159,29 +152,21 @@ function opening(A, B) {
 function walk(what, A, B, frames) {
   const st = CMModern.attach(A);
   record(A, st);
-  let phi = null, shown = null;
+  let shown = null;
   for (let f = 0; f < frames; f++) {
     const keys = plan(f);
     for (const rt of [A, B]) rt.input.keys = new Set(keys);
     A.runFrame(); B.runFrame(); T.frames++;
-    const F = A.lastFrame();
-    for (let k = 0; k < SUB; k++) {
-      const v = CMModern.smooth(st, A.target - FRAME + ((k + 1) / SUB) * FRAME, F);
-      if (!v) { phi = null; shown = null; T.none++; continue; }
-      T.smooth++;
-      if (v.still) T.still++;
-      if (phi !== null && v.phi < phi - 1e-9) { T.back++; if (T.back < 4) console.log('  ' + what + ', frame ' + f + ': the view moved back from ' + phi.toFixed(3) + ' to ' + v.phi.toFixed(3)); }
-      phi = v.phi;
-      if (shown && v.shown !== shown) {
-        // a new picture on show: how far the view is behind it, in steps from the picture before
-        T.arrive++;
-        const a = v.shown.pic.pose, was = shown.pic.pose, lag = v.shown.n - v.phi;
+    // each new picture: whether the player moved, turned or looked since the one before
+    const v = st.flips[st.flips.length - 1];
+    if (v && v.pic && v !== shown) {
+      if (shown && shown.pic) {
+        const a = v.pic.pose, was = shown.pic.pose;
         if (a.yaw !== was.yaw) T.turned++;
         if (a.pitch !== was.pitch) T.looked++;
         if (a.x !== was.x || a.z !== was.z) T.slid++;
-        T.lag += lag; T.lagMax = Math.max(T.lagMax, lag);
       }
-      shown = v.shown;
+      shown = v;
     }
     const d = [];
     if (A.t !== B.t) d.push('clock ' + A.t + ' / ' + B.t);
@@ -218,9 +203,7 @@ console.log('  objects the game drew               ' + (T.objects - T.objBad) + 
 console.log('  faces as the game drew them         ' + (T.faces - T.faceBad - T.dropped) + ' of ' + T.faces + '; ' + T.dropped + ' more on the page');
 console.log('  faces with each corner within 2 px  ' + (T.near - T.far) + ' of ' + T.near + '; the ' + T.far + ' others all cut by the view\'s edge (' + T.farCut + '), the farthest ' + T.ptMax.toFixed(1) + ' px');
 console.log('  the C64\'s pixels as the game paints ' + pc(T.px - T.pxBad, T.px) + ', at most ' + T.pxMax + ' of 14400 in one view');
-console.log('  smooth views                        ' + T.smooth + ', ' + T.back + ' moved back; ' + T.still + ' the game\'s own picture, ' + T.none + ' none');
-console.log('  pictures that came on show          ' + T.arrive + ' (' + T.slid + ' moved, ' + T.turned + ' turned, ' + T.looked + ' looked up or down); the view behind each by ' +
-  pc(T.lag, T.arrive) + ' of a step on average, at most ' + pc(T.lagMax, 1));
+console.log('  pictures after the one before       ' + T.slid + ' moved, ' + T.turned + ' turned, ' + T.looked + ' looked up or down');
 // the marks: what a correct view passes with room, what a broken one fails
 if (T.passes < 20) fail('only ' + T.passes + ' views drawn');
 if (!T.slid || !T.turned || !T.looked) fail('the walk did not move, turn and look: ' + T.slid + ', ' + T.turned + ', ' + T.looked);
@@ -230,8 +213,5 @@ if (T.orderBad) fail(T.orderBad + ' views with the objects in another order');
 if (T.faceBad + T.dropped > T.faces / 100) fail(T.faceBad + ' faces differ in colour or corners, ' + T.dropped + ' more on the page');
 if (T.far > T.near / 100 || T.farCut < T.far) fail(T.far + ' faces with a corner more than 2 pixels from the game\'s, ' + (T.far - T.farCut) + ' of them not cut by the view\'s edge');
 if (T.pxBad > T.px / 50) fail('the C64\'s pixels differ from the game\'s buffer in ' + pc(T.pxBad, T.px));
-if (T.back) fail('the smooth view moved back ' + T.back + ' times');
-if (T.lag > 0.05 * T.arrive || T.lagMax > 0.5) fail('the smooth view came to the pictures late: ' + pc(T.lag, T.arrive) + ' of a step on average, at most ' + pc(T.lagMax, 1));
-if (T.smooth < T.frames) fail('only ' + T.smooth + ' smooth views in ' + T.frames + ' frames');
 console.log(fails ? 'FAIL: ' + fails : 'ok');
 process.exitCode = fails ? 1 : 0;

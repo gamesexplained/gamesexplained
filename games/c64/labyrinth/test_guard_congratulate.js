@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-04/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-04/listing.json');
 const {labyrinthGuardCongratulate:reply,labyrinthGuardCongratulations:texts,labyrinthGuardCongratulateCases:cases}=g.run('levels.html','labyrinth-guard-congratulate','labyrinthGuardCongratulate','labyrinthGuardCongratulations','labyrinthGuardCongratulateCases');
 for(const[pair,pointer,action,object,target]of [[0x8b34,0x8bf4,33,44,0x90e5],[0x8b3e,0x8bfe,33,53,0x90eb],[0x8b52,0x8c12,34,44,0x913f],[0x8b60,0x8c20,34,53,0x9145],[0x8b70,0x8c30,35,44,0x913f],[0x8b76,0x8c36,35,53,0x9145]]){assert.equal(ram[pair],action);assert.equal(ram[pair+1],object);assert.equal(ram[pointer]+256*ram[pointer+1],target);}
 const c=new CPU(Uint8Array.from(ram));let count=0;

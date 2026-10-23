@@ -2,7 +2,7 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram}=g.listing('parts/scene-05/listing.json');
+const g=require('./layered.js')(game(__dirname)),{ram}=g.listing('parts/scene-05/listing.json');
 const {labyrinthWallFirstManicure:compare,labyrinthWallManicureTexts:texts,labyrinthWallManicureCases:cases}=g.run('levels.html','labyrinth-wall-manicure','labyrinthWallFirstManicure','labyrinthWallManicureTexts','labyrinthWallManicureCases');
 assert.deepStrictEqual([ram[0x8b74],ram[0x8b75]],[36,54]);assert.equal(ram[0x8c34]+256*ram[0x8c35],0x90e2);
 const c=new CPU(Uint8Array.from(ram));let checked=0;

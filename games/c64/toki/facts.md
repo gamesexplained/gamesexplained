@@ -28,10 +28,10 @@ alphabet). No version string found.
 ## Timing
 
 - `game_start` ($8000) sets CIA 2 timer A to $4CC7 ($8006-$800D) and
-  `stage_load` ($5271) points the NMI vector at `nmi_frame` ($4D1D): a
+  `nmi_and_first_copy` ($5271) points the NMI vector at `nmi_frame` ($4D1D): a
   timer NMI once a PAL frame.
-- Two raster interrupts take turns through $FFFE: `irq_play` $837E
-  (written on line 248) and `irq_panel` $BCE1 (written on line 216) *live*
+- Two raster interrupts take turns through $FFFE: `irq_panel` $837E
+  (written on line 248 by `nmi_frame`, from `raster_vector` $07AB) and `irq_panel_on` $BCE1 (written on line 216 by `irq_panel`) *live*. Both serve the status panel: `irq_panel` sets $D011 = $57 with multicolour on, an invalid mode the VIC-II shows as black, for lines $D6-$DD while it switches video bank, character set, and colours; `irq_panel_on` sets $D011 = $17 (read from the code, 2026-10-22; the black band shows in a screenshot of stage 1)
   (frame capture).
 - `wait_frame` ($819B) spins on $08F7 until the interrupt changes it *live*.
 
@@ -50,17 +50,17 @@ From the disassembler's trace of the play snapshot (21,388 code bytes).
 
 | Register | What the game does | Where |
 |---|---|---|
-| $D000-$D00F sprite positions | set at start-up, in `irq_play` and by `nmi_frame` | $40AA-$40DE, $8398-$83AD, $81C5-$81DE, $4D5B, $4D61 |
+| $D000-$D00F sprite positions | set at start-up, in `irq_panel` and by `nmi_frame` | $40AA-$40DE, $8398-$83AD, $81C5-$81DE, $4D5B, $4D61 |
 | $D010 sprite X high bits | | $40B7, $40CA, $8395 |
 | $D011 control 1 | blank, scroll and mode | $4053, $4072, $4108, $801E, $806A, $8390, $4D3F |
-| $D012 raster | wait for line $EE; compare in `irq_play` | $8012, $838B, $40A1, $42D6 |
+| $D012 raster | wait for line $EE; compare in `irq_panel` | $8012, $838B, $40A1, $42D6 |
 | $D015 sprite enable | | $40F7, $8062, $8213, $4D70 |
 | $D017, $D01D sprite expand | set per split | $83B0, $83B3 |
 | $D018 memory control | | $405F |
 | $D019, $D01A raster interrupt | acknowledge; enable | $809F, $80A2, $8030, $8055 |
 | $D01C sprite multicolour | | $8216 |
 | $D020 border | | $054F |
-| $D021 background | incremented once ($858B), purpose ? | $858B |
+| $D021 background | incremented by `update_player` ($858B) each frame the stage-skip combination is held, with `cheat_flag` $08F9 | $858B |
 | $D022, $D023 multicolours | | $83C6, $83CA |
 | $D025, $D026 sprite multicolours | | $8884, $8889 |
 | $D027-$D02A sprite colours | | $81EE-$8200, $4D67 |
@@ -68,7 +68,7 @@ From the disassembler's trace of the play snapshot (21,388 code bytes).
 | $D40B, $D412 voice 2 and 3 control | silenced together | $6ED1, $6ED4 |
 | $D415, $D416 filter cutoff | | $6E21, $6E3A |
 | $D417 resonance, $D418 volume | | $6615, $6CB5, $6620-$683C |
-| $DC00, $DC01 CIA 1 ports | keyboard scan `read_keys` $5290; more reads and writes at $8577-$8595, purpose ? | $4084-$4091, $5292-$52DF, $8577-$8595 |
+| $DC00, $DC01 CIA 1 ports | keyboard scan `read_keys` $5290; `update_player` ($8577-$8595) reads joystick 2 and joystick 1 together for the stage-skip combination | $4084-$4091, $5292-$52DF, $8577-$8595 |
 | $DD00 CIA 2 port A | video bank | $8034, $83BC |
 | $DD04-$DD0E CIA 2 timer A | the per-frame NMI | $8008, $800D, $8019, $404D, $8052, $8196, $824C, $8259 |
 | $DE00 Ocean bank register | cartridge bank select | see Memory layout |
@@ -84,7 +84,7 @@ reach the other voices: an absence of named writes says nothing.
 
 ## Cartridge directory
 
-All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start; entries 8-10 from $51E7-$51F3; entry 16 and entries 12-15 from `stage_load` at $523D and $5242, just before `jsr $0C05`; each stage's three entries from `stage_load`. Who copies entry 11 is not traced.
+All 32 entries of the directory in bank 0 ($8009-$8108), decoded from the cartridge image by reading `cart_copy` ($011F). X is the offset `cart_copy` is called with. Entries 0-5 are copied at power-on by `cart_copy_six` ($0100). Entries 17-31 form five sets of three (destinations $C000, $BD76, $0C01), one per stage. Callers found statically: entries 6 and 7 from $0B11 and $0B16 at each stage start; entries 8-10 from $51E7-$51F3; entry 16 and entries 12-15 from `stage_load` at $523D and $5242, just before `jsr $0C05`; each stage's three entries from `stage_load`. No caller of entry 11 was found: no code in any bank loads X with $58 before `cart_copy` or `stage_load`, and in the play snapshot only 7 of its 304 bytes match RAM $0812-$0941. Its bytes read as a cruncher's start-up stub (`sei`, $01 = $30, copy $082A and $08D0 onward to $00FA and $0333, `jmp $0100`), so it is probably left over from building the cartridge and never used (static check, 2026-10-22).
 
 | # | X | Bank | Flags | Source | Destination | Bytes |
 |---|---|---|---|---|---|---|
@@ -152,3 +152,11 @@ The kit's 6502 simulator (`kit/cpu/cpu6502.js`) ran `unpack` from bank 0 on each
 Live check (VICE, 2026-10-15): at $0B11 after stage 1 loaded, RAM $0C01-$20DF matched the simulator's unpacked stage 1 byte for byte (5,343 of 5,343).
 
 What stage 1's block holds, from a load watch on $0C01-$20DF over a few seconds of play: nothing executes there, and the reads come through zero-page pointers into it ($36/$38 = $1B34/$1B71, $3A/$3C = $1AE3/$1AA1), each pair read as split low and high bytes at the same index ($B207/$B20B, $A23D/$A241, $B57D/$B581), with the index from a per-object table ($33CA,x), and one read at $4C2E adds to a per-object table ($38EC,x). So the block holds pointer tables and the data behind them that the object code uses for each stage. Which object property each table holds is unknown.
+
+## After a stage loads
+
+Read statically from the cartridge and the unpacked blocks, 2026-10-22.
+
+- `stage_start` goes on at $0B43: it takes a pointer for the stage from a table in bank 0 (low bytes $8113, high bytes $8118: bank 5 $815F, $8243, $82E5, $83C1, $848D), switches to bank 5, and copies bytes 0, 1, 4, and 5 of that record to $08E3-$08E6. Every record starts $E8 $FF; what the four variables hold is unknown.
+- It then copies the words at $0C1C and $0C1E, inside the stage block just unpacked, to the zero-page pointers $3A and $3C, calls $0500, and leaves with $01 = $35.
+- Each stage block starts with a header of pointers into itself, in the same layout for all five stages. In stage 1 the words at $0C18, $0C1A, $0C1C, and $0C1E are $1B34, $1B71, $1AE3, and $1AA1: the values found live in $36, $38, $3A, and $3C during play ("Packed entries"). Which code copies $0C18 and $0C1A to $36 and $38 is not traced.

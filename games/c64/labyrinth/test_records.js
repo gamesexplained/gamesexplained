@@ -2,8 +2,8 @@
 const assert=require('assert'),path=require('path');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const {CPU}=require(path.resolve(__dirname,'../../../kit/cpu/cpu6502.js'));
-const g=game(__dirname),{ram,has}=require('./opening_image.js')(g);
-const fixture=g.json('analysis-records.json'),symbols=g.json('parts/opening/symbols.json');
+const g=require('./layered.js')(game(__dirname)),{ram,has}=require('./opening_image.js')(g);
+const fixture=g.json('analysis-records.json'),symbols={comments:[...g.json('parts/resident/symbols.json').comments,...g.json('parts/opening/symbols.json').comments]};
 for(const rec of fixture.headered_text){
  for(let a=rec.address;a<=rec.end;a++)assert(has[a],`text byte $${a.toString(16)}`);
  assert.deepStrictEqual(Array.from(ram.slice(rec.address,rec.address+2)),rec.header);

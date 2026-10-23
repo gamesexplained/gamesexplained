@@ -487,3 +487,13 @@ The route list, table, and separate gallery on the all-areas view were replaced 
 The pull request's kit test run failed after the screenshot grid went in: `kit/scripts/edit.py --test` tried an edit on each card's list item and refused it because the item held an image beside its text. Each card is now a figure with a picture link and a caption, so only the caption is editable text. The full kit test run passes (251 passed, 8 skipped for the missing SkoolKit oracle).
 
 The pull request's checks run with `--require-tools`, which fails any test whose last output line contains "skip", "skipped", or "skipping". `test_stone_arch.js` passed but ended its message with "skipped/companion slots", so CI marked it failed. The message now says "including the companion-slot cases". A test's closing line must not use those words unless the test really skipped.
+
+## Silver, session 1: the resident engine · 22 October 2026
+
+Rebuilt the opening, gate, first corridor and Brick Hallway by playing both sides again, and scenes 4 to 6 by setting the pending-scene byte `$0530` from the corridor snapshot and answering the disk prompts. Compared the seven states byte for byte: `$0800-$78FF` and `$D000-$DFFF` are the engine (see `parts/resident/facts.md`).
+
+Made `parts/resident` and put the opening and scenes 1 to 6 over it. The engine's labels and comments came from the opening's map; where a scene had labelled the same address, the opening's label won and the scene's is in `parts/resident/merge-notes.md`. Each part's map was re-cut with the kit's own `clip`, and the ledger entries inside the engine moved to the resident part. Listings were rebuilt with `listing.py`; the snapshots used are the rebuilt captures with the 60 to 5,586 counted bytes that differ from the earlier listings pinned to the earlier values, so the tests that read those listings are unchanged. `layered.js` fills a part's listing from the part beneath for the tests.
+
+Game coverage went from 16.7 % to 38.8 %: the scenes no longer count the engine as their own, so each now counts only the bytes its load owns.
+
+Loaded scenes 7 to 26 the same way (set `$0530`, answer the disk prompts, wait for the game to clear `$0530`) and saved each state in its part's `work/` as `play-rebuilt.vsf`. All 22 states agree on the engine and on `$D000-$DFFF` (see `parts/resident/facts.md`). The 15 parts that had no analysis now name the resident part and the three ranges a load owns, so each will count only its own bytes when it is started. The resident part's last 256 bytes were described (twelve jump-table entries, the second half of the scene-request service, the twin-scene map mutation, the shared interrupt tail, four small tables).

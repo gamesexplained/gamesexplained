@@ -380,17 +380,21 @@ globalThis.C64 = (function () {
   //   const vm = videoMemory(M, colour, o)   M the game's 64 KB, colour its 1024 colour nibbles;
   //       o.keep    the object the page gives renderFrame as F.keep: only the bytes the chip has
   //                 read in the frames drawn so far are compared at every line, and a change to
-  //                 any other shows from the next frame on. Without it the whole bank is compared,
+  //                 any other shows from the next frame on. Without it all 64 KB are compared,
   //                 which costs a node test nothing it notices and a page too much
   //       o.frames  how many frames' copies are kept at once (2)
   //       o.lines, o.cycles   PAL's 312 of 63 unless NTSC's 263 of 65 are given
-  //   vm.at(t, writes, bank)   each time the clock moves: t the clock in cycles from the first
+  //   vm.at(t, writes)         each time the clock moves: t the clock in cycles from the first
   //                            frame's first cycle, writes the list of the frame the clock was in
-  //                            before it moved, bank the video bank (0-3). Once the clock has left
-  //                            the line it stood on, the memory is compared with what was last seen,
-  //                            and each change goes in writes where the clock stood before it moved:
-  //                            the port runs a stretch of code at once and then moves the clock by
-  //                            its cost, so that is where the code ran
+  //                            before it moved. Once the clock has left the line it stood on, the
+  //                            memory is compared with what was last seen, and each change goes in
+  //                            writes where the clock stood before it moved: the port runs a stretch
+  //                            of code at once and then moves the clock by its cost, so that is where
+  //                            the code ran. Every bank is compared, not only the one on show: a game
+  //                            that changes banks within the frame writes the next band's memory
+  //                            while another band's is shown, and a change found only once its bank
+  //                            is on show again would be logged after the beam has drawn it (a
+  //                            bank given after writes, as the first pages give it, is not used)
   //   vm.begin()               on the first cycle of each frame, after at(): {mem, colour}, copies
   //                            of both as the frame begins, for F.mem and F.colourMem
   function videoMemory(M, colour, o = {}) {
@@ -411,7 +415,7 @@ globalThis.C64 = (function () {
         writes.push([line, cycle, to === 0 && j >= 0xD000 && j < 0xE000 ? 0x20000 + j : to + j, a[j]]);
       }
     }
-    function at(t, writes, bank) {
+    function at(t, writes) {
       const t0 = last;
       last = t;
       if (t0 < 0 || Math.floor(t0 / cycles) === Math.floor(t / cycles)) return;
@@ -419,10 +423,10 @@ globalThis.C64 = (function () {
       if (watch) {
         for (let i = 0; i < watch.length; i++) {
           const x = watch[i];
-          if (live[x] !== was[x] && x >> 12 === bank) log(M, seen, x, writes, line, cycle, 0);
+          if (live[x] !== was[x]) log(M, seen, x, writes, line, cycle, 0);
         }
       } else {
-        for (let x = bank << 12, e = x + 0x1000; x < e; x++) if (live[x] !== was[x]) log(M, seen, x, writes, line, cycle, 0);
+        for (let x = 0; x < 0x4000; x++) if (live[x] !== was[x]) log(M, seen, x, writes, line, cycle, 0);
       }
       for (let x = 0; x < 0x100; x++) if (liveC[x] !== wasC[x]) log(colour, seenC, x, writes, line, cycle, 0x1D800);
     }

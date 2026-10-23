@@ -22,7 +22,8 @@ crack or trainer.
 3. Fire on joystick port 2: the stage card, "LABYRINTH OF CAVES" with SFX
    and MUSIC (`reference/stage-card.png`).
 4. Fire again; after about three seconds of warp stage 1 is in play.
-   Snapshot `work/play-round1.vsf`, the one the listing is built from.
+   Snapshot `work/play-round1.vsf`, the one the listing is built from
+   (retaken 2026-10-22: five seconds after `stage_load` runs with X = $88).
 
 ## The hand-over
 
