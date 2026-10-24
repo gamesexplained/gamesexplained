@@ -411,7 +411,7 @@ class Machine {
     Object.assign(m, { cmp: s.cmp, latch: s.latch, enable: s.enable, lastLine: s.lastLine, frames: s.frames, passes: s.passes, pra: s.pra, ddra: s.ddra, ddrb: s.ddrb,
       skipOnce: !!s.skipOnce, joy: s.joy === undefined ? 0x1F : s.joy, keys: new Set(s.keys || []) });
     if (s.joy1 !== undefined) m.joy1 = s.joy1;
-    if (s.cia) Object.assign(m, { cia: s.cia, pra2: s.pra2, ddra2: s.ddra2, lastCycles: s.lastCycles, nmiDue: s.nmiDue });
+    if (s.cia) Object.assign(m, { cia: JSON.parse(JSON.stringify(s.cia)), pra2: s.pra2, ddra2: s.ddra2, lastCycles: s.lastCycles, nmiDue: s.nmiDue });
     else m.lastCycles = c.cycles;
     if (s.collide) { m.pra2 = s.pra2; m.ddra2 = s.ddra2; m.collide.load(s.collide); }
     return m;

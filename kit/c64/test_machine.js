@@ -129,6 +129,11 @@ if (require.main === module) {
     const back = Machine.restore(c.save());
     back.runCycles(1020); c.runCycles(1020);
     check('a restored machine keeps its timers', back.nmis + r2[0x2010] >= 0 && back.ram[0x2010], c.ram[0x2010]);
+    // two machines from one save, as a search that tries several inputs from one moment makes them:
+    // the second must not start from the timers the first has run on
+    const s2 = c.save(), one = Machine.restore(s2), two = Machine.restore(s2), alone = Machine.restore(JSON.parse(JSON.stringify(s2)));
+    for (const x of [one, two, alone]) x.runCycles(5037);
+    check('two machines restored from one save keep their own timers', JSON.stringify(two.save().cia), JSON.stringify(alone.save().cia));
   }
 
   // Machine.fromSnapshot: a game's raster interrupt goes on from a snapshot of play. A snapshot laid
