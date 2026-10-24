@@ -3932,9 +3932,9 @@
   },
   {
    "address": 17452,
-   "name": "s_442C",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "draw_column_left_of_view",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 17472,
@@ -3980,9 +3980,9 @@
   },
   {
    "address": 17634,
-   "name": "j_44E2",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "draw_column_odd_start",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 17679,
@@ -6284,9 +6284,9 @@
   },
   {
    "address": 28033,
-   "name": "s_6D81",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "music_voice_step",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 28044,
@@ -6302,9 +6302,9 @@
   },
   {
    "address": 28110,
-   "name": "j_6DCE",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "update_filter_sweep",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 28117,
@@ -10232,9 +10232,9 @@
   },
   {
    "address": 44688,
-   "name": "s_AE90",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "restore_saved_cells",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 44693,
@@ -10250,9 +10250,9 @@
   },
   {
    "address": 44790,
-   "name": "b_AEF6",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "restore_one_cell_record",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 44808,
@@ -10262,9 +10262,9 @@
   },
   {
    "address": 44812,
-   "name": "b_AF0C",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "restore_two_cell_record",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 44846,
@@ -13930,6 +13930,16 @@
    "text": "Set the scroll direction $0F to 7 and scroll_phase $0E to 0, so that the next call of the matching scroll routine starts moving."
   },
   {
+   "address": 17452,
+   "type": "line",
+   "text": "Redraws the playfield column just left of the view (map x = scroll_x minus 1, map y = scroll_y plus 1) into the screen buffer pointed to by $08C1/$08C2, one character column down the screen (21 rows, counter in $E9). Bit 0 of the map x and y positions go to $08C7 and $08C8 and select which half of each 2x2-character block is copied. Map blocks are found through the row pointer tables at ($2A)/($2C) indexed by y/2, then the block number times 4 plus $2E gives the block's characters. Odd-row starts are handed to draw_column_odd_start. Used while the screen scrolls; role inferred from the code."
+  },
+  {
+   "address": 17634,
+   "type": "line",
+   "text": "Variant of draw_column_left_of_view for a column that starts on the lower half of a map block ($08C8 non-zero). It copies one character of the first block to the top screen row, and one from the block ten rows further down to the row twenty rows below ($E5 plus $320), then sets the remaining row counter $E9 to 18 and rejoins the normal column loop at $448D. The $320 offset is the bottom row of the 21-row playfield; role inferred."
+  },
+  {
    "address": 17811,
    "type": "line",
    "text": "Entry that sets up a map-row copy at map position ($1C/$1D minus 1, $1E/$1F minus 1): stores the results in $20/$21 and $22/$23, the odd-column and odd-row flags in $08C7 and $08C8, and the destination pointer from $08C1/$08C2 into $E5/$E6, then jumps to map_row_copy_start."
@@ -14513,6 +14523,16 @@
    "address": 26919,
    "type": "line",
    "text": "Handles a command byte (bit 7 set) in a voice script: looks the handler address up in the tables at $6549,x/$6557,x, patches it into the jump at $6936 (operand $6937/$6938), restores X from $FF and jumps to the common command parser at $6C88."
+  },
+  {
+   "address": 28033,
+   "type": "line",
+   "text": "Steps one sound voice (voice number in X) by one frame. Does nothing if the voice is off ($657C,x zero). Otherwise counts down $65AC,x; on zero it reads the next note byte from the voice's pattern (pointer $653C/$6542,x, index $65B2,x), adds three transpose offsets ($6568, $658B, $658E,x), looks the sum up in the frequency tables $6F06 (low) and $6F64 (high) and writes them to the voice's SID frequency registers ($D400/$D401 plus the voice offset in $656F). It then reloads the countdown from $65AF,x and advances the index, wrapping to 0 at the pattern length $65B5,x. Role inferred from the SID writes and the note-table lookup."
+  },
+  {
+   "address": 28110,
+   "type": "line",
+   "text": "Per-frame SID filter-cutoff sweep. Returns at once if $6501 is non-zero or if any of the three voices ($657F,x) is active with $6582,x non-zero. Otherwise counts down $6514; when it expires it reads the next (length, step low, step high) triple from the table at $72C5 (a zero length skips ahead via the next byte). Each frame the 16-bit step in $654A/$654B is added to the accumulator $654E/$654F, and the result is written to the filter cutoff registers $D415 and $D416. Purpose (a sound effect sweep) inferred from the register writes."
   },
   {
    "address": 31933,
@@ -15393,6 +15413,21 @@
    "address": 44590,
    "type": "line",
    "text": "Four-cell (2x2) case: appends an 8-byte record (four old characters, the marker value, screen address high/low, colour RAM high) at $0743 using $0904, then advances $0904 by 8. Writes definition bytes 4, 5, 6, and 7 to the cells at offsets 0, 1, $28, and $29 on the screen, and byte 1 to the same four colour cells."
+  },
+  {
+   "address": 44688,
+   "type": "line",
+   "text": "Pops the saved-background stack and puts the characters back on the screen and their colours into colour RAM. $0904 holds the top of the stack; it does nothing if it is zero. Each record is 5, 6 or 8 bytes ending at offset X in $073B..$0742: a tag in $073F,x (0 = 1 cell, 1 = 2 cells, 2 or more = 2x2 cells), a screen pointer in $0740/$0741 and a colour RAM pointer in $0741/$0742. Each saved character is stored back at the screen address, and its colour is looked up in char_colour_table ($0C22) and stored at the colour RAM address. It loops until the stack is empty, then clears $0904. Pairs with slot_save_draw_4_cells, which saves the cells; role inferred."
+  },
+  {
+   "address": 44790,
+   "type": "line",
+   "text": "Entry for a one-cell record on the saved-background stack: restores the single character at offset 0 and its colour, then pops 5 bytes from the stack pointer in X (ends the routine if that empties it)."
+  },
+  {
+   "address": 44812,
+   "type": "line",
+   "text": "Entry for a two-cell record on the saved-background stack: restores two adjacent characters (offsets 0 and 1) with their colours, then pops 6 bytes; ends via $AF08 when the stack is empty, else loops back to $AE95."
   },
   {
    "address": 44852,
