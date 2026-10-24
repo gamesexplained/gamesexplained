@@ -1,0 +1,167 @@
+{
+ "schema": 1,
+ "platform": "bbc",
+ "game": "flowers-of-crystal",
+ "part": "menu",
+ "build": "",
+ "source": "live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    32768,
+    49151,
+    "paged ROM"
+   ],
+   [
+    49152,
+    65535,
+    "MOS ROM and I/O"
+   ],
+   [
+    1024,
+    2047,
+    "BASIC II's workspace: the integer variables, the variables' catalogue, its stacks and its buffers"
+   ],
+   [
+    2048,
+    2303,
+    "the MOS's sound workspace and buffers, the printer buffer and envelopes 1-4"
+   ],
+   [
+    2304,
+    2815,
+    "the MOS's envelopes 5-16 and the cassette and RS423 buffers, holding what earlier programs left"
+   ],
+   [
+    2816,
+    3071,
+    "the MOS's definitions of the function keys"
+   ],
+   [
+    3072,
+    3327,
+    "the MOS's definitions of characters 224-255, holding what earlier programs left"
+   ],
+   [
+    3328,
+    3583,
+    "the DFS's NMI routine, the extended vectors and the paged ROMs' workspace bytes"
+   ],
+   [
+    3584,
+    6399,
+    "the DFS's workspace: the catalogue and the file buffers"
+   ],
+   [
+    7055,
+    32767,
+    "above the program: BASIC's variables, what earlier programs left in memory, and the screen"
+   ]
+  ],
+  "extra": [],
+  "edges": [
+   256,
+   512,
+   768,
+   1024,
+   2048,
+   3328,
+   3584,
+   6400,
+   32768,
+   49152
+  ]
+ },
+ "blocks": [
+  {
+   "start": 0,
+   "end": 6399,
+   "type": "Undefined"
+  },
+  {
+   "start": 6400,
+   "end": 7054,
+   "type": "BASIC"
+  },
+  {
+   "start": 7055,
+   "end": 65535,
+   "type": "Undefined"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 6400,
+   "name": "setup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6436,
+   "name": "title",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6578,
+   "name": "menu",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6801,
+   "name": "choose",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6858,
+   "name": "PROCB",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 7011,
+   "name": "PROCb",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 6400,
+   "type": "line",
+   "text": "Lines 7-10. `*FX200,2` writes 2 to the MOS's BREAK and ESCAPE byte (&0258), so BREAK clears memory rather than letting OLD bring the program back; `*FX220,144` makes character 144 (&90, the code SHIFT-f0 gives) the escape character, so the ESCAPE key no longer stops the program and SHIFT-f0 does; both hold through every program the menu chains. MODE 7, and ON ERROR RUN, which starts the menu again after any error, ESCAPE by SHIFT-f0 included."
+  },
+  {
+   "address": 6436,
+   "type": "line",
+   "text": "Line 100, the title. A%=FALSE tells the program chained next that it starts afresh (the worksheet program K skips its printer question when A% is non-zero; the adventures keep their progress only while it is). @%=0 sets the print format. PROCB draws a cyan box over rows 3-8 with `4Mat Educational Software` in its top edge and `F L O W E R S  of  C R Y S T A L` across rows 5 and 6 in double height, blue letters on a cyan band (codes &8D, &86, &9D, &84); VDU 28 then makes rows 10-24 the text window, so that CLS in the menu leaves the title."
+  },
+  {
+   "address": 6578,
+   "type": "line",
+   "text": "Lines 200-205, the menu. Each time round: CLS of the window, a cyan box (PROCB) holding the four choices in white, `1. Crystal - The Story`, `2. The Adventure (Part 1)`, `3. The Adventure (Part 2)` and `4. Utility (printer)`, `*FX15,0` to empty the keyboard buffer, then INPUT `Please choose (1-4)`, until the answer is exactly 1, 2, 3 or 4."
+  },
+  {
+   "address": 6801,
+   "type": "line",
+   "text": "Line 210: CHAIN the program chosen: STORY (1), N1 (2, which leads to part 1), N2 (3, part 2) or K (4, the worksheets). Each loads at PAGE over this one."
+  },
+  {
+   "address": 6858,
+   "type": "line",
+   "text": "PROCB(a,b,s,ln,c), lines 28900-28910: a box of teletext graphics from row a to row b, its left edge at column s and its inside ln wide, in graphics colour c (c+144). The corners are graphics characters h, 4, * and % (sixels for a rounded corner), the top and bottom rows a run of commas (a thin line), the sides 5 and j. Each middle row prints the left side, white text (&87), then TAB(ln): BASIC counts that from the 5 just printed (TAB(x,y) does not reset its count), so TAB(ln) prints ln-2 spaces, clearing the inside, and puts the right side under the corners."
+  },
+  {
+   "address": 7011,
+   "type": "line",
+   "text": "PROCb(y1,y2,x,q$), line 29050: prints q$ at column x of every row from y1 to y2, most often a colour code and a new-background code that turn a band of rows into a coloured panel. Nothing in this program calls it; the adventures and the other programs carry the same procedure."
+  }
+ ]
+}

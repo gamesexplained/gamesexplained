@@ -1,0 +1,194 @@
+{
+ "schema": 1,
+ "platform": "bbc",
+ "game": "flowers-of-crystal",
+ "part": "sound-1",
+ "build": "",
+ "source": "live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    32768,
+    49151,
+    "paged ROM"
+   ],
+   [
+    49152,
+    65535,
+    "MOS ROM and I/O"
+   ],
+   [
+    1024,
+    2047,
+    "BASIC II's workspace: the integer variables, the variables' catalogue, its stacks and its buffers"
+   ],
+   [
+    2048,
+    2303,
+    "the MOS's sound workspace and buffers, the printer buffer and envelopes 1-4"
+   ],
+   [
+    2304,
+    2815,
+    "the MOS's envelopes 5-16 and the cassette and RS423 buffers, holding what earlier programs left"
+   ],
+   [
+    2816,
+    3071,
+    "the MOS's definitions of the function keys"
+   ],
+   [
+    3072,
+    3327,
+    "the MOS's definitions of characters 224-255, holding what earlier programs left"
+   ],
+   [
+    3328,
+    3583,
+    "the DFS's NMI routine, the extended vectors and the paged ROMs' workspace bytes"
+   ],
+   [
+    3584,
+    6399,
+    "the DFS's workspace: the catalogue and the file buffers"
+   ],
+   [
+    7031,
+    32767,
+    "above the program: BASIC's variables, what earlier programs left in memory, and the screen"
+   ]
+  ],
+  "extra": [],
+  "edges": [
+   256,
+   512,
+   768,
+   1024,
+   2048,
+   3328,
+   3584,
+   6400,
+   32768,
+   49152
+  ]
+ },
+ "blocks": [
+  {
+   "start": 0,
+   "end": 6399,
+   "type": "Undefined"
+  },
+  {
+   "start": 6400,
+   "end": 7025,
+   "type": "BASIC"
+  },
+  {
+   "start": 7026,
+   "end": 7030,
+   "type": "Byte"
+  },
+  {
+   "start": 7031,
+   "end": 65535,
+   "type": "Undefined"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 6400,
+   "name": "f0_key",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6445,
+   "name": "setup",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6510,
+   "name": "title",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6631,
+   "name": "part_number",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6674,
+   "name": "ask_level",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6833,
+   "name": "read_key",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6912,
+   "name": "start_part",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 7026,
+   "name": "tail",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 6400,
+   "type": "line",
+   "text": "Line 3, `*KEY0`: defines f0 as `DELETE1,6`, `32220`, `32225`, `MODE7` and `RUN`, each ended by RETURN (|M). Nothing here presses it: the adventure part 1, chained by line 220, moves itself to &0E00 and then puts f0 in the keyboard buffer itself (its lines 5-6), so that back at BASIC's prompt the MOS types these commands, which delete the adventure's relocation lines and run it. The definition lives in the MOS's soft-key buffer at &0B00, which CHAIN does not touch."
+  },
+  {
+   "address": 6445,
+   "type": "line",
+   "text": "Lines 20-60: MODE 7 and ON ERROR RUN; `*FX15,0` empties every input buffer; `*FX200,2` makes BREAK clear memory; VDU 6 and the cursor turned off (VDU 23;8202;0;0;0;); a pause of 0.8 seconds (INKEY(80))."
+  },
+  {
+   "address": 6510,
+   "type": "line",
+   "text": "Line 70: S%=-3, the sound level the player gets by pressing the space bar straight away (level 1). Then `FLOWERS OF CRYSTAL` in double height on rows 6 and 7, printed three times through seven colour pairs: for a from 7 down to 1, letters in teletext colour a on a band in colour a-1 (CHR$(128+a-1), then new background, &9D), with an empty count of 100 between pairs and of 1000 after each pass. The last pair, a=1, leaves red letters on a band of white, the colour 128 giving none (live)."
+  },
+  {
+   "address": 6631,
+   "type": "line",
+   "text": "Line 75: `part  1` in double height under the title, rows 9 and 10, and a pause of two seconds (INKEY(200))."
+  },
+  {
+   "address": 6674,
+   "type": "line",
+   "text": "Lines 80-150: `Select sound level 0-5`, one key read (GOSUB 200), then `< S >` and `Press the space bar when you are happy with the sound level.`, and from then on GOSUB 200 for ever. Only the space bar, at line 210, leaves."
+  },
+  {
+   "address": 6833,
+   "type": "line",
+   "text": "Lines 200-205: waits for a key until it is 0-5 or the space bar. A digit n sets S%=-3n, the SOUND loudness 0 (silent) to -15 (loudest) that the adventure uses for its sounds, and plays two short notes at that loudness (pitches 150 and 134, channels 1 and 2) so the player can hear it, then returns."
+  },
+  {
+   "address": 6912,
+   "type": "line",
+   "text": "Lines 210-220, the space bar: A%=0, so that the adventure starts afresh, `Please wait.`, auto-repeat off (`*FX11,0`); level 0 also turns the MOS's sound off altogether (`*FX210,1`), which nothing on the disc turns on again. Then `*LOAD` the machine code CODE1/1 (to &0900) and CODE1/2 (to &0C00), and CHAIN\"AD1\"."
+  },
+  {
+   "address": 7026,
+   "type": "line",
+   "text": "Five zero bytes after the end mark, counted in the file's catalogue length of 631. BASIC never reads them."
+  }
+ ]
+}
