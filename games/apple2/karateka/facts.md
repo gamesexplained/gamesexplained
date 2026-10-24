@@ -292,7 +292,12 @@ snapshots, with the keyboard chosen by writing 1 to $C4.
 - *The title and the demo* (title): run from $BFFA with no key, the two
   hi-res pages held the same bytes as the listing's code run on the kit's
   6502 at each of 18 flips of the page shown, from the credits to the
-  demo fight and the prologue again (`test_demo.js`).
+  demo fight and the prologue again (`test_demo.js`). Through the first
+  round, 571 flips from the credits to the flip before the credits come
+  round again, the 16,141 clicks of the speaker between flips came at the
+  same spacings in both; the first click after a flip came up to 4 cycles
+  apart, and the flips themselves came later in Apple2TS, whose IIe waits
+  for the vertical blank: 157.75 s for the round against 155.10 s.
 - *The stages* (cliff, palace, dungeon, akuma): each stage run from its
   entry ($BFFA) in Apple2TS, with the keyboard chosen where the snapshot
   had the joystick, and stopped at the flips of the page shown that
