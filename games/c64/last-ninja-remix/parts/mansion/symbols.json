@@ -13594,7 +13594,7 @@
   {
    "address": 40138,
    "type": "line",
-   "text": "AdvanceBoundarySequence, The Mansion's version, which PlayerDriver calls at $A098: Central Park's routine at $A08A with one kind of entrance added. Nothing happens while the player's animation runs ($61). Kind 5, which only the arrival by spawn record 10 has, clears the kind $0293 at once and plays animation $C091: five steps of 4 right and 1 down (frames 8 to 12), then frame 17 moving 7 down three times. The other kinds count $0294 down and clear $0293 at zero. Kinds 0 and 1 take a step in the player's heading each tick (InstallDirectionalPlayerAnimation) and at the last tick play $BFB0 or $BFA2, by bit 2 of the heading (frames 44, 45 and 44). Kind 2 climbs 11 pixels up a tick ($BFE7) and steps off the top at the last ($BFFC). Kinds 3 and 4 climb 11 down a tick ($C02D) and step off at the last ($C042), kind 4 walking instead once fewer than 6 ticks are left. The Mansion's entrance list uses only kinds 1 and 5."
+   "text": "AdvanceBoundarySequence, The Mansion's version, which PlayerDriver calls at $A098: Central Park's routine at $A08A with one kind of entrance added. Nothing happens while the player's animation runs ($61), so each count below is one animation step, taken once the one before has finished. Kind 5, which only the arrival by spawn record 10 has, clears the kind $0293 at once and plays animation $C091: five steps of 4 right and 1 down (frames 8 to 12), then frame 17 moving 7 down three times. The other kinds count $0294 down and clear $0293 at zero. Kinds 0 and 1 drop the player 8 pixels a step in the falling frame for their heading, 78 or 83 (InstallDirectionalPlayerAnimation, $C999 or $C9A2), and at the last step play $BFB0 or $BFA2, by bit 2 of the heading (frames 44, 45 and 44). Kind 2 climbs 11 pixels up a step ($BFE7) and steps off the top at the last ($BFFC). Kinds 3 and 4 climb 11 down a step ($C02D) and step off at the last ($C042), kind 4 dropping 8 pixels a step instead once fewer than 6 steps are left. The Mansion's entrance list uses only kinds 1 and 5."
   },
   {
    "address": 40272,
@@ -13799,7 +13799,7 @@
   {
    "address": 40882,
    "type": "line",
-   "text": "Script command 54, which walls in area 1 carry: the player drops 46 pixels at depth $30 and lands ($B6, $81 and $0234 cleared after the fall), then leaves the area by transition variant 0."
+   "text": "Script command 54, which a wall in area 1 carries: the player drops 46 pixels at depth $30 and lands ($B6, $81 and $0234 cleared after the fall), then leaves the area by transition variant 0."
   },
   {
    "address": 40901,
@@ -13819,7 +13819,7 @@
   {
    "address": 40919,
    "type": "line",
-   "text": "FallPlayer: A is how far to fall. It keeps the time in $022E and sets $0234 to $FF, and then, for every two or more counts of the interrupt counter $E2, moves the player down 4 pixels a count and draws them in the falling frame for their heading from $A034, testing the scene conditions at depth $74. Between steps it runs ScheduleEnemyAnimation and RuntimeNoOpHook. Once the player has fallen the whole distance, or reached Y $BD, it sets $B6 to $FF and the player dies, unless the caller clears it again."
+   "text": "FallPlayer: A is how far to fall. It keeps the time in $022E and sets $0234 to $FF, and then, for every two or more counts of the interrupt counter $E2, moves the player down 4 pixels a count and draws them in the falling frame for their heading from $A034, testing the scene conditions at depth $74. Between steps it runs ScheduleEnemyAnimation and RuntimeNoOpHook. Once a step's move is more than the distance still to fall, or the player has reached Y $BD, it sets $B6 to $FF and the player dies, unless the caller clears it again. The step that ends the fall has already moved the player, so they fall a little past the distance: 48 pixels in steps of 8 end after 56."
   },
   {
    "address": 41012,
@@ -14149,7 +14149,7 @@
   {
    "address": 42870,
    "type": "line",
-   "text": "20 attack strengths read at $A750 and $A758 for an enemy attack against the player; each is the energy DamagePlayer subtracts. Index $1F is the enemy's attack mode $6F minus $14 shifted right twice (0-3, since its attack modes are $14-$23), ORed with its profile $72 times 4 (a profile of 4 and up counts as 0), so only entries 0-15 can be read; the result enters the saturating player-damage routine $B11A. The last four bytes ($A786-$A789) are not reached by this index."
+   "text": "20 attack strengths read at $A750 and $A758 for an enemy attack against the player; each is the energy DamagePlayer subtracts, or four times it while the alarm $03EA is non-zero (the ASL ASL at $A753). Index $1F is the enemy's attack mode $6F minus $14 shifted right twice (0-3, since its attack modes are $14-$23), ORed with its profile $72 times 4 (a profile of 4 and up counts as 0), so only entries 0-15 can be read; the result enters the saturating player-damage routine $B11A. The last four bytes ($A786-$A789) are not reached by this index."
   },
   {
    "address": 42890,
@@ -14869,7 +14869,7 @@
   {
    "address": 48412,
    "type": "line",
-   "text": "ObjectLightsOn: the routine object record 3 (area 9) calls. It clears flag $03EC (item 20) and returns with A zero, so ObjectEngine takes item 19: flag $03EB is set, which lights area 10 (RenderConditionalSceneVariant at $9358), scene $BD45 draws the switch on, and 5 is added to the score. Records 3 and 4 share one spot, and ObjectEngine passes over a record whose item flag is set, so each use takes whichever of the two is clear: the switch goes on, off and on again, scoring 5 every time."
+   "text": "ObjectLightsOn: the routine object record 3 (area 9) calls. It clears flag $03EC (item 20) and returns with A zero, so ObjectEngine takes item 19: flag $03EB is set, which lights area 10 (RenderConditionalSceneVariant at $9358), scene $BD45 draws the switch on, and 500 points are added to the score ($1183 with A = 5, the hundreds digit). Records 3 and 4 share one spot, and ObjectEngine passes over a record whose item flag is set, so each use takes whichever of the two is clear: the switch goes on, off and on again, scoring 500 every time."
   },
   {
    "address": 48418,
@@ -14889,7 +14889,7 @@
   {
    "address": 48453,
    "type": "line",
-   "text": "Object scene $BD45-$BD51, which object record 3 draws once the object is taken: 3 placed scenes (9, 9, 29) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $BD45-$BD51, which object record 3 draws once the object is taken, and the entrance rules draw on entering area 9 while flag $03EB is set ($92FB): 3 placed scenes (9, 9, 29) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 48466,
@@ -14929,7 +14929,7 @@
   {
    "address": 48545,
    "type": "line",
-   "text": "Object scene $BDA1-$BDB1, which object record 0 draws once the object is taken: 4 placed scenes (75, 75, 75, 75) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $BDA1-$BDB1, which object records 0 and 1 draw once the object is taken: 4 placed scenes (75, 75, 75, 75) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 48562,

@@ -12196,7 +12196,7 @@
   {
    "address": 34534,
    "type": "line",
-   "text": "4 exits, $86E6-$86E9: the area it leads to ($FF for none). Values: 0, 1, 255, 0."
+   "text": "4 exits, $86E6-$86E9: the area it leads to, or $FF for the way out of the level (entry 2, the first exit of area 1's group, reached from area 1's top edge left of X 34), which sets the level-exit request $02AF instead of moving the player. Values: 0, 1, 255, 0."
   },
   {
    "address": 34538,
@@ -12281,7 +12281,7 @@
   {
    "address": 35152,
    "type": "line",
-   "text": "The Final Battle's own entrance rules: only area 1, the room with the five candles, has any. Until flag $03E9 is set (item 17, object record 0) it draws scene $898C, the panel shut; after that $8990, the panel raised, and then the lock: scene $8994 until item 18 is held (the code entered, ObjectEnterCode at $B327), then $B467, the lock open, or $B46E once item 16 has been taken out (ObjectSummonKunitoki at $B3ED). The same scenes are what object records 0, 1 and 2 draw when they are taken."
+   "text": "The Final Battle's own entrance rules: only area 1, the room with the five candles, has any. Until flag $03E9 is set (item 17, object record 0) it draws scene $898C, the panel shut; after that $8990, the panel raised, and then the lock: scene $8994 until item 18 is held (the code entered, ObjectEnterCode at $B327), then $B467, the lock open, or $B46E once item 16 has been taken out (ObjectSummonKunitoki at $B3ED). Object records 1 and 2 draw the same $B467 and $B46E when they are taken (and record 4 $B467); record 0 draws $B442 instead, which raises the panel in five steps and leaves it, with the lock, where $8990 and $8994 draw them."
   },
   {
    "address": 35212,
@@ -12301,7 +12301,7 @@
   {
    "address": 35224,
    "type": "line",
-   "text": "The Final Battle's entrance-animation list, three bytes an entry as in Central Park's (the spawn record the player arrived by, the kind of entrance, its length in ticks), ending with $FF. This level's has no entries: only the $FF."
+   "text": "The Final Battle's entrance-animation list, three bytes an entry as in Central Park's (the spawn record the player arrived by, the kind of entrance, how many animation steps it lasts), ending with $FF. This level's has no entries: only the $FF."
   },
   {
    "address": 35225,
@@ -12371,7 +12371,7 @@
   {
    "address": 36068,
    "type": "line",
-   "text": "Until the player has captured the spirit, the game runs on: the player can move and act (PlayerDriver, ScheduleEnemyAnimation, EventDispatch), the floor colours cycle (CycleEndingColours) and the candles flicker (FlickerCandles), and EndingFrame fills and empties both energy bars. Each time Kunitoki's animation ends ($63 zero) it is started again from $C1AD, frames 122 down to 100 and back up, unless flag $03EF is set (item 23, ObjectCaptureSpirit at $B430)."
+   "text": "Until the player has captured the spirit, the game runs on: the player can move and act (PlayerDriver, ScheduleEnemyAnimation, EventDispatch), the floor colours cycle (CycleEndingColours) and the candles flicker (FlickerCandles), and EndingFrame fills and empties both energy bars. Each time Kunitoki's animation ends ($63 zero) it is started again from $C1AD, frames 122 down to 105 and then 100, after which it goes on at $C17A, frames 105 back up to 123, unless flag $03EF is set (item 23, ObjectCaptureSpirit at $B430)."
   },
   {
    "address": 36111,
@@ -12486,12 +12486,12 @@
   {
    "address": 36696,
    "type": "line",
-   "text": "EndingLoop, which never ends: once each count of the interrupt counter $E2 it runs the enemy's animation, CycleEndingColours, FlickerCandles and RuntimeNoOpHook, and holds the countdown at $029C-$029D below 256 as EndingFrame does. The game stops here; only a reset leaves it."
+   "text": "EndingLoop, which never ends: once each count of the interrupt counter $E2 it runs the enemy's animation, CycleEndingColours, FlickerCandles and RuntimeNoOpHook, and, as EndingFrame does, sets $029D to 1 and $029C to 0 whenever $029D is not zero, so the countdown at $029C-$029D is held at 256 or less. The game stops here; only a reset leaves it."
   },
   {
    "address": 36738,
    "type": "line",
-   "text": "EndingFrame: waits for the next count of the interrupt counter $E2. When both energy bars have caught up with their energies ($0229 equal to $022B and $022A to $022C), it sets both energies to $2C less the enemy's, so they go from 0 to $2C and back, and the bars fill and empty in turn. When $029D is not zero it sets $029D to 1 and $029C to 0: the interrupt routine counts this pair down ($1E42), and no instruction in this load reads it."
+   "text": "EndingFrame: waits for the next count of the interrupt counter $E2. When both energy bars have caught up with their energies ($0229 equal to $022B and $022A to $022C), it sets both energies to $2C less the enemy's, so they go from 0 to $2C and back, and the bars fill and empty in turn. When $029D is not zero it sets $029D to 1 and $029C to 0. The pair is a countdown, $029D the high byte, which the interrupt routine decrements at $1E42-$1E4A, so it is held at 256 or less; besides that decrement, only this test ($8FAA) and the same one in EndingLoop ($8F64) read $029D."
   },
   {
    "address": 36794,
@@ -12521,7 +12521,7 @@
   {
    "address": 37325,
    "type": "line",
-   "text": "Condition list for area 1, $91CD-$91DD: 4 four-byte entries, then $FF. In each entry the second byte is the smallest value of the caller's parameter that tests it, and the two after it give the region of the scene that is tested against each actor. Its bytes from $91DD on are also the start of condition list 02, which begins there."
+   "text": "Condition list for area 1, $91CD-$91DD: 4 four-byte entries, then $FF. In each entry the second byte is the largest value of the caller's parameter (the actor's depth) that tests it, and the two after it give the region of the scene that is tested against each actor. Its bytes from $91DD on are also the start of condition list 02, which begins there."
   },
   {
    "address": 37341,
@@ -12616,7 +12616,7 @@
   {
    "address": 37466,
    "type": "line",
-   "text": "FlickerCandles, called from MainTick every pass, a call Central Park's MainTick does not make: at most every 6 counts of the interrupt counter $E2 (the last time kept in $03EC), and only in area 1, it redraws each lit candle ($029F-$02A3 negative) with the other flame: it flips bit 0 of the candle's byte and draws scene 32 or 33 at the candle's place from the tables at $92A3 and $92A8, through the one-placement scene at $B475."
+   "text": "FlickerCandles, called from MainTick every pass ($8440, a call Central Park's MainTick does not make) and from the ending's loops at $8CF6 (EndingWaitForCapture) and $8F79 (EndingLoop): at most every 6 counts of the interrupt counter $E2 (the last time kept in $03EC), and only in area 1, it redraws each lit candle ($029F-$02A3 negative) with the other flame: it flips bit 0 of the candle's byte and draws scene 32 or 33 at the candle's place from the tables at $92A3 and $92A8, through the one-placement scene at $B475."
   },
   {
    "address": 37539,
@@ -13036,7 +13036,7 @@
   {
    "address": 39812,
    "type": "line",
-   "text": "Event 23, which Kunitoki's last animations raise on frames 111 to 120 ($C186 on, and $C1B2 on): each step moves him one pixel toward Y $72, and across toward X $76 (heading bit 2 clear) or $86 (set), so he settles at a fixed spot."
+   "text": "Event 23, which Kunitoki's last animations raise on frames 111 to 120 ($C186 on, and $C1B2 on): each step moves him one pixel toward Y $72 (moving $76 with $57), and across toward X $86 when his heading $6B has bit 2 set, or toward X $76 when it is clear; with bit 2 clear and X below $76 the increment at $9BAA falls through into the $86 test, so he moves two pixels a step from the left. Either way he settles at a fixed spot."
   },
   {
    "address": 39868,
@@ -13121,7 +13121,7 @@
   {
    "address": 40130,
    "type": "line",
-   "text": "StartEndingFromKnockdown: clears $CB and $022D, sets $012E, $0234 (no area transitions) and $02B9 (the ending, which MainTick acts on) to $FF, and starts Kunitoki's last animation $C15B (frame 44, then frames 99 to 123, the spirit leaving him) facing away from his heading, with AI state 7."
+   "text": "StartEndingFromKnockdown: clears $CB and $022D, sets $012E, $0234 (no area transitions) and $02B9 (the ending, which MainTick acts on) to $FF, and starts Kunitoki's last animation $C15B (frame 44, then frames 99 to 123, the spirit leaving him), mirrored ($5F = 4) when his heading $6B has bit 2 clear and not when it is set, with AI state 7 and $0236 cleared."
   },
   {
    "address": 40191,
@@ -13291,7 +13291,7 @@
   {
    "address": 41393,
    "type": "line",
-   "text": "Let a defeated enemy get up again once its energy has refilled (AI state 11, which SpawnEnemy sets for an enemy restored as defeated).\nInputs: Area index $A2, the area's defeat byte $012D,X, the ticks $E2/$F0 and the defeat time $0175,X/$0187,X, player/opponent positions $54-$57, heading $6B, and animation pointers $B63F/$B635.\nOutputs: Returns at once while $012D,X is $FF (beaten for good). Otherwise rebuilds the enemy's energy from the ticks since its defeat (RebuildEnemyMeterFromElapsedTicks, which writes $022A and $3F92,X); when that has reached 44 and the player is not within 12 horizontally and 6 vertically, clears bit 7 of $012D,X, sets $CF=7, installs the animation at $B63F (heading bit 2 clear) or $B635 (bit 2 set) through InstallAiScript ($9E22), and writes $0236=6; otherwise returns without transition.\nClobbers: A, X, Y, flags, $1E/$1F, $022A, $3F92,X, and when the enemy gets up $012D,X, $CF, enemy animation state $5A/$5E/$62/$63, and $0236."
+   "text": "Let a defeated enemy get up again once its energy has refilled (AI state 11, which SpawnEnemy sets for an enemy restored as defeated and event 3 sets when the defeat animation $B61D or $B629 reaches it).\nInputs: Area index $A2, the area's defeat byte $012D,X, the ticks $E2/$F0 and the defeat time $0175,X/$0187,X, player/opponent positions $54-$57, heading $6B, and animation pointers $B63F/$B635.\nOutputs: Returns at once while $012D,X is $FF (beaten for good). Otherwise rebuilds the enemy's energy from the ticks since its defeat (RebuildEnemyMeterFromElapsedTicks, which writes $022A and $3F92,X); when that has reached 44 and the player is not within 12 horizontally and 6 vertically, puts the candles out in area 1 (PutOutCandles, $A1E5), clears bit 7 of $012D,X, sets $CF=7, installs the animation at $B63F (heading bit 2 clear) or $B635 (bit 2 set) through InstallAiScript ($9E22), and writes $0236=6; otherwise returns without transition.\nClobbers: A, X, Y, flags, $1E/$1F, $022A, $3F92,X, and when the enemy gets up $012D,X, $CF, enemy animation state $5A/$5E/$62/$63, and $0236, and in area 1 the candle bytes $029F-$02A3."
   },
   {
    "address": 41439,
@@ -13411,7 +13411,7 @@
   {
    "address": 42219,
    "type": "line",
-   "text": "Rebuild the current area enemy meter from the 16-bit tick pair $F0:$E2 and saved tick origin $0187,X:$0175,X. Computes delta modulo 65536, shifts right five, subtracts two with a zero floor and clamps to 44. Writes both $022A and $3F92,X. The inputs are elapsed ticks, not world-height coordinates; X is current area $A2."
+   "text": "Rebuild the current area enemy meter from the 16-bit tick pair $F0:$E2 and saved tick origin $0187,X:$0175,X. Computes delta modulo 65536, shifts it right four (one step every 16 ticks), subtracts two with a zero floor and clamps to 44. Writes both $022A and $3F92,X. The inputs are elapsed ticks, not world-height coordinates; X is current area $A2."
   },
   {
    "address": 42275,
@@ -13851,12 +13851,12 @@
   {
    "address": 45681,
    "type": "line",
-   "text": "StartEndingFromCandle: as at $9CC2, with Kunitoki's last animation started from $C162, its second command."
+   "text": "StartEndingFromCandle: only while $012E is negative, it does what $9CC2 does, with Kunitoki's last animation started from $C162, its fourth command (frame 100, delay 16), but it leaves the AI state $CF and $0236 as they are."
   },
   {
    "address": 45723,
    "type": "side",
-   "text": "shifts the player's animation control byte $58 right; ObjectEngine shifts it left at $B195"
+   "text": "shifts the player's animation delay countdown $58 right; ObjectEngine shifts it left at $B195"
   },
   {
    "address": 45728,
@@ -13896,7 +13896,7 @@
   {
    "address": 45903,
    "type": "line",
-   "text": "Text b34b plus 4, the address the instructions at $B38A, $B3C9, $B3D2 and $B3DF write with X as the index: the table read from its byte 4 on."
+   "text": "Text b34b plus 4, the address the instructions at $B38A, $B3C9 and $B3DF read and the one at $B3D2 writes, with X as the index: the table read from its byte 4 on."
   },
   {
    "address": 45908,
@@ -16921,12 +16921,12 @@
   {
    "address": 55336,
    "type": "line",
-   "text": "Colour RAM address $D828: TestSceneConditionRecord writes colour here ($8D39, sta $D828,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 18 of sprite 130 ($D816-$D851), whose bytes go on from here."
+   "text": "Colour RAM address $D828: ClearScreenForEnding writes colour here twice ($8D39 and $8D3C, sta $D828,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 18 of sprite 130 ($D816-$D851), whose bytes go on from here."
   },
   {
    "address": 55376,
    "type": "line",
-   "text": "Colour RAM address $D850: TestSceneConditionRecord writes colour here ($8D42, sta $D850,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 58 of sprite 130 ($D816-$D851), whose bytes go on from here."
+   "text": "Colour RAM address $D850: ClearScreenForEnding writes colour here twice ($8D42 and $8D45, sta $D850,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 58 of sprite 130 ($D816-$D851), whose bytes go on from here."
   },
   {
    "address": 55378,
@@ -16936,7 +16936,7 @@
   {
    "address": 55416,
    "type": "line",
-   "text": "Colour RAM address $D878: TestSceneConditionRecord writes colour here ($8D4B, sta $D878,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 38 of sprite 131 ($D852-$D883), whose bytes go on from here."
+   "text": "Colour RAM address $D878: ClearScreenForEnding writes colour here twice ($8D4B and $8D4E, sta $D878,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 38 of sprite 131 ($D852-$D883), whose bytes go on from here."
   },
   {
    "address": 55428,
@@ -16946,7 +16946,7 @@
   {
    "address": 55456,
    "type": "line",
-   "text": "Colour RAM address $D8A0: TestSceneConditionRecord writes colour here ($8D54, sta $D8A0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 28 of sprite 132 ($D884-$D8AB), whose bytes go on from here."
+   "text": "Colour RAM address $D8A0: ClearScreenForEnding writes colour here twice ($8D54 and $8D57, sta $D8A0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 28 of sprite 132 ($D884-$D8AB), whose bytes go on from here."
   },
   {
    "address": 55468,
@@ -16956,7 +16956,7 @@
   {
    "address": 55496,
    "type": "line",
-   "text": "Colour RAM address $D8C8: TestSceneConditionRecord writes colour here ($8D5D, sta $D8C8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 28 of sprite 133 ($D8AC-$D8E5), whose bytes go on from here."
+   "text": "Colour RAM address $D8C8: ClearScreenForEnding writes colour here twice ($8D5D and $8D60, sta $D8C8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 28 of sprite 133 ($D8AC-$D8E5), whose bytes go on from here."
   },
   {
    "address": 55526,
@@ -16966,7 +16966,7 @@
   {
    "address": 55536,
    "type": "line",
-   "text": "Colour RAM address $D8F0: TestSceneConditionRecord writes colour here ($8D66, sta $D8F0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 10 of sprite 134 ($D8E6-$D91A), whose bytes go on from here."
+   "text": "Colour RAM address $D8F0: ClearScreenForEnding writes colour here twice ($8D66 and $8D69, sta $D8F0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 10 of sprite 134 ($D8E6-$D91A), whose bytes go on from here."
   },
   {
    "address": 55552,
@@ -16976,7 +16976,7 @@
   {
    "address": 55576,
    "type": "line",
-   "text": "Colour RAM address $D918: TestSceneConditionRecord writes colour here ($8D6F, sta $D918,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 50 of sprite 134 ($D8E6-$D91A), whose bytes go on from here."
+   "text": "Colour RAM address $D918: ClearScreenForEnding writes colour here twice ($8D6F and $8D72, sta $D918,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 50 of sprite 134 ($D8E6-$D91A), whose bytes go on from here."
   },
   {
    "address": 55579,
@@ -16986,7 +16986,7 @@
   {
    "address": 55616,
    "type": "line",
-   "text": "Colour RAM address $D940: TestSceneConditionRecord writes colour here ($8D78, sta $D940,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 37 of sprite 135 ($D91B-$D94F), whose bytes go on from here."
+   "text": "Colour RAM address $D940: ClearScreenForEnding writes colour here twice ($8D78 and $8D7B, sta $D940,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 37 of sprite 135 ($D91B-$D94F), whose bytes go on from here."
   },
   {
    "address": 55632,
@@ -16996,7 +16996,7 @@
   {
    "address": 55656,
    "type": "line",
-   "text": "Colour RAM address $D968: TestSceneConditionRecord writes colour here ($8DD9, sta $D968,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 24 of sprite 136 ($D950-$D97A), whose bytes go on from here."
+   "text": "Colour RAM address $D968: ClearScreenForEnding writes colour here twice ($8DD9 and $8DDC, sta $D968,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 24 of sprite 136 ($D950-$D97A), whose bytes go on from here."
   },
   {
    "address": 55675,
@@ -17006,37 +17006,37 @@
   {
    "address": 55677,
    "type": "line",
-   "text": "Colour RAM address $D97D: TestSceneConditionRecord writes colour here ($8E4A, sta $D97D,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 2 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D97D: ClearScreenForEnding writes colour here twice ($8E4A and $8E4D, sta $D97D,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 2 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55686,
    "type": "line",
-   "text": "Colour RAM address $D986: TestSceneConditionRecord writes colour here ($8DFD, sta $D986,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 11 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D986: ClearScreenForEnding writes colour here twice ($8DFD and $8E00, sta $D986,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 11 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55689,
    "type": "line",
-   "text": "Colour RAM address $D989: RasterSyncObjectDisplayState writes colour here ($B358, sta $D989,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 14 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D989: ObjectEnterCode writes colour 1, white, here ($B358, sta $D989,X, with X the cursor's digit 0-3) with the I/O visible, to mark the digit of the code being set. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 14 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55696,
    "type": "line",
-   "text": "Colour RAM address $D990: TestSceneConditionRecord writes colour here ($8DE2, sta $D990,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 21 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D990: ClearScreenForEnding writes colour here twice ($8DE2 and $8DE5, sta $D990,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 21 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55707,
    "type": "line",
-   "text": "Colour RAM address $D99B: TestSceneConditionRecord writes colour here ($8FF4, sta $D99B,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 32 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D99B: CycleEndingColours writes colour here ($8FF4, sta $D99B,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 32 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55717,
    "type": "line",
-   "text": "Colour RAM address $D9A5: TestSceneConditionRecord writes colour here ($8E53, sta $D9A5,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 42 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D9A5: ClearScreenForEnding writes colour here twice ($8E53 and $8E56, sta $D9A5,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 42 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55726,
    "type": "line",
-   "text": "Colour RAM address $D9AE: TestSceneConditionRecord writes colour here ($8E06, sta $D9AE,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 51 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
+   "text": "Colour RAM address $D9AE: ClearScreenForEnding writes colour here twice ($8E06 and $8E09, sta $D9AE,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 51 of sprite 137 ($D97B-$D9B6), whose bytes go on from here."
   },
   {
    "address": 55735,
@@ -17046,17 +17046,17 @@
   {
    "address": 55747,
    "type": "line",
-   "text": "Colour RAM address $D9C3: TestSceneConditionRecord writes colour here ($902B, sta $D9C3,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 12 of sprite 138 ($D9B7-$D9F2), whose bytes go on from here."
+   "text": "Colour RAM address $D9C3: CycleEndingColours writes colour here ($902B, sta $D9C3,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 12 of sprite 138 ($D9B7-$D9F2), whose bytes go on from here."
   },
   {
    "address": 55766,
    "type": "line",
-   "text": "Colour RAM address $D9D6: TestSceneConditionRecord writes colour here ($8E0F, sta $D9D6,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 31 of sprite 138 ($D9B7-$D9F2), whose bytes go on from here."
+   "text": "Colour RAM address $D9D6: ClearScreenForEnding writes colour here twice ($8E0F and $8E12, sta $D9D6,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 31 of sprite 138 ($D9B7-$D9F2), whose bytes go on from here."
   },
   {
    "address": 55784,
    "type": "line",
-   "text": "Colour RAM address $D9E8: TestSceneConditionRecord writes colour here ($9067, sta $D9E8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 49 of sprite 138 ($D9B7-$D9F2), whose bytes go on from here."
+   "text": "Colour RAM address $D9E8: CycleEndingColours writes colour here ($9067, sta $D9E8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 49 of sprite 138 ($D9B7-$D9F2), whose bytes go on from here."
   },
   {
    "address": 55795,
@@ -17066,7 +17066,7 @@
   {
    "address": 55806,
    "type": "line",
-   "text": "Colour RAM address $D9FE: TestSceneConditionRecord writes colour here ($8E18, sta $D9FE,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 11 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
+   "text": "Colour RAM address $D9FE: ClearScreenForEnding writes colour here twice ($8E18 and $8E1B, sta $D9FE,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 11 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
   },
   {
    "address": 55808,
@@ -17076,17 +17076,17 @@
   {
    "address": 55820,
    "type": "line",
-   "text": "Colour RAM address $DA0C: TestSceneConditionRecord writes colour here ($90A3, sta $DA0C,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 25 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
+   "text": "Colour RAM address $DA0C: CycleEndingColours writes colour here ($90A3, sta $DA0C,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 25 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
   },
   {
    "address": 55842,
    "type": "line",
-   "text": "Colour RAM address $DA22: TestSceneConditionRecord writes colour here ($8E80, sta $DA22,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 47 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
+   "text": "Colour RAM address $DA22: ClearScreenForEnding writes colour here twice ($8E80 and $8E83, sta $DA22,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 47 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
   },
   {
    "address": 55846,
    "type": "line",
-   "text": "Colour RAM address $DA26: TestSceneConditionRecord writes colour here ($8E21, sta $DA26,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 51 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
+   "text": "Colour RAM address $DA26: ClearScreenForEnding writes colour here twice ($8E21 and $8E24, sta $DA26,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 51 of sprite 139 ($D9F3-$DA2E), whose bytes go on from here."
   },
   {
    "address": 55855,
@@ -17096,27 +17096,27 @@
   {
    "address": 55868,
    "type": "line",
-   "text": "Colour RAM address $DA3C: TestSceneConditionRecord writes colour here ($90DF, sta $DA3C,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 13 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
+   "text": "Colour RAM address $DA3C: CycleEndingColours writes colour here ($90DF, sta $DA3C,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 13 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
   },
   {
    "address": 55882,
    "type": "line",
-   "text": "Colour RAM address $DA4A: TestSceneConditionRecord writes colour here ($8E77, sta $DA4A,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 27 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
+   "text": "Colour RAM address $DA4A: ClearScreenForEnding writes colour here twice ($8E77 and $8E7A, sta $DA4A,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 27 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
   },
   {
    "address": 55886,
    "type": "line",
-   "text": "Colour RAM address $DA4E: TestSceneConditionRecord writes colour here ($8E2A, sta $DA4E,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 31 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
+   "text": "Colour RAM address $DA4E: ClearScreenForEnding writes colour here twice ($8E2A and $8E2D, sta $DA4E,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 31 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
   },
   {
    "address": 55896,
    "type": "line",
-   "text": "Colour RAM address $DA58: TestSceneConditionRecord writes colour here ($8DF4, sta $DA58,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 41 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
+   "text": "Colour RAM address $DA58: ClearScreenForEnding writes colour here twice ($8DF4 and $8DF7, sta $DA58,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 41 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
   },
   {
    "address": 55908,
    "type": "line",
-   "text": "Colour RAM address $DA64: TestSceneConditionRecord writes colour here ($9116, sta $DA64,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 53 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
+   "text": "Colour RAM address $DA64: CycleEndingColours writes colour here ($9116, sta $DA64,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 53 of sprite 140 ($DA2F-$DA68), whose bytes go on from here."
   },
   {
    "address": 55913,
@@ -17126,27 +17126,27 @@
   {
    "address": 55917,
    "type": "line",
-   "text": "Colour RAM address $DA6D: TestSceneConditionRecord writes colour here ($8E65, sta $DA6D,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 4 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
+   "text": "Colour RAM address $DA6D: ClearScreenForEnding writes colour here twice ($8E65 and $8E68, sta $DA6D,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 4 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
   },
   {
    "address": 55926,
    "type": "line",
-   "text": "Colour RAM address $DA76: TestSceneConditionRecord writes colour here ($8E33, sta $DA76,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 13 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
+   "text": "Colour RAM address $DA76: ClearScreenForEnding writes colour here twice ($8E33 and $8E36, sta $DA76,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 13 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
   },
   {
    "address": 55936,
    "type": "line",
-   "text": "Colour RAM address $DA80: TestSceneConditionRecord writes colour here ($8DEB, sta $DA80,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 23 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
+   "text": "Colour RAM address $DA80: ClearScreenForEnding writes colour here twice ($8DEB and $8DEE, sta $DA80,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 23 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
   },
   {
    "address": 55949,
    "type": "line",
-   "text": "Colour RAM address $DA8D: TestSceneConditionRecord writes colour here ($9152, sta $DA8D,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 36 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
+   "text": "Colour RAM address $DA8D: CycleEndingColours writes colour here ($9152, sta $DA8D,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 36 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
   },
   {
    "address": 55952,
    "type": "line",
-   "text": "Colour RAM address $DA90: TestSceneConditionRecord writes colour here ($8E6E, sta $DA90,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 39 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
+   "text": "Colour RAM address $DA90: ClearScreenForEnding writes colour here twice ($8E6E and $8E71, sta $DA90,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 39 of sprite 141 ($DA69-$DA91), whose bytes go on from here."
   },
   {
    "address": 55954,
@@ -17156,12 +17156,12 @@
   {
    "address": 55957,
    "type": "line",
-   "text": "Colour RAM address $DA95: TestSceneConditionRecord writes colour here ($8E5C, sta $DA95,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 3 of sprite 142 ($DA92-$DAA0), whose bytes go on from here."
+   "text": "Colour RAM address $DA95: ClearScreenForEnding writes colour here twice ($8E5C and $8E5F, sta $DA95,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 3 of sprite 142 ($DA92-$DAA0), whose bytes go on from here."
   },
   {
    "address": 55966,
    "type": "line",
-   "text": "Colour RAM address $DA9E: TestSceneConditionRecord writes colour here ($8E3C, sta $DA9E,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 12 of sprite 142 ($DA92-$DAA0), whose bytes go on from here."
+   "text": "Colour RAM address $DA9E: ClearScreenForEnding writes colour here twice ($8E3C and $8E3F, sta $DA9E,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 12 of sprite 142 ($DA92-$DAA0), whose bytes go on from here."
   },
   {
    "address": 55969,
@@ -17171,12 +17171,12 @@
   {
    "address": 55976,
    "type": "line",
-   "text": "Colour RAM address $DAA8: TestSceneConditionRecord writes colour here ($8DA5, sta $DAA8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 7 of sprite 143 ($DAA1-$DADC), whose bytes go on from here."
+   "text": "Colour RAM address $DAA8: ClearScreenForEnding writes colour here twice ($8DA5 and $8DA8, sta $DAA8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 7 of sprite 143 ($DAA1-$DADC), whose bytes go on from here."
   },
   {
    "address": 56016,
    "type": "line",
-   "text": "Colour RAM address $DAD0: TestSceneConditionRecord writes colour here ($8D9C, sta $DAD0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 47 of sprite 143 ($DAA1-$DADC), whose bytes go on from here."
+   "text": "Colour RAM address $DAD0: ClearScreenForEnding writes colour here twice ($8D9C and $8D9F, sta $DAD0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 47 of sprite 143 ($DAA1-$DADC), whose bytes go on from here."
   },
   {
    "address": 56029,
@@ -17191,7 +17191,7 @@
   {
    "address": 56056,
    "type": "line",
-   "text": "Colour RAM address $DAF8: TestSceneConditionRecord writes colour here ($8D93, sta $DAF8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 27 of sprite 144 ($DADD-$DB17), whose bytes go on from here."
+   "text": "Colour RAM address $DAF8: ClearScreenForEnding writes colour here twice ($8D93 and $8D96, sta $DAF8,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 27 of sprite 144 ($DADD-$DB17), whose bytes go on from here."
   },
   {
    "address": 56088,
@@ -17201,12 +17201,12 @@
   {
    "address": 56096,
    "type": "line",
-   "text": "Colour RAM address $DB20: TestSceneConditionRecord writes colour here ($8D8A, sta $DB20,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 8 of sprite 145 ($DB18-$DB4D), whose bytes go on from here."
+   "text": "Colour RAM address $DB20: ClearScreenForEnding writes colour here twice ($8D8A and $8D8D, sta $DB20,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 8 of sprite 145 ($DB18-$DB4D), whose bytes go on from here."
   },
   {
    "address": 56136,
    "type": "line",
-   "text": "Colour RAM address $DB48: TestSceneConditionRecord writes colour here ($8DCB, sta $DB48,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 48 of sprite 145 ($DB18-$DB4D), whose bytes go on from here."
+   "text": "Colour RAM address $DB48: ClearScreenForEnding writes colour here twice ($8DCB and $8DCE, sta $DB48,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 48 of sprite 145 ($DB18-$DB4D), whose bytes go on from here."
   },
   {
    "address": 56142,
@@ -17221,7 +17221,7 @@
   {
    "address": 56176,
    "type": "line",
-   "text": "Colour RAM address $DB70: TestSceneConditionRecord writes colour here ($8DC2, sta $DB70,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 22 of sprite 147 ($DB5A-$DB77), whose bytes go on from here."
+   "text": "Colour RAM address $DB70: ClearScreenForEnding writes colour here twice ($8DC2 and $8DC5, sta $DB70,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 22 of sprite 147 ($DB5A-$DB77), whose bytes go on from here."
   },
   {
    "address": 56184,
@@ -17236,7 +17236,7 @@
   {
    "address": 56216,
    "type": "line",
-   "text": "Colour RAM address $DB98: TestSceneConditionRecord writes colour here ($8DB9, sta $DB98,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 7 of sprite 149 ($DB91-$DBA4), whose bytes go on from here."
+   "text": "Colour RAM address $DB98: ClearScreenForEnding writes colour here twice ($8DB9 and $8DBC, sta $DB98,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 7 of sprite 149 ($DB91-$DBA4), whose bytes go on from here."
   },
   {
    "address": 56229,
@@ -17251,7 +17251,7 @@
   {
    "address": 56256,
    "type": "line",
-   "text": "Colour RAM address $DBC0: TestSceneConditionRecord writes colour here ($8D81, sta $DBC0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 15 of sprite 151 ($DBB1-$DBD0), whose bytes go on from here."
+   "text": "Colour RAM address $DBC0: ClearScreenForEnding writes colour here twice ($8D81 and $8D84, sta $DBC0,X) with the I/O visible. In the RAM beneath, which the sprite decoder reads with the I/O switched out, it is byte 15 of sprite 151 ($DBB1-$DBD0), whose bytes go on from here."
   },
   {
    "address": 56273,
