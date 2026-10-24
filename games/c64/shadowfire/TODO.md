@@ -25,9 +25,9 @@ by what writes it rather than what reads it.
 
 ## For Gold
 
-A human pass over the copy, section by section, on all three pages
-(`index.html`, `discoveries.html`, `levels.html`), setting `copy` in
-`game.json` to what the pass did.
+A human pass over the copy, section by section, on all four pages
+(`index.html`, `discoveries.html`, `levels.html`, `solution.html`),
+setting `copy` in `game.json` to what the pass did.
 
 ## For Platinum
 
@@ -35,7 +35,10 @@ A Play tab that is the whole game, ported routine by routine and run in
 lockstep with the game's code (`kit/skills/core/70-minisite/play.md`).
 The pieces already ported and tested are a start: the pictures
 (`draw_picture`), the view screen's map (`draw_view_map`) and the music
-driver. Still to port: the icon screens and their handlers, the
+driver. `solution-input.json`, a whole game played from the first
+instruction to MISSION STATUS SUCCEEDED, is a lockstep session ready
+made: menus, every screen, the transporter, lock picking, combat,
+Kryxix's rescue and Zoff's capture. Still to port: the icon screens and their handlers, the
 interrupt's per-person second (walking, combat, lock picking,
 recovery), the patrols, the transporter, the clock, the ticker and the
 iris.
@@ -44,8 +47,9 @@ iris.
 
 - Two features stay open in `features.md`: Syylk's hatred of Zoff, which
   the manual says "could prove a weakness" and the code never compares,
-  and the Phantom, Zoff's invisible pet, which nothing in the code
-  matches.
+  and the Phantom, Zoff's invisible pet, which its makers called a bug
+  they had taken out (`discoveries.html#pet`). A copy of the first C64
+  release with the bug in it would show which mnemonic was wrong.
 - The phantom enemies (`discoveries.html`, section 02) are traced and
   were run on the simulator; a live test in the emulator of a retreat
   refused towards location `$80` would add the observation.

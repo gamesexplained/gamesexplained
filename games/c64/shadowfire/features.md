@@ -20,6 +20,12 @@ Sources:
   `uta_Shadowfire_1985_Beyond_2440`, and of a cracked copy's play
   (`Shadowfire_1985_Beyond_Software_cr_Yak_Society`), archive.org, read
   22 October 2026. Saved in `reference/` as `web-*.png`.
+- A feature on Denton Designs, with Steve Cain interviewed, Sinclair
+  User 40, July 1985, page 58, https://archive.org/details/sinclair-user-magazine-040/page/n57,
+  read 24 October 2026: the Phantom as a C64 bug, taken out.
+- "Shadowfire: the solution", Crash, June 1986, as kept in the Spectrum
+  game database, https://sunsite.icm.edu.pl/packages/sinclair/docs/game-database/S/SHADFIRE.TXT,
+  read 24 October 2026: a route through the game on the Spectrum.
 - C64-Wiki has no page for the game (`Shadowfire` and `Shadow_Fire` on
   c64-wiki.com and c64-wiki.de were empty on 22 October 2026). Lemon64
   refused the fetch (a browser check).
@@ -63,7 +69,7 @@ Sources:
 | Torik is the fastest; Maul slow and well protected; Manto the only transporter | traced | agility base `$FF` for Torik, `$40` for Maul (`$CFB7`); Maul's strength and factor are `$FF`; nothing reduces the damage he takes. Only character 2, Manto, gets the beacons' and the transporter's flags (`list_objects_here`) |
 | Enemies: General Zoff (purple icon), Captain Chur (white or grey), Marshalls, Squad leaders ("Targs"), Troopers ("Eugs"), humanoid and robotic | traced | 42 enemy records (`$CA9E` onwards) with seven kinds of figure (`entity_pictures` `$6CFE`); the names are not in the game's text, except Marshalls Cavns and Xator in location names |
 | Ambassador Kryxix appears as a green icon; he must be located and beamed off | traced | `map_icon_kryxix` `$0AE3`; rescue at `$5A68` |
-| The Phantom, Zoff's invisible pet, attacks characters at random. Wikipedia says this was a bug in the C64 version, later fixed | open | every one of the 50 entities has a map icon and a figure, and combat (`$5BE6`) picks no random target; nothing found that attacks unseen |
+| The Phantom, Zoff's invisible pet, attacks characters at random. Steve Cain of Denton Designs (Sinclair User 40, July 1985, page 58) says it was a bug in the C64 version, one wrong mnemonic, since taken out | open | every attacker is one of the 50 entities, which the interrupt runs in turn (`irq_entity` `$66D1`, `$6197`); each has a map icon and shows in the list of people in a location, and combat (`$5BE6`) runs only for one attacking, defending or retreating. Nothing found that attacks unseen. Six C64 copies hold the same program: Beyond's tape and disk, and the Yak Society (dated 30 April 1985), TBC, Radwar and TCI cracks (two more, cracks by Tuerk and FCG, were not compared). The only search past the end of the people, `enemy_at` (`$7250`), makes phantoms that never attack (`discoveries.html#phantoms`) |
 | Objects: projectile pistol, lazer rifle, rocket launcher, grenade, smoke bomb, tool kit, colour-coded key cards, self-destruct card, self-destruct unit, time delay unit, transporter beacon | traced | 54 object records at `$CD98`: 18 other objects and 36 weapons in 18 pictures. The game names none of them |
 | Rocket launcher best fired into an adjacent location; grenade and smoke bomb in the same location | differs | `weapon_strength` `$CF15` has an adjacent strength in its low nibble, which combat never uses (`$68D7`): every weapon hits adjacent locations with its same-location strength. Which picture is which weapon is not in the game |
 | Time delay unit: the character who activates it is the only thing not held in a time lock | traced | `activate_time_delay` `$7282`: 120 seconds, once |
@@ -109,5 +115,6 @@ Found in the code, not in the manual.
 
 ## Open questions
 
-- The Phantom: nothing found in the code (see the table).
+- The Phantom: which mnemonic the first C64 release got wrong, and what
+  it did; no copy that shows it has been found (see the table).
 - Syylk's weakness against Zoff: nothing found.
