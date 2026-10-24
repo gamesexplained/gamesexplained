@@ -637,13 +637,13 @@
   {
    "address": 16390,
    "name": "MusicControl",
-   "type": "UserDefined",
+   "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 16393,
    "name": "MusicGate",
-   "type": "UserDefined",
+   "type": "Subroutine",
    "kind": "user"
   },
   {
@@ -2256,22 +2256,22 @@
   {
    "address": 16384,
    "type": "line",
-   "text": "Purpose: initialize The Mansion's retained SID music module. Inputs: A selects the song. Outputs: initialized music state. Assumptions: retained module and gameplay phase match. Clobbers: A, X, Y, flags, and music state. Hardware changes: initializes state later emitted to SID."
+   "text": "JMP $40EC: the tune's start. The title sequence calls it at $1110 before it plays the tune, and the interrupt routine at $1EF8 when MusicRestartRequest asks for a restart."
   },
   {
    "address": 16387,
    "type": "line",
-   "text": "Purpose: service one The Mansion music tick. Inputs: initialized sequencer state. Outputs: advanced tracks and SID register image. Assumptions: the retained module matches the active gameplay phase. Clobbers: A, X, Y, flags, and music state. Hardware changes: writes SID registers."
+   "text": "JMP $4151: one step of the tune. The interrupt routine calls it at $1F0E on every interrupt, except that while $AB is zero it leaves out every sixth; the title sequence calls it at $111D once a frame, timed by the raster."
   },
   {
    "address": 16390,
    "type": "line",
-   "text": "Purpose: set The Mansion's three music-control bytes from A. Inputs: A is the control value. Outputs: updated player controls. Assumptions: module active. Clobbers: flags and music scratch. Hardware changes: none directly."
+   "text": "JMP $4147: stores A in the player's three control bytes, $4078, $4079 and $407A."
   },
   {
    "address": 16393,
    "type": "line",
-   "text": "Purpose: increment The Mansion's music gate/pause state. Inputs: module active. Outputs: incremented gate byte. Assumptions: retained player state is valid. Clobbers: flags. Hardware changes: none directly."
+   "text": "JMP $4257: adds one to $4073. While that byte is not zero the tick routine does not play: it writes the byte to the three voices' control registers ($D404, $D40B, $D412) and the player's control bytes, and returns."
   },
   {
    "address": 16396,
@@ -2311,7 +2311,7 @@
   {
    "address": 17822,
    "type": "side",
-   "text": "[offcut 4564] Self-modified immediate operand of `LDY #$00` at `$459E`. The The Mansion music sequencer writes the selected sequence index here at `$456C`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
+   "text": "[offcut 4564] Self-modified immediate operand of `LDY #$00` at `$459E`. The Mansion music sequencer writes the selected sequence index here at `$456C`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
   },
   {
    "address": 17824,

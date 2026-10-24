@@ -808,6 +808,30 @@
    "kind": "user"
   },
   {
+   "address": 16384,
+   "name": "MusicInit",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16387,
+   "name": "MusicTick",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16390,
+   "name": "MusicControl",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16393,
+   "name": "MusicGate",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
    "address": 16396,
    "name": "music_message",
    "type": "UserDefined",
@@ -2649,6 +2673,26 @@
    "text": "The tune's restart flag: the interrupt routine restarts the tune (jsr $4000) when it finds this byte nonzero, clearing it first ($1EEE-$1EF8), and the title sequence clears it at $110D before it starts the tune. The six zero bytes after it, up to the music jumps at $4000, are read by no instruction."
   },
   {
+   "address": 16384,
+   "type": "line",
+   "text": "JMP $40C4: the tune's start. The title sequence calls it at $1110 before it plays the tune, and the interrupt routine at $1EF8 when MusicRestartRequest asks for a restart."
+  },
+  {
+   "address": 16387,
+   "type": "line",
+   "text": "JMP $4129: one step of the tune. The interrupt routine calls it at $1F0E on every interrupt, except that while $AB is zero it leaves out every sixth; the title sequence calls it at $111D once a frame, timed by the raster."
+  },
+  {
+   "address": 16390,
+   "type": "line",
+   "text": "JMP $411F: stores A in the player's three control bytes, $4050, $4051 and $4052."
+  },
+  {
+   "address": 16393,
+   "type": "line",
+   "text": "JMP $422F: adds one to $404B. While that byte is not zero the tick routine does not play: it writes the byte to the three voices' control registers ($D404, $D40B, $D412) and the player's control bytes, and returns."
+  },
+  {
    "address": 16396,
    "type": "line",
    "text": "61 bytes of text that nothing reads, carried with the tune: \"COOL REMIX BY REYN OUWEHAND AND PLAYER/SOUNDS BY FALCO PAUL\"."
@@ -2661,7 +2705,7 @@
   {
    "address": 16671,
    "type": "line",
-   "text": "Purpose: Implement Level's $4006? music-control veneer by storing A into the module's three control bytes and returning.\nInputs: A is the control value; the matching retained music occupant and its writable state are active.\nOutputs: A is stored to $4050-$4052; A, X, Y, and all status flags are preserved on return.\nAssumptions: The three adjacent bytes are the control triplet for this exact music-module occupant.\nClobbers: Memory $4050-$4052; A, X, Y, and flags are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
+   "text": "Purpose: Implement Level's $4006 music-control veneer by storing A into the module's three control bytes and returning.\nInputs: A is the control value; the matching retained music occupant and its writable state are active.\nOutputs: A is stored to $4050-$4052; A, X, Y, and all status flags are preserved on return.\nAssumptions: The three adjacent bytes are the control triplet for this exact music-module occupant.\nClobbers: Memory $4050-$4052; A, X, Y, and flags are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
   },
   {
    "address": 16674,
@@ -2671,12 +2715,12 @@
   {
    "address": 16681,
    "type": "line",
-   "text": "Purpose: Implement Level's $4003? music-tick veneer, honoring the module gate and advancing its sequencer and SID image.\nInputs: The module is initialized; $404B is its gate byte and the resident IRQ enters through the matching $4003? veneer.\nOutputs: Advances or gates the current music tick, updates sequencer/envelope state, emits the resulting SID register values, and returns.\nAssumptions: The retained title/play music module matches the active phase and the call occurs at the engine's normal music-tick cadence.\nClobbers: A, X, Y, processor flags, zero-page music cursors, module track/envelope state, and SID register state.\nHardware changes: Writes SID voice and filter/volume registers as directed by the current tick; no CIA or VIC-II access is introduced by the veneer body."
+   "text": "Purpose: Implement Level's $4003 music-tick veneer, honoring the module gate and advancing its sequencer and SID image.\nInputs: The module is initialized; $404B is its gate byte and the resident IRQ enters through the matching $4003 veneer.\nOutputs: Advances or gates the current music tick, updates sequencer/envelope state, emits the resulting SID register values, and returns.\nAssumptions: The retained title/play music module matches the active phase and the call occurs at the engine's normal music-tick cadence.\nClobbers: A, X, Y, processor flags, zero-page music cursors, module track/envelope state, and SID register state.\nHardware changes: Writes SID voice and filter/volume registers as directed by the current tick; no CIA or VIC-II access is introduced by the veneer body."
   },
   {
    "address": 16943,
    "type": "line",
-   "text": "Purpose: Implement Level's $4009? gate veneer by incrementing the module gate byte and returning.\nInputs: $404B is the writable gate byte for the matching retained music occupant.\nOutputs: $404B is incremented modulo 256; N and Z describe the new value; A, X, and Y are preserved.\nAssumptions: The caller intentionally changes the module gate/pause state and accepts byte wraparound.\nClobbers: $404B, N, and Z; A, X, Y, C, V, D, and I are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
+   "text": "Purpose: Implement Level's $4009 gate veneer by incrementing the module gate byte and returning.\nInputs: $404B is the writable gate byte for the matching retained music occupant.\nOutputs: $404B is incremented modulo 256; N and Z describe the new value; A, X, and Y are preserved.\nAssumptions: The caller intentionally changes the module gate/pause state and accepts byte wraparound.\nClobbers: $404B, N, and Z; A, X, Y, C, V, D, and I are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
   },
   {
    "address": 17726,
@@ -2686,7 +2730,7 @@
   {
    "address": 17782,
    "type": "side",
-   "text": "[offcut 4564] Self-modified immediate operand of `LDY #$00` at `$4576`. The The Sewers music sequencer writes the selected sequence index here at `$4544`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
+   "text": "[offcut 4564] Self-modified immediate operand of `LDY #$00` at `$4576`. The Sewers music sequencer writes the selected sequence index here at `$4544`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
   },
   {
    "address": 17784,
