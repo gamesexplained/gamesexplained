@@ -1,9 +1,10 @@
 // Test of site/lib/crt.js, the CRT screen every Play tab offers: each Play page with a canvas
-// loads it, gives it a "📺 CRT screen" button and attaches it; a browser without WebGL2 never shows
-// the button; switched on, it lays its own canvas over the game's, draws the game's frame again
-// each time the page draws one (from the source canvas, at the page's pixel size), keeps the
-// viewer's choice for every Play tab, and tells the page so that it can turn off what cannot be
-// drawn through it. The shader keeps the defaults of Lottes's public-domain one.
+// loads it, gives it a "📺 CRT screen" button and attaches it, and every such button on any page
+// starts pressed; a browser without WebGL2 never shows the button; the screen starts on until the
+// viewer switches it off; switched on, it lays its own canvas over the game's, draws the game's
+// frame again each time the page draws one (from the source canvas, at the page's pixel size),
+// keeps the viewer's choice for every page, and tells the page so that it can turn off what cannot
+// be drawn through it. The shader keeps the defaults of Lottes's public-domain one.
 //   node kit/scripts/test_crt_screen.js
 const fs = require('fs');
 const path = require('path');
@@ -28,6 +29,17 @@ for (const platform of fs.readdirSync(games)) {
     check(/\bCRT\.attach\(/.test(page), name + ' calls CRT.attach');
   }
 }
+
+// --- every CRT button on any page, a port's template included, starts pressed, as the screen does
+(function walk(dir) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) { if (e.name !== 'work' && e.name !== 'node_modules') walk(p); continue; }
+    if (!e.name.endsWith('.html')) continue;
+    for (const b of fs.readFileSync(p, 'utf8').match(/<button\b[^>]*\bdata-crt\b[^>]*>/g) || [])
+      check(/\baria-pressed="true"/.test(b), path.relative(ROOT, p) + ': the CRT button starts pressed (aria-pressed="true")');
+  }
+})(games);
 
 // --- a page in node: a game canvas in a parent, a button, storage and animation frames
 function element(tag) {
@@ -88,11 +100,22 @@ function page(opts) {
   check(p.run() === 0, 'without WebGL2 a frame drawn asks for no CRT frame');
 }
 
-// WebGL2: switched on, drawn on every frame the page draws, switched off again
+// a viewer who has not chosen: on from the start, which is neither stored as their choice nor
+// told to the page; a click off is their choice
 {
   const p = page({ webgl2: true });
-  check(p.button.style.display !== 'none' && p.button.attrs['aria-pressed'] === 'false', 'with WebGL2 the button shows, not pressed');
-  check(p.crt.on === false, 'the screen starts off');
+  check(p.crt.on && p.button.style.display !== 'none' && p.button.attrs['aria-pressed'] === 'true', 'with WebGL2 and no choice made, the screen starts on and the button shows pressed');
+  check(!p.store.has('gamesexplained.crt') && p.changes.length === 0, 'the start is neither stored nor told');
+  p.button.click();
+  check(!p.crt.on && p.store.get('gamesexplained.crt') === '0' && p.changes.join() === 'false', 'a click switches it off, stores that and tells the page');
+}
+
+// WebGL2, for a viewer who switched it off: switched on, drawn on every frame the page draws,
+// switched off again
+{
+  const p = page({ webgl2: true, stored: '0' });
+  check(p.button.style.display !== 'none' && p.button.attrs['aria-pressed'] === 'false', 'a viewer who chose off: the button shows, not pressed');
+  check(p.crt.on === false, 'a viewer who chose off: the screen starts off');
   p.ctx.putImageData();
   check(p.run() === 0, 'while off, a frame drawn asks for no CRT frame');
   p.button.click();
@@ -102,7 +125,7 @@ function page(opts) {
   check(screen && screen.style.pointerEvents === 'none' && screen.style.display === 'block', 'the CRT canvas shows and lets clicks through');
   check(screen && screen.style.left === '3px' && screen.style.top === '4.5px' && screen.style.width === '890px' && screen.style.height === '629.25px', 'the CRT canvas covers the game canvas exactly, inside the parent\'s border');
   check(p.parent.style.position === 'relative', 'a static parent is made relative, so the CRT canvas can sit over the game');
-  check(p.store.get('gamesexplained.crt') === '1', 'the choice is stored for every Play tab');
+  check(p.store.get('gamesexplained.crt') === '1', 'the choice is stored for every page');
   check(p.changes.join() === 'true', 'the page is told the screen went on');
   screen.width = 1780; screen.height = 1260;                  // what the resize observer would set
   p.log.length = 0; p.run();
@@ -122,7 +145,7 @@ function page(opts) {
   check(p.run() === 0, 'once off, a frame drawn asks for no CRT frame');
 }
 
-// the viewer's choice from another Play tab: on from the start, without telling the page
+// the viewer's choice of on from another page: on from the start, without telling the page
 {
   const p = page({ webgl2: true, stored: '1' });
   check(p.crt.on && p.button.attrs['aria-pressed'] === 'true', 'a stored choice starts the screen on');
@@ -131,23 +154,11 @@ function page(opts) {
   check(p.changes.join() === 'false', 'set(false) from the page is told');
 }
 
-// a page that starts the screen on: for a viewer with no choice yet, on and not stored; a stored
-// choice still wins
-{
-  const p = page({ webgl2: true, attach: { on: true } });
-  check(p.crt.on && p.button.attrs['aria-pressed'] === 'true', 'with on, the screen starts on');
-  check(!p.store.has('gamesexplained.crt') && p.changes.length === 0, 'with on, the start is neither stored nor told');
-  p.button.click();
-  check(!p.crt.on && p.store.get('gamesexplained.crt') === '0', 'with on, the viewer switching it off is stored');
-  const q = page({ webgl2: true, stored: '0', attach: { on: true } });
-  check(!q.crt.on, 'with on, a stored choice of off keeps the screen off');
-}
-
 // a page that scales its picture into the canvas it shows, and one drawn at twice size
 {
   const off = { width: 384, height: 272 };
   const p = page({ webgl2: true, w: 1152, h: 816, attach: { source: off } });
-  p.button.click(); p.made.find(e => e.className === 'crt-screen').width = 100; p.made.find(e => e.className === 'crt-screen').height = 70;
+  p.made.find(e => e.className === 'crt-screen').width = 100; p.made.find(e => e.className === 'crt-screen').height = 70;
   p.log.length = 0; p.ctx.drawImage(); p.run();
   const tex = p.log.find(l => l[0] === 'texImage2D');
   check(tex && tex[6] === off, 'with source, the texture is read from the source canvas');
@@ -155,7 +166,7 @@ function page(opts) {
 }
 {
   const p = page({ webgl2: true, w: 768, h: 544, attach: { pixel: 2 } });
-  p.button.click(); p.made.find(e => e.className === 'crt-screen').width = 100; p.made.find(e => e.className === 'crt-screen').height = 70;
+  p.made.find(e => e.className === 'crt-screen').width = 100; p.made.find(e => e.className === 'crt-screen').height = 70;
   p.log.length = 0; p.ctx.putImageData(); p.run();
   check(p.log.some(l => l[0] === 'uniform2i' && l[1] === 'uSize' && l[2] === 384 && l[3] === 272), 'with pixel 2, a 768 x 544 canvas is a 384 x 272 picture');
   check(p.log.some(l => l[0] === 'uniform1i' && l[1] === 'uPixel' && l[2] === 2), 'with pixel 2, the shader reads every second texel');

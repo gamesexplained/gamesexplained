@@ -5,22 +5,21 @@
 // the picture is curved a little like a tube and a shadow mask is drawn on the screen's own
 // pixels. No dependencies. Exposes CRT (window.CRT on a page; globalThis.CRT in node, for tests).
 //
-//   const crt = CRT.attach(canvas, { button, source, pixel, on, onChange })
+//   const crt = CRT.attach(canvas, { button, source, pixel, onChange })
 //     canvas    the page's game canvas: the CRT picture covers it exactly and lets clicks through
 //     button    the page's switch, a <button> whose aria-pressed this keeps; hidden where the
 //               browser has no WebGL2
 //     source    the canvas that holds the C64's frame (default: canvas), for a page that scales
 //               its picture into the canvas it shows
 //     pixel     source pixels to a C64 pixel (default 1; 2 for a page that draws at twice size)
-//     on        true starts the screen on for a viewer who has not switched it on or off yet
-//               (default false); the start is not stored, so it holds on this page alone
 //     onChange  called with true or false when the screen is switched, so a page can turn off
 //               what cannot be drawn through it (a view at the screen's own resolution)
 //   crt.on, crt.set(on), crt.frame()
 // A page makes no call per frame: every putImageData and drawImage on canvas's 2D context draws
 // the CRT picture again, from source, at the next animation frame (crt.frame() does the same for
-// a page that draws some other way). The viewer's choice holds on every Play tab
-// (localStorage 'gamesexplained.crt'), and until they make one it starts off, or as `on` says.
+// a page that draws some other way). The viewer's choice holds on every page with the screen
+// (localStorage 'gamesexplained.crt'), and until they make one it starts on. That start is not
+// stored, so it follows the site's default rather than becoming the viewer's choice.
 (function (root) {
   'use strict';
   const KEY = 'gamesexplained.crt';
@@ -167,16 +166,16 @@ void main() {
       gl.uniform1i(u.pixel, pixel);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
-    // quiet: the screen as the viewer left it, set while the page starts, without onChange;
-    // unstored: the page's own start, which is not the viewer's choice
-    function set(on, quiet, unstored) {
+    // quiet: the screen as the page starts it, the viewer's choice or the default, neither
+    // stored nor told to onChange
+    function set(on, quiet) {
       on = !!on;
       if (on && !make()) { on = false; if (button) button.style.display = 'none'; }
       const was = api.on;
       api.on = on;
       if (cv) cv.style.display = on ? 'block' : 'none';
       if (button) button.setAttribute('aria-pressed', String(on));
-      if (!unstored) store(on);
+      if (!quiet) store(on);
       if (on) { place(); frame(); }
       if (on !== was && !quiet && opts.onChange) opts.onChange(on);
       return on;
@@ -192,8 +191,7 @@ void main() {
       button.setAttribute('aria-pressed', 'false');
       button.addEventListener('click', () => set(!api.on));
     }
-    const choice = stored();
-    if (choice === null ? opts.on : choice) set(true, true, choice === null);
+    if (stored() !== false) set(true, true);
     return api;
   }
 

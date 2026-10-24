@@ -474,16 +474,17 @@ Omit the tab only if there is genuinely nothing playable to put on it.
 Only Platinum needs the Play tab (`AGENTS.md`, "Definition of done"),
 so it never blocks Silver or Gold.
 
-Every Play tab that draws on a canvas offers the site's CRT screen:
-load `../../lib/crt.js`, put a "📺 CRT screen" button with `data-crt` in
-the page's bar, and call `CRT.attach(canvas, { button })` once the
-canvas exists. It draws the picture again on the GPU each time the page
-draws, so the page adds nothing to its loop; the header of
+Every Play tab that draws on a canvas offers the site's CRT screen, on
+by default: load `../../lib/crt.js`, put a "📺 CRT screen" button with
+`data-crt` and `aria-pressed="true"` in the page's bar, and call
+`CRT.attach(canvas, { button })` once the canvas exists. It draws the
+picture again on the GPU each time the page draws, so the page adds
+nothing to its loop; the header of
 `site/lib/crt.js` says what to pass for a picture scaled into the canvas
 from another (`source`), one drawn at twice the size (`pixel`), and a
 view at the screen's own resolution, which goes off when the CRT screen
 goes on (`onChange`). `kit/scripts/test_crt_screen.js` fails a Play page that
-leaves it out.
+leaves it out, and a CRT button on any page that starts unpressed.
 
 Every Play tab whose game makes a sound offers the site's sound switch,
 on by default: load `../../lib/sound.js`, put
