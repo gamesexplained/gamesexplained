@@ -13,7 +13,9 @@
 //                          stages whose entry at the same address plays the same tune
 //   KarTunes.PARTS         the listings a page loads: the engine's and each stage's
 //   KarTunes.log(Ls, k, p) tune k's log, Ls holding Apple2.load's listing for each part by its id;
-//                          p, one of the tune's also, plays it from that stage instead
+//                          p, one of the tune's also, plays it from that stage instead. Beside the
+//                          clicks: tune, the address of the tune's header, and notes, [cycle,
+//                          address] at each note the player starts ($0D49), the note's first byte
 globalThis.KarTunes = (function () {
   const CLOCK = 1020484;
   const PARTS = ['engine', 'title', 'cliff', 'palace', 'dungeon', 'akuma'];
@@ -46,7 +48,7 @@ globalThis.KarTunes = (function () {
   function log(Ls, k, part) {
     const T = TUNES[k], m = memory(Ls, part || T.part);
     m[0x4F] = 1; m[0x86] = 1;            // the music and the sound on
-    const out = { format: 'kit-apple2-sound', clock: CLOCK, start: 0, end: 0, speaker: [] };
+    const out = { format: 'kit-apple2-sound', clock: CLOCK, start: 0, end: 0, speaker: [], tune: 0, notes: [] };
     // Page $C0 is the machine's switches: the player reads the keyboard at $C000 between notes (no
     // key is down here) and moves the speaker with every access to $C030
     const io = {
@@ -55,7 +57,11 @@ globalThis.KarTunes = (function () {
     };
     const cpu = new C64Cpu.CPU(m, { io, ioPages: [0xC0] });
     cpu.pc = T.entry;
-    cpu.run({ until: PLAYER_DONE, maxSteps: 50000000 });
+    const hooks = {
+      0x0D00: () => { out.tune = m[0xF7] | m[0xF8] << 8; },
+      0x0D49: c => { out.notes.push([c.cycles, (out.tune + c.y) & 0xFFFF]); },
+    };
+    cpu.run({ until: PLAYER_DONE, maxSteps: 50000000, hooks });
     out.end = cpu.cycles;
     return out;
   }

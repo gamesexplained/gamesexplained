@@ -7,35 +7,29 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "Sweep the whole input space, not a few plausible values": the guards' brain was ported and run against the game's routine over every random number at every distance in every stage, and over 100,000 random zero pages, which showed the page's figure of 72 in 256 was 183.
+- `70-minisite`: "Draw from the memory the game draws from": the stages on the Maps / levels tab start from the zero page, `$0D5E` and `$0F00`-`$0F0F` that each stage's snapshot held at its entry, which no listing holds, rather than from the listings alone.
+- `70-minisite`: "Read each heading for a list": two headings that named their section's contents were rewritten as its finding, and a discovery that held two findings became two sections.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `site/lib/apple2-speaker.js`: `notes(log, voices)`, and `voices` on `mount`'s tunes, read a player that clicks two voices at one pitch, whose click spacings alternate as the voices drift; the one-voice rule cut each of Karateka's notes into scraps. `kit/apple2/test_speaker.js` holds the two-voice rule.
+- `site/lib/apple2.js`: `Apple2.monitor`, hooks for the kit's 6502 that stand in for the Monitor's WAIT (`$FCA8`) with its measured cycles, so a game's sound that times itself with WAIT clicks when the game's does. `kit/apple2/test_monitor_hooks.js` holds it to the timings in `apple2-reference`, "Timing".
+- `kit/skills/apple2/steps/SKILL.md`: the `simulator` row names `Apple2.monitor`, and the `sound` row names `voices: 2`, so the next Apple II run finds both.
+- `kit/lessons/2026-10-24-karateka.md`: take a mechanic's figures for the copy from the tested port.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+None.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+Each widget's test against Apple2TS (the demo, the tunes, the sounds and the stages) needed its own recorder in `work/`, and a kit script that runs a part from its entry in Apple2TS and records the page shown and the clicks at each flip would have saved the most.
+
+## Operating system and tools
+
+As in `game.json`: Apple2TS 3.7.0 in the kit's server and regenerator2000 0.9.20 on Linux 6.18 x86_64 in a hosted session, with nothing the install notes do not already say. A snapshot taken with the joystick chosen (`$C4` = 0) ignores the arrow keys, and Apple2TS centres the paddles, so the hero stands still; writing 1 to `$C4`, as the K key does, gives the keys back.

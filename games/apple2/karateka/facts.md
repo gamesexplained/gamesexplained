@@ -189,6 +189,12 @@ Before those chances are tried, the brain picks a move by the distance
 between the fighters, 7 to 11 columns, from four tables each stage keeps
 at $BFE1-$BFFD (engine $6B00; the cliff's at cliff $BFE1). The title's
 demo guard has every chance at $FF and its own tables (title $BFE8).
+The page's port of the brain (`reference/brain.js`) gives the same
+command, height ($2A), stick ($29) and next random number ($48) as
+engine $6B00 run on the kit's 6502 over the listings in 673,440 cases:
+every random number at distances 0 to 13 in each of the five stages,
+and 100,000 random states of the zero page cells it reads
+(`test_brain.js`).
 
 ## Data tables
 
@@ -287,6 +293,14 @@ snapshots, with the keyboard chosen by writing 1 to $C4.
   hi-res pages held the same bytes as the listing's code run on the kit's
   6502 at each of 18 flips of the page shown, from the credits to the
   demo fight and the prologue again (`test_demo.js`).
+- *The stages* (cliff, palace, dungeon, akuma): each stage run from its
+  entry ($BFFA) in Apple2TS, with the keyboard chosen where the snapshot
+  had the joystick, and stopped at the flips of the page shown that
+  `reference/stages.js` names for its places (17 in all, after the same
+  pokes, key presses and jumps), showed the same 7,680 visible bytes of
+  the page shown as the listings run on the kit's 6502 from the same
+  hand-over state (`test_stages.js`). The screen holes ($3FF8-$3FFF and
+  the like) and the stack differ between the two and are left out.
 - *The portcullis*, *the doorways*, *the stages in order* and *the text
   alphabet*: `orientation.md`, "From power-on to play", and "The text
   alphabet" above.

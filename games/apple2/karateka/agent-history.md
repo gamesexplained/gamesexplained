@@ -29,3 +29,32 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - The text is plain ASCII in a lowercase-only face drawn by $0700; the
   punctuation sits at $7B-$7E. A search for the letter differences of
   "akuma" found every string in one pass.
+
+## 24 October 2026, the minisite
+
+- The Maps / levels tab runs each stage from its entry on the kit's
+  6502, over the engine's listing with the stage's laid over it. Neither
+  listing holds what the stage before leaves in the engine's memory, so
+  zero page, $0D5E and $0F00-$0F0F are carried in `reference/stages.js`
+  as each stage's snapshot held them at $BFFA.
+- The first comparison with Apple2TS failed at every place of the cliff
+  although the pictures looked the same. The differing bytes were the
+  screen holes ($3FF8-$3FFF and the like) and the stack; the test now
+  compares the 7,680 visible bytes of the page shown, row by row.
+- No key reached the cliff at first: its snapshot had the joystick
+  chosen ($C4 = 0), and Apple2TS centres the paddles, so the hero ran
+  without a key. Writing 1 to $C4, as K does, fixed both runs.
+- Rooms were reached without fighting by putting the hero at column $21
+  ($62), where each stage moves him on, with every doorway opened
+  ($C5 = 6). The dungeon's first place, Mariko's cell, showed the same
+  picture as the palace's and was dropped.
+- The brain calculator's first copy said a guard at distance 10 steps in
+  72 times in 256. Porting $6B00 line for line and holding the port to
+  the listing's code over every random number gave 183: the fourth table
+  reads the stage's own entry JMP at $BFF9-$BFFD, and at 10 the chance is
+  its high byte, $B7. The port also showed that a punch refused for the
+  legs' pose goes on to $6C2F with X loaded from $4D by $6C71, not the
+  distance.
+- The tune player's bytes panel needed each note's offset into its tune:
+  `reference/tunes.js` logs the tune's address at $0D00 and each note's
+  at $0D49.
