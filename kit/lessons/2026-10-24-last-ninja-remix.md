@@ -44,3 +44,12 @@
   it: its interrupt goes from the clock straight to restoring `$01`.
   Comparing the code in play with another release's at the start would
   have found it before any comment was written.
+- **Correct a template, not the instances a checker read.** An audit
+  item stood for every comment written from one template, shown to the
+  checker through up to four instances. Where the checker found the
+  template wrong, the corrections went to those instances only, and the
+  same error stayed in the members it had not been shown: 66 condition
+  lists in six levels, and eight other comments in the last two
+  levels. The second sample drew one of them. Correct the template and
+  generate again, then search every member for the words the correction
+  replaced.

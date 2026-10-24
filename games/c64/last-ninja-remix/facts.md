@@ -241,6 +241,37 @@ Final Battle; and a sprite list was said to serve the wrong enemy kinds.
 All ten were corrected, each with every comment that said the same.
 Since more than 2 of the 60 were wrong, every comment was then audited.
 
+The audit (air): fresh agents on claude-opus-5-5[1m] checked every
+comment against the bytes, in seventeen ranges, and every claim in the
+facts files. The 1,428 comments carried unchanged from Central Park to
+the later levels stand with the Central Park comment they copy, and each
+copy's calls and constants were compared with Central Park's: about
+sixty that differed were rewritten for their level and checked again.
+Of the 1,942 items read (a template's comments counted once and checked
+through its instances), 382 were wrong in a detail, and 66 of the 355
+claims in the facts files. What was wrong most often: counts given in
+ticks that are in steps of the tempo or of an animation; callers and
+readers named wrongly or left out; comparisons read the wrong way round
+or off by one; an exit's `$FF` called "none", where it ends the level;
+Central Park's description kept where a level's code differs; and the
+end of the engine's interrupt, `$1F52-$1F6B`, called the game's, where
+it is the crack's trainer. All were corrected, each with every comment
+that said the same: 2,257 comments differ from the listing the seed
+16184 sample was drawn from, and 70 were written new.
+
+Seed 25956, the maintainer's second sample (air): 60 comments from the
+9,970 that are not unchanged copies, spread over the parts by their
+size, checked against the bytes by a fresh agent on claude-opus-5-5[1m]
+that wrote and audited none of them. 1 of the 60 was wrong in a detail:
+1.7 % (95 % interval 0.3 % to 8.9 %), within the mark of 2. The
+condition lists' template called the second byte of an entry the
+smallest depth at which the actor is tested against the picture, where
+it is the largest. The audit had found it and corrected only the
+six lists it was shown; the other 66 were corrected now. A search for
+other corrections that had stopped short found twelve more comments in
+The Mansion, The Final Battle and The Office, and they were corrected
+too.
+
 ## Live tests
 
 - The intro's hidden credits: holding L on the logo starts a scroller

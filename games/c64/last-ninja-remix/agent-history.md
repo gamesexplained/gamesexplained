@@ -87,9 +87,18 @@ paired call's target and every paired immediate with Central Park's,
 by script, found about sixty such
 comments, which were rewritten for each level (`work/xfer/rules.py` and
 `own()` in `gen.py`), and a last unit checked the rewrites. The facts
-files were audited claim by claim: 66 of 355 were wrong in a detail. In
-all 2,174 comments changed from the listing the maintainer's sample was
-drawn from.
+files were audited claim by claim: 66 of 355 were wrong in a detail.
+
+**The second sample**, seed 25956, found 1 of 60 wrong: the condition
+lists' template called the largest depth at which a picture is tested
+the smallest. The audit had found that, and the correction had gone
+only to the instances the checker was shown. Searching every member of
+every family a checker marked wrong, for the words its correction
+replaced, found 66 condition lists and eight comments in The Mansion
+and The Final Battle still wrong, and a search for each correction's
+replaced phrase across all comments found four wall counts in The
+Office. All were corrected: 2,257 comments differ from the listing the
+maintainer's first sample was drawn from.
 
 **Pages, and two mistakes the pages caught.** The title card first
 came out with the panel's lettering broken: the card's routine writes

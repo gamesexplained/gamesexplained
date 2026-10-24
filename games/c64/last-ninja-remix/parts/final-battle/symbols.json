@@ -12061,7 +12061,7 @@
   {
    "address": 33633,
    "type": "line",
-   "text": "EngineEntry: The Final Battle's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, reveals the status panel, draws the credits card, sets the background to black, waits for the death sprite's descent and goes into the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
+   "text": "EngineEntry: The Final Battle's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, lowers the sprite curtain over the play window (AnimateStatusPanelReveal, $1F75), draws the credits card, sets the background to black, raises the curtain again and waits until it is gone (RaiseSpriteCurtain, $8536), which shows the card, then waits for the fire button or the second button read through the SID's pot X ($D419), keeping which in $AC, and goes on into EnterArea ($83AA) and the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
   },
   {
    "address": 33668,
@@ -12106,7 +12106,7 @@
   {
    "address": 33938,
    "type": "line",
-   "text": "Text \"0 LIVES LEFT\", drawn by the call at $848F that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $84A3."
+   "text": "Text \"0 LIVES LEFT\", drawn by the call at $848F that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The 0 at $8496 is a placeholder: the instruction at $848C writes the lives left (counting the spare life) plus $1B into it before the call, so the line reads 2 LIVES LEFT or more. The routine returns to the instruction after the zero, at $84A3."
   },
   {
    "address": 33942,
@@ -12246,7 +12246,7 @@
   {
    "address": 35003,
    "type": "line",
-   "text": "Text \"MODE  \", drawn by the call at $88B8 that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $88C6."
+   "text": "Text \"MODE  \", drawn by the call at $88B8 that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The second space, at $88C4, is a placeholder: the instruction at $88B5 writes the mode $03F3 (0 to 2) plus $1C into it before the call, so the line reads MODE 1, MODE 2 or MODE 3. The routine returns to the instruction after the zero, at $88C6."
   },
   {
    "address": 35012,
@@ -12516,12 +12516,12 @@
   {
    "address": 37288,
    "type": "line",
-   "text": "Condition list for area 0, $91A8-$91CC: 9 four-byte entries, then $FF. In each entry the second byte is the smallest value of the caller's parameter that tests it, and the two after it give the region of the scene that is tested against each actor."
+   "text": "Condition list for area 0, $91A8-$91CC: 9 four-byte entries, then $FF. Each entry is a picture's scene index, the largest depth of the actor (the caller's parameter, $F7) at which the picture is tested against it, and the column and row where the picture is placed; the picture's size comes from its header."
   },
   {
    "address": 37325,
    "type": "line",
-   "text": "Condition list for area 1, $91CD-$91DD: 4 four-byte entries, then $FF. In each entry the second byte is the largest value of the caller's parameter (the actor's depth) that tests it, and the two after it give the region of the scene that is tested against each actor. Its bytes from $91DD on are also the start of condition list 02, which begins there."
+   "text": "Condition list for area 1, $91CD-$91DD: 4 four-byte entries, then $FF. Each entry is a picture's scene index, the largest depth of the actor (the caller's parameter, $F7) at which the picture is tested against it, and the column and row where the picture is placed; the picture's size comes from its header. Its bytes from $91DD on are also the start of condition list 02, which begins there."
   },
   {
    "address": 37341,
@@ -12736,7 +12736,7 @@
   {
    "address": 37967,
    "type": "line",
-   "text": "Script command 13: runs four frames of the scripted runtime (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $950A, so the player loses two points of energy. It clears the command $81 and returns. The Final Battle has no copy of that sequence; every call that went to it goes to $950A here. No wall in The Final Battle carries command 13, and the walls are the only source of commands, so it never runs in this level."
+   "text": "Script command 13: plays the player's facing animation four times through, running the engine until each one ends (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $950A, so the player loses two points of energy. It clears the command $81 and returns. The Final Battle has no copy of that sequence; every call that went to it goes to $950A here. No wall in The Final Battle carries command 13, and the walls are the only source of commands, so it never runs in this level."
   },
   {
    "address": 37984,
@@ -13131,7 +13131,7 @@
   {
    "address": 40225,
    "type": "line",
-   "text": "32 words, each the animation an enemy answers a blow with. Targets: $B661, $B661, $B659, $B659, $B661, $B661, $B659, $B659, $B677, $B677, $B649, $B651, $B651, $B649, $B669, $B669, $B661, $B661, $B669, $B669, $B677, $B677, $B659, $B659, $B677, $B677, $B659, $B659, $B661, $B661, $B669, $B669."
+   "text": "32 words, each the animation the actor that is hit answers a blow with: the player's when the enemy hits them (installed with InstallAnimation), the enemy's when the player does (InstallAiScript). Targets: $B661, $B661, $B659, $B659, $B661, $B661, $B659, $B659, $B677, $B677, $B649, $B651, $B651, $B649, $B669, $B669, $B661, $B661, $B669, $B669, $B677, $B677, $B659, $B659, $B677, $B677, $B659, $B659, $B661, $B661, $B669, $B669."
   },
   {
    "address": 40226,

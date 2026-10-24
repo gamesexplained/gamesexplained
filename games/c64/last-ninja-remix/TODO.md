@@ -1,11 +1,38 @@
-# Work toward Silver
+# Last Ninja Remix — TODO
 
-- Finish coverage: 99.6%, 52,716 of 52,905 tracked bytes. Resolve all authored-data spans and data outside the ledger; verify state-dependent code bytes `$1F5B` and `$8A0F`.
-- Resolve the hand-over comparison’s untracked ranges, the remaining `$FFA9-$FFFD` upper-memory tail. Condition/collision streams, music and object records have been accounted for. The loader return at `$10F8` is captured as `work/entry.vsf`; the earlier resident bootstrap remains a separate initialization lead.
-- Trace and test scenery, sprite packing, animation, combat, object records and music in `60-verify`; expand the interactive article as each claim is verified. Sprite packing, all 18 collision outputs, the enemy-meter formula and late-animation first commands have native checks. Ordinary movement/combat/object routes, complete scene presentation and track semantics remain open.
-- Six parts are named and not analysed: The Street, Sewers, Basement, Office, Mansion and Final Battle (`parts/<id>/part.json`). Each needs its route in `orientation.md`, a snapshot in play and at its hand-over, and its own symbol map.
-- Tell the engine from Central Park. `parts/central-park` holds both. Find the addresses the level's load writes, make the engine a part of its own and put the level over it (`kit/skills/core/15-parts`): the engine is then counted once, and every level lies over it.
-- Obtain the maintainer check required for the unproven run model and unknown imported models.
+Current tier and what is missing for the next one.
 
-- Resolve the 124-byte residual ledger queue plus new automatic boundaries in the `$C096` code span (189 bytes bare after that code export). Do not treat the near-complete ledger as a completed verification pass.
-- The four bytes at `$CCE8` resemble an extra third component after frame 87’s declared two; their original purpose remains open.
+## Tier
+
+Silver: 100 % coverage in all sixteen parts, `facts.md`, every feature
+traced, observed or explicitly open, the minisite built with a player
+for every tune, and the listing measured. The maintainer's check (air)
+audited every comment and every claim in the facts files, and a second
+sample of 60 comments, seed 25956, found 1 wrong, within the mark
+(`facts.md`, "The listing's error rate").
+
+## For Gold
+
+A human pass over the copy, section by section, on all three pages
+(`index.html`, `discoveries.html`, `levels.html`), setting `copy` in
+`game.json` to what the pass did.
+
+## For Platinum
+
+A Play tab that is the whole game, ported routine by routine and run in
+lockstep with the game's code (`kit/skills/core/70-minisite/play.md`).
+The pieces already ported and tested are a start: the title cards, the
+sprite unpacker, the area painter, the level-skip reader, the enemy's
+energy and the music players. Still to port: the player's movement and
+fighting, the enemy's steering, the scripts the walls carry, the
+objects, the projectiles and the level loader's hand-over between
+levels.
+
+## Open questions
+
+- Three features stay open in `features.md`: picking an item up, the
+  somersaults, and the table from stick to fighting move.
+- Who wrote the intro's tune: its driver is not the levels' and it
+  carries no credit.
+- The 15 bytes at intro `$1797`, which nothing reads.
+- The pokes in `cheats.md` have not been tried in the emulator.
