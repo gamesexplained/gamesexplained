@@ -11987,7 +11987,7 @@
   {
    "address": 31127,
    "type": "line",
-   "text": "Clear the play window and render The Sewers' credit/title card from six inline records. Inputs: resident play-window clear routine $140E and inline-record renderer $1583 are active; six well-formed inline records follow their calls. Outputs: the credit/title card is displayed and $7B is set to $BF. Clobbers: A, X, Y, flags, $7B, and renderer scratch. Hardware: changes visible display memory through resident helpers."
+   "text": "Clear the play window and render The Sewers' credit/title card from six inline records. Inputs: resident play-window clear routine $140E and inline-record renderer $1583 are active; six well-formed inline records follow their calls. Outputs: the credit/title card is displayed and $7B is set to $A6. Clobbers: A, X, Y, flags, $7B, and renderer scratch. Hardware: changes visible display memory through resident helpers."
   },
   {
    "address": 31133,
@@ -12052,7 +12052,7 @@
   {
    "address": 31291,
    "type": "line",
-   "text": "EngineEntry: The Sewers' play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, reveals the status panel, draws the credits card, sets the background to black, waits for the death sprite's descent and goes into the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
+   "text": "EngineEntry: The Sewers' play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, lowers the sprite curtain over the play window (AnimateStatusPanelReveal, $1F75), draws the credits card, sets the background to black, raises the curtain again and waits until it is gone (RaiseSpriteCurtain, $7C10), which shows the card, then waits for the fire button or the second button read through the SID's pot X ($D419), keeping which in $AC, and goes on into EnterArea ($7A84) and the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
   },
   {
    "address": 31326,
@@ -12082,7 +12082,7 @@
   {
    "address": 31514,
    "type": "side",
-   "text": "The Sewers' flowing water, where Central Park calls an RTS"
+   "text": "The Sewers adds this call for its flowing water; Central Park has no call here"
   },
   {
    "address": 31543,
@@ -12172,7 +12172,7 @@
   {
    "address": 32206,
    "type": "line",
-   "text": "31 exits, $7DCE-$7DEC: the area it leads to ($FF for none). Values: 0, 1, 0, 2, 1, 4, 3, 2, 2, 5, 4, 6, 0, 5, 7, 6, 8, 7, 9, 8, 10, 11, 9, 12, 10, 11, 13, 14, 12, 13, 255."
+   "text": "31 exits, $7DCE-$7DEC: the area it leads to, or $FF for the way out of the level (entry 30, the closing $FF of area 14's group), which sets the level-exit request $02AF instead of moving the player. Values: 0, 1, 0, 2, 1, 4, 3, 2, 2, 5, 4, 6, 0, 5, 7, 6, 8, 7, 9, 8, 10, 11, 9, 12, 10, 11, 13, 14, 12, 13, 255."
   },
   {
    "address": 32237,
@@ -12247,7 +12247,7 @@
   {
    "address": 32986,
    "type": "line",
-   "text": "The Sewers' entrance-animation list, three bytes an entry as in Central Park's (the exit the player arrived by, the kind of entrance, its length in ticks), ending with $FF: arriving by exit 0 plays kind 4 for 10 ticks, and arriving by exit 11 plays kind 3 for 8 ticks. ApplySceneEntryRules stores the kind and the ticks at $0293 and $0294."
+   "text": "The Sewers' entrance-animation list, three bytes an entry as in Central Park's (the exit the player arrived by, the kind of entrance, how many animation steps it lasts), ending with $FF: arriving by exit 0 plays kind 4 for 10 steps, and arriving by exit 11 plays kind 3 for 8 steps. ApplySceneEntryRules stores the kind and the count at $0293 and $0294, and AdvanceBoundarySequence ($887A) counts $0294 down by one each time the player's previous animation has finished, starting the next."
   },
   {
    "address": 32987,
@@ -12257,7 +12257,7 @@
   {
    "address": 32988,
    "type": "line",
-   "text": "The third byte of each entrance-animation entry, its length in ticks, read at $8085 with the same X."
+   "text": "The third byte of each entrance-animation entry, its length in animation steps (AdvanceBoundarySequence counts it down once each time the player's previous animation has finished), read at $8085 with the same X."
   },
   {
    "address": 32993,
@@ -12482,7 +12482,7 @@
   {
    "address": 34639,
    "type": "line",
-   "text": "Area 4 ($F8 = 5). When the second actor has no animation ($63 is zero) and the player's X ($54) is from $30 up to $7F, it starts animation $B48D in the second actor's slot: frame 99 appears 98 across and 28 down from where the actor stands, drops 8 pixels at a time eleven times, and then frames 100 and 101 move it 4 left and 1 down a step, over and over. Once it has reached X 4 or less ($56) the actor is taken away: X, Y, $76 and its animation $63 are cleared, and the trap can start again. Every pass the player loses 2 energy (DamagePlayer) if they stand no more than 19 to its left or 6 to its right (the sum $56 + 6 - $54 is below 26) while its Y ($57) is $58 or more, unless the player's action, $6D with its two low bits cleared, is $0C."
+   "text": "Area 4 ($F8 = 5). When the second actor has no animation ($63 is zero) and the player's X ($54) is from $30 up to $7F, it starts animation $B48D in the second actor's slot: frame 99 appears 98 across and 28 down from where the actor stands, drops 8 pixels at a time eleven times, and then frames 100 and 101 move it 4 left and 1 down a step, over and over. Once its X ($56) is below 4 the actor is taken away: X, Y, $76 and its animation $63 are cleared, and the trap can start again. Every pass the player loses 2 energy (DamagePlayer) if they stand no more than 19 to its left or 6 to its right (the sum $56 + 6 - $54 is below 26) while its Y ($57) is $58 or more, unless the player's action, $6D with its two low bits cleared, is $0C."
   },
   {
    "address": 34691,
@@ -12497,7 +12497,7 @@
   {
    "address": 34715,
    "type": "line",
-   "text": "Area 10 ($F8 = 6). The actor that the entrance rules started with animation $B4DB (frames 102 to 104, moving 4 left and 1 down a step, over and over) is put back at the right of the area when it reaches X 4 or less: X and Y take the two bytes at $B4DE and $B4DF, which are the move of that animation's first step, $FF and $86. The player loses 2 energy if they stand within the same window across, 19 to its left to 6 to its right, and less than 16 above its Y less $48 ($57 - $48 - $55 below 16), unless their action ($6D with the low two bits cleared) is $0C."
+   "text": "Area 10 ($F8 = 6). The actor that the entrance rules started with animation $B4DB (frames 102 to 104, moving 4 left and 1 down a step, over and over) is put back at the right of the area when its X is below 4: X and Y take the two bytes at $B4DE and $B4DF, which are the move of that animation's first step, $FF and $86. The player loses 2 energy if they stand within the same window across, 19 to its left to 6 to its right, and less than 16 above its Y less $48 ($57 - $48 - $55 below 16), unless their action ($6D with the low two bits cleared) is $0C."
   },
   {
    "address": 34755,
@@ -12522,7 +12522,7 @@
   {
    "address": 34849,
    "type": "line",
-   "text": "AnimateWater, called from MainTick every pass where Central Park calls an RTS: the flowing water of The Sewers. Once six counts of the interrupt counter $E2 have passed since the time kept in $03E9 (the byte Central Park uses for item 17's flag), it keeps the new time and looks the current area up in the table at $8864 (sorted by area, so it stops at the first larger one). In an area with water it moves the frame $03EA on through 0, 1 and 2, writes scene $52 plus the frame into the first byte (the scene number) of that area's water placement, and draws it, so the water cycles through scenes 82, 83 and 84."
+   "text": "AnimateWater, which The Sewers adds to MainTick (called every pass, after RenderScoreIfDirty, where Central Park has no call): the flowing water of The Sewers. Once six counts of the interrupt counter $E2 have passed since the time kept in $03E9 (the byte Central Park uses for item 17's flag), it keeps the new time and looks the current area up in the table at $8864 (sorted by area, so it stops at the first larger one). In an area with water it moves the frame $03EA on through 0, 1 and 2, writes scene $52 plus the frame into the first byte (the scene number) of that area's water placement, and draws it, so the water cycles through scenes 82, 83 and 84."
   },
   {
    "address": 34909,
@@ -12592,7 +12592,7 @@
   {
    "address": 35225,
    "type": "line",
-   "text": "Script command 22, which walls in area 6 carry (commands 5 and 6 lead here too, but no wall in The Sewers carries them): The Sewers' longer copy of ScriptRunHeading7AnimationSequence at $89C2. When the player faces heading 7 ($69) and $70 is zero, it plays animation $AB01 once (frames 73 and 74, then on into the commands of $AB06) and then $AB06 six times (frames 75, 76, 75 and 74, which take the player 11 pixels up), each to its end, 77 pixels up in all, and goes to $89EC, which sets $74 to $98 and $EF to $FF and calls ResetEngineTickBaselines. Where $89C2 plays $AB06 twice and closes with $AB1B, this has no closing animation. It clears the command $81 in every case."
+   "text": "Script command 22, which a wall in area 6 carries (commands 5 and 6 lead here too, but no wall in The Sewers carries them): The Sewers' longer copy of ScriptRunHeading7AnimationSequence at $89C2. When the player faces heading 7 ($69) and $70 is zero, it plays animation $AB01 once (frames 73 and 74, then on into the commands of $AB06) and then $AB06 six times (frames 75, 76, 75 and 74, which take the player 11 pixels up), each to its end, 77 pixels up in all, and goes to $89EC, which sets $74 to $98 and $EF to $FF and calls ResetEngineTickBaselines. Where $89C2 plays $AB06 twice and closes with $AB1B, this has no closing animation. It clears the command $81 in every case."
   },
   {
    "address": 35266,
@@ -12972,7 +12972,7 @@
   {
    "address": 37361,
    "type": "line",
-   "text": "Events 15, 18, 19, 20, 21 and 23: load X with $FC and go on into EventPatrolGuard, which never reads X. Central Park's events of these numbers load X the same way before copying $89 to $70; none of the animations in The Sewers' data carries them."
+   "text": "Events 15, 18, 19, 20, 21 and 23: load X with $FC and go on into EventPatrolGuard, which never reads X. Central Park's events of these numbers load X the same way and go on into its nudge ($AA82), which moves the player 4 left and 1 down when bit 0 of $81 is set and the player's action is not $0C; none of the animations in The Sewers' data carries them."
   },
   {
    "address": 37365,
@@ -12982,7 +12982,7 @@
   {
    "address": 37367,
    "type": "line",
-   "text": "Event 12, which ends each of the guard's walking animations in area 14: chooses his next walk. His direction $03ED (a byte Central Park uses for item 21's flag) becomes $FF, right, when his X ($56) is below $3C, and 0, left, when it is $8E or more; between $4C and $7D it flips at random one time in four (NextPseudoRandomByte below $40). Then it puts the next animation straight into $62/$63: walking left, $B50A (frames 106 and 107) when the player is more than $30 to his left (counted from 8 left of him), and $B532 (frames 108 and 109) when the player is nearer or to his right; walking right, $B51E (106 and 107) when the player is that far to his left, and $B546 (108 and 109) otherwise. Each step moves him 4 across and 1 up or down, and each animation ends with event 12 again."
+   "text": "Event 12, which ends each of the guard's walking animations in area 14: chooses his next walk. His direction $03ED (a byte Central Park uses for item 21's flag) becomes $FF, right, when his X ($56) is below $3C, and 0, left, when it is $8E or more; between $4C and $7D it flips at random one time in four (NextPseudoRandomByte below $40). Then it puts the next animation straight into $62/$63: walking left, $B50A (frames 106, 107, 106 and 105) when the player is $30 or more to his left, counted from 8 left of him ($56 - 8 - $54), and $B532 (frames 108, 109, 108 and 105) when the player is nearer or to the right of that; walking right, $B51E (106, 107, 106 and 105) when the player is $30 or more to the left of the point 8 right of him ($56 + 8 - $54), and $B546 (108, 109, 108 and 105) otherwise. Each step moves him 4 across and 1 up or down, and each animation ends with event 12 again."
   },
   {
    "address": 37474,
@@ -13752,7 +13752,7 @@
   {
    "address": 43123,
    "type": "line",
-   "text": "Object record 7, $A873-$A880: area 13; the player must stand at X 133 to 149 and Y 58 to 66, facing 1, with action 0; nothing is drawn in the room, the routine at $A888 runs first, and it is item 19."
+   "text": "Object record 7, $A873-$A880: area 13; the player must stand at X 133 to 149 and Y 58 to 66, facing 1, with action 0; nothing is drawn in the room, the routine at $A888 runs first, and its item byte is 19: item 19's flag must be clear for the record to match, but the routine returns Y = 10, so ObjectEngine takes item 10 in its place."
   },
   {
    "address": 43137,
@@ -13767,7 +13767,7 @@
   {
    "address": 43144,
    "type": "line",
-   "text": "ObjectUseItem10: the routine object record 7 (area 13) calls before its object can be taken. Only with item 10 selected ($0279) does it go on (otherwise Z is clear and nothing is taken): it sets flag $03EB to $FF, draws picture 10 again in the panel's second box (X = 1), which DrawUiImageRecord now draws in red, and clears item 10's flag $03E2. It returns with Y = 10 and Z set, so ObjectEngine goes on with item 10 in place of the record's item 19: it sets $03E2 again, adds 5 to the score and draws picture 10 once more. Item 19 is never taken; its flag $03EB is the one this routine sets, which also keeps the record from matching again. Item 10 stays selected, and thrown with $03EB set it flies as projectile kind 7, the one that stops the guard in area 14."
+   "text": "ObjectUseItem10: the routine object record 7 (area 13) calls before its object can be taken. Only with item 10 selected ($0279) does it go on (otherwise Z is clear and nothing is taken): it sets flag $03EB to $FF, draws picture 10 again in the panel's second box (X = 1), which DrawUiImageRecord now draws in red, and clears item 10's flag $03E2. It returns with Y = 10 and Z set, so ObjectEngine goes on with item 10 in place of the record's item 19: it sets $03E2 again, adds 500 points to the score ($1183 with A = 5, the hundreds digit) and draws picture 10 once more. Item 19 is never taken; its flag $03EB is the one this routine sets, which also keeps the record from matching again. Item 10 stays selected, and thrown with $03EB set it flies as projectile kind 7, the one that stops the guard in area 14."
   },
   {
    "address": 43175,
@@ -16977,7 +16977,7 @@
   {
    "address": 53656,
    "type": "line",
-   "text": "Eight pointers, one for each kind of extra sprite the enemy can carry: none, $D1E9, $D1E9, $D1E9, $D999, $E1C1, $E1C1, $EA32. The extra sprite is part of the enemy's figure, not its weapon (the weapon is the frame's alternative slot, picked by the low two bits of $92): for the frames the pose table covers the composer draws it in the enemy's first sprite, in place of the frame's first slot and at the position of its second, and sets the attributes of the enemy's first three sprites from $D1A8. The high nibble of the area's entry in the enemy table at $9DC0 picks the pointer: it is twice the kind, a byte offset into this table. The composer adds a word offset taken from the pose table to the chosen pointer, reads the word there and unpacks the image it leads to, the same way for every kind. No area's enemy has a kind whose pointer is $EA32, the unpacked images."
+   "text": "Eight pointers, one for each kind of extra sprite the enemy can carry: none, $D1E9, $D1E9, $D1E9, $D999, $E1C1, $E1C1, $EA32. The extra sprite is part of the enemy's figure, not its weapon (the weapon is the frame's alternative slot, picked by the low two bits of $92): for frames 0 to 48, the frames the pose table at $D1B8 covers, the composer draws it in the enemy's first sprite, in place of the frame's first slot and at the position of its second, and sets the attributes of the enemy's first three sprites from $D1A8; for frames 45 and 46, whose pose entries are $FF, it draws nothing in that sprite. The high nibble of the area's entry in the enemy table at $9DC0 picks the pointer: it is twice the kind, a byte offset into this table. The composer adds a word offset taken from the pose table to the chosen pointer, reads the word there and unpacks the image it leads to, the same way for every kind. No area's enemy has a kind whose pointer is $EA32, the unpacked images."
   },
   {
    "address": 53657,
@@ -17292,7 +17292,7 @@
   {
    "address": 56374,
    "type": "line",
-   "text": "Aux2 sprite 11 plus 48, the address the instruction at $A7D7 reads with Y as the index: the table read from its byte 48 on."
+   "text": "Byte 48 of aux2 sprite 11 ($DC06-$DC3B) in the RAM under the I/O, which the sprite decoder reads. The undocumented LAX $DC36,Y at $A7D7 names this address but never reads these bytes: it runs with the I/O visible and Y = $EE, so it reads $DD24, CIA 2's timer A low byte through a mirror."
   },
   {
    "address": 56380,

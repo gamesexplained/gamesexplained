@@ -51,7 +51,7 @@ what follows is where things are and what differs.
   the candles out (`$B3ED`). No enemy enters area 1 until item 16 is
   held.
 - The candles: taking anywhere in area 1 (record 3, `$B234`) lights or
-  puts out the candle whose zone the player stands in (`$B2D7`), 5
+  puts out the candle whose zone the player stands in (`$B2D7`), 500
   points each; lit candles flicker (`$925A`). Knocking Kunitoki down
   while he stands inside the candles with all five lit (`$9CFF`) starts
   the ending (`$9CC2`, `$B271`); when he gets up again they go out
