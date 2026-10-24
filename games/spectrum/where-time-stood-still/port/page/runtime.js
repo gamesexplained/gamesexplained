@@ -14,7 +14,8 @@
 //              game, and the interrupt's and the view's copy's, measured
 //   rt.runFrame()      one frame of time: the program runs until the clock reaches the frame's end;
 //                      returns the frame that ends there, { frame, screen (the 6,912 bytes shown),
-//                      border, flash }
+//                      border, flash, bank (the screen shown, 5 or 7), at (the clock's time when
+//                      the picture was taken) }
 //   rt.shown           that frame's number: the clock can be ahead of it
 //   rt.input           { keys: Set of key names (kit/spectrum/machine.js's), joy: the Kempston
 //                      interface's bits (right, left, down, up and fire in bits 0 to 4, set when
@@ -73,7 +74,7 @@ function create(o) {
   const done = [];
   const frameNow = () => {
     const s = paging & 8 ? mem.bank(7) : M.subarray(0x4000, 0x8000);
-    return { frame: frameIdx, screen: s.slice(0, 6912), border, flash: (frameIdx >> 4) & 1 };
+    return { frame: frameIdx, screen: s.slice(0, 6912), border, flash: (frameIdx >> 4) & 1, bank: paging & 8 ? 7 : 5, at: t };
   };
   // the frames the clock has finished, each with the picture as the beam reached the paper
   function roll() {
