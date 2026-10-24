@@ -64,9 +64,8 @@ Next: Review Painted scenery against the original collision surfaces before exte
 - What `$1000`-`$1FFF` and `$6BCD`-`$6FFD` held: most likely RAM nothing
   had written to, saved with the program (copies of one pattern with
   scattered bit flips; `facts.md`). Not provable from the image alone.
-- What the `$00`-`$03` runs in `$4B00`-`$4DFF` mean, beside the runs that
-  look like saved colour RAM; and where the unused tile set at
-  `$4E00`-`$50FD` came from.
+- Which screen `$4B00`-`$4DFF` (a 40-column colour map matching none of
+  the ten) and the unused tile set at `$4E00`-`$50FD` belonged to.
 - Why `$4A90`-`$4AEA`, a 90-step path that drifts upward, was left unused.
 - Whether `(ANTISOFT)` is the cracking group ASI (Antisoft Inc.) named on
   CSDb: the CSDb release and group pages need reading
@@ -74,8 +73,9 @@ Next: Review Painted scenery against the original collision surfaces before exte
 - Which of the crawling and hunched enemies, if any, are the manual's
   ghouls (the ghost, zombies and bats are matched by eye; `discoveries.html`).
   The inlay's OCR text on the Internet Archive may tie names to screens.
-- How the shot was meant to hit: `joy_move` `$C700` moves it, but nothing
-  links a shot's collision to `unused_shot_hit` (`facts.md`).
+- How the shot was meant to hit: `joy_move` `$C700` moves it, and the
+  kill's end survives at `$CE02`, but the code that wrote the hit mask
+  `$CF4D` is gone (`facts.md`).
 
 ## Working notes
 

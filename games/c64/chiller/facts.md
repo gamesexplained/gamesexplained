@@ -494,7 +494,17 @@ start) executed or read it; each is described in `symbols.json`.
   sprite 1 appeared on the boy; `joy_move` ran 0 times in 4,700 passes.
   With `player_step` made to return 8 every eighth call, sprite 1 flew in
   a straight line to the screen edge (x 134 to 8) and stayed there. No
-  code links the shot touching an enemy to `unused_shot_hit`.
+  code links the shot touching an enemy to `unused_shot_hit`: the slot
+  mask it starts from, `$CF4D`, is read there and written nowhere in the
+  image (a byte search for its address finds only that read). Two
+  fragments that no jump, branch or table reaches survive in the gaps of
+  page `$CE` (the bytes of `$0900`-`$09FF`, which the loader copies there):
+  `$CE02`-`$CE10`, `STA $CF4F,X` / `LDA #$FD` / `AND $D015` /
+  `STA $D015` / `JMP add_score_for` / `RTS`, the end of a kill that marks
+  the enemy dying, switches sprite 1 (the shot) off and pays out; and
+  `$CECD`-`$CED9` after `sprite_touch`, whose last bytes are the
+  `JMP unused_kill_enemy` and `JMP unused_end_sound` the comments list.
+  So the hit was wired once, and its start was overwritten or cut.
 - **Screen-editor tools.** `unused_editor_tools` `$5198` (a box drawer, a
   character plotter) and `unused_screen_tools` `$C038` (fills, a glyph
   mirror) call only each other.
@@ -533,7 +543,14 @@ start) executed or read it; each is described in `symbols.json`.
     `$00`-`$03` (397), in runs of 8 to 32, mostly in equal pairs. `$F0`-`$FF`
     is what colour RAM reads back as (its top four bits read as 1), so the
     `$F` runs look like colours saved from colour RAM; what the `$00`-`$03`
-    runs mean is not established.
+    runs mean is not established. Laid out 40 bytes to a row it is a
+    screen: the strongest repeat is at 40 bytes (79 % of bytes are the same
+    kind 40 on), the `$F` runs fill the left 24 columns of most of 19
+    rows and the `$00`-`$03` runs the rest. Neither its values nor their low
+    nibbles match the screen or colour memory of any of the ten screens
+    at any row offset (best 6 %, port on the kit's C64, 24 October 2026),
+    so it is most likely the colour map of a screen the release does not
+    have (inferred).
   - `$4E00`-`$50FD`: character graphics. Drawn as 8x8 glyphs they are
     tiles (platform edges, arrows, fences, solid blocks). Only 3 of the 83
     non-blank glyphs match any glyph of the five outward screens' character
