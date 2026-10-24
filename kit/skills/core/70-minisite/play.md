@@ -147,8 +147,9 @@ demonstration.
   sample player counts on, sprite collisions if the game reads them.
   On the C64 the collisions are `site/lib/collide.js`, the model
   `machine.js` runs with `collide: true`, held against VICE: give it
-  the page's clock at each read and write of the chip, and never write
-  a model of your own.
+  the page's clock at each read and write of the chip, take its
+  interrupts when the game enables them, and never write a model of
+  your own.
   Run the page's runtime in node from the cold start before opening a
   browser: a game that stalls there (waiting for an interrupt the page
   never raises) stalls in the browser with nothing to say why.

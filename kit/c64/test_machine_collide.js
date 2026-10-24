@@ -9,6 +9,8 @@
 //   (the timing cases read in the middle of a line, in cycles the kit's machine does not keep to
 //   the cycle, and are left to the first half).
 // - A save and restore in the middle of a frame, and the character ROM read through rom.char.
+// - The collision interrupts: kit/c64/fixtures/vic-collide-irq.json, which `frame.py irq --record`
+//   recorded in VICE, against machine.js running the same programs.
 // Exits 1 on any failure. node kit/c64/test_machine_collide.js
 const fs = require('fs');
 const path = require('path');
@@ -94,5 +96,40 @@ for (const c of F.cases.filter((c) => !c.name.startsWith('timing'))) {
   }
 }
 
-console.log(`${checked - fails} of ${checked} checks pass (${F.cases.length} cases, ${F.recorded}, ${F.emulator})`);
+// The collision interrupts, held against kit/c64/fixtures/vic-collide-irq.json, which frame.py irq
+// recorded in VICE: each scene's program and handlers, run the same way. A handler that never reads
+// the register is interrupted once, and one that reads it at once as often as in VICE. With the
+// read pad NOPs later the count is one VICE gave for pads pad - 5 to pad, a read up to ten cycles
+// earlier: the machine does not keep to the cycle where the handler's read falls in its line.
+const I = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'vic-collide-irq.json'), 'utf8'));
+for (const s of I.scenes) {
+  const ram = new Uint8Array(65536);
+  for (const [a, h, n] of s.mem) ram.set(n === undefined ? bytes(h) : new Uint8Array(n).fill(parseInt(h, 16)), a);
+  ram.set(bytes(s.program), I.org);
+  ram.set(bytes(s.handlers[0]), I.handler);
+  const m = new Machine({ ram, pc: I.org, collide: true, dma: true, cia: true });
+  m.runFrames(1);
+  const got = [];
+  for (const h of s.handlers) {
+    ram.set(bytes(h), I.handler);
+    m.runFrames(2);
+    const a = ram[I.count];
+    m.runFrames(I.frames);
+    got.push((ram[I.count] - a) & 255);
+  }
+  check(got[0] === s.counts[0], `${s.name}: read at once, ${got[0]} interrupts in ${I.frames} frames, VICE ${s.counts[0]}`);
+  const off = got.map((g, p) => [g, s.counts.slice(Math.max(0, p - 5), p + 1)])
+    .map(([g, w], p) => (g >= Math.min(...w) && g <= Math.max(...w) ? '' : `pad ${p}: ${g}, VICE ${w.join(' ')}`)).filter(Boolean);
+  check(!off.length, `${s.name}: ${off.slice(0, 3).join('; ')}${off.length > 3 ? ` and ${off.length - 3} pads more` : ''}`);
+  ram.set(bytes(s.never_read), I.handler);
+  const z = ram[I.count];
+  m.runFrames(1);
+  const a = ram[I.count];
+  m.runFrames(50);
+  const nr = [(a - z) & 255, (ram[I.count] - a) & 255];
+  check(nr.join() === s.never_read_counts.join(), `${s.name}: never read, ${nr.join(' then ')} interrupts, VICE ${s.never_read_counts.join(' then ')}`);
+}
+
+console.log(`${checked - fails} of ${checked} checks pass (${F.cases.length} cases, ${F.recorded}, ${F.emulator}; ` +
+  `the collision interrupts ${I.recorded})`);
 process.exit(fails ? 1 : 0);

@@ -26,7 +26,7 @@ Usage:
                                          writes <frame>-diff.png
   frame.py trim <frame.json> <out.json>  keep only the memory the drawing reads, for a page
   frame.py test [--keep]                 the kit's own test: a program with a split of every
-                                         kind, captured, drawn and compared, then dma and collide. It resets
+                                         kind, captured, drawn and compared, then dma, collide and irq. It resets
                                          the machine: not during a game you mean to keep. It sets
                                          the video chip its standard is checked on (the 8565 for
                                          PAL), which a switch of standard changes
@@ -38,6 +38,10 @@ Usage:
                                          read to the cycle, compared with
                                          kit/c64/fixtures/vic-collide.json, or written to it with
                                          --record. It resets the machine too
+  frame.py irq [--record]                the collision interrupts ($D019 bits 2 and 1): how often a
+                                         handler is interrupted, for each place its read falls,
+                                         compared with kit/c64/fixtures/vic-collide-irq.json, or
+                                         written to it with --record. It resets the machine too
 
 Needs the emulator (`tools.py vice`) for capture and test, and a JavaScript runtime for the
 drawing: node, or on macOS the system's own JavaScriptCore. The frame file holds a copy of the
@@ -622,7 +626,7 @@ def late_bad_lines(F):
 def test(keep=False):
     """Run the kit's test program, capture a frame of it, draw it and compare; then measure the
     cycles the video chip takes and the sprite collisions and compare them with their fixtures
-    (dma, collide). True if all three pass."""
+    (dma, collide) and the collision interrupts with theirs (irq). True if all four pass."""
     from vice import poke
     m = fresh()
     for a, data in test_memory():
@@ -664,8 +668,9 @@ def test(keep=False):
     print("the picture: " + ("PASS" if bad == 0 else f"FAIL: {bad} pixels differ; kept in {out}"))
     held = dma_check()
     hit = collide_check()
-    print("PASS" if bad == 0 and held and hit else "FAIL")
-    return bad == 0 and held and hit
+    irq = irq_check()
+    print("PASS" if bad == 0 and held and hit and irq else "FAIL")
+    return bad == 0 and held and hit and irq
 
 
 # --- the cycles the video chip takes from the processor -----------------------------------
@@ -1283,6 +1288,165 @@ def collide_check():
     return not bad
 
 
+# --- the collision interrupts --------------------------------------------------------------
+# A collision that sets a bit in $D01E or $D01F while the register is 0 sets bit 2 or bit 1 of
+# $D019, and with that bit of $D01A on the chip interrupts the processor; a collision in a
+# register that already has a bit set raises nothing. So a program that never reads the
+# register is interrupted once, and a handler that reads it is interrupted again at the first
+# collision after its read: how often depends on where in its line the read falls.
+# irq_measure() runs two scenes the same on every frame: sprites 0 and 1 overlapping for 17
+# lines, and sprite 0 alone over solid characters. The handler counts its interrupts, runs `pad`
+# NOPs and reads the register; the count over ten frames is taken for each pad from 0 to 40,
+# then with a handler that never reads. kit/c64/fixtures/vic-collide-irq.json is the record:
+# `test` checks the emulator against it, and kit/c64/test_machine_collide.js checks machine.js's
+# option collide against it, with the same programs.
+IRQ_FIXTURE = os.path.join(HERE, "fixtures", "vic-collide-irq.json")
+IRQ_ORG, IRQ_HANDLER, IRQ_COUNT, IRQ_PADS, IRQ_FRAMES = 0xC000, 0xC100, 0xC200, 41, 10
+IRQ_SCENES = [{"name": "sprite against sprite", "reg": 0x1E, "bit": 0x04},
+              {"name": "sprite against the characters", "reg": 0x1F, "bit": 0x02}]
+IRQ_MEM = {0x1E: [(0x2000, bytes([0xFF] * 63))],
+           0x1F: [(0x2000, bytes([0xFF] * 63)), (0x3000, bytes([0xFF] * 2048))]}
+
+
+def irq_program(scene):
+    """The set-up: the display on, the screen at $0400 with the characters at $1000 (the ROM's)
+    or, for the characters scene, at $3000 (all solid); the sprites' shape at $2000; both
+    registers read to clear them, the scene's interrupt enabled, and a loop."""
+    from asm6502 import assemble
+    bg = scene["reg"] == 0x1F
+    return assemble(f"""
+            sei
+            lda #$35
+            sta $01
+            lda #${IRQ_HANDLER & 255:02x}
+            sta $fffe
+            lda #${IRQ_HANDLER >> 8:02x}
+            sta $ffff
+            lda #$7f
+            sta $dc0d
+            lda $dc0d
+            lda #$1b
+            sta $d011
+            lda #$c8
+            sta $d016
+            lda #${0x1C if bg else 0x15:02x}
+            sta $d018
+            lda #$80
+            sta $07f8
+            sta $07f9
+            lda #100
+            sta $d000
+            sta $d001
+            lda #104
+            sta $d002
+            sta $d003
+            lda #0
+            sta $d010
+            lda #${0x01 if bg else 0x03:02x}
+            sta $d015
+            lda $d01e
+            lda $d01f
+            lda #$0f
+            sta $d019
+            lda #${scene["bit"]:02x}
+            sta $d01a
+            cli
+    loop:   jmp loop
+    """, IRQ_ORG)[0]
+
+
+def irq_handler(scene, pad, read=True):
+    """Acknowledge, count the scene's interrupt, `pad` NOPs, read the register (or, with read
+    False, three NOPs in its place) and return."""
+    from asm6502 import assemble
+    body = "\n".join(["nop"] * pad + ([f"lda $d0{scene['reg']:02x}"] if read else ["nop"] * 3))
+    return assemble(f"""
+            pha
+            lda $d019
+            sta $d019
+            and #${scene["bit"]:02x}
+            beq out
+            inc ${IRQ_COUNT:04x}
+            {body}
+    out:    pla
+            rti
+    """, IRQ_HANDLER)[0]
+
+
+def irq_measure():
+    """Run both scenes in the emulator. The record, as the fixture holds it."""
+    from tools import vice_build
+    from vice import poke, frames
+    out = None
+    for scene in IRQ_SCENES:
+        m = fresh()
+        if out is None:
+            std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+            if std != "PAL":
+                raise SystemExit(f"the machine is {std}: the counts are written for PAL's 312 lines of 63 cycles")
+            out = {"source": "kit/c64/frame.py irq --record", "recorded": time.strftime("%Y-%m-%d"),
+                   "emulator": f"VICE {m.j('vice_ping').get('version', '?')}, {vice_build()}", "standard": std,
+                   "org": IRQ_ORG, "handler": IRQ_HANDLER, "count": IRQ_COUNT, "frames": IRQ_FRAMES, "scenes": []}
+        for a, b in IRQ_MEM[scene["reg"]]:
+            poke(m.rpc, a, b)
+        poke(m.rpc, IRQ_ORG, irq_program(scene))
+        poke(m.rpc, IRQ_HANDLER, irq_handler(scene, 0))
+        poke(m.rpc, IRQ_COUNT, bytes(1))
+        m.j("vice_registers_set", {"register": "PC", "value": IRQ_ORG})
+        frames(m.rpc, 1)
+        counts = []
+        for pad in range(IRQ_PADS):
+            poke(m.rpc, IRQ_HANDLER, irq_handler(scene, pad))
+            frames(m.rpc, 2)
+            a = m.read(IRQ_COUNT, 1)[0]
+            frames(m.rpc, IRQ_FRAMES)
+            counts.append((m.read(IRQ_COUNT, 1)[0] - a) & 255)
+        poke(m.rpc, IRQ_HANDLER, irq_handler(scene, 0, read=False))
+        z = m.read(IRQ_COUNT, 1)[0]
+        frames(m.rpc, 1)
+        a = m.read(IRQ_COUNT, 1)[0]
+        frames(m.rpc, 50)
+        b = m.read(IRQ_COUNT, 1)[0]
+        rec = {"name": scene["name"], "reg": scene["reg"], "program": irq_program(scene).hex(),
+               "mem": _mem_record(IRQ_MEM[scene["reg"]]),
+               "handlers": [irq_handler(scene, p).hex() for p in range(IRQ_PADS)],
+               "never_read": irq_handler(scene, 0, read=False).hex(),
+               "counts": counts, "never_read_counts": [(a - z) & 255, (b - a) & 255]}
+        print(f"{scene['name']}: {IRQ_FRAMES} frames, pad 0 to {IRQ_PADS - 1}: {counts}; "
+              f"never read: {rec['never_read_counts'][0]} in the next frame, {rec['never_read_counts'][1]} in 50 more",
+              flush=True)
+        out["scenes"].append(rec)
+        m._call(m.rpc, "vice_execution_run", {})
+    return out
+
+
+def irq_write(out):
+    """The fixture, a scene to a line."""
+    lines = ["{"] + [f" {json.dumps(k)}: {json.dumps(v)}," for k, v in out.items() if k != "scenes"]
+    rows = out["scenes"]
+    lines += [' "scenes": ['] + [f"  {json.dumps(r)}" + ("," if i < len(rows) - 1 else "") for i, r in enumerate(rows)]
+    with open(IRQ_FIXTURE, "w") as f:
+        f.write("\n".join(lines + [" ]", "}"]) + "\n")
+
+
+def irq_check():
+    """Measure again and compare with the fixture. True if every count agrees."""
+    want = json.load(open(IRQ_FIXTURE))
+    got = irq_measure()
+    bad = []
+    for w, g in zip(want["scenes"], got["scenes"]):
+        if (w["program"], w["handlers"]) != (g["program"], g["handlers"]):
+            bad.append(f"{g['name']}: the programs are not the fixture's")
+        elif (w["counts"], w["never_read_counts"]) != (g["counts"], g["never_read_counts"]):
+            bad.append(f"{g['name']}: the fixture has {w['counts']} and {w['never_read_counts']}, the emulator "
+                       f"{g['counts']} and {g['never_read_counts']}")
+    for b in bad:
+        print("  " + b)
+    print(f"the collision interrupts: {'they agree with' if not bad else 'FAIL, they differ from'} "
+          f"{os.path.relpath(IRQ_FIXTURE, ROOT)} ({want['recorded']}, {want['emulator']})")
+    return not bad
+
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     # -h after a subcommand too: "capture -h" once captured a frame into a file named -h
@@ -1302,6 +1466,12 @@ if __name__ == "__main__":
             print(f"wrote {os.path.relpath(COLLIDE_FIXTURE, ROOT)}")
         else:
             sys.exit(0 if collide_check() else 1)
+    elif argv[0] == "irq":
+        if "--record" in argv:
+            irq_write(irq_measure())
+            print(f"wrote {os.path.relpath(IRQ_FIXTURE, ROOT)}")
+        else:
+            sys.exit(0 if irq_check() else 1)
     elif argv[0] == "compare":
         sys.exit(1 if compare(argv[1], argv[2] if len(argv) > 2 else None) else 0)
     elif argv[0] == "trim":

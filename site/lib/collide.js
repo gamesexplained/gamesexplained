@@ -41,6 +41,12 @@
 //                   first, and so does a read in cycle w
 // C.read(r, cycle)  $D01E (r $1E) or $D01F (r $1F) read in cycle: its bits, and the register cleared
 // C.peek(r, cycle)  the same, the register kept
+// C.irq(cycle)      the interrupt bits the collisions raised up to cycle since the last call, $04
+//                   for $D01E and $02 for $D01F as $D019 holds them: a collision raises its bit when
+//                   it sets a bit in a register that was 0, and nothing while the register holds one,
+//                   so a program that never reads the register is interrupted once (checked against
+//                   VICE by kit/c64/test_machine_collide.js, kit/c64/fixtures/vic-collide-irq.json)
+// C.armed()         the interrupt bits a collision could raise now: those of the registers at 0
 // C.mask            the sprites fetched on the last line worked out, a bit each: on those lines the
 //                   chip holds the processor (kit/skills/c64/c64-reference), which a clock may count
 // C.save(), C.load(s)
@@ -56,7 +62,7 @@ globalThis.C64Collide = (function () {
     // the beam: the next cycle to work out; the rows (renderFrame's vcbase, vc, rc and display, and
     // the frame's display bit at line $30); the top and bottom border; the collisions
     const S = { at: 0, vcbase: 0, vc: 0, rc: 0, display: false, den30: false, badline: false, gn: 0,
-      gvc: 0, grc: 0, gdisplay: false, vborder: true, ss: 0, sb: 0, mask: 0, rows: 0 };
+      gvc: 0, grc: 0, gdisplay: false, vborder: true, ss: 0, sb: 0, rose: 0, mask: 0, rows: 0 };
     const C = { mask: 0 };
     const who = new Uint8Array(8);
 
@@ -107,8 +113,9 @@ globalThis.C64Collide = (function () {
         const m = who[p];
         if (!m) continue;
         who[p] = 0;
-        if (m & (m - 1)) S.ss |= m;
-        if (fg(x0 + p)) S.sb |= m;
+        // a bit set in a register that was 0 raises the interrupt ($D019 bit 2 for $D01E, 1 for $D01F)
+        if (m & (m - 1)) { if (!S.ss) S.rose |= 4; S.ss |= m; }
+        if (fg(x0 + p)) { if (!S.sb) S.rose |= 2; S.sb |= m; }
       }
     }
 
@@ -195,6 +202,8 @@ globalThis.C64Collide = (function () {
       if ((r & 0x3F) === 0x1E) S.ss = 0; else S.sb = 0;
       return v;
     };
+    C.irq = function (cycle_) { C.to(cycle_ + 1); const v = S.rose; S.rose = 0; return v; };
+    C.armed = () => (S.ss ? 0 : 4) | (S.sb ? 0 : 2);
     C.save = () => JSON.parse(JSON.stringify({ S, spr }));
     C.load = (s) => {
       Object.assign(S, s.S);

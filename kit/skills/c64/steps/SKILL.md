@@ -45,7 +45,7 @@ instructions the cases reached.
 
 `kit/c64/machine.js` is the simulator with a raster interrupt, the
 keyboard, the joystick and colour RAM around it (and with
-`collide: true` the sprite collisions), started from the listing's memory
+`collide: true` the sprite collisions and their interrupts), started from the listing's memory
 or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
 interrupt set as the game left it, counting passes where the main loop
 begins. `kit/c64/lockstep.js` runs a port beside it.
