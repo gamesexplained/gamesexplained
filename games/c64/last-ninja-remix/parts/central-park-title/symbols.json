@@ -1,0 +1,2587 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "last-ninja-remix",
+ "build": "I-TAL/TSM release; Central Park in active play, one declared level",
+ "source": "regen2000proj",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    1024,
+    2047,
+    "screen RAM"
+   ],
+   [
+    0,
+    4095,
+    "Runtime state, screens and double-buffered sprite output; $0E00 startup code has been overwritten"
+   ],
+   [
+    8192,
+    16191,
+    "Runtime bitmap output"
+   ],
+   [
+    16438,
+    16560,
+    "Runtime music state: initialized at $40B1-$40FF and updated by $4116 onward, three voice arrays and shared tick/filter/fade state"
+   ],
+   [
+    16274,
+    16303,
+    "30 runtime enemy-meter slots initialized to 44; elapsed-tick regeneration traced and checked"
+   ],
+   [
+    65273,
+    65448,
+    "Runtime collision compiler output; maximum 29 records plus two-byte terminator, checked for all 18 loaded areas"
+   ]
+  ],
+  "extra": [
+   [
+    52820,
+    53143,
+    "162 main packed-sprite pointer words, independently validated"
+   ],
+   [
+    50370,
+    50581,
+    "106 absolute frame pointer words, all destinations checked"
+   ],
+   [
+    20007,
+    20242,
+    "118 biased scene pointer words, all record boundaries checked"
+   ],
+   [
+    6888,
+    7215,
+    "Retained eight-byte multicolor glyph cells, inline text renderer base $1AE8; resident code starts $1C30"
+   ],
+   [
+    4608,
+    4863,
+    "All 256 multicolor pair-reversal entries, formula checked"
+   ],
+   [
+    4864,
+    5119,
+    "All 256 bit-reversal entries, formula checked"
+   ],
+   [
+    20245,
+    35341,
+    "Complete scene record pool: all 118 lengths/boundaries independently checked"
+   ],
+   [
+    53144,
+    59687,
+    "Complete 162-record packed sprite pool, all expansion lengths and boundaries checked"
+   ],
+   [
+    39380,
+    41037,
+    "Condition lists and collision source lists; complete boundaries traced and collision output checked for all 18 areas"
+   ],
+   [
+    18472,
+    19939,
+    "Retained music directories, instruments, frequency tables, playlists and phrase pool; consumers traced"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 16371,
+   "end": 16376,
+   "type": "Code"
+  },
+  {
+   "start": 16377,
+   "end": 16383,
+   "type": "Byte"
+  },
+  {
+   "start": 16384,
+   "end": 16395,
+   "type": "Code"
+  },
+  {
+   "start": 16396,
+   "end": 16560,
+   "type": "Byte"
+  },
+  {
+   "start": 16561,
+   "end": 18442,
+   "type": "Code"
+  },
+  {
+   "start": 18443,
+   "end": 19967,
+   "type": "Byte"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 16371,
+   "name": "PhaseHandoff",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16374,
+   "name": "PlayNextLoadVector",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16377,
+   "name": "MusicPostTitleRenderMarker",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16384,
+   "name": "MusicInit",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16387,
+   "name": "MusicTick",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16390,
+   "name": "MusicControl",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16393,
+   "name": "MusicGate",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16396,
+   "name": "music_credit_text",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16438,
+   "name": "MusicCurrentVoiceIndex",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16439,
+   "name": "MusicEffectDefinitionIndexScratch",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16440,
+   "name": "MusicGatePauseState",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16441,
+   "name": "MusicPrimaryTickDivider",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16442,
+   "name": "MusicSecondaryTickDivider",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16443,
+   "name": "MusicPrimaryTickDividerReload",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16444,
+   "name": "MusicSecondaryTickDividerReload",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16445,
+   "name": "MusicExternalFadeOverride",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16446,
+   "name": "MusicMasterVolumeFadePeriod",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16447,
+   "name": "MusicMasterVolumeFadeCountdown",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16448,
+   "name": "MusicSidVolumeHighNybble",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16449,
+   "name": "MusicMasterVolumeLowNybble",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16450,
+   "name": "MusicVoice0DurationCountdown",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16451,
+   "name": "MusicVoice1DurationCountdown",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16452,
+   "name": "MusicVoice2DurationCountdown",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16453,
+   "name": "PlayMusicIndexedVoiceStateField01Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16456,
+   "name": "PlayMusicIndexedVoiceStateField02Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16459,
+   "name": "PlayMusicIndexedVoiceStateField03Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16462,
+   "name": "PlayMusicIndexedVoiceStateField04Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16465,
+   "name": "PlayMusicIndexedVoiceStateField05Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16468,
+   "name": "PlayMusicIndexedVoiceStateField06Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16471,
+   "name": "PlayMusicIndexedVoiceStateField07Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16474,
+   "name": "PlayMusicIndexedVoiceStateField08Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16477,
+   "name": "PlayMusicIndexedVoiceStateField09Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16480,
+   "name": "PlayMusicIndexedVoiceStateField10Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16483,
+   "name": "PlayMusicIndexedVoiceStateField11Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16486,
+   "name": "PlayMusicIndexedVoiceStateField12Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16489,
+   "name": "PlayMusicIndexedVoiceStateField13Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16492,
+   "name": "PlayMusicIndexedVoiceStateField14Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16495,
+   "name": "PlayMusicIndexedVoiceStateField15Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16498,
+   "name": "PlayMusicIndexedVoiceStateField16Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16501,
+   "name": "PlayMusicIndexedVoiceStateField17Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16504,
+   "name": "PlayMusicIndexedVoiceStateField18Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16507,
+   "name": "PlayMusicIndexedVoiceStateField19Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16510,
+   "name": "PlayMusicIndexedVoiceStateField20Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16513,
+   "name": "PlayMusicIndexedVoiceStateField21Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16516,
+   "name": "PlayMusicIndexedVoiceStateField22Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16519,
+   "name": "PlayMusicIndexedVoiceStateField23Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16522,
+   "name": "PlayMusicIndexedVoiceStateField24Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16525,
+   "name": "PlayMusicIndexedVoiceStateField25Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16528,
+   "name": "PlayMusicIndexedVoiceStateField26Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16531,
+   "name": "PlayMusicIndexedVoiceStateField27Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16534,
+   "name": "PlayMusicIndexedVoiceStateField28Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16537,
+   "name": "PlayMusicIndexedVoiceStateField29Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16540,
+   "name": "MusicFilterCutoffEncodedLow",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16541,
+   "name": "PlayMusicIndexedVoiceStateField30Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16544,
+   "name": "MusicFilterCutoffEncodedHigh",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16545,
+   "name": "PlayMusicIndexedVoiceStateField31Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16549,
+   "name": "PlayMusicIndexedVoiceStateField32Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16553,
+   "name": "PlayMusicIndexedVoiceStateField33Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16557,
+   "name": "PlayMusicIndexedVoiceStateField34Base",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16560,
+   "name": "MusicFilterUpdateBypassToggle",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16561,
+   "name": "MusicPlayerCode",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16584,
+   "name": "MusicPlayerCodeLocal40c8",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16643,
+   "name": "MusicPlayerCodeLocal4103",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16652,
+   "name": "MusicControlStoreBody",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16655,
+   "name": "StoreMusicControlPair",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16662,
+   "name": "MusicTickBody",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16691,
+   "name": "MusicTickBodyLocal4133",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16704,
+   "name": "MusicTickBodyLocal4140",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16724,
+   "name": "MusicTickBodyLocal4154",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16735,
+   "name": "MusicTickBodyLocal415f",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16790,
+   "name": "MusicTickBodyLocal4196",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16807,
+   "name": "MusicTickBodyLocal41a7",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16824,
+   "name": "MusicTickBodyLocal41b8",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16839,
+   "name": "MusicTickBodyLocal41c7",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16843,
+   "name": "MusicTickBodyLocal41cb",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16879,
+   "name": "MusicTickBodyLocal41ef",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16898,
+   "name": "MusicTickBodyLocal4202",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16916,
+   "name": "MusicTickBodyLocal4214",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16924,
+   "name": "MusicControlIncrementBody",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16928,
+   "name": "MusicControlIncrementBodyLocal4220",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16951,
+   "name": "MusicControlIncrementBodyLocal4237",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16961,
+   "name": "MusicControlIncrementBodyLocal4241",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16980,
+   "name": "MusicControlIncrementBodyLocal4254",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16994,
+   "name": "MusicControlIncrementBodyLocal4262",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 16996,
+   "name": "MusicControlIncrementBodyLocal4264",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17020,
+   "name": "MusicControlIncrementBodyLocal427c",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17026,
+   "name": "MusicControlIncrementBodyLocal4282",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17045,
+   "name": "MusicControlIncrementBodyLocal4295",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17057,
+   "name": "MusicControlIncrementBodyLocal42a1",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17074,
+   "name": "MusicControlIncrementBodyLocal42b2",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17089,
+   "name": "MusicControlIncrementBodyLocal42c1",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17101,
+   "name": "MusicControlIncrementBodyLocal42cd",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17134,
+   "name": "MusicControlIncrementBodyLocal42ee",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17146,
+   "name": "MusicControlIncrementBodyLocal42fa",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17158,
+   "name": "MusicControlIncrementBodyLocal4306",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17175,
+   "name": "MusicControlIncrementBodyLocal4317",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17178,
+   "name": "MusicControlIncrementBodyLocal431a",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17180,
+   "name": "MusicControlIncrementBodyLocal431c",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17225,
+   "name": "MusicControlIncrementBodyLocal4349",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17270,
+   "name": "MusicControlIncrementBodyLocal4376",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17292,
+   "name": "MusicControlIncrementBodyLocal438c",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17294,
+   "name": "MusicControlIncrementBodyLocal438e",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17303,
+   "name": "MusicControlIncrementBodyLocal4397",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17320,
+   "name": "MusicControlIncrementBodyLocal43a8",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17337,
+   "name": "MusicControlIncrementBodyLocal43b9",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17354,
+   "name": "MusicControlIncrementBodyLocal43ca",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17359,
+   "name": "MusicControlIncrementBodyLocal43cf",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17363,
+   "name": "MusicControlIncrementBodyLocal43d3",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17369,
+   "name": "MusicControlIncrementBodyLocal43d9",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17388,
+   "name": "MusicControlIncrementBodyLocal43ec",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17409,
+   "name": "MusicControlIncrementBodyLocal4401",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17426,
+   "name": "MusicControlIncrementBodyLocal4412",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17429,
+   "name": "MusicControlIncrementBodyLocal4415",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17448,
+   "name": "MusicControlIncrementBodyLocal4428",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17456,
+   "name": "MusicControlIncrementBodyLocal4430",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17471,
+   "name": "MusicControlIncrementBodyLocal443f",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17479,
+   "name": "MusicControlIncrementBodyLocal4447",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17514,
+   "name": "MusicControlIncrementBodyLocal446a",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17527,
+   "name": "MusicControlIncrementBodyLocal4477",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17535,
+   "name": "MusicControlIncrementBodyLocal447f",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17543,
+   "name": "MusicControlIncrementBodyLocal4487",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17551,
+   "name": "MusicControlIncrementBodyLocal448f",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17578,
+   "name": "MusicControlIncrementBodyLocal44aa",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17586,
+   "name": "MusicControlIncrementBodyLocal44b2",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17609,
+   "name": "MusicControlIncrementBodyLocal44c9",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17626,
+   "name": "MusicControlIncrementBodyLocal44da",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17635,
+   "name": "MusicControlIncrementBodyLocal44e3",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17638,
+   "name": "MusicControlIncrementBodyLocal44e6",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17641,
+   "name": "MusicControlIncrementBodyLocal44e9",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17665,
+   "name": "MusicControlIncrementBodyLocal4501",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17674,
+   "name": "MusicControlIncrementBodyLocal450a",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17707,
+   "name": "ParseVoiceNoteAndEffectStreams",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17738,
+   "name": "ParseVoiceNoteAndEffectStreamsLocal454a",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17755,
+   "name": "ParseVoiceNoteAndEffectStreamsLocal455b",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17763,
+   "name": "ParseVoiceNoteAndEffectStreamsLocal4563",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17764,
+   "name": "MusicSequenceIndexImmediateOperand",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17765,
+   "name": "AdvanceInstrumentPitchSequence",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 17796,
+   "name": "MusicSequenceIndexImmediateOperandLocal4584",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17809,
+   "name": "MusicSequenceIndexImmediateOperandLocal4591",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17810,
+   "name": "MusicSequenceIndexImmediateOperandLocal4592",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17819,
+   "name": "AdvanceVoiceAuxSequence",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17844,
+   "name": "AdvanceVoiceAuxSequenceLocal45b4",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17848,
+   "name": "AdvanceVoiceAuxSequenceLocal45b8",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17859,
+   "name": "LoadVoiceTargetFrequency",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17872,
+   "name": "StepVoicePitchTowardTarget",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17925,
+   "name": "StepVoicePitchTowardTargetLocal4605",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17940,
+   "name": "StepVoicePitchTowardTargetLocal4614",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17941,
+   "name": "StepVoicePitchTowardTargetLocal4615",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 17974,
+   "name": "UpdateVoicePitchEnvelope",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 18025,
+   "name": "UpdateVoicePitchEnvelopeLocal4669",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18034,
+   "name": "UpdateVoicePitchEnvelopeLocal4672",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18043,
+   "name": "UpdateVoicePitchEnvelopeLocal467b",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18074,
+   "name": "UpdateVoicePitchEnvelopeLocal469a",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18090,
+   "name": "UpdateVoicePitchEnvelopeLocal46aa",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18117,
+   "name": "UpdateVoicePitchEnvelopeLocal46c5",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18141,
+   "name": "UpdateVoicePitchEnvelopeLocal46dd",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18163,
+   "name": "UpdateVoicePitchEnvelopeLocal46f3",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18167,
+   "name": "InitVoiceModulationStream",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 18186,
+   "name": "InitVoiceModulationStreamLocal470a",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18187,
+   "name": "AdvanceVoiceModulationStream",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 18228,
+   "name": "AdvanceVoiceModulationStreamLocal4734",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18238,
+   "name": "AdvanceVoiceModulationStreamLocal473e",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18246,
+   "name": "AdvanceVoiceModulationStreamLocal4746",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18272,
+   "name": "AdvanceVoiceModulationStreamLocal4760",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18292,
+   "name": "AdvanceVoiceModulationStreamLocal4774",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18307,
+   "name": "AdvanceVoiceModulationStreamLocal4783",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18310,
+   "name": "AdvanceVoiceModulationStreamLocal4786",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18339,
+   "name": "AdvanceVoiceModulationStreamLocal47a3",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18372,
+   "name": "AdvanceVoiceModulationStreamLocal47c4",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18373,
+   "name": "AdvanceVoiceModulationStreamLocal47c5",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18395,
+   "name": "AdvanceVoiceModulationStreamLocal47db",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18429,
+   "name": "AdvanceVoiceModulationStreamLocal47fd",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18433,
+   "name": "AdvanceVoiceModulationStreamLocal4801",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18437,
+   "name": "AdvanceVoiceModulationStreamLocal4805",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18439,
+   "name": "AdvanceVoiceModulationStreamLocal4807",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 18443,
+   "name": "music_sid_voice_offsets",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18446,
+   "name": "music_sid_filter_voice_masks",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18449,
+   "name": "music_instrument_offset_lookup",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18472,
+   "name": "music_frequency_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18568,
+   "name": "music_frequency_high",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18663,
+   "name": "music_auxiliary_pointer_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18674,
+   "name": "music_auxiliary_pointer_high",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18686,
+   "name": "music_aux_sequence_48fe",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18692,
+   "name": "music_aux_sequence_4904",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18698,
+   "name": "music_aux_sequence_490a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18704,
+   "name": "music_aux_sequence_4910",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18710,
+   "name": "music_aux_sequence_4916",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18716,
+   "name": "music_aux_sequence_491c",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18724,
+   "name": "music_aux_sequence_4924",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18730,
+   "name": "music_aux_sequence_492a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18741,
+   "name": "music_aux_sequence_4935",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18752,
+   "name": "music_aux_sequence_4940",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18781,
+   "name": "music_wave_sequence_pointer_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18785,
+   "name": "music_wave_sequence_pointer_high",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18789,
+   "name": "music_pitch_sequence_pointer_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18793,
+   "name": "music_pitch_sequence_pointer_high",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18797,
+   "name": "music_waveform_sequence_0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18802,
+   "name": "music_pitch_sequence_0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18807,
+   "name": "music_waveform_sequence_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18816,
+   "name": "music_pitch_sequence_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18834,
+   "name": "music_waveform_sequence_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18839,
+   "name": "music_pitch_sequence_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18844,
+   "name": "music_waveform_sequence_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18850,
+   "name": "music_pitch_sequence_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18856,
+   "name": "music_instrument_00",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18857,
+   "name": "instrument_auxiliary_sequence_field_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18858,
+   "name": "f_49AA",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18859,
+   "name": "f_49AB",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18860,
+   "name": "f_49AC",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18861,
+   "name": "f_49AD",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18862,
+   "name": "f_49AE",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18863,
+   "name": "f_49AF",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18864,
+   "name": "f_49B0",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18865,
+   "name": "f_49B1",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18866,
+   "name": "f_49B2",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 18867,
+   "name": "music_instrument_01",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18878,
+   "name": "music_instrument_02",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18889,
+   "name": "music_instrument_03",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18900,
+   "name": "music_instrument_04",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18911,
+   "name": "music_instrument_05",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18922,
+   "name": "music_instrument_06",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18933,
+   "name": "music_instrument_07",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18944,
+   "name": "music_instrument_08",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18955,
+   "name": "music_instrument_09",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18966,
+   "name": "music_instrument_10",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18977,
+   "name": "music_instrument_11",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18991,
+   "name": "music_pitch_modulation_parameters",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18992,
+   "name": "pitch_modulation_delay_lower_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18993,
+   "name": "pitch_modulation_stream_low_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18994,
+   "name": "pitch_modulation_stream_high_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18995,
+   "name": "pitch_modulation_interval_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18996,
+   "name": "pitch_modulation_shift_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18997,
+   "name": "pitch_modulation_adjustment_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18998,
+   "name": "pitch_modulation_delay_upper_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19009,
+   "name": "music_filter_pulse_parameters_0",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19010,
+   "name": "filter_frequency_high_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19011,
+   "name": "f_4A43",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19012,
+   "name": "f_4A44",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19013,
+   "name": "f_4A45",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19014,
+   "name": "f_4A46",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19015,
+   "name": "f_4A47",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19016,
+   "name": "f_4A48",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19017,
+   "name": "f_4A49",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19018,
+   "name": "f_4A4A",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19019,
+   "name": "f_4A4B",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19020,
+   "name": "f_4A4C",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19021,
+   "name": "f_4A4D",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19022,
+   "name": "f_4A4E",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19023,
+   "name": "f_4A4F",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19024,
+   "name": "f_4A50",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 19025,
+   "name": "music_filter_pulse_parameters_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19041,
+   "name": "music_filter_pulse_parameters_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19057,
+   "name": "music_filter_pulse_parameters_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19073,
+   "name": "music_filter_pulse_parameters_4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19089,
+   "name": "music_filter_pulse_parameters_5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19105,
+   "name": "music_filter_pulse_parameters_6",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19121,
+   "name": "music_song_descriptor",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19122,
+   "name": "music_song_descriptor_second_byte_alias",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19129,
+   "name": "music_voice_playlist_0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19216,
+   "name": "music_voice_playlist_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19289,
+   "name": "music_voice_playlist_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19326,
+   "name": "music_phrase_pointer_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19345,
+   "name": "music_phrase_pointer_high",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19364,
+   "name": "music_phrase_4ba4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19391,
+   "name": "music_phrase_4bbf",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19432,
+   "name": "music_phrase_4be8",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19453,
+   "name": "music_aux_sequence_4bfd",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19473,
+   "name": "music_phrase_4c11",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19515,
+   "name": "music_phrase_4c3b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19523,
+   "name": "music_phrase_4c43",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19545,
+   "name": "music_phrase_4c59",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19566,
+   "name": "music_phrase_4c6e",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19578,
+   "name": "music_phrase_4c7a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19591,
+   "name": "music_phrase_4c87",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19618,
+   "name": "music_phrase_4ca2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19644,
+   "name": "music_phrase_4cbc",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19655,
+   "name": "music_phrase_4cc7",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19706,
+   "name": "music_phrase_4cfa",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19748,
+   "name": "music_phrase_4d24",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19796,
+   "name": "music_phrase_4d54",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19802,
+   "name": "music_phrase_4d5a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19824,
+   "name": "music_phrase_4d70",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19914,
+   "name": "music_phrase_4dca",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19940,
+   "name": "SceneHeader",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19941,
+   "name": "PlaySceneRelocationDeltaLow",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19942,
+   "name": "PlaySceneRelocationDeltaHigh",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19943,
+   "name": "area_scene_and_background_pairs",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19944,
+   "name": "area_background_color_alias",
+   "type": "Field",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 16371,
+   "type": "line",
+   "text": "Purpose: Central Park phase handoff installed by the first expanded segment and retained after the second. Inputs: completed level load and restored low workspace. Outputs: unconditional transfer to `$8EAD`; does not return. Assumptions: Central Park playable occupant `$4E00-$FEFF` is active. Clobbers: none before transfer. Hardware changes: none in this veneer.\nfunction: undefined PhaseHandoff()"
+  },
+  {
+   "address": 16374,
+   "type": "line",
+   "text": "Purpose: tail-call the resident C64/level initializer at `$0E00` through Central Park's retained phase vector. Inputs: none. Outputs: cleared runtime work areas, installed interrupt state, and initialized VIC-II, CIA, SID, banking, and NMI-vector state. Assumptions: the Central Park retained vector and resident initializer are intact and real C64 I/O is present. Clobbers: A, X, Y, processor flags, zero-page/game state, and screen workspaces. Hardware changes: the target selects `$01=$35`, disables CIA interrupts, clears VIC-II interrupt/sprite state, silences SID, installs NMI vectors, and synchronizes to the raster; the veneer adds no stack frame."
+  },
+  {
+   "address": 16377,
+   "type": "line",
+   "text": "Runtime title-render marker read at $1EEE; nonzero is cleared and triggers music reinitialization through $4000. Boot/title setup also clears it at $110D. The marker is one byte; six trailing captured zero bytes have no established independent role."
+  },
+  {
+   "address": 16384,
+   "type": "line",
+   "text": "Purpose: initialize Central Park's retained SID music module. Inputs: A selects the song. Outputs: initialized music state. Assumptions: retained module and gameplay phase match. Clobbers: A, X, Y, flags, and music state. Hardware changes: initializes state later emitted to SID."
+  },
+  {
+   "address": 16387,
+   "type": "line",
+   "text": "Purpose: service one Central Park music tick. Inputs: initialized sequencer state. Outputs: advanced tracks and SID register image. Assumptions: the retained module matches the active gameplay phase. Clobbers: A, X, Y, flags, and music state. Hardware changes: writes SID registers."
+  },
+  {
+   "address": 16390,
+   "type": "line",
+   "text": "Purpose: set Central Park's three music-control bytes from A. Inputs: A is the control value. Outputs: updated player controls. Assumptions: module active. Clobbers: flags and music scratch. Hardware changes: none directly."
+  },
+  {
+   "address": 16393,
+   "type": "line",
+   "text": "Purpose: increment Central Park's music gate/pause state. Inputs: module active. Outputs: incremented gate byte. Assumptions: retained player state is valid. Clobbers: flags. Hardware changes: none directly."
+  },
+  {
+   "address": 16396,
+   "type": "line",
+   "text": "42 ASCII bytes through $4035: MUSIC BY R. OUWEHAND AND PLAYER BY F. PAUL. Retained credit string between the music entry veneers and runtime state; no display consumer is established in the loaded Central Park phase. These are authored text, not an unidentified sound table."
+  },
+  {
+   "address": 16453,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 01; X selects voice 0..2. The recovered cohort has 3 user-defined references (read=2, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16456,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 02; X selects voice 0..2. The recovered cohort has 14 user-defined references (read=10, read_write=3, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16459,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 03; X selects voice 0..2. The recovered cohort has 2 user-defined references (read=1, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16462,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 04; X selects voice 0..2. The recovered cohort has 3 user-defined references (read=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16465,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 05; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=2, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16468,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 06; X selects voice 0..2. The recovered cohort has 9 user-defined references (read=7, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16471,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 07; X selects voice 0..2. The recovered cohort has 11 user-defined references (read=8, write=3). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16474,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 08; X selects voice 0..2. The recovered cohort has 5 user-defined references (read=3, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16477,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 09; X selects voice 0..2. The recovered cohort has 3 user-defined references (read=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16480,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 10; X selects voice 0..2. The recovered cohort has 12 user-defined references (read=1, read_write=9, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16483,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 11; X selects voice 0..2. The recovered cohort has 2 user-defined references (read=1, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16486,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 12; X selects voice 0..2. The recovered cohort has 2 user-defined references (read=1, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16489,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 13; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=1, read_write=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16492,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 14; X selects voice 0..2. The recovered cohort has 7 user-defined references (read=4, write=3). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16495,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 15; X selects voice 0..2. The recovered cohort has 3 user-defined references (read=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16498,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 16; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=1, read_write=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16501,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 17; X selects voice 0..2. The recovered cohort has 10 user-defined references (read=9, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16504,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 18; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=2, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16507,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 19; X selects voice 0..2. The recovered cohort has 3 user-defined references (read=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16510,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 20; X selects voice 0..2. The recovered cohort has 13 user-defined references (read=7, write=6). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16513,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 21; X selects voice 0..2. The recovered cohort has 17 user-defined references (read=10, write=7). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16516,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 22; X selects voice 0..2. The recovered cohort has 2 user-defined references (read=1, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16519,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 23; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=1, write=3). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16522,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 24; X selects voice 0..2. The recovered cohort has 2 user-defined references (read=1, write=1). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16525,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 25; X selects voice 0..2. The recovered cohort has 6 user-defined references (read=2, read_write=2, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16528,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 26; X selects voice 0..2. The recovered cohort has 6 user-defined references (read=3, read_write=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16531,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 27; X selects voice 0..2. The recovered cohort has 6 user-defined references (read=3, read_write=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16534,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 28; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=1, read_write=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16537,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 29; X selects voice 0..2. The recovered cohort has 15 user-defined references (read=7, write=8). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16541,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 30; X selects voice 0..2. The recovered cohort has 13 user-defined references (read=5, read_write=2, write=6). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16545,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 31; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=2, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16549,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 32; X selects voice 0..2. The recovered cohort has 5 user-defined references (read=1, read_write=1, write=3). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16553,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 33; X selects voice 0..2. The recovered cohort has 4 user-defined references (read=1, read_write=1, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16557,
+   "type": "side",
+   "text": "Verified absolute-indexed base for Play retained three-voice music state field 34; X selects voice 0..2. The recovered cohort has 5 user-defined references (read=3, write=2). The field ordinal is structural; a narrower musical role is not proved."
+  },
+  {
+   "address": 16561,
+   "type": "line",
+   "text": "Purpose: implement Central Park's retained music sequencer and track-bytecode parser. Inputs: song descriptor, three voice streams, and player state. Outputs: updated music/SID state. Assumptions: retained code and sequence tables are from the same level title. Clobbers: A, X, Y, flags, and player state. Hardware changes: writes SID registers during tick service."
+  },
+  {
+   "address": 16652,
+   "type": "line",
+   "text": "Purpose: Implement Level's $4006 music-control veneer by storing A into the module's three control bytes and returning.\nInputs: A is the control value; the matching retained music occupant and its writable state are active.\nOutputs: A is stored to $403D-$403F; A, X, Y, and all status flags are preserved on return.\nAssumptions: The three adjacent bytes are the control triplet for this exact music-module occupant.\nClobbers: Memory $403D-$403F; A, X, Y, and flags are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
+  },
+  {
+   "address": 16655,
+   "type": "line",
+   "text": "Purpose: copy A into the paired global music-control bytes. Inputs: A is the control value. Outputs: both control bytes equal A; A, X, Y, and flags are preserved. Assumptions: Central Park music-player occupant is active. Clobbers: memory only. Hardware changes: none directly; the later music service consumes the state."
+  },
+  {
+   "address": 16662,
+   "type": "line",
+   "text": "Purpose: Implement Level's $4003 music-tick veneer, honoring the module gate and advancing its sequencer and SID image.\nInputs: The module is initialized; $4038 is its gate byte and the resident IRQ enters through the matching $4003 veneer.\nOutputs: Advances or gates the current music tick, updates sequencer/envelope state, emits the resulting SID register values, and returns.\nAssumptions: The retained title/play music module matches the active phase and the call occurs at the engine's normal music-tick cadence.\nClobbers: A, X, Y, processor flags, zero-page music cursors, module track/envelope state, and SID register state.\nHardware changes: Writes SID voice and filter/volume registers as directed by the current tick; no CIA or VIC-II access is introduced by the veneer body."
+  },
+  {
+   "address": 16924,
+   "type": "line",
+   "text": "Purpose: Implement Level's $4009 gate veneer by incrementing the module gate byte and returning.\nInputs: $4038 is the writable gate byte for the matching retained music occupant.\nOutputs: $4038 is incremented modulo 256; N and Z describe the new value; A, X, and Y are preserved.\nAssumptions: The caller intentionally changes the module gate/pause state and accepts byte wraparound.\nClobbers: $4038, N, and Z; A, X, Y, C, V, D, and I are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
+  },
+  {
+   "address": 17707,
+   "type": "line",
+   "text": "Purpose: fetch and interpret the next note or effect command for a voice. Inputs: phase-local voice index, stream pointers, and player state. Outputs: stream cursors, note/effect parameters, and target-frequency state are updated. Assumptions: streams use the observed $FE/$FD control-token encoding. Clobbers: A, X, Y, flags, indirect-pointer scratch, and voice scratch. Hardware changes: none directly."
+  },
+  {
+   "address": 17763,
+   "type": "side",
+   "text": "[offcut 4564] Self-modified immediate operand of `LDY #$00` at `$4563`. The Central Park music sequencer writes the selected sequence index here at `$4531`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
+  },
+  {
+   "address": 17764,
+   "type": "line",
+   "text": "Immediate Y operand in LDY #index at $4563. $4531 rewrites it from instrument byte 1 before selecting the pitch sequence. This is a self-modified operand, not an independent routine; execution continues at $4565."
+  },
+  {
+   "address": 17765,
+   "type": "line",
+   "text": "Loads the selected four-entry pitch-sequence pointer, reads the current per-voice cursor $4072, handles $FD/$FE control and $FF redirection, updates frequency-high state $4081, clears $407E and advances the cursor. The $4592 branch advances the cursor then restores the note frequency through $45C3. Uses the instrument-selected index embedded in the preceding LDY operand."
+  },
+  {
+   "address": 17819,
+   "type": "line",
+   "text": "Purpose: advance a voice's auxiliary effect sequence. Inputs: selected voice and its auxiliary pointer and cursor. Outputs: the next auxiliary value or control state is installed. Assumptions: the pointer addresses a valid phase-local auxiliary sequence. Clobbers: A, Y, flags, cursor state, and voice scratch. Hardware changes: none directly."
+  },
+  {
+   "address": 17859,
+   "type": "line",
+   "text": "Purpose: load a note's target frequency into the selected voice state. Inputs: note-table index and voice-state index. Outputs: target-frequency low and high bytes are updated. Assumptions: both indices are valid for the phase-local frequency tables. Clobbers: A, indexed voice state, and flags. Hardware changes: none directly; this routine does not write SID registers."
+  },
+  {
+   "address": 17872,
+   "type": "line",
+   "text": "Purpose: move current pitch toward its target under the current pitch-step rule. Inputs: current and target frequency plus signed step state. Outputs: current frequency is stepped and clamped, with a next target loaded when required. Assumptions: the paired frequency bytes and step state are internally consistent. Clobbers: A, X, Y, flags, and voice arithmetic scratch. Hardware changes: none directly."
+  },
+  {
+   "address": 17974,
+   "type": "line",
+   "text": "Purpose: update one voice's pitch envelope for the current music tick. Inputs: voice index, envelope cursor, current frequency, and envelope stream. Outputs: frequency, cursor, and envelope counters are advanced. Assumptions: the active envelope pointer addresses a valid stream. Clobbers: A, X, Y, flags, and voice scratch. Hardware changes: none directly."
+  },
+  {
+   "address": 18167,
+   "type": "line",
+   "text": "Purpose: conditionally initialize one voice's modulation stream. Inputs: X selects the voice, Y selects its modulation definition, and the current per-voice guard controls initialization. Outputs: when the guard is zero, the modulation cursor and count are cleared and the definition's mode bit is installed; otherwise voice state is unchanged. Assumptions: X and Y index valid phase-local voice and definition records. Clobbers: A and flags, plus indexed voice state only on the initialization path; X and Y are preserved. Hardware changes: none directly."
+  },
+  {
+   "address": 18187,
+   "type": "line",
+   "text": "Purpose: execute one modulation-stream step. Inputs: selected voice, modulation cursor and count, and current frequency. Outputs: cursor, count, and modulated frequency are updated. Assumptions: the stream follows the observed signed-update and control-token encoding. Clobbers: A, X, Y, flags, and voice scratch. Hardware changes: none directly."
+  },
+  {
+   "address": 18443,
+   "type": "line",
+   "text": "Three SID register offsets 0,7,14, indexed by music voice 0..2. $416E/$4376 and related writes add the offset to the SID voice-register base. These three bytes are not sequence data."
+  },
+  {
+   "address": 18446,
+   "type": "line",
+   "text": "Three filter-routing bits 1,2,4, added at $436A to the selected filter descriptor routing value before writing SID $D417."
+  },
+  {
+   "address": 18449,
+   "type": "line",
+   "text": "23 multiplication-by-eleven entries, 11*index for index 0..22. $426E maps an instrument command to the byte offset used for the eleven parallel reads based at $49A8-$49B2. The lookup length does not prove that 23 complete instrument records exist: twelve records are intact before the following pitch-modulation data."
+  },
+  {
+   "address": 18472,
+   "type": "line",
+   "text": "96 low bytes of the SID frequency lookup. $45C3 reads paired bytes with a note index Y and writes voice frequency state $407E/$4081. Other pitch helpers use the same table for target comparisons and interval differences. The contiguous 96-entry extent ends at $4887; exact tuning is not inferred from a remembered clock constant."
+  },
+  {
+   "address": 18568,
+   "type": "line",
+   "text": "96 high bytes of the SID frequency lookup. $45C3 reads paired bytes with a note index Y and writes voice frequency state $407E/$4081. Other pitch helpers use the same table for target comparisons and interval differences. The contiguous 96-entry extent ends at $48E7; exact tuning is not inferred from a remembered clock constant."
+  },
+  {
+   "address": 18663,
+   "type": "line",
+   "text": "11 low bytes for auxiliary pitch sequences. $459B/$45A0 construct $FE/$FF, then $45A8 advances the per-voice cursor, handles a negative marker and applies the resulting offset to the note index before looking up frequency. The directory occupies $48E7-$48FC."
+  },
+  {
+   "address": 18674,
+   "type": "line",
+   "text": "11 high bytes for auxiliary pitch sequences. $459B/$45A0 construct $FE/$FF, then $45A8 advances the per-voice cursor, handles a negative marker and applies the resulting offset to the note index before looking up frequency. The directory occupies $48E7-$48FC."
+  },
+  {
+   "address": 18686,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $48FE-$4903, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18692,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4904-$4909, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18698,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $490A-$490F, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18704,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4910-$4915, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18710,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4916-$491B, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18716,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $491C-$4923, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18724,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4924-$4929, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18730,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $492A-$4934, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18741,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4935-$493F, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18752,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4940-$4BFC, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 18781,
+   "type": "line",
+   "text": "four low bytes read by $4535/$453A or $4565/$456A. Instrument byte 1 selects these paired directories. The first sequences update waveform/control state; the second update the frequency-high/auxiliary state. Each directory contains four entries, independently bounded by the adjacent table."
+  },
+  {
+   "address": 18785,
+   "type": "line",
+   "text": "four high bytes read by $4535/$453A or $4565/$456A. Instrument byte 1 selects these paired directories. The first sequences update waveform/control state; the second update the frequency-high/auxiliary state. Each directory contains four entries, independently bounded by the adjacent table."
+  },
+  {
+   "address": 18789,
+   "type": "line",
+   "text": "Four low bytes selecting pitch-sequence entries, read at $4565 after the instrument-selected LDY operand at $4563. Paired high bytes are at $4969; output enters the cursor interpreter at $456F."
+  },
+  {
+   "address": 18793,
+   "type": "line",
+   "text": "Four high bytes paired with the low pitch-sequence directory at $4965. $456A installs $FF before the sequence cursor loads; these four bytes end immediately before the first waveform sequence at $496D."
+  },
+  {
+   "address": 18797,
+   "type": "line",
+   "text": "waveform/control sequence 0 selected through $495D/$4961. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18802,
+   "type": "line",
+   "text": "pitch sequence 0 selected through $4965/$4969. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18807,
+   "type": "line",
+   "text": "waveform/control sequence 1 selected through $495D/$4961. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18816,
+   "type": "line",
+   "text": "pitch sequence 1 selected through $4965/$4969. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18834,
+   "type": "line",
+   "text": "waveform/control sequence 2 selected through $495D/$4961. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18839,
+   "type": "line",
+   "text": "pitch sequence 2 selected through $4965/$4969. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18844,
+   "type": "line",
+   "text": "waveform/control sequence 3 selected through $495D/$4961. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18850,
+   "type": "line",
+   "text": "pitch sequence 3 selected through $4965/$4969. The byte interpreter at $454A or $456F updates voice state and handles $FE stopping/control and $FF cursor redirection. Other sequence pointers can begin inside this same bounded sound-data pool; this label describes a consumer entry, not an exclusive allocation."
+  },
+  {
+   "address": 18856,
+   "type": "line",
+   "text": "Eleven-byte instrument record 0, $49A8-$49B2. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18857,
+   "type": "line",
+   "text": "Byte-1 indexed base within the eleven-byte instrument records beginning $49A8. $452E copies the selected record value into the self-modified LDY operand at $4564; $44DD reads it for auxiliary pitch/control behavior. Record stride comes from the instrument offset lookup, not this symbol boundary."
+  },
+  {
+   "address": 18867,
+   "type": "line",
+   "text": "Eleven-byte instrument record 1, $49B3-$49BD. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18878,
+   "type": "line",
+   "text": "Eleven-byte instrument record 2, $49BE-$49C8. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18889,
+   "type": "line",
+   "text": "Eleven-byte instrument record 3, $49C9-$49D3. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18900,
+   "type": "line",
+   "text": "Eleven-byte instrument record 4, $49D4-$49DE. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18911,
+   "type": "line",
+   "text": "Eleven-byte instrument record 5, $49DF-$49E9. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18922,
+   "type": "line",
+   "text": "Eleven-byte instrument record 6, $49EA-$49F4. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18933,
+   "type": "line",
+   "text": "Eleven-byte instrument record 7, $49F5-$49FF. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18944,
+   "type": "line",
+   "text": "Eleven-byte instrument record 8, $4A00-$4A0A. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18955,
+   "type": "line",
+   "text": "Eleven-byte instrument record 9, $4A0B-$4A15. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18966,
+   "type": "line",
+   "text": "Eleven-byte instrument record 10, $4A16-$4A20. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18977,
+   "type": "line",
+   "text": "Eleven-byte instrument record 11, $4A21-$4A2B. Fields read at $4329-$4418: waveform/control selector, auxiliary-sequence index, SID ADSR bytes, pitch-slide parameters, pulse-width values, filter-record offset, and pitch/pulse-modulation selectors. $4811 translates instrument id to 11*id; twelve complete records fit before $4A2C. Their broader instrument names are not established."
+  },
+  {
+   "address": 18991,
+   "type": "line",
+   "text": "Indexed parameter base used at $43F9 and $4636-$46F6 for pitch modulation: delay bounds, stream pointer, semitone interval, right-shift count and step adjustment. Instrument selectors are shifted right once; their indexed reads can overlap the following filter/pulse slots starting at $4A41. There is no separate fixed-size pitch-modulation allocation proven by this base."
+  },
+  {
+   "address": 18992,
+   "type": "line",
+   "text": "Indexed delay lower threshold field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 18993,
+   "type": "line",
+   "text": "Indexed modulation-stream pointer low byte field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 18994,
+   "type": "line",
+   "text": "Indexed modulation-stream pointer high byte field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 18995,
+   "type": "line",
+   "text": "Indexed note interval field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 18996,
+   "type": "line",
+   "text": "Indexed right-shift count field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 18997,
+   "type": "line",
+   "text": "Indexed step adjustment field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 18998,
+   "type": "line",
+   "text": "Indexed delay upper threshold field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 19009,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 0, $4A41-$4A50. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19010,
+   "type": "line",
+   "text": "Indexed filter frequency high byte field base within the retained sound-parameter area. Its consumer adds the current parameter-record offset Y; this address is not a separate allocation. Pitch modulation uses $4636-$46F6, while filter frequency is loaded at $4360."
+  },
+  {
+   "address": 19025,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 1, $4A51-$4A60. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19041,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 2, $4A61-$4A70. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19057,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 3, $4A71-$4A80. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19073,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 4, $4A81-$4A90. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19089,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 5, $4A91-$4AA0. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19105,
+   "type": "line",
+   "text": "Sixteen-byte filter/pulse parameter slot 6, $4AA1-$4AB0. Instrument field 8 selects a filter slot offset at $4354; field 10 supplies the pulse-envelope offset at $4404. Indexed reads based at $4A41-$4A50 supply filter frequency/routing, volume-high bits, envelope control, stream pointer, bounds and signed increments. Slots are shared by these two consumers; source table membership does not imply that every slot is selected."
+  },
+  {
+   "address": 19121,
+   "type": "line",
+   "text": "Eight-byte song descriptor: primary and secondary tick-divider reloads, followed by three little-endian voice playlist pointers. $40B1 multiplies song index by eight and copies these fields into music state. Captured descriptor zero points to $4AB9, $4B10 and $4B59. Only this intact descriptor is established in the retained Central Park image."
+  },
+  {
+   "address": 19122,
+   "type": "line",
+   "text": "Secondary divider field and indexed high-byte alias within the song descriptor at $4AB1; not the beginning of a separate stream allocation."
+  },
+  {
+   "address": 19129,
+   "type": "line",
+   "text": "Voice 0 playlist at $4AB9-$4B0F, selected by song descriptor zero. $4183 onward handles phrase ids, transpose, repeated-phrase and timing control; $FF redirects the playlist cursor using the following byte. All three boundaries are fixed by the descriptor and the following phrase directory."
+  },
+  {
+   "address": 19216,
+   "type": "line",
+   "text": "Voice 1 playlist at $4B10-$4B58, selected by song descriptor zero. $4183 onward handles phrase ids, transpose, repeated-phrase and timing control; $FF redirects the playlist cursor using the following byte. All three boundaries are fixed by the descriptor and the following phrase directory."
+  },
+  {
+   "address": 19289,
+   "type": "line",
+   "text": "Voice 2 playlist at $4B59-$4B7D, selected by song descriptor zero. $4183 onward handles phrase ids, transpose, repeated-phrase and timing control; $FF redirects the playlist cursor using the following byte. All three boundaries are fixed by the descriptor and the following phrase directory."
+  },
+  {
+   "address": 19326,
+   "type": "line",
+   "text": "19 low bytes of phrase pointers; $4221 selects one with Y and $4226 reads the corresponding high byte at $4B91. The directory includes interior entries into shared phrase data, so streams are not forced into disjoint records."
+  },
+  {
+   "address": 19345,
+   "type": "line",
+   "text": "19 high bytes paired with $4B7E. The phrase pool begins at $4BA4 and ends at $4DE3, immediately before the scene header."
+  },
+  {
+   "address": 19364,
+   "type": "line",
+   "text": "Music phrase entry $4BA4: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4BBE. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19391,
+   "type": "line",
+   "text": "Music phrase entry $4BBF: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4BE7. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19432,
+   "type": "line",
+   "text": "Music phrase entry $4BE8: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C10. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19453,
+   "type": "line",
+   "text": "Auxiliary pitch-sequence bytes at $4BFD-$495C, selected through $48E7/$48F2. Consumed by $459B-$45C2; negative bytes control cursor behavior, nonnegative values offset the current note. End is bounded by the next selected sequence or the following directory, not by assuming zero padding."
+  },
+  {
+   "address": 19473,
+   "type": "line",
+   "text": "Music phrase entry $4C11: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C3A. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19515,
+   "type": "line",
+   "text": "Music phrase entry $4C3B: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C42. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19523,
+   "type": "line",
+   "text": "Music phrase entry $4C43: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C58. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19545,
+   "type": "line",
+   "text": "Music phrase entry $4C59: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C6D. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19566,
+   "type": "line",
+   "text": "Music phrase entry $4C6E: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C86. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19578,
+   "type": "line",
+   "text": "Music phrase entry $4C7A: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4C86. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19591,
+   "type": "line",
+   "text": "Music phrase entry $4C87: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4CA1. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19618,
+   "type": "line",
+   "text": "Music phrase entry $4CA2: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4CBB. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19644,
+   "type": "line",
+   "text": "Music phrase entry $4CBC: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4CC6. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19655,
+   "type": "line",
+   "text": "Music phrase entry $4CC7: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4CF9. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19706,
+   "type": "line",
+   "text": "Music phrase entry $4CFA: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4D23. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19748,
+   "type": "line",
+   "text": "Music phrase entry $4D24: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4D53. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19796,
+   "type": "line",
+   "text": "Music phrase entry $4D54: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4D59. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19802,
+   "type": "line",
+   "text": "Music phrase entry $4D5A: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4D6F. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19824,
+   "type": "line",
+   "text": "Music phrase entry $4D70: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4DC9. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19914,
+   "type": "line",
+   "text": "Music phrase entry $4DCA: note/duration and command bytes consumed by $4237-$431D; first $FF boundary at $4DE3. Pointers can share a phrase suffix. $4309 handles the end marker by resetting the phrase cursor and advancing the voice playlist unless its repeat countdown is active. The complete pool is $4BA4-$4DE3."
+  },
+  {
+   "address": 19940,
+   "type": "line",
+   "text": "Scene header: first byte is 118, the number of scene pointers processed by the one-time relocation loop at $8A15. The following delta word at $4DE5/$4DE6 is $0800 in the fresh captured level. The area scene-selector bytes start at $4DE7; scene pointers begin at $4E27. The loaded pointers are already relocatable biased words; after initialization the entry at $8A0F is patched to RTS."
+  },
+  {
+   "address": 19943,
+   "type": "line",
+   "text": "32 two-byte area slots at $4DE7-$4E26: scene selector then background/color flags. $8A54 doubles current area into X, $8A56 reads byte 1 and masks its low nibble for $D021, while $8A64 reads byte 0 and doubles the scene selector to index the scene directory. A $FF scene selects the renderer sentinel path. Populated Central Park slots are followed by $FF/0 pairs."
+  },
+  {
+   "address": 19944,
+   "type": "line",
+   "text": "Background/color byte of area slot zero in the paired array $4DE7-$4E26. Read at $8A56 using X=2*area; low nibble becomes VIC-II background $D021 and renderer color $32. It is not an independent per-area scene array."
+  }
+ ]
+}
