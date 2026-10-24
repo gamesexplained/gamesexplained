@@ -49,6 +49,10 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-screen canvas.pl-3d[hidden]{display:none}
 .pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
 .pl-over[hidden]{display:none}
+.pl-race{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:3;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.82);color:#fff;border:2px solid #fff;border-radius:10px;padding:8px 10px 8px 14px;font-family:var(--fm);font-size:13px;line-height:1.3;max-width:92%}
+.pl-race[hidden]{display:none}
+.pl-race button{white-space:nowrap;font-family:var(--fb);font-size:14px;font-weight:700;background:#fff;color:#000;border:none;border-radius:7px;padding:6px 10px;cursor:pointer}
+.pl-race #pl-race-no{background:transparent;color:#fff;border:1px solid #fff}
 .pl-over button{font-size:16px}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
 .pl-bar button,.pl-over button,.pl-mod button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
@@ -90,7 +94,8 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-panel{margin-top:14px;border-top:1px solid var(--line-soft);padding-top:12px}
 .pl-panel[hidden]{display:none}
 .pl-panel h3{margin:0 0 6px;font-size:17px}
-.pl-mem{display:block;width:100%;max-width:512px;height:auto;image-rendering:pixelated;border-radius:6px;border:1px solid var(--line);cursor:crosshair;background:#000}
+.pl-under{margin-top:12px;border-top:none;padding-top:0}
+.pl-mem{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px;border:1px solid var(--line);cursor:crosshair;background:#000}
 .pl-mem-tip{font-family:var(--fm);font-size:12px;color:var(--ink-soft);min-height:1.6em;margin-top:6px}
 .pl-voices{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:center;font-family:var(--fm);font-size:13px;color:var(--ink-soft);max-width:620px}
 .pl-voices .bar{position:relative;height:22px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);overflow:hidden}
@@ -115,7 +120,19 @@ section table{margin:6px 0 18px}
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
       <canvas id="pl-3d" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The same screen as a model: the scenery raised in blocks, the sprites standing in front. Drag to turn it."></canvas>
+      <div class="pl-race" id="pl-race" hidden><span id="pl-race-msg"></span> <button type="button" id="pl-race-go">👻 Race your ghost</button> <button type="button" id="pl-race-no" aria-label="No thanks">✕</button></div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
+    </div>
+    <div class="pl-panel pl-under" id="pl-memory" hidden>
+      <h3>The memory as the game uses it</h3>
+      <canvas class="pl-mem" id="pl-mem" width="512" height="128" role="img" aria-label="The game's 64 KB, one dot per byte: a column is 128 bytes, $0000 at the left and $FFFF at the right"></canvas>
+      <p class="pl-mem-tip" id="pl-mem-tip">Hover for the address; click to open it in the source.</p>
+      <p class="cap">One dot per byte, 128 to a column, from <code>$0000</code> at the left to <code>$FFFF</code> at the right, laid out and coloured as the Source tab's map. A byte the game wrote in the last frames <b>flashes white</b> and fades; the routines the game ran in the last frame are <b>striped</b> (those the lab below lists). The port reads its memory directly, so only writes can be seen, not reads.</p>
+    </div>
+    <div class="pl-panel pl-under" id="pl-voices" hidden>
+      <h3>The sound chip's three voices</h3>
+      <div class="pl-voices" id="pl-voice-rows"></div>
+      <p class="cap">Each bar is a voice's loudness, worked out from the attack, decay, sustain, and release the game sets; the mark is its sustain level. The note is the voice's frequency register on a PAL machine. The tune plays on voices 1 and 2; the game's sound effects use voice 3.</p>
     </div>
     <div class="pl-bar" id="pl-bar">
       <button type="button" data-act="pause" aria-pressed="false">Pause</button>
@@ -148,17 +165,6 @@ section table{margin:6px 0 18px}
       <button type="button" data-tune="2" aria-pressed="false" title="The re-release's tune and its driver byte, put into the game's memory">The re-release's tune</button>
     </div>
     <p class="pl-show-note" id="pl-show-note" aria-live="polite"></p>
-    <div class="pl-panel" id="pl-memory" hidden>
-      <h3>The memory as the game uses it</h3>
-      <canvas class="pl-mem" id="pl-mem" width="256" height="256" role="img" aria-label="The game's 64 KB, one dot per byte: a row is a page of 256 bytes, $0000 at the top left"></canvas>
-      <p class="pl-mem-tip" id="pl-mem-tip">Hover for the address; click to open it in the source.</p>
-      <p class="cap">One dot per byte, a row of 256 bytes to a page, from <code>$0000</code> at the top to <code>$FFFF</code> at the bottom, in the colours of the Source tab's map. A byte the game wrote in the last frames <b>flashes white</b> and fades; the routines the game ran in the last frame are <b>striped</b> (those the lab below lists). The port reads its memory directly, so only writes can be seen, not reads.</p>
-    </div>
-    <div class="pl-panel" id="pl-voices" hidden>
-      <h3>The sound chip's three voices</h3>
-      <div class="pl-voices" id="pl-voice-rows"></div>
-      <p class="cap">Each bar is a voice's loudness, worked out from the attack, decay, sustain, and release the game sets; the mark is its sustain level. The note is the voice's frequency register on a PAL machine. The tune plays on voices 1 and 2; the game's sound effects use voice 3.</p>
-    </div>
     <div class="pl-lab" id="pl-lab">
       <h3>Rewind and see what is running</h3>
       <div class="pl-scrub">
@@ -352,8 +358,11 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
         wallRGB[o] = c[0]; wallRGB[o + 1] = c[1]; wallRGB[o + 2] = c[2]; wallRGB[o + 3] = 255;
       }
     }
+    if (SHOW.paths && !rt.busy) for (const [x, y] of paths.points()) { const c = (x + y) & 4 ? 1 : 0; put(x - 1, y - 1, 2, 14, 2, c); put(x - 1, y, 2, 14, 2, c); }   // white and black, in steps
     gl.viewport(0, 0, c3.width, c3.height);
-    gl.clearColor(0.08, 0.08, 0.1, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // beyond the wall's edges, the border colour as the wall shows it, so the screen stays full
+    const bc = COL[rt.chips.vic[0x20] & 15];
+    gl.clearColor(bc[0] * 0.92, bc[1] * 0.92, bc[2] * 0.92, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
     const mvp = new Float32Array(view());
     gl.useProgram(wallP);
@@ -409,12 +418,13 @@ const ghost = (function () {
       if (cur && cur.track.length > 50) {
         const finished = !cur.over, b = best.get(cur.rec);
         if (!b || (finished && (!b.finished || cur.track.length < b.track.length)) || (!finished && !b.finished)) best.set(cur.rec, { finished, track: cur.track });
+        offer(cur.rec, cur.f0, finished);
       }
       cur = { rec, f0: played, track: [], over: false, seen: rt.over };
     }
     cur.track.push([v[0] | ((v[0x10] & 1) << 8), v[1], M[0x07F8], v[0x15] & 1]);
   }
-  function seek(T) {                                    // after a rewind: this try as far as T
+  function trim(T) {                                    // after a rewind: this try as far as T
     if (!cur) return;
     if (rt && recAt(rt.M) !== cur.rec || T < cur.f0) { cur = null; return; }
     cur.track.length = Math.max(0, T - cur.f0); cur.over = false; cur.seen = rt.over;
@@ -448,7 +458,24 @@ const ghost = (function () {
     if (!b) return 'Ghost: play ' + name.toLowerCase() + ' through once, or lose it, and your next try races that run.';
     return 'Ghost: ' + (b.finished ? 'your fastest finish of ' + name.toLowerCase() + ', ' + secs(b.track.length) : 'your last try at ' + name.toLowerCase() + ', which did not finish') + '.';
   }
-  return { step, seek, paint, note, reset() { best.clear(); cur = null; } };
+  // when a try at a screen ends, the offer to race it: rewind to where that screen began (the
+  // log and the saved passes rebuild the moment) with the ghost on
+  const race = $('pl-race'), raceMsg = $('pl-race-msg');
+  let raceAt = null, raceTimer = 0;
+  function offer(rec, f0, finished) {
+    if (replaying || rt.busy) return;
+    const name = (LEVELS[LEVEL_OF.get(rec)] || 'that screen').toLowerCase();
+    raceAt = f0; raceMsg.textContent = (finished ? 'You finished ' + name + '.' : 'Game over in ' + name + '.') + ' Play it again against yourself?';
+    race.hidden = false; clearTimeout(raceTimer); raceTimer = setTimeout(() => { race.hidden = true; }, 15000);
+  }
+  $('pl-race-go').addEventListener('click', e => {
+    e.stopPropagation(); race.hidden = true;
+    if (raceAt === null || !running) return;
+    if (!SHOW.ghost) { SHOW.ghost = true; document.querySelector('[data-show=ghost]').setAttribute('aria-pressed', 'true'); }
+    seek(raceAt); unpause(); screen.focus();
+  });
+  $('pl-race-no').addEventListener('click', e => { e.stopPropagation(); race.hidden = true; screen.focus(); });
+  return { step, trim, paint, note, reset() { best.clear(); cur = null; } };
 })();
 
 // The enemies' paths: each slot's script ($4A00 on) stepped on from where the slot is, as
@@ -486,32 +513,46 @@ const paths = (function () {
     for (let s = 0; s < 5; s++) {
       if (!(v[0x15] >> (s + 2) & 1)) continue;
       const t = trace(s), p = t.pts;
-      const line = (w, col, dash) => { c.beginPath(); c.setLineDash(dash); c.lineWidth = w; c.strokeStyle = col; c.moveTo(fx(p[0][0]) + 0.5, fy(p[0][1]) + 0.5); for (const q of p) c.lineTo(fx(q[0]) + 0.5, fy(q[1]) + 0.5); c.stroke(); };
-      line(3, 'rgba(0,0,0,.75)', []); line(1, '#fff', [4, 3]);
-      c.setLineDash([]);
-      for (const [x, y] of t.turns.slice(0, 6)) { c.fillStyle = '#fff'; c.fillRect(fx(x) - 1, fy(y) - 1, 3, 3); }
+      const line = (w, col) => { c.beginPath(); c.lineWidth = w; c.strokeStyle = col; c.moveTo(fx(p[0][0]) + 0.5, fy(p[0][1]) + 0.5); for (const q of p) c.lineTo(fx(q[0]) + 0.5, fy(q[1]) + 0.5); c.stroke(); };
+      line(5, '#000'); line(2, '#fff');
+      // a chevron every 16 pixels, pointing the way the enemy will go
+      for (let i = 8; i + 1 < p.length; i += 16) {
+        const [x0, y0] = p[i], [x1, y1] = p[i + 1], ax = x1 - x0, ay = y1 - y0; if (!ax && !ay) continue;
+        const cx = fx(x0) + 0.5, cy = fy(y0) + 0.5;
+        c.beginPath(); c.moveTo(cx - 4 * ax + 3 * ay, cy - 4 * ay + 3 * ax); c.lineTo(cx + 2 * ax, cy + 2 * ay); c.lineTo(cx - 4 * ax - 3 * ay, cy - 4 * ay - 3 * ax);
+        c.lineWidth = 4; c.strokeStyle = '#000'; c.stroke(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke();
+      }
+      for (const [x, y] of t.turns.slice(0, 6)) { c.fillStyle = '#000'; c.fillRect(fx(x) - 3, fy(y) - 3, 7, 7); c.fillStyle = '#fff'; c.fillRect(fx(x) - 2, fy(y) - 2, 5, 5); }
       const e = p[p.length - 1];
       if (t.gone) {                                    // where it leaves the screen: a cross
         c.strokeStyle = '#000'; c.lineWidth = 3; c.beginPath(); c.moveTo(fx(e[0]) - 4, fy(e[1]) - 4); c.lineTo(fx(e[0]) + 4, fy(e[1]) + 4); c.moveTo(fx(e[0]) + 4, fy(e[1]) - 4); c.lineTo(fx(e[0]) - 4, fy(e[1]) + 4); c.stroke();
         c.strokeStyle = '#fff'; c.lineWidth = 1.2; c.stroke();
       }
       const lx = fx(p[0][0]) - 4, ly = fy(p[0][1]) - 18;   // the slot's number, in a box above it
+      c.fillStyle = '#fff'; c.fillRect(lx - 2, ly - 2, t.random ? 42 : 13, 14);
       c.fillStyle = '#000'; c.fillRect(lx - 1, ly - 1, t.random ? 40 : 11, 12);
       c.fillStyle = '#fff'; c.fillText(String(s + 1) + (t.random ? ' random' : ''), lx + 1, ly + 8);
     }
     c.restore();
   }
-  return { paint };
+  // the paths as points in the frame, for the 3D view
+  function points() {
+    const v = rt.chips.vic, out = [];
+    for (let s = 0; s < 5; s++) if (v[0x15] >> (s + 2) & 1) for (const [x, y] of trace(s).pts) out.push([fx(x), fy(y)]);
+    return out;
+  }
+  return { paint, points };
 })();
 
 // The memory: a dot per byte, in the Source tab's colours, written bytes flashing white
 const memory = (function () {
-  const cvm = $('pl-mem'), mctx = cvm.getContext('2d'), mimg = mctx.createImageData(256, 256), tip = $('pl-mem-tip');
+  const cvm = $('pl-mem'), mctx = cvm.getContext('2d'), mimg = mctx.createImageData(512, 128), tip = $('pl-mem-tip');
   const KIND = { code: [232, 163, 61], graphics: [111, 199, 212], levels: [143, 209, 122], sound: [217, 127, 110], text: [237, 241, 113],
     tables: [143, 127, 224], variables: [196, 108, 113], runtime: [58, 61, 106], rom: [42, 44, 74], other: [46, 102, 114], unused: [18, 20, 44] };
   const kind = new Uint8Array(0x10000), kinds = Object.keys(KIND), label = [], span = new Map();
   const heat = new Float32Array(0x10000), age = new Uint32Array(0x10000).fill(0xFFFFFFFF);
   let prev = null, routineSpans = [];
+  const at = a => (((a & 127) << 9) | (a >> 7)) * 4;   // byte a's dot: column a >> 7, row a & 127
   // a routine's bytes: from its label to the next one, at most 128
   fetch('memmap.json').then(r => r.json()).then(m => {
     for (const [a, n, k] of m.runs) kind.fill(kinds.indexOf(k) < 0 ? kinds.length - 1 : kinds.indexOf(k), a, a + n);
@@ -527,16 +568,16 @@ const memory = (function () {
     for (const n of rt.seen) { const sp = span.get(n) || (names.has(n) ? [names.get(n), 1] : null); if (sp) routineSpans.push(sp); }
     const d = mimg.data;
     for (let a = 0; a < 0x10000; a++) {
-      const k = KIND[kinds[kind[a]]], h = heat[a], o = a * 4;
+      const k = KIND[kinds[kind[a]]], h = heat[a], o = at(a);
       d[o] = k[0] * 0.55 + (255 - k[0] * 0.55) * h; d[o + 1] = k[1] * 0.55 + (255 - k[1] * 0.55) * h; d[o + 2] = k[2] * 0.55 + (255 - k[2] * 0.55) * h; d[o + 3] = 255;
       if (h) heat[a] = h < 0.03 ? 0 : h * 0.86;
     }
     for (const [a0, n] of routineSpans)                   // the routines that ran: striped
-      for (let a = a0; a < a0 + n && a < 0x10000; a++) if (((a & 255) + (a >> 8)) % 3 === 0) { const o = a * 4; d[o] = d[o + 1] = d[o + 2] = 255; }
-      else { const o = a * 4; d[o] *= 0.5; d[o + 1] *= 0.5; d[o + 2] *= 0.5; }
+      for (let a = a0; a < a0 + n && a < 0x10000; a++) if (((a & 127) + (a >> 7)) % 3 === 0) { const o = at(a); d[o] = d[o + 1] = d[o + 2] = 255; }
+      else { const o = at(a); d[o] *= 0.5; d[o + 1] *= 0.5; d[o + 2] *= 0.5; }
     mctx.putImageData(mimg, 0, 0);
   }
-  const addrOf = e => { const b = cvm.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * 256), y = Math.floor((e.clientY - b.top) / b.height * 256); return (Math.max(0, Math.min(255, y)) << 8) | Math.max(0, Math.min(255, x)); };
+  const addrOf = e => { const b = cvm.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * 512), y = Math.floor((e.clientY - b.top) / b.height * 128); return (Math.max(0, Math.min(511, x)) << 7) | Math.max(0, Math.min(127, y)); };
   cvm.addEventListener('mousemove', e => {
     const a = addrOf(e); let sym = null;
     for (const s of label) { if (s[0] <= a) sym = s; else break; }
@@ -848,7 +889,7 @@ function seek(T) {
   const t0 = performance.now();
   replaying = true;
   try { rt = replayTo(T); } finally { replaying = false; }
-  played = T; paused = true; ghost.seek(T); memory.reset();
+  played = T; paused = true; ghost.trim(T); memory.reset();
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'true');
   sound.attach(); draw(); lab();
   say('Rewound to ' + secs(T) + ' (' + Math.round(performance.now() - t0) + ' ms to replay)');
