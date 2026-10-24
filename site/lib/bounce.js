@@ -49,7 +49,7 @@
   // fov is the lens's height in radians, (ax, ay) is where the ball's point sits on the canvas
   // (-1 to 1 from the middle, ay down) and zoom brings it nearer than the distance that fits
   const CAMS = {
-    tall: { yaw: 0.25, pitch: 0.62, fov: 0.85, ax: 0, ay: 0.4, zoom: 1 },
+    tall: { yaw: 1.06, pitch: 0.63, fov: 1.06, ax: -0.04, ay: 0.17, zoom: 0.9 },
     wide: { yaw: 1.0, pitch: 0.6, fov: 0.7, ax: -0.3, ay: 0.08, zoom: 1 },
   };
 
