@@ -50,7 +50,7 @@ follows is where things are and what differs.
   falls and dies.
 - The alarm: walls in areas 3 and 9 carry command 47 (`$9E0F`), which
   sets `$03EA`: the lamps in areas 2, 3, 7, 8 and 9 flash
-  (`FlashAlarmLamps`, `$9C5C`, called where Central Park calls an `RTS`)
+  (`FlashAlarmLamps`, `$9C5C`, a call The Mansion adds to the main loop)
   and enemies' blows take four times the energy. Object record 2 in area
   8 switches it off (`$BD3A`), but bit 7 of `$03EA` stays set, so the
   blows stay four times as strong.

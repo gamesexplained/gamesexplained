@@ -3067,7 +3067,7 @@
   },
   {
    "address": 37664,
-   "name": "entrance_animation_ticks",
+   "name": "entrance_animation_steps",
    "type": "Field",
    "kind": "user"
   },
@@ -12314,7 +12314,7 @@
   {
    "address": 20139,
    "type": "line",
-   "text": "Scene pointer 128 plus 1, the address the instructions at $8818, $881E, $884A, $88E1 and $946A write with X and Y as the index: the high byte of each word of the table, the index counting in pairs from the low byte."
+   "text": "Scene pointer 128 plus 1, the address the instructions at $8818, $884A, $88E1 and $946A read and the one at $881E writes, with X and Y as the index: the high byte of each word of the table, the index counting in pairs from the low byte."
   },
   {
    "address": 20140,
@@ -13229,7 +13229,7 @@
   {
    "address": 36881,
    "type": "line",
-   "text": "26 exits, $9011-$902A: the area it leads to ($FF for none). Values: 0, 1, 2, 0, 3, 4, 2, 7, 5, 2, 6, 3, 7, 3, 9, 8, 6, 7, 10, 7, 12, 9, 12, 9, 255, 10."
+   "text": "26 exits, $9011-$902A: the area it leads to, or $FF for the way out of the level (entry 24, the first exit of area 12's group), which sets the level-exit request $02AF instead of moving the player. Values: 0, 1, 2, 0, 3, 4, 2, 7, 5, 2, 6, 3, 7, 3, 9, 8, 6, 7, 10, 7, 12, 9, 12, 9, 255, 10."
   },
   {
    "address": 36907,
@@ -13304,7 +13304,7 @@
   {
    "address": 37662,
    "type": "line",
-   "text": "The Mansion's entrance-animation list, three bytes an entry as in Central Park's (the spawn record the player arrived by, the kind of entrance, its length in ticks), ending with $FF: arriving by record 2 (area 2) plays kind 1 for 15 ticks, and by record 10 (area 6, X 69, Y 79) kind 5, which only The Mansion has (AdvanceBoundarySequence at $9CCA), for 2 ticks."
+   "text": "The Mansion's entrance-animation list, three bytes an entry as in Central Park's (the spawn record the player arrived by, the kind of entrance, how many animation steps it lasts), ending with $FF: arriving by record 2 (area 2) plays kind 1 for 15 steps, and by record 10 (area 6, X 69, Y 79) kind 5, which only The Mansion has (AdvanceBoundarySequence at $9CCA). Kind 5's length byte, 2, is never used: AdvanceBoundarySequence clears the kind $0293 at once ($9CDC) and plays animation $C091 without counting $0294 down."
   },
   {
    "address": 37663,
@@ -13314,7 +13314,7 @@
   {
    "address": 37664,
    "type": "line",
-   "text": "The third byte of each entrance-animation entry, its length in ticks, read with the same X."
+   "text": "The third byte of each entrance-animation entry, its length in animation steps (AdvanceBoundarySequence counts it down once each time the player's previous animation has finished), read with the same X. Kind 5 does not use it."
   },
   {
    "address": 37669,
@@ -13444,7 +13444,7 @@
   {
    "address": 39239,
    "type": "line",
-   "text": "Condition list for area 12, $9947-$9983: 15 four-byte entries, then $FF. In each entry the second byte is the smallest value of the caller's parameter that tests it, and the two after it give the region of the scene that is tested against each actor. Its bytes from $9983 on are also the start of condition list 13, which begins there."
+   "text": "Condition list for area 12, $9947-$9983: 15 four-byte entries, then $FF. In each entry the second byte is the largest value of the caller's parameter (the actor's depth) that tests it, and the two after it give the region of the scene that is tested against each actor. Its bytes from $9983 on are also the start of condition list 13, which begins there."
   },
   {
    "address": 39299,
@@ -13569,7 +13569,7 @@
   {
    "address": 40028,
    "type": "line",
-   "text": "FlashAlarmLamps, called from MainTick every pass, a call Central Park's MainTick does not make: it redraws the lamp of the current area with its colour changed, at most every 12 counts of the interrupt counter $E2 (the last time kept in $03EE), while the alarm is ringing ($03EA has any of its low seven bits set). For the 16 passes after the alarm is switched off ($03F0 from $FF down to $F0, item 24, ObjectSwitchOffAlarm at $BD3A) it flashes every 3 counts instead, decrementing $03F0 each time, and then stops."
+   "text": "FlashAlarmLamps, called from MainTick every pass, a call Central Park's MainTick does not make: it redraws the lamp of the current area with its colour changed, at most every 12 counts of the interrupt counter $E2 (the last time kept in $03EE), while the alarm is ringing ($03EA has any of its low seven bits set). Once the alarm is switched off (item 24, ObjectSwitchOffAlarm at $BD3A, sets $03F0 to $FF) it flashes 16 more times, at most every 3 counts, decrementing $03F0 at each flash from $FF down to $EF, and then stops."
   },
   {
    "address": 40067,

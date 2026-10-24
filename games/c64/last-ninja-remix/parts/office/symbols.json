@@ -2929,7 +2929,7 @@
   },
   {
    "address": 36623,
-   "name": "entrance_animations_ticks",
+   "name": "entrance_animation_steps",
    "type": "Field",
    "kind": "user"
   },
@@ -12854,7 +12854,7 @@
   {
    "address": 35791,
    "type": "line",
-   "text": "30 exits, $8BCF-$8BEC: the area it leads to ($FF for none). Values: 0, 1, 3, 0, 2, 4, 1, 5, 1, 2, 6, 2, 7, 5, 8, 6, 7, 9, 10, 8, 11, 9, 10, 12, 13, 11, 14, 12, 255, 13."
+   "text": "30 exits, $8BCF-$8BEC: the area it leads to, or $FF for the way out of the level (entry 28, the first exit of area 14's group), which sets the level-exit request $02AF instead of moving the player. Values: 0, 1, 3, 0, 2, 4, 1, 5, 1, 2, 6, 2, 7, 5, 8, 6, 7, 9, 10, 8, 11, 9, 10, 12, 13, 11, 14, 12, 255, 13."
   },
   {
    "address": 35821,
@@ -12934,7 +12934,7 @@
   {
    "address": 36621,
    "type": "line",
-   "text": "The Office's entrance-animation list, three bytes an entry as in Central Park's (the exit the player arrived by, the kind of entrance, its length in ticks), ending with $FF: arriving by exit 15 plays kind 3 for 8 ticks, by exit 12 kind 2 for 4 ticks, and by exit 27 kind 3 for 8 ticks."
+   "text": "The Office's entrance-animation list, three bytes an entry as in Central Park's (the exit the player arrived by, the kind of entrance, how many animation steps it lasts), ending with $FF: arriving by exit 15 plays kind 3 for 8 steps, by exit 12 kind 2 for 4 steps, and by exit 27 kind 3 for 8 steps. ApplySceneEntryRules stores the kind and the count at $0293 and $0294, and AdvanceBoundarySequence ($9892) counts $0294 down by one each time the player's previous animation has finished, starting the next."
   },
   {
    "address": 36622,
@@ -12944,7 +12944,7 @@
   {
    "address": 36623,
    "type": "line",
-   "text": "The third byte of each entrance-animation entry, its length in ticks, read with the same X."
+   "text": "The third byte of each entrance-animation entry, its length in animation steps (AdvanceBoundarySequence counts it down once each time the player's previous animation has finished), read with the same X."
   },
   {
    "address": 36631,
@@ -13189,7 +13189,7 @@
   {
    "address": 39017,
    "type": "line",
-   "text": "Area 14 ($F8 = $0A). While $02A9 is zero and $B1 is set (by ObjectGrabHelicopter at $B8D0, when the player takes hold of the helicopter), the player is carried: their X becomes the actor's X plus 4 and their Y the actor's Y plus 12, and they are drawn (ComposeSprites with X = 0) and tested against the scene conditions at depth $74."
+   "text": "Area 14 ($F8 = $0A). While $02A9 is zero and $B1 is set (by ObjectGrabHelicopter at $B8D0, when the player takes hold of the helicopter), the player is carried: their X becomes the actor's X plus 4 and their Y the actor's Y plus 12, and they are drawn (ComposeSprites with X = 0) and tested against the scene conditions at a fixed depth of $74 (the immediate value at $988B, not the byte $74)."
   },
   {
    "address": 39058,
@@ -13239,7 +13239,7 @@
   {
    "address": 39351,
    "type": "line",
-   "text": "Script command 42, which walls in area 6 carry: The Office's longer copy of ScriptRunHeading7AnimationSequence at $9A09. When the player faces heading 7 ($69) and $70 is zero, it plays animation $BB6D once (frames 73 and 74, then on into the commands of $BB72) and $BB72 seven times (frames 75, 76, 75 and 74, which take the player 11 pixels up), 88 pixels up in all, and goes to $9A33, which sets $74 to $98 and $EF to $FF and calls ResetEngineTickBaselines. It has no closing animation. It clears the command $81 in every case."
+   "text": "Script command 42, which walls in area 6 carry: The Office's longer copy of ScriptRunHeading7AnimationSequence at $9A09. The dispatch table also sends commands 5, 6 and 22 here, but no wall in The Office carries them. When the player faces heading 7 ($69) and $70 is zero, it plays animation $BB6D once (frames 73 and 74, then on into the commands of $BB72) and $BB72 seven times (frames 75, 76, 75 and 74, which take the player 11 pixels up), 88 pixels up in all, and goes to $9A33, which sets $74 to $98 and $EF to $FF and calls ResetEngineTickBaselines. It has no closing animation. It clears the command $81 in every case."
   },
   {
    "address": 39392,
@@ -13254,7 +13254,7 @@
   {
    "address": 39491,
    "type": "line",
-   "text": "Script command 43, which walls in area 7 carry: The Office's version of Central Park's ScriptRunHeading7AnimationOrFallbackFatalSequence. When the player faces heading 7 and $70 is zero, it plays $BBA6 (frame 75 moving 8 down four times, then on into the commands of $BBB8) and RepeatFixedAnimationSequence with A = 1 ($BBB8 once, frames 74, 75, 76 and 75 moving 11 down, then $BBCD), and clears $81. Facing any other way it goes on into ScriptUseCurrentYAndRunFatalSequence at $9A83: eight frames of the scripted runtime and the player dies."
+   "text": "Script command 43, which walls in area 7 carry: The Office's version of Central Park's ScriptRunHeading7AnimationOrFallbackFatalSequence. The dispatch table also sends command 9 here, but no wall in The Office carries it. When the player faces heading 7 and $70 is zero, it plays $BBA6 (frame 75 moving 8 down four times, then on into the commands of $BBB8) and RepeatFixedAnimationSequence with A = 1 ($BBB8 once, frames 74, 75, 76 and 75 moving 11 down, then $BBCD), and clears $81. Facing any other way, or with $70 not zero, it goes on into ScriptUseCurrentYAndRunFatalSequence at $9A83: eight frames of the scripted runtime and the player dies."
   },
   {
    "address": 39518,
@@ -13379,7 +13379,7 @@
   {
    "address": 39802,
    "type": "line",
-   "text": "FallPlayer: A is how far to fall. It keeps the time in $022E and sets $0234 to $FF, and then, for every two or more counts of the interrupt counter $E2, moves the player down 4 pixels a count and draws them in the falling frame for their heading from $9BD7, testing the scene conditions at depth $74. Between steps it runs ScheduleEnemyAnimation and RuntimeNoOpHook. Once the player has fallen the whole distance, or reached Y $BD, it sets $B6 to $FF and the player dies."
+   "text": "FallPlayer: A is how far to fall. It keeps the time in $022E and sets $0234 to $FF, and then, for every two or more counts of the interrupt counter $E2, moves the player down 4 pixels a count and draws them in the falling frame for their heading from $9BD7, testing the scene conditions at depth $74. Between steps it runs ScheduleEnemyAnimation and RuntimeNoOpHook. Once a step's move is more than the distance still to fall, or the player has reached Y $BD, it sets $B6 to $FF and the player dies. The step that ends the fall has already moved the player, so they fall a little past the distance: 48 pixels in steps of 8 end after 56."
   },
   {
    "address": 39876,
@@ -14429,7 +14429,7 @@
   {
    "address": 47343,
    "type": "line",
-   "text": "ObjectShowCode: the routine object record 0 (area 3) calls. It clears the panel's second box (picture 0, X = 1), copies the four glyph numbers at $0297-$029A into the text record at $B90A and prints them there, at column 33, row 9, then returns with Y = 18 and A zero, so ObjectEngine goes on with item 18 in place of the record's item 19. The four glyphs are the minutes and seconds the panel's clock showed when CopyClockToCode last ran: at the end of The Basement, or at a GAME OVER in The Office. No other instruction in The Office names them, or the text they are copied into. They are the code The Final Battle's lock asks for (ObjectEnterCode there, at $B327)."
+   "text": "ObjectShowCode: the routine object record 0 (area 3) calls. It clears the panel's second box (picture 0, X = 1), copies the four glyph numbers at $0297-$029A into the text record at $B90A and prints them there, at column 33, row 9, then returns with Y = 18 and A zero, so ObjectEngine goes on with item 18 in place of the record's item 19. The four glyphs are the minutes and seconds the panel's clock showed when CopyClockToCode last ran: at the end of The Basement, or at a GAME OVER in The Office (the engine sets them to 1111 at $0EEE when a game starts). Apart from this routine and CopyClockToCode's store at $B92A, no instruction in The Office names them, and no other instruction names the text they are copied into. They are the code The Final Battle's lock asks for (ObjectEnterCode there, at $B327)."
   },
   {
    "address": 47366,
@@ -14444,7 +14444,7 @@
   {
    "address": 47375,
    "type": "line",
-   "text": "The text routine at $1583 returns here, to the first instruction after the zero that ends \"\" at $B90E, and the routine that called it at $B903 goes on."
+   "text": "The text routine at $1583 returns here, to the first instruction after the zero that ends the four code glyphs at $B90E (four spaces as loaded, the code once ObjectShowCode has copied it in), and the routine that called it at $B903 goes on."
   },
   {
    "address": 47385,
@@ -14464,7 +14464,7 @@
   {
    "address": 47413,
    "type": "line",
-   "text": "Object scene $B935-$B938, which the entrance rules draw in area 9 once item 20 is held: 1 placed scene (121) in the same three-byte placement format as a composite scene, ending with $FF. Object record 3 draws scene 120 ($B939) at the same place when item 20 is taken."
+   "text": "Object scene $B935-$B938, which the entrance rules draw in area 9 once item 20 is held: 1 placed scene (121) in the same three-byte placement format as a composite scene, ending with $FF. It is placed at column 0, row 1. Object record 3 draws scene 120 ($B939, placed at column 0, row 0) when item 20 is taken."
   },
   {
    "address": 47417,

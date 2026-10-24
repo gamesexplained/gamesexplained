@@ -53,7 +53,8 @@ follows is where things are and what differs.
   `$B8D0`) carries the player off with it (`CarryPlayerWithActor`,
   `$9869`).
 - Falls: command 48 in areas 10 to 13 (`$9B12`) drops the player to Y
-  `$BD`, command 47 in areas 13 and 14 (`$9B6E`) 48 pixels, and both
+  `$BD`, command 47 in areas 13 and 14 (`$9B6E`) by 48 pixels, which in
+  steps of 8 ends after 56, and both
   kill (`FallPlayer`, `$9B7A`). Command 49 in area 9 (`$9BD9`) shuts the
   exits while it is touched.
 - Walls that open: area 5's first wall once item 17 is held (`$8EA6`),
