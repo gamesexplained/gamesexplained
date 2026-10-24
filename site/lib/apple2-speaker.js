@@ -19,12 +19,16 @@
 // kit/apple2/test_speaker.js holds the model to that rule.
 //
 //   clicks(log)          the clicks' times in seconds from the log's start
-//   notes(log)           what the clicks play: [{ t, dur, hz, clicks }], a note being a run of clicks
+//   notes(log, voices)   what the clicks play: [{ t, dur, hz, clicks }], a note being a run of clicks
 //                        whose spacing stays within a quarter of the run's first; hz is the square
-//                        wave's, clock / (2 x the mean spacing)
+//                        wave's, clock / (2 x the mean spacing). voices 2 is for a player that clicks
+//                        two voices at one pitch, each once a period, so that the spacings alternate
+//                        as the voices drift apart: a note is then a run in which every two
+//                        neighbouring spacings add up to within 1/32 of the run's first two (a
+//                        semitone is about 1/17), and hz is clock / that sum, the same formula
 //   hz(cycles)           the pitch of clicks that many cycles apart
 //   render(log, rate)    Float32Array: the output at `rate` samples a second, to 50 ms after the end
-//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button and
+//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log, voices }), a stop button and
 //                        a drawing of the notes (rows by pitch) with each click as a tick along the
 //                        foot, its playhead moving as the sound plays. opts.onTime(t, tune) is called
 //                        each animation frame while a sound plays, and with t = null when it stops.
@@ -57,10 +61,23 @@
     return log.speaker.map(c => (c - log.start) / log.clock);
   }
 
-  function notes(log) {
+  function notes(log, voices) {
     log = unpack(log);
     const s = log.speaker, out = [];
     let i = 0;
+    if (voices === 2) {
+      while (i + 2 < s.length) {
+        const first = s[i + 2] - s[i];
+        let j = i + 2;
+        while (first > 0 && j + 1 < s.length && Math.abs((s[j + 1] - s[j - 1]) - first) <= first / 32) j++;
+        // fewer than four spacings is the join between two notes, or a stray click
+        if (first <= 0 || j - i < 4) { i++; continue; }
+        out.push({ t: (s[i] - log.start) / log.clock, dur: (s[j] - s[i]) / log.clock,
+          hz: hz((s[j] - s[i]) / (j - i), log.clock), clicks: j - i + 1 });
+        i = j;
+      }
+      return out;
+    }
     while (i + 1 < s.length) {
       const first = s[i + 1] - s[i];
       if (first <= 0) { i++; continue; }
@@ -110,7 +127,7 @@
   }
 
   function mount(el, opts) {
-    const tunes = opts.tunes.map(t => ({ name: t.name, log: unpack(t.log) }));
+    const tunes = opts.tunes.map(t => ({ name: t.name, log: unpack(t.log), voices: t.voices || opts.voices }));
     if (!document.querySelector('style.a2spk-style')) {
       const st = document.createElement('style');
       st.className = 'a2spk-style';
@@ -148,7 +165,7 @@
     const cache = new Map();
     function draw(i, t) {
       shown = i;
-      const tune = tunes[i], ns = notes(tune.log), cs = clicks(tune.log);
+      const tune = tunes[i], ns = notes(tune.log, tune.voices), cs = clicks(tune.log);
       const len = (tune.log.end - tune.log.start) / tune.log.clock;
       const W = canvas.clientWidth || 640, H = 200, dpr = root.devicePixelRatio || 1;
       canvas.width = W * dpr; canvas.height = H * dpr;

@@ -7,6 +7,7 @@
 //   Apple2.textBase(row), Apple2.hiresBase(y)                                 page 1's row addresses
 //   Apple2.text(main, aux, sw) -> 24 rows of {ch, inverse} cells             the text page, as text
 //   Apple2.load(url) -> {ram, has, names, byName, listing, bytes(a, n), sym(label)}   listing.json
+//   Apple2.monitor                                                            hooks for the ROM's routines
 //
 // main and aux are the two 64Ks as arrays of bytes (aux may be null when the game never uses it);
 // sw holds the switches by the kit server's names (text, mixed, page2, hires, 80col, 80store,
@@ -18,6 +19,14 @@
 // whether the IIe shows it in inverse (flashing counts as inverse, as screen.py draws it), so a page
 // can set the screen in its own font. kit/apple2/test_text.py holds the two to each other.
 // Apple2.load rebuilds the game image from listing.json, as C64.load and BBC.load do.
+// Apple2.monitor stands in for the Monitor ROM's routines that games call, which the kit holds no copy
+// of, as hooks for the kit's 6502 (kit/cpu/cpu6502.js, `hooks`): new C64Cpu.CPU(m, ...) and then
+// cpu.run({ ..., hooks: { ...Apple2.monitor } }). Each does what the routine does to the registers and
+// takes its cycles (kit/skills/apple2/apple2-reference, "Timing"), so a sound the game makes with it
+// clicks when the game's does; kit/apple2/test_monitor_hooks.js holds them to the timings measured
+// there. WAIT ($FCA8): (26 + 27A + 5A^2) / 2 cycles from the JSR to the instruction after it, A
+// left 0, carry set. A = 0, which waits 256 rounds, stops the run, since its measured time is not
+// what the formula gives.
 globalThis.Apple2 = (function () {
   const W = 560, H = 384;
   const COLOURS = [[0, 0, 0], [227, 30, 96], [96, 78, 189], [255, 68, 253], [0, 163, 96], [156, 156, 156],
@@ -160,7 +169,16 @@ globalThis.Apple2 = (function () {
   }
 
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-  return { W, H, COLOURS, textBase, hiresBase, modeOf, render, draw, text, load, hex };
+  const monitor = Object.freeze({
+    0xFCA8(cpu) {                              // WAIT: the JSR's 6 cycles are already counted
+      const a = cpu.a;
+      if (a === 0) throw new Error('Apple2.monitor: WAIT with A = 0 is not modelled (from ' + hex(cpu.pc) + ')');
+      cpu.cycles += (26 + 27 * a + 5 * a * a) / 2 - 6;
+      cpu.a = 0; cpu.z = 1; cpu.n = 0; cpu.c = 1;
+      cpu.rts();
+    },
+  });
+  return { W, H, COLOURS, textBase, hiresBase, modeOf, render, draw, text, load, hex, monitor };
 })();
 
 // The Apple II's names for the footprint categories; the drawing is makeMemMap in memmap.js.
