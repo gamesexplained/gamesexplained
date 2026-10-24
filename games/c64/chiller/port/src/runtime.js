@@ -8,6 +8,7 @@
 // rt.frame, rt.cycles, rt.chips (vic, colour, sidw, keys, joy), rt.P, rt.onSid(fn(r, v, t))
 // rt.jump(n)        a fresh game taken to level n (0-9) as finishing each level before it does;
 //                   the caller runs it fast (rt.busy is true until the level has started)
+// rt.tracing, rt.seen  set tracing, and rt.seen holds the names of the routines called since it was cleared
 // rt.cheats         { energy, ghosts } switched on and off by the page; rt.skip() ends the level
 (function (root) {
 'use strict';
@@ -82,13 +83,14 @@ function create(image, opts = {}) {
   K().boot(M);
   // the routines' calls since the last yield, for the cost of the stretch
   const COST = opts.cost || {};
+  rt.tracing = false; rt.seen = new Set();   // with tracing on, the routines called since the page last cleared seen
   let spent = 0;
   const GENF = Object.getPrototypeOf(function* () {}).constructor;
   for (const name of Object.keys(P)) {
     const f = P[name], w = COST[name] || 0;
     if (typeof f !== 'function' || !w) continue;
-    P[name] = f instanceof GENF ? function* (...a) { spent += w; return yield* f.apply(this, a); }
-      : function (...a) { spent += w; return f.apply(this, a); };
+    P[name] = f instanceof GENF ? function* (...a) { spent += w; if (rt.tracing) rt.seen.add(name); return yield* f.apply(this, a); }
+      : function (...a) { spent += w; if (rt.tracing) rt.seen.add(name); return f.apply(this, a); };
   }
   const base = COST['@yield'] || 30, IRQ = COST['@irq'] || 0;
   let nextIrq = TIMER, lastLine = 0, due = false;
