@@ -48,8 +48,13 @@
 //   of them and each write to the chip or to $DD00 and $DD02 (which pick the video bank, kept with
 //   collide whether or not cia is on), and at each line, from memory as it stands then. The
 //   character ROM the chip sees at $1000-$1FFF of banks 0 and 2 is rom.char when given; without it
-//   those bytes read 0, collide nothing, and are counted in collideRomReads. Without collide the
-//   two registers read what was last written to them.
+//   those bytes read 0, collide nothing, and are counted in collideRomReads. A collision that sets
+//   a bit in a register that was 0 sets the latch's bit for it ($D019 bit 2 for $D01E, bit 1 for
+//   $D01F), which interrupts when $D01A enables it; one while the register holds a bit raises
+//   nothing, so a program that never reads the register is interrupted once (collide.js's
+//   C.irq). The latch is looked at every eight cycles, and a handler is interrupted as often as in
+//   VICE with its read up to ten cycles earlier (kit/c64/fixtures/vic-collide-irq.json). Without
+//   collide the two registers read what was last written to them and raise no interrupt.
 // Not modelled: the VIC-II's timing beyond that and whole lines, the disk and the ROMs (the
 // simulator stops on a ROM read; a hook can stand in, or rom: { char } gives the character ROM,
 // read from the emulator's own file at run time and never committed). Reads of other VIC
@@ -347,6 +352,8 @@ class Machine {
       let step = LINE - (cpu.cycles % LINE);
       if (this.cia) { this.ciaCatchUp(); step = Math.max(1, Math.min(step, this.ciaNext())); }
       if (this.dma) step = Math.max(1, Math.min(step, this.dmaNext() - cpu.cycles));
+      // a collision's interrupt is looked for every eight cycles while one could be raised
+      if (this.collide && this.enable & this.collide.armed()) step = Math.min(step, 8);
       cpu.run({ cycles: step, hooks: this.hooks });
       if (this.stopFlag) { this.stopFlag = false; return false; }
       this.tick();
@@ -355,7 +362,7 @@ class Machine {
   }
   tick() {
     if (this.dma) this.dmaCatchUp();
-    if (this.collide) this.collide.to(this.cpu.cycles);
+    if (this.collide) this.latch |= this.collide.irq(this.cpu.cycles - 1);
     const ln = Math.floor(this.cpu.cycles / LINE);
     while (this.lastLine < ln) {
       this.lastLine++;
@@ -369,7 +376,7 @@ class Machine {
       const c = this.cia[0];
       if ((c.icr & c.mask) && !this.cpu.i) { this.cpu.irq(null, { hooks: this.hooks }); return; }
     }
-    if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(null, { hooks: this.hooks });
+    if ((this.latch & this.enable & 0x0F) && !this.cpu.i) this.cpu.irq(null, { hooks: this.hooks });
   }
   runFrames(n) { return this.runCycles(n * FRAME); }
   // Run until f(machine) is true at a main-loop pass: stops with the program counter at passAt,
@@ -411,7 +418,7 @@ class Machine {
     Object.assign(m, { cmp: s.cmp, latch: s.latch, enable: s.enable, lastLine: s.lastLine, frames: s.frames, passes: s.passes, pra: s.pra, ddra: s.ddra, ddrb: s.ddrb,
       skipOnce: !!s.skipOnce, joy: s.joy === undefined ? 0x1F : s.joy, keys: new Set(s.keys || []) });
     if (s.joy1 !== undefined) m.joy1 = s.joy1;
-    if (s.cia) Object.assign(m, { cia: s.cia, pra2: s.pra2, ddra2: s.ddra2, lastCycles: s.lastCycles, nmiDue: s.nmiDue });
+    if (s.cia) Object.assign(m, { cia: JSON.parse(JSON.stringify(s.cia)), pra2: s.pra2, ddra2: s.ddra2, lastCycles: s.lastCycles, nmiDue: s.nmiDue });
     else m.lastCycles = c.cycles;
     if (s.collide) { m.pra2 = s.pra2; m.ddra2 = s.ddra2; m.collide.load(s.collide); }
     return m;

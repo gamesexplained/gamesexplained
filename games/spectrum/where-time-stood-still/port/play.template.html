@@ -58,6 +58,32 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
 .pl-pad button.on{background:var(--ink);color:#fff}
 @media (pointer:coarse){.pl-pad{display:grid}}
+/* the wide view: the plate over the whole window, the picture above the bar */
+.pl-wide-only{display:none}
+.pl-stage{display:none;position:absolute;inset:0;overflow:hidden}
+.pl-stage canvas{position:absolute;display:block;image-rendering:pixelated}
+.pl-world{position:absolute;transform-origin:0 0}
+.pl-edge{position:absolute;outline:1px solid rgba(255,255,255,.35);pointer-events:none}
+/* the CRT screen over the wide picture stands in for the view and the panel drawn over it, and
+   waits for the first picture of play */
+.pl-wcrt #pl-ocv,.pl-wcrt #pl-hcv{visibility:hidden}
+.pl-wide:not(.pl-drawn) .pl-world .crt-screen{display:none!important}
+/* a section the site skips while off screen (content-visibility) would hold the plate inside it */
+html.pl-wide-page section{content-visibility:visible!important;contain:none!important}
+.pl-plate.pl-wide{position:fixed;inset:0;z-index:10000;margin:0;border:0;border-radius:0;padding:0;background:#000;display:flex;flex-direction:column;box-shadow:none}
+.pl-wide .pl-screen{flex:1;min-height:0;border-radius:0}
+.pl-wide .pl-screen:focus-visible,.pl-wide .pl-screen.pl-focus{box-shadow:none}
+.pl-wide .pl-stage{display:block}
+.pl-wide #pl-cv{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.pl-wide.pl-drawn #pl-cv{visibility:hidden}
+.pl-wide .pl-keys,.pl-wide .pl-pad,.pl-wide #pl-cap,.pl-wide #pl-cv + .crt-screen{display:none!important}
+.pl-wide .pl-wide-only{display:inline-block}
+.pl-wide .pl-bar{margin:0;padding:8px 12px;background:#17191d}
+.pl-wide .pl-bar button{background:#2a2d33;color:#e9e7e1;border-color:#3d4047}
+.pl-wide .pl-bar button[aria-pressed="true"]{background:#e9e7e1;color:#17191d;border-color:#e9e7e1}
+.pl-wide .pl-bar .pl-sep{background:#3d4047}
+.pl-wide .pl-status,.pl-wide .pl-hint{font-family:var(--fm);font-size:12px;color:#9a9da4}
+.pl-zoom{font-family:var(--fm);font-size:13px;color:#e9e7e1;min-width:2.6em;text-align:center}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -74,6 +100,10 @@ section table{margin:6px 0 18px}
   <div class="plate pl-plate">
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="320" height="256" role="img" aria-label="The ZX Spectrum 128 screen of Where Time Stood Still"></canvas>
+      <div class="pl-stage" id="pl-stage" aria-hidden="true">
+        <div class="pl-world" id="pl-world"><canvas id="pl-wcv"></canvas><canvas id="pl-ocv" width="256" height="192"></canvas><canvas id="pl-hcv" width="256" height="40"></canvas></div>
+        <div class="pl-edge" id="pl-edge"></div>
+      </div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's data…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
@@ -81,16 +111,22 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
-      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-act="wide" aria-pressed="false" title="Fill the window with the plateau round the view, drawn by the game's own routines">🔭 Wide view</button>
+      <span class="pl-wide-only"><button type="button" data-act="zoom-out" aria-label="Zoom out">−</button> <span class="pl-zoom" id="pl-zoom">×2</span> <button type="button" data-act="zoom-in" aria-label="Zoom in">+</button></span>
+      <button type="button" class="pl-wide-only" data-act="full">⛶ Full screen</button>
+      <span class="pl-wide-only pl-hint">− and + zoom · Esc goes back</span>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <ul class="pl-keys">
       <li><kbd>2</kbd>, <kbd>0</kbd>, <kbd>Y</kbd> on the control selection: the arrow keys as a Kempston joystick</li>
       <li><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> walk the leader; with fire held, run</li>
-      <li><kbd>Right Ctrl</kbd> or <kbd>Right Alt</kbd>: fire, which shoots the way the leader faces</li>
+      <li><kbd>Left Ctrl</kbd>, <kbd>Left Shift</kbd>, <kbd>Right Ctrl</kbd> or <kbd>Right Alt</kbd>: fire, which shoots the way the leader faces</li>
       <li><kbd>Space</kbd> the menus: the arrows move the pointer and fire picks</li>
+      <li>The mouse: a click opens the menus, and in a menu the pointer follows the mouse and a click picks; with the game paused, a click carries on</li>
       <li><kbd>1</kbd>, <kbd>3</kbd> or <kbd>4</kbd> on the control selection: keys of your own, Interface 2 or cursor, played on the Spectrum's keys</li>
-      <li><kbd>Shift</kbd> is CAPS SHIFT, <kbd>Left Ctrl</kbd> SYMBOL SHIFT and <kbd>Enter</kbd> ENTER</li>
+      <li><kbd>Shift</kbd> is CAPS SHIFT, <kbd>Left Ctrl</kbd> SYMBOL SHIFT and <kbd>Enter</kbd> ENTER; in play the game reads neither shift</li>
+      <li>🔭 Wide view: <kbd>−</kbd> and <kbd>+</kbd> zoom, <kbd>Esc</kbd> goes back to the 128's screen</li>
     </ul>
     <div class="pl-pad" id="pl-pad" aria-label="Joystick">
       <button type="button" data-pad="10">↖</button><button type="button" data-pad="8">↑</button><button type="button" data-pad="9">↗</button>
@@ -110,6 +146,24 @@ section table{margin:6px 0 18px}
   <h2 class="t">What differs from a Spectrum 128</h2>
   <!-- differences -->
 </section>
+<section id="wide">
+  <p class="fig">03 · The wide view</p>
+  <h2 class="t">The plateau beyond the 128's screen</h2>
+  <p class="lede">The 128 shows the party 28 characters by 18 of a map 256 by 128, about a sixty-fifth of the area they are in. The Wide view button fills the window with the plateau round that view, drawn by the game's own routines, and leaves the game as it is.</p>
+  <p>Each part of the wide picture is what the game would draw if its view stood there at that moment. The page keeps a copy of the machine from each pass of the main loop, taken where the pass has moved the actors and scrolled the view and is about to draw the actors. For each piece of the picture, 28 characters by 18, the page moves the copy's view there and runs the pass's drawing on it:</p>
+  <table>
+    <tr><th>The copy, with its view moved</th><th>The game's routine</th></tr>
+    <tr><td>puts back the actors far from the view</td><td>$DCB9</td></tr>
+    <tr><td>brings in the creatures and objects near it</td><td>$DC0B</td></tr>
+    <tr><td>draws the scenery into the view's buffer</td><td>$A012</td></tr>
+    <tr><td>copies the buffer to the screen the game is not showing</td><td>$963B</td></tr>
+    <tr><td>draws the rope, the shots, the actors and the objects over it</td><td>$E6B3, $C21B, $A6F4</td></tr>
+  </table>
+  <p>The page reads the piece back from that screen and sets the copy back before the next piece, so the game's own machine is never touched. The 128's view sits in the middle of the wide picture, outlined, drawn as before. The menus and the conversation window open over it where the 128 opens them, and the panel the 128 shows under the view sits at the foot of the window.</p>
+  <p>A creature far from the view is drawn where the game keeps it. The game has eight places for actors and brings a creature into one only when the view comes near; until then the creature is a record of its place. Each pass the game takes the next of its 46 records and, when that creature is out of play, moves it a step along its route ($E187), so a creature out of play takes a step every six or seven seconds at most. The wide view draws a creature out of play as the game would draw it on bringing it in, standing at its record's place between those steps. It comes to life when the 128's view comes near enough to bring it into play.</p>
+  <p>The plateau is sixteen areas, four by four, and the game holds one at a time. Each area's map overlaps the next by 28 characters across and 20 down, and the game moves into the next area when the view's column reaches 228 or its row 108 ($DB0B). Past the edge of the view's area the wide view draws the next one, on a copy that has crossed into it as the game crosses: the actors carried ($DBDD), the objects carried ($F72A) and the area loaded ($87CF). Where two maps overlap they do not always agree. The wide view draws the overlap from the view's own area, so the picture there changes when the view crosses, while the 128 keeps the rows it drew from the area before until they scroll out of its view. Areas 12 and 15 have no scenery, and the wide view leaves them black, with the world beyond the plateau's edge.</p>
+  <p>The wide view is made for a large monitor. Full screen fills it, − and + set the zoom from ×1 to ×6, and the page remembers the zoom; Esc goes back to the 128's screen. The CRT screen draws the whole wide picture as one tube. In full screen at ×2 on a 2560 by 1440 monitor the window shows about 27 times as much of the plateau as the 128's view. The keys play the game as before.</p>
+</section>
 </main>
 <script src="../../lib/spectrum.js"></script>
 <script src="../../lib/ay.js"></script>
@@ -127,7 +181,7 @@ const RGB = Spectrum.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16
 const FRAME = WTPage.FRAME, FRAME_MS = 1000 * FRAME / 3546900;
 // the picture: the paper, 256 by 192, inside a border of 32 pixels
 const W = 320, H = 256, BX = 32, BY = 32;
-let data = null, rt = null, running = false, paused = false;
+let data = null, rt = null, mouse = null, running = false, paused = false;
 
 // --- drawing: the frame the clock finished last, the screen as the beam reached the paper
 const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H);
@@ -149,6 +203,134 @@ function draw(F) {
   }
   ctx.putImageData(img, 0, 0);
 }
+
+// --- the wide view (port/page/wide.js): the plateau round the view, drawn on the copy of the
+// machine left by the pass that drew the screen shown; over it the screen's own view and the
+// windows that pass drew, where the 128 shows them, and the panel at the bottom of the window
+const plate = screen.closest('.pl-plate'), stage = $('pl-stage'), edge = $('pl-edge');
+const wcv = $('pl-wcv'), ocv = $('pl-ocv'), hcv = $('pl-hcv');
+const wctx = wcv.getContext('2d'), octx = ocv.getContext('2d'), hctx = hcv.getContext('2d');
+const oimg = octx.createImageData(256, 192), himg = hctx.createImageData(256, 40);
+// the CRT screen's source: the picture, the view and the panel in one, a pixel the Spectrum's
+const ccv = document.createElement('canvas'), cctx = ccv.getContext('2d'), cscr = new Uint8Array(6912);
+let wcrt = null, ckey = '';
+const RGB32 = RGB.map(c => (0xFF000000 | c[2] << 16 | c[1] << 8 | c[0]) >>> 0);
+// the panel: the screen's last five character rows
+const HUD = 40, ZOOM = 'gamesexplained.wtss.wide-zoom';
+const WV = WTWide.create();
+let wideOn = false, zoom = 2, snaps = [], serial = 0, wimg = null, wpix = null, wsize = null, painted = 0;
+try { const z = +localStorage.getItem(ZOOM); if (z >= 1 && z <= 6) zoom = z; } catch (e) { /* no storage: the zoom starts at 2 */ }
+// the copies: one a pass, where it starts to draw the actors ($86D9), and the windows that pass
+// draws noted at the next pass's start ($86A2); a new game from the title ($8521) has none yet.
+// And the mouse's pointer and fire (page/mouse.js), once the pass has read the controls ($86C1)
+function* watch(it) {
+  for (const y of it) {
+    if (y && y.cp === 0x86D9) {
+      const s = WV.snap(rt, snaps.length >= 4 ? snaps.shift() : null);
+      s.id = ++serial; s.windows = null;
+      snaps.push(s);
+    } else if (y && y.cp === 0x86A2 && snaps.length && !snaps[snaps.length - 1].windows) WV.windows(snaps[snaps.length - 1], rt);
+    else if (y && y.cp === 0x86C1) mouse.pass();
+    else if (y && y.cp === 0x8521) { snaps.length = 0; mouse.reset(); }
+    yield y;
+  }
+}
+// the copy behind a frame: the last taken before the frame's picture, by the pass that drew into
+// the screen the frame shows
+function pick(F) {
+  let best = null;
+  for (const s of snaps) if (s.bank === F.bank && s.t <= F.at && (!best || s.t > best.t)) best = s;
+  return best;
+}
+const place = (el, x, y, w, h) => Object.assign(el.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+// the picture's size in the Spectrum's pixels, each zoom by zoom of the window's, and where the
+// 128's view stands in it: across the middle, and down the middle of what the panel leaves
+function layout() {
+  if (!wideOn) return;
+  const cw = stage.clientWidth, ch = stage.clientHeight;
+  if (!cw || !ch) return;
+  const W = Math.max(256, Math.floor(cw / zoom)), H = Math.max(192 + HUD, Math.floor(ch / zoom));
+  if (!wsize || wsize.W !== W || wsize.H !== H) { wcv.width = ccv.width = W; wcv.height = ccv.height = H; wimg = wctx.createImageData(W, H); wpix = new Uint8Array(W * H); }
+  const x = Math.floor(W / 2) - 112, y = Math.floor((H - HUD) / 2) - 72;
+  const left = Math.floor((cw - W * zoom) / 2), top = Math.floor((ch - H * zoom) / 2), z = zoom;
+  wsize = { W, H, x, y };
+  place(wcv, left, top, W * z, H * z);
+  place(ocv, left + (x - 16) * z, top + (y - 8) * z, 256 * z, 192 * z);
+  place(hcv, left + Math.floor((W - 256) / 2) * z, top + (H - HUD) * z, 256 * z, HUD * z);
+  place(edge, left + x * z, top + y * z, 224 * z, 144 * z);
+  $('pl-zoom').textContent = '×' + zoom;
+  painted = 0; ckey = '';
+  drawWide(rt && rt.lastFrame());
+}
+function drawWide(F) {
+  if (!wideOn || !wsize || !F) return;
+  const s = F.bank ? pick(F) : null;
+  plate.classList.toggle('pl-drawn', !!s);
+  edge.hidden = !s;
+  if (!s) return;
+  if (painted !== s.id) {
+    const { W, H, x, y } = wsize, v = s.view;
+    WV.render(s, v.col * 8 + 4 * v.half - x, v.row * 8 + v.pixel - y, W, H, wpix);
+    const a = s.colour, br = (a >> 3) & 8, ink = RGB32[(a & 7) | br], paper = RGB32[((a >> 3) & 7) | br], none = RGB32[0];
+    const u = new Uint32Array(wimg.data.buffer);
+    for (let i = 0; i < wpix.length; i++) { const p = wpix[i]; u[i] = p === 1 ? ink : p ? none : paper; }
+    wctx.putImageData(wimg, 0, 0);
+    painted = s.id;
+  }
+  // the screen: its view and the windows over the picture, the rest of its last five rows as the panel
+  const win = new Uint8Array(768);
+  for (const w of s.windows || []) for (let r = w.row; r < Math.min(24, w.row + w.rows); r++) for (let c = w.col; c < Math.min(32, w.col + w.cols); c++) win[r * 32 + c] = 1;
+  const o = new Uint32Array(oimg.data.buffer), h = new Uint32Array(himg.data.buffer);
+  o.fill(0); h.fill(RGB32[0]);
+  for (let r = 0; r < 24; r++) for (let c = 0; c < 32; c++) {
+    const w = win[r * 32 + c];
+    if (w || (r >= 1 && r <= 18 && c >= 2 && c <= 29)) cell(F, c, r, o, r * 8);
+    else if (r >= 19) cell(F, c, r, h, (r - 19) * 8);
+  }
+  octx.putImageData(oimg, 0, 0); hctx.putImageData(himg, 0, 0);
+  // through the CRT screen: the three in one, drawn again only when one of them has changed
+  const crt = !!(wcrt && wcrt.on);
+  plate.classList.toggle('pl-wcrt', crt);
+  if (!crt) return;
+  const key = s.id + ',' + F.flash + ',' + wsize.W + ',' + wsize.H;
+  let same = key === ckey;
+  for (let i = 0; same && i < 6912; i++) same = cscr[i] === F.screen[i];
+  if (same) return;
+  ckey = key; cscr.set(F.screen.subarray(0, 6912));
+  const { W, H, x, y } = wsize;
+  cctx.drawImage(wcv, 0, 0);
+  cctx.drawImage(ocv, x - 16, y - 8);
+  cctx.drawImage(hcv, Math.floor((W - 256) / 2), H - HUD);
+  wcrt.frame();
+}
+// the screen's character at column c and row r into u, 256 pixels across, from pixel row y
+function cell(F, c, r, u, y) {
+  const s = F.screen, a = s[6144 + r * 32 + c], bright = (a >> 3) & 8;
+  let ink = RGB32[(a & 7) | bright], paper = RGB32[((a >> 3) & 7) | bright];
+  if ((a & 0x80) && F.flash) [ink, paper] = [paper, ink];
+  for (let k = 0; k < 8; k++) {
+    const yy = r * 8 + k, bits = s[((yy & 0xC0) << 5) | ((yy & 7) << 8) | ((yy & 0x38) << 2) | c];
+    for (let b = 7, o = (y + k) * 256 + c * 8; b >= 0; b--, o++) u[o] = (bits >> b) & 1 ? ink : paper;
+  }
+}
+function setWide(on) {
+  wideOn = on;
+  plate.classList.toggle('pl-wide', on);
+  plate.classList.remove('pl-drawn');
+  document.documentElement.classList.toggle('pl-wide-page', on);
+  document.documentElement.style.overflow = on ? 'hidden' : '';
+  document.querySelector('[data-act="wide"]').setAttribute('aria-pressed', String(on));
+  if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  wsize = null;
+  layout();
+  screen.focus();
+}
+function zoomBy(d) {
+  zoom = Math.max(1, Math.min(6, zoom + d));
+  try { localStorage.setItem(ZOOM, String(zoom)); } catch (e) { /* no storage: the zoom lasts for this visit */ }
+  layout();
+}
+new ResizeObserver(() => layout()).observe(stage);
 
 // --- sound: the AY's writes and the beeper's changes in each frame of 128 time, streamed to the
 // site's model of them (site/lib/ay.js) as each frame is shown (the clock can be ahead of it)
@@ -190,6 +372,9 @@ Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound 
 let acc = 0, last = 0;
 function boot() {
   rt = WTPage.create({ data, cost: window.WT_COST });
+  mouse = WTMouse.create(rt);
+  snaps = []; painted = 0;
+  rt.restore(data, P => watch(P.program(true)));
   sound.attach(); input();
 }
 function tick(now) {
@@ -201,11 +386,14 @@ function tick(now) {
     while (acc >= FRAME_MS && n < 10) { F = rt.runFrame(); sound.frame(); acc -= FRAME_MS; n++; if (letGo.size) release(); }
     if (n === 10) acc = 0;
   } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); return; }
-  if (n) draw(F);
+  if (n) { draw(F); drawWide(F); }
 }
 
-// --- input: the arrows and fire as a Kempston joystick, the other keys as the Spectrum's
-const JOY = { ArrowRight: 1, ArrowLeft: 2, ArrowDown: 4, ArrowUp: 8, ControlRight: 16, AltRight: 16, NumpadEnter: 16, Numpad0: 16 };
+// --- input: the arrows and fire as a Kempston joystick, the other keys as the Spectrum's. Left
+// Ctrl and Left Shift are fire as well as SYMBOL SHIFT and CAPS SHIFT: in play the game reads
+// neither shift, and a key of one's own picked at the control selection ($B57F) can still be one
+// (on a Mac, Ctrl with an arrow moves between desktops, so Shift is the fire to run with there)
+const JOY = { ArrowRight: 1, ArrowLeft: 2, ArrowDown: 4, ArrowUp: 8, ControlLeft: 16, ShiftLeft: 16, ControlRight: 16, AltRight: 16, NumpadEnter: 16, Numpad0: 16 };
 const CODE = { Space: 'SPACE', Enter: 'ENTER', ShiftLeft: 'CAPS', ShiftRight: 'CAPS', ControlLeft: 'SYMBOL' };
 // A key is held for at least eight frames of the game's time: the game looks at the controls
 // once a pass, about six frames apart, and a shorter tap could fall between two looks
@@ -220,7 +408,7 @@ function input() {
   if (!rt) return;
   let bits = padBits;
   const keys = new Set();
-  for (const k of held.values()) if (typeof k === 'number') bits |= k; else keys.add(k);
+  for (const ks of held.values()) for (const k of ks) if (typeof k === 'number') bits |= k; else keys.add(k);
   rt.input.joy = bits;
   rt.input.keys = keys;
 }
@@ -232,8 +420,8 @@ function zxKey(e) {
 }
 function onKey(e, down) {
   if (!running || e.metaKey) return;
-  const k = JOY[e.code] !== undefined ? JOY[e.code] : zxKey(e);
-  if (k === null) return;
+  const k = [JOY[e.code], zxKey(e)].filter(v => v !== undefined && v !== null);
+  if (!k.length) return;
   e.preventDefault();
   if (down) { if (!held.has(e.code)) since.set(e.code, rt ? rt.shown : 0); held.set(e.code, k); letGo.delete(e.code); }
   else letGo.add(e.code);
@@ -242,13 +430,41 @@ function onKey(e, down) {
 let active = false;
 screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
-document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keydown', e => {
+  if (wideOn && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    if (e.key === 'Escape' && !document.fullscreenElement) { e.preventDefault(); setWide(false); return; }
+    if (e.code === 'Minus' || e.code === 'NumpadSubtract') { e.preventDefault(); zoomBy(-1); return; }
+    if (e.code === 'Equal' || e.code === 'NumpadAdd') { e.preventDefault(); zoomBy(1); return; }
+  }
+  if (active) onKey(e, true);
+});
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
 document.querySelectorAll('#pl-pad button').forEach(b => {
   const bits = +b.dataset.pad;
   const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
   const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
   b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+// the mouse (page/mouse.js): where it is on the 128's screen, in the screen's pixels, from the
+// picture of it shown (in the wide view the screen over the plateau, else the screen in its
+// border); a press it asks for held as a key is, by the latch above
+function spot(e) {
+  const wide = wideOn && plate.classList.contains('pl-drawn');
+  const r = (wide ? ocv : cv).getBoundingClientRect(), w = wide ? 256 : W, h = wide ? 192 : H;
+  if (!r.width || !r.height) return null;
+  return [Math.floor((e.clientX - r.left) * w / r.width) - (wide ? 0 : BX), Math.floor((e.clientY - r.top) * h / r.height) - (wide ? 0 : BY)];
+}
+screen.addEventListener('pointermove', e => {
+  const p = running && !paused && mouse && spot(e);
+  if (p) mouse.move(p[0], p[1]);
+});
+screen.addEventListener('pointerdown', e => {
+  const p = e.button === 0 && running && !paused && mouse && spot(e);
+  if (!p) return;
+  const k = { space: 'SPACE', fire: 16 }[mouse.click(p[0], p[1])];
+  if (k === undefined) return;
+  held.set('mouse', [k]); since.set('mouse', rt.shown); letGo.add('mouse');
+  release();
 });
 
 // --- controls
@@ -266,10 +482,17 @@ $('pl-bar').addEventListener('click', e => {
   const act = b.dataset.act;
   if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
   else if (act === 'restart' && data) start();
+  else if (act === 'wide') setWide(!wideOn);
+  else if (act === 'zoom-in') zoomBy(1);
+  else if (act === 'zoom-out') zoomBy(-1);
+  else if (act === 'full' && plate.requestFullscreen) plate.requestFullscreen().catch(() => {});
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && data) start(); });
-CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen (site/lib/crt.js)
+// the CRT screen (site/lib/crt.js), on until the viewer switches it off, and over the wide
+// picture, switched by the same button
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });
+wcrt = CRT.attach(wcv, { button: document.querySelector('[data-crt]'), source: ccv, onChange: () => { ckey = ''; drawWide(rt && rt.lastFrame()); } });
 try {
   data = JSON.parse(document.getElementById('wt-data').textContent);
   overMsg.textContent = 'Where Time Stood Still from where its loader hands over: the title, then the control selection. Press 2, 0 and Y there to play with the arrow keys. Click, then use the keyboard.';
@@ -278,6 +501,6 @@ try {
   over.appendChild(bt);
   requestAnimationFrame(tick);
 } catch (e) { overMsg.textContent = 'The game\'s data did not load: ' + e.message; }
-window.WTPlay = { get rt() { return rt; }, start };
+window.WTPlay = { get rt() { return rt; }, start, wide: { set: setWide, get on() { return wideOn; }, get snaps() { return snaps; }, zoom: zoomBy } };
 })();
 </script>

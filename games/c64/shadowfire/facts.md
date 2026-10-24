@@ -55,9 +55,12 @@ vectors at `$FFFA` and `$FFFE`.
   simulation**, the rolling clock, the ticker, one cell of the view map,
   and the entity's reachable locations.
 - The fifty entities take one frame each (`irq_entity`, `$66D1`), so each
-  is simulated once a second. After the fiftieth (`$61B2`) the time lock,
-  the self-destruct and the mission clock each count one second. *Live*:
-  the clock fell one second for every 50 frames in every test below.
+  is simulated once a second. After the fiftieth (`$61B2`) the
+  self-destruct and the mission clock each count one second, unless the
+  time lock is set: then it alone counts down (`$61C6`). While it holds,
+  every entity but the one in `$CF84` stands still (`$5841`), and so do
+  the clock's roll and the ticker (`$5F79`). *Live*: the clock fell one
+  second for every 50 frames in every test below.
 - The mission clock starts at 99:58 (`$CA00`-`$CA03` = 08 05 09 09) and
   counts down. Past 00:00 it counts up (`clock_up`, `$CA04` = 1),
   Kryxix is executed and war is declared (`$629F`). Counting up past
@@ -144,8 +147,8 @@ vectors at `$FFFA` and `$FFFE`.
 - **Strength, agility, stamina.** Strength recovers by (255 - strength)
   x stamina / 256 a second, slower in combat, and recovery costs stamina
   (`$58F8`). The load limit is strength x the character's factor
-  (`strength_factor`, `$CF85`) / 256; over it agility falls by the excess
-  / 16 a second, under it agility recovers (`$5950`, `$59AE`). Nothing
+  (`strength_factor`, `$CF85`) / 256; at or over it agility falls by (the
+  excess + 4) / 16 a second, under it agility recovers (`$5950`, `$59AE`). Nothing
   compares the load with strength when an object is picked up; Pick-up is
   refused only when the total weight would pass 255 (`pick_up`, `$6FD9`).
 - **Combat** (`$5BE6`): damage is strength x factor / 256. An enemy hits

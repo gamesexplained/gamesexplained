@@ -49,6 +49,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sf-tbl th{font-weight:700;color:var(--ink-soft)}
 .sf-tbl td.sf-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
 .sf-meter{display:inline-block;height:9px;border-radius:2px;background:var(--accent);vertical-align:1px;margin-right:8px}
+.sf-steps{margin:0;padding-left:1.4em}
+.sf-steps li{margin:0 0 .45em}
+.sf-picks{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.sf-picks figure{margin:0;text-align:center;font-size:13px;line-height:1.35}
+.sf-picks .sf-n{font-family:var(--fm)}
 .sf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
 .sf-grid button{background:#000;border:2px solid transparent;border-radius:5px;padding:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:52px}
 .sf-grid button[aria-pressed="true"]{border-color:var(--amber)}
@@ -60,6 +65,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .sf-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .sf-code{font-family:var(--fm);font-size:12px;line-height:1.5;background:#1d1f24;color:#e9e7e1;padding:14px;border-radius:6px;overflow-x:auto;margin:0 0 14px;white-space:pre}
 .sf-mono{font-family:var(--fm);font-size:13px}
+.sf-ring{align-items:center;margin:14px 0 0;gap:6px}
+.sf-ring small{opacity:.7;margin-left:4px}
+.sf-ring>span{color:var(--ink-mute)}
 @media (max-width:720px){.sf-two{grid-template-columns:1fr}.sf-strip{grid-template-columns:repeat(10,minmax(0,1fr))}}
 </style>
 <!-- tabs -->
@@ -94,8 +102,24 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Attack and Retreat both call <code>enemy_at</code>. A character told to retreat towards one of these locations refuses, with "CANNOT RUN IN THAT DIRECTION ENEMY IN THAT LOCATION", and an attack into one is accepted with nobody there to fight.</p>
 </section>
 
+<section id="pet">
+  <p class="fig">03 · Zoff's pet</p>
+  <h2 class="t">Bug: Zoff's invisible pet began as a bug</h2>
+  <p class="lede">The mission briefing warns of the Phantom, Zoff's invisible pet alien, which roams the starship attacking characters at random. Its makers said in July 1985 that the Phantom was a bug in the Commodore 64 version, and that they had taken it out.</p>
+  <div class="plate">
+    <table class="sf-tbl">
+      <tr><th>Where</th><th>What it says</th></tr>
+      <tr><td>The booklet, mission briefing</td><td>"Beware the Phantom. Zoff's invisible pet alien roams the starship attacking characters at random."</td></tr>
+      <tr><td>Steve Cain of Denton Designs, <i>Sinclair User</i> 40, July 1985, page 58</td><td>"On the Commodore 64 Shadowfire there was a bug. A phantom would appear and attack members of the Enigma team. We couldn't work out why, so we decided it was Zoff's pet. It turned out there was a spelling mistake on a single mnemonic in the machine code somewhere. We've taken the bug out now, so the bit in the booklet about Zoff's pet doesn't matter any more."</td></tr>
+    </table>
+    <p class="cap">The booklet's warning and the explanation Denton Designs gave for it. The magazine's interview is on the Internet Archive.</p>
+  </div>
+  <p>In the program on Beyond's tape, every attacker is one of the fifty people aboard. The game moves them one at a time, one each time the screen is redrawn, and after the fiftieth it starts again at the first (<code>irq_entity</code>, <code>$66D1</code>, and <code>$6197</code>). Combat (<code>$5BE6</code>) runs only for someone who is attacking, defending or retreating, and every one of the fifty shows on the view screen's map and in the list of people in a location. Beyond's disk and four cracked copies, one of them dated 30 April 1985, hold the same program.</p>
+  <p>Which mnemonic was wrong, and what it did, is unknown. The one search in this program that runs past the end of the people is <code>enemy_at</code> (section 02), and its phantoms do not attack anyone: they block a retreat and take an attack with nobody there to fight.</p>
+</section>
+
 <section id="guard">
-  <p class="fig">03 · A guard</p>
+  <p class="fig">04 · A guard</p>
   <h2 class="t">Bug: one guard was meant to patrol and never moves</h2>
   <p class="lede">Person <code>$27</code>, a horned guard in XATOR SECURITY, has a patrol script like the guards around him, but the bit that sets him walking was left out of his record.</p>
   <div class="plate">
@@ -106,7 +130,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="clock">
-  <p class="fig">04 · The clock</p>
+  <p class="fig">05 · The clock</p>
   <h2 class="t">Secret: the clock runs on past 00:00</h2>
   <p class="lede">The mission has one hour forty minutes. When the clock reaches 00:00 the game carries on, and the clock counts up.</p>
   <div class="plate">
@@ -117,7 +141,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="portraits">
-  <p class="fig">05 · The portraits</p>
+  <p class="fig">06 · The portraits</p>
   <h2 class="t">Bug: the portraits never show the top line of their cells</h2>
   <p class="lede">A portrait rolls onto the monitor a line at a time. The roll copies seven of each cell's eight lines, and the eighth, the top one, shows the line below it again.</p>
   <div class="plate">
@@ -132,14 +156,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="music">
-  <p class="fig">06 · The music</p>
+  <p class="fig">07 · The music</p>
   <h2 class="t">Secret: the music in play starts silent</h2>
   <p class="lede">The manual says the arrows on the team screen turn the music on and off. They fade it in and out, and a new game starts with it faded out.</p>
   <p>The in-game tune plays all along, but its two melody voices are pulse waves whose width is the byte at <code>$1603</code>, and a new game leaves it at 0, a pulse of no width (<a href="index.html#music">How it works</a>). The up arrow adds one to it on every pass of the screen's loop while fire is held, up to <code>$40</code>, and the down arrow takes one off, down to 0. Holding fire on the up arrow for a third of a second takes it from 0 to <code>$11</code>.</p>
 </section>
 
 <section id="destruct">
-  <p class="fig">07 · The self-destruct</p>
+  <p class="fig">08 · The self-destruct</p>
   <h2 class="t">Bug: the self-destruct takes 256 seconds where the manual says four minutes</h2>
   <p class="lede">Armed with its card, the self-destruct unit counts down a byte that starts at 0, and its first second takes it to 255.</p>
   <div class="plate">
@@ -151,28 +175,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="untouchable">
-  <p class="fig">08 · Kryxix and Zoff</p>
+  <p class="fig">09 · Kryxix and Zoff</p>
   <h2 class="t">Secret: Kryxix and Zoff cannot be hurt</h2>
   <p class="lede">Zoff walks the ship like anyone else and can be captured, but weapons cannot touch him, or the ambassador he holds.</p>
   <p>In combat an enemy hits the six team members and a team member hits people 8 to 49 (<code>$5BFF</code>). Kryxix is person 6 and Zoff person 7, so they are on neither list: they never fight and never lose strength. Zoff is beaten by beaming him aboard the attack craft, which counts as his capture, and Kryxix is rescued the same way (<code>$5A68</code>).</p>
 </section>
 
 <section id="patrols">
-  <p class="fig">09 · Patrols</p>
+  <p class="fig">10 · Patrols</p>
   <h2 class="t">Secret: guards walk home four times as fast as they walk out</h2>
   <p class="lede">A patrol script gives a time for each step, and the guard uses it differently in each direction.</p>
   <p>Walking a script forwards, each step takes its time multiplied by four seconds; walking it back, the time as it stands (<code>$5E22</code>). The <a href="levels.html">Maps / levels</a> tab draws each script's route.</p>
 </section>
 
 <section id="view">
-  <p class="fig">10 · The view screen</p>
+  <p class="fig">11 · The view screen</p>
   <h2 class="t">Bug: one cell of the view screen never shows anybody</h2>
   <p class="lede">The view screen's map has seventeen places where an icon can appear, and the search for people fills only sixteen of them.</p>
   <p><code>find_view_locations</code> (<code>$6BB7</code>) counts X down from 15 to 0 through the seventeen cells of the view, so cell 16, two tiles right of the character and two down, is never searched. Anyone standing in a location there is not shown on the view screen.</p>
 </section>
 
 <section id="shake">
-  <p class="fig">11 · The explosion</p>
+  <p class="fig">12 · The explosion</p>
   <h2 class="t">Secret: Zoff V's explosion shakes the screen to the game's own code</h2>
   <p class="lede">When the ship blows up, the screen shakes and flashes for 256 frames, and the shaking comes from reading the program as if it were a table of random numbers.</p>
   <div class="plate"><pre class="sf-code" id="sf-shake-code"></pre><p class="cap"><code>shake_screen</code> from the listing.</p></div>
@@ -180,14 +204,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="demo">
-  <p class="fig">12 · The demonstration</p>
+  <p class="fig">13 · The demonstration</p>
   <h2 class="t">Bug: the demonstration ends by clicking its way out</h2>
   <p class="lede">Left alone on the title, the game plays itself by walking the cursor through a script of 55 points. The script has no end mark: it stops by choosing Quit twice.</p>
   <p><code>input_demo</code> (<code>$5570</code>) would end the demonstration at a point whose second byte is <code>$FF</code>, and none has one. The last two points are the team screen's Quit and the start menu's Quit, which goes back to the control menu, and the control menu turns the demonstration off (<code>$41FC</code>). The demonstration ends the same way every time it runs.</p>
 </section>
 
 <section id="speech">
-  <p class="fig">13 · Leftovers</p>
+  <p class="fig">14 · Leftovers</p>
   <h2 class="t">Secret: rules for a talking program are left in three corners of memory</h2>
   <p class="lede">Three runs of unused bytes hold text that has nothing to do with the game: pronunciation rules in the form a text-to-speech program reads.</p>
   <div class="plate"><table class="sf-tbl" id="sf-speech"></table><p class="cap">The bytes from the listing, shown as text (the top bit of a rule's last character marks its end).</p></div>
@@ -339,14 +363,14 @@ function show(L) {
     ph.push([hex(a, 4), hex(ram[a]), alive ? 'alive' : 'dead', alive ? loc(ram[a + 2]) : hex(ram[a + 2])]);
   }
   table('sf-phantoms', ['Record', 'First byte', 'Reads as', 'Location'], ph);
-  // 03 the guard
+  // 04 the guard
   const gs = [];
   for (let e = 0x26; e < 0x32; e++) {
     const r = SF.entity(ram, e).r;
     gs.push([hex(e), loc(r[2]), hex(r[7]), hex(r[8]), r[5] & 0x80 ? 'a chain' : r[7] & 0x80 ? 'walks' : '<b>stands</b>']);
   }
   table('sf-guards', ['Person', 'Starts in', '+7', '+8', 'Patrol'], gs);
-  // 05 the portraits
+  // 06 the portraits
   const w = (a) => ram[a] | ram[a + 1] << 8, pic = sfPicture(ram, w(0x4A21) - 2);
   const screen = C64.renderFrame(SF_FRAME), shot = { w: 80, h: 64, px: new Uint8ClampedArray(80 * 64 * 4) };
   for (let y = 0; y < 64; y++) for (let x = 0; x < 80; x++) {
@@ -372,9 +396,9 @@ function show(L) {
   $('sf-port-mark').onclick = function () { this.setAttribute('aria-pressed', String(this.getAttribute('aria-pressed') !== 'true')); draw(); };
   draw();
   $('sf-port-out').innerHTML = `In the recorded frame the top line of a cell repeats the line below it in ${same} of the 80 cells, and differs from the portrait's own top line in ${differs}.`;
-  // 11 the explosion
+  // 12 the explosion
   $('sf-shake-code').textContent = code(L, 0x4AD7, 0x4B34);
-  // 13 the leftovers
+  // 14 the leftovers
   const txt = (a, n) => [...ram.slice(a, a + n)].map((b) => String.fromCharCode(b & 0x7F)).join('');
   table('sf-speech', ['Where', 'Bytes as text'], [[hex(0x0FE8, 4), esc(txt(0x0FE8, 16))], [hex(0x13E8, 4), esc(txt(0x13E8, 24))], [hex(0x15DF, 4), esc(txt(0x15DF, 33))]]);
 }

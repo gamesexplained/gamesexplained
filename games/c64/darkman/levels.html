@@ -1,0 +1,605 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: the levels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+code a{color:inherit;text-decoration:none}
+.dl-bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-start;margin:0;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.dl-pickwrap{flex:1 1 260px}
+.dl-seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.dl-seg button,.dl-btn{font:inherit;background:var(--surface);color:var(--ink-soft);border:0;padding:6px 12px;cursor:pointer}
+.dl-btn{border:1px solid var(--line);border-radius:6px}
+.dl-seg button+button{border-left:1px solid var(--line)}
+.dl-seg button.on{background:var(--chip);color:var(--chip-ink)}
+.dl-seg button:focus-visible,.dl-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.dl-toggles{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 12px;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.dl-toggles label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.dl-toggles input{accent-color:var(--accent)}
+.dl-toggles svg{width:16px;height:16px;flex:none}
+.dl-view{position:relative;overflow:auto;max-height:520px;background:#000;border-radius:6px;-webkit-overflow-scrolling:touch}
+.dl-view:focus-visible{outline:2px solid var(--accent)}
+.dl-stage{position:relative;display:block}
+.dl-stage canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.dl-stage canvas.dl-over{position:absolute;left:0;top:0;cursor:crosshair}
+.dl-info{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin:10px 0 0;min-height:2.6em}
+.dl-text{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px 28px;margin-top:20px}
+.dl-text h3{font-size:14px;font-family:var(--fm);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin:0 0 6px}
+.dl-brief{font-family:var(--fm);font-size:13px;line-height:1.5;background:var(--c64blue);color:#b8b0ff;border-radius:6px;padding:12px 14px;margin:0;white-space:pre-wrap}
+.dl-text p{margin:0 0 .7em;font-size:15.5px}
+.dl-table{border-collapse:collapse;width:100%;font-size:14.5px;margin-top:18px}
+.dl-table th,.dl-table td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.dl-table th{font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.dl-table td.n{font-family:var(--fm);font-size:13.5px}
+.dl-scroll{overflow-x:auto}
+.dl-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:6px}
+.dl-trio figure{margin:0}
+.dl-trio canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;background:#000;border-radius:4px}
+.dl-trio figcaption{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-top:4px}
+.dl-range{width:100%;margin:10px 0 0}
+.dl-chase{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:6px}
+details.dl-more{margin-top:16px}
+details.dl-more summary{cursor:pointer;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.dl-hide{display:none!important}
+@media (max-width:720px){:root{--gx:16px;--pp:14px;--h1:34px}.dl-text{grid-template-columns:minmax(0,1fr)}.dl-trio{grid-template-columns:minmax(0,1fr)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Each level drawn from the bytes of its own file: the tile map, the character shapes, and the lists of enemies and pickups.</p>
+</header>
+<main class="wrap">
+<section id="maps">
+  <p class="fig">01 · The maps</p>
+  <h2 class="t">Five levels are tile maps, and the fifth is a script</h2>
+  <p class="lede">The page draws each map from the tile numbers in the level file, with the game's own tile table, character shapes, and colours. Level 5 has no map. Its chopper, walls, and obstacles follow three scripts.</p>
+  <div class="plate">
+    <div class="dl-bar">
+      <div class="dl-pickwrap"><div class="pick">
+        <button type="button" class="step" data-step="-1" aria-label="Previous level">&#8249;</button>
+        <select id="dl-sel" aria-label="Level"></select>
+        <button type="button" class="step" data-step="1" aria-label="Next level">&#8250;</button>
+      </div></div>
+      <div class="dl-seg" role="group" aria-label="Zoom" id="dl-zoom"><button type="button" data-zoom="1">1×</button><button type="button" data-zoom="2" class="on">2×</button></div>
+      <button type="button" class="dl-btn" id="dl-first">Go to the first screen</button>
+    </div>
+    <div class="dl-toggles" id="dl-toggles" role="group" aria-label="Objects to show"></div>
+    <div id="dl-tilebox">
+      <div class="dl-view" id="dl-view" tabindex="0" aria-label="The map of the level. Scroll to move."><div class="dl-stage" id="dl-stage"><canvas id="dl-map" width="320" height="192"></canvas><canvas id="dl-over" class="dl-over" width="320" height="192"></canvas></div></div>
+      <p class="dl-info" id="dl-info" aria-live="polite"></p>
+    </div>
+    <div id="dl-chasebox" class="dl-hide">
+      <canvas id="dl-chase" class="dl-chase" width="720" height="440" aria-label="The playfield of the chase with the chopper's path, the walls, and the obstacles, and a timeline of when each starts"></canvas>
+      <input type="range" class="dl-range" id="dl-time" min="0" max="1000" value="0" aria-label="Frame of the chase">
+      <p class="dl-info" id="dl-chaseinfo" aria-live="polite"></p>
+    </div>
+    <div class="dl-text">
+      <div><h3>The briefing the game types out</h3><pre class="dl-brief" id="dl-brief"></pre></div>
+      <div><h3>What ends the level</h3><div id="dl-ends"></div><h3 style="margin-top:14px">Not drawn</h3><div id="dl-open"></div></div>
+    </div>
+    <p class="cap" id="dl-cap"></p>
+    <details class="dl-more" id="dl-objects-box"><summary>Every object of this level</summary><div class="dl-scroll"><table class="dl-table" id="dl-objects"></table></div></details>
+  </div>
+</section>
+<section id="check">
+  <p class="fig">02 · The check</p>
+  <h2 class="t">The drawing matches the emulator's first screen, except under the sprites</h2>
+  <p class="lede">The page redraws the first screen of each level from the embedded bytes and compares it, pixel by pixel, with the emulator's picture of that frame.</p>
+  <div class="plate">
+    <div class="dl-bar"><div class="dl-pickwrap"><div class="pick">
+      <button type="button" class="step" data-step="-1" aria-label="Previous level">&#8249;</button>
+      <select id="dl-sel2" aria-label="Level"></select>
+      <button type="button" class="step" data-step="1" aria-label="Next level">&#8250;</button>
+    </div></div></div>
+    <div class="dl-trio" id="dl-trio">
+      <figure><canvas id="dl-c-draw" width="288" height="126" aria-label="The page's drawing of the first screen"></canvas><figcaption>This page's drawing</figcaption></figure>
+      <figure><canvas id="dl-c-emu" width="288" height="126" aria-label="The emulator's picture of the first screen"></canvas><figcaption>The emulator's picture</figcaption></figure>
+      <figure><canvas id="dl-c-diff" width="288" height="126" aria-label="The pixels where the two differ, in white"></canvas><figcaption>Differences in white, boxed</figcaption></figure>
+    </div>
+    <p class="cap" id="dl-checkcap"></p>
+    <div class="dl-scroll"><table class="dl-table" id="dl-checks"></table></div>
+  </div>
+</section>
+<section id="where">
+  <p class="fig">03 · The addresses</p>
+  <h2 class="t">Where each map, table, and list sits in memory</h2>
+  <p class="lede">Every byte the page draws from is in the listing of the level's own part. A test holds the page's copy against that listing.</p>
+  <div class="plate">
+    <div class="dl-scroll"><table class="dl-table" id="dl-where"></table></div>
+    <p class="cap">The listing of level 2 holds 192 of the 2,048 bytes of its character shapes and 64 of its 256 colours, and the listing of level 3 holds neither, so the drawings of those two levels rest on the first-screen check alone for shapes and colours. The tile tables, the maps, and the object lists are held byte for byte against the listings. The game sets bit 3 of every character colour when a level starts, and level 3 copies eight of its map cells to others; the page holds the bytes as they stand in play.</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+// The bytes each level draws from, by address, and the emulator's picture of the first screen. Written by
+// levels_data.py from the play snapshots (parts/levelN/work/play.vsf); not edited by hand.
+/* levels-data */
+const DM_LEVELS = [{"n":1,"kind":"tiles","rows":8,"cols":174,"map":"DQ8NDw0PDQ8NFhQUFBQUFBQUFBQUExAQERIQExUUFBQUFBAVFBIVFBQUFBQTFRUTFRQUFBkNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDRYUEwAXExQbEBESGxUUFBkUFBQTABcXFxUWFBQUFBQUFBQUKSotLS0pKi0RLSkqLS0tKSoTAAAXFxcXFxMYFwAAAB8UFB8AFRQUFBQUFBQQERIQFBQUFBQUFBMtLS0tLS0tKSoQDQ0NDgAREgAfFRQUFBQULxsxFBQUEw0NDQ0NExUUFBQUFBEVFBEVFC8wMRQTDQ0TFRQUFBopKi0tLS0tKSotLS0tLSkqDQ0pKhUUEwAXExQPDw8PDxUvMBswMRQTABcXFxUVFhQULzAxLzAxJygrGiwnKCsaLCcoKxosJygTAAAAAAAAABMAAAAAAB8UFB8AFRQvMBswMRQPDw8PFC8wGzAxFBMNDQ0NDQ0NDQ0NLS0fFRUVFRUfFRQULzAxMjM0LzAxEwAAAAAAExUUFBQUFBIVFBQVFDIzNBQTAAATFRYUFBMnKCsAAAAsJygrAAAALCcoABcnKBUUEwAAExQfMjM0HxUyMzMzNBQTABUcHR4cHBweHRwcHhwdJygAAAAnKAAAACcoAAAAJygTAAAAAAAAABMAAAAAAB8UFB8AFRQyMzMzNBQyMzM0FDIzMzM0FBMAAAAAAAAsJygrACwfFRQUFBQfFRQUMjM0NQA2MjM0EwAAAAAeHR4cHRwWFBQVFBQUFDUANhQTAAATFRQUFBMnKAAAAAAAJygAAAAAACcoFRQnKBUUEwAgExQfEAA2HxU1AAAANhQTABUcHB4cHRweHBwdHhwcJygAAAAnKAAAACcoAAAAJygTAAAgICAgIBMiIAAAAB8UFB8AFRQ1AAAANhQ1AAA2FDUAAAA2FBMAFRUVFRUVJygAAAAfFRQUFBQfFRQUNQA2NQA2NQA2EwAAAAAeHR4dHBwcFhQUFBQUFBQUFBQTJCMTFRQUFBMnKAAAAAAAJygAAAAAACcoFRQnKBUUEwAAExQfNQA2HxU1AAAANhQTABUdHB4cHRweHBwcHhwdJygAAAAnKAAAACcoAAAAJygTAAAAOjs8PRMAAAAAAB8UFB8AFRQUFBQUFBQ1AAA2FBQUFBQUFBMAFRQUFBQUJygAFBQfISAgICAfFRQUFBQUFBQUFBQUEyEgICAeHR4cHB4cHCEgICABAgMgICAjIyMjISAgIBMlJi4uLi4uJSYuLi4uLiUmISAlJhUUEyEgICAfISAgHxUUFBQUFBQTISAgICAgICAgICABAgMgJSYuLi4lJi4uLiUmLi4uJSYTISAgNzg5NxMhICAgIB8cHB8hICAgICAgIB8kIyMjHyAgICABAgMgICAgICAgJSYuBwcKBwcHBwcKBwgHBwcHBwcHBwcHCAcHBwcIBwgHBwgHCQcHBwcEBQYHBwgIBwcHBwcHBwgHBwcHBwcHBwcHBwkHBwcHBwcHBwcHBwcHBwkKBwcHCgcHBwcHBwcHBwcHBwcHBwcHBwcEBQYHBwcHBwkHBwcHBwcHBwcHBwcJBwcHBwcHBwcHBwcHBwoHBwoHBwcHBwcHBwcHBwcHBwcHBwcEBQYIBwcJBwcHBwcHCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsMCwwLDAsM","top":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJ1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnegoaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbH8PHy8w==","bot":"KCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp/IycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v9PX29w==","charset":"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","chcol":"CPj5+fn5+flJ+fn5+fn5Cf29+tr5nPn5qfm9/f39+/v////////6+vpK+fn5Gfn5+fr6+vr6+fn5+ar6ufnP/w8Pvd397furDx+f///Pqrr6+pqquroOTu4OSrrNjQ//2ur6qh9K+fxL+/v7i0u5KWn5OanpSoqqqgr6mvrq/i4OLvoa+grvL3qKCgr/ivncGakJ6SmJCfkJyQlJ6flK2ioKCu6u+urK+vrquokZCgoK+goKmv7+/q76+vr6Kv39bf393f39/f2q+rr+rvr6+vr6+vr6+vr6+or6+vr+/v7++vr6+vr9/f39rf29/V39/f39/f39/f39/f29/f39/Q==","bg":[0,11,15],"first":{"gx":3,"gy":-1,"fx":3,"fy":0},"briefing":["LEVEL ONE.","DARKMAN SEEKING REVENGE ON","THOSE WHO DISFIGURED HIM","SETS OUT TO ACQUIRE THE ILL","GOTTEN GAINS OF ROBERT G.","DURANT TO FURTHER HIS PLANS.","END OF LINE..."],"addr":{"map":28253,"top":27571,"bot":27729,"chcol":48896,"charset":49152,"tiles":62,"briefing":4070},"ref":{"win":[48,62,288,122],"px":"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"},"enemies":[{"i":0,"pos":0,"side":0,"state":1,"slot":1,"kind":0,"energy":1},{"i":1,"pos":0,"side":1,"state":1,"slot":0,"kind":0,"energy":1},{"i":2,"pos":440,"side":1,"state":1,"slot":1,"kind":1,"energy":1},{"i":3,"pos":440,"side":0,"state":1,"slot":0,"kind":0,"energy":1},{"i":4,"pos":750,"side":0,"state":1,"slot":1,"kind":1,"energy":2},{"i":5,"pos":750,"side":1,"state":1,"slot":0,"kind":1,"energy":1},{"i":6,"pos":800,"side":0,"state":1,"slot":1,"kind":1,"energy":2},{"i":7,"pos":800,"side":1,"state":1,"slot":0,"kind":1,"energy":3},{"i":8,"pos":1200,"side":0,"state":8,"slot":1,"kind":1,"energy":3},{"i":9,"pos":1200,"side":1,"state":1,"slot":0,"kind":0,"energy":2},{"i":10,"pos":1470,"side":0,"state":1,"slot":1,"kind":1,"energy":3},{"i":11,"pos":1470,"side":1,"state":1,"slot":0,"kind":1,"energy":2},{"i":12,"pos":2160,"side":1,"state":8,"slot":0,"kind":0,"energy":5},{"i":13,"pos":2160,"side":0,"state":8,"slot":1,"kind":0,"energy":4}],"things":[{"i":0,"pos":90,"t0":1,"t1":0},{"i":1,"pos":120,"t0":0,"t1":0},{"i":2,"pos":130,"t0":3,"t1":0},{"i":3,"pos":330,"t0":0,"t1":0},{"i":4,"pos":550,"t0":3,"t1":0},{"i":5,"pos":550,"t0":0,"t1":0},{"i":6,"pos":600,"t0":1,"t1":0},{"i":7,"pos":630,"t0":0,"t1":0},{"i":8,"pos":640,"t0":3,"t1":0},{"i":9,"pos":690,"t0":0,"t1":0},{"i":10,"pos":840,"t0":3,"t1":0},{"i":11,"pos":1120,"t0":0,"t1":0},{"i":12,"pos":1240,"t0":1,"t1":0},{"i":13,"pos":1280,"t0":0,"t1":0},{"i":14,"pos":1290,"t0":3,"t1":0},{"i":15,"pos":1300,"t0":0,"t1":0},{"i":16,"pos":1510,"t0":3,"t1":0},{"i":17,"pos":1700,"t0":0,"t1":0},{"i":18,"pos":1740,"t0":1,"t1":0},{"i":19,"pos":1780,"t0":0,"t1":0},{"i":20,"pos":1800,"t0":3,"t1":0},{"i":21,"pos":2100,"t0":0,"t1":0}]},{"n":2,"kind":"tiles","rows":72,"cols":64,"map":"LzAkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQtLgUFBQUFBS8wLy4uLi4uLi8uLy4vLi4vLi8vLi4vLi4uLi8vLi4uLy4uLi8uLi8vLy8ZIyQkJCQkJCQkJCQkLS4FBQUFBQUvMDgZFxklJicdHR0eHRkpJSYqGRkZHR0dHR0ZGRkZKSUmKhkZGSklJioZOTojJCQkJCQkJCQkJC0uBQUFBQUFMzQAGxsbJSYoGxsbHhsbGyUmKBsbGxsbGxsbGxsbGxslJigbGxsbJSYnGRk5Oi8uLi8wGhQZLS4vLgUFBQUFBQsMCw8LDA0OCw8LDB4MCwwlJgsMCwwLDAsMCwwLDAsMKywLDAsMCyssCwwLDAwZGRkZGRkUGRk5LS4FBQUFBQUvMDc2OTolJjc2GRkeGRklJSYmGRkZGRkZGRk5OhkZGSUmJxkZNTYlJicZGRkZGRkZGRkZEhkXGS0uBQUFBQUFLzA4GRk5JSY4GRkXHhkZGSUmJxkZGRkXFxkZGTk6FxklJicZNTYZJSYnGRkZGRkZGRcXGRIZGRctLgUFBQUFBS8wABkZGRkZGRkXGR4ZFxklJicZFxkZGRcZGRkZOToZJSYnNTYZFyUmJxkZFxkXFxkXFxkSGRkZLS4FBQUFBQUvMB8fHx8fHx8fHx8eHx8fKyYnGRkZGRkZGRkZFxk5OiUmNzYZGRclJicZGRgZFxgXGRkZEhkZFy0uBQUFBQUFLzAAGRcZGRcZGRkbHhsbGyUmKBsbGwYHHBsbGRkZGTklJjgbGxsbJSYoGxsbGxsbGxsbGxMbGxsxMgUFBQUFBS8wABkXGRkZGRkZCwwMCwwNDgsMCwwLDAsMDBkZFxkLDQ4LDAsPCw0ODAsMCwwLDAsMCwwLDAsNDQ4FBQUFBQUvMAAZGQYHGhkZGRkZOToZJSYnNTYZGRkZGRkZFxkZGSUmJxk1NhkpKhkXGRkXGRkZGRkZGRkZKSUmBQUFBQUFMzQAGwYHBwAGBxwbGxk5OiUmNzYZGRkZGRkZGRkZGRklJic1NhkZGRkXGRkXFxkZGRkZGRkXFxkpKgUFBQUFBQsMCwwLDwsMCwwLDAwZGTklJjgZGRkZGRkZGRkZGRkZJSY3NhkZFxkXFxkZFxcZGRkZGRkZGRkXGSUFBQUFBQUvMAAZNTYZGRkZGRkZGRkbJSYoGRkbGxsbGRkZGxsbGyUmOBsbGxsbGxsbGxsbGxsbGxsbGxkZFxklBQUFBQUFLzAANTYZGRcZGRkZGRcZCw0ODBkZAQMDBBkZGQEDAgICAgICAgICAgICAgICAgICAgICAwQZGRkZJQUFBQUFBS8wNzYZGRkXGRkZGRkZFxclJjgZGRkZGRkZGRkZGRkZJSYnGR0ZGR0ZGR0ZGR0ZGR0ZGRkZGRsbGyUFBQUFBQUvMDgZFxkZGRkXFxcZFxkZJSYnGRkZGRkZGRkZGRkZGSUmJxkZGRkZGRkZGRkZFxcXGRkZGRkBAwICBQUFBQUFLzAAGRkZGxUUFhsZGRkZGyUmKBsZGRkbGxsbGxsbGxslJigbGxsbGxsbGxsbGxsbGxsbGxkZGS0uAwUFBQUFBS8wABkZGQEDEQMEGRkZGQgJCQkKGRkZAQMCAgICAgICAgICAgICAgICAgICAgICAgICAwQZGRctLi8FBQUFBQUvMAAZGRkZGRIZGRkZGRkZGRkZGRkZGRkZGRkdGS0vKSUmKhkdLzAAGRkdGRkZHRkXGBkZFxcZLS4vBQUFBQUFLzAAGRcZGRkSGRkZGRkZGRkZGRkZGRkZGRkZGRktLxklJicZGS8wABkZGRkXGRkZGRkZGRkXFy0uLwUFBQUFBTM0ABUUFhsbExsbGRkZGRkZFxkXGRkZGRkZGRkZLS8ZJSYnGRkvMAAZGRkZGRkZGRkZFxkZFxctLi8FBQUFBQUDAwMDEQMDAwMDBBkZGRkZFxgXGBcZGRkZGxsbGzEyGSUmKBkZLzQAGwYHHBsbGxsbGxsbGxUUMTIvBQUFBQUFLzAAGRIZGRkZGRkZGRkZGRkXGRkXGRkZGQEDAgICAgICAgICAgMDAgICAgMDAgICAwMCAgICEQMCAwUFBQUFBS8wABkSGRkZGRkZGRkZGRkZFxkZGRkZGRkZGR0ZLS8ZJSYnGRkvMAAZGRkZGRkZGS8wABkZGRIZLS4FBQUFBQUvMAAZEhkZGRkZGRkZGRkZGRkZFxkZGRkXGRkZGS0vGSUmJxkZLzAAGRcZGRkXGRkvMAAZGRkSGS0uBQUFBQUFLzAAGRIZGRkZGRkZGRkZGRkZGRcZGRkZFxkZGRctLxklJicZGS8wABkZGBgYGRkZLzAAGRcZEhktLgUFBQUFBTM0ABsTGxsbGx4eHBsbGxkZGRkZGRkZGRkZGRkXLS8ZJSYnGRkvMAAZGRgYGBkXGS8wABcXGRIZLS4FBQUFBQUICQkJCQkJCQkJCQkJCQoZGRkbGxkZGRcZGRkZGS0vGSUmJxkZLzAAGRcZGRcZGRkvMAAZFxcSGS0uBQUFBQUFLzAAGR0ZGS0uLxkZGRkZGRkZCAoZGRkXGRkbGxsxLxklJigbGy8wABkZGRkZGRkZLzAAGRcXEhktLgUFBQUFBS8wABkZGRktLi8vGRkZGRcXGRkZGRkXGRkZAQMCAgIDAgICAwQvMAAZGRkZGRkXGS8wABkZGRIZLS4FBQUFBQUvMAAZGRcXLS4vLxkZGRcXGRkZGRkZFxcZGRkZGS0vGSUmJxkZLzAAGRkXFxcXFxkvMAAZGRkSGS0uBQUFBQUFLzAAGRcXFy0uLy8ZGRkXGRkZGRkZFxkXGRkZGRktLwYHJicZGS8wABkXGRcZFxkZLwYHGhkZEhktLgUFBQUFBS8wABkZFxktLi8vGRkZFxcZGxsbGxsbGRcZGRsbMQYHByYnGRkvMAAZGRsbGxsbGwYHBwccGxMbMTIFBQUFBQUzNAAVFBYbMTIzLxkZGRkZGQEDAgIDBBkZGRkBAwICAgICAgMELzAAGRkBAgICAgICAgICAgICAgICBQUFBQUFAwICAhECAgICAgICAwQZGRkZGRkZGRkZGRcZGRkZGRklJicZGS8wABkZGRkZHRkZHRkZHRkZHRkpLQUFBQUFBS8wABkSGRkdHRkdHRkZGRkZGRkXFxcZGRkZGRkZGRkZJSYnGRkvMAAZGRkZGRkZGRkZGRkZGRkZGS0FBQUFBQUvMAAZEhkZGRkZGRkZGRkXFxkXFxkZGBcYFxkZGRkZGSUmJxkZLzAAFxcXFxkZGRkZGRcZGRkZFxctBQUFBQUFLzAAGRIZFxkZGRkZGRkZGRcZGRcXGRkZGRkZGRkZGRklJicZGS8wABkZGRcZGRkZFxkZGRkZGRkXLQUFBQUFBS8wABkSGRkZGRcXGRkZGRkZGRcXFxkZGRkZGRkbGxsbJSYnFRQWNAAbGxsbGxsbGxkXGRkZGxUUFjEFBQUFBQUvMAAZEhkZGRkhHx8fHx8fHx8fHx8fHx8fHyAZCwwLDA0MCwwQDAsMCwwLDAsMCwwXGRkZGQEDEQMDBQUFBQUFLzAAGRIZGRkZHhcZHRkZFx0ZFxcdGRkZHRceGRkZGRklJicZEi8wABkZGRkZGRkZFxkXGRkZGRIZLQUFBQUFBS8wABkSGRkXHh4XGRkZFxkZGRkZGRkZGRkZGRkZGRkZJSYnGRIvMAAZGRcYGRkZGRkZGRkZGRkSGS0FBQUFBQUzNAAbExsbGx4eHhwbGRkZGRsbGxsbGxkZGRkZGRkZGSUmJxkSLzAAGRkZGRkZGRcZGRkZGRkZEhktBQUFBQUFDAsMCwwLDAsMCwwLDBkZGRkBAwMDAwQZGRkZGRkZGRklJicZEi8wABsbGxsbGRkZGRkXGRkZGRIZLQUFBQUFBS8wABkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZFxkZGQsMDQ4LDAsMCwwLDAsMDBkZFxkZGRkXGRkSGS0FBQUFBQUvMB8fHx8fHx8fHx8fHx8fHx8fIBkZGRkZGRkZGRkZGSUmJxkZGR4ZGRkZGRkZGRkZGRkZGRkZEhktBQUFBQUFLzAfHx8fHx8fHx8fHx8fHx8fHyAZGRkZGRkZGRkZGRklJicZGRkeGRcXGRkZGRsGBwccGxsbGxMbMQUFBQUFBS8wABcZGRkZHRkZLS4vHQAZGRkeHx8fHx8fHx8fHx8fKywfHx8fIhkZFxkZGRkLDAsMCwwLDAsMDQ4FBQUFBQUvMAAXFxkZGRkZFy0uLzAAGRkZHhkZLR0dMAAZHRkZGSUmJxkZHRkZGRkZGRkZGRkZGRkZGRkZGSklBQUFBQUFLzAAGRcXGRkZGRktLi8wABkZGR4ZGS0uLzAAGRkZGRklJicZGRkZGRkZBgcZGRkZGRkZGRkZGRkZJQUFBQUFBS8wABkZFxkZGRgZMTIGBwYHHBseGxstLi8wABsbGxsbJSYoGxkZGRkbBgcHHBsZGRcZGRcZGRkZGSUFBQUFBQUzNAAVFBYbGxkZGQgJCQkJCQkJCQkKLS4vMAsMCwwLDA0OCwwZGRkZCwwLDAsMGRkZFxkZGRkZFxclBQUFBQUFCwwLDBAMCwwZGRktLhkZGRkZGRkZGS0uLzA2GRkZGRklJicZGRkZGRkZFxcZGRkZGRkXGRkZFxcXJQUFBQUFBS8wABkSGRkZGRkZLS4vGRkZGRcZGRktLi8wGRkYGRgZJSYnGRkZGRkZFxkZFxkZGRkZGRkZGRgYFyUFBQUFBQUvMAAZEhkZGRkZGS0uLxkZGRkZGRkZLS4vMBkZGRkZGSUmJxkZGRkZGRkZFxkZGRsbGxsVFBYbGxslBQUFBQUFLzAAGRIZGRcZGRktLi8wGRkZGRkZGS0uLzAZGRkZGRklJicZGRkZGRkZGRcZGRkLDAsMCxALDAsMDQUFBQUFBTM0ABsTGRkZGRsbMTIzNBwbGwYHHBsxLi8wGRsbGxsbJSYoGxsZGRkbGxsbGxkZGRkZGRkSGRkZLS4FBQUFBQUMCwwLDBkZGRkLDAsMCwwLDAsMCwwLDC4vMBkLDAsMCw0ODAsMGRkZAwICAgMZGRkZGRkZEhkhHy0uBQUFBQUFLzAfHx8fHx8fHx8fHx8fHx8fHyAZOS0uLzAZGRkZGSklJioZGRkZGS0uLy8wGRkhGRkZGRIZHhktLgUFBQUFBS8wABcdGRkZHRkZLR0vMAAdGRkeGRktLi8wGRkhHx8fKywfHx8fHx8tLi8vMBkZHhkZGRkSGR4ZLS4FBQUFBQUvMAAZFxcZGRkZGS0uLzAAGRkZHhkZLS4vMBkZHgAZGSUmJxkZGRkZLS4vLzAZGR4ZGRkZEhkeGS0uBQUFBQUFMzQAGxsbGxsbGxsxMjM0ABUUFh4bGy0uLzAbGx4AGxslJigbGxsbGzEyMzM0GxseBgccGxMbHhsxMgUFBQUFBQICAwICAwICAwICAwICAwICEQICAwQtLi8wAQMCAgMCAgMCAgMCAgMCAgMCAgMCAgMCAgMCAgMCAgMFBQUFBQUfHx8fHx8gGRkZGS0uLzAZGRIZHhcZLS4vMBkZHgAZGSUmJxkZGRkZGRkZGR0ZGR4ZGRkZJSYZGS0uBQUFBQUFHx8fHx8gHhkYGRktLi8wGRkSGR4XFy0uLzAZGR4AGRklJicZGRkZGRgZGRcdFxkeGRkZFyUmGRktLgUFBQUFBS8wABkZHh4ZGRkZLS4vMBkZEhceFxctLi8wGRkeIR8fKywfHyAZGRkZFxkXHRcZHhkXGRclJhkhLS4FBQUFBQUzBgcaGR4eGRkZBgcGBzAZGRIXHhkXLS4vMBkZHh4ZGSUmJxkeGRkZGRkZFx0ZGR4ZGRkXJSYZHjEyBQUFBQUFCAkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCgUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUF","top":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJ1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnegoaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExQ==","bot":"KCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp/IycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7Q==","charset":"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","chcol":"qAhp2Yn5+an5Sfmpv2//v6mpifkJ+QmpmUkt3d3djSn6Cvqaavr6uvqqCqkp+fn5qQlZ+a//nw8pyUn5CWm5qfn5/f2t/bn5+vr6+vr6+vr6+vr6+tr6+v7+/v7+/g7+Lv75+fz8TPz8/Jz8/Pz+/v7+/f39/f2t+rr6+vr6+voO/i7+/v7+/k6u+WlM/LzMzPwcDPwMXI4Ovv1d3b0N/Q0tLX2tzQ2NLd0puampudnZ+UmJuTmJSSnZ6RraCgr66voqatpKCkoqWi0tLZ39bc0NSfmJ2amp+QkpKYmpyQmpqQraagqaqtra+ur6qvr6+vr6Grq6GvpqqhqKqoqq+g==","bg":[0,11,15],"first":{"gx":-11,"gy":124,"fx":3,"fy":6},"briefing":["LEVEL TWO.","DARKMAN IS DISCOVERED BEFORE","HIS PLAN IS HALF GROWN. HIS","FIANCE JULIE HAS BEEN SEIZED","BY STRACK AND DARKMAN IS","CORNERED IN HIS LAIR. FIRED","BY GRIEF DARKMAN FIGHTS WITH","INHUMAN FEROCITY TO ESCAPE..","END OF LINE..."],"addr":{"map":31296,"top":38481,"bot":38639,"chcol":48896,"charset":53248,"tiles":59,"briefing":37070,"objects":37309},"ref":{"win":[48,64,288,126],"px":"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"},"objects":[{"i":0,"t":1,"x":450,"y":1280,"v":0,"e":1},{"i":1,"t":7,"x":450,"y":1301,"v":0,"e":0},{"i":2,"t":2,"x":760,"y":1280,"v":1,"e":3},{"i":3,"t":7,"x":760,"y":1301,"v":1,"e":0},{"i":4,"t":1,"x":1000,"y":1280,"v":0,"e":2},{"i":5,"t":7,"x":1000,"y":1301,"v":0,"e":0},{"i":6,"t":4,"x":1050,"y":1265,"v":0,"e":0},{"i":7,"t":1,"x":300,"y":1199,"v":0,"e":2},{"i":8,"t":7,"x":300,"y":1220,"v":0,"e":0},{"i":9,"t":2,"x":900,"y":1199,"v":1,"e":3},{"i":10,"t":7,"x":900,"y":1220,"v":1,"e":0},{"i":11,"t":1,"x":800,"y":1199,"v":0,"e":3},{"i":12,"t":7,"x":800,"y":1220,"v":0,"e":0},{"i":13,"t":4,"x":237,"y":1198,"v":0,"e":0},{"i":14,"t":5,"x":1055,"y":1167,"v":0,"e":0},{"i":15,"t":6,"x":1030,"y":1167,"v":0,"e":0},{"i":16,"t":8,"x":692,"y":1150,"v":0,"e":0},{"i":17,"t":2,"x":930,"y":1087,"v":0,"e":2},{"i":18,"t":7,"x":930,"y":1108,"v":0,"e":0},{"i":19,"t":5,"x":530,"y":1086,"v":0,"e":0},{"i":20,"t":6,"x":530,"y":1086,"v":0,"e":0},{"i":21,"t":1,"x":200,"y":1119,"v":1,"e":3},{"i":22,"t":7,"x":200,"y":1140,"v":1,"e":0},{"i":23,"t":4,"x":170,"y":1000,"v":0,"e":0},{"i":24,"t":9,"x":440,"y":1045,"v":0,"e":0},{"i":25,"t":9,"x":475,"y":1045,"v":0,"e":0},{"i":26,"t":1,"x":600,"y":1023,"v":1,"e":2},{"i":27,"t":7,"x":600,"y":1044,"v":1,"e":0},{"i":28,"t":10,"x":840,"y":950,"v":0,"e":0},{"i":29,"t":11,"x":840,"y":950,"v":0,"e":0},{"i":30,"t":1,"x":990,"y":959,"v":0,"e":3},{"i":31,"t":7,"x":990,"y":980,"v":0,"e":0},{"i":32,"t":3,"x":1040,"y":810,"v":0,"e":0},{"i":33,"t":1,"x":850,"y":831,"v":0,"e":2},{"i":34,"t":7,"x":850,"y":852,"v":0,"e":0},{"i":35,"t":8,"x":692,"y":860,"v":0,"e":0},{"i":36,"t":9,"x":343,"y":916,"v":0,"e":0},{"i":37,"t":1,"x":250,"y":895,"v":0,"e":3},{"i":38,"t":7,"x":250,"y":916,"v":0,"e":0},{"i":39,"t":1,"x":200,"y":750,"v":1,"e":3},{"i":40,"t":7,"x":200,"y":771,"v":1,"e":0},{"i":41,"t":1,"x":300,"y":750,"v":1,"e":2},{"i":42,"t":7,"x":300,"y":771,"v":1,"e":0},{"i":43,"t":1,"x":450,"y":734,"v":0,"e":3},{"i":44,"t":7,"x":450,"y":755,"v":0,"e":0},{"i":45,"t":9,"x":643,"y":739,"v":0,"e":0},{"i":46,"t":9,"x":660,"y":723,"v":0,"e":0},{"i":47,"t":1,"x":700,"y":671,"v":0,"e":5},{"i":48,"t":7,"x":700,"y":692,"v":0,"e":0},{"i":49,"t":5,"x":820,"y":637,"v":0,"e":0},{"i":50,"t":6,"x":820,"y":637,"v":0,"e":0},{"i":51,"t":1,"x":1000,"y":734,"v":0,"e":3},{"i":52,"t":7,"x":1000,"y":755,"v":0,"e":0},{"i":53,"t":1,"x":900,"y":559,"v":0,"e":3},{"i":54,"t":7,"x":900,"y":580,"v":0,"e":0},{"i":55,"t":17,"x":900,"y":559,"v":0,"e":0},{"i":56,"t":5,"x":587,"y":608,"v":0,"e":0},{"i":57,"t":6,"x":567,"y":606,"v":0,"e":0},{"i":58,"t":9,"x":344,"y":659,"v":0,"e":0},{"i":59,"t":1,"x":300,"y":641,"v":0,"e":3},{"i":60,"t":7,"x":300,"y":662,"v":0,"e":0},{"i":61,"t":17,"x":300,"y":638,"v":0,"e":0},{"i":62,"t":1,"x":200,"y":543,"v":1,"e":2},{"i":63,"t":7,"x":200,"y":564,"v":1,"e":0},{"i":64,"t":1,"x":260,"y":543,"v":0,"e":3},{"i":65,"t":7,"x":260,"y":564,"v":0,"e":0},{"i":66,"t":3,"x":250,"y":460,"v":0,"e":0},{"i":67,"t":10,"x":300,"y":424,"v":0,"e":0},{"i":68,"t":11,"x":300,"y":424,"v":0,"e":0},{"i":69,"t":10,"x":400,"y":457,"v":0,"e":0},{"i":70,"t":11,"x":400,"y":457,"v":0,"e":0},{"i":71,"t":1,"x":700,"y":480,"v":0,"e":3},{"i":72,"t":7,"x":700,"y":501,"v":0,"e":0},{"i":73,"t":17,"x":900,"y":480,"v":0,"e":0},{"i":74,"t":9,"x":1027,"y":467,"v":0,"e":0},{"i":75,"t":1,"x":900,"y":414,"v":0,"e":4},{"i":76,"t":7,"x":900,"y":435,"v":0,"e":0},{"i":77,"t":17,"x":900,"y":414,"v":0,"e":0},{"i":78,"t":1,"x":450,"y":336,"v":1,"e":3},{"i":79,"t":7,"x":450,"y":357,"v":1,"e":0},{"i":80,"t":1,"x":900,"y":336,"v":0,"e":20},{"i":81,"t":7,"x":900,"y":357,"v":0,"e":0},{"i":82,"t":17,"x":700,"y":336,"v":0,"e":0},{"i":83,"t":0,"x":1,"y":5,"v":0,"e":0}],"objOffset":[165,218],"camera":[50,1156],"live":[{"i":7,"t":1,"x":194,"y":1199},{"i":8,"t":7,"x":194,"y":1220},{"i":13,"t":4,"x":237,"y":1198}],"player":[134,107],"typeNames":{"0":"no behaviour","1":"walk left","2":"walk right","3":"pickup energy","4":"pickup score","5":"prop flash","6":"hazard arc","7":"follow","8":"hazard loop","9":"hazard anim","10":"shuttle","11":"shooter","12":"inert","13":"fall","14":"attack right","15":"attack left","16":"knocked down"}},{"n":3,"kind":"tiles","rows":5,"cols":256,"map":"AAAAAAAhAAAAAAAAAAAAABgZAAAAKAAAAAAAAAAAAAAAAAAAAAAhAAAAAAAAAAAAAAAAAAAAHB0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYGQAAACEAAAAAAAAYGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgAAAAAAAAAAAAAAAAAAAAYGRgZAAAAAAAAAAAAAAAAACEAAAAAAAQBCAkBCAkICQECAQEBAwAAHB0AAAAAABgZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEGBwEBAQEBAQIBAQEBAQEBAgECAQEBAQECAQEDAAAAAAAAGBkAIAAAAAAAAAAYGQAAAAAAABwdAAAcHQAAAAAAAAAAAAAAAAAAABgZAAAAAAAAACgoAAAAAAAABAEBAQgJBgcBAQIBAQECAQEBCAkGBwIBAQMAAAAAAAAhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsLCwsLCwsLCwAAAAACAgICAgICAgICLwAAAAwLCwsLCwsLCwsLDAAAERURERQRFBEUEREREScAABwdAAAAAAAaGwAAIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgAAAAAAAAAAAAAAAAAAAQRIiMREREUEREREREVERERFBERFREUFBERFBERAAAAAAAAABobACAhAAAAAAAAGhsAAAAAAAAcHQAAHB0AISEoAAAAAAAAAAAAAAAaGwAYGQAABAEBCAkBAQMAAAAUFRERFSIjEREUERURERERFBERIiMRFBEAAAAAAAAYICEZAAAAAAAAAAAABAYBAQEBAQEGAwATERElJSUREREqKywtEREVJSUlJRU3FScAAAAAERERERERERERES8AABEUNzg1NhURERQUEREmAAAEAQEBAQEBAQEBAQoFAQMAAAANDg4PEA4QAAAAAA0ODxANDg8QAAAAAAAAAAAACwsLCwsLFSIjERERFRQREREVEhQREREkJCUWERUlJSURFQAAAAQBCAkBAQEKBQECAQgJAgEBAQgJAwAAHAQBAQEICQgJAQICAQgJCAkBAgEBAQIBAQgJAQEUFRQWEREnAAAAEREVEREiIyERERERFREUEREVFCIjFBERAAAAACgAGiAgGwAACwsLCwsAAAAiFRQRFRERIgAAFhERERESERERAAAAABYRERcUFxI2NyknAAAAABEREREREREREREnAAAUExI6NTY3FBURERIRJgAAHBURIRERFRERFREgNBUqKywtMDAxMjMyMyorLC0wMTIzMDEyMyorLgAAAAAACwsREREREREiIyUlJRIRFBERERURFBERJSUlERURJSQlFBEAAAAAERQVERERIDQVERERFRERERQREQAAABwdERQRERERFBURFREREREREREUFRQRFBERERERFRcRFBERJgAAABElJSkRIiMgNBQSJSUlFRQREREiIyUlFAAABAEBAgEBCgEDABERERESAAAAIhERFRcRFCIAAB4cHRwdHRwdHwAAAAAeHB0cHRwdHB0fJgAAAAARESUlERERERERJgAAEREVEjo2NxYUEREVEScAABwUESE0ESkUERERIDQSAAAAADAwMTIzMjMAAAAAMDEyMzAxMjMAAAAAAAQBAgEBAQIICQg=","top":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJ1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnegoaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExQ==","bot":"KCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp/IycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7Q==","charset":"/////////////////////wD/Vf////+qAP9V/////6oA/lfO3v7OmAD/Vc/f/8+aL5W/v7O3vyr4Vvz8zNz8qC+VPz8zNz8q+Fb+/s7e/qgA/1X/////qgD/Vf////+qKnX/1fXl1VWqVf5WXlpWVoCPNT8/Pz8qAP9V/////6oA/1X//vrgAAD/VeqooqgKAP9VqoAggAIA/1WrAgul1wiVf781ER0VAFb9/lREdFSq91WqjO7u5qp9VaqO5u7mqvdVqozu7uaqfVWqjubu5gAfPz8/Pz8/AP/9//333fcA/9133XfddQDd1VVVVVVWANVZZllmmWYAZplmmmaaagBqqqiqqKKIAKIiggKCAgDu7u7u7u7u7u7u7u7u7u7uAGpWtZVsR0kAAIBgWFZiiu7u7u7u932o7u7u7vZdhwD/////////////////////AICIiEhkZm4ACIiIhEZm5gCAiIhIZGZuAAiIiIRGZuYAAggjjz///wA/////////APz///////8AgCDI8vz//wAAiIiEhIaGAAiIiIRGZuYACIKDwODg4gAICAqO7r4+AAAAAACIiIoAiIiISGZmZggIiIiGRmZugohERGZm5u7vuyqASGRkZn7ooAiIREZmAC43Nzc3NzcAAICAiIiMjG5gAAiEREZubmAACIRETm5mYM///////2Zgz///////ADY1PT09HigAVlX//e/9qgCIZm3trOWKAACqVVVUVaoACoZGhUSFigAAqmaZZJmqAAAICAaIBogAAACCIIIigu7u7u7u7u7u7u7u7u7u7u7i6OTs7u7u7iYmrm7u7u7uAJ1/94FIxO4InPfSxiau7ghEZOYmZm7uiEZmbmJmZubu7u7u7u7u7u7u7u7u5ubm7u7uroru7qbu7u7ubu7u7v//f39vbm9n/+7+7u7uZm4APx8lPx8fHwD/3VX99913APVWGFZaZloApIwApIyMjAD8/Pz8/Pz8AFZ1fn19fZYAgKBAokCigAA/Pz8/Pz8/VVhUZUFMT09VAP8/T1AWxVUA//zxBZRTVSUVWUEx8fEVFOTF8fz//1UA/z9PUBbFVQD//PEFlFNUFBtTTz///zc3Nzc3Nzc3jIyMjIyMjIwANzc3Nzc3NwCsjIyMjIyM4uLg4OLj6e8uPp7+bs6ODoZGxoYGhoaG7u7u7u7u7u4AACIIKjsuOwACIoqpue25AAAAAAAAAAAAAgIBAQEBAefn5+fn5+fnj4+Pj4+Pj48fnZ2dnZ2dJltjY2NjY2OD7u7u7u7u7u7m7u7u7u7u7u5ubuYmZmaIZmZmbmJmZogIKqZu7u7u7u7ubu7u7u7u5ubm7u7u7u5mbu7u7u7u7iUfHx8lHx8fVffdd1n33XegVmZagFZaZgCkjIwApIyM/Pz8/Pz8/PyWfX19fX19fYJiYmJiYmJiPz8/Pz8/Pz9PT09MQWVUU8nFFlBPP///Y1OUBfH8///x8fExQVkVxf//////////8fz///////9PP///////////////////Ljc3Nzc3NzcAjIyMjIyMjC43Nzc3Nzc3AIyMjIyMjIzm7uvj4uDg4g4ODo7O7r4+hoaGRsaGBobu7u7u7u7u7i8/Pz8/PwAl/f39/f39AVUAAAAAAAAAJQEDAQMDAwv/5+fn5+fn5+ePj4+Pj4+Pj8Dm5+fn5+fnDw+Pj4+Pj4//////////4P////////8PAAoGJi6ubm5u7u7u7u7u7j9jGsn8//8A//8PaiXw/wD///8PaqXwAP////+AWQkB/////wBlYED////8qVoPAP//8ClYD/8A/MmkYz///wD/////P39/QP////////8A/////////8D/////////DygePT09PT09AP/97/3//f8A392c3V3dXQDdVVRVVVVVAG2lZKVmpWYAVplkmWaZZgCKBogGiAaIAKIigiKCIoKEhISEhISEhO7u7u7u7u7uAAAAAAAAAAAAAAAAAAAAAKqoqIqCgICAqgAAAICgKAqqAAAAAgoooKoqKqKCAgICAAACCw8vLysAAIDg/Pz+/D////+fbY4MDM8PJ8vDw0MAAAAAAAADAwAAAAAAAADAAAAAAAAAAAAAAAAAAAAAALe2iLa2tra2ozMDIzMzMzPu7u7u7u7u7u7u7u7u7u7uL7UvKwoKAgD8Vvz8/KioAP9V////qqoA91X39/eurgrPZc/Pz4qKgP9V////qqoA73Xv78+KigD/Vf///6qqAM9lz8/PioqA/FT8/PyoqADn5+fn5+fn54+Pj4+Pj4+PPT09PT09Hij9//3//e/9qt1t3W3drOWKVVVVVVVUVaqlZqVmpWSlqplmmWaZZJmqBogGiAaIBogigiKCIoIigoSEhISEhISE7u7u7u7u7u4AAAAAAAAAAAAAAAAAAAAAgICAgIKqqKgKCiiggAAAAKCgKAoCAAAAAgICAoKqKiorCy8uCQoCAv76ppiooAAADAyMBAgIAACCAQIgAAAAAAIAADAgAAAAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJqYCF26n/hdyiAiBrMamBhdup/4XcogEgazGpgoXbqf+F3KIAIGsxYL1AMQoKCqqgAL0JD5Hb6MjIyMAY0PNgAKAAubc1SLkAwJm3NWiZAMC5ozZIuezAmaM2aJnswLmPN0i52MGZjzdomdjBuXs4SLnEwpl7OGiZxMLIwOw=","chcol":"Hh4aGhoayvoa2hoKGUkaGioaaqqJGf8vPw8JCekJafkJKQkJaQkZCQ4OCQkJGQ4eDh4OGQ29DW0JCQoKDG4JCR4OGQkJKQkJCQkJyQkZCQkJCQkJCQm6CokJqQseCbkODh4ODg5uDi4MHgwODR0JCQsLCwseDhkOCRkJCQkZGRkZGRkbbhnJHh4eHh4eHh4eHB4cDh1tGckbCxsZHg4eHh4eGRkOHm4eHh4eHh4eHh6pGRkZGbkZGRkZGRkZGYkZHh4eHh7+bq4b7gkZ/W2NjT0dHR3tDT4eiQmpKQnpCfkJiQkJCRkJyQ4eDh4OHg4eDr4ODh4eDh4Ovg4ODh4ODg==","bg":[0,15,11],"first":{"gx":1,"gy":-9,"fx":1,"fy":0},"briefing":["LEVEL THREE.","DARKMAN SEES THAT THIS","PLACE CAN NO LONGER BE","HIS HOME. HE MUST LEAP","ACROSS THE ROOFTOPS TO","HIS LAB TO DESTROY IT","BEFORE IT IS DISCOVERED.","END OF LINE..."],"addr":{"map":7752,"top":23623,"bot":23781,"chcol":48896,"charset":49152,"tiles":59,"briefing":9957},"ref":{"win":[48,140,288,56],"px":"eNrtmuGugyAMhXXGxIQfvv/b3tWuAZwo0EN1V5twN+ZuwW8t4IG+X8y5rnu9ZnM7o83D9qep76cpusx8bI1adI5fz7Cd9qeJrtObhY7Ej63Rz0P9o9cz7Kj9mb+0RM8ZfMiof2faYftPfiXbX64HfJyxSascv/Z21D5ff+zYQk7MdPuz29XfCbbH57blPfh83o/MxBN6+HyXcfR85pk/k1d5f9c6saHir/HIzUW+e9860UnzeQpFkOcTX6PnDip3rnMEMZ/wO6VlPbbX+mlVavsn8SN5V9u+z12dn1alsn/L+pr49L2Wj2d8TT5V/VuiB5FfW3l8TUbl/yPrH934E47512NT2b937PAaSBs/63mxdRwY9W+WNSKCj1WO1fKp6N/y/IUafzT9t/Rf8v+/xgcRn2fzaRkzVnPkp43x4bPPR8bnq657z1xf8dqH+WjXzxddv2jbi/SfX1j7WuYX8RH9R7t+/qd8Iv3nynzWmrBRezD9p7UelNqXqvWfu/WF0n9a60GyyxnuI2j8p3cA4zpK/2mtB83BSQoZKzX+j3d12JD6T8v1Cv31ZwU4nzT+4/zcrtNHKP2n9XpFIsgT0vmPz2PwTk5cl/Bp83yKnI+9D+ojE9L677phcE4K8VjXOY1R+k8qr3B8qH+UYz42Nf7JhyfC8RPXOX4s9A0UH59Nev+Z8QPXN7Z+T4RuG845CP8cL2ISP2EdywetP2z5C8dl/fwxDDGPdR2bXxZ8ZJbBzK95fJD6D/rZ8dsfbozM5APTf9DrndZ6TyYfmP6D1h9a6xm5fFD6z+/xCc3zWNVh+g9an2mt93D+ekvUk/qP9syw9fmgUv9a/SdXH/EqSazPWJ8PKvWv1X/K+cT6jPX5oFL/ufeX0n8yx6/Oq1Xf+oz1/lWJ/9zxOaX/lPOJ9Rn79UyZ/8z7S+o/pXzW+kzL+RrhP/P+kvpPOZ9Yn2n5fJbiU+I/N35Sz6c1fFL6jPX5HSAfh+Kzp88g+eTEhz0fGln262h9prV+knl/f+Q7hBU="}},{"n":4,"kind":"tiles","rows":72,"cols":64,"map":"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","top":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJ1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnegoaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbH8PHy8w==","bot":"KCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp/IycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v9PX29w==","charset":"AAAAAAAAAAAAAAAAAAAAAACqv/9VAAAEAKv9/VQAAAQAW97bT00NBAC//913VRFEALrf39XA2t8A/933VQL77wB32W29/fTRAFEBAQEFQQEAqv8AVlX//wCq/wDFVV//tra2VQUVlJCUlJQAVNTQwABRYWC1tbm5AABAAEBQUFC2trZl/rq6upSUlECIhISEAD8qIioVFSEA/6qqqlVVoQD/qqqqVVWhAP+qqqpVVaEA/6qiqlVVoQCUVFRUAABU/////////////////////4CKj4CKioCPCKj4CKioCPiAio+FioqAhAio+FioqAgIgYGBgIqKgIFYWFgIqKgIWICAgICKioCACAgICKioCAiBwcHAn4qAgVhcXAz4qAhYJiYmJiYmJiampqampqampqampqampqampqampqampqYAAAAAAAAAAAAAAAAAAAAAAP//3XdVEUQAT97bT00NBAC//913VRFEAFve209NDQTfxtvvv730AL/99NFHHVUARR0N3V3dWQAQAARUAQBAAP////6q/wAA////H6r/QAC/vfXVl5+//UBEVNTQwEBEurq6Zfe2trZQUJBAkJCUlLq6umX3tra2hISEQKSUlJQmJyUnJycnJ/ZbeXl5+fur9vvZ2VnZ+6v229vb2+P7q6ampqampqamVFRUVFRUVFT/////////////////////j4+PhYqKgID4+PgYqKgICICPj4WKioCECEjYWKioCAiBgYGAioqAgVhYWAioqAhYgICAgIqKgIAICAgIqKgICIGBgYCfioCBWFhYCPioCFgmKz8/KiIqFaar//+qqqpVpqv//6qqqlWmq///qqqqVaampqampqamVFRUVFRUVFRRUVEAVVVVVVVVVQBRUVFRAABAAFBQVFQAAAAAAAAAAFEREQAFAQEAVVVVAFFRUVEAAAAAAAAAAAABAQABERFRAAAAAAAAAAAAAAAAAAAAABFBEQBRRBFEEUQRABFBEUGmpqZRqqqqqqqqqlGmpqamUVGRUKWlqalVVVUAUVFRUQAAAAAAAAAAAABAAREEBAEAAAAREBAQEAAAAAEFSFQkEABAEQAQEBAAAAABAEREFABAAQAEABAQAAAAAAAAAAAkKCkmJiUkJAAAAQNGjZl0YOCgYGAgICAEBBQUBEREBGqn77/vv+21///9ddVVVVXpVFRUVFVdfVUAAQRVVFVUUVFRAFVVVVVVVVUAUVFRUVFQTwxMTEpMVQD/QEFAu0BRAaQJSQmpCUAUFBAUEBgQpqb//6qiqlVUVFSUVFRUVFVVVQBRUVFRUVFRAFVVVVVVVVUAUVFRUQAAQABQUFRUAAAAAAAAAABREREABQEBAAABAQABERFRUVFRAFVVVVVVVVUAUVFRUVFRUQBVVVVVEUQRABFBEUERQREAUUQRRKqqqlGmpqampqamUaqqqqqqqqpRpqamplFRkVClpampAAAAAAAAAAABAAAAAAAAABBQURYVGRQUVJRFQQEAAAAQEBARUVBQIBRERQUEBAQEQEAAAAAAAAAAAAAAAAAAACQkJScmLSkkZNiZRkIBAAAhISAkZKCgZAQEBAQEBAQEpaWlpaWnr+9VV19//fX91f39/PTUVFRUUQABAAEABVRVVVUAGiogL1FRUQCr/j76TExMHL3tve1AVUBAQUFRUAlZCQlJSUkJHBAYEBQQmBAgLyA/Kzo6Ljr/P/315NTRvf//VwEAUPRVVf////09PF1d/9VZARB0FBBU8HwwQAQAamoVFRUFEUCbm4aGRkZGAP/qoa+RrpEA/+sKqgKqAgD//6qqqqqqgO/v2tqamppqmvbt25qqtpCQkJBQgJBQ6urq6urq6uqQkJCQkJCQkABRVJVUlZWVAABAAEAAQAAAb6+/r7+vvwD7quq66rrqAKaZZplmmWYAb7+qqqqqqgA7O2odOzs7AFjc9UBc3FwA//+qqqqqqgD9+aKWiVkkAAAAAAAAAAAAAAECBgkZJFFRUQBVVVVVVFRRAkZJGSRkpKRkZCcuKQADDjrmmVkkpJCQQEABAQQEEBBAQAAAAC1bypaipaipAEXRtG2bkmQtGwoGAgEAAABA0LRtm5JkLRtKBlJRVFQAQNC0bZuSZC4fFwVBQFBU09PTU1ERAAT8/Pz89FSQADw8PBQUAAAA/Pz9/TVUIAAEBAgEBAAAAAURAAAAAAAARkZBAQAAAACuoWpVAAAAAKoKqVUAAAAAqqpVVQAAAACamoVFAAAAALWhUVQAAAAAQEAAAAEFFVXq/qXq6urq6pBQQJCQkJCQlaVQlZWV6upAAABAQECQkK+/r1UbLwAAuuqpVenqAACZZpUQVJUAAKpqVVUQBAAAOzs7ah07OzvcXNz1RFzcXKmoUVIGChopZJOeeaSQQAAAAAECBgoaKWSTnnmkkEAAVFRRAkZKGilkk555pJBAAOSkZSYmKSkkZJCQQEABAQQEEBBAQAAAAAAAAAAAAAAAqqpVVQAAAAAkWUlGAgEAAAAAAAAAAAAAJBkJBgIBAABVVVUAUVFRUSQZSQZSUVRUJCkpJiZl5KQEAQFAQJCQZAAAAEBAEBAEAAAAAAAAAAAtKyZkZKSkZCRZ2bYuCwIABAEBQECQ0LQAAABAQBAQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=","chcol":"+PgLu1v7Hf0NLZoqCb8pufkJ+VkJCan5a6v6mvubG0v7CxkpGWmpCYmJq4uri/1d3Y2a+g//KRkJGakZCfn5KasLqvor+xsbKwv5Cbn5uQn5Wdm5qfm5+dn5uckJuWkJKYn52an5yUkp+blp+fnfr8+//+///w//+fn5+fn5+Qn5+fn5+fn5Kfm5+Un5+fn5+fn5+fn5//+v/7//7///uf8v///////5+fn5+dn5+fn5+fn5+fn8DPm5+fn5+alJ+SlJ+RmpKbn/L68Pv88PP7mpucnZqWkZyen5CZn5HPy8+fn5CQkpSfmpqQm5+fnJuQmp+Wn5CQkpSflp6WmZSQ==","bg":[0,11,15],"first":{"gx":87,"gy":10,"fx":1,"fy":6},"briefing":["LEVEL FOUR.","DESCENDING TO HIS LAB","DARKMAN MUST OPEN THE GAS","CYLINDERS THEN SET THE BIRD","ROCKING OVER THE LIGHTER AND","ESCAPE BACK UP TO THE ROOFTOP.","THE DOOM INTENDED FOR HIM","SHALL NOW BEFALL HIS ENEMIES.","END OF LINE..."],"addr":{"map":31982,"top":37054,"bot":37212,"chcol":48896,"charset":53248,"tiles":62,"briefing":39946,"objects":30960},"ref":{"win":[48,64,288,126],"px":"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"},"objects":[{"i":0,"t":1,"x":900,"y":352,"v":0,"e":3},{"i":1,"t":7,"x":900,"y":373,"v":0,"e":0},{"i":2,"t":17,"x":900,"y":352,"v":0,"e":0},{"i":3,"t":2,"x":600,"y":433,"v":1,"e":3},{"i":4,"t":7,"x":600,"y":454,"v":1,"e":0},{"i":5,"t":9,"x":535,"y":452,"v":0,"e":0},{"i":6,"t":10,"x":448,"y":400,"v":0,"e":0},{"i":7,"t":11,"x":448,"y":400,"v":0,"e":0},{"i":8,"t":10,"x":448,"y":550,"v":0,"e":0},{"i":9,"t":11,"x":448,"y":550,"v":0,"e":0},{"i":10,"t":1,"x":600,"y":545,"v":0,"e":3},{"i":11,"t":7,"x":600,"y":566,"v":0,"e":0},{"i":12,"t":1,"x":600,"y":656,"v":0,"e":3},{"i":13,"t":7,"x":600,"y":677,"v":0,"e":0},{"i":14,"t":17,"x":600,"y":656,"v":0,"e":0},{"i":15,"t":19,"x":640,"y":752,"v":0,"e":0},{"i":16,"t":19,"x":660,"y":752,"v":1,"e":0},{"i":17,"t":19,"x":680,"y":752,"v":2,"e":0},{"i":18,"t":20,"x":640,"y":752,"v":0,"e":0},{"i":19,"t":9,"x":700,"y":788,"v":0,"e":0},{"i":20,"t":5,"x":420,"y":734,"v":0,"e":0},{"i":21,"t":6,"x":420,"y":734,"v":0,"e":0},{"i":22,"t":21,"x":790,"y":630,"v":0,"e":0},{"i":23,"t":21,"x":790,"y":500,"v":0,"e":0},{"i":24,"t":21,"x":960,"y":549,"v":0,"e":0},{"i":25,"t":21,"x":960,"y":613,"v":0,"e":0},{"i":26,"t":21,"x":1060,"y":740,"v":1,"e":0},{"i":27,"t":1,"x":1000,"y":432,"v":0,"e":3},{"i":28,"t":7,"x":1000,"y":453,"v":0,"e":0},{"i":29,"t":1,"x":1000,"y":656,"v":1,"e":3},{"i":30,"t":7,"x":1000,"y":677,"v":1,"e":0},{"i":31,"t":2,"x":1000,"y":768,"v":1,"e":3},{"i":32,"t":7,"x":1000,"y":789,"v":1,"e":0},{"i":33,"t":2,"x":950,"y":864,"v":0,"e":3},{"i":34,"t":7,"x":950,"y":885,"v":0,"e":0},{"i":35,"t":22,"x":570,"y":884,"v":1,"e":0},{"i":36,"t":22,"x":620,"y":884,"v":2,"e":0},{"i":37,"t":9,"x":725,"y":885,"v":0,"e":0},{"i":38,"t":9,"x":845,"y":901,"v":0,"e":0},{"i":39,"t":10,"x":450,"y":900,"v":0,"e":0},{"i":40,"t":11,"x":450,"y":900,"v":0,"e":0},{"i":41,"t":2,"x":300,"y":960,"v":1,"e":3},{"i":42,"t":7,"x":300,"y":981,"v":1,"e":0},{"i":43,"t":1,"x":290,"y":1023,"v":1,"e":3},{"i":44,"t":7,"x":290,"y":1044,"v":1,"e":0},{"i":45,"t":9,"x":355,"y":1077,"v":0,"e":0},{"i":46,"t":9,"x":297,"y":1124,"v":0,"e":0},{"i":47,"t":1,"x":980,"y":960,"v":0,"e":3},{"i":48,"t":7,"x":980,"y":981,"v":0,"e":0},{"i":49,"t":17,"x":980,"y":960,"v":0,"e":0},{"i":50,"t":1,"x":980,"y":1040,"v":0,"e":3},{"i":51,"t":7,"x":980,"y":1061,"v":0,"e":0},{"i":52,"t":17,"x":980,"y":1040,"v":0,"e":0},{"i":53,"t":2,"x":980,"y":1152,"v":1,"e":3},{"i":54,"t":7,"x":980,"y":1173,"v":1,"e":0},{"i":55,"t":9,"x":880,"y":1189,"v":0,"e":0},{"i":56,"t":1,"x":820,"y":1136,"v":0,"e":3},{"i":57,"t":7,"x":820,"y":1157,"v":0,"e":0},{"i":58,"t":1,"x":540,"y":1265,"v":0,"e":3},{"i":59,"t":7,"x":540,"y":1286,"v":0,"e":0},{"i":60,"t":17,"x":500,"y":1265,"v":0,"e":0},{"i":61,"t":23,"x":300,"y":391,"v":0,"e":0},{"i":62,"t":23,"x":270,"y":599,"v":0,"e":0},{"i":63,"t":23,"x":690,"y":1047,"v":0,"e":0},{"i":64,"t":23,"x":339,"y":1207,"v":0,"e":0},{"i":65,"t":25,"x":200,"y":1285,"v":0,"e":0},{"i":66,"t":26,"x":200,"y":1264,"v":0,"e":0},{"i":67,"t":4,"x":770,"y":1030,"v":0,"e":0},{"i":68,"t":4,"x":810,"y":1030,"v":0,"e":0},{"i":69,"t":4,"x":230,"y":1080,"v":0,"e":0},{"i":70,"t":3,"x":760,"y":950,"v":0,"e":0},{"i":71,"t":1,"x":300,"y":337,"v":0,"e":3},{"i":72,"t":7,"x":300,"y":358,"v":0,"e":0}],"objOffset":[165,218],"camera":[836,244],"live":[{"i":0,"t":2,"x":1016,"y":352},{"i":1,"t":7,"x":1016,"y":373},{"i":2,"t":17,"x":1016,"y":352},{"i":27,"t":1,"x":1000,"y":432},{"i":28,"t":7,"x":1000,"y":453}],"player":[206,107],"typeNames":{"0":"free","1":"walk left","2":"walk right","3":"energy pickup","4":"score pickup","5":"flash frame","6":"lobbed shot","7":"follow","8":"none","9":"flashing hazard","10":"vertical patrol","11":"radial shot","12":"colour 6","13":"colour 1","14":"attack right","15":"attack left","16":"knocked down","17":"enemy shot","18":"none 18","19":"path follower","20":"fixed sprite","21":"timed blast","22":"bouncer","23":"falling object","24":"falling burst","25":"countdown start","26":"countdown light"}},{"n":5,"kind":"chase","chopper":[[0,0,10,0],[-7,1,33,0],[0,0,60,0],[2,1,24,0],[0,0,30,0],[2,-1,33,0],[0,0,50,0],[-1,0,66,0],[0,0,50,0],[-2,1,30,0],[0,0,90,0],[1,0,49,0],[0,0,60,0],[1,-1,50,0],[1,0,7,0],[0,0,200,0],[1,0,50,0],[0,0,130,0],[-4,0,11,0],[0,0,80,0],[-1,1,60,0],[0,0,110,0],[-1,0,40,0],[0,0,90,0],[2,0,50,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[0,0,50,0],[0,-1,60,0],[1,0,4,0],[0,0,250,0],[-1,1,62,0],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-2,0,25,1],[0,0,20,1],[2,0,25,1],[-1,0,102,0],[0,0,250,0]],"walls":[[9,1,0,50],[15,2,1,13],[15,1,1,50],[22,3,1,50],[22,3,0,50],[9,2,1,30],[15,1,0,20],[28,3,1,60],[9,1,2,30],[9,2,0,70],[28,3,1,35],[9,1,1,50],[15,2,1,110],[22,3,0,167],[22,3,0,90],[28,3,0,190],[28,3,1,100],[15,2,1,60],[15,1,0,10],[9,2,3,100],[9,1,1,250],[28,3,1,250],[28,3,1,250],[9,1,1,50],[22,3,0,30],[15,2,2,25],[27,3,1,50]],"obstacles":[[244,1,-5,50],[205,1,-2,150],[200,1,-2,100],[200,1,-2,220],[244,1,-2,150],[244,1,-1,200],[244,1,-2,220],[200,1,-1,250],[244,1,-2,150],[244,1,-4,150],[97,2,1,250]],"briefing":["LEVEL FIVE.","WITH SECONDS TO SPARE DARKMAN","GRABS THE ROPE BENEATH DURANTS","CHOPPER. THE BIRD GIVES A","FINAL NOD AND THE WAREHOUSE","BEHIND HIM EXPLODES.","NOW HE HANGS ON AS THE CHOPPER","SWOOPS DOWN TO THE BUSY","FREEWAY..","END OF LINE..."],"start":{"x":326,"y":50,"wallDelay":23,"obstacleDelay":200},"barFrames":2800,"addr":{"chopper":5688,"walls":5528,"obstacles":5640,"briefing":9460}},{"n":6,"kind":"tiles","rows":72,"cols":64,"map":"NDQ0NDk0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NAAADAwMDAwMDD09NjQ0NDQ3NDQ0NDQ0NDQ5ND49PT09PT09PTQ0NDk0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0OTQ0NDQAAAwMDAwMDAw4ADs0NDQ+PT09PT09NDQ0NDQ6PAA8ADwAPAA0OTQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDc0AAAMDAwMDAwMAAA7NDQ0OjgAOAA4ADQ0NDQ0OgAAAAAAAAAANDQ0NDQ0NDc0NzQ0NDQ0PT09NjQ0NDQ0NT09PQAADAwMDAwMDDgAOzQ0NDo4ADwAPAA0OTQ0NDo8ADwAPAA8ADQ0NDQ0Pj09PT09PTQ0NAAAAD09PTQ0NAA4ADgAAAwMDAwMDAwAAAAANDQAPAw8ADwANDQ0NDQ6ABYAFgAAAAA0NDQ0NDoAPAAAPAA0NDQAAAAAAAA0NDQAAAAAAAAMDAwMDAwMAAAAADQ0ADgMOAA8ADQ0ND49AAMEBAQEBAQEBAQ0NDQAAAAAAAAANDQ0AAAAAAAANDQ0AAAMAAAADAwMDAwMDAAAAAA0NAA8DDwAPAA0NDQ6AAAAFwAXAAAcHTQ0NDQ5AAAAAAAAADQ0NAAAAAAAADQ0NAA8DDgAAAwMDAwMDAwADAAANDQAPAw8ADwANDQ0OgAAABYAFgAYGQA0NDQ0NDoAAAAAAAA0NDQAAAAAAAA0NDQAAAwMAAAMDAwMDAwMDAwAADQ0ADwMPAA4AD09NDoAAAAWABYYGQAAAAAAAAAAAAAAAAAABAUFBAUFBAAANBQ0AAAMDAAADAwMDAwMDAwMAAA0NAAADAAAAAAAADQ6AAAAFgAWGQAAAAAAAAAAAAAAAAAAABotLi8tLhkADwASAAAADAwAAAwMDAwMDAwMDAAANDQAMQoLCgsKCwoLCgsKCwoLCgsKCwoLCgsKCwoLCgsDBAQEBAQEBAQEBA0ECwoLCgsKAAAMDAwMDAwMDAwAADQ0MjAvMC8wLzAvMC8wLzAvMC8wLzAvMC8wLzAvMC8wLzAvMC0uLy0uMC8OLzAvMBAREBEADAwMDAwMDAwMAAA0NAAAADMzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMEBAQEBAYADgAAAAAQERARAAwMDAwMDAwMDAAANDQAAAAzMwAAAAAAAAAeHxcAFxwdAAAAAAAAAAAAAAAAAAAALS4vLS4BAA4AFRUAEBEQEQAMDAwMDAwMDAwAADQ0AAA4MzMAAAAAAAAAABoWABYZDwAAAAAAAAAAAAAAAAAAAC0uMC0uAQAOABQUAAAAAAAADAwMDAwMDAwMAAA0NAAAADMzAAAAAAADBAQEBQQFBA0EBgAAAAAAAAAAAAAAAAAtLgAtLgEADgASEwAAAAAAAAwMDAwMDAwMDAAANDQAAAAzMzgAAAAAAAAAABcAFwAOAAAAAAAAAAAAAAAAAAAALS4ALS4BAA4AFBQAAAAAAAAMDAwMDAwMDAwAAAAAAAAAMzMAAAAAAAAAAAAWABYADgAAAAAAAAAAAAAAAAADBAQEBAQEBAQEBAQEBgAAAAAADAwMDAwMDAwMAAAAAAAAADMzAAAAAAAAAAAAFgAWAA4AAAAABwgAAAAAAAAAABctLgAtLgAAAAAVFQAAAAAAAAwMDAwMDAwMDAAAAAAAAAAzMwAAAAAAAAAAABYAFgAOAAAAAAcIAAAAAAcIAAAWLS4ALS4AAAAAEhMAAAAAAAAMDAwMDAwMDAwAAAAAAAAAMzMAAAAAAAAAAAAWABYADgAALCwHCQgAAAAHCAAAFi0uAC0uAAAPABQUAAAAAAAADAwMDAwMDAwMAAAAAAAAADMzAAAAAAMEBAQEBAQEBAQEBAQEBAQEBAQEBAYAABYtLgAtLgADDQQEBAYAAAAAAAwMDAwMDAwMDAAAAAAAAAAzBwgAAAAAAAAeHxcAFwAXAAAXAAAAABwdFx4fAAAWLS4ALS4AAA4eFBQAAAAAAAAMDAwMDAwMDAwAAAAAAAAAMwcIAAAAAAAAABoWABYAFiEiFgAAABgZABYAGhsAFi0uAC0uAAAOABITAAAAAAAADAwMDAwMDAwMAAAAAAAAAAcJCQgAAAAAAAAAFhsWIBYAABYjABgZAAAWAAAaGxYtLgAtLgAADgAUFAAAAAAAAAwMDAwMDAwMDAAAAAAEBAQEBAQEBAQAAAAsLBYaFiEWAAAWIigZAAAAFgAAABoWLS4ALS4AAA4AEhMAAAAAAAAMDAwMDAwMDAwAAAAAAAAAAAAAAAAAAAAsLCwWIBYbFgcIFhgmIwAAABYAAAAAFi0uAC0uAAAOABQUAAAAAAAADAwMDAwMDAwMAAAAAAAAAAAAAAAAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBgAAABYtLgAtLgAADgASEwAAAAAAAAwMDAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAABciFwAeHxwdABYhAAAAAAAAAAAWLS4ALS4AAA4AFBQAAAAAAAAMDAwMDAwMDAwAAAAAAAASAAAAAAAAAAAAAAAWABYjABYWACAWAAAAAAASAAAAFi0uAC0uAAAOABITAAAAAAAADAwMDAwMDAwMAAAAAAAAFAAAAAAAAAAAAAAAFgAWIigZGichFgAAAAAAFBQAABYtLgAtLgAADgAUFAAAAAAAAAwMDAwMDAwMDAAAAAAPABITAAAAAAAAAAAAABYAFhgmIyAkGxYALCwAABITAAAWLQcJCC4AAA4AEhMALAAAAAAMDAwMDAwMDAwAAwQEDQQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQGAAAADAwMDAwMDAwMAAAAAA4AFRUAAAAAAAAAAAAAFwAXABwdHh8AAAAAAAAAFRUAABctLgAtLhcAAAASEwAAAAAAAAwMDAwMDAwMDAAAAAAOABITAAAAAAAAAAAAABYAFhgZAAAaGwAAAAAAABITAAAWLS4ALS4WAAAAFBQAAAAAAAAMDAwMDAwMDAwAAAAADgAUFAAAAAAAAAAAAAAWABYZAAAAABobAAAAAAAUFAAABQQEBAQEBQAAABITAAAAAAAADAwMDAwMDAwMAAAAAA4AEhMAAAAAAAAAAAAAFhgWAAAAAAAAGhsAAAAgEhMAAAAtLgAtLgAAAAAUFAAAAAAAAAwMDAwMDAwMDAMEBAQEBAQEBAQEBAQEBAYAABYZFgAAAAAAAAAaGwAgIRQUAAAALS4ALS4AAAAAEhMAAAAAAAAMDAwMDAwMDAwAAAAAAAAVFQAAAAAVFQAAABgWABYAAAAAAAAAABonIQASEwAAAC0uAC0uAAAAABQUDwAAAAAADAwMDAwMDAwMAAAAAAAAEhMAAAAAEhMAAAMFBAQEBQQGAAAAAAMEBAQEBAQEBAQEBAQEBAQEBAQEBA0EBgAAAAwMDAwMDAwMDAAAAAAAABQUAAAAABQUAAAAHhcAFx0AAAAAAAAAAAAaGxcVFwAALS4ALS4AAAAAFRUOAAAAAAAMDAwMDAwMDAwAAAAAAAASEwAAAAASEwAAAAAWABYAAAAAAAAAAAAAABoWExYAAC0uAC0uAAAAABITDgAAAAAADAwMDAwMDAwMAAAAAA8AFBQAAAAAFBQAAAAAFgAWAAAAAAAAAAAAAAAAFgQWAAAtLgAtLgAAAAAUFA4AAAAAAAwMDAwMDAwMDAAAAAMNBAQGAAAAAwQEBAQEBAQEBAQGAAAAAAAAAAAAABYaFgAALS4ALS4AAAAAEhMOAAAAAAAMDAwMDAwMDAwAAAAADh8VFQAAAAAVFR4fAB4XLxcdAAAAAAAAAAAAAAAWABYAAC0uAC0uAAAAABQUDgAAAAAADAwMDAwMDAwMAAAAAA4aEhMAAAAAEhMAGhsAFjAWAAAAAAAAAAAAAAAAFgAWAAAtLgMEBAQEBAQEBAQEBgAAAAwMDAwMDAwMDAAAAAAOABQUAAAAABQUAAAsLBYvFgAAAAAAAAAAAAMEBAQEBAYALS4ALS4AABcAFRUAAAAAAAAMDAwMDAwMDAwAAAAADgASEwAAAAASEwAsLCwWMBYAAAAAAAAAAAAAFwAXABcAAC0uAC0uAAAWABITAAAAAAAADAwMDAwMDAwMAAAAAwQEBAQEBAQEBAQEBAQEBS8WAAAAAAAAAAAAABYAFgAWAAAtLgAtLgAAFgAUFAAAAAAAAAwMDAwMDAwMDAAAAAAAABUVAAAAABUVAAAAABcvFgcIAAAAAAAAAAAWABYAFgAALS4ALS4AABYAEhMAAAAAAAAMDAwMDAwMDAwAAAAAAAASEwAAAAASEwAAAAAWMAcJCAAAAAAAAAAAFgAWABYAAC0uAC0uAAAWABQUAA8AAAAADAwMDAwMDAwMAAAAAAAAFBQAAAAAFBQAAAAAFgMFBAUEBAQEBAAAAAQEBQQFBAQGLgAtLgMEBAQEBAQNBgAAAAwMDAwMDAwMDAAAAAAAABITAAAAABITAAAAABYAFwAeHwAAACIjABwdABcAFyEALS4ALS4AABcAFRUADgAAAAAMDAwMDAwMDAwAAAAAAAAUFAAAAAAUFAAAAAAWABYAABobAAAAIigZAAAWIBYAAC0uAC0uAAAWABITAA4AAAAADAwMDAwMDAwMAAAAAAAAEhMAAAAAEhMAAAAAFgAWAAAAGhsAABgmIwAAFiEWAAAtLgAtLgAAFgAUFAAOAAAAAAwMDAwMDAwMDAAAAAAAABQUAA8AABQUBwgAABYAFgAAAAAaGxgZACIjIBYAFgAALS4ALS4AABYAEhMADgAAAAAMDAwMDAwMDAwAAAADBAQEBAQNBAQEBAQEBAQEBAQEBAQEBAUFBAQEBAQFBAUEBAQEBAQEBAQEBAQEBAQEBAQGDAwMDAwMDAwMAAAAAAAAFRUADgAAFRUAAAAAFwAXAAAAABwdHh8AICEiFwAXAAAtLi8tLgAAAAAVFQAAABcAKgwMDAwMDAwMDAAAAAAAABITAA4AABITAAAAABYAFgAAABgZAAAaJyEAABYjFgAALS4wLS4AAAAAEhMAAAAWACkMDAwMDAwMDAwAAAAAAAAUFAAOAAAUFAAAAAAWABYAABgZAAAAICQbAAAWIhYAAC0uLy0uACoqKhQUACoqFgApDAwMDAwMDAwMAAAAAAAAEhMADgAAEhMAAAAAFgAWABgZAAcIICEAGhsAFgAWIwAtLjAtLgAqKioSEwAqKhYAKQwMDAwMDAwMDAAAAAAAABQUAA4AABQUAAAsLBYAFhgZAAAHCQgAAAAaGxYAFiIjLS4vLS4AKioqFBQAKioWACkMDAwMDAwMDAwAAAADBAQEBAQEBAQEBAQEBAQFABYZAAAABAQEBAQEBAQFBAUEBAQEBAQEBAQEBAQEBAQEBAQGDAwMDAwMDAwMAAAAABcAFRUAAAAAFRUAAAAAAAAWAAAAICEAAAAAAAAAFwAXAAAtLjAtLgAAAAAVFQAAAAAAKgwMDAwMDAwMDAAAAAAWKhITACoqKhITACoqKioqFgAAICEAAAAAAAAAABYAFgAALS4vLS4AAAAAEhMAKgcIKikMDAwMDAwMDAwAAAArFioUFAAqKioUFAAqKioqKhYAICEAKyoqKioqKioWABYAKi0uMC0sLAAqKhQUACoHCCopDAwMDAwMDAwMAAArKhYqEBEAKioqEBEAKgcIBwgWICEABwgAKiwsACoqFgAWACoQEREsLCwAKioQEQAHCAcIKQwMDAwMDAwCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUF","top":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJ1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnegoaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbH8PHy8/T1","bot":"KCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OT3h5ent8fX5/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp/IycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v9vf4+fr7","charset":"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","chcol":"CBgJDQsLCQkJCaoKCQkJCa4JvpkPDw8PCAgODg6uCQkJCQmuCb+ZCQkJCb0LGwkJCQkKmgmpCbkOjg4JCQ8PDwgIDg4ODq4OCQkJDgkPCakJCQkJCgoKCgoKigoKCgoKugoKCgoKCgoKCooKCgoKChoKCgoKCgqqCQkJCQoKCgoKCooKKsqKKgoKigoKKgraCgoKKgp6CpoKCgoKmgqqCroKigoKCsoKDS4PDw8PDw8PDw8PDw8JCQ4ODg4ODg4OCQkODg4ODg4KCgoKCgoKCg0Ozw8PDw8PDw8PDw8PCQkODg4ODg4ODgkJDg4ODg4ODg4ODg4ODg4Ovg6ODh4ODg==","bg":[0,15,11],"first":{"gx":3,"gy":121,"fx":1,"fy":6},"briefing":["LEVEL SIX.","HIS RAGE BURNING INCANDESCENT","IN HIS HEART DARKMAN PURSUES","STRACK WITH ONLY TWO THOUGHTS","IN HIS MIND. TO FREE HIS LOVE","AND KILL HIS CREATOR...","END OF LINE..."],"addr":{"map":33154,"top":38900,"bot":39058,"chcol":48896,"charset":53248,"tiles":63,"briefing":38719,"objects":30281},"ref":{"win":[48,64,288,126],"px":"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"},"objects":[{"i":0,"t":1,"x":900,"y":1265,"v":0,"e":3},{"i":1,"t":7,"x":900,"y":1286,"v":0,"e":0},{"i":2,"t":1,"x":300,"y":1184,"v":0,"e":3},{"i":3,"t":7,"x":300,"y":1205,"v":0,"e":0},{"i":4,"t":1,"x":700,"y":1184,"v":0,"e":5},{"i":5,"t":7,"x":700,"y":1205,"v":0,"e":0},{"i":6,"t":17,"x":700,"y":1184,"v":0,"e":0},{"i":7,"t":1,"x":300,"y":1088,"v":0,"e":3},{"i":8,"t":7,"x":300,"y":1109,"v":0,"e":0},{"i":9,"t":17,"x":300,"y":1088,"v":0,"e":0},{"i":10,"t":1,"x":1000,"y":1088,"v":0,"e":6},{"i":11,"t":7,"x":1000,"y":1109,"v":0,"e":0},{"i":12,"t":17,"x":1000,"y":1088,"v":0,"e":0},{"i":13,"t":1,"x":980,"y":1008,"v":0,"e":3},{"i":14,"t":7,"x":980,"y":1029,"v":0,"e":0},{"i":15,"t":1,"x":570,"y":1008,"v":0,"e":5},{"i":16,"t":7,"x":570,"y":1029,"v":0,"e":0},{"i":17,"t":1,"x":400,"y":960,"v":0,"e":3},{"i":18,"t":7,"x":400,"y":981,"v":0,"e":0},{"i":19,"t":17,"x":400,"y":960,"v":0,"e":0},{"i":20,"t":1,"x":500,"y":880,"v":0,"e":3},{"i":21,"t":7,"x":500,"y":901,"v":0,"e":0},{"i":22,"t":1,"x":1000,"y":912,"v":0,"e":6},{"i":23,"t":7,"x":1000,"y":933,"v":0,"e":0},{"i":24,"t":1,"x":900,"y":816,"v":0,"e":3},{"i":25,"t":7,"x":900,"y":837,"v":0,"e":0},{"i":26,"t":17,"x":900,"y":816,"v":0,"e":0},{"i":27,"t":1,"x":500,"y":816,"v":0,"e":3},{"i":28,"t":7,"x":500,"y":837,"v":0,"e":0},{"i":29,"t":1,"x":350,"y":783,"v":0,"e":3},{"i":30,"t":7,"x":350,"y":804,"v":0,"e":0},{"i":31,"t":1,"x":700,"y":705,"v":0,"e":6},{"i":32,"t":7,"x":700,"y":726,"v":0,"e":0},{"i":33,"t":1,"x":300,"y":705,"v":0,"e":3},{"i":34,"t":7,"x":300,"y":726,"v":0,"e":0},{"i":35,"t":1,"x":900,"y":705,"v":0,"e":6},{"i":36,"t":7,"x":900,"y":726,"v":0,"e":0},{"i":37,"t":1,"x":650,"y":624,"v":0,"e":3},{"i":38,"t":7,"x":650,"y":645,"v":0,"e":0},{"i":39,"t":1,"x":500,"y":528,"v":0,"e":3},{"i":40,"t":7,"x":500,"y":549,"v":0,"e":0},{"i":41,"t":1,"x":800,"y":352,"v":0,"e":8},{"i":42,"t":7,"x":800,"y":373,"v":0,"e":0},{"i":43,"t":2,"x":670,"y":352,"v":0,"e":8},{"i":44,"t":7,"x":670,"y":373,"v":0,"e":0},{"i":45,"t":23,"x":400,"y":1239,"v":0,"e":0},{"i":46,"t":23,"x":350,"y":1239,"v":0,"e":0},{"i":47,"t":9,"x":474,"y":1204,"v":0,"e":0},{"i":48,"t":23,"x":765,"y":983,"v":0,"e":0},{"i":49,"t":23,"x":715,"y":983,"v":0,"e":0},{"i":50,"t":9,"x":836,"y":932,"v":0,"e":0},{"i":51,"t":23,"x":760,"y":871,"v":0,"e":0},{"i":52,"t":27,"x":600,"y":330,"v":0,"e":0},{"i":53,"t":27,"x":600,"y":351,"v":0,"e":0},{"i":54,"t":1,"x":320,"y":352,"v":1,"e":20},{"i":55,"t":7,"x":320,"y":373,"v":1,"e":0},{"i":56,"t":17,"x":280,"y":352,"v":0,"e":0},{"i":57,"t":28,"x":260,"y":550,"v":0,"e":0},{"i":58,"t":29,"x":1000,"y":1140,"v":0,"e":0},{"i":59,"t":29,"x":700,"y":1060,"v":0,"e":0},{"i":60,"t":29,"x":280,"y":840,"v":0,"e":0},{"i":61,"t":29,"x":290,"y":645,"v":0,"e":0},{"i":62,"t":29,"x":710,"y":580,"v":0,"e":0},{"i":63,"t":29,"x":400,"y":580,"v":0,"e":0},{"i":64,"t":9,"x":685,"y":548,"v":0,"e":0},{"i":65,"t":4,"x":831,"y":770,"v":0,"e":0},{"i":66,"t":4,"x":831,"y":600,"v":0,"e":0},{"i":67,"t":4,"x":831,"y":650,"v":0,"e":0},{"i":68,"t":4,"x":831,"y":550,"v":0,"e":0},{"i":69,"t":3,"x":320,"y":450,"v":0,"e":0}],"objOffset":[165,218],"camera":[164,1132],"live":[{"i":2,"t":1,"x":388,"y":1184},{"i":3,"t":7,"x":388,"y":1205},{"i":45,"t":24,"x":400,"y":1284},{"i":46,"t":24,"x":350,"y":1284},{"i":47,"t":9,"x":474,"y":1204}],"player":[116,130],"typeNames":{"0":"free","1":"walk left","2":"walk right","3":"energy pickup","4":"score pickup","5":"flash frame","6":"lobbed shot","7":"follow","8":"none","9":"flashing hazard","10":"vertical patrol","11":"radial shot","12":"colour 6","13":"colour 1","14":"attack right","15":"attack left","16":"knocked down","17":"enemy shot","18":"none 18","19":"none 19","20":"none 20","21":"none 21","22":"none 22","23":"falling object","24":"falling burst","25":"light start","26":"light blink","27":"follow object y","28":"map switch","29":"drop rise"}}];
+// end of levels-data
+</script>
+<script>
+/* levels-core */
+// The drawing and the checks. Pure functions: the page and test_levels.js both run them.
+const DM = (function () {
+  const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const b64 = s => typeof atob === 'function' ? Uint8Array.from(atob(s), c => c.charCodeAt(0))
+                                               : Uint8Array.from(Buffer.from(s, 'base64'));
+  // A zlib stream in base64, unpacked (the emulator's picture is stored packed).
+  async function unz(s) {
+    const r = new Response(new Blob([b64(s)]).stream().pipeThrough(new DecompressionStream('deflate')));
+    return new Uint8Array(await r.arrayBuffer());
+  }
+  // A level's tables, decoded once.
+  function prep(L) {
+    return { map: b64(L.map), top: b64(L.top), bot: b64(L.bot), charset: b64(L.charset), chcol: b64(L.chcol) };
+  }
+  // The screen code at character (cx, cy). The game reads the map as one run of tiles, a tile being two characters
+  // across and two down, so a column left of the first wraps to the end of the row above. -1 is outside the run.
+  function code(L, P, cx, cy) {
+    const i = (cy >> 1) * L.cols + (cx >> 1);
+    if (i < 0 || i >= P.map.length) return -1;
+    return ((cy & 1) ? P.bot : P.top)[2 * P.map[i] + (cx & 1)];
+  }
+  // The pixels (palette numbers) of nx by ny characters from (cx0, cy0). A character the map does not hold is 255.
+  // A character is multicolour when bit 3 of its colour is set: the bit pairs pick the background, the two shared
+  // colours (L.bg[1], L.bg[2]), or the character's own colour.
+  function chars(L, P, cx0, cy0, nx, ny) {
+    const w = nx * 8, out = new Uint8Array(w * ny * 8), bg = L.bg;
+    for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+      const c = code(L, P, cx0 + x, cy0 + y);
+      if (c < 0) { for (let l = 0; l < 8; l++) for (let p = 0; p < 8; p++) out[(y * 8 + l) * w + x * 8 + p] = 255; continue; }
+      const col = P.chcol[c] & 15, fg = col & 7;
+      for (let l = 0; l < 8; l++) {
+        const row = P.charset[c * 8 + l];
+        for (let p = 0; p < 8; p++) {
+          let v;
+          if (col & 8) { const pair = (row >> (6 - (p & 6))) & 3; v = pair === 3 ? fg : bg[pair]; }
+          else v = (row >> (7 - p)) & 1 ? fg : bg[0];
+          out[(y * 8 + l) * w + x * 8 + p] = v;
+        }
+      }
+    }
+    return out;
+  }
+  // The whole map in its own layout: 16 pixels to a tile.
+  function mapPixels(L, P) {
+    return { w: L.cols * 16, h: L.rows * 16, px: chars(L, P, 0, 0, L.cols * 2, L.rows * 2) };
+  }
+  // The window of the emulator's frame (win = [x, y, w, h]) as the map draws it when the character at
+  // (first.gx, first.gy) is at the top left of the text and the fine scroll is (first.fx, first.fy). The frame's
+  // text starts at pixel column 32 + fx and row 50 + fy.
+  function windowPixels(L, P) {
+    const f = L.first, [x0, y0, w, h] = L.ref.win;
+    const tx = x0 - 32 - f.fx, ty = y0 - 50 - f.fy;
+    const nx = ((tx + w - 1) >> 3) - (tx >> 3) + 1, ny = ((ty + h - 1) >> 3) - (ty >> 3) + 1;
+    const big = chars(L, P, f.gx + (tx >> 3), f.gy + (ty >> 3), nx, ny), bw = nx * 8;
+    const out = new Uint8Array(w * h), ox = tx & 7, oy = ty & 7;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) out[y * w + x] = big[(y + oy) * bw + x + ox];
+    return out;
+  }
+  // The map rectangle (in map pixels) that the window shows, in one or two pieces: the part left of the first
+  // column continues in the row above, at its right end.
+  function windowRects(L) {
+    const f = L.first, [x0, y0, w, h] = L.ref.win, W = L.cols * 16;
+    const x = f.gx * 8 + (x0 - 32 - f.fx), y = f.gy * 8 + (y0 - 50 - f.fy);
+    const out = [];
+    const cut = (xa, xb, ya) => { if (xb > xa) out.push({ x: xa, y: ya, w: xb - xa, h }); };
+    if (x < 0) { cut(x + W, W, y - 16); cut(0, Math.min(x + w, W), y); }
+    else if (x + w > W) { cut(x, W, y); cut(0, x + w - W, y + 16); }
+    else cut(x, x + w, y);
+    return out;
+  }
+  // Pixels that differ, as a mask, and how many.
+  function diff(pix, ref) {
+    const mask = new Uint8Array(pix.length); let n = 0;
+    for (let i = 0; i < pix.length; i++) if (pix[i] !== ref[i]) { mask[i] = 1; n++; }
+    return { mask, n };
+  }
+  // The boxes the differences fall in. Differing pixels in neighbouring 8 by 8 cells (diagonals and one empty cell
+  // between included) belong to one box. A sprite is at most 24 by 21 pixels, 48 by 42 when expanded.
+  function boxes(mask, w, h) {
+    const gw = (w + 7) >> 3, gh = (h + 7) >> 3, cell = new Int32Array(gw * gh).fill(-1), list = [];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) cell[(y >> 3) * gw + (x >> 3)] = 0;
+    const seen = new Uint8Array(gw * gh);
+    for (let s = 0; s < gw * gh; s++) {
+      if (cell[s] < 0 || seen[s]) continue;
+      const stack = [s], comp = []; seen[s] = 1;
+      while (stack.length) {
+        const c = stack.pop(); comp.push(c);
+        const cx = c % gw, cy = (c / gw) | 0;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+          const nx = cx + dx, ny = cy + dy;
+          if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue;
+          const k = ny * gw + nx;
+          if (cell[k] >= 0 && !seen[k]) { seen[k] = 1; stack.push(k); }
+        }
+      }
+      let x0 = w, y0 = h, x1 = -1, y1 = -1, n = 0;
+      for (const c of comp) {
+        const cx = (c % gw) * 8, cy = ((c / gw) | 0) * 8;
+        for (let y = cy; y < Math.min(cy + 8, h); y++) for (let x = cx; x < Math.min(cx + 8, w); x++) if (mask[y * w + x]) {
+          n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+      }
+      list.push({ x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, n });
+    }
+    return list.sort((a, b) => a.y - b.y || a.x - b.x);
+  }
+  // The same object classes everywhere: a shape and a letter each, so that colour is never the only sign.
+  const CLASSES = {
+    enemy:  { label: 'Enemy',        letter: 'E', shape: 'square',   fill: '#D55E00' },
+    energy: { label: 'Energy pickup', letter: '+', shape: 'circle',   fill: '#009E73' },
+    score:  { label: 'Score pickup',  letter: 'S', shape: 'diamond',  fill: '#56B4E9' },
+    other:  { label: 'Other object',  letter: '',  shape: 'triangle', fill: '#F0E442' }
+  };
+  const classOf = t => t === 1 || t === 2 ? 'enemy' : t === 3 ? 'energy' : t === 4 ? 'score' : 'other';
+  // The objects of an engine level that are drawn: the second sprite of an enemy (7) and an enemy's shot (17) take
+  // their place from the object before, so they are counted but not marked.
+  const drawn = o => o.t !== 0 && o.t !== 7 && o.t !== 17;
+  // Where an engine level's object stands on the map: its world position less the level's offset.
+  const markOf = (L, o) => ({ x: o.x - L.objOffset[0], y: o.y - L.objOffset[1] });
+  // Level 1 starts its enemies and objects by scroll position. The screen's left edge is at map pixel
+  // scroll + gx * 8 - fx at the start, and the scroll counts pixels.
+  function marks1(L) {
+    const base = L.first.gx * 8 - L.first.fx, out = [];
+    L.enemies.forEach(e => out.push({ cls: 'enemy', x: e.pos + base, y: e.slot ? 40 : 76, side: e.side, text: 'enemy ' + (e.i + 1) + ', from the ' + (e.side ? 'right' : 'left') + ' edge, kind ' + e.kind + ', energy ' + e.energy }));
+    L.things.forEach(o => [o.t0, o.t1].forEach((t, k) => { if (t) out.push({ cls: 'other', x: o.pos + base, y: 104 + k * 8, n: t, text: 'object record ' + (o.i + 1) + ', slot ' + k + ': type ' + t + (t === 1 ? ' (wide, two sprites, crosses to the right)' : t === 3 ? ' (small, crosses either way)' : '') }); }));
+    return out;
+  }
+  // The chase (level 5). The chopper's position after f frames of its script, from the start X and Y; an entry holds
+  // [X step, Y step, frames, shoots].
+  function chopperAt(L, f) {
+    let x = L.start.x, y = L.start.y, shoot = 0, left = f;
+    for (const [dx, dy, n, s] of L.chopper) {
+      const k = Math.min(left, n);
+      x += dx * k; y += dy * k; shoot = s; left -= k;
+      if (left <= 0) return { x, y, shoot, done: false };
+    }
+    return { x, y, shoot: 0, done: true };
+  }
+  const chopperFrames = L => L.chopper.reduce((a, e) => a + e[2], 0);
+  // Frame at which each wall object starts, from the delays alone: the first after the setup delay, each later one
+  // after the delay of the entry before it.
+  function wallTimes(L) {
+    let t = L.start.wallDelay; const out = [];
+    for (const w of L.walls) { out.push(t); t += w[3]; }
+    return out;
+  }
+  // Frames an obstacle is on the screen: type 1 rises from Y 200 and the rest fall from Y 30, until Y passes 205 or
+  // drops below 10; its step is added every frame.
+  function obstacleFlight(o) {
+    let y = o[1] === 1 ? 200 : 30, n = 0;
+    while (y < 205 && y >= 10 && n < 1000) { y += o[2]; n++; }
+    return n;
+  }
+  // Frame at which each obstacle starts: the delay counts only while none is on the screen.
+  function obstacleTimes(L) {
+    let t = L.start.obstacleDelay; const out = [];
+    for (const o of L.obstacles) { out.push(t); t += obstacleFlight(o) + o[3]; }
+    return out;
+  }
+  return { PAL, b64, unz, prep, code, chars, mapPixels, windowPixels, windowRects, diff, boxes,
+           CLASSES, classOf, drawn, markOf, marks1, chopperAt, chopperFrames, wallTimes, obstacleFlight, obstacleTimes };
+})();
+if (typeof module !== 'undefined') module.exports = DM;
+// end of levels-core
+</script>
+<script>
+(function () {
+  // The page: the picker, the map with its markers, the chase, the checks, and the addresses.
+  const L = DM_LEVELS, P = L.map(l => l.kind === 'tiles' ? DM.prep(l) : null);
+  const $ = id => document.getElementById(id);
+  const PAL = DM.PAL, RGB = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+  const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const part = n => 'level' + n;
+  // An address in a part's listing, linked the way site.js links a bare one (it runs before this draws).
+  const A = (n, a) => `<a href="source-${part(n)}.html#${a.toString(16).toUpperCase().padStart(4, '0')}"><code>${hex(a)}</code></a>`;
+  const sel = [$('dl-sel'), $('dl-sel2')];
+  let cur = 0, zoom = 2; const show = { enemy: true, energy: true, score: true, other: true };
+  const COPY = {
+    1: {
+      how: `The map is 174 tiles across and 8 down (${A(1, 0x6E5D)}), drawn through the tile table (${A(1, 0x6BB3)}, ${A(1, 0x6C51)}) with the character shapes at ${A(1, 0xC000)}. The dashed box is the part of the first screen that the check below compares.`,
+      ends: `<p>The scroll stops at the end of the map, and an exit marker (sprite 7) comes down at the edge of the screen. Touching the marker sets the end-of-play flag (${A(1, 0x4586)}). While an enemy is in play, the scroll is held still (${A(1, 0x354A)}).</p>`,
+      open: `<p>Enemies and objects are not placed on the map. The game starts each one when the screen has scrolled a set distance (${A(1, 0x312E)} for enemies, ${A(1, 0x3207)} for objects), so each marker stands at the screen's left edge for that distance, with a dotted line down the map. An arrow shows the side an enemy enters from. The sprites are not drawn. The top character row of the first screen lies above the map's first row and is left out of the check.</p>`
+    },
+    2: {
+      how: `The map is 64 tiles across and 72 down (${A(2, 0x7A40)}), drawn through ${A(2, 0x9651)} and ${A(2, 0x96EF)} with the character shapes at ${A(2, 0xD000)}. The game reads the map as one run of tiles, so at the start the left of the screen shows the end of the row above, and the dashed box has two pieces.`,
+      ends: `<p>The level ends when the camera's height falls below 179 (${A(2, 0x2050)}). The camera starts at 1,156, so the way out is up.</p>`,
+      open: `<p>The markers stand where the level starts its objects. Walking enemies leave their place and move between the limits the table holds. The second sprite of an enemy (type 7) and an enemy's shot (type 17) take their place from the object before, so the list counts them and the map does not mark them.</p>`
+    },
+    3: {
+      how: `The map is five rows of 256 tiles (${A(3, 0x1E48)}), drawn through ${A(3, 0x5C47)} and ${A(3, 0x5CE5)} with the character shapes at <code>$C000</code>, which the listing of level 3 does not hold. The game draws the strip on screen rows 9 to 18, and only the strip is drawn here.`,
+      ends: `<p>The strip scrolls by itself. The first pass starts at tile 20 and runs to tile 255. The second pass runs from tile 0 to tile 217, and there the level-done flag is set (${A(3, 0x0FB7)}). The game then goes to the mask-making game (${A(3, 0x4286)}).</p>`,
+      open: `<p>The sky above the strip has its own colours and is not drawn. The one moving object, a thrown sprite (${A(3, 0x1C45)}), is not drawn either. The level has no table of objects, so there are no markers.</p>`
+    },
+    4: {
+      how: `The map is 64 tiles across and 72 down (${A(4, 0x7CEE)}), drawn through ${A(4, 0x90BE)} and ${A(4, 0x915C)} with the character shapes at ${A(4, 0xD000)}. The markers stand at the start positions of the level's 73 objects.`,
+      ends: `<p>Touching object 65 (type 25), near the bottom left of the map, starts a countdown of 999 that falls by one every seventh frame, about 140 seconds (${A(4, 0x122C)}). While it runs, the level ends when the camera's height plus Darkman's height is 250 to 255, higher than the place he starts (${A(4, 0x1E85)}). If the countdown reaches zero first, the energy is set to zero.</p>`,
+      open: `<p>Walking enemies, falling objects, blasts, and bouncers leave the places the markers show. The second sprite of an enemy (type 7) and an enemy's shot (type 17) are counted in the list and not marked.</p>`
+    },
+    5: {
+      how: `The chopper's path, the wall objects, and the obstacles are three scripts (${A(5, 0x1638)}, ${A(5, 0x1598)}, ${A(5, 0x1608)}). The picture draws each from its script bytes on the 40 by 19 character playfield: the white line is the chopper's path while it shoots and the dashed line while it does not, the numbered rectangles are walls in the 90 frames after they start (▼ falling from the top, ▲ rising from the bottom), and the numbered diamonds are obstacles on their way across. The timeline under the picture marks every wall (triangle), every obstacle (diamond), and the stretches where the chopper shoots. Move the slider to step the chase.`,
+      ends: `<p>A time bar of 56 steps, one every 50 frames, runs down during the chase (${A(5, 0x0B0A)}). When it is empty, the shots and new walls stop and the scroll speeds up. The next hit starts the finale, an explosion, and 200 frames later the level is over (${A(5, 0x2722)}). The mask-making game follows.</p>`,
+      open: `<p>The backdrop, which the game scrolls by rotating character shapes (${A(5, 0x1B93)}), and the sprites are not drawn. The snapshot of this level is not of play, so there is no picture of the chase to check a drawing against. Wall and obstacle times come from the delays in the scripts alone. A wall waits for a free slot and an obstacle waits for the one before to leave, so the real times can be a few frames later.</p>`
+    },
+    6: {
+      how: `The map is 64 tiles across and 72 down (${A(6, 0x8182)}), drawn through ${A(6, 0x97F4)} and ${A(6, 0x9892)} with the character shapes at ${A(6, 0xD000)}. The markers stand at the start positions of the level's 70 objects.`,
+      ends: `<p>Object 54, an enemy with energy 20 at the top left of the map, is the last. When its energy is gone and it is hit once more, the finale starts (${A(6, 0x61BC)}). The game then holds the joystick to the right until the world X is 446, waits 200 frames, and shows the ending text (${A(6, 0x93AF)}).</p>`,
+      open: `<p>Objects 52 and 53 (type 27) are moved down by the finale, and object 57 (type 28) blacks out the playfield for a moment. Walking enemies and falling objects leave the places the markers show. The second sprite of an enemy (type 7) and an enemy's shot (type 17) are counted in the list and not marked.</p>`
+    }
+  };
+  let saved = null; try { saved = +localStorage.getItem('dl-level'); } catch (e) {}
+  if (saved >= 0 && saved < L.length) cur = saved;
+  function setLevel(i) {
+    cur = Math.max(0, Math.min(L.length - 1, i));
+    sel.forEach(s => { s.value = cur; });
+    try { localStorage.setItem('dl-level', cur); } catch (e) {}
+    render();
+  }
+  L.forEach((l, i) => sel.forEach(s => s.add(new Option('Level ' + l.n + (l.kind === 'tiles' ? ' · ' + l.cols * 16 + ' by ' + l.rows * 16 + ' pixels' : ' · the chase'), i))));
+  sel.forEach(s => { s.onchange = () => setLevel(+s.value); });
+  document.querySelectorAll('.pick [data-step]').forEach(b => { b.onclick = () => setLevel(cur + +b.dataset.step); });
+  document.querySelectorAll('#dl-zoom button').forEach(b => { b.onclick = () => { zoom = +b.dataset.zoom; document.querySelectorAll('#dl-zoom button').forEach(x => x.classList.toggle('on', x === b)); render(); }; });
+  function swatch(cls) {
+    const c = DM.CLASSES[cls], s = 16, m = 8;
+    const shape = c.shape === 'square' ? `<rect x="3" y="3" width="10" height="10"/>` : c.shape === 'circle' ? `<circle cx="${m}" cy="${m}" r="5.5"/>` :
+      c.shape === 'diamond' ? `<polygon points="8,1.5 14.5,8 8,14.5 1.5,8"/>` : `<polygon points="8,2 14.5,14 1.5,14"/>`;
+    return `<svg viewBox="0 0 16 16" aria-hidden="true"><g fill="${c.fill}" stroke="#000" stroke-width="1.5">${shape}</g></svg>`;
+  }
+  function buildToggles() {
+    const t = $('dl-toggles'); t.innerHTML = '';
+    Object.keys(DM.CLASSES).forEach(k => {
+      const lab = document.createElement('label');
+      lab.innerHTML = `<input type="checkbox" ${show[k] ? 'checked' : ''}>${swatch(k)}${DM.CLASSES[k].label}${DM.CLASSES[k].letter ? ' (' + DM.CLASSES[k].letter + ')' : ' (type number)'}`;
+      lab.firstChild.onchange = e => { show[k] = e.target.checked; drawOverlay(); };
+      t.appendChild(lab);
+    });
+  }
+  // A marker: a shape with a black outline and a white halo, and a letter or number in it.
+  function marker(g, m, s) {
+    const c = DM.CLASSES[m.cls], r = 7 * s / 2 + 3, x = m.x * zoom, y = m.y * zoom;
+    g.lineJoin = 'round';
+    const path = () => {
+      g.beginPath();
+      if (c.shape === 'square') g.rect(x - r, y - r, 2 * r, 2 * r);
+      else if (c.shape === 'circle') g.arc(x, y, r + 1, 0, 6.2832);
+      else if (c.shape === 'diamond') { g.moveTo(x, y - r - 2); g.lineTo(x + r + 2, y); g.lineTo(x, y + r + 2); g.lineTo(x - r - 2, y); g.closePath(); }
+      else { g.moveTo(x, y - r - 1); g.lineTo(x + r + 2, y + r); g.lineTo(x - r - 2, y + r); g.closePath(); }
+    };
+    path(); g.lineWidth = 5; g.strokeStyle = '#fff'; g.stroke();
+    path(); g.lineWidth = 2.5; g.strokeStyle = '#000'; g.stroke();
+    g.fillStyle = c.fill; g.fill();
+    const text = c.letter || (m.n !== undefined ? String(m.n) : '');
+    if (text) { g.fillStyle = '#000'; g.font = 'bold ' + (text.length > 1 ? 9 : 11) + 'px IBM Plex Mono, monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, x, y + (c.shape === 'triangle' ? 3 : 1)); }
+  }
+  let marks = [];
+  function marksOf(i) {
+    const l = L[i];
+    if (l.n === 1) return DM.marks1(l);
+    if (!l.objects) return [];
+    return l.objects.filter(DM.drawn).map(o => {
+      const p = DM.markOf(l, o), cls = DM.classOf(o.t);
+      return { cls, x: p.x, y: p.y, n: o.t, text: 'object ' + o.i + ': type ' + o.t + ', ' + (l.typeNames[o.t] || 'unnamed') + '; world (' + o.x + ', ' + o.y + '), map pixel (' + p.x + ', ' + p.y + '), energy ' + o.e };
+    });
+  }
+  function drawOverlay() {
+    const cv = $('dl-over'), g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height);
+    const l = L[cur]; if (l.kind !== 'tiles') return;
+    // the first screen's window, dashed in black and white
+    g.setLineDash([6, 4]);
+    DM.windowRects(l).forEach(r => { [['#000', 0], ['#fff', 5]].forEach(([c, off]) => { g.lineDashOffset = off; g.strokeStyle = c; g.lineWidth = 2; g.strokeRect(r.x * zoom + 1, r.y * zoom + 1, r.w * zoom - 2, r.h * zoom - 2); }); });
+    g.setLineDash([]);
+    if (l.n === 1) { // the trigger lines of level 1
+      marks.forEach(m => { if (!show[m.cls]) return; g.strokeStyle = '#fff'; g.lineWidth = 1; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(m.x * zoom, 0); g.lineTo(m.x * zoom, cv.height); g.stroke(); g.setLineDash([]); });
+    }
+    marks.forEach(m => { if (show[m.cls]) marker(g, m, 1.6); });
+    if (l.n === 1) { // the side an enemy comes from
+      marks.forEach(m => { if (m.cls !== 'enemy' || !show.enemy) return; g.fillStyle = '#fff'; g.strokeStyle = '#000'; g.lineWidth = 3; g.font = 'bold 14px sans-serif'; g.textAlign = m.side ? 'left' : 'right'; g.textBaseline = 'middle'; const t = m.side ? '▶' : '◀'; const dx = m.side ? 16 : -16; g.strokeText(t, m.x * zoom + dx, m.y * zoom); g.fillText(t, m.x * zoom + dx, m.y * zoom); });
+    }
+  }
+  function drawMap() {
+    const l = L[cur]; if (l.kind !== 'tiles') return;
+    const M = DM.mapPixels(l, P[cur]), bw = $('dl-map'), g = bw.getContext('2d');
+    // the level 3 strip is five tile rows; the sky above it is not drawn
+    const img = new ImageData(M.w, M.h), d = img.data;
+    for (let i = 0; i < M.px.length; i++) {
+      const v = M.px[i], o = i * 4;
+      if (v === 255) { const c = ((i % M.w >> 3) + ((i / M.w | 0) >> 3)) & 1 ? 90 : 60; d[o] = d[o + 1] = d[o + 2] = c; }
+      else { d[o] = RGB[v][0]; d[o + 1] = RGB[v][1]; d[o + 2] = RGB[v][2]; }
+      d[o + 3] = 255;
+    }
+    const tmp = document.createElement('canvas'); tmp.width = M.w; tmp.height = M.h; tmp.getContext('2d').putImageData(img, 0, 0);
+    bw.width = M.w * zoom; bw.height = M.h * zoom; g.imageSmoothingEnabled = false; g.drawImage(tmp, 0, 0, bw.width, bw.height);
+    const ov = $('dl-over'); ov.width = bw.width; ov.height = bw.height;
+  }
+  function goFirst() {
+    const l = L[cur]; if (l.kind !== 'tiles') return;
+    const r = DM.windowRects(l)[0], v = $('dl-view');
+    v.scrollLeft = Math.max(0, r.x * zoom - 16); v.scrollTop = Math.max(0, r.y * zoom - 16);
+  }
+  $('dl-first').onclick = goFirst;
+  // click or tap near a marker: say what it is
+  $('dl-over').onclick = e => {
+    const r = e.target.getBoundingClientRect(), x = (e.clientX - r.left) * e.target.width / r.width / zoom, y = (e.clientY - r.top) * e.target.height / r.height / zoom;
+    let best = null;
+    marks.forEach(m => { if (!show[m.cls]) return; const dd = Math.hypot(m.x - x, m.y - y); if (dd < 14 && (!best || dd < best.d)) best = { d: dd, m }; });
+    $('dl-info').textContent = best ? best.m.text : 'Click or tap a marker to read what it is.';
+  };
+  function objectsTable() {
+    const l = L[cur], t = $('dl-objects'); let h = '';
+    if (l.n === 1) {
+      h = '<tr><th>Record</th><th>Starts at scroll</th><th>What</th></tr>' + marks.map((m, k) => `<tr><td class="n">${k + 1}</td><td class="n">${Math.round(m.x - (l.first.gx * 8 - l.first.fx))}</td><td>${m.text}</td></tr>`).join('');
+    } else if (l.objects) {
+      h = '<tr><th>Object</th><th>Type</th><th>Class</th><th>World X, Y</th><th>Map pixel</th><th>Energy</th></tr>' + l.objects.map(o => {
+        const p = DM.markOf(l, o), nm = l.typeNames[o.t] || (o.t ? 'unnamed' : 'unused');
+        return `<tr><td class="n">${o.i}</td><td>${o.t} · ${nm}</td><td>${DM.drawn(o) ? DM.CLASSES[DM.classOf(o.t)].label : 'not marked'}</td><td class="n">${o.x}, ${o.y}</td><td class="n">${DM.drawn(o) ? p.x + ', ' + p.y : ''}</td><td class="n">${o.e}</td></tr>`;
+      }).join('');
+    }
+    $('dl-objects-box').classList.toggle('dl-hide', !h);
+    t.innerHTML = h;
+  }
+  // The checks, run on the page's own data.
+  const checks = [];
+  async function runChecks() {
+    for (let i = 0; i < L.length; i++) {
+      const l = L[i]; if (l.kind !== 'tiles') { checks.push(null); continue; }
+      const ref = await DM.unz(l.ref.px), pix = DM.windowPixels(l, P[i]), d = DM.diff(pix, ref), w = l.ref.win[2], h = l.ref.win[3];
+      checks.push({ ref, pix, d, w, h, boxes: DM.boxes(d.mask, w, h), });
+    }
+    renderChecks(); renderCaption(); renderWhere();
+  }
+  const pct = (a, b) => (100 * a / b).toFixed(1) + ' %';
+  function paint(cv, px, w, h, f) {
+    cv.width = w; cv.height = h; const g = cv.getContext('2d'), img = g.createImageData(w, h);
+    for (let i = 0; i < w * h; i++) { const c = f(i), o = i * 4; img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255; }
+    g.putImageData(img, 0, 0);
+  }
+  function renderChecks() {
+    const c = checks[cur], l = L[cur];
+    if (!c) {
+      ['dl-c-draw', 'dl-c-emu', 'dl-c-diff'].forEach(id => { const cv = $(id); cv.width = 288; cv.height = 126; cv.getContext('2d').clearRect(0, 0, 288, 126); });
+      $('dl-checkcap').innerHTML = 'Level 5 has no tile map, and the snapshot of it holds no frame of play, so there is no picture to compare.';
+    } else {
+      const col = v => v === 255 ? [128, 128, 128] : RGB[v];
+      paint($('dl-c-draw'), c.pix, c.w, c.h, i => col(c.pix[i]));
+      paint($('dl-c-emu'), c.ref, c.w, c.h, i => RGB[c.ref[i] & 15]);
+      paint($('dl-c-diff'), c.d.mask, c.w, c.h, i => c.d.mask[i] ? [255, 255, 255] : [24, 24, 24]);
+      const g = $('dl-c-diff').getContext('2d'); g.strokeStyle = '#fff'; g.lineWidth = 1;
+      c.boxes.forEach(b => { g.setLineDash([3, 2]); g.strokeRect(b.x - 1.5, b.y - 1.5, b.w + 3, b.h + 3); });
+      const big = c.boxes.reduce((a, b) => Math.max(a, b.w, b.h), 0);
+      $('dl-checkcap').innerHTML = `<b>Level ${l.n}:</b> ${c.d.n.toLocaleString('en')} of ${(c.w * c.h).toLocaleString('en')} pixels differ (${pct(c.d.n, c.w * c.h)}), in ${c.boxes.length} box${c.boxes.length === 1 ? '' : 'es'}, the largest ${big} pixels across. ${l.checkNote || ''}`;
+    }
+    const rows = L.map((m, i) => {
+      const k = checks[i];
+      if (!k) return `<tr><td>Level ${m.n}</td><td colspan="3">No tile map and no frame of play to compare</td></tr>`;
+      return `<tr><td>Level ${m.n}</td><td class="n">${k.w} × ${k.h}</td><td class="n">${k.d.n.toLocaleString('en')} (${pct(k.d.n, k.w * k.h)})</td><td class="n">${k.boxes.length} (${k.boxes.reduce((a, b) => Math.max(a, b.w, b.h), 0)} px)</td></tr>`;
+    });
+    $('dl-checks').innerHTML = '<tr><th>Level</th><th>Window</th><th>Pixels that differ</th><th>Boxes (largest)</th></tr>' + rows.join('');
+  }
+  function renderCaption() {
+    const l = L[cur], c = checks[cur], cap = $('dl-cap');
+    if (!c) { cap.innerHTML = COPY[l.n].how; return; }
+    cap.innerHTML = COPY[l.n].how + ` <b>Checked:</b> the drawing of the first screen differs from the emulator's picture in ${c.d.n.toLocaleString('en')} of ${(c.w * c.h).toLocaleString('en')} pixels (${pct(c.d.n, c.w * c.h)}), in ${c.boxes.length} boxes, where sprites are.`;
+  }
+  function renderWhere() {
+    const rows = L.map(l => {
+      const a = l.addr, n = l.n;
+      if (l.kind === 'tiles') {
+        const objs = n === 1 ? `${A(1, 0x312E)} enemies, ${A(1, 0x3207)} objects` : l.objects ? `${A(n, a.objects)} and the 13 tables after it` : 'none';
+        return `<tr><td>Level ${n}</td><td>${A(n, a.map)}</td><td>${A(n, a.top)}, ${A(n, a.bot)} (${a.tiles} tiles)</td><td>${n === 3 ? `<code>${hex(a.charset)}</code>, <code>${hex(a.chcol)}</code>` : `${A(n, a.charset)}, ${A(n, a.chcol)}`}</td><td>${objs}</td><td>${A(n, a.briefing)}</td></tr>`;
+      }
+      return `<tr><td>Level 5</td><td colspan="3">chopper path ${A(5, a.chopper)}, walls ${A(5, a.walls)}, obstacles ${A(5, a.obstacles)}</td><td>${l.walls.length} walls, ${l.obstacles.length} obstacles</td><td>${A(5, a.briefing)}</td></tr>`;
+    });
+    $('dl-where').innerHTML = '<tr><th>Level</th><th>Map</th><th>Tile characters</th><th>Shapes, colours</th><th>Objects</th><th>Briefing</th></tr>' + rows.join('');
+  }
+  // The chase
+  function drawChase() {
+    const l = L[cur], cv = $('dl-chase'), g = cv.getContext('2d'), S = 2, FW = 320, FH = 152, CW = 360;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#10131a'; g.fillRect(0, 0, cv.width, cv.height);
+    const f = +$('dl-time').value, total = DM.chopperFrames(l), wt = DM.wallTimes(l), ot = DM.obstacleTimes(l);
+    const mono = (px, bold) => (bold ? 'bold ' : '') + px + 'px IBM Plex Mono, monospace';
+    g.save(); g.scale(S, S);
+    // the playfield, 40 columns by 19 rows, and the strip to its right that the chopper can leave it by
+    g.fillStyle = '#1d2230'; g.fillRect(0, 0, FW, FH);
+    g.fillStyle = '#0b0d12'; g.fillRect(FW, 0, CW - FW, FH);
+    g.strokeStyle = '#2f3649'; g.lineWidth = .5;
+    for (let x = 0; x <= FW; x += 8) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, FH); g.stroke(); }
+    g.save(); g.beginPath(); g.rect(0, 0, CW, FH); g.clip();
+    // the chopper's whole path: a solid white line where it shoots, dashed grey where it does not
+    let prev = null;
+    for (let t = 0; t <= total; t += 2) {
+      const p = DM.chopperAt(l, t), x = p.x - 24 + 20, y = p.y - 50 + 10;
+      if (prev) { g.strokeStyle = prev.shoot ? '#fff' : '#8791ab'; g.setLineDash(prev.shoot ? [] : [3, 3]); g.lineWidth = prev.shoot ? 2.5 : 1; g.beginPath(); g.moveTo(prev.x, prev.y); g.lineTo(x, y); g.stroke(); }
+      prev = { x, y, shoot: p.shoot };
+    }
+    g.setLineDash([]);
+    // walls that started in the last 90 frames, where they start; obstacles on the screen, where they are
+    l.walls.forEach((w, k) => {
+      if (wt[k] > f || f - wt[k] > 90) return;
+      const up = w[1] === 3, x = w[0] * 8, y = up ? FH - 40 : 0;
+      g.fillStyle = 'rgba(240,228,66,.9)'; g.strokeStyle = '#000'; g.lineWidth = 1.5; g.fillRect(x, y, 24, 40); g.strokeRect(x + .5, y + .5, 23, 39);
+      g.fillStyle = '#000'; g.font = mono(9, true); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText((up ? '▲ ' : '▼ ') + (k + 1), x + 12, y + 20);
+    });
+    l.obstacles.forEach((o, k) => {
+      const fl = DM.obstacleFlight(o);
+      if (ot[k] > f || f > ot[k] + fl) return;
+      const y0 = o[1] === 1 ? 200 : 30, x = o[0] - 24 + 12, y = y0 + o[2] * (f - ot[k]) - 50 + 10;
+      g.fillStyle = '#E69F00'; g.strokeStyle = '#000'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(x, y - 9); g.lineTo(x + 9, y); g.lineTo(x, y + 9); g.lineTo(x - 9, y); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = '#000'; g.font = mono(8, true); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(k + 1), x, y + .5);
+    });
+    // the chopper now
+    const p = DM.chopperAt(l, f), cx = p.x - 24, cy = p.y - 50;
+    g.fillStyle = '#fff'; g.strokeStyle = '#000'; g.lineWidth = 2; g.fillRect(cx, cy, 40, 20); g.strokeRect(cx, cy, 40, 20);
+    g.fillStyle = '#000'; g.font = mono(8, true); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p.shoot ? 'SHOOTS' : 'CHOPPER', cx + 20, cy + 10);
+    g.restore();
+    g.fillStyle = '#9aa3b8'; g.font = mono(6); g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText('off screen', FW + 3, 3);
+    g.restore();
+    // the timeline under it: one lane each for the walls, the obstacles, and the shots
+    const X0 = 60, X1 = cv.width - 14, tx = t => X0 + (X1 - X0) * t / total, Y = FH * S + 22;
+    g.font = mono(11); g.fillStyle = '#cfd5e4'; g.textBaseline = 'middle'; g.textAlign = 'left';
+    ['walls', 'obstacles', 'shoots'].forEach((nm, i) => { g.fillText(nm, 6, Y + 26 + i * 34); g.strokeStyle = '#2f3649'; g.lineWidth = 1; g.beginPath(); g.moveTo(X0, Y + 26 + i * 34); g.lineTo(X1, Y + 26 + i * 34); g.stroke(); });
+    let t0 = 0; l.chopper.forEach(e => { if (e[3]) { g.fillStyle = '#fff'; g.fillRect(tx(t0), Y + 26 + 68 - 5, Math.max(1, tx(t0 + e[2]) - tx(t0)), 10); } t0 += e[2]; });
+    g.textAlign = 'center';
+    wt.forEach((t, k) => { if (t > total) return; const up = l.walls[k][1] === 3, x = tx(t), y = Y + 26; g.fillStyle = '#F0E442'; g.strokeStyle = '#000'; g.lineWidth = 1.5; g.beginPath(); if (up) { g.moveTo(x, y - 7); g.lineTo(x + 6, y + 6); g.lineTo(x - 6, y + 6); } else { g.moveTo(x, y + 7); g.lineTo(x + 6, y - 6); g.lineTo(x - 6, y - 6); } g.closePath(); g.fill(); g.stroke(); });
+    ot.forEach((t, k) => { if (t > total) return; const x = tx(t), y = Y + 26 + 34; g.fillStyle = '#E69F00'; g.strokeStyle = '#000'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x, y - 7); g.lineTo(x + 7, y); g.lineTo(x, y + 7); g.lineTo(x - 7, y); g.closePath(); g.fill(); g.stroke(); });
+    g.setLineDash([4, 3]); g.strokeStyle = '#fff'; g.lineWidth = 1.5; const bx = tx(Math.min(l.barFrames, total)); g.beginPath(); g.moveTo(bx, Y + 2); g.lineTo(bx, Y + 100); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#fff'; g.font = mono(10); g.textAlign = 'right'; g.fillText('time bar empty', bx - 4, Y + 8);
+    g.fillStyle = '#fff'; g.fillRect(tx(f) - 1, Y + 2, 3, 98);
+    const nw = wt.filter(t => t <= f).length, no = ot.filter(t => t <= f).length;
+    $('dl-chaseinfo').textContent = `Frame ${f} of the chopper's ${total}: chopper at sprite position (${p.x}, ${p.y}), ${p.done ? 'script finished' : p.shoot ? 'throwing shots' : 'not shooting'}. Walls started: ${nw} of ${l.walls.length}. Obstacles started: ${no} of ${l.obstacles.length}. The time bar empties at frame ${l.barFrames} (56 steps of 50 frames).`;
+  }
+  $('dl-time').oninput = drawChase;
+  function renderTexts() {
+    const l = L[cur], t = COPY[l.n];
+    $('dl-brief').textContent = l.briefing.join('\n');
+    $('dl-ends').innerHTML = t.ends; $('dl-open').innerHTML = t.open;
+  }
+  function render() {
+    const l = L[cur], tile = l.kind === 'tiles';
+    $('dl-tilebox').classList.toggle('dl-hide', !tile); $('dl-chasebox').classList.toggle('dl-hide', tile);
+    $('dl-first').classList.toggle('dl-hide', !tile); $('dl-zoom').classList.toggle('dl-hide', !tile);
+    $('dl-toggles').classList.toggle('dl-hide', !tile || (!l.objects && l.n !== 1));
+    marks = marksOf(cur);
+    if (tile) { drawMap(); drawOverlay(); $('dl-info').textContent = marks.length ? 'Click or tap a marker to read what it is.' : ''; goFirst(); }
+    else { const tm = $('dl-time'); tm.max = DM.chopperFrames(l); drawChase(); }
+    renderTexts(); objectsTable();
+    if (checks.length) { renderChecks(); renderCaption(); }
+  }
+  buildToggles();
+  setLevel(cur);
+  if (L.length) runChecks();
+})();
+</script>

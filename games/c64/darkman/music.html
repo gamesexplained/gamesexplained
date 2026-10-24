@@ -1,0 +1,224 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Three tunes, a fourth that never starts, and eleven sound effects, played by the game's own sound driver.</p></header>
+<main class="wrap">
+<style>
+.dm-scroll{overflow-x:auto}
+.dm-t{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
+.dm-t th,.dm-t td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.dm-t th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500;white-space:nowrap}
+.dm-t td.n{text-align:right;font-variant-numeric:tabular-nums}
+.dm-t code{margin-right:2px}
+.dm-miss{font-size:14px;color:var(--coral)}
+</style>
+
+<section data-part="resident">
+  <p class="fig">01 · Music</p>
+  <h2 class="t">The music plays before a level and never during one</h2>
+  <p class="lede">The title pages and the briefing text play three tunes, and a fourth is in the game and never starts. Jonathan Dunn is credited with the sound. The player below runs the game's own driver on the kit's 6502 simulator, calls it once a frame, and plays what the driver writes to the sound chip.</p>
+  <div class="plate"><div id="dm-music"></div>
+    <p class="cap">The driver is the title copy at <code>$A0C8</code>, in the bytes of level 1's file from <span data-part="level1"><code>$817C</code></span> to <span data-part="level1"><code>$93AB</code></span>, and the player calls <code>$A242</code> once a frame, 50.12 times a second on a PAL machine. The page supplies only the player, the note display, and the filter, which starts as a model of a 6581 chip; its cutoff curve is one chip's, and real chips differ. Each tune was checked against the same calls on the kit's 6502 simulator (<code>test_music.js</code>): <span data-count="tunes">520,674</span> writes to the sound chip over 12,000 frames of each tune, in order, with no difference.</p></div>
+  <p>Level 1's title code starts a tune by calling <code>$A164</code> with X set to six times the tune number. The title pages play tune 3, or tune 1 when the new-high-score flag at <span data-part="level1"><code>$110F</code></span> is set. Tune 0 starts at <span data-part="level1"><code>$0F70</code></span> whenever no voice is playing while the briefing text is typed. Nothing in the game loads X with 12, so tune 2 never starts, and it is the only tune that ends: the other three loop. Once play begins, nothing calls the tune player again.</p>
+  <div class="plate dm-scroll"><table class="dm-t">
+    <thead><tr><th>Tune</th><th>Started at</th><th>Track lists, voices 1 to 3</th><th>Plays</th><th>Wave programs</th><th>Patterns</th></tr></thead>
+    <tbody>
+      <tr data-tune="0" data-opening="0" data-loop="1920"><td class="n">0</td><td><span data-part="level1"><code>$0F70</code></span>, with the briefing text</td><td><code>$ADAD</code> <code>$ADA0</code> <code>$ADB2</code></td><td>Loops every 1,920 frames (38.3 s)</td><td>0 and 1</td><td>0, 1, 6</td></tr>
+      <tr data-tune="1" data-opening="1344" data-loop="960"><td class="n">1</td><td><span data-part="level1"><code>$0AC1</code></span>, when the new-high-score flag is set</td><td><code>$AF5A</code> <code>$AF93</code> <code>$AFA6</code></td><td>An opening of 1,344 frames (26.8 s), then loops every 960 (19.2 s)</td><td>4 to 6</td><td>2 or 8, and 26 to 31</td></tr>
+      <tr data-tune="2" data-end="457"><td class="n">2</td><td>Never</td><td><code>$AEB8</code> <code>$AEBC</code> <code>$AEC0</code></td><td>Ends on frame 457 (9.1 s)</td><td>2 and 3</td><td>21 to 23</td></tr>
+      <tr data-tune="3" data-opening="0" data-loop="5376"><td class="n">3</td><td><span data-part="level1"><code>$0AC8</code></span> on the title pages, and <span data-part="level1"><code>$1320</code></span> once no voice is playing</td><td><code>$B10B</code> <code>$B143</code> <code>$B0F3</code></td><td>Loops every 5,376 frames (107.3 s)</td><td>7 to 10</td><td>69 to 71, 73, 75, 76 or 77, and 78</td></tr>
+    </tbody></table>
+    <p class="cap">The tune table at <code>$AA8D</code> holds the three track-list addresses of each tune. Two pattern numbers that share an address cannot be told apart from the address, so the player shows both.</p></div>
+  <p>The driver is not a program of its own on the disk. Level 1's file holds it twice: once to play tunes, and once to play sound effects. <span data-part="level1"><code>$1C11</code></span> copies 19 pages of the file, from <span data-part="level1"><code>$80B4</code></span> to <code>$A000</code>, when the title pages are set up, and <span data-part="level1"><code>$1BE9</code></span> copies 13 pages from <span data-part="level1"><code>$747B</code></span> to <code>$B000</code> when play is set up. The second copy covers the first from <code>$B000</code> upwards, so tune 3's track lists, which begin at <code>$B0F3</code>, are in the file at <span data-part="level1"><code>$91A7</code></span> and gone from memory in play.</p>
+  <p>A tune is three track lists, one for each voice. A track list is a row of pattern numbers with a few commands between them, and the pattern tables at <code>$AAA5</code> and <code>$AAF6</code> give each pattern's address. A pattern is a stream of notes, each with a length in frames, and commands that change the instrument. A stream picks a wave program from the table at <code>$ACF7</code>, and each note runs it: a short list of steps that sets the waveform and the envelope, and waits. The pulse width, the pitch slide, the arpeggio, and the filter each have a table of their own. Notes come from a table of 94 pitches at <code>$A98C</code> and <code>$A9EA</code>, where entry 45 is A3.</p>
+  <div class="plate dm-scroll"><table class="dm-t">
+    <thead><tr><th>Stream byte</th><th>What the driver does</th></tr></thead>
+    <tbody>
+      <tr><td><code>$00</code> to <code>$5F</code></td><td>A note, followed by its length in frames</td></tr>
+      <tr><td><code>$60</code></td><td>A rest, followed by its length</td></tr>
+      <tr><td><code>$80</code></td><td>The pattern ends, and the track list gives the next</td></tr>
+      <tr><td><code>$81</code> n</td><td>Use wave program n</td></tr>
+      <tr><td><code>$82</code></td><td>Start a pulse-width sweep, from an index and a width</td></tr>
+      <tr><td><code>$83</code></td><td>Start a pitch slide, from an index</td></tr>
+      <tr><td><code>$84</code>, <code>$8D</code></td><td>Start an arpeggio, from a list</td></tr>
+      <tr><td><code>$85</code></td><td>Start a filter sweep</td></tr>
+      <tr><td><code>$86</code>, <code>$89</code></td><td>Play a drum, followed by a number and a length</td></tr>
+      <tr><td><code>$87</code> n</td><td>Every note after this lasts n frames and has no length byte</td></tr>
+      <tr><td><code>$88</code></td><td>Every note after this has its own length byte again</td></tr>
+      <tr><td><code>$8A</code></td><td>Stop this voice</td></tr>
+      <tr><td><code>$8B</code></td><td>Continue at the address in the next two bytes</td></tr>
+    </tbody></table>
+    <p class="cap">The commands of a pattern or sound-effect stream. The sound-effect copy of the driver reads the same commands.</p></div>
+  <div class="plate dm-scroll"><table class="dm-t">
+    <thead><tr><th>Track list byte</th><th>What the driver does</th></tr></thead>
+    <tbody>
+      <tr><td>Below <code>$F0</code></td><td>A pattern number</td></tr>
+      <tr><td><code>$F0</code> n</td><td>Jump to byte n of the track list, which is how a tune loops</td></tr>
+      <tr><td><code>$F1</code> n</td><td>Play the next pattern n times</td></tr>
+      <tr><td><code>$F2</code></td><td>Stop the voice</td></tr>
+      <tr><td><code>$F3</code> n</td><td>Transpose the next pattern by n semitones, a signed number</td></tr>
+      <tr><td><code>$F4</code> n</td><td>Fade the volume out</td></tr>
+      <tr><td><code>$F5</code></td><td>Fade the volume in, from a rate and a target</td></tr>
+    </tbody></table>
+    <p class="cap">The commands of a track list.</p></div>
+</section>
+
+<section data-part="resident">
+  <p class="fig">02 · Sound effects</p>
+  <h2 class="t">Eleven sound effects, and the last is never asked for</h2>
+  <p class="lede">In play, a second copy of the driver sits at <code>$B000</code> and plays sound effects only. Press a button to hear one. The numbers are the game's own, and the names say what the levels use each effect for, where the code makes that plain.</p>
+  <div class="plate"><div id="dm-sfx"></div>
+    <p class="cap">The driver is the sound-effect copy at <code>$B0C8</code>, in the bytes of level 1's file from <span data-part="level1"><code>$7543</code></span> to <span data-part="level1"><code>$80B3</code></span>. Each button starts the effect as a level does, with <code>$B0EE</code>, and calls <code>$B176</code> once a frame. Each effect was checked against the same calls on the kit's 6502 simulator: <span data-count="effects">18,547</span> writes to the sound chip over 400 frames of each effect, in order, with no difference. The page repeats the chip's registers every 32 bytes from <span data-part=""><code>$D400</code></span> to <span data-part=""><code>$D7FF</code></span>, as the chip does, so the stray writes described below land where they do on a real chip.</p></div>
+  <p>A level plays an effect by calling <code>$B0EE</code> with X set to four times the effect number. That picks a row of the sound table at <code>$BB48</code>, which has one byte for each voice: the number of a stream, or a value with bit 7 set that leaves the voice alone. A stream is the same kind of list of notes and commands that a tune uses, and the table at <code>$BB74</code> gives each stream's address. Effects 0, 2, 6, and 7 use voice 1 alone, and the others use voices 2 and 3 together. Effect 10 plays one note and starts it again every 255 frames, so it never ends, and no level asks for it.</p>
+  <div class="plate dm-scroll"><table class="dm-t">
+    <thead><tr><th>Effect</th><th>X</th><th>Voices</th><th>Frames</th><th>Seconds</th><th>Asked for by</th><th>Stray zero lands on</th></tr></thead>
+    <tbody>
+      <tr data-fx="0" data-frames="13" data-stray=""><td class="n">0</td><td><code>$00</code></td><td>1</td><td class="n">13</td><td class="n">0.26</td><td>Level 1: the strike, the punch, and the crouch. Levels 2, 4, and 6: walking and crouching, and climbing in levels 4 and 6. Level 3: the hit test. Level 5: taking energy.</td><td data-part="">-</td></tr>
+      <tr data-fx="1" data-frames="15" data-stray="$D4BB"><td class="n">1</td><td><code>$04</code></td><td>2 and 3</td><td class="n">15</td><td class="n">0.30</td><td>Darkman losing energy in levels 1, 2, 4, and 6. Level 5: the finale.</td><td data-part=""><code>$D4BB</code> no register (27)</td></tr>
+      <tr data-fx="2" data-frames="16" data-stray="$D503"><td class="n">2</td><td><code>$08</code></td><td>1</td><td class="n">16</td><td class="n">0.32</td><td>An enemy's shot in level 1. Level 5: the shots.</td><td data-part=""><code>$D503</code> voice 1 pulse width, high byte</td></tr>
+      <tr data-fx="3" data-frames="23" data-stray="$D4BC $D47C"><td class="n">3</td><td><code>$0C</code></td><td>2 and 3</td><td class="n">23</td><td class="n">0.46</td><td>Score pick-ups in levels 2, 4, and 6, and level 1's exit marker.</td><td data-part=""><code>$D4BC</code> no register (28)<br><code>$D47C</code> no register (28)</td></tr>
+      <tr data-fx="4" data-frames="79" data-stray="$D450 $D464"><td class="n">4</td><td><code>$10</code></td><td>2 and 3</td><td class="n">79</td><td class="n">1.58</td><td>Energy pick-ups in levels 2, 4, and 6.</td><td data-part=""><code>$D450</code> voice 3 pulse width, low byte<br><code>$D464</code> voice 1 control register</td></tr>
+      <tr data-fx="5" data-frames="107" data-stray="$D4A7 $D4C0"><td class="n">5</td><td><code>$14</code></td><td>2 and 3</td><td class="n">107</td><td class="n">2.13</td><td>A pick-up's score in levels 2 and 4, level 3's objects, and level 6's falling objects.</td><td data-part=""><code>$D4A7</code> voice 2 frequency, low byte<br><code>$D4C0</code> voice 1 frequency, low byte</td></tr>
+      <tr data-fx="6" data-frames="34" data-stray="$D4F6"><td class="n">6</td><td><code>$18</code></td><td>1</td><td class="n">34</td><td class="n">0.68</td><td>The mask game's fire button, in levels 1, 3, and 5.</td><td data-part=""><code>$D4F6</code> filter cutoff, high byte</td></tr>
+      <tr data-fx="7" data-frames="11" data-stray="$D477"><td class="n">7</td><td><code>$1C</code></td><td>1</td><td class="n">11</td><td class="n">0.22</td><td>The mask game's cursor scan, objects starting in level 1, and the shooters and blasts of levels 2 and 4.</td><td data-part=""><code>$D477</code> filter routing</td></tr>
+      <tr data-fx="8" data-frames="63" data-stray="$D449 $D47B"><td class="n">8</td><td><code>$20</code></td><td>2 and 3</td><td class="n">63</td><td class="n">1.26</td><td>Level 3's objects, and falling objects in levels 4 and 6.</td><td data-part=""><code>$D449</code> voice 2 pulse width, low byte<br><code>$D47B</code> no register (27)</td></tr>
+      <tr data-fx="9" data-frames="67" data-stray="$D423 $D462"><td class="n">9</td><td><code>$24</code></td><td>2 and 3</td><td class="n">67</td><td class="n">1.34</td><td>An enemy dying in level 1.</td><td data-part=""><code>$D423</code> voice 1 pulse width, high byte<br><code>$D462</code> voice 1 pulse width, low byte</td></tr>
+      <tr data-fx="10" data-frames="" data-stray="$D436 $D484"><td class="n">10</td><td><code>$28</code></td><td>2 and 3</td><td class="n">Never ends</td><td class="n">-</td><td>Nothing.</td><td data-part=""><code>$D436</code> filter cutoff, high byte<br><code>$D484</code> voice 1 control register</td></tr>
+    </tbody></table>
+    <p class="cap">Voices are numbered as the player numbers them. Seconds are frames at 50.12 a second.</p></div>
+  <p>The effect starter has a fault. For every voice it starts, <code>$B0EE</code> writes a zero to one of the sound chip's control registers. It finds the register's offset in the three bytes at <code>$B8B4</code>, which are 00, 07, and 0E, but it indexes them with the position in the sound table, four times the effect number plus the voice, where it should use the voice. Effect 0 reads <code>$B8B4</code> itself and gets the right offset by luck. Every other effect reads from the bytes that follow the table, and the zero goes to whatever address that byte gives. The last column lists them. The chip repeats its registers every 32 bytes, so a stray write at <span data-part=""><code>$D464</code></span> clears register 4, the control register of voice 1, and one at <span data-part=""><code>$D477</code></span> clears register 23, the filter's resonance and voice routing. A write at <span data-part=""><code>$D4BB</code></span> reaches no register at all.</p>
+</section>
+
+<script src="../../lib/sid.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script>
+function createDriver(M, C64Cpu) {
+  // Darkman's own sound driver, run on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which
+  // sid.js passes to createDriver) over the bytes of level 1's file. M = { mode, base, hex }: mode
+  // 'tunes' is the title copy of the driver, assembled for $A0C8 (tune_start $A164, tune_play
+  // $A242, tune_silence_all $A8F2, X = 6 x tune); 'sfx' is the copy the levels use, assembled for
+  // $B0C8 (music_init $B0C8, play_sound $B0EE with X = 4 x effect, music_play $B176, silence_all
+  // $B828). The driver's variables ($A000-$A0C7 or $B000-$B0C7) are zero in the file, so they
+  // start as zeros, and the game's own zero-page flags $F7-$F9 say which voices are running.
+  // The SID repeats every 32 bytes from $D400 to $D7FF, as the chip does, because the effect
+  // starter at $B0EE writes a zero to a register offset it takes from the wrong table position.
+  const sfx = M.mode === 'sfx';
+  const mem = new Uint8Array(0x10000);
+  const sid = new Uint8Array(25);
+  let writes = [], carry = [], on = false;
+  const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+    read: () => 0,
+    write(a, v) {
+      if (a < 0xD400 || a > 0xD7FF) return;
+      const r = (a - 0xD400) & 31;
+      if (r < 25) { sid[r] = v; writes.push(r, v); }
+    },
+  } });
+  const PLAY = sfx ? 0xB176 : 0xA242, SILENCE = sfx ? 0xB828 : 0xA8F2;
+  const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const word = (a) => mem[a] | mem[a + 1] << 8;
+  const where = (count, addr, at) => {               // the numbers whose address, at(i), is addr
+    const found = [];
+    for (let i = 0; i < count; i++) if (at(i) === addr) found.push(i);
+    return found;
+  };
+  return {
+    init(n) {
+      mem.fill(0);
+      for (let i = 0; i < M.hex.length / 2; i++) mem[M.base + i] = parseInt(M.hex.substr(i * 2, 2), 16);
+      sid.fill(0); writes = []; carry = [];
+      if (sfx) { cpu.call(0xB0C8, {}); cpu.call(0xB0EE, { x: 4 * n }); }
+      else cpu.call(0xA164, { x: 6 * n });
+      carry = writes.slice();                         // the start's writes go out with the first frame
+      on = true;
+    },
+    stop() { writes = []; cpu.call(SILENCE, {}); carry = carry.concat(writes); on = false; },
+    play() { writes = carry; carry = []; if (on) cpu.call(PLAY, {}); },
+    sid, get writes() { return writes; }, playing: () => on && (mem[0xF7] | mem[0xF8] | mem[0xF9]) !== 0,
+    voice(x) {
+      if (!mem[0xF7 + x]) return { running: false };
+      const b = sfx ? 0xB000 : 0xA000, stream = mem[b + 0x5B + x] | mem[b + 0x5E + x] << 8;
+      const wt = sfx ? 0xBA7C : 0xACF7;                      // the table of wave programs
+      const program = where(sfx ? 10 : 11, mem[b + 0x23 + x] | mem[b + 0x29 + x] << 8, (i) => word(wt + 2 * i));
+      if (sfx) return { running: true, stream: where(18, stream, (i) => word(0xBB74 + 2 * i)), at: stream, program };
+      const n = (mem[0xA067 + x] + mem[0xA08D + x]) & 0xFF;     // the note and the transposition
+      return { running: true, pattern: where(81, stream, (i) => mem[0xAAA5 + i] | mem[0xAAF6 + i] << 8), at: stream, program,
+        note: n >= 1 && n <= 93 ? NOTES[n % 12] + Math.floor(n / 12) : '-' };
+    },
+  };
+}
+
+// The bytes the two copies of the driver need, as level 1's file holds them: the tune player's
+// $817C-$93AB, assembled for $A0C8, and the sound-effect player's $7543-$80B3, for $B0C8.
+const DM_TUNES = { mode: 'tunes', base: 0xA0C8, hex: 'a9008dc2a08dbea08d17d4a91f8dc1a08d00a08d18d4a216a9009d00d4a9009d2fa0ca10f560ad00a0f032a000bde2b230258ec7a00aaabde6b2995ba0bde7b2995ea02026a1aec7a08cc7a0bc7ea9a9009904d4acc7a0e8c8c00390d060a90199f700c898889904a0a900998da099a8a09987a099c4a09975a09978a0997ba09981a09984a0a9819920a09923a0a9a99926a09929a0a900992fa060ee01a0a9008d00a085f785f885f9bd8daa8d1aa0bd8eaa8d1da0bd8faa8d1ba0bd90aa8d1ea0bd91aa8d1ca0bd92aa8d1fa0a9008dc2a0a20286faa6faa9009d14a09d8da09d6aa09d87a09dc4a09d75a09d78a09d7ba09d81a09d84a020faa3a6faa9819d20a09d23a0a9a99d26a09d29a0a9009d2fa09d47a0a5f09d5ba0a5f19d5ea0c6fa10b3a217a9089d00d4a9009d00d4ca10f38dbea0a0018c04a084f784f884f98c0aa08c0da08c10a08c13a0c88c05a08c0ba08c0ea08c11a0c88c06a08c0ca08c0fa08c12a0adc2a0d008a91f8dc1a08d18d4a9008d01a060ad01a0f00160a90285faa6fabd7ea98d6ea0b5f7d0034cd6a2adc2a0f00320e3a2adbea0f01ecebfa0adbfa0d016adc0a08dbfa0cec1a0adc1a08d18d4290fd0034cf2a82007a3b5f7f049bd81a0d04420c4a42000a720c3a7bd7ba0d036bd84a0f01fa9009d84a0bd8aa0bd67a0187d8aa07d8da0a8b98ca99d61a0b9eaa99d64a0204aa7ac6ea0bd61a09900d4bd64a09901d4c6fa30034c4ca22080a84c10a8cebfa0adbfa0d01badc0a08dbfa0eec1a0adc1a08d18d4290fcdc3a0d005a9008dc2a060de04a0f00160bd5ba085f0bd5ea085f12028a3fea8a0a5f09d5ba0a5f19d5ea060bca8a0b1f010034ce2a3c960d0034ccca39d67a0a9019d84a0a9009d81a0bdc4a02904d011a9019d0aa0bd23a09d20a0bd29a09d26a0bdc4a02902d017a9019d0da0bd2fa09d2ca0bd93a09d90a0bd99a09d96a0bd75a0f012bdc4a02901d00ba9019d10a0bd38a09d35a0bd7ba0f011bdc4a02910d00aa9009db1a0a9019daba0bd7ea0f01ebdc4a02908d017ad47a08d48a0ad4ba08d4da0ad4ca08d4ea0a9018d13a0bd87a0f006bd07a04cdaa3c8b1f09d04a0989da8a060aabdc8a88df2a3bdd6a88df3a3a6fa4cffff20faa34c28a3a6fabd1aa085f2bd1da085f3a9009da8a0bd8da0f00abd6aa0d005a9009d8da0bc14a0b1f2c9f0b01caabda5aa85f0bdf6aa85f1a6fabd6aa0f006de6aa0f00160fe14a060aabd74a88d4fa4bd7aa88d50a4a6fa4cffffc8b1f29d14a04c1aa4c8b1f29d6aa0fe14a0fe14a04c1aa4a90095f7ac6ea09904d49905d49906d460c8b1f29d8da0fe14a0fe14a04c1aa4c8b1f28dbea08dbfa08dc0a0fe14a0fe14a04c1aa4c8b1f28dc2a08dbfa08dc0a0a9108dc1a08d18d4c8b1f28dc3a0fe14a0fe14a0fe14a04c1aa4de0aa0f00160bd8aa0f019a9009d8aa0bd67a0187d8da0a8b98ca99d61a0b9eaa99d64a0bd20a085f0bd26a085f1a9008d6da0ac6da0b1f0aabd70a98d0ca5bd77a98d0da5a6fa4cffffc88c6da0b1f09d0aa04ca7a5c8b1f048c8b1f085f16885f0a9008d6da04cf7a4c8b1f09d6fa0c8b1f09d72a0c88c6da0ac6ea09906d4bd6fa09905d44cf7a4c8b1f085f6c8b1f09d0aa08c6da0ac6ea0a5f69904d44ca7a5c8b1f085f6c88c6da0bd04a038f1f09d0aa0ac6ea0a5f69904d44ca7a5c8b1f085f6c8b1f09d0aa0c88c6da0b1f0f0119d84a09d8aa0ac6ea0a5f69904d44ca7a5ee6da0a5f0186d6da09d20a0a5f169009d26a060c8b1f00a8d02a0c8989da8a0ac02a0b9f7ac9d23a0b9f8ac9d29a04c28a3c8b1f09d2fa0c8b1f09d99a0c8b1f09d93a0c8989da8a04c28a3c8b1f09d38a0c8989da8a09d75a0a9009d32a09d7ba04c28a3a9009d75a0c8989d7ba0b1f00aaabddaab85f4bddbab85f5c898a6fa9da8a0a000b1f49daea0c8b1f49db4a0a5f41869029d3ba0a5f569009d41a04c28a3c8b1f09d07a09d87a0c8989da8a04c28a3a9009d87a0fea8a04c28a3c8989da8a0b1f0a8b94aaa9db8a0b948aa9d4fa0187db8a09d52a0b949aa9d55a069009d58a0b94baa48b94caaac6ea09903d4689906d49d81a0bd7ea0f00aa9ff8d15d4a9908d16d4a9009905d4a9089904d4a9009dbba0fea8a0bca8a0b1f09d04a060c8b1f08d47a0c8b1f08d4ba08d4da0c8b1f08d4ca08d4ea0c8b1f048c8989da8a0a9008d7ea08d7fa08d80a0688d17d49d7ea04c28a3de0da0d028bc2ca0b947abd00ac8b947ab9d2ca04c05a79d0da0c8b947ab9d9ca0c8b947ab9d9fa0c8989d2ca0ac6ea0bd90a0187d9ca09d90a09902d4bd96a07d9fa09d96a09903d460bd75a0f0fade10a0d058bd32a0f02bbc35a0b9daabd00ac8b9daab9d35a04c59a79d10a0c8b9daab9da2a0c8b9daab9da5a0c8989d35a04caca7bc35a0b985abd00ac8b985ab9d35a04c84a79d10a0c8b985ab9da2a0c8b985ab9da5a0c8989d35a0ac6ea0bd61a0187da2a09d61a0bd64a07da5a09d64a060bd7ba0f047deaba0f00160bd3ba085f0bd41a085f1bdaea09daba0bcb1a0b1f0187d67a07d8aa07d8da0ac6ea0aabd8ca99900d4bdeaa99901d4a6fafeb1a0bdb1a0ddb4a0d005a9009db1a060ad00a0d012a202bd7ea0d006ca10f84c28a8bd81a0f00160ce13a0d027ac48a0b9dbacd00ac8b9dbac8d48a04c2da88d13a0c8b9dbac8d49a0c8b9dbac8d4aa0c88c48a0ad4ea0186d49a08d4ea08db7a029078d15d4ad4da06d4aa08d4da04a6eb7a04a6eb7a04aadb7a06a8d16d460a202bd81a0f01bbdbba0ddb8a0d017ad00a0f00ea900bc7ea99904d49905d49906d4ca10dd608e02a08d03a0bd52a08dcba8bd58a08dcca8bd4fa08dd9a8bd55a08ddaa8bc7ea9ae03a0bddddd9900d49901d4a9089904d4bddddd9904d4ae02a0febba0ca30034c82a860a5f705f805f960a90085f785f885f98dbea08dc2a08d18d4a9ff8dc4a08dc5a08dc6a0a9088d04d48d0bd48d12d4608dbea08dbfa08dc0a0a9008dc2a060a90095f7ac6ea09904d460c8b1f09d5ba0c8b1f09d5ea0a9009da8a04c28a3f4bbd9f30cca664a5b662934480ca3a5a5a5a6a6a6a6a6a6a9a9a9a6515a697a899ea4a4a4a4a4a40e1a2e4d6683a7a5a5a5a5a5a5a500070e00ff0181a9ff00004c86a978283a4c60758ba3bcd6f2102f507399c0ea164577ace41f5ea0e73280d42d8bee58c83ebc41cd6301a85a16ddb0907c77819bc50251b42cba601ff9ef03368b03a1675773c03ef1de056c160643ceaee7807de4bb0ad72c0d859c5ccf000501010101010101010101020202020202020303030303040404040505050606060707080809090a0b0b0c0d0d0e0f10111213141617181a1b1d1f20222527292c2e3134373a3e41454a4e53585d62686e757c838b949ca6b0bac5d1ddeb57aa09b80869aa0cd90881aa0698010981411010101010100080070d070605030209814080808080808080f0f000ff10eebebdbcbbbab9b8b709814110101000ff25201c18adada0adb2ad5aaf93afa6afb8aebcaec0ae0bb143b1f3b0ca4bb4b8b8b885a2b4b8b8b8b8b8b8b8b8b8b8b8b8c4042f5a5ab4d24166b1c6f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3787cb0dbe222387878dfe2e2adaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeafafafafafafb0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b1b1b1b1b1b2b2b2b2b2b2b2ff0000000003280003d8ff0005020000053200059cff053200001005000004140004d8ff041400001eff3c00002902280001d8ff002eb80a00b8f6ff0036ff00000000190000031c0006e4ff031c0000080106001800000008019cff0514001300000008010c00180000000802000003e0000340fe03e00000310200000138ff081900000502000003240003b8ff032400004a18ac20ac28ac30ac38ac40ac48ac50ac58ac5cac64ac69ac71ac79ac7eac83ac89ac8fac95ac9aaca0aca8acacacb0acb6acbcacc2acc7acccacd1acd6ac02060005070c111302060005080c111402060002070c0e1303060005070c111303060005080c111403060002070c0e1302060005070c111302060002070c0e130102000002060005070c111302030c000002060003070c0f1302060004070c1013030300050c030300030c02040002070c01040003080c01040005090c0103180c000204000405090106000203080c1401020c000202000c03040005080c03040005070c03040004070c010300050901030c040001030c030001030004090103000307ff000000000cabff0000089cff0000600a0060f6ff000f0606ff00000dad19ad26ad32ad41ad50ad60ad6cad78ad84ad90ad0200760341020320ff0113ad02017a0541020c0340ff0120ad02034a0441010340ff012cad0201aa0351010341010340ff0120ad02035a0321020341020320ff0120ad0202a9054101f40341010340ff0120ad02035e0321030340ff012cad0214680441010340ff012cad0201480341030360ff0113ad0202a90341030320ff018aad0202980541020c0441010340ff0120adf50c0ff10400f3fff10400f003f10806f00001f3fb01f3f901f3fb01f3ff01f3fa01f3f801f3fa01f0008706810082050400841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30841c2d841b30841c2f841b30808101820d08008505042085210c6018210c600c21066006600c21066006210c600c210c6018210c600c21066006210c600c2409600326096003808886002486052486001886002486001886052486001886050c86000c808860786018240c600c230c600c1f12601e8088606080f31816f2f31817f2f30c15f281038229060085170610840d0c0d0c0b0c0d0c602408060b060d0c0d0c0b0c0d0c602408060b060d0c0d0c0b0c0d0c602408060b060d0c0d0c0b0c0d0c6030808102821b0600831b251e60068305201e6006220c23062206201e60061e1e60061b0c1c061b0619c06048808102821b064060018313251e6006201e6006220c23062206201e60061e1e60061b0c1c061b0619be604880f5140ff104f3fd1af104f3fd1af102f3fd1af102f3f91af3f81af3fb1af102f3fd1af102f3f91af3f81af3fb1af102f3fe1af102f3f91af01df10402f102f3211ff3211bf3211bf3211df00bf10802f3091cf3091cf3091ef006810582290800850a0360d11f121f061f061f061f121f061f0c1f0c1f0c80840d1a121a061a061a061a121a061a0c1a0c1a0c1a121a061a061a061a121a061a0c1a0c1a0c161216061606160616121606160c160c160c161216061606160616121606160c160c160c151215061506150615121506150c150c150c131213061306130613121306130c130c130c808106821b060083052b24303c32243324320c330632062eb42d062e062d6029302618291880840e181218061806180618121806180c180c180c181218061806180618121806180c180c180c131213061306130613121306130c130c130c131213061306130613121306130c130c130c8030602e302c2e60022c182b0c2778240c270c290c80840d8104822904001a121a061a061a061a121a061a0c1a0c1a0c1a121a061a061a061a121a061a0c1a0c1a0c80f51e0ff107454ef102f30c49f102f30e49f104f30c4df00347f3fb47f3f947f3f44747f3fb47f3f947f3f447f30c4bf30247f3fd47f3fb47f3f647f30e4b47f3fb4747f3fb4747f3fb4747f3fb47f00046f30746f305464646f30746f305464646f30746f3054646f30246f30946f30746f30246f30246f30946f30746f30246f10846f00088606080810a821b06c0850a0380231806180c1806180c1806180c1806180c180c180c1806180c1806180c1806180c1806180c160c1b0c8081088347821b0d0087063f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e808600488600188088600c8107821b06008305240c220c240c2706260c240c22062478270c260c270c2606240c260c2706266024062206203022302418221820241f0620061fc08086001286000686010c86001886000c86010c86000c8088600e8107821b06408326240c220c240c2706260c240c22062478270c260c270c2606240c260c2706266024062206203022302418221820241f0620061fbe808109821b040084172b1284182b1284172b1284182b1284172b0c84182b0c84172b1284182b1284172b1284182b128418290c8419290c84172b1284182b1284172b1284182b1284172b0c84182b0c84172b1284182b1284172b1284182b128418290c8419290c80605f8000808000e8b2812883008200040000ff89078bf0b2b0' };
+const DM_SFX = { mode: 'sfx', base: 0xB0C8, hex: 'a9008dc2b08dbeb08d17d4a91f8dc1b08d00b08d18d4a214a9009d00d4a9009d2fb0ca10f560ad00b0f044a000bd48bb30378ec7b00aaabd74bb995bb0bd75bb995eb0c000f00ea9008d15d48d16d48d17d48d7eb02038b1aec7b08cc7b0bcb4b8a9009904d4acc7b0e8c8c00390be60a90199f700c898889904b0a900998db099a8b09987b099c4b09975b09978b0997bb09981b09984b0a9b79920b09923b0a9b89926b09929b0a900992fb060ad01b0f00160a90285faa6fabdb4b88d6eb0b5f7d0034c0ab2adc2b0f0032017b2adbeb0f01ecebfb0adbfb0d016adc0b08dbfb0cec1b0adc1b08d18d4290fd0034c28b8203bb2b5f7f049bd81b0d04420f8b3204eb62011b7bd7bb0d036bd84b0f01fa9009d84b0bd8ab0bd67b0187d8ab07d8db0a8b9c2b89d61b0b920b99d64b02098b6ac6eb0bd61b09900d4bd64b09901d4c6fa30034c80b120b6b74c5eb7cebfb0adbfb0d01badc0b08dbfb0eec1b0adc1b08d18d4290fcdc3b0d005a9008dc2b060de04b0f00160bd5bb085f0bd5eb085f1205cb2fea8b0a5f09d5bb0a5f19d5eb060bca8b0b1f010034c16b3c960d0034c00b39d67b0a9019d84b0a9009d81b0bdc4b02904d011a9019d0ab0bd23b09d20b0bd29b09d26b0bdc4b02902d017a9019d0db0bd2fb09d2cb0bd93b09d90b0bd99b09d96b0bd75b0f012bdc4b02901d00ba9019d10b0bd38b09d35b0bd7bb0f011bdc4b02910d00aa9009db1b0a9019dabb0bd7eb0f01ebdc4b02908d017ad47b08d48b0ad4bb08d4db0ad4cb08d4eb0a9018d13b0bd87b0f006bd07b04c0eb3c8b1f09d04b0989da8b060aabdfeb78d26b3bd0cb88d27b3a6fa4cffff202eb34c5cb2a6fabd1ab085f2bd1db085f3a9009da8b0bd8db0f00abd6ab0d005a9009d8db0bc14b0b1f2c9f0b01caabde4b985f0bde4b985f1a6fabd6ab0f006de6ab0f00160fe14b060aabdaab78d83b3bdb0b78d84b3a6fa4cffffc8b1f29d14b04c4eb3c8b1f29d6ab0fe14b0fe14b04c4eb3a90095f7ac6eb09904d49905d49906d460c8b1f29d8db0fe14b0fe14b04c4eb3c8b1f28dbeb08dbfb08dc0b0fe14b0fe14b04c4eb3c8b1f28dc2b08dbfb08dc0b0a9108dc1b08d18d4c8b1f28dc3b0fe14b0fe14b0fe14b04c4eb3de0ab0f00160bd8ab0f019a9009d8ab0bd67b0187d8db0a8b9c2b89d61b0b920b99d64b0bd20b085f0bd26b085f1a9008d6db0ac6db0b1f0aabda6b88d40b4bdadb88d41b4a6fa4cffffc88c6db0b1f09d0ab04cedb4c8b1f048c8b1f085f16885f0a9008d6db04c2bb4c8b1f09d6fb0c8b1f09d72b0c88c6db0ac6eb09906d4bd6fb09905d44c2bb4c8b1f085f6c8b1f09d0ab08c6db0ac6eb0a5f69904d44cedb4c8b1f085f6c88c6db0bd04b038f1f09d0ab0ac6eb0a5f69904d44cedb4c8b1f085f6c8b1f09d0ab0c88c6db0b1f0f0119d84b09d8ab0ac6eb0a5f69904d44cedb4a9ff9d61b09d64b0a9009d84b0a9014ccdb4ee6db0a5f0186d6db09d20b0a5f169009d26b060c8b1f00a8d02b0c8989da8b0ac02b0b97cba9d23b0b97dba9d29b04c5cb2c8b1f09d2fb0c8b1f09d99b0c8b1f09d93b0c8989da8b04c5cb2c8b1f09d38b0c8989da8b09d75b0a9009d32b09d7bb04c5cb2a9009d75b0c8989d7bb0b1f00aaabd5bba85f4bd5cba85f5c898a6fa9da8b0a000b1f49daeb0c8b1f49db4b0a5f41869029d3bb0a5f569009d41b04c5cb2c8b1f09d07b09d87b0c8989da8b04c5cb2a9009d87b0fea8b04c5cb2c8989da8b0b1f0a8b980b99db8b0b97eb99d4fb0187db8b09d52b0b97fb99d55b069009d58b0b981b948b982b9ac6eb09903d4689906d49d81b0a9009905d4a9089904d4a9009dbbb0fea8b0bca8b0b1f09d04b0ad47b08d48b0ad4bb08d4db0ad4cb08d4eb0a9018d13b060c8b1f08d47b0c8b1f08d4bb08d4db0c8b1f08d4cb08d4eb0c8b1f048c8989da8b0a9008d7eb08d7fb08d80b0688d17d49d7eb04c5cb2de0db0d028bc2cb0b9e4b9d00ac8b9e4b99d2cb04c53b69d0db0c8b9e4b99d9cb0c8b9e4b99d9fb0c8989d2cb0ac6eb0bd90b0187d9cb09d90b09902d4bd96b07d9fb09d96b09903d460bd75b0f0fade10b0d058bd32b0f02bbc35b0b95bbad00ac8b95bba9d35b04ca7b69d10b0c8b95bba9da2b0c8b95bba9da5b0c8989d35b04cfab6bc35b0b907bad00ac8b907ba9d35b04cd2b69d10b0c8b907ba9da2b0c8b907ba9da5b0c8989d35b0ac6eb0bd61b0187da2b09d61b0bd64b07da5b09d64b060bd7bb0f047deabb0f00160bd3bb085f0bd41b085f1bdaeb09dabb0bcb1b0b1f0187d67b07d8ab07d8db0ac6eb0aabdc2b89900d4bd20b99901d4a6fafeb1b0bdb1b0ddb4b0d005a9009db1b060ce13b0d027ac48b0b962bad00ac8b962ba8d48b04c63b78d13b0c8b962ba8d49b0c8b962ba8d4ab0c88c48b0ad4eb0186d49b08d4eb08db7b029078d15d4ad4db06d4ab08d4db04a6eb7b04a6eb7b04aadb7b06a8d16d460a202bd81b0f01bbdbbb0ddb8b0d017ad00b0f00ea900bcb4b89904d49905d49906d4ca10dd608e02b08d03b0bd52b08d01b8bd58b08d02b8bd4fb08d0fb8bd55b08d10b8bcb4b8ae03b0bddddd9900d49901d4a9089904d4bddddd9904d4ae02b0febbb0ca30034cb8b760a5f705f805f960a90085f785f885f98dbeb08dc2b08d18d4a9ff8dc4b08dc5b08dc6b0a9088d04d48d0bd48d12d4608dbeb08dbfb08dc0b0a9008dc2b060a90095f7ac6eb09904d460c8b1f09d5bb0c8b1f09d5eb0a9009da8b04c5cb228011f395218ac90a1ac5f6a7e52b3b5b5b5b5b6b5b5b5b5b8b8b8b5858e9daebdd2b3b3b3b3b3b3424e62819ab7edb4b4b4b4b4b4b400070e00ff01b7b8ff00004cbcb878283a4c60758ba3bcd6f2102f507399c0ea164577ace41f5ea0e73280d42d8bee58c83ebc41cd6301a85a16ddb0907c77819bc50251b42cba601ff9ef03368b03a1675773c03ef1de056c160643ceaee7807de4bb0ad72c0d859c5ccf000501010101010101010101020202020202020303030303040404040505050606060707080809090a0b0b0c0d0d0e0f10111213141617181a1b1d1f20222527292c2e3134373a3e41454a4e53585d62686e757c838b949ca6b0bac5d1ddeb9cb90ce808b4b90cd908ccb90cd808ccb90cb808ccb90c7808ccb90c380808814141101010808080808000800d06070625434240404008811181108010801080108000700e700d700d700970097008814141101010101010101000ff0f080b0b0a0a09090807ff0000000005140005d8ff05140000050532000aceff0532000010029600026aff001bff00000000ff9cff00000400000938ff00000120030300000012013c00001201c409013cf6001f090400ff0c00002702140001c8000138ff01c8000138ff01c8000138ff01c8000138ff06fbff002f016400002f5dba010300050cff000000000200fe08e7ff0816000008ff3c000000ffffff001590ba9fbaaebac5bad4ba04bb13bb1fbb2fbb3bbb0200d70341030340010320010196ba0200d703150303140303120301a5ba0201a803110105810100031101058101000380ff01bfba0200a703110303200103100101cbba0200b80341030340080200a703410303400802008703410303400802005703410303400802001703410303400801feba0202fa038106038008030004010abb0292f80381090380ff0119bb0201a2058101000381020380ff0129bb0201560441030340ff0135bb0200b105810124031102013ebb0080800080010200038080008004050080060700800809000a8080000b808000800c0d00800e0f008010110098bb9cbba7bbaebbb5bbb5bbc4bbcfbbdcbbe3bbeabbfdbb01bc06bc0dbc1fbc2ebc35bc86000c8a8100820508008305210c8a810183053c0c8a8102830a300f8a8103840024022b03300437053c068a810483128210080030468a60068104831a8210080430468a850505608660058105831f0c648a81075e012b023c0a8108821b0400832f26148a86050a8a851000004681068327183c8a8515048086860a0f860f0f86140f86190f8a6004860a0f860f0f86140f86190f8a81091fff8b30bc60028aff' };
+// end of createDriver
+
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const S = globalThis.C64Sid, roots = [$('dm-music'), $('dm-sfx')];
+  if (!S || !globalThis.C64Cpu) {
+    roots.forEach((r) => { r.innerHTML = '<p class="dm-miss">This player needs the site’s shared scripts, which the built site serves.</p>'; });
+    return;
+  }
+  const hx = (n) => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+  const list = (a) => a.length ? a.join(' or ') : '-';
+  S.mount(roots[0], {
+    driver: createDriver, data: DM_TUNES, filter: '6581',
+    tunes: ['0 · Briefing', '1 · New high score', '2 · Never started', '3 · Title pages'],
+    rows: [
+      { k: 'Pattern', f: (v) => v.running ? list(v.pattern) + ' (' + hx(v.at) + ')' : '-' },
+      { k: 'Wave program', f: (v) => v.running ? list(v.program) : '-' },
+      { k: 'Note', f: (v) => v.running && (v.ctrl & 1) ? v.note : '-' },
+    ],
+  });
+  const NAMES = ['Strike', 'Darkman hurt', 'Enemy shot', '', 'Energy pick-up', '', 'Mask game', '', '', 'Enemy dies', 'Never asked for'];
+  S.mount(roots[1], {
+    driver: createDriver, data: DM_SFX, filter: '6581',
+    tunes: NAMES.map((n, i) => i + (n ? ' · ' + n : '')),
+    rows: [
+      { k: 'Stream', f: (v) => v.running ? list(v.stream) + ' (' + hx(v.at) + ')' : '-' },
+      { k: 'Wave program', f: (v) => v.running ? list(v.program) : '-' },
+    ],
+  });
+})();
+</script>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+

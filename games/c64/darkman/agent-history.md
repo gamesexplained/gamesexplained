@@ -30,3 +30,27 @@ coverage round annotated the four interrupts and the subsystems they
 call; two first readings were wrong and corrected: $1FA4 selects the
 screen matrix, not the character set, and the panel interrupt's $D018
 write sets the screen bits.
+
+## 22 to 24 October 2026, Silver run (Sonnet 5.5 leading, Opus 5.5 checking)
+
+Levels 3 to 6 were snapshotted with `dm.py level N` (it attaches the disk side;
+without it the load stops at DISC ERROR). Each level was seeded from the code
+reachable from its raster handlers, then annotated by cold-briefed Sonnet
+agents, one at a time, from the routines of finished parts (carried by address)
+and `dump_part.py` disassembly dumps. Wrong turns: a table address was seeded as
+code; one root was mid-instruction (a skip option, `-XXXX`, now exists in
+`seed_part.py`); charset bytes under the I/O area were typed as sprite shapes in
+level 6; a comment about the dissolve routine was wrong in levels 3 and 5.
+
+The 60-comment sample (Opus 5.5) found 8 comments wrong in a detail. Seven were
+readers or writers missing from a list or a flag set at the wrong moment; one
+(`climb_frame_down` in level 6) said the frame was written every other call
+when it is written every call, and the same sentence stood in ten comments of
+levels 2, 4 and 6, which were corrected.
+
+The pages: the music player runs the title and effect drivers on the kit's
+simulator and was compared write for write (539,221 writes); the levels page
+draws the maps from the files and was compared with the emulator's first screen
+of each level; the rebuilt frame was compared with the emulator's picture
+(2,467 of 104,448 pixels differ, all explained). The cheat BABY AXE MAN was
+found in `cheat_check` and typed live.

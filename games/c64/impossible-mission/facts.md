@@ -148,6 +148,17 @@ bank 3 when the mission is won, with his mouth animated from two sets of
 13 glyphs (`$AB93`, `$ABA0`) while voice line 4 plays, and random lights
 twinkling (`end_twinkle`, `$ABBA`). *Live:* forced by filling the
 password line and starting `$AA40`; screenshot `reference/end-elvin.png`.
+`say_line` starts line 4 and returns at once (`$AB23`); the mouth then
+goes through seven steps, closed, open, closed, open, closed, open,
+closed. Each step lasts its table entry plus one tick: `end_twinkle` waits
+a tick and recolours six random cells, X + 1 times (`dex` / `bpl`). The
+three openings fall on the three words of line 4: on PAL the mouth is
+open from 0.28 to 0.84 s, 1.60 to 2.16 s and 2.83 to 3.51 s after the
+line starts, and the port's levels have their three voiced stretches at
+0.05 to 0.6 s, 1.45 to 2.0 s and 2.8 to 3.28 s. The whole sequence is
+230 ticks on PAL (4.6 s) and 275 on NTSC (4.6 s); the line is 3.3 s on
+PAL and 3.2 s on NTSC, so it ends before the game points the NMI vector
+back at the restart (`$AB4E`).
 
 ## Mechanics
 
@@ -311,6 +322,13 @@ Each table is described in the listing; the main ones:
   and 3 are spoken by the start-up, 1 on entering a room after a game
   hour has passed, 7 when the agent falls, 5 when time runs out, 4 over
   the end picture, 0 on the end screen; line 6 is never called.
+- The words of the lines, as the contributor (Aaron) heard them through
+  the Sound and speech player on 24 October 2026: 0 "Mission
+  accomplished! Congratulations", 1 "Destroy him, my robots", 2 "Another
+  visitor", 3 "Stay a while. Stay forever!", 4 "No! No! NO!", 5 "Ha ha ha
+  ha ha ha ha ha", 6 "Ah", 7 "Aaaaaaagggghhhhhh". The lengths fit: from
+  the port, 6 is the shortest (2,083 interrupts, 0.21 s on PAL), 2 is
+  1.5 s and 3 is 4.2 s.
 - How the driver plays a line. Each NMI runs one step of a chain of
   handlers: `nmi_speech_up` plays a window of the buffer at `$0800`
   forwards, `nmi_speech_down` plays it backwards from where it stopped,
@@ -402,8 +420,5 @@ Three checks, all verified:
 
 ## Open questions
 
-- What each of the eight voice lines says: the code shows when each is
-  spoken, and the Sound and speech tab plays them, but nobody has
-  transcribed the words.
 - The meaning of the agent's frame `$0F` (tested against lifting
   platforms by `platform_at`).

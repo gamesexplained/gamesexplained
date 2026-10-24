@@ -89,5 +89,22 @@ for (const every of [500, 1305, 270, 3000]) {
   if (Math.abs(S.hz(500) - 1020.484) > 1e-9) fail('hz(500)', S.hz(500));
 }
 
+// notes(log, 2) over two voices at one pitch, the second a little slower, so that they drift apart:
+// each voice clicks once a period, and the spacings alternate. Two notes, then a rest, then the
+// two voices held a fixed distance apart: three notes, each at clock / the first voice's period.
+{
+  const speaker = [], want = [];
+  let at = 1000;
+  for (const [period, lead, count, drift] of [[6440, 39, 60, 36], [5139, 39, 60, 30], [3862, 49, 80, 0]]) {
+    want.push(S.CLOCK / period);
+    for (let k = 0; k < count; k++) { speaker.push(at, at + lead + k * drift); at += period; }
+    at += 20000;
+  }
+  speaker.sort((a, b) => a - b);
+  const ns = S.notes({ clock: S.CLOCK, start: 0, end: at, speaker }, 2);
+  if (ns.length !== 3 || ns.some((n, k) => Math.abs(n.hz - want[k]) / want[k] > 0.01))
+    fail('notes(log, 2) for two voices:', JSON.stringify(ns.map(n => [n.t.toFixed(3), n.hz.toFixed(1), n.clicks])), 'want', want.map(h => h.toFixed(1)).join(', '));
+}
+
 if (bad) { console.log(bad + ' failed'); process.exit(1); }
 console.log('apple2-speaker: the model follows the speaker\'s rule');

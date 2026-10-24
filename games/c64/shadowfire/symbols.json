@@ -14518,7 +14518,7 @@
   {
    "address": 17332,
    "type": "line",
-   "text": "Draws the selection frame around the icon at cell X, Y whose size is in $49F1/$49F2: a rectangle of multicolour pixels through $456A, one or (when $543F bit 1 is set) three pixels further out, drawn twice in colour $45D4 = 3 and so on down to 0, which leaves it erased, so the frame flashes. Returns early when $543F is 0, leaving the frame drawn."
+   "text": "Draws the selection frame around the icon at cell X, Y whose size is in $49F1/$49F2: two rectangles of multicolour pixels through $456A, one and two pixels outside the icon, in colour $45D4 = 3 (three and four pixels out when $543F bit 1 is set, which happens only while draw_screen draws its borders, when no frame is drawn). When $543F is not 0 it returns there ($444F), leaving the frame drawn; otherwise it draws the same two rectangles again in colours 2, 1 and 0, which leaves them erased, so the frame flashes."
   },
   {
    "address": 17516,
@@ -14703,7 +14703,7 @@
   {
    "address": 18609,
    "type": "line",
-   "text": "Puts the portrait of character $5436 on the right-hand monitor (cell column 28, row 2, 10 x 8 cells): blanks the area, clearing each cell's top line and rolling it down through $49A3; then, in seven passes, copies one pixel line of all 80 cells, line 7 first and line 1 last, into the top line of each cell and rolls the rows down a line, so the picture rolls on like a television; then colours it from the colour pointer through $4324. Line 0 of each cell is never copied: the monitor repeats line 1 there (live)."
+   "text": "Puts the portrait of character $5436 on the right-hand monitor (cell column 28, row 2, 10 x 8 cells): blanks the area, clearing each cell's top line and rolling it down through $49A3; colours it from the colour pointer through $4324 ($4922); then, in seven passes, copies one pixel line of all 80 cells, line 7 first and line 1 last, into the top line of each cell and rolls the rows down a line, so the picture rolls on like a television. Line 0 of each cell is never copied: the monitor repeats line 1 there (live)."
   },
   {
    "address": 18851,
@@ -14858,7 +14858,7 @@
   {
    "address": 19043,
    "type": "line",
-   "text": "Draws screen A (0-8, from the table at $789C) and makes it current ($5435): for each icon record (11 bytes: picture pointer, cell column and row, flags, text pointer, text column and row, handler) draws the picture through $42D9 and prints its text through $472B, until a record starting $FFFF; then draws each panel border listed after it (4 bytes: width, height, column, row, up to another $FFFF) through $446C. Leaves $543F = 3, or 0 when the screen has no borders."
+   "text": "Draws screen A (0-8, from the table at $789C) and makes it current ($5435): for each icon record (11 bytes: picture pointer, cell column and row, flags, text pointer, text column and row, handler) draws the picture through $42D9 and prints its text through $472B, until a record starting $FFFF; then draws each panel border listed after it (4 bytes: width, height, column, row, up to another $FFFF) through $446C. $543F is 3 while the borders are drawn, and 0 when it returns ($4AB3)."
   },
   {
    "address": 19159,
@@ -14888,7 +14888,7 @@
   {
    "address": 19396,
    "type": "line",
-   "text": "Tests the icon at ($37) against the cursor cell ($76 row, $77 column). It is skipped unless flag bit 0 (enabled) is set. An icon without flag bit 1 must also carry every bit of the mask at $545F for the choice under way ($543E): $05 when there is none, so a plain icon needs bit 2 as well as bit 0. An icon with flag bit 1 can be chosen only when no choice is under way. Inside the icon's rectangle, draws the flashing frame through $43B4 and waits; fire (cleared $78) selects it. A selected icon that has a text label writes $DE to the sound driver's byte $1601. An icon with flag bit 1 starts a two-step choice: its flags' bits 2-7 become the group, the frame stays, and the loop runs again for the second icon (an object, a character, a direction), whose handler records the choice and returns; the first icon's handler then runs, unless $5439 cancels. Any other icon's handler runs at once through the JMP at $4CDC, whose operand is written here."
+   "text": "Tests the icon at ($37) against the cursor cell ($76 row, $77 column). It is skipped unless flag bit 0 (enabled) is set. An icon without flag bit 1 must also carry every bit of the mask at $545F for the choice under way ($543E): $05 when there is none, so a plain icon needs bit 2 as well as bit 0. An icon with flag bit 1 can be chosen only when no choice is under way. Inside the icon's rectangle, sets $78 to $FF and draws the frame through $43B4; the icon is chosen when $78 is clear by then, as the interrupt makes it while fire is held. Nothing waits for the press: one that ends before the frame is drawn is missed. A selected icon that has a text label writes $DE to the sound driver's byte $1601. An icon with flag bit 1 starts a two-step choice: its flags' bits 2-7 become the group, the frame stays, and the loop runs again for the second icon (an object, a character, a direction), whose handler records the choice and returns; the first icon's handler then runs, unless $5439 cancels. Any other icon's handler runs at once through the JMP at $4CDC, whose operand is written here."
   },
   {
    "address": 19677,
@@ -14913,7 +14913,7 @@
   {
    "address": 19706,
    "type": "line",
-   "text": "Fills the left-hand column of the objects screen (screen 4, icon records from $5482) with the objects lying in the current location $5437, from the 7-byte object records at ($CD96), skipping the first $5440 of them for paging. Each icon gets the object's picture and the flag bits that let a command choose it: bit 3 (Pick-up) when object flag 3 is clear and the object weighs less than 255 minus the weight the character carries (entity byte 7), bit 5 (Ready for use) when object flag 1 is set, bit 6 (Activate) when object flag 2 is set, each with bit 0 (enabled). Objects 0-2, the two transporter beacons and the transporter, get no flags unless the character is 2, Manto. $544F records which object each icon shows. Eight icons hold objects; the ninth is the page arrow ($5480, flags $FD) when more objects follow or a later page is showing, and a blank otherwise. A skip that runs past the last object starts again at the first."
+   "text": "Fills the left-hand column of the objects screen (screen 4, icon records from $5482) with the objects lying in the current location $5437, from the 7-byte object records at ($CD96), skipping the first $5440 of them for paging. Each icon gets the object's picture and the flag bits that let a command choose it: bit 3 (Pick-up) when object flag 3 is clear and the object weighs less than 255 minus the weight the character carries (entity byte 7), and then bit 5 (Ready for use) when object flag 1 is set too, so a fixed or too heavy object cannot be readied either; bit 6 (Activate) when object flag 2 is set, each with bit 0 (enabled). Objects 0-2, the two transporter beacons and the transporter, get no flags unless the character is 2, Manto. $544F records which object each icon shows. Eight icons hold objects; the ninth is the page arrow ($5480, flags $FD) when more objects follow or a later page is showing, and a blank otherwise. A skip that runs past the last object starts again at the first."
   },
   {
    "address": 20087,
@@ -15033,7 +15033,7 @@
   {
    "address": 21567,
    "type": "line",
-   "text": "How $43B4 draws the frame: 0 drawn and left, 1 flashed once, 3 the large frame."
+   "text": "How $43B4 draws the frame: 0 drawn in colours 3 to 0, so it flashes and is erased; 1 drawn and left, for the first icon of a two-step choice; 3 while draw_screen draws its borders, when no frame is drawn (bit 1 would make it the large frame)."
   },
   {
    "address": 21568,
@@ -15203,12 +15203,12 @@
   {
    "address": 21872,
    "type": "line",
-   "text": "The demonstration's input: any key ends the demonstration ($6932 = 1, the script restarts at entry $6C). Otherwise the cursor walks one pixel a frame towards the next point of the demo script at $1571 (X in $692E, Y in $692F); there it waits $78 frames with fire pressed ($6933), then takes the next point, every fourth point starting the \"Shadowfire demonstration\" message again. A point with Y = $FF would end the script ($6932), but none has one: the script ends by clicking Quit on the team screen and then on the start menu, which goes back to the control menu (live)."
+   "text": "The demonstration's input: any key ends the demonstration ($6932 = 1, the script restarts at entry $6C). Otherwise the cursor walks a step a frame (a line up or down, two pixels across) towards the next point of the demo script at $1571 (X in $692E, Y in $692F); there it waits $78 frames, then presses fire ($6933 = $78), held with the cursor still until icon_test takes it and clears $6933, and takes the next point, every fourth point starting the \"Shadowfire demonstration\" message again. A point with Y = $FF would end the script ($6932), but none has one: the script ends by clicking Quit on the team screen and then on the start menu, which goes back to the control menu (live)."
   },
   {
    "address": 22060,
    "type": "line",
-   "text": "Digital joystick in port 1, read through $DC01 (entered with X = 1; the keyboard entry at $5630 uses X = 2). Each direction held moves the cursor faster, its speed ($68E1 across, $68E2 down) rising from 2 to 6 every 10 or 20 frames, and the cursor wraps from one edge of the panel area to the other. Fire clears $78."
+   "text": "Digital joystick in port 1, read through $DC01 (entered with X = 1; the keyboard entry at $5630 uses X = 2). Each direction held moves the cursor faster, its speed ($68E1 across, $68E2 down) rising from 2 to 6 by a step every 10 frames it is held (the first step up or down after 20), and the cursor wraps from one edge of the panel area to the other. Fire clears $78."
   },
   {
    "address": 22064,
@@ -15223,7 +15223,7 @@
   {
    "address": 22356,
    "type": "line",
-   "text": "The game's own part of the interrupt, every frame after the input handler. Plays a frame of music ($1606). While the game is not running ($68B0 set: the menus and the start) it skips the status bars, the entity's second of simulation and the clock's roll, and jumps to the ticker ($5FEF), which goes on as in play to the view map's cell, the entity's list of reachable locations and the step to the next entity; after the fiftieth entity it stops there. Otherwise, in order: grows or shrinks the status screen's bars one step, runs one entity's second of simulation (entity $66D1, record at ($45): one of the fifty each frame, so each one once a second), rolls the clock digits, scrolls the ticker, updates one cell of the view screen's map, rebuilds the entity's list of reachable locations, and after the fiftieth entity counts down the time lock, the self-destruct and the mission clock. Ends by restoring everything at $637E."
+   "text": "The game's own part of the interrupt, every frame after the input handler. Plays a frame of music ($1606). While the game is not running ($68B0 set: the menus and the start) it skips the status bars, the entity's second of simulation and the clock's roll, and jumps to the ticker ($5FEF), which goes on as in play to the view map's cell, the entity's list of reachable locations and the step to the next entity; after the fiftieth entity it stops there. Otherwise, in order: grows or shrinks the status screen's bars one step, runs one entity's second of simulation (entity $66D1, record at ($45): one of the fifty each frame, so each one once a second), rolls the clock digits, scrolls the ticker, updates one cell of the view screen's map, rebuilds the entity's list of reachable locations, and after the fiftieth entity counts down the time lock or, when there is none, the self-destruct and the mission clock. While the time lock holds ($CF83), every entity but the one in $CF84 stands still ($5841), and so do the clock's roll and the ticker ($5F79). Ends by restoring everything at $637E."
   },
   {
    "address": 22369,
@@ -15268,7 +15268,7 @@
   {
    "address": 22864,
    "type": "line",
-   "text": "Load against strength: the limit is strength x $CF85 / 256. Over it, agility (+5) falls each second by the excess / 16, its remainder taken from the fraction at $CFBD (the four low bits, gathered in reverse order by the LSR/ROL pairs), and not below 0."
+   "text": "Load against strength: the limit is strength x $CF85 / 256. At or over it, agility (+5) falls each second by (the excess + 4) / 16, the 4 left off when the sum would pass 255, its remainder taken from the fraction at $CFBD (the four low bits, gathered in reverse order by the LSR/ROL pairs), and not below 0."
   },
   {
    "address": 22958,
@@ -15418,7 +15418,7 @@
   {
    "address": 24783,
    "type": "line",
-   "text": "The view screen's map, while it is open ($6C8C): one of sixteen location cells a frame (entity numbers $00-$1F); the seventeenth of the tables, two right and two down, is never visited. In frames $10-$1F the cell's location ($6830) is searched for the next living entity after the last one shown ($6896), in turn round all fifty, and that entity's map icon (the first pointer of its four bytes at $6CFE) is drawn at the cell's column $6852 and row $6863. In frames $00-$0F a cell whose occupant changed is blanked ($8D08): so each icon flashes, and a location with several takes them in turn."
+   "text": "The view screen's map, while it is open ($6C8C): one of sixteen location cells a frame (entity numbers $00-$1F); the seventeenth of the tables, two right and two down, is never visited. In frames $10-$1F the cell's location ($6830) is searched for the next living entity after the last one shown ($6896), in turn round all fifty, and that entity's map icon (the first pointer of its four bytes at $6CFE) is drawn at the cell's column $6852 and row $6863. In frames $00-$0F a cell whose occupant changed is blanked ($8D08): a location with several shows them in turn, blank between each, while one alone is found again and stays lit. A search that finds nobody blanks the cell at once."
   },
   {
    "address": 24983,
@@ -15958,12 +15958,12 @@
   {
    "address": 26932,
    "type": "line",
-   "text": "Prepares the movement screen (2) and the battle screen (5) for location A: points $3F at its record and reads its map coordinates into $6C90/$6C91. For each of the eight directions, from bit 7 of the exits mask: a direction with no exit gets the empty arrow pictures ($6CAE for screen 2, $6CCE for screen 5), no flags and the handler at $7601; one with an exit gets the filled arrows ($6C9E, $6CBE), flags $3D on screen 2 and $39 on screen 5 ($08 on both when the exit's door is locked: shown, not selectable), and the next of the eight direction handlers ($6CDE, $6CEE), so handler n always means the location's nth exit. Points the movement screen's description text at the record after the exits, and draws the map through $6A50 unless $6DC6 is set."
+   "text": "Prepares the movement screen (2) and the battle screen (5) for location A: points $3F at its record and reads its map coordinates into $6C90/$6C91. For each of the eight directions, from bit 7 of the exits mask: a direction with no exit gets the empty arrow pictures ($6CAE for screen 2, $6CCE for screen 5), no flags and, on the movement screen only, the handler no_action ($7603, its address kept at $7601); one with an exit gets the filled arrows ($6C9E, $6CBE), flags $3D on screen 2 and $39 on screen 5 ($08 on both when the exit's door is locked: shown, not selectable), and the next of the eight direction handlers ($6CDE, $6CEE), so handler n always means the location's nth exit. Points the movement screen's description text at the record after the exits, and draws the map through $6A50 unless $6DC6 is set."
   },
   {
    "address": 27216,
    "type": "line",
-   "text": "Draws the view screen's map around map position X, Y. $FF, $FF (a place off the map) draws two pictures instead, from $6DC7 and $6DC9. Otherwise a window of 5 x 5 tiles from (X - 1, Y - 1), each tile 2 x 2 cells: its number from the 32 x 32 tile map at ($84C7), its colour from the map at ($84C9), its four characters from the tile set at ($BF94), their bitmaps from ($C286). Rows and columns outside the map are tile $31. Colour RAM is filled with $0E first. Then finds the locations to show through $6BB7."
+   "text": "Draws the view screen's map around map position X, Y. $FF, $FF (a place off the map) draws two pictures instead, from $6DC7 and $6DC9. Otherwise a window of 5 x 5 tiles from (X - 1, Y - 1), each tile 2 x 2 cells: its number from the 32 x 32 tile map at ($84C7), its colour from the map at ($84C9), its four characters from the tile set at ($BF94), their bitmaps from ($C286). Columns outside the map are tile $31, its colour whatever byte the colour map's pointer finds there; a row outside the map is blank characters but the first ($6C46), and keeps the row before's colours but the first. Colour RAM is filled with $0E first. Then finds the locations to show through $6BB7."
   },
   {
    "address": 27301,
@@ -16603,7 +16603,7 @@
   {
    "address": 29517,
    "type": "line",
-   "text": "A transporter beacon (objects 0 and 1): lists the people standing at beacon 1 (left column) and beacon 2 (middle column), blank where a beacon is being carried, and waits for one of them to be chosen (group 5) or for Quit. The one chosen, standing at one beacon, is sent to the other: destination the other beacon's location, step countdown 1 second, status 1. When it is Manto, the arrows are rebuilt for his location and the iris closes and opens again ($4A61 set meanwhile)."
+   "text": "A transporter beacon (objects 0 and 1): lists the people standing at beacon 1 (left column) and beacon 2 (middle column), blank where a beacon is being carried, and waits for one of them to be chosen (group 5) or for Quit. The one chosen, standing at one beacon, is sent to the other: destination the other beacon's location, step countdown 1 second, status 1. When it is Manto, the arrows are rebuilt for the location of the character on show, who has not moved (the move takes its second later), and the iris closes and opens again ($4A61 set meanwhile)."
   },
   {
    "address": 29702,
@@ -16638,7 +16638,7 @@
   {
    "address": 29881,
    "type": "line",
-   "text": "The start menu (7): plays tune 7 and stops the game ($68B0). Old game can be chosen (flags 5 at $7C7C) unless $CF7F is set (by any way out through $4B35, or a failed load or save) or the mission has failed or succeeded. The mission status, two tokens at $CF7B and $CF7D in the summary text at $CF4B: FAILED and ENIGMA FORCE DEFEATED when the whole team is dead ($CA05 bit 0 clear); SUCCEEDED when every bit of $CA05 is set ($1F); otherwise INCOMPLETE and the first objective missing, counting the low bits of $CA05 that are set: KRYXIX NOT RESCUED, ZOFF V NOT DESTROYED, ZOFF 5 NOT CAPTURED (the game's text has a 5 for the V), ZOFF NOT CAPTURED."
+   "text": "The start menu (7): plays tune 7 and stops the game ($68B0). Old game can be chosen (flags 5 at $7C7C) unless $CF7F is set (by any way out through $4B35, or a load or save that fails other than with FILE NOT FOUND) or the mission has failed or succeeded. The mission status, two tokens at $CF7B and $CF7D in the summary text at $CF4B: FAILED and ENIGMA FORCE DEFEATED when the whole team is dead ($CA05 bit 0 clear); SUCCEEDED when every bit of $CA05 is set ($1F); otherwise INCOMPLETE and the first objective missing, counting the low bits of $CA05 that are set: KRYXIX NOT RESCUED, ZOFF V NOT DESTROYED, ZOFF 5 NOT CAPTURED (the game's text has a 5 for the V), ZOFF NOT CAPTURED."
   },
   {
    "address": 29990,

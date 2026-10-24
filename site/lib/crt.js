@@ -17,8 +17,9 @@
 //   crt.on, crt.set(on), crt.frame()
 // A page makes no call per frame: every putImageData and drawImage on canvas's 2D context draws
 // the CRT picture again, from source, at the next animation frame (crt.frame() does the same for
-// a page that draws some other way). The viewer's choice holds on every Play tab
-// (localStorage 'gamesexplained.crt'), and it starts off.
+// a page that draws some other way). The viewer's choice holds on every page with the screen
+// (localStorage 'gamesexplained.crt'), and until they make one it starts on. That start is not
+// stored, so it follows the site's default rather than becoming the viewer's choice.
 (function (root) {
   'use strict';
   const KEY = 'gamesexplained.crt';
@@ -73,7 +74,8 @@ void main() {
 }`;
 
   const supported = () => typeof root.WebGL2RenderingContext === 'function';
-  function stored() { try { return root.localStorage.getItem(KEY) === '1'; } catch (e) { return false; } }
+  // the viewer's choice: true, false, or null before they make one
+  function stored() { try { const v = root.localStorage.getItem(KEY); return v === '1' ? true : v === '0' ? false : null; } catch (e) { return null; } }
   function store(on) { try { root.localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) { /* no storage: the choice lasts for this visit */ } }
 
   // The canvas's backing size in the screen's own pixels: the browser's exact count where it gives
@@ -164,7 +166,8 @@ void main() {
       gl.uniform1i(u.pixel, pixel);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
-    // quiet: the screen as the viewer left it, set while the page starts, without onChange
+    // quiet: the screen as the page starts it, the viewer's choice or the default, neither
+    // stored nor told to onChange
     function set(on, quiet) {
       on = !!on;
       if (on && !make()) { on = false; if (button) button.style.display = 'none'; }
@@ -172,7 +175,7 @@ void main() {
       api.on = on;
       if (cv) cv.style.display = on ? 'block' : 'none';
       if (button) button.setAttribute('aria-pressed', String(on));
-      store(on);
+      if (!quiet) store(on);
       if (on) { place(); frame(); }
       if (on !== was && !quiet && opts.onChange) opts.onChange(on);
       return on;
@@ -188,7 +191,7 @@ void main() {
       button.setAttribute('aria-pressed', 'false');
       button.addEventListener('click', () => set(!api.on));
     }
-    if (stored()) set(true, true);
+    if (stored() !== false) set(true, true);
     return api;
   }
 

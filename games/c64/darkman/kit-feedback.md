@@ -16,6 +16,11 @@ time, operating system and tool versions.
 
 None.
 
+## 24 October 2026, Silver run
+
+- A comment belief repeated across levels (a toggle that moves an index on every other call, said to move the frame too) was in ten comments; `60-verify`, "A wrong comment is usually one belief written down more than once", found them when searched for by their wording.
+- `listing.py --recomment` is the way to put corrected comments into a listing built long before from a snapshot; building it again showed 4,023 bytes of uncounted data for level 2 that the earlier build had not listed.
+
 ## Candidates
 
 - The disassembler's `r2000_search_disassembly` returned exactly 50

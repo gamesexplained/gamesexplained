@@ -523,4 +523,97 @@ const TICK = (() => {
   check('and the sprite collided', m.ram[0x2000] !== n0, true);
 }
 
+// 19. A handler that saves a byte the main program keeps and puts it back: it pushes $2000, uses it
+// as its own scratch and pulls it. The interrupt falls in the delay before the main program's INC
+// of $2000, and the port's INC comes before its { cycles }, where the replay runs: the handler's
+// write of the value it read is no change of the interrupt's, so the port's value stays, and the
+// copy to $2001 after the delay is the game's.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x68, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0x58, 0x4C, 0x20, 0x10);   // set up, CLI, JMP $1020
+  put(0x1020, 0x20, 0x40, 0x10, 0x4C, 0x20, 0x10);                                        // JSR work, JMP
+  put(0x1040, 0xA2, 0x00, 0xE8, 0xD0, 0xFD, 0xEE, 0x00, 0x20, 0xAD, 0x00, 0x20, 0x8D, 0x01, 0x20, 0x60);   // 256 INX, INC $2000, $2001 = $2000
+  put(0x1100, 0x48, 0xAD, 0x00, 0x20, 0x48, 0xA9, 0x55, 0x8D, 0x00, 0x20, 0xEE, 0x02, 0x20,
+    0x68, 0x8D, 0x00, 0x20, 0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40);                     // save $2000, $55 there, INC $2002, put it back
+  const m = new Machine({ ram, pc: 0x1000, passAt: 0x1020, port: { dir: 0x2F, data: 0x35 } });
+  m.runUntilPass(q => q.passes >= 3);
+  const M = new Uint8Array(65536), P = { M };
+  P.irq = function () { const s = M[0x2000]; M[0x2000] = 0x55; M[0x2002] = (M[0x2002] + 1) & 255; M[0x2000] = s; P.io.vicWrite(0x19, 0xFF); };
+  const program = function* () {
+    for (;;) { yield { cp: 0x1020 }; M[0x2000] = (M[0x2000] + 1) & 255; yield { cycles: 1300 }; M[0x2001] = M[0x2000]; }
+  };
+  const n0 = m.ram[0x2002];
+  const r = new Lockstep({ machine: m, port: P, program, checkpoints: [0x1020], irqs: { 0x1100: 'irq' } }).run({ passes: 200 });
+  check('a byte a handler saves and puts back: 200 passes identical', r.ok && r.passes === 200, true);
+  check('and the interrupt came', m.ram[0x2002] !== n0, true);
+}
+
+// 20. A raster wait whose exit heads the copy after it: X is set before the wait, so the loop that
+// copies 200 bytes starts at the instruction after the poll, and the game comes to the wait's exit
+// 200 times a wait. Only the first, after the poll, is the wait's. The interrupt at line $62 moves
+// the clock at $A2 on during the copy, and the game reads it after: the port reads it through
+// irqByte before its next yield, where the game is still at the wait's exit, and the copy of the
+// machine run on to the next stop for it must pass the copy's turns too.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x62, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0x58, 0x4C, 0x20, 0x10);   // set up, CLI, JMP $1020
+  put(0x1020, 0x20, 0x40, 0x10, 0xEE, 0x00, 0x20, 0x4C, 0x20, 0x10);                     // JSR wait_copy, INC $2000, JMP
+  put(0x1040, 0xA2, 0x00, 0xAD, 0x12, 0xD0, 0xC9, 0x60, 0xD0, 0xF9,                      // LDX #0; wait for line $60
+    0xBD, 0x00, 0x20, 0x9D, 0x00, 0x21, 0xE8, 0xE0, 0xC8, 0xD0, 0xF5,                     // copy: $2100,X = $2000,X, 200 times
+    0xA5, 0xA2, 0x8D, 0x10, 0x20, 0x60);                                                  // $2010 = the clock
+  put(0x1100, 0x48, 0xE6, 0xA2, 0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40);               // INC $A2, the clock
+  const m = new Machine({ ram, pc: 0x1000, passAt: 0x1020, port: { dir: 0x2F, data: 0x35 } });
+  m.runUntilPass(q => q.passes >= 2);
+  const M = new Uint8Array(65536), P = { M };
+  P.irq = function () { M[0xA2] = (M[0xA2] + 1) & 255; P.io.vicWrite(0x19, 0xFF); };
+  const program = function* () {
+    for (;;) {
+      yield { cp: 0x1020 }; yield { wait: 0x60 };
+      for (let x = 0; x < 200; x++) M[0x2100 + x] = M[0x2000 + x];
+      M[0x2010] = P.io.irqByte(0xA2);
+      M[0x2000] = (M[0x2000] + 1) & 255;
+    }
+  };
+  const a0 = m.ram[0xA2];
+  const r = new Lockstep({ machine: m, port: P, program, checkpoints: [0x1020], waits: [0x1049], irqs: { 0x1100: 'irq' }, irqBytes: [0xA2] }).run({ passes: 50 });
+  check('a wait\'s exit that heads a loop: 50 passes identical', r.ok && r.passes === 50, true);
+  check('and the clock moved in the copy', m.ram[0x2010] === m.ram[0xA2] && m.ram[0xA2] !== a0, true);
+}
+
+// 21. A long routine that hands a page's clock back as it goes ({ cycles: 0 }): a delay of eight
+// frames, then the joystick the interrupt last read. The port reads the game's value first, from a
+// copy of the machine run on ahead with the input as it stands, then yields 25,000 times. Those
+// yields are none of the game's work: if the game ran on at each and took the new frames' input,
+// its interrupts would read a joystick the copy never saw.
+{
+  const ram = new Uint8Array(65536);
+  const put = (a, ...b) => ram.set(b, a);
+  put(0x1000, 0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x62, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0x58, 0x4C, 0x20, 0x10);   // set up, CLI, JMP $1020
+  put(0x1020, 0x20, 0x40, 0x10, 0x4C, 0x20, 0x10);                                        // JSR delay_read, JMP
+  put(0x1040, 0xA0, 0x80, 0xA2, 0x00, 0xCA, 0xD0, 0xFD, 0x88, 0xD0, 0xF8,                 // 128 x 256 turns of DEX
+    0xA5, 0xA2, 0x8D, 0x10, 0x20, 0x60);                                                  // $2010 = the joystick
+  put(0x1100, 0x48, 0xAD, 0x00, 0xDC, 0x85, 0xA2, 0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40);   // $A2 = $DC00
+  const m = new Machine({ ram, pc: 0x1000, passAt: 0x1020, port: { dir: 0x2F, data: 0x35 } });
+  m.runUntilPass(q => q.passes >= 2);
+  const M = new Uint8Array(65536), P = { M };
+  P.irq = function () { M[0xA2] = P.io.ciaRead(0x00); P.io.vicWrite(0x19, 0xFF); };
+  const program = function* () {
+    for (;;) {
+      yield { cp: 0x1020 };
+      M[0x2010] = P.io.irqByte(0xA2);
+      for (let n = 0; n < 25000; n++) yield { cycles: 0 };
+    }
+  };
+  const seen = new Set();
+  const r = new Lockstep({ machine: m, port: P, program, checkpoints: [0x1020], irqs: { 0x1100: 'irq' }, irqBytes: [0xA2] })
+    .run({ passes: 6, onFrame: (f, g) => { g.joy = f & 1 ? 0x1F : 0x0E; seen.add(g.ram[0x2010]); } });
+  check('yields of no work in a long routine: 6 passes identical', r.ok && r.passes === 6, true);
+  check('and the joystick changed', seen.size > 1, true);
+}
+
 process.exit(fails ? 1 : 0);

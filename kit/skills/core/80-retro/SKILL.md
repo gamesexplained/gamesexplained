@@ -178,7 +178,12 @@ unnoticed.
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
-8. **Update `TODO.md`** with what is missing for the next tier.
+8. **Update `TODO.md`** with what is missing for the next tier. If the
+   contributor said yes to looking the game up online (`kit/START.md`),
+   first search the web for each question you would leave them, and
+   leave only what no source settles, since an answer found now reaches
+   the page without waiting on them. An answer goes where its fact
+   belongs, with its source, as `features.md` records its own.
 9. **If you were the first on your operating system** (its cell in
    `site/status.json` was missing or `untested`), the install notes are
    part of your retrospective: run

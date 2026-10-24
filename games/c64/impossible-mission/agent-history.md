@@ -151,3 +151,22 @@ new play snapshot's bytes that the listing already held were written
 back over it (60 bytes, variables and zero page), so the rebuilt listing
 keeps every byte it had and adds these 18. The raw snapshot is kept as
 `work/play-room1-raw.vsf`.
+
+## The words of the voice lines, and the ending's timing (24 October 2026)
+
+The contributor, Aaron, listened to the eight lines on the Sound and
+speech tab and gave their words. Their order matches the code's numbers:
+the lengths from the speech port fit the words (6, "Ah", is 0.21 s; 2,
+"Another visitor", 1.5 s), and each line's words fit the moment the code
+plays it. The words went into the player, the table beside it, `facts.md`
+and `features.md`, and the open question closed.
+
+Putting line 4 under Elvin's face showed that The ending tab played the
+mouth six times too slowly. It counted six ticks for each count of the
+timing table; `end_twinkle` waits one tick and then recolours six cells
+at once, X + 1 times. With one tick a count the
+mouth's three openings land on the three words of the line, which the
+slow version could not do (it lasted 27 s against a 3.3 s line). The
+speech port moved from the Sound and speech tab into
+`reference/speech.js` so that both tabs play it. The listing's comment on
+`end_twinkle` still says "X times"; the count is X + 1.

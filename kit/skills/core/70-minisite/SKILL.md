@@ -373,6 +373,29 @@ Before/after, from real drafts:
   sent to do. The second is who else is there, ending on that enemy and
   why it looks the way it does.
 
+Last, do an **ELI15 pass** ("explain it like I'm fifteen"): rewrite every
+authored page so that a reader of fifteen who has never programmed can
+follow each sentence. The Source tab stays as it is, since its reader came
+for the code. Commit the pages first, so that `git diff` puts each changed
+sentence beside the one it replaced. Then:
+
+1. Explain each term where it first appears on a page, in a few words,
+   since a reader can open any tab first: a keyword of the game's
+   language, a chip or its register, a hexadecimal address, a kind of
+   variable. Keep the code, the addresses and the numbers, which are the
+   evidence.
+2. Split every sentence that holds more than one idea, and put plain words
+   in place of shorthand ("turns down" for "declines").
+3. Check the diff sentence by sentence against the original. Every fact
+   the original gave (a number, a name, an address, a condition, a cause)
+   is still on the page, and every explanation added is true. Put back
+   what was lost, and check what was added against `facts.md` and the
+   platform reference.
+
+The standfirst, the headings, the captions, the table cells and the text
+the widgets write are copy too, and the rewrite follows `kit/style.md`
+like the draft.
+
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it
 as it was, `human-edited` when a human changed it, `human` when a human
@@ -451,16 +474,17 @@ Omit the tab only if there is genuinely nothing playable to put on it.
 Only Platinum needs the Play tab (`AGENTS.md`, "Definition of done"),
 so it never blocks Silver or Gold.
 
-Every Play tab that draws on a canvas offers the site's CRT screen:
-load `../../lib/crt.js`, put a "📺 CRT screen" button with `data-crt` in
-the page's bar, and call `CRT.attach(canvas, { button })` once the
-canvas exists. It draws the picture again on the GPU each time the page
-draws, so the page adds nothing to its loop; the header of
+Every Play tab that draws on a canvas offers the site's CRT screen, on
+by default: load `../../lib/crt.js`, put a "📺 CRT screen" button with
+`data-crt` and `aria-pressed="true"` in the page's bar, and call
+`CRT.attach(canvas, { button })` once the canvas exists. It draws the
+picture again on the GPU each time the page draws, so the page adds
+nothing to its loop; the header of
 `site/lib/crt.js` says what to pass for a picture scaled into the canvas
 from another (`source`), one drawn at twice the size (`pixel`), and a
 view at the screen's own resolution, which goes off when the CRT screen
 goes on (`onChange`). `kit/scripts/test_crt_screen.js` fails a Play page that
-leaves it out.
+leaves it out, and a CRT button on any page that starts unpressed.
 
 Every Play tab whose game makes a sound offers the site's sound switch,
 on by default: load `../../lib/sound.js`, put
@@ -472,6 +496,13 @@ press, so the switch starts it at the viewer's first one and keeps the
 viewer's choice for every Play tab; the page starts no sound of its own,
 neither when its game starts nor in its key handlers.
 `kit/scripts/test_sound_switch.js` fails a Play page that leaves it out.
+The page hands its game's writes to the sound chip's model through the
+site's live queue (`kit/skills/<platform>/steps`, "sound") and keeps no
+queue of its own: the site's holds half a second, since a page's frames
+come unevenly and the audio device can take 100 ms at once, and a
+shorter queue runs dry and overflows by turns, which is heard as the
+music skipping. `kit/scripts/test_live_sound.js` fails a Play page with
+a queue of its own.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in

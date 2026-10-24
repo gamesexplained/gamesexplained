@@ -23,7 +23,9 @@
 //                     at one of the waits' exits (two waits with no checkpoint between are two stops
 //                     at the exit, as a routine that waits, called twice running, makes them)
 //     { cycles: n }   n cycles of the game's own work, as a page's clock counts them; with at: a,
-//                     the game is at a, and it is a checkpoint when a is listed
+//                     the game is at a, and it is a checkpoint when a is listed. { cycles: 0 }
+//                     is none: a place inside a long routine where a page's clock may stop and
+//                     take the player's input, which the lockstep passes over
 //     anything else   a bare yield, one turn of a polling loop: one raster line passes
 // - The interrupt handlers, plain functions, one for each address the game's vector at $FFFE
 //   points to.
@@ -50,13 +52,18 @@
 //   reaches one address (a wait for a timer called from everywhere) yields it once a pass.
 // - waits: the raster waits' exits, the instruction after each loop that polls the raster. The
 //   game must leave on the port's line or the next. While it waits it passes the checkpoint before,
-//   which may head the loop (a port that names its time up to the wait).
+//   which may head the loop (a port that names its time up to the wait). The game reaches an exit
+//   only when its main program has read the raster ($D011, $D012 or $D019) since its last stop, so
+//   an exit that also heads the loop of work after the wait (a copy, ten times round) is reached
+//   once a wait.
 // - irqs: { handler address: a function, or the name of one of P's }. The interrupts the game took
 //   run in the port in order, at the port's next yield of any kind: a replay can keep the order
 //   but not the place inside a stretch. So each runs on the memory the game's handler saw: the
 //   bytes it read, its instructions' operands among them, are set to the values it read (the stack
 //   aside), and go back to the port's after
-//   unless it wrote them. Its reads of the raster ($D012, and $D011's bit 7) get the values the
+//   unless it wrote them. A byte it read and left as it read it is one it saved and put back (a
+//   handler that pushes the main program's pointers and pulls them before it returns), and it too
+//   goes back to the port's. Its reads of the raster ($D012, and $D011's bit 7) get the values the
 //   game's did, in turn (a read past those, the line the game's handler ended on), and the raster's
 //   interrupt bit is latched. So do its reads of the interrupt flags, $D019, $DC0D and $DD0D, and
 //   of the sprite collisions, $D01E and $D01F, the port's chips' own after those: one handler for
@@ -324,6 +331,7 @@ class Lockstep {
     this.matched = false;
     this.resume = -1;
     this.through = -1;                             // a checkpoint the game passes while it waits for the raster
+    this.polled = false;                           // the main program has read the raster since its last stop
     this.pending = [];                             // interrupts the game took, not yet run in the port
     this.fix = new Map();                          // bytes they wrote, until the next checkpoint
     this.irq = null;                               // the one running on the machine
@@ -357,16 +365,23 @@ class Lockstep {
     g.sidw.set(m.sidw);
     const out = new Map(), B = this.irqBytes;
     for (const [a, vs] of this.ib.live) out.set(a, vs.slice());
-    let depth = 0, stop = false, skip = g.cpu.pc;
+    let depth = 0, stop = false, skip = g.cpu.pc, polled = this.polled;
     Object.assign(g.hooks, this.hooks);
     for (const a of [...this.cps, ...this.waits]) {
       const prev = g.hooks[a];
       g.hooks[a] = c => {
         if (depth) return prev ? prev(c) : false;                     // an interrupt's code
         if (a === skip) { skip = -1; return prev ? prev(c) : false; }   // the stop it starts at
+        if (this.waits.has(a) && !polled) return prev ? prev(c) : false;   // a wait's exit come to again with no wait
         stop = true; g.stopFlag = true; return true;
       };
     }
+    const ioRead = g.ioRead;
+    g.ioRead = function (x) {
+      const v = ioRead.call(this, x);
+      if (!depth && x >= 0xD000 && x < 0xD400) { const r = x & 0x3F; if (r === 0x11 || r === 0x12 || r === 0x19) polled = true; }
+      return v;
+    };
     const irq = g.cpu.irq, run = g.cpu.run;
     g.cpu.irq = function (h, o) { depth++; try { return irq.call(this, h, o); } finally { depth--; } };
     const reads = new Proxy({}, { set(t, k) {
@@ -419,7 +434,8 @@ class Lockstep {
         if (ls.irq !== null) return prev ? prev(c) : false;            // an interrupt's code, not the main program
         if (ls.resume === a) { ls.resume = -1; return prev ? prev(c) : false; }
         if (ls.through === a) return prev ? prev(c) : false;          // the head of the loop a raster wait turns in
-        ls.at = a; ls.matched = false; m.stopFlag = true;
+        if (ls.waits.has(a) && !ls.polled) return prev ? prev(c) : false; // a wait's exit come to again with no wait
+        ls.at = a; ls.matched = false; m.stopFlag = true; ls.polled = false;
         return true;
       };
     }
@@ -474,9 +490,10 @@ class Lockstep {
     const ioRead = m.ioRead;
     m.ioRead = function (a) {
       const v = ioRead.call(this, a), q = ls.irq;
-      if (q !== null && a >= 0xD000 && a < 0xD400) {
+      if (a >= 0xD000 && a < 0xD400) {
         const r = a & 0x3F;
-        if (r === 0x12) q.d012.push(v); else if (r === 0x11) q.d011.push(v);
+        if (q === null) { if (r === 0x11 || r === 0x12 || r === 0x19) ls.polled = true; }
+        else if (r === 0x12) q.d012.push(v); else if (r === 0x11) q.d011.push(v);
       }
       const f = q !== null ? flagRegister(a) : -1;
       if (f >= 0) { if (!q.flags.has(f)) q.flags.set(f, { v: [], i: 0 }); q.flags.get(f).v.push(v); }
@@ -531,7 +548,12 @@ class Lockstep {
           let f = this.irqs[q.at];
           if (typeof f === 'string') f = P[f];
           if (typeof f !== 'function') throw new Error('Lockstep: no port handler for the interrupt at ' + hex(q.at) + ' (irqs)');
+          // a byte the handler read and left as it read it, saved and put back (a handler that
+          // pushes the main program's pointers and pulls them before it returns): not the
+          // interrupt's to change, so the port's value stays
+          const kept = a => q.seen.has(a) && q.seen.get(a) === q.wrote.get(a);
           for (const a of q.wrote.keys()) {
+            if (kept(a)) continue;
             const x = fix.get(a);
             if (!x) fix.set(a, { b: M[a], h: -1, v: -1 });
             else if (M[a] !== x.h) x.b = M[a];                  // the port's program has written it since
@@ -541,8 +563,8 @@ class Lockstep {
           this.replaying = q; c.raster = q.end; c.latch |= 1;
           const r = f.call(P);
           if (r && typeof r.next === 'function') throw new Error('Lockstep: the handler for ' + hex(q.at) + ' is a generator; an interrupt runs to its end');
-          for (let i = 0; i < put.length; i += 2) if (!q.wrote.has(put[i])) M[put[i]] = put[i + 1];
-          for (const [a, v] of q.wrote) { const x = fix.get(a); x.v = v; x.h = M[a]; }
+          for (let i = 0; i < put.length; i += 2) if (!q.wrote.has(put[i]) || kept(put[i])) M[put[i]] = put[i + 1];
+          for (const [a, v] of q.wrote) { if (kept(a)) continue; const x = fix.get(a); x.v = v; x.h = M[a]; }
         }
       } catch (e) { throw this.annotate(e); }
       finally { this.replaying = null; this.counting = counting; }
@@ -569,6 +591,9 @@ class Lockstep {
     if (y && y.at !== undefined && this.cps.has(y.at & 0xFFFF)) return this.checkpoint(y.at & 0xFFFF, y);
     if (y && y.wait !== undefined) return this.rasterWait(y.wait, y);
     if (y && y.cycles !== undefined) {
+      // none of the game's work: the game is not where the port is, so it does not run, and its
+      // input waits for the next stop, as a copy irqBytes made of it has the input as it stood
+      if (!y.cycles) return this.running();
       this.estimate += y.cycles;
       if (this.forCycles(y.cycles)) this.idle = 0;
       this.settle();

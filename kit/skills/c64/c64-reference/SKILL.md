@@ -105,6 +105,14 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
 
+Read back, the VIC's unused bits are 1: the top two of `$D016`, bit 0
+of `$D018`, bits 4-6 of `$D019`, the top four of `$D01A` and of every
+colour register `$D020`-`$D02E`. A register dump, a snapshot and
+`kit/c64/frame.py` give the value read back, so a game that writes `$01`
+to `$D01A` shows `$F1` there. When a note names a value a register is
+set to, take it from the instruction that stores it, since a value
+copied from a dump reads as one the game wrote.
+
 The raster compare sets `$D019` bit 0 whether or not `$D01A` enables
 it, and the bit stays set until the program writes a 1 to it. The
 interrupt is raised whenever a latched bit is enabled, so a program
@@ -232,6 +240,14 @@ and `kit/c64/machine.js` with `collide: true`.
 - The 38-column side border hides graphics that still collide. Under
   the 24-row border, and with the display off, there is no foreground.
   The idle pattern (`$3FFF`, `$39FF` with extended colour) collides.
+- A collision that sets a bit in `$D01E` or `$D01F` while the register
+  is 0 sets `$D019` bit 2 or bit 1, which interrupts when `$D01A`
+  enables it. One while the register already holds a bit sets nothing,
+  so a program that never reads the register is interrupted once, and a
+  handler that reads it is interrupted again by the first collision
+  after its read: how often depends on where in its line the read
+  falls. `kit/c64/frame.py irq` records it, and `machine.js` raises it
+  (`kit/lessons/2026-10-24-collision-interrupts.md`).
 
 ## SID essentials (`$D400`)
 

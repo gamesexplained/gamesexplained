@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Darkman</title>
+<title>{{title}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -36,13 +36,323 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 </style>
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">Commodore 64 · 1990 · Ocean</p><h1>Darkman</h1><p class="sub">Ocean's game of the Sam Raimi film, written by Twilight. Each of its six levels is a program of its own, loaded from disk after a screen that asks for fire.</p></header>
+<header class="hero"><p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p><h1>{{title}}</h1><p class="sub">Ocean's game of the Sam Raimi film, written by Twilight. Each of its six levels is a program of its own, loaded from disk after a screen that asks for fire.</p></header>
 <main class="wrap">
-<section><p class="fig">01 · Overview</p><h2 class="t">Credits, then the streets</h2><p>Once the first level has loaded, the title alternates between two pages: the credits, which name Finlay Munro for the code, Noel Hines for the graphics, and Jonathan Dunn for the sound, and a table of the day's top scores. Fire on the joystick in port 2 starts play.</p><div class="plate"><img class="reference" src="reference/title.png" alt="The Darkman logo above the licence lines, the credits, and the Ocean logo"><p class="cap">The credits page of the title screen.</p></div><div class="plate"><img class="reference" src="reference/high-scores.png" alt="The Darkman logo above a table headed Todays Top Darkmen, with five names and scores"><p class="cap">The other page of the title: TODAYS TOP DARKMEN.</p></div><p>The first level is a street scene with a brick wall and shop signs, where Darkman fights gangsters in suits. A panel under the play area holds the score, a green bar, and a portrait of Darkman.</p><div class="plate"><img class="reference" src="reference/play-level1.png" alt="Darkman in a long coat between two gangsters on a street, above a status panel with a portrait"><p class="cap">Level 1, a few seconds into play.</p></div></section>
-<section data-part="resident"><p class="fig">02 · Loading</p><h2 class="t">Six levels, one at a time</h2><p>A small loader stays in memory at $0400 for the whole game. Before each level, the routine at <code>$0625</code> puts up a plain text screen and waits for fire. Before level 1 and level 4, the screen says which side of the disk to insert, and before the other levels it reads PRESS FIRE TO LOAD NEXT LEVEL.</p><div class="plate"><img class="reference" src="reference/insert-disk.png" alt="Black screen with the words Insert disk side 1, then press fire"><p class="cap">The prompt before the first load.</p></div><p>The loop at <code>$0407</code> then loads the two files of the level whose number is held at <code>$0435</code>, retries after a disk error, adds one to the number, and jumps to <span data-part="level1"><code>$0A20</code></span>. Each level's first file starts at that address, and its second fills $BF00 onwards, under the chips and the ROMs. Coloured stripes run across the screen while a load is under way.</p></section>
-<section data-part="level1"><p class="fig">03 · Controls</p><h2 class="t">Walk, jump, crouch, and strike</h2><p>The joystick in port 2 does everything. Left and right walk, four pixels every four frames. Up jumps, and Darkman rises 26 lines in 32 frames. Down crouches, and fire with down throws a low strike that carries him forward.</p><p>The interrupt at <code>$1D43</code> copies the joystick to <code>$203B</code> once a frame. A key on the keyboard pauses the game: when the code read at <code>$0E30</code> is <code>$50</code>, the routine at <code>$1777</code> sets a flag, and the interrupts skip every moving part until the key is pressed again.</p></section>
-<section data-part="level1"><p class="fig">04 · The play screen</p><h2 class="t">A game run by its interrupts</h2><p>The play screen is drawn by four raster interrupts that hand over to one another, each writing the address of the next into the processor's interrupt vector. They also run the game. The first, at <code>$1E21</code>, moves Darkman and the two enemies and places their sprites: three for Darkman and two for each enemy. The second, at <code>$1EF4</code>, plays the sound and reads the keyboard. The third, at <code>$1D43</code>, reads the joystick and switches the screen matrix, the character set, and the colour mode for the status panel. The fourth, at <code>$1DBF</code>, hands back to the first.</p><p>Meanwhile the main loop at <code>$179E</code> only redraws the panel and waits. When play ends, it goes either to the game-over code at <code>$195C</code> or, when the level is done, to <code>$4A8F</code>.</p></section>
-<section data-part="resident"><p class="fig">05 · Between levels</p><h2 class="t">A sound driver that outlives its level</h2><p>Each level's files replace most of memory, but the sound driver is never loaded at all. Level 1 copies it from its own file to <code>$B0C8</code>, in a stretch of memory that no later load writes. Level 2 carries no driver of its own and calls the one level 1 left behind.</p><div class="plate"><img class="reference" src="reference/level2-briefing.png" alt="Yellow text on black: Level two. Darkman is discovered before his plan is half grown"><p class="cap">The briefing before level 2.</p></div><div class="plate"><img class="reference" src="reference/play-level2.png" alt="Darkman on a ledge by purple pipes in a brick room, above the status panel"><p class="cap">Level 2 in play.</p></div></section>
-<section><p class="fig">06 · Scope</p><h2 class="t">Two parts of seven</h2><p>The Source tab shows the resident loader and the first level as they stand in play. Level 2 has been reached and saved but not read, and levels 3 to 6 have not been reached.</p></section>
+<section id="game"><p class="fig">01 · Overview</p><h2 class="t">Credits, then the streets</h2><p>Once the first level has loaded, the title alternates between two pages: the credits, which name Finlay Munro for the code, Noel Hines for the graphics, and Jonathan Dunn for the sound, and a table of the day's top scores. Fire on the joystick in port 2 starts play.</p><div class="plate"><img class="reference" src="reference/title.png" alt="The Darkman logo above the licence lines, the credits, and the Ocean logo"><p class="cap">The credits page of the title screen.</p></div><div class="plate"><img class="reference" src="reference/high-scores.png" alt="The Darkman logo above a table headed Todays Top Darkmen, with five names and scores"><p class="cap">The other page of the title: TODAYS TOP DARKMEN.</p></div><p>The first level is a street scene with a brick wall and shop signs, where Darkman fights gangsters in suits. A panel under the play area holds the score, an energy bar, and a portrait of Darkman. <a href="levels.html">The Maps / levels tab</a> draws all six levels from the bytes of their files.</p><div class="plate"><img class="reference" src="reference/play-level1.png" alt="Darkman in a long coat between two gangsters on a street, above a status panel with a portrait"><p class="cap">Level 1, a few seconds into play.</p></div></section>
+<section id="loading" data-part="resident"><p class="fig">02 · Loading</p><h2 class="t">Six levels, one at a time</h2><p>A small loader stays in memory at $0400 for the whole game. Before each level, the routine at <code>$0625</code> puts up a plain text screen and waits for fire. Before level 1 and level 4, the screen says which side of the disk to insert, and before the other levels it reads PRESS FIRE TO LOAD NEXT LEVEL.</p><div class="plate"><img class="reference" src="reference/insert-disk.png" alt="Black screen with the words Insert disk side 1, then press fire"><p class="cap">The prompt before the first load.</p></div><p>The loop at <code>$0407</code> then loads the two files of the level whose number is held at <code>$0435</code>, retries after a disk error, adds one to the number, and jumps to <span data-part="level1"><code>$0A20</code></span>. Each level's first file starts at that address, and its second fills $BF00 onwards, under the chips and the ROMs. Coloured stripes run across the screen while a load is under way. A level ends by jumping back into the loader: levels 1 to 5 jump to <code>$0407</code> when they are done, and the levels after the first use <code>$0404</code>, which starts the index again at 0, after a game over.</p><p>The sound driver is never loaded as a file of its own. Level 1 carries two copies of it, one for the title tunes and one for the sound effects, and copies the second to <code>$B0C8</code>, in a stretch of memory that no later load writes. Every later level calls that copy. <a href="music.html">The Music tab</a> plays both.</p><div class="plate"><img class="reference" src="reference/level2-briefing.png" alt="Yellow text on black: Level two. Darkman is discovered before his plan is half grown"><p class="cap">The briefing before level 2.</p></div><div class="plate"><img class="reference" src="reference/play-level2.png" alt="Darkman on a ledge by purple pipes in a brick room, above the status panel"><p class="cap">Level 2 in play.</p></div></section>
+<section id="controls" data-part="level1"><p class="fig">03 · Controls</p><h2 class="t">Walk, jump, crouch, and strike</h2><p>The joystick in port 2 does everything. Left and right walk, four pixels every four frames. Up jumps, and Darkman rises 26 lines in 32 frames. Down crouches. Fire alone throws a punch, and fire with down throws a low strike that carries him forward (<code>$2979</code>).</p><p>The third raster interrupt, <code>$1D43</code>, copies the joystick to <code>$203B</code> once a frame, except while the stun timer after a hit is running. The keyboard is read once a frame by <code>$0E30</code>, which leaves an ASCII key code in <code>$0E2F</code>. The P key gives <code>$50</code>, and the routine at <code>$1777</code> then toggles the pause flag at <code>$1EF2</code>, so a second press of P resumes play. Two more keys do something only after a secret code has been typed: <a href="discoveries.html">the Discoveries tab</a> has it.</p></section>
+<style>
+.dm-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.dm-btn{font:500 14px/1.2 var(--fm);padding:8px 12px;border:1px solid var(--ink-mute);border-radius:8px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.dm-btn:hover{border-color:var(--ink)}
+.dm-btn:focus-visible{outline:3px solid var(--link);outline-offset:2px}
+.dm-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.dm-btn[aria-pressed="true"]::before{content:"\2713\00a0"}
+.dm-stage{position:relative;max-width:768px;margin:0 auto;background:#000;line-height:0}
+.dm-stage canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.dm-mark{position:absolute;left:0;right:0;height:3px;margin-top:-1px;pointer-events:none}
+.dm-mark.irq{background:repeating-linear-gradient(90deg,#fff 0 10px,#000 10px 14px)}
+.dm-mark.mode{background:repeating-linear-gradient(90deg,#fff 0 3px,#000 3px 6px)}
+.dm-tag{position:absolute;font:500 12px/1.25 var(--fm);padding:2px 6px;background:#000;color:#fff;border:1px solid #fff;pointer-events:none;white-space:nowrap}
+.dm-tag.irq{left:4px;border-style:dashed}
+.dm-tag.mode{right:4px;border-style:dotted;border-width:2px}
+.dm-box{position:absolute;border:2px solid #fff;outline:2px solid #000;pointer-events:none}
+.dm-badge{position:absolute;min-width:16px;padding:0 4px;text-align:center;font:700 12px/16px var(--fm);background:#fff;color:#000;border:2px solid #000;pointer-events:none}
+.dm-status{margin:10px 0 0;font-size:14px;color:var(--ink-soft);min-height:1.6em}
+.dm-legend{margin:10px 0 0;padding:0 0 0 1.1em;font-size:14px;color:var(--ink-soft)}
+.dm-legend li{margin:2px 0}
+.dm-scroll{overflow-x:auto}
+.dm-t{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
+.dm-t th,.dm-t td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.dm-t th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500;white-space:nowrap}
+.dm-t td.n{text-align:right;font-variant-numeric:tabular-nums}
+.dm-t code{margin-right:2px}
+</style>
+
+
+<section data-part="level1">
+  <p class="fig">04 · One frame, rebuilt from memory</p>
+  <h2 class="t">A text screen over a bitmap panel, with eight black lines between them</h2>
+  <p class="lede">Level 1's play screen is a text screen with the street in it, over a bitmap with the panel in it. Four raster interrupts switch the video chip from one to the other every frame. The picture below is drawn by this page from the bytes in memory and the writes the game's own interrupt handlers make to the chip.</p>
+  <div class="plate">
+    <div class="dm-ctl" role="group" aria-label="What to draw">
+      <button type="button" class="dm-btn" data-view="all" aria-pressed="true">Whole screen</button>
+      <button type="button" class="dm-btn" data-view="nosprites" aria-pressed="false">Sprites off</button>
+      <button type="button" class="dm-btn" data-view="sprites" aria-pressed="false">Only the sprites</button>
+    </div>
+    <div class="dm-ctl" role="group" aria-label="What to mark">
+      <button type="button" class="dm-btn" id="dm-marks-btn" aria-pressed="false">Mark the interrupts and bands</button>
+      <button type="button" class="dm-btn" id="dm-sprites-btn" aria-pressed="false">Number the sprites</button>
+    </div>
+    <div class="dm-stage" id="dm-stage"><canvas id="dm-cv" role="img" aria-label="Level 1 in play: a street with three men in suits in front of a brick wall, above a panel with a score, an energy bar, and a portrait"></canvas></div>
+    <p class="dm-status" id="dm-status" aria-live="polite"></p>
+    <ul class="dm-legend" id="dm-legend"></ul>
+    <p class="cap">Level 1 in play, drawn from memory. The character set, screen matrix, colour RAM, sprite shapes, sprite pointers, and panel bitmap are the play snapshot's bytes, <span data-count="bytes">4,689</span> of them. The register values, and the raster line and cycle each was written on, come from running the game's four interrupt handlers on the kit's 6502 simulator for the first whole frame after the snapshot; <code>test_frame.js</code> runs the handlers again on the listing and compares every write. Against the emulator's screenshot of level 1, <span data-count="differ">2,467</span> of <span data-count="pixels">104,448</span> pixels differ. The screenshot was saved at a different moment from the snapshot. The men stand in other places, and the energy bar is longer: in the snapshot Darkman holds <span data-count="energy">4</span> of 33 energy points and is drawn white because he has just been hit, and the bar's eight cells have <span data-count="barnow">76</span> pixels that are not black where the screenshot's have <span data-count="barshot">376</span>. So <span data-count="sprites">2,166</span> of the differing pixels lie on lines <span data-count="first">120</span> to <span data-count="last">162</span>, where the sprites are, and <span data-count="bar">300</span> lie in the energy bar. The last pixel, at the right end of line 198, is the light grey dot that the emulator draws where a colour register is written. This drawing leaves out the dot, and puts it <span data-count="dotdx">24</span> pixels to the right of its own write to the border colour. The other <span data-count="same">101,981</span> match, including every pixel of the black strip and of the panel outside its energy bar.</p>
+  </div>
+  <p>From the top of the frame to the bottom, the video chip is in four states. The interrupts change them, and the raster lines in the first column are read from the registers of the recorded frame, not from the code.</p>
+  <div class="plate dm-scroll"><table class="dm-t" id="dm-band-table">
+    <thead><tr><th>Raster lines</th><th>Set by</th><th>Mode</th><th>Window</th><th>Screen matrix</th><th>Characters or bitmap</th></tr></thead>
+    <tbody>
+      <tr data-first="0" data-last="9"><td class="n">0 to 9</td><td>Interrupt 4 of the frame before</td><td>Multicolour bitmap</td><td>25 rows</td><td><code>$CC00</code></td><td>Bitmap at <code>$E000</code></td></tr>
+      <tr data-first="10" data-last="198"><td class="n">10 to 198</td><td>Interrupt 1</td><td>Multicolour text</td><td>24 rows</td><td><code>$CC00</code></td><td>Characters at <code>$C000</code></td></tr>
+      <tr data-first="199" data-last="206"><td class="n">199 to 206</td><td>Interrupt 3</td><td>Invalid mode, drawn black</td><td>25 rows</td><td><code>$CC00</code></td><td>None shown</td></tr>
+      <tr data-first="207" data-last="311"><td class="n">207 to 311</td><td>Interrupt 4</td><td>Multicolour bitmap</td><td>25 rows</td><td><code>$CC00</code></td><td>Bitmap at <code>$E000</code></td></tr>
+    </tbody></table>
+    <p class="cap">Every band is 38 columns wide. The picture starts on line 16, so the first band and the first 6 lines of the second lie above it. The display ends on line 250 in the last band, and the bottom border starts on line 251.</p></div>
+  <p>The strip shows nothing from memory. Interrupt 3 sets extended colour mode in <code>$D011</code> while multicolour in <code>$D016</code> is still on, a combination the video chip does not define, and the chip draws black for as long as it lasts. The strip covers the eight lines 199 to 206. Inside it the game changes <code>$D018</code> from the character set at <code>$C000</code> to the bitmap at <code>$E000</code>, and interrupt 4 adds bitmap mode near the start of line 206 and removes extended colour mode near its end, as the simulator counts the cycles, so that the first line of the panel is 207. The code does not say what the strip is for.</p>
+  <p>The vertical scroll of 7 that interrupt 3 writes puts the first line of each character row on lines 199, 207, 215, and so on, where the play field's rows begin on multiples of 8. The last row of the play field is cut off after seven lines for that reason, and the panel's first row, row 19 of the matrix at <code>$CC00</code>, begins on line 207. The panel's colours are that matrix and colour RAM; its pixels are the bitmap at <code>$E000</code>, eight bytes to each matrix cell.</p>
+  <p>The sprites are the part of the screen that is not split. Every write to a sprite register or pointer in the recorded frame falls between lines 11 and 56, apart from the two shared colours on line 198, and the first sprite line is 120. Interrupt 3 changes the two shared sprite colours to black on line 198, below the last sprite line. No sprite is moved after it has been drawn, so the frame does not multiplex them: eight sprites cover the whole screen. Sprites 0 and 1 are Darkman, one above the other, drawn over sprite 2, which is also Darkman and twice as tall. Sprites 3 and 4 are one enemy, a pair stacked in the same way, and sprites 5 and 6 are the other. Sprite 7 is the exit marker, and while an enemy is on the screen the game puts it on line 1, under the top border, where none of it shows.</p>
+</section>
+
+<section data-part="level1">
+  <p class="fig">05 · The four interrupts</p>
+  <h2 class="t">Four raster interrupts draw the screen and run the game</h2>
+  <p class="lede">Each interrupt writes the line of the next one to <code>$D012</code> and the next one's address to the vector at <code>$FFFE</code>, so the four run in a ring: on line 10, line 80, line 198, and line 205, and then line 10 again.</p>
+  <div class="plate dm-scroll"><table class="dm-t" id="dm-irq-table">
+    <thead><tr><th>Interrupt</th><th>Raster line</th><th>Handler</th><th>Writes to the screen registers, in order</th><th>Sprite writes</th></tr></thead>
+    <tbody>
+      <tr data-n="1" data-line="10" data-handler="7713"><td class="n">1</td><td class="n">10</td><td><code>$1E21</code></td><td><code>$D011=$10</code> <code>$D016=$D0</code> <code>$D011=$10</code> <code>$D018=$30</code> <code>$D012=$50</code></td><td class="n">38</td></tr>
+      <tr data-n="2" data-line="80" data-handler="7924"><td class="n">2</td><td class="n">80</td><td><code>$1EF4</code></td><td><code>$D016=$D0</code> <code>$D022=$0B</code> <code>$D023=$0F</code> <code>$D012=$C6</code></td><td class="n">0</td></tr>
+      <tr data-n="3" data-line="198" data-handler="7491"><td class="n">3</td><td class="n">198</td><td><code>$1D43</code></td><td><code>$D018=$30</code> <code>$D011=$5F</code> <code>$D020=$00</code> <code>$D012=$CD</code> <code>$D018=$38</code></td><td class="n">2</td></tr>
+      <tr data-n="4" data-line="205" data-handler="7615"><td class="n">4</td><td class="n">205</td><td><code>$1DBF</code></td><td><code>$D011=$7F</code> <code>$D016=$D7</code> <code>$D020=$00</code> <code>$D012=$0A</code> <code>$D011=$3F</code></td><td class="n">0</td></tr>
+    </tbody></table>
+    <p class="cap">The writes of the recorded frame, without the acknowledgement of the video chip's interrupt in <code>$D019</code>. Sprite writes are those to the sprite positions, enables, expansions, colours, and pointers.</p></div>
+  <p>Interrupt 1, <code>$1E21</code>, sets the text screen and then runs one step of the game: Darkman's move (<code>$265E</code>), the exit marker (<code>$354A</code>), the enemies (<code>$3725</code>), the objects (<code>$3297</code>), the shot (<code>$4140</code>), and the tests for touching an exit or an object. Along the way the handler places all eight sprites, so that every sprite register is set before the first sprite line.</p>
+  <p>Interrupt 2, <code>$1EF4</code>, plays the sound (<code>$B176</code>) and reads the keyboard (<code>$0E30</code>). The handler also writes the scroll in <code>$D016</code> and the background colours in <code>$D022</code> and <code>$D023</code>, and moves sprite 0 or sprite 1 eight pixels sideways when the flag at <code>$2768</code> or <code>$2F67</code> is set (<code>$1F40</code>). In the recorded frame the registers already hold the values it writes, so the screen is the same on both sides of line 80. The code does not say why they are written again.</p>
+  <p>Interrupt 3, <code>$1D43</code>, begins the switch to the panel. The handler sets extended colour mode, 25 rows, and the vertical scroll of 7 in <code>$D011</code>, and it blacks the border and the sprites' shared colours. Interrupt 3 also counts down the stun timer (<code>$29F3</code>) and the hit grace counter (<code>$29F4</code>), and reads joystick port 2 into <code>$203B</code> unless the stun timer is still running after a hit.</p>
+  <p>Interrupt 4, <code>$1DBF</code>, finishes the switch. A run of 17 NOPs holds back its first write to <code>$D011</code>, so that, in the recording, the write falls early in line 206. The handler then points the vector back at interrupt 1 and, unless the game is paused, erases the shot (<code>$41EF</code>), tests the shot against Darkman (<code>$4636</code>), and scrolls the play field (<code>$2066</code>). All three run after the last line of the play field has been drawn.</p>
+  <p>The main loop at <code>$179E</code> is the only code that runs outside the interrupts. Each pass redraws the panel's energy bar (<code>$4449</code>) and the seven figures of the score (<code>$44FD</code>), checks for the space bar (<code>$1A0C</code>) and the pause key (<code>$1777</code>), and then the loop waits for the flag that the NMI at <code>$2030</code> sets. The loop leaves for <code>$4A8F</code> when <code>$1A1E</code> is set, and for the game-over code at <code>$195C</code> when the flag at <code>$0A11</code> and the energy at <code>$43E3</code> are both zero.</p>
+</section>
+
+<script src="../../lib/c64.js"></script>
+<script>
+/* dm-frame */
+/* dm-data begin */
+const DM_FRAME = {"lines":312,"cycles":63,"vic":[114,119,114,140,114,119,134,120,142,141,39,120,39,141,0,1,0,63,10,0,0,255,215,4,56,0,1,0,255,0,0,0,0,0,11,15,3,0,0,1,1,9,0,0,0,0,12],"cia2":[132,63],"writes":[[10,25,53273,1],[10,35,53265,16],[10,49,53270,208],[11,8,53265,16],[11,32,53272,48],[11,44,53285,11],[11,50,53286,8],[11,63,53269,255],[12,6,53264,0],[12,12,53276,255],[33,35,53240,157],[33,47,53241,170],[33,59,53242,134],[35,16,53263,1],[47,51,53290,0],[47,55,53291,0],[47,59,53292,0],[47,63,53293,0],[48,8,53255,120],[48,16,53257,141],[48,24,53259,120],[48,32,53261,141],[48,40,53254,142],[48,44,53256,142],[48,61,53264,0],[49,6,53258,37],[49,10,53260,37],[49,27,53264,0],[50,43,53254,134],[50,62,53258,37],[54,54,53248,112],[54,58,53250,112],[54,62,53252,112],[55,16,53264,0],[55,24,53249,119],[55,28,53253,119],[55,36,53251,140],[55,42,53289,9],[55,48,53285,1],[55,54,53286,8],[56,7,53287,1],[56,11,53288,1],[56,17,53271,4],[57,17,53266,80],[80,39,53273,1],[80,53,53270,208],[80,61,53282,11],[81,2,53283,15],[120,18,53266,198],[120,30,65535,29],[198,43,53272,48],[198,47,53265,95],[198,53,53280,0],[198,57,53285,0],[198,61,53286,0],[199,4,53273,1],[199,32,53266,205],[199,44,53272,56],[206,12,53265,127],[206,16,53270,215],[206,22,53280,0],[206,28,53273,1],[206,34,53266,10],[206,46,65535,30],[206,56,53265,63]],"ram":[{"a":49152,"b":"AAAAAAAAAAAAAAAAAAAAAAA9PDw8PDw8AL8DA2srGwsA28DAxsLBwAD/AwOrq6urANvAxsbGxsYA/Dy8vLy8"},{"a":49256,"b":"ubi4uLi4uHhapqmUeqqpkqmXbqpZlmrqur7/j2CqqJLt9vbKGYYqKg=="},{"a":49312,"b":"bq6uqnqqqZJNTk5aqZZqqmoU/6pVVVUAqUT/qlVVVQBqAP6pVFRUAKkA/+qVlZVAQHTff193X3cHfuvqu+q76tDw9NzY2d3fAAAAAAAAAABAdN9/X3dfdwd+6+q76rvq"},{"a":49424,"b":"VVXfV1VVVVdV9f31dXX9/1VVXV9dfXffVVV1dX1d9fU="},{"a":49472,"b":"AAAAAAAAAAAAAAAAAAAAAA=="},{"a":49584,"b":"aaqplmXqqZapVnqqqVZqqmqqqZZl6qmWqQZ6qqEWaqo="},{"a":49632,"b":"aaqplmXqqZapVnqqqVZqqlX/Vf9VEUQRVf9V/1URRBFV/1X/VRFEEVX/Vf9VEUQRX9ddFwUBAAC77vv99FAAAN/X11cXBQAAQMDQ0EAAAABf110XBQEAALvu+/30UAAA39dXX//99VXV1VX1/V1VVX/9VVV9fXVV/XV1dXX11VVXXV99ddVVVXV1dXV19XV1"},{"a":49792,"b":"AKL29gSq//8Qqv//AIrb2wBRAAAAVQAAAFUAAABFAAAAYgICAFUAABCq//8AigsL"},{"a":49904,"b":"Pe/7fEiD3+lUFRVUEMHRFQ=="},{"a":49968,"b":"Li4uGT8uLi1MTEwEnExMDAAARAAEEXRBAEAEEAABFFEAAAAEAAAEAQAAAAAAAQQRAAAAAAABAAE="},{"a":50112,"b":"AKL29gSq//8Qqv//AIrb2wBRAAAAVQAAAFUAAABFAAAAUQAAAFUAAABaDw8ARgMA"},{"a":50224,"b":"5e/dxtvfx/AF1RGB4fHRBQ=="},{"a":50288,"b":"Lh4uGT8uLS5MTEwEnExMTBRVVEFl6qmWVAIlVKFWaqoEAQQBBQopVlRCJVShVmqq"},{"a":50400,"b":"5OTunmipqaU="},{"a":50504,"b":"////f38fHw8AAAAAAAAAAAAAAAQEBAQEAAAAAAAAAL4AAAAAAAAA7gCi9vYEqv/8AKr88govP88AKj44O8yPjwCovMyMM/LyAKo/z7D8/PIEqv//AKL3NwOj8PIDo/PwEFBAQ0BDTEMAA8wzzPPMPzAAzPPMM8z/BMUBAcEBzTHAyh+f0MrfHwCj8/MAo/PzQEBAQEBAQEABAQEBAQEBARDK398Qyt/f"},{"a":50816,"b":"AAAAAAAAAAAHBwcDAwEBAQDAwMDa//9VCwsLC6v//1U="},{"a":50864,"b":"AKjz8gKg8/KjuD6M4fQE0ODFFEAAAQAQC1MUAQAAEADLL/wySx8QBwQqj8/ACs+PA6Pz8wCj8/NPT1pFRUBAQP//qlVVAAAA8/+qVVUAAAD9/alVVQEBAdDK398Qyt/fAKPz8wCj8/NAQEBAQEBAQAEBAQEBAQEBEMrf3xDK398="},{"a":51072,"b":"AP9VAAAAAAA="},{"a":52224,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8aGx4fGhseHxobHh8aG1RVUFFQUVBRUFFQUVBRUFFQUVBRUFFQUfBHQkNGR0JDRkdCQ0ZHQkN8fXh5eHl4eXh5eHl4eXh5eHl4eXh5eHlMGxobHB0AASIjJCUAAWZnUlNQUVBRUFFQUVBRrq9eX7KzUFFQUVBRnENCQ0RFKClKS0xNKCmOj3p7eHl4eXh5eHl4edbXhofa23h5eHl4eUmrZmdSU1JTUlNSU1JTZmdSU1BRUFGur7CxsrO0tba3uLmur7CxsrMQ046Pent6e3p7ent6e46Pent4eXh51tfY2drb3N3e3+Dh1tfY2drbbKlmZ1JTUFFQUVBRUFFmZ1JTUFFQUbS1tre4ubq7AAG8vbS1tre4udDRjo96e3h5eHl4eXh5jo96e3h5eHnc3d7f4OHi4ygp5OXc3d7f4OE4AWZnUlNQUVBRUFFQUWZnUlNQUVBRursAAby9ursAAby9ursAAby9JCmOj3p7eHl4eXh5eHmOj3p7eHl4eeLjKCnk5eLjKCnk5eLjKCnk5bFRZmdqa2hpaGloaWhpZmdSU1BRUFFQUVBRUFFQUVBRUFFQUVBRUFFpeY6PkpOQkZCRkJGQkY6Pent4eXh5eHl4eXh5eHl4eXh5eHl4eXh5sA8UFQ4PDg8ODw4PDg8UFQ4PEBEODw4PDg8ODw4PDg8ODw4PDg8OD2w3PD02NzY3Njc2NzY3PD02Nzg5Njc2NzY3Njc2NzY3Njc2NzY3NjetGRYXGBkWFxgZFhcYGRYXGBkWFxgZFhcYGRYXGBkWFxgZFhcYGRYXDUE+P0BBPj9AQT4/QEE+P0BBPj9AQT4/QEE+P0BBPj9AQT4/QEE+PzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIu4HLy9srK8HL+8u7m4i4uMnJucvLzLv7+/y8/PzMvLn7GxscGBoaGJifsbwh0RERERy8vLuYu4G/sb+8/MHPv7H7y8W1tbW7HJ+7+4uLq6i4u/v7+/v7+/v7y/u4mLicEdHR0dHR0dHcHLwS8sLCuxnJv7jIj6+omL/HFxcXFxcXEbFhmYuLi8vL+//Py8v7srLLy/vLy7ERsbG7HxFhYbuSuHgYGBgYGBYpZiibm5u7sWHs/7+/v7+yYrKysrK5Gbm5GRkSEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":53240,"b":"mqeDRUpDTAA="},{"a":53440,"b":"AAAAAKgAAqoAAPqAALqAANuAAP+AAP8AAD2AApWoCpWuCpWqCpWqCpeqCpaqCpaq+p6q2rqq+qqlKqqvAKqv"},{"a":53568,"b":"AAAAAAqAACqgAA+oAAuoAA24AA/4AA/wAANQAAFoACqouqqo2qqo2qqqCqqqAAqqAAqqAAqqAAKqAAKqAAKq"},{"a":53888,"b":"AqqAAquAAquAAquAAquAAquACquACuugCurgCurgC4roC4q4C4K6C4KuC4CqC4AqDoAKK4AKmoAmqoAqAAAA"},{"a":54016,"b":"AKqAAK6AAq6AArqACrqACuqACuqAC6qgC6rgC6rgC4roC4q4C4K6C4KuC4Cqr4Aqm8AKKoAKCoAmAoAqAAAA"},{"a":57344,"b":"AAAAAAiAAA=="},{"a":57728,"b":"AAAAAiAAAIgAAoIAAgCACgoACiigAiqgCgogCiggCiggCgggKggACAIgCAIgIACoICAIICgoKKqAIAACAAAK"},{"a":59200,"b":"AAAAAAAAA3wAAMoAAioADfIAAByAAuYAK1agvF44IHjgCuOAIqIgLIvILIjoLLAIILDIILLIILLIIILIIILI"},{"a":60032,"b":"IILIsKKIkKLokK5YAqJYIqrIIqioIqjIIqrICqrACqowCoqyCoq+CoKOCoKiCgCqIigqioKKqgAIKgAoCgAi"},{"a":63111,"b":"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"},{"a":65535,"b":"Hg=="}],"colour":"CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAsNDQsLDQ0LCw0NCwsNDQoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg0LDQ0LCw0NCwsNDQsLDQ0KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoPDQ0NDQ0ICA8PDw8ICAkMCgoKCgoKCgoKCgoKCgoPDwoKCgoKCgoKCQ0NDQ0NCgoPDw8PCgoJDAoKCgoKCgoKCgoKCgoKDw8KCgoKCgoKCg8KCQwKCgoKCgoKCgoKCQwKCgoKCgoKCgoKCgoKDg4ODgoKCgoKCgoNCgkMCgoKCgoKCgoKCgkMCgoKCgoKCgoKCgoKCg4ODg4KCgoKCgoKCwoJDAoKCgoKCgoKCgoJDAoKCgoKCgoODg4OCgoKCAgKCgoODg4OCgoKCQwKCgoKCgoKCgoKCQwKCgoKCgoKDg4ODgoKCgoKCgoKDg4ODgoJCAkMCgoKCgoKCgoKCgkMCgoKCgoKCgoICAoKCgoICAoKCgoICAoKDwoJDAoKCgoKCgoKCgoJDAoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCQwLCwsLCwsLCwsLCQwKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoLCgkMCQkJCQkJCQkJCQkMCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgkJDAkJCQkJCQkJCQkJDAkJDQ0JCQkJCQkJCQkJCQkJCQkJCQkJCQsJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDwkODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OAAkJDw8FCQkLDwwPDwgJCQkLCwwLDwsPDAwMDwEMDwwMAQkLCwgPDw8LCwwMAQwMDAwMDwwMCAkJDwwPDAsLDwwMCw8PAQEBAQkLDAwLAQEBCQkBAQEBAQEBAQ8BAQsJCw8FBQUFBQUFBQ8PDwwPCwsJCwwMAQEBAQsJCwwMDAwMDAwODgILCQkLDwEMCwsPDAwGDw8MCwsLCwwMDAwICgoJCAkBBwcHBwcHCQIJAggLCQwOBgsMDAwMBgsJCQkJCQ8BAQEBDw8OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg==","irqs":[[10,1,7713],[80,1,7924],[198,1,7491],[205,3,7615]]};
+/* dm-data end */
+
+// The frame is the first whole frame after the play snapshot, run on the kit's 6502 simulator:
+// DM_FRAME.vic holds the 47 video registers as the frame begins, DM_FRAME.writes every write to
+// them, to CIA 2's port A ($DD00, $DD02) and to a byte of video memory or colour RAM that the
+// picture reads (colour RAM as $1D800 plus its index), as [line, cycle, address, value], and
+// DM_FRAME.irqs the line, cycle and address of each interrupt handler the machine entered.
+// DM_FRAME.ram holds the bytes of memory the drawing read, DM_FRAME.colour the 1,024 colour nibbles.
+const DM_LINE0 = 16;                           // the first raster line of the picture C64.renderFrame draws
+
+// The frame with the registers changed for a view: 'nosprites' keeps every sprite switched off
+// ($D015), 'recolour' moves every sprite colour register ($D025-$D02E) on by one, so that each
+// sprite pixel differs from the same pixel of the whole picture.
+function dmVariant(how) {
+  const F = DM_FRAME;
+  const f = (a, v) => how === 'nosprites' && a === 0xD015 ? 0
+    : how === 'recolour' && a >= 0xD025 && a <= 0xD02E ? (v + 1) & 15 : v;
+  return { lines: F.lines, cycles: F.cycles, ram: F.ram, colour: F.colour, cia2: F.cia2,
+    vic: F.vic.map((v, i) => f(0xD000 + i, v)),
+    writes: F.writes.map(([l, c, a, v]) => [l, c, a, f(a, v)]) };
+}
+const dmDrawn = {};
+function dmRender(how) {
+  return dmDrawn[how] || (dmDrawn[how] = C64.renderFrame(dmVariant(how)));
+}
+// The colour numbers of a view, one per pixel; 255 marks a pixel that is not a sprite's in the
+// 'sprites' view. The views: 'all' (the whole screen), 'nosprites', 'sprites' (only the sprites).
+function dmPicture(view) {
+  const a = dmRender('all' === view || 'sprites' === view ? 'full' : 'nosprites');
+  if (view !== 'sprites') return { w: a.w, h: a.h, px: a.px };
+  const b = dmRender('recolour');
+  return { w: a.w, h: a.h, px: a.px.map((c, i) => c !== b.px[i] ? c : 255) };
+}
+// The registers in force after every write up to line, cycle (inclusive).
+function dmRegs(line, cycle) {
+  const R = DM_FRAME.vic.slice();
+  for (const [l, c, a, v] of DM_FRAME.writes)
+    if ((l < line || (l === line && c <= cycle)) && a >= 0xD000 && a <= 0xD02E) R[a - 0xD000] = v;
+  return R;
+}
+// The video chip's view of memory: the bank CIA 2 picks, and what the registers select in it
+function dmBank() { const c = DM_FRAME.cia2; return 3 - ((c[0] | ~c[1]) & 3); }
+const dmHex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+function dmDecode(R) {
+  const ecm = R[0x11] & 0x40, bmm = R[0x11] & 0x20, mcm = R[0x16] & 0x10, base = dmBank() * 0x4000;
+  const mode = ecm && (bmm || mcm) ? 'invalid, shows black'
+    : ecm ? 'extended colour text' : bmm ? (mcm ? 'multicolour bitmap' : 'bitmap')
+    : mcm ? 'multicolour text' : 'text';
+  return { mode, on: !!(R[0x11] & 0x10), rows: R[0x11] & 8 ? 25 : 24, cols: R[0x16] & 8 ? 40 : 38,
+    yscroll: R[0x11] & 7, xscroll: R[0x16] & 7,
+    screen: base + (R[0x18] >> 4) * 0x400,
+    glyphs: bmm ? base + (R[0x18] & 8) * 0x400 : base + (R[0x18] & 0x0E) * 0x400,
+    border: R[0x20] & 15, bg: [R[0x21] & 15, R[0x22] & 15, R[0x23] & 15, R[0x24] & 15] };
+}
+// The bands of the picture: runs of raster lines over which the mode, the window, the screen
+// matrix and the colours the chip is set to stay the same, taken at cycle 40 of each line, after
+// the writes the interrupts make at the start of a line and before the ones they make at its end.
+function dmBands() {
+  const bands = [];
+  for (let line = 0; line < DM_FRAME.lines; line++) {
+    const d = dmDecode(dmRegs(line, 40)), k = JSON.stringify([d.mode, d.rows, d.cols, d.screen, d.border, d.bg]);
+    const last = bands[bands.length - 1];
+    if (last && last.key === k) { last.last = line; last.state = d; } else bands.push({ first: line, last: line, key: k, state: d });
+  }
+  return bands;
+}
+// The interrupts in the order they run. line is the raster line the previous handler set in $D012
+// (with bit 7 of $D011) for it, took where the machine entered it; writes are its writes to the
+// video chip and CIA 2.
+function dmInterrupts() {
+  const F = DM_FRAME, out = [];
+  let compare = F.vic[0x12] | (F.vic[0x11] & 0x80) << 1, d011 = F.vic[0x11];
+  F.irqs.forEach(([line, cycle, handler], k) => {
+    const next = F.irqs[k + 1], writes = [];
+    let nextCompare = null;
+    for (const w of F.writes) {
+      const [l, c, a, v] = w;
+      if (l < line || (l === line && c < cycle)) continue;
+      if (next && (l > next[0] || (l === next[0] && c >= next[1]))) break;
+      if (a === 0xD011) d011 = v;
+      if (a === 0xD012) nextCompare = v | (d011 & 0x80) << 1;
+      if ((a >= 0xD000 && a <= 0xD02E) || a === 0xDD00 || a === 0xDD02) writes.push(w);
+    }
+    out.push({ n: k + 1, handler, line: compare, took: [line, cycle], writes });
+    if (nextCompare !== null) compare = nextCompare;
+  });
+  return out;
+}
+// The sprites as the registers stand when the second interrupt begins, with the first one's writes
+// done and no sprite drawn yet: the box each covers in the picture, 24 by 21 pixels, doubled where
+// expanded.
+function dmSprites() {
+  const R = dmRegs(DM_FRAME.irqs[1][0], DM_FRAME.irqs[1][1] - 1), base = dmBank() * 0x4000, ram = dmRam();
+  const screen = base + (R[0x18] >> 4) * 0x400, out = [];
+  for (let n = 0; n < 8; n++) {
+    const x = R[2 * n] | (R[0x10] >> n & 1) << 8, y = R[2 * n + 1], xe = R[0x1D] >> n & 1, ye = R[0x17] >> n & 1;
+    const ptr = ram[screen + 0x3F8 + n];
+    out.push({ n, on: !!(R[0x15] >> n & 1), x, y, pointer: ptr, shape: base + ptr * 64, colour: R[0x27 + n] & 15,
+      multicolour: !!(R[0x1C] >> n & 1), xe: !!xe, ye: !!ye,
+      // the picture's column and line of its top left pixel: the chip shows a sprite from the
+      // line after its Y, and the picture starts 8 columns left of coordinate 0 and on line 16
+      left: x + 8, top: y + 1 - DM_LINE0, width: 24 << xe, height: 21 << ye });
+  }
+  return out;
+}
+let dmMemory = null;
+function dmRam() {
+  if (!dmMemory) {
+    dmMemory = new Uint8Array(0x10000);
+    for (const r of DM_FRAME.ram) dmMemory.set(Uint8Array.from(atob(r.b), (c) => c.charCodeAt(0)), r.a);
+  }
+  return dmMemory;
+}
+// What the page marks on the picture: the raster line each interrupt is set for, the lines where
+// the mode changes, and the sprites with the box each covers. above says the line lies over the
+// picture's first line, so that the page can say so in words instead of drawing it.
+function dmMarks() {
+  // the window the sprites can be seen in: lines 51 to 250 and X 24 to 343, where no border covers them
+  const sees = (s) => s.on && s.left < 24 + 8 + 320 && s.left + s.width > 24 + 8 && s.top < 250 - DM_LINE0 + 1 && s.top + s.height > 51 - DM_LINE0;
+  const irqs = dmInterrupts().map((i) => ({ n: i.n, line: i.line, handler: i.handler, above: i.line < DM_LINE0 }));
+  const modes = dmBands().slice(1).map((b) => ({ line: b.first, mode: b.state.mode, above: b.first < DM_LINE0 }));
+  const sprites = dmSprites().map((s) => Object.assign({}, s, {
+    shown: sees(s) }));
+  return { irqs, modes, sprites };
+}
+// end of dm-frame
+
+/* dm-frame-ui */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('dm-cv');
+  if (!cv) return;
+  if (!globalThis.C64 || !C64.renderFrame) {
+    cv.replaceWith(Object.assign(document.createElement('p'), { textContent: 'The frame is drawn by the site\u2019s shared script, ../../lib/c64.js: open this page from the built site.' }));
+    return;
+  }
+  const stage = $('dm-stage'), status = $('dm-status'), legend = $('dm-legend');
+  const IRQ_TEXT = { 1: 'sets text mode and runs the game, sprites included', 2: 'plays the sound; no visible change on this frame',
+    3: 'starts the switch to the panel', 4: 'finishes the switch and runs the scroll' };
+  const MODE_TEXT = { 'invalid, shows black': 'the black strip begins', 'multicolour bitmap': 'the bitmap panel begins', 'multicolour text': 'text mode begins' };
+  const STATUS = { all: 'Whole screen: the frame as the video chip draws it.',
+    nosprites: 'Sprites off: the same frame with the sprite enable register, $D015, held at 0.',
+    sprites: 'Only the sprites: each pixel a sprite draws, on a hatched background.' };
+  const SPRITE_ROLE = ['Darkman, upper half', 'Darkman, lower half', 'Darkman, behind the other two, twice as tall',
+    'first enemy, upper half', 'first enemy, lower half', 'second enemy, upper half', 'second enemy, lower half', 'exit marker'];
+  let view = 'all', marks = false, nums = false;
+  const rgb = C64.PAL.map((c) => [1, 3, 5].map((i) => parseInt(c.substr(i, 2), 16)));
+
+  function paint() {
+    const pic = dmPicture(view), s = 2, ctx = C64.canvas(cv, pic.w * s, pic.h * s);
+    const img = ctx.createImageData(pic.w * s, pic.h * s);
+    for (let y = 0; y < pic.h * s; y++) for (let x = 0; x < pic.w * s; x++) {
+      const c = pic.px[(y / s | 0) * pic.w + (x / s | 0)], o = (y * pic.w * s + x) * 4;
+      const v = c === 255 ? ((x + y) % 8 < 4 ? [74, 74, 74] : [52, 52, 52]) : rgb[c];
+      img.data[o] = v[0]; img.data[o + 1] = v[1]; img.data[o + 2] = v[2]; img.data[o + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  function add(cls, css, text) {
+    const e = document.createElement('div');
+    e.className = cls; Object.assign(e.style, css); if (text !== undefined) e.textContent = text;
+    stage.appendChild(e); return e;
+  }
+  const pct = (line) => ((line - DM_LINE0) / 272 * 100) + '%';
+  function overlay() {
+    stage.querySelectorAll('.dm-mark,.dm-tag,.dm-box,.dm-badge').forEach((e) => e.remove());
+    const m = dmMarks(), notes = [];
+    if (marks) {
+      for (const i of m.irqs) {
+        const text = 'Interrupt ' + i.n + ', line ' + i.line + ', ' + dmHex(i.handler) + ': ' + IRQ_TEXT[i.n];
+        if (i.above) notes.push(text + ' (above the picture)');
+        else { add('dm-mark irq', { top: pct(i.line) }); add('dm-tag irq', { top: pct(i.line) }, 'INT ' + i.n + ' · line ' + i.line); notes.push(text); }
+      }
+      for (const b of m.modes) {
+        const text = 'Line ' + b.line + ': ' + MODE_TEXT[b.mode];
+        if (b.above) notes.push(text + ' (above the picture)');
+        else { add('dm-mark mode', { top: pct(b.line) }); add('dm-tag mode', { top: pct(b.line) }, 'line ' + b.line + ' · ' + MODE_TEXT[b.mode]); notes.push(text); }
+      }
+    }
+    if (nums) {
+      const seen = {};
+      for (const s of m.sprites) {
+        if (!s.shown) { if (s.on) notes.push('Sprite ' + s.n + ' (' + SPRITE_ROLE[s.n] + ') is on line ' + s.y + ', under the top border'); continue; }
+        add('dm-box', { left: (s.left / 384 * 100) + '%', top: (s.top / 272 * 100) + '%', width: (s.width / 384 * 100) + '%', height: (s.height / 272 * 100) + '%', boxSizing: 'border-box' });
+        const key = s.left + ',' + s.top, k = seen[key] = (seen[key] || 0) + 1;
+        add('dm-badge', { left: 'calc(' + (s.left / 384 * 100) + '% + ' + (k - 1) * 20 + 'px)', top: 'calc(' + (s.top / 272 * 100) + '% - 20px)' }, String(s.n));
+        notes.push('Sprite ' + s.n + ': ' + SPRITE_ROLE[s.n]);
+      }
+    }
+    legend.innerHTML = '';
+    for (const n of notes) { const li = document.createElement('li'); li.textContent = n; legend.appendChild(li); }
+    layout();
+  }
+  // tags that would overlap are pushed down, in pixels of the page as it stands
+  function layout() {
+    const h = stage.clientHeight;
+    for (const side of ['irq', 'mode']) {
+      let floor = -Infinity;
+      for (const t of [...stage.querySelectorAll('.dm-tag.' + side)].sort((a, b) => parseFloat(a.style.top) - parseFloat(b.style.top))) {
+        const y = Math.max(parseFloat(t.style.top) / 100 * h, floor);
+        t.style.top = (y / h * 100) + '%'; t.dataset.top = y; floor = y + t.offsetHeight + 2;
+      }
+    }
+  }
+  function show() {
+    paint();
+    document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+    $('dm-marks-btn').setAttribute('aria-pressed', String(marks));
+    $('dm-sprites-btn').setAttribute('aria-pressed', String(nums));
+    status.textContent = STATUS[view];
+    overlay();
+  }
+  document.querySelectorAll('[data-view]').forEach((b) => { b.onclick = () => { view = b.dataset.view; show(); }; });
+  $('dm-marks-btn').onclick = () => { marks = !marks; show(); };
+  $('dm-sprites-btn').onclick = () => { nums = !nums; show(); };
+  if (window.ResizeObserver) new ResizeObserver(() => { if (marks) overlay(); }).observe(stage);
+  show();
+})();
+</script>
+
+<section id="objects" data-part="level4"><p class="fig">06 · Enemies and pickups</p><h2 class="t">Seventy objects, eleven slots</h2><p>Levels 2, 4, and 6 keep their enemies, pickups, and hazards in one list of objects, 84 in level 2, 73 in level 4, and 70 in level 6. Each frame <code>scan_objects</code> (<code>$0F0F</code> in level 4) walks the list from the last object to the first. An object that comes within the camera's window, from 26 pixels left of the camera to less than 346 pixels right of it and between lines $14 and $D6 below its top, takes the first free one of 11 slots. An object that leaves the window gives its slot back.</p><p>Every slot has a state, and <code>update_objects</code> (<code>$117E</code>) runs the behaviour for that state through a table. The behaviours are routines with names that say what they do: <code>behave_attack_left</code> and <code>behave_attack_right</code>, <code>behave_walk_left</code> and <code>behave_walk_right</code>, <code>behave_vertical_patrol</code>, <code>behave_radial_shot</code>, <code>behave_lobbed_shot</code>, <code>behave_flashing_hazard</code>, <code>behave_energy_pickup</code> and <code>behave_score_pickup</code>. Before a behaviour runs, <code>player_hit_test</code> (<code>$101C</code>) tests the slot against Darkman. Level 6 adds a map switch (<code>behave_map_switch</code>, <code>$13AF</code>) that, on contact, writes zeros over four cells of the level map, and an area trigger (<code>$1F6A</code>) that, once the player passes a map position, writes 3 into the high byte of the height of objects 41 to 44.</p></section>
+<section id="mask-game" data-part="level3"><p class="fig">07 · The mask game</p><h2 class="t">A scan cursor, twelve slices, and a timer</h2><p>Levels 1, 3, and 5 end in a game of their own, which the story text calls preparing a disguise. The main loop of level 3 jumps to <code>mask_main</code> (<code>$4286</code>) when the level-done flag is set, level 5 does the same through <code>mask_screen</code> (<code>$29F1</code>), and level 1 reaches it through <code>$4A8F</code>. A raster interrupt chain of three handlers (<code>$5177</code>, <code>$51DB</code>, <code>$5242</code> in level 3) runs it.</p><p>The player moves a cursor with the joystick in steps of 8 pixels inside a window (<code>cursor_move</code>, <code>$49E9</code>) while a three-digit timer counts down (<code>mask_timer_tick</code>, <code>$535D</code>). Each press of fire captures a 3 by 3 block of characters (<code>fire_capture</code>, <code>$46C5</code>), and <code>match_check</code> (<code>$475F</code>) tests whether the cursor stands on a picture's place. Twelve captures, or an empty timer, end the game, and <code>scan_cursor</code> (<code>$48BA</code>) then walks the cursor along a fixed scan path, sounding when it reaches a slice that matched. <code>mask_report</code> (<code>$445F</code>) prints MASK COMPLETE or INSUFFICIENT DATA TO GENERATE MASK, and a dissolve (<code>$448C</code>) erodes the captured picture in 30 rounds, each ANDing every byte of a 256-byte buffer with one of four random masks. Five objects slide in and out of the picture as the game runs (<code>objects_run</code>, <code>$4BB9</code>).</p><p>The three mask games are the same routines at different addresses.</p></section>
+<section id="chase" data-part="level5"><p class="fig">08 · The chase</p><h2 class="t">Level 5 is a script, not a map</h2><p>Level 5 has no scrolling map. The player hangs on a rope under a flying machine, sprite 3, and swings with the joystick (<code>player_swing</code>, <code>$126D</code>) while four walls, flying obstacles, and the shots of a chopper cross the screen. The chopper, sprites 0 to 2, follows a script of four-byte entries: a step in X, a step in Y, a number of frames, and a flag that makes it shoot (<code>chopper_step</code>, <code>$1417</code>). The walls move down and up along their own rows (<code>wall_move_down</code>, <code>wall_move_up</code>), and a time bar runs down (<code>time_bar_step</code>, <code>$0B0A</code>). When a collision comes after the bar has run out, <code>finale_step</code> (<code>$0A7B</code>) fills the screen with a closing pattern, row by row, and the level ends in <a href="#mask-game">the mask game</a>.</p></section>
+
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
