@@ -2944,32 +2944,32 @@
   {
    "address": 16580,
    "type": "line",
-   "text": "Purpose: implement The Sewers's retained music sequencer and track-bytecode parser. Inputs: song descriptor, three voice streams, and player state. Outputs: updated music/SID state. Assumptions: retained code and sequence tables are from the same level title. Clobbers: A, X, Y, flags, and player state. Hardware changes: writes SID registers during tick service."
+   "text": "Implement The Sewers's retained music sequencer and track-bytecode parser. Inputs: song descriptor, three voice streams, and player state. Outputs: updated music/SID state. Clobbers: A, X, Y, flags, and player state. Hardware: writes SID registers during tick service."
   },
   {
    "address": 16671,
    "type": "line",
-   "text": "Purpose: Implement Level's $4006 music-control veneer by storing A into the module's three control bytes and returning.\nInputs: A is the control value; the matching retained music occupant and its writable state are active.\nOutputs: A is stored to $4050-$4052; A, X, Y, and all status flags are preserved on return.\nAssumptions: The three adjacent bytes are the control triplet for this exact music-module occupant.\nClobbers: Memory $4050-$4052; A, X, Y, and flags are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
+   "text": "Implement Level's $4006 music-control veneer by storing A into the module's three control bytes and returning.\nInputs: A is the control value; the matching retained music occupant and its writable state are active.\nOutputs: A is stored to $4050-$4052; A, X, Y, and all status flags are preserved on return.\nClobbers: Memory $4050-$4052; A, X, Y, and flags are preserved, and RTS advances SP by two over the caller's return frame.\nHardware: No hardware registers are written directly."
   },
   {
    "address": 16674,
    "type": "line",
-   "text": "Purpose: copy A into the paired global music-control bytes. Inputs: A is the control value. Outputs: both control bytes equal A; A, X, Y, and flags are preserved. Assumptions: The Sewers music-player occupant is active. Clobbers: memory only. Hardware changes: none directly; the later music service consumes the state."
+   "text": "Copy A into the paired global music-control bytes. Inputs: A is the control value. Outputs: both control bytes equal A; A, X, Y, and flags are preserved. Clobbers: memory only."
   },
   {
    "address": 16681,
    "type": "line",
-   "text": "Purpose: Implement Level's $4003 music-tick veneer, honoring the module gate and advancing its sequencer and SID image.\nInputs: The module is initialized; $404B is its gate byte and the resident IRQ enters through the matching $4003 veneer.\nOutputs: Advances or gates the current music tick, updates sequencer/envelope state, emits the resulting SID register values, and returns.\nAssumptions: The retained title/play music module matches the active phase and the call occurs at the engine's normal music-tick cadence.\nClobbers: A, X, Y, processor flags, zero-page music cursors, module track/envelope state, and SID register state.\nHardware changes: Writes SID voice and filter/volume registers as directed by the current tick; no CIA or VIC-II access is introduced by the veneer body."
+   "text": "Implement Level's $4003 music-tick veneer, honoring the module gate and advancing its sequencer and SID image.\nInputs: The module is initialized; $404B is its gate byte and the resident IRQ enters through the matching $4003 veneer.\nOutputs: Advances or gates the current music tick, updates sequencer/envelope state, emits the resulting SID register values, and returns.\nClobbers: A, X, Y, processor flags, zero-page music cursors, module track/envelope state, and SID register state.\nHardware: Writes SID voice and filter/volume registers as directed by the current tick; no CIA or VIC-II access is introduced by the veneer body."
   },
   {
    "address": 16943,
    "type": "line",
-   "text": "Purpose: Implement Level's $4009 gate veneer by incrementing the module gate byte and returning.\nInputs: $404B is the writable gate byte for the matching retained music occupant.\nOutputs: $404B is incremented modulo 256; N and Z describe the new value; A, X, and Y are preserved.\nAssumptions: The caller intentionally changes the module gate/pause state and accepts byte wraparound.\nClobbers: $404B, N, and Z; A, X, Y, C, V, D, and I are preserved, and RTS advances SP by two over the caller's return frame.\nHardware changes: No hardware registers are written directly."
+   "text": "Implement Level's $4009 gate veneer by incrementing the module gate byte and returning.\nInputs: $404B is the writable gate byte for the matching retained music occupant.\nOutputs: $404B is incremented modulo 256; N and Z describe the new value; A, X, and Y are preserved.\nClobbers: $404B, N, and Z; A, X, Y, C, V, D, and I are preserved, and RTS advances SP by two over the caller's return frame.\nHardware: No hardware registers are written directly."
   },
   {
    "address": 17726,
    "type": "line",
-   "text": "Purpose: fetch and interpret the next note or effect command for a voice. Inputs: phase-local voice index, stream pointers, and player state. Outputs: stream cursors, note/effect parameters, and target-frequency state are updated. Assumptions: streams use the observed $FE/$FD control-token encoding. Clobbers: A, X, Y, flags, indirect-pointer scratch, and voice scratch. Hardware changes: none directly."
+   "text": "Fetch and interpret the next note or effect command for a voice. Inputs: phase-local voice index, stream pointers, and player state. Outputs: stream cursors, note/effect parameters, and target-frequency state are updated. Clobbers: A, X, Y, flags, indirect-pointer scratch, and voice scratch."
   },
   {
    "address": 17782,
@@ -2989,32 +2989,32 @@
   {
    "address": 17838,
    "type": "line",
-   "text": "Purpose: advance a voice's auxiliary effect sequence. Inputs: selected voice and its auxiliary pointer and cursor. Outputs: the next auxiliary value or control state is installed. Assumptions: the pointer addresses a valid phase-local auxiliary sequence. Clobbers: A, Y, flags, cursor state, and voice scratch. Hardware changes: none directly."
+   "text": "Advance a voice's auxiliary effect sequence. Inputs: selected voice and its auxiliary pointer and cursor. Outputs: the next auxiliary value or control state is installed. Clobbers: A, Y, flags, cursor state, and voice scratch."
   },
   {
    "address": 17878,
    "type": "line",
-   "text": "Purpose: load a note's target frequency into the selected voice state. Inputs: note-table index and voice-state index. Outputs: target-frequency low and high bytes are updated. Assumptions: both indices are valid for the phase-local frequency tables. Clobbers: A, indexed voice state, and flags. Hardware changes: none directly; this routine does not write SID registers."
+   "text": "Load a note's target frequency into the selected voice state. Inputs: note-table index and voice-state index. Outputs: target-frequency low and high bytes are updated. Clobbers: A, indexed voice state, and flags."
   },
   {
    "address": 17891,
    "type": "line",
-   "text": "Purpose: move current pitch toward its target under the current pitch-step rule. Inputs: current and target frequency plus signed step state. Outputs: current frequency is stepped and clamped, with a next target loaded when required. Assumptions: the paired frequency bytes and step state are internally consistent. Clobbers: A, X, Y, flags, and voice arithmetic scratch. Hardware changes: none directly."
+   "text": "Move current pitch toward its target under the current pitch-step rule. Inputs: current and target frequency plus signed step state. Outputs: current frequency is stepped and clamped, with a next target loaded when required. Clobbers: A, X, Y, flags, and voice arithmetic scratch."
   },
   {
    "address": 17993,
    "type": "line",
-   "text": "Purpose: update one voice's pitch envelope for the current music tick. Inputs: voice index, envelope cursor, current frequency, and envelope stream. Outputs: frequency, cursor, and envelope counters are advanced. Assumptions: the active envelope pointer addresses a valid stream. Clobbers: A, X, Y, flags, and voice scratch. Hardware changes: none directly."
+   "text": "Update one voice's pitch envelope for the current music tick. Inputs: voice index, envelope cursor, current frequency, and envelope stream. Outputs: frequency, cursor, and envelope counters are advanced. Clobbers: A, X, Y, flags, and voice scratch."
   },
   {
    "address": 18186,
    "type": "line",
-   "text": "Purpose: conditionally initialize one voice's modulation stream. Inputs: X selects the voice, Y selects its modulation definition, and the current per-voice guard controls initialization. Outputs: when the guard is zero, the modulation cursor and count are cleared and the definition's mode bit is installed; otherwise voice state is unchanged. Assumptions: X and Y index valid phase-local voice and definition records. Clobbers: A and flags, plus indexed voice state only on the initialization path; X and Y are preserved. Hardware changes: none directly."
+   "text": "Conditionally initialize one voice's modulation stream. Inputs: X selects the voice, Y selects its modulation definition, and the current per-voice guard controls initialization. Outputs: when the guard is zero, the modulation cursor and count are cleared and the definition's mode bit is installed; otherwise voice state is unchanged. Clobbers: A and flags, plus indexed voice state only on the initialization path; X and Y are preserved."
   },
   {
    "address": 18206,
    "type": "line",
-   "text": "Purpose: execute one modulation-stream step. Inputs: selected voice, modulation cursor and count, and current frequency. Outputs: cursor, count, and modulated frequency are updated. Assumptions: the stream follows the observed signed-update and control-token encoding. Clobbers: A, X, Y, flags, and voice scratch. Hardware changes: none directly."
+   "text": "Execute one modulation-stream step. Inputs: selected voice, modulation cursor and count, and current frequency. Outputs: cursor, count, and modulated frequency are updated. Clobbers: A, X, Y, flags, and voice scratch."
   },
   {
    "address": 18462,
