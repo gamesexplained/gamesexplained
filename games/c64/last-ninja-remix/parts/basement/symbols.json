@@ -8987,7 +8987,7 @@
   },
   {
    "address": 50369,
-   "name": "anim_c4c1",
+   "name": "unused_c4c1",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -14222,7 +14222,7 @@
   {
    "address": 42386,
    "type": "line",
-   "text": "16 words, each the routine for one state of an enemy's fighting mind, from state 0 up less one: the dispatcher pushes it and returns into it. Targets: $A5B2, $A5BF, $A629, $A5D8, $A5F8, $A6AD, $A7E1, $A81C, $A821, $A864, $A871, $A872, $A660, $A96C, $0000, $A689."
+   "text": "16 words, one for each state of an enemy's fighting mind from state 0 up, each the address of that state's routine less one: the dispatcher pushes it and returns into it. Targets: $A5B2, $A5BF, $A629, $A5D8, $A5F8, $A6AD, $A7E1, $A81C, $A821, $A864, $A871, $A872, $A660, $A96C, $0000, $A689. State 14's word is $FFFF, which would return to $0000: it is not a routine, and nothing in this load or the engine sets $CF to 14."
   },
   {
    "address": 42387,
@@ -14517,12 +14517,12 @@
   {
    "address": 44657,
    "type": "line",
-   "text": "18 bytes, one for each area by number, $AE71-$AE82: its heading in the low three bits and its weapon in the high nibble. Values: 81, 83, 85, 81, 87, 85, 81, 81, 81, 87, 81, 81, 87, 81, 85, 81, 81, 81."
+   "text": "18 bytes, one for each area by number, $AE71-$AE82: its heading in the low three bits, and in the high nibble how many times it must be beaten before it stays down ($D6, which DamageEnemy compares with the count of its defeats at $AD5B; 15 means it always gets up again). Values: 81, 83, 85, 81, 87, 85, 81, 81, 81, 87, 81, 81, 87, 81, 85, 81, 81, 81; the high nibble is 5 in every area."
   },
   {
    "address": 44675,
    "type": "line",
-   "text": "18 bytes, one for each area by number, $AE83-$AE94: its fighting style, whose low two bits also choose its pause between actions. Values: 64, 64, 65, 65, 65, 65, 65, 65, 65, 66, 65, 66, 66, 65, 66, 65, 65, 65."
+   "text": "18 bytes, one for each area by number, $AE83-$AE94: its fighting style, kept in $D0, of which only bit 6 is tested (AiBeginTimedDecision, $A5C1: set, a timed decision goes to state 4, clear, to state 3; it is set in every area here). The low two bits, kept in $D3, also set its speed: they pick the delay of each animation step of the actions InstallAiActionByDirection starts, from enemy_action_delay at $AB1A (8, 6, 4 or 4), and, plus one, the movement profile MoveEnemy passes to AdvanceCandidate ($9FD2). Values: 64, 64, 65, 65, 65, 65, 65, 65, 65, 66, 65, 66, 66, 65, 66, 65, 65, 65."
   },
   {
    "address": 44693,
@@ -14562,7 +14562,7 @@
   {
    "address": 45254,
    "type": "line",
-   "text": "Fifteen sprite attribute bytes by projectile state, copied to the sprite slot's $0220 entry when it is drawn: -1, 1, 1, 1, 1, 1, 6, 0, -1, 1, 1, 1, 1, 1, 6."
+   "text": "Sprite attribute bytes by projectile state, copied to the sprite slot's $0220 entry when it is drawn: fifteen here, -1, 1, 1, 1, 1, 1, 6, 0, -1, 1, 1, 1, 1, 1, 6, and state 15 (kind 7, which the player throws with item 10 selected once flag $03EB is set, on its second picture) reads the byte after them, 2, the first of the X offsets at $B0D5."
   },
   {
    "address": 45269,
@@ -14747,7 +14747,7 @@
   {
    "address": 47220,
    "type": "line",
-   "text": "6 words, each an animation that is replaced when the player picks something up. Targets: $BC00, $BC03, $BC06, $BC12, $BC15, $BC18."
+   "text": "6 words, each a point inside one of the player's two pick-up animations ($BBFC and $BC0E): the command after each of the three that raise events 9, 10 and 11, which run the object engine with actions 0, 1 and 2. After an object is taken (and when a record's routine returns with Y = $FF), the object engine compares the player's animation pointer $60/$61 with them; on a match it moves the pointer to the word beside it in PickupAnimationReplacements and doubles the countdown $58. Targets: $BC00, $BC03, $BC06, $BC12, $BC15, $BC18."
   },
   {
    "address": 47221,
@@ -14757,7 +14757,7 @@
   {
    "address": 47232,
    "type": "line",
-   "text": "6 words, each the animation that replaces the one listed beside it in the table before. Targets: $BC0A, $BC08, $BC06, $BC1C, $BC1A, $BC18."
+   "text": "6 words, each the point in the same pick-up animation that the player's animation pointer ($60/$61) is moved to when it holds the word beside it in PickupAnimationMatches: the first of each three moves it on to the animation's last command and the second to the one before, and the third and sixth are the same as their matches, so there only the doubled countdown $58 changes anything. Targets: $BC0A, $BC08, $BC06, $BC1C, $BC1A, $BC18."
   },
   {
    "address": 47233,
@@ -14937,32 +14937,32 @@
   {
    "address": 47553,
    "type": "line",
-   "text": "Object scene $B9C1-$B9C4, which object record 0 draws once the object is taken: 1 placed scene (30) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9C1-$B9C4, which object records 0 to 2 draw once the object is taken: 1 placed scene (30) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47557,
    "type": "line",
-   "text": "Object scene $B9C5-$B9C8, which object record 0 draws: 1 placed scene (120) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9C5-$B9C8, which object records 0 to 2 draw: 1 placed scene (120) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47561,
    "type": "line",
-   "text": "Object scene $B9C9-$B9CF, which object record 3 draws once the object is taken: 1 placed scene (4) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9C9-$B9CF, which object records 3 to 6 draw once the object is taken: 1 placed scene (4) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47568,
    "type": "line",
-   "text": "Object scene $B9D0-$B9D3, which object record 3 draws: 1 placed scene (4) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9D0-$B9D3, which object records 3 to 6 draw: 1 placed scene (4) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47572,
    "type": "line",
-   "text": "Object scene $B9D4-$B9D8, which object record 11 draws once the object is taken: 1 placed scene (35) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9D4-$B9D8, which object records 11 and 12 draw once the object is taken: 1 placed scene (35) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47577,
    "type": "line",
-   "text": "Object scene $B9D9-$B9DC, which object record 11 draws: 1 placed scene (35) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9D9-$B9DC, which object records 11 and 12 draw: 1 placed scene (35) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47581,
@@ -14972,12 +14972,12 @@
   {
    "address": 47588,
    "type": "line",
-   "text": "Object scene $B9E4-$B9E9, which object record 7 draws: 1 placed scene (3) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9E4-$B9E9, which object records 7 to 10 draw: 1 placed scene (3) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47594,
    "type": "line",
-   "text": "Object scene $B9EA-$B9EF, which object record 7 draws once the object is taken: 1 placed scene (3) in the same three-byte placement format as a composite scene, ending with $FF."
+   "text": "Object scene $B9EA-$B9EF, which object records 7 to 10 draw once the object is taken: 1 placed scene (3) in the same three-byte placement format as a composite scene, ending with $FF."
   },
   {
    "address": 47600,
@@ -16162,7 +16162,7 @@
   {
    "address": 50369,
    "type": "line",
-   "text": "Animation $C4C1-$C4C4, read one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $C4C1: control $24, frame 177, stop."
+   "text": "Four bytes, $C4C1-$C4C4, between frame 087 and frame 078, that nothing in this load points at: no instruction, word or animation names them. They are not an animation: read as one they would show frame 177, past the 114 frame pointers (the composer doubles the frame number in eight bits, so it would draw frame 49). Their values, 36, 177, 34 and 0, have the layout of a frame part (the sprite number, its X and Y offsets and its attributes), like a third part of frame 087 just before them, whose header $81 counts only two; what they were for is unknown."
   },
   {
    "address": 50373,

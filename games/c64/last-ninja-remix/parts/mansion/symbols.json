@@ -9001,7 +9001,7 @@
   },
   {
    "address": 51420,
-   "name": "anim_c8dc",
+   "name": "unused_c8dc",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -14224,7 +14224,7 @@
   {
    "address": 43450,
    "type": "line",
-   "text": "16 words, each the routine for one state of an enemy's fighting mind, from state 0 up less one: the dispatcher pushes it and returns into it. Targets: $A9DA, $A9E7, $AA51, $AA00, $AA20, $AAD5, $AC09, $AC44, $AC49, $AC8C, $AC99, $AC9A, $AA88, $AD94, $0000, $AAB1."
+   "text": "16 words, one for each state of an enemy's fighting mind from state 0 up, each the address of that state's routine less one: the dispatcher pushes it and returns into it. Targets: $A9DA, $A9E7, $AA51, $AA00, $AA20, $AAD5, $AC09, $AC44, $AC49, $AC8C, $AC99, $AC9A, $AA88, $AD94, $0000, $AAB1. State 14's word is $FFFF, which would return to $0000: it is not a routine, and nothing in this load or the engine sets $CF to 14."
   },
   {
    "address": 43451,
@@ -14504,12 +14504,12 @@
   {
    "address": 45701,
    "type": "line",
-   "text": "18 bytes, one for each area by number, $B285-$B296: its heading in the low three bits and its weapon in the high nibble. Values: 113, 113, 113, 113, 115, 115, 117, 113, 117, 119, 113, 113, 113, 113, 113, 113, 113, 113."
+   "text": "18 bytes, one for each area by number, $B285-$B296: its heading in the low three bits, and in the high nibble how many times it must be beaten before it stays down ($D6, which DamageEnemy compares with the count of its defeats at $B16F; 15 means it always gets up again). Values: 113, 113, 113, 113, 115, 115, 117, 113, 117, 119, 113, 113, 113, 113, 113, 113, 113, 113; the high nibble is 7 in every area."
   },
   {
    "address": 45719,
    "type": "line",
-   "text": "18 bytes, one for each area by number, $B297-$B2A8: its fighting style, whose low two bits also choose its pause between actions. Values: 65, 65, 66, 66, 67, 67, 66, 65, 67, 66, 65, 65, 65, 65, 65, 65, 65, 65."
+   "text": "18 bytes, one for each area by number, $B297-$B2A8: its fighting style, kept in $D0, of which only bit 6 is tested (AiBeginTimedDecision, $A9E9: set, a timed decision goes to state 4, clear, to state 3; it is set in every area here). The low two bits, kept in $D3, also set its speed: they pick the delay of each animation step of the actions InstallAiActionByDirection starts, from enemy_action_delay at $AF42 (8, 6, 4 or 4), and, plus one, the movement profile MoveEnemy passes to AdvanceCandidate ($A3D8). Values: 65, 65, 66, 66, 67, 67, 66, 65, 67, 66, 65, 65, 65, 65, 65, 65, 65, 65."
   },
   {
    "address": 45737,
@@ -14549,7 +14549,7 @@
   {
    "address": 46298,
    "type": "line",
-   "text": "Fifteen sprite attribute bytes by projectile state, copied to the sprite slot's $0220 entry when it is drawn: -1, 1, 1, 1, 1, 1, 6, 0, -1, 1, 1, 1, 1, 1, 6."
+   "text": "Sprite attribute bytes by projectile state, copied to the sprite slot's $0220 entry when it is drawn: fifteen here, -1, 1, 1, 1, 1, 1, 6, 0, -1, 1, 1, 1, 1, 1, 6, and state 15 (kind 7, which the player throws with item 10 selected once flag $03EB is set, on its second picture) reads the byte after them, 2, the first of the X offsets at $B4E9."
   },
   {
    "address": 46313,
@@ -14749,7 +14749,7 @@
   {
    "address": 48303,
    "type": "line",
-   "text": "6 words, each an animation that is replaced when the player picks something up. Targets: $BFC2, $BFC5, $BFC8, $BFD4, $BFD7, $BFDA."
+   "text": "6 words, each a point inside one of the player's two pick-up animations ($BFBE and $BFD0): the command after each of the three that raise events 9, 10 and 11, which run the object engine with actions 0, 1 and 2. After an object is taken (and when a record's routine returns with Y = $FF), the object engine compares the player's animation pointer $60/$61 with them; on a match it moves the pointer to the word beside it in PickupAnimationReplacements and doubles the countdown $58. Targets: $BFC2, $BFC5, $BFC8, $BFD4, $BFD7, $BFDA."
   },
   {
    "address": 48304,
@@ -14759,7 +14759,7 @@
   {
    "address": 48315,
    "type": "line",
-   "text": "6 words, each the animation that replaces the one listed beside it in the table before. Targets: $BFCC, $BFCA, $BFC8, $BFDE, $BFDC, $BFDA."
+   "text": "6 words, each the point in the same pick-up animation that the player's animation pointer ($60/$61) is moved to when it holds the word beside it in PickupAnimationMatches: the first of each three moves it on to the animation's last command and the second to the one before, and the third and sixth are the same as their matches, so there only the doubled countdown $58 changes anything. Targets: $BFCC, $BFCA, $BFC8, $BFDE, $BFDC, $BFDA."
   },
   {
    "address": 48316,
@@ -16084,7 +16084,7 @@
   {
    "address": 51420,
    "type": "line",
-   "text": "Animation $C8DC-$C8DF, read one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $C8DC: control $24, frame 177, stop."
+   "text": "Four bytes, $C8DC-$C8DF, between frame 087 and frame 078, that nothing in this load points at: no instruction, word or animation names them. They are not an animation: read as one they would show frame 177, past the 106 frame pointers (the composer doubles the frame number in eight bits, so it would draw frame 49). Their values, 36, 177, 34 and 0, have the layout of a frame part (the sprite number, its X and Y offsets and its attributes), like a third part of frame 087 just before them, whose header $81 counts only two; what they were for is unknown."
   },
   {
    "address": 51424,
