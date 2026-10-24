@@ -5,7 +5,10 @@ A screen split by raster interrupts changes the video chip's registers, and ofte
 pointers, several times a frame, so one read of them draws the wrong picture. This records
 one whole frame of the running machine: the registers as the frame begins, then every write
 to the video chip, to CIA 2's port A (the video bank) and to any sprite pointer, each with the
-raster line and cycle it happened on, and the RAM and colour RAM as the frame began.
+raster line and cycle it happened on, and the RAM and colour RAM as the frame began. A
+register's value is as the chip reads it back after the store, so its unused bits read as 1:
+$D01A written as $01 is recorded as $F1, and $D018 always has bit 0 set. Quote what the game
+writes from the instruction that stores it.
 site/lib/c64.js draws it (C64.renderFrame), line by line with the state in force; `compare`
 checks that drawing against the emulator's own picture of the same frame.
 
@@ -1282,7 +1285,8 @@ def collide_check():
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    if not argv or argv[0] in ("-h", "--help"):
+    # -h after a subcommand too: "capture -h" once captured a frame into a file named -h
+    if not argv or "-h" in argv or "--help" in argv:
         print(__doc__)
     elif argv[0] == "test":
         sys.exit(0 if test("--keep" in argv) else 1)

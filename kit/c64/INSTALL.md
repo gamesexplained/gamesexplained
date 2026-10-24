@@ -571,6 +571,17 @@ sudo apt-get install --no-install-recommends libpulse0 libpcap0.8t64 libusb-1.0-
   libglew2.2 libevdev2 libmicrohttpd12t64 libportaudio2 libmpg123-0t64
 ```
 
+Without `sudo` or a contributor to type its password, as in a cloud
+container, the packages the machine lacks can stay inside the repository
+instead, in the `tools/vice-libs` folder the launcher reads (below):
+`apt-get download <package> ...` into `tools/vice-libs/debs`, then
+`dpkg-deb -x <file>.deb tools/vice-libs` for each. On 24 October 2026 a
+cloud container on Ubuntu 24.04.5 lacked libglew2.2, libevdev2,
+libieee1284-3t64, libmicrohttpd12t64, libpcap0.8t64 and libportaudio2
+(and libpcap's own libibverbs1, libnl-3-200 and libnl-route-3-200); with
+those nine unpacked there, the v3.13.2 zip passed `check-emulator` 57 of 57
+and nothing was installed on the system.
+
 The v3.13.2 zip needed nothing outside that set on 2 October 2026. On
 Ubuntu 26.04 it cannot run: it is linked against `libFLAC.so.12`, and
 26.04 ships only `libflac14` (`libFLAC.so.14`); `get-vice download` names
