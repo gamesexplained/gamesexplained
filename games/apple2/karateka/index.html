@@ -38,7 +38,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .ka-pair img,.ka-screen{width:100%;display:block;border-radius:4px;image-rendering:pixelated;background:#000}
 .ka-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
 .ka-bar button{font:inherit;font-size:13px;padding:5px 11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;cursor:pointer}
-.ka-bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ka-bar button.on,.ka-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ka-scrub{display:flex;gap:10px;align-items:center;margin:10px 0 0;font-family:var(--fm);font-size:12px;color:var(--ink-mute)}
+.ka-scrub input{flex:1;min-width:0;accent-color:var(--accent)}
 .ka-bar label{font-size:13px;color:var(--ink-soft);display:flex;gap:6px;align-items:center}
 .ka-bar label[hidden]{display:none}
 .ka-bar select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
@@ -96,10 +98,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <button type="button" id="dm-play">▶ Play</button>
       <button type="button" id="dm-step">Next frame</button>
       <button type="button" id="dm-reset">From the start</button>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="false" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="ka-stat" id="dm-stat">loading the listings</span>
     </div>
     <canvas id="dm-cv" class="ka-screen" width="560" height="384" aria-label="The title stage's screen, drawn from memory at each page flip"></canvas>
-    <p class="cap">The title stage's code runs from its entry, <code data-part="">$BFFA</code>, on the kit's 6502 over the engine's listing with the title's laid over it, and stops each time the game flips the page shown; the page then shown is drawn by the site's Apple II library (<code>reference/demo.js</code>). The Monitor's delay routine, which the sounds call, is the one piece of the machine stood in for. <b>At 18 flips from the credits to the demonstration fight and the prologue again, both hi-res pages hold the same 16,384 bytes as in Apple2TS</b>, run from the stage's entry (<code>test_demo.js</code>). A whole round, from the credits back to the credits, is about 550 flips.</p>
+    <div class="ka-scrub"><input type="range" id="dm-scrub" min="1" max="571" value="1" step="1" aria-label="Flip of the round"><span id="dm-at">flip 1</span></div>
+    <p class="cap">The title stage's code runs from its entry, <code data-part="">$BFFA</code>, on the kit's 6502 over the engine's listing with the title's laid over it, and stops each time the game flips the page shown; the page then shown is drawn by the site's Apple II library (<code>reference/demo.js</code>). The Monitor's delay routine, which the sounds call, is the one piece of the machine stood in for. The round, 571 flips from the credits to the credits again, is worked out once, and the slider moves through it. Play shows each flip at the machine's speed, with the speaker's clicks played through the site's model of the speaker. <b>At 18 flips from the credits to the demonstration fight and the prologue again, both hi-res pages hold the same 16,384 bytes as in Apple2TS, and the round's 16,141 clicks come at the same spacings between its flips</b>, run from the stage's entry (<code>test_demo.js</code>). The run here is an Apple II older than the IIe, which does not wait for the vertical blank before a flip, so the round takes 155.1 seconds here and 157.8 on a IIe. In the game the next round's fight differs, because the random numbers carry on; Play goes round the same one again.</p>
   </div>
   <p>Every frame is drawn on the hi-res page the player is not looking at, and then the two are swapped. The page being drawn is kept in <code>$07</code> (<code>$20</code> for page 1, <code>$40</code> for page 2), and <code>flip</code> (<code data-part="engine">$7609</code>) shows it. On a IIe or IIc the flip first waits for the vertical blank, after a look at the machine's ID byte (<code data-part="engine">$779A</code>); on an older Apple II it flips at once. There is no timer. A frame takes as long as its drawing takes, and a tune or a sound holds the frame up while it plays.</p>
   <div class="ka-scroll"><table class="ka-tbl">
@@ -235,6 +240,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <script src="../../lib/cpu6502.js"></script>
 <script src="../../lib/apple2.js"></script>
 <script src="../../lib/apple2-speaker.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
 <script src="reference/demo.js"></script>
 <script src="reference/tunes.js"></script>
 <script src="reference/sound.js"></script>
@@ -328,29 +335,108 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   // --- 02: the title and the demo ------------------------------------------------------------------
   const cv = $('dm-cv'), ctx = cv.getContext('2d');
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+  if (globalThis.CRT) CRT.attach(cv, { button: document.querySelector('#demo [data-crt]'), pixel: 2, on: true });   // the CRT screen switch (site/lib/crt.js)
   if (Ls) {
-    let s, playing = false, owed = 0, prev = 0, raf = 0;
-    const draw = page => {
-      Apple2.draw(cv, s.m, null, { hires: true, page2: page === 2 }, 'hires');
-      $('dm-stat').textContent = `flip ${s.flips} · page ${page} · ${(s.cpu.cycles / KarDemo.CLOCK).toFixed(1)} s of the machine's time`;
-    };
-    const step = () => { const f = KarDemo.next(s); draw(f.page); return f.cycles; };
-    const reset = () => { s = KarDemo.start({ engine: Ls.engine, title: Ls.title }); step(); };
-    function tick(t) {
+    // The round is worked out once, a few flips at a time while the page stays free: for each flip,
+    // the page shown and its 8 KB, the cycle it came at and the clicks of the speaker since the flip
+    // before. Playing, scrubbing and stepping then show what was kept. Flip N + 1 shows the credits
+    // again, as flip 1 did, so Play goes back to flip 1 when it is due.
+    const N = KarDemo.ROUND, CLOCK = KarDemo.CLOCK, T = [], screen = new Uint8Array(0x10000);
+    const scrub = $('dm-scrub');
+    scrub.max = N;
+    let run = null, working = false;
+    function work() {
+      if (T.length > N) { working = false; return; }
+      working = true;
+      run = run || KarDemo.start({ engine: Ls.engine, title: Ls.title });
+      const end = performance.now() + 20;
+      do {
+        const f = KarDemo.next(run), at = f.page === 1 ? 0x2000 : 0x4000;
+        T.push({ page: f.page, at: run.cpu.cycles, bytes: run.m.slice(at, at + 0x2000), clicks: run.speaker.splice(0) });
+      } while (T.length <= N && performance.now() < end);
+      if (k === 0) show(1); else label();
+      setTimeout(work, 0);
+    }
+
+    let k = 0, playing = false, raf = 0, t0 = 0, c0 = 0, queued = 0;
+    function label() {
+      $('dm-at').textContent = `flip ${k} of ${N}` + (T.length < N ? `, ${T.length} worked out` : '');
+      $('dm-stat').textContent = `page ${T[k - 1].page} · ${(T[k - 1].at / CLOCK).toFixed(1)} s of the machine's time`;
+    }
+    function show(j) {
+      k = Math.max(1, Math.min(j, T.length, N));
+      const F = T[k - 1];
+      screen.set(F.bytes, F.page === 1 ? 0x2000 : 0x4000);
+      Apple2.draw(cv, screen, null, { hires: true, page2: F.page === 2 }, 'hires');
+      scrub.value = k;
+      label();
+    }
+
+    // The sound: each flip's clicks played through the site's model of the speaker, timed from the
+    // flip shown, so a tune that holds a frame up plays before the next flip appears
+    let actx = null, soundOn = false;
+    const sources = new Set();
+    function sound(j, at) {             // flip j's clicks, the first at `at` (performance.now() ms)
+      const c = T[j - 1] && T[j - 1].clicks;
+      if (!soundOn || !actx || !c || !c.length) return;
+      const data = Apple2Speaker.render({ clock: CLOCK, start: c[0], end: c[c.length - 1], speaker: c }, actx.sampleRate);
+      const buf = actx.createBuffer(1, data.length, actx.sampleRate);
+      buf.getChannelData(0).set(data);
+      const src = actx.createBufferSource();
+      src.buffer = buf; src.connect(actx.destination);
+      const when = actx.currentTime + (at - performance.now()) / 1000;
+      if (when >= actx.currentTime) src.start(when);
+      else if (actx.currentTime - when < buf.duration) src.start(actx.currentTime, actx.currentTime - when);
+      else return;
+      sources.add(src); src.onended = () => sources.delete(src);
+    }
+    function hush() { for (const src of sources) { try { src.stop(); } catch (e) { /* not started */ } } sources.clear(); }
+    if (globalThis.Sound) Sound.attach(document.querySelector('#demo [data-sound]'), on => {   // the sound switch (site/lib/sound.js)
+      if (!on) { soundOn = false; hush(); return false; }
+      try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return false; }
+      if (actx.state === 'suspended') actx.resume();
+      soundOn = true; queued = k;
+      return true;
+    });
+
+    // Playing at the machine's own speed: flip j is shown at t0 + its cycles since c0, and the
+    // clicks of the flip after it are queued a little ahead
+    const due = j => t0 + (T[j - 1].at - c0) / CLOCK * 1000;
+    const clickAt = c => t0 + (c - c0) / CLOCK * 1000;
+    function rebase(now) { t0 = now; c0 = T[k - 1].at; hush(); queued = k; }
+    function tick(now) {
       if (!playing) return;
-      owed += Math.min(250, t - (prev || t)); prev = t;
-      // flips at the machine's own speed: each took its cycles at 1,020,484 a second
-      while (owed > 0) owed -= step() / KarDemo.CLOCK * 1000;
+      if (k < T.length && now - due(k + 1) > 250) rebase(now);     // the tab was hidden: go on from here
+      while (k < Math.min(T.length, N) && now >= due(k + 1)) show(k + 1);
+      if (k === N && T.length > N && now >= due(N + 1)) { show(1); rebase(now); }   // the credits again
+      else if (k === T.length) rebase(now);                         // waiting for the flips to be worked out
+      while (queued < T.length && due(queued) < now + 300) {
+        queued++;
+        if (T[queued - 1].clicks.length) sound(queued, clickAt(T[queued - 1].clicks[0]));
+      }
       raf = requestAnimationFrame(tick);
     }
-    $('dm-play').onclick = () => {
-      playing = !playing; $('dm-play').textContent = playing ? '❚❚ Pause' : '▶ Play';
+    function play(on) {
+      playing = on; $('dm-play').textContent = playing ? '❚❚ Pause' : '▶ Play';
       $('dm-play').classList.toggle('on', playing);
-      prev = 0; owed = 0; if (playing) raf = requestAnimationFrame(tick); else cancelAnimationFrame(raf);
+      cancelAnimationFrame(raf); hush();
+      if (playing) { rebase(performance.now()); raf = requestAnimationFrame(tick); }
+    }
+    const begin = () => { if (!working && T.length <= N) { if (!T.length) $('dm-stat').textContent = 'working out the round'; work(); } };
+    $('dm-play').onclick = () => { begin(); play(!playing); };
+    $('dm-step').onclick = () => {
+      begin();
+      if (playing || k >= Math.min(T.length, N)) return;
+      show(k + 1);
+      sound(k, performance.now());
     };
-    $('dm-step').onclick = () => { if (!playing) step(); };
-    $('dm-reset').onclick = () => reset();
-    reset();
+    $('dm-reset').onclick = () => { begin(); show(1); if (playing) rebase(performance.now()); };
+    scrub.oninput = () => { begin(); show(+scrub.value); if (playing) rebase(performance.now()); };
+    // the round is worked out once the section comes near the screen
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); begin(); } }, { rootMargin: '600px' });
+      io.observe($('demo'));
+    } else begin();
   }
 
   // --- 04: the tunes, each made by the game's player as the page needs it ---------------------------

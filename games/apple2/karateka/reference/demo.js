@@ -7,12 +7,17 @@
 // Every switch in page $C0 reads 0: no key, no button, the joystick's timers run out at once, and
 // the ROM's ID byte ($FBB3, not in the listings) reads 0, an Apple II older than the IIe, so the
 // flip does not wait for the vertical blank. The sounds call the Monitor's WAIT, which
-// Apple2.monitor stands in for. The page shown is the last of $C054 (page 1, $2000) and $C055
-// (page 2, $4000) the code read. index.html loads it after ../../lib/cpu6502.js and apple2.js;
-// test_demo.js holds its pages to the pages Apple2TS held at the same flips (facts.md, "Live tests").
+// Apple2.monitor stands in for, and every access to the speaker ($C030) is kept, as the cycle it
+// came at, in speaker, the log site/lib/apple2-speaker.js plays. The page shown is the last of
+// $C054 (page 1, $2000) and $C055 (page 2, $4000) the code read. index.html loads it after
+// ../../lib/cpu6502.js and apple2.js; test_demo.js holds its pages and its clicks to the ones
+// Apple2TS made at the same flips (facts.md, "Live tests").
 //
 //   KarDemo.start(Ls)     a run from $BFFA, Ls holding Apple2.load's listings by part id (engine,
-//                         title): { m, cpu, page, flips }
+//                         title): { m, cpu, page, flips, speaker }
+//   KarDemo.ROUND         the flips of the first round, from the credits to the flip before the
+//                         credits come round again; the next round's fight differs, since the
+//                         random numbers carry on
 //   KarDemo.run(s, n)     runs about n cycles; the page shown is s.page (1 or 2)
 //   KarDemo.next(s)       runs to the next flip of the page shown: { page, cycles }
 globalThis.KarDemo = (function () {
@@ -20,15 +25,16 @@ globalThis.KarDemo = (function () {
   // the instructions after each read of $C054 or $C055: flip ($7619, $7624), the title's own flip
   // ($07A8, $07B5) and the castle picture's ($03B1, $03BD)
   const SHOWN = [0x761C, 0x7627, 0x07AB, 0x07B8, 0x03B4, 0x03C0];
+  const ROUND = 571;
 
   function start(Ls) {
     const m = Ls.engine.ram.slice(), t = Ls.title;
     for (let a = 0; a < 0x10000; a++) if (t.has[a]) m[a] = t.ram[a];
     m[0x07] = 0x40; m[0xD2] = 0; m[0x3D] = 0x60;
-    const s = { m, cpu: null, page: 1, flips: 0 };
+    const s = { m, cpu: null, page: 1, flips: 0, speaker: [] };
     const io = {
-      read(a) { if (a === 0xC054) s.page = 1; else if (a === 0xC055) s.page = 2; return 0; },
-      write(a) { if (a === 0xC054) s.page = 1; else if (a === 0xC055) s.page = 2; },
+      read(a, cpu) { if (a === 0xC054) s.page = 1; else if (a === 0xC055) s.page = 2; else if (a === 0xC030) s.speaker.push(cpu.cycles); return 0; },
+      write(a, v, cpu) { if (a === 0xC054) s.page = 1; else if (a === 0xC055) s.page = 2; else if (a === 0xC030) s.speaker.push(cpu.cycles); },
     };
     s.cpu = new C64Cpu.CPU(m, { io, ioPages: [0xC0] });
     s.cpu.pc = ENTRY; s.cpu.sp = 0xFF;
@@ -49,5 +55,5 @@ globalThis.KarDemo = (function () {
     return { page: s.page, cycles: s.cpu.cycles - c0 };
   }
 
-  return { CLOCK, ENTRY, SHOWN, start, run, next };
+  return { CLOCK, ENTRY, SHOWN, ROUND, start, run, next };
 })();

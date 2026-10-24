@@ -4,7 +4,12 @@
 // is shown, as in Apple2TS run from the title stage's snapshot at $BFFA, stopped at the same six
 // places at the same flip (work/verify/demo_live.py, 24 October 2026): the credits, the logo, the
 // prologue, the scene in Akuma's chamber, the demo fight and the prologue again. The pages are game
-// memory, so this file keeps only their SHA-256.
+// memory, so this file keeps only their SHA-256. Through the first round (KarDemo.ROUND), the clicks
+// of the speaker between each two flips come at the same spacings as Apple2TS's, run the same way
+// with its sound recorded (work/verify/demo_sound_live.py, 24 October 2026): the count of clicks
+// at each flip and the spacings are kept as SHA-256. The first click after a flip may come 4 cycles
+// apart, and the flips themselves do not line up, since the IIe in Apple2TS waits for the vertical
+// blank and the run here does not. Flip ROUND + 1 shows the page flip 1 showed.
 //   node games/apple2/karateka/test_demo.js
 'use strict';
 const path = require('path'), crypto = require('crypto');
@@ -20,11 +25,18 @@ const LIVE = {                         // flip: [page shown, SHA-256 of $2000-$5
   401: [2, '002d62b828dcb914'], 450: [1, '0ca9fcd2e843213b'], 500: [1, '15ab30311f1cc8bf'],
   550: [1, 'f7f263778ac77225'], 551: [2, '9de30ed5621fa356'], 600: [1, 'ef47356dc502e5e8'],
 };
+const SOUND = { clicks: 16141, counts: '23a9ec9627250688', spacings: '5deb0cb731b5a40f' };   // Apple2TS, flips 1 to ROUND
+const sha = x => crypto.createHash('sha256').update(x).digest('hex').slice(0, 16);
 let bad = 0;
 const s = KarDemo.start({ engine: g.listing('parts/engine/listing.json'), title: g.listing('parts/title/listing.json') });
-const last = Math.max(...Object.keys(LIVE).map(Number));
+const last = Math.max(...Object.keys(LIVE).map(Number), KarDemo.ROUND + 1);
+const clicks = [], shown = page => s.m.slice(page === 1 ? 0x2000 : 0x4000, page === 1 ? 0x4000 : 0x6000);
+let first = null;
 for (let f = 1; f <= last; f++) {
   const { page } = KarDemo.next(s);
+  if (f <= KarDemo.ROUND) clicks.push(s.speaker.splice(0));
+  if (f === 1) first = shown(page);
+  if (f === KarDemo.ROUND + 1 && sha(shown(page)) !== sha(first)) { bad++; console.log(`FAIL flip ${f} does not show the page flip 1 showed`); }
   if (!LIVE[f]) continue;
   const hash = crypto.createHash('sha256').update(s.m.subarray(0x2000, 0x6000)).digest('hex').slice(0, 16);
   if (page !== LIVE[f][0] || hash !== LIVE[f][1]) {
@@ -32,5 +44,11 @@ for (let f = 1; f <= last; f++) {
     console.log(`FAIL flip ${f}: page ${page}, pages ${hash}; Apple2TS showed page ${LIVE[f][0]}, pages ${LIVE[f][1]}`);
   }
 }
+const n = clicks.reduce((t, c) => t + c.length, 0);
+const counts = sha(clicks.map(c => c.length).join(',')), spacings = sha(clicks.map(c => c.slice(1).map((x, i) => x - c[i]).join(',')).join(';'));
+if (n !== SOUND.clicks || counts !== SOUND.counts || spacings !== SOUND.spacings) {
+  bad++;
+  console.log(`FAIL the round's clicks: ${n}, counts ${counts}, spacings ${spacings}; Apple2TS made ${SOUND.clicks}, ${SOUND.counts}, ${SOUND.spacings}`);
+}
 if (bad) process.exit(1);
-console.log(`test_demo: flips ${Object.keys(LIVE).join(', ')} of the title and the demo match Apple2TS byte for byte`);
+console.log(`test_demo: flips ${Object.keys(LIVE).join(', ')} of the title and the demo match Apple2TS byte for byte, and the round's ${n} clicks spacing for spacing`);

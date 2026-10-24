@@ -373,6 +373,29 @@ Before/after, from real drafts:
   sent to do. The second is who else is there, ending on that enemy and
   why it looks the way it does.
 
+Last, do an **ELI15 pass** ("explain it like I'm fifteen"): rewrite every
+authored page so that a reader of fifteen who has never programmed can
+follow each sentence. The Source tab stays as it is, since its reader came
+for the code. Commit the pages first, so that `git diff` puts each changed
+sentence beside the one it replaced. Then:
+
+1. Explain each term where it first appears on a page, in a few words,
+   since a reader can open any tab first: a keyword of the game's
+   language, a chip or its register, a hexadecimal address, a kind of
+   variable. Keep the code, the addresses and the numbers, which are the
+   evidence.
+2. Split every sentence that holds more than one idea, and put plain words
+   in place of shorthand ("turns down" for "declines").
+3. Check the diff sentence by sentence against the original. Every fact
+   the original gave (a number, a name, an address, a condition, a cause)
+   is still on the page, and every explanation added is true. Put back
+   what was lost, and check what was added against `facts.md` and the
+   platform reference.
+
+The standfirst, the headings, the captions, the table cells and the text
+the widgets write are copy too, and the rewrite follows `kit/style.md`
+like the draft.
+
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it
 as it was, `human-edited` when a human changed it, `human` when a human
