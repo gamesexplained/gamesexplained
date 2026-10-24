@@ -16,9 +16,9 @@ follows is where things are and what differs.
 - Where Central Park's routines are: `EngineEntry` `$7A3B`,
   `RenderScene` `$75E2`, `CompileCollision` `$A091`,
   `DecodeSpriteMaskRle63` `$A680`, `DamagePlayer` `$9C8B`.
-- Frames: 128 pointers at `$AB6C`, the records `$AC6C-$B6BE`.
+- Frames: 128 pointers at `$AB6C`, the records `$AC6C-$B6C3`.
 - Packed sprites: 162 pointers at `$B6C4`, each plus `$F6C4` (modulo
-  65536) the address of its record, and the records `$B808-$D18B`. The
+  65536) the address of its record, and the records `$B808-$D197`. The
   enemy of an area may be drawn with an extra sprite, a picture of its head and body for each pose that takes the place of the frame's first piece: the high
   nibble of the area's entry in the enemy table at `$9DC0` picks one of
   the eight pointers at `$D198`, none or one of three groups of 40
@@ -37,19 +37,20 @@ follows is where things are and what differs.
 - 15 areas have a scene in the title load's area slots. Exits: 31
   records in parallel tables from `$7DCE`. Conditions from `$840C`,
   walls in their packed form from `$8593`.
-- Entrance animations: arriving by exit 0 plays kind 4 for 10 ticks, by
-  exit 11 kind 3 for 8 (`$80DA`).
+- Entrance animations: arriving by exit 0 plays kind 4 for 10 of the
+  player's animations (the count drops each time one ends), by exit 11
+  kind 3 for 8 (`$80DA`).
 - 8 object records from `$A811`, ending with `$FF` at `$A881`; 46 script
   commands through the table at `$890E`.
 - Finishing the level needs no items and takes away items 10 and 12.
 
 ## What this level adds
 
-- The water: `AnimateWater` (`$8821`), called from the main loop where
-  Central Park calls an `RTS`, steps the water of the area on screen
-  through scenes 82, 83 and 84 every six ticks, by writing the scene
-  number into that area's placement (the table at `$8864`, placements
-  from `$A8B5`).
+- The water: `AnimateWater` (`$8821`), called from the main loop by a
+  call Central Park's does not make, steps the water of the area on
+  screen through scenes 82, 83 and 84 every six ticks, by writing the
+  scene number into that area's placement (the table at `$8864`,
+  placements from `$A8B5`).
 - The traps: in area 4 (`$874F`) a falling block starts when the player
   is between X `$30` and `$7F`, and in area 10 (`$879B`) one crosses the
   room over and over; each takes 2 energy a pass from a player in its

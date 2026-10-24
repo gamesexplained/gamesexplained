@@ -9,14 +9,15 @@ the loader calls `$4E00` (engine `$1108`).
   where the load coordinator goes once the level is in.
 - `PlayNextLoadVector` (`$3FF6`): `JMP $8113`, an `RTS` in the play
   load. Only Central Park's title load points this vector at
-  `MachineSetup`, and only Central Park's is called: the one call,
-  from `StartLevelLoad` (engine `$1405`), comes once as the game starts,
-  and the end of a level goes straight to `CoordinateLevelLoad` (engine
-  `$16AD`).
+  `MachineSetup`, and no title load's copy is ever called: the one
+  call, from `StartLevelLoad` (engine `$1405`), comes once as the game
+  starts, before any level is loaded, and goes through the engine's
+  own `JMP $0E00` at `$3FF6`; the end of a level goes straight to
+  `CoordinateLevelLoad` (engine `$16AD`).
 - The tune: its player at `$4000` (`$4000` starts it, `$4003` plays a
   frame), the text "COOL REMIX BY REYN OUWEHAND AND PLAYER/SOUNDS BY
   FALCO PAUL" at `$400C`, which nothing reads, the player's working
-  variables, then 8 instruments and 14 phrases up to `$4C22`.
+  variables, then 8 instruments and 14 phrases up to `$4C51`.
 - The level's scene header at `$4C52`, which the play load uses: 85
   scene pointers at `$4C95`, each an offset from the header's address
   with bit 15 set for a picture, adjusted once by the word at `$4C53` as

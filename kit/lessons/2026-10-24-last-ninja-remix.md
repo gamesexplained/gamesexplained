@@ -22,7 +22,12 @@
   comment and the copies generated again, or the next generation puts
   the mistake back, and a sample that counts the copies as separate
   comments counts one belief many times. Keep the copies out of the sample's population, and audit
-  the code each level changed on its own.
+  the code each level changed on its own. A copy on code of the same shape
+  is not always right when the first part's is: about sixty described a
+  routine the level calls in place of the first part's, or a value the
+  level loads differently. Before counting a comment as a copy, compare
+  each paired call's target and each paired immediate with the first
+  part's.
 - **A live test's length is how long it was watched.** The intro's
   hidden credits were recorded as running for 3,210 frames, which was
   how long the test ran, and the page first said so. The text is 1,058

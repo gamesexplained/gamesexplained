@@ -8,16 +8,17 @@ follows is where things are and what differs.
 
 ## Layout
 
-- Scenes: 129 pointers at `$4DE4`, in the title load with the scene
-  header (`$4DA1`), and one more after them that marks the end of the
-  pool; the pool `$4EE8-$8555`, 94 pictures and 35 composites.
+- Scenes: 129 pointers at `$4DE4`, after the scene header (`$4DA1`)
+  in the title load; the first 14 lie in the title load, the rest in
+  this load from `$4E00`, and one more after them that marks the end
+  of the pool; the pool `$4EE8-$8555`, 94 pictures and 35 composites.
   `RelocateScenePointers` (`$8556`) starts the code, as in Central Park.
 - Where Central Park's routines are: `EngineEntry` `$89F4`,
   `RenderScene` `$8599`, `CompileCollision` `$B233`,
   `DecodeSpriteMaskRle63` `$B822`, `DamagePlayer` `$AE35`.
-- Frames: 115 pointers at `$BD9E`, the records `$BE84-$C7C9`.
+- Frames: 115 pointers at `$BD9E`, the records `$BE84-$C7DA`.
 - Packed sprites: 162 pointers at `$C7EE`, each plus `$07EE` (modulo
-  65536) the address of its record, and the records `$C932-$E2B5`. The
+  65536) the address of its record, and the records `$C932-$E2C1`. The
   enemy of an area may be drawn with an extra sprite, a picture of its head and body for each pose that takes the place of the frame's first piece: the high
   nibble of the area's entry in the enemy table at `$AF6A` picks one of
   the eight pointers at `$E2C2`, none or one of two groups of 40 packed
@@ -39,8 +40,9 @@ follows is where things are and what differs.
 - Entrance animations: none.
 - 15 object records from `$B9B3`, ending with `$FF` at `$BA85`; 46
   script commands through the table at `$9B31`.
-- To finish the level the player needs items 1 and 10 (`required_items`,
-  `$91F4`); finishing takes away item 11.
+- The level asks for items 1 and 10 (`required_items`, `$91F4`): with
+  either missing it asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT
+  LEVEL, and a YES leaves without them. Finishing takes away item 11.
 
 ## What this level adds
 
@@ -52,12 +54,13 @@ follows is where things are and what differs.
   and its two light scenes (from `$BAC7`).
 - The cars: walls in the roads of areas 1, 4 and 8 carry script commands
   35, 36 and 37 (`$9D1A`, `$9D34`, `$9D4E`). Touched while that
-  crossing's light shows red (in area 4, green), each starts the car's
-  animation in the second actor's slot and takes `$2C`, 44, from the
-  player's energy, as much as a full bar holds.
+  crossing's light shows red (in area 4, green), and only while the
+  second actor's Y (`$57`) is zero, each starts the car's animation in
+  the second actor's slot and takes `$2C`, 44, from the player's energy,
+  as much as a full bar holds.
 - Fixed hazards: events 15, 19, 21 and 23 take 44 energy from a player
-  within 11 across and 7 up or down of X 124, Y 115 (`$A3E9`), event 20
-  the same at X 219, Y 143 (`$A3EF`).
+  less than 11 across and less than 7 up or down from X 124, Y 115
+  (`$A3E9`), event 20 the same at X 219, Y 143 (`$A3EF`).
 - Area 14: with item 19 taken (flag `$03EB`, object records 10 to 13,
   which need item 11 selected, `$BA86`), four walls carry command 38
   (`$9D68`), which lowers the player 32 pixels and leaves by transition

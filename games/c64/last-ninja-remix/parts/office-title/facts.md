@@ -9,19 +9,22 @@ the loader calls `$4E00` (engine `$1108`).
   where the load coordinator goes once the level is in.
 - `PlayNextLoadVector` (`$3FF6`): `JMP $8F49`, an `RTS` in the play
   load. Only Central Park's title load points this vector at
-  `MachineSetup`, and only Central Park's is called: the one call,
-  from `StartLevelLoad` (engine `$1405`), comes once as the game starts,
-  and the end of a level goes straight to `CoordinateLevelLoad` (engine
-  `$16AD`).
+  `MachineSetup`, and no title load's copy is ever called: the one
+  call, from `StartLevelLoad` (engine `$1405`), comes once as the game
+  starts, before any level is loaded, and goes through the engine's
+  own `JMP $0E00` at `$3FF6`; the end of a level goes straight to
+  `CoordinateLevelLoad` (engine `$16AD`).
 - The tune: its player at `$4000` (`$4000` starts it, `$4003` plays a
   frame), the text "MUSIC BY REYN OUWEHAND & FALCO PAUL. PLAYER/SOUNDS
   BY FALCO PAUL" at `$400C`, which nothing reads, the player's working
-  variables, then 15 instruments and 17 phrases up to `$4D1B`.
+  variables, then 15 instruments and 17 phrases up to `$4D53`.
 - The level's scene header at `$4D54`, which the play load uses: 122
-  scene pointers at `$4D97`, each an offset from the header's address
-  with bit 15 set for a picture, adjusted once by the word at `$4D55` as
-  play starts, and 32 area slots at `$4D57`, each the scene that draws
-  an area and its background colour.
+  scene pointers at `$4D97` (only the first 52, and the low byte of
+  the 53rd, are in this load; the rest come with the play load, from
+  `$4E00`), each an offset from the header's address with bit 15 set
+  for a picture, adjusted once by the word at `$4D55` as play starts,
+  and 32 area slots at `$4D57`, each the scene that draws an area and its
+  background colour.
 - `DrawTitleCard` (`$4E00`) relocates the title's own scene pointers,
   clears the play window and draws area 1's scene, scene 4: the level's
   picture with its name beneath, beside the status panel, with a copy of

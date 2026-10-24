@@ -9,15 +9,16 @@ the loader calls `$4E00` (engine `$1108`).
   where the load coordinator goes once the level is in.
 - `PlayNextLoadVector` (`$3FF6`): `JMP $89CB`, an `RTS` in the play
   load. Only Central Park's title load points this vector at
-  `MachineSetup`, and only Central Park's is called: the one call,
-  from `StartLevelLoad` (engine `$1405`), comes once as the game starts,
-  and the end of a level goes straight to `CoordinateLevelLoad` (engine
-  `$16AD`).
+  `MachineSetup`, and no title load's copy is ever called: the one
+  call, from `StartLevelLoad` (engine `$1405`), comes once as the game
+  starts, before any level is loaded, and goes through the engine's
+  own `JMP $0E00` at `$3FF6`; the end of a level goes straight to
+  `CoordinateLevelLoad` (engine `$16AD`).
 - The tune: its player at `$4000` (`$4000` starts it, `$4003` plays a
   frame), the text "MUSIC COMPOSED BY REYN OUWEHAND WHILE BEING BUGGED
   BY FALCO, RICHARD & JOHN! PLAYER/SOUNDS BY FALCO" at `$400C`, which
   nothing reads, the player's working variables, then 14 instruments and
-  17 phrases up to `$4D5A`. It is The Mansion's tune, byte for byte.
+  17 phrases up to `$4D66`. It is The Mansion's tune, byte for byte.
 - The level's scene header at `$4D67`, which the play load uses: 39
   scene pointers at `$4DAA`, each an offset from the header's address
   with bit 15 set for a picture, adjusted once by the word at `$4D68` as
