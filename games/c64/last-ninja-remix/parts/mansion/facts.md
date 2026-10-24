@@ -25,7 +25,8 @@ follows is where things are and what differs.
   `$F601` are drawn as they are by the frames whose header has bit 5
   set.
 - Panel pictures: 17 pointers at `$F881`, to `$3F40` in the engine and 6
-  pictures at `$F8A3-$FA88`.
+  pictures at `$F8A3-$FA88`; the last, item 16's, points at `$FA89`, the
+  start of the wall buffer, and leads to no picture.
 - The walls of the area on screen are compiled into the zeros from
   `$FA89` to the end of the load.
 

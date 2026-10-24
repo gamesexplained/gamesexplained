@@ -27,7 +27,8 @@ follows is where things are and what differs.
   images of 64 bytes from `$EA32` are drawn as they are by the frames
   whose header has bit 5 set.
 - Panel pictures: 17 pointers at `$F072`, to `$3F40` in the engine and 7
-  pictures at `$F094-$F2CA`.
+  pictures at `$F094-$F2CA`; the last, item 16's, points at `$F2CB`, the
+  start of the wall buffer, and leads to no picture.
 - The walls of the area on screen are compiled into the zeros from
   `$F2CB` to the end of the load.
 

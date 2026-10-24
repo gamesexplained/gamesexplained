@@ -16714,7 +16714,7 @@
   {
    "address": 50560,
    "type": "line",
-   "text": "Frame 076, $C580-$C599: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 101, 134, 128, 0, 64. Its bytes from $C58E on are also the start of frame 077, which begins there."
+   "text": "Frame 076, $C580-$C599: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 101, 134, 128, 0, 64. Its bytes from $C58E on are also the whole of frame 077, six bytes to $C593, and the first six bytes of frame 083, which begins at $C594: the alternative 128 is frame 077's header $80, and the alternative 64 is the sprite of frame 083's first part."
   },
   {
    "address": 50574,
@@ -18424,7 +18424,7 @@
   {
    "address": 56374,
    "type": "line",
-   "text": "Sprite 120 plus 45, the address the instruction at $B979 reads with Y as the index: the table read from its byte 45 on."
+   "text": "Sprite 120 plus 45 is also the operand of the undocumented LAX $DC36,Y at $B979, which never reads this RAM: it runs with the I/O switched in (the loop before it waits on the raster register) and with Y = $4E, which the engine sets to $EE at start-up and nothing changes, so it loads A and X from $DD24, CIA 2's timer A low byte, through a mirror. In the RAM beneath, which the sprite decoder reads with the I/O switched out, $DC36 is byte 45 of sprite 120 ($DC09-$DC40)."
   },
   {
    "address": 56385,
@@ -18649,7 +18649,7 @@
   {
    "address": 58066,
    "type": "line",
-   "text": "Eight pairs of sprite attributes, one for each pointer at $E2C2, set when the actor carries that kind: the first on the actor's first and third sprites, the second on its second: $00/$00, $00/$0A, $09/$0A, $06/$0A, $00/$0A, $00/$08, $00/$08, $00/$08."
+   "text": "Eight pairs of sprite attributes, one for each pointer at $E2C2. When the actor carries an extra sprite (a kind other than 0) and its frame is one of 0 to 48, the composer writes its kind's pair over the attributes of the actor's first three sprites: the first on its first and third sprites, the second on its second. Frames 49 and up keep their own attributes, and the first pair, for kind 0, is never used: $00/$00, $00/$0A, $09/$0A, $06/$0A, $00/$0A, $00/$08, $00/$08, $00/$08."
   },
   {
    "address": 58067,
@@ -19139,7 +19139,7 @@
   {
    "address": 62970,
    "type": "line",
-   "text": "17 pointers to the small pictures the panel shows for items 0-16: $3F40, $F802, $F760, $F70F, $F853, $F760, $F760, $F61C, $F6BE, $F7B1, $F66D, $F61C, $F61C, $F66D, $F70F, $F802, $F8A4."
+   "text": "17 pointers, one for each of items 0-16. The first sixteen lead to the small pictures the panel shows: $3F40, $F802, $F760, $F70F, $F853, $F760, $F760, $F61C, $F6BE, $F7B1, $F66D, $F61C, $F61C, $F66D, $F70F, $F802. The last, item 16's, is $F8A4, which holds no picture: it is where CompileCollision writes the walls of the area on screen, so the size byte the renderer would read there is whatever CompileCollision has left in its first byte ($00 in this snapshot)."
   },
   {
    "address": 62971,

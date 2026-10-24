@@ -32,7 +32,8 @@ other addresses, and their facts give only what differs.
   14 of 64 bytes, as they are.
 - Panel pictures: 17 pointers at `UiImagePointers` (`$FCA0`) to the
   pictures of the items, four cells by two (size byte `$42`), at
-  `$FCC2-$FEF8` and the engine's `$3F40`.
+  `$FCC2-$FEF8` and the engine's `$3F40`; the last, item 16's, points at
+  `$FEF9`, the start of the wall buffer, and leads to no picture.
 - The walls of the area on screen: `CompileCollision` (`$B950`) writes
   them from `$FEF9`, six bytes a wall, at most 29 and a two-byte end, up
   to `$FFA8`.
