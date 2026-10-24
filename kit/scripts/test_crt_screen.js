@@ -131,6 +131,18 @@ function page(opts) {
   check(p.changes.join() === 'false', 'set(false) from the page is told');
 }
 
+// a page that starts the screen on: for a viewer with no choice yet, on and not stored; a stored
+// choice still wins
+{
+  const p = page({ webgl2: true, attach: { on: true } });
+  check(p.crt.on && p.button.attrs['aria-pressed'] === 'true', 'with on, the screen starts on');
+  check(!p.store.has('gamesexplained.crt') && p.changes.length === 0, 'with on, the start is neither stored nor told');
+  p.button.click();
+  check(!p.crt.on && p.store.get('gamesexplained.crt') === '0', 'with on, the viewer switching it off is stored');
+  const q = page({ webgl2: true, stored: '0', attach: { on: true } });
+  check(!q.crt.on, 'with on, a stored choice of off keeps the screen off');
+}
+
 // a page that scales its picture into the canvas it shows, and one drawn at twice size
 {
   const off = { width: 384, height: 272 };
