@@ -1,8 +1,8 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 44.5 % of the play snapshot's ledger (2026-10-24).
+Tier: Bronze (2026-10-08). Coverage 49.6 % of the play snapshot's ledger (2026-10-24).
 
-Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the large bare runs ($5F83 scroll code, $470C, $AC4F, $A990, $4EDD). Named 2026-10-24: player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat.
+Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the large bare runs ($470C, $AC4F, $A990, $4EDD). Named 2026-10-24 (later pass: recolour_screen $5BC2, the colour-RAM refresh, and char_colour_table $0C22):  player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat.
 
 For Silver:
 

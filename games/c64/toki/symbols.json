@@ -3074,9 +3074,9 @@
   },
   {
    "address": 3106,
-   "name": "f_0C22",
-   "type": "Field",
-   "kind": "auto"
+   "name": "char_colour_table",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 3362,
@@ -5150,21 +5150,21 @@
   },
   {
    "address": 23490,
-   "name": "j_5BC2",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_screen",
+   "type": "Subroutine",
+   "kind": "user"
   },
   {
    "address": 23497,
-   "name": "b_5BC9",
+   "name": "recolour_c800",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 23500,
-   "name": "j_5BCC",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_c800_0",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 23797,
@@ -5174,9 +5174,9 @@
   },
   {
    "address": 23798,
-   "name": "j_5CF6",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_c800_1",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 24095,
@@ -5186,9 +5186,9 @@
   },
   {
    "address": 24096,
-   "name": "j_5E20",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_c800_2",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 24393,
@@ -5198,9 +5198,9 @@
   },
   {
    "address": 24396,
-   "name": "j_5F4C",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_c800_3",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 24729,
@@ -5210,15 +5210,15 @@
   },
   {
    "address": 24730,
-   "name": "j_609A",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_cc00",
+   "type": "Subroutine",
+   "kind": "user"
   },
   {
    "address": 24733,
-   "name": "j_609D",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_cc00_0",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 25030,
@@ -5228,9 +5228,9 @@
   },
   {
    "address": 25031,
-   "name": "j_61C7",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_cc00_1",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 25328,
@@ -5240,9 +5240,9 @@
   },
   {
    "address": 25329,
-   "name": "j_62F1",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_cc00_2",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 25626,
@@ -5252,9 +5252,9 @@
   },
   {
    "address": 25629,
-   "name": "j_641D",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "recolour_cc00_3",
+   "type": "Branch",
+   "kind": "user"
   },
   {
    "address": 25845,
@@ -13635,6 +13635,11 @@
    "text": "Once a frame, from irq_panel: unless $DF is set, play each sound effect queued in $91 onward ($90 counts them) through $6633, then run the sound driver at $6787."
   },
   {
+   "address": 3106,
+   "type": "line",
+   "text": "Colour of each character code, 256 bytes, indexed by the character (screen code) found in the screen buffers. recolour_screen copies the entry for every one of the 840 playfield characters into colour RAM. Only the low nibble reaches colour RAM, and a value of 8 or more turns on multicolour for that character, since the playfield runs in multicolour text mode ($D016 bit 4)."
+  },
+  {
    "address": 12922,
    "type": "line",
    "text": "Object type in the top three bits and hit points in the low five bits: player shots take hit points off (see object_sprites_and_hits)."
@@ -13868,6 +13873,61 @@
    "address": 23427,
    "type": "line",
    "text": "Draw the strip of the background that a one-tile scroll will bring into view. It does nothing unless scroll_phase ($0E) is zero. It then picks from scroll_dir ($0F: 0 is up, 2 right, 4 down, 6 left, and the odd numbers 1, 3, 5, and 7 are the diagonals between them) the row, the column, or both that are about to appear at the edge of the screen, and fills them into the off-screen character buffer whose address is in $08C1/$08C2. The stage map is read through the row pointer tables $2A and $2C (low and high bytes of each map row's address); each map byte is a tile, expanded to a 2 by 2 block of characters taken from the table at $2E/$2F, with $08C7 and $08C8 choosing which half of the tile the row or column starts in. A row is 40 characters (20 tiles) wide and a column 21 characters tall. The routines at $433D-$438B set $0F and clear $0E, $4B8A sets $0E to 1 once a tile step is made, and $888D then counts $0E down."
+  },
+  {
+   "address": 23490,
+   "type": "line",
+   "text": "Refresh the colour RAM of the 21 playfield rows ($D800-$DB47, 840 characters) so it matches the screen buffer that is now on show. The screen buffer is swapped by the tile step at $4B8A, which flips $10 (0 shows the buffer at $C800, 1 shows $CC00; build_vic_shadows turns that into $D018 $21 or $31). Colour RAM exists only once, so it is rewritten rather than swapped: the tile step sets scroll_phase ($0E) to 1, and the countdown at $888D calls this routine when it sees the old value 1, one frame later. Each character's colour is taken from char_colour_table ($0C22). Reached by the jump at $889B and by the stub at $9517. The copy is unrolled, 32 characters per loop pass with Y as the index, in four loops (three pages of 256 characters and a last one of 72): recolour_c800_0 and the loops after it do the $C800 buffer, and recolour_cc00_0 and its loops do the $CC00 buffer."
+  },
+  {
+   "address": 23497,
+   "type": "line",
+   "text": "Colour-RAM refresh from the screen buffer at $C800, used when $10 is zero. Clears carry for the additions in the loops and starts Y at 0."
+  },
+  {
+   "address": 23500,
+   "type": "line",
+   "text": "First of 4 copy loops that read the screen buffer at $C800 one character at a time and write each character's colour to colour RAM. Each of the 32 unrolled steps takes the character code from $C800+Y, looks its colour up in char_colour_table ($0C22), and stores it at $D800+Y. Y then moves on by $20 and the loop repeats until Y wraps past $FF, so it copies 256 characters, from $D800 to $D8FF. When Y wraps it falls into the next page's loop at $5CF6."
+  },
+  {
+   "address": 23798,
+   "type": "line",
+   "text": "Copy loop 2 of 4 for the screen buffer at $C800. Each of the 32 unrolled steps takes the character code from $C900+Y, looks its colour up in char_colour_table ($0C22), and stores it at $D900+Y. Y then moves on by $20 and the loop repeats until Y wraps past $FF, so it copies 256 characters, from $D900 to $D9FF. When Y wraps it falls into the next page's loop at $5E20."
+  },
+  {
+   "address": 24096,
+   "type": "line",
+   "text": "Copy loop 3 of 4 for the screen buffer at $C800. Each of the 32 unrolled steps takes the character code from $CA00+Y, looks its colour up in char_colour_table ($0C22), and stores it at $DA00+Y. Y then moves on by $20 and the loop repeats until Y wraps past $FF, so it copies 256 characters, from $DA00 to $DAFF. When Y wraps it falls into the next page's loop at $5F4C."
+  },
+  {
+   "address": 24396,
+   "type": "line",
+   "text": "Copy loop 4 of 4 for the screen buffer at $C800. Each of the 36 unrolled steps takes the character code from $CA48+Y, looks its colour up in char_colour_table ($0C22), and stores it at $DA48+Y. Y then moves on by $24 and the loop repeats until Y wraps past $FF, so it copies 72 characters, from $DB00 to $DB47 (the Y offsets are shifted so the unrolled steps end exactly at the last playfield character). That ends the 21 playfield rows (840 characters, $D800-$DB47); the routine then returns."
+  },
+  {
+   "address": 24730,
+   "type": "line",
+   "text": "Colour-RAM refresh from the screen buffer at $CC00, used when $10 is non-zero (jumped to from $5BC6). Same four loops as recolour_c800 with the source moved up by $0400; clears carry and starts Y at 0."
+  },
+  {
+   "address": 24733,
+   "type": "line",
+   "text": "First of 4 copy loops that read the screen buffer at $CC00 one character at a time and write each character's colour to colour RAM. Each of the 32 unrolled steps takes the character code from $CC00+Y, looks its colour up in char_colour_table ($0C22), and stores it at $D800+Y. Y then moves on by $20 and the loop repeats until Y wraps past $FF, so it copies 256 characters, from $D800 to $D8FF. When Y wraps it falls into the next page's loop at $61C7."
+  },
+  {
+   "address": 25031,
+   "type": "line",
+   "text": "Copy loop 2 of 4 for the screen buffer at $CC00. Each of the 32 unrolled steps takes the character code from $CD00+Y, looks its colour up in char_colour_table ($0C22), and stores it at $D900+Y. Y then moves on by $20 and the loop repeats until Y wraps past $FF, so it copies 256 characters, from $D900 to $D9FF. When Y wraps it falls into the next page's loop at $62F1."
+  },
+  {
+   "address": 25329,
+   "type": "line",
+   "text": "Copy loop 3 of 4 for the screen buffer at $CC00. Each of the 32 unrolled steps takes the character code from $CE00+Y, looks its colour up in char_colour_table ($0C22), and stores it at $DA00+Y. Y then moves on by $20 and the loop repeats until Y wraps past $FF, so it copies 256 characters, from $DA00 to $DAFF. When Y wraps it falls into the next page's loop at $641D."
+  },
+  {
+   "address": 25629,
+   "type": "line",
+   "text": "Copy loop 4 of 4 for the screen buffer at $CC00. Each of the 24 unrolled steps takes the character code from $CE48+Y, looks its colour up in char_colour_table ($0C22), and stores it at $DA48+Y. Y then moves on by $18 and the loop repeats until Y wraps past $FF, so it copies 72 characters, from $DB00 to $DB47 (the Y offsets are shifted so the unrolled steps end exactly at the last playfield character). That ends the 21 playfield rows (840 characters, $D800-$DB47); the routine then returns."
   },
   {
    "address": 26125,
