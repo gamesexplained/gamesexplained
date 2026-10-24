@@ -45,6 +45,13 @@
                                                    // note moves in a tick
   const GROOVE = 0.011, LIT = 0.013, LIT_GLOW = 0.045;   // half-widths of the line, world units
   const TRAIL = 0.3;                               // seconds of the ball's path drawn behind it
+  // the camera for each shape of canvas: yaw turns it (0 looks along time), pitch tilts it down,
+  // fov is the lens's height in radians, (ax, ay) is where the ball's point sits on the canvas
+  // (-1 to 1 from the middle, ay down) and zoom brings it nearer than the distance that fits
+  const CAMS = {
+    tall: { yaw: 0.25, pitch: 0.62, fov: 0.85, ax: 0, ay: 0.4, zoom: 1 },
+    wide: { yaw: 1.0, pitch: 0.6, fov: 0.7, ax: -0.3, ay: 0.08, zoom: 1 },
+  };
 
   const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
   const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
@@ -70,8 +77,9 @@
     const bloom = document.createElement('canvas'), bg2 = bloom.getContext('2d');
     let grain = null;
     let W = 0, H = 0, dpr = 1, portrait = false;
-    let lanes = [], rate = 50, speed = 2, cam = null;
+    let lanes = [], rate = 50, speed = 2, cam = null, last = [0, null];   // last: the tick and options drawn
     const view = { message: 'Choose a tune to start.', score, draw, ballAt, notesOf };
+    const cams = { tall: Object.assign({}, CAMS.tall), wide: Object.assign({}, CAMS.wide) };
 
     // ------------------------------------------------------------------ the tune
     // Lanes, one a voice with notes: each note's time in seconds and place across the lane, when
@@ -245,9 +253,9 @@
     function camera() {
       const n = Math.max(lanes.length, 3);           // one or two lanes keep the size they have among three
       const half = (n * LANE + (n - 1) * GAP) / 2;
-      const P = portrait
-        ? { yaw: 0.25, pitch: 0.62, fov: 0.85, ax: 0, ay: 0.4, keys: [[-half - 0.02, 0, 0], [half - 0.15, 0, 0.3], [0, 0.7, 0], [-half + 0.3, 0, -0.4]] }
-        : { yaw: 1.0, pitch: 0.6, fov: 0.7, ax: -0.3, ay: 0.08, keys: [[-half - 0.1, 0, -0.4], [half + 0.1, 0, -0.4], [-half - 0.1, 0, 1.2], [half + 0.1, 0, 0.8], [half, 0.7, 0]] };
+      const P = Object.assign({}, cams[portrait ? 'tall' : 'wide'], { keys: portrait
+        ? [[-half - 0.02, 0, 0], [half - 0.15, 0, 0.3], [0, 0.7, 0], [-half + 0.3, 0, -0.4]]
+        : [[-half - 0.1, 0, -0.4], [half + 0.1, 0, -0.4], [-half - 0.1, 0, 1.2], [half + 0.1, 0, 0.8], [half, 0.7, 0]] });
       const cp = Math.cos(P.pitch);
       const F = [Math.sin(P.yaw) * cp, -Math.sin(P.pitch), Math.cos(P.yaw) * cp];
       const R = [-F[2], 0, F[0]], rl = Math.hypot(R[0], R[2]);
@@ -266,7 +274,7 @@
       });
       let lo = 0.5, hi = 60;
       for (let k = 0; k < 40; k++) { const d = (lo + hi) / 2; if (fits(at(d))) hi = d; else lo = d; }
-      return at(hi);
+      return at(hi / (P.zoom || 1));
     }
 
     // A point (x across, y up, z along time, all relative to the ball's point) on the canvas:
@@ -326,6 +334,7 @@
     const fog = (z) => clamp(1 - (z - FAR() * 0.55) / (FAR() * 0.45), 0, 1);
 
     function draw(t, opts) {
+      last = [t, opts];
       if (!resize()) return;
       const muted = (opts && opts.muted) || [];
       if (!cam) cam = camera();
@@ -353,8 +362,9 @@
       const back = 2.2, ahead = FAR();
 
       // the lines, on the sheet under everything else
-      const sx = portrait ? -1 : 1;                  // higher notes: right on a tall canvas, farther on a wide one
-      const lxOf = (l) => (p) => l.cx + sx * p * SPAN * LANE;
+      // higher notes lie toward +x: up and to the left on a tall canvas, as on a page seen from
+      // its left edge, and up (farther) on a wide one, as on a page seen from its foot
+      const lxOf = (l) => (p) => l.cx + p * SPAN * LANE;
       lanes.forEach((l) => { if (l.lp) line(l, now, back, ahead, muted[l.x] ? 0.3 : 1, lxOf(l)); });
 
       // everything that stands up, far to near, so that nearer things cover farther ones
@@ -632,6 +642,14 @@
       g.fillStyle = v;
       g.fillRect(0, 0, W, H);
     }
+
+    // Temporary, for trying camera angles: site/lib/bounce-tune.js reads and sets the camera of
+    // the canvas's shape through this, and goes when the angles are settled.
+    view.tuning = {
+      get: () => Object.assign({ shape: portrait ? 'tall' : 'wide' }, cams[portrait ? 'tall' : 'wide']),
+      set: (p) => { Object.assign(cams[portrait ? 'tall' : 'wide'], p); cam = null; baseKey = ''; draw(last[0], last[1]); },
+    };
+    canvas.noteBounce = view;
 
     return view;
   }
