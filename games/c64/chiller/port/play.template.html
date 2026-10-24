@@ -45,6 +45,8 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
 .pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .pl-screen canvas.pl-native{image-rendering:auto}
+.pl-screen canvas.pl-3d{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+.pl-screen canvas.pl-3d[hidden]{display:none}
 .pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
 .pl-over[hidden]{display:none}
 .pl-over button{font-size:16px}
@@ -100,6 +102,7 @@ section table{margin:6px 0 18px}
   <div class="plate pl-plate">
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
+      <canvas id="pl-3d" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The same screen as a model: the scenery raised in blocks, the sprites standing in front. Drag to turn it."></canvas>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
     <div class="pl-bar" id="pl-bar">
@@ -108,6 +111,7 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button type="button" data-3d aria-pressed="false" title="Show the screen as a model: each pixel of the scenery a block standing out from the background, the sprites in front of it. Drag the picture to turn it.">🧊 3D view</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
@@ -179,7 +183,7 @@ section table{margin:6px 0 18px}
 const $ = id => document.getElementById(id);
 const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272), px = new Uint8Array(384 * 272);
-CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
+const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
 const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
 const FRAME = ChillerRuntime.FRAME, FRAME_MS = 1000 * FRAME / 985248;
 const LEVELS = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
@@ -198,7 +202,126 @@ function draw() {
   const d = img.data;
   for (let i = 0, o = 0; i < px.length; i++, o += 4) { const c = RGB[px[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
   ctx.putImageData(img, 0, 0);
+  if (view3d.on) view3d.frame();
 }
+
+// --- the 3D view: the picture the port drew, as a model. It reads the port's memory and the
+// video chip's registers and changes nothing. The background is a flat back wall; every other
+// pixel of the play area's characters is a block standing out from it; every sprite pixel is a
+// block in front of the scenery. Drawn with WebGL2, one cube instanced per pixel.
+const view3d = (function () {
+  const c3 = $('pl-3d'), btn = document.querySelector('[data-3d]');
+  const gl = c3.getContext('webgl2', { antialias: true });
+  if (!gl) { btn.hidden = true; return { on: false, frame() {} }; }
+  const W = 384, H = 272, X0 = 32, X1 = 351, Y0 = 35, Y1 = 234;   // the play area in the frame
+  const bgpx = new Uint8Array(W * H), vic0 = new Uint8Array(0x40);
+  const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+  const prog = (vs, fs) => { const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); return p; };
+  const cubeP = prog(`#version 300 es
+layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 iAt; layout(location=3) in vec3 iCol;
+uniform mat4 uMVP; out vec3 vCol;
+void main() {
+  vec3 p = vec3(iAt.x + aPos.x, -(iAt.y + aPos.y), iAt.z + aPos.z * iAt.w);
+  float l = 0.55 + 0.45 * max(dot(aNrm, normalize(vec3(-0.4, 0.5, 0.8))), 0.0);
+  vCol = iCol * l; gl_Position = uMVP * vec4(p, 1.0);
+}`, `#version 300 es
+precision mediump float; in vec3 vCol; out vec4 o; void main() { o = vec4(vCol, 1.0); }`);
+  const wallP = prog(`#version 300 es
+layout(location=0) in vec2 aPos; uniform mat4 uMVP; out vec2 vUV;
+void main() { vUV = aPos; gl_Position = uMVP * vec4(aPos.x * ${W}.0, -aPos.y * ${H}.0, 0.0, 1.0); }`, `#version 300 es
+precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(uTex, vUV).rgb * 0.8, 1.0); }`);
+  // a unit cube, from 0 to 1 on each axis, its faces' normals (y down the screen, so flipped)
+  const F = [[0,0,1, [0,0,0,1,0,0,1,1,0,0,1,0]], [0,0,-1, [0,0,0,0,1,0,1,1,0,1,0,0]], [0,-1,0, [0,1,0,0,1,1,1,1,1,1,1,0]],
+             [0,1,0, [0,0,0,1,0,0,1,0,1,0,0,1]], [1,0,0, [1,0,0,1,1,0,1,1,1,1,0,1]], [-1,0,0, [0,0,0,0,0,1,0,1,1,0,1,0]]];
+  const cv3 = [];
+  for (const [nx, ny, nz, q] of F) {
+    const v = i => [q[i * 3], q[i * 3 + 1], q[i * 3 + 2]];
+    for (const i of [0, 1, 2, 0, 2, 3]) cv3.push(...v(i), nx, ny, nz);
+  }
+  // a pixel's front face is at z = depth; a quad's corner order above faces the camera from +z
+  const cubeVA = gl.createVertexArray(); gl.bindVertexArray(cubeVA);
+  const cb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cv3), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
+  const ib = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib);
+  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 28, 0); gl.vertexAttribDivisor(2, 1);
+  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 28, 16); gl.vertexAttribDivisor(3, 1);
+  const wallVA = gl.createVertexArray(); gl.bindVertexArray(wallVA);
+  const wb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, wb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 1,1, 0,0, 1,1, 0,1]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  gl.bindVertexArray(null);
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const wallRGB = new Uint8Array(W * H * 4);
+  let inst = new Float32Array(7 * 40000), yaw = -0.35, pitch = 0.3;
+  const COL = RGB.map(c => c.map(v => v / 255));
+  function persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2); return [t / a,0,0,0, 0,t,0,0, 0,0,(fa + n) / (n - fa),-1, 0,0,2 * fa * n / (n - fa),0]; }
+  function mul(a, b) { const o = new Array(16).fill(0); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) o[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k]; return o; }
+  function view() {
+    // the camera on a sphere round the play area's middle, looking at it
+    const cx = W / 2, cy = -H / 2, d = 390;
+    const ex = cx + d * Math.sin(yaw) * Math.cos(pitch), ey = cy + d * Math.sin(pitch), ez = d * Math.cos(yaw) * Math.cos(pitch);
+    let fx = cx - ex, fy = cy - ey, fz = -ez; const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
+    let sx = fy * 0 - fz * 1, sy = fz * 0 - fx * 0, sz = fx * 1 - fy * 0; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
+    const ux = sy * fz - sz * fy, uy = sz * fx - sx * fz, uz = sx * fy - sy * fx;
+    const V = [sx, ux, -fx, 0, sy, uy, -fy, 0, sz, uz, -fz, 0, -(sx * ex + sy * ey + sz * ez), -(ux * ex + uy * ey + uz * ez), fx * ex + fy * ey + fz * ez, 1];
+    return mul(persp(0.75, c3.width / c3.height, 10, 3000), V);
+  }
+  function frame() {
+    if (!rt) return;
+    vic0.set(rt.chips.vic); vic0[0x15] = 0;               // the same picture without the sprites
+    ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bgpx);
+    const b0 = rt.chips.vic[0x21] & 15;
+    let n = 0;
+    const put = (x, y, z, dep, ci) => {
+      if (n * 7 + 7 > inst.length) { const g = new Float32Array(inst.length * 2); g.set(inst); inst = g; }
+      const c = COL[ci], o = n++ * 7;
+      inst[o] = x; inst[o + 1] = y; inst[o + 2] = z; inst[o + 3] = dep; inst[o + 4] = c[0]; inst[o + 5] = c[1]; inst[o + 6] = c[2];
+    };
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = y * W + x, inPlay = x >= X0 && x <= X1 && y >= Y0 && y <= Y1;
+      if (px[i] !== bgpx[i]) put(x, y, 10, 4, px[i]);                  // a sprite pixel, in front
+      if (inPlay && bgpx[i] !== b0) put(x, y, 0, 6, bgpx[i]);          // the scenery, raised
+      const c = RGB[inPlay && bgpx[i] !== b0 ? b0 : bgpx[i]], o = i * 4;  // the wall: background only
+      wallRGB[o] = c[0]; wallRGB[o + 1] = c[1]; wallRGB[o + 2] = c[2]; wallRGB[o + 3] = 255;
+    }
+    gl.viewport(0, 0, c3.width, c3.height);
+    gl.clearColor(0.08, 0.08, 0.1, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+    const mvp = new Float32Array(view());
+    gl.useProgram(wallP);
+    gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, wallRGB);
+    gl.uniformMatrix4fv(gl.getUniformLocation(wallP, 'uMVP'), false, mvp);
+    gl.bindVertexArray(wallVA); gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.useProgram(cubeP);
+    gl.uniformMatrix4fv(gl.getUniformLocation(cubeP, 'uMVP'), false, mvp);
+    gl.bindVertexArray(cubeVA);
+    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 7), gl.DYNAMIC_DRAW);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
+    gl.bindVertexArray(null);
+  }
+  // drag to turn the model, within limits that keep the picture readable
+  let drag = null;
+  c3.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, yaw, pitch }; c3.setPointerCapture(e.pointerId); c3.style.cursor = 'grabbing'; });
+  c3.addEventListener('pointermove', e => {
+    if (!drag) return;
+    yaw = Math.max(-1.1, Math.min(1.1, drag.yaw + (e.clientX - drag.x) / 200));
+    pitch = Math.max(-0.6, Math.min(0.9, drag.pitch + (e.clientY - drag.y) / 200));
+    if (paused || !running) frame();
+  });
+  const end = () => { drag = null; c3.style.cursor = ''; };
+  c3.addEventListener('pointerup', end); c3.addEventListener('pointercancel', end);
+  let crtWas = false;
+  const v = { on: false, frame,
+    set(want) {
+      v.on = want; c3.hidden = !want; btn.setAttribute('aria-pressed', String(want));
+      if (want) { crtWas = crt.on; if (crt.on) crt.set(false); if (rt) frame(); }
+      else if (crtWas) crt.set(true);
+    } };
+  btn.addEventListener('click', () => { v.set(!v.on); screen.focus(); });
+  return v;
+})();
 
 // --- sound: the SID writes of each frame of C64 time, streamed to the site's SID model -------
 const sound = (function () {
