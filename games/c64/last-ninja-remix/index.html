@@ -168,7 +168,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
         <div class="ln-key"><span><i style="background:#dbe8f7"></i>a run of zeros</span><span><i style="background:#ffe1c7"></i>$68 and a byte taken as it is</span><span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>a byte as it is</span></div></div>
     </div>
     <div class="ln-gal" id="ln-spr-gal"></div>
-    <p class="cap">Central Park's 242 packed sprites: the 162 of the main pool (<code>SpriteSourcePointers</code>, <code>$CE54</code>) and the 40 of each of the two groups an enemy's weapon is drawn from (<code>$E979</code> and <code>$F1B2</code>). The unpacker on this page is ported from <code>DecodeSpriteMaskRle63</code> (<code>$BF3F</code>); <code>test_index.js</code> unpacks all 242 with the port and with the game's routine on the kit's 6502, and they agree in every byte.</p>
+    <p class="cap">Central Park's 242 packed sprites: the 162 of the main pool (<code>SpriteSourcePointers</code>, <code>$CE54</code>) and the 40 of each of the two groups of extra pictures some enemies' figures are drawn with (<code>$E979</code> and <code>$F1B2</code>). The unpacker on this page is ported from <code>DecodeSpriteMaskRle63</code> (<code>$BF3F</code>); <code>test_index.js</code> unpacks all 242 with the port and with the game's routine on the kit's 6502, and they agree in every byte.</p>
   </div>
   <p>Most of a sprite is empty, so the packing removes zeros. A byte from <code>$69</code> to <code>$6F</code> stands for a run of one to seven zero bytes. A <code>$68</code> says that the byte after it is to be copied as it is, which lets a sprite hold a byte from <code>$68</code> to <code>$6F</code> of its own. Every other byte is copied as it is. Packed, the main pool takes 6,544 bytes, where its 162 sprites take 10,206 unpacked.</p>
   <p>In the frame in section 03, Armakuni is three of the machine's eight sprites: two black ones, one above the other, and a third laid over the upper one that adds a few light red pixels.</p>
@@ -623,7 +623,7 @@ async function sprites() {
     g.fillStyle = C64.PAL[15]; g.fillRect(0, 0, 24 * s, 21 * s); g.fillStyle = C64.PAL[0];
     for (let y = 0; y < 21; y++) for (let x = 0; x < 24; x++) if (bytes[y * 3 + (x >> 3)] >> (7 - (x & 7)) & 1) g.fillRect(x * s, y * s, s, s);
   };
-  const name = (s) => s.group ? `Weapon group ${s.group}, sprite ${s.n}` : `Sprite ${s.n}`;
+  const name = (s) => s.group ? `Extra group ${s.group}, sprite ${s.n}` : `Sprite ${s.n}`;
   function show(k, b) {
     const s = list[k], u = lnrUnpack(P.ram, s.at);
     pressed(gal, b);

@@ -23,8 +23,8 @@ other addresses, and their facts give only what differs.
   records `$CF98-$E927`, part of them in the RAM under the I/O; two
   groups of 40 more at `AuxCompressedSpriteGroup1` (`$E979`) and
   `AuxCompressedSpriteGroup2` (`$F1B2`), each word an offset from its
-  group, biased by `$C000`. The enemy of an area may carry an extra
-  sprite, its weapon: the high nibble of the area's entry in
+  group, biased by `$C000`. The enemy of an area may be drawn with an extra
+  sprite, a picture of its head and body for each pose that takes the place of the frame's first piece: the high nibble of the area's entry in
   `enemy_area_selector` (`$B67F`) picks one of the eight pointers at
   `AuxSpriteGroupPointers` (`$E928`), none or one of the two groups. The
   other five pointers lead to the unpacked images at `$F920`, kinds no

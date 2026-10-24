@@ -18,7 +18,7 @@ follows is where things are and what differs.
 - Frames: 106 pointers at `$C0B6`, the records `$C18A-$CAAF`.
 - Packed sprites: 162 pointers at `$CAE5`, each plus `$0AE5` (modulo
   65536) the address of its record, and the records `$CC29-$E5AC`. The
-  enemy of an area may carry an extra sprite, its weapon: the high
+  enemy of an area may be drawn with an extra sprite, a picture of its head and body for each pose that takes the place of the frame's first piece: the high
   nibble of the area's entry in the enemy table at `$B24F` picks one of
   the eight pointers at `$E5B9`, none or one of two groups of 40 packed
   images, at `$E60A` and `$EE7B`. 10 unpacked images of 64 bytes from
