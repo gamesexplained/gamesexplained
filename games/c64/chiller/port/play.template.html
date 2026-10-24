@@ -219,17 +219,18 @@ const view3d = (function () {
   const prog = (vs, fs) => { const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); return p; };
   const cubeP = prog(`#version 300 es
 layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 iAt; layout(location=3) in vec3 iCol;
+layout(location=4) in float iW;
 uniform mat4 uMVP; out vec3 vCol;
 void main() {
-  vec3 p = vec3(iAt.x + aPos.x, -(iAt.y + aPos.y), iAt.z + aPos.z * iAt.w);
-  float l = 0.55 + 0.45 * max(dot(aNrm, normalize(vec3(-0.4, 0.5, 0.8))), 0.0);
+  vec3 p = vec3(iAt.x + aPos.x * iW, -(iAt.y + aPos.y), iAt.z + aPos.z * iAt.w);
+  float l = 0.78 + 0.22 * dot(aNrm, normalize(vec3(-0.35, 0.45, 0.82)));
   vCol = iCol * l; gl_Position = uMVP * vec4(p, 1.0);
 }`, `#version 300 es
 precision mediump float; in vec3 vCol; out vec4 o; void main() { o = vec4(vCol, 1.0); }`);
   const wallP = prog(`#version 300 es
 layout(location=0) in vec2 aPos; uniform mat4 uMVP; out vec2 vUV;
-void main() { vUV = aPos; gl_Position = uMVP * vec4(aPos.x * ${W}.0, -aPos.y * ${H}.0, 0.0, 1.0); }`, `#version 300 es
-precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(uTex, vUV).rgb * 0.8, 1.0); }`);
+void main() { vUV = aPos; gl_Position = uMVP * vec4(aPos.x * ${W}.0, -aPos.y * ${H}.0, -0.5, 1.0); }`, `#version 300 es
+precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(uTex, vUV).rgb * 0.92, 1.0); }`);
   // a unit cube, from 0 to 1 on each axis, its faces' normals (y down the screen, so flipped)
   const F = [[0,0,1, [0,0,0,1,0,0,1,1,0,0,1,0]], [0,0,-1, [0,0,0,0,1,0,1,1,0,1,0,0]], [0,-1,0, [0,1,0,0,1,1,1,1,1,1,1,0]],
              [0,1,0, [0,0,0,1,0,0,1,0,1,0,0,1]], [1,0,0, [1,0,0,1,1,0,1,1,1,1,0,1]], [-1,0,0, [0,0,0,0,0,1,0,1,1,0,1,0]]];
@@ -244,8 +245,9 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
   gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
   const ib = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib);
-  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 28, 0); gl.vertexAttribDivisor(2, 1);
-  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 28, 16); gl.vertexAttribDivisor(3, 1);
+  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 0); gl.vertexAttribDivisor(2, 1);
+  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 32, 16); gl.vertexAttribDivisor(3, 1);
+  gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 1, gl.FLOAT, false, 32, 28); gl.vertexAttribDivisor(4, 1);
   const wallVA = gl.createVertexArray(); gl.bindVertexArray(wallVA);
   const wb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, wb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 1,1, 0,0, 1,1, 0,1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
@@ -254,13 +256,13 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   const wallRGB = new Uint8Array(W * H * 4);
-  let inst = new Float32Array(7 * 40000), yaw = -0.35, pitch = 0.3;
+  let inst = new Float32Array(8 * 20000), yaw = -0.35, pitch = 0.3;
   const COL = RGB.map(c => c.map(v => v / 255));
   function persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2); return [t / a,0,0,0, 0,t,0,0, 0,0,(fa + n) / (n - fa),-1, 0,0,2 * fa * n / (n - fa),0]; }
   function mul(a, b) { const o = new Array(16).fill(0); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) o[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k]; return o; }
   function view() {
     // the camera on a sphere round the play area's middle, looking at it
-    const cx = W / 2, cy = -H / 2, d = 390;
+    const cx = W / 2, cy = -H / 2, d = 440;
     const ex = cx + d * Math.sin(yaw) * Math.cos(pitch), ey = cy + d * Math.sin(pitch), ez = d * Math.cos(yaw) * Math.cos(pitch);
     let fx = cx - ex, fy = cy - ey, fz = -ez; const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
     let sx = fy * 0 - fz * 1, sy = fz * 0 - fx * 0, sz = fx * 1 - fy * 0; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
@@ -270,21 +272,38 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
   }
   function frame() {
     if (!rt) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), wantW = Math.round(c3.clientWidth * dpr), wantH = Math.round(c3.clientHeight * dpr);
+    if (wantW && (c3.width !== wantW || c3.height !== wantH)) { c3.width = wantW; c3.height = wantH; }
     vic0.set(rt.chips.vic); vic0[0x15] = 0;               // the same picture without the sprites
     ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bgpx);
     const b0 = rt.chips.vic[0x21] & 15;
     let n = 0;
-    const put = (x, y, z, dep, ci) => {
-      if (n * 7 + 7 > inst.length) { const g = new Float32Array(inst.length * 2); g.set(inst); inst = g; }
-      const c = COL[ci], o = n++ * 7;
-      inst[o] = x; inst[o + 1] = y; inst[o + 2] = z; inst[o + 3] = dep; inst[o + 4] = c[0]; inst[o + 5] = c[1]; inst[o + 6] = c[2];
+    const put = (x, y, w, z, dep, ci) => {
+      if (n * 8 + 8 > inst.length) { const g = new Float32Array(inst.length * 2); g.set(inst); inst = g; }
+      const c = COL[ci], o = n++ * 8;
+      inst[o] = x; inst[o + 1] = y; inst[o + 2] = z; inst[o + 3] = dep; inst[o + 4] = c[0]; inst[o + 5] = c[1]; inst[o + 6] = c[2]; inst[o + 7] = w;
     };
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const i = y * W + x, inPlay = x >= X0 && x <= X1 && y >= Y0 && y <= Y1;
-      if (px[i] !== bgpx[i]) put(x, y, 10, 4, px[i]);                  // a sprite pixel, in front
-      if (inPlay && bgpx[i] !== b0) put(x, y, 0, 6, bgpx[i]);          // the scenery, raised
-      const c = RGB[inPlay && bgpx[i] !== b0 ? b0 : bgpx[i]], o = i * 4;  // the wall: background only
-      wallRGB[o] = c[0]; wallRGB[o + 1] = c[1]; wallRGB[o + 2] = c[2]; wallRGB[o + 3] = 255;
+    // each run of same-coloured pixels along a row is one block, so no two blocks share a face
+    // and nothing flickers where they meet
+    const spr = i => px[i] !== bgpx[i] ? px[i] : -1;
+    const scn = (x, y) => (x >= X0 && x <= X1 && y >= Y0 && y <= Y1 && bgpx[y * W + x] !== b0) ? bgpx[y * W + x] : -1;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; ) {                                         // the sprites, in front
+        const c = spr(y * W + x); let e = x + 1;
+        if (c < 0) { x = e; continue; }
+        while (e < W && spr(y * W + e) === c) e++;
+        put(x, y, e - x, 10, 4, c); x = e;
+      }
+      for (let x = 0; x < W; ) {                                         // the scenery, raised
+        const c = scn(x, y); let e = x + 1;
+        if (c < 0) { x = e; continue; }
+        while (e < W && scn(e, y) === c) e++;
+        put(x, y, e - x, 0, 6, c); x = e;
+      }
+      for (let x = 0; x < W; x++) {                                      // the wall: background only
+        const i = y * W + x, c = RGB[scn(x, y) >= 0 ? b0 : bgpx[i]], o = i * 4;
+        wallRGB[o] = c[0]; wallRGB[o + 1] = c[1]; wallRGB[o + 2] = c[2]; wallRGB[o + 3] = 255;
+      }
     }
     gl.viewport(0, 0, c3.width, c3.height);
     gl.clearColor(0.08, 0.08, 0.1, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -297,7 +316,7 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
     gl.useProgram(cubeP);
     gl.uniformMatrix4fv(gl.getUniformLocation(cubeP, 'uMVP'), false, mvp);
     gl.bindVertexArray(cubeVA);
-    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 7), gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 8), gl.DYNAMIC_DRAW);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
     gl.bindVertexArray(null);
   }
