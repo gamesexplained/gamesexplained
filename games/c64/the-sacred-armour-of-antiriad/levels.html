@@ -65,6 +65,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .an-world button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
 .an-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
 .an-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.an-border{padding:12px;border-radius:6px;border:1px solid var(--line);background:#000;margin:0 0 10px}
 .an-strip{display:block;width:100%;max-width:528px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;margin:0 0 10px}
 .an-mono{font-family:var(--fm);font-size:13px}
 .an-sprite{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
@@ -103,7 +104,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <table class="an-tbl" id="an-room-tbl"></table>
       <div class="an-wrapx"><table class="an-tbl" id="an-room-spr"></table></div>
     </div>
-    <p class="cap">Drawn from the listing by the same port of <code>build_room</code> (<code>$852C</code>), <code>place_room_sprites</code>, <code>hold_back_group</code> and <code>place_bomber</code> as the How it works page, which <code>test_rooms.js</code> checks against the game's routines for all 69 rooms. Each sprite shows the first picture of its animation. Add-ons and recharge cells show as in a new game, before any is taken.</p>
+    <p class="cap">Drawn from the listing by the same port of <code>build_room</code> (<code>$852C</code>), <code>place_room_sprites</code>, <code>hold_back_group</code> and <code>place_bomber</code> as the How it works page, which <code>test_rooms.js</code> checks against the game's routines for all 69 rooms. The animated tiles move as <code>animate_tiles</code> (<code>$8C30</code>) steps them, a frame at a time, which <code>test_rooms.js</code> holds to the routine for 1,500 frames of every room that has them. Each sprite shows the first picture of its animation. Add-ons and recharge cells show as in a new game, before any is taken.</p>
   </div>
 </section>
 
@@ -118,20 +119,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 // screen columns 4-35, with the left neighbour's last tile column in columns 0-3 and the right
 // neighbour's first in 36-39 (draw_edge_column). The shapes come from character lists
 // (load_room_chars): room_charset ($F761) picks one of nine at $3F00, each a count of runs of a
-// first and a last code and an offset into the shape pool at $2400 (8 bytes a shape) and the
-// colour pool at $3C00 (one colour a shape); the left neighbour's list is loaded first, then the
-// right's, then the room's own. The animated tiles then show the picture the first step of each
-// of the room's scripts copies in (animate_tiles). colour_room ($869C) puts each code's colour in
-// colour RAM and the room's two multicolours, room_mc_colours ($F71C), in $D022 (low nibble) and
-// $D023 (high); 0 leaves the room in hires. A cell whose colour has bit 3 set is drawn in
-// multicolour in a multicolour room. Sprites come from the room's list (room_sprite_ptrs, $CA16):
-// a count, then X, Y, the path (bit 7 is X bit 8) and the animation, filled from slot 7 down
-// (place_room_sprites), with the entries after a round striped creature held back
-// (hold_back_group) and a bomb under a bomb-thrower whose left half is on slot 7 (place_bomber),
-// as a new game finds them; an animation's first picture is drawn, the picture at $4000 + 64 x its
-// number in bank 1, in the colour and mode of its header (anim_ptrs, $FCA6), with the shared
-// sprite multicolours of Tal on foot or in the armour. test_rooms.js holds all of it against
-// build_room, place_room_sprites and draw_title_screen run on the kit's 6502.
+// first and a last code and an offset into the shape pool at $2400 (8 bytes a shape) and the colour
+// pool at $3C00 (one colour a shape); the left neighbour's list is loaded first, then the right's,
+// then the room's own. The animated tiles then show the picture the first step of each of the
+// room's scripts copies in (animate_tiles), and tilesFrame moves them on. colour_room ($869C) puts
+// each code's colour in colour RAM and the room's two multicolours, room_mc_colours ($F71C), in
+// $D022 (low nibble) and $D023 (high); 0 leaves the room in hires. A cell whose colour has bit 3
+// set is drawn in multicolour in a multicolour room. Sprites come from the room's list
+// (room_sprite_ptrs, $CA16): a count, then X, Y, the path (bit 7 is X bit 8) and the animation,
+// filled from slot 7 down (place_room_sprites), with the entries after a round striped creature
+// held back (hold_back_group) and a bomb under a bomb-thrower whose left half is on slot 7
+// (place_bomber), as a new game finds them; an animation's first picture is drawn, the picture at
+// $4000 + 64 x its number in bank 1, in the colour and mode of its header (anim_ptrs, $FCA6), with
+// the shared sprite multicolours of Tal on foot or in the armour. test_rooms.js holds all of it
+// against build_room, place_room_sprites, animate_tiles and draw_title_screen run on the kit's
+// 6502.
 const ANT = {
   ROOMS: 69,
   w: (m, a) => m[a] | m[a + 1] << 8,
@@ -159,9 +161,9 @@ const ANT = {
     if (left < 0x80) { for (let row = 0; row < 4; row++) tile(m[0x0B00 + 32 * left + 8 * row + 7], 0, row, 0, 4); ANT.loadChars(m, left, shapes, colours); }
     if (right < 0x80) { for (let row = 0; row < 4; row++) tile(m[0x0B00 + 32 * right + 8 * row], 9, row, 0, 4); ANT.loadChars(m, right, shapes, colours); }
     ANT.loadChars(m, r, shapes, colours);
-    for (const t of ANT.tileAnims(m, r)) if (t.pic) shapes.set(m.subarray(t.pic, t.pic + 8 * t.count), t.dest - 0x7800);
+    const tiles = ANT.tilesStart(m, r, shapes);
     const cram = scr.map((c) => c ? colours[c] & 15 : 0), mc = m[0xF71C + r];
-    return { r, scr, shapes, colours, cram, mc, m1: mc & 15, m2: mc >> 4, left, right };
+    return { r, scr, shapes, colours, cram, mc, m1: mc & 15, m2: mc >> 4, left, right, tiles };
   },
   // the room's animated tiles (room_anim_ptrs, $FBAB: a count, then script numbers from $80), each
   // with the picture its first step copies in as the room is built (animate_tile): a script
@@ -184,6 +186,88 @@ const ANT = {
     }
     return out;
   },
+  // the animated tiles as they run: clear_tile_anims and load_room_animations fill the slots from
+  // the room's list (number with bit 7, step 3, wait 0) and build_room runs one pass, which copies
+  // each script's first picture; tilesFrame then moves them on a frame, as count_timers counts
+  // each slot's wait (tile_wait, $0248) down once a frame and animate_tiles ($8C30) steps a slot
+  // whose wait is out: a picture is copied into the character set (shapes, from $7800) and the
+  // wait restarts at the script's byte 0; command 0 restarts at step 3, 1 n goes to step n + 3,
+  // 2 n chains to script n, any other stops the slot (bit 7 off). Every script waits a frame or
+  // more, so the game's other passes in the frame find nothing to step.
+  tilesStart(m, r, shapes) {
+    const p = ANT.w(m, 0xFBAB + 2 * r), slots = [];
+    for (let k = 1; k <= m[p] && k <= 8; k++) slots.push({ anim: m[p + k] | 0x80, step: 3, wait: 0 });
+    ANT.tilesPass(m, slots, shapes);
+    return slots;
+  },
+  tilesPass(m, slots, shapes) {
+    for (let x = slots.length - 1; x >= 0; x--) {
+      const s = slots[x];
+      for (let guard = 0; guard < 64 && s.anim & 0x80 && !s.wait; guard++) {
+        const q = ANT.w(m, 0x06BC + 2 * (s.anim & 0x7F)), lo = m[q + 2 * s.step], hi = m[q + 2 * s.step + 1];
+        if (hi >= 3) {
+          const pic = lo | hi << 8, n = 8 * m[q + 2], d = ANT.w(m, q + 4) - 0x7800;
+          for (let i = 0; i < n; i++) shapes[(d + i) & 0x7FF] = m[(pic + i) & 0xFFFF];
+          s.step = (s.step + 1) & 0xFF; s.wait = m[q];
+        } else if (lo === 0) s.step = 3;
+        else if (lo === 1) s.step = (m[q + 2 * s.step + 2] + 3) & 0xFF;
+        else if (lo === 2) { s.anim = m[q + 2 * s.step + 2] | 0x80; s.step = 3; }
+        else s.anim &= 0x7F;
+      }
+    }
+  },
+  tilesFrame(m, slots, shapes) {
+    for (const s of slots) if (s.wait) s.wait--;
+    ANT.tilesPass(m, slots, shapes);
+  },
+  // the panel's message strip as scroll_message ($AA68) moves it once a frame: eleven characters
+  // ($77A8-$77FF, strip here, 8 bytes each) that every row of shifts left two pixels a frame, the
+  // next letter rolling in from a buffer ($0672, buf) loaded every fourth frame from message msg
+  // (message_ptrs, $C1AA) at offset off: A-Z as panel characters code + $5B, the marks of
+  // text_punct ($C5CB) as text_punct_chars ($C5D3), the shapes from $7000; byte 0 starts the
+  // message again, 1 n goes on to message n, "$" stops it (msg 0). messageStart is start_message.
+  message: () => ({ msg: 0, off: 0, pix: 0, buf: new Uint8Array(8), strip: new Uint8Array(88) }),
+  messageStart(st, n) { st.strip.fill(0); st.off = 0; st.pix = 0; st.msg = n | 0x80; },
+  messageFrame(m, st) {
+    if (!(st.msg & 0x80)) return;
+    if (!st.pix) for (let guard = 0; ; guard++) {
+      if (guard > 64) return;
+      const p = ANT.w(m, 0xC1AA + 2 * (st.msg & 0x7F)), b = m[(p + st.off) & 0xFFFF];
+      let code = -1;
+      if (b >= 0x41 && b < 0x5B) code = b + 0x5B;
+      else for (let x = 7; x >= 0; x--) if (m[0xC5CB + x] === b) { code = m[0xC5D3 + x]; break; }
+      if (code >= 0) {
+        st.buf.set(m.subarray(0x7000 + 8 * code, 0x7008 + 8 * code));
+        st.off = (st.off + 1) & 0xFF;
+        break;
+      }
+      if (b === 0) st.off = 0;
+      else if (b === 1) { st.msg = m[(p + st.off + 1) & 0xFFFF]; st.off = 0; if (!(st.msg & 0x80)) return; }
+      else { if (b === 0x24) st.msg = 0; return; }
+    }
+    for (let k = 0; k < 2; k++) {
+      for (let y = 0; y < 8; y++) {
+        let c = st.buf[y] >> 7;
+        st.buf[y] = st.buf[y] << 1 & 0xFF;
+        for (let ch = 10; ch >= 0; ch--) {
+          const v = st.strip[8 * ch + y];
+          st.strip[8 * ch + y] = (v << 1 | c) & 0xFF;
+          c = v >> 7;
+        }
+      }
+      st.pix++;
+    }
+    st.pix &= 7;
+  },
+  // one of the ending's nine steps (victory_sequence, $8AD9), k from 0 to 8: every byte of the
+  // playfield's character set (shapes, from $7800) ANDed with byte (address & 63) of the mask at
+  // $0800 + 64 x k, a page of 256 bytes at a time (endPage), then the fine scroll (v.scroll, $D011
+  // bits 0-2) flipped between 3 and 0 and the border (v.border) between black and white, the
+  // background (v.bg) taken from the border (endFlip); the game waits ten frames (zp_wait) before
+  // the next, and reset_tal_end puts back 3, 0 and 0
+  endPage(m, shapes, k, p) { for (let i = 256 * p; i < 256 * p + 256; i++) shapes[i] &= m[0x0800 + 64 * k + (i & 63)]; },
+  endFlip(v) { v.scroll ^= 3; v.border ^= 1; v.bg = v.border; },
+  endStep(m, shapes, k, v) { for (let p = 0; p < 8; p++) ANT.endPage(m, shapes, k, p); ANT.endFlip(v); },
   sprites(m, r) {
     const p = ANT.w(m, 0xCA16 + 2 * r), out = [];
     for (let k = 0; k < m[p]; k++) {
@@ -214,10 +298,11 @@ const ANT = {
       if (X1 >= 0 && X1 < w && Y1 >= 0 && Y1 < h) px[Y1 * w + X1] = c;
     }
   },
-  // the playfield, 320 x 128, as colour indices; o.sprites draws the room's list, in the shared
-  // multicolours o.mc, [8, 9] on foot as start_new_game sets them, [14, 11] in the armour
+  // the playfield, 320 x 128, as colour indices on the background o.bg (black when left out);
+  // o.sprites draws the room's list, in the shared multicolours o.mc, [8, 9] on foot as
+  // start_new_game sets them, [14, 11] in the armour
   paint(m, R, o = {}) {
-    const W = 320, H = 128, px = new Uint8Array(W * H);
+    const W = 320, H = 128, px = new Uint8Array(W * H).fill(o.bg || 0);
     for (let cy = 0; cy < 16; cy++) for (let cx = 0; cx < 40; cx++) {
       const c = R.scr[cy * 40 + cx], col = R.cram[cy * 40 + cx];
       if (!c) continue;
@@ -396,16 +481,26 @@ function levels(ram) {
   };
   // ---- 02 room by room
   const rbar = $('an-room-bar');
-  [['Sprites', 'sprites'], ['Shared colours of the suit', 'suit']].forEach(([l, k]) => {
+  opt.tiles = true;
+  [['Animated tiles', 'tiles'], ['Sprites', 'sprites'], ['Shared colours of the suit', 'suit']].forEach(([l, k]) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'an-btn'; b.textContent = l; b.setAttribute('aria-pressed', String(opt[k]));
-    b.onclick = () => { opt[k] = !opt[k]; b.setAttribute('aria-pressed', String(opt[k])); go(); };
+    b.onclick = () => { opt[k] = !opt[k]; b.setAttribute('aria-pressed', String(opt[k])); if (k === 'tiles') { if (!opt.tiles) go(); } else draw(); };
     rbar.appendChild(b);
   });
   const dirs = ['Right', 'Left', 'Below', 'Above'];
+  // the room as build_room leaves it, its animated tiles then moved on a frame at a time
+  let R = null;
+  const draw = () => show($('an-room'), ANT.paint(ram, R, { sprites: opt.sprites, mc: opt.suit ? [14, 11] : [8, 9] }), 2);
+  Frames.add($('an-room'), () => {
+    if (!R || !opt.tiles || !R.tiles.length) return;
+    const was = R.tiles.map((s) => s.anim << 8 | s.step).join();
+    ANT.tilesFrame(ram, R.tiles, R.shapes);
+    if (R.tiles.map((s) => s.anim << 8 | s.step).join() !== was) draw();
+  });
   const go = pick(sel, Array.from({ length: N }, (_, r) => label(r)), (r) => {
-    const R = ANT.room(ram, r);
-    show($('an-room'), ANT.paint(ram, R, { sprites: opt.sprites, mc: opt.suit ? [14, 11] : [8, 9] }), 2);
+    R = ANT.room(ram, r);
+    draw();
     const L = ANT.links(ram, r), lv = ANT.radiation(ram, r), T = ANT.tileAnims(ram, r);
     const rows = [
       ['Map', '<code>' + hex(0x0B00 + 32 * r, 4) + '</code>'],

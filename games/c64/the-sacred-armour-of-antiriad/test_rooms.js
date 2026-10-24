@@ -9,6 +9,10 @@
 // - place_room_sprites ($8716) for each room: the X (spr_xy and spr_xhi), Y and animation
 //   (slot_materialise, else slot_anim) of slots 3 to 7, and which slots wait for a striped
 //   creature ($64 in the counter at $02B0 + slot), against ANT.sprites;
+// - the animated tiles of every room that has them, for 1,500 frames: count_timers ($AF86) once
+//   a frame and animate_tiles ($8C30) three times after it, as the interrupt and the main loop's
+//   passes run them, against ANT.tilesFrame: the character set and each slot's script, step and
+//   wait ($0250, $0258, $0248) after every frame;
 // - draw_title_screen ($8421): the whole screen and colour RAM it leaves, against ANT.title.
 // It exits 1 on any difference.
 //   node games/c64/the-sacred-armour-of-antiriad/test_rooms.js
@@ -19,7 +23,7 @@ const g = game(__dirname);
 g.sameBlock('ant-room');
 g.sameBlock('ant-ui');
 const { ANT } = g.run('index.html', 'ant-room', 'ANT');
-const L = g.listing(), sym = L.sym;
+const L = g.listing(), sym = L.sym, FRAMES = 1500;
 let bad = 0;
 const fail = (...w) => { if (bad++ < 20) console.log('DIFFERS', ...w); };
 const hex = (n) => '$' + n.toString(16).toUpperCase().padStart(2, '0');
@@ -74,6 +78,33 @@ for (let r = 0; r < ANT.ROOMS; r++) {
   if (d.length) fail('sprites of room', hex(r), d.join('; '));
 }
 
+let tileRooms = 0, tileFrames = 0;
+for (let r = 0; r < ANT.ROOMS; r++) {
+  const R = ANT.room(L.ram, r);
+  if (!R.tiles.length) continue;
+  const m = L.ram.slice(), col = new Uint8Array(1024);
+  m[0x85C1] = 0x60;
+  m[0x5B] = r;
+  const cpu = machine(m, col), call = (a) => cpu.call(a, { a: 0, x: 0, y: 0 }, { maxSteps: 2000000 });
+  call(sym('build_room'));
+  tileRooms++;
+  for (let f = 0; f <= FRAMES; f++) {
+    if (f) {
+      call(sym('count_timers'));
+      for (let k = 0; k < 3; k++) call(sym('animate_tiles'));
+      ANT.tilesFrame(L.ram, R.tiles, R.shapes);
+      tileFrames++;
+    }
+    let d = '';
+    for (let a = 0; a < 0x800 && !d; a++) if (m[0x7800 + a] !== R.shapes[a]) d = 'character byte ' + hex(0x7800 + a);
+    R.tiles.forEach((s, x) => {
+      if (!d && (m[0x0250 + x] !== s.anim || m[0x0258 + x] !== s.step || m[0x0248 + x] !== s.wait))
+        d = 'slot ' + x + ' ' + [m[0x0250 + x], m[0x0258 + x], m[0x0248 + x]].map(hex) + ' / ' + [s.anim, s.step, s.wait].map(hex);
+    });
+    if (d) { fail('animated tiles of room', hex(r), 'frame', f, d); break; }
+  }
+}
+
 {
   const m = L.ram.slice(), col = new Uint8Array(1024);
   machine(m, col).call(sym('draw_title_screen'), { a: 0, x: 0, y: 0 }, { maxSteps: 2000000 });
@@ -84,5 +115,6 @@ for (let r = 0; r < ANT.ROOMS; r++) {
   }
 }
 
-console.log(`${rooms} rooms, ${sprites} sprites and the title: ` + (bad ? bad + ' differences' : 'every room, sprite and title cell matches the game'));
+console.log(`${rooms} rooms, ${sprites} sprites, ${tileRooms} rooms' animated tiles over ${FRAMES} frames each and the title: ` +
+  (bad ? bad + ' differences' : 'every room, sprite, character and title cell matches the game'));
 process.exit(bad ? 1 : 0);

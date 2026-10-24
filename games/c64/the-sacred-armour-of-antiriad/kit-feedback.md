@@ -17,6 +17,8 @@ time, operating system and tool versions.
 - `kit/skills/c64/c64-reference`, "VIC-II essentials": lists the VIC bits that read back as 1 and says to take a register's value from the instruction that stores it. It would have mattered in `games/c64/shadowfire` and `games/c64/spy-vs-spy`, whose orientation notes both say `$D01A` = `$F1` where the game stores `$01`. The lesson is `kit/lessons/2026-10-24-the-sacred-armour-of-antiriad.md`.
 - `kit/c64/INSTALL.md`, Linux, "The release zip": a machine without `sudo`, such as a cloud container, can unpack the packages it lacks into `tools/vice-libs` with `apt-get download` and `dpkg-deb -x`, and the nine this container needed are named. The notes said only that the contributor runs `sudo apt-get install`, which an unattended run cannot do; the launcher already read `tools/vice-libs` for the Ubuntu 26.04 case.
 
+- `kit/c64/machine.js`, `Machine.restore`: two machines restored from one save shared the save's CIA timer state, so the second started from the timers the first had run on. A search that tried several joysticks from one saved moment of play got different results from the same inputs replayed straight through. The restored machine now takes its own copy, and `kit/c64/test_machine.js` checks it, failing on the old code.
+
 ## Candidates
 
 None.

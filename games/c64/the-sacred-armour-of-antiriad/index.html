@@ -65,6 +65,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .an-world button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
 .an-key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-soft);margin:8px 0 0}
 .an-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.an-border{padding:12px;border-radius:6px;border:1px solid var(--line);background:#000;margin:0 0 10px}
 .an-strip{display:block;width:100%;max-width:528px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px;margin:0 0 10px}
 .an-mono{font-family:var(--fm);font-size:13px}
 .an-sprite{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
@@ -136,7 +137,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="an-bar" id="an-room-bar"></div>
     <canvas id="an-room" class="an-cv" width="640" height="256"></canvas>
     <p class="an-out" id="an-room-out">Click a tile to see where it comes from.</p>
-    <p class="cap">Room <code>$2B</code>, the one in the frame above, drawn from the listing by a port of <code>build_room</code> (<code>$852C</code>). <code>test_rooms.js</code> checks the screen, colour RAM, every character's shape and the multicolours of all 69 rooms against the routine itself run on the simulator, and the sprites against <code>place_room_sprites</code>. Here the monkey's characters show the first picture of their animation. <a href="levels.html">Maps / levels</a> draws every room.</p>
+    <p class="cap">Room <code>$2B</code>, the one in the frame above, drawn from the listing by a port of <code>build_room</code> (<code>$852C</code>). <code>test_rooms.js</code> checks the screen, colour RAM, every character's shape and the multicolours of all 69 rooms against the routine itself run on the simulator, and the sprites against <code>place_room_sprites</code>. The monkey is characters the game redraws every eight frames (<code>animate_tiles</code>, <code>$8C30</code>), as here. <a href="levels.html">Maps / levels</a> draws every room.</p>
   </div>
   <p>The map of a room is 32 bytes at <code>$0B00</code> plus 32 times its number: four rows of eight tile numbers. A tile is 16 character codes, four by four, from the 256 tiles at <code>$1400</code>. <code>build_room</code> draws the room's tiles into screen columns 4 to 35, then the last tile column of the room to the left into columns 0 to 3 and the first of the room to the right into columns 36 to 39 (<code>draw_edge_column</code>).</p>
   <p>The tiles name character codes, and the shapes behind the codes change from room to room. Each room picks one of nine character lists (<code>room_charset</code>, <code>$F761</code>), and a list copies runs of shapes and their colours out of a pool of 748 at <code>$2400</code> into the playfield's character set at <code>$7800</code>. The neighbours' lists are loaded first, so their strips keep their own shapes, and then the room's own.</p>
@@ -202,9 +203,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pick"><button class="step" data-d="-1" aria-label="Previous message">‹</button><select id="an-msg" aria-label="Message"></select><button class="step" data-d="1" aria-label="Next message">›</button></div>
     <canvas id="an-strip" class="an-strip" width="264" height="24"></canvas>
     <p class="an-out" id="an-msg-out"></p>
-    <p class="cap">The messages from <code>message_ptrs</code> (<code>$C1AA</code>), scrolled as <code>scroll_message</code> (<code>$AA68</code>) scrolls them, two pixels a frame, in the panel's letters from its character set at <code>$7000</code> and the strip's colour.</p>
+    <p class="cap">The messages from <code>message_ptrs</code> (<code>$C1AA</code>), scrolled as <code>scroll_message</code> (<code>$AA68</code>) scrolls them, two pixels a frame, in the panel's letters from its character set at <code>$7000</code>. The strip is in multicolour, as the lit panel shows it: dark grey and light blue from the panel band's <code>$D022</code> and <code>$D023</code>, and cyan from the strip's colour, 11.</p>
   </div>
-  <p>The text is plain ASCII. Each letter becomes a panel character (code + <code>$5B</code>), and every fourth frame the next one is copied into a buffer at <code>$0672</code> and rolled into the strip's eleven characters a pixel at a time (<code>shift_message</code>). With each new letter, voice 3 types it if it is free.</p>
+  <p>The text is plain ASCII. Each letter becomes a panel character (code + <code>$5B</code>), and every fourth frame the next one is copied into a buffer at <code>$0672</code> and rolled into the strip's eleven characters a pixel at a time (<code>shift_message</code>), twice a frame, so the letters move one multicolour pixel each frame. With each new letter, voice 3 types it if it is free.</p>
   <p>"YOU HAVE THREE" and "YOU HAVE TWO" both end by naming message <code>$94</code>, " REJUVENATIONS REMAINING", and most messages go on to <code>$92</code>, eleven spaces, which scroll the last words out of the strip.</p>
   <p>The game-over and ending messages start again from the top until fire is pressed, and an add-on picked up on foot repeats its message until Tal is back in the suit (<code>addon_message</code>).</p>
 </section>
@@ -246,10 +247,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <h2 class="t">The mine goes off only on top of one pole</h2>
   <p class="lede">The power centre is room <code>$00</code>. The Implosion Mine is set off by landing the suit on the cap of the lower pole of its force field, three characters wide.</p>
   <div class="plate">
-    <canvas id="an-end" class="an-cv" width="640" height="256"></canvas>
-    <p class="cap">Room <code>$00</code> drawn as in section 04, with the three cells <code>check_detonation</code> (<code>$9850</code>) looks for marked: screen codes <code>$C9</code>-<code>$CB</code> at row 12, columns 18 to 20.</p>
+    <div class="an-bar" id="an-end-bar"></div>
+    <div class="an-border" id="an-end-box"><canvas id="an-end" class="an-cv" width="640" height="256"></canvas></div>
+    <canvas id="an-end-strip" class="an-strip" width="264" height="24"></canvas>
+    <p class="an-out" id="an-end-out"></p>
+    <p class="cap">Room <code>$00</code> drawn as in section 04, without its sprites, with the three cells <code>check_detonation</code> (<code>$9850</code>) looks for marked: screen codes <code>$C9</code>-<code>$CB</code> at row 12, columns 18 to 20. Set off, the panel's strip scrolls message <code>$93</code> as section 08 does, and then the playfield dissolves as <code>victory_sequence</code> (<code>$8AD9</code>) dissolves it, which <code>test_ending.js</code> holds to the routine step by step.</p>
   </div>
-  <p>While the suit stands on the ground, <code>check_detonation</code> reads the screen code in the cell below and to the right of Tal. When it is one of the three in <code>detonator_chars</code> (<code>$CE30</code>) and the Implosion Mine is fitted, it starts message <code>$93</code>, "IMPLOSION MINE DETONATION SEQUENCE INITIALIZED", which counts down from FIVE to ZERO as it scrolls. When the message has gone, the ending tune plays, the playfield's characters dissolve in nine steps with the border flashing, and the panel repeats "THE OPPRESSORS ARE DEFEATED YOUR RACE IS FREE" until fire starts a new game (<code>victory_sequence</code>).</p>
+  <p>While the suit stands on the ground, <code>check_detonation</code> reads the screen code in the cell below and to the right of Tal. When it is one of the three in <code>detonator_chars</code> (<code>$CE30</code>) and the Implosion Mine is fitted, it starts message <code>$93</code>, "IMPLOSION MINE DETONATION SEQUENCE INITIALIZED", which counts down from FIVE to ZERO as it scrolls, about seven and a half seconds.</p>
+  <p>When the message has gone, the ending tune plays and the playfield's characters dissolve in nine steps (<code>victory_sequence</code>). Each step ANDs all 2,048 bytes of the room's character set with a 64-byte mask from <code>$0800</code>, a new mask each step, and then flips the border and background between black and white and the fine scroll between 3 and 0, so the whole picture jumps three lines up and back. A step takes 17 or 18 frames: about eight while the processor works through the bytes, between the frame's other jobs, and then a wait of ten.</p>
+  <p>After the ninth, the colours and scroll go back to normal and the panel repeats "THE OPPRESSORS ARE DEFEATED YOUR RACE IS FREE PRESS FIRE TO PLAY AGAIN" until fire starts a new game.</p>
   <p>There is no clock. The game ends only three ways: the mine, fire after the fifth death, and Q.</p>
 </section>
 
@@ -266,20 +272,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 // screen columns 4-35, with the left neighbour's last tile column in columns 0-3 and the right
 // neighbour's first in 36-39 (draw_edge_column). The shapes come from character lists
 // (load_room_chars): room_charset ($F761) picks one of nine at $3F00, each a count of runs of a
-// first and a last code and an offset into the shape pool at $2400 (8 bytes a shape) and the
-// colour pool at $3C00 (one colour a shape); the left neighbour's list is loaded first, then the
-// right's, then the room's own. The animated tiles then show the picture the first step of each
-// of the room's scripts copies in (animate_tiles). colour_room ($869C) puts each code's colour in
-// colour RAM and the room's two multicolours, room_mc_colours ($F71C), in $D022 (low nibble) and
-// $D023 (high); 0 leaves the room in hires. A cell whose colour has bit 3 set is drawn in
-// multicolour in a multicolour room. Sprites come from the room's list (room_sprite_ptrs, $CA16):
-// a count, then X, Y, the path (bit 7 is X bit 8) and the animation, filled from slot 7 down
-// (place_room_sprites), with the entries after a round striped creature held back
-// (hold_back_group) and a bomb under a bomb-thrower whose left half is on slot 7 (place_bomber),
-// as a new game finds them; an animation's first picture is drawn, the picture at $4000 + 64 x its
-// number in bank 1, in the colour and mode of its header (anim_ptrs, $FCA6), with the shared
-// sprite multicolours of Tal on foot or in the armour. test_rooms.js holds all of it against
-// build_room, place_room_sprites and draw_title_screen run on the kit's 6502.
+// first and a last code and an offset into the shape pool at $2400 (8 bytes a shape) and the colour
+// pool at $3C00 (one colour a shape); the left neighbour's list is loaded first, then the right's,
+// then the room's own. The animated tiles then show the picture the first step of each of the
+// room's scripts copies in (animate_tiles), and tilesFrame moves them on. colour_room ($869C) puts
+// each code's colour in colour RAM and the room's two multicolours, room_mc_colours ($F71C), in
+// $D022 (low nibble) and $D023 (high); 0 leaves the room in hires. A cell whose colour has bit 3
+// set is drawn in multicolour in a multicolour room. Sprites come from the room's list
+// (room_sprite_ptrs, $CA16): a count, then X, Y, the path (bit 7 is X bit 8) and the animation,
+// filled from slot 7 down (place_room_sprites), with the entries after a round striped creature
+// held back (hold_back_group) and a bomb under a bomb-thrower whose left half is on slot 7
+// (place_bomber), as a new game finds them; an animation's first picture is drawn, the picture at
+// $4000 + 64 x its number in bank 1, in the colour and mode of its header (anim_ptrs, $FCA6), with
+// the shared sprite multicolours of Tal on foot or in the armour. test_rooms.js holds all of it
+// against build_room, place_room_sprites, animate_tiles and draw_title_screen run on the kit's
+// 6502.
 const ANT = {
   ROOMS: 69,
   w: (m, a) => m[a] | m[a + 1] << 8,
@@ -307,9 +314,9 @@ const ANT = {
     if (left < 0x80) { for (let row = 0; row < 4; row++) tile(m[0x0B00 + 32 * left + 8 * row + 7], 0, row, 0, 4); ANT.loadChars(m, left, shapes, colours); }
     if (right < 0x80) { for (let row = 0; row < 4; row++) tile(m[0x0B00 + 32 * right + 8 * row], 9, row, 0, 4); ANT.loadChars(m, right, shapes, colours); }
     ANT.loadChars(m, r, shapes, colours);
-    for (const t of ANT.tileAnims(m, r)) if (t.pic) shapes.set(m.subarray(t.pic, t.pic + 8 * t.count), t.dest - 0x7800);
+    const tiles = ANT.tilesStart(m, r, shapes);
     const cram = scr.map((c) => c ? colours[c] & 15 : 0), mc = m[0xF71C + r];
-    return { r, scr, shapes, colours, cram, mc, m1: mc & 15, m2: mc >> 4, left, right };
+    return { r, scr, shapes, colours, cram, mc, m1: mc & 15, m2: mc >> 4, left, right, tiles };
   },
   // the room's animated tiles (room_anim_ptrs, $FBAB: a count, then script numbers from $80), each
   // with the picture its first step copies in as the room is built (animate_tile): a script
@@ -332,6 +339,88 @@ const ANT = {
     }
     return out;
   },
+  // the animated tiles as they run: clear_tile_anims and load_room_animations fill the slots from
+  // the room's list (number with bit 7, step 3, wait 0) and build_room runs one pass, which copies
+  // each script's first picture; tilesFrame then moves them on a frame, as count_timers counts
+  // each slot's wait (tile_wait, $0248) down once a frame and animate_tiles ($8C30) steps a slot
+  // whose wait is out: a picture is copied into the character set (shapes, from $7800) and the
+  // wait restarts at the script's byte 0; command 0 restarts at step 3, 1 n goes to step n + 3,
+  // 2 n chains to script n, any other stops the slot (bit 7 off). Every script waits a frame or
+  // more, so the game's other passes in the frame find nothing to step.
+  tilesStart(m, r, shapes) {
+    const p = ANT.w(m, 0xFBAB + 2 * r), slots = [];
+    for (let k = 1; k <= m[p] && k <= 8; k++) slots.push({ anim: m[p + k] | 0x80, step: 3, wait: 0 });
+    ANT.tilesPass(m, slots, shapes);
+    return slots;
+  },
+  tilesPass(m, slots, shapes) {
+    for (let x = slots.length - 1; x >= 0; x--) {
+      const s = slots[x];
+      for (let guard = 0; guard < 64 && s.anim & 0x80 && !s.wait; guard++) {
+        const q = ANT.w(m, 0x06BC + 2 * (s.anim & 0x7F)), lo = m[q + 2 * s.step], hi = m[q + 2 * s.step + 1];
+        if (hi >= 3) {
+          const pic = lo | hi << 8, n = 8 * m[q + 2], d = ANT.w(m, q + 4) - 0x7800;
+          for (let i = 0; i < n; i++) shapes[(d + i) & 0x7FF] = m[(pic + i) & 0xFFFF];
+          s.step = (s.step + 1) & 0xFF; s.wait = m[q];
+        } else if (lo === 0) s.step = 3;
+        else if (lo === 1) s.step = (m[q + 2 * s.step + 2] + 3) & 0xFF;
+        else if (lo === 2) { s.anim = m[q + 2 * s.step + 2] | 0x80; s.step = 3; }
+        else s.anim &= 0x7F;
+      }
+    }
+  },
+  tilesFrame(m, slots, shapes) {
+    for (const s of slots) if (s.wait) s.wait--;
+    ANT.tilesPass(m, slots, shapes);
+  },
+  // the panel's message strip as scroll_message ($AA68) moves it once a frame: eleven characters
+  // ($77A8-$77FF, strip here, 8 bytes each) that every row of shifts left two pixels a frame, the
+  // next letter rolling in from a buffer ($0672, buf) loaded every fourth frame from message msg
+  // (message_ptrs, $C1AA) at offset off: A-Z as panel characters code + $5B, the marks of
+  // text_punct ($C5CB) as text_punct_chars ($C5D3), the shapes from $7000; byte 0 starts the
+  // message again, 1 n goes on to message n, "$" stops it (msg 0). messageStart is start_message.
+  message: () => ({ msg: 0, off: 0, pix: 0, buf: new Uint8Array(8), strip: new Uint8Array(88) }),
+  messageStart(st, n) { st.strip.fill(0); st.off = 0; st.pix = 0; st.msg = n | 0x80; },
+  messageFrame(m, st) {
+    if (!(st.msg & 0x80)) return;
+    if (!st.pix) for (let guard = 0; ; guard++) {
+      if (guard > 64) return;
+      const p = ANT.w(m, 0xC1AA + 2 * (st.msg & 0x7F)), b = m[(p + st.off) & 0xFFFF];
+      let code = -1;
+      if (b >= 0x41 && b < 0x5B) code = b + 0x5B;
+      else for (let x = 7; x >= 0; x--) if (m[0xC5CB + x] === b) { code = m[0xC5D3 + x]; break; }
+      if (code >= 0) {
+        st.buf.set(m.subarray(0x7000 + 8 * code, 0x7008 + 8 * code));
+        st.off = (st.off + 1) & 0xFF;
+        break;
+      }
+      if (b === 0) st.off = 0;
+      else if (b === 1) { st.msg = m[(p + st.off + 1) & 0xFFFF]; st.off = 0; if (!(st.msg & 0x80)) return; }
+      else { if (b === 0x24) st.msg = 0; return; }
+    }
+    for (let k = 0; k < 2; k++) {
+      for (let y = 0; y < 8; y++) {
+        let c = st.buf[y] >> 7;
+        st.buf[y] = st.buf[y] << 1 & 0xFF;
+        for (let ch = 10; ch >= 0; ch--) {
+          const v = st.strip[8 * ch + y];
+          st.strip[8 * ch + y] = (v << 1 | c) & 0xFF;
+          c = v >> 7;
+        }
+      }
+      st.pix++;
+    }
+    st.pix &= 7;
+  },
+  // one of the ending's nine steps (victory_sequence, $8AD9), k from 0 to 8: every byte of the
+  // playfield's character set (shapes, from $7800) ANDed with byte (address & 63) of the mask at
+  // $0800 + 64 x k, a page of 256 bytes at a time (endPage), then the fine scroll (v.scroll, $D011
+  // bits 0-2) flipped between 3 and 0 and the border (v.border) between black and white, the
+  // background (v.bg) taken from the border (endFlip); the game waits ten frames (zp_wait) before
+  // the next, and reset_tal_end puts back 3, 0 and 0
+  endPage(m, shapes, k, p) { for (let i = 256 * p; i < 256 * p + 256; i++) shapes[i] &= m[0x0800 + 64 * k + (i & 63)]; },
+  endFlip(v) { v.scroll ^= 3; v.border ^= 1; v.bg = v.border; },
+  endStep(m, shapes, k, v) { for (let p = 0; p < 8; p++) ANT.endPage(m, shapes, k, p); ANT.endFlip(v); },
   sprites(m, r) {
     const p = ANT.w(m, 0xCA16 + 2 * r), out = [];
     for (let k = 0; k < m[p]; k++) {
@@ -362,10 +451,11 @@ const ANT = {
       if (X1 >= 0 && X1 < w && Y1 >= 0 && Y1 < h) px[Y1 * w + X1] = c;
     }
   },
-  // the playfield, 320 x 128, as colour indices; o.sprites draws the room's list, in the shared
-  // multicolours o.mc, [8, 9] on foot as start_new_game sets them, [14, 11] in the armour
+  // the playfield, 320 x 128, as colour indices on the background o.bg (black when left out);
+  // o.sprites draws the room's list, in the shared multicolours o.mc, [8, 9] on foot as
+  // start_new_game sets them, [14, 11] in the armour
   paint(m, R, o = {}) {
-    const W = 320, H = 128, px = new Uint8Array(W * H);
+    const W = 320, H = 128, px = new Uint8Array(W * H).fill(o.bg || 0);
     for (let cy = 0; cy < 16; cy++) for (let cx = 0; cx < 40; cx++) {
       const c = R.scr[cy * 40 + cx], col = R.cram[cy * 40 + cx];
       if (!c) continue;
@@ -673,6 +763,11 @@ function roomWidget(ram) {
     b.onclick = () => { on[k] = !on[k]; b.setAttribute('aria-pressed', String(on[k])); draw(); };
     bar.appendChild(b);
   });
+  Frames.add(cv, () => {
+    const was = R.tiles.map((s) => s.step).join();
+    ANT.tilesFrame(ram, R.tiles, R.shapes);
+    if (R.tiles.map((s) => s.step).join() !== was) draw();
+  });
   cv.onclick = (e) => {
     const b = cv.getBoundingClientRect(), col = Math.floor((e.clientX - b.left) / b.width * 10), row = Math.floor((e.clientY - b.top) / b.height * 4);
     sel = [col, row];
@@ -746,9 +841,15 @@ function talWidget(ram) {
 }
 
 // ---- 08 the panel's messages
+// the strip as the lit panel shows it, 88 x 8 pixels in multicolour: the panel band's 11 and 14
+// ($D022, $D023) and the strip's colour RAM, 11, for cyan
+function stripImage(st) {
+  const px = new Uint8Array(88 * 8);
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 88; x++) px[88 * y + x] = [0, 11, 14, 3][(st.strip[8 * (x >> 3) + y] >> (6 - (x & 6))) & 3];
+  return { w: 88, h: 8, px };
+}
 function messageWidget(ram) {
-  const N = 22, sel = $('an-msg'), cv = $('an-strip');
-  const punct = [...ram.subarray(0xC5CB, 0xC5D3)], punctCodes = [...ram.subarray(0xC5D3, 0xC5DB)];
+  const N = 22, sel = $('an-msg'), cv = $('an-strip'), st = ANT.message();
   const start = (n) => ANT.w(ram, 0xC1AA + 2 * (n - 0x80));
   function text(n) {
     let s = '', a = start(n);
@@ -760,38 +861,19 @@ function messageWidget(ram) {
       s += String.fromCharCode(b);
     }
   }
-  const strip = new Uint8Array(88 * 8);
-  let msg = 0x80, off = 0, pix = 0, glyph = null, chosen = 0x80, rest = 0;
-  function glyphOf(b) {
-    const k = punct.indexOf(b), code = b >= 0x41 && b < 0x5B ? b + 0x5B : k >= 0 ? punctCodes[k] : 0;
-    return ram.subarray(0x7000 + 8 * code, 0x7008 + 8 * code);
-  }
-  function next() {
-    for (let guard = 0; guard < 4; guard++) {
-      const b = ram[start(msg) + off];
-      if (b === 0) { off = 0; continue; }
-      if (b === 1) { msg = ram[start(msg) + off + 1]; off = 0; continue; }
-      if (b === 0x24) return false;
-      glyph = glyphOf(b); off++; return true;
-    }
-    return false;
-  }
+  let chosen = 0x80, rest = 0;
   function frame() {
-    if (rest) { if (--rest === 0) { msg = chosen; off = 0; pix = 0; strip.fill(0); } return; }
-    if (pix === 0 && !next()) { rest = 75; return; }
-    for (let k = 0; k < 2; k++) {
-      for (let y = 0; y < 8; y++) {
-        strip.copyWithin(88 * y, 88 * y + 1, 88 * y + 88);
-        strip[88 * y + 87] = (glyph[y] >> (7 - pix)) & 1 ? 2 : 0;
-      }
-      pix = (pix + 1) & 7;
-    }
-    show(cv, { w: 88, h: 8, px: strip }, 3);
+    if (!(st.msg & 0x80) && ++rest < 75) return;
+    if (rest) { rest = 0; ANT.messageStart(st, chosen); }
+    ANT.messageFrame(ram, st);
+    show(cv, stripImage(st), 3);
   }
   const labels = [];
   for (let n = 0x80; n < 0x80 + N; n++) { const t = text(n); labels.push(hex(n) + ' ' + (t.s.trim() || '(eleven spaces)')); }
   pick(sel, labels, (i) => {
-    chosen = msg = 0x80 + i; off = 0; pix = 0; rest = 0; strip.fill(0);
+    chosen = 0x80 + i; rest = 0;
+    ANT.messageStart(st, chosen);
+    show(cv, stripImage(st), 3);
     const t = text(chosen);
     $('an-msg-out').innerHTML = '<b>Message ' + hex(chosen) + '</b>, at <code>' + hex(start(chosen), 4) + '</code>: "' + esc(t.s) + '", then ' + t.end + '.';
   })();
@@ -850,15 +932,49 @@ function radiationWidget(ram) {
 }
 
 // ---- 11 the ending
+// from the press: message $93 and $92 scroll; when they stop, nine steps of eight frames' AND, a
+// page a frame, the flip, then the wait (17 frames a step in all, as the game took in the
+// emulator); after the ninth wait, the colours and scroll put back and message $95 for ever
 function endWidget(ram) {
-  const ctx = show($('an-end'), ANT.paint(ram, ANT.room(ram, 0)), 2);
-  ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 4; ctx.strokeRect(16 * 18 - 3, 16 * 12 - 3, 16 * 3 + 6, 16 + 6);
+  const cv = $('an-end'), box = $('an-end-box'), strip = $('an-end-strip'), out = $('an-end-out');
+  const STEP = 17;
+  let R, v, st, phase = 'ready', k = 0, t = 0;
+  function draw() {
+    const img = ANT.paint(ram, R, { bg: v.bg });
+    if (!v.scroll) { img.px.copyWithin(0, 3 * 320); img.px.fill(v.bg, 320 * 125); }
+    const ctx = show(cv, img, 2);
+    if (phase === 'ready') { ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 4; ctx.strokeRect(16 * 18 - 3, 16 * 12 - 3, 16 * 3 + 6, 16 + 6); }
+    box.style.background = C64.PAL[v.border];
+    show(strip, stripImage(st), 3);
+    out.innerHTML = phase === 'ready' ? 'The suit has not landed on the pole yet.'
+      : phase === 'count' ? 'Message <code>' + hex(st.msg) + '</code> scrolling.'
+      : phase === 'dissolve' ? 'Dissolve step ' + (k + 1) + ' of 9: ' + (t < 8 ? 'ANDing page ' + hex(0x78 + t) + ' with the mask at <code>' + hex(0x0800 + 64 * k, 4) + '</code>.' : 'waiting.')
+      : 'Message <code>$95</code>, until fire is pressed.';
+  }
+  function reset() { R = ANT.room(ram, 0); v = { scroll: 3, border: 0, bg: 0 }; st = ANT.message(); phase = 'ready'; k = t = 0; }
+  button($('an-end-bar'), 'Set off the mine', () => { reset(); phase = 'count'; ANT.messageStart(st, 0x93); draw(); });
+  button($('an-end-bar'), 'Press fire', () => { reset(); draw(); });
+  Frames.add(cv, () => {
+    if (phase === 'ready') return;
+    ANT.messageFrame(ram, st);
+    if (phase === 'count' && !(st.msg & 0x80)) phase = 'dissolve';
+    else if (phase === 'dissolve') {
+      if (t < 8) ANT.endPage(ram, R.shapes, k, t);
+      if (t === 7) ANT.endFlip(v);
+      if (++t === STEP) {
+        t = 0;
+        if (++k === 9) { v.scroll = 3; v.border = v.bg = 0; phase = 'free'; ANT.messageStart(st, 0x95); }
+      }
+    }
+    draw();
+  });
+  reset(); draw();
 }
 
 frameWidget();
 C64.load('listing.json').then((L) => {
   const m = L.ram;
   soundWidgets(m); roomWidget(m); solidWidget(m); talWidget(m); messageWidget(m); creatureWidget(m); radiationWidget(m); endWidget(m);
-}).catch((e) => { for (const id of ['an-music', 'an-sfx', 'an-room-out', 'an-solid-out', 'an-tal-out', 'an-msg-out', 'an-crit-out', 'an-rad-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
+}).catch((e) => { for (const id of ['an-music', 'an-sfx', 'an-room-out', 'an-solid-out', 'an-tal-out', 'an-msg-out', 'an-crit-out', 'an-rad-out', 'an-end-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
 // end of ant-page
 </script>

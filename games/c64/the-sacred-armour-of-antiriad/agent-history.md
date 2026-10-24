@@ -71,3 +71,28 @@ errors on any of the three pages.
 loaded from `work/entry.vsf`, did not stop within 60 seconds, though the
 title starts that tune within a second. It was not run down; the music
 check used a state recorded another way.
+
+## Follow-up: animated tiles and the ending (24 October 2026)
+
+After the Silver pull request, the contributor asked for four of the
+debrief's ideas. `animate_tiles` was ported into the shared room block
+(`ANT.tilesStart`, `tilesPass`, `tilesFrame`) and `test_rooms.js` now
+runs it beside the game's routine, with `count_timers` once a frame and
+three main-loop passes after it, for 1,500 frames of each of the 37
+rooms that have tile scripts; the character set and every slot's script,
+step and wait matched on every frame. Maps and How it works animate the
+tiles from it.
+
+The ending widget needed `scroll_message` and the dissolve. Both were
+ported into the same block and `test_ending.js` holds them: every one of
+the 22 messages for 1,500 frames, and `victory_sequence` in room `$00`
+stopped at each of its nine waits. A planted slip in each port (the
+dissolve mask's index, a letter's code) failed the test. The step's
+length on the screen came from VICE: the border flips 17 or 18 frames
+apart, of which the AND takes about eight with the interrupt running.
+
+Drawing the strip under the ending showed that the panel widget of
+section 08 had drawn its letters in hires red. A screenshot of the strip
+in VICE, decoded pixel by pixel, matched the strip's bytes drawn in
+multicolour with dark grey, light blue and cyan (colour RAM 11), and
+both widgets now draw it so.

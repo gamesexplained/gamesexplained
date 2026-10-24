@@ -28,14 +28,11 @@ minisite is built with a player for every tune.
 - A Play tab that is the whole game, every routine ported and run in
   lockstep with the game's code (`kit/skills/core/70-minisite/play.md`).
   The pages already carry ports of `build_room`, `place_room_sprites`,
-  the title and the sound driver, held by `test_rooms.js` and
-  `test_music.js`.
+  `animate_tiles`, the title, the sound driver, `scroll_message` and the
+  ending's dissolve, held by `test_rooms.js`, `test_music.js` and
+  `test_ending.js`.
 
 ## Article ideas
 
-- A walk through the ending: the countdown message, the nine dissolve
-  steps and the border flashes, drawn from `victory_sequence`.
 - The suit's flight: `suit_vertical`'s acceleration and the sinking of
   a suit with no energy, as a widget.
-- The machine gunner and the dragons as tile scripts (`$83`, `$86`,
-  `$89`): how a picture made of characters is animated.

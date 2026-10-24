@@ -145,6 +145,12 @@ no umlaut. Letters become panel character codes `$9C`-`$B5`
   frames (`roll_score`, `score_digits`). *Live*: a binary score of 123 was
   reached by the counted digits in 492 frames, the shown digits one roll
   behind.
+- The ending's nine dissolve steps (`victory_sequence`) each AND the 2,048
+  bytes of the playfield's characters with a mask, 84,124 processor cycles
+  with no interrupt, then wait ten frames (`zp_wait`). *Live*: the border
+  flipped 426, 444, 461, 479, 496, 513, 530, 547 and 564 frames after the
+  mine went off, 17 or 18 frames apart; message `$93` scrolled for 373
+  frames, and `$95` began at frame 574.
 - The Geiger clicks come every 800, 400, 200 or 100 frames at radiation
   levels 0 to 3 (`radiation_clicks`, `radiation_click_waits`). When voice
   3 is busy as a wait runs out, there is no click and the next wait is
@@ -226,6 +232,13 @@ except in rooms `$00`-`$09`.
 - The panel is drawn in dark grey until the suit is first worn, then
   coloured (`colour_panel`) and flickered between hires and multicolour in
   seven stages (`panel_power_up`, `flicker_waits`, `flicker_counts`).
+- The message strip, row 23, columns 15 to 25 (codes `$F5`-`$FF`, shapes
+  at `$77A8`-`$77FF`), has colour 11, so once the panel is lit and in
+  multicolour (`zp_panel_mc` `$10`, `panel_power_up`) each pair of bits
+  of a letter shows dark grey, light blue or cyan (`$D022` 11, `$D023`
+  14, colour 3). Two shifts a frame (`scroll_message`) move it one
+  multicolour pixel. *Live*: the strip's 88 bytes drawn so matched a
+  screenshot of the strip pixel for pixel.
 
 ## Mechanics
 
@@ -477,7 +490,10 @@ running whole frames.
   Tal's energy stayed at 31 for 500 frames, against 31 to 1 without it
   (`cheats.md`).
 - The ending: the suit on the pole in room `$00` with the add-ons set,
-  countdown, dissolve and message `$95`.
+  countdown, dissolve and message `$95`; read a frame at a time, the
+  timings under "Timing". Message `$84` ("ANTI-RAD SUIT ACTIVE"), queued
+  by the suit's power-up the test had set going, scrolled during the
+  dissolve.
 - Room `$03`, Tal on foot: the bomb on slot 5 with 0 hit points and 20
   points. A stone (sprite 2, animation `$BC`) placed on it each frame
   started its dissolve on the first frame of contact, hit points 255, and
