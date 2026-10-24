@@ -70,7 +70,7 @@
     if (tuneLoading || !HERE) return;
     tuneLoading = true;                          // when it loads, it finds every view on the page
     const sc = document.createElement('script');
-    sc.src = HERE.replace(/[^/]*$/, 'bounce-tune.js');
+    sc.src = new URL('bounce-tune.js', HERE).href;
     document.head.appendChild(sc);
   }
 

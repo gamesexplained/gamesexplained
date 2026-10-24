@@ -81,8 +81,8 @@ in a chain (`10-orient`, step 3).
 
 Port the game's own music driver and play it through the site's model of
 the SID, `../../lib/sid.js`: it runs the driver once a frame, plays it,
-and shows each voice on a piano roll with the lines the port supplies
-about what the driver read. When the game calls its driver from a CIA
+and shows each voice as a bouncing ball, or on a piano roll, with the
+lines the port supplies about what the driver read. When the game calls its driver from a CIA
 timer instead, pass the timer's period in cycles (the latch plus 1) to
 `mount` as `period`, and port one call to each `play()`: the player keeps
 the game's tempo, where mapping calls to frames in the port makes a

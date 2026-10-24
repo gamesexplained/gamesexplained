@@ -77,8 +77,8 @@
 // 6581 voice a DC of $800 * $FF against a swing of ($FFF - $380) * $FF, about 0.64, so about 2 for
 // the three voices of a 6581; the 8580's is close to 0, and 0, the default, leaves it out.
 //
-//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll (or a
-//                                bouncing ball, ../../lib/bounce.js) and a panel per voice
+//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a bouncing ball a voice
+//                                (../../lib/bounce.js) or a piano roll, and a panel per voice
 //   C64Sid.host(options)         the sound alone, for a page with its own controls; with live:
 //                                true, the writes a Play tab's game makes as it runs
 //   C64Sid.engine()              the model, the bus and the frame player without a page, for
@@ -87,6 +87,21 @@
 //   C64Sid.live                  the driver host() runs for live: true, for C64Sid.worklet in tests
 globalThis.C64Sid = (function () {
   'use strict';
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (globalThis.NoteBounce) return Promise.resolve(globalThis.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => globalThis.NoteBounce ? ok(globalThis.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
 
   // Everything that makes sound is inside engine(), which refers to nothing outside itself:
   // host() runs it in an AudioWorklet from its own source text, and node runs it for tests.
@@ -556,7 +571,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-seek input:disabled{opacity:.45}
 .sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
-.sid-roll[hidden],.sid-stagebox[hidden]{display:none}
+.sid-roll[hidden],.sid-stagebox[hidden],.sid-filt[hidden]{display:none}
 .sid-stagebox{position:relative}
 .sid-stage{display:block;width:100%;height:min(480px,56vw,80vh);border-radius:8px;background:#060607}
 @media (orientation:portrait){.sid-stage{height:min(72vh,150vw)}}
@@ -610,12 +625,14 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //   onFrame optional: (frame, tune) => ..., called with each frame the reader hears, as the
   //           display shows it, for a page that draws something in step with the music (lyrics,
   //           a screen); frame counts from the tune's start, as the seek bar does
-  //   bounce  optional: true for a bouncing ball in place of the piano roll, with a switch between
-  //           the two and a full-screen button: a ball a voice hops from note to note as the
-  //           reader hears them, and rides the voice's pitch as it bends or wavers between
-  //           (NoteBounce, ../../lib/bounce.js, which the page loads before this script). The
-  //           player runs the driver ahead when a tune starts, as for its length, and takes a
-  //           note where mark says one starts, and where the pitch steps to a new note and holds
+  //   bounce  optional: false for the piano roll alone. Otherwise the player shows a bouncing
+  //           ball in its place, with a switch between the two and a full-screen button: a ball
+  //           a voice hops from note to note as the reader hears them, and rides the voice's
+  //           pitch as it bends or wavers between (NoteBounce, ../../lib/bounce.js, loaded from
+  //           beside this script unless the page has loaded it; where it cannot load, the piano
+  //           roll). The player runs the driver ahead when a tune starts, as for its length, and
+  //           takes a note where mark says one starts, and where the pitch steps to a new note
+  //           and holds
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -631,7 +648,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
     const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
-    const BOUNCE = !!(o.bounce && globalThis.NoteBounce);
+    const BOUNCE = o.bounce !== false;
     const line = (r, i) => r.k
       ? `<div class="sid-l"><span class="sid-k">${esc(r.k)}</span><span class="sid-m" data-row="${i}">-</span></div>`
       : `<div class="sid-l${r.in ? ' sid-in' : ''}${r.mono ? ' sid-m' : ''}" data-row="${i}">-</div>`;
@@ -644,7 +661,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         '<span class="sid-fsw"><span class="sid-k">Filter</span>' +
         FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
         '</span><span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
-      (BOUNCE ? '<span class="sid-filt" role="group" aria-label="What the player shows"><span class="sid-k">View</span>' +
+      (BOUNCE ? '<span class="sid-filt" data-views role="group" aria-label="What the player shows"><span class="sid-k">View</span>' +
         '<button type="button" data-view="ball" aria-pressed="true">Ball</button>' +
         '<button type="button" data-view="roll" aria-pressed="false">Piano roll</button></span>' : '') +
       '<span class="sid-stat">' +
@@ -683,8 +700,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     // The bouncing ball: drawn every animation frame from the last frame heard, moved on by the
     // time since, so that it flies smoothly between the player's frames.
     const box = BOUNCE ? $('.sid-stagebox') : null, full = BOUNCE ? $('[data-full]') : null;
-    const ball = BOUNCE ? globalThis.NoteBounce.create($('.sid-stage'), { colors: COLORS, font: FONT_B }) : null;
-    let view = BOUNCE ? 'ball' : 'roll', heard = null, heardAt = 0;
+    let ball = null, view = BOUNCE ? 'ball' : 'roll', heard = null, heardAt = 0;
     // Each tune's length in frames, or null where it runs on past LONG: measured once, by running
     // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
     // gets a bar LONG long, which grows if the tune is played past it. The same run notes whether
@@ -928,11 +944,18 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 
     draw();
     window.addEventListener('resize', draw);
-    if (ball) {                                              // drawn again whenever the stage changes size
-      if (globalThis.ResizeObserver) new ResizeObserver(drawBall).observe(box);
-      else window.addEventListener('resize', drawBall);
+    if (BOUNCE) noteBounce().then((NB) => {
+      ball = NB.create($('.sid-stage'), { colors: COLORS, font: FONT_B });
+      if (tune >= 0) ball.score(scores[tune]);
+      if (globalThis.ResizeObserver) new ResizeObserver(drawBall).observe(box);   // drawn again whenever
+      else window.addEventListener('resize', drawBall);                          // the stage changes size
       drawBall();
-    }
+    }, () => {                                               // no ball: the piano roll alone
+      view = 'roll';
+      box.hidden = true; canvas.hidden = false;
+      $('[data-views]').hidden = true;
+      draw();
+    });
   }
 
   return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName };
