@@ -86,8 +86,21 @@
 //                                tests
 //   C64Sid.worklet(driver)       the source text host() runs in the AudioWorklet, for tests
 //   C64Sid.live                  the driver host() runs for live: true, for C64Sid.worklet in tests
+//   C64Sid.waveLevel(ctrl, pw)   how loud a voice's waveform is against its envelope, 0 to 1
 globalThis.C64Sid = (function () {
   'use strict';
+  // How loud a voice's waveform is, 0 to 1, against the level its envelope sets: none with no
+  // waveform or with the test bit holding the oscillator, and for a pulse its RMS against a
+  // square's, 2 sqrt(d (1 - d)) for a width d of the cycle, as the model's output measures it (a
+  // pulse 100 of 4096 wide is a third as loud as a square). A sweep of a pulse's width from 0 is
+  // how a driver fades a voice in (Wizball's title, voice 3).
+  function waveLevel(ctrl, pw) {
+    if (!(ctrl & 0xF0) || ctrl & 8) return 0;
+    if (!(ctrl & 0x40)) return 1;
+    const d = (pw & 0xFFF) / 4096;
+    return 2 * Math.sqrt(d * (1 - d));
+  }
+
   // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
   const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
   let bounceLoad = null;
@@ -709,7 +722,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     // and, for the bouncing ball, the frame and pitch of every note each voice starts, and each
     // voice's pitch and loudness at every frame. The loudness is the envelope's, from the chip's
     // model run alongside without sound (about 0.1 s for five minutes of music), so that a note
-    // still sounds while it is released.
+    // still sounds while it is released, times what the waveform lets out (waveLevel), so that a
+    // pulse swept wider from nothing fades in.
     const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [], scores = [];
     function length(t) {
       if (lengths[t] === undefined) {
@@ -730,7 +744,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
             const v = Object.assign({}, d.voice ? d.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
               pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] });
             const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
-            level[x][k] = lv;
+            level[x][k] = lv * waveLevel(v.ctrl, v.pw);
             if (lv && v.freq && wave && wave !== 0x80) line[x][k] = semis(v.freq);   // noise has no pitch to show
             if (mark(v, prev[x]) && v.freq) notes[x].push({ t: k, n: semis(v.freq) });
             prev[x] = v;
@@ -959,5 +973,5 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     });
   }
 
-  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName };
+  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel };
 })();

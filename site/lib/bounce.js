@@ -17,14 +17,16 @@
 //             (any origin; 0 = C0 in the SID player). line, optional: the voice's pitch at each
 //             tick, NaN where it is silent; a step in it to a new pitch that holds is a note
 //             too (an instrument playing an arpeggio of its own on one note of the track).
-//             level, optional: its loudness at each tick, 0 to 1. A voice with no notes gets
-//             no lane. null clears the view
+//             level, optional: its loudness at each tick, 0 to 1, which the line, the ball's
+//             glow and each lit note's follow. A voice with no notes gets no lane. null clears
+//             the view
 //   view.draw(t, { muted })        draws the tune at tick t (fractional), with muted[x] true for
 //             a voice to draw dimmed; with no score, draws the empty sheet and the message
 //   view.message                   the text drawn on an empty sheet
-//   view.ballAt(x, t)              voice x's ball at tick t, { i, lat, y, at }: the note it last
+//   view.ballAt(x, t)              voice x's ball at tick t, { i, lat, y, at, loud }: the note it last
 //             landed on (-1 before the first), its place across the lane (-0.5 to 0.5), its
-//             height and the tick of the point under it, for tests
+//             height, the tick of the point under it and the loudness its glow shows (0 to 1),
+//             for tests
 //   view.notesOf(x)                voice x's notes as the view takes them, given and found in
 //             the line, [{ t, n }], for tests
 // Everything drawn is a function of t alone, so a page can seek, pause or loop without telling
@@ -47,6 +49,8 @@
                                                    // note moves in a tick
   const GROOVE = 0.011, LIT = 0.013, LIT_GLOW = 0.045;   // half-widths of the line, world units
   const TRAIL = 0.3;                               // seconds of the ball's path drawn behind it
+  const GLOW_FALL = 0.25;                          // seconds: how fast a glow fades after its voice goes quiet
+  const GLOW_LEAST = 0.15;                         // the glow of a silent voice, against a voice at full volume
   // the camera for each shape of canvas: yaw turns it (0 looks along time), pitch tilts it down,
   // fov is the lens's height in radians, (ax, ay) is where the ball's point sits on the canvas
   // (-1 to 1 from the middle, ay down) and zoom brings it nearer than the distance that fits
@@ -135,7 +139,7 @@
         // everywhere it sounds but at a step to a pitch that then holds, so that a new note
         // starts a new stretch of line while a bend or a chord played a tick a note at a time
         // stays one
-        let lp = null, lv = null, join = null;
+        let lp = null, lv = null, lg = null, join = null;
         if (line) {
           lp = new Float32Array(line.length); lv = new Float32Array(line.length); join = new Uint8Array(line.length);
           for (let k = 0; k < line.length; k++) {
@@ -149,6 +153,14 @@
             join[k] = d >= STEP && heard(k + 2) && Math.abs(line[k + 2] - line[k + 1]) < HELD ? 0 : 1;
           }
         }
+        // the loudness the glow shows: the level, falling away over a quarter of a second once
+        // the voice is quieter, so that it holds through the gaps between notes but not a rest
+        if (level) {
+          lg = new Float32Array(level.length);
+          const fall = Math.exp(-1 / (rate * GLOW_FALL));
+          let peak = 0;
+          for (let k = 0; k < level.length; k++) lg[k] = peak = Math.max(clamp(level[k] || 0, 0, 1), peak * fall);
+        }
         // when each note's sound ends: where the voice falls silent (after an attack that may
         // take half a second to be heard), or at the next note; with no line, at the next note,
         // or a second after the last
@@ -161,7 +173,7 @@
           while (k < next && heard(k)) k++;
           ends[i] = Math.min(k, next) / rate;
         });
-        lanes.push({ x, notes, ts, ps, lp, lv, join, ends, color: COLORS[x % COLORS.length] });
+        lanes.push({ x, notes, ts, ps, lp, lv, lg, join, ends, color: COLORS[x % COLORS.length] });
       });
       gaps.sort((a, b) => a - b);
       const typical = gaps.length ? gaps[gaps.length >> 1] : 0.25;
@@ -252,11 +264,22 @@
       return { i, lat: lat + (pb - lat) * u, y: y * (1 - u) + peak * 4 * u * (1 - u), at: s };
     }
 
+    // how loud the voice is at time s, as its glow shows it: 1 with no levels given
+    function loud(l, s) {
+      const lg = l.lg;
+      if (!lg) return 1;
+      const k = s * rate, k0 = Math.floor(k);
+      if (k0 < 0) return lg.length ? lg[0] : 0;
+      if (k0 + 1 >= lg.length) return lg.length ? lg[lg.length - 1] : 0;
+      return lg[k0] + (lg[k0 + 1] - lg[k0]) * (k - k0);
+    }
+    const glowOf = (v) => GLOW_LEAST + (1 - GLOW_LEAST) * v;
+
     function ballAt(x, t) {
       const l = lanes.find((q) => q.x === x);
       if (!l) return null;
       const b = ball(l, t / rate);
-      return { i: b.i, lat: b.lat, y: b.y, at: b.at * rate };
+      return { i: b.i, lat: b.lat, y: b.y, at: b.at * rate, loud: loud(l, t / rate) };
     }
 
     // ------------------------------------------------------------------ the camera
@@ -561,7 +584,8 @@
         return;
       }
       const flash = Math.exp(-age / 0.2);
-      const k = (0.62 + 0.55 * flash) * f;
+      const v = glowOf(loud(l, l.ts[i] + 1 / rate));   // as loud as the note sounds once it starts
+      const k = (0.62 + 0.55 * flash) * f * (0.5 + 0.5 * v);
       const gr = g.createRadialGradient(0, 0, 0, 0, 0, 1);
       gr.addColorStop(0, css([255, 255, 255], Math.min(1, k))); gr.addColorStop(0.45, css(C.core, Math.min(1, k)));
       gr.addColorStop(0.85, css(C.light, Math.min(1, k * 0.9))); gr.addColorStop(1, css(C.base, 0.5 * f));
@@ -572,7 +596,8 @@
       gg.setTransform(m[0] / 2, m[1] / 2, m[2] / 2, m[3] / 2, m[4] / 2, m[5] / 2);
       const s = 2.8 + 1.8 * flash;
       const hg = gg.createRadialGradient(0, 0, 0, 0, 0, s);
-      hg.addColorStop(0, css(C.core, 0.9 * k)); hg.addColorStop(0.18, css(C.light, 0.5 * k)); hg.addColorStop(0.5, css(C.base, 0.16 * k)); hg.addColorStop(1, css(C.base, 0));
+      const kg = k * v;
+      hg.addColorStop(0, css(C.core, 0.9 * kg)); hg.addColorStop(0.18, css(C.light, 0.5 * kg)); hg.addColorStop(0.5, css(C.base, 0.16 * kg)); hg.addColorStop(1, css(C.base, 0));
       gg.fillStyle = hg;
       gg.beginPath(); gg.arc(0, 0, s, 0, 2 * Math.PI); gg.fill();
     }
@@ -585,11 +610,12 @@
       const p = proj(cam, x, y, z);
       if (!p) return;
       const f = fog(z) * dim, r = BALL_R * p[3];
+      const gl = f * glowOf(loud(l, b.at));        // its light: as bright as its voice is loud
 
       // the pool of light under it, brighter as it comes down
       const m = disc(x, z, 0.32);
       if (m) {
-        const k = f * 0.4 / (1 + 6 * b.y);
+        const k = gl * 0.4 / (1 + 6 * b.y);
         gg.setTransform(m[0] / 2, m[1] / 2, m[2] / 2, m[3] / 2, m[4] / 2, m[5] / 2);
         const pg = gg.createRadialGradient(0, 0, 0, 0, 0, 1);
         pg.addColorStop(0, css(C.light, k)); pg.addColorStop(0.4, css(C.base, k * 0.35)); pg.addColorStop(1, css(C.base, 0));
@@ -610,7 +636,7 @@
         g.beginPath(); g.arc(q[0], q[1], rr * 1.05, 0, 2 * Math.PI); g.fill();
         gg.setTransform(1, 0, 0, 1, 0, 0);            // and a little of its light
         const qg = gg.createRadialGradient(q[0] / 2, q[1] / 2, 0, q[0] / 2, q[1] / 2, rr * 1.2);
-        qg.addColorStop(0, css(C.light, 0.25 * k)); qg.addColorStop(1, css(C.base, 0));
+        qg.addColorStop(0, css(C.light, 0.25 * gl * 0.95 / (1 + 0.8 * b.y))); qg.addColorStop(1, css(C.base, 0));
         gg.fillStyle = qg;
         gg.beginPath(); gg.arc(q[0] / 2, q[1] / 2, rr * 1.2, 0, 2 * Math.PI); gg.fill();
       }
@@ -623,7 +649,7 @@
         const s = now - TRAIL * k / 14, bb = ball(l, s);
         const pp = proj(cam, lx(bb.lat), bb.y + BALL_R, (bb.at - now) * speed);
         if (pp && last) {
-          gg.strokeStyle = css(C.core, 0.55 * f * (1 - k / 14));
+          gg.strokeStyle = css(C.core, 0.55 * gl * (1 - k / 14));
           gg.lineWidth = Math.max(1, BALL_R * pp[3] * 0.5 * (1 - k / 16));
           gg.beginPath(); gg.moveTo(last[0], last[1]); gg.lineTo(pp[0], pp[1]); gg.stroke();
         }
@@ -639,7 +665,7 @@
       gg.setTransform(1, 0, 0, 1, 0, 0);
       const hr = r * 3.6 / 2;                       // its glow, half what the notes give
       const hg = gg.createRadialGradient(p[0] / 2, p[1] / 2, 0, p[0] / 2, p[1] / 2, hr);
-      hg.addColorStop(0, css(C.core, 0.48 * f)); hg.addColorStop(0.25, css(C.light, 0.22 * f)); hg.addColorStop(1, css(C.base, 0));
+      hg.addColorStop(0, css(C.core, 0.48 * gl)); hg.addColorStop(0.25, css(C.light, 0.22 * gl)); hg.addColorStop(1, css(C.base, 0));
       gg.fillStyle = hg;
       gg.beginPath(); gg.arc(p[0] / 2, p[1] / 2, hr, 0, 2 * Math.PI); gg.fill();
     }

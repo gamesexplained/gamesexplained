@@ -13,6 +13,8 @@
 // - a step in the line to a pitch that holds is a note; a pitch held for a tick or two and a
 //   slide are not;
 // - it never jumps: sampled every tenth of a tick, no step in place, height or time is large;
+// - its glow follows the voice's loudness: rising as a voice fades in, held through a short
+//   gap, gone in a long rest, and full for a voice with no levels;
 // - voices with no notes get no lane.
 //   node kit/scripts/test_bounce.js
 const path = require('path');
@@ -121,6 +123,16 @@ for (let t = 20; t < 290; t++) ridden.push(siren.ballAt(0, t));
 const across = Math.max(...ridden.map((b) => b.lat)) - Math.min(...ridden.map((b) => b.lat));
 check(ridden.every((b) => b.y === 0) && across > 0.75,
   `a slow, quiet start and a sweep far beyond the note keep the ball on the sheet, riding across the lane (${across.toFixed(2)} of it)`);
+
+// The glow: the siren fades in, so its loudness rises with it; voice 1's note 4 falls silent at
+// tick 60, two ticks of quiet keep most of its glow and the long rest after puts it out; voice 2
+// gives no levels, so it glows in full.
+const f100 = siren.ballAt(0, 100).loud, f250 = siren.ballAt(0, 250).loud;
+check(Math.abs(f100 - 100 / 300) < 0.01 && Math.abs(f250 - 250 / 300) < 0.01,
+  `the glow rises as the voice fades in (${f100.toFixed(2)} at tick 100, ${f250.toFixed(2)} at tick 250)`);
+const g62 = view.ballAt(1, 62).loud, g140 = view.ballAt(1, 140).loud;
+check(g62 > 0.5 && g62 < 0.8 && g140 < 0.01 && view.ballAt(2, 120).loud === 1,
+  `the glow holds through a short gap (${g62.toFixed(2)}), is gone in a long rest (${g140.toFixed(3)}), and is full with no levels`);
 
 view.score(null);
 check(view.ballAt(1, 20) === null, 'score(null) clears the view');
