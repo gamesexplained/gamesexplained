@@ -1538,9 +1538,9 @@
   },
   {
    "address": 1280,
-   "name": "s_0500",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "load_stage_bank_records",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 1297,
@@ -3542,9 +3542,9 @@
   },
   {
    "address": 16406,
-   "name": "j_4016",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "stage_intro_start",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 16425,
@@ -6248,9 +6248,9 @@
   },
   {
    "address": 27912,
-   "name": "s_6D08",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "music_voice_advance",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 27927,
@@ -9170,9 +9170,9 @@
   },
   {
    "address": 40553,
-   "name": "s_9E69",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "player_probe_previous_tiles",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 40591,
@@ -13515,6 +13515,11 @@
    "text": "Table indexed by a sprite count: $00, $01, $03, $07, $0F, $1F, $3F, $7F, $FF, the sprite-enable mask with that many sprites on."
   },
   {
+   "address": 1280,
+   "type": "line",
+   "text": "Loads the object records for the current stage from the cartridge bank. Sets the bank register $DE00 to $80, copies 64 bytes from the pointer at $0C07 into $0100, then walks the records in groups of 3 bytes: for each it runs unpack_bank_record and the routine at $06E6 once per entry (stepping $EF by 2), builds the offset table at $0773 and the index lists at $08AC/$08A8, and stops when a record's first byte has bit 7 set, clearing the border colour $D020 on exit. The stage number $08E7 selects start pointers from tables at $811D/$8122. Role as the stage object-list loader is inferred from the tables it fills."
+  },
+  {
    "address": 1434,
    "type": "line",
    "text": "Bank-switched record unpacker (likely a level/screen data loader; A = record index). Writes $87 to $DE00, reads a 16-bit pointer from $8000+2*A into $E3/$E4 (top 3 bits select the bank $87-$8E, address folded into $8000-$9FFF), then copies the records into the buffer at ($E1): groups of 5 bytes, followed by word entries with the destination address added to a stored offset, then a second table of 5-byte records whose 4-byte sub-entries have $08A6 added to one byte. At the end it stores the next pointer into the table at $0773/$0774 indexed by $08A3 (incremented twice) and sets $DE00 and $E5/$E6 for the following block. Uses $E1-$E9. NOTE: the routine runs on past $06DC into zero bytes in the snapshot, so the tail is not visible; called by a jsr at $0560."
@@ -13838,6 +13843,11 @@
    "address": 16375,
    "type": "line",
    "text": "Life of each pool object, counted down by one by update_temp_objects on each frame the object moves (set to $18 when one turns into its short animation)."
+  },
+  {
+   "address": 16406,
+   "type": "line",
+   "text": "Start of the between-stage screen. Clears the page at $FE00, runs the routine at $8C07 with $01 set to $37 (ROM visible; probably unpacks data from $8B27 into $FE00, inferred), then looks at $0294. If the stage number $08E7 is 5 or more, it switches off CIA2 interrupts and the screen ($D011), calls $BD5D and restarts the game at game_start. Otherwise it sets $D018 to $31, calls $8E9A and polls read_joystick_ports until fire (bit 4) is seen, blanks the screen, bumps $0294, then increments $089D and continues into stage_begin. The $0294 branch and $089D meaning are not established here."
   },
   {
    "address": 16514,
@@ -14525,6 +14535,11 @@
    "text": "Handles a command byte (bit 7 set) in a voice script: looks the handler address up in the tables at $6549,x/$6557,x, patches it into the jump at $6936 (operand $6937/$6938), restores X from $FF and jumps to the common command parser at $6C88."
   },
   {
+   "address": 27912,
+   "type": "line",
+   "text": "Music engine: advances one voice (X = 0 to 2) by one frame. If the voice is enabled ($6576,x), counts down its note timer $6511,x; when it reaches zero it reads the next 3-byte event (duration, two data bytes) from the stream at $7277 or, when $6533,x is zero, from $7184, using the voice's position $6536,x. A zero duration byte is a jump: the next byte becomes the new stream position. The two data bytes go to $65A3,x and $65A6,x. Every frame it then adds that pair to the 16-bit accumulator $6562,x/$6565,x, which looks like the voice's pitch (slide or vibrato step); that reading is inferred."
+  },
+  {
    "address": 28033,
    "type": "line",
    "text": "Steps one sound voice (voice number in X) by one frame. Does nothing if the voice is off ($657C,x zero). Otherwise counts down $65AC,x; on zero it reads the next note byte from the voice's pattern (pointer $653C/$6542,x, index $65B2,x), adds three transpose offsets ($6568, $658B, $658E,x), looks the sum up in the frequency tables $6F06 (low) and $6F64 (high) and writes them to the voice's SID frequency registers ($D400/$D401 plus the voice offset in $656F). It then reloads the countdown from $65AF,x and advances the index, wrapping to 0 at the pattern length $65B5,x. Role inferred from the SID writes and the note-table lookup."
@@ -15098,6 +15113,11 @@
    "address": 40542,
    "type": "line",
    "text": "Used when $19 is $0D: sets bit 7 of obj_flags $364C for the object already in $1A, then returns without scanning."
+  },
+  {
+   "address": 40553,
+   "type": "line",
+   "text": "Looks up the two map tiles under the player's previous position and stores their property bytes. Takes the previous position ($08BB/$08BD plus offsets $22 across and $04 down for the head probe, $25 further down for the feet probe), turns them into tile column and row (divide by 16), reads the tile numbers from the level map through the row pointer tables at $2A/$2C, then looks each tile up in the property table at ($30) and puts the results in $08E8 (head) and $08E9 (feet). If the feet probe is above the top of the map it clears both and returns. Also leaves 8 minus the pixel offset within the tile in $E1/$E2. Used as the player's terrain check; the exact meaning of the property bits is inferred, not shown here."
   },
   {
    "address": 40709,
