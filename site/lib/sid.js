@@ -12,7 +12,8 @@
 //               a period where the page passes one (below)
 //   sid         a Uint8Array(25): $D400-$D418 as the driver last wrote them
 //   playing()   true while a tune runs, false once it has ended or been stopped
-//   voice(x)    optional: plain data about voice x (0-2) for the display's rows
+//   voice(x)    optional: plain data about voice x (0-2) for the display's rows; a field named
+//               as one the player reads from the chip (freq, pw, ctrl, ad, sr, env) is ignored
 //   readback(env3, osc3, bus)  optional: called before each play() with what $D41C and $D41B
 //               read, voice 3's envelope level and the top eight bits of its waveform, and what a
 //               register the chip does not answer reads (bus, below), as the model has them at
@@ -416,8 +417,8 @@ globalThis.C64Sid = (function () {
         const s = drv.sid, v = [];
         for (let x = 0; x < 3; x++) {
           const r = 7 * x;
-          v.push(Object.assign({ freq: s[r] | s[r + 1] << 8, pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF,
-            ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: sid.V[x].env }, drv.voice ? drv.voice(x) : null));
+          v.push(Object.assign({}, drv.voice ? drv.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
+            pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: sid.V[x].env }));
         }
         return { t, run, frame: frames, vol: s[24] & 15, playing: drv.playing(), v };
       }
@@ -726,8 +727,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           chip.skip(PERIOD);
           for (let x = 0; x < 3; x++) {
             const r = 7 * x;
-            const v = Object.assign({ freq: s[r] | s[r + 1] << 8, pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF,
-              ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] }, d.voice ? d.voice(x) : null);
+            const v = Object.assign({}, d.voice ? d.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
+              pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] });
             const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
             level[x][k] = lv;
             if (lv && v.freq && wave && wave !== 0x80) line[x][k] = semis(v.freq);   // noise has no pitch to show
