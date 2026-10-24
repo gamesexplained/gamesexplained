@@ -71,6 +71,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .an-sprite{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
 .an-sprite canvas{image-rendering:pixelated;background:#000;border-radius:4px}
 @media (max-width:720px){.an-two,.an-pics{grid-template-columns:1fr}.an-world button,.an-world span{font-size:0}}
+.an-range{width:100%;margin:12px 0 4px;accent-color:var(--accent)}
+.an-stages{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.an-stage{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 9px;color:var(--ink);cursor:pointer;text-align:left}
+.an-stage:hover{border-color:var(--ink-mute)}
+.an-stage[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.an-stage .an-n{color:var(--ink-mute);margin-right:6px}
+.an-bar-group{display:inline-flex;flex-wrap:wrap;gap:8px;margin-right:10px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -92,8 +99,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The power centre, room <code>$00</code>, sits at H1 on top of a column one or two rooms wide. Below row 10 the world spreads out: row 13 has fifteen rooms and row 14 has thirteen. Radiation falls a level with each band of rows, from 3 in rows 1 to 5 down to 0 from row 11 to the bottom (<a href="index.html#radiation">How it works</a>). In rows 5, 7, 11 and 13 the last room's exit to the right leads back into the first.</p>
 </section>
 
+<section id="route">
+  <p class="fig">02 · The way through</p>
+  <h2 class="t">From the armour to the power centre</h2>
+  <p class="lede">One way through the game, from the title to the last message: 5 minutes 37 seconds of play, all four add-ons, and two of Tal's five lives. Press Play, drag the slider, or pick a stage to see where Tal is.</p>
+  <div class="plate">
+    <div class="an-bar" id="an-route-bar"></div>
+    <div class="an-wrapx"><canvas id="an-route" class="an-cv" width="1920" height="896" style="min-width:720px"></canvas></div>
+    <input type="range" class="an-range" id="an-route-at" min="0" max="1" value="0" step="1" aria-label="How far along the route">
+    <p class="an-out" id="an-route-out"></p>
+    <ol class="an-stages" id="an-route-stages"></ol>
+    <p class="cap">Tal's place every 8 frames, yellow on foot and cyan in the suit, from a recording of the joystick a frame at a time. <code>test_route.js</code> plays the recording through the game's own code, from the listing, and fails if any stage or place differs from the ones drawn here. Times are at 50 frames a second, from the moment the game has loaded; the stages are read from the game's own flags. This is one way through, not the quickest.</p>
+  </div>
+  <p>Tal starts in B14 with nothing and walks east along the bottom row to the armour in I14. He climbs in at 0:44, though the suit cannot go far yet: the add-ons can be picked up only once the suit has been worn, so this first visit is what lets him collect them. The panel lights three seconds later, and Tal stays in the suit until 1:21, because in it his own energy rises a point every 100 frames, here from 13 to 31, and the walk that follows costs most of it.</p>
+  <p>Without the Gravity Displacer the suit cannot leave the ground, and left or right on the ground climbs Tal out of it (<a href="index.html#tal">How it works</a>). So the first add-on is fetched on foot: Tal walks back west to C14 and climbs into C13, where the Displacer sits on a ledge. The creatures on the way take nearly all his energy, and it runs out in C13 at 2:13. He rises, crouches to take the Displacer at 2:20, and walks back to the armour.</p>
+  <p>With the Displacer the suit flies. It goes up column I, east along row 11 to K11 for the Pulsar Beam at 2:55, then back west and up to G7. From there it goes west into F7, whose left-hand exit wraps round to K7 at the far end of row 7, then up column J and right into K5 for the Particle Negator at 3:23. K5's exits lead down to G6 and right to H5, though the map draws it at the end of its row (the world map, above, says why), so the suit drops straight into G6.</p>
+  <p>The Implosion Mine is in H8, through an energy barrier in I8 that turns the suit back. Tal climbs out beside it at 3:58, walks through, and crouches to take the mine at 4:05. The scenery in H8 hurts where he touches it and its radiation takes a point every 50 frames, so his energy runs out at 4:09; once he has risen he walks back to the suit, at 4:24.</p>
+  <p>The last climb goes back round by G7 and up through H6 to the top of the world. Without the Particle Negator, H2 and H1 would empty the suit's energy as it came in (<a href="index.html#radiation">How it works</a>). In H1, the power centre, the suit lands on the cap of the lower pole and the mine goes off, at 5:26 (<a href="index.html#ending">How it works</a>). The ending's message follows at 5:37, with a score of 1,135.</p>
+  <p>The first stone, thrown at 0:15, matters more than it looks: until a stone has landed, a doorway can take Tal two rooms on (<a href="discoveries.html#throw">Discoveries</a>).</p>
+</section>
+
 <section id="rooms">
-  <p class="fig">02 · Room by room</p>
+  <p class="fig">03 · Room by room</p>
   <h2 class="t">Every room, with its exits and creatures</h2>
   <p class="lede">Each room as a new game finds it, with the strips of its neighbours at the sides, the creatures and items of its list, and the tables the game reads for it.</p>
   <div class="plate">
@@ -439,6 +466,13 @@ function Anim(m, n) {
 // end of ant-ui
 </script>
 <script>
+/* ant-route */
+// The route on the Maps page, as route.json keeps it (test_route.js replays its joystick): the
+// stages, and Tal's room, X, Y and whether he wears the suit every `every` frames from frame `from`, four bytes a place.
+const ANT_ROUTE = {"frames":16871,"every":8,"from":664,"stages":[{"what":"the game starts","frame":660,"room":56,"x":96,"y":88},{"what":"the first stone lands","frame":786,"room":56,"x":82,"y":88},{"what":"into the armour","frame":2200,"room":63,"x":128,"y":64},{"what":"the panel lights","frame":2354,"room":63,"x":128,"y":64},{"what":"out of the armour","frame":4081,"room":63,"x":128,"y":64},{"what":"a life lost","frame":6667,"room":43,"x":202,"y":88},{"what":"the Gravity Displacer","frame":7006,"room":43,"x":78,"y":64},{"what":"into the armour","frame":8323,"room":63,"x":128,"y":64},{"what":"the Pulsar Beam","frame":8751,"room":33,"x":143,"y":126},{"what":"the Particle Negator","frame":10160,"room":6,"x":265,"y":124},{"what":"out of the armour","frame":11917,"room":21,"x":245,"y":128},{"what":"the Implosion Mine","frame":12256,"room":20,"x":78,"y":128},{"what":"a life lost","frame":12489,"room":20,"x":146,"y":104},{"what":"into the armour","frame":13204,"room":21,"x":245,"y":128},{"what":"the mine goes off","frame":16311,"room":0,"x":164,"y":104},{"what":"the last message","frame":16871,"room":0,"x":164,"y":105}],"trace":"OGBYADhgWAA4YFgAOGBYADhgWAA4YFgAOGBYADhgWAA4YFgAOGBYADhgWAA4YFgAOGBYADhgWAA4UlgAOFJYADhSWAA4UlgAOFJYADhSWAA4UlgAOFhYADhoWAA4eFgAOHxYADiKWAA4mjwAOKoyADi6OwA4zFUAONx1ADjigAA44oAAOO6AADj+ZwA4DlkBOB5XATkyYAA5MmAAOTpqADlGgAA5RoAAOU5wADleXAA5blQAOX5cADmOcAA5loAAOZaAADmggAA5sIAAOcCAADnQgAA54IAAOfCAADkAgAE5EIABOSCAAToygAA6MoAAOjyAADpMgAA6XIAAOmyAADp+gAA6joAAOp6AADqugAA6voAAOs6AADrggAA68IAAOgCAAToQgAE6IIABOzKAADsygAA7PIAAO0yAADtcgAA7bG0AO3xbADuOVgA7klgAO5JYADugWAA7sFQAO8A6ADvSNAA74j8AO/JZADsCeQE7BoABOwaAATsWZAE7JlgBPDJVADwyVQA8RFwAPFRwADxcgAA8XIAAPGaAADx2gAA8iIAAPJiAADyogAA8uIAAPMiAADzYgAA86IAAPPiAADwKgAE8GoABPCqAAT0ygAA9NoAAPUaAAD1WgAA9ZoAAPXaAAD2GgAA9mIAAPaiAAD24gAA9yIAAPdiAAD3oagA9+FoAPQpXAT0aYgE9KnwBPjKAAD4ygAA+MoAAPjSAAD5EgAA+VIAAPmRwAD50XAA+hlUAPpZeAD6mdAA+rIAAPqyAAD64gAA+yIAAPtiAAD7ogAA++IAAPgiAAT4YgAE+KIABPzKAAD82gAA/RoAAP1aAAD9mgAA/aIAAP2iAAD9ogAA/aIAAP255AD9ugAA/boAAP26AAD9ugAA/ZnAAP1RbAD9EVQA/NF4APixiAT4qZAE+JmgBPiZoAT4maAE+JmgBPiZoAT4maAE/MlwAPzJcAD88TAA/TEAAP1xAAD9cQAA/YEAAP3BAAD+AQAA/hEAAP4RAAD+EQAA/hEAAP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEACP4BAAj+AQAI/gEAAP4BAAD+AQAA/gEAAP4BAAD+AQAA/ckAAP2JAAD9SQAA/QkMAPzJPAD4sUgE+LFIBPh5oAT4eaAE+GGgBPghwAT74fgA+9oAAPvaAAD7mgAA+1oAAPsaAAD60gAA+pIAAPpSAAD6EgAA+dIAAPmR0AD5UXgA+RFUAPjRbAD0sXgE9KmABPRp4AT0WgAE9FoABPQiAAT34gAA96IAAPdiAAD3GgAA9toAAPaaAAD2WgAA9hoAAPXaAAD1mgAA9VoAAPUaAAD02gAA8LIABPCyAATwegAE8DoABPP6AADzugAA83oAAPM6AADy+gAA8roAAPJ6AADyMgAA8fGcAPGxZADxcVwA8TGIAPDx8ADw6gAA8OoAAOyxtATssbQE7IF4BOw5UATv+XAA77nAAO+aAADvmgAA73IAAO8yAADu8gAA7uoAAO6qAADuagAA7ioAAO3qAADtqgAA7WoAAO0qAADs4gAA6LIABOiyAAToegAE6DoABOv6AADrugAA63oAAOs6AADq+gAA6roAAOp6AADqOgAA6foAAOm6AADpegAA6ToAAOjyAADksgAE5LIABOSSAATkegAE5HoABOR58ATkeYgE5HlYBOR5YATkeWAE5KlgBOjJYADo0VAA6RjgAOlgtADpoMwA6bDgAOmw4ADp6OAAsepwALHqcACx6lgAseo0ALHqTADp6HQA6eh0AOnoxADp6MAA6ejAAOnowADp6MAA6ejAAOnowACxunAAsbpwALGaSACxWiAAsRI0AOjYdADo2HQA5LCcBOSwnATkoLwE5GE8BORZQATkWTAE5FjIBORY4ATkWSgE5FlABORZQATkWUAE5FlABORZQATkWUAE5FlABORZQATkIUAE5BlABOfZQADnsUAA57FAAOexQADnsUAA57FAAOfBQADkAUAE5ElABORZQATkWUAE5FlABORZQATkWUAE5FlABORZQATkWUAE5FlABORZQATkeUAE6MlAAOjJQADo4UAA6OFAAOjhQADksUAE5LFABOShQATkYNwE5BjcBOfZHADnwUAA58FAAOeRQADnUVgA5xGEAObR7ADmwgAA5sIAAOaCAADmUgAA5joAAOYaAADmGbQA5hlsAOYZVADmGXgA5hnQAOYaAADmGgAA5hoAAOYiAADmYgAA5qIAAObiAADnIgAA52IAAOeiAADn4gAA5CHgBORhgATkoVgE6MlQAOjRVADo0WAA6NlQAOkY6ADpYLgA6aDIAOmwwADpsMAA6bDAAOmwwADpsMAA6dCAALHicACx4nAAsiIwALJaIACyWkAA6lh0AOpYdADqWLwA6ljAAOpYwADqWMAA6kDAAOoAgACx8nAAsfJwALGyMACxciAAsTJIAOkQdADpEHQA6NjcAOSxDATksQwE5JFABOSRQATkkOgE5JDUBOSREATkkUAE5JFABOSRQATkkUAE5JFABOSRQATkkRAE5JDIBOSQ7ATkkUQE5JFABOSRQATkkUAE5JEABOSQzATkkPQE5JFABOSRQATkkUAE5JFABOSRQATkkUAE5JFABOSJQATkSUAE5AlABOfJAADngKwA50CUAOcooADnKKAArypwAK8qcACvKjAAryoAAK8qBACvKjwA5yh0AOcodADnKKAA5yigAOcooADnKKAAr0JwAK9CcACvcigAr7H8AK/qAACv6gAAr+oAAK/qAACvuagAr3loAK85WACvKWAArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKbQArym0AK8ptACvKWAArylgAK8ZYACu2WAArplgAK5ZYACuGWAArdj8AK2QyACtUOwArTkAAK05AACtOQAArTkAAK0pAACtKQAArUEAAK2AwACtyPQArglMAK4ZYACuGWAArhlgAK4RYACt0WAAral4AK2ppACtqhwA5ah0AOWodADlqLQA5akAAOWpAADlqQAA5akAAOXpAADmKQAA5mkAAOapKADm6XAA5ynsAOc6AADnOgAA53oAAOe6AADn+dAA5Dl4BOR5VATkiWAE5IlgBOjJYADoyWAA6OlgAOkxIADpcNAA6bi0AOnQwADp0MAA6gjAAOpIwADqiMAA6sjcAOsJJADrSaAA63oAAOt6AADrkdAA69lwAOgZUAToWXAE6JnABOzJ8ADsyfAA7NIAAOzSAADtEgAA7VIAAO2SAADt0gAA7hIAAO5RqADukWgA7tlcAO7hYADu4WAA7yFQAO9g6ADvoMwA7+D0AOwhVATsYdQE7HoABOx6AATwygAA8MoAAPDaAADxIgAA8WIAAPGqAADx6gAA8ioAAPJqAADyqgAA8vIAAPMyAADzcgAA87IAAPPyAADwOgAE8HoABPTKAAD0ygAA9OIAAPUiAAD1YgAA9aIAAPXiAAD2IgAA9mIAA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"};
+// end of ant-route
+</script>
+<script>
 /* ant-levels */
 // The Maps / levels page: every room from the listing's memory, with the ant-room and ant-ui
 // blocks above.
@@ -457,8 +491,8 @@ function levels(ram) {
   const at = (r) => [G[r][0] + 7, G[r][1]];
   const label = (r) => hex(r) + ', ' + ANT.place(G[r]);
   // ---- 01 the world map: each room's own columns 4-35, half size
-  const map = $('an-map'), mctx = map.getContext('2d'), tmp = document.createElement('canvas');
-  function drawMap(withSprites) {
+  const map = $('an-map'), tmp = document.createElement('canvas');
+  function drawMap(withSprites, mctx = map.getContext('2d')) {
     mctx.fillStyle = '#000'; mctx.fillRect(0, 0, map.width, map.height);
     mctx.imageSmoothingEnabled = true;
     for (let r = 0; r < N; r++) {
@@ -479,14 +513,107 @@ function levels(ram) {
     const b = map.getBoundingClientRect(), x = Math.floor((e.clientX - b.left) / b.width * 15), y = Math.floor((e.clientY - b.top) / b.height * 14);
     for (let r = 0; r < N; r++) if (at(r)[0] === x && at(r)[1] === y) { sel.value = r; go(); $('rooms').scrollIntoView({ behavior: 'smooth' }); }
   };
-  // ---- 02 room by room
-  const rbar = $('an-room-bar');
+  // ---- 02 the route: Tal's place every RT.every frames, over the map drawn at full size
+  const RT = ANT_ROUTE, tb = Uint8Array.from(atob(RT.trace), (c) => c.charCodeAt(0)), NP = tb.length / 4;
+  // a place in the room's own columns: the middle of Tal's two sprites, sprite 0 at (x, y)
+  const onMap = (r, x, y) => { const [gx, gy] = at(r); return [256 * gx + Math.max(0, Math.min(256, x + 12 - 56)), 128 * gy + Math.max(0, Math.min(128, y + 21 - 50))]; };
+  const PTS = Array.from({ length: NP }, (_, i) => {
+    const f = tb[4 * i + 3], [x, y] = onMap(tb[4 * i], tb[4 * i + 1] | (f & 1) << 8, tb[4 * i + 2]);
+    return { r: tb[4 * i], x, y, suit: !!(f & 2) };
+  });
+  const frameOf = (i) => RT.from + i * RT.every, placeOf = (f) => Math.max(0, Math.min(NP - 1, Math.round((f - RT.from) / RT.every)));
+  const ST = RT.stages.map((s, k) => Object.assign({ k: k + 1, i: placeOf(s.frame) }, s, (([x, y]) => ({ mx: x, my: y }))(onMap(s.room, s.x, s.y))));
+  const rcv = $('an-route'), rctx = rcv.getContext('2d'), base = document.createElement('canvas'), W = 256 * 15, H = 128 * 14;
+  base.width = W; base.height = H;
+  {
+    const c = base.getContext('2d');
+    c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+    for (let r = 0; r < N; r++) { show(tmp, ANT.paint(ram, ANT.room(ram, r), {}), 1); const [x, y] = at(r); c.drawImage(tmp, 32, 0, 256, 128, 256 * x, 128 * y, 256, 128); }
+    c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(0, 0, W, H);
+    c.font = '500 20px ' + (getComputedStyle(document.body).getPropertyValue('--fm') || 'monospace');
+    for (let r = 0; r < N; r++) {
+      const [x, y] = at(r), t = ANT.place(G[r]) + ' ' + hex(r);
+      c.fillStyle = 'rgba(0,0,0,.7)'; c.fillRect(256 * x + 4, 128 * y + 4, c.measureText(t).width + 10, 26);
+      c.fillStyle = '#fff'; c.fillText(t, 256 * x + 9, 128 * y + 24);
+    }
+  }
+  const FOOT = C64.PAL[7], SUIT = C64.PAL[3], clock = (f) => Math.floor(f / 3000) + ':' + String(Math.floor(f / 50) % 60).padStart(2, '0');
+  const slider = $('an-route-at');
+  slider.max = NP - 1;
+  let cur = 0, playing = false, follow = false, cam = null;
+  // the view: the whole map, or four rooms' width round Tal, the camera easing after him
+  function view() {
+    if (!follow) return { s: rcv.width / W, ox: 0, oy: 0 };
+    const s = rcv.width / 1024, vw = 1024, vh = rcv.height / s, p = PTS[cur];
+    const want = [Math.max(0, Math.min(W - vw, p.x - vw / 2)), Math.max(0, Math.min(H - vh, p.y - vh / 2))];
+    cam = cam && playing ? [cam[0] + (want[0] - cam[0]) * 0.12, cam[1] + (want[1] - cam[1]) * 0.12] : want;
+    return { s, ox: cam[0], oy: cam[1] };
+  }
+  function path(to, alpha, w, s) {
+    rctx.globalAlpha = alpha; rctx.lineWidth = w / s; rctx.lineCap = rctx.lineJoin = 'round';
+    let colour = null;
+    for (let i = 1; i <= to; i++) {
+      const a = PTS[i - 1], b = PTS[i];
+      if (Math.abs(a.x - b.x) + Math.abs(a.y - b.y) > 80) continue;   // a row that wraps round, or a room the map draws apart
+      const c = b.suit ? SUIT : FOOT;
+      if (c !== colour) { if (colour) rctx.stroke(); rctx.strokeStyle = colour = c; rctx.beginPath(); rctx.moveTo(a.x, a.y); }
+      else rctx.moveTo(a.x, a.y);
+      rctx.lineTo(b.x, b.y);
+    }
+    if (colour) rctx.stroke();
+    rctx.globalAlpha = 1;
+  }
+  function drawRoute() {
+    const v = view(), k = rcv.width / rcv.getBoundingClientRect().width || 2;   // canvas pixels to a pixel on the screen
+    rctx.setTransform(1, 0, 0, 1, 0, 0);
+    rctx.fillStyle = '#000'; rctx.fillRect(0, 0, rcv.width, rcv.height);
+    rctx.setTransform(v.s, 0, 0, v.s, -v.ox * v.s, -v.oy * v.s);
+    rctx.imageSmoothingEnabled = !follow;
+    rctx.drawImage(base, 0, 0);
+    path(NP - 1, 0.35, 2.5 * k, v.s);
+    path(cur, 1, 3.5 * k, v.s);
+    rctx.font = `600 ${12 * k / v.s}px ` + (getComputedStyle(document.body).getPropertyValue('--fm') || 'monospace');
+    rctx.textAlign = 'center'; rctx.textBaseline = 'middle';
+    for (const s of ST) {
+      const done = s.i <= cur;
+      rctx.beginPath(); rctx.arc(s.mx, s.my, 9 * k / v.s, 0, 7);
+      rctx.fillStyle = done ? '#fff' : 'rgba(0,0,0,.75)'; rctx.fill();
+      rctx.lineWidth = 1.5 * k / v.s; rctx.strokeStyle = '#fff'; rctx.stroke();
+      rctx.fillStyle = done ? '#000' : '#fff'; rctx.fillText(String(s.k), s.mx, s.my + 0.5 * k / v.s);
+    }
+    const p = PTS[cur];
+    rctx.beginPath(); rctx.arc(p.x, p.y, 6 * k / v.s, 0, 7);
+    rctx.fillStyle = p.suit ? SUIT : FOOT; rctx.fill(); rctx.lineWidth = 2.5 * k / v.s; rctx.strokeStyle = '#000'; rctx.stroke();
+    const f = frameOf(cur), next = ST.find((s) => s.i > cur);
+    slider.value = cur;
+    $('an-route-out').innerHTML = `<b>${clock(f)}</b> · frame ${f.toLocaleString('en-GB')} · room ${label(p.r)} · ${p.suit ? 'in the suit' : 'on foot'}` +
+      (next ? ` · next: ${esc(next.what)}` : '');
+    const last = ST.filter((s) => s.i <= cur).pop();
+    $('an-route-stages').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(ST[j] === last)));
+  }
+  $('an-route-stages').innerHTML = ST.map((s) => `<li><button type="button" class="an-stage" aria-pressed="false"><span class="an-n">${s.k} · ${clock(s.frame)}</span>` +
+    `${esc(s.what[0].toUpperCase() + s.what.slice(1))}, room ${label(s.room)}</button></li>`).join('');
+  $('an-route-stages').querySelectorAll('button').forEach((b, j) => b.onclick = () => { cur = ST[j].i; cam = null; drawRoute(); });
+  const rbar = $('an-route-bar'), pbar = document.createElement('span'), vbar = document.createElement('span');
+  pbar.className = vbar.className = 'an-bar-group'; rbar.append(pbar, vbar);
+  const playBtn = button(pbar, 'Play', () => { playing = !playing; if (playing && cur >= NP - 1) cur = 0; playBtn.textContent = playing ? 'Pause' : 'Play'; playBtn.setAttribute('aria-pressed', String(playing)); });
+  [['Whole map', false], ['Follow Tal', true]].forEach(([l, on], j) => { const b = button(vbar, l, () => { follow = on; cam = null; drawRoute(); }); if (!j) b.setAttribute('aria-pressed', 'true'); });
+  slider.oninput = () => { cur = +slider.value; cam = null; drawRoute(); };
+  Frames.add(rcv, () => {
+    if (!playing) return;
+    if (cur >= NP - 1) { playing = false; playBtn.textContent = 'Play'; playBtn.setAttribute('aria-pressed', 'false'); return; }
+    cur++; drawRoute();
+  });
+  addEventListener('resize', () => drawRoute());
+  drawRoute();
+  // ---- 03 room by room
+  const obar = $('an-room-bar');
   opt.tiles = true;
   [['Animated tiles', 'tiles'], ['Sprites', 'sprites'], ['Shared colours of the suit', 'suit']].forEach(([l, k]) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'an-btn'; b.textContent = l; b.setAttribute('aria-pressed', String(opt[k]));
     b.onclick = () => { opt[k] = !opt[k]; b.setAttribute('aria-pressed', String(opt[k])); if (k === 'tiles') { if (!opt.tiles) go(); } else draw(); };
-    rbar.appendChild(b);
+    obar.appendChild(b);
   });
   const dirs = ['Right', 'Left', 'Below', 'Above'];
   // the room as build_room leaves it, its animated tiles then moved on a frame at a time
