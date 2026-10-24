@@ -195,6 +195,19 @@ poked beside the boy were taken and counted, red ones were left. Going
 out only the boy plays and each screen needs five; coming back both play
 and all ten are needed.
 
+**The MAGIC CROSSES counter counts the whole game.** `cross_count`
+`$5B5E` adds one to the two digits at `$041C` (tens) and `$041D` (units)
+for every cross taken. Only a new game resets them (the HUD row copied
+from `$77C0`); each screen's card saves the HUD's two rows at `$0200` and
+puts them back, so the
+second screen opens on `05`, the first way-back screen on `25`, and the
+cinema on the way home on `55`. The HUD's digits are characters `$B0`-`$B9`
+of the game's character set at `$3000`, and its 5 (`$B5`) is drawn as a
+slanted S, so `25` reads as "2S" and `55` as "SS". *Live*: the cinema on
+the way home, rendered from the port on the kit's C64 with `$041C` and
+`$041D` set to `$B5`, shows the same "SS" as
+`reference/screen-08-cinema-back.png`.
+
 **Every cross can be taken, and the game has no ending.** The three
 lowest crosses, all blue and all on the way back, sit in the play area's
 bottom two rows: graveyard-back (record `$7380`) at screen address

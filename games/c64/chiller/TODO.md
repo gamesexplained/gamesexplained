@@ -31,6 +31,15 @@ Next: Review Painted scenery against the original collision surfaces before exte
 
 ## Resolved on the way to Gold, with evidence
 
+- **The way-back screenshots' "2S" and "SS", and the stray fence.** The
+  counter is the crosses taken in the whole game (25 and 55 there), and
+  the game's 5 is drawn like an S (`facts.md`, "The MAGIC CROSSES counter
+  counts the whole game"). The fence patch on the cinema going home does
+  not appear when the game reaches that screen with
+  no pokes (the port on the kit's C64, through `port/jump.js`), so it came
+  from the crosses the screenshot run poked beside the boy, not from the
+  game (24 October 2026).
+
 - **Can every cross be reached?** Yes. The three lowest crosses, on the
   way back, were each taken on the game's own code by walking left along
   the ground, and the steward played all ten levels through, taking every
@@ -54,14 +63,6 @@ Next: Review Painted scenery against the original collision surfaces before exte
   the page from `reference/music-v2.json`.
 
 ## Still to establish (open, not absent)
-
-- What the way-back play-through screenshots show (`reference/screen-05`
-  to `screen-09`): a stray fence patch on the cinema, and a crosses
-  counter reading `2S`, `5S` and so on where the outward screens read
-  `05`. They were captured with crosses poked beside the boy, so either
-  the poke or the game could be the cause. The steward does not recognise
-  either from play (29 September 2026); the page uses the screen
-  builder's renders instead.
 
 - What `$1000`-`$1FFF` held: not sprite data (`work/render_1000.py`
   renders it as multicolour sprites and it is visual noise), but the
