@@ -40,7 +40,7 @@
   const RISE = 0.35, FLOAT = 0.45;                 // a floating ball: seconds to rise, its height
   const SMOOTH = 0.12, SETTLE = 0.06;              // seconds: the stretch of line a riding ball follows the
                                                    // average of, and the time it takes to settle onto it
-  const HEARD = 6 / 255;                           // a level below this is silence
+  const HEARD = 1 / 255;                           // a level below this is silence: an envelope at 0
   const STEP = 0.5, HELD = 0.25;                   // semitones: a step to a new note, and the most a held
                                                    // note moves in a tick
   const GROOVE = 0.011, LIT = 0.013, LIT_GLOW = 0.045;   // half-widths of the line, world units
@@ -92,6 +92,15 @@
         for (const e of notes) { if (e.n < lo) lo = e.n; if (e.n > hi) hi = e.n; }
         if (hi - lo < 12) { const c = (lo + hi) / 2; lo = c - 6; hi = c + 6; }
         lo -= 1; hi += 1;
+        if (line) {                                  // a line that mostly lies outside the notes (a
+          const p = [];                              // sweep, a chord a tick a note) widens the lane
+          for (let k = 0; k < line.length; k++) if (heard(k)) p.push(line[k]);
+          if (p.length > 20 && p.filter((n) => n >= lo && n <= hi).length < 0.75 * p.length) {
+            p.sort((a, b) => a - b);
+            lo = Math.min(lo, p[Math.floor(p.length * 0.05)] - 1);
+            hi = Math.max(hi, p[Math.ceil(p.length * 0.95) - 1] + 1);
+          }
+        }
         const place = (n) => (n - lo) / (hi - lo) - 0.5;
         const ts = new Float64Array(notes.length), ps = new Float64Array(notes.length);
         notes.forEach((e, i) => {
@@ -117,15 +126,16 @@
             join[k] = d >= STEP && heard(k + 2) && Math.abs(line[k + 2] - line[k + 1]) < HELD ? 0 : 1;
           }
         }
-        // when each note's sound ends: where the line falls silent, or at the next note; with no
-        // line, at the next note, or a second after the last
+        // when each note's sound ends: where the voice falls silent (after an attack that may
+        // take half a second to be heard), or at the next note; with no line, at the next note,
+        // or a second after the last
         const ends = new Float64Array(notes.length);
         notes.forEach((e, i) => {
           const next = i + 1 < notes.length ? notes[i + 1].t : Infinity;
           if (!lp) { ends[i] = Math.min(next, e.t + rate) / rate; return; }
           let k = Math.floor(e.t) + 1;
-          while (k < next && k <= e.t + 3 && !(lp[k] === lp[k])) k++;   // a slow attack
-          while (k < next && k < lp.length && lp[k] === lp[k]) k++;
+          while (k < next && k <= e.t + rate / 2 && !heard(k)) k++;
+          while (k < next && heard(k)) k++;
           ends[i] = Math.min(k, next) / rate;
         });
         lanes.push({ x, notes, ts, ps, lp, lv, join, ends, color: COLORS[x % COLORS.length] });
@@ -178,8 +188,8 @@
 
     // Where a ball that landed on note i rides at time s: along the line while the note sounds,
     // following its average over the last SMOOTH, so that a chord played a tick a note at a time
-    // does not shake it, and settling onto it from the note's place; once the sound has ended,
-    // where it was then.
+    // does not shake it, and settling onto it from the note's place; where the line is off the
+    // lane, and once the sound has ended, where it last was.
     function ride(l, i, s) {
       const a = l.ts[i], p = l.ps[i];
       if (!l.lp) return p;
@@ -190,7 +200,9 @@
         const v = lineAt(l.lp, Math.max(a, u - SMOOTH * j / 7));
         if (v === v) { sum += v; n++; }
       }
-      return n ? p + (sum / n - p) * Math.min(1, (u - a) / SETTLE) : p;
+      let v = n ? sum / n : NaN;
+      for (let k = Math.floor(u * rate), stop = Math.max(a * rate, k - 2 * rate); !(v === v) && k >= stop; k--) v = l.lp[k];
+      return v === v ? p + (v - p) * Math.min(1, (u - a) / SETTLE) : p;
     }
 
     const bob = (s, k) => 0.025 * Math.sin(2 * Math.PI * 0.7 * s) * k;
@@ -225,14 +237,16 @@
     }
 
     // ------------------------------------------------------------------ the camera
-    // One fixed angle per shape: from behind and above on a tall canvas, from the side on a wide
-    // one, looking a little ahead so that most of what shows is to come. The distance is found
-    // by halving until the lanes around the ball, and the top of its arc, fit the canvas.
+    // One fixed angle per shape: from behind, above and a little to the side on a tall canvas, so
+    // that time runs up and to the right, and from the side on a wide one, looking a little ahead
+    // so that most of what shows is to come. The distance is found by halving until the lanes
+    // around the ball, and the top of its arc, fit the canvas; on a tall one the lanes may run off
+    // its right edge where they come nearest.
     function camera() {
       const n = Math.max(lanes.length, 3);           // one or two lanes keep the size they have among three
       const half = (n * LANE + (n - 1) * GAP) / 2;
       const P = portrait
-        ? { yaw: 0, pitch: 0.78, fov: 0.75, ax: 0, ay: 0.5, keys: [[-half - 0.06, 0, -0.2], [half + 0.06, 0, -0.2], [0, 0.7, 0]] }
+        ? { yaw: 0.25, pitch: 0.62, fov: 0.85, ax: 0, ay: 0.4, keys: [[-half - 0.02, 0, 0], [half - 0.15, 0, 0.3], [0, 0.7, 0], [-half + 0.3, 0, -0.4]] }
         : { yaw: 1.0, pitch: 0.6, fov: 0.7, ax: -0.3, ay: 0.08, keys: [[-half - 0.1, 0, -0.4], [half + 0.1, 0, -0.4], [-half - 0.1, 0, 1.2], [half + 0.1, 0, 0.8], [half, 0.7, 0]] };
       const cp = Math.cos(P.pitch);
       const F = [Math.sin(P.yaw) * cp, -Math.sin(P.pitch), Math.cos(P.yaw) * cp];
@@ -308,7 +322,7 @@
     }
 
     // fog: 1 up to a little way ahead of the ball, falling to 0 at the far end of what is drawn
-    const FAR = () => portrait ? 11 : 12;
+    const FAR = () => portrait ? 18 : 12;
     const fog = (z) => clamp(1 - (z - FAR() * 0.55) / (FAR() * 0.45), 0, 1);
 
     function draw(t, opts) {
@@ -336,7 +350,7 @@
       }
 
       // past notes stay a little while behind the ball, then leave the picture
-      const back = portrait ? 1.1 : 2.2, ahead = FAR();
+      const back = 2.2, ahead = FAR();
 
       // the lines, on the sheet under everything else
       const sx = portrait ? -1 : 1;                  // higher notes: right on a tall canvas, farther on a wide one
@@ -393,7 +407,7 @@
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = 'source-over';
       g.globalAlpha = 1;
-      const c0 = proj(cam, 0, 0, 0.6) || [W / 2, H / 2];
+      const c0 = proj(cam, 0, 0, portrait ? 2.5 : 0.6) || [W / 2, H / 2];
       g.fillStyle = '#060607';
       g.fillRect(0, 0, W, H);
       const lit = g.createRadialGradient(c0[0], c0[1], 0, c0[0], c0[1], Math.max(W, H) * 0.85);
@@ -415,7 +429,7 @@
 
     // A lane's staff: five engraved lines along time, fading into the dark.
     function staff(cx, alpha, l) {
-      const z0 = portrait ? -3 : -6, z1 = FAR();
+      const z0 = portrait ? -4 : -6, z1 = FAR();
       for (let k = 0; k < 5; k++) {
         const x = cx + (k - 2) * 0.2 * SPAN * LANE, w = 0.006;
         const a = proj(cam, x - w, 0, z0), b = proj(cam, x + w, 0, z0), c = proj(cam, x + w, 0, z1), d = proj(cam, x - w, 0, z1);

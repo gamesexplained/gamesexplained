@@ -6,8 +6,8 @@
 // - at each note's tick the ball is on that note: on the sheet (height 0), at the note's place
 //   across the lane, and the note it last landed on is that one;
 // - between two notes a short way apart it is in the air;
-// - while a note sounds it rides the voice's line on the sheet, following a bend; once the sound
-//   ends it rises;
+// - while a note sounds it rides the voice's line on the sheet, following a bend, however quiet
+//   the note and however far the line strays from it; once the sound ends it rises;
 // - through a wait long enough to carry a resting ball out of the picture, before the first note
 //   and after the last, it floats and keeps pace with the music;
 // - a step in the line to a pitch that holds is a note; a pitch held for a tick or two and a
@@ -108,6 +108,19 @@ for (let t = 0; t <= 300; t += 0.1) {
 }
 check(worst.lat < 0.1 && worst.y < 0.1 && worst.at < 0.5,
   `it never jumps: largest steps in a tenth of a tick ${worst.lat.toFixed(3)} across, ${worst.y.toFixed(3)} up, ${worst.at.toFixed(2)} ticks along`);
+
+// One note whose sound fades in from almost nothing and sweeps up again and again over far more
+// than the note's own range, as a siren does: the ball rides it all the way, across the lane.
+// It is silent for its first 10 ticks, as under a slow attack.
+const sweep = new Float32Array(300).fill(NaN), fade = new Float32Array(300);
+for (let k = 11; k < 300; k++) { sweep[k] = 40 + (k * 0.8) % 50; fade[k] = k / 300; }
+const siren = NoteBounce.create(stub());
+siren.score({ rate: RATE, voices: [{ notes: [{ t: 1, n: 40.8 }], line: sweep, level: fade }] });
+const ridden = [];
+for (let t = 20; t < 290; t++) ridden.push(siren.ballAt(0, t));
+const across = Math.max(...ridden.map((b) => b.lat)) - Math.min(...ridden.map((b) => b.lat));
+check(ridden.every((b) => b.y === 0) && across > 0.75,
+  `a slow, quiet start and a sweep far beyond the note keep the ball on the sheet, riding across the lane (${across.toFixed(2)} of it)`);
 
 view.score(null);
 check(view.ballAt(1, 20) === null, 'score(null) clears the view');
