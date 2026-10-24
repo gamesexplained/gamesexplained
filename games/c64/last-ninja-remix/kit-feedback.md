@@ -37,4 +37,4 @@ The full audit of every comment, which the maintainer's sample made necessary, a
 ## Operating system and tools
 
 - Linux x86_64, Ubuntu 24.04.5, in a cloud container. VICE x64sc v3.13.2 (`v3.13.2-linux-x86_64-gui.zip`) under the kit's virtual display; regenerator2000 0.9.20.
-- The disk images are a crack with a trainer. Its options were left at NO, so the listings hold the game's own instructions; the route is in `orientation.md`.
+- The disk images are a crack with a trainer. Its two options were left at NO; its level skip on the ← key is always on, and its code, at the end of the engine's interrupt, is in the engine's listing, marked as the crackers'. The route is in `orientation.md`.

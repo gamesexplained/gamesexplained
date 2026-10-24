@@ -8,13 +8,14 @@ after the trainer's F7.
 - `MachineSetup` (`$0E00`) runs once, the first time a load reaches it
   through the vector at `$3FF6`: it maps RAM with the I/O (`$01` = `$35`),
   stops the interrupts and timers, silences the SID, clears page 2, the
-  sprite buffers and the zero page, tells PAL from NTSC by waiting for a
+  first sprite buffer (`$0C00-$0DFF`; the second, `$0E00-$0FFF`, is where
+  it runs) and the zero page from `$02`, tells PAL from NTSC by waiting for a
   raster interrupt at line 304 (`$AB`), points both NMI vectors at the
   `RTI` at `$1582` (so RESTORE does nothing) and sets up the state the
   first level starts from (`$0EAF`): four lives, the lock code 1111, score
   and clock at zero, level digit 1. From the first level load on, its
-  bytes are overwritten by the copy of page 3 that `CoordinateLevelLoad`
-  keeps at `$0F00`.
+  bytes are overwritten by the copies of page 2 and page 3 that
+  `CoordinateLevelLoad` keeps at `$0E00` and `$0F00`.
 - `CoordinateLevelLoad` (`$16AD`) keeps pages 0 to 3 at `$0C00-$0FFF`
   during a load and puts them back after, stores the level's digit into
   the file name `0n*` (`$117D`), asks for side two before level 3
@@ -48,7 +49,7 @@ after the trainer's F7.
   `$1DAD`, or the status panel's raster-timed ones, `$1CA8`), restarts the
   tune when `$3FF9` asks, plays it through `$4003` (five frames in six on
   NTSC), moves each energy spiral a half-cell toward its value
-  (`$1E82`, `$1EA3`) and keeps the clock.
+  (`$1E67-$1EC0`) and keeps the clock.
 - The two energy spirals: 44 half-cells each, the enemy's in columns 2 to
   6 and the player's in columns 8 to 12 of rows 19 to 23, the cells in
   order at `$1D4B` and `$1D78` as offsets from `$06FA`; the first 22 are

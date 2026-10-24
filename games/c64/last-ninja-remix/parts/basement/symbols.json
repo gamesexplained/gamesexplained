@@ -3,7 +3,7 @@
  "platform": "c64",
  "game": "last-ninja-remix",
  "part": "basement",
- "build": "The Force's crack of the 1990 disk, with Ikari+Talent's trainer, left off (archive.org; side A SHA-1 5597c4896f0a6ada501fb13ad94359063a8c1e29, side B 22f881cff073a4797580f95ca6225903a0bfaa99): all seven levels",
+ "build": "The Force's crack of the 1990 disk, with Ikari+Talent's trainer, its two options left off (archive.org; side A SHA-1 5597c4896f0a6ada501fb13ad94359063a8c1e29, side B 22f881cff073a4797580f95ca6225903a0bfaa99): all seven levels",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -13147,7 +13147,7 @@
   {
    "address": 34388,
    "type": "line",
-   "text": "Set up the current area and enter the main loop, for The Basement. This runs once each time an area is entered or redrawn, not once a frame: it is reached by falling through from the start-up wait at $8652, from MainTick when the redraw latch $02A9 is set ($8701), after a lost life ($8768) and after a declined level exit ($915D?), and it falls into MainTick ($86AE), the per-tick loop.\nInputs: Current area $A2, the player's position and the actor/object state.\nOutputs: Sets $0230=$7F; rebuilds the area's enemy meter when $012D,X holds $80-$FE and loads $022A from the area's enemy energy at $3F92; clears the play window and draws the area's scene ($96DC?); clears the actor slots, resets runtime state, compiles the collision records, spawns the enemy, draws inactive objects and composes the actors; on the first visit to an area below $12 sets its $011B byte and adds a score bonus ($1183 with A=$15); redraws the HUD digits, applies the area's entrance rules ($8C6F), stamps $026D from $E2, sets $0230=$FF and falls into MainTick.\nClobbers: A, X, Y, processor flags, $0230, gameplay zero page, actor/object/projectile arrays, renderer/collision scratch, and display work state.\nHardware: Through its helpers, writes $D021 and the VIC-II-visible bitmap, screen and colour memory."
+   "text": "Set up the current area and enter the main loop, for The Basement. This runs once each time an area is entered or redrawn, not once a frame: it is reached by falling through from the start-up wait at $8652, from MainTick when the redraw latch $02A9 is set ($8701) and after a lost life ($8768), and it falls into MainTick ($86AE), the per-tick loop.\nInputs: Current area $A2, the player's position and the actor/object state.\nOutputs: Sets $0230=$7F; rebuilds the area's enemy meter when $012D,X holds $80-$FE and loads $022A from the area's enemy energy at $3F92; clears the play window and draws the area's scene ($8CF7); clears the actor slots, resets runtime state, compiles the collision records, spawns the enemy, draws inactive objects and composes the actors; on the first visit to an area below $12 sets its $011B byte and adds a score bonus ($1183 with A=$15); redraws the HUD digits, applies the area's entrance rules ($8C6F), stamps $026D from $E2, sets $0230=$FF and falls into MainTick.\nClobbers: A, X, Y, processor flags, $0230, gameplay zero page, actor/object/projectile arrays, renderer/collision scratch, and display work state.\nHardware: Through its helpers, writes $D021 and the VIC-II-visible bitmap, screen and colour memory."
   },
   {
    "address": 34419,
@@ -13227,7 +13227,7 @@
   {
    "address": 34910,
    "type": "line",
-   "text": "Set up the status of a level as it starts. It clears $022B, $022C, $70, $89 and $A0, fills the 30 bytes at $3F92 that keep each area's enemy energy, and both energies ($0229, $022A) with $2C, a full bar, and sets $7A to $AD. It copies the item flags saved when the level began ($03B0-$03D7) over the live ones ($03D8-$03FF) and clears $03E9-$03F1 among them, then puts the score ($1CA0) and the clock's digits back from the saved copy ($03CC-$03D7). It sets $87 to $BF, clears $011B-$013E and draws panel picture 0 at both of its places (DrawUiImageRecord, $ABB9, with A = 0 and X = 0, then 1). It builds no scene or wall data. Clobbers: A, X, Y, flags and the drawing routine's scratch."
+   "text": "Set up the status of a level as it starts. It clears $022B, $022C, $70, $89 and $A0, fills the 30 bytes at $3F92 that keep each area's enemy energy, and both energies ($0229, $022A) with $2C, a full bar, and sets $7A to $69. It copies the item flags saved when the level began ($03B0-$03D7) over the live ones ($03D8-$03FF) and clears $03E9-$03F1 among them, then puts the score ($1CA0) and the clock's digits back from the saved copy ($03CC-$03D7). It sets $87 to $B7, clears $011B-$013E and draws panel picture 0 at both of its places (DrawUiImageRecord, $ABB9, with A = 0 and X = 0, then 1). It builds no scene or wall data. Clobbers: A, X, Y, flags and the drawing routine's scratch."
   },
   {
    "address": 35013,
@@ -13702,42 +13702,42 @@
   {
    "address": 39630,
    "type": "line",
-   "text": "When command bit 0 is set, set $74, the Y the scene conditions test, to 0, run two scripted animation/update cycles and then the $A338? sequence; then consume the command.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=0 and enters the two-cycle entry at $9AFB, whose tail calls RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563; both paths clear $81 before return.\nClobbers: A, X, Y, flags, $74, $81, $0229, $0234, and animation/actor scratch."
+   "text": "When command bit 0 is set, set $74, the Y the scene conditions test, to 0, run two scripted animation/update cycles and then ScriptDamagePlayerTwoAndClearCommand ($9C42), which takes two points of the player's energy; then consume the command.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=0 and enters the two-cycle entry at $9AFB, whose tail calls ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer; both paths clear $81 before return.\nClobbers: A, X, Y, flags, $74, $81, $0229, $0234, and animation/actor scratch; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 39643,
    "type": "line",
-   "text": "Set $74, the Y the scene conditions test, to $5D, hold it there with $EF = $FF, advance one scripted animation/update cycle and run the $A338? sequence.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$5D and $EF=$FF, calls the one-cycle path through $9B77, then RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0229, $0234, and animation/actor scratch."
+   "text": "Set $74, the Y the scene conditions test, to $5D, hold it there with $EF = $FF, advance one scripted animation/update cycle and run ScriptDamagePlayerTwoAndClearCommand ($9C42), which takes two points of the player's energy.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$5D and $EF=$FF, calls the one-cycle path through $9B77, then ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0229, $0234, and animation/actor scratch; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 39651,
    "type": "line",
-   "text": "Advance 1 scripted animation/update cycle and run the $A338? sequence, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $9B77 with A=1; after the bounded loop, calls RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, then clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0229, $0234, and animation/actor scratch."
+   "text": "Advance 1 scripted animation/update cycle and run ScriptDamagePlayerTwoAndClearCommand ($9C42), which takes two points of the player's energy, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $9B77 with A=1; after the bounded loop, calls ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, then clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0229, $0234, and animation/actor scratch; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 39655,
    "type": "line",
-   "text": "Command $1A loads $5D, then branches to $9AF1 to store it in $74, the Y the scene conditions test, set $EF=$FF and run one scripted update cycle and then RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, before clearing command $81. This entry shares that tail with the $00 and $7D variants; it differs from $9ADB in its branch path."
+   "text": "Command $1A loads $5D, then branches to $9AF1 to store it in $74, the Y the scene conditions test, set $EF=$FF and run one scripted update cycle and then ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, before clearing command $81. This entry shares that tail with the $00 and $7D variants; it differs from $9ADB in its branch path."
   },
   {
    "address": 39659,
    "type": "line",
-   "text": "Set $74, the Y the scene conditions test, to $00, hold it there with $EF = $FF, advance one scripted animation/update cycle and run the $A338? sequence.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$00 and $EF=$FF, calls the one-cycle path through $9B77, then RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0229, $0234, and animation/actor scratch."
+   "text": "Set $74, the Y the scene conditions test, to $00, hold it there with $EF = $FF, advance one scripted animation/update cycle and run ScriptDamagePlayerTwoAndClearCommand ($9C42), which takes two points of the player's energy.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$00 and $EF=$FF, calls the one-cycle path through $9B77, then ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0229, $0234, and animation/actor scratch; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 39663,
    "type": "line",
-   "text": "Set $74, the Y the scene conditions test, to $7D, hold it there with $EF = $FF, advance one scripted animation/update cycle and run the $A338? sequence.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$7D and $EF=$FF, calls the one-cycle path through $9B77, then RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0229, $0234, and animation/actor scratch."
+   "text": "Set $74, the Y the scene conditions test, to $7D, hold it there with $EF = $FF, advance one scripted animation/update cycle and run ScriptDamagePlayerTwoAndClearCommand ($9C42), which takes two points of the player's energy.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$7D and $EF=$FF, calls the one-cycle path through $9B77, then ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0229, $0234, and animation/actor scratch; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 39671,
    "type": "line",
-   "text": "Command $12 loads A=1 and branches to the bounded update loop at $9B01. $74 and $EF stay as the script left them; the tail calls $9B77 once, then RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, and clears $81. Unlike the target-setting entries, this entry writes neither $74 nor $EF itself."
+   "text": "Command $12 loads A=1 and branches to the bounded update loop at $9B01. $74 and $EF stay as the script left them; the tail calls $9B77 once, then ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, and clears $81. Unlike the target-setting entries, this entry writes neither $74 nor $EF itself."
   },
   {
    "address": 39675,
    "type": "line",
-   "text": "Advance 2 scripted animation/update cycles and run the $A338? sequence, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $9B77 with A=2; after the bounded loop, calls RunScriptCoordinateAnimationSequence ($A338?) with X=$F8 and Y=4, which sets the player's energy $0229 to 0 and, with 8 added to $55 until it ends, runs the animation at $C545 (at $C554 when $69 + 2 has bit 2 set) and then $C563, then clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0229, $0234, and animation/actor scratch."
+   "text": "Advance 2 scripted animation/update cycles and run ScriptDamagePlayerTwoAndClearCommand ($9C42), which takes two points of the player's energy, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $9B77 with A=2; after the bounded loop, calls ScriptDamagePlayerTwoAndClearCommand ($9C42) with X=$F8 and Y=4, which it does not read: it takes two points of the player's energy $0229 through DamagePlayer, then clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0229, $0234, and animation/actor scratch; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 39679,

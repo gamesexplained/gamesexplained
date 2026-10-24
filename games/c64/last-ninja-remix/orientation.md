@@ -20,12 +20,16 @@ Side A holds `LAST NINJA REMIX` (The Force's intro), `NINJA INTRO /I+T`
 (System 3's intro, the engine, and Ikari+Talent's intro and trainer,
 packed together), `01.CENTRAL PARK` and `02.THE STREET`. Side B holds
 `03.THE SEWERS` to `07.FINAL BATTLE`. This is not the original release:
-the crackers' intros come first, and the trainer patches three `BIT`
-instructions in the engine's interrupt into `STA`s when its options are
-turned on. Every snapshot was taken with both options off, so the
-listings hold the game's own instructions. A second crack, X-Rated's
-(`[cr X-Rated][h LXT][t +30 X-Rated]` in the same collection), was used
-only to compare bytes.
+the crackers' intros come first, and the trainer adds code of its own to
+the end of the engine's interrupt (`$1F52-$1F6B`): a level skip on the ←
+key, which is always on (`CoordinateLevelLoad` turns it off for the Final
+Battle, at `$171D`), and two `BIT` instructions it turns into `STA`s when
+its options are turned on. Every snapshot was taken with both options
+off, so the only trainer code that acts in them is the level skip, and
+only when ← is pressed; the engine's listing marks the trainer's code. A
+second crack, X-Rated's (`[cr X-Rated][h LXT][t +30 X-Rated]` in the same
+collection), was used only to compare bytes: its interrupt goes from the
+clock straight to restoring `$01`.
 
 The game's manual is the archive.org item
 `Last_Ninja_Remix_The_1990_System_3`.

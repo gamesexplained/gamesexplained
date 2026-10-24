@@ -4403,6 +4403,11 @@
    "text": "Coordinate a numbered level load while preserving the low C64 workspace needed by the caller. Inputs: level digit in `$EC`, which the entry at `$16AD` first increments (StartLevelLoad enters at `$16AF` and keeps it); filename digit destination `$117E`. Outputs: loaded phase, restored `$0000-$03FF`, marker `$0267=$FF`, then transfer through `$3FF3`. Clobbers: A, X, flags and loader scratch; does not return after final handoff. Hardware: saves/restores zero page, stack, page 2 and page 3 (vectors); resets KERNAL/CIA/VIC state and calls the loader before jumping to the selected phase entry."
   },
   {
+   "address": 5917,
+   "type": "line",
+   "text": "From here to $1727, the trainer's too, since it writes into the trainer's code at $1F52: when the level digit $EC is $37, the Final Battle, it stores $2C at $1F5B, turning the level skip's STA $02AF into BIT $02AF, so the last level cannot be skipped. $1728 goes on to the level's entry at $3FF3."
+  },
+  {
    "address": 5931,
    "type": "line",
    "text": "Request disk side two when A is character `3`, wait for Space and fire to be released, render `INSERT SIDE TWO` and `PRESS SPACE`, then wait for Space or fire to be pressed. Inputs: A contains the side/level character. Outputs: prompt rendered and input acknowledged for side two, otherwise immediate return. Clobbers: A, X, Y, flags, renderer scratch, and the stacked return address through `$1583`. Hardware: writes `$DC00=$7F` to select keyboard row 7 and tests bit 4 of `$DC01` ANDed with `$DC00`: `$DC01` bit 4 is Space's column, shared with control-port-1 fire, and `$DC00` bit 4 is control-port-2 fire."
@@ -4806,6 +4811,11 @@
    "address": 7701,
    "type": "line",
    "text": "Dispatch gameplay hardware IRQs between CIA timekeeping and VIC raster presentation. Inputs: hardware IRQ state, CPU port `$01`, gameplay timing/state arrays, and current phase music interface. Outputs: 50 Hz tick `$E2` with overflow `$F0`, quarter-rate tick `$B0`, animated HUD state, gameplay/status sprites, and serviced phase music. Clobbers: A, X, Y, flags, stack, and IRQ scratch; restores interrupted registers and `$01`. Hardware: acknowledges VIC-II `$D019`, reads CIA 1 `$DC0D`, updates VIC sprite/status presentation, and calls the current play phase's `$4000/$4003` music entries."
+  },
+  {
+   "address": 8018,
+   "type": "line",
+   "text": "From here to $1F6B, code the crack's trainer (Ikari+Talent's) put at the end of the interrupt: X-Rated's crack goes from the clock straight to restoring $01. When the copy of keyboard row 7 at $0267 is $FD, the \u2190 key alone, it stores 1 in $02AF, which asks MainTick to end the level: the trainer's level skip, on whatever its options say (CoordinateLevelLoad turns the STA into a BIT for the Final Battle, at $171D). The two BITs at $1F60 and $1F65 are the trainer's two options, left off here: turned on, they become STAs that keep the lives $03F2 at 4 and the energy $0229 at $2C, a full bar, on every interrupt. The four NOPs fill the rest."
   },
   {
    "address": 8027,

@@ -17,13 +17,18 @@ from reading the code in the snapshots `orientation.md` names.
   (`0n*`, the name at engine `$117D` with the level's digit stored into
   `$117E`), which the engine's loader (`LoadAndExpandLevelFile`, engine
   `$1000`) unpacks backwards in two segments: the first ends with the
-  title card drawn and the tune playing, the second, after a key or fire,
+  title card drawn and the tune playing, the second, after Space or fire,
   is the level.
 - The intro is gone once the game starts: its hand-over (intro `$0340`)
   gives the machine back to the KERNAL and loads `NINJA*` (intro `$03A6`).
 - The trainer's options (unlimited lives, unlimited power, the ← key to
-  skip a level) are the crackers' and are not part of the listings; every
-  snapshot was taken with both options off.
+  skip a level) are the crackers'. Their code is in the engine's listing,
+  at the end of the interrupt (`$1F52-$1F6B`, which X-Rated's crack does
+  not have). Every snapshot was taken with both options off, so
+  `BIT $03F2` (`$1F60`) and `BIT $0229` (`$1F65`) stay `BIT`s; the level
+  skip is on in all of them: `STA $02AF` at `$1F5B` asks to end the level
+  when `$0267` is `$FD` (the ← key alone), except in the Final Battle,
+  where `CoordinateLevelLoad` makes it a `BIT` (`$1723`).
 
 ## Memory layout
 
@@ -36,7 +41,7 @@ bitmap `$2000`.
 | Zero page, the stack, the game's variables | `$0000-$03FF`; the item flags `$03D8-$03FF`, one byte for each of 40 items; what goes on to the next level `$03B0-$03D7` (`SaveLevelState`, engine `$1C30`) |
 | Screen colours of the bitmap | `$0400-$07E7` |
 | The colour copy, written beside colour RAM and copied into it | `$0800-$0BE7` |
-| Sprite images, two buffers of eight | `$0C00-$0FFF`; during a load the copy of pages 0 to 3 (engine `$0F00`) |
+| Sprite images, two buffers of eight | `$0C00-$0FFF`; during a load the copy of pages 0 to 3 (`CoordinateLevelLoad`, engine `$16AD`) |
 | The engine's code | `$1000-$1FFF`: loader and unpacker `$1000`, score `$1183`, text `$1583`, load coordinator `$16AD`, tile compositor `$17F6`, glyphs `$1AE8`, clock and score `$1C65`-`$1CA7`, sprites to the chip `$1DAD`, interrupt `$1E15` |
 | The bitmap | `$2000-$3F3F`: the play window in columns 0 to 29 of rows 0 to 17, the status panel to its right and below |
 | A level's first load | `$3FF3-$4DFF`: the hand-over vectors at `$3FF3` and `$3FF6`, the tune from `$4000`, the scene header; then the title card above `$4E00` |
@@ -74,14 +79,15 @@ bitmap `$2000`.
   is set to `$80` to select that port's paddle lines, as on the C64GS's
   three-button pad.
 - Whichever button starts play becomes the fire button: the credits card
-  that starts a level and follows each death waits for a button, and the
-  second button sets `$AC` (`$8EE8`-`$8EF9` in Central Park); the scan
+  that starts a level and comes back after a GAME OVER waits for a button,
+  and the second button sets `$AC` (`$8EE8`-`$8EF9` in Central Park); the scan
   then swaps bits 4 and 5 whenever only one of them is pressed.
 - The second button alone selects the next weapon the player holds
   (`$951B`, with Space doing the same), and both buttons together the next
   item (`$9497`). *Live*.
 - Keys: F1 turns the sound off and on (`$AA`, read by the interrupt at
-  engine `$1EEA`; turning it off clears the SID's registers), F3 and F5
+  engine `$1EEA`; turning it off clears the SID's registers
+  `$D400-$D417`, leaving the volume at `$D418`), F3 and F5
   step through the items, F7 pauses (`$02B7`), Space selects the next
   weapon, J turns the stick's directions through an eighth of a turn
   (`$03F3`, 0 to 2, added to the heading at `$A50D` in Central Park, and
@@ -107,8 +113,9 @@ bitmap `$2000`.
 - Every screen is multicolour bitmap. A room is drawn into the play
   window by the scene renderer (`$8A52` in Central Park, at its own
   address in each level), which walks a tree of scene records: a picture
-  (a size byte, then eight bitmap bytes, a screen byte and a colour byte
-  for each cell) or a composite of placed scenes with optional colour
+  (a size byte, then eight bitmap bytes for each cell, then a screen byte
+  for each cell, then a colour byte for each cell, each kind in a block
+  of its own) or a composite of placed scenes with optional colour
   swaps. Scene pointers have bit 15 set for a picture.
 - The ninja and his enemies are built from software sprites: each frame
   record lists parts, each part a packed sprite, which the decoder unpacks
@@ -130,7 +137,7 @@ bitmap `$2000`.
   shown values (`$022B`, `$022C`) follow them a step at a time.
 - Lives: item 26's flag (`$03F2`), 4 at the start (the state
   `MachineSetup` leaves, engine `$0EAF`). Each death takes one
-  (`LoseLife`, `$93DB` in Central Park); when none
+  (`LoseLife`, `$93C4` in Central Park, its `DEC` at `$93DB`); when none
   is left, item 8 (`$03E0`), a spare life, is spent if the player has it
   (`$9012`), and otherwise GAME OVER is printed and the level's credits
   card comes back (`ResetSceneAfterDeath`). The end of a level also turns
@@ -164,13 +171,17 @@ bitmap `$2000`.
 ## Sound
 
 - Each level's tune is in its title load, with its player at `$4000`
-  (`$4000` to start, `$4003` every frame). The engine's interrupt plays
-  it (engine `$1F0E`) and so does the loader while it reads the level
-  (engine `$111D`). Six tunes for seven levels: The Mansion and the Final
+  (`$4000` to start, `$4003` every frame, five frames in six on NTSC).
+  The engine's interrupt plays it (engine `$1F0E`), and so does the
+  loader between the level file's two segments, while it waits for Space
+  or fire (engine `$111D`); it turns the volume down before it reads the
+  level. Six tunes for seven levels: The Mansion and the Final
   Battle have the same one, byte for byte over `$4000-$4D66`.
 - Each tune carries a line of text at `$400C` that nothing reads, crediting
-  Reyn Ouwehand with the music and Falco Paul with the player and sounds,
-  in different words each time; the tune for The Mansion and the Final
+  Reyn Ouwehand with the music and Falco Paul with the player, and in
+  most of them the sounds too, in different words each time (Central
+  Park's names only the player, and The Office's gives the music to both
+  of them); the tune for The Mansion and the Final
   Battle says it was composed WHILE BEING BUGGED BY FALCO, RICHARD &
   JOHN! The title parts' facts give each text.
 - The intro has a driver of its own at intro `$B000` (`$B000` to start,

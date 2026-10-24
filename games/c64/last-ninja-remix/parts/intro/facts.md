@@ -22,9 +22,10 @@ here is this part's. Unless marked *live*, a fact comes from the code in
   redrawing the kneeling ninjas with their heads raised (`$0CB2`); a
   vision of a figure in the window, then a fade to white; the city at
   night with the masked ninja, 250 frames; and the logo again.
-- `IntroIrq` (`$106C`) comes twice a frame: at line `$33` the tune, the
-  timers, the keys and the credits (`$10C3`), at line `$FB` the sprites
-  (`$10D0`).
+- `IntroIrq` (`$106C`) comes twice a frame, at lines `$2F` and `$F7`, and
+  waits four lines before its work: from line `$33` the tune, the timers,
+  the keys and the credits (`$10C3`), from line `$FB` the sprites and the
+  fade to white (`$10D0`).
 - Moving pictures are tiles: four channels step through scripts
   (`$17A6`), each step a tile copied into the bitmap (`DrawTile`,
   `$0C79`): the lamps' flames, their smoke, the lightning and the vision.
@@ -38,8 +39,8 @@ here is this part's. Unless marked *live*, a fact comes from the code in
 - Fire on port 2 or the second button leaves the intro (`$0905`-`$0927`),
   once the city has been shown (`fire_allowed`, `$4C`).
 - The hidden credits: holding L on the logo (`ScanKeys`, `$1105`, and
-  `$1187`) starts a scroller in columns 14 to 25 of cell row 22, over the
-  badge's middle, one character every fourth frame from the PETSCII text
+  `$1187`) starts a scroller in columns 14 to 25 of cell row 22, the
+  badge's SYSTEM 3 strip, between the S and the 3, one character every fourth frame from the PETSCII text
   at `$8002` to its closing `$24`, with the font at `$8425`. While it
   runs the logo stays. The text credits the intro to Stan Schembri
   (programming) and Robin Levy (graphics) and ends with thanks to the
@@ -54,7 +55,8 @@ here is this part's. Unless marked *live*, a fact comes from the code in
   across them), a tick every eighth frame, the voices ticking on
   different frames. Instruments are 47 bytes from `$B272`: two sounds a
   voice swaps between, vibrato, a pulse sweep, the filter for voice 2 and
-  a bend that reads three more bytes from the pattern.
+  a bend that reads four more bytes from the pattern (one as the note
+  starts, the frames before the bend, and three when the bend begins).
 - `HandOverToGame` (`$0340`) puts the ROMs back, resets the I/O through
   the KERNAL and loads `NINJA*` (`$03A6`).
 - Left over: `OldLoaderStub` (`$0B9F`), which loads a file named L2 to

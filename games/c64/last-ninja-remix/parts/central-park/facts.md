@@ -40,15 +40,18 @@ other addresses, and their facts give only what differs.
 
 ## Rooms
 
-- 18 areas. Each has a list of conditions (pointers at `$99D4`) and a
-  list of walls in a packed form (`area_collision_source_00`, `$9D8A`, and
-  on), which `CompileCollision` expands into fixed records when the
-  player enters: chains of segments with a start, ends and slopes, and an
-  optional script command a wall sets when touched.
+- 18 areas. Each has a list of the pictures an actor passes behind
+  (pointers at `$99D4`; four bytes each: a scene, a depth, a column and a
+  row) and a list of walls in a packed form (`area_collision_source_00`,
+  `$9D8A`, and on), which `CompileCollision` expands into fixed records
+  when the player enters: chains of segments with a start, ends and
+  slopes, and an optional script command a wall sets when touched.
 - Exits: 37 records in parallel tables from `transition_area` (`$9330`),
-  the first giving the area each leads to, `$FF` for none.
+  the first giving the area each leads to; `$FF` (exits 34 and 36) leads
+  out of the level, to the check for the items it needs (`$02AF`).
 - Entrance animations: one, at `$96A6`: arriving by exit 2 plays kind 1
-  for 15 ticks.
+  with a count of 15, one taken off each time the player's animation ends
+  (`$A08A`): 13 steps of 8 in Y, one last animation, then the end.
 - `RenderScene` (`$8A52`) draws the area's scene tree into the 30 by 18
   cell window, clipped, with the colour swaps and mirroring its records
   ask for.

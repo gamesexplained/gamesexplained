@@ -26,7 +26,7 @@ Sources:
 | Fighting moves, unarmed, armed and thrown | open | combat overlap (`ResolveCombatOverlapForActorSlotX`, `$AB67`), damage (`DamagePlayer`, `$B54A`) and projectile hits (`$B767`) are traced; the table from stick to move is not |
 | Weapons and items: keys, map, nunchakus, shuriken, staff, bottle, sword, hamburger, credit card, terminal | traced | 40 item flags at `$03D8`; each level's object records say where an item lies and what taking it does |
 | The player's and the enemy's energy | confirmed | `$0229` and `$022A`, 44 each, shown as two spirals (engine `$1D4B`, `$1D78`); `test_index.js` holds the spiral against engine `$1E67` |
-| Lives | traced | item 26's flag (`$03F2`), four at the start (engine `$0EAF`); `LoseLife` (`$93DB` in Central Park) |
+| Lives | traced | item 26's flag (`$03F2`), four at the start (engine `$0EAF`); `LoseLife` (`$93C4` in Central Park) |
 | Score | traced | engine `$1183`; 5,000 at the end of each level (`ResolveLevelCompletion`), 50,000 at the end of the game (`PlayEnding`, `$8CA5` in The Final Battle) |
 | Clock | live | engine `$1F1B`, a second every 50 raster interrupts: 10 seconds in 500 PAL frames |
 | The final problem "is always in the picture": the last door's lock | confirmed | the code is the clock's minutes and seconds as The Basement ends (`CopyClockToCode`, `$B9B2` in The Basement); `test_index.js` runs it for all 3,600 times |
