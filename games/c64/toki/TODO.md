@@ -1,8 +1,8 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 54.0 % of the play snapshot's ledger (2026-10-24).
+Tier: Bronze (2026-10-08). Coverage 62.7 % of the play snapshot's ledger (2026-10-24).
 
-Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the large bare runs ($AC4F, $A990, $4EDD, $66A9). Named 2026-10-24 (latest pass: the view-scroll engine, update_view_scroll $470C with its scroll_* steps and room_to_scroll_* tests; before it: recolour_screen $5BC2, the colour-RAM refresh, and char_colour_table $0C22):  player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat.
+Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the remaining bare runs ($4082, $059A, $9C1E, $B259, $9443, $5108, $686D, $6D81, $442C; queue via coverage.py). Named 2026-10-24 (latest pass: init_round_state $4EDD, map-row copy $4593, SID sound driver $66A9, object phase handlers $A990, char-block slots $AC4F, player tile probe $9D3C; before it: the view-scroll engine, recolour_screen $5BC2, player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat).
 
 For Silver:
 
