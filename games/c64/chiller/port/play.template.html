@@ -126,7 +126,7 @@ section table{margin:6px 0 18px}
         <output id="pl-scrub-t" for="pl-scrub">0.0 s</output>
         <button type="button" id="pl-resume" disabled>Play from here</button>
       </div>
-      <p class="cap">Drag back to rewind to any moment of this game: the game is replayed from the start with the keys you pressed, which takes about a tenth of a second for each second of play. Then <b>Play from here</b> to take a different path. While paused, the routines the game ran in the last frame are listed below, each linked to its place in the source.</p>
+      <p class="cap">Drag back to rewind to any moment of this game: the game is replayed from the start with the keys you pressed, from the nearest of the moments it saves every two and a half seconds. Then <b>Play from here</b> to take a different path. While paused, the routines the game ran in the last frame are listed below, each linked to its place in the source.</p>
       <ul class="pl-calls" id="pl-calls" aria-label="Routines the game ran in the last frame"></ul>
       <h3>Change a byte and watch</h3>
       <div class="pl-poke">
@@ -188,8 +188,10 @@ let image = null, rt = null, running = false, paused = false, level = null;
 let names = new Map();                 // routine name -> address, from the listing's index
 // The game so far as what was done to it: the level it started on, the cheats, and the keys, cheats
 // and byte edits with the frame of play they came at. The port holds generators, which cannot be
-// copied, so a moment is rebuilt by playing the log again from the start (replayTo).
-let log = { n: 0, cheats0: {}, ev: [] }, played = 0, maxPlayed = 0, edits = [], replaying = false;
+// copied, so a moment is rebuilt by playing the log again (replayTo), from the nearest saved pass
+// before it: every EVERY frames the runtime saves its whole state at the top of main_loop.
+const EVERY = 125;
+let log = { n: 0, cheats0: {}, ev: [] }, played = 0, maxPlayed = 0, edits = [], replaying = false, keys = [];
 
 function draw() {
   ChillerScreen.draw(rt.M, rt.chips.vic, rt.chips.colour, px);
@@ -240,7 +242,7 @@ function boot(n) {
   rt = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
   Object.assign(rt.cheats, cheats);
   level = n || 0;
-  log = { n: level, cheats0: Object.assign({}, cheats), ev: [] }; played = 0; maxPlayed = 0; edits = [];
+  log = { n: level, cheats0: Object.assign({}, cheats), ev: [] }; played = 0; maxPlayed = 0; edits = []; keys = [];
   rt.tracing = true;
   if (n) { rt.jump(n); overMsg.textContent = 'Going to ' + LEVELS[n].toLowerCase() + '…'; over.hidden = false; }
   sound.attach(); input();
@@ -259,7 +261,11 @@ function tick(now) {
     acc += Math.min(250, now - (last || now)); last = now;
     let n = 0;
     while (acc >= FRAME_MS && n < 10) {
-      rt.seen.clear(); rt.runTo((rt.frame + 1) * FRAME); played++; sound.frame(); acc -= FRAME_MS; n++;
+      const t = (rt.frame + 1) * FRAME;
+      if (!keys.length || played - keys[keys.length - 1].f >= EVERY) rt.wantSave = true;
+      rt.seen.clear(); rt.runTo(t);
+      if (rt.saved) { keys.push({ f: played, t, s: rt.saved }); rt.saved = null; }
+      played++; sound.frame(); acc -= FRAME_MS; n++;
     }
     if (n === 10) acc = 0;
     if (n) { maxPlayed = played; draw(); if (played % 6 === 0) lab(); }
@@ -366,14 +372,25 @@ function applyEv(r, e) {
   else if (e.t === 'poke') r.M[e.a] = e.v;
 }
 // the game as it stood at frame T of play: the log played again from the start, as fast as it goes
-function replayTo(T) {
-  const r = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
-  Object.assign(r.cheats, log.cheats0);
-  if (log.n) r.jump(log.n);
-  while (r.busy) r.runTo(r.cycles + FRAME);
-  r.tracing = true;
+function replayTo(T, fromStart) {
+  let r, i = 0;
+  const kf = fromStart ? null : keys.filter(k => k.f < T).pop();
+  if (kf) {                                       // from a saved pass, part way through frame kf.f
+    r = ChillerRuntime.create(image, { cost: window.CHILLER_COST, state: kf.s });
+    r.tracing = true;
+    if (kf.f === T - 1) r.seen.clear();
+    r.runTo(kf.t);
+    i = kf.f + 1;
+  } else {
+    r = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
+    Object.assign(r.cheats, log.cheats0);
+    if (log.n) r.jump(log.n);
+    while (r.busy) r.runTo(r.cycles + FRAME);
+    r.tracing = true;
+  }
   let k = 0;
-  for (let i = 0; i <= T; i++) {
+  while (k < log.ev.length && log.ev[k].f < i) k++;
+  for (; i <= T; i++) {
     while (k < log.ev.length && log.ev[k].f <= i) applyEv(r, log.ev[k++]);
     if (i < T) { r.seen.clear(); r.runTo((r.frame + 1) * FRAME); }
   }
@@ -393,7 +410,7 @@ function seek(T) {
 function unpause() {
   if (!paused) return;
   if (played < maxPlayed) {                       // taking a different path: the rest of the old one is dropped
-    log.ev = log.ev.filter(e => e.f <= played); maxPlayed = played;
+    log.ev = log.ev.filter(e => e.f <= played); keys = keys.filter(k => k.f < played); maxPlayed = played;
   }
   paused = false; last = 0; acc = 0;
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
@@ -453,6 +470,6 @@ C64.load('listing.json').then(G => {
   showStart('Chiller, as the tape starts it: the forest card, then the forest. Click, then use the keyboard, or pick a level below.');
   requestAnimationFrame(tick);
 }, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
-window.ChillerPlay = { get rt() { return rt; } };
+window.ChillerPlay = { get rt() { return rt; }, replayTo, get played() { return played; }, get keys() { return keys; } };
 })();
 </script>
