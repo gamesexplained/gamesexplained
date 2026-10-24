@@ -9,7 +9,10 @@ the loader calls `$4E00` (engine `$1108`).
   where the load coordinator goes once the level is in.
 - `PlayNextLoadVector` (`$3FF6`): `JMP $8CF6`, an `RTS` in the play
   load. Only Central Park's title load points this vector at
-  `MachineSetup`.
+  `MachineSetup`, and only Central Park's is called: the one call,
+  from `StartLevelLoad` (engine `$1405`), comes once as the game starts,
+  and the end of a level goes straight to `CoordinateLevelLoad` (engine
+  `$16AD`).
 - The tune: its player at `$4000` (`$4000` starts it, `$4003` plays a
   frame), the text "THIS TUNE IS COMPOSED BY REYN OUWEHAND! THE PLAYER
   AND SOUNDS ARE DONE BY FALCO PAUL" at `$400C`, which nothing reads,

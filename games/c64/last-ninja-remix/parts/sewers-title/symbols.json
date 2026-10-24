@@ -2909,7 +2909,7 @@
   {
    "address": 16374,
    "type": "line",
-   "text": "JMP $8113: StartLevelLoad calls this ($1405, jsr $3FF6) before it loads the next part. Central Park's points at the machine set-up at $0E00; The Sewers' points at an RTS, so it does nothing."
+   "text": "JMP $8113, an RTS in The Sewers' play load. This is the vector StartLevelLoad calls ($1405, jsr $3FF6) before it loads a part, but StartLevelLoad runs only once, when the game starts and before Central Park's first load, while the vector still holds the engine's own JMP $0E00 to the machine set-up. A finished level jumps to CoordinateLevelLoad at $16AD directly ($7C0D), past that call, so nothing calls this vector while this load is in memory."
   },
   {
    "address": 16377,
@@ -2924,7 +2924,7 @@
   {
    "address": 16387,
    "type": "line",
-   "text": "JMP $4129: one step of the tune. The interrupt routine calls it at $1F0E on every interrupt, except that while $AB is zero it leaves out every sixth; the title sequence calls it at $111D once a frame, timed by the raster."
+   "text": "JMP $4129: one step of the tune. The interrupt routine calls it at $1F0E on its raster interrupt, once a frame, while the music switch $AA is nonzero, except that while $AB is zero it leaves out every sixth; the title sequence calls it at $111D once a frame, timed by the raster."
   },
   {
    "address": 16390,
@@ -3474,7 +3474,7 @@
   {
    "address": 19606,
    "type": "line",
-   "text": "ScenePointers plus 1, the address the instructions at $75BE, $75C4, $75FE, $7695 and $8229 write with X and Y as the index: the high byte of each word of the table, the index counting in pairs from the low byte."
+   "text": "ScenePointers plus 1, the address the instructions at $75BE, $75C4, $75FE, $7695 and $8229 use with X or Y as the index (the one at $75C4 writes it, the other four read it): the high byte of each word of the table, the index counting in pairs from the low byte."
   },
   {
    "address": 19607,
@@ -3944,12 +3944,12 @@
   {
    "address": 19861,
    "type": "line",
-   "text": "Scene leaf 007 plus 7, the address the instructions at $75CA, $75D1, $7603, $769A and $8213 write with X and Y as the index: the table read from its byte 7 on."
+   "text": "Scene leaf 007 plus 7, and also the scene pointers ($4C95) plus 256, where the low byte of pointer 128 would be. The instructions at $75CA, $75D1, $7603, $769A and $8213 use it only as that table, with X or Y as twice the scene number (the one at $75D1 writes, the others read), on the branch for a scene number of 128 or more. The Sewers has 85 scenes and names none above 84, so that branch never runs and nothing reads or writes the leaf through these instructions."
   },
   {
    "address": 19862,
    "type": "line",
-   "text": "Scene leaf 007 plus 8, the address the instructions at $75D4, $75DA, $7606, $769D and $821B write with X and Y as the index: the table read from its byte 8 on."
+   "text": "Scene leaf 007 plus 8, and also the scene pointers ($4C95) plus 257, where the high byte of pointer 128 would be. The instructions at $75D4, $75DA, $7606, $769D and $821B use it only as that table, with X or Y as twice the scene number (the one at $75DA writes, the others read), on the branch for a scene number of 128 or more. The Sewers has 85 scenes and names none above 84, so that branch never runs and nothing reads or writes the leaf through these instructions."
   },
   {
    "address": 19895,
@@ -4034,7 +4034,7 @@
   {
    "address": 20968,
    "type": "line",
-   "text": "32 two-byte area slots, $51E8-$5227: the scene that draws the area, then its background colour in the low nibble. 18 areas have a scene (area 0: scene 2, area 1: scene 2, area 2: scene 2, area 3: scene 2, area 4: scene 2, area 5: scene 2, area 6: scene 2, area 7: scene 2, area 8: scene 2, area 9: scene 2, area 10: scene 2, area 11: scene 2, area 12: scene 2, area 13: scene 2, area 14: scene 2, area 15: scene 2, area 16: scene 2, area 17: scene 2); $FF marks a slot no area uses. Every slot of the title's names scene 2: DrawTitleCard draws area 1 only, and the background colour it sets is 0."
+   "text": "32 two-byte area slots, $51E8-$5227: the scene that draws the area, then its background colour in the low nibble. 18 areas have a scene (area 0: scene 2, area 1: scene 2, area 2: scene 2, area 3: scene 2, area 4: scene 2, area 5: scene 2, area 6: scene 2, area 7: scene 2, area 8: scene 2, area 9: scene 2, area 10: scene 2, area 11: scene 2, area 12: scene 2, area 13: scene 2, area 14: scene 2, area 15: scene 2, area 16: scene 2, area 17: scene 2); $FF marks a slot no area uses. Every slot of the title's that is not $FF names scene 2: DrawTitleCard draws area 1 only, and the background colour it sets is 0."
   },
   {
    "address": 20969,
