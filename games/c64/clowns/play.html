@@ -157,21 +157,14 @@ if (!window.C64 || !window.ClownsPort) {
 
   // ---- sound: each tick's SID writes, streamed to the site's SID model
   let host = null, soundOn = false;
-  function driver() {
-    const sid = new Uint8Array(25), queue = [];
-    const d = { sid, writes: [], playing: () => true, stop() {},
-      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 40) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
-      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
-    return d;
-  }
   let pending = [];
   async function sound(on) {
     soundOn = on;
     if (on && !host) {
       try {
-        host = await C64Sid.host({ driver, data: null, gain: 0.5, period: 10001 });
+        host = await C64Sid.host({ live: true, gain: 0.5, period: 10001 });
         const all = []; for (let r = 0; r < 25; r++) all.push(r, sidRegs[r]);
-        host.send({ cmd: 'start', tune: { frames: [all] } });
+        host.push([all]);
       } catch (e) { soundOn = false; $('cp-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
@@ -198,7 +191,7 @@ if (!window.C64 || !window.ClownsPort) {
         if (soundOn && host) { pending.push(sidQueue); }
         sidQueue = [];
       }
-      if (soundOn && host && pending.length) { host.send({ cmd: 'start', tune: { frames: pending } }); }
+      if (soundOn && host && pending.length) { host.push(pending); }
       pending = [];
     }
     last = t;

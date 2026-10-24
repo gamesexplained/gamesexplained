@@ -24,7 +24,7 @@ JavaScript file's header is its manual.
 | `machine` | `60-verify`, "Unreachable"; `70-minisite`, Play | `kit/c64/machine.js`, and for a game that reads typed lines or loads as it plays, `kit/c64/kernal_lines.js` and `kit/c64/c64run.js` ("The machine", below) |
 | `lockstep` | `70-minisite`, Play (`play.md`) | `kit/c64/lockstep.js`: `checkGen`, `standIn`, `standInGen`, `irqBytes` and `timing` |
 | `frame` | `10-orient`, step 3; `70-minisite`, "One frame, rebuilt from memory" | `python3 kit/c64/frame.py capture`, `compare` and `trim` ("The frame", below) |
-| `sound` | `70-minisite`, "The sound" | the SID, `site/lib/sid.js`, playing the game's own driver run on the kit's 6502 or ported ("The sound", below) |
+| `sound` | `70-minisite`, "The sound" | the SID, `site/lib/sid.js`, playing the game's own driver run on the kit's 6502 or ported ("The sound", below); a Play tab hands it its game's writes with `C64Sid.host({ live: true })` and `push` |
 | `fixes` | `60-verify`, the checker's corrections | `python3 kit/c64/r2000.py --apply fixes.json` sends them to the disassembler, keeps each comment's kind, and refuses a label given to two addresses before anything is sent |
 | `page` | `70-minisite`, "Building it" | `site/lib/c64.js` (`C64.load`, the glyph, screen and sprite drawing, `C64.renderFrame`, `C64.drawFrame`, `C64.videoMemory`), `site/lib/sid.js`, `site/lib/collide.js`, and `lib/cpu6502.js` as `C64Cpu` |
 

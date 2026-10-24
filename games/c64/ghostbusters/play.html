@@ -5247,13 +5247,6 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
   const sound = (function () {
     const FRAME = 19656;
     let host = null, on = false, pending = new Map(), sent = 0;
-    function driver() {
-      const sid = new Uint8Array(25), queue = [];
-      const d = { sid, writes: [], playing: () => true, stop() {},
-        init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 25) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
-        play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
-      return d;
-    }
     function reset() { pending.clear(); sent = rt ? rt.frame : 0; }
     function attach() {
       if (!rt) return;
@@ -5270,8 +5263,8 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
       on = want;
       if (on && !host) {
         try {
-          host = await C64Sid.host({ driver, data: null, gain: 0.5 });
-          host.send({ cmd: 'start', tune: { frames: [Array.from(rt ? rt.sid.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])] } });
+          host = await C64Sid.host({ live: true, gain: 0.5 });
+          host.push([Array.from(rt ? rt.sid.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])]);
           speech.context(host.ctx);
         } catch (e) { on = false; say('No sound: ' + e.message); }
       }
@@ -5282,7 +5275,7 @@ window.GB_CHARROM = 'GDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHh
       if (!on || !host || !rt) return;
       const frames = [];
       for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
-      if (frames.length) host.send({ cmd: 'start', tune: { frames } });
+      if (frames.length) host.push(frames);
     }
     return { attach, set, frame, reset, get on() { return on; } };
   })();

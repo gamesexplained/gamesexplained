@@ -263,20 +263,13 @@ function start(D) {
   const mute = () => !musicOn && !(inPlay() && !play.M[0x3D1]);
   function music(on) { musicOn = on; $('mm-music').setAttribute('aria-pressed', String(on)); }
   let host = null, soundOn = false;
-  function driver() {
-    const sid = new Uint8Array(25), queue = [];
-    const d = { sid, writes: [], playing: () => true, stop() {},
-      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 48) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
-      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) if (f[i] < 25) sid[f[i]] = f[i + 1]; } };
-    return d;
-  }
   async function sound(on) {
     soundOn = on;
     if (on && !host) {
       try {
-        host = await C64Sid.host({ driver, data: null, gain: 0.5, period: MoMPlay.FRAME / MoMPlay.SLICES });
+        host = await C64Sid.host({ live: true, gain: 0.5, period: MoMPlay.FRAME / MoMPlay.SLICES });
         const all = []; for (let r = 0; r < 25; r++) all.push(r, r === 0x18 && muted ? play.sid[r] & 0xF0 : play.sid[r]);
-        host.send({ cmd: 'start', tune: { frames: [all] } });
+        host.push([all]);
       } catch (e) { soundOn = false; $('mm-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn && !paused) host.ctx.resume(); else host.ctx.suspend(); }
@@ -338,7 +331,7 @@ function start(D) {
         if (m) for (const sl of slices) for (let i = 0; i + 1 < sl.length; i += 2) if (sl[i] === 0x18) sl[i + 1] &= 0xF0;
         muted = m;
       }
-      if (soundOn && host && slices.length) host.send({ cmd: 'start', tune: { frames: slices } });
+      if (soundOn && host && slices.length) host.push(slices);
       draw();
       if (!paused) $('mm-out').textContent = say();
       const M = play.M, rec = (M[0x314] | M[0x315] << 8) === 0x2653 && M[0x3D3] === 1;

@@ -472,6 +472,13 @@ press, so the switch starts it at the viewer's first one and keeps the
 viewer's choice for every Play tab; the page starts no sound of its own,
 neither when its game starts nor in its key handlers.
 `kit/scripts/test_sound_switch.js` fails a Play page that leaves it out.
+The page hands its game's writes to the sound chip's model through the
+site's live queue (`kit/skills/<platform>/steps`, "sound") and keeps no
+queue of its own: the site's holds half a second, since a page's frames
+come unevenly and the audio device can take 100 ms at once, and a
+shorter queue runs dry and overflows by turns, which is heard as the
+music skipping. `kit/scripts/test_live_sound.js` fails a Play page with
+a queue of its own.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in
