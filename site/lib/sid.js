@@ -612,11 +612,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           a screen); frame counts from the tune's start, as the seek bar does
   //   bounce  optional: true for a bouncing ball in place of the piano roll, with a switch between
   //           the two and a full-screen button: a ball a voice hops from note to note as the
-  //           reader hears them (NoteBounce, ../../lib/bounce.js, which the page loads before
-  //           this script). The player runs the driver ahead when a tune starts, as for its
-  //           length, and takes a note where mark says one starts
-  //   pitch   optional: (v) => the pitch of the note starting in v, in semitones from C0, for the
-  //           bouncing ball; by default the nearest note to the voice's frequency
+  //           reader hears them, and rides the voice's pitch as it bends or wavers between
+  //           (NoteBounce, ../../lib/bounce.js, which the page loads before this script). The
+  //           player runs the driver ahead when a tune starts, as for its length, and takes a
+  //           note where mark says one starts, and where the pitch steps to a new note and holds
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -632,7 +631,6 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
     const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
-    const pitch = o.pitch || ((v) => Math.round(12 * Math.log2(v.freq * HZ / C0)));
     const BOUNCE = !!(o.bounce && globalThis.NoteBounce);
     const line = (r, i) => r.k
       ? `<div class="sid-l"><span class="sid-k">${esc(r.k)}</span><span class="sid-m" data-row="${i}">-</span></div>`
@@ -691,18 +689,33 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
     // gets a bar LONG long, which grows if the tune is played past it. The same run notes whether
     // the tune ever routes a voice through the filter ($D417 bits 0-2), for the filter switch,
-    // and, for the bouncing ball, the frame and pitch of every note each voice starts.
+    // and, for the bouncing ball, the frame and pitch of every note each voice starts, and each
+    // voice's pitch and loudness at every frame. The loudness is the envelope's, from the chip's
+    // model run alongside without sound (about 0.1 s for five minutes of music), so that a note
+    // still sounds while it is released.
     const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [], scores = [];
     function length(t) {
       if (lengths[t] === undefined) {
         let n = 0, f = false;
         const notes = [[], [], []], prev = [null, null, null];
+        const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1).fill(NaN)) : null;
+        const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1)) : null;
+        const chip = BOUNCE ? E.createSID(8000, { ntsc: o.ntsc }) : null;
+        const semis = (freq) => 12 * Math.log2(freq * HZ / C0);
         const collect = BOUNCE ? (d, k) => {
+          const w = d.writes, s = d.sid;                     // as the player sets the chip
+          if (w) for (let i = 0; i + 1 < w.length; i += 2) chip.write(w[i], w[i + 1]);
+          chip.setRegs(s);
+          const env = chip.V.map((c) => c.env);
+          chip.skip(PERIOD);
           for (let x = 0; x < 3; x++) {
-            const r = 7 * x, s = d.sid;
+            const r = 7 * x;
             const v = Object.assign({ freq: s[r] | s[r + 1] << 8, pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF,
-              ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: 0 }, d.voice ? d.voice(x) : null);
-            if (mark(v, prev[x])) { const p = pitch(v); if (isFinite(p)) notes[x].push({ t: k, n: p }); }
+              ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] }, d.voice ? d.voice(x) : null);
+            const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
+            level[x][k] = lv;
+            if (lv && v.freq && wave && wave !== 0x80) line[x][k] = semis(v.freq);   // noise has no pitch to show
+            if (mark(v, prev[x]) && v.freq) notes[x].push({ t: k, n: semis(v.freq) });
             prev[x] = v;
           }
         } : null;
@@ -716,6 +729,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);
           for (; n < LONG; n++) {
+            if (chip && d.readback) d.readback(...chip.read3(), chip.peek());
             d.play(); f = f || routes(d);
             if (!d.playing()) break;
             if (collect) collect(d, n + 1);                  // the frame the display numbers it
@@ -723,7 +737,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         } catch (e) { n = LONG; f = true; }
         lengths[t] = n < LONG ? n : null;
         filtered[t] = f;
-        scores[t] = { rate: FPS, voices: notes.map((x) => ({ notes: x })) };
+        if (BOUNCE) scores[t] = { rate: FPS, voices: notes.map((x, i) =>
+          ({ notes: x, line: line[i].slice(0, n + 2), level: level[i].slice(0, n + 2) })) };
       }
       return lengths[t];
     }

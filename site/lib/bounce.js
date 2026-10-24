@@ -1,25 +1,32 @@
 // A bouncing-ball view of a tune: each voice's notes lie on a dark sheet as discs on a staff, a
 // glowing ball hops in an arc from each note to the next and lands as the note sounds, and a
-// note lights up when the ball hits it. The camera keeps one angle and moves with the music:
-// time runs away from the viewer on a canvas taller than wide (a phone) and to the right on a
-// wider one. Glow, bloom and the ball's reflection are drawn with the 2D canvas alone: the
-// bright parts are drawn again on a second canvas, shrunk in steps and added back enlarged.
-// No dependencies. Exposes NoteBounce (window.NoteBounce on a page; globalThis.NoteBounce in
-// node, for tests).
+// note lights up when the ball hits it. Where a voice's pitch moves while a note sounds (a bend,
+// a vibrato, a slide), a line on the sheet shows it, and the ball rides the line until it hops
+// to the next note. The camera keeps one angle and moves with the music: time runs away from
+// the viewer on a canvas taller than wide (a phone) and to the right on a wider one. Glow, bloom
+// and the ball's reflection are drawn with the 2D canvas alone: the bright parts are drawn again
+// on a second canvas, shrunk in steps and added back enlarged. No dependencies. Exposes
+// NoteBounce (window.NoteBounce on a page; globalThis.NoteBounce in node, for tests).
 //
 //   const view = NoteBounce.create(canvas, { colors })
 //     canvas  the canvas to draw on; its CSS size decides the shape, and the view follows it
 //     colors  optional: one CSS hex colour a voice ('#1f5fa8'), as the page's other displays
 //             colour them
-//   view.score({ rate, voices })   the tune: rate ticks a second, and per voice { notes }, each
-//             note { t, n }: the tick it starts on and its pitch in semitones (any origin; 0 =
-//             C0 in the SID player). A voice with no notes gets no lane. null clears the view
+//   view.score({ rate, voices })   the tune: rate ticks a second, and per voice { notes, line,
+//             level }. notes: each { t, n }, the tick it starts on and its pitch in semitones
+//             (any origin; 0 = C0 in the SID player). line, optional: the voice's pitch at each
+//             tick, NaN where it is silent; a step in it to a new pitch that holds is a note
+//             too (an instrument playing an arpeggio of its own on one note of the track).
+//             level, optional: its loudness at each tick, 0 to 1. A voice with no notes gets
+//             no lane. null clears the view
 //   view.draw(t, { muted })        draws the tune at tick t (fractional), with muted[x] true for
 //             a voice to draw dimmed; with no score, draws the empty sheet and the message
 //   view.message                   the text drawn on an empty sheet
 //   view.ballAt(x, t)              voice x's ball at tick t, { i, lat, y, at }: the note it last
 //             landed on (-1 before the first), its place across the lane (-0.5 to 0.5), its
 //             height and the tick of the point under it, for tests
+//   view.notesOf(x)                voice x's notes as the view takes them, given and found in
+//             the line, [{ t, n }], for tests
 // Everything drawn is a function of t alone, so a page can seek, pause or loop without telling
 // the view anything but the tick.
 (function (root) {
@@ -29,9 +36,14 @@
   const LANE = 1, GAP = 0.38;                      // world units: a lane's width, the gap between lanes
   const SPAN = 0.84;                               // the part of a lane the notes use
   const NOTE_R = 0.064, BALL_R = 0.056;
-  const HOP_MOST = 0.42;                           // seconds: a longer wait is spent resting on the note
-  const REST_MOST = 0.6;                           // world units a resting ball may fall behind before it floats
-  const RISE = 0.35, FLOAT = 0.45;                 // a floating ball: seconds to rise or come down, its height
+  const HOP_MOST = 0.42;                           // seconds: the longest hop; before it, the ball rides the line
+  const RISE = 0.35, FLOAT = 0.45;                 // a floating ball: seconds to rise, its height
+  const SMOOTH = 0.12, SETTLE = 0.06;              // seconds: the stretch of line a riding ball follows the
+                                                   // average of, and the time it takes to settle onto it
+  const HEARD = 6 / 255;                           // a level below this is silence
+  const STEP = 0.5, HELD = 0.25;                   // semitones: a step to a new note, and the most a held
+                                                   // note moves in a tick
+  const GROOVE = 0.011, LIT = 0.013, LIT_GLOW = 0.045;   // half-widths of the line, world units
   const TRAIL = 0.3;                               // seconds of the ball's path drawn behind it
 
   const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -59,35 +71,91 @@
     let grain = null;
     let W = 0, H = 0, dpr = 1, portrait = false;
     let lanes = [], rate = 50, speed = 2, cam = null;
-    const view = { message: 'Choose a tune to start.', score, draw, ballAt };
+    const view = { message: 'Choose a tune to start.', score, draw, ballAt, notesOf };
 
     // ------------------------------------------------------------------ the tune
-    // Lanes, one a voice with notes: each note's time in seconds and place across the lane, and
-    // the speed at which the sheet moves, set so that the usual gap between notes is a few discs.
+    // Lanes, one a voice with notes: each note's time in seconds and place across the lane, when
+    // its sound ends, the line as places across the lane, and the speed at which the sheet
+    // moves, set so that the usual gap between notes is a few discs.
     function score(s) {
       lanes = [];
       if (!s || !s.voices) return;
       rate = s.rate || 50;
       const gaps = [];
       s.voices.forEach((v, x) => {
-        const notes = (v && v.notes) || [];
+        if (!v) return;
+        const line = v.line || null, level = v.level || null;
+        const heard = (k) => k >= 0 && k < line.length && line[k] === line[k] && (!level || level[k] >= HEARD);
+        const notes = line ? withSteps(v.notes || [], line, heard) : (v.notes || []).slice();
         if (!notes.length) return;
         let lo = Infinity, hi = -Infinity;
         for (const e of notes) { if (e.n < lo) lo = e.n; if (e.n > hi) hi = e.n; }
         if (hi - lo < 12) { const c = (lo + hi) / 2; lo = c - 6; hi = c + 6; }
         lo -= 1; hi += 1;
+        const place = (n) => (n - lo) / (hi - lo) - 0.5;
         const ts = new Float64Array(notes.length), ps = new Float64Array(notes.length);
         notes.forEach((e, i) => {
-          ts[i] = e.t / rate; ps[i] = (e.n - lo) / (hi - lo) - 0.5;
+          ts[i] = e.t / rate; ps[i] = place(e.n);
           if (i) gaps.push(ts[i] - ts[i - 1]);
         });
-        lanes.push({ x, ts, ps, color: COLORS[x % COLORS.length] });
+        // the line, NaN where silent or off the lane (a bend that falls far below the notes, as
+        // far as the frequency register wrapping round), and where it joins the next tick:
+        // everywhere it sounds but at a step to a pitch that then holds, so that a new note
+        // starts a new stretch of line while a bend or a chord played a tick a note at a time
+        // stays one
+        let lp = null, lv = null, join = null;
+        if (line) {
+          lp = new Float32Array(line.length); lv = new Float32Array(line.length); join = new Uint8Array(line.length);
+          for (let k = 0; k < line.length; k++) {
+            const p = heard(k) ? place(line[k]) : NaN;
+            lp[k] = Math.abs(p) <= 0.6 ? p : NaN;
+            lv[k] = level ? clamp(level[k], 0, 1) : 1;
+          }
+          for (let k = 0; k + 1 < line.length; k++) {
+            if (!(lp[k] === lp[k]) || !(lp[k + 1] === lp[k + 1])) continue;
+            const d = Math.abs(line[k + 1] - line[k]);
+            join[k] = d >= STEP && heard(k + 2) && Math.abs(line[k + 2] - line[k + 1]) < HELD ? 0 : 1;
+          }
+        }
+        // when each note's sound ends: where the line falls silent, or at the next note; with no
+        // line, at the next note, or a second after the last
+        const ends = new Float64Array(notes.length);
+        notes.forEach((e, i) => {
+          const next = i + 1 < notes.length ? notes[i + 1].t : Infinity;
+          if (!lp) { ends[i] = Math.min(next, e.t + rate) / rate; return; }
+          let k = Math.floor(e.t) + 1;
+          while (k < next && k <= e.t + 3 && !(lp[k] === lp[k])) k++;   // a slow attack
+          while (k < next && k < lp.length && lp[k] === lp[k]) k++;
+          ends[i] = Math.min(k, next) / rate;
+        });
+        lanes.push({ x, notes, ts, ps, lp, lv, join, ends, color: COLORS[x % COLORS.length] });
       });
       gaps.sort((a, b) => a - b);
       const typical = gaps.length ? gaps[gaps.length >> 1] : 0.25;
       speed = clamp(0.3 / Math.max(typical, 0.02), 0.8, 2.6);
       lanes.forEach((l, k) => { l.cx = ((lanes.length - 1) / 2 - k) * (LANE + GAP); });
       cam = null;
+    }
+
+    // The notes, and a note wherever the line steps from one held pitch to another that holds
+    // for three ticks: an instrument that plays a melody of its own on one note of the track (an
+    // arpeggio, a pitch program). A chord played a tick or two a note at a time is not one, so
+    // as not to crowd the sheet, nor is a slide or a bend.
+    function withSteps(notes, line, heard) {
+      const out = notes.slice(), near = new Set();
+      for (const e of notes) for (let d = -2; d <= 2; d++) near.add(Math.round(e.t) + d);
+      for (let k = 2; k + 2 < line.length; k++) {
+        if (near.has(k) || !heard(k - 2) || !heard(k - 1) || !heard(k) || !heard(k + 1) || !heard(k + 2)) continue;
+        const a = line[k - 2], b = line[k - 1], c = line[k];
+        if (Math.abs(c - b) >= STEP && Math.abs(b - a) < HELD && Math.abs(line[k + 1] - c) < HELD &&
+          Math.abs(line[k + 2] - c) < HELD) out.push({ t: k, n: c });
+      }
+      return out.sort((p, q) => p.t - q.t);
+    }
+
+    function notesOf(x) {
+      const l = lanes.find((q) => q.x === x);
+      return l ? l.notes.map((e) => ({ t: e.t, n: e.n })) : null;
     }
 
     // The note at or before time s (seconds), by halving: -1 before the first.
@@ -98,28 +166,55 @@
       return a;
     }
 
-    // The ball over a lane at time s: resting on the last note it hit, or in the air on its way
-    // to the next, leaving at the latest HOP_MOST before it. A wait long enough to carry the
-    // resting ball out of the picture is spent floating instead: it rises off the note, keeps
-    // pace with the music over the lane and comes down onto the next note (and before the first
-    // note, and after the last, it floats).
+    // The line's place across the lane at time q (seconds), straight between ticks; NaN where
+    // the voice is silent.
+    function lineAt(lp, q) {
+      const k = q * rate, k0 = Math.floor(k), f = k - k0;
+      let v0 = k0 >= 0 && k0 < lp.length ? lp[k0] : NaN, v1 = k0 + 1 < lp.length ? lp[k0 + 1] : NaN;
+      if (!(v0 === v0)) v0 = v1;
+      if (!(v1 === v1)) v1 = v0;
+      return v0 + (v1 - v0) * f;
+    }
+
+    // Where a ball that landed on note i rides at time s: along the line while the note sounds,
+    // following its average over the last SMOOTH, so that a chord played a tick a note at a time
+    // does not shake it, and settling onto it from the note's place; once the sound has ended,
+    // where it was then.
+    function ride(l, i, s) {
+      const a = l.ts[i], p = l.ps[i];
+      if (!l.lp) return p;
+      const u = Math.min(s, l.ends[i] - 0.5 / rate);
+      if (u <= a) return p;
+      let sum = 0, n = 0;
+      for (let j = 0; j < 8; j++) {
+        const v = lineAt(l.lp, Math.max(a, u - SMOOTH * j / 7));
+        if (v === v) { sum += v; n++; }
+      }
+      return n ? p + (sum / n - p) * Math.min(1, (u - a) / SETTLE) : p;
+    }
+
+    const bob = (s, k) => 0.025 * Math.sin(2 * Math.PI * 0.7 * s) * k;
+
+    // The ball over a lane at time s. On its way, it floats before the first note; after a note
+    // it rides the line on the sheet until the note's sound ends, then rises and floats, keeping
+    // pace with the music. For the last HOP_MOST before the next note, at most, it is in the air
+    // on an arc from there that lands on the note as it starts.
     function ball(l, s) {
       const { ts, ps } = l, i = before(ts, s);
       const a = i < 0 ? -Infinity : ts[i], b = i + 1 < ts.length ? ts[i + 1] : Infinity;
       const pa = ps[Math.max(i, 0)], pb = ps[Math.min(i + 1, ts.length - 1)];
-      const hop = Math.min(b - a, HOP_MOST), leave = b - hop;
-      if ((leave - a) * speed > REST_MOST) {
-        const up = (v) => v >= 1 ? 1 : 1 - (1 - v) * (1 - v);
-        const k = Math.min(up((s - a) / RISE), up((b - s) / RISE));
-        const across = isFinite(a) && isFinite(b) ? smooth((s - a) / (b - a)) : (isFinite(b) ? 1 : 0);
-        const bob = 0.025 * Math.sin(2 * Math.PI * 0.7 * s) * Math.min(1, (s - a) / RISE, (b - s) / RISE);
-        return { i, lat: pa + (pb - pa) * across, y: FLOAT * k + bob, at: s };
+      let lat = pb, y = FLOAT + bob(s, 1);
+      if (i >= 0) {
+        const e = l.ends[i], v = (s - e) / RISE;
+        lat = ride(l, i, s);
+        y = s <= e ? 0 : FLOAT * (v >= 1 ? 1 : 1 - (1 - v) * (1 - v)) + bob(s, Math.min(1, v));
       }
-      if (s <= leave) return { i, lat: pa, y: 0, at: a };
+      const hop = Math.min(b - a, HOP_MOST), leave = b - hop;
+      if (!(s > leave)) return { i, lat, y, at: s };
       const u = (s - leave) / hop;
       const dz = hop * speed, dx = (pb - pa) * SPAN;
       const peak = Math.min(0.55, 0.05 + 0.42 * Math.hypot(dz, dx));
-      return { i, lat: pa + (pb - pa) * u, y: peak * 4 * u * (1 - u), at: leave + hop * u };
+      return { i, lat: lat + (pb - lat) * u, y: y * (1 - u) + peak * 4 * u * (1 - u), at: s };
     }
 
     function ballAt(x, t) {
@@ -243,12 +338,16 @@
       // past notes stay a little while behind the ball, then leave the picture
       const back = portrait ? 1.1 : 2.2, ahead = FAR();
 
+      // the lines, on the sheet under everything else
+      const sx = portrait ? -1 : 1;                  // higher notes: right on a tall canvas, farther on a wide one
+      const lxOf = (l) => (p) => l.cx + sx * p * SPAN * LANE;
+      lanes.forEach((l) => { if (l.lp) line(l, now, back, ahead, muted[l.x] ? 0.3 : 1, lxOf(l)); });
+
       // everything that stands up, far to near, so that nearer things cover farther ones
       const items = [];
       lanes.forEach((l) => {
         const dim = muted[l.x] ? 0.3 : 1;
-        const sx = portrait ? -1 : 1;                // higher notes: right on a tall canvas, farther on a wide one
-        const lx = (p) => l.cx + sx * p * SPAN * LANE;
+        const lx = lxOf(l);
         const i0 = Math.max(0, before(l.ts, now - back / speed));
         for (let i = i0; i < l.ts.length; i++) {
           const z = (l.ts[i] - now) * speed;
@@ -340,6 +439,67 @@
       }
     }
 
+    // A voice's line: where its pitch goes while it sounds, through and between the notes.
+    // Ahead of the ball it is a groove in the sheet; behind, it is lit, brighter where the voice
+    // was louder and where the ball has just passed. Drawn in bands of depth, each a stroke of
+    // the width the camera sees there, and behind the ball by brightness too.
+    function line(l, now, back, ahead, dim, lx) {
+      const { lp, lv, join } = l, C = l.color, kn = now * rate;
+      const k0 = Math.max(0, Math.floor((now - back / speed) * rate));
+      const k1 = Math.min(lp.length - 1, Math.ceil((now + ahead / speed) * rate));
+      const groups = new Map();
+      const pt = (k, v) => proj(cam, lx(v), 0, (k / rate - now) * speed);
+      const add = (ka, va, kb, vb, k) => {
+        const A = pt(ka, va), B = pt(kb, vb);
+        if (!A || !B) return;
+        const band = Math.floor(((ka + kb) / 2 / rate - now) * speed);
+        let key = band;
+        if (kb <= kn + 1e-6) {                       // behind the ball: lit
+          const age = now - kb / rate;
+          const a = (0.3 + 0.7 * lv[k]) * (0.7 + 0.3 * Math.exp(-age / 0.25));
+          key = 1000 + (band + 50) * 16 + Math.round(a * 10);
+        }
+        let g2 = groups.get(key);
+        if (!g2) groups.set(key, g2 = []);
+        g2.push(A[0], A[1], B[0], B[1]);
+      };
+      for (let k = k0; k <= k1; k++) {
+        const v = lp[k];
+        if (!(v === v) || !join[k] && !(k && join[k - 1])) continue;   // a lone tick would be a speck
+        const ve = join[k] ? lp[k + 1] : v;          // a tick holds its pitch until the next joins it
+        if (k < kn && kn < k + 1) {                  // where the ball is: split into lit and not
+          const vm = v + (ve - v) * (kn - k);
+          add(k, v, kn, vm, k); add(kn, vm, k + 1, ve, k);
+        } else add(k, v, k + 1, ve, k);
+      }
+      const width = (band) => { const q = proj(cam, l.cx, 0, band + 0.5); return q ? q[3] : 0; };
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.lineCap = gg.lineCap = 'round'; g.lineJoin = gg.lineJoin = 'round';
+      gg.setTransform(0.5, 0, 0, 0.5, 0, 0);
+      groups.forEach((seg, key) => {
+        const lit = key >= 1000, band = lit ? Math.floor((key - 1000) / 16) - 50 : key;
+        const s = width(band);
+        if (!s) return;
+        const stroke = (c) => { c.beginPath(); for (let i = 0; i < seg.length; i += 4) { c.moveTo(seg[i], seg[i + 1]); c.lineTo(seg[i + 2], seg[i + 3]); } c.stroke(); };
+        if (!lit) {
+          const f = fog(band + 0.5) * dim;
+          if (f <= 0.01) return;
+          g.strokeStyle = `rgba(8,8,9,${(0.8 * f).toFixed(3)})`;
+          g.lineWidth = Math.max(1, 2 * GROOVE * s);
+          stroke(g);
+          return;
+        }
+        const a = ((key - 1000) % 16) / 10 * dim;
+        g.strokeStyle = css(C.core, a);
+        g.lineWidth = Math.max(1, 2 * LIT * s);
+        stroke(g);
+        gg.strokeStyle = css(C.light, 0.4 * a);
+        gg.lineWidth = Math.max(1, 2 * LIT_GLOW * s);
+        stroke(gg);
+      });
+      gg.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
     // A note: a dark disc set into the sheet until the ball lands on it, then lit for good,
     // flaring as it is hit.
     function note(it, now) {
@@ -390,7 +550,7 @@
       // the pool of light under it, brighter as it comes down
       const m = disc(x, z, 0.32);
       if (m) {
-        const k = f * 0.55 / (1 + 6 * b.y);
+        const k = f * 0.4 / (1 + 6 * b.y);
         gg.setTransform(m[0] / 2, m[1] / 2, m[2] / 2, m[3] / 2, m[4] / 2, m[5] / 2);
         const pg = gg.createRadialGradient(0, 0, 0, 0, 0, 1);
         pg.addColorStop(0, css(C.light, k)); pg.addColorStop(0.4, css(C.base, k * 0.35)); pg.addColorStop(1, css(C.base, 0));
@@ -398,15 +558,22 @@
         gg.beginPath(); gg.arc(0, 0, 1, 0, 2 * Math.PI); gg.fill();
       }
 
-      // the reflection: the ball mirrored under the sheet, dim and soft
+      // the reflection: the ball mirrored under the glossy sheet, its highlight mirrored too,
+      // a little dimmer the higher the ball
       const q = proj(cam, x, -y, z);
       if (q) {
         g.setTransform(1, 0, 0, 1, 0, 0);
-        const rr = BALL_R * q[3] * 1.15;
-        const rg = g.createRadialGradient(q[0], q[1], 0, q[0], q[1], rr);
-        rg.addColorStop(0, css(C.core, 0.38 * f)); rg.addColorStop(0.6, css(C.light, 0.16 * f)); rg.addColorStop(1, css(C.base, 0));
+        const rr = BALL_R * q[3], k = f * 0.95 / (1 + 0.8 * b.y);
+        const rg = g.createRadialGradient(q[0] - rr * 0.3, q[1] + rr * 0.35, 0, q[0], q[1], rr * 1.05);
+        rg.addColorStop(0, css(C.core, 0.8 * k)); rg.addColorStop(0.45, css(C.light, 0.75 * k));
+        rg.addColorStop(0.85, css(C.base, 0.6 * k)); rg.addColorStop(1, css(C.base, 0));
         g.fillStyle = rg;
-        g.beginPath(); g.arc(q[0], q[1], rr, 0, 2 * Math.PI); g.fill();
+        g.beginPath(); g.arc(q[0], q[1], rr * 1.05, 0, 2 * Math.PI); g.fill();
+        gg.setTransform(1, 0, 0, 1, 0, 0);            // and a little of its light
+        const qg = gg.createRadialGradient(q[0] / 2, q[1] / 2, 0, q[0] / 2, q[1] / 2, rr * 1.2);
+        qg.addColorStop(0, css(C.light, 0.25 * k)); qg.addColorStop(1, css(C.base, 0));
+        gg.fillStyle = qg;
+        gg.beginPath(); gg.arc(q[0] / 2, q[1] / 2, rr * 1.2, 0, 2 * Math.PI); gg.fill();
       }
 
       // the path just flown
@@ -431,9 +598,9 @@
       g.fillStyle = bg;
       g.beginPath(); g.arc(p[0], p[1], r, 0, 2 * Math.PI); g.fill();
       gg.setTransform(1, 0, 0, 1, 0, 0);
-      const hr = r * 3.6 / 2;
+      const hr = r * 3.6 / 2;                       // its glow, half what the notes give
       const hg = gg.createRadialGradient(p[0] / 2, p[1] / 2, 0, p[0] / 2, p[1] / 2, hr);
-      hg.addColorStop(0, css(C.core, 0.95 * f)); hg.addColorStop(0.25, css(C.light, 0.45 * f)); hg.addColorStop(1, css(C.base, 0));
+      hg.addColorStop(0, css(C.core, 0.48 * f)); hg.addColorStop(0.25, css(C.light, 0.22 * f)); hg.addColorStop(1, css(C.base, 0));
       gg.fillStyle = hg;
       gg.beginPath(); gg.arc(p[0] / 2, p[1] / 2, hr, 0, 2 * Math.PI); gg.fill();
     }
