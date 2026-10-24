@@ -541,7 +541,14 @@ const codes = s => Array.from(s, c => c.charCodeAt(0));
       btn[p.k] = b; $('flowerbtns').appendChild(b);
     });
     $('flowerall').onclick = () => { held = ''; for (const k of 'WOLEF') held += k; find(PARTS[3]); };
-    $('flowerreset').onclick = () => { held = ''; n = 0; fn = false; draw(); say('No part found yet: PROCfl clears the screen and shows only the label and < S >.'); };
+    function blank() {
+      clearInterval(timer);
+      held = ''; n = 0; fn = false;
+      BBC.drawTeletext(cv, screen7().s);
+      PARTS.forEach(p => btn[p.k].classList.remove('on'));
+      say('No part found yet. Choose a place to find its part.');
+    }
+    $('flowerreset').onclick = blank;
     $('flowerplay').onclick = () => {
       if (!held) { held = 'FLOWER'; n = 4; fn = true; }
       const pieces = flowerCodes(P.ram, P.sym, held, n, fn), t = screen7();
@@ -560,8 +567,7 @@ const codes = s => Array.from(s, c => c.charCodeAt(0));
         if (i >= pieces.length) { clearInterval(timer); PARTS.forEach(p => btn[p.k].classList.toggle('on', held.includes(p.k))); say('Done: every byte the picture sends to OSWRCH, in order.'); }
       }, 30);
     };
-    held = 'FLOWER'; n = 4; fn = true; draw();
-    say('The end of the game: all six parts held. Choose a place to find its part, or start again.');
+    blank();
   }).catch(e => { console.error(e); missing(cv.parentNode, 'The flower'); });
 })();
 
