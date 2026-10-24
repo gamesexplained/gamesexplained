@@ -77,8 +77,8 @@
 // 6581 voice a DC of $800 * $FF against a swing of ($FFF - $380) * $FF, about 0.64, so about 2 for
 // the three voices of a 6581; the 8580's is close to 0, and 0, the default, leaves it out.
 //
-//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
-//                                per voice
+//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll (or a
+//                                bouncing ball, ../../lib/bounce.js) and a panel per voice
 //   C64Sid.host(options)         the sound alone, for a page with its own controls; with live:
 //                                true, the writes a Play tab's game makes as it runs
 //   C64Sid.engine()              the model, the bus and the frame player without a page, for
@@ -556,6 +556,14 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-seek input:disabled{opacity:.45}
 .sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
+.sid-roll[hidden],.sid-stagebox[hidden]{display:none}
+.sid-stagebox{position:relative}
+.sid-stage{display:block;width:100%;height:min(480px,56vw,80vh);border-radius:8px;background:#060607}
+@media (orientation:portrait){.sid-stage{height:min(72vh,150vw)}}
+.sid-stagebox:fullscreen{background:#060607}
+.sid-stagebox:fullscreen .sid-stage{height:100vh;border-radius:0}
+.sid-player .sid-full{position:absolute;right:10px;top:10px;padding:3px 9px;font-size:11.5px;background:rgba(30,30,32,.7);color:#e9e7e1;border-color:rgba(255,255,255,.18)}
+.sid-player .sid-full[hidden]{display:none}
 .sid-voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:12px}
 .sid-v{border:1px solid var(--line,#d5d3cc);border-radius:8px;padding:9px 12px 10px;background:var(--surface,#fff);min-width:0}
 .sid-vh{display:flex;align-items:center;gap:8px;font-weight:700}
@@ -602,6 +610,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //   onFrame optional: (frame, tune) => ..., called with each frame the reader hears, as the
   //           display shows it, for a page that draws something in step with the music (lyrics,
   //           a screen); frame counts from the tune's start, as the seek bar does
+  //   bounce  optional: true for a bouncing ball in place of the piano roll, with a switch between
+  //           the two and a full-screen button: a ball a voice hops from note to note as the
+  //           reader hears them (NoteBounce, ../../lib/bounce.js, which the page loads before
+  //           this script). The player runs the driver ahead when a tune starts, as for its
+  //           length, and takes a note where mark says one starts
+  //   pitch   optional: (v) => the pitch of the note starting in v, in semitones from C0, for the
+  //           bouncing ball; by default the nearest note to the voice's frequency
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -617,6 +632,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
     const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
+    const pitch = o.pitch || ((v) => Math.round(12 * Math.log2(v.freq * HZ / C0)));
+    const BOUNCE = !!(o.bounce && globalThis.NoteBounce);
     const line = (r, i) => r.k
       ? `<div class="sid-l"><span class="sid-k">${esc(r.k)}</span><span class="sid-m" data-row="${i}">-</span></div>`
       : `<div class="sid-l${r.in ? ' sid-in' : ''}${r.mono ? ' sid-m' : ''}" data-row="${i}">-</div>`;
@@ -629,12 +646,19 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         '<span class="sid-fsw"><span class="sid-k">Filter</span>' +
         FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
         '</span><span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
+      (BOUNCE ? '<span class="sid-filt" role="group" aria-label="What the player shows"><span class="sid-k">View</span>' +
+        '<button type="button" data-view="ball" aria-pressed="true">Ball</button>' +
+        '<button type="button" data-view="roll" aria-pressed="false">Piano roll</button></span>' : '') +
       '<span class="sid-stat">' +
       '<span><span class="sid-k">Volume</span><span data-g="vol">-</span><span class="sid-vol">' +
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
       '<div class="sid-seek"><input type="range" min="0" max="1" step="1" value="0" disabled ' +
       'aria-label="Position in the tune"><span data-g="time">0:00.0</span></div>' +
-      '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"></canvas>' +
+      (BOUNCE ? '<div class="sid-stagebox"><canvas class="sid-stage" role="img" aria-label="A ball for each voice ' +
+        'hopping from note to note as they play"></canvas><button type="button" class="sid-full" data-full hidden>' +
+        'Full screen</button></div>' : '') +
+      '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"' +
+      (BOUNCE ? ' hidden' : '') + '></canvas>' +
       '<div class="sid-voices">' + [0, 1, 2].map((x) => `<div class="sid-v" data-voice="${x}">
         <div class="sid-vh"><i class="sid-sw" style="background:${COLORS[x]}"></i>Voice ${x + 1}
           <button type="button" data-mute="${x}" aria-pressed="false">Mute</button></div>
@@ -658,14 +682,30 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const FONT_B = getComputedStyle(root).getPropertyValue('--fb').trim() || "'Lato', sans-serif";
     let ctx = null, send = () => {}, starting = null, raf = 0, playing = -1, quietSince = 0, runs = 0;
     let queue = [], hist = [], tune = -1, dragging = false;
+    // The bouncing ball: drawn every animation frame from the last frame heard, moved on by the
+    // time since, so that it flies smoothly between the player's frames.
+    const box = BOUNCE ? $('.sid-stagebox') : null, full = BOUNCE ? $('[data-full]') : null;
+    const ball = BOUNCE ? globalThis.NoteBounce.create($('.sid-stage'), { colors: COLORS, font: FONT_B }) : null;
+    let view = BOUNCE ? 'ball' : 'roll', heard = null, heardAt = 0;
     // Each tune's length in frames, or null where it runs on past LONG: measured once, by running
     // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
     // gets a bar LONG long, which grows if the tune is played past it. The same run notes whether
-    // the tune ever routes a voice through the filter ($D417 bits 0-2), for the filter switch.
-    const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [];
+    // the tune ever routes a voice through the filter ($D417 bits 0-2), for the filter switch,
+    // and, for the bouncing ball, the frame and pitch of every note each voice starts.
+    const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [], scores = [];
     function length(t) {
       if (lengths[t] === undefined) {
         let n = 0, f = false;
+        const notes = [[], [], []], prev = [null, null, null];
+        const collect = BOUNCE ? (d, k) => {
+          for (let x = 0; x < 3; x++) {
+            const r = 7 * x, s = d.sid;
+            const v = Object.assign({ freq: s[r] | s[r + 1] << 8, pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF,
+              ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: 0 }, d.voice ? d.voice(x) : null);
+            if (mark(v, prev[x])) { const p = pitch(v); if (isFinite(p)) notes[x].push({ t: k, n: p }); }
+            prev[x] = v;
+          }
+        } : null;
         const routes = (d) => {
           if (d.sid[23] & 7) return true;
           const w = d.writes;
@@ -675,10 +715,15 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         try {
           const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);
-          for (; n < LONG; n++) { d.play(); f = f || routes(d); if (!d.playing()) break; }
+          for (; n < LONG; n++) {
+            d.play(); f = f || routes(d);
+            if (!d.playing()) break;
+            if (collect) collect(d, n + 1);                  // the frame the display numbers it
+          }
         } catch (e) { n = LONG; f = true; }
         lengths[t] = n < LONG ? n : null;
         filtered[t] = f;
+        scores[t] = { rate: FPS, voices: notes.map((x) => ({ notes: x })) };
       }
       return lengths[t];
     }
@@ -714,6 +759,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       if (t !== tune) {
         tune = t;
         const n = length(t);
+        if (ball) ball.score(scores[t]);
         seek.max = String(n != null ? Math.max(1, n) : LONG);
         seek.disabled = false;
         const sw = root.querySelector('.sid-fsw'), note = root.querySelector('.sid-fnote');
@@ -721,12 +767,12 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       }
       at = Math.max(0, Math.min(at || 0, +seek.max));
       send({ cmd: 'start', tune: t, run: ++runs, at });
-      queue = []; hist = [];
+      queue = []; hist = []; heard = null; heardAt = at;
       if (!dragging) seek.value = String(at);
       time(at);
       playing = t; quietSince = 0;
       buttons();
-      draw();
+      draw(); drawBall();
       if (!raf) raf = requestAnimationFrame(loop);
     }
 
@@ -758,9 +804,25 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         muted[x] = !muted[x];
         b.setAttribute('aria-pressed', String(muted[x]));
         send({ cmd: 'mute', voice: x, on: muted[x] });
-        draw();
+        draw(); drawBall();
+      }
+      else if (b.dataset.view !== undefined) {
+        view = b.dataset.view;
+        root.querySelectorAll('[data-view]').forEach((v) => v.setAttribute('aria-pressed', String(v === b)));
+        box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
+        draw(); drawBall();
+      }
+      else if (b.hasAttribute('data-full')) {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (box.requestFullscreen) box.requestFullscreen().catch(() => {});
       }
     });
+    if (full) {
+      full.hidden = !document.fullscreenEnabled;
+      document.addEventListener('fullscreenchange', () => {
+        full.textContent = document.fullscreenElement === box ? 'Exit full screen' : 'Full screen';
+      });
+    }
 
     function loop() {
       raf = requestAnimationFrame(loop);
@@ -770,8 +832,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         const q = queue.shift();
         if (q.run === runs) { s = q; hist.push(q); }         // frames of an earlier start are dropped
       }
+      if (s) heard = s;
+      drawBall();
       if (!s) return;
-      const keep = Math.ceil(canvas.clientWidth / px) + 2;
+      const keep = Math.ceil((canvas.clientWidth || root.clientWidth) / px) + 2;   // the roll's width, hidden or not
       if (hist.length > keep) hist.splice(0, hist.length - keep);
       show(s);
       draw();
@@ -836,8 +900,24 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       g.globalAlpha = 1;
     }
 
+    // the ball at the frame last heard, and between frames as far on as the time since says
+    function drawBall() {
+      if (!ball || view !== 'ball') return;
+      let f = heardAt;
+      if (heard) {
+        f = heard.frame;
+        if (heard.playing && ctx) f += Math.min(1, Math.max(0, (ctx.currentTime - (ctx.outputLatency || 0) - heard.t) * FPS));
+      }
+      ball.draw(f, { muted });
+    }
+
     draw();
     window.addEventListener('resize', draw);
+    if (ball) {                                              // drawn again whenever the stage changes size
+      if (globalThis.ResizeObserver) new ResizeObserver(drawBall).observe(box);
+      else window.addEventListener('resize', drawBall);
+      drawBall();
+    }
   }
 
   return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName };
