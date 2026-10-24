@@ -34,3 +34,13 @@
   characters at four frames each: 4,232 frames. Write down what was
   observed as an observation ("803 characters in 3,210 frames") and work
   the whole from the code.
+- **A trainer's code can stay in the game with its options off.** The
+  disk was The Force's crack with Ikari+Talent's trainer, run with both
+  its options at NO. The listing described the 26 bytes at the end of the engine's interrupt
+  (`$1F52-$1F6B`) as the game's: a level skip on the ← key and two
+  `BIT` instructions. They are the trainer's: the level skip is always
+  on, and the two `BIT`s become `STA`s when the options are turned on.
+  An auditor found it, and X-Rated's crack of the same disk confirmed
+  it: its interrupt goes from the clock straight to restoring `$01`.
+  Comparing the code in play with another release's at the start would
+  have found it before any comment was written.

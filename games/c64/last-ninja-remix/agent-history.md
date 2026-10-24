@@ -73,6 +73,24 @@ The maintainer's sample, on the contributor's say-so and with a new
 seed, found 10 of 60 wrong, over the mark, so every comment was audited
 by fresh checkers one unit at a time.
 
+**The audit.** Seventeen units, 1,942 items (a template's comments
+counted once, checked through a few of its instances), covered every
+comment but the 1,428 carried over to the later levels unchanged, which
+stand with the Central Park comment they copy. Checkers found 382 items
+wrong in a detail. Two findings reached beyond their units. The first:
+the end of the engine's interrupt, `$1F52-$1F6B`, is the crack's
+trainer, not the game's; X-Rated's crack of the same disk goes from the
+clock straight to restoring `$01`. The second: a carried comment can be
+wrong on code of the same shape, when the level calls its own routine in
+place of Central Park's or loads another constant. Comparing every
+paired call's target and every paired immediate with Central Park's,
+by script, found about sixty such
+comments, which were rewritten for each level (`work/xfer/rules.py` and
+`own()` in `gen.py`), and a last unit checked the rewrites. The facts
+files were audited claim by claim: 66 of 355 were wrong in a detail. In
+all 2,174 comments changed from the listing the maintainer's sample was
+drawn from.
+
 **Pages, and two mistakes the pages caught.** The title card first
 came out with the panel's lettering broken: the card's routine writes
 colour RAM only for the window, and the panel's colours come from the

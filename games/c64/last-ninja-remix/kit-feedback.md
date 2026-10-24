@@ -19,7 +19,9 @@ and took all sixteen parts to 100 %.
 
 ## What was changed in the kit
 
-- `kit/lessons/2026-10-24-last-ninja-remix.md`: three lessons. A picture widget is tested against the painted picture, not the memory behind it; comments carried to a part that is another part's code reassembled are corrected at the source and kept out of the sample's population; a live test's length is how long it was watched, not how long the thing lasts.
+- `kit/lessons/2026-10-24-last-ninja-remix.md`: four lessons. A picture widget is tested against the painted picture, not the memory behind it; comments carried to a part that is another part's code reassembled are corrected at the source and kept out of the sample's population; a live test's length is how long it was watched, not how long the thing lasts.
+- `kit/skills/core/10-orient`, step 1: a trainer can leave code of its own in the game with its options off, so compare the code in play with another release's and mark what differs as the crackers'. The listing described the end of the engine's interrupt as the game's until an auditor found it in no other release; X-Rated's crack goes from the clock straight to restoring `$01`. It would have mattered in `games/c64/master-of-magic`, whose crack's trainer changes the game's own code (`cheats.md` there).
+- The lesson file gains a fourth lesson, on the trainer, and the second lesson a paragraph on carried comments that are wrong on code of the same shape.
 
 ## Candidates
 
