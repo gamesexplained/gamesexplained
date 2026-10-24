@@ -1,0 +1,276 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paradroid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+a{color:var(--link)}
+.pd-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.pd-wide{width:100%}
+.pd-stack{position:relative;line-height:0}
+.pd-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
+.pd-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.pd-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.pd-btn:hover{border-color:var(--ink-mute)}
+.pd-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pd-mono{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.pd-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.pd-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.pd-shots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.pd-shots figure{margin:0}
+.pd-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.pd-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.pd-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.pd-tbl th,.pd-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.pd-tbl th{font-weight:700;color:var(--ink-soft)}
+.pd-tbl td.pd-n,.pd-tbl th.pd-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.pd-tbl tr.pd-on td{background:var(--hl)}
+.pd-scroll{overflow-x:auto}
+.pd-enq{background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-family:var(--fm);font-size:13px;line-height:1.6;color:#813338;white-space:pre-wrap}
+.pd-enq .pd-head{color:#3e8f89;font-weight:500}
+.pd-droid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+.pd-droid canvas{background:#fff;border:1px solid var(--line);border-radius:6px}
+.pd-chips{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:760px){
+  :root{--gx:16px;--h1:36px;--pp:16px}
+  .pd-two,.pd-shots,.pd-droid{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Hewson Consultants</p>
+  <h1>Paradroid</h1>
+  <p class="sub">The sixteen decks of every freighter, drawn from the plans the game unpacks as the 001 arrives, with the waypoints the robots walk and the lifts between decks.</p>
+</header>
+<main class="wrap">
+
+<section id="decks">
+  <p class="fig">01 · Every deck</p>
+  <h2 class="t">The decks, one by one</h2>
+  <p class="lede">Every ship of the fleet has the same sixteen decks; only the robots on them change. Step through them, and turn on the waypoints, the lifts or the lights-out colours of a cleared deck.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous deck">‹</button><select id="pd-lv" aria-label="Deck"></select><button class="step" data-d="1" aria-label="Next deck">›</button></div>
+    <div class="pd-bar">
+      <button type="button" class="pd-btn" id="pd-lv-ways" aria-pressed="true">Waypoints</button>
+      <button type="button" class="pd-btn" id="pd-lv-lifts" aria-pressed="true">Lifts</button>
+      <button type="button" class="pd-btn" id="pd-lv-lights" aria-pressed="false">Lights out</button>
+    </div>
+    <div class="pd-scroll"><div class="pd-stack"><canvas id="pd-lv-map" class="pd-cv"></canvas><canvas id="pd-lv-hi" class="pd-cv"></canvas></div></div>
+    <p class="pd-out" id="pd-lv-out"></p>
+    <p class="cap">Each deck is unpacked from its plan (<code>plan_ptrs</code>, <code>$F100</code>) into blocks of 4 by 4 characters (<code>map_blocks</code>, <code>$E800</code>), as <code>build_deck</code> (<code>$3590</code>) does, and drawn one character at a time in the deck's colour scheme; the map matches <code>build_deck</code> run in the kit's simulator for all sixteen. Waypoint 0, in white, is where the player beams in. A lift is marked with its shaft, from the lift tables at <code>$6CC8</code>-<code>$6D45</code>.</p>
+  </div>
+</section>
+
+<section id="table">
+  <p class="fig">02 · The decks side by side</p>
+  <h2 class="t">What each deck holds</h2>
+  <p class="lede">The numbers the game keeps for each deck. Press a row to draw that deck above.</p>
+  <div class="plate">
+    <div class="pd-scroll"><table class="pd-tbl" id="pd-lv-table"></table></div>
+    <p class="cap">Base type from <code>deck_lowest</code> (<code>$C830</code>), which the ship's number is added to; places from <code>deck_places</code> (<code>$F170</code>), one fewer than the byte and twelve at most; waypoints from <code>way_counts</code> (<code>$C800</code>); the scheme from <code>deck_schemes</code> (<code>$F160</code>); the lift shafts from <code>lift_decks</code> (<code>$6CC8</code>) and <code>lift_shafts</code> (<code>$6CE7</code>).</p>
+  </div>
+  <p>The eight lift shafts link the decks in overlapping groups: shaft 4 alone serves six decks, from research down to robo-stores, and the bridge is reached by shafts 2, 3 and 6. A deck's base type sets how big its robots are, so the two cargo decks, with bases of 17 and 19, hold 7xx and 8xx droids from the first ship on, while the airlock's base of 0 leaves it to the smallest robots. How the robots are rolled onto these places is on the <a href="index.html#ship">How it works</a> tab.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* pd-core */
+// Paradroid's data, read from the game's memory m (64 KB, as C64.load gives it from the listing).
+// deckMap(m, d) is build_deck ($3590) ported: deck d's plan, found through plan_ptrs ($F100, $F110),
+// unpacked by deckPlan (a byte with bit 7 set is a cell repeated as many times as the next byte
+// says, 0 for 256; any other byte is one cell) into 16 rows of 64 cells, each cell's low five bits
+// picking a block of 4 by 4 characters from map_blocks ($E800): 64 rows of 256 characters, as the
+// game puts them at $8000. deckScheme(m, d) is the 16-entry scheme deck_colours ($27E5) leaves at $0215 (entries
+// 12-14 hold 0, entry 15 $FE), and charColour(m, sch, c) the colour recolour ($3577) gives
+// character c: its group, the high four bits of the colour table ($0800), picks a scheme entry,
+// whose low four bits are the colour RAM's nibble; the alert's character $16 is set from
+// alert_colours ($6D45) instead, green on a deck at the start. text(m, a) reads the game's
+// alphabet, words(m) the dictionary at $C000.
+const PD = (() => {
+  const ALPHA = {};
+  '0123456789'.split('').forEach((c, i) => { ALPHA[i] = c; });
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach((c, i) => { ALPHA[0x0A + i] = c; });
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((c, i) => { ALPHA[0x3A + i] = c; });
+  Object.assign(ALPHA, { 0x16: 'I', 0x42: 'm', 0x54: 'w', 0x20: '©', 0x24: '?', 0x25: '!', 0x26: '(', 0x27: ')',
+    0x28: '.', 0x29: ',', 0x2A: ':', 0x2B: ';', 0x2C: '"', 0x2D: "'", 0x2E: '-', 0x30: ' ' });
+  const ch = (b) => (b in ALPHA ? ALPHA[b] : '?');
+  function words(m) {
+    const n = m[0xC000], out = [];
+    let a = 0xC001;
+    while (out.length < n) {
+      let s = ch(m[a] & 0x7F); a++;
+      while (!(m[a] & 0x80) && out.length < n - 1) { s += ch(m[a]); a++; }
+      if (out.length === n - 1) { while (m[a] < 0x80 && m[a] !== 0) { s += ch(m[a]); a++; } }
+      out.push(s);
+    }
+    return out;
+  }
+  // Deck d's plan as build_deck unpacks it: 16 rows of 64 cells, each a byte whose low five bits
+  // pick a block from map_blocks.
+  function deckPlan(m, d) {
+    const plan = new Uint8Array(1024);
+    let p = m[0xF100 + d] | m[0xF110 + d] << 8, pos = 0;
+    while (pos < 1024) {
+      const b = m[p];
+      let n = 1;
+      if (b & 0x80) { n = m[p + 1] || 256; p += 2; } else p += 1;
+      for (let k = 0; k < n && pos < 1024; k++) plan[pos++] = b;
+    }
+    return plan;
+  }
+  function deckMap(m, d) {
+    const map = new Uint8Array(0x4000), plan = deckPlan(m, d);
+    for (let pos = 0; pos < 1024; pos++) {
+      const blk = 0xE800 + (plan[pos] & 0x1F) * 16, r0 = (pos >> 6) * 4, c0 = (pos & 63) * 4;
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) map[(r0 + r) * 256 + c0 + c] = m[blk + r * 4 + c];
+    }
+    return map;
+  }
+  function deckScheme(m, d, cleared) {
+    const s = new Uint8Array(16), k = cleared ? 7 : m[0xF160 + d];
+    for (let i = 0; i < 12; i++) s[i] = m[0x6A44 + 12 * k + i];
+    s[15] = 0xFE;
+    return s;
+  }
+  function charColour(m, sch, c) {
+    if (c === 0x16) return m[0x6D45] & 15;
+    return sch[m[0x0800 + c] >> 4] & 15;
+  }
+  // Draws map cells [r0, r0 + rows) x [c0, c0 + cols) on ctx at pixel scale s, as the deck shows
+  // them: one-colour text ($D016 from the $C0 that back_to_play puts at $6F1C), the deck's
+  // character set at $7800 on the scheme's background, each character in its own colour.
+  function drawMap(ctx, m, map, sch, r0, c0, rows, cols, s) {
+    const PAL = C64.PAL, cs = m.subarray(0x7800, 0x8000);
+    ctx.fillStyle = PAL[sch[0] & 15]; ctx.fillRect(0, 0, cols * 8 * s, rows * 8 * s);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const code = map[(r0 + r) * 256 + c0 + c];
+      C64.drawGlyph(ctx, cs, code, c * 8 * s, r * 8 * s, s, PAL[charColour(m, sch, code)]);
+    }
+  }
+  // The rectangle of the map deck d's cells fill: rows and columns of characters other than 0.
+  function deckBounds(map) {
+    let r0 = 64, r1 = -1, c0 = 256, c1 = -1;
+    for (let r = 0; r < 64; r++) for (let c = 0; c < 256; c++) if (map[r * 256 + c]) {
+      if (r < r0) r0 = r; if (r > r1) r1 = r; if (c < c0) c0 = c; if (c > c1) c1 = c;
+    }
+    return { r0, c0, rows: r1 - r0 + 1, cols: c1 - c0 + 1 };
+  }
+  // Deck d's waypoints, from way_counts ($C800) and way_lists ($C810, $C820): column, row (map
+  // cells) and the ways on from it, bit 7 left round to bit 0 up-left (choose_way).
+  function waypoints(m, d) {
+    const n = m[0xC800 + d], a = m[0xC810 + d] | m[0xC820 + d] << 8, out = [];
+    for (let i = 0; i < n; i++) out.push({ col: m[a + 3 * i], row: m[a + 3 * i + 1], ways: m[a + 3 * i + 2] });
+    return out;
+  }
+  const NUMBERS = (m) => Array.from({ length: 24 }, (_, t) => m[0xEA00 + t] * 100 + (m[0xEA20 + t] >> 4) * 10 + (m[0xEA20 + t] & 15));
+  return { ALPHA, ch, words, deckPlan, deckMap, deckScheme, charColour, drawMap, deckBounds, waypoints, NUMBERS };
+})();
+// end of pd-core
+</script>
+<script>
+/* pd-levels */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const num = (NUM, t) => String(NUM[t]).padStart(3, '0');
+/* pd-lifts */
+// The lifts of deck d: each entry 1-30 of the lift tables ($6CC8 deck, $6CE7 shaft, $6D07 and $6D26
+// the view's left column and top row when the player stands on the lift), with the lift's own
+// cell, 21 columns and 9 rows in from the view's corner, and the other decks its shaft serves.
+function pdLifts(m, d) {
+  const out = [];
+  for (let e = 1; e <= 30; e++) if (m[0x6CC8 + e] === d) {
+    const shaft = m[0x6CE7 + e], decks = [];
+    for (let f = 1; f <= 30; f++) if (m[0x6CE7 + f] === shaft) decks.push(m[0x6CC8 + f]);
+    out.push({ entry: e, shaft, col: m[0x6D07 + e] + 21, row: m[0x6D26 + e] + 9, decks });
+  }
+  return out;
+}
+// end of pd-lifts
+function levels(m) {
+  const W = PD.words(m), NUM = PD.NUMBERS(m), sel = $('pd-lv'), cv = $('pd-lv-map'), hi = $('pd-lv-hi');
+  const ways = $('pd-lv-ways'), lifts = $('pd-lv-lifts'), lights = $('pd-lv-lights');
+  for (let d = 0; d < 16; d++) sel.add(new Option('Deck ' + d + ' · ' + cap(W[0x7A + d].trim()), d));
+  function draw() {
+    const d = +sel.value, map = PD.deckMap(m, d), b = PD.deckBounds(map), out = lights.getAttribute('aria-pressed') === 'true';
+    const S = 1;
+    cv.width = b.cols * 8 * S; cv.height = b.rows * 8 * S;
+    PD.drawMap(cv.getContext('2d'), m, map, PD.deckScheme(m, d, out), b.r0, b.c0, b.rows, b.cols, S);
+    hi.width = cv.width; hi.height = cv.height;
+    const ctx = hi.getContext('2d'), pts = PD.waypoints(m, d), ls = pdLifts(m, d);
+    const at = (c, r) => [(c - b.c0) * 8 * S, (r - b.r0) * 8 * S];
+    if (lifts.getAttribute('aria-pressed') === 'true') for (const l of ls) {
+      const [x, y] = at(l.col, l.row);
+      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 3; ctx.strokeRect(x - 3, y - 3, 22, 22);
+      ctx.font = '600 13px IBM Plex Mono, monospace'; ctx.fillStyle = '#ffd34d'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+      const label = 'shaft ' + l.shaft;
+      ctx.strokeText(label, x + 22, y - 4); ctx.fillText(label, x + 22, y - 4);
+    }
+    if (ways.getAttribute('aria-pressed') === 'true') pts.forEach((p, i) => {
+      const [x, y] = at(p.col, p.row);
+      ctx.fillStyle = i === 0 ? '#ffffff' : '#d04a3a';
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    const lo = m[0xC830 + d], places = Math.min(m[0xF170 + d] - 1, 12);
+    $('pd-lv-out').innerHTML = '<b>Deck ' + d + ', ' + esc(W[0x7A + d].trim()) + '.</b> ' +
+      places + ' places for robots, the first seven of them ' + num(NUM, Math.min(lo + 1, 19)) + ' to ' + num(NUM, Math.min(lo + 1, 19) + 3) + ' on the first ship; ' +
+      pts.length + ' waypoints; colour scheme ' + m[0xF160 + d] + '. ' +
+      (ls.length ? 'Lifts: ' + ls.map((l) => { const o = l.decks.filter((x) => x !== d); return 'shaft ' + l.shaft + ' to deck' + (o.length > 1 ? 's ' : ' ') + o.join(', '); }).join('; ') + '.' : '') +
+      (d === 1 ? ' Place 13 holds the 999 on every ship.' : '');
+    document.querySelectorAll('#pd-lv-table tr[data-d]').forEach((tr) => tr.classList.toggle('pd-on', +tr.dataset.d === d));
+  }
+  function stepper() {
+    sel.addEventListener('change', draw);
+    sel.parentNode.querySelectorAll('.step').forEach((btn) => btn.addEventListener('click', () => {
+      const i = sel.selectedIndex + +btn.dataset.d;
+      if (i >= 0 && i < 16) { sel.selectedIndex = i; draw(); }
+    }));
+  }
+  [ways, lifts, lights].forEach((btn) => btn.addEventListener('click', () => { btn.setAttribute('aria-pressed', String(btn.getAttribute('aria-pressed') !== 'true')); draw(); }));
+  let html = '<tr><th class="pd-n">Deck</th><th>Name</th><th class="pd-n">Base type</th><th class="pd-n">Places</th><th class="pd-n">Waypoints</th><th class="pd-n">Scheme</th><th class="pd-n">Lift shafts</th></tr>';
+  for (let d = 0; d < 16; d++) {
+    html += '<tr data-d="' + d + '" style="cursor:pointer"><td class="pd-n">' + d + '</td><td>' + esc(W[0x7A + d].trim()) + '</td><td class="pd-n">' + m[0xC830 + d] +
+      '</td><td class="pd-n">' + Math.min(m[0xF170 + d] - 1, 12) + '</td><td class="pd-n">' + m[0xC800 + d] + '</td><td class="pd-n">' + m[0xF160 + d] +
+      '</td><td class="pd-n">' + pdLifts(m, d).map((l) => l.shaft).join(', ') + '</td></tr>';
+  }
+  $('pd-lv-table').innerHTML = html;
+  document.querySelectorAll('#pd-lv-table tr[data-d]').forEach((tr) => tr.addEventListener('click', () => { sel.value = tr.dataset.d; draw(); $('pd-lv-map').scrollIntoView({ block: 'nearest' }); }));
+  stepper();
+  sel.value = '7';
+  draw();
+}
+C64.load('listing.json').then((L) => levels(L.ram));
+// end of pd-levels
+</script>
