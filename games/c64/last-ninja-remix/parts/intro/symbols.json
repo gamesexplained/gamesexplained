@@ -43,16 +43,6 @@
     "The bitmap each picture is drawn into: the logo screen clears it before anything is shown ($0F19), so the bytes the file leaves here are never read"
    ],
    [
-    46379,
-    46513,
-    "The tune's working variables: each voice's place, note, frequencies, pulse widths, waveforms and counters, set as the notes start and changed every frame"
-   ],
-   [
-    47744,
-    47762,
-    "Where a note's bend saves its instrument's vibrato settings ($BAAE), and a byte the filter routine works in ($BA54)"
-   ],
-   [
     53248,
     57343,
     "The RAM under the I/O area: the intro keeps the I/O chips mapped in all the time ($01=$35), so it never reads the RAM here"
@@ -222,13 +212,8 @@
   },
   {
    "start": 45062,
-   "end": 46378,
-   "type": "Byte"
-  },
-  {
-   "start": 46379,
    "end": 46513,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 46514,
@@ -253,7 +238,7 @@
   {
    "start": 47744,
    "end": 47762,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 47763,
@@ -267,21 +252,21 @@
   },
   {
    "start": 47955,
-   "end": 48036,
+   "end": 48034,
    "type": "Address"
   },
   {
-   "start": 48037,
+   "start": 48035,
    "end": 48038,
    "type": "Word"
   },
   {
    "start": 48039,
-   "end": 48132,
+   "end": 48130,
    "type": "Address"
   },
   {
-   "start": 48133,
+   "start": 48131,
    "end": 48134,
    "type": "Word"
   },
@@ -319,9 +304,9 @@
  "symbols": [
   {
    "address": 0,
-   "name": "pattern_0000",
-   "type": "UserDefined",
-   "kind": "user"
+   "name": "zpa_00",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
   },
   {
    "address": 1,
@@ -5652,7 +5637,7 @@
    "kind": "user"
   },
   {
-   "address": 48037,
+   "address": 48035,
    "name": "order_list_0_end",
    "type": "UserDefined",
    "kind": "user"
@@ -5664,7 +5649,7 @@
    "kind": "user"
   },
   {
-   "address": 48133,
+   "address": 48131,
    "name": "order_list_1_end",
    "type": "UserDefined",
    "kind": "user"
@@ -6488,11 +6473,6 @@
  ],
  "comments": [
   {
-   "address": 0,
-   "type": "line",
-   "text": "Pattern at $0000-$000D: 4 notes, instruments 6, 8 and 10, 113 ticks long; played by voice 0 at place 40; voice 1 at place 46. Each note of instrument 10 is followed by four bytes: a delay, then the length, high byte and low byte of a bend."
-  },
-  {
    "address": 832,
    "type": "line",
    "text": "The hand-over to the game, which runs when the intro returns to the wrapper at $53C0 (its JMP $0340). It turns the BASIC and KERNAL ROMs back on ($01=$37), lets the KERNAL set up the I/O chips again ($FDA3), makes the screen the output device and the keyboard the input ($9A=3, $99=0) and copies the 48 bytes at $ECB9 in the KERNAL ROM into the VIC's registers $D000-$D02F, skipping $D020 and $D021. It calls the KERNAL at $E51B and at $FF5E, its PAL or NTSC test, which sets $02A6, puts the KERNAL's own interrupt routine ($EA31) back in $0314, sets the text colour ($0286), border and background to black, clears the screen ($E544), writes A into the SID's 25 registers ($D400-$D418) and turns interrupts on. It ends by loading the file NINJA* from drive 8 to the address the file gives (secondary address 8, $FFBA, $FFBD, $FFD5) and jumping to $080B, the game's start. The intro clears zero page and pages 2 and 4 to 7, but not page 3, so this code is still there when the intro is over."
@@ -6585,7 +6565,7 @@
   {
    "address": 2975,
    "type": "line",
-   "text": "An older way into the game that nothing calls. It blanks the screen, turns off the raster interrupt and the sound, turns the KERNAL ROM on ($01=$36) and loads the file named at $0C17, L2, from drive 8 to $A000. With all ROMs and I/O off ($01=$34) it copies $A000-$CFFF to $D000-$FFFF, a page at a time until the destination's high byte wraps to 0. It then pushes $07FF, so that the KERNAL load's RTS goes to $0800, changes the name to L1 ($0BF9 decrements the 2), and jumps into LOAD with secondary address 1, which puts L1 at the address its file gives. The wrapper at $53C0 and the hand-over at $0340 replace all of this."
+   "text": "An older way into the game that nothing calls. It blanks the screen, turns off the raster interrupt and the sound, turns the KERNAL ROM on ($01=$36) and loads the file named at $0C17, L2, from drive 8 to $A000. With all ROMs and I/O off ($01=$34) it copies $A000-$CFFF to $D000-$FFFF, a page at a time until the destination's high byte wraps to 0. It then pushes $07FF, so that the KERNAL load's RTS goes to $0800, changes the name to L1 ($0BF9 decrements the 2), and jumps into LOAD as logical file 1 with secondary address $FF ($0C00-$0C06); any secondary address other than 0 makes LOAD put L1 at the address its file gives. The wrapper at $53C0 and the hand-over at $0340 replace all of this."
   },
   {
    "address": 3044,
@@ -6610,7 +6590,7 @@
   {
    "address": 3097,
    "type": "line",
-   "text": "Steps the four tile channels, called once a pass of the main loop. A channel runs while its script number has bit 7 set ($22-$25) and moves on when its delay ($2A-$2D, counted down every frame at $10DA) is 0. It then reads its script's header from $17A6: the delay to the next step, the width in bytes and the height in cell rows of each tile, and where in the bitmap it goes. Each step is a tile number, drawn by $0C79. $FC starts the script again, $FD and a number change to another script, and $FE or $FF stop the channel (the script number becomes 2 or 3, without bit 7)."
+   "text": "Steps the four tile channels, called once a pass of the main loop ($089E) and once more by $0D9A, which uses it to draw the unlit lamps at once. A channel runs while its script number has bit 7 set ($22-$25) and moves on when its delay ($2A-$2D, counted down every frame at $10DA) is 0. It then reads its script's header from $17A6: the delay to the next step, the width in bytes and the height in cell rows of each tile, and where in the bitmap it goes. Each step is a tile number, drawn by $0C79. $FC starts the script again, $FD and a number change to another script, and $FE or $FF stop the channel (the script number becomes 2 or 3, without bit 7)."
   },
   {
    "address": 3193,
@@ -6635,7 +6615,7 @@
   {
    "address": 3316,
    "type": "line",
-   "text": "While channel 2 runs script 6, the lightning in the window ($24=$86), this picks one of nine colour changes by the channel's step ($28): the routine from $1361 and $136A, written into the JMP at $0D0E, sets the temple's dark colours ($0D48) or, for steps 3 and 4, the colours with the lamps alight ($0D12), and $1373 gives the sprites' first shared colour, white during those two steps and light blue otherwise."
+   "text": "While channel 2 runs script 6, the lightning in the window ($24=$86), this picks a colour change from nine-entry tables by the channel's step ($28), which is 1 to 8 whenever this runs, so entry 0 is never used ($0C19 draws the first tile and moves the step on before this routine first sees it): the routine from $1361 and $136A, written into the JMP at $0D0E, sets the temple's dark colours ($0D48) or, for steps 3 and 4, the colours with the lamps alight ($0D12), and $1373 gives the sprites' first shared colour, white during those two steps and light blue otherwise."
   },
   {
    "address": 3342,
@@ -6670,17 +6650,17 @@
   {
    "address": 3513,
    "type": "line",
-   "text": "Once sprite sequence 1 has reached step 13, when the figure stands, and channel 0 is still running, this puts tile scripts 2 and 3 on channels 0 and 1 again: both lamps are drawn unlit once more and the channels stop, which ends the smoke."
+   "text": "Once sprite sequence 1 has reached step 13, when the figure stands, and channel 0 is still running, this puts tile scripts 2 and 3 on channels 0 and 1 again: both lamps are drawn unlit once more, which ends the smoke. It does this on every pass while channel 0's script has bit 7 set, and each time sets both channels' steps back to 0, so they never reach the $FE that would stop them: the unlit lamps are drawn again every frame or so until $1323 stops the channels."
   },
   {
    "address": 3543,
    "type": "line",
-   "text": "From step 13 of sprite sequence 1, while fewer than five flashes have come ($46) and scene_timer is out, this starts the next flash: tile script 6 on channel 2, the lightning in the window, with scene_timer set to 50 frames. At the second flash it also redraws the kneeling ninjas ($0CB2). Its test against starting a flash while one runs compares channel 0's script with 6, not channel 2's, so it never succeeds; the 50 frames keep the flashes apart, as the lightning takes 24."
+   "text": "From step 13 of sprite sequence 1, while fewer than five flashes have come ($46) and scene_timer is out, this starts the next flash: tile script 6 on channel 2, the lightning in the window, with scene_timer set to 50 frames. At the second flash it also redraws the kneeling ninjas ($0CB2). Its test against starting a flash while one runs compares channel 0's script with 6, not channel 2's, so it never succeeds (channel 0 holds script 2, $82, from the lamps going out on); the 50 frames keep the flashes apart, as the lightning takes at least 24 (eight steps of 3 frames; about 27 in a simulation, because while a flash runs each pass of the main loop also copies some 2,000 colour bytes and takes about a frame)."
   },
   {
    "address": 3595,
    "type": "line",
-   "text": "After the fifth flash, unless the city is due ($48) or channel 2 is already on script 6 or 7, this starts the vision: tile script 7 on channel 2, a figure in the window drawn from three tiles, sets the sprites' shared colours to light blue and white and scene_timer to 250 frames, then colours the window's cells ($0E38)."
+   "text": "After the fifth flash, unless the city is due ($48) or channel 2 is already on script 6 or 7, this starts the vision: tile script 7 on channel 2, a crackling glow over the window and round the standing figure, drawn from three tiles, sets the sprites' shared colours to light blue and white and scene_timer to 250 frames, then colours the window's cells ($0E38)."
   },
   {
    "address": 3640,
@@ -6790,12 +6770,12 @@
   {
    "address": 4503,
    "type": "line",
-   "text": "Scrolls the credits one multicolour pixel to the left: twice over, for each of the eight pixel rows, it shifts the next bit of the incoming glyph ($1A-$21) into the right of a strip of 12 cells of the bitmap and rolls the row along, from $7C48 down to $7BF0, which is columns 14 to 25 of cell row 22 on the logo screen. scroll_phase ($3E) counts the frames, so a glyph of 8 pixels takes four."
+   "text": "Scrolls the credits one multicolour pixel to the left: twice over, for each of the eight pixel rows, it shifts the next bit of the incoming glyph ($1A-$21) into the right of a strip of 12 cells of the bitmap and rolls the row along, from $7C48 down to $7BF0, which is columns 14 to 25 of cell row 22 on the logo screen. scroll_phase ($3E) counts the frames, so a glyph, eight bits or four multicolour pixels wide, takes four frames."
   },
   {
    "address": 4554,
    "type": "line",
-   "text": "Steps the sprite sequence while sprite_sequence ($42) has bit 7 set: when sequence_delay ($43) is 0 it reads the next entry through $138D. An entry below $FC is a formation, set by $121E, which also gives the next delay; $FC starts the sequence again, $FD and a number change to another sequence, $FE stops the sequence and every sprite, and $FF steps back one entry and sets that formation again, which holds the picture."
+   "text": "Steps the sprite sequence while sprite_sequence ($42) has bit 7 set: when sequence_delay ($43) is 0 it reads the next entry through $138D. An entry below $FC is a formation, set by $121E, which also gives the next delay; $FC starts the sequence again, $FD and a number store that number as the sequence, but the handler goes back to $11CE with A=0, so that step is read from sequence 0's table and the new sequence starts at its second entry on the next step (no sequence uses $FD), $FE stops the sequence and every sprite, and $FF steps back one entry and sets that formation again, which holds the picture."
   },
   {
    "address": 4638,
@@ -6805,7 +6785,7 @@
   {
    "address": 4699,
    "type": "line",
-   "text": "Runs the eight sprites' animations. A sprite whose delay ($12-$19) is not yet 0 keeps its frame. Otherwise it is turned off, and if its animation ($02-$09) has bit 7 set, the record from $161D gives the delay, the colour and the frames: a frame below $FC becomes the sprite's pointer, plus $10 because the sprites start at $4400, and the sprite is turned on again. $FC starts the frames again, $FD and a number change animation, and $FE stops it."
+   "text": "Runs the eight sprites' animations. A sprite whose delay ($12-$19) is not yet 0 keeps its frame. Otherwise it is turned off, and if its animation ($02-$09) has bit 7 set, the record from $161D gives the delay, the colour and the frames: a frame below $FC becomes the sprite's pointer, plus $10 because the sprites start at $4400, and the sprite is turned on again. $FC starts the frames again; $FD and a number store that number as the animation, but the handler goes back to $1270 with Y still the offset of that byte in the old record, not twice the number, so that step loads a record pointer from the wrong place in $161D (no animation uses $FD); and $FE stops it."
   },
   {
    "address": 4825,
@@ -6865,7 +6845,7 @@
   {
    "address": 4961,
    "type": "line",
-   "text": "The colour routine for each of the nine steps of a flash of lightning, low bytes then high: the dark colours ($0D48) for steps 0 to 2 and 5 to 8, the colours with the lamps alight ($0D12) for steps 3 and 4."
+   "text": "The colour routine for each value of channel 2's step during a flash of lightning, nine entries, low bytes then high: the dark colours ($0D48) for steps 0 to 2 and 5 to 8, the colours with the lamps alight ($0D12) for steps 3 and 4. The step is 1 to 8 whenever $0CF4 reads it (a flash is eight tiles), so entry 0 is never used."
   },
   {
    "address": 4970,
@@ -6875,7 +6855,7 @@
   {
    "address": 4979,
    "type": "line",
-   "text": "The sprites' first shared colour for each of the nine steps of a flash: light blue ($0E), and white ($01) for steps 3 and 4."
+   "text": "The sprites' first shared colour for each value of channel 2's step during a flash, nine entries: light blue ($0E), and white ($01) for steps 3 and 4. The step is 1 to 8 whenever $0CF4 reads it, so entry 0 is never used."
   },
   {
    "address": 4988,
@@ -6940,7 +6920,7 @@
   {
    "address": 5111,
    "type": "line",
-   "text": "Formation 1 ($13F7): the head lifting. It holds for 100 frames. sprite 0 animation 0 at 112,99; sprite 1 animation 4 at 100,100; sprite 2 animation 5 at 124,100; sprite 3 animation 6 at 100,121; sprite 4 animation 7 at 124,121."
+   "text": "Formation 1 ($13F7): the seated figure with its head still bowed (animation 0, as in formation 0), without the two light grey sprites. It holds for 100 frames. sprite 0 animation 0 at 112,99; sprite 1 animation 4 at 100,100; sprite 2 animation 5 at 124,100; sprite 3 animation 6 at 100,121; sprite 4 animation 7 at 124,121."
   },
   {
    "address": 5136,
@@ -7060,22 +7040,22 @@
   {
    "address": 5787,
    "type": "line",
-   "text": "Animation 0: one frame, sprite 0 ($4400), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 0 to 10."
+   "text": "Animation 0: one frame, sprite 0 ($4400), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 0, 1 and 10."
   },
   {
    "address": 5791,
    "type": "line",
-   "text": "Animation 1: one frame, sprite 1 ($4440), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 2 to 11."
+   "text": "Animation 1: one frame, sprite 1 ($4440), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 2, 9 and 11."
   },
   {
    "address": 5795,
    "type": "line",
-   "text": "Animation 2: one frame, sprite 2 ($4480), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 3 to 12."
+   "text": "Animation 2: one frame, sprite 2 ($4480), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 3, 8 and 12."
   },
   {
    "address": 5799,
    "type": "line",
-   "text": "Animation 3: one frame, sprite 3 ($44C0), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 4 to 13."
+   "text": "Animation 3: one frame, sprite 3 ($44C0), colour 6 (blue), multicolour, which $FC sets again every frame; used by formations 4 to 7 and 13."
   },
   {
    "address": 5803,
@@ -7375,7 +7355,7 @@
   {
    "address": 6039,
    "type": "line",
-   "text": "Fifteen bytes after the last animation that nothing reads: $1799 as a word, then four groups of a value and $22 $0A, and $FC, the shape of an animation record of four frames."
+   "text": "Fifteen bytes after the last animation that nothing reads: $1799 as a word, then four groups of a value and $22 $0A, and $FC. What they were for is unknown: read as one of this intro's animation records (a delay, a colour, then frames up to $FC), the bytes from $1799 would be a delay of 8, colour $22 and ten frames."
   },
   {
    "address": 6054,
@@ -7400,12 +7380,12 @@
   {
    "address": 6090,
    "type": "line",
-   "text": "Tile script 2, the left lamp unlit, drawn once: a step every 1 frame, tiles 3 cells wide and 3 rows high at $67D8 (row 6, column 11); steps 4, then $FE, which stops."
+   "text": "Tile script 2, the left lamp unlit, one step: a step every 1 frame, tiles 3 cells wide and 3 rows high at $67D8 (row 6, column 11); steps 4, then $FE, which would stop the channel. The $FE is never reached: $0D7E puts script 4 on the channel straight after the first drawing, and from the lamps going out $0DB9 sets the step back to 0 on every pass, so the tile is drawn again every frame or so until $1323 stops the channels."
   },
   {
    "address": 6097,
    "type": "line",
-   "text": "Tile script 3, the right lamp unlit, drawn once: a step every 1 frame, tiles 3 cells wide and 3 rows high at $6850 (row 6, column 26); steps 4, then $FE, which stops."
+   "text": "Tile script 3, the right lamp unlit, one step: a step every 1 frame, tiles 3 cells wide and 3 rows high at $6850 (row 6, column 26); steps 4, then $FE, which would stop the channel. The $FE is never reached: $0D7E puts script 5 on the channel straight after the first drawing, and from the lamps going out $0DB9 sets the step back to 0 on every pass, so the tile is drawn again every frame or so until $1323 stops the channels."
   },
   {
    "address": 6104,
@@ -7440,7 +7420,7 @@
   {
    "address": 6188,
    "type": "line",
-   "text": "Tile 0, the left lamp's flame, frame 1 of 4: 1 by 1 cells of bitmap, 8 bytes, stored a cell row at a time."
+   "text": "Tile 0, a lamp flame, frame 1 of 4 for the left lamp and frame 3 for the right: 1 by 1 cells of bitmap, 8 bytes, stored a cell row at a time."
   },
   {
    "address": 6196,
@@ -7645,22 +7625,22 @@
   {
    "address": 17408,
    "type": "line",
-   "text": "Sprite 0 ($4400-$443F): the figure's head, shown in formations 0 to 10. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 0 ($4400-$443F): the figure's head, shown in formations 0, 1 and 10. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 17472,
    "type": "line",
-   "text": "Sprite 1 ($4440-$447F): the figure's head, shown in formations 2 to 11. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 1 ($4440-$447F): the figure's head, shown in formations 2, 9 and 11. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 17536,
    "type": "line",
-   "text": "Sprite 2 ($4480-$44BF): the figure's head, shown in formations 3 to 12. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 2 ($4480-$44BF): the figure's head, shown in formations 3, 8 and 12. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 17600,
    "type": "line",
-   "text": "Sprite 3 ($44C0-$44FF): the figure's head, shown in formations 4 to 13. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 3 ($44C0-$44FF): the figure's head, shown in formations 4 to 7 and 13. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 17664,
@@ -7765,12 +7745,12 @@
   {
    "address": 18944,
    "type": "line",
-   "text": "Sprite 24 ($4A00-$4A3F): the figure's body, top left, shown in formation 9. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 24 ($4A00-$4A3F): the figure's body, middle left, under the upper body (sprite 44), shown in formation 9. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19008,
    "type": "line",
-   "text": "Sprite 25 ($4A40-$4A7F): the figure's body, top right, shown in formation 9. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 25 ($4A40-$4A7F): the figure's body, middle right, under the upper body (sprite 45), shown in formation 9. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19072,
@@ -7785,12 +7765,12 @@
   {
    "address": 19200,
    "type": "line",
-   "text": "Sprite 28 ($4B00-$4B3F): the figure's body, top left, shown in formation 10. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 28 ($4B00-$4B3F): the figure's body, middle left, under the upper body (sprite 46), shown in formation 10. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19264,
    "type": "line",
-   "text": "Sprite 29 ($4B40-$4B7F): the figure's body, top right, shown in formation 10. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 29 ($4B40-$4B7F): the figure's body, middle right, under the upper body (sprite 47), shown in formation 10. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19328,
@@ -7805,12 +7785,12 @@
   {
    "address": 19456,
    "type": "line",
-   "text": "Sprite 32 ($4C00-$4C3F): the figure's body, top left, shown in formation 11. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 32 ($4C00-$4C3F): the figure's body, middle left, under the upper body (sprite 48), shown in formation 11. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19520,
    "type": "line",
-   "text": "Sprite 33 ($4C40-$4C7F): the figure's body, top right, shown in formation 11. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 33 ($4C40-$4C7F): the figure's body, middle right, under the upper body (sprite 49), shown in formation 11. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19584,
@@ -7825,12 +7805,12 @@
   {
    "address": 19712,
    "type": "line",
-   "text": "Sprite 36 ($4D00-$4D3F): the figure's body, top left, shown in formation 12. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 36 ($4D00-$4D3F): the figure's body, middle left, under the upper body (sprite 50), shown in formation 12. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19776,
    "type": "line",
-   "text": "Sprite 37 ($4D40-$4D7F): the figure's body, top right, shown in formation 12. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 37 ($4D40-$4D7F): the figure's body, middle right, under the upper body (sprite 51), shown in formation 12. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 19840,
@@ -7855,7 +7835,7 @@
   {
    "address": 20096,
    "type": "line",
-   "text": "Sprite 42 ($4E80-$4EBF): the figure's body, top left, shown in formations 13 to 22. 21 rows of three bytes, multicolour, and a spare byte."
+   "text": "Sprite 42 ($4E80-$4EBF): the figure's body, middle left, under the upper body (sprite 40), shown in formations 13 to 22. 21 rows of three bytes, multicolour, and a spare byte."
   },
   {
    "address": 20160,
@@ -8785,7 +8765,7 @@
   {
    "address": 45066,
    "type": "line",
-   "text": "Pattern at $B00A-$B013: 4 notes, instrument 0, 0 ticks long; played by voice 0 at places 0, 1; voice 1 at place 11."
+   "text": "Pattern at $B00A-$B013: 4 notes, instrument 0, 256 ticks long; played by voice 0 at places 0, 1; voice 1 at place 11."
   },
   {
    "address": 45076,
@@ -8795,7 +8775,7 @@
   {
    "address": 45090,
    "type": "line",
-   "text": "Pattern at $B022-$B02B: 4 notes, instrument 4, 0 ticks long; played by voice 2 at places 0, 1."
+   "text": "Pattern at $B022-$B02B: 4 notes, instrument 4, 256 ticks long; played by voice 2 at places 0, 1."
   },
   {
    "address": 45100,
@@ -8845,12 +8825,12 @@
   {
    "address": 45242,
    "type": "line",
-   "text": "Pattern at $B0BA-$B0BF: 2 notes, instrument 4, 0 ticks long; played by voice 2 at places 6, 9, 10."
+   "text": "Pattern at $B0BA-$B0BF: 2 notes, instrument 4, 128 ticks long; played by voice 2 at places 6, 9, 10."
   },
   {
    "address": 45248,
    "type": "line",
-   "text": "Pattern at $B0C0-$B0C5: 2 notes, instrument 4, 0 ticks long; played by voice 2 at places 7, 11, 12."
+   "text": "Pattern at $B0C0-$B0C5: 2 notes, instrument 4, 128 ticks long; played by voice 2 at places 7, 11, 12."
   },
   {
    "address": 45254,
@@ -8880,7 +8860,7 @@
   {
    "address": 45394,
    "type": "line",
-   "text": "Pattern at $B152-$B157: 2 notes, instrument 0, 32 ticks long; played by voice 0 at place 34."
+   "text": "Pattern at $B152-$B157: 2 notes, instrument 0, 96 ticks long; played by voice 0 at place 34."
   },
   {
    "address": 45400,
@@ -8960,7 +8940,7 @@
   {
    "address": 45964,
    "type": "line",
-   "text": "Instrument 6, 47 bytes, played by 24 notes: attack/decay $08, sustain/release $60; pulse wave; octave 2; pulse width $00C0; vibrato 4 frames up by $00C0 and 4 down by $00C0; pulse sweep after 30 frames."
+   "text": "Instrument 6, 47 bytes, played by 23 notes: attack/decay $08, sustain/release $60; pulse wave; octave 2; pulse width $00C0; vibrato 4 frames up by $00C0 and 4 down by $00C0; pulse sweep after 30 frames."
   },
   {
    "address": 46011,
@@ -8970,7 +8950,7 @@
   {
    "address": 46058,
    "type": "line",
-   "text": "Instrument 8, 47 bytes, played by 30 notes: attack/decay $69, sustain/release $00; triangle with sync wave; octave 2, 7 semitones up; every 3 counted frames it swaps to the triangle wave 2 octaves up; vibrato 4 frames up by $0100 and 4 down by $0100."
+   "text": "Instrument 8, 47 bytes, played by 28 notes: attack/decay $69, sustain/release $00; triangle with sync wave; octave 2, 7 semitones up; every 3 counted frames it swaps to the triangle wave 2 octaves up; vibrato 4 frames up by $0100 and 4 down by $0100."
   },
   {
    "address": 46105,
@@ -8980,7 +8960,7 @@
   {
    "address": 46152,
    "type": "line",
-   "text": "Instrument 10, 47 bytes, played by 8 notes: attack/decay $8C, sustain/release $4C; pulse and triangle wave; octave 3; pulse width $0400; vibrato 5 frames up by $0000 and 5 down by $003F; notes carry a bend."
+   "text": "Instrument 10, 47 bytes, played by 7 notes: attack/decay $8C, sustain/release $4C; pulse and triangle wave; octave 3; pulse width $0400; vibrato 5 frames up by $0000 and 5 down by $003F; notes carry a bend."
   },
   {
    "address": 46199,
@@ -8991,6 +8971,266 @@
    "address": 46289,
    "type": "line",
    "text": "The low bytes of the 90 note frequencies."
+  },
+  {
+   "address": 46379,
+   "type": "line",
+   "text": "MusicStartNote keeps the voice's number here while it adds up the detune ($B95E-$B96B). The tune's working variables follow, labelled one by one, to $B5B1. Their bytes are as the file loads them, left from when it was saved: MusicWriteSid writes every voice to the SID each frame, so until a voice's first note replaces them its leftover frequency, pulse width and waveform reach the SID, and the tick counters ($B56A-$B56C) start at 1, 2 and 3, which puts the three voices' ticks on different frames."
+  },
+  {
+   "address": 46380,
+   "type": "line",
+   "text": "A word MusicStartNote multiplies with: it starts at 47 ($002F) and doubles at each of eight steps, added to $FD/$FE ($B272 to begin with) for each set bit of the instrument's number, which leaves the instrument's address in $FD/$FE ($B826-$B855)."
+  },
+  {
+   "address": 46381,
+   "type": "line",
+   "text": "The high byte of the word at $B52C, which starts at 0 ($B830) and takes the carry as the word doubles ($B851)."
+  },
+  {
+   "address": 46382,
+   "type": "line",
+   "text": "The voice MusicFrame is working on, 0 to 2 ($B618), which the routines it calls read to index the tables below."
+  },
+  {
+   "address": 46383,
+   "type": "line",
+   "text": "The voice's number doubled ($B61D), the index into the voices' words: their pattern and order list pointers at $F0 and $F6 and their instrument addresses at $B531. $B530 is a byte nothing reads or writes."
+  },
+  {
+   "address": 46385,
+   "type": "line",
+   "text": "Each voice's instrument address, a word for each voice at $B531, $B533 and $B535, indexed by the voice's number doubled: MusicStartNote stores it when a note starts ($B85C, $B861), and MusicFrame loads it into $FD/$FE for the voice every frame ($B621-$B629)."
+  },
+  {
+   "address": 46386,
+   "type": "line",
+   "text": "The rest of the three instrument addresses begun at $B531: voice 0's high byte, then voice 1's word and voice 2's."
+  },
+  {
+   "address": 46391,
+   "type": "line",
+   "text": "The first byte of the note MusicReadNote has just read from the voice's pattern ($B78F): its low six bits are the pitch, $3F for a rest ($B7DD), and its top two bits the instrument number's low two bits ($B812-$B81B). Two zero bytes end the pattern ($B7A4)."
+  },
+  {
+   "address": 46392,
+   "type": "line",
+   "text": "The note's second byte ($B795): its top six bits are the note's length in ticks ($B7C8-$B7D2) and its low two bits the instrument number's high two bits ($B81D-$B824). $B539-$B53C are four bytes nothing reads or writes."
+  },
+  {
+   "address": 46397,
+   "type": "line",
+   "text": "Each voice's attack and decay: the instrument's byte 0 as a note starts ($B975), which MusicWriteSid writes to the voice's attack/decay register every frame ($B9AF)."
+  },
+  {
+   "address": 46400,
+   "type": "line",
+   "text": "Each voice's sustain and release: the instrument's byte 1 as a note starts ($B97C), written to the voice's sustain/release register every frame ($B9B5)."
+  },
+  {
+   "address": 46403,
+   "type": "line",
+   "text": "Each voice's frequency for its second sound, high byte: the note's pitch plus 12 times the instrument's byte 5, looked up in the note frequencies as the note starts ($B883-$B8A8). MusicWriteSid writes it, with the carry from the detune, while the second sound is on ($B9CC)."
+  },
+  {
+   "address": 46406,
+   "type": "line",
+   "text": "Each voice's frequency for its first sound, high byte: the note's pitch plus the instrument's byte 4 plus 12 times its byte 24, looked up as the note starts ($B8B1-$B8DB), then moved by the vibrato ($B68A, $B6BF). Written, with the carry from the detune, while the first sound plays ($B9F3)."
+  },
+  {
+   "address": 46409,
+   "type": "line",
+   "text": "Each voice's frequency for its second sound, low byte ($B8AE), which MusicWriteSid writes with the detune added ($B9C0). As the note starts it holds 12 times the instrument's byte 5 for a moment ($B897)."
+  },
+  {
+   "address": 46412,
+   "type": "line",
+   "text": "Each voice's frequency for its first sound, low byte ($B8E1), moved by the vibrato ($B683, $B6B5) and written with the detune added ($B9E7). As the note starts it holds the instrument's byte 4 plus 12 times its byte 24 for a moment ($B8C5-$B8D0)."
+  },
+  {
+   "address": 46415,
+   "type": "line",
+   "text": "Each voice's pulse width for its second sound, high byte: the instrument's byte 43 as a note starts ($B86B), written while the second sound is on ($B9D2); for voice 2 with the filter on it is the cut-off's high byte ($BA77)."
+  },
+  {
+   "address": 46418,
+   "type": "line",
+   "text": "Each voice's pulse width for its first sound, high byte: the instrument's byte 45 as a note starts ($B879), moved by the pulse sweep ($B715, $B747) and written while the first sound plays ($BA0E)."
+  },
+  {
+   "address": 46421,
+   "type": "line",
+   "text": "Each voice's pulse width for its second sound, low byte: the instrument's byte 44 ($B872), written while the second sound is on ($B9D8); for voice 2 with the filter on, the cut-off's low byte ($BA71)."
+  },
+  {
+   "address": 46424,
+   "type": "line",
+   "text": "Each voice's pulse width for its first sound, low byte: the instrument's byte 46 ($B880), moved by the pulse sweep ($B709, $B73B) and written while the first sound plays ($BA14)."
+  },
+  {
+   "address": 46427,
+   "type": "line",
+   "text": "Each voice's waveform for its second sound: the instrument's byte 22 as a note starts ($B98A), or its byte 23 at a rest ($B7E8); written to the voice's control register while the second sound is on ($B9DE)."
+  },
+  {
+   "address": 46430,
+   "type": "line",
+   "text": "Each voice's waveform for its first sound: the instrument's byte 41 as a note starts ($B991), or its byte 42 at a rest ($B7EF); written to the voice's control register while the first sound plays ($BA1A)."
+  },
+  {
+   "address": 46433,
+   "type": "line",
+   "text": "For each voice, $FF while it plays its second sound and 0 for its first: cleared as a note starts ($B996), turned over by MusicSwapSound ($B76F-$B774) and tested by MusicWriteSid ($B9BB)."
+  },
+  {
+   "address": 46436,
+   "type": "line",
+   "text": "For each voice, the count to its next swap of sounds: the instrument's byte 3 as a note starts ($B983) and after each swap ($B77B), counted down by MusicSwapSound on two frames of every four ($B76A)."
+  },
+  {
+   "address": 46439,
+   "type": "line",
+   "text": "Each voice's frame counter, added to every frame by MusicSwapSound ($B760); while its bit 1 is clear the swap count goes down."
+  },
+  {
+   "address": 46442,
+   "type": "line",
+   "text": "Voice 0's frames to its next tick: MusicFrame counts it down every frame and at 0 sets it to 8 and ticks the voice ($B62E-$B635). $B56B and $B56C are voice 1's and voice 2's. The file loads them as 1, 2 and 3, and MusicWriteSid sets them so again when it starts the tune over ($BA3B-$BA45), so the three voices tick on different frames."
+  },
+  {
+   "address": 46443,
+   "type": "line",
+   "text": "Voice 1's frames to its next tick (see $B56A), set to 2 when the tune starts over ($BA40)."
+  },
+  {
+   "address": 46444,
+   "type": "line",
+   "text": "Voice 2's frames to its next tick (see $B56A), set to 3 when the tune starts over ($BA45)."
+  },
+  {
+   "address": 46445,
+   "type": "line",
+   "text": "Voice 0's ticks left of its note: the note's length as it starts ($B7D2), counted down at each tick and kept to six bits, so a length of 0 lasts 64 ticks ($B638-$B641); at 0 the voice reads its next note ($B647). $B56E and $B56F are voice 1's and voice 2's. MusicStart sets all three to 1 ($B5D5-$B5DD), so each voice reads a note at its first tick."
+  },
+  {
+   "address": 46446,
+   "type": "line",
+   "text": "Voice 1's ticks left of its note (see $B56D), set to 1 by MusicStart ($B5DA) and when the tune starts over ($BA35)."
+  },
+  {
+   "address": 46447,
+   "type": "line",
+   "text": "Voice 2's ticks left of its note (see $B56D), set to 1 by MusicStart ($B5DD) and when the tune starts over ($BA38)."
+  },
+  {
+   "address": 46448,
+   "type": "line",
+   "text": "The instrument's byte 6 for each voice, stored as a note starts ($B8EB) and never read."
+  },
+  {
+   "address": 46451,
+   "type": "line",
+   "text": "Each voice's frames to the start of its bend: the instrument's byte 25 as a note starts ($B8F2), or a byte from the pattern when the instrument's byte 17 has bit 1 set ($BAA8); MusicFrame counts it down and at 0 starts the bend ($B64F-$B654). MusicEndBend clears it ($BB48)."
+  },
+  {
+   "address": 46454,
+   "type": "line",
+   "text": "The instrument's byte 7 for each voice, stored as a note starts ($B8F9) and never read."
+  },
+  {
+   "address": 46457,
+   "type": "line",
+   "text": "Each voice's bend length: the instrument's byte 26 as a note starts ($B900). While it is 0 MusicFrame runs the vibrato; above 1 it counts it down once a frame and runs the vibrato; at 1 the note holds with no vibrato ($B65A-$B666)."
+  },
+  {
+   "address": 46460,
+   "type": "line",
+   "text": "The instrument's byte 8 for each voice, stored as a note starts ($B907) and never read."
+  },
+  {
+   "address": 46463,
+   "type": "line",
+   "text": "Each voice's frames left of the vibrato's rise: the instrument's byte 27 as a note starts ($B90E), counted down by MusicVibrato and set from byte 27 again when it runs out ($B693-$B6A4). MusicStartBend sets it to 0 ($BB02)."
+  },
+  {
+   "address": 46466,
+   "type": "line",
+   "text": "The instrument's byte 9 for each voice, stored as a note starts ($B915) and never read."
+  },
+  {
+   "address": 46469,
+   "type": "line",
+   "text": "Each voice's frames left of the vibrato's fall: the instrument's byte 28 as a note starts ($B91C), halved at once ($B9A1), so a note starts with half a fall, then counted down and set from byte 28 again ($B6C5-$B6D6). MusicStartBend puts the bend's length here ($BAFD). $B588-$B58A are three bytes nothing reads or writes."
+  },
+  {
+   "address": 46475,
+   "type": "line",
+   "text": "For each voice, $FF while its vibrato falls and 0 while it rises: $FF as a note starts ($B99B), turned over each time a half runs out ($B69B, $B6CD)."
+  },
+  {
+   "address": 46478,
+   "type": "line",
+   "text": "The instrument's byte 14 for each voice, stored as a note starts ($B923) and never read."
+  },
+  {
+   "address": 46481,
+   "type": "line",
+   "text": "Each voice's frames before its pulse sweep starts: the instrument's byte 33 as a note starts ($B92A), counted down by MusicPulse ($B6DF)."
+  },
+  {
+   "address": 46484,
+   "type": "line",
+   "text": "The instrument's byte 15 for each voice, stored as a note starts ($B931) and never read."
+  },
+  {
+   "address": 46487,
+   "type": "line",
+   "text": "Each voice's pulse sweep length: the instrument's byte 34 as a note starts ($B938). While it is 0 the sweep runs; above 1 MusicPulse counts it down once a frame and sweeps; at 1 the sweep stops ($B6E5-$B6EE)."
+  },
+  {
+   "address": 46490,
+   "type": "line",
+   "text": "The instrument's byte 16 for each voice, stored as a note starts ($B93F) and never read."
+  },
+  {
+   "address": 46493,
+   "type": "line",
+   "text": "Each voice's frames left of the pulse width's rise: the instrument's byte 35 as a note starts ($B946), counted down and set from byte 35 again ($B719-$B72A)."
+  },
+  {
+   "address": 46496,
+   "type": "line",
+   "text": "Each voice's copy of the instrument's byte 17 ($B94D): with bit 1 set the pattern carries the bend's delay and the bend after a note ($BA98, $BAB3, $BB12)."
+  },
+  {
+   "address": 46499,
+   "type": "line",
+   "text": "Each voice's frames left of the pulse width's fall: the instrument's byte 36 as a note starts ($B957), halved at once ($B9A4), then counted down ($B74B). When it runs out MusicPulseSweep sets it from byte 36 again, but into voice 0's byte whichever voice is sweeping ($B75C has no index). $B5A6-$B5A8 are three bytes nothing reads or writes."
+  },
+  {
+   "address": 46505,
+   "type": "line",
+   "text": "For each voice, $FF while its pulse width falls and 0 while it rises: $FF as a note starts ($B99E), turned over each time a half runs out ($B721, $B753)."
+  },
+  {
+   "address": 46508,
+   "type": "line",
+   "text": "Each voice's detune: the instrument's byte 2 times the voice's number ($B95A-$B96E), added to the frequency's low byte as it is written ($B9C4, $B9EB)."
+  },
+  {
+   "address": 46511,
+   "type": "line",
+   "text": "Another copy of the instrument's byte 17 for each voice, at $B5AF, $B5B0 and $B5B1 ($B950). Voice 0's is never read."
+  },
+  {
+   "address": 46512,
+   "type": "line",
+   "text": "Voice 1's copy of its instrument's byte 17: with bit 0 set MusicFilter routes voice 2 through the filter as well ($BA60)."
+  },
+  {
+   "address": 46513,
+   "type": "line",
+   "text": "Voice 2's copy of its instrument's byte 17: with bit 0 set MusicWriteSid turns the filter on ($B9FD) and MusicFilter routes voice 3 through it ($BA54)."
   },
   {
    "address": 46514,
@@ -9073,6 +9313,41 @@
    "text": "The filter, for voice 2 when its instrument asks: resonance $F, voice 3 filtered and voice 2 too if voice 1's instrument has byte 17 bit 0 set, the low-pass filter at volume 15, and the cut-off from voice 2's second pulse width."
   },
   {
+   "address": 47744,
+   "type": "line",
+   "text": "Where MusicStartBend keeps a voice's vibrato settings while the bend uses them, for MusicEndBend to put back, a byte for each voice: here the instrument's byte 30 ($BABE), the low byte of the rise's step."
+  },
+  {
+   "address": 47747,
+   "type": "line",
+   "text": "The instrument's byte 29, the high byte of the rise's step, saved by MusicStartBend ($BAC5) and put back by MusicEndBend ($BB20), a byte for each voice."
+  },
+  {
+   "address": 47750,
+   "type": "line",
+   "text": "The frames left of the vibrato's rise ($B57F), saved by MusicStartBend ($BAC8) and put back by MusicEndBend ($BB35), a byte for each voice."
+  },
+  {
+   "address": 47753,
+   "type": "line",
+   "text": "The instrument's byte 32, the low byte of the fall's step, saved by MusicStartBend ($BAD2) and put back by MusicEndBend ($BB27), a byte for each voice."
+  },
+  {
+   "address": 47756,
+   "type": "line",
+   "text": "The instrument's byte 31, the high byte of the fall's step, saved by MusicStartBend ($BAD9) and put back by MusicEndBend ($BB2E), a byte for each voice."
+  },
+  {
+   "address": 47759,
+   "type": "line",
+   "text": "Meant for the frames left of the vibrato's fall ($B585), which MusicEndBend puts back from here ($BB3B): MusicStartBend loads that count into Y ($BADC) and stores A, which still holds the instrument's byte 31 ($BADF), a byte for each voice."
+  },
+  {
+   "address": 47762,
+   "type": "line",
+   "text": "MusicFilter's scratch byte: the resonance and voice 3's filter bit, before it adds voice 2's and writes the routing to $D417 ($BA5D-$BA69)."
+  },
+  {
    "address": 47763,
    "type": "line",
    "text": "For an instrument with byte 17 bit 1 set, reads the note's first extra byte: the frames before the bend starts."
@@ -9095,27 +9370,27 @@
   {
    "address": 47955,
    "type": "line",
-   "text": "Voice 0's order list: 41 patterns, 1601 ticks in all, ended by $0000 at $BBA5."
+   "text": "Voice 0's order list: 40 patterns, 2064 ticks in all, ended by $0000 at $BBA3."
   },
   {
-   "address": 48037,
+   "address": 48035,
    "type": "line",
-   "text": "The end of voice 0's order list, $0000."
+   "text": "The end of voice 0's order list, $0000. The $0000 after it, at $BBA5, is never read: all three voices last 2064 ticks, and voice 2, whose ticks fall 2 frames after this voice's, starts the tune again when it reaches the end of its list."
   },
   {
    "address": 48039,
    "type": "line",
-   "text": "Voice 1's order list: 47 patterns, 1921 ticks in all, ended by $0000 at $BC05."
+   "text": "Voice 1's order list: 46 patterns, 2064 ticks in all, ended by $0000 at $BC03."
   },
   {
-   "address": 48133,
+   "address": 48131,
    "type": "line",
-   "text": "The end of voice 1's order list, $0000."
+   "text": "The end of voice 1's order list, $0000. The $0000 after it, at $BC05, is never read: all three voices last 2064 ticks, and voice 2, whose ticks fall 1 frame after this voice's, starts the tune again when it reaches the end of its list."
   },
   {
    "address": 48135,
    "type": "line",
-   "text": "Voice 2's order list: 29 patterns, 784 ticks in all, ended by $0000 at $BC41. The tune starts again when this voice reaches its end ($BA2A)."
+   "text": "Voice 2's order list: 29 patterns, 2064 ticks in all, ended by $0000 at $BC41. The tune starts again when this voice reaches its end ($BA2A)."
   },
   {
    "address": 48193,

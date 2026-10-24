@@ -1090,7 +1090,7 @@
   },
   {
    "address": 18213,
-   "name": "AdvanceVoiceModulationStream",
+   "name": "AdvanceVoiceSweep",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -1227,12 +1227,6 @@
    "kind": "user"
   },
   {
-   "address": 18705,
-   "name": "music_arpeggio_4911",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
    "address": 18706,
    "name": "music_arpeggio_4912",
    "type": "UserDefined",
@@ -1271,6 +1265,12 @@
   {
    "address": 18758,
    "name": "music_arpeggio_4946",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18772,
+   "name": "music_arpeggio_4954",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2571,7 +2571,7 @@
   {
    "address": 18213,
    "type": "line",
-   "text": "Execute one modulation-stream step. Inputs: selected voice, modulation cursor and count, and current frequency. Outputs: cursor, count, and modulated frequency are updated. Clobbers: A, X, Y, flags, and voice scratch."
+   "text": "One step of voice X's pulse-width sweep (X 0 to 2), or of the filter cut-off when X is 3 (the call at $4444). Y is the instrument's setting, an offset into the filter and pulse settings: their bytes 6 and 7 point at the sweep list, whose entries set the voice's 16-bit value ($40B7 high, $40B3 low) outright or start a run of steps, and the settings' steps move the value up or down between two limits. The frequency is not touched. Clobbers: A, Y, flags, $FE/$FF, $4051 and the voice's place and count in the list ($40BF, $40C3)."
   },
   {
    "address": 18469,
@@ -2601,17 +2601,12 @@
   {
    "address": 18689,
    "type": "line",
-   "text": "Low bytes of 8 pointers to the arpeggio lists below, chosen by a phrase's $E0-$F7 command."
+   "text": "Low bytes of arpeggio pointers 0 to 7, chosen by the number in a phrase's $E0-$F7 command. Pointer 8's low byte is the first byte of the high table after it ($4909), which is also pointer 0's high byte: the two tables overlap by a byte. Pointer 0 ($54FD) is never followed, since the player skips the arpeggio when the number is 0."
   },
   {
    "address": 18697,
    "type": "line",
-   "text": "High bytes of the same pointers: $54FD, $4912, $4918, $491E, $4924, $492A, $4938, $4946."
-  },
-  {
-   "address": 18705,
-   "type": "line",
-   "text": "Arpeggio list, $4911-$4911: every tick the player steps to the next byte and adds it to the note as a signed number of semitones, so the voice cycles through a chord; $80 holds the current step, and $81 is followed by the position to go back to."
+   "text": "High bytes of arpeggio pointers 0 to 8: $54FD, $4912, $4918, $491E, $4924, $492A, $4938, $4946, $4954."
   },
   {
    "address": 18706,
@@ -2646,7 +2641,12 @@
   {
    "address": 18758,
    "type": "line",
-   "text": "Arpeggio list, $4946-$4961: every tick the player steps to the next byte and adds it to the note as a signed number of semitones, so the voice cycles through a chord; $80 holds the current step, and $81 is followed by the position to go back to."
+   "text": "Arpeggio list, $4946-$4953: every tick the player steps to the next byte and adds it to the note as a signed number of semitones, so the voice cycles through a chord; $80 holds the current step, and $81 is followed by the position to go back to."
+  },
+  {
+   "address": 18772,
+   "type": "line",
+   "text": "Arpeggio list, $4954-$4961: every tick the player steps to the next byte and adds it to the note as a signed number of semitones, so the voice cycles through a chord; $80 holds the current step, and $81 is followed by the position to go back to."
   },
   {
    "address": 18786,
@@ -2756,57 +2756,57 @@
   {
    "address": 18855,
    "type": "line",
-   "text": "Instrument 1, $49A7-$49B1: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $DC; the note is released when 1 tick of it remains; pulse width $D0D; flags $30; then the filter setting 64, the vibrato setting 0 and the pulse sweep 16, each an offset into its table (0 for none)."
+   "text": "Instrument 1, $49A7-$49B1: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $DC; the note is released when 1 tick of it remains; pulse width $D0D; flags $30; then the filter setting 64 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18866,
    "type": "line",
-   "text": "Instrument 2, $49B2-$49BC: waveform register $41 at the start of a note; byte 1, 1, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0, the vibrato setting 0 and the pulse sweep 0, each an offset into its table (0 for none)."
+   "text": "Instrument 2, $49B2-$49BC: waveform register $41 at the start of a note; byte 1, 1, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18877,
    "type": "line",
-   "text": "Instrument 3, $49BD-$49C7: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $0C and sustain/release $B6; the note is released after 0 ticks; pulse width $D0D; flags $70; then the filter setting 0, the vibrato setting 0 and the pulse sweep 16, each an offset into its table (0 for none)."
+   "text": "Instrument 3, $49BD-$49C7: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $0C and sustain/release $B6; the note is released after 0 ticks; pulse width $D0D; flags $70; then the filter setting 0 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18888,
    "type": "line",
-   "text": "Instrument 4, $49C8-$49D2: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $6D; the note is released after 0 ticks; pulse width $404; flags $20; then the filter setting 0, the vibrato setting 0 and the pulse sweep 32, each an offset into its table (0 for none)."
+   "text": "Instrument 4, $49C8-$49D2: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $6D; the note is released after 0 ticks; pulse width $404; flags $20; then the filter setting 0 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18899,
    "type": "line",
-   "text": "Instrument 5, $49D3-$49DD: waveform register $41 at the start of a note; byte 1, 0, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $E9; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0, the vibrato setting 0 and the pulse sweep 0, each an offset into its table (0 for none)."
+   "text": "Instrument 5, $49D3-$49DD: waveform register $41 at the start of a note; byte 1, 0, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $E9; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18910,
    "type": "line",
-   "text": "Instrument 6, $49DE-$49E8: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $86; the note is released after 9 ticks; pulse width $707; flags $20; then the filter setting 0, the vibrato setting 0 and the pulse sweep 48, each an offset into its table (0 for none)."
+   "text": "Instrument 6, $49DE-$49E8: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $86; the note is released after 9 ticks; pulse width $707; flags $20; then the filter setting 0 and the pulse sweep 48, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18921,
    "type": "line",
-   "text": "Instrument 7, $49E9-$49F3: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $48 and sustain/release $89; the note is released when 1 tick of it remains; pulse width $808; flags $20; then the filter setting 80, the vibrato setting 16 and the pulse sweep 16, each an offset into its table (0 for none)."
+   "text": "Instrument 7, $49E9-$49F3: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $48 and sustain/release $89; the note is released when 1 tick of it remains; pulse width $808; flags $20; then the filter setting 80 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18932,
    "type": "line",
-   "text": "Instrument 8, $49F4-$49FE: waveform register $11 at the start of a note; $10 written there at the release; attack/decay $00 and sustain/release $FF; the note is released after 0 ticks; pulse width $000; flags $30; then the filter setting 0, the vibrato setting 16 and the pulse sweep 0, each an offset into its table (0 for none)."
+   "text": "Instrument 8, $49F4-$49FE: waveform register $11 at the start of a note; $10 written there at the release; attack/decay $00 and sustain/release $FF; the note is released after 0 ticks; pulse width $000; flags $30; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18943,
    "type": "line",
-   "text": "Instrument 9, $49FF-$4A09: waveform register $13 at the start of a note; $12 written there at the release; attack/decay $09 and sustain/release $CC; the note is released when 1 tick of it remains; pulse width $000; flags $30; then the filter setting 0, the vibrato setting 0 and the pulse sweep 0, each an offset into its table (0 for none)."
+   "text": "Instrument 9, $49FF-$4A09: waveform register $13 at the start of a note; $12 written there at the release; attack/decay $09 and sustain/release $CC; the note is released when 1 tick of it remains; pulse width $000; flags $30; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18954,
    "type": "line",
-   "text": "Instrument 10, $4A0A-$4A14: waveform register $43 at the start of a note; $42 written there at the release; attack/decay $00 and sustain/release $CA; the note is released when 1 tick of it remains; pulse width $404; flags $00; then the filter setting 0, the vibrato setting 0 and the pulse sweep 48, each an offset into its table (0 for none)."
+   "text": "Instrument 10, $4A0A-$4A14: waveform register $43 at the start of a note; $42 written there at the release; attack/decay $00 and sustain/release $CA; the note is released when 1 tick of it remains; pulse width $404; flags $00; then the filter setting 0 and the pulse sweep 48, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18965,
    "type": "line",
-   "text": "Instrument 11, $4A15-$4A1F: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $48 and sustain/release $79; the note is released when 1 tick of it remains; pulse width $707; flags $30; then the filter setting 0, the vibrato setting 16 and the pulse sweep 16, each an offset into its table (0 for none)."
+   "text": "Instrument 11, $4A15-$4A1F: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $48 and sustain/release $79; the note is released when 1 tick of it remains; pulse width $707; flags $30; then the filter setting 0 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18976,

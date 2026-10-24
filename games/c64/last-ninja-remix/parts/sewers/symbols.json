@@ -5418,7 +5418,7 @@
   },
   {
    "address": 40649,
-   "name": "LaunchProjectileFromActor",
+   "name": "LaunchPlayerProjectile",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -12142,7 +12142,7 @@
   {
    "address": 31878,
    "type": "line",
-   "text": "Set up the status of a level as it starts. It clears $022B, $022C, $70, $89 and $A0, fills the enemy meter's 30 slots at $3F92 and both energies ($0229, $022A) with $2C, a full bar, and sets $7A to $AD. It copies the item flags saved when the level began ($03B0-$03D7) over the live ones ($03D8-$03FF) and clears $03E9-$03F1 among them, then puts the score ($1CA0) and the clock's digits back from the saved copy ($03CC-$03D7). It sets $87 to $BF, clears $011B-$013E and draws panel picture 0 at both of its places (DrawUiImageRecord, $9B3D, with A = 0 and X = 0, then 1). It builds no scene or wall data. Clobbers: A, X, Y, flags and the drawing routine's scratch."
+   "text": "Set up the status of a level as it starts. It clears $022B, $022C, $70, $89 and $A0, fills the 30 bytes at $3F92 that keep each area's enemy energy, and both energies ($0229, $022A) with $2C, a full bar, and sets $7A to $AD. It copies the item flags saved when the level began ($03B0-$03D7) over the live ones ($03D8-$03FF) and clears $03E9-$03F1 among them, then puts the score ($1CA0) and the clock's digits back from the saved copy ($03CC-$03D7). It sets $87 to $BF, clears $011B-$013E and draws panel picture 0 at both of its places (DrawUiImageRecord, $9B3D, with A = 0 and X = 0, then 1). It builds no scene or wall data. Clobbers: A, X, Y, flags and the drawing routine's scratch."
   },
   {
    "address": 31981,
@@ -12597,67 +12597,67 @@
   {
    "address": 35266,
    "type": "line",
-   "text": "Run the heading-7, state-$70-zero scripted animation sequence, then consume the pending command.\nInputs: Current heading $69, state $70, command $81, and animation data beginning at $AB01/$AB06/$AB1B.\nOutputs: On heading 7 with $70 zero, runs one $AB01 animation, two $AB06 animations, then $AB1B, sets target Y $74=$98 and mode $EF=$FF, and calls resident pacing $11F1; always clears $81 before returning.\nClobbers: A, X, Y, flags, $74, $EF, $81, animation/actor state, and pacing scratch."
+   "text": "Run the heading-7, state-$70-zero scripted animation sequence, then consume the pending command.\nInputs: Current heading $69, state $70, command $81, and animation data beginning at $AB01/$AB06/$AB1B.\nOutputs: On heading 7 with $70 zero, runs one $AB01 animation, two $AB06 animations, then $AB1B, sets $74, the Y the scene conditions test, to $98 and $EF to $FF, which holds it there, and calls resident pacing $11F1; always clears $81 before returning.\nClobbers: A, X, Y, flags, $74, $EF, $81, animation/actor state, and pacing scratch."
   },
   {
    "address": 35324,
    "type": "line",
-   "text": "Set the scripted target Y to $9E, enable mode $EF, then run the common eight-cycle fatal sequence.\nInputs: Current animation/actor state.\nOutputs: Stores $74=$9E and $EF=$FF, then runs eight cycles and sets death latch $B6=$FF.\nClobbers: A, X, Y, flags, $74, $EF, $0234, animation/actor scratch, and $B6."
+   "text": "Set $74, the Y the scene conditions test, to $9E and hold it there ($EF = $FF stops ApplySignedActorHeightDelta changing it), then run the common eight-cycle fatal sequence.\nInputs: Current animation/actor state.\nOutputs: Stores $74=$9E and $EF=$FF, then runs eight cycles and sets death latch $B6=$FF.\nClobbers: A, X, Y, flags, $74, $EF, $0234, animation/actor scratch, and $B6."
   },
   {
    "address": 35334,
    "type": "line",
-   "text": "Copy the player's current Y coordinate into the scripted target and run the common eight-cycle fatal sequence.\nInputs: Player Y low byte $55 and current animation/actor state.\nOutputs: Stores $55 into $74, then runs eight cycles and sets death latch $B6=$FF.\nClobbers: A, X, Y, flags, $74, $0234, animation/actor scratch, and $B6."
+   "text": "Copy the player's Y ($55) into $74, the Y the scene conditions test, and run the common eight-cycle fatal sequence.\nInputs: Player Y low byte $55 and current animation/actor state.\nOutputs: Stores $55 into $74, then runs eight cycles and sets death latch $B6=$FF.\nClobbers: A, X, Y, flags, $74, $0234, animation/actor scratch, and $B6."
   },
   {
    "address": 35338,
    "type": "line",
-   "text": "Advance eight scripted animation/update cycles and latch player death.\nInputs: Target/mode already prepared in $74/$EF and current actor/animation state.\nOutputs: Calls $8ABD with A=8, which marks $0234 and advances eight cycles, then writes $B6=$FF.\nClobbers: A, X, Y, flags, $0234, animation/actor scratch, and $B6."
+   "text": "Advance eight scripted animation/update cycles and latch player death.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $8ABD with A=8, which marks $0234 and advances eight cycles, then writes $B6=$FF.\nClobbers: A, X, Y, flags, $0234, animation/actor scratch, and $B6."
   },
   {
    "address": 35348,
    "type": "line",
-   "text": "When command bit 0 is set, select target Y zero and run two scripted animation/update cycles; then consume the command.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=0 and enters the two-cycle entry at $8A41; both paths clear $81 before return.\nClobbers: A, X, Y, flags, $74, $81, $0234, and animation/actor scratch."
+   "text": "When command bit 0 is set, set $74, the Y the scene conditions test, to 0 and run two scripted animation/update cycles; then consume the command.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=0 and enters the two-cycle entry at $8A41; both paths clear $81 before return.\nClobbers: A, X, Y, flags, $74, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35361,
    "type": "line",
-   "text": "Select target Y $5D, enable mode $EF, and advance one scripted animation/update cycle.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$5D and $EF=$FF, calls the one-cycle path through $8ABD, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, and animation/actor scratch."
+   "text": "Set $74, the Y the scene conditions test, to $5D, hold it there with $EF = $FF, and advance one scripted animation/update cycle.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$5D and $EF=$FF, calls the one-cycle path through $8ABD, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35369,
    "type": "line",
-   "text": "Advance 1 scripted animation/update cycle, then consume the pending command.\nInputs: Target/mode already prepared in $74/$EF and current actor/animation state.\nOutputs: Calls $8ABD with A=1; after the bounded loop, clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0234, and animation/actor scratch."
+   "text": "Advance 1 scripted animation/update cycle, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $8ABD with A=1; after the bounded loop, clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35373,
    "type": "line",
-   "text": "Command $19 selects target Y=$5D, then branches to $8A37 to store it, set mode $EF=$FF and run one scripted update cycle before clearing command $81. This entry shares that tail with the $00/$7D target variants; it differs from $8A21 in its branch path."
+   "text": "Command $19 loads $5D, then branches to $8A37 to store it in $74, the Y the scene conditions test, set $EF=$FF and run one scripted update cycle before clearing command $81. This entry shares that tail with the $00 and $7D variants; it differs from $8A21 in its branch path."
   },
   {
    "address": 35377,
    "type": "line",
-   "text": "Select target Y $00, enable mode $EF, and advance one scripted animation/update cycle.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$00 and $EF=$FF, calls the one-cycle path through $8ABD, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, and animation/actor scratch."
+   "text": "Set $74, the Y the scene conditions test, to $00, hold it there with $EF = $FF, and advance one scripted animation/update cycle.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$00 and $EF=$FF, calls the one-cycle path through $8ABD, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35381,
    "type": "line",
-   "text": "Select target Y $7D, enable mode $EF, and advance one scripted animation/update cycle.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$7D and $EF=$FF, calls the one-cycle path through $8ABD, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, and animation/actor scratch."
+   "text": "Set $74, the Y the scene conditions test, to $7D, hold it there with $EF = $FF, and advance one scripted animation/update cycle.\nInputs: Current actor/animation state.\nOutputs: Stores $74=$7D and $EF=$FF, calls the one-cycle path through $8ABD, then clears command $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35389,
    "type": "line",
-   "text": "Command $11 loads A=1 and branches to the bounded update loop at $8A47. Target $74 and mode $EF must already be prepared; the tail calls $8ABD once and clears $81. Unlike the target-setting entries, this entry writes neither target nor mode itself."
+   "text": "Command $11 loads A=1 and branches to the bounded update loop at $8A47. $74 and $EF stay as the script left them; the tail calls $8ABD once and clears $81. Unlike the target-setting entries, this entry writes neither $74 nor $EF itself."
   },
   {
    "address": 35393,
    "type": "line",
-   "text": "Advance 2 scripted animation/update cycles, then consume the pending command.\nInputs: Target/mode already prepared in $74/$EF and current actor/animation state.\nOutputs: Calls $8ABD with A=2; after the bounded loop, clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0234, and animation/actor scratch."
+   "text": "Advance 2 scripted animation/update cycles, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $8ABD with A=2; after the bounded loop, clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35397,
    "type": "line",
-   "text": "Advance 4 scripted animation/update cycles, then consume the pending command.\nInputs: Target/mode already prepared in $74/$EF and current actor/animation state.\nOutputs: Calls $8ABD with A=4; after the bounded loop, clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0234, and animation/actor scratch."
+   "text": "Advance 4 scripted animation/update cycles, then consume the pending command.\nInputs: $74 and $EF as the script left them, and current actor/animation state.\nOutputs: Calls $8ABD with A=4; after the bounded loop, clears $81 and returns.\nClobbers: A, X, Y, flags, $81, $0234, and animation/actor scratch."
   },
   {
    "address": 35414,
@@ -12667,12 +12667,12 @@
   {
    "address": 35430,
    "type": "line",
-   "text": "When command bit 0 is set, choose target Y $04, enable mode $EF, run seven cycles, and latch death.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=$04/$EF=$FF and enters the seven-cycle fatal tail; unarmed path clears $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, animation/actor scratch, and on the armed path $B6."
+   "text": "When command bit 0 is set, set $74, the Y the scene conditions test, to $04, hold it there with $EF = $FF, run seven cycles, and latch death.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=$04/$EF=$FF and enters the seven-cycle fatal tail; unarmed path clears $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, animation/actor scratch, and on the armed path $B6."
   },
   {
    "address": 35434,
    "type": "line",
-   "text": "When command bit 0 is set, choose target Y $0C, enable mode $EF, run seven cycles, and latch death.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=$0C/$EF=$FF and enters the seven-cycle fatal tail; unarmed path clears $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, animation/actor scratch, and on the armed path $B6."
+   "text": "When command bit 0 is set, set $74, the Y the scene conditions test, to $0C, hold it there with $EF = $FF, run seven cycles, and latch death.\nInputs: Command flags $81 and current actor/animation state.\nOutputs: Armed path stores $74=$0C/$EF=$FF and enters the seven-cycle fatal tail; unarmed path clears $81.\nClobbers: A, X, Y, flags, $74, $EF, $81, $0234, animation/actor scratch, and on the armed path $B6."
   },
   {
    "address": 35453,
@@ -13247,7 +13247,7 @@
   {
    "address": 39472,
    "type": "line",
-   "text": "Eight heading mappings read at $975A after comparing near-contact horizontal/vertical separation. The resulting direction is stored in $6A; the table ends at $9A37 before the Manhattan-distance routine."
+   "text": "Eight headings, read at $975A once the distances to the target are in $1C and $1D ($9A3A). When a quarter of $1C is less than $1D the entry read is the one before the enemy's heading $6B (the SBC #$00 at $9757 runs with the carry clear, so heading 0 reads $9A2F, the byte before the table); otherwise, when $1D is less than 4, it is the entry for $6B itself. The entry becomes the enemy's new heading $6A, which is $6B unchanged when neither holds. The table ends at $9A37, before the Manhattan-distance routine."
   },
   {
    "address": 39480,
@@ -13367,7 +13367,7 @@
   {
    "address": 40105,
    "type": "line",
-   "text": "Subtract one hit from enemy health, update its HUD value, and on defeat persist position/time state and award score\nInputs: A = unsigned damage; enemy health $022A; current area $A2; enemy position/heading $56/$57/$6B; tick/time state; defeated-count limit $D6\nOutputs: stores saturated health in $022A and HUD cell $3F92,$A2; on defeat awards score, records position/heading/time in $013F/$0151/$0163/$0175/$0187 indexed by area, advances bounded persistent state $012D,X, and installs reaction/action $24\nClobbers: A, X, Y, flags and score/persistence/reaction scratch"
+   "text": "Subtract the damage in A from the enemy's energy, keep the area's copy of it, and on defeat persist position/time state and award score\nInputs: A = unsigned damage; enemy health $022A; current area $A2; enemy position/heading $56/$57/$6B; tick/time state; defeated-count limit $D6\nOutputs: stores the energy, held at 0, in $022A and in the area's copy at $3F92,$A2, which the area gets back when the player returns; on defeat awards score, records position/heading/time in $013F/$0151/$0163/$0175/$0187 indexed by area, advances bounded persistent state $012D,X, and installs reaction/action $24\nClobbers: A, X, Y, flags and score/persistence/reaction scratch"
   },
   {
    "address": 40200,
@@ -13427,12 +13427,12 @@
   {
    "address": 40649,
    "type": "line",
-   "text": "Initialize a projectile trajectory from an actor. Inputs: projectile type, source actor, facing, and coordinates. Outputs: projectile owner, state, origin, direction, and signed velocity are installed. Clobbers: A, X, Y, flags, and projectile state."
+   "text": "Launch the player's projectile, in slot 0: A is its lifetime, which UpdateProjectiles counts down ($0288), and X its kind ($0280). It starts at the player's position ($54, $55) plus the offsets for the player's heading $69 from $A068 and $A069 ($0284, $0286), flies on that heading ($0282), and $0295 is set to $FF. When the X offset carries the start off either side of the play area, the kind is cleared to 0 and nothing is launched. Clobbers: A, X and flags; Y is kept."
   },
   {
    "address": 40698,
    "type": "line",
-   "text": "Advance both projectile slots for elapsed IRQ ticks and remove or resolve projectiles that expire, leave bounds, hit geometry, or overlap an actor\nInputs: tick $E2/$0273; two projectile slots in $0280-$0289; compiled collision geometry and actor positions/extents/health\nOutputs: stamps elapsed delta in $8F/$0273; advances lifetime and coordinates for slots 1 then 0; clears expired/hit slots and applies damage/reaction on actor overlap\nClobbers: A, X, Y, flags and projectile, collision, overlap, damage, and reaction scratch"
+   "text": "Move the two projectile slots on by the ticks since the last call ($E2 less $0273, kept in $8F), slot 1 then slot 0, and return at once when none has passed. Each tick counts down a projectile's lifetime ($0288,X), and it is removed when that runs out. While the lifetime is 8 or more it also moves a step on its heading (the X and Y steps at $A070 and $A071), and it is removed when its X leaves 0-$FC or its Y leaves $22-$B0, or, for kinds 0 and 1, when the scenery in front has masked its sprite to nothing (bytes 1, 4 and 7 of the sprite at $0CC1 or $0EC1 for slot 0, $0DC1 or $0FC1 for slot 1, as $0295 or $0296 is 0 or not, all zero; nothing is tested while it is negative). Then a projectile of kind 0 to 5 is tested against the other side's actor (TestProjectileCollisionBox, $9EA8), unless that actor's action ($6D or $6F, the low two bits aside) is $24 or $0C: slot 1's hits the player, who loses 22 of energy (DamagePlayer, $9C8B), and slot 0's, the player's, hits the enemy while $CB is negative, which loses 44, a full bar (DamageEnemy, $9CA9). A hit starts the actor's reaction ($92F6) and removes the projectile. Kinds 6 and 7 hit nothing. Removing a projectile clears its kind ($0280,X) and its sprite's entries at $0213 and $024B. Clobbers: A, X, Y, flags, $1E and $8F."
   },
   {
    "address": 41003,
@@ -13792,7 +13792,7 @@
   {
    "address": 43217,
    "type": "line",
-   "text": "Render each inactive object image belonging to the current The Sewers area\nInputs: current area $A2; 14-byte records beginning at $A811; persistent active bytes $03D8,Y; inactive scene-record pointer in record bytes 5-6\nOutputs: for each current-area record whose persistent byte is zero and whose inactive pointer high byte is nonzero, loads $02/$03 and tail-enters the recursive scene-record renderer; otherwise scans to the negative-area terminator and returns\nClobbers: A, X, Y, flags, $02/$03, and scene-renderer scratch on a render path"
+   "text": "Draw the picture of the first object record of the current area ($A2) whose item is still in place. It scans the 14-byte records from $A811 to the $FF that ends them, passing over those of other areas, those whose item's flag ($03D8 plus the record's byte 11) is set, and those with no picture (bytes 5 and 6 of the record, a high byte of 0), and tail-enters the scene renderer ($7616) with the first one left in $02/$03: at most one picture is drawn. Clobbers: A, X, Y, flags, $02/$03, and the renderer's scratch when it draws."
   },
   {
    "address": 43259,
@@ -17002,162 +17002,162 @@
   {
    "address": 53737,
    "type": "line",
-   "text": "Extra sprite kind 1: 40 words, each an offset from $D1E9 biased by $C000, to one packed image."
+   "text": "Extra sprite kinds 1, 2 and 3: 40 words, each an offset from $D1E9 biased by $C000, to one packed image. Of these, enemies of this level carry only kind 1 and 3."
   },
   {
    "address": 53817,
    "type": "line",
-   "text": "Extra sprite kind 1, image 0, $D239-$D268: 48 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 0, $D239-$D268: 48 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 53865,
    "type": "line",
-   "text": "Extra sprite kind 1, image 1, $D269-$D299: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 1, $D269-$D299: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 53914,
    "type": "line",
-   "text": "Extra sprite kind 1, image 2, $D29A-$D2D0: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 2, $D29A-$D2D0: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 53969,
    "type": "line",
-   "text": "Extra sprite kind 1, image 3, $D2D1-$D303: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 3, $D2D1-$D303: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54020,
    "type": "line",
-   "text": "Extra sprite kind 1, image 4, $D304-$D337: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 4, $D304-$D337: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54072,
    "type": "line",
-   "text": "Extra sprite kind 1, image 5, $D338-$D36A: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 5, $D338-$D36A: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54123,
    "type": "line",
-   "text": "Extra sprite kind 1, image 6, $D36B-$D39C: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 6, $D36B-$D39C: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54173,
    "type": "line",
-   "text": "Extra sprite kind 1, image 7, $D39D-$D3D4: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 7, $D39D-$D3D4: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54229,
    "type": "line",
-   "text": "Extra sprite kind 1, image 8, $D3D5-$D3FA: 38 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 8, $D3D5-$D3FA: 38 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54267,
    "type": "line",
-   "text": "Extra sprite kind 1, image 9, $D3FB-$D422: 40 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 9, $D3FB-$D422: 40 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54307,
    "type": "line",
-   "text": "Extra sprite kind 1, image 10, $D423-$D446: 36 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 10, $D423-$D446: 36 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54343,
    "type": "line",
-   "text": "Extra sprite kind 1, image 11, $D447-$D46E: 40 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 11, $D447-$D46E: 40 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54383,
    "type": "line",
-   "text": "Extra sprite kind 1, image 12, $D46F-$D4A0: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 12, $D46F-$D4A0: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54433,
    "type": "line",
-   "text": "Extra sprite kind 1, image 13, $D4A1-$D4CE: 46 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 13, $D4A1-$D4CE: 46 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54479,
    "type": "line",
-   "text": "Extra sprite kind 1, image 14, $D4CF-$D4FF: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 14, $D4CF-$D4FF: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54528,
    "type": "line",
-   "text": "Extra sprite kind 1, image 15, $D500-$D530: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 15, $D500-$D530: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54577,
    "type": "line",
-   "text": "Extra sprite kind 1, image 16, $D531-$D566: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 16, $D531-$D566: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54631,
    "type": "line",
-   "text": "Extra sprite kind 1, image 17, $D567-$D592: 44 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 17, $D567-$D592: 44 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54675,
    "type": "line",
-   "text": "Extra sprite kind 1, image 18, $D593-$D5BE: 44 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 18, $D593-$D5BE: 44 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54719,
    "type": "line",
-   "text": "Extra sprite kind 1, image 19, $D5BF-$D5DC: 30 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 19, $D5BF-$D5DC: 30 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54749,
    "type": "line",
-   "text": "Extra sprite kind 1, image 20, $D5DD-$D611: 53 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 20, $D5DD-$D611: 53 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54802,
    "type": "line",
-   "text": "Extra sprite kind 1, image 21, $D612-$D640: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 21, $D612-$D640: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54849,
    "type": "line",
-   "text": "Extra sprite kind 1, image 22, $D641-$D673: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 22, $D641-$D673: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54900,
    "type": "line",
-   "text": "Extra sprite kind 1, image 23, $D674-$D6A5: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 23, $D674-$D6A5: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 54950,
    "type": "line",
-   "text": "Extra sprite kind 1, image 24, $D6A6-$D6DA: 53 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 24, $D6A6-$D6DA: 53 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55003,
    "type": "line",
-   "text": "Extra sprite kind 1, image 25, $D6DB-$D70B: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 25, $D6DB-$D70B: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55052,
    "type": "line",
-   "text": "Extra sprite kind 1, image 26, $D70C-$D73D: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 26, $D70C-$D73D: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55102,
    "type": "line",
-   "text": "Extra sprite kind 1, image 27, $D73E-$D76E: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 27, $D73E-$D76E: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55151,
    "type": "line",
-   "text": "Extra sprite kind 1, image 28, $D76F-$D7A1: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 28, $D76F-$D7A1: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55202,
    "type": "line",
-   "text": "Extra sprite kind 1, image 29, $D7A2-$D7D8: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 29, $D7A2-$D7D8: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55257,
    "type": "line",
-   "text": "Extra sprite kind 1, image 30, $D7D9-$D80A: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 30, $D7D9-$D80A: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55296,
@@ -17167,32 +17167,32 @@
   {
    "address": 55307,
    "type": "line",
-   "text": "Extra sprite kind 1, image 31, $D80B-$D839: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 31, $D80B-$D839: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55354,
    "type": "line",
-   "text": "Extra sprite kind 1, image 32, $D83A-$D862: 41 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 32, $D83A-$D862: 41 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55395,
    "type": "line",
-   "text": "Extra sprite kind 1, image 33, $D863-$D885: 35 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 33, $D863-$D885: 35 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55430,
    "type": "line",
-   "text": "Extra sprite kind 1, image 34, $D886-$D8AD: 40 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 34, $D886-$D8AD: 40 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55470,
    "type": "line",
-   "text": "Extra sprite kind 1, image 35, $D8AE-$D8DA: 45 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 35, $D8AE-$D8DA: 45 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55515,
    "type": "line",
-   "text": "Extra sprite kind 1, image 36, $D8DB-$D90B: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 36, $D8DB-$D90B: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55552,
@@ -17202,17 +17202,17 @@
   {
    "address": 55564,
    "type": "line",
-   "text": "Extra sprite kind 1, image 37, $D90C-$D93D: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 37, $D90C-$D93D: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55614,
    "type": "line",
-   "text": "Extra sprite kind 1, image 38, $D93E-$D967: 42 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 38, $D93E-$D967: 42 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55656,
    "type": "line",
-   "text": "Extra sprite kind 1, image 39, $D968-$D998: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 1, 2 and 3, image 39, $D968-$D998: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 55705,
@@ -17442,207 +17442,207 @@
   {
    "address": 57793,
    "type": "line",
-   "text": "Extra sprite kind 5: 40 words, each an offset from $E1C1 biased by $C000, to one packed image."
+   "text": "Extra sprite kinds 5 and 6: 40 words, each an offset from $E1C1 biased by $C000, to one packed image. Of these, enemies of this level carry only kind 6."
   },
   {
    "address": 57873,
    "type": "line",
-   "text": "Extra sprite kind 5, image 0, $E211-$E247: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 0, $E211-$E247: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 57928,
    "type": "line",
-   "text": "Extra sprite kind 5, image 1, $E248-$E27F: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 1, $E248-$E27F: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 57984,
    "type": "line",
-   "text": "Extra sprite kind 5, image 2, $E280-$E2B9: 58 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 2, $E280-$E2B9: 58 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58042,
    "type": "line",
-   "text": "Extra sprite kind 5, image 3, $E2BA-$E2EF: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 3, $E2BA-$E2EF: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58096,
    "type": "line",
-   "text": "Extra sprite kind 5, image 4, $E2F0-$E325: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 4, $E2F0-$E325: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58150,
    "type": "line",
-   "text": "Extra sprite kind 5, image 5, $E326-$E35D: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 5, $E326-$E35D: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58206,
    "type": "line",
-   "text": "Extra sprite kind 5, image 6, $E35E-$E395: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 6, $E35E-$E395: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58262,
    "type": "line",
-   "text": "Extra sprite kind 5, image 7, $E396-$E3CF: 58 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 7, $E396-$E3CF: 58 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58320,
    "type": "line",
-   "text": "Extra sprite kind 5, image 8, $E3D0-$E3FD: 46 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 8, $E3D0-$E3FD: 46 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58366,
    "type": "line",
-   "text": "Extra sprite kind 5, image 9, $E3FE-$E42D: 48 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 9, $E3FE-$E42D: 48 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58414,
    "type": "line",
-   "text": "Extra sprite kind 5, image 10, $E42E-$E456: 41 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 10, $E42E-$E456: 41 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58455,
    "type": "line",
-   "text": "Extra sprite kind 5, image 11, $E457-$E48C: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 11, $E457-$E48C: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58509,
    "type": "line",
-   "text": "Extra sprite kind 5, image 12, $E48D-$E4BF: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 12, $E48D-$E4BF: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58560,
    "type": "line",
-   "text": "Extra sprite kind 5, image 13, $E4C0-$E4F1: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 13, $E4C0-$E4F1: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58610,
    "type": "line",
-   "text": "Extra sprite kind 5, image 14, $E4F2-$E524: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 14, $E4F2-$E524: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58661,
    "type": "line",
-   "text": "Extra sprite kind 5, image 15, $E525-$E553: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 15, $E525-$E553: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58708,
    "type": "line",
-   "text": "Extra sprite kind 5, image 16, $E554-$E58B: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 16, $E554-$E58B: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58764,
    "type": "line",
-   "text": "Extra sprite kind 5, image 17, $E58C-$E5BA: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 17, $E58C-$E5BA: 47 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58811,
    "type": "line",
-   "text": "Extra sprite kind 5, image 18, $E5BB-$E5EB: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 18, $E5BB-$E5EB: 49 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58860,
    "type": "line",
-   "text": "Extra sprite kind 5, image 19, $E5EC-$E60D: 34 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 19, $E5EC-$E60D: 34 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58894,
    "type": "line",
-   "text": "Extra sprite kind 5, image 20, $E60E-$E645: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 20, $E60E-$E645: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 58950,
    "type": "line",
-   "text": "Extra sprite kind 5, image 21, $E646-$E67C: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 21, $E646-$E67C: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59005,
    "type": "line",
-   "text": "Extra sprite kind 5, image 22, $E67D-$E6B5: 57 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 22, $E67D-$E6B5: 57 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59062,
    "type": "line",
-   "text": "Extra sprite kind 5, image 23, $E6B6-$E6EB: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 23, $E6B6-$E6EB: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59116,
    "type": "line",
-   "text": "Extra sprite kind 5, image 24, $E6EC-$E725: 58 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 24, $E6EC-$E725: 58 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59174,
    "type": "line",
-   "text": "Extra sprite kind 5, image 25, $E726-$E75C: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 25, $E726-$E75C: 55 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59229,
    "type": "line",
-   "text": "Extra sprite kind 5, image 26, $E75D-$E794: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 26, $E75D-$E794: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59285,
    "type": "line",
-   "text": "Extra sprite kind 5, image 27, $E795-$E7CC: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 27, $E795-$E7CC: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59341,
    "type": "line",
-   "text": "Extra sprite kind 5, image 28, $E7CD-$E805: 57 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 28, $E7CD-$E805: 57 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59398,
    "type": "line",
-   "text": "Extra sprite kind 5, image 29, $E806-$E841: 60 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 29, $E806-$E841: 60 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59458,
    "type": "line",
-   "text": "Extra sprite kind 5, image 30, $E842-$E879: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 30, $E842-$E879: 56 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59514,
    "type": "line",
-   "text": "Extra sprite kind 5, image 31, $E87A-$E8AC: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 31, $E87A-$E8AC: 51 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59565,
    "type": "line",
-   "text": "Extra sprite kind 5, image 32, $E8AD-$E8DE: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 32, $E8AD-$E8DE: 50 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59615,
    "type": "line",
-   "text": "Extra sprite kind 5, image 33, $E8DF-$E904: 38 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 33, $E8DF-$E904: 38 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59653,
    "type": "line",
-   "text": "Extra sprite kind 5, image 34, $E905-$E931: 45 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 34, $E905-$E931: 45 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59698,
    "type": "line",
-   "text": "Extra sprite kind 5, image 35, $E932-$E965: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 35, $E932-$E965: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59750,
    "type": "line",
-   "text": "Extra sprite kind 5, image 36, $E966-$E999: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 36, $E966-$E999: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59802,
    "type": "line",
-   "text": "Extra sprite kind 5, image 37, $E99A-$E9CF: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 37, $E99A-$E9CF: 54 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59856,
    "type": "line",
-   "text": "Extra sprite kind 5, image 38, $E9D0-$E9FD: 46 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 38, $E9D0-$E9FD: 46 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59902,
    "type": "line",
-   "text": "Extra sprite kind 5, image 39, $E9FE-$EA31: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
+   "text": "Extra sprite kinds 5 and 6, image 39, $E9FE-$EA31: 52 bytes that unpack to the 63 bytes of one sprite image, as the packed sprites do."
   },
   {
    "address": 59954,
