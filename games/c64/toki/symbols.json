@@ -6122,9 +6122,9 @@
   },
   {
    "address": 26943,
-   "name": "s_693F",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "advance_effect_voice_script",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 26975,
@@ -6140,9 +6140,9 @@
   },
   {
    "address": 27012,
-   "name": "b_6984",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "effect_voice_run_command",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 27028,
@@ -6860,9 +6860,9 @@
   },
   {
    "address": 33429,
-   "name": "s_8295",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "level_timer_tick",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 33503,
@@ -6872,9 +6872,9 @@
   },
   {
    "address": 33506,
-   "name": "b_82E2",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "draw_level_timer",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 33536,
@@ -8528,9 +8528,9 @@
   },
   {
    "address": 37494,
-   "name": "j_9276",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "player_step_check_first_dir",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 37506,
@@ -8558,9 +8558,9 @@
   },
   {
    "address": 37549,
-   "name": "j_92AD",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "player_step_check_second_dir",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 37582,
@@ -10754,9 +10754,15 @@
   },
   {
    "address": 46458,
-   "name": "s_B57A",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "advance_object_animation",
+   "type": "code",
+   "kind": "user"
+  },
+  {
+   "address": 46503,
+   "name": "reselect_object_animation_frame",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 46514,
@@ -14535,6 +14541,21 @@
    "text": "Handles a command byte (bit 7 set) in a voice script: looks the handler address up in the tables at $6549,x/$6557,x, patches it into the jump at $6936 (operand $6937/$6938), restores X from $FF and jumps to the common command parser at $6C88."
   },
   {
+   "address": 26943,
+   "type": "line",
+   "text": "Advances one voice's event script in the second table set at $651B/$651E (script pointer, copied to $F7/$F8), $6515 (position) and $656B (duration counter), with X = voice number from $FF. Role inferred: a sibling of advance_voice_script for sound effects or a separate voice group; it is called with jsr from the stub at $6939 which then jumps to advance_voice_script. Clears $65A9,x, and clears the hold flag $658E,x once the duration counter has run out. A script byte below $F0 is a note: its pointer is fetched from $70CC/$70F5 into $F5/$F6, the duration counter is counted down and the position advances when it is spent."
+  },
+  {
+   "address": 27008,
+   "type": "line",
+   "text": "Counter spent (or zero): step the voice's script position on by one byte and return."
+  },
+  {
+   "address": 27012,
+   "type": "line",
+   "text": "Script byte of $F0 or more is a command: the handler address is taken from the tables at $64F5 and $64FB, indexed by the command byte, and written into the operand of the jmp at $6993 (the bytes $6994/$6995), then X is restored from $FF and the jmp runs (initially jumps to $69BF; the first handler sets $658E,x from the next script byte and skips two bytes). Patching a jmp operand is the same trick dispatch_voice_command uses at $6936."
+  },
+  {
    "address": 27912,
    "type": "line",
    "text": "Music engine: advances one voice (X = 0 to 2) by one frame. If the voice is enabled ($6576,x), counts down its note timer $6511,x; when it reaches zero it reads the next 3-byte event (duration, two data bytes) from the stream at $7277 or, when $6533,x is zero, from $7184, using the voice's position $6536,x. A zero duration byte is a jump: the next byte becomes the new stream position. The two data bytes go to $65A3,x and $65A6,x. Every frame it then adds that pair to the 16-bit accumulator $6562,x/$6565,x, which looks like the voice's pitch (slide or vibrato step); that reading is inferred."
@@ -14588,6 +14609,26 @@
    "address": 33179,
    "type": "line",
    "text": "Wait for frame_flag to change once more, clear it and allow interrupts, then check for a cleared stage (bit 5 of $3592 at the current position $08CC): if so, increment stage and play the stage-clear sequence."
+  },
+  {
+   "address": 33429,
+   "type": "line",
+   "text": "Level countdown timer, called once per frame (inferred). $0898 counts frames down from $19 (25); each wrap ticks the clock digits $089B (units, 9..0), $089A (tens, 5..0) and $0899 (minutes) down like a minutes:seconds display. When the minutes count below zero the time has run out: the digits are set to zero and the routine runs the time-out sequence (calls $0B8C and $8E2F; the player is killed there, inferred). Falls into draw_level_timer for the other frames."
+  },
+  {
+   "address": 33464,
+   "type": "line",
+   "text": "Time is up: zero the clock digits, clear player_mode, set jump_state and player_hit to $FF (the same flags a hit sets, so the player dies) and jump_counter to $10, then play sound $24."
+  },
+  {
+   "address": 33494,
+   "type": "line",
+   "text": "If $DF is non-zero (queue_sound refuses new effects then), the sound $25 is started through $6ED8 instead (role of $6ED8 inferred from the call). Then hit_save_pos records where the player died."
+  },
+  {
+   "address": 33506,
+   "type": "line",
+   "text": "Draws the clock: each digit ($0899, $089A, $089B) plus $C1 is stored in the status-line cells $7FAE, $7FB0 and $7FB1 (the cell between them, $7FAF, is skipped; the $C1 digit base is read from the code, the glyphs are not checked here). Carry is clear going in, so the adds do not chain."
   },
   {
    "address": 33662,
@@ -14963,6 +15004,21 @@
    "address": 37278,
    "type": "line",
    "text": "Second half of mode 1 movement, reached from player_mode1_step. When $08FF is negative it is set to 0, and when it is positive nothing more happens. When $08FF is zero and $0B is non-zero, move_dir ($0D) of $07 goes to $9276 and $0B to $92AD. When $0B is zero, $0E goes to mode1_up_end ($91CF), $0D to $91EB, and left (bit 2 clear) or right (bit 3 clear) to $9207 or $921C, which move player_x by 8 and start a jump back in mode 0. mode1_up_end probes with $9D17; when $0291 is non-zero it commits Y with $4256, otherwise it sets player_third_on ($0913) to 0, $0903 to 1, and $08FF to 2."
+  },
+  {
+   "address": 37494,
+   "type": "line",
+   "text": "Resolve a player move step: probe the tiles around the player (probe_player_tiles). If any of $E1-$E3 has bit 0 set the move is blocked and the routine ends at $92AC. Otherwise it continues at $9283, which undoes the horizontal move and probes again. Entry is the sibling of $92AD; which direction each serves is inferred, not traced."
+  },
+  {
+   "address": 37507,
+   "type": "line",
+   "text": "First probe found no wall: restore_player_x puts the player back at the previous x and the tiles are probed again (player_probe_tiles_and_platforms). If bit 0 of $E1 is clear it returns. Otherwise: with joy_bits bit 1 set, $18 becomes 7 and player_action 1 (via $92CE); with it clear, $18 and move_dir become 5 and $0299 becomes 1. Both clear player_mode, jump_state and slope_kind. The meaning of the codes is inferred."
+  },
+  {
+   "address": 37549,
+   "type": "line",
+   "text": "Second variant of the move-step check: probes with $9BF6 and returns if bit 0 of $E1, $E2 or $E3 is set; otherwise restores x (restore_player_x) and re-probes. If bit 0 of $E3 is then set: with joy_bits bit 1 set, $18 becomes $0B and player_action 1 (via $92CE); with it clear, $18 and move_dir become 9 and $0299 becomes 1 (via $9272). Both clear player_mode, jump_state and slope_kind. Direction meaning inferred."
   },
   {
    "address": 37599,
@@ -15553,6 +15609,21 @@
    "address": 46324,
    "type": "line",
    "text": "No bounce height left: land for good, and stop the table handler by clearing bit 5 of obj_flags."
+  },
+  {
+   "address": 46458,
+   "type": "line",
+   "text": "Advances one object's animation. X is the object slot. The object's obj_frame indexes the pointer tables at ($3A) and ($3C), giving the animation data block in $E5/$E6. If bit 0 of obj_state is set, the per-object delay $3A60,x counts down; when it passes zero it is reloaded from $3535,x and the frame index $3EBC,x goes up by one, wrapping to 0 at the count in the block's first byte."
+  },
+  {
+   "address": 46503,
+   "type": "line",
+   "text": "Alternate entry (no caller found in this range): reloads the data block pointer $E5/$E6 for the object's obj_frame without advancing the frame index, then falls into the common code at $B5B2."
+  },
+  {
+   "address": 46514,
+   "type": "line",
+   "text": "Common end: store the frame index, then read that frame's pair of bytes (at offset 5 + 2 x index of the data block) into $3B1A,x and $3B77,x (and copies in $EB/$EC), and set $3ABD,x to $38 minus the block's byte 4. What those fields are drawn from (offsets or sizes) is inferred, not traced."
   },
   {
    "address": 47311,
