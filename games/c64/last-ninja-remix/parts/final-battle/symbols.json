@@ -4885,19 +4885,19 @@
   },
   {
    "address": 41393,
-   "name": "AiTriggerAreaStatus2CEncounter",
+   "name": "AiGetUpWhenEnergyRefilled",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 41420,
-   "name": "AiTriggerAreaStatus2CEncounterLocala1cc",
+   "name": "AiGetUpWhenEnergyRefilledLocala1cc",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 41435,
-   "name": "AiTriggerAreaStatus2CEncounterLocala1db",
+   "name": "AiGetUpWhenEnergyRefilledLocala1db",
    "type": "Branch",
    "kind": "user"
   },
@@ -4909,25 +4909,25 @@
   },
   {
    "address": 41448,
-   "name": "AiTriggerAreaStatus2CEncounterLocala1e8",
+   "name": "AiGetUpWhenEnergyRefilledLocala1e8",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 41472,
-   "name": "AiTriggerAreaStatus2CEncounterLocala200",
+   "name": "AiGetUpWhenEnergyRefilledLocala200",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 41476,
-   "name": "AiTriggerAreaStatus2CEncounterLocala204",
+   "name": "AiGetUpWhenEnergyRefilledLocala204",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 41484,
-   "name": "AiTriggerAreaStatus2CEncounterLocala20c",
+   "name": "AiGetUpWhenEnergyRefilledLocala20c",
    "type": "Branch",
    "kind": "user"
   },
@@ -5989,7 +5989,7 @@
   },
   {
    "address": 44242,
-   "name": "ComposeSpritesMaskedMode",
+   "name": "ComposeEnemySprites",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -12951,7 +12951,7 @@
   {
    "address": 39371,
    "type": "line",
-   "text": "Compose an actor's current frame and hide the parts behind the area's foreground pictures. Inputs: X and $4F the actor offset (0 player, 2 enemy) and current animation frame $65,X; the mirror flag is $5D,X when $5C,X bit 4 is set, else $5C,X bit 6; depth $74,X. Outputs: the player is composed into sprite slots 0-3 with ComposeSprites, the enemy into slots 4-7 with ComposeSpritesMaskedMode; MaskActorSpritesBehindScenery then clears the sprite pixels behind the foreground pictures and stages the slots in $0240-$025F. X is not restored: it returns as 4 for the player and 8 for the enemy. Clobbers: A, X, Y, flags, and shared renderer scratch. Hardware: changes sprite or image RAM only directly."
+   "text": "Compose an actor's current frame and hide the parts behind the area's foreground pictures. Inputs: X and $4F the actor offset (0 player, 2 enemy) and current animation frame $65,X; the mirror flag is $5D,X when $5C,X bit 4 is set, else $5C,X bit 6; depth $74,X. Outputs: the player is composed into sprite slots 0-3 with ComposeSprites, the enemy into slots 4-7 with ComposeEnemySprites; MaskActorSpritesBehindScenery then clears the sprite pixels behind the foreground pictures and stages the slots in $0240-$025F. X is not restored: it returns as 4 for the player and 8 for the enemy. Clobbers: A, X, Y, flags, and shared renderer scratch. Hardware: changes sprite or image RAM only directly."
   },
   {
    "address": 39416,
@@ -13251,22 +13251,22 @@
   {
    "address": 40940,
    "type": "line",
-   "text": "Steer the enemy toward the player. Inputs: the player's position and heading ($54/$55, $68), the enemy's position ($56/$57), its profile $72 and behaviour $CB, the positions kept in $028A/$028B and $028E/$028F, and the tick $E2. It aims at a point level with the player, as far to one side as the profile's entry in $A3ED says, on the side the enemy is on (judged from the player's X moved 8 pixels the way the player faces). Within a Manhattan distance of 6 of that point, or when the point would fall off the screen, it goes to RetargetAiToPlayer ($A029): that keeps the player's position in $028A/$028B, faces the enemy toward the player and enters state 6. It also holds the enemy's X between 4 and $F7, retargeting when it has to. With $CB at $80 and the player 56 or more away, it enters state 9 when the player is at least as far from the position in $028E/$028F as the enemy is (half the X distance plus half the Y distance each), and keeps the player's position there. Otherwise it turns the enemy toward the point (a turn that changes bit 2 of the heading waits until 20 ticks have passed since the last, kept in $02BE) and sets the heading $6A, from the table at $A3F4 when the vertical distance is the larger. Outputs: $6A, $6B, $6F, $CF and the enemy's action. Clobbers: A, X, Y, flags, $1C-$21, $56, $028A/$028B, $028E/$028F and $02BE."
+   "text": "Steer the enemy toward the player. Inputs: the player's position ($54/$55) and joystick heading $68, the enemy's position ($56/$57) and heading $6B, its profile $72 and behaviour $CB, the positions kept in $028A/$028B and $028E/$028F, and the tick $E2. It aims at a point level with the player, as far to one side as the profile's entry in $A3ED says, on the side the enemy is on, judged against the player's X less 8 when $68 is 0 to 3, plus 8 when it is 4 to 7, or unchanged when $68 is negative. When that point is less than 6 away from the enemy (Manhattan distance), or when the point would fall off the screen, it goes to RetargetAiToPlayer ($A029): that keeps the player's position in $028A/$028B, faces the enemy toward the player and enters state 6. It also holds the enemy's X between 4 and $F7, retargeting when it has to. With $CB at $80 and the player 56 or more away, it enters state 9 when the player is at least as far from the position in $028E/$028F as the enemy is (half the X distance plus half the Y distance each), and keeps the player's position there. Otherwise, when the heading toward the point and the heading toward the player differ in bit 2, it retargets one time in 16 (a random byte below $10) if the player is less than 8 away vertically. Then it turns the enemy toward the point (a turn that changes bit 2 of the heading waits until 20 ticks have passed since the last, kept in $02BE) and sets the heading $6A from the table at $A3F4: the entry before $6B when a quarter of the horizontal distance to the point is less than the vertical one, the entry for $6B when the vertical distance is under 4, and $6B itself otherwise. Outputs: $6A, $6B, $6F, $CF and the enemy's action. Clobbers: A, X, Y, flags, $1C-$21, $56, $028A/$028B, $028E/$028F, $02BE and the random-number state $F9-$FB."
   },
   {
    "address": 41001,
    "type": "line",
-   "text": "Retarget the Final Battle playable phase's opponent AI to the player's current coordinates.\nInputs: Player coordinates are $54/$55; opponent target/heading state and the phase PRNG are initialized.\nOutputs: Copies $54/$55 to $028A/$028B, chooses a random heading into $6A/$6B, applies the heading helper, blends toward zero into $6F, sets $CF=6, and returns.\nClobbers: A, X, processor flags, PRNG state $F9-$FB, helper scratch, $028A/$028B, $6A/$6B/$6F, and $CF; Y is preserved.\nHardware: No hardware registers are written; each PRNG call reads CIA 1 Timer A low at $DC04 and reads high at $DC05 only on reseeding."
+   "text": "Retarget the Final Battle playable phase's opponent AI to the player's current coordinates.\nInputs: Player coordinates are $54/$55 and the enemy's are $56/$57.\nOutputs: Copies $54/$55 to $028A/$028B, sets $6A/$6B to the diagonal heading from the enemy toward the player (ClassifyRelativeActorQuadrant), installs that heading's action from the table at $A48B (InstallAiActionByDirection with X=4), sets $6F to mode class 0 plus the heading (the heading shifted right once), sets $CF=6, and returns.\nClobbers: A, X, Y (left 0), processor flags, $1F, the enemy's animation fields $5A/$5B/$5E/$5F/$62/$63, $028A/$028B, $6A/$6B/$6F, and $CF.\nHardware: No hardware registers are read or written."
   },
   {
    "address": 41248,
    "type": "line",
-   "text": "Choose between an immediate recovery/timer state and a randomized attack setup from the player's current actor mode.\nInputs: Player actor mode $6D, behavior selector $72, tick $E2, random source, opponent heading $6B, and AI sequence counter $02BD.\nOutputs: If ($6D&$FC)==$24, sets $CF=8, snapshots $E2 to $0276, and stores a random byte in $D5; otherwise selects a bounded random action/setup, sets $CF=7, and increments $02BD.\nClobbers: A, X, flags, $CF, $0276, $D5, $6F, $02BD, and helper scratch."
+   "text": "Choose between an immediate recovery/timer state and a randomized attack setup from the player's current actor mode.\nInputs: Player actor mode $6D, behavior selector $72, tick $E2, random source, opponent heading $6B, and AI sequence counter $02BD.\nOutputs: If ($6D&$FC)==$24, sets $CF=8, snapshots $E2 to $0276, and stores a random byte in $D5; otherwise selects a bounded random action/setup, sets $CF=7, and increments $02BD.\nClobbers: A, X, Y (left 0 on the attack path), flags, $CF, $0276, $D5, $6F, $02BD, the random-number state $F9-$FB, and helper scratch."
   },
   {
    "address": 41271,
    "type": "line",
-   "text": "Choose and install a random close-range opponent action for the Final Battle playable phase.\nInputs: Opponent/player proximity tests have reached the close-range branch; orientation $72, animation state, and PRNG are current.\nOutputs: Selects a bounded random variant, installs its animation/heading parameters through the phase helpers, sets $CF=7, increments $02BD, and returns.\nClobbers: A, X, processor flags, PRNG state $F9-$FB, helper scratch, action/animation state, $CF, and $02BD; Y is preserved.\nHardware: No hardware registers are written; each PRNG call reads CIA 1 Timer A low at $DC04 and reads high at $DC05 only on reseeding."
+   "text": "Choose and install a random close-range opponent action for the Final Battle playable phase.\nInputs: Opponent/player proximity tests have reached the close-range branch; the enemy's profile $72 (zero allows two variants, nonzero four), its heading $6B, animation state, and PRNG are current.\nOutputs: Selects a bounded random variant, installs its animation/heading parameters through the phase helpers, sets $CF=7, increments $02BD, and returns.\nClobbers: A, X, Y (left 0), processor flags, PRNG state $F9-$FB, helper scratch, action/animation state, $CF, and $02BD.\nHardware: No hardware registers are written; each PRNG call reads CIA 1 Timer A low at $DC04 and reads high at $DC05 only on reseeding."
   },
   {
    "address": 41307,
@@ -13281,17 +13281,17 @@
   {
    "address": 41379,
    "type": "line",
-   "text": "Wait for both opponent animation completion and projectile slot 1 inactivity, then reset through AI state 5.\nInputs: Opponent animation pointer high byte $63 and projectile slot-1 state $0281.\nOutputs: Returns if either field is nonzero; when both are zero, tail-enters the state-5 reset at $9F21.\nClobbers: A, flags, and on reset A/X plus $CF/$6A/$6B/$6F and helper scratch."
+   "text": "Wait for both opponent animation completion and projectile slot 1 inactivity, then reset through AI state 5.\nInputs: Opponent animation pointer high byte $63 and projectile slot-1 state $0281.\nOutputs: Returns if either field is nonzero; when both are zero, tail-enters the state-5 reset at $9F21.\nClobbers: A, flags, and on reset A/X/Y (Y left 0) plus $CF/$6A/$6B/$6F, $1F, the enemy's animation fields and helper scratch."
   },
   {
    "address": 41392,
    "type": "line",
-   "text": "Return at once, for the enemy states that do nothing. Its RTS returns to the code that called OpponentAI: the address the dispatcher pushed at $9EC5-$9ECC was used up by the RTS at $9ECD that jumped here. Inputs and outputs: none. Clobbers: nothing."
+   "text": "Return at once, for state 10, the one enemy state that does nothing (its word in the dispatch table at $9ED1 is $A1AF). Its RTS returns to the code that called OpponentAI: the address the dispatcher pushed at $9EC5-$9ECC was used up by the RTS at $9ECD that jumped here. Inputs and outputs: none. Clobbers: nothing."
   },
   {
    "address": 41393,
    "type": "line",
-   "text": "Test the current area's persistent opponent record for subtype $2C and, when its spatial conditions apply, consume its high flag and start AI state 7 with a heading-selected animation.\nInputs: Area index $A2, persistent status array $012D+, player/opponent positions $54-$57, heading $6B, and animation pointers $B63F/$B635.\nOutputs: On a qualifying record, clears status bit 7, sets $CF=7, installs one of two animations according to heading bit 2, and writes $0236=6; otherwise returns without transition.\nClobbers: A, X, flags, selected $012D+ status, $CF, enemy animation state $5A/$5E/$62/$63, and $0236."
+   "text": "Let a defeated enemy get up again once its energy has refilled (AI state 11, which SpawnEnemy sets for an enemy restored as defeated).\nInputs: Area index $A2, the area's defeat byte $012D,X, the ticks $E2/$F0 and the defeat time $0175,X/$0187,X, player/opponent positions $54-$57, heading $6B, and animation pointers $B63F/$B635.\nOutputs: Returns at once while $012D,X is $FF (beaten for good). Otherwise rebuilds the enemy's energy from the ticks since its defeat (RebuildEnemyMeterFromElapsedTicks, which writes $022A and $3F92,X); when that has reached 44 and the player is not within 12 horizontally and 6 vertically, clears bit 7 of $012D,X, sets $CF=7, installs the animation at $B63F (heading bit 2 clear) or $B635 (bit 2 set) through InstallAiScript ($9E22), and writes $0236=6; otherwise returns without transition.\nClobbers: A, X, Y, flags, $1E/$1F, $022A, $3F92,X, and when the enemy gets up $012D,X, $CF, enemy animation state $5A/$5E/$62/$63, and $0236."
   },
   {
    "address": 41439,
@@ -13301,22 +13301,22 @@
   {
    "address": 41486,
    "type": "line",
-   "text": "Consume the Final Battle playable phase's pending opponent target identifier and update the AI target history/state.\nInputs: $02B0 is the pending target ID or $FF; $02B3/$02A4/$02A5 and opponent AI state are current.\nOutputs: Reads then clears $02B0 to $FF, ignores the sentinel, otherwise rotates target history as needed and dispatches the matching target/approach behavior.\nClobbers: A, X, Y, processor flags, $02B0, $02B3/$02A4/$02A5, and AI action/target scratch on non-sentinel paths.\nHardware: No direct hardware-register writes."
+   "text": "Handle what the enemy's last move ran into.\nInputs: $02B0 is the offset of the compiled collision record the enemy's move hit (stored by MoveEnemy at $9892) or $FF; $02B1 counts moves that left the play area and $02B2 other blocked moves; $02B3 is the record being followed and $02A4/$02A5 the last two records hit.\nOutputs: Reads $02B0 and sets it to $FF. With a record: unless it is already $02B3 it becomes $02B3, is pushed into $02A4 (the old $02A4 into $02A5) when it is not $02A4, and ChooseEnemyFacingFromContactState picks the heading, with A=2 when it equals the old $02A5 and A=0 otherwise. Then a nonzero $02B1 clears $02B1/$02B2, sets $02B3=$FF and enters state 5 (AiFacePlayerQuadrant); a nonzero $02B2 clears it, sets $02B3=$FF and retargets ($A029); otherwise it enters state $0D, clears both and runs AiTrackSelectedCollisionRecord. With $FF: when the player is less than 14 away (Manhattan) it clears $02B1/$02B2, sets $02B3=$FF and either sets $CF=5 with action mode 8 (horizontal distance under 12) or retargets; otherwise it enters state 5 when $02B1 is nonzero, or retargets.\nClobbers: A, X, Y, processor flags, $1C/$1D, $02B0-$02B3, $02A4/$02A5, $CF, and AI action/heading state on every path.\nHardware: No direct hardware-register writes."
   },
   {
    "address": 41652,
    "type": "line",
-   "text": "Validate the selected collision-record index against the opponent's X position and either reset the selection, resume navigation, or continue heading/distance analysis.\nInputs: Selected record index $02B3, collision-record coordinate arrays $F460/$F462 indexed by X, opponent position $56/$57, player position $54/$55, and current heading $6B.\nOutputs: Clears $02B3 and resets to state 5 when the record is absent/out of range; may resume navigation at $A029 for near conditions; otherwise derives a heading/distance decision and continues through the shared AI tail.\nClobbers: A, X, flags, $02B3, $1C-$21, $6A/$6B, $CF, and helper scratch."
+   "text": "Follow the collision record the enemy ran into (AI state $0D) and give it up when the enemy has passed it or the player comes near.\nInputs: Selected record offset $02B3 ($FF for none), the record's start and end X at $F460,X/$F462,X, opponent position $56/$57, player position $54/$55, current heading $6B, the side bit $02B5, and the tick $E2.\nOutputs: Sets $02B3 to $FF and enters state 5 (AiFacePlayerQuadrant) when there is no record or the enemy's X is 8 or more below the record's start X or 4 or more above its end X; sets $02B3 to $FF and retargets at $A029 when the player is less than 14 away (Manhattan distance); sets $02B3 to $FF, keeps $E2 in $02BE and enters state 5 when the enemy is heading straight away from the player, 8 or more away horizontally, and the player's vertical side matches $02B5; otherwise returns with nothing changed.\nClobbers: A, X, Y, flags, $02B3, $02BE, $1C/$1D, $1F, $6A/$6B, $6F, $CF, and helper scratch."
   },
   {
    "address": 41756,
    "type": "line",
-   "text": "Choose enemy facing and action from contact geometry. Inputs: A is desired input, X is the contact selector or sentinel, and actor positions are valid. Outputs: $6A/$6B facing state and possibly the AI script are updated. Clobbers: A, X, Y, flags, and AI state."
+   "text": "Choose enemy facing and action from contact geometry. Inputs: A is 0 or 2 (2 when the record just hit is the one hit before the last), X is the previously followed record offset or $FF, and the enemy's heading $6B, the actor positions, the side bits $02B4/$02B5 and the record's byte 4 at $F464,$02B3 are valid. Outputs: $6A/$6B are set from the table at $A3AD (reversed when X is not $FF and $02B4 differs from $02B5), the action is reinstalled when the heading changed, action mode 8 is set, $02B5 takes $02B4, and for a record whose byte 4 AND $3E is 5 or more $6A is replaced from $A39D; a negative table entry hangs in a loop that increments the border colour. Clobbers: A, X, Y, flags, $1E/$1F, and AI state."
   },
   {
    "address": 41885,
    "type": "line",
-   "text": "16 direction-selection bytes read at $A38F after doubling contact selector $1E and incorporating compiled-record bit $40. Nonnegative result becomes desired heading $6A; a negative entry takes the visible red-border trap loop $A397."
+   "text": "16 direction-selection bytes read at $A38F, for a record whose byte 4 AND $3E is 5 or more. The index is half the enemy's heading $6B, then bit 0 of $02B4, then whether the record's bit 6 ($40) is set, shifted in in that order. Nonnegative result becomes desired heading $6A; a negative entry takes the trap loop at $A397, which increments the border colour $D020 for ever."
   },
   {
    "address": 41901,
@@ -13331,12 +13331,12 @@
   {
    "address": 41972,
    "type": "line",
-   "text": "Eight headings, read at $A115 once the distances to the target are in $1C and $1D ($A423). When a quarter of $1C is less than $1D the entry read is the one before the enemy's heading $6B (the SBC #$00 at $A112 runs with the carry clear, so heading 0 reads $A3F3, the byte before the table); otherwise, when $1D is less than 4, it is the entry for $6B itself. The entry becomes the enemy's new heading $6A, which is $6B unchanged when neither holds. The table ends at $A3FB, before PutOutCandles ($A3FC)."
+   "text": "Eight headings, read at $A115 once the distances to the target are in $1C and $1D ($A423). When a quarter of $1C is less than $1D the entry read is the one before the enemy's heading $6B (the SBC #$00 at $A112 runs with the carry clear); $6B is always odd where it is set, so that is entry 0, 2, 4 or 6, a vertical heading. Otherwise, when $1D is less than 4, it is the entry for $6B itself, a horizontal heading. The entry becomes the enemy's new heading $6A, which is $6B unchanged when neither holds. The table ends at $A3FB, before PutOutCandles ($A3FC)."
   },
   {
    "address": 41980,
    "type": "line",
-   "text": "PutOutCandles: clears the five candle bytes $029F-$02A3 and draws the five unlit candles (scene $A411). AiTriggerAreaStatus2CEncounter calls it in area 1 when Kunitoki gets up again after being knocked down, and ObjectSummonKunitoki when he first appears."
+   "text": "PutOutCandles: clears the five candle bytes $029F-$02A3 and draws the five unlit candles (scene $A411). AiGetUpWhenEnergyRefilled calls it in area 1 when Kunitoki gets up again after being knocked down, and ObjectSummonKunitoki when he first appears."
   },
   {
    "address": 42001,
@@ -13356,7 +13356,7 @@
   {
    "address": 42051,
    "type": "line",
-   "text": "Classify the second coordinate pair's quadrant relative to the first. Inputs: $54-$57 contain the two coordinate pairs. Outputs: A is the phase-table quadrant/direction code and $1F contains transient horizontal comparison state. Clobbers: A, X, flags, and $1F; Y is preserved."
+   "text": "Classify the first coordinate pair's quadrant relative to the second: the diagonal heading from the second pair ($56/$57, the enemy) toward the first ($54/$55, the player). Inputs: $54-$57 contain the two coordinate pairs. Outputs: A is the heading 7, 5, 1 or 3 from the table at $A457 (index bit 1 set when the first X is not less than the second, bit 0 when the first Y is not less than the second), X is that index, and $1F has the X comparison's carry shifted into bit 0. Clobbers: A, X, flags, and $1F; Y is preserved."
   },
   {
    "address": 42053,
@@ -13371,12 +13371,12 @@
   {
    "address": 42075,
    "type": "line",
-   "text": "Select and install the AI action matching direction and action class. Inputs: A is direction or facing and X is the action-table offset. Outputs: AI pointer, first opcode or state, and script index are initialized. Clobbers: A, X, Y, flags, and AI script state."
+   "text": "Select and install the AI action matching the enemy's heading and an action class. Inputs: X is the action-table offset (the class); the heading is read from $6B (A is not an input), and $D3 picks the frame delay. Outputs: X is moved on by 2 when $6B is 1 or 7; $5F = $6B AND 2, $5B = the delay from $A487, $62/$63 = the pointer from $A48B,X, $5E = the stream's first byte and $5A = 0. Clobbers: A, X, Y (left 0), flags, and AI script state."
   },
   {
    "address": 42119,
    "type": "line",
-   "text": "Four action delays 8,6,4,4 indexed by $D3 at $A46D and written to animation/state countdown $5B before an AI action is installed."
+   "text": "Four action delays 8,6,4,4 indexed by $D3 at $A46D and written to $5B, the enemy animation's frame delay (the interpreter copies it into the countdown $5A at each command that brings no delay of its own), before an AI action is installed."
   },
   {
    "address": 42123,
@@ -13441,7 +13441,7 @@
   {
    "address": 42545,
    "type": "line",
-   "text": "Advance and return The Final Battle's table- and CIA-timer-mixed pseudo-random byte. Inputs: $F9/$FA is the readable table pointer, $FB is the previous random byte, Y is caller state to preserve, and CIA 1 Timer A is running at $DC04/$DC05. Outputs: If old $FA is at least $C1, sets $FA=($DC04 & $1F)+$7E and $F9=$DC05. Then A and $FB receive old $FB + byte[$F9/$FA] + $DC04 modulo 256; $F9 increments and $FA increments on low-byte wrap; Y is restored. Clobbers: A, N, Z, C, V, and $F9-$FB; X and Y are preserved. Hardware: Reads CIA 1 Timer A low byte $DC04 on every call and high byte $DC05 only on reseed; performs no hardware write."
+   "text": "Advance and return The Final Battle's table- and CIA-timer-mixed pseudo-random byte. Inputs: $F9/$FA is the readable table pointer, $FB is the previous random byte, Y is caller state to preserve, and CIA 1 Timer A is running at $DC04/$DC05. Outputs: If old $FA is at least $C1, sets $FA=($DC04 & $1F)+$7E and $F9=$DC05. Then A and $FB receive old $FB + byte[$F9/$FA] + $DC04 modulo 256, plus 1 when old $FB + byte[$F9/$FA] passes 255 (the second ADC keeps that carry); $F9 increments and $FA increments on low-byte wrap; Y is restored. Clobbers: A, N, Z, C, V, and $F9-$FB; X and Y are preserved. Hardware: Reads CIA 1 Timer A low byte $DC04 on every call and high byte $DC05 only on reseed; performs no hardware write."
   },
   {
    "address": 42588,
@@ -13506,7 +13506,7 @@
   {
    "address": 43084,
    "type": "line",
-   "text": "Initialize the single projectile slot when it is free. Inputs: A is projectile kind or state and actor and facing context are valid. Outputs: projectile owner, direction, coordinates, and state are initialized or left unchanged when occupied. Clobbers: A, X, Y, flags, and projectile state."
+   "text": "Launch the enemy's projectile into slot 1 when that slot is free. Inputs: A is the projectile kind; the enemy's position $56/$57 and heading $6B. Outputs: when $0281 is free, sets the lifetime $0289 to $FF, the kind $0281 to A, the heading $0283 to $6B, the start $0285/$0287 to the enemy's position plus the heading's offsets from $AA44/$AA45, and $0296 to $FF; when the X offset carries the start off either side of the play area the kind is cleared to 0 and nothing is launched; when the slot is occupied nothing changes. Clobbers: A, X, flags, and projectile state; Y is kept."
   },
   {
    "address": 43140,
@@ -13521,7 +13521,7 @@
   {
    "address": 43222,
    "type": "line",
-   "text": "Move the two projectile slots on by the ticks since the last call ($E2 less $0273, kept in $8F), slot 1 then slot 0, and return at once when none has passed. Each tick counts down a projectile's lifetime ($0288,X), and it is removed when that runs out. While the lifetime is 8 or more it also moves a step on its heading (the X and Y steps at $AA4C and $AA4D), and it is removed when its X leaves 0-$FC or its Y leaves $22-$B0, or, for kinds 0 and 1, when the scenery in front has masked its sprite to nothing (bytes 1, 4 and 7 of the sprite at $0CC1 or $0EC1 for slot 0, $0DC1 or $0FC1 for slot 1, as $0295 or $0296 is 0 or not, all zero; nothing is tested while it is negative). Then a projectile of kind 0 to 5 is tested against the other side's actor (TestProjectileCollisionBox, $A884), unless that actor's action ($6D or $6F, the low two bits aside) is $24 or $0C: slot 1's hits the player, who loses 22 of energy (DamagePlayer, $A65C), and slot 0's, the player's, hits the enemy while $CB is negative, which loses 44, a full bar (DamageEnemy, $A67A). A hit starts the actor's reaction ($9C64) and removes the projectile. Kinds 6 and 7 hit nothing. Removing a projectile clears its kind ($0280,X) and its sprite's entries at $0213 and $024B. Clobbers: A, X, Y, flags, $1E and $8F."
+   "text": "Move the two projectile slots on by the ticks since the last call ($E2 less $0273, kept in $8F), slot 1 then slot 0, and return at once when none has passed. Each tick counts down a projectile's lifetime ($0288,X), and it is removed when that runs out. While the lifetime is 8 or more it also moves a step on its heading (the X and Y steps at $AA4C and $AA4D), and it is removed when its X leaves 0-$FC or its Y leaves $22-$B0, or, for kinds 0 and 1, when the scenery in front has masked its sprite to nothing (bytes 1, 4 and 7 of the sprite at $0CC0 or $0EC0 for slot 0, $0DC0 or $0FC0 for slot 1, as $0295 or $0296 is 0 or not, all zero; nothing is tested while it is negative). Then a projectile of kind 0 to 5 is tested against the other side's actor (TestProjectileCollisionBox, $A884), unless that actor's action ($6D or $6F, the low two bits aside) is $24 or $0C: slot 1's hits the player, who loses 22 of energy (DamagePlayer, $A65C), and slot 0's, the player's, hits the enemy while $CB is negative, which loses 44, a full bar (DamageEnemy, $A67A). A hit starts the actor's reaction ($9C64) and removes the projectile. Kinds 6 and 7 hit nothing. Removing a projectile clears its kind ($0280,X) and its sprite's entries at $0213 and $024B for slot 0, $0217 and $024F for slot 1. Clobbers: A, X, Y, flags, $1E and $8F."
   },
   {
    "address": 43527,
@@ -13586,17 +13586,17 @@
   {
    "address": 43981,
    "type": "line",
-   "text": "Test the candidate movement segment against every compiled collision record and report collision plus any encoded trigger\nInputs: X = heading/direction selector; old and candidate coordinates $48-$4B; movement profile $027F; six-byte records beginning at $F460\nOutputs: returns A=$FF for collision or A=0 for none and restores X from $F3; records the matched record offset in $24; an eligible special segment may set action $80 and OR trigger/collision state into $81\nClobbers: A, Y, flags and collision arithmetic scratch including $23/$24,$45-$47,$F3; X is restored on return"
+   "text": "Test the candidate movement segment against the compiled collision records until one is crossed, and report the collision plus any encoded trigger\nInputs: X = heading/direction selector; old and candidate coordinates $48-$4B; movement profile $027F; six-byte records beginning at $F460\nOutputs: returns A=$FF for collision or A=0 for none and restores X from $F3; records the matched record offset in $24 on a collision; when $027F is 0, a crossed segment with bit 0 of its flags set is a trigger: it stores the record's action byte in $80 and counts as a collision only when that byte is negative, and after the scan $81 becomes $81 plus 1 with bit 7 set\nClobbers: A, Y, flags and collision arithmetic scratch including $21-$24,$45-$47,$C5,$F3; X is restored on return"
   },
   {
    "address": 44242,
    "type": "line",
-   "text": "Invoke sprite composition in the requested masked or collision mode. Inputs: A is mode plus the named compositor's normal actor and frame context. Outputs: composite sprite buffers and metadata are produced. Clobbers: A, X, Y, flags, and extensive compositor scratch. Hardware: changes sprite or image RAM; no VIC-II register is written directly."
+   "text": "Compose the enemy's frame: the same as ComposeSprites, but with $92 set to $80 plus the enemy's profile $72 (its low two bits pick the frame's weapon part) instead of the player's weapon $70. Inputs: A is the mirror flag (stored in $F1), Y the frame number and X the first logical sprite slot (4, from $99E2). Outputs: the enemy's parts are drawn into its sprite images and their positions, attributes and flags set. Clobbers: A, X, Y, flags, and extensive compositor scratch. Hardware: changes sprite or image RAM; no VIC-II register is written directly."
   },
   {
    "address": 44253,
    "type": "line",
-   "text": "Decode one actor frame descriptor into positioned logical sprite components, temporarily exposing RAM beneath KERNAL for high-memory source data\nInputs: A = frame attribute/modifier; Y = frame-descriptor index; X = first logical-sprite slot; actor state including $70,$72,$7D and frame pointer tables at $B714\nOutputs: writes component bitmap references, positions, flags, and ready state into logical sprite arrays $0200-$0258 and sets sprite-dirty state as required\nClobbers: A, X, Y, flags and sprite-composition scratch including $F1,$92,$9F\nHardware: decrements then restores CPU port $01 to expose high RAM transiently; does not directly write VIC-II sprite registers"
+   "text": "Decode one actor frame descriptor into positioned logical sprite components, temporarily switching the I/O area out to read the packed sprites in the RAM under $D000-$DFFF\nInputs: A = frame attribute/modifier; Y = frame-descriptor index; X = first logical-sprite slot; actor state including $70,$7D and frame pointer tables at $B714\nOutputs: draws the parts into the slots' sprite images ($0C00-$0FFF) and writes their positions, attributes, flags, and ready state into logical sprite arrays $0200-$0258, setting sprite-dirty state as required\nClobbers: A, X, Y, flags and sprite-composition scratch including $F1,$92,$9F\nHardware: decrements then restores CPU port $01 to switch the I/O area out transiently; does not directly write VIC-II sprite registers"
   },
   {
    "address": 44272,
@@ -13606,17 +13606,17 @@
   {
    "address": 44274,
    "type": "line",
-   "text": "Enter the Final Battle playable phase's common sprite-composition body with the mode already prepared by the masked-mode caller.\nInputs: $F1 is the mirror flag, set when the actor faces the other way, and the low two bits of $92 pick one of a six-part frame's three alternatives; X selects the logical sprite group; Y selects the frame descriptor; CPU port $01 is in the engine's normal I/O-visible state.\nOutputs: Decrements $01 for the required high-memory RAM visibility, resolves and composes the selected frame into logical sprite work buffers, restores $01 before return, and records composition state.\nClobbers: A, X, Y, processor flags, $01 transiently, $02/$03, $92/$97/$9F, $F1, and logical sprite work buffers.\nHardware: Changes CPU-port $01 transiently by one decrement and a balancing increment to expose the required high-memory RAM; writes sprite work buffers, not VIC-II registers directly."
+   "text": "Enter the Final Battle playable phase's common sprite-composition body with the mode already prepared by ComposeSprites ($ACDD, $92 from the player's weapon $70) or by the enemy's entry at $ACD2 ($92 set to $80 plus $72).\nInputs: $F1 is the mirror flag, set when the actor faces the other way, and the low two bits of $92 pick one of a six-part frame's three alternatives; X selects the logical sprite group; Y selects the frame descriptor; CPU port $01 is in the engine's normal I/O-visible state.\nOutputs: Decrements $01 for the required high-memory RAM visibility, resolves and composes the selected frame into logical sprite work buffers and the slots' sprite images, restores $01 before return, and records composition state.\nClobbers: A, X, Y, processor flags, $01 transiently, $02-$07, $1E, $42-$44, $97, $C5-$C7, $0237, $F1 on the projectile path, and logical sprite work buffers and images.\nHardware: Changes CPU-port $01 transiently by one decrement and a balancing increment to expose the required high-memory RAM; writes sprite work buffers, not VIC-II registers directly."
   },
   {
    "address": 44510,
    "type": "line",
-   "text": "Finish the Final Battle playable phase's empty composite-sprite slot by marking its descriptor and restoring CPU-port banking.\nInputs: X selects the logical sprite descriptor at $0218,X; the caller entered with $01 decremented for RAM-under-KERNAL access.\nOutputs: Sets bit 6 in $0218,X, increments $01 to restore the caller's banking state, and returns.\nClobbers: A, N, Z, $0218,X, $01, and return-address stack bytes; X and Y are preserved.\nHardware: Restores CPU-port $01 banking by one increment; no VIC-II/CIA/SID register write."
+   "text": "Finish the last slot of a composite sprite group, by marking its descriptor and restoring CPU-port banking: reached when the group's projectile slot is empty ($ADDC) and at the end of ConfigureCompositeSpriteSlot ($AE5F) after a projectile has been drawn.\nInputs: X selects the logical sprite descriptor at $0218,X; the caller entered with $01 decremented to switch the I/O area out (RAM under $D000-$DFFF).\nOutputs: Sets bit 6 in $0218,X, increments $01 to restore the caller's banking state, and returns.\nClobbers: A, N, Z, $0218,X, $01, and return-address stack bytes; X and Y are preserved.\nHardware: Restores CPU-port $01 banking by one increment; no VIC-II/CIA/SID register write."
   },
   {
    "address": 44521,
    "type": "line",
-   "text": "Configure one slot of a composite actor sprite. Inputs: X and Y are part and slot indices and the current part record is valid. Outputs: slot pointer, position, attribute, image, and flip metadata are updated. Clobbers: A, X, Y, flags, and compositor scratch. Hardware: changes sprite metadata and RAM only."
+   "text": "Draw a projectile into one slot of a composite actor sprite. Inputs: X is the logical sprite slot (3 or 7) and Y the projectile slot (0 or 1); the projectile's kind $0280,Y and position $0284,Y/$0286,Y are valid and $01 has been lowered by the caller. Outputs: bit 3 of $0280,Y (the image phase) is toggled; $0220,X takes the attribute from $AA27; the image is the raw one that $AA07/$AA17 point at or the packed sprite they name, unpacked into $02C0; $0295 or $0296 records the buffer in use; the sprite's X ($0200, with $0208 = 0) and Y ($0210) are the projectile's position plus the kind's offsets at $AA36/$AA3D; $0238 and $F1 are cleared and $0271,Y takes $E2; the image is blitted into the slot's sprite, and FinishEmptyCompositeSpriteSlot sets bit 6 of $0218,X and puts $01 back. Clobbers: A, X, Y, flags, and compositor scratch. Hardware: changes sprite metadata and RAM, and increments the processor port $01 at the end."
   },
   {
    "address": 44642,
@@ -13631,12 +13631,12 @@
   {
    "address": 44674,
    "type": "line",
-   "text": "Place one part of a frame and draw it into its sprite. Inputs: A chooses the source for the blitter (nonzero, the sprite just unpacked into $02C0; zero, the unpacked image at ($06)); $C5 the sprite slot; $C6 the part's offset in the frame record at ($02); $F1 the mirror flag and $97 the mirror width; the actor's position, $54/$55 for slots 0 to 3 and $56/$57 for slots 4 to 7. It selects the slot's sprite buffer ($AFDE), waits until bit 1 of the slot's flags at $0218 is clear, and sets the sprite's X ($0200/$0208: the actor's X plus the part's X offset less $30, or with $F1 set plus the mirror width less that offset), its Y ($0210, the actor's Y plus the part's Y offset) and its attributes ($0220, with bit 7, the multicolour flag, also in $0238). Then it falls into BlitSpritePartWithMask with A. Outputs: X = $C5, Y = $C6, moved on past the part; A as BlitSpritePartWithMask leaves it. Clobbers: A, flags, $04/$05, $1F and $42-$44."
+   "text": "Place one part of a frame and draw it into its sprite. Inputs: A chooses the source for the blitter (nonzero, the sprite just unpacked into $02C0; zero, the unpacked image at ($06)); $C5 the sprite slot; $C6 the part's offset in the frame record at ($02); $F1 the mirror flag and $97 the mirror width; the actor's position, $54/$55 for slots 0 to 3 and $56/$57 for slots 4 to 7. It selects the slot's sprite buffer ($AFDE), waits until bit 1 of the slot's flags at $0218 is clear, and sets the sprite's X ($0200/$0208: the actor's X plus the part's X offset less $30, or with $F1 set plus the mirror width less that offset), its Y ($0210, the actor's Y plus the part's Y offset) and its attributes ($0220, with bit 7, the multicolour flag, also in $0238). Then it falls into BlitSpritePartWithMask with A. Outputs: X = $C5, Y = $C6, left on the part's last byte (its attributes); A as BlitSpritePartWithMask leaves it. Clobbers: A, flags, $04/$05, $1F and $42-$44."
   },
   {
    "address": 44778,
    "type": "line",
-   "text": "Draw a part into its slot's sprite at ($04), overwriting what is there: each of the 63 bytes is the source ANDed with a mask for its column ($42-$44), worked out from the sprite's X ($0200/$0208), which hides what lies past the right edge of the play window. With A nonzero the source is the sprite unpacked into $02C0 (BlitCachedSpriteMask, $AFF4); with A zero, the image at ($06). When the mirror flag $F1 is set the bytes go through the reversal table at $1300 (hires) or $1200 (multicolour, when bit 7 of $0238 is set) with the outer columns swapped. Then, when the sprite's Y ($0210) is below the line in $9E, it clears that many rows from the bottom, 21 at most. Outputs: X = $C5, Y = $C6, and A 0 or the difference $0210 less $9E. Clobbers: A, flags, $1F and $42-$44."
+   "text": "Draw a part into its slot's sprite at ($04), overwriting what is there: each of the 63 bytes is the source ANDed with a mask for its column ($42-$44), worked out from the sprite's X ($0200/$0208), which hides what lies past the right edge of the play window. With A nonzero the source is the sprite unpacked into $02C0 (BlitCachedSpriteMask, $AFF4); with A zero, the image at ($06). When the mirror flag $F1 is set the bytes go through a reversal table with the outer columns swapped: for the image at ($06), the one at $1300 (hires) or $1200 (multicolour, when bit 7 of $0238 is set); for the unpacked sprite, always $1300. Then, when the sprite's Y ($0210) is below the line in $9E, it clears that many rows from the bottom, 21 at most. Outputs: X = $C5, Y = $C6, and A 0 or the difference $0210 less $9E. Clobbers: A, flags, $1F and $42-$44."
   },
   {
    "address": 45022,
@@ -13661,22 +13661,22 @@
   {
    "address": 45197,
    "type": "line",
-   "text": "Resolve the Final Battle playable phase's alternate raw sprite pointer without decoding the 63-byte cache.\nInputs: A is the encoded sprite selector and $06 contributes its carried high-address bit; $C7 bit 6 selected raw-pointer mode before this entry.\nOutputs: Computes and stores the raw sprite pointer in $06/$07, returns A=0, preserves X, and leaves $02C0-$02FE unchanged.\nClobbers: A, Y, N, Z, C, and $06/$07; X and the 63-byte cache are preserved."
+   "text": "Resolve the Final Battle playable phase's alternate raw sprite pointer without decoding the 63-byte cache.\nInputs: A is the raw sprite's number; $C7 bit 6 selected raw-pointer mode before this entry.\nOutputs: Stores in $06/$07 the address of that raw sprite, $EDD8 plus 64 times A, returns A=0, preserves X, and leaves $02C0-$02FE unchanged.\nClobbers: A, Y, N, V, Z, C, and $06/$07; X and the 63-byte cache are preserved."
   },
   {
    "address": 45220,
    "type": "line",
-   "text": "Update auxiliary sprite or object slot zero. Inputs: slot-zero state at $0280 and shared object and sprite state. Outputs: slot-zero image and position state advance when active and eligible. Clobbers: A, X, Y, flags, and sprite scratch. Hardware: changes sprite RAM and state only directly."
+   "text": "Draw projectile slot 0 into the player's fourth sprite (slot 3), at most once per tick (update slot 9 of GateUpdateByTickInterval, which returns from the caller when no tick has passed). Inputs: slot-zero state at $0280, its position $0284/$0286, and shared object and sprite state. Outputs: when $0280 is nonzero its image (the phase flipped by bit 3 of $0280) is drawn at the projectile's position and masked behind the scenery; the projectile itself is not moved. Clobbers: A, X, Y, flags, and sprite scratch. Hardware: lowers the processor port $01 by one while it draws and puts it back; changes sprite RAM."
   },
   {
    "address": 45229,
    "type": "line",
-   "text": "Update auxiliary sprite or object slot one. Inputs: slot-one state and shared object and sprite state. Outputs: slot-one image and position state advance when active and eligible. Clobbers: A, X, Y, flags, and sprite scratch. Hardware: changes sprite RAM and state only directly."
+   "text": "Draw projectile slot 1 into the enemy's fourth sprite (slot 7), at most once per tick (update slot 10 of GateUpdateByTickInterval, which returns from the caller when no tick has passed). Inputs: slot-one state at $0281, its position $0285/$0287, and shared object and sprite state. Outputs: when $0281 is nonzero its image (the phase flipped by bit 3 of $0281) is drawn at the projectile's position and masked behind the scenery; the projectile itself is not moved. Clobbers: A, X, Y, flags, and sprite scratch. Hardware: lowers the processor port $01 by one while it draws and puts it back; changes sprite RAM."
   },
   {
    "address": 45236,
    "type": "line",
-   "text": "Render the Final Battle playable phase's auxiliary/projectile sprite slot selected by Y through the common slot-1 body.\nInputs: Y is 0 for slot 0 or 1 for slot 1; $0280,Y and its position/type arrays are current; the caller's rate gate has passed.\nOutputs: Returns if the slot is empty; otherwise banks RAM beneath KERNAL, composes the slot into its logical sprite group, restores composition context, and tail-enters scene-condition evaluation.\nClobbers: A, X, Y, processor flags, $01 transiently, $C5-$C7, sprite work buffers, and scene-condition scratch.\nHardware: Changes CPU-port $01 transiently within the composition helper and restores it before tail transfer; updates sprite work buffers but does not directly write VIC-II registers."
+   "text": "Render the Final Battle playable phase's projectile slot selected by Y into the last sprite of its group (slot 3 or 7), the common body of UpdateAuxSpriteSlot0 and UpdateAuxSpriteSlot1.\nInputs: Y is 0 for slot 0 or 1 for slot 1; $0280,Y and its position/type arrays are current; the caller's rate gate has passed.\nOutputs: Returns if the slot is empty; otherwise lowers $01 to switch the I/O area out, draws the projectile into sprite slot Y*4+3 through ConfigureCompositeSpriteSlot (which puts $01 back), and tail-enters MaskActorSpritesBehindScenery ($89F2) with the projectile's Y in A to hide it behind the area's foreground pictures.\nClobbers: A, X, Y, processor flags, $01 transiently, $C5-$C7, sprite work buffers, and the masking routine's scratch.\nHardware: Decrements CPU-port $01 at $B0BA and restores it in the composition helper before the tail transfer; updates sprite work buffers but does not directly write VIC-II registers."
   },
   {
    "address": 45268,
@@ -13706,12 +13706,12 @@
   {
    "address": 45472,
    "type": "line",
-   "text": "Synchronize and commit object-display state near the bottom raster. Inputs: $A0, tick $E2, object-display pointers $7A/$86, and index $4E. Outputs: display buffers are updated when required and $A0 receives the current or forced-nonzero tick. Clobbers: A, Y, flags, indirect destinations, and $A0. Hardware: reads VIC-II raster register $D012 and writes hardware-visible display RAM indirectly."
+   "text": "Start the 100-tick timer of the found item shown in the panel: $A0 receives the tick $E2, or $FF when that is 0, and ExpireInactiveObjectAfterDelay ($B4A3) puts the selected item back 100 ticks later. When $A0 was 0 it first waits for raster line $FA and runs $B1AB-$B1CA, which changes its own code: with $4E = $EE, $7A/$7B = $B0CA and $86/$87 = $B0D2, the two stores at $B1AF/$B1B1 write $DD into $B1B8 and $B1C0, the high bytes of SBC $0486 and CPX $04E4, so that pass reads CIA 2's timers through mirrors ($DD24, $DD86, $DDE4); the stores at $B1C8/$B1CA put $04 back, and the results of the reads are not kept. Inputs: $A0, tick $E2, pointers $7A/$7B and $86/$87, and $4E. Outputs: $A0. Clobbers: A, X, Y, flags, and $A0. Hardware: reads VIC-II raster register $D012 and CIA 2's timer registers; writes no hardware register."
   },
   {
    "address": 45491,
    "type": "line",
-   "text": "25-byte instruction continuation of $B1A0, including undocumented LAX absolute,Y at $B1B3. LAX loads both A/X from the $DC36+Y I/O address; SBC $0486 and CPX $04E4 select paths that execute optional BIT instructions. Every path reaches LDA #4 and stores four through both display pointers $7A/$86 at Y. The comparisons change the path, not the stored value."
+   "text": "25-byte instruction continuation of $B1A0, including undocumented LAX absolute,Y at $B1B3. With Y = $4E = $EE, LAX loads both A and X from $DD24 (CIA 2's timer A low, through a mirror). The stores at $B1AF/$B1B1 have just changed the high bytes of the next two instructions ($B1B8 and $B1C0) from $04 to $DD, so SBC $0486 and CPX $04E4 run as SBC $DD86 and CPX $DDE4 (CIA 2's timer B low and timer A low); each selects whether an optional BIT $7EC5 runs. Every path reaches LDA #4 and stores it through $7A/$86 at Y, which puts $04 back in $B1B8 and $B1C0. The comparisons change the path and its timing, not the stored value."
   },
   {
    "address": 45516,
@@ -13971,7 +13971,7 @@
   {
    "address": 46272,
    "type": "line",
-   "text": "Return from the Final Battle playable phase's inactive-object expiry check when the delay has not elapsed or no inactive object is pending.\nInputs: The preceding expiry comparison selected the no-clear path and a valid return address is on the stack.\nOutputs: Returns without clearing the object or redrawing its UI image.\nClobbers: Registers, flags, object state, and memory are preserved; RTS advances SP by two over the caller's return frame."
+   "text": "The RTS that ends the Final Battle playable phase's inactive-object expiry check. The branches at $B4AA and $B4AE come here when the delay has not elapsed or no inactive object is pending, and ClearInactiveObjectAndRefreshUi also ends here after redrawing the panel's image.\nInputs: A valid return address is on the stack.\nOutputs: Returns; on the two branch paths nothing has been cleared or redrawn.\nClobbers: Registers, flags, object state, and memory are preserved; RTS advances SP by two over the caller's return frame."
   },
   {
    "address": 46273,

@@ -207,6 +207,26 @@ list that left out `$6D`; a Basement note said several walls carry a
 command that one wall carries. All 19 were corrected, each with every
 comment that said the same: 1,109 comments changed in all.
 
+Seed 16184, the maintainer's check (air): 60 comments from the same
+11,351, spread over the parts by their size, checked against the bytes
+by a fresh agent on claude-opus-5-5[1m]. 10 of the 60 were wrong in a
+detail: 17 % (95 % interval 9 % to 28 %). The projectile launcher was
+said to set a speed and an owner, where it stores a lifetime and a kind
+and always launches the player's slot; a byte of a tune's arpeggio
+pointers was called a list of its own, where the low and high tables
+overlap by a byte; the intro tune's order list was said to hold 41
+patterns and run 1,601 ticks, where it holds 40 and runs 2,064; the
+per-area store of enemy energy at `$3F92` was called a status-panel
+cell; the projectiles' scenery test was said to read the collision map,
+where it tests the bytes of the drawn sprite; a sweep said to change a
+voice's frequency changes its pulse width, or the filter's cut-off; a
+vibrato setting's table offset left out that the byte is halved first;
+`$74` was called a target, where it is the actor's height, which `$EF`
+freezes; a table's comment named the wrong routine after it in The
+Final Battle; and a sprite list was said to serve the wrong enemy kinds.
+All ten were corrected, each with every comment that said the same.
+Since more than 2 of the 60 were wrong, every comment was then audited.
+
 ## Live tests
 
 - The intro's hidden credits: holding L on the logo starts a scroller
