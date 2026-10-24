@@ -29,6 +29,8 @@
 //             the line, [{ t, n }], for tests
 // Everything drawn is a function of t alone, so a page can seek, pause or loop without telling
 // the view anything but the tick.
+// Camera sliders, for choosing new angles for CAMS below, are in site/lib/bounce-tune.js. They are
+// off: a page whose address ends in ?camera loads them from beside this file, over every view.
 (function (root) {
   'use strict';
 
@@ -50,7 +52,7 @@
   // (-1 to 1 from the middle, ay down) and zoom brings it nearer than the distance that fits
   const CAMS = {
     tall: { yaw: 1.06, pitch: 0.63, fov: 1.06, ax: -0.04, ay: 0.17, zoom: 0.9 },
-    wide: { yaw: 1.0, pitch: 0.6, fov: 0.7, ax: -0.3, ay: 0.08, zoom: 1 },
+    wide: { yaw: 1, pitch: 0.86, fov: 0.7, ax: -0.3, ay: 0.08, zoom: 1 },
   };
 
   const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -58,6 +60,19 @@
   const css = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a == null ? 1 : +a.toFixed(3)})`;
   const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
   const smooth = (v) => { v = clamp(v, 0, 1); return v * v * (3 - 2 * v); };
+
+  // the camera sliders: wanted when the address asks for them, found beside this file
+  const TUNE = typeof location !== 'undefined' && /[?&]camera(=|&|$)/.test(location.search);
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let tuneLoading = false;
+  function sliders(canvas) {
+    if (root.NoteBounceTune) { root.NoteBounceTune.add(canvas); return; }
+    if (tuneLoading || !HERE) return;
+    tuneLoading = true;                          // when it loads, it finds every view on the page
+    const sc = document.createElement('script');
+    sc.src = HERE.replace(/[^/]*$/, 'bounce-tune.js');
+    document.head.appendChild(sc);
+  }
 
   function create(canvas, o) {
     o = o || {};
@@ -643,13 +658,13 @@
       g.fillRect(0, 0, W, H);
     }
 
-    // Temporary, for trying camera angles: site/lib/bounce-tune.js reads and sets the camera of
-    // the canvas's shape through this, and goes when the angles are settled.
+    // the camera sliders read and set the camera of the canvas's present shape through this
     view.tuning = {
       get: () => Object.assign({ shape: portrait ? 'tall' : 'wide' }, cams[portrait ? 'tall' : 'wide']),
       set: (p) => { Object.assign(cams[portrait ? 'tall' : 'wide'], p); cam = null; baseKey = ''; draw(last[0], last[1]); },
     };
     canvas.noteBounce = view;
+    if (TUNE || root.BOUNCE_TUNE) sliders(canvas);
 
     return view;
   }

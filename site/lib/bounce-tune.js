@@ -1,11 +1,10 @@
-// Temporary: sliders for trying the bouncing ball's camera angles (site/lib/bounce.js), shown over
-// the ball view on a page opened with ?camera at the end of its address. They change the camera
-// for the canvas's present shape (tall or wide), and the line under them is that camera as
-// bounce.js's CAMS table writes it, to copy back. Delete this file, its script tag and the tuning
-// hook at the end of bounce.js's create() once the angles are settled.
+// Sliders for choosing the bouncing ball's camera angles (site/lib/bounce.js), shown over each
+// ball view. They are off: bounce.js loads this file only on a page whose address ends in
+// ?camera (or that sets window.BOUNCE_TUNE first), so no page needs a script tag for it. They
+// change the camera for the canvas's present shape (tall or wide), and the line under them is
+// that camera as bounce.js's CAMS table writes it, to copy in there.
 (function () {
   'use strict';
-  if (!/[?&]camera(=|&|$)/.test(location.search) && !window.BOUNCE_TUNE) return;
   const SLIDERS = [
     ['yaw', 'Turn', -1.6, 1.6], ['pitch', 'Tilt down', 0.05, 1.5], ['fov', 'Lens', 0.3, 1.6],
     ['zoom', 'Zoom', 0.4, 3], ['ax', 'Ball across', -0.9, 0.9], ['ay', 'Ball down', -0.9, 0.9]];
@@ -25,10 +24,10 @@
     const view = canvas.noteBounce;
     const el = document.createElement('div');
     el.className = 'bounce-tune';
-    el.innerHTML = '<div class="bt-head"><b>Camera</b><span class="bt-shape"></span><button type="button" data-shut>Hide</button></div>' +
+    el.innerHTML = '<div class="bt-head"><b>Camera</b><span class="bt-shape"></span><button type="button" data-bt-shut>Hide</button></div>' +
       '<div class="bt-body">' + SLIDERS.map(([k, name, lo, hi]) =>
         `<label>${name}<input type="range" min="${lo}" max="${hi}" step="0.01" data-k="${k}"><output data-o="${k}"></output></label>`).join('') +
-      '<code></code><div class="bt-row"><button type="button" data-copy>Copy</button><button type="button" data-reset>Reset</button></div></div>';
+      '<code></code><div class="bt-row"><button type="button" data-bt-copy>Copy</button><button type="button" data-bt-reset>Reset</button></div></div>';
     canvas.parentNode.appendChild(el);
     const $ = (s) => el.querySelector(s);
     let shape = '', start = {};
@@ -46,16 +45,16 @@
     el.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
-      if (b.hasAttribute('data-shut')) {
-        const shut = !el.hasAttribute('data-shut');
+      if (b.hasAttribute('data-bt-shut')) {
+        const shut = !el.hasAttribute('data-bt-shut');
         el.toggleAttribute('data-shut', shut);
         b.textContent = shut ? 'Show' : 'Hide';
-      } else if (b.hasAttribute('data-copy')) {
+      } else if (b.hasAttribute('data-bt-copy')) {
         const t = $('code').textContent;
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
           () => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy'; }, 1200); },
           () => { getSelection().selectAllChildren($('code')); });
-      } else if (b.hasAttribute('data-reset')) {
+      } else if (b.hasAttribute('data-bt-reset')) {
         const s = Object.assign({}, start[shape]);
         delete s.shape;
         view.tuning.set(s);
@@ -66,11 +65,18 @@
     setInterval(() => { if (view.tuning.get().shape !== shape) show(); }, 400);   // turned, or full screen
   }
 
-  function begin() {
-    const st = document.createElement('style');
-    st.textContent = CSS;
-    document.head.appendChild(st);
-    document.querySelectorAll('canvas').forEach((c) => { if (c.noteBounce) panel(c); });
+  let styled = false;
+  function add(canvas) {
+    if (!canvas.noteBounce || canvas.noteBounceTune || !canvas.parentNode) return;
+    canvas.noteBounceTune = true;
+    if (!styled) {
+      styled = true;
+      const st = document.createElement('style');
+      st.textContent = CSS;
+      document.head.appendChild(st);
+    }
+    panel(canvas);
   }
-  if (document.readyState === 'complete') begin(); else window.addEventListener('load', begin);
+  window.NoteBounceTune = { add };
+  document.querySelectorAll('canvas').forEach(add);   // the views made while this file loaded
 })();
