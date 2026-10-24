@@ -3271,7 +3271,7 @@
   },
   {
    "address": 7589,
-   "name": "logical_sprite_bits",
+   "name": "single_bit_masks",
    "type": "Field",
    "kind": "user"
   },
@@ -4190,7 +4190,7 @@
   {
    "address": 4096,
    "type": "line",
-   "text": "Open the selected packed level file and backward-expand its title and playable occupants. Inputs: three-byte filename at `$117D` (`nn*`), device 8, packed stream from the current disk side. Outputs: title occupant first, then after fire the playable occupant; returns at end of file. Clobbers: A, X, Y, flags, `$02`, `$F6-$FF`, coding-table tail `$17F3-$17F5`, file/channel state. Hardware: replaces IRQ vector low byte temporarily, switches `$01` among all-RAM and KERNAL/I/O-visible states, polls CIA 1 fire, silences SID, and uses VIC border writes as read activity indication. Actual bytes are written from `upper` down through `lower+1`.\nfunction: undefined LoadAndExpandLevelFile()"
+   "text": "Open the selected packed level file and backward-expand its title and playable occupants. Inputs: three-byte filename at `$117D` (`nn*`), device 8, packed stream from the current disk side. Outputs: title occupant first, then after fire the playable occupant; returns at end of file. Clobbers: A, X, Y, flags, `$02`, `$F6-$FF`, coding-table tail `$17F3-$17F5`, file/channel state. Hardware: replaces IRQ vector low byte temporarily, switches `$01` among all-RAM and KERNAL/I/O-visible states, polls CIA 1 fire, silences SID, and uses VIC border writes as read activity indication. Actual bytes are written from `upper` down through `lower+1`."
   },
   {
    "address": 4137,
@@ -4290,12 +4290,12 @@
   {
    "address": 5120,
    "type": "line",
-   "text": "Cold entry for a level-load cycle. Inputs: resident state and selected level number. Outputs: transfers permanently to the load coordinator after hardware initialization. Clobbers: X, stack pointer, decimal flag, interrupt state. Hardware: disables IRQ, clears decimal mode, resets SP to `$12`, calls the phase initialization vector, then jumps to `$16AF`; does not return.\nfunction: undefined StartLevelLoad()"
+   "text": "Cold entry for a level-load cycle. Inputs: resident state and selected level number. Outputs: transfers permanently to the load coordinator after hardware initialization. Clobbers: X, stack pointer, decimal flag, interrupt state. Hardware: disables IRQ, clears decimal mode, resets SP to `$12`, calls the phase initialization vector, then jumps to `$16AF`; does not return."
   },
   {
    "address": 5131,
    "type": "line",
-   "text": "Tail-call the resident raster-synchronized bitmap-display setup at `$150A` through its stable veneer. Inputs: none; VIC-II I/O must be visible and its raster counter must advance. Outputs: returns after raster low byte reaches zero with raster high bit clear, border black, multicolor bitmap mode selected, 40-column timing selected, and `$D018=$18`. Clobbers: A and processor flags; X and Y are preserved. Hardware: the target polls `$D012` and `$D011` bit 7, then writes `$D020=$00`, `$D011=$3B`, `$D016=$18`, and `$D018=$18`; the veneer adds no stack frame.\nfunction: undefined ScreenSetupVeneer()"
+   "text": "Tail-call the resident raster-synchronized bitmap-display setup at `$150A` through its stable veneer. Inputs: none; VIC-II I/O must be visible and its raster counter must advance. Outputs: returns after raster low byte reaches zero with raster high bit clear, border black, multicolor bitmap mode selected, 40-column timing selected, and `$D018=$18`. Clobbers: A and processor flags; X and Y are preserved. Hardware: the target polls `$D012` and `$D011` bit 7, then writes `$D020=$00`, `$D011=$3B`, `$D016=$18`, and `$D018=$18`; the veneer adds no stack frame."
   },
   {
    "address": 5134,
@@ -4305,7 +4305,7 @@
   {
    "address": 5137,
    "type": "line",
-   "text": "Tail-call the resident tile/color compositor at `$17F6` through its stable veneer. Inputs: `$04/$05` points to an eight-byte tile; `$0E/$0F` to destination bitmap rows; `$10/$11` and `$12/$13` to packed screen-color descriptions; `$14/$15` to the paired color descriptor; `$E8` selects source order. Outputs: reconciled packed colors are written through `($10),Y`, `($12),Y`, and `($14),Y`, and eight transformed rows are merged through `($0E),Y`. Clobbers: A, X, Y, processor flags, compositor scratch `$0A-$41`, `$BC-$BE`, `$E3-$E9`, and `$0112-$011A`. Hardware: no register writes; the target writes color RAM only when `$14/$15` selects `$D800`; the veneer adds no stack frame.\nfunction: undefined ResidentKernelVeneer()"
+   "text": "Tail-call the resident tile/color compositor at `$17F6` through its stable veneer. Inputs: `$04/$05` points to an eight-byte tile; `$0E/$0F` to destination bitmap rows; `$10/$11` and `$12/$13` to packed screen-color descriptions; `$14/$15` to the paired color descriptor; `$E8` selects source order. Outputs: reconciled packed colors are written through `($10),Y`, `($12),Y`, and `($14),Y`, and eight transformed rows are merged through `($0E),Y`. Clobbers: A, X, Y, processor flags, compositor scratch `$0A-$41`, `$BC-$BE`, `$E3-$E9`, and `$0112-$011A`. Hardware: no register writes; the target writes color RAM only when `$14/$15` selects `$D800`; the veneer adds no stack frame."
   },
   {
    "address": 5140,
@@ -4335,7 +4335,7 @@
   {
    "address": 5386,
    "type": "line",
-   "text": "Synchronize to the first safe raster interval and select the resident multicolor-bitmap display\nInputs: none; VIC-II raster registers must be visible\nOutputs: returns after raster low byte is zero with raster high bit clear, border black, bitmap mode selected, 40-column multicolor timing selected, and VIC memory layout set\nClobbers: A and flags; X and Y are preserved\nHardware: polls $D012 and $D011 bit 7; writes $D020=$00, $D011=$3B, $D016=$18, and $D018=$18\nfunction: undefined ConfigureBitmapDisplay()"
+   "text": "Synchronize to the first safe raster interval and select the resident multicolor-bitmap display\nInputs: none; VIC-II raster registers must be visible\nOutputs: returns after raster low byte is zero with raster high bit clear, border black, bitmap mode selected, 40-column multicolor timing selected, and VIC memory layout set\nClobbers: A and flags; X and Y are preserved\nHardware: polls $D012 and $D011 bit 7; writes $D020=$00, $D011=$3B, $D016=$18, and $D018=$18"
   },
   {
    "address": 5427,
@@ -4350,7 +4350,7 @@
   {
    "address": 5507,
    "type": "line",
-   "text": "Render a variable-length text record embedded immediately after the caller JSR. Inputs: return address on stack followed by column, row, bitmap/color attributes, then nonzero character codes terminated by zero. Outputs: glyph bytes copied into bitmap memory, screen/color attributes written, and a synthesized return address pointing after the terminator. Clobbers: A, X, Y, flags, `$02-$09`, `$34/$35`, `$4A/$4B`. Hardware: color writes address the `$D800` color-RAM window when I/O is visible; other output targets bitmap and screen RAM.\nfunction: undefined RenderInlineTextRecord()"
+   "text": "Render a variable-length text record embedded immediately after the caller JSR. Inputs: return address on stack followed by column, row, bitmap/color attributes, then nonzero character codes terminated by zero. Outputs: glyph bytes copied into bitmap memory, screen/color attributes written, and a synthesized return address pointing after the terminator. Clobbers: A, X, Y, flags, `$02-$09`, `$34/$35`, `$4A/$4B`. Hardware: color writes address the `$D800` color-RAM window when I/O is visible; other output targets bitmap and screen RAM."
   },
   {
    "address": 5533,
@@ -4400,12 +4400,12 @@
   {
    "address": 5805,
    "type": "line",
-   "text": "Coordinate a numbered level load while preserving the low C64 workspace needed by the caller. Inputs: level selector in `$EC`; filename digit destination `$117E`. Outputs: loaded phase, restored `$0000-$03FF`, marker `$0267=$FF`, then transfer through `$3FF3`. Clobbers: A, X, flags and loader scratch; does not return after final handoff. Hardware: saves/restores zero page, stack, screen/vectors; resets KERNAL/CIA/VIC state and calls the loader before jumping to the selected phase entry.\nfunction: undefined CoordinateLevelLoad()"
+   "text": "Coordinate a numbered level load while preserving the low C64 workspace needed by the caller. Inputs: level selector in `$EC`; filename digit destination `$117E`. Outputs: loaded phase, restored `$0000-$03FF`, marker `$0267=$FF`, then transfer through `$3FF3`. Clobbers: A, X, flags and loader scratch; does not return after final handoff. Hardware: saves/restores zero page, stack, screen/vectors; resets KERNAL/CIA/VIC state and calls the loader before jumping to the selected phase entry."
   },
   {
    "address": 5931,
    "type": "line",
-   "text": "Request disk side two when A is character `3`, wait for the shared Space/control-port-1-fire line to be released, render `INSERT SIDE TWO` and `PRESS SPACE`, then wait for that line to be pressed. Inputs: A contains the side/level character. Outputs: prompt rendered and input acknowledged for side two, otherwise immediate return. Clobbers: A, X, Y, flags, renderer scratch, and the stacked return address through `$1583`. Hardware: writes `$DC00=$7F` to select keyboard column 7 and reads CIA 1 port B `$DC01` bit 4, which is Space's matrix line and is shared with control-port-1 fire.\nfunction: undefined HandleDiskSidePrompt()"
+   "text": "Request disk side two when A is character `3`, wait for the shared Space/control-port-1-fire line to be released, render `INSERT SIDE TWO` and `PRESS SPACE`, then wait for that line to be pressed. Inputs: A contains the side/level character. Outputs: prompt rendered and input acknowledged for side two, otherwise immediate return. Clobbers: A, X, Y, flags, renderer scratch, and the stacked return address through `$1583`. Hardware: writes `$DC00=$7F` to select keyboard column 7 and reads CIA 1 port B `$DC01` bit 4, which is Space's matrix line and is shared with control-port-1 fire."
   },
   {
    "address": 5941,
@@ -4430,7 +4430,7 @@
   {
    "address": 5999,
    "type": "line",
-   "text": "Wait until the shared Space/control-port-1-fire line is released before displaying and accepting the disk-side prompt. Inputs: CIA 1 keyboard/control-port lines. Outputs: returns through the screen-renderer veneer when bit 4 is high. Clobbers: A and flags. Hardware: writes `$DC00=$7F` to select keyboard column 7, then polls CIA 1 port B `$DC01` bit 4 and jumps to `$140E` after release.\nfunction: undefined WaitForSpaceOrPort1FireRelease()"
+   "text": "Wait until the shared Space/control-port-1-fire line is released before displaying and accepting the disk-side prompt. Inputs: CIA 1 keyboard/control-port lines. Outputs: returns through the screen-renderer veneer when bit 4 is high. Clobbers: A and flags. Hardware: writes `$DC00=$7F` to select keyboard column 7, then polls CIA 1 port B `$DC01` bit 4 and jumps to `$140E` after release."
   },
   {
    "address": 6017,
@@ -4455,7 +4455,7 @@
   {
    "address": 6134,
    "type": "line",
-   "text": "Decode one source tile, reconcile its two encoded color descriptions, and merge its eight rows into the destination multicolor bitmap\nInputs: $04/$05 points to the eight-byte source tile; $0E/$0F points to destination bitmap rows; $10/$11 and $12/$13 point to packed screen-color descriptions; $14/$15 points to the paired color descriptor; $E8 selects normal or lookup-remapped source order\nOutputs: writes reconciled packed colors through ($10),Y, ($12),Y, and ($14),Y and merges eight transformed rows through ($0E),Y; palette slots and compositor scratch are updated\nClobbers: A, X, Y, flags, broad compositor scratch including $0A-$41, $BC-$BE, $E3-$E9, and $0112-$011A\nHardware: no register writes; writes color RAM when $14/$15 selects the $D800 window, otherwise only RAM\nfunction: undefined ResidentKernelEntry()"
+   "text": "Decode one source tile, reconcile its two encoded color descriptions, and merge its eight rows into the destination multicolor bitmap\nInputs: $04/$05 points to the eight-byte source tile; $0E/$0F points to destination bitmap rows; $10/$11 and $12/$13 point to packed screen-color descriptions; $14/$15 points to the paired color descriptor; $E8 selects normal or lookup-remapped source order\nOutputs: writes reconciled packed colors through ($10),Y, ($12),Y, and ($14),Y and merges eight transformed rows through ($0E),Y; palette slots and compositor scratch are updated\nClobbers: A, X, Y, flags, broad compositor scratch including $0A-$41, $BC-$BE, $E3-$E9, and $0112-$011A\nHardware: no register writes; writes color RAM when $14/$15 selects the $D800 window, otherwise only RAM"
   },
   {
    "address": 6547,
@@ -4690,7 +4690,7 @@
   {
    "address": 7216,
    "type": "line",
-   "text": "SaveLevelState, which ResolveLevelCompletion calls before the next level loads ($907C in Central Park): it keeps what the player takes into the next level in $03B0-$03D7, which the loads leave alone. If item 8's flag $03E0 is set it adds one to item 26's flag $03F2 and clears $03E0; it clears bit 7 of item 4's flag $03DC; then it copies the 40 item flags $03D8-$03FF to $03B0-$03D7 and, over the last twelve of those, the six score digits ($1CA0, to $03CC) and the clock's six digits (to $03D2, through the offsets at $1D3F). The next level's start copies it all back (InitializeSceneAndActorBuffers, $9204 in Central Park), clearing items 17 to 25, the level's own."
+   "text": "SaveLevelState, which ResolveLevelCompletion calls before the next level loads ($907C in Central Park): it keeps what the player takes into the next level in $03B0-$03D7, which the loads leave alone. If item 8's flag $03E0 is set it adds one to item 26's flag $03F2 and clears $03E0; it clears bit 7 of item 4's flag $03DC; then it copies the 40 item flags $03D8-$03FF to $03B0-$03D7 and, over the last twelve of those, the six score digits ($1CA0, to $03CC) and the clock's six digits (to $03D2, through the offsets at $1D3F). The next level's start copies it all back (InitializeLevelStatus, $9204 in Central Park), clearing items 17 to 25, the level's own."
   },
   {
    "address": 7269,
@@ -4790,7 +4790,7 @@
   {
    "address": 7589,
    "type": "line",
-   "text": "eight masks 1<<slot used by sprite enable/state consumers. Health-display tables use a separate full/empty glyph path when index is at least $16; inventory limits include six independent slots. The tables are authored layout data, not glyph bitmaps."
+   "text": "Eight bytes, $01, $02, $04 and so on to $80, a single bit for each of the numbers 0 to 7. The levels read them two ways: by a heading from 0 to 7, for that direction's bit in $1E (in Central Park at $A4AE, $A724 and $A76D), and in the input scan (Central Park's $943C), which writes each byte inverted to $DC00 to select one row of the keyboard and reads that row's keys from $DC01."
   },
   {
    "address": 7597,

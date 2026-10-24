@@ -18,15 +18,18 @@ other addresses, and their facts give only what differs.
 - The level's code from `$8A0F`, with its tables among it; animations
   `$C2C4-$C4C1` (32 scripts) and eleven more between the frames; frames:
   106 pointers at `FramePointers` (`$C4C2-$C595`) to the frame records.
-- Packed sprites: 162 pointers at `SpriteSourcePointers` (`$CE54-$CF97`),
-  each plus `$0E54` the address of its record, and the records
-  `$CF98-$E927`, part of them in the RAM under the I/O; two groups of 40
-  more at `AuxCompressedSpriteGroup1` (`$E979`) and
+- Packed sprites: 162 pointers at `SpriteSourcePointers`
+  (`$CE54-$CF97`), each plus `$0E54` the address of its record, and the
+  records `$CF98-$E927`, part of them in the RAM under the I/O; two
+  groups of 40 more at `AuxCompressedSpriteGroup1` (`$E979`) and
   `AuxCompressedSpriteGroup2` (`$F1B2`), each word an offset from its
-  group, biased by `$C000`. The eight kinds of extra sprite an actor can
-  carry are pointed to from `AuxSpriteGroupPointers` (`$E928`): none,
-  the two groups, and five kinds drawn from unpacked images of 64 bytes
-  at `$F920`.
+  group, biased by `$C000`. The enemy of an area may carry an extra
+  sprite, its weapon: the high nibble of the area's entry in
+  `enemy_area_selector` (`$B67F`) picks one of the eight pointers at
+  `AuxSpriteGroupPointers` (`$E928`), none or one of the two groups. The
+  other five pointers lead to the unpacked images at `$F920`, kinds no
+  area's enemy has; frames whose header has bit 5 set draw those images,
+  14 of 64 bytes, as they are.
 - Panel pictures: 17 pointers at `UiImagePointers` (`$FCA0`) to the
   pictures of the items, four cells by two (size byte `$42`), at
   `$FCC2-$FEF8` and the engine's `$3F40`.

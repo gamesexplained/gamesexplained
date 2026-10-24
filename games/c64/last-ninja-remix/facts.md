@@ -128,7 +128,7 @@ bitmap `$2000`.
   shown values (`$022B`, `$022C`) follow them a step at a time.
 - Lives: item 26's flag (`$03F2`), 4 at the start (the state
   `MachineSetup` leaves, engine `$0EAF`). Each death takes one
-  (`BlankAndRedrawTransitionFrame`, `$93DB` in Central Park); when none
+  (`LoseLife`, `$93DB` in Central Park); when none
   is left, item 8 (`$03E0`), a spare life, is spent if the player has it
   (`$9012`), and otherwise GAME OVER is printed and the level's credits
   card comes back (`ResetSceneAfterDeath`). The end of a level also turns
@@ -178,10 +178,32 @@ Seed 20261024, population 11,351 comments over the 16 parts: 4,441
 written one at a time (by hand, or Central Park's carried over to the
 routine at the same place in each later level) and 6,910 generated from
 templates, one template for each kind of record (packed sprites, frames,
-scenes, pointers and the like). A sample of 60 from the first and 20 from
-the second, the 60 spread over the parts by their size, is being checked
-against the bytes by an agent that wrote none of them; its count goes
-here.
+scenes, pointers and the like). A sample of 60 from the first and 20
+from the second, the 60 spread over the parts by their size, was checked
+against the bytes by an agent on claude-opus-5-5[1m] that wrote none of
+them. 19 of the 80 were wrong in a detail: 15 of the 60 and 4 of the 20.
+That is 24 % (95 % interval 16 % to 34 %), or 22 % with each stratum
+weighted by its size, and a lower bound, since a checker misses some.
+What was wrong: the frame templates called the second header byte a
+vertical offset, where the composer doubles it into the mirror width for
+an actor facing the other way, and said the actor's state always picks
+one of a frame's three alternatives, where the low two bits of `$92`
+pick one or none; the wall template left out the script command byte
+that follows a length with bit 0 set; the exit thresholds' template
+missed that byte 0 belongs to no area and that the closing `$FF` is
+compared too; the pitch-list template named the wrong instruction as the
+table's reader; the unpacked images' template said two extra-sprite
+kinds use them, which no area's enemy has. Central Park's comments,
+carried to the same routines in every level, misread the sprite blitter
+(it overwrites the sprite, and `$F1` is the mirror flag), the routine
+placing a part (which does not keep A), the enemy's steering, the
+dissolve (one random mask and one random offset a pass, over the sprite
+buffers), the routine setting up a level's status (which builds no
+scene), a negative height change (which wraps), the timing of the
+player's actions, where two no-op handlers return to, and a register
+list that left out `$6D`; a Basement note said several walls carry a
+command that one wall carries. All 19 were corrected, each with every
+comment that said the same: 1,109 comments changed in all.
 
 ## Live tests
 

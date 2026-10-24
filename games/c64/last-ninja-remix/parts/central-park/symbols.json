@@ -2952,37 +2952,37 @@
   },
   {
    "address": 37346,
-   "name": "InitializeSceneAndActorBuffers",
+   "name": "InitializeLevelStatus",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 37364,
-   "name": "InitializeSceneAndActorBuffersLocal91f4",
+   "name": "InitializeLevelStatusLocal91f4",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 37382,
-   "name": "InitializeSceneAndActorBuffersLocal9206",
+   "name": "InitializeLevelStatusLocal9206",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 37395,
-   "name": "InitializeSceneAndActorBuffersLocal9213",
+   "name": "InitializeLevelStatusLocal9213",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 37403,
-   "name": "InitializeSceneAndActorBuffersLocal921b",
+   "name": "InitializeLevelStatusLocal921b",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 37429,
-   "name": "InitializeSceneAndActorBuffersLocal9235",
+   "name": "InitializeLevelStatusLocal9235",
    "type": "Branch",
    "kind": "user"
   },
@@ -3126,7 +3126,7 @@
   },
   {
    "address": 37828,
-   "name": "BlankAndRedrawTransitionFrame",
+   "name": "LoseLife",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -6414,37 +6414,37 @@
   },
   {
    "address": 46154,
-   "name": "DissolveAndClearBitmapStrip",
+   "name": "DissolveSpriteImages",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 46166,
-   "name": "DissolveAndClearBitmapStripLocalb456",
+   "name": "DissolveSpriteImagesLocalb456",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 46328,
-   "name": "DissolveAndClearBitmapStripLocalb4f8",
+   "name": "DissolveSpriteImagesLocalb4f8",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 46339,
-   "name": "DissolveAndClearBitmapStripLocalb503",
+   "name": "DissolveSpriteImagesLocalb503",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 46344,
-   "name": "DissolveAndClearBitmapStripLocalb508",
+   "name": "DissolveSpriteImagesLocalb508",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 46347,
-   "name": "DissolveAndClearBitmapStripLocalb50b",
+   "name": "DissolveSpriteImagesLocalb50b",
    "type": "Branch",
    "kind": "user"
   },
@@ -13631,7 +13631,7 @@
   {
    "address": 36525,
    "type": "line",
-   "text": "Initialize Central Park gameplay and enter its main engine loop. Inputs: resident loader state restored and Central Park data active. Outputs: initialized engine flags/state followed by permanent transfer to the loop at `$8EE0`. Clobbers: A, X, Y, flags and engine state including `$AA` and `$03CB`. Hardware: invokes display/input helpers and sets VIC-II background color `$D021=0` before entering the loop.\nfunction: undefined EngineEntry()"
+   "text": "Initialize Central Park gameplay and enter its main engine loop. Inputs: resident loader state restored and Central Park data active. Outputs: initialized engine flags/state followed by permanent transfer to the loop at `$8EE0`. Clobbers: A, X, Y, flags and engine state including `$AA` and `$03CB`. Hardware: invokes display/input helpers and sets VIC-II background color `$D021=0` before entering the loop."
   },
   {
    "address": 36565,
@@ -13776,7 +13776,7 @@
   {
    "address": 37346,
    "type": "line",
-   "text": "Construct the initial scene, actor, collision, and UI buffers. Inputs: current room selection and Central Park initialization tables. Outputs: actor slots, collision state, UI state, and initial status presentation are initialized. Clobbers: A, X, Y, flags, and scene and actor scratch. Hardware: changes hardware-visible UI or screen RAM through the tail-called renderer."
+   "text": "Set up the status of a level as it starts. It clears $022B, $022C, $70, $89 and $A0, fills the enemy meter's 30 slots at $3F92 and both energies ($0229, $022A) with $2C, a full bar, and sets $7A to $AD. It copies the item flags saved when the level began ($03B0-$03D7) over the live ones ($03D8-$03FF) and clears $03E9-$03F1 among them, then puts the score ($1CA0) and the clock's digits back from the saved copy ($03CC-$03D7). It sets $87 to $BF, clears $011B-$013E and draws panel picture 0 at both of its places (DrawUiImageRecord, $B411, with A = 0 and X = 0, then 1). It builds no scene or wall data. Clobbers: A, X, Y, flags and the drawing routine's scratch."
   },
   {
    "address": 37449,
@@ -13826,7 +13826,7 @@
   {
    "address": 37828,
    "type": "line",
-   "text": "Perform one blank, dissolve, delay, and redraw step during a transition. Inputs: current renderer state and transition counter. Outputs: a fresh transition frame is displayed and the counter is decremented. Clobbers: A, X, Y, flags, and renderer scratch. Hardware: changes visible bitmap and screen state and may change VIC-II background color through called helpers."
+   "text": "The player's death, once the fall is over: it clears $F2, crumbles the sprites away (DissolveSpriteImages, $B44A), runs the status panel's reveal again ($1F75), waits 25 ticks (WaitEngineTicks, $A8F1), clears the screen ($140E), sets the background to black and takes one from the lives, item 26's flag at $03F2. The caller tests the Z flag that the DEC leaves: with no lives left it spends a spare life, item 8, if the player has one, and otherwise the game is over. Clobbers: A, X, Y and flags."
   },
   {
    "address": 37855,
@@ -14196,7 +14196,7 @@
   {
    "address": 41384,
    "type": "line",
-   "text": "Return immediately for script commands that intentionally have no action.\nInputs: None.\nOutputs: Returns to the stored-return dispatcher without changing registers, flags, RAM, stack beyond RTS, or hardware.\nClobbers: No registers or flags; RTS consumes the dispatcher-supplied return address."
+   "text": "Return at once, for the script commands that have no action. Its RTS returns to the code that called ScriptDispatch: the address the dispatcher pushed was used up by the RTS at $A11D that jumped here. Inputs and outputs: none. Clobbers: nothing."
   },
   {
    "address": 41385,
@@ -14376,7 +14376,7 @@
   {
    "address": 41986,
    "type": "line",
-   "text": "Apply two units of player damage and consume the pending script command.\nInputs: Player energy $0229 and command $81.\nOutputs: Calls DamagePlayer with A=2, then clears $81.\nClobbers: A, flags, $0229, possible death latch $B6, and $81; helper scratch is volatile."
+   "text": "Apply two units of player damage and consume the pending script command.\nInputs: Player energy $0229 and command $81.\nOutputs: Calls DamagePlayer with A=2, then clears $81.\nClobbers: A, flags, $0229 and $81; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 41996,
@@ -14466,7 +14466,7 @@
   {
    "address": 42644,
    "type": "line",
-   "text": "Eight alternating delays 4,8 indexed by normalized direction Y. $A66D compares elapsed tick difference against the chosen threshold before deriving action code $84*4+8 and selecting animation. This table controls action timing, not the joystick direction conversion."
+   "text": "Eight alternating delays 4,8 indexed by normalized direction Y. $A66D compares elapsed tick difference against the chosen threshold before deriving action code $84*4+8, plus $20 when $70 is 0 or 4 and up, and selecting animation. This table controls action timing, not the joystick direction conversion."
   },
   {
    "address": 42652,
@@ -14501,7 +14501,7 @@
   {
    "address": 42953,
    "type": "line",
-   "text": "Apply a signed vertical or height delta to an actor with saturation. Inputs: A is the signed delta and X is the actor offset. Outputs: $74,X is updated within its limits or left unchanged when inactive or inhibited. Clobbers: A, flags, and $74,X; X and Y are preserved."
+   "text": "Add the signed number in A to the actor's $74,X, unless $EF is set or $74,X is 0 or $FF. A positive sum is held at $FF; a negative one is not held at zero but wraps, since the BCS at $A7E8 goes on to the next instruction either way. Inputs: A, and X the actor's offset. Outputs: $74,X. Clobbers: A and flags; X and Y are kept."
   },
   {
    "address": 42989,
@@ -14801,7 +14801,7 @@
   {
    "address": 44805,
    "type": "line",
-   "text": "Navigate the opponent relative to the player and collision geometry, selecting movement, reset, or attack states from distance and heading tests.\nInputs: Player/opponent positions $54/$55/$56/$57, headings $68/$6A/$6B, behavior fields $CB/$72, saved coordinates $028A/$028B/$028E/$028F, tick $E2, and collision/distance helpers $B30C/$B30E/$B32E/$B330/$B346.\nOutputs: Clamps/wraps candidate coordinates, may restore the saved player position and enter state 6, may enter state 9 after a distance comparison, otherwise updates desired/current opponent heading and setup state; several rejection paths reset through state 5.\nClobbers: A, X, flags, $1D-$21, $54/$56, $6A/$6B/$6F, $CF, $028A/$028B/$028E/$028F/$02BE, and helper scratch."
+   "text": "Steer the enemy toward the player. Inputs: the player's position and heading ($54/$55, $68), the enemy's position ($56/$57), its profile $72 and behaviour $CB, the positions kept in $028A/$028B and $028E/$028F, and the tick $E2. It aims at a point level with the player, as far to one side as the profile's entry in $B2FD says, on the side the enemy is on (judged from the player's X moved 8 pixels the way the player faces). Within a Manhattan distance of 6 of that point, or when the point would fall off the screen, it goes to RetargetAiToPlayer ($AF42): that keeps the player's position in $028A/$028B, faces the enemy toward the player and enters state 6. It also holds the enemy's X between 4 and $F7, retargeting when it has to. With $CB at $80 and the player 56 or more away, it enters state 9 when the player is at least as far from the position in $028E/$028F as the enemy is (half the X distance plus half the Y distance each), and keeps the player's position there. Otherwise it turns the enemy toward the point (a turn that changes bit 2 of the heading waits until 20 ticks have passed since the last, kept in $02BE) and sets the heading $6A, from the table at $B304 when the vertical distance is the larger. Outputs: $6A, $6B, $6F, $CF and the enemy's action. Clobbers: A, X, Y, flags, $1C-$21, $56, $028A/$028B, $028E/$028F and $02BE."
   },
   {
    "address": 44866,
@@ -14836,7 +14836,7 @@
   {
    "address": 45257,
    "type": "line",
-   "text": "Return immediately for the intentionally inactive AI state-table entry.\nInputs: None.\nOutputs: Returns through the stored-return dispatcher without changing registers, flags, RAM, or hardware.\nClobbers: No registers or flags; RTS consumes the dispatcher-supplied return address."
+   "text": "Return at once, for the enemy states that do nothing. Its RTS returns to the code that called OpponentAI: the address the dispatcher pushed at $ADDE-$ADE5 was used up by the RTS at $ADE6 that jumped here. Inputs and outputs: none. Clobbers: nothing."
   },
   {
    "address": 45258,
@@ -14971,12 +14971,12 @@
   {
    "address": 46154,
    "type": "line",
-   "text": "Dissolve and erase the display strip at $0C00-$0FFF. Inputs: current strip contents and pseudo-random state. Outputs: several masked dissolve passes are displayed and the region is finally cleared. Clobbers: A, X, Y, flags, and random and delay scratch. Hardware: changes hardware-visible bitmap or screen RAM; no direct VIC-II register write."
+   "text": "Crumble the sprites away, then clear them: 769 passes, each ANDing one random mask from $B51B into one random byte (0 to 63) of all 16 sprite buffers at $0C00-$0FFF, the two sets of the eight slots' images, with a short wait after each; then it clears all 1,024 bytes. The sprites on screen change because their images do. Inputs: the random-number state. Clobbers: A, X, Y, flags, $1E-$21 and the random-number state."
   },
   {
    "address": 46363,
    "type": "line",
-   "text": "The masks $3F, $CF, $F3 and $FC, each clearing one of the four two-bit pixels of a multicolour byte: the dissolve at $B460 takes a random number from 0 to 3 for each byte of the strip and ANDs that mask into it, so the picture crumbles a pixel at a time."
+   "text": "The masks $3F, $CF, $F3 and $FC, each clearing one of the four two-bit pixels of a multicolour byte. Each pass of DissolveSpriteImages ($B456) picks one random offset from 0 to 63 and one of these masks at random, and ANDs that mask into the byte at that offset in all 16 sprite buffers at $0C00-$0FFF, so the sprites crumble a pixel at a time."
   },
   {
    "address": 46367,
@@ -14986,7 +14986,7 @@
   {
    "address": 46410,
    "type": "line",
-   "text": "Subtract unsigned A from player health $0229 with saturation at zero. Positive remaining health preserves action $6D and death latch $B6. Only the zero-result path sets $6D=($69>>1)+$24 and $B6=$FF. X/Y are preserved; no hardware registers are written. Live tests cover positive, equal, excessive and zero damage, including health 0 and 255."
+   "text": "Subtract unsigned A from player health $0229 with saturation at zero. Positive remaining health preserves action $6D and death latch $B6. Only the zero-result path sets $6D=($69>>1)+$24 and $B6=$FF. X/Y are preserved; no hardware registers are written."
   },
   {
    "address": 46440,
@@ -15156,7 +15156,7 @@
   {
    "address": 48085,
    "type": "line",
-   "text": "Enter the Central Park playable phase's common sprite-composition body with the mode already prepared by the masked-mode caller.\nInputs: A/$F1 and $92 contain the prepared composition mode; X selects the logical sprite group; Y selects the frame descriptor; CPU port $01 is in the engine's normal I/O-visible state.\nOutputs: Decrements $01 for the required high-memory RAM visibility, resolves and composes the selected frame into logical sprite work buffers, restores $01 before return, and records composition state.\nClobbers: A, X, Y, processor flags, $01 transiently, $02/$03, $92/$97/$9F, $F1, and logical sprite work buffers.\nHardware: Changes CPU-port $01 transiently by one decrement and a balancing increment to expose the required high-memory RAM; writes sprite work buffers, not VIC-II registers directly."
+   "text": "Enter the Central Park playable phase's common sprite-composition body with the mode already prepared by the masked-mode caller.\nInputs: $F1 is the mirror flag, set when the actor faces the other way, and the low two bits of $92 pick one of a six-part frame's three alternatives; X selects the logical sprite group; Y selects the frame descriptor; CPU port $01 is in the engine's normal I/O-visible state.\nOutputs: Decrements $01 for the required high-memory RAM visibility, resolves and composes the selected frame into logical sprite work buffers, restores $01 before return, and records composition state.\nClobbers: A, X, Y, processor flags, $01 transiently, $02/$03, $92/$97/$9F, $F1, and logical sprite work buffers.\nHardware: Changes CPU-port $01 transiently by one decrement and a balancing increment to expose the required high-memory RAM; writes sprite work buffers, not VIC-II registers directly."
   },
   {
    "address": 48321,
@@ -15181,12 +15181,12 @@
   {
    "address": 48485,
    "type": "line",
-   "text": "Place an already decoded sprite part into the selected composite slot. Inputs: A is preserved across setup, $C5/$C6 hold saved X/Y, and ($02),Y addresses the part record. Outputs: position and attribute arrays are populated and the preserved A is restored by the shared tail. Clobbers: X, Y, flags, and compositor scratch. Hardware: changes sprite RAM only."
+   "text": "Place one part of a frame and draw it into its sprite. Inputs: A chooses the source for the blitter (nonzero, the sprite just unpacked into $02C0; zero, the unpacked image at ($06)); $C5 the sprite slot; $C6 the part's offset in the frame record at ($02); $F1 the mirror flag and $97 the mirror width; the actor's position, $54/$55 for slots 0 to 3 and $56/$57 for slots 4 to 7. It selects the slot's sprite buffer ($BEC1), waits until bit 1 of the slot's flags at $0218 is clear, and sets the sprite's X ($0200/$0208: the actor's X plus the part's X offset less $30, or with $F1 set plus the mirror width less that offset), its Y ($0210, the actor's Y plus the part's Y offset) and its attributes ($0220, with bit 7, the multicolour flag, also in $0238). Then it falls into BlitSpritePartWithMask with A. Outputs: X = $C5, Y = $C6, moved on past the part; A as BlitSpritePartWithMask leaves it. Clobbers: A, flags, $04/$05, $1F and $42-$44."
   },
   {
    "address": 48589,
    "type": "line",
-   "text": "Merge a sprite part into its composite destination under the current mask mode. Inputs: decoded source, destination pointer, placement and flip state, and mode $F1. Outputs: the 63-byte destination sprite region is updated. Clobbers: A, X, Y, flags, and mask and pointer scratch. Hardware: changes sprite RAM only."
+   "text": "Draw a part into its slot's sprite at ($04), overwriting what is there: each of the 63 bytes is the source ANDed with a mask for its column ($42-$44), worked out from the sprite's X ($0200/$0208), which hides what lies past the right edge of the play window. With A nonzero the source is the sprite unpacked into $02C0 (BlitCachedSpriteMask, $BED7); with A zero, the image at ($06). When the mirror flag $F1 is set the bytes go through the reversal table at $1300 (hires) or $1200 (multicolour, when bit 7 of $0238 is set) with the outer columns swapped. Then, when the sprite's Y ($0210) is below the line in $9E, it clears that many rows from the bottom, 21 at most. Outputs: X = $C5, Y = $C6, and A 0 or the difference $0210 less $9E. Clobbers: A, flags, $1F and $42-$44."
   },
   {
    "address": 48833,
@@ -15196,7 +15196,7 @@
   {
    "address": 48855,
    "type": "line",
-   "text": "Merge the cached decoded sprite mask into the active destination. Inputs: $02C0 cache, destination pointer, three masks, and mode $F1. Outputs: the transformed destination sprite bytes are updated. Clobbers: A, X, Y, flags, and mask scratch. Hardware: changes sprite RAM only."
+   "text": "Copy the sprite unpacked into $02C0 into the slot's sprite at ($04), each byte ANDed with the mask for its column ($42-$44): as it is, or, when the mirror flag $F1 is set, through the bit-reversal table at $1300 with the outer columns swapped. Clobbers: A, X, Y and flags."
   },
   {
    "address": 48926,
@@ -16241,417 +16241,417 @@
   {
    "address": 50582,
    "type": "line",
-   "text": "Central Park frame 008: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 17, 1, 9, 83, 84, 76. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C5AF."
+   "text": "Central Park frame 008: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 17, 1, 9, 83, 84, 76. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C5AF."
   },
   {
    "address": 50608,
    "type": "line",
-   "text": "Central Park frame 009: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 18, 2, 10, 83, 84, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C5C9."
+   "text": "Central Park frame 009: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 18, 2, 10, 83, 84, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C5C9."
   },
   {
    "address": 50634,
    "type": "line",
-   "text": "Central Park frame 010: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 19, 3, 11, 83, 84, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C5E3."
+   "text": "Central Park frame 010: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 19, 3, 11, 83, 84, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C5E3."
   },
   {
    "address": 50660,
    "type": "line",
-   "text": "Central Park frame 011: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 20, 4, 12, 82, 84, 76. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C5FD."
+   "text": "Central Park frame 011: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 20, 4, 12, 82, 84, 76. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C5FD."
   },
   {
    "address": 50686,
    "type": "line",
-   "text": "Central Park frame 012: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 21, 5, 13, 82, 84, 86. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C617."
+   "text": "Central Park frame 012: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 21, 5, 13, 82, 84, 86. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C617."
   },
   {
    "address": 50712,
    "type": "line",
-   "text": "Central Park frame 013: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 22, 6, 14, 82, 84, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C631."
+   "text": "Central Park frame 013: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 22, 6, 14, 82, 84, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C631."
   },
   {
    "address": 50738,
    "type": "line",
-   "text": "Central Park frame 014: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 23, 7, 15, 82, 84, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C64B."
+   "text": "Central Park frame 014: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 23, 7, 15, 82, 84, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C64B."
   },
   {
    "address": 50764,
    "type": "line",
-   "text": "Central Park frame 015: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 16, 0, 8, 82, 84, 86. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C665."
+   "text": "Central Park frame 015: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 16, 0, 8, 82, 84, 86. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C665."
   },
   {
    "address": 50790,
    "type": "line",
-   "text": "Central Park frame 000: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 93, 123, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C67F."
+   "text": "Central Park frame 000: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 93, 123, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C67F."
   },
   {
    "address": 50816,
    "type": "line",
-   "text": "Central Park frame 001: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 94, 124, 147, 141, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C699."
+   "text": "Central Park frame 001: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 94, 124, 147, 141, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C699."
   },
   {
    "address": 50842,
    "type": "line",
-   "text": "Central Park frame 002: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 95, 125, 147, 141, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C6B3."
+   "text": "Central Park frame 002: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 95, 125, 147, 141, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C6B3."
   },
   {
    "address": 50868,
    "type": "line",
-   "text": "Central Park frame 003: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 96, 126, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C6CD."
+   "text": "Central Park frame 003: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 96, 126, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C6CD."
   },
   {
    "address": 50894,
    "type": "line",
-   "text": "Central Park frame 004: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 97, 127, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C6E7."
+   "text": "Central Park frame 004: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 97, 127, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C6E7."
   },
   {
    "address": 50920,
    "type": "line",
-   "text": "Central Park frame 005: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 98, 128, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C701."
+   "text": "Central Park frame 005: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 98, 128, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C701."
   },
   {
    "address": 50946,
    "type": "line",
-   "text": "Central Park frame 006: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 99, 129, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C71B."
+   "text": "Central Park frame 006: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 99, 129, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C71B."
   },
   {
    "address": 50972,
    "type": "line",
-   "text": "Central Park frame 007: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 100, 130, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C735."
+   "text": "Central Park frame 007: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 100, 130, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C735."
   },
   {
    "address": 50998,
    "type": "line",
-   "text": "Central Park frame 017: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 65, 37, 45, 89, 84, 79. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C74F."
+   "text": "Central Park frame 017: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 65, 37, 45, 89, 84, 79. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C74F."
   },
   {
    "address": 51024,
    "type": "line",
-   "text": "Central Park frame 016: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 100, 137, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C769."
+   "text": "Central Park frame 016: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 100, 137, 147, 141, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C769."
   },
   {
    "address": 51050,
    "type": "line",
-   "text": "Central Park frame 055: header $83, doubled-coordinate input 8, and 4 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 59, 31, 49, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C77B."
+   "text": "Central Park frame 055: header $83, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 4 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 59, 31, 49, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C77B."
   },
   {
    "address": 51068,
    "type": "line",
-   "text": "Central Park frame 056: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 69, 26, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C789."
+   "text": "Central Park frame 056: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 69, 26, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C789."
   },
   {
    "address": 51082,
    "type": "line",
-   "text": "Central Park frame 057: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 55, 27, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C797."
+   "text": "Central Park frame 057: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 55, 27, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C797."
   },
   {
    "address": 51096,
    "type": "line",
-   "text": "Central Park frame 058: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 24, 28, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7A5."
+   "text": "Central Park frame 058: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 24, 28, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7A5."
   },
   {
    "address": 51110,
    "type": "line",
-   "text": "Central Park frame 050: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 62, 34, 46, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C7BF."
+   "text": "Central Park frame 050: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 62, 34, 46, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C7BF."
   },
   {
    "address": 51136,
    "type": "line",
-   "text": "Central Park frame 051: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7CD."
+   "text": "Central Park frame 051: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7CD."
   },
   {
    "address": 51150,
    "type": "line",
-   "text": "Central Park frame 052: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 106, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7D7."
+   "text": "Central Park frame 052: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 106, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7D7."
   },
   {
    "address": 51160,
    "type": "line",
-   "text": "Central Park frame 053: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 107, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7E1."
+   "text": "Central Park frame 053: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 107, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7E1."
   },
   {
    "address": 51170,
    "type": "line",
-   "text": "Central Park frame 054: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 108, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7EB."
+   "text": "Central Park frame 054: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 108, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C7EB."
   },
   {
    "address": 51180,
    "type": "line",
-   "text": "Central Park frame 049: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 116, 138, 151, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C805."
+   "text": "Central Park frame 049: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 116, 138, 151, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C805."
   },
   {
    "address": 51206,
    "type": "line",
-   "text": "Central Park frame 059: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C813."
+   "text": "Central Park frame 059: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C813."
   },
   {
    "address": 51220,
    "type": "line",
-   "text": "Central Park frame 060: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 108, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C81D."
+   "text": "Central Park frame 060: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 108, 146. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C81D."
   },
   {
    "address": 51230,
    "type": "line",
-   "text": "Central Park frame 061: header $83, doubled-coordinate input 8, and 4 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 59, 31, 49, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C82F."
+   "text": "Central Park frame 061: header $83, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 4 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 59, 31, 49, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C82F."
   },
   {
    "address": 51248,
    "type": "line",
-   "text": "Central Park frame 062: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 24, 28, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C83D."
+   "text": "Central Park frame 062: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 24, 28, 90. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $C83D."
   },
   {
    "address": 51262,
    "type": "line",
-   "text": "Central Park frame 063: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 116, 138, 147, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C857."
+   "text": "Central Park frame 063: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 116, 138, 147, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C857."
   },
   {
    "address": 51288,
    "type": "line",
-   "text": "Central Park frame 064: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 62, 34, 46, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C871."
+   "text": "Central Park frame 064: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 62, 34, 46, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C871."
   },
   {
    "address": 51314,
    "type": "line",
-   "text": "Central Park frame 048: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 45, 88, 78, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C88B."
+   "text": "Central Park frame 048: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 45, 88, 78, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C88B."
   },
   {
    "address": 51340,
    "type": "line",
-   "text": "Central Park frame 067: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 56, 25, 45, 91, 91, 77. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C8A5."
+   "text": "Central Park frame 067: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 56, 25, 45, 91, 91, 77. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C8A5."
   },
   {
    "address": 51366,
    "type": "line",
-   "text": "Central Park frame 068: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 63, 35, 45, empty, empty, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C8BF."
+   "text": "Central Park frame 068: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 63, 35, 45, empty, empty, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C8BF."
   },
   {
    "address": 51392,
    "type": "line",
-   "text": "Central Park frame 047: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 110, 137, 148, 132, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C8D9."
+   "text": "Central Park frame 047: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 110, 137, 148, 132, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C8D9."
   },
   {
    "address": 51418,
    "type": "line",
-   "text": "Central Park frame 065: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 111, 137, 147, 141, 155. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C8F3."
+   "text": "Central Park frame 065: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 111, 137, 147, 141, 155. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C8F3."
   },
   {
    "address": 51444,
    "type": "line",
-   "text": "Central Park frame 066: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 112, 137, empty, empty, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C90D."
+   "text": "Central Park frame 066: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 112, 137, empty, empty, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C90D."
   },
   {
    "address": 51470,
    "type": "line",
-   "text": "Central Park frame 021: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 66, 38, 47, 89, 84, 76. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C927."
+   "text": "Central Park frame 021: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 66, 38, 47, 89, 84, 76. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C927."
   },
   {
    "address": 51496,
    "type": "line",
-   "text": "Central Park frame 022: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 67, 39, 48, 91, 80, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C941."
+   "text": "Central Park frame 022: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 67, 39, 48, 91, 80, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C941."
   },
   {
    "address": 51522,
    "type": "line",
-   "text": "Central Park frame 023: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 66, 38, 47, 89, 84, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C95B."
+   "text": "Central Park frame 023: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 66, 38, 47, 89, 84, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C95B."
   },
   {
    "address": 51548,
    "type": "line",
-   "text": "Central Park frame 018: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 97, 137, 147, 141, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C975."
+   "text": "Central Park frame 018: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 97, 137, 147, 141, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C975."
   },
   {
    "address": 51574,
    "type": "line",
-   "text": "Central Park frame 019: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 120, 140, 150, 122, 154. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C98F."
+   "text": "Central Park frame 019: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 120, 140, 150, 122, 154. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C98F."
   },
   {
    "address": 51600,
    "type": "line",
-   "text": "Central Park frame 020: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 97, 137, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C9A9."
+   "text": "Central Park frame 020: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 97, 137, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C9A9."
   },
   {
    "address": 51626,
    "type": "line",
-   "text": "Central Park frame 026: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 71, 42, 54, 89, 84, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C9C3."
+   "text": "Central Park frame 026: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 71, 42, 54, 89, 84, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C9C3."
   },
   {
    "address": 51652,
    "type": "line",
-   "text": "Central Park frame 027: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 68, 40, 44, 89, 84, 77. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C9DD."
+   "text": "Central Park frame 027: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 68, 40, 44, 89, 84, 77. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C9DD."
   },
   {
    "address": 51678,
    "type": "line",
-   "text": "Central Park frame 024: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 115, 143, 147, 136, 154. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $C9F7."
+   "text": "Central Park frame 024: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 115, 143, 147, 136, 154. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $C9F7."
   },
   {
    "address": 51704,
    "type": "line",
-   "text": "Central Park frame 025: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 121, 144, 151, 136, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CA11."
+   "text": "Central Park frame 025: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 121, 144, 151, 136, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CA11."
   },
   {
    "address": 51730,
    "type": "line",
-   "text": "Central Park frame 031: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 71, 42, 45, 91, 80, 86. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CA2B."
+   "text": "Central Park frame 031: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 71, 42, 45, 91, 80, 86. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CA2B."
   },
   {
    "address": 51756,
    "type": "line",
-   "text": "Central Park frame 032: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 62, 34, 46, 91, 80, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CA45."
+   "text": "Central Park frame 032: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 62, 34, 46, 91, 80, 73. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CA45."
   },
   {
    "address": 51782,
    "type": "line",
-   "text": "Central Park frame 033: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 60, 32, 47, 91, 80, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CA5F."
+   "text": "Central Park frame 033: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 60, 32, 47, 91, 80, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CA5F."
   },
   {
    "address": 51808,
    "type": "line",
-   "text": "Central Park frame 028: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 114, 139, 150, 122, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CA79."
+   "text": "Central Park frame 028: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 114, 139, 150, 122, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CA79."
   },
   {
    "address": 51834,
    "type": "line",
-   "text": "Central Park frame 029: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 116, 138, 150, 122, 154. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CA93."
+   "text": "Central Park frame 029: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 116, 138, 150, 122, 154. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CA93."
   },
   {
    "address": 51860,
    "type": "line",
-   "text": "Central Park frame 030: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 117, 139, 150, 122, 142. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CAAD."
+   "text": "Central Park frame 030: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 117, 139, 150, 122, 142. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CAAD."
   },
   {
    "address": 51886,
    "type": "line",
-   "text": "Central Park frame 040: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 63, 35, 45, 91, 91, 77. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CAC7."
+   "text": "Central Park frame 040: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 63, 35, 45, 91, 91, 77. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CAC7."
   },
   {
    "address": 51912,
    "type": "line",
-   "text": "Central Park frame 041: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 61, 33, 48, 91, 80, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CAE1."
+   "text": "Central Park frame 041: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 61, 33, 48, 91, 80, 85. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CAE1."
   },
   {
    "address": 51938,
    "type": "line",
-   "text": "Central Park frame 034: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 112, 137, 150, 122, 142. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CAFB."
+   "text": "Central Park frame 034: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 112, 137, 150, 122, 142. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CAFB."
   },
   {
    "address": 51964,
    "type": "line",
-   "text": "Central Park frame 035: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 111, 137, 148, 132, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CB15."
+   "text": "Central Park frame 035: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 111, 137, 148, 132, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CB15."
   },
   {
    "address": 51990,
    "type": "line",
-   "text": "Central Park frame 036: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 113, 137, 147, 141, 153. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CB2F."
+   "text": "Central Park frame 036: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 113, 137, 147, 141, 153. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CB2F."
   },
   {
    "address": 52016,
    "type": "line",
-   "text": "Central Park frame 037: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 118, 137, 150, 122, 142. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CB49."
+   "text": "Central Park frame 037: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 118, 137, 150, 122, 142. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CB49."
   },
   {
    "address": 52042,
    "type": "line",
-   "text": "Central Park frame 038: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 105, 139, 148, 132, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CB63."
+   "text": "Central Park frame 038: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 105, 139, 148, 132, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CB63."
   },
   {
    "address": 52068,
    "type": "line",
-   "text": "Central Park frame 039: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 118, 137, 150, 122, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CB7D."
+   "text": "Central Park frame 039: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 118, 137, 150, 122, 149. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CB7D."
   },
   {
    "address": 52094,
    "type": "line",
-   "text": "Central Park frame 043: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 70, 41, 45, 83, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CB97."
+   "text": "Central Park frame 043: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 70, 41, 45, 83, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CB97."
   },
   {
    "address": 52120,
    "type": "line",
-   "text": "Central Park frame 042: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 119, 140, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CBB1."
+   "text": "Central Park frame 042: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 119, 140, 147, 141, 103. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CBB1."
   },
   {
    "address": 52146,
    "type": "line",
-   "text": "Central Park frame 044: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 72, 43, 51, 89, 84, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CBCB."
+   "text": "Central Park frame 044: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 72, 43, 51, 89, 84, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CBCB."
   },
   {
    "address": 52172,
    "type": "line",
-   "text": "Central Park frame 045: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 72, empty, 52, 91, 80, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CBE5."
+   "text": "Central Park frame 045: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 72, empty, 52, 91, 80, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CBE5."
   },
   {
    "address": 52198,
    "type": "line",
-   "text": "Central Park frame 046: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 72, empty, 53, 91, 91, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CBFF."
+   "text": "Central Park frame 046: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 72, empty, 53, 91, 91, empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CBFF."
   },
   {
    "address": 52224,
    "type": "line",
-   "text": "Central Park frame 071: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 58, 30, 45, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CC19."
+   "text": "Central Park frame 071: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 58, 30, 45, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CC19."
   },
   {
    "address": 52250,
    "type": "line",
-   "text": "Central Park frame 072: header $03, doubled-coordinate input 7, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 57, 29, 50, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CC33."
+   "text": "Central Park frame 072: header $03, then 7, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 57, 29, 50, 87, 81, 92. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CC33."
   },
   {
    "address": 52276,
    "type": "line",
-   "text": "Central Park frame 069: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 118, 137, 147, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CC4D."
+   "text": "Central Park frame 069: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 118, 137, 147, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CC4D."
   },
   {
    "address": 52302,
    "type": "line",
-   "text": "Central Park frame 070: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 109, 145, 151, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The component payload ends at $CC67."
+   "text": "Central Park frame 070: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 109, 145, 151, 136, 152. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The component payload ends at $CC67."
   },
   {
    "address": 52328,
    "type": "line",
-   "text": "Central Park frame 073: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 113, 137, 3, 0, 2. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The next pointer begins $CC76, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
+   "text": "Central Park frame 073: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 113, 137, 3, 0, 2. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The next pointer begins $CC76, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
   },
   {
    "address": 52342,
    "type": "line",
-   "text": "Central Park frame 074: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 104, 135, 3, 0, 2. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The next pointer begins $CC84, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
+   "text": "Central Park frame 074: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 104, 135, 3, 0, 2. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The next pointer begins $CC84, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
   },
   {
    "address": 52356,
    "type": "line",
-   "text": "Central Park frame 075: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 102, 133, 3, 0, 2. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The next pointer begins $CC92, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
+   "text": "Central Park frame 075: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 102, 133, 3, 0, 2. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The next pointer begins $CC92, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
   },
   {
    "address": 52370,
    "type": "line",
-   "text": "Central Park frame 076: header $03, doubled-coordinate input 8, and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 101, 134, 128, 0, 64. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The fixed six-slot path also supports actor-dependent auxiliary parts. The next pointer begins $CCA0, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
+   "text": "Central Park frame 076: header $03, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 6 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty, 101, 134, 128, 0, 64. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. The last three slots are alternatives: the low two bits of $92 pick one, or none when they are 0. The next pointer begins $CCA0, inside this fixed-slot read window; the interpretation depends on the auxiliary actor path."
   },
   {
    "address": 52384,
    "type": "line",
-   "text": "Central Park frame 077: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCA5."
+   "text": "Central Park frame 077: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: empty. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCA5."
   },
   {
    "address": 52390,
    "type": "line",
-   "text": "Central Park frame 083: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 8. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCB3."
+   "text": "Central Park frame 083: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 8. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCB3."
   },
   {
    "address": 52404,
    "type": "line",
-   "text": "Central Park frame 084: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 8. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCC1."
+   "text": "Central Park frame 084: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 8. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCC1."
   },
   {
    "address": 52418,
    "type": "line",
-   "text": "Central Park frame 085: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 8. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCCF."
+   "text": "Central Park frame 085: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 64, 36, 8. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCCF."
   },
   {
    "address": 52432,
    "type": "line",
-   "text": "Central Park frame 086: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 157, 64, 36. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCDD."
+   "text": "Central Park frame 086: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 157, 64, 36. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCDD."
   },
   {
    "address": 52446,
    "type": "line",
-   "text": "Central Park frame 087: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 64. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCE7."
+   "text": "Central Park frame 087: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 64. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCE7."
   },
   {
    "address": 52456,
@@ -16661,172 +16661,172 @@
   {
    "address": 52460,
    "type": "line",
-   "text": "Central Park frame 078: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCF5."
+   "text": "Central Park frame 078: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCF5."
   },
   {
    "address": 52470,
    "type": "line",
-   "text": "Central Park frame 079: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 113, 131. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCFF."
+   "text": "Central Park frame 079: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 113, 131. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CCFF."
   },
   {
    "address": 52480,
    "type": "line",
-   "text": "Central Park frame 080: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD09."
+   "text": "Central Park frame 080: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 105, 131. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD09."
   },
   {
    "address": 52490,
    "type": "line",
-   "text": "Central Park frame 081: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 157, 105. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD13."
+   "text": "Central Park frame 081: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 157, 105. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD13."
   },
   {
    "address": 52500,
    "type": "line",
-   "text": "Central Park frame 082: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 105. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD1D."
+   "text": "Central Park frame 082: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 105. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD1D."
   },
   {
    "address": 52510,
    "type": "line",
-   "text": "Central Park frame 088: header $82, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 156, 156. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD2B."
+   "text": "Central Park frame 088: header $82, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 156, 156. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD2B."
   },
   {
    "address": 52524,
    "type": "line",
-   "text": "Central Park frame 089: header $81, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 157. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD35."
+   "text": "Central Park frame 089: header $81, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 156, 157. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD35."
   },
   {
    "address": 52534,
    "type": "line",
-   "text": "Central Park frame 090: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 157. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD3B."
+   "text": "Central Park frame 090: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 157. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD3B."
   },
   {
    "address": 52540,
    "type": "line",
-   "text": "Central Park frame 091: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 158. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD41."
+   "text": "Central Park frame 091: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 158. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD41."
   },
   {
    "address": 52546,
    "type": "line",
-   "text": "Central Park frame 092: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 159. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD47."
+   "text": "Central Park frame 092: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 159. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD47."
   },
   {
    "address": 52552,
    "type": "line",
-   "text": "Central Park frame 093: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD4D."
+   "text": "Central Park frame 093: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD4D."
   },
   {
    "address": 52558,
    "type": "line",
-   "text": "Central Park frame 094: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 160. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD53."
+   "text": "Central Park frame 094: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 160. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD53."
   },
   {
    "address": 52564,
    "type": "line",
-   "text": "Central Park frame 095: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD59."
+   "text": "Central Park frame 095: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD59."
   },
   {
    "address": 52570,
    "type": "line",
-   "text": "Central Park frame 096: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD5F."
+   "text": "Central Park frame 096: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD5F."
   },
   {
    "address": 52576,
    "type": "line",
-   "text": "Central Park frame 097: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 159. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD65."
+   "text": "Central Park frame 097: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 159. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD65."
   },
   {
    "address": 52582,
    "type": "line",
-   "text": "Central Park frame 098: header $80, doubled-coordinate input 8, and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD6B."
+   "text": "Central Park frame 098: header $80, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 1 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 161. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CD6B."
   },
   {
    "address": 52588,
    "type": "line",
-   "text": "Late animation stream $CD6C-$CD7A, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CD6C: frame 78, delay 6, delta None, event None, next none; $CD6F: frame 79, delay 6, delta None, event None, next none; $CD72: frame 80, delay 6, delta None, event None, next none; $CD75: frame 81, delay None, delta None, event None, next none; $CD77: frame 82, delay None, delta None, event None, next $0000. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CD6C-$CD7A, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CD6C: control $1A, delay 6, frame 78; $CD6F: control $1A, delay 6, frame 79; $CD72: control $1A, delay 6, frame 80; $CD75: control $18, frame 81; $CD77: control $38, frame 82, stop."
   },
   {
    "address": 52603,
    "type": "line",
-   "text": "Late animation stream $CD7B-$CD89, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CD7B: frame 83, delay 6, delta None, event None, next none; $CD7E: frame 84, delay 6, delta None, event None, next none; $CD81: frame 85, delay 6, delta None, event None, next none; $CD84: frame 86, delay None, delta None, event None, next none; $CD86: frame 87, delay None, delta None, event None, next $0000. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CD7B-$CD89, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CD7B: control $1A, delay 6, frame 83; $CD7E: control $1A, delay 6, frame 84; $CD81: control $1A, delay 6, frame 85; $CD84: control $18, frame 86; $CD86: control $38, frame 87, stop."
   },
   {
    "address": 52618,
    "type": "line",
-   "text": "Late animation stream $CD8A-$CDA4, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CD8A: frame 88, delay None, delta None, event None, next none; $CD8C: frame 89, delay None, delta None, event None, next none; $CD8E: frame 90, delay None, delta None, event None, next none; $CD90: frame 91, delay None, delta None, event None, next none; $CD92: frame 92, delay None, delta None, event None, next none; $CD94: frame 93, delay None, delta None, event None, next none; $CD96: frame 94, delay None, delta None, event None, next none; $CD98: frame 95, delay None, delta None, event None, next none; $CD9A: frame 96, delay None, delta None, event None, next none; $CD9C: frame 97, delay None, delta None, event None, next none; $CD9E: frame 98, delay None, delta None, event None, next none; $CDA0: frame 77, delay None, delta None, event 3, next $0000. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CD8A-$CDA4, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CD8A: control $18, frame 88; $CD8C: control $18, frame 89; $CD8E: control $18, frame 90; $CD90: control $18, frame 91; $CD92: control $18, frame 92; $CD94: control $18, frame 93; $CD96: control $18, frame 94; $CD98: control $18, frame 95; $CD9A: control $18, frame 96; $CD9C: control $18, frame 97; $CD9E: control $18, frame 98; $CDA0: control $39, frame 77, event 3, stop."
   },
   {
    "address": 52645,
    "type": "line",
-   "text": "Late animation stream $CDA5-$CDAD, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CDA5: frame 78, delay 2, delta [0, 8], event None, next none; $CDAA: frame 78, delay None, delta None, event None, next $0000. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CDA5-$CDAD, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CDA5: control $9A, delay 2, frame 78, move +0,+8; $CDAA: control $38, frame 78, stop."
   },
   {
    "address": 52654,
    "type": "line",
-   "text": "Late animation stream $CDAE-$CDB6, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CDAE: frame 83, delay 2, delta [0, 8], event None, next none; $CDB3: frame 83, delay None, delta None, event None, next $0000. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CDAE-$CDB6, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CDAE: control $9A, delay 2, frame 83, move +0,+8; $CDB3: control $38, frame 83, stop."
   },
   {
    "address": 52663,
    "type": "line",
-   "text": "Late animation stream $CDB7-$CDCA, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CDB7: frame 99, delay 1, delta [112, 56], event None, next none; $CDBC: frame 99, delay 4, delta None, event None, next none; $CDBF: frame 100, delay None, delta None, event None, next none; $CDC1: frame 101, delay None, delta None, event None, next none; $CDC3: frame 102, delay None, delta None, event None, next none; $CDC5: frame 101, delay None, delta None, event None, next none; $CDC7: frame 100, delay None, delta None, event None, next $CDBC. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CDB7-$CDCA, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CDB7: control $C2, delay 1, frame 99, move +112,+56; $CDBC: control $42, delay 4, frame 99; $CDBF: control $40, frame 100; $CDC1: control $40, frame 101; $CDC3: control $40, frame 102; $CDC5: control $40, frame 101; $CDC7: control $60, frame 100, then $CDBC."
   },
   {
    "address": 52683,
    "type": "line",
-   "text": "Central Park frame 099: header $A2, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 2, 3, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CDD8."
+   "text": "Central Park frame 099: header $A2, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 2, 3, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CDD8."
   },
   {
    "address": 52697,
    "type": "line",
-   "text": "Central Park frame 100: header $A2, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 4, 5, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CDE6."
+   "text": "Central Park frame 100: header $A2, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 4, 5, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CDE6."
   },
   {
    "address": 52711,
    "type": "line",
-   "text": "Central Park frame 101: header $A2, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 6, 7, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CDF4."
+   "text": "Central Park frame 101: header $A2, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 6, 7, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CDF4."
   },
   {
    "address": 52725,
    "type": "line",
-   "text": "Central Park frame 102: header $A2, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 8, 9, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE02."
+   "text": "Central Park frame 102: header $A2, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 8, 9, 10. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE02."
   },
   {
    "address": 52739,
    "type": "line",
-   "text": "Late animation stream $CE03-$CE0F, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CE03: frame 103, delay 48, delta [0, 37], event None, next none; $CE08: frame 103, delay 6, delta [4, 1], event 17, next $CE08. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CE03-$CE0F, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CE03: control $82, delay 48, frame 103, move +0,+37; $CE08: control $A3, delay 6, frame 103, move +4,+1, event 17, then $CE08."
   },
   {
    "address": 52752,
    "type": "line",
-   "text": "Late animation stream $CE10-$CE13, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CE10: frame 103, delay None, delta None, event None, next $CE10. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CE10-$CE13, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CE10: control $60, frame 103, then $CE10."
   },
   {
    "address": 52756,
    "type": "line",
-   "text": "Central Park frame 103: header $A1, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 0, 1. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE1D."
+   "text": "Central Park frame 103: header $A1, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 0, 1. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE1D."
   },
   {
    "address": 52766,
    "type": "line",
-   "text": "Late animation stream $CE1E-$CE24, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CE1E: frame 104, delay 1, delta [88, 58], event None, next $0000. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CE1E-$CE24, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CE1E: control $E2, delay 1, frame 104, move +88,+58, stop."
   },
   {
    "address": 52773,
    "type": "line",
-   "text": "Late animation stream $CE25-$CE31, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CE25: frame 104, delay 1, delta [252, 12], event None, next none; $CE2A: frame 104, delay 6, delta [252, 1], event 18, next $CE2A. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CE25-$CE31, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CE25: control $C2, delay 1, frame 104, move -4,+12; $CE2A: control $E3, delay 6, frame 104, move -4,+1, event 18, then $CE2A."
   },
   {
    "address": 52786,
    "type": "line",
-   "text": "Central Park frame 104: header $A1, doubled-coordinate input 8, and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 0, 1. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE3B."
+   "text": "Central Park frame 104: header $A1, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 2 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 0, 1. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE3B."
   },
   {
    "address": 52796,
    "type": "line",
-   "text": "Late animation stream $CE3C-$CE45, stored between frame descriptors. Uses the same $A829-$A899 command format as $C2C4: optional delay (bit 1), frame, optional X/Y delta (bit 7), event (bit 0), and continuation word (bit 5). $CE3C: frame 105, delay 3, delta [86, 180], event None, next none; $CE41: frame 105, delay None, delta None, event 16, next $CE41. These bytes are animation data, not unexplained frame padding."
+   "text": "Late animation $CE3C-$CE45, stored between the frame records and read like the animations at $C2C4, one command a step: a control byte whose bit 1 brings a delay, a frame number, a signed X and Y move if bit 7 is set, an event if bit 0 is set, and if bit 5 is set the address to go on from (none ends it). $CE3C: control $82, delay 3, frame 105, move +86,-76; $CE41: control $21, frame 105, event 16, then $CE41."
   },
   {
    "address": 52806,
    "type": "line",
-   "text": "Central Park frame 105: header $A2, doubled-coordinate input 8, and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 13, 13, 13. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE53."
+   "text": "Central Park frame 105: header $A2, then 8, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), and 3 four-byte component slots read by $BBD5/$BD45. Sprite selectors: 13, 13, 13. Each occupied slot contains a sprite selector, X field, Y field, and attribute byte; $FF skips the remaining three bytes. Bit 7 selects the counted low-two-bit component path. The component payload ends at $CE53."
   },
   {
    "address": 52809,
@@ -18501,12 +18501,12 @@
   {
    "address": 59688,
    "type": "line",
-   "text": "Eight little-endian auxiliary sprite group bases: null, $E979, $F1B2, and five references to raw bank $F920. $BC36 indexes this table with the actor auxiliary selector, then adds a pose-derived word offset within the chosen group."
+   "text": "Eight pointers, one for each kind of extra sprite the enemy can carry (its weapon): none, $E979, $F1B2 and five times $F920. The high nibble of the area's entry in the enemy table at $B67F picks the pointer: it is twice the kind, a byte offset into this table. The composer ($BC2F-$BC5D) adds a word offset taken from the pose table at $E948 to the chosen pointer, reads the word there and unpacks the image it leads to, the same way for every kind. No area's enemy has a kind above 2, so the five pointers to $F920, the unpacked images, are never read."
   },
   {
    "address": 59689,
    "type": "line",
-   "text": "High-byte indexed base of the eight little-endian auxiliary group pointers at $E928-$E937; group selector is doubled. Null, two packed groups, and raw bank $F920 have distinct decoder paths."
+   "text": "The high bytes of the pointers at $E928: the composer reads the pair with the same Y, twice the kind."
   },
   {
    "address": 59704,
@@ -18936,7 +18936,7 @@
   {
    "address": 63776,
    "type": "line",
-   "text": "Raw auxiliary sprite bank addressed by $BF70: two shifts and the carried low selector bits form $F920 + 64*selector, split across $06/$07. The raw path returns this source pointer without filling the RLE cache. Each selected slot occupies 64 bytes."
+   "text": "Unpacked sprite images, 64 bytes each. A frame whose header has bit 5 set names them by number, and ResolveRawSpritePointer ($BF70) finds image n at $F920 plus 64 times n and returns A = 0, so the blitter takes the image as it is, without unpacking."
   },
   {
    "address": 64672,

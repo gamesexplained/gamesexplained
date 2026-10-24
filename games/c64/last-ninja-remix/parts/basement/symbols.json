@@ -2501,37 +2501,37 @@
   },
   {
    "address": 34910,
-   "name": "InitializeSceneAndActorBuffers",
+   "name": "InitializeLevelStatus",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 34928,
-   "name": "InitializeSceneAndActorBuffersLocal8870",
+   "name": "InitializeLevelStatusLocal8870",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 34946,
-   "name": "InitializeSceneAndActorBuffersLocal8882",
+   "name": "InitializeLevelStatusLocal8882",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 34959,
-   "name": "InitializeSceneAndActorBuffersLocal888f",
+   "name": "InitializeLevelStatusLocal888f",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 34967,
-   "name": "InitializeSceneAndActorBuffersLocal8897",
+   "name": "InitializeLevelStatusLocal8897",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 34993,
-   "name": "InitializeSceneAndActorBuffersLocal88b1",
+   "name": "InitializeLevelStatusLocal88b1",
    "type": "Branch",
    "kind": "user"
   },
@@ -2675,7 +2675,7 @@
   },
   {
    "address": 35402,
-   "name": "BlankAndRedrawTransitionFrame",
+   "name": "LoseLife",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -5951,37 +5951,37 @@
   },
   {
    "address": 44038,
-   "name": "DissolveAndClearBitmapStrip",
+   "name": "DissolveSpriteImages",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 44050,
-   "name": "DissolveAndClearBitmapStripLocalac12",
+   "name": "DissolveSpriteImagesLocalac12",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 44212,
-   "name": "DissolveAndClearBitmapStripLocalacb4",
+   "name": "DissolveSpriteImagesLocalacb4",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 44223,
-   "name": "DissolveAndClearBitmapStripLocalacbf",
+   "name": "DissolveSpriteImagesLocalacbf",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 44228,
-   "name": "DissolveAndClearBitmapStripLocalacc4",
+   "name": "DissolveSpriteImagesLocalacc4",
    "type": "Branch",
    "kind": "user"
   },
   {
    "address": 44231,
-   "name": "DissolveAndClearBitmapStripLocalacc7",
+   "name": "DissolveSpriteImagesLocalacc7",
    "type": "Branch",
    "kind": "user"
   },
@@ -13227,7 +13227,7 @@
   {
    "address": 34910,
    "type": "line",
-   "text": "Construct the initial scene, actor, collision, and UI buffers. Inputs: current room selection and The Basement initialization tables. Outputs: actor slots, collision state, UI state, and initial status presentation are initialized. Clobbers: A, X, Y, flags, and scene and actor scratch. Hardware: changes hardware-visible UI or screen RAM through the tail-called renderer."
+   "text": "Set up the status of a level as it starts. It clears $022B, $022C, $70, $89 and $A0, fills the enemy meter's 30 slots at $3F92 and both energies ($0229, $022A) with $2C, a full bar, and sets $7A to $AD. It copies the item flags saved when the level began ($03B0-$03D7) over the live ones ($03D8-$03FF) and clears $03E9-$03F1 among them, then puts the score ($1CA0) and the clock's digits back from the saved copy ($03CC-$03D7). It sets $87 to $BF, clears $011B-$013E and draws panel picture 0 at both of its places (DrawUiImageRecord, $ABB9, with A = 0 and X = 0, then 1). It builds no scene or wall data. Clobbers: A, X, Y, flags and the drawing routine's scratch."
   },
   {
    "address": 35013,
@@ -13252,7 +13252,7 @@
   {
    "address": 35207,
    "type": "line",
-   "text": "39 bytes, one for each way out of an area, grouped by area with $FF closing each group: the routine that finds the exit the player is walking through skips a group for each area before the current one, then compares the player's position with these values. The same index then selects the exit's destination in the four tables that follow."
+   "text": "39 bytes of exit thresholds. Byte 0 belongs to no area: the scans start at byte 1, and entry 0 of the four tables that follow is the level's start position. Then comes a group for each area, closed by $FF. The routine that finds the exit the player is walking through skips a group for each area before the current one, turns the player's place on the edge of the play window into one number running clockwise round it from the top left, and takes the first value in the group above that number, the closing $FF included. The same index then selects the exit's destination in the four tables that follow."
   },
   {
    "address": 35246,
@@ -13277,7 +13277,7 @@
   {
    "address": 35402,
    "type": "line",
-   "text": "Perform one blank, dissolve, delay, and redraw step during a transition. Inputs: current renderer state and transition counter. Outputs: a fresh transition frame is displayed and the counter is decremented. Clobbers: A, X, Y, flags, and renderer scratch. Hardware: changes visible bitmap and screen state and may change VIC-II background color through called helpers."
+   "text": "The player's death, once the fall is over: it clears $F2, crumbles the sprites away (DissolveSpriteImages, $AC06), runs the status panel's reveal again ($1F75), waits 25 ticks (WaitEngineTicks, $A14D), clears the screen ($140E), sets the background to black and takes one from the lives, item 26's flag at $03F2. The caller tests the Z flag that the DEC leaves: with no lives left it spends a spare life, item 8, if the player has one, and otherwise the game is over. Clobbers: A, X, Y and flags."
   },
   {
    "address": 35429,
@@ -13487,77 +13487,77 @@
   {
    "address": 38079,
    "type": "line",
-   "text": "Walls of area 0, $94BF-$94FC, ending with $FF. The compiler finds them by skipping 0 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 0, $94BF-$94FC, ending with $FF. The compiler finds them by skipping 0 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38141,
    "type": "line",
-   "text": "Walls of area 1, $94FD-$9557, ending with $FF. The compiler finds them by skipping 1 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 1, $94FD-$9557, ending with $FF. The compiler finds them by skipping 1 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38232,
    "type": "line",
-   "text": "Walls of area 2, $9558-$9598, ending with $FF. The compiler finds them by skipping 2 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 2, $9558-$9598, ending with $FF. The compiler finds them by skipping 2 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38297,
    "type": "line",
-   "text": "Walls of area 3, $9599-$95EA, ending with $FF. The compiler finds them by skipping 3 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 3, $9599-$95EA, ending with $FF. The compiler finds them by skipping 3 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38379,
    "type": "line",
-   "text": "Walls of area 4, $95EB-$9632, ending with $FF. The compiler finds them by skipping 4 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 4, $95EB-$9632, ending with $FF. The compiler finds them by skipping 4 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38451,
    "type": "line",
-   "text": "Walls of area 5, $9633-$9675, ending with $FF. The compiler finds them by skipping 5 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 5, $9633-$9675, ending with $FF. The compiler finds them by skipping 5 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38518,
    "type": "line",
-   "text": "Walls of area 6, $9676-$9694, ending with $FF. The compiler finds them by skipping 6 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 6, $9676-$9694, ending with $FF. The compiler finds them by skipping 6 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38549,
    "type": "line",
-   "text": "Walls of area 7, $9695-$96AB, ending with $FF. The compiler finds them by skipping 7 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 7, $9695-$96AB, ending with $FF. The compiler finds them by skipping 7 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38572,
    "type": "line",
-   "text": "Walls of area 8, $96AC-$9707, ending with $FF. The compiler finds them by skipping 8 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 8, $96AC-$9707, ending with $FF. The compiler finds them by skipping 8 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38664,
    "type": "line",
-   "text": "Walls of area 9, $9708-$9718, ending with $FF. The compiler finds them by skipping 9 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 9, $9708-$9718, ending with $FF. The compiler finds them by skipping 9 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38681,
    "type": "line",
-   "text": "Walls of area 10, $9719-$9736, ending with $FF. The compiler finds them by skipping 10 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 10, $9719-$9736, ending with $FF. The compiler finds them by skipping 10 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38711,
    "type": "line",
-   "text": "Walls of area 11, $9737-$9751, ending with $FF. The compiler finds them by skipping 11 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 11, $9737-$9751, ending with $FF. The compiler finds them by skipping 11 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38738,
    "type": "line",
-   "text": "Walls of area 12, $9752-$9768, ending with $FF. The compiler finds them by skipping 12 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 12, $9752-$9768, ending with $FF. The compiler finds them by skipping 12 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38761,
    "type": "line",
-   "text": "Walls of area 13, $9769-$97A3, ending with $FF. The compiler finds them by skipping 13 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 13, $9769-$97A3, ending with $FF. The compiler finds them by skipping 13 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38820,
    "type": "line",
-   "text": "Walls of area 14, $97A4-$97C3, ending with $FF. The compiler finds them by skipping 14 lists from $94BF, and turns each chain of segments (a start X and Y, then pairs of direction and length) into six-byte records at $F7EA for the movement tests."
+   "text": "Walls of area 14, $97A4-$97C3, ending with $FF. The compiler finds them by skipping 14 lists from $94BF, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7EA for the movement tests."
   },
   {
    "address": 38852,
@@ -13657,7 +13657,7 @@
   {
    "address": 39423,
    "type": "line",
-   "text": "Return immediately for script commands that intentionally have no action.\nInputs: None.\nOutputs: Returns to the stored-return dispatcher without changing registers, flags, RAM, stack beyond RTS, or hardware.\nClobbers: No registers or flags; RTS consumes the dispatcher-supplied return address."
+   "text": "Return at once, for the script commands that have no action. Its RTS returns to the code that called ScriptDispatch: the address the dispatcher pushed was used up by the RTS at $9966 that jumped here. Inputs and outputs: none. Clobbers: nothing."
   },
   {
    "address": 39424,
@@ -13787,7 +13787,7 @@
   {
    "address": 39820,
    "type": "line",
-   "text": "Script command 49, which walls along the drop in area 8 carry: X = 4, then ScriptFallIfArmed. Commands 50 to 53 differ only in X: $0C, $14, $1C and $24, the depth the scene conditions are tested with while the player falls."
+   "text": "Script command 49, which one wall at the drop in area 8 carries: X = 4, then ScriptFallIfArmed. Commands 50 to 53 differ only in X: $0C, $14, $1C and $24, the depth the scene conditions are tested with while the player falls."
   },
   {
    "address": 39824,
@@ -13857,7 +13857,7 @@
   {
    "address": 40002,
    "type": "line",
-   "text": "Apply two units of player damage and consume the pending script command.\nInputs: Player energy $0229 and command $81.\nOutputs: Calls DamagePlayer with A=2, then clears $81.\nClobbers: A, flags, $0229, possible death latch $B6, and $81; helper scratch is volatile."
+   "text": "Apply two units of player damage and consume the pending script command.\nInputs: Player energy $0229 and command $81.\nOutputs: Calls DamagePlayer with A=2, then clears $81.\nClobbers: A, flags, $0229 and $81; when the energy runs out, also $6D and the death latch $B6."
   },
   {
    "address": 40012,
@@ -13947,7 +13947,7 @@
   {
    "address": 40660,
    "type": "line",
-   "text": "Eight alternating delays 4,8 indexed by normalized direction Y. $9EAD compares elapsed tick difference against the chosen threshold before deriving action code $84*4+8 and selecting animation. This table controls action timing, not the joystick direction conversion."
+   "text": "Eight alternating delays 4,8 indexed by normalized direction Y. $9EAD compares elapsed tick difference against the chosen threshold before deriving action code $84*4+8, plus $20 when $70 is 0 or 4 and up, and selecting animation. This table controls action timing, not the joystick direction conversion."
   },
   {
    "address": 40668,
@@ -13987,7 +13987,7 @@
   {
    "address": 40997,
    "type": "line",
-   "text": "Apply a signed vertical or height delta to an actor with saturation. Inputs: A is the signed delta and X is the actor offset. Outputs: $74,X is updated within its limits or left unchanged when inactive or inhibited. Clobbers: A, flags, and $74,X; X and Y are preserved."
+   "text": "Add the signed number in A to the actor's $74,X, unless $EF is set or $74,X is 0 or $FF. A positive sum is held at $FF; a negative one is not held at zero but wraps, since the BCS at $A044 goes on to the next instruction either way. Inputs: A, and X the actor's offset. Outputs: $74,X. Clobbers: A and flags; X and Y are kept."
   },
   {
    "address": 41033,
@@ -14282,7 +14282,7 @@
   {
    "address": 42669,
    "type": "line",
-   "text": "Navigate the opponent relative to the player and collision geometry, selecting movement, reset, or attack states from distance and heading tests.\nInputs: Player/opponent positions $54/$55/$56/$57, headings $68/$6A/$6B, behavior fields $CB/$72, saved coordinates $028A/$028B/$028E/$028F, tick $E2, and collision/distance helpers $AAB4/$AAB6/$AAD6/$AAD8/$AAEE.\nOutputs: Clamps/wraps candidate coordinates, may restore the saved player position and enter state 6, may enter state 9 after a distance comparison, otherwise updates desired/current opponent heading and setup state; several rejection paths reset through state 5.\nClobbers: A, X, flags, $1D-$21, $54/$56, $6A/$6B/$6F, $CF, $028A/$028B/$028E/$028F/$02BE, and helper scratch."
+   "text": "Steer the enemy toward the player. Inputs: the player's position and heading ($54/$55, $68), the enemy's position ($56/$57), its profile $72 and behaviour $CB, the positions kept in $028A/$028B and $028E/$028F, and the tick $E2. It aims at a point level with the player, as far to one side as the profile's entry in $AAA5 says, on the side the enemy is on (judged from the player's X moved 8 pixels the way the player faces). Within a Manhattan distance of 6 of that point, or when the point would fall off the screen, it goes to RetargetAiToPlayer ($A6EA): that keeps the player's position in $028A/$028B, faces the enemy toward the player and enters state 6. It also holds the enemy's X between 4 and $F7, retargeting when it has to. With $CB at $80 and the player 56 or more away, it enters state 9 when the player is at least as far from the position in $028E/$028F as the enemy is (half the X distance plus half the Y distance each), and keeps the player's position there. Otherwise it turns the enemy toward the point (a turn that changes bit 2 of the heading waits until 20 ticks have passed since the last, kept in $02BE) and sets the heading $6A, from the table at $AAAC when the vertical distance is the larger. Outputs: $6A, $6B, $6F, $CF and the enemy's action. Clobbers: A, X, Y, flags, $1C-$21, $56, $028A/$028B, $028E/$028F and $02BE."
   },
   {
    "address": 42730,
@@ -14317,7 +14317,7 @@
   {
    "address": 43121,
    "type": "line",
-   "text": "Return immediately for the intentionally inactive AI state-table entry.\nInputs: None.\nOutputs: Returns through the stored-return dispatcher without changing registers, flags, RAM, or hardware.\nClobbers: No registers or flags; RTS consumes the dispatcher-supplied return address."
+   "text": "Return at once, for the enemy states that do nothing. Its RTS returns to the code that called OpponentAI: the address the dispatcher pushed at $A586-$A58D was used up by the RTS at $A58E that jumped here. Inputs and outputs: none. Clobbers: nothing."
   },
   {
    "address": 43122,
@@ -14462,12 +14462,12 @@
   {
    "address": 44038,
    "type": "line",
-   "text": "Dissolve and erase the display strip at $0C00-$0FFF. Inputs: current strip contents and pseudo-random state. Outputs: several masked dissolve passes are displayed and the region is finally cleared. Clobbers: A, X, Y, flags, and random and delay scratch. Hardware: changes hardware-visible bitmap or screen RAM; no direct VIC-II register write."
+   "text": "Crumble the sprites away, then clear them: 769 passes, each ANDing one random mask from $ACD7 into one random byte (0 to 63) of all 16 sprite buffers at $0C00-$0FFF, the two sets of the eight slots' images, with a short wait after each; then it clears all 1,024 bytes. The sprites on screen change because their images do. Inputs: the random-number state. Clobbers: A, X, Y, flags, $1E-$21 and the random-number state."
   },
   {
    "address": 44247,
    "type": "line",
-   "text": "The masks $3F, $CF, $F3 and $FC, each clearing one of the four two-bit pixels of a multicolour byte: the dissolve at $AC1C takes a random number from 0 to 3 for each byte of the strip and ANDs that mask into it, so the picture crumbles a pixel at a time."
+   "text": "The masks $3F, $CF, $F3 and $FC, each clearing one of the four two-bit pixels of a multicolour byte. Each pass of DissolveSpriteImages ($AC12) picks one random offset from 0 to 63 and one of these masks at random, and ANDs that mask into the byte at that offset in all 16 sprite buffers at $0C00-$0FFF, so the sprites crumble a pixel at a time."
   },
   {
    "address": 44251,
@@ -14477,7 +14477,7 @@
   {
    "address": 44294,
    "type": "line",
-   "text": "Subtract unsigned A from player health $0229 with saturation at zero. Positive remaining health preserves action $6D and death latch $B6. Only the zero-result path sets $6D=($69>>1)+$24 and $B6=$FF. X/Y are preserved; no hardware registers are written. Live tests cover positive, equal, excessive and zero damage, including health 0 and 255."
+   "text": "Subtract unsigned A from player health $0229 with saturation at zero. Positive remaining health preserves action $6D and death latch $B6. Only the zero-result path sets $6D=($69>>1)+$24 and $B6=$FF. X/Y are preserved; no hardware registers are written."
   },
   {
    "address": 44324,
@@ -14632,7 +14632,7 @@
   {
    "address": 45969,
    "type": "line",
-   "text": "Enter The Basement playable phase's common sprite-composition body with the mode already prepared by the masked-mode caller.\nInputs: A/$F1 and $92 contain the prepared composition mode; X selects the logical sprite group; Y selects the frame descriptor; CPU port $01 is in the engine's normal I/O-visible state.\nOutputs: Decrements $01 for the required high-memory RAM visibility, resolves and composes the selected frame into logical sprite work buffers, restores $01 before return, and records composition state.\nClobbers: A, X, Y, processor flags, $01 transiently, $02/$03, $92/$97/$9F, $F1, and logical sprite work buffers.\nHardware: Changes CPU-port $01 transiently by one decrement and a balancing increment to expose the required high-memory RAM; writes sprite work buffers, not VIC-II registers directly."
+   "text": "Enter The Basement playable phase's common sprite-composition body with the mode already prepared by the masked-mode caller.\nInputs: $F1 is the mirror flag, set when the actor faces the other way, and the low two bits of $92 pick one of a six-part frame's three alternatives; X selects the logical sprite group; Y selects the frame descriptor; CPU port $01 is in the engine's normal I/O-visible state.\nOutputs: Decrements $01 for the required high-memory RAM visibility, resolves and composes the selected frame into logical sprite work buffers, restores $01 before return, and records composition state.\nClobbers: A, X, Y, processor flags, $01 transiently, $02/$03, $92/$97/$9F, $F1, and logical sprite work buffers.\nHardware: Changes CPU-port $01 transiently by one decrement and a balancing increment to expose the required high-memory RAM; writes sprite work buffers, not VIC-II registers directly."
   },
   {
    "address": 46205,
@@ -14657,12 +14657,12 @@
   {
    "address": 46369,
    "type": "line",
-   "text": "Place an already decoded sprite part into the selected composite slot. Inputs: A is preserved across setup, $C5/$C6 hold saved X/Y, and ($02),Y addresses the part record. Outputs: position and attribute arrays are populated and the preserved A is restored by the shared tail. Clobbers: X, Y, flags, and compositor scratch. Hardware: changes sprite RAM only."
+   "text": "Place one part of a frame and draw it into its sprite. Inputs: A chooses the source for the blitter (nonzero, the sprite just unpacked into $02C0; zero, the unpacked image at ($06)); $C5 the sprite slot; $C6 the part's offset in the frame record at ($02); $F1 the mirror flag and $97 the mirror width; the actor's position, $54/$55 for slots 0 to 3 and $56/$57 for slots 4 to 7. It selects the slot's sprite buffer ($B67D), waits until bit 1 of the slot's flags at $0218 is clear, and sets the sprite's X ($0200/$0208: the actor's X plus the part's X offset less $30, or with $F1 set plus the mirror width less that offset), its Y ($0210, the actor's Y plus the part's Y offset) and its attributes ($0220, with bit 7, the multicolour flag, also in $0238). Then it falls into BlitSpritePartWithMask with A. Outputs: X = $C5, Y = $C6, moved on past the part; A as BlitSpritePartWithMask leaves it. Clobbers: A, flags, $04/$05, $1F and $42-$44."
   },
   {
    "address": 46473,
    "type": "line",
-   "text": "Merge a sprite part into its composite destination under the current mask mode. Inputs: decoded source, destination pointer, placement and flip state, and mode $F1. Outputs: the 63-byte destination sprite region is updated. Clobbers: A, X, Y, flags, and mask and pointer scratch. Hardware: changes sprite RAM only."
+   "text": "Draw a part into its slot's sprite at ($04), overwriting what is there: each of the 63 bytes is the source ANDed with a mask for its column ($42-$44), worked out from the sprite's X ($0200/$0208), which hides what lies past the right edge of the play window. With A nonzero the source is the sprite unpacked into $02C0 (BlitCachedSpriteMask, $B693); with A zero, the image at ($06). When the mirror flag $F1 is set the bytes go through the reversal table at $1300 (hires) or $1200 (multicolour, when bit 7 of $0238 is set) with the outer columns swapped. Then, when the sprite's Y ($0210) is below the line in $9E, it clears that many rows from the bottom, 21 at most. Outputs: X = $C5, Y = $C6, and A 0 or the difference $0210 less $9E. Clobbers: A, flags, $1F and $42-$44."
   },
   {
    "address": 46717,
@@ -14672,7 +14672,7 @@
   {
    "address": 46739,
    "type": "line",
-   "text": "Merge the cached decoded sprite mask into the active destination. Inputs: $02C0 cache, destination pointer, three masks, and mode $F1. Outputs: the transformed destination sprite bytes are updated. Clobbers: A, X, Y, flags, and mask scratch. Hardware: changes sprite RAM only."
+   "text": "Copy the sprite unpacked into $02C0 into the slot's sprite at ($04), each byte ANDed with the mask for its column ($42-$44): as it is, or, when the mirror flag $F1 is set, through the bit-reversal table at $1300 with the outer columns swapped. Clobbers: A, X, Y and flags."
   },
   {
    "address": 46810,
@@ -15742,157 +15742,157 @@
   {
    "address": 48495,
    "type": "line",
-   "text": "Frame 008, $BD6F-$BD88: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 17, 1, 9, 83, 84, 76."
+   "text": "Frame 008, $BD6F-$BD88: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 17, 1, 9, 83, 84, 76."
   },
   {
    "address": 48521,
    "type": "line",
-   "text": "Frame 009, $BD89-$BDA2: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 18, 2, 10, 83, 84, 92."
+   "text": "Frame 009, $BD89-$BDA2: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 18, 2, 10, 83, 84, 92."
   },
   {
    "address": 48547,
    "type": "line",
-   "text": "Frame 010, $BDA3-$BDBC: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 19, 3, 11, 83, 84, 92."
+   "text": "Frame 010, $BDA3-$BDBC: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 19, 3, 11, 83, 84, 92."
   },
   {
    "address": 48573,
    "type": "line",
-   "text": "Frame 011, $BDBD-$BDD6: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 20, 4, 12, 82, 84, 76."
+   "text": "Frame 011, $BDBD-$BDD6: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 20, 4, 12, 82, 84, 76."
   },
   {
    "address": 48599,
    "type": "line",
-   "text": "Frame 012, $BDD7-$BDF0: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 21, 5, 13, 82, 84, 86."
+   "text": "Frame 012, $BDD7-$BDF0: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 21, 5, 13, 82, 84, 86."
   },
   {
    "address": 48625,
    "type": "line",
-   "text": "Frame 013, $BDF1-$BE0A: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 22, 6, 14, 82, 84, 73."
+   "text": "Frame 013, $BDF1-$BE0A: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 22, 6, 14, 82, 84, 73."
   },
   {
    "address": 48651,
    "type": "line",
-   "text": "Frame 014, $BE0B-$BE24: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 23, 7, 15, 82, 84, 73."
+   "text": "Frame 014, $BE0B-$BE24: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 23, 7, 15, 82, 84, 73."
   },
   {
    "address": 48677,
    "type": "line",
-   "text": "Frame 015, $BE25-$BE3E: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 16, 0, 8, 82, 84, 86."
+   "text": "Frame 015, $BE25-$BE3E: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 16, 0, 8, 82, 84, 86."
   },
   {
    "address": 48703,
    "type": "line",
-   "text": "Frame 000, $BE3F-$BE58: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 93, 123, 147, 141, 152."
+   "text": "Frame 000, $BE3F-$BE58: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 93, 123, 147, 141, 152."
   },
   {
    "address": 48729,
    "type": "line",
-   "text": "Frame 001, $BE59-$BE72: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 94, 124, 147, 141, 149."
+   "text": "Frame 001, $BE59-$BE72: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 94, 124, 147, 141, 149."
   },
   {
    "address": 48755,
    "type": "line",
-   "text": "Frame 002, $BE73-$BE8C: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 95, 125, 147, 141, 149."
+   "text": "Frame 002, $BE73-$BE8C: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 95, 125, 147, 141, 149."
   },
   {
    "address": 48781,
    "type": "line",
-   "text": "Frame 003, $BE8D-$BEA6: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 96, 126, 147, 141, 152."
+   "text": "Frame 003, $BE8D-$BEA6: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 96, 126, 147, 141, 152."
   },
   {
    "address": 48807,
    "type": "line",
-   "text": "Frame 004, $BEA7-$BEC0: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 97, 127, 147, 141, 103."
+   "text": "Frame 004, $BEA7-$BEC0: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 97, 127, 147, 141, 103."
   },
   {
    "address": 48833,
    "type": "line",
-   "text": "Frame 005, $BEC1-$BEDA: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 98, 128, 147, 141, 103."
+   "text": "Frame 005, $BEC1-$BEDA: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 98, 128, 147, 141, 103."
   },
   {
    "address": 48859,
    "type": "line",
-   "text": "Frame 006, $BEDB-$BEF4: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 99, 129, 147, 141, 152."
+   "text": "Frame 006, $BEDB-$BEF4: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 99, 129, 147, 141, 152."
   },
   {
    "address": 48885,
    "type": "line",
-   "text": "Frame 007, $BEF5-$BF0E: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 100, 130, 147, 141, 152."
+   "text": "Frame 007, $BEF5-$BF0E: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 100, 130, 147, 141, 152."
   },
   {
    "address": 48911,
    "type": "line",
-   "text": "Frame 017, $BF0F-$BF28: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 65, 37, 45, 89, 84, 79."
+   "text": "Frame 017, $BF0F-$BF28: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 65, 37, 45, 89, 84, 79."
   },
   {
    "address": 48937,
    "type": "line",
-   "text": "Frame 016, $BF29-$BF42: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 100, 137, 147, 141, 152."
+   "text": "Frame 016, $BF29-$BF42: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 100, 137, 147, 141, 152."
   },
   {
    "address": 48963,
    "type": "line",
-   "text": "Frame 055, $BF43-$BF54: header $83, whose bit 7 makes it a list of 4 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 59, 31, 49, 90."
+   "text": "Frame 055, $BF43-$BF54: header $83, whose bit 7 makes it a list of 4 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 59, 31, 49, 90."
   },
   {
    "address": 48981,
    "type": "line",
-   "text": "Frame 056, $BF55-$BF62: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 69, 26, 90."
+   "text": "Frame 056, $BF55-$BF62: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 69, 26, 90."
   },
   {
    "address": 48995,
    "type": "line",
-   "text": "Frame 057, $BF63-$BF70: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 55, 27, 90."
+   "text": "Frame 057, $BF63-$BF70: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 55, 27, 90."
   },
   {
    "address": 49009,
    "type": "line",
-   "text": "Frame 058, $BF71-$BF7E: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 24, 28, 90."
+   "text": "Frame 058, $BF71-$BF7E: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 24, 28, 90."
   },
   {
    "address": 49023,
    "type": "line",
-   "text": "Frame 050, $BF7F-$BF98: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 62, 34, 46, 87, 81, 92."
+   "text": "Frame 050, $BF7F-$BF98: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 62, 34, 46, 87, 81, 92."
   },
   {
    "address": 49049,
    "type": "line",
-   "text": "Frame 051, $BF99-$BFA6: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131, 146."
+   "text": "Frame 051, $BF99-$BFA6: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131, 146."
   },
   {
    "address": 49063,
    "type": "line",
-   "text": "Frame 052, $BFA7-$BFB0: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 106, 146."
+   "text": "Frame 052, $BFA7-$BFB0: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 106, 146."
   },
   {
    "address": 49073,
    "type": "line",
-   "text": "Frame 053, $BFB1-$BFBA: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 107, 146."
+   "text": "Frame 053, $BFB1-$BFBA: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 107, 146."
   },
   {
    "address": 49083,
    "type": "line",
-   "text": "Frame 054, $BFBB-$BFC4: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 108, 146."
+   "text": "Frame 054, $BFBB-$BFC4: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 108, 146."
   },
   {
    "address": 49093,
    "type": "line",
-   "text": "Frame 049, $BFC5-$BFDE: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 116, 138, 151, 136, 152."
+   "text": "Frame 049, $BFC5-$BFDE: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 116, 138, 151, 136, 152."
   },
   {
    "address": 49119,
    "type": "line",
-   "text": "Frame 059, $BFDF-$BFEC: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131, 146."
+   "text": "Frame 059, $BFDF-$BFEC: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131, 146."
   },
   {
    "address": 49133,
    "type": "line",
-   "text": "Frame 060, $BFED-$BFF6: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 108, 146."
+   "text": "Frame 060, $BFED-$BFF6: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 108, 146."
   },
   {
    "address": 49143,
    "type": "line",
-   "text": "Frame 061, $BFF7-$C008: header $83, whose bit 7 makes it a list of 4 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 59, 31, 49, 90."
+   "text": "Frame 061, $BFF7-$C008: header $83, whose bit 7 makes it a list of 4 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 59, 31, 49, 90."
   },
   {
    "address": 49152,
@@ -15902,262 +15902,262 @@
   {
    "address": 49161,
    "type": "line",
-   "text": "Frame 062, $C009-$C016: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 24, 28, 90."
+   "text": "Frame 062, $C009-$C016: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 24, 28, 90."
   },
   {
    "address": 49175,
    "type": "line",
-   "text": "Frame 063, $C017-$C030: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 116, 138, 147, 136, 152."
+   "text": "Frame 063, $C017-$C030: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 116, 138, 147, 136, 152."
   },
   {
    "address": 49201,
    "type": "line",
-   "text": "Frame 064, $C031-$C04A: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 62, 34, 46, 87, 81, 92."
+   "text": "Frame 064, $C031-$C04A: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 62, 34, 46, 87, 81, 92."
   },
   {
    "address": 49227,
    "type": "line",
-   "text": "Frame 048, $C04B-$C064: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 45, 88, 78, 92."
+   "text": "Frame 048, $C04B-$C064: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 45, 88, 78, 92."
   },
   {
    "address": 49253,
    "type": "line",
-   "text": "Frame 067, $C065-$C07E: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 56, 25, 45, 91, 91, 77."
+   "text": "Frame 067, $C065-$C07E: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 56, 25, 45, 91, 91, 77."
   },
   {
    "address": 49279,
    "type": "line",
-   "text": "Frame 068, $C07F-$C098: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 63, 35, 45, empty, empty, empty."
+   "text": "Frame 068, $C07F-$C098: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 63, 35, 45, empty, empty, empty."
   },
   {
    "address": 49305,
    "type": "line",
-   "text": "Frame 047, $C099-$C0B2: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 110, 137, 148, 132, 152."
+   "text": "Frame 047, $C099-$C0B2: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 110, 137, 148, 132, 152."
   },
   {
    "address": 49331,
    "type": "line",
-   "text": "Frame 065, $C0B3-$C0CC: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 111, 137, 147, 141, 155."
+   "text": "Frame 065, $C0B3-$C0CC: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 111, 137, 147, 141, 155."
   },
   {
    "address": 49357,
    "type": "line",
-   "text": "Frame 066, $C0CD-$C0E6: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 112, 137, empty, empty, empty."
+   "text": "Frame 066, $C0CD-$C0E6: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 112, 137, empty, empty, empty."
   },
   {
    "address": 49383,
    "type": "line",
-   "text": "Frame 021, $C0E7-$C100: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 66, 38, 47, 89, 84, 76."
+   "text": "Frame 021, $C0E7-$C100: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 66, 38, 47, 89, 84, 76."
   },
   {
    "address": 49409,
    "type": "line",
-   "text": "Frame 022, $C101-$C11A: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 67, 39, 48, 91, 80, 73."
+   "text": "Frame 022, $C101-$C11A: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 67, 39, 48, 91, 80, 73."
   },
   {
    "address": 49435,
    "type": "line",
-   "text": "Frame 023, $C11B-$C134: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 66, 38, 47, 89, 84, 85."
+   "text": "Frame 023, $C11B-$C134: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 66, 38, 47, 89, 84, 85."
   },
   {
    "address": 49461,
    "type": "line",
-   "text": "Frame 018, $C135-$C14E: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 97, 137, 147, 141, 149."
+   "text": "Frame 018, $C135-$C14E: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 97, 137, 147, 141, 149."
   },
   {
    "address": 49487,
    "type": "line",
-   "text": "Frame 019, $C14F-$C168: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 120, 140, 150, 122, 154."
+   "text": "Frame 019, $C14F-$C168: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 120, 140, 150, 122, 154."
   },
   {
    "address": 49513,
    "type": "line",
-   "text": "Frame 020, $C169-$C182: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 97, 137, 147, 141, 103."
+   "text": "Frame 020, $C169-$C182: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 97, 137, 147, 141, 103."
   },
   {
    "address": 49539,
    "type": "line",
-   "text": "Frame 026, $C183-$C19C: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 71, 42, 54, 89, 84, 85."
+   "text": "Frame 026, $C183-$C19C: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 71, 42, 54, 89, 84, 85."
   },
   {
    "address": 49565,
    "type": "line",
-   "text": "Frame 027, $C19D-$C1B6: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 68, 40, 44, 89, 84, 77."
+   "text": "Frame 027, $C19D-$C1B6: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 68, 40, 44, 89, 84, 77."
   },
   {
    "address": 49591,
    "type": "line",
-   "text": "Frame 024, $C1B7-$C1D0: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 115, 143, 147, 136, 154."
+   "text": "Frame 024, $C1B7-$C1D0: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 115, 143, 147, 136, 154."
   },
   {
    "address": 49617,
    "type": "line",
-   "text": "Frame 025, $C1D1-$C1EA: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 121, 144, 151, 136, empty."
+   "text": "Frame 025, $C1D1-$C1EA: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 121, 144, 151, 136, empty."
   },
   {
    "address": 49643,
    "type": "line",
-   "text": "Frame 031, $C1EB-$C204: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 71, 42, 45, 91, 80, 86."
+   "text": "Frame 031, $C1EB-$C204: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 71, 42, 45, 91, 80, 86."
   },
   {
    "address": 49669,
    "type": "line",
-   "text": "Frame 032, $C205-$C21E: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 62, 34, 46, 91, 80, 73."
+   "text": "Frame 032, $C205-$C21E: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 62, 34, 46, 91, 80, 73."
   },
   {
    "address": 49695,
    "type": "line",
-   "text": "Frame 033, $C21F-$C238: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 60, 32, 47, 91, 80, 85."
+   "text": "Frame 033, $C21F-$C238: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 60, 32, 47, 91, 80, 85."
   },
   {
    "address": 49721,
    "type": "line",
-   "text": "Frame 028, $C239-$C252: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 114, 139, 150, 122, 149."
+   "text": "Frame 028, $C239-$C252: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 114, 139, 150, 122, 149."
   },
   {
    "address": 49747,
    "type": "line",
-   "text": "Frame 029, $C253-$C26C: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 116, 138, 150, 122, 154."
+   "text": "Frame 029, $C253-$C26C: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 116, 138, 150, 122, 154."
   },
   {
    "address": 49773,
    "type": "line",
-   "text": "Frame 030, $C26D-$C286: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 117, 139, 150, 122, 142."
+   "text": "Frame 030, $C26D-$C286: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 117, 139, 150, 122, 142."
   },
   {
    "address": 49799,
    "type": "line",
-   "text": "Frame 040, $C287-$C2A0: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 63, 35, 45, 91, 91, 77."
+   "text": "Frame 040, $C287-$C2A0: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 63, 35, 45, 91, 91, 77."
   },
   {
    "address": 49825,
    "type": "line",
-   "text": "Frame 041, $C2A1-$C2BA: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 61, 33, 48, 91, 80, 85."
+   "text": "Frame 041, $C2A1-$C2BA: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 61, 33, 48, 91, 80, 85."
   },
   {
    "address": 49851,
    "type": "line",
-   "text": "Frame 034, $C2BB-$C2D4: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 112, 137, 150, 122, 142."
+   "text": "Frame 034, $C2BB-$C2D4: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 112, 137, 150, 122, 142."
   },
   {
    "address": 49877,
    "type": "line",
-   "text": "Frame 035, $C2D5-$C2EE: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 111, 137, 148, 132, 152."
+   "text": "Frame 035, $C2D5-$C2EE: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 111, 137, 148, 132, 152."
   },
   {
    "address": 49903,
    "type": "line",
-   "text": "Frame 036, $C2EF-$C308: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 113, 137, 147, 141, 153."
+   "text": "Frame 036, $C2EF-$C308: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 113, 137, 147, 141, 153."
   },
   {
    "address": 49929,
    "type": "line",
-   "text": "Frame 037, $C309-$C322: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 118, 137, 150, 122, 142."
+   "text": "Frame 037, $C309-$C322: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 118, 137, 150, 122, 142."
   },
   {
    "address": 49955,
    "type": "line",
-   "text": "Frame 038, $C323-$C33C: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 105, 139, 148, 132, 103."
+   "text": "Frame 038, $C323-$C33C: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 105, 139, 148, 132, 103."
   },
   {
    "address": 49981,
    "type": "line",
-   "text": "Frame 039, $C33D-$C356: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 118, 137, 150, 122, 149."
+   "text": "Frame 039, $C33D-$C356: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 118, 137, 150, 122, 149."
   },
   {
    "address": 50007,
    "type": "line",
-   "text": "Frame 043, $C357-$C370: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 70, 41, 45, 83, 81, 92."
+   "text": "Frame 043, $C357-$C370: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 70, 41, 45, 83, 81, 92."
   },
   {
    "address": 50033,
    "type": "line",
-   "text": "Frame 042, $C371-$C38A: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 119, 140, 147, 141, 103."
+   "text": "Frame 042, $C371-$C38A: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 119, 140, 147, 141, 103."
   },
   {
    "address": 50059,
    "type": "line",
-   "text": "Frame 044, $C38B-$C3A4: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 72, 43, 51, 89, 84, 92."
+   "text": "Frame 044, $C38B-$C3A4: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 72, 43, 51, 89, 84, 92."
   },
   {
    "address": 50085,
    "type": "line",
-   "text": "Frame 045, $C3A5-$C3BE: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 72, empty, 52, 91, 80, 92."
+   "text": "Frame 045, $C3A5-$C3BE: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 72, empty, 52, 91, 80, 92."
   },
   {
    "address": 50111,
    "type": "line",
-   "text": "Frame 046, $C3BF-$C3D8: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 72, empty, 53, 91, 91, empty."
+   "text": "Frame 046, $C3BF-$C3D8: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 72, empty, 53, 91, 91, empty."
   },
   {
    "address": 50137,
    "type": "line",
-   "text": "Frame 071, $C3D9-$C3F2: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 58, 30, 45, 87, 81, 92."
+   "text": "Frame 071, $C3D9-$C3F2: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 58, 30, 45, 87, 81, 92."
   },
   {
    "address": 50163,
    "type": "line",
-   "text": "Frame 072, $C3F3-$C40C: header $03 and $07, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 57, 29, 50, 87, 81, 92."
+   "text": "Frame 072, $C3F3-$C40C: header $03 and $07, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 57, 29, 50, 87, 81, 92."
   },
   {
    "address": 50189,
    "type": "line",
-   "text": "Frame 069, $C40D-$C426: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 118, 137, 147, 136, 152."
+   "text": "Frame 069, $C40D-$C426: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 118, 137, 147, 136, 152."
   },
   {
    "address": 50215,
    "type": "line",
-   "text": "Frame 070, $C427-$C440: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 109, 145, 151, 136, 152."
+   "text": "Frame 070, $C427-$C440: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 109, 145, 151, 136, 152."
   },
   {
    "address": 50241,
    "type": "line",
-   "text": "Frame 073, $C441-$C45A: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 113, 137, 3, 0, 2. Its bytes from $C44F on are also the start of frame 074, which begins there."
+   "text": "Frame 073, $C441-$C45A: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 113, 137, 3, 0, 2. Its bytes from $C44F on are also the start of frame 074, which begins there."
   },
   {
    "address": 50255,
    "type": "line",
-   "text": "Frame 074, $C44F-$C468: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 104, 135, 3, 0, 2. Its bytes from $C45D on are also the start of frame 075, which begins there."
+   "text": "Frame 074, $C44F-$C468: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 104, 135, 3, 0, 2. Its bytes from $C45D on are also the start of frame 075, which begins there."
   },
   {
    "address": 50269,
    "type": "line",
-   "text": "Frame 075, $C45D-$C476: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 102, 133, 3, 0, 2. Its bytes from $C46B on are also the start of frame 076, which begins there."
+   "text": "Frame 075, $C45D-$C476: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 102, 133, 3, 0, 2. Its bytes from $C46B on are also the start of frame 076, which begins there."
   },
   {
    "address": 50283,
    "type": "line",
-   "text": "Frame 076, $C46B-$C484: header $03 and $08, the vertical offset the composer doubles, then six four-byte parts: three for the body, and three alternatives of which the actor's state picks one. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 101, 134, 128, 0, 64. Its bytes from $C479 on are also the start of frame 077, which begins there."
+   "text": "Frame 076, $C46B-$C484: header $03 and $08, which the composer doubles into the mirror width (an actor facing the other way has each part placed at that width less its X offset), then six four-byte parts: three for the body, and three alternatives, of which the low two bits of $92 pick one, or none when they are 0. Each part is the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty, 101, 134, 128, 0, 64. Its bytes from $C479 on are also the start of frame 077, which begins there."
   },
   {
    "address": 50297,
    "type": "line",
-   "text": "Frame 077, $C479-$C47E: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty."
+   "text": "Frame 077, $C479-$C47E: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: empty."
   },
   {
    "address": 50303,
    "type": "line",
-   "text": "Frame 083, $C47F-$C48C: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 8."
+   "text": "Frame 083, $C47F-$C48C: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 8."
   },
   {
    "address": 50317,
    "type": "line",
-   "text": "Frame 084, $C48D-$C49A: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 8."
+   "text": "Frame 084, $C48D-$C49A: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 8."
   },
   {
    "address": 50331,
    "type": "line",
-   "text": "Frame 085, $C49B-$C4A8: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 8."
+   "text": "Frame 085, $C49B-$C4A8: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 64, 36, 8."
   },
   {
    "address": 50345,
    "type": "line",
-   "text": "Frame 086, $C4A9-$C4B6: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 157, 64, 36."
+   "text": "Frame 086, $C4A9-$C4B6: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 157, 64, 36."
   },
   {
    "address": 50359,
    "type": "line",
-   "text": "Frame 087, $C4B7-$C4C0: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 64."
+   "text": "Frame 087, $C4B7-$C4C0: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 64."
   },
   {
    "address": 50369,
@@ -16167,82 +16167,82 @@
   {
    "address": 50373,
    "type": "line",
-   "text": "Frame 078, $C4C5-$C4CE: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131."
+   "text": "Frame 078, $C4C5-$C4CE: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131."
   },
   {
    "address": 50383,
    "type": "line",
-   "text": "Frame 079, $C4CF-$C4D8: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 113, 131."
+   "text": "Frame 079, $C4CF-$C4D8: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 113, 131."
   },
   {
    "address": 50393,
    "type": "line",
-   "text": "Frame 080, $C4D9-$C4E2: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131."
+   "text": "Frame 080, $C4D9-$C4E2: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 105, 131."
   },
   {
    "address": 50403,
    "type": "line",
-   "text": "Frame 081, $C4E3-$C4EC: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 157, 105."
+   "text": "Frame 081, $C4E3-$C4EC: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 157, 105."
   },
   {
    "address": 50413,
    "type": "line",
-   "text": "Frame 082, $C4ED-$C4F6: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 105."
+   "text": "Frame 082, $C4ED-$C4F6: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 105."
   },
   {
    "address": 50423,
    "type": "line",
-   "text": "Frame 088, $C4F7-$C504: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 156, 156."
+   "text": "Frame 088, $C4F7-$C504: header $82, whose bit 7 makes it a list of 3 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 156, 156."
   },
   {
    "address": 50437,
    "type": "line",
-   "text": "Frame 089, $C505-$C50E: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 157."
+   "text": "Frame 089, $C505-$C50E: header $81, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 156, 157."
   },
   {
    "address": 50447,
    "type": "line",
-   "text": "Frame 090, $C50F-$C514: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 157."
+   "text": "Frame 090, $C50F-$C514: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 157."
   },
   {
    "address": 50453,
    "type": "line",
-   "text": "Frame 091, $C515-$C51A: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 158."
+   "text": "Frame 091, $C515-$C51A: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 158."
   },
   {
    "address": 50459,
    "type": "line",
-   "text": "Frame 092, $C51B-$C520: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 159."
+   "text": "Frame 092, $C51B-$C520: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 159."
   },
   {
    "address": 50465,
    "type": "line",
-   "text": "Frame 093, $C521-$C526: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
+   "text": "Frame 093, $C521-$C526: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
   },
   {
    "address": 50471,
    "type": "line",
-   "text": "Frame 094, $C527-$C52C: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 160."
+   "text": "Frame 094, $C527-$C52C: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 160."
   },
   {
    "address": 50477,
    "type": "line",
-   "text": "Frame 095, $C52D-$C532: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
+   "text": "Frame 095, $C52D-$C532: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
   },
   {
    "address": 50483,
    "type": "line",
-   "text": "Frame 096, $C533-$C538: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
+   "text": "Frame 096, $C533-$C538: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
   },
   {
    "address": 50489,
    "type": "line",
-   "text": "Frame 097, $C539-$C53E: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 159."
+   "text": "Frame 097, $C539-$C53E: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 159."
   },
   {
    "address": 50495,
    "type": "line",
-   "text": "Frame 098, $C53F-$C544: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
+   "text": "Frame 098, $C53F-$C544: header $80, whose bit 7 makes it a list of 1 part (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Sprites: 161."
   },
   {
    "address": 50501,
@@ -16272,77 +16272,77 @@
   {
    "address": 50576,
    "type": "line",
-   "text": "Frame 099, $C590-$C599: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 13, 14."
+   "text": "Frame 099, $C590-$C599: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 13, 14."
   },
   {
    "address": 50586,
    "type": "line",
-   "text": "Frame 100, $C59A-$C5A3: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 2, 3."
+   "text": "Frame 100, $C59A-$C5A3: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 2, 3."
   },
   {
    "address": 50596,
    "type": "line",
-   "text": "Frame 101, $C5A4-$C5AD: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 4, 3."
+   "text": "Frame 101, $C5A4-$C5AD: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 4, 3."
   },
   {
    "address": 50606,
    "type": "line",
-   "text": "Frame 102, $C5AE-$C5B7: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 7."
+   "text": "Frame 102, $C5AE-$C5B7: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 7."
   },
   {
    "address": 50616,
    "type": "line",
-   "text": "Frame 103, $C5B8-$C5C1: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 7."
+   "text": "Frame 103, $C5B8-$C5C1: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 7."
   },
   {
    "address": 50626,
    "type": "line",
-   "text": "Frame 104, $C5C2-$C5CB: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 9."
+   "text": "Frame 104, $C5C2-$C5CB: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 9."
   },
   {
    "address": 50636,
    "type": "line",
-   "text": "Frame 105, $C5CC-$C5D5: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 7."
+   "text": "Frame 105, $C5CC-$C5D5: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 7."
   },
   {
    "address": 50646,
    "type": "line",
-   "text": "Frame 106, $C5D6-$C5DF: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 9."
+   "text": "Frame 106, $C5D6-$C5DF: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 9."
   },
   {
    "address": 50656,
    "type": "line",
-   "text": "Frame 107, $C5E0-$C5E9: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 10, 11."
+   "text": "Frame 107, $C5E0-$C5E9: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 10, 11."
   },
   {
    "address": 50666,
    "type": "line",
-   "text": "Frame 108, $C5EA-$C5F3: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 12, 5."
+   "text": "Frame 108, $C5EA-$C5F3: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 12, 5."
   },
   {
    "address": 50676,
    "type": "line",
-   "text": "Frame 109, $C5F4-$C5FD: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 5."
+   "text": "Frame 109, $C5F4-$C5FD: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 5."
   },
   {
    "address": 50686,
    "type": "line",
-   "text": "Frame 110, $C5FE-$C607: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 11."
+   "text": "Frame 110, $C5FE-$C607: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 11."
   },
   {
    "address": 50696,
    "type": "line",
-   "text": "Frame 111, $C608-$C611: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 1."
+   "text": "Frame 111, $C608-$C611: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 6, 1."
   },
   {
    "address": 50706,
    "type": "line",
-   "text": "Frame 112, $C612-$C61B: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 0, 1."
+   "text": "Frame 112, $C612-$C61B: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 0, 1."
   },
   {
    "address": 50716,
    "type": "line",
-   "text": "Frame 113, $C61C-$C625: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, the vertical offset the composer doubles. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 1."
+   "text": "Frame 113, $C61C-$C625: header $A1, whose bit 7 makes it a list of 2 parts (the low two bits plus one), and $08, which the composer doubles into the mirror width: an actor facing the other way has each part placed at that width less its X offset. Each part is four bytes: the sprite number, its X and Y offsets and its attributes; $FF leaves the slot empty. Bit 5 of the header makes the sprite numbers unpacked images, image n at $F180 plus 64 times n, which the composer uses as they are. Images: 8, 1."
   },
   {
    "address": 50726,
@@ -18042,7 +18042,7 @@
   {
    "address": 57696,
    "type": "line",
-   "text": "Eight pointers, one for each kind of extra sprite an actor can carry (a weapon held, for one): none, $E1B1, $E1B1, $E1B1, $E1B1, $E9D9, $F180 (unpacked images), $F180 (unpacked images). The frame composer adds a word offset taken from the pose table to the chosen pointer."
+   "text": "Eight pointers, one for each kind of extra sprite the enemy can carry (its weapon): none, $E1B1, $E1B1, $E1B1, $E1B1, $E9D9, $F180, $F180. The high nibble of the area's entry in the enemy table at $AE3B picks the pointer: it is twice the kind, a byte offset into this table. The composer adds a word offset taken from the pose table to the chosen pointer, reads the word there and unpacks the image it leads to, the same way for every kind. No area's enemy has a kind whose pointer is $F180, the unpacked images."
   },
   {
    "address": 57697,
@@ -18477,77 +18477,77 @@
   {
    "address": 61824,
    "type": "line",
-   "text": "Unpacked sprite image 0, $F180-$F1BF: 64 bytes, used as they are by frame 112; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 0, $F180-$F1BF: 64 bytes, used as they are by frame 112; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 61888,
    "type": "line",
-   "text": "Unpacked sprite image 1, $F1C0-$F1FF: 64 bytes, used as they are by frames 111, 112 and 113; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 1, $F1C0-$F1FF: 64 bytes, used as they are by frames 111, 112 and 113; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 61952,
    "type": "line",
-   "text": "Unpacked sprite image 2, $F200-$F23F: 64 bytes, used as they are by frame 100; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 2, $F200-$F23F: 64 bytes, used as they are by frame 100; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62016,
    "type": "line",
-   "text": "Unpacked sprite image 3, $F240-$F27F: 64 bytes, used as they are by frames 100 and 101; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 3, $F240-$F27F: 64 bytes, used as they are by frames 100 and 101; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62080,
    "type": "line",
-   "text": "Unpacked sprite image 4, $F280-$F2BF: 64 bytes, used as they are by frame 101; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 4, $F280-$F2BF: 64 bytes, used as they are by frame 101; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62144,
    "type": "line",
-   "text": "Unpacked sprite image 5, $F2C0-$F2FF: 64 bytes, used as they are by frames 108 and 109; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 5, $F2C0-$F2FF: 64 bytes, used as they are by frames 108 and 109; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62208,
    "type": "line",
-   "text": "Unpacked sprite image 6, $F300-$F33F: 64 bytes, used as they are by frames 102, 104, 105, 109 and 111; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 6, $F300-$F33F: 64 bytes, used as they are by frames 102, 104, 105, 109 and 111; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62272,
    "type": "line",
-   "text": "Unpacked sprite image 7, $F340-$F37F: 64 bytes, used as they are by frames 102, 103 and 105; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 7, $F340-$F37F: 64 bytes, used as they are by frames 102, 103 and 105; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62336,
    "type": "line",
-   "text": "Unpacked sprite image 8, $F380-$F3BF: 64 bytes, used as they are by frames 103, 106, 110 and 113; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 8, $F380-$F3BF: 64 bytes, used as they are by frames 103, 106, 110 and 113; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62400,
    "type": "line",
-   "text": "Unpacked sprite image 9, $F3C0-$F3FF: 64 bytes, used as they are by frames 104 and 106; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 9, $F3C0-$F3FF: 64 bytes, used as they are by frames 104 and 106; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62464,
    "type": "line",
-   "text": "Unpacked sprite image 10, $F400-$F43F: 64 bytes, used as they are by frame 107; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 10, $F400-$F43F: 64 bytes, used as they are by frame 107; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62528,
    "type": "line",
-   "text": "Unpacked sprite image 11, $F440-$F47F: 64 bytes, used as they are by frames 107 and 110; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 11, $F440-$F47F: 64 bytes, used as they are by frames 107 and 110; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62592,
    "type": "line",
-   "text": "Unpacked sprite image 12, $F480-$F4BF: 64 bytes, used as they are by frame 108; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 12, $F480-$F4BF: 64 bytes, used as they are by frame 108; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62656,
    "type": "line",
-   "text": "Unpacked sprite image 13, $F4C0-$F4FF: 64 bytes, used as they are by frame 99; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 13, $F4C0-$F4FF: 64 bytes, used as they are by frame 99; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62720,
    "type": "line",
-   "text": "Unpacked sprite image 14, $F500-$F53F: 64 bytes, used as they are by frame 99; the composer finds image n at $F180 plus 64 times n. Extra sprite kind 6 and 7 takes its images from this bank too."
+   "text": "Unpacked sprite image 14, $F500-$F53F: 64 bytes, used as they are by frame 99; the composer finds image n at $F180 plus 64 times n."
   },
   {
    "address": 62784,

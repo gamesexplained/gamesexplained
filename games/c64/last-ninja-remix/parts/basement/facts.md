@@ -18,9 +18,13 @@ what follows is where things are and what differs.
 - Frames: 114 pointers at `$BC8B`, the records `$BD6F-$C61C`.
 - Packed sprites: 162 pointers at `$C68C`, each plus `$068C` (modulo
   65536) the address of its record, and the records `$C7D0-$E153`. The
-  eight kinds of extra sprite an actor can carry are pointed to from
-  `$E160`: two groups of 40 packed images at `$E1B1` and `$E9D9`, and 15
-  unpacked images of 64 bytes from `$F180`.
+  enemy of an area may carry an extra sprite, its weapon: the high
+  nibble of the area's entry in the enemy table at `$AE3B` picks one of
+  the eight pointers at `$E160`, none or one of two groups of 40 packed
+  images, at `$E1B1` and `$E9D9`. The pointers that lead to the unpacked
+  images are for kinds no area's enemy has. 15 unpacked images of 64
+  bytes from `$F180` are drawn as they are by the frames whose header
+  has bit 5 set.
 - Panel pictures: 17 pointers at `$F540`, to `$3F40` in the engine and 8
   pictures at `$F562-$F7E9`.
 - The walls of the area on screen are compiled into the zeros from
