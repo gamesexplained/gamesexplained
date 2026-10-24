@@ -139,8 +139,11 @@ bitmap `$2000`.
   object records say where each item lies and what taking it does; some
   call a routine first, which may refuse unless a given item is selected.
 - A level ends through `ResolveLevelCompletion`: it checks the items the
-  level asks for (Central Park four, The Street two, the rest none), adds
-  50 to the score, takes away the items used only in that level, saves
+  level asks for (Central Park four, The Street two, the rest none), and
+  if one is missing asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT
+  LEVEL, where YES ends the level all the same and NO goes back to it;
+  then it adds 5,000 to the score (`$50` to the hundreds and thousands
+  digits, engine `$1183`), takes away the items used only in that level, saves
   the items, score and clock (`SaveLevelState`, engine `$1C30`) and calls
   the load coordinator (engine `$16AD`) for the next level.
 - The clock is also a code. The Basement, as it ends, copies the clock's

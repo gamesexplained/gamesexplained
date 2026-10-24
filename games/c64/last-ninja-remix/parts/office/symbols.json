@@ -12719,7 +12719,7 @@
   {
    "address": 34880,
    "type": "line",
-   "text": "EngineEntry: The Office's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, reveals the status panel, draws the credits card, sets the background to black, waits for the death sprite's descent and goes into the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
+   "text": "EngineEntry: The Office's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, lowers the sprite curtain over the play window (AnimateStatusPanelReveal, $1F75), draws the credits card, sets the background to black, raises the curtain again and waits until it is gone (RaiseSpriteCurtain, $8A0D), which shows the card, then waits for the fire button or the second button read through the SID's pot X ($D419), keeping which in $AC, and goes on into EnterArea ($8889) and the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
   },
   {
    "address": 34915,
@@ -12754,7 +12754,7 @@
   {
    "address": 35174,
    "type": "line",
-   "text": "Text \"0 LIVES LEFT\", drawn by the call at $8963 that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $8977."
+   "text": "Text \"0 LIVES LEFT\", drawn by the call at $8963 that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The 0 at $896A is a placeholder: the instruction at $8960 writes the lives left (counting the spare life) plus $1B into it before the call, so the line reads 2 LIVES LEFT or more. The routine returns to the instruction after the zero, at $8977."
   },
   {
    "address": 35178,
@@ -12799,7 +12799,7 @@
   {
    "address": 35296,
    "type": "line",
-   "text": "ResolveLevelCompletion: runs when the completion request $02AF is set. In this level it asks for no items. Then it adds $50 to the score, saves the items, score and clock for the next level (SaveLevelState, $1C30), counts the energy $0229 up from 0 to 21, one step each time the interrupt routine changes $022B, and jumps to the load coordinator at $16AD for the next part."
+   "text": "ResolveLevelCompletion: runs when the completion request $02AF is set. In this level it asks for no items. Then it adds 5,000 points to the score ($1183 with A = $50: 5 to the thousands digit, 0 to the hundreds), saves the items, score and clock for the next level (SaveLevelState, $1C30), counts the energy $0229 up from 0 to 21, one step each time the interrupt routine changes $022B, and jumps to the load coordinator at $16AD for the next part."
   },
   {
    "address": 35341,
@@ -12894,7 +12894,7 @@
   {
    "address": 36354,
    "type": "line",
-   "text": "Text \"MODE  \", drawn by the call at $8DFF that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $8E0D."
+   "text": "Text \"MODE  \", drawn by the call at $8DFF that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The second space, at $8E0B, is a placeholder: the instruction at $8DFC writes the mode $03F3 (0 to 2) plus $1C into it before the call, so the line reads MODE 1, MODE 2 or MODE 3. The routine returns to the instruction after the zero, at $8E0D."
   },
   {
    "address": 36363,
@@ -13044,7 +13044,7 @@
   {
    "address": 37856,
    "type": "line",
-   "text": "Condition list for area 6, $93E0-$94A4: 49 four-byte entries, then $FF. In each entry the second byte is the smallest value of the caller's parameter that tests it, and the two after it give the region of the scene that is tested against each actor."
+   "text": "Condition list for area 6, $93E0-$94A4: 49 four-byte entries, then $FF. In each entry the second byte is the largest value of the caller's parameter (the actor's depth) that tests it, and the two after it give the region of the scene that is tested against each actor."
   },
   {
    "address": 38053,
@@ -13164,7 +13164,7 @@
   {
    "address": 38986,
    "type": "line",
-   "text": "Walls of area 14, $984A-$985C, ending with $FF. The compiler finds them by skipping 14 lists from $962E, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7BA for the movement tests."
+   "text": "Walls of area 14, $984A-$985F, ending with $FF. The compiler finds them by skipping 14 lists from $962E, and turns each chain (a start X and Y, then for each segment a direction byte and a length byte, and a third byte, a script command, when the length has bit 0 set; bit 0 of the direction ends the chain) into six-byte records at $F7BA for the movement tests. The last chain, from $9852, has no direction byte with bit 0 set before the $FF at $985C, so the compiler goes on and reads $985C-$985E (that $FF and the lone $FF lists of areas 15 and 16) as one more segment, direction $FF, length $FF and command $FF, and the list ends at the $FF at $985F."
   },
   {
    "address": 39005,
@@ -13319,7 +13319,7 @@
   {
    "address": 39618,
    "type": "line",
-   "text": "Script command 13: runs four frames of the scripted runtime (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $9C1D, so the player loses two points of energy. It clears the command $81 and returns. The Office has no copy of that sequence; every call that went to it goes to $9C1D here. No wall in The Office carries command 13, and the walls are the only source of commands, so it never runs in this level."
+   "text": "Script command 13: plays the player's facing animation four times through, running the engine until each one ends (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $9C1D, so the player loses two points of energy. It clears the command $81 and returns. The Office has no copy of that sequence; every call that went to it goes to $9C1D here. No wall in The Office carries command 13, and the walls are the only source of commands, so it never runs in this level."
   },
   {
    "address": 39635,
@@ -13729,7 +13729,7 @@
   {
    "address": 41971,
    "type": "line",
-   "text": "32 words, each the animation an enemy answers a blow with. Targets: $BB25, $BB25, $BB1D, $BB1D, $BB25, $BB25, $BB1D, $BB1D, $BB3B, $BB3B, $BB0D, $BB15, $BB15, $BB0D, $BB2D, $BB2D, $BB25, $BB25, $BB2D, $BB2D, $BB3B, $BB3B, $BB1D, $BB1D, $BB3B, $BB3B, $BB1D, $BB1D, $BB25, $BB25, $BB2D, $BB2D."
+   "text": "32 words, each the animation the actor that is hit answers a blow with: the player's when the enemy hits them (installed with InstallAnimation), the enemy's when the player does (InstallAiScript). Targets: $BB25, $BB25, $BB1D, $BB1D, $BB25, $BB25, $BB1D, $BB1D, $BB3B, $BB3B, $BB0D, $BB15, $BB15, $BB0D, $BB2D, $BB2D, $BB25, $BB25, $BB2D, $BB2D, $BB3B, $BB3B, $BB1D, $BB1D, $BB3B, $BB3B, $BB1D, $BB1D, $BB25, $BB25, $BB2D, $BB2D."
   },
   {
    "address": 41972,

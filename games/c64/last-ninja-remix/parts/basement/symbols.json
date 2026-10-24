@@ -13137,7 +13137,7 @@
   {
    "address": 34315,
    "type": "line",
-   "text": "EngineEntry: The Basement's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, reveals the status panel, draws the credits card, sets the background to black, waits for the death sprite's descent and goes into the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
+   "text": "EngineEntry: The Basement's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, lowers the sprite curtain over the play window (AnimateStatusPanelReveal, $1F75), draws the credits card, sets the background to black, raises the curtain again and waits until it is gone (RaiseSpriteCurtain, $87E0), which shows the card, then waits for the fire button or the second button read through the SID's pot X ($D419), keeping which in $AC, and goes on into EnterArea ($8654) and the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
   },
   {
    "address": 34350,
@@ -13172,7 +13172,7 @@
   {
    "address": 34609,
    "type": "line",
-   "text": "Text \"0 LIVES LEFT\", drawn by the call at $872E that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $8742."
+   "text": "Text \"0 LIVES LEFT\", drawn by the call at $872E that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The 0 at $8735 is a placeholder: the instruction at $872B writes the lives left (counting the spare life) plus $1B into it before the call, so the line reads 2 LIVES LEFT or more. The routine returns to the instruction after the zero, at $8742."
   },
   {
    "address": 34613,
@@ -13207,7 +13207,7 @@
   {
    "address": 34728,
    "type": "line",
-   "text": "ResolveLevelCompletion: runs when the completion request $02AF is set. In this level it asks for no items. Then it adds $50 to the score, takes away items 13 and 14 (clears $03E5 and $03E6), saves the items, score and clock for the next level (SaveLevelState, $1C30), counts the energy $0229 up from 0 to 21, one step each time the interrupt routine changes $022B, and jumps to the load coordinator at $16AD for the next part."
+   "text": "ResolveLevelCompletion: runs when the completion request $02AF is set. In this level it asks for no items. Then it adds 5,000 points to the score ($1183 with A = $50: 5 to the thousands digit, 0 to the hundreds), takes away items 13 and 14 (clears $03E5 and $03E6), saves the items, score and clock for the next level (SaveLevelState, $1C30), counts the energy $0229 up from 0 to 21, one step each time the interrupt routine changes $022B, and jumps to the load coordinator at $16AD for the next part."
   },
   {
    "address": 34758,
@@ -13297,7 +13297,7 @@
   {
    "address": 35845,
    "type": "line",
-   "text": "Text \"MODE  \", drawn by the call at $8C02 that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $8C10."
+   "text": "Text \"MODE  \", drawn by the call at $8C02 that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The second space, at $8C0E, is a placeholder: the instruction at $8BFF writes the mode $03F3 (0 to 2) plus $1C into it before the call, so the line reads MODE 1, MODE 2 or MODE 3. The routine returns to the instruction after the zero, at $8C10."
   },
   {
    "address": 35854,
@@ -13417,7 +13417,7 @@
   {
    "address": 37089,
    "type": "line",
-   "text": "Condition list for area 2, $90E1-$9141: 24 four-byte entries, then $FF. In each entry the second byte is the smallest value of the caller's parameter that tests it, and the two after it give the region of the scene that is tested against each actor."
+   "text": "Condition list for area 2, $90E1-$9141: 24 four-byte entries, then $FF. In each entry the second byte is the largest value of the caller's parameter (the actor's depth) that tests it, and the two after it give the region of the scene that is tested against each actor."
   },
   {
    "address": 37186,
@@ -13742,7 +13742,7 @@
   {
    "address": 39679,
    "type": "line",
-   "text": "Script command 13: runs four frames of the scripted runtime (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $9C42, so the player loses two points of energy. It clears the command $81 and returns. The Basement has no copy of that sequence; every call that went to it goes to $9C42 here. No wall in The Basement carries command 13, and the walls are the only source of commands, so it never runs in this level."
+   "text": "Script command 13: plays the player's facing animation four times through, running the engine until each one ends (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $9C42, so the player loses two points of energy. It clears the command $81 and returns. The Basement has no copy of that sequence; every call that went to it goes to $9C42 here. No wall in The Basement carries command 13, and the walls are the only source of commands, so it never runs in this level."
   },
   {
    "address": 39696,
@@ -14162,7 +14162,7 @@
   {
    "address": 41954,
    "type": "line",
-   "text": "32 words, each the animation an enemy answers a blow with. Targets: $BBD8, $BBD8, $BBD0, $BBD0, $BBD8, $BBD8, $BBD0, $BBD0, $BBEE, $BBEE, $BBC0, $BBC8, $BBC8, $BBC0, $BBE0, $BBE0, $BBD8, $BBD8, $BBE0, $BBE0, $BBEE, $BBEE, $BBD0, $BBD0, $BBEE, $BBEE, $BBD0, $BBD0, $BBD8, $BBD8, $BBE0, $BBE0."
+   "text": "32 words, each the animation the actor that is hit answers a blow with: the player's when the enemy hits them (installed with InstallAnimation), the enemy's when the player does (InstallAiScript). Targets: $BBD8, $BBD8, $BBD0, $BBD0, $BBD8, $BBD8, $BBD0, $BBD0, $BBEE, $BBEE, $BBC0, $BBC8, $BBC8, $BBC0, $BBE0, $BBE0, $BBD8, $BBD8, $BBE0, $BBE0, $BBEE, $BBEE, $BBD0, $BBD0, $BBEE, $BBEE, $BBD0, $BBD0, $BBD8, $BBD8, $BBE0, $BBE0."
   },
   {
    "address": 41955,

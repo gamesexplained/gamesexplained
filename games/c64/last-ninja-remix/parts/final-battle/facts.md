@@ -56,7 +56,7 @@ what follows is where things are and what differs.
   while he stands inside the candles with all five lit (`$9CFF`) starts
   the ending (`$9CC2`, `$B271`); when he gets up again they go out
   (`$A3FC`).
-- The ending: `PlayEnding` (`$8CA5`) adds 500 to the score in ten steps
+- The ending: `PlayEnding` (`$8CA5`) adds 50,000 to the score, 5,000 at a time in ten steps,
   and copies the score and clock into TOTAL SCORE and TOTAL TIME. Taking
   the spirit with item 16 selected (record 4, `$B430`) clears the screen
   and prints CONGRATULATIONS, YOU HAVE CAPTURED THE SPIRIT OF THE EVIL

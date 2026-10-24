@@ -12894,7 +12894,7 @@
   {
    "address": 20197,
    "type": "line",
-   "text": "Scene pointer 128 plus 1, the address the instructions at $858B, $8591, $85BD, $8654 and $92F8 write with X and Y as the index: the high byte of each word of the table, the index counting in pairs from the low byte."
+   "text": "Scene pointer 128 plus 1, the address the instructions at $858B, $85BD, $8654 and $92F8 read and the one at $8591 writes, with X and Y as the index: the high byte of each word of the table, the index counting in pairs from the low byte."
   },
   {
    "address": 20198,
@@ -13679,7 +13679,7 @@
   {
    "address": 35316,
    "type": "line",
-   "text": "EngineEntry: The Street's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, reveals the status panel, draws the credits card, sets the background to black, waits for the death sprite's descent and goes into the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
+   "text": "EngineEntry: The Street's play code starts here, from PhaseHandoff at $3FF3. It sets $AA to $FF, which lets the interrupt routine play the tune, relocates the scene pointers, clears the scene buffers, waits 25 ticks, lowers the sprite curtain over the play window (AnimateStatusPanelReveal, $1F75), draws the credits card, sets the background to black, raises the curtain again and waits until it is gone (RaiseSpriteCurtain, $8CA2), which shows the card, then waits for the fire button or the second button read through the SID's pot X ($D419), keeping which in $AC, and goes on into EnterArea ($8A3D) and the main loop. Central Park's EngineEntry also sets $03CB to 1; this one leaves it alone."
   },
   {
    "address": 35351,
@@ -13714,7 +13714,7 @@
   {
    "address": 35542,
    "type": "side",
-   "text": "The Street's crossing lights, where Central Park calls an RTS"
+   "text": "The Street adds this call to advance the crossing lights; Central Park has no call here"
   },
   {
    "address": 35571,
@@ -13724,7 +13724,7 @@
   {
    "address": 35616,
    "type": "line",
-   "text": "Text \"0 LIVES LEFT\", drawn by the call at $8B1D that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $8B31."
+   "text": "Text \"0 LIVES LEFT\", drawn by the call at $8B1D that comes before it: column 9, row 8, colours $07 and $C0, then 12 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The 0 at $8B24 is a placeholder: the instruction at $8B1A writes the lives left (counting the spare life) plus $1B into it before the call, so the line reads 2 LIVES LEFT or more. The routine returns to the instruction after the zero, at $8B31."
   },
   {
    "address": 35620,
@@ -13759,7 +13759,7 @@
   {
    "address": 35735,
    "type": "line",
-   "text": "ResolveLevelCompletion: runs when the completion request $02AF is set. It looks up each of the 2 items listed at $91F4 (1, 10) in the item flags at $03D8. With one missing it asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT LEVEL, YES or NO, and NO returns the player to the level. Then it adds $50 to the score, takes away item 11 (clears $03E3), saves the items, score and clock for the next level (SaveLevelState, $1C30), counts the energy $0229 up from 0 to 21, one step each time the interrupt routine changes $022B, and jumps to the load coordinator at $16AD for the next part."
+   "text": "ResolveLevelCompletion: runs when the completion request $02AF is set. It looks up each of the 2 items listed at $91F4 (1, 10) in the item flags at $03D8. With one missing it asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT LEVEL, YES or NO, and NO returns the player to the level. Then it adds 5,000 points to the score ($1183 with A = $50: 5 to the thousands digit, 0 to the hundreds), takes away item 11 (clears $03E3), saves the items, score and clock for the next level (SaveLevelState, $1C30), counts the energy $0229 up from 0 to 21, one step each time the interrupt routine changes $022B, and jumps to the load coordinator at $16AD for the next part."
   },
   {
    "address": 35803,
@@ -13874,7 +13874,7 @@
   {
    "address": 36457,
    "type": "line",
-   "text": "40 exits, $8E69-$8E90: the area it leads to ($FF for none). Values: 0, 12, 1, 2, 13, 2, 4, 0, 14, 0, 1, 4, 15, 1, 5, 3, 6, 4, 7, 9, 5, 8, 6, 11, 7, 6, 12, 11, 8, 10, 9, 13, 0, 14, 1, 12, 2, 13, 255, 3."
+   "text": "40 exits, $8E69-$8E90: the area it leads to, or $FF for the way out of the level (entry 38, the closing $FF of area 14's group), which sets the level-exit request $02AF instead of moving the player. Values: 0, 12, 1, 2, 13, 2, 4, 0, 14, 0, 1, 4, 15, 1, 5, 3, 6, 4, 7, 9, 5, 8, 6, 11, 7, 6, 12, 11, 8, 10, 9, 13, 0, 14, 1, 12, 2, 13, 255, 3."
   },
   {
    "address": 36497,
@@ -13914,7 +13914,7 @@
   {
    "address": 37060,
    "type": "line",
-   "text": "Text \"MODE  \", drawn by the call at $90C1 that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The routine returns to the instruction after the zero, at $90CF."
+   "text": "Text \"MODE  \", drawn by the call at $90C1 that comes before it: column 17, row 20, colours $03 and $E6, then 6 glyph numbers (0 a space, 1-26 A-Z, 27-36 the digits) and a zero. The second space, at $90CD, is a placeholder: the instruction at $90BE writes the mode $03F3 (0 to 2) plus $1C into it before the call, so the line reads MODE 1, MODE 2 or MODE 3. The routine returns to the instruction after the zero, at $90CF."
   },
   {
    "address": 37069,
@@ -13954,7 +13954,7 @@
   {
    "address": 37307,
    "type": "line",
-   "text": "The Street's entrance-animation list, three bytes an entry as in Central Park's at $96A6 (the exit the player arrived by, the animation kind, its ticks), ending with $FF. This level's has no entries: only the $FF."
+   "text": "The Street's entrance-animation list, three bytes an entry as in Central Park's at $96A6 (the exit the player arrived by, the animation kind, how many animation steps it lasts), ending with $FF. This level's has no entries: only the $FF."
   },
   {
    "address": 37308,
@@ -13994,7 +13994,7 @@
   {
    "address": 37364,
    "type": "line",
-   "text": "The two items the player must hold to finish the level: item 1 and item 10. ResolveLevelCompletion reads them at $8BA6 with X counting to two and looks each up in the item flags at $03D8."
+   "text": "The two items the game expects the player to hold when leaving the level: item 1 and item 10. ResolveLevelCompletion reads them at $8BA6 with X counting to two and looks each up in the item flags at $03D8; with either missing it asks ARE YOU SURE YOU ARE PREPARED FOR THE NEXT LEVEL, and YES leaves the level all the same."
   },
   {
    "address": 37366,
@@ -14034,7 +14034,7 @@
   {
    "address": 38123,
    "type": "line",
-   "text": "Condition list for area 0, $94EB-$9517: 11 four-byte entries, then $FF. In each entry the second byte is the smallest value of the caller's parameter that tests it, and the two after it give the region of the scene that is tested against each actor."
+   "text": "Condition list for area 0, $94EB-$9517: 11 four-byte entries, then $FF. In each entry the second byte is the largest value of the caller's parameter (the actor's depth) that tests it, and the two after it give the region of the scene that is tested against each actor."
   },
   {
    "address": 38168,
@@ -14344,7 +14344,7 @@
   {
    "address": 39999,
    "type": "line",
-   "text": "Script command 13: runs four frames of the scripted runtime (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $9CFA, so the player loses two points of energy. It clears the command $81 and returns. The Street has no copy of that sequence; every call that went to it goes to $9CFA here. No wall in The Street carries command 13, and the walls are the only source of commands, so it never runs in this level."
+   "text": "Script command 13: plays the player's facing animation four times through, running the engine until each one ends (RepeatScriptRuntimeFrames, A = 4), then, where Central Park runs its scripted coordinate sequence with X = $F8 and Y = 4, calls ScriptDamagePlayerTwoAndClearCommand at $9CFA, so the player loses two points of energy. It clears the command $81 and returns. The Street has no copy of that sequence; every call that went to it goes to $9CFA here. No wall in The Street carries command 13, and the walls are the only source of commands, so it never runs in this level."
   },
   {
    "address": 40016,
@@ -14464,7 +14464,7 @@
   {
    "address": 40334,
    "type": "line",
-   "text": "RTS: script commands 39 and 40, which walls in areas 5 and 7 carry, do nothing themselves in The Street; the touch that sets them also sets bit 0 of $81, which ServiceEnemyBoundaryLatch at $9A05 acts on."
+   "text": "RTS: script commands 39 and 40, which walls in areas 5 and 7 carry, do nothing themselves in The Street; the touch that sets them also adds one to $81 and sets its bit 7 (SegmentCollision, $B48E), and ServiceEnemyBoundaryLatch at $9A05 acts on bit 0 of $81."
   },
   {
    "address": 40335,
@@ -14664,7 +14664,7 @@
   {
    "address": 41960,
    "type": "line",
-   "text": "RTS: event 0, and the events the table gives no work to, do nothing."
+   "text": "RTS: the table's entry for event 0, which does nothing. No other event points here, and EventDispatch never dispatches event 0, since it skips a zero $64 or $66."
   },
   {
    "address": 41961,
@@ -14764,7 +14764,7 @@
   {
    "address": 42277,
    "type": "line",
-   "text": "32 words, each the animation an enemy answers a blow with. Targets: $BCEB, $BCEB, $BCE3, $BCE3, $BCEB, $BCEB, $BCE3, $BCE3, $BD01, $BD01, $BCD3, $BCDB, $BCDB, $BCD3, $BCF3, $BCF3, $BCEB, $BCEB, $BCF3, $BCF3, $BD01, $BD01, $BCE3, $BCE3, $BD01, $BD01, $BCE3, $BCE3, $BCEB, $BCEB, $BCF3, $BCF3."
+   "text": "32 words, each the animation the actor that is hit answers a blow with: the player's when the enemy hits them (installed with InstallAnimation), the enemy's when the player does (InstallAiScript). Targets: $BCEB, $BCEB, $BCE3, $BCE3, $BCEB, $BCEB, $BCE3, $BCE3, $BD01, $BD01, $BCD3, $BCDB, $BCDB, $BCD3, $BCF3, $BCF3, $BCEB, $BCEB, $BCF3, $BCF3, $BD01, $BD01, $BCE3, $BCE3, $BD01, $BD01, $BCE3, $BCE3, $BCEB, $BCEB, $BCF3, $BCF3."
   },
   {
    "address": 42278,
