@@ -5,7 +5,7 @@
 // the picture is curved a little like a tube and a shadow mask is drawn on the screen's own
 // pixels. No dependencies. Exposes CRT (window.CRT on a page; globalThis.CRT in node, for tests).
 //
-//   const crt = CRT.attach(canvas, { button, source, pixel, onChange })
+//   const crt = CRT.attach(canvas, { button, source, pixel, onChange, start })
 //     canvas    the page's game canvas: the CRT picture covers it exactly and lets clicks through
 //     button    the page's switch, a <button> whose aria-pressed this keeps; hidden where the
 //               browser has no WebGL2
@@ -14,11 +14,13 @@
 //     pixel     source pixels to a C64 pixel (default 1; 2 for a page that draws at twice size)
 //     onChange  called with true or false when the screen is switched, so a page can turn off
 //               what cannot be drawn through it (a view at the screen's own resolution)
+//     start     true for the screen on while the viewer has not chosen (default false: off)
 //   crt.on, crt.set(on), crt.frame()
 // A page makes no call per frame: every putImageData and drawImage on canvas's 2D context draws
 // the CRT picture again, from source, at the next animation frame (crt.frame() does the same for
 // a page that draws some other way). The viewer's choice holds on every Play tab
-// (localStorage 'gamesexplained.crt'), and it starts off.
+// (localStorage 'gamesexplained.crt'); until they make one, the screen starts as the page's start
+// says, and that is not stored as their choice.
 (function (root) {
   'use strict';
   const KEY = 'gamesexplained.crt';
@@ -73,7 +75,7 @@ void main() {
 }`;
 
   const supported = () => typeof root.WebGL2RenderingContext === 'function';
-  function stored() { try { return root.localStorage.getItem(KEY) === '1'; } catch (e) { return false; } }
+  function stored() { try { return root.localStorage.getItem(KEY); } catch (e) { return null; } }
   function store(on) { try { root.localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) { /* no storage: the choice lasts for this visit */ } }
 
   // The canvas's backing size in the screen's own pixels: the browser's exact count where it gives
@@ -164,7 +166,8 @@ void main() {
       gl.uniform1i(u.pixel, pixel);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
-    // quiet: the screen as the viewer left it, set while the page starts, without onChange
+    // quiet: the screen as the viewer left it or the page starts it, set while the page starts,
+    // without onChange and without storing it
     function set(on, quiet) {
       on = !!on;
       if (on && !make()) { on = false; if (button) button.style.display = 'none'; }
@@ -172,7 +175,7 @@ void main() {
       api.on = on;
       if (cv) cv.style.display = on ? 'block' : 'none';
       if (button) button.setAttribute('aria-pressed', String(on));
-      store(on);
+      if (!quiet) store(on);
       if (on) { place(); frame(); }
       if (on !== was && !quiet && opts.onChange) opts.onChange(on);
       return on;
@@ -188,7 +191,8 @@ void main() {
       button.setAttribute('aria-pressed', 'false');
       button.addEventListener('click', () => set(!api.on));
     }
-    if (stored()) set(true, true);
+    const choice = stored();
+    if (choice === '1' || (choice === null && opts.start)) set(true, true);
     return api;
   }
 

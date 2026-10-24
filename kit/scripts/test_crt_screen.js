@@ -2,8 +2,8 @@
 // loads it, gives it a "📺 CRT screen" button and attaches it; a browser without WebGL2 never shows
 // the button; switched on, it lays its own canvas over the game's, draws the game's frame again
 // each time the page draws one (from the source canvas, at the page's pixel size), keeps the
-// viewer's choice for every Play tab, and tells the page so that it can turn off what cannot be
-// drawn through it. The shader keeps the defaults of Lottes's public-domain one.
+// viewer's choice for every Play tab, starts on for a viewer who has not chosen on a page that
+// asks it to, and tells the page so that it can turn off what cannot be drawn through it. The shader keeps the defaults of Lottes's public-domain one.
 //   node kit/scripts/test_crt_screen.js
 const fs = require('fs');
 const path = require('path');
@@ -129,6 +129,21 @@ function page(opts) {
   check(p.changes.length === 0, 'a stored choice is not told as a change');
   p.crt.set(false);
   check(p.changes.join() === 'false', 'set(false) from the page is told');
+}
+
+// a page that starts the screen on: on for a viewer who has not chosen, which is not stored as
+// their choice for the other Play tabs nor told as a change; a viewer who chose off keeps it off
+{
+  const p = page({ webgl2: true, attach: { start: true } });
+  check(p.crt.on && p.button.attrs['aria-pressed'] === 'true', 'start: true starts the screen on for a viewer who has not chosen');
+  check(!p.store.has('gamesexplained.crt'), 'a page\'s start is not stored as the viewer\'s choice');
+  check(p.changes.length === 0, 'a page\'s start is not told as a change');
+  p.button.click();
+  check(!p.crt.on && p.store.get('gamesexplained.crt') === '0', 'a click switches it off and stores that');
+  const q = page({ webgl2: true, stored: '0', attach: { start: true } });
+  check(!q.crt.on, 'a viewer who chose off keeps it off on a page that starts it on');
+  const r = page({ webgl2: true });
+  check(!r.crt.on, 'without start the screen starts off for a viewer who has not chosen');
 }
 
 // a page that scales its picture into the canvas it shows, and one drawn at twice size
