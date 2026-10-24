@@ -9130,7 +9130,7 @@
   {
    "address": 46451,
    "type": "line",
-   "text": "Each voice's frames to the start of its bend: the instrument's byte 25 as a note starts ($B8F2), or a byte from the pattern when the instrument's byte 17 has bit 1 set ($BAA8); MusicFrame counts it down and at 0 starts the bend ($B64F-$B654). MusicEndBend clears it ($BB48)."
+   "text": "Each voice's frames to the start of its bend: the instrument's byte 25 as a note starts ($B8F2), or a byte from the pattern when the instrument's byte 17 has bit 1 set ($BAA8). While it is not 0 MusicFrame counts it down once a frame and runs neither the vibrato nor the bend's length ($B64A-$B657); at 0 it calls MusicStartBend ($B654), which starts a bend only when byte 17 has bit 1 set, so for instrument 6 (byte 25 is 32, byte 17 is 0) the count only keeps the vibrato off for its first 32 frames. MusicEndBend would clear it ($BB48), but its one call never runs."
   },
   {
    "address": 46454,
@@ -9140,7 +9140,7 @@
   {
    "address": 46457,
    "type": "line",
-   "text": "Each voice's bend length: the instrument's byte 26 as a note starts ($B900). While it is 0 MusicFrame runs the vibrato; above 1 it counts it down once a frame and runs the vibrato; at 1 the note holds with no vibrato ($B65A-$B666)."
+   "text": "Each voice's bend length: the instrument's byte 26 as a note starts ($B900). Once the bend's delay at $B573 is 0 (until then neither this count nor the vibrato runs): while it is 0 MusicFrame runs the vibrato; above 1 it counts it down once a frame and runs the vibrato; at 1 the note holds with no vibrato ($B65A-$B666)."
   },
   {
    "address": 46460,
@@ -9185,7 +9185,7 @@
   {
    "address": 46487,
    "type": "line",
-   "text": "Each voice's pulse sweep length: the instrument's byte 34 as a note starts ($B938). While it is 0 the sweep runs; above 1 MusicPulse counts it down once a frame and sweeps; at 1 the sweep stops ($B6E5-$B6EE)."
+   "text": "Each voice's pulse sweep length: the instrument's byte 34 as a note starts ($B938). Once the sweep's delay at $B591 is 0 (until then the sweep does not run): while it is 0 the sweep runs; above 1 MusicPulse counts it down once a frame and sweeps; at 1 the sweep stops ($B6E5-$B6EE)."
   },
   {
    "address": 46490,
@@ -9225,12 +9225,12 @@
   {
    "address": 46512,
    "type": "line",
-   "text": "Voice 1's copy of its instrument's byte 17: with bit 0 set MusicFilter routes voice 2 through the filter as well ($BA60)."
+   "text": "Voice 1's copy of its instrument's byte 17: with bit 0 set MusicFilter routes voice 1 itself (the SID's voice 2, bit 1 of $D417) through the filter as well ($BA60)."
   },
   {
    "address": 46513,
    "type": "line",
-   "text": "Voice 2's copy of its instrument's byte 17: with bit 0 set MusicWriteSid turns the filter on ($B9FD) and MusicFilter routes voice 3 through it ($BA54)."
+   "text": "Voice 2's copy of its instrument's byte 17: with bit 0 set MusicWriteSid turns the filter on ($B9FD) and MusicFilter routes voice 2 itself (the SID's voice 3, bit 2 of $D417) through it ($BA54)."
   },
   {
    "address": 46514,

@@ -12887,7 +12887,7 @@
   {
    "address": 36920,
    "type": "line",
-   "text": "Compose an actor's current frame and hide the parts behind the area's foreground pictures. Inputs: X and $4F the actor offset (0 player, 2 enemy) and current animation frame $65,X; the mirror flag is $5D,X when $5C,X bit 4 is set, else $5C,X bit 6; depth $74,X. Outputs: the player is composed into sprite slots 0-3 with ComposeSprites, the enemy into slots 4-7 with ComposeEnemySprites; MaskActorSpritesBehindScenery then clears the sprite pixels behind the foreground pictures and stages the slots in $0240-$025F. X is not restored: it returns as 4 for the player and 8 for the enemy. Clobbers: A, X, Y, flags, and shared renderer scratch. Hardware: changes sprite or image RAM only directly."
+   "text": "Compose an actor's current frame and hide the parts behind the area's foreground pictures. Inputs: X and $4F the actor offset (0 player, 2 enemy) and current animation frame $65,X; the mirror flag is $5D,X when $5C,X bit 4 is set, else $5C,X bit 6; depth $74,X. Outputs: the player is composed into sprite slots 0-3 with ComposeSprites, the enemy into slots 4-7 with ComposeEnemySprites; MaskActorSpritesBehindScenery then clears the sprite pixels behind the foreground pictures and stages the slots in $0240-$025F. X is not restored: it returns as 4 for the player and 8 for the enemy. Clobbers: A, X, Y, flags, and shared renderer scratch. Hardware: it writes no chip register itself; the composer it calls switches the I/O area out through the processor port $01 while it reads the packed sprites and puts it back, and MaskActorSpritesBehindScenery stages the slots with interrupts off and ends with CLI."
   },
   {
    "address": 36965,
@@ -13407,7 +13407,7 @@
   {
    "address": 40456,
    "type": "line",
-   "text": "18 bytes, one for each area by number, $9E08-$9E19: its fighting style, kept in $D0, of which only bit 6 is tested (AiBeginTimedDecision, $9545: set, a timed decision goes to state 4, clear, to state 3; it is set in every area here). The low two bits, kept in $D3, also set its speed: they pick the delay of each animation step of the actions InstallAiActionByDirection starts, from enemy_action_delay at $9A9E (8, 6, 4 or 4), and, plus one, the movement profile MoveEnemy passes to AdvanceCandidate ($8EEB). Values: 65, 65, 66, 66, 65, 65, 64, 66, 65, 65, 65, 66, 67, 66, 65, 65, 65, 65."
+   "text": "18 bytes, one for each area by number, $9E08-$9E19: its fighting style, kept in $D0, of which only bit 6 is tested (AiBeginTimedDecision, $9545: set, a timed decision goes to state 4, clear, to state 3; it is set in every area here). The low two bits, kept in $D3, also set its speed: they pick the delay, from enemy_action_delay at $9A9E (8, 6, 4 or 4), of each step of the one-frame poses and walks InstallAiActionByDirection starts (entries 2 to 13 of EnemyActionAnimations at $9AA2; the other actions bring a delay of their own in their first command, which replaces it), and, plus one, the movement profile MoveEnemy passes to AdvanceCandidate ($8EEB). Values: 65, 65, 66, 66, 65, 65, 64, 66, 65, 65, 65, 66, 67, 66, 65, 65, 65, 65."
   },
   {
    "address": 40474,
@@ -16987,7 +16987,7 @@
   {
    "address": 53672,
    "type": "line",
-   "text": "Eight pairs of sprite attributes, one for each pointer at $D198. When the actor carries an extra sprite (a kind other than 0) and its frame is one of 0 to 48, the composer writes its kind's pair over the attributes of the actor's first three sprites: the first on its first and third sprites, the second on its second. Frames 49 and up keep their own attributes, and the first pair, for kind 0, is never used: $00/$00, $00/$0A, $09/$0A, $06/$0A, $00/$0A, $00/$08, $00/$08, $00/$08."
+   "text": "Eight pairs of sprite attributes, one for each pointer at $D198, set when the actor carries that kind and its frame is one of 0 to 48 (frames 49 and up keep their own attributes, and the first pair, for kind 0, is never used): the first on the actor's first and third sprites, the second on its second: $00/$00, $00/$0A, $09/$0A, $06/$0A, $00/$0A, $00/$08, $00/$08, $00/$08."
   },
   {
    "address": 53673,
