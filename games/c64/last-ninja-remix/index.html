@@ -86,7 +86,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
   <p>The city is seen from above and to one side. Each of the seven levels (Central Park, The Street, The Sewers, The Basement, The Office, The Mansion and the Final Battle) is a set of areas, one screen each, joined at their edges. Armakuni walks from area to area, fights the enemy waiting in some of them, and picks up the objects he finds, some of which the way ahead needs: Central Park cannot be finished without four of them, nor The Street without two.</p>
   <figure class="plate" style="margin:22px 0 0">
     <img class="ln-ref" src="reference/central-park.png" alt="Armakuni on the bandstand in Central Park, with the status panel below and to the right" width="384" height="272">
-    <figcaption class="cap">Central Park, the first level, in the emulator. Armakuni stands on the bandstand. The panel at the bottom holds the two energy spirals, the score and the clock; the one on the right shows the weapon he is using and the object he has found.</figcaption>
+    <figcaption class="cap">Central Park, the first level. Armakuni stands on the bandstand. The panel at the bottom holds the two energy spirals, the score and the clock; the one on the right shows the weapon he is using and the object he has found.</figcaption>
   </figure>
 </section>
 
@@ -124,7 +124,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <div class="ln-bar" id="ln-regions"></div>
     <div class="ln-stack"><canvas id="ln-frame" class="ln-cv" width="384" height="272"></canvas><canvas id="ln-frame-hi" class="ln-cv" width="384" height="272"></canvas></div>
     <p class="ln-out" id="ln-region-out">Press a part of the screen above.</p>
-    <p class="cap">One frame of Central Park, recorded in the emulator and drawn here by the site's renderer from the bitmap at <code>$2000</code>, the screen colours at <code>$0400</code>, colour RAM and the sprites. All 104,448 pixels of the drawing match the emulator's own picture of the frame; the game changes none of the video chip's registers while the frame is drawn.</p>
+    <p class="cap">One frame of Central Park, recorded in the emulator and drawn here by the site's renderer from the bitmap at <code data-part="">$2000</code>, the screen colours at <code data-part="">$0400</code>, colour RAM and the sprites. All 104,448 pixels of the drawing match the emulator's own picture of the frame; the game changes none of the video chip's registers while the frame is drawn.</p>
   </div>
 </section>
 
@@ -154,7 +154,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <p class="cap">Each card is drawn in the page by the level's own <code data-part="central-park-title">DrawTitleCard</code> (<code data-part="central-park-title">$4E00</code> in every first load) on the kit's 6502, over the engine's memory. The panel is the engine's, coloured from the copy of colour RAM it keeps at <code data-part="engine">$0800</code>. In all seven levels every pixel of the play window matches the emulator's picture with the card on show, and for Central Park, the card a new game opens with, so does every pixel of the screen; <code>test_index.js</code> keeps a fingerprint of each. The panel here shows what a new game starts with. On a later card it shows the score, the clock and the energy of the game played to reach it.</p>
   </div>
   <p>The first piece ends at <code data-part="central-park-title">$4E00</code>, and the loader calls that address as soon as the piece is in (<code data-part="engine">$1108</code>). The routine there clears the window and draws the level's picture and name with a small copy of the scene renderer and a scene file of its own, beside the panel. The loader then starts the tune and plays it once a frame until Space or fire on either joystick port is pressed (<code data-part="engine">$1113</code>-<code data-part="engine">$112D</code>), turns the volume down and unpacks the second piece, which writes over the card's code.</p>
-  <p>The second piece holds the level's code, its scenes, its animations, its packed sprites and the pictures for the panel, up to near the top of memory, some of it in the RAM under the chips. The engine keeps pages 0 to 3, which hold the game's variables, at <code data-part="engine">$0C00</code> during a load and puts them back after. Before level 3 it asks for the disk to be turned over (<code data-part="engine">$172B</code>: INSERT SIDE TWO, PRESS SPACE).</p>
+  <p>The second piece holds the level's code, its scenes, its animations, its packed sprites and the pictures for the panel, up to near the top of memory, some of it in the RAM under the chips. The engine keeps pages 0 to 3, which hold the game's variables, at <code data-part="">$0C00</code> during a load and puts them back after. Before level 3 it asks for the disk to be turned over (<code data-part="engine">$172B</code>: INSERT SIDE TWO, PRESS SPACE).</p>
 </section>
 
 <section id="sprites">
@@ -184,8 +184,8 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
     <p class="ln-out" id="ln-energy-out">The spiral is drawn in the built site, which serves the listings it comes from.</p>
     <p class="cap">The energy is worked out by a port of <code>RebuildEnemyMeterFromElapsedTicks</code> (<code>$B3D6</code>), and the spiral coloured as the engine's interrupt leaves it (<code data-part="engine">$1E69</code>-<code data-part="engine">$1EBA</code>), in the panel of the frame in section 03. <code>test_index.js</code> runs the port and the game's routine on the kit's 6502 over 4,378 pairs of times, every boundary and wrap of the counter among them, and the spiral port against the engine's code for every energy, counting up and counting down; they agree on every one.</p>
   </div>
-  <p>When the enemy's energy reaches zero, <code>DamageEnemy</code> (<code>$B568</code>) keeps where it fell and the game's tick, the 16-bit count at <code>$F0</code>:<code>$E2</code> that CIA 1's timer advances about 50.6 times a second, in tables with an entry for each area (<code>$0175</code> and <code>$0187</code>). On entering an area whose enemy is down but will get up again, the game takes the ticks since then, counted round 65,536, divides them by 32 and takes away 2, keeping the result between 0 and 44 (<code>$8F0B</code>).</p>
-  <p>An enemy gets up only so many times. Each area's entry in the enemy tables gives, in its high four bits, how many knock-downs put its enemy down for good (<code>enemy_heading_profile</code>, <code>$B6B5</code>, read at <code>$B641</code>); <code>DamageEnemy</code> counts them in the area's byte at <code>$012D</code>, and at the last one marks the area <code>$FF</code>, an enemy that no longer comes back, and adds to the score a second time. The number rises level by level, and in the Final Battle, where it is 15, the game never puts an enemy down for good (<code>$B5A5</code>):</p>
+  <p>When the enemy's energy reaches zero, <code>DamageEnemy</code> (<code>$B568</code>) keeps where it fell and the game's tick, the 16-bit count at <code>$F0</code>:<code>$E2</code> that CIA 1's timer advances about 50.6 times a second, in tables with an entry for each area (<code data-part="">$0175</code> and <code data-part="">$0187</code>). On entering an area whose enemy is down but will get up again, the game takes the ticks since then, counted round 65,536, divides them by 32 and takes away 2, keeping the result between 0 and 44 (<code>$8F0B</code>).</p>
+  <p>An enemy gets up only so many times. Each area's entry in the enemy tables gives, in its high four bits, how many knock-downs put its enemy down for good (<code>enemy_heading_profile</code>, <code>$B6B5</code>, read at <code>$B641</code>); <code>DamageEnemy</code> counts them in the area's byte at <code data-part="">$012D</code>, and at the last one marks the area <code>$FF</code>, an enemy that no longer comes back, and adds to the score a second time. The number rises level by level, and in the Final Battle, where it is 15, the game never puts an enemy down for good (<code>$B5A5</code>):</p>
   <div class="plate ln-scroll">
     <table class="ln-table">
       <thead><tr><th>Level</th><th>Knock-downs before an enemy stays down</th></tr></thead>
@@ -205,7 +205,7 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
 
 <section id="controls">
   <p class="fig">08 · Controls</p>
-  <h2 class="t">A second fire button, and a key that turns the joystick</h2>
+  <h2 class="t">A second fire button picks weapons without the keyboard</h2>
   <p class="lede">The game reads a joystick in port 2 and a few keys. It also reads a second fire button, wired as on the three-button pad of Commodore's C64GS console, which picks weapons and objects without the keyboard.</p>
   <div class="plate ln-scroll">
     <table class="ln-table">
@@ -216,14 +216,14 @@ a{color:var(--link)} a:hover{color:var(--link-hover)}
         <tr><td>Space</td><td>The next weapon</td><td><code>$951B</code></td></tr>
         <tr><td>F1</td><td>Sound off and on</td><td><code data-part="engine">$1EEA</code></td></tr>
         <tr><td>F3, F5</td><td>Step through the objects</td><td></td></tr>
-        <tr><td>F7</td><td>Pause</td><td><code>$02B7</code></td></tr>
-        <tr><td>J</td><td>Turns the stick's directions through an eighth of a turn, in three settings, shown as MODE where the score is</td><td><code>$03F3</code>, <code>$A50D</code></td></tr>
-        <tr><td>RUN/STOP</td><td>Armakuni dies</td><td><code>$0267</code></td></tr>
+        <tr><td>F7</td><td>Pause</td><td><code data-part="">$02B7</code></td></tr>
+        <tr><td>J</td><td>Turns the stick's directions through an eighth of a turn, in three settings, shown as MODE where the score is</td><td><code data-part="">$03F3</code>, <code>$A50D</code></td></tr>
+        <tr><td>RUN/STOP</td><td>Armakuni dies</td><td><code data-part="">$0267</code></td></tr>
       </tbody>
     </table>
   </div>
   <p>The second button is read from port 2's paddle line: the game sets <code>$DC00</code> to select that port's paddles and reads <code>$D419</code>, where a value below <code>$80</code> means pressed. Whichever button the player presses to start a level, at the credits card that opens it and after each death, becomes the fire button: if it was the second one, the game sets <code>$AC</code> (<code>$8EE8</code>-<code>$8EF9</code>) and from then on swaps the two buttons whenever only one of them is down.</p>
-  <p>Each press of J turns the meaning of the stick by an eighth of a turn, so that pushing up walks Armakuni in another of the city's directions than straight up the screen. The setting, 0 to 2, goes into <code>$03F3</code> and is added to his heading (<code>$A50D</code>). The joystick also hides a way to end any level at once, which <a href="discoveries.html#level-skip">Discoveries</a> walks through.</p>
+  <p>Each press of J turns the meaning of the stick by an eighth of a turn, so that pushing up walks Armakuni in another of the city's directions than straight up the screen. The setting, 0 to 2, goes into <code data-part="">$03F3</code> and is added to his heading (<code>$A50D</code>). The joystick also hides a way to end any level at once, which <a href="discoveries.html#level-skip">Discoveries</a> walks through.</p>
 </section>
 
 <section id="lock">

@@ -90,9 +90,11 @@ bitmap `$2000`.
 - A hidden sequence ends any level: facing heading 1 (up and right), hold
   the second button and push up, centre, up, centre, left, centre, left,
   centre, right, centre, right, centre, down, centre, down, centre, left,
-  centre. `$95AB`-`$95CE` in Central Park compares each change of `$7C`
-  with the table at `$95D6` and after the eighteenth sets `$02AF`, the
-  request to end the level. *Live*: the ARE YOU SURE YOU ARE PREPARED
+  centre. `$95AB`-`$95CE` in Central Park takes a reading of `$7C` only
+  when the next scan finds it unchanged (the last reading is kept in
+  `$AD`), compares it with the next entry of the table at `$95D6` (the
+  count is `$BF`), and after the eighteenth sets `$02AF`, the request to
+  end the level. *Live*: the ARE YOU SURE YOU ARE PREPARED
   FOR THE NEXT LEVEL question came up. `ResolveLevelCompletion` asks it
   only when an item the level needs is missing, and YES goes on all the
   same.
