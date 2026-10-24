@@ -167,3 +167,48 @@ function key, and without one the demonstration starts when the title
 tune ends; F3 is held for ten frames to choose the joystick. Replaying the
 recorded joystick gives the same game frame for frame. `test_solution.js`
 replays it and holds the Solution tab's table of stages to the game.
+
+### The Play tab
+
+The port is in `port/src`, one file to a part of the game, and runs
+beside the game's own code in `kit/c64/lockstep.js`
+(`port/test/lockstep.js`): from the first instruction with and without a
+key, and from the 82 moments of play `port/scripts/gen-states.js` saves
+from the demonstration and the Solution tab's game. What went wrong on
+the way:
+
+- The interrupt saves 24 zero-page bytes the main program draws with and
+  puts them back. The lockstep took the replayed handler's writes of
+  them as its own, and the port drew on with the game's pointers. The
+  lockstep now gives such a byte back to the port (case 19 in
+  `kit/c64/test_lockstep.js`).
+- The portrait roll's raster wait exits onto the head of its copy loop,
+  and the lockstep stopped there ten times a wait (case 20).
+- Long routines (a screen's drawing, the view map, the frame round an
+  icon) hand the page's clock back with `{ cycles: 0 }`, so that the
+  controls answer while they run. The lockstep counted each as a stretch
+  of the game's work and ran the game on with the input of the moment;
+  it now passes them over (case 21).
+- The page's clock: each routine's own cycles fitted to the game's
+  (`port/scripts/fit-cost.js`, `port/cost.json`), the interrupt's
+  routines timed alone, and the video chip's stolen cycles charged by
+  line. The clock paid for a long routine all at once and ran past the
+  end of the frame (34,000 cycles at the iris); it now pays up to the
+  frame's end and carries the rest. Over 3,900 frames the
+  demonstration's screens and tunes come within 4 frames of the C64's,
+  and the cursor is where the C64 has it on every frame of the Solution
+  tab's first 3,000.
+- Driving the page's own icons in `test_play.js` met the same timing as
+  the guide's player: fire counts only once the icon's frame has been
+  drawn (`$78` set to `$FF`), the cursor's cell lags the cursor by a
+  few frames, and an icon at the screen's edge is reached at the edge of
+  its rectangle, two cells a step.
+
+Porting the code meant reading all of it, and 15 of the listing's
+comments said something the port showed wrong; they are corrected in
+place, and `facts.md` and the How it works page with them where they had
+the same claim (the time lock stops the clock's roll and the ticker
+too). The port's own notes had names crossed: Kryxix called "the
+general", Manto and Maul's gravestone given to Syylk and Sevrina, the
+44th kill called the 34th. The memory decides those (the name tokens at
+`$81B1`, the records from `$CA0E`), and the notes now follow it.

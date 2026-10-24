@@ -61,7 +61,7 @@ Sources:
 | A successful attacker advances into the enemy's location | traced | `$5D54` |
 | Mission command panel above every screen: status icons, view screen, character in play | live | rows 0-12 of the bitmap as loaded, `panel_row_0` `$2000` onwards |
 | Status icon colours: white inactive, blue moving, purple attacking, orange defending, yellow retreating, green picking a lock; grey when weak, black when dying | traced | `status_colours` `$68B7`, `$5896`; grey below strength `$80`, black below `$40` (`$58CB`) |
-| View screen: an iris opens on the chosen character; icons flash for each other character in the location | traced | `iris_open` `$45E2`; the map icons from `entity_pictures` `$6CFE`, one cell updated each frame |
+| View screen: an iris opens on the chosen character; icons flash for each other character in the location | traced | `iris_open` `$45E2`; the map icons from `entity_pictures` `$6CFE`, one cell updated each frame; several in one location take turns, blank between them, and one alone stays lit (`$60CF`) |
 | Six characters with different speed, strength, stamina and carrying: Zark Montor, Syylk, Sevrina Maris, Torik, Maul, Manto | traced | strengths at `$CA0E`, `agility_base` `$CFB7`, `strength_factor` `$CF85` |
 | Zark Montor is the translator: Kryxix follows only him (Wikipedia) | traced | `$5B9A`, `$5D93` |
 | Syylk's hatred of Zoff "could prove a weakness" | open | nothing found: no comparison of entity 0 with Zoff in the combat (`$5BE6`), the triggers or the arrival code, and Zoff can be harmed by nobody |
