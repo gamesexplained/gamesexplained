@@ -26,16 +26,16 @@ Sources:
 | Down crouches | live | screenshot; no change of position |
 | Fire alone, and fire with down, strike | live | fire with down shows an arm-out pose and moves Darkman 16 pixels forward in 32 frames; whether the game calls either a punch or a kick is open |
 | Fire with right, and fire with up | live | fire with right shows no strike pose in the frame looked at; fire with up jumps as up does |
-| Pause key | traced | $1777 waits while the key code in $0E2F is $50; which key gives $50 is open |
-| Six levels, from city streets to a skyscraper finale against Strack | open | six level loads, `1a`-`6b` |
-| Photo sessions between levels: move a cursor and fire to photograph henchmen, to make masks | open (play ending with $1A1E set leads through $4A8F to the screen at $58C8, next to the photo text) | text at $57C6 "DARKMAN MUST PREPARE A DISGUISE TO FOOL THE EVIL GANGSTERS" |
-| Swinging on a rope under a helicopter in one level | open | |
-| One life | open | |
+| Pause key | traced | $1777 waits while the key code in $0E2F is $50, which the key table at $0EAA gives to the P key |
+| Six levels, from city streets to a skyscraper finale against Strack | traced | six level loads by `load_level_files` ($0436); levels 2, 4 and 6 are one scrolling engine, 1, 3 and 5 have their own; level 6's ending text has Strack fall; what each level looks like: `levels.html` |
+| Photo sessions between levels: move a cursor and fire to photograph henchmen, to make masks | traced | the mask game at the end of levels 1, 3 and 5 (`mask_setup` $58C8, $4F9C and $37C9): twelve captures with the cursor, rated into $0A10 |
+| Swinging on a rope under a helicopter in one level | traced | level 5, `player_swing` $126D and `chopper_step` $1417 |
+| One life | differs | one energy bar, but levels 2 to 6 offer a continue screen while the credits $0A12 (3, set by the title) last; level 1 has none |
 | Joystick control | live | fire on port 2 starts the load and the game |
 | Level briefing text | live (level 2's, after skipping level 1) | $0FE6 "LEVEL ONE ... END OF LINE" |
 | Title page alternating credits and high scores | live | $0A20, $11BC, $13C9 |
 | High-score table with name entry | traced | $122E "YOU HAVE ACHIEVED A HIGH SCORE", $1357 "PLEASE ENTER YOUR NAME" |
-| Status panel under the play area with a portrait | live | split by the raster interrupt at $1D43 |
+| Status panel under the play area with a portrait | live | split by the raster interrupts at $1D43 and $1DBF |
 | Game over screen | live | text at $1A02 |
 
 ## Beyond the documentation
@@ -46,8 +46,11 @@ Sources:
   it test CIA 2 port A bit 2.
 - The high-score table holds ANDY, DAVE, JASON, PETE and STUART.
 
+- Typing BABY AXE MAN on the title pages (`cheat_check` $1385) flips
+  $0A11: the space bar then ends a level, and running out of energy no
+  longer ends the game.
+
 ## Open questions
 
-- Which key gives the pause code $50, and whether other keys do anything.
-- The text "BABY AXE MAN" at $1376 (read as PETSCII): an enemy name or a
-  default high-score name?
+- Whether keys other than P, the space bar and the cheat sequence do
+  anything.
