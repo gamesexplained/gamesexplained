@@ -42,6 +42,9 @@ Usage:
                                          handler is interrupted, for each place its read falls,
                                          compared with kit/c64/fixtures/vic-collide-irq.json, or
                                          written to it with --record. It resets the machine too
+  frame.py nest [--record]               interrupts taken inside a handler that clears I: each one's
+                                         kind and line, compared with kit/c64/fixtures/vic-nest.json,
+                                         or written to it with --record. It resets the machine too
 
 Needs the emulator (`tools.py vice`) for capture and test, and a JavaScript runtime for the
 drawing: node, or on macOS the system's own JavaScriptCore. The frame file holds a copy of the
@@ -669,8 +672,9 @@ def test(keep=False):
     held = dma_check()
     hit = collide_check()
     irq = irq_check()
-    print("PASS" if bad == 0 and held and hit and irq else "FAIL")
-    return bad == 0 and held and hit and irq
+    nest = nest_check()
+    print("PASS" if bad == 0 and held and hit and irq and nest else "FAIL")
+    return bad == 0 and held and hit and irq and nest
 
 
 # --- the cycles the video chip takes from the processor -----------------------------------
@@ -1447,6 +1451,166 @@ def irq_check():
     return not bad
 
 
+# --- interrupts inside a handler ---------------------------------------------------------------
+# A handler that clears I (CLI) is interrupted by the next interrupt due, as any code is. Games do
+# it to let a timer's music go on while a long raster handler runs, and a collision raised then is
+# latched by its own handler inside the long one; a model that runs each handler whole takes it
+# after, when the long handler's read of $D01F has cleared it. nest_measure() runs one program: a
+# raster interrupt at line 60 whose handler clears I, waits about 80 lines and reads $D01F before
+# it returns; sprite 0 over solid characters from line 100, with the sprite-to-scenery interrupt
+# on; and CIA 1's timer A every 1,500 cycles, started at line 32. Every other interrupt writes to a
+# table what it was, $C1 for the timer and for a collision what $D01F read, and the line it was
+# taken on, until 64 are written. kit/c64/fixtures/vic-nest.json is the record: `test` checks the
+# emulator against it, and kit/c64/test_machine_nest.js checks machine.js's option nest against it.
+NEST_FIXTURE = os.path.join(HERE, "fixtures", "vic-nest.json")
+NEST_ORG, NEST_HANDLER, NEST_TABLE, NEST_FRAMES = 0xC000, 0xC100, 0xC200, 4
+NEST_MEM = [(0x2000, bytes([0xFF] * 63)), (0x3000, bytes([0xFF] * 2048))]
+
+
+def nest_program():
+    """The set-up: the display on, the screen at $0400 with every character solid ($3000), sprite 0
+    at (100, 100), the raster compare at line 60; at line 32 the timer started; both collision
+    registers read, the raster and sprite-to-scenery interrupts enabled, and a loop."""
+    from asm6502 import assemble
+    return assemble(f"""
+            sei
+            lda #$35
+            sta $01
+            lda #${NEST_HANDLER & 255:02x}
+            sta $fffe
+            lda #${NEST_HANDLER >> 8:02x}
+            sta $ffff
+            lda #$7f
+            sta $dc0d
+            lda $dc0d
+            lda #$1b
+            sta $d011
+            lda #$c8
+            sta $d016
+            lda #$1c
+            sta $d018
+            lda #$80
+            sta $07f8
+            lda #100
+            sta $d000
+            sta $d001
+            lda #0
+            sta $d010
+            sta ${NEST_TABLE:04x}
+            lda #$01
+            sta $d015
+            lda #60
+            sta $d012
+    sync:   lda $d012
+            cmp #32
+            bne sync
+            lda #${1499 & 255:02x}
+            sta $dc04
+            lda #${1499 >> 8:02x}
+            sta $dc05
+            lda #$11
+            sta $dc0e
+            lda #$81
+            sta $dc0d
+            lda $d01e
+            lda $d01f
+            lda #$0f
+            sta $d019
+            lda #$03
+            sta $d01a
+            cli
+    loop:   jmp loop
+    """, NEST_ORG)[0]
+
+
+def nest_handler():
+    """The timer's interrupt written as $C1; the raster's: I cleared, about 80 lines of waiting,
+    $D01F read; the collision's written as what $D01F read. The table: its count at NEST_TABLE,
+    what each was from + $40, its line from + $80."""
+    from asm6502 import assemble
+    t = NEST_TABLE
+    return assemble(f"""
+            pha
+            txa
+            pha
+            lda $dc0d
+            bpl vic
+            lda #$c1
+            jsr rec
+    vic:    lda $d019
+            sta $d019
+            lsr a
+            bcc coll
+            cli
+            ldx #4
+    w1:     ldy #0
+    w2:     dey
+            bne w2
+            dex
+            bne w1
+            lda $d01f
+            jmp out
+    coll:   lsr a
+            bcc out
+            lda $d01f
+            jsr rec
+    out:    pla
+            tax
+            pla
+            rti
+    rec:    ldx ${t:04x}
+            cpx #$40
+            bcs full
+            sta ${t + 0x40:04x},x
+            lda $d012
+            sta ${t + 0x80:04x},x
+            inc ${t:04x}
+    full:   rts
+    """, NEST_HANDLER)[0]
+
+
+def nest_measure():
+    """Run the program in the emulator. The record, as the fixture holds it."""
+    from tools import vice_build
+    from vice import poke, frames
+    m = fresh()
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    if std != "PAL":
+        raise SystemExit(f"the machine is {std}: the lines are written for PAL's 312 lines of 63 cycles")
+    for a, b in NEST_MEM:
+        poke(m.rpc, a, b)
+    poke(m.rpc, NEST_ORG, nest_program())
+    poke(m.rpc, NEST_HANDLER, nest_handler())
+    m.j("vice_registers_set", {"register": "PC", "value": NEST_ORG})
+    frames(m.rpc, NEST_FRAMES)
+    n = m.read(NEST_TABLE, 1)[0]
+    out = {"source": "kit/c64/frame.py nest --record", "recorded": time.strftime("%Y-%m-%d"),
+           "emulator": f"VICE {m.j('vice_ping').get('version', '?')}, {vice_build()}", "standard": std,
+           "org": NEST_ORG, "handler": NEST_HANDLER, "table": NEST_TABLE, "frames": NEST_FRAMES,
+           "program": nest_program().hex(), "code": nest_handler().hex(), "mem": _mem_record(NEST_MEM),
+           "what": list(m.read(NEST_TABLE + 0x40, n)), "lines": list(m.read(NEST_TABLE + 0x80, n))}
+    m._call(m.rpc, "vice_execution_run", {})
+    print(f"{n} interrupts inside the raster handler's wait and after it: "
+          + " ".join(f"{'timer' if w == 0xC1 else f'$D01F={w:02X}'}@{y}" for w, y in zip(out["what"], out["lines"])), flush=True)
+    return out
+
+
+def nest_write(out):
+    with open(NEST_FIXTURE, "w") as f:
+        f.write("{\n" + ",\n".join(f" {json.dumps(k)}: {json.dumps(v)}" for k, v in out.items()) + "\n}\n")
+
+
+def nest_check():
+    """Measure again and compare with the fixture. True if every interrupt agrees."""
+    want = json.load(open(NEST_FIXTURE))
+    got = nest_measure()
+    ok = (want["program"], want["code"]) == (got["program"], got["code"]) and \
+        (want["what"], want["lines"]) == (got["what"], got["lines"])
+    print(f"interrupts inside a handler: {'they agree with' if ok else 'FAIL, they differ from'} "
+          f"{os.path.relpath(NEST_FIXTURE, ROOT)} ({want['recorded']}, {want['emulator']})")
+    return ok
+
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     # -h after a subcommand too: "capture -h" once captured a frame into a file named -h
@@ -1472,6 +1636,12 @@ if __name__ == "__main__":
             print(f"wrote {os.path.relpath(IRQ_FIXTURE, ROOT)}")
         else:
             sys.exit(0 if irq_check() else 1)
+    elif argv[0] == "nest":
+        if "--record" in argv:
+            nest_write(nest_measure())
+            print(f"wrote {os.path.relpath(NEST_FIXTURE, ROOT)}")
+        else:
+            sys.exit(0 if nest_check() else 1)
     elif argv[0] == "compare":
         sys.exit(1 if compare(argv[1], argv[2] if len(argv) > 2 else None) else 0)
     elif argv[0] == "trim":

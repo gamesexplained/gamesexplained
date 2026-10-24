@@ -39,7 +39,8 @@
 //   cycle is taken as a read, so a store whose write falls on a bad line's cycle 12, which the
 //   machine lets go ahead, is held a cycle more here than there. The chip's registers are read
 //   at cycle 12 and cycle 55 of each line. An interrupt handler runs whole (cpu6502.js), so the
-//   cycles taken while it ran are added when it returns, from the registers as it left them.
+//   cycles taken while it ran are added when it returns, from the registers as it left them;
+//   with nest (below) they are taken as it runs.
 //   Checked against the emulator by kit/c64/test_machine_dma.js (kit/c64/fixtures/vic-dma.json).
 //   Without dma the processor has every cycle, and a pass runs faster here than on the machine.
 // - With collide: true, the sprite collisions: $D01E and $D01F as the video chip sets them while
@@ -55,6 +56,12 @@
 //   C.irq). The latch is looked at every eight cycles, and a handler is interrupted as often as in
 //   VICE with its read up to ten cycles earlier (kit/c64/fixtures/vic-collide-irq.json). Without
 //   collide the two registers read what was last written to them and raise no interrupt.
+// - With nest: true, an interrupt is taken as the processor takes it: its seven cycles, the program
+//   counter and flags pushed, I set and the vector followed, and its handler runs on with the rest
+//   of the program, so one that clears I (CLI) is interrupted in turn by the next interrupt due, as
+//   on the machine. Without nest a handler runs whole (cpu6502.js's irq and nmi), and an interrupt
+//   that falls due while one runs is taken after its RTI; a collision it raises meanwhile may be
+//   cleared by the handler's own read of $D01E or $D01F first, and so never be latched.
 // Not modelled: the VIC-II's timing beyond that and whole lines, the disk and the ROMs (the
 // simulator stops on a ROM read; a hook can stand in, or rom: { char } gives the character ROM,
 // read from the emulator's own file at run time and never committed). Reads of other VIC
@@ -79,6 +86,7 @@
 //   passes counts one and onPass(machine) runs, the place to set the next pass's input; onPass
 //   returning true stops the run with the program counter there, before the pass (runUntilPass).
 // - collide: true, the sprite collisions in $D01E and $D01F (above).
+// - nest: true, interrupts taken between the handler's instructions too (above).
 // - sid: '6581' or '8580', the chip whose bus fade the SID's reads follow. The default is the
 //   8580, the chip the kit's emulator starts with (v3.13.2; its SidModel resource).
 // - runCycles(n), runFrames(n), runPasses(n), runUntilPass(f): run with the interrupts. frames
@@ -136,6 +144,7 @@ class Machine {
     this.joy1 = 0x1F;                   // port 1, the same bits, on $DC01
     this.cia = opts.cia ? [0, 1].map(() => ({ lat: [0xFFFF, 0xFFFF], cnt: [0xFFFF, 0xFFFF], cr: [0, 0], mask: 0, icr: 0 })) : null;
     this.pra2 = 0x3F; this.ddra2 = 0x3F; this.nmis = 0;
+    this.nest = !!opts.nest;
     // the video chip's fetches (dma): the cycle of the next look at its registers (-1 until the
     // first), the stretches it holds the processor that have not yet come, as [first, last]
     // cycles, whether this frame's line 48 saw the display on, and each sprite's lines to fetch
@@ -372,11 +381,19 @@ class Machine {
     }
     if (this.cia) {
       this.ciaCatchUp();
-      if (this.nmiDue) { this.nmiDue = false; this.nmis++; this.cpu.nmi(null, { hooks: this.hooks }); }
+      if (this.nmiDue) { this.nmiDue = false; this.nmis++; this.take(0xFFFA); }
       const c = this.cia[0];
-      if ((c.icr & c.mask) && !this.cpu.i) { this.cpu.irq(null, { hooks: this.hooks }); return; }
+      if ((c.icr & c.mask) && !this.cpu.i) { this.take(0xFFFE); return; }
     }
-    if ((this.latch & this.enable & 0x0F) && !this.cpu.i) this.cpu.irq(null, { hooks: this.hooks });
+    if ((this.latch & this.enable & 0x0F) && !this.cpu.i) this.take(0xFFFE);
+  }
+  // An interrupt through the vector at v: run whole, or with nest only begun
+  take(v) {
+    const c = this.cpu;
+    if (!this.nest) return v === 0xFFFA ? c.nmi(null, { hooks: this.hooks }) : c.irq(null, { hooks: this.hooks });
+    c.push(c.pc >> 8); c.push(c.pc & 0xFF); c.push(c.p & ~0x10);
+    c.i = 1; c.cycles += 7;
+    c.pc = c.vector(v, v === 0xFFFA ? 'NMI' : 'IRQ');
   }
   runFrames(n) { return this.runCycles(n * FRAME); }
   // Run until f(machine) is true at a main-loop pass: stops with the program counter at passAt,
@@ -403,13 +420,13 @@ class Machine {
       cmp: this.cmp, latch: this.latch, enable: this.enable, lastLine: this.lastLine, frames: this.frames, passes: this.passes,
       pra: this.pra, ddra: this.ddra, ddrb: this.ddrb, skipOnce: this.skipOnce, joy: this.joy, keys: Array.from(this.keys), passAt: this.passAt,
       joy1: this.joy1, cia: this.cia ? JSON.parse(JSON.stringify(this.cia)) : null, pra2: this.pra2, ddra2: this.ddra2, lastCycles: this.lastCycles, nmiDue: !!this.nmiDue,
-      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null, collide: this.collide ? this.collide.save() : null };
+      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null, collide: this.collide ? this.collide.save() : null, nest: this.nest };
   }
   // opts.dma turns the video chip's fetches on or off for the restored machine (default: as saved).
   static restore(s, opts = {}) {
     const dma = opts.dma !== undefined ? !!opts.dma : !!s.dma;
     const m = new Machine({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), passAt: opts.passAt !== undefined ? opts.passAt : s.passAt,
-      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma, collide: !!s.collide });
+      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma, collide: !!s.collide, nest: !!s.nest });
     if (dma && s.dma) m.dma = JSON.parse(JSON.stringify(s.dma));
     const c = m.cpu;
     Object.assign(c, { a: s.cpu.a, x: s.cpu.x, y: s.cpu.y, sp: s.cpu.sp, pc: s.cpu.pc, cycles: s.cpu.cycles });
