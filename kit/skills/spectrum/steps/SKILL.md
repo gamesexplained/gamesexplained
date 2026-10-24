@@ -24,7 +24,7 @@ its usage with `-h`, and every JavaScript file's header is its manual.
 | `machine` | `60-verify`, "Unreachable"; `70-minisite`, Play | `kit/spectrum/machine.js` ("The machine", below) |
 | `lockstep` | `70-minisite`, Play (`play.md`) | `kit/spectrum/lockstep.js`: `standIn` and `irqBytes`; a wait for the display is a `HALT` |
 | `frame` | `10-orient`, step 3; `70-minisite`, "One frame, rebuilt from memory" | the screen is one bitmap and its attributes at `$4000`, the same for the whole frame: `Spectrum.drawScreen` in `site/lib/spectrum.js` draws it from memory, and `python3 kit/spectrum/frame.py test` holds that drawing to ZEsarUX's picture, in both FLASH phases. A game that changes the border or the attributes as the beam passes has no frame recorder yet |
-| `sound` | `70-minisite`, "The sound" | `site/lib/ay.js` ("The sound", below) |
+| `sound` | `70-minisite`, "The sound" | `site/lib/ay.js` ("The sound", below); a Play tab hands it its game's writes with `SpectrumAY.host` and `push` |
 | `fixes` | `60-verify`, the checker's corrections | no live disassembler takes them: correct the control file by address, matched on the old text, then export it and build the listing again (`symbols_export.py --ctl`, `listing.py`) |
 | `page` | `70-minisite`, "Building it" | `site/lib/spectrum.js` (`Spectrum.load`, `drawScreen`, `drawCharset`), `site/lib/ay.js` |
 

@@ -7345,14 +7345,6 @@ function makeDisplay(opts) {
   const sound = (function () {
     const FRAME = 19656;
     let host = null, on = false, pending = new Map(), sent = 0;
-    function driver() {
-      const sid = new Uint8Array(25), queue = [];
-      const d = { sid, writes: [], playing: () => true, stop() {},
-        // a queue longer than half a second loses its oldest frame's timing, not its writes
-        init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 25) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
-        play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
-      return d;
-    }
     function reset() { pending.clear(); sent = rt ? rt.frame : 0; }
     const regs = () => Array.from(rt ? rt.sid.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : []);
     function attach() {
@@ -7369,7 +7361,7 @@ function makeDisplay(opts) {
       if (want && !on) reset();
       on = want;
       if (on && !host) {
-        try { host = await C64Sid.host({ driver, data: null, gain: 0.5 }); host.send({ cmd: 'start', tune: { frames: [regs()] } }); }
+        try { host = await C64Sid.host({ live: true, gain: 0.5 }); host.push([regs()]); }
         catch (e) { on = false; say('No sound: ' + e.message); }
       }
       if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
@@ -7379,12 +7371,12 @@ function makeDisplay(opts) {
       if (!on || !host || !rt) return;
       const frames = [];
       for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
-      if (frames.length) host.send({ cmd: 'start', tune: { frames } });
+      if (frames.length) host.push(frames);
     }
     // a skip: silent while the frames run; then the frames skipped dropped, and the chip's
     // registers sent as they stand
     function hold() { if (on && host) host.ctx.suspend(); }
-    function skip() { reset(); if (on && host) { host.send({ cmd: 'start', tune: { frames: [regs()] } }); host.ctx.resume(); } }
+    function skip() { reset(); if (on && host) { host.push([regs()]); host.ctx.resume(); } }
     return { attach, set, frame, hold, skip, get on() { return on; } };
   })();
   Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)

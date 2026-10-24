@@ -159,13 +159,6 @@ function draw() {
 // --- sound: the SID writes of each frame of C64 time, streamed to the site's SID model -------
 const sound = (function () {
   let host = null, on = false, pending = new Map(), sent = 0;
-  function driver() {
-    const sid = new Uint8Array(25), queue = [];
-    const d = { sid, writes: [], playing: () => true, stop() {},
-      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 25) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
-      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
-    return d;
-  }
   function attach() {
     if (!rt) return;
     pending.clear(); sent = rt.frame;
@@ -181,8 +174,8 @@ const sound = (function () {
     on = want;
     if (on && !host) {
       try {
-        host = await C64Sid.host({ driver, data: null, gain: 0.5, filter: '6581' });
-        host.send({ cmd: 'start', tune: { frames: [Array.from(rt ? rt.chips.sidw.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])] } });
+        host = await C64Sid.host({ live: true, gain: 0.5, filter: '6581' });
+        host.push([Array.from(rt ? rt.chips.sidw.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])]);
       } catch (e) { on = false; say('No sound: ' + e.message); }
     }
     if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
@@ -192,7 +185,7 @@ const sound = (function () {
     if (!on || !host || !rt) return;
     const frames = [];
     for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
-    if (frames.length) host.send({ cmd: 'start', tune: { frames } });
+    if (frames.length) host.push(frames);
   }
   return { attach, set, frame, get on() { return on; } };
 })();

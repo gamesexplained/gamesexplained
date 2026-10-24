@@ -79,10 +79,12 @@
 //
 //   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
 //                                per voice
-//   C64Sid.host(options)         the sound alone, for a page with its own controls
+//   C64Sid.host(options)         the sound alone, for a page with its own controls; with live:
+//                                true, the writes a Play tab's game makes as it runs
 //   C64Sid.engine()              the model, the bus and the frame player without a page, for
 //                                tests
 //   C64Sid.worklet(driver)       the source text host() runs in the AudioWorklet, for tests
+//   C64Sid.live                  the driver host() runs for live: true, for C64Sid.worklet in tests
 globalThis.C64Sid = (function () {
   'use strict';
 
@@ -429,7 +431,34 @@ globalThis.C64Sid = (function () {
       return { drv, sid, command, render };
     }
 
-    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer };
+    // ------------------------------------------------------------------ a game's writes, live
+    // createLive({ most }) is the driver for a Play tab, whose game makes its SID writes as it runs
+    // (host's live option, below). init(tune) queues tune.frames, each the writes [register, value,
+    // ...] of one call; each call plays the next. With none waiting the registers hold, and the
+    // queue is a call longer from then on, so it grows to what the page's uneven frames and the
+    // audio device's buffer need. With more than most waiting the oldest are written at once and
+    // the sound catches up. liveMost(opts) is half a second of calls: the device alone can take
+    // 100 ms at a time, and a queue shorter than the two together runs dry and overflows by turns,
+    // which is heard as music skipping (kit/lessons/2026-10-24-master-of-magic-sound.md).
+    function createLive(o) {
+      const most = Math.max(1, (o && o.most) | 0), sid = new Uint8Array(25), queue = [];
+      const d = { sid, writes: [], playing: () => true, stop() {},
+        queued: () => queue.length,
+        init(t) {
+          if (t && t.frames) for (const f of t.frames) queue.push(f);
+          while (queue.length > most) { const f = queue.shift(); queue[0] = f.concat(queue[0]); }
+        },
+        play() {
+          const f = queue.shift();
+          d.writes = f || [];
+          if (f) for (let i = 0; i + 1 < f.length; i += 2) if (f[i] < 25) sid[f[i]] = f[i + 1];
+        } };
+      return d;
+    }
+    const liveMost = (opts) => Math.ceil(0.5 * clockOf(opts) / periodOf(opts));
+
+    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer,
+      createLive, liveMost };
   }
 
   // ------------------------------------------------------------------ the sound, on a page
@@ -462,15 +491,22 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 
   // host({driver, data, gain, filter, ntsc, period, digi, onFrame}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
-  // {ctx, mode, send(command)}. onFrame(snapshot), if given, receives every driver frame when it
-  // is computed, ahead of the sound; show it once snapshot.t has reached ctx.currentTime.
+  // {ctx, mode, send(command), push(frames)}. onFrame(snapshot), if given, receives every driver
+  // frame when it is computed, ahead of the sound; show it once snapshot.t has reached
+  // ctx.currentTime.
+  // A Play tab, whose game makes its SID writes as it runs, passes live: true instead of a driver:
+  // the driver is then createLive's, and push(frames) queues the writes of each call to come,
+  // [[register, value, ...], ...], one call a frame or a period. The first push is usually all 25
+  // registers as they stand.
+  const LIVE = function (data) { return E.createLive(data); };   // in the worklet, where E is the model
   async function host(o) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) throw new Error('This browser has no Web Audio.');
     const ctx = new AC();
     ctx.resume();
     const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc, period: o.period, digi: o.digi }, post = o.onFrame || null;
-    const code = worklet(o.driver);
+    const E = engine(), data = o.live ? { most: E.liveMost(opts) } : o.data;
+    const code = worklet(o.live ? LIVE : o.driver);
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
     let node = null, local = null;
@@ -478,13 +514,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       try {
         await ctx.audioWorklet.addModule(typeof u === 'function' ? u() : u);
         node = new AudioWorkletNode(ctx, 'c64-sid', { numberOfInputs: 0, outputChannelCount: [1],
-          processorOptions: { data: o.data, opts, frames: !!post } });
+          processorOptions: { data, opts, frames: !!post } });
         if (post) node.port.onmessage = (e) => post(e.data);
         break;
       } catch (e) { node = null; }
     }
     if (!node) {                                             // no worklet: the older ScriptProcessorNode
-      local = engine().createPlayer(o.driver(o.data, globalThis.C64Cpu), ctx.sampleRate, opts);
+      local = E.createPlayer(o.live ? E.createLive(data) : o.driver(data, globalThis.C64Cpu), ctx.sampleRate, opts);
       node = ctx.createScriptProcessor(4096, 1, 1);
       node.onaudioprocess = (e) => {
         const out = e.outputBuffer.getChannelData(0);
@@ -492,8 +528,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       };
     }
     node.connect(ctx.destination);
-    return { ctx, mode: local ? 'script-processor' : 'worklet',
-      send: (c) => { if (local) local.command(c); else node.port.postMessage(c); } };
+    const send = (c) => { if (local) local.command(c); else node.port.postMessage(c); };
+    return { ctx, mode: local ? 'script-processor' : 'worklet', send,
+      push: (frames) => send({ cmd: 'start', tune: { frames } }) };
   }
 
   // ------------------------------------------------------------------ the player
@@ -803,5 +840,5 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     window.addEventListener('resize', draw);
   }
 
-  return { engine, host, mount, worklet, hex, bytes, noteName };
+  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName };
 })();
