@@ -105,3 +105,65 @@ block uses names another block defines: running `sf-data` and
 A `vice_snapshot_save` given a `path` wrote nothing: the call takes a
 `name` and writes under `tools/vice-home/` (`tool-vice-mcp`, step 4). The
 snapshot it was for was not needed.
+
+## 24 October 2026, the contributor's follow-ups
+
+The contributor asked for four things after the Silver merged: a plainer
+standfirst, the title music chained as the game chains it, a guide to
+winning that had been checked, and a Play tab. They also asked for
+research on the Phantom, Zoff's pet. The same model did the work, in a
+cloud container.
+
+### The Phantom
+
+The booklet's mission briefing warns of the Phantom. Steve Cain of
+Denton Designs told Sinclair User (issue 40, July 1985, page 58) that it
+was a bug in the C64 version, one wrong mnemonic, which they had taken
+out. Copies from archive.org were compared with the tape. Beyond's disk
+holds the tape's three files byte for byte. The Yak Society (dated 30
+April 1985), TBC, Radwar and TCI cracks, the last also on a compilation,
+were booted in VICE to `$4000` and their memory compared over the game's
+bytes: all hold the same program, and the differences are in screen
+memory and the loaders' leftovers. So no copy with the bug was found.
+Two more images, a crack signed Tuerk and one called FCG, never reached
+`$4000` in seven minutes of running and were not compared.
+
+### A player for the guide
+
+The guide's route was checked by playing it on the kit's C64
+(`kit/c64/machine.js`), the game's own code steered through its own
+input. `work/walk/bot.js` points the cursor at an icon and presses fire,
+and `work/walk/win.js` plays the route in phases, saving the machine
+after each. What went wrong on the way, for whoever drives this game's
+icons next:
+
+- The main loop works out the cursor's cell once a round of the icons
+  (`$76`, `$77`), and an icon under the cursor sets `$78` to `$FF` while
+  it waits for fire. Pressing fire before that clicked the icon the
+  cursor had just left. Holding fire after `$78` cleared carried the
+  press onto the next screen and beamed the wrong person.
+- A click while the main loop was busy (a portrait rolling in, the iris)
+  was lost; the player waits for a pass at `icon_poll` first.
+- A team icon is disabled for a moment after an arrival, and a movement
+  arrow is disabled while its character fights.
+- A patrol's route is not its script alone: six guards walk chains of
+  scripts (`+5` bit 7, the chain in `+6`), and `+8` holds only the
+  script walked now. Hunting such a guard by its current script sent the
+  team back and forth across the ship. The player now runs a copy of the
+  machine on with no input to see where a guard will be, and waits at
+  the first place on its way it can reach in time.
+- Zoff was missed at the armoury while the player chose Manto and opened
+  the objects screen. Making those choices before Zoff runs, with the
+  cursor waiting on the beacon, catches him.
+
+A game played that way from the snapshot of a new game won once. The
+recorded game for the page is played from the listing's own memory at
+`$4000` instead, so that a test can replay it from what the repository
+holds: the start copies the KERNAL's vectors from `$FD30`, which the
+kit's C64 does not have, and the copy is stepped over: only the
+KERNAL's routines use them, and the game calls those only to load or
+save. The control menu waits for a
+function key, and without one the demonstration starts when the title
+tune ends; F3 is held for ten frames to choose the joystick. Replaying the
+recorded joystick gives the same game frame for frame. `test_solution.js`
+replays it and holds the Solution tab's table of stages to the game.
