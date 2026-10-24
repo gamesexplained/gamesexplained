@@ -1562,9 +1562,9 @@
   },
   {
    "address": 1434,
-   "name": "s_059A",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "unpack_bank_record",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 1492,
@@ -3584,9 +3584,9 @@
   },
   {
    "address": 16514,
-   "name": "s_4082",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "read_joystick_ports",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 16532,
@@ -3596,9 +3596,9 @@
   },
   {
    "address": 16533,
-   "name": "b_4095",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "intro_sprite_wait_loop",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 16567,
@@ -9080,9 +9080,9 @@
   },
   {
    "address": 39966,
-   "name": "s_9C1E",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "probe_player_tiles",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 39987,
@@ -13509,6 +13509,11 @@
    "text": "Table indexed by a sprite count: $00, $01, $03, $07, $0F, $1F, $3F, $7F, $FF, the sprite-enable mask with that many sprites on."
   },
   {
+   "address": 1434,
+   "type": "line",
+   "text": "Bank-switched record unpacker (likely a level/screen data loader; A = record index). Writes $87 to $DE00, reads a 16-bit pointer from $8000+2*A into $E3/$E4 (top 3 bits select the bank $87-$8E, address folded into $8000-$9FFF), then copies the records into the buffer at ($E1): groups of 5 bytes, followed by word entries with the destination address added to a stored offset, then a second table of 5-byte records whose 4-byte sub-entries have $08A6 added to one byte. At the end it stores the next pointer into the table at $0773/$0774 indexed by $08A3 (incremented twice) and sets $DE00 and $E5/$E6 for the following block. Uses $E1-$E9. NOTE: the routine runs on past $06DC into zero bytes in the snapshot, so the tail is not visible; called by a jsr at $0560."
+  },
+  {
    "address": 1963,
    "type": "line",
    "text": "The raster interrupt nmi_frame installs each frame: handler $07AB/$07AC into $FFFE, line $07AD into $D012. The main loop sets irq_panel at line $D5, or $95A4 when $6B is set."
@@ -13827,6 +13832,16 @@
    "address": 16375,
    "type": "line",
    "text": "Life of each pool object, counted down by one by update_temp_objects on each frame the object moves (set to $18 when one turns into its short animation)."
+  },
+  {
+   "address": 16514,
+   "type": "line",
+   "text": "Reads both joystick ports: writes $7F to $DC00 and $DC01 (CIA 1 ports A/B), reads $DC00 and, if no direction/fire pressed there ($7F), reads $DC01 instead. Returns the port value in A (fire is bit 4, active low). Called from the wait loop at $4069 (title/start waiting for fire: AND #$10)."
+  },
+  {
+   "address": 16533,
+   "type": "line",
+   "text": "Per-frame loop of the pre-round/intro screen. Points the IRQ vector ($FFFE/$FFFF) to irq_panel $837E and the raster line $D012 to $D5, sets sprite X positions in $D000-$D00E (sprites 0 and 2 from player_screen_x $029B with high bit $029C, sprites 1 and 3 at +24, sprites 4-7 at fixed $8C/$A4/$BC/$D4, high bits into $D010), waits for frame_flag $08F7 to change, then increments frame_count $08F6. At $80 frames it enables all sprites ($D015=$FF) and calls $6ED8 with A=$19 (caller of $6ED8); when the count wraps to 0 it increments $0294, turns the display off ($D011=0), sets $08B0=$FF and jumps back to $4044. Entered from $403D when $0294 is negative, and loops back to $4095 each frame otherwise."
   },
   {
    "address": 16698,
@@ -14972,6 +14987,11 @@
    "address": 39155,
    "type": "line",
    "text": "Choose the player's two body sprite shapes and their offsets, once a frame, from the action number $0905 and the facing flag $18 (bit 3 set for left; the values used are $07 for right and $0B for left, with others such as $05, $06, $09, $0A, and $0E in some states). While player_hit ($0292) is non-zero it only switches the third sprite off and sets player_shape_1 and player_shape_2 to fixed shapes ($28 and $34, or $29 and $35 by bit 2 of $18). Otherwise $0905 below 5 uses the table at $0458, $046C, $0480, $0490, $04A0, $04AC, $04B6, $04C0, or $04CA by facing; 5 and 6 go to $9A2A, and 7 goes to $9BAB. Each table starts with its length, and the frame index $0902 steps by 2 and wraps at that length; the pair of shape numbers is read at offset 8 plus the index, and bytes 1 to 7 give the sprite offsets $0322 and $0323, the second-sprite flag $0900, and the offsets $031A to $031D. A change of state or facing restarts the sequence (the hold counters are $0901, $0903, and $0296). While $08FF is non-zero it plays a transition sequence from the frames at $04E8 and the offsets at $04EC, moves player_y, and for the value 6 (at $9B17) either sets $0B to 1 and the third sprite on or sets player_mode to 0 ($9B85)."
+  },
+  {
+   "address": 39966,
+   "type": "line",
+   "text": "Player terrain probe: looks up the map tile attribute values around the player and stores them in $E1 (upper left/centre cell), $E2 (next cell below, when the height $031D allows), $E3 (cell at the lower edge). Position = player_prev_x $08BB/$08BC plus offsets $031A and $031B, player_prev_y $08BD/$08BE plus $031C plus 2 (clamped to 0 if negative), divided by 16 into tile columns/rows; it indexes the row pointer tables at ($2A)/($2C) with the row, then the block map row with the column ($E9), then the tile attribute table at ($30). If the player is on the right side of the screen ($029C set and player_screen_x $029B >= $25) it just sets $E2-$E4 = 3 and returns."
   },
   {
    "address": 40252,
