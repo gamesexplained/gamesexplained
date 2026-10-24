@@ -1036,7 +1036,7 @@
   },
   {
    "address": 17859,
-   "name": "LoadVoiceTargetFrequency",
+   "name": "LoadVoiceNoteFrequency",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -2565,7 +2565,7 @@
   {
    "address": 16387,
    "type": "line",
-   "text": "JMP $4116: one step of the tune. The interrupt routine calls it at $1F0E on every interrupt, except that while $AB is zero it leaves out every sixth; the title sequence calls it at $111D once a frame, timed by the raster."
+   "text": "JMP $4116: one step of the tune. The interrupt routine calls it at $1F0E on its raster interrupt, once a frame, while the music switch $AA is nonzero, except that while $AB is zero it leaves out every sixth; the title sequence calls it at $111D once a frame, timed by the raster."
   },
   {
    "address": 16390,
@@ -2585,7 +2585,7 @@
   {
    "address": 16561,
    "type": "line",
-   "text": "Implement Central Park's retained music sequencer and track-bytecode parser. Inputs: song descriptor, three voice streams, and player state. Outputs: updated music/SID state. Clobbers: A, X, Y, flags, and player state. Hardware: writes SID registers during tick service."
+   "text": "The body of MusicInit, which the JMP at $4000 reaches with the song number in A, and the start of the player's code. It multiplies A by eight to index the song table at $4AB1, copies the song's first two bytes into the tempo reloads $403B and $403C, and sets the volume $4041 to 15. For each of the three voices it copies the playlist pointer into $4063 and $4066, sets the duration countdown $4042 to 1, and clears the playlist place $4060, the phrase place $405D, the repeat count $4069, the instrument base $404E, the transpose $405A and the pulse-width switch $40AD; $403A is set to 1. It then clears the filter switch $40B0, the filter mode bits $4040, the tick divider $4039 and the gate $4038, writes zero to the three voices' control registers ($D404, $D40B, $D412) and to $403D-$403F, and returns. Clobbers: A, X, Y and flags."
   },
   {
    "address": 16652,
@@ -2610,7 +2610,7 @@
   {
    "address": 17707,
    "type": "line",
-   "text": "Fetch and interpret the next note or effect command for a voice. Inputs: phase-local voice index, stream pointers, and player state. Outputs: stream cursors, note/effect parameters, and target-frequency state are updated. Clobbers: A, X, Y, flags, indirect-pointer scratch, and voice scratch."
+   "text": "Steps the instrument's waveform list and pitch list for voice X, once a tick; the tick routine calls it at $4444 for an instrument whose byte 7 has bit 7 set. Byte 1 of the instrument ($49A9, with the record offset from $4054 in Y) is the number of both lists: it is written into the operand of the LDY at $4563 and picks the waveform list's pointer from $495D and $4961. The first time it runs for a note ($4048 still zero) both list places, $406F and $4072, are cleared. The waveform list's byte at the place goes to $406C, the voice's waveform and gate byte, and the place moves on; $FE leaves both as they are, and $FF is followed by the place to go to, whose byte is used. It then goes on into the pitch list at $4563. Clobbers: A, Y, flags and $FE/$FF; X is kept."
   },
   {
    "address": 17763,
@@ -2620,7 +2620,7 @@
   {
    "address": 17764,
    "type": "line",
-   "text": "The operand of the LDY #$00 at $4563, which the instruction at $4531, earlier in the same routine, rewrites: with the voice's instrument number from $4054 it reads the instrument's byte in the table at $49A9, stores it here, and the LDY then loads it, the number of the instrument's pitch sequence."
+   "text": "The operand of the LDY #$00 at $4563, which the instruction at $4531, earlier in the same routine, rewrites: with the offset of the voice's instrument record from $4054 (eleven times the instrument's number) it reads the instrument's byte 1 from the table at $49A9, stores it here, and the LDY then loads it, the number of the instrument's pitch sequence."
   },
   {
    "address": 17765,
@@ -2630,22 +2630,22 @@
   {
    "address": 17819,
    "type": "line",
-   "text": "Advance a voice's auxiliary effect sequence. Inputs: selected voice and its auxiliary pointer and cursor. Outputs: the next auxiliary value or control state is installed. Clobbers: A, Y, flags, cursor state, and voice scratch."
+   "text": "One tick of voice X's arpeggio, called at $443C when the voice's arpeggio number $4078 is nonzero and bit 4 of the instrument's flags is clear. Y is the arpeggio number: it picks the list's pointer from $48E7 and $48F2. The place $407B moves on one byte; that byte is added to the note $4057 as a signed number of semitones and the voice's frequency is set to that note's ($45C3). $80 leaves the place and the frequency as they are, and $81 is followed by the place to go to, whose byte is used. Clobbers: A, Y, flags, $FE/$FF, the place $407B and the frequency $407E/$4081; X is kept."
   },
   {
    "address": 17859,
    "type": "line",
-   "text": "Load a note's target frequency into the selected voice state. Inputs: note-table index and voice-state index. Outputs: target-frequency low and high bytes are updated. Clobbers: A, indexed voice state, and flags."
+   "text": "Set the voice's frequency to a note's. Inputs: Y is the note number and X the voice. Outputs: the low and high bytes from $4828,Y and $4888,Y go to $407E,X and $4081,X, the frequency the tick writes to the voice's $D400/$D401. Clobbers: A and flags."
   },
   {
    "address": 17872,
    "type": "line",
-   "text": "Move current pitch toward its target under the current pitch-step rule. Inputs: current and target frequency plus signed step state. Outputs: current frequency is stepped and clamped, with a next target loaded when required. Clobbers: A, X, Y, flags, and voice arithmetic scratch."
+   "text": "One tick of a slide for voice X (set up by a phrase's $FB-$FE command), called at $43E6 once the note's tick count $4048 reaches the slide's start $4084. Inputs: Y is the slide speed from $4087; the step is four times it, a 16-bit amount in $FE/$FF. If the target note $408A is at or above the note $4057 the step is added to the voice's frequency $407E/$4081, otherwise subtracted. Outputs: once the frequency goes past the target note's, it is set to that note's ($45C3), the speed $4087 and $4096 are cleared and the target becomes the voice's note $4057. Clobbers: A, Y, flags and $FE/$FF; X is kept."
   },
   {
    "address": 17974,
    "type": "line",
-   "text": "Update one voice's pitch envelope for the current music tick. Inputs: voice index, envelope cursor, current frequency, and envelope stream. Outputs: frequency, cursor, and envelope counters are advanced. Clobbers: A, X, Y, flags, and voice scratch."
+   "text": "One tick of voice X's vibrato, called at $43FE once the note's tick count $4048 reaches the setting's byte 0. Inputs: Y is the vibrato setting's offset, half the instrument's byte 9. The first run for a note ($4096 zero) only works out the depth, the frequency difference between the note $4057 and the note byte 4 above it, halved as many times as byte 5 says, into $4090/$4093, clears the list place $408D and sets $4096. Later runs add byte 6 to the depth while the tick count is at least byte 1 and below byte 7, set the frequency back to the note's ($45C3) and step the up-and-down list that bytes 2 and 3 point at: a byte from 1 to $7F adds the depth that many times, 0 adds nothing, $81 is followed by the place to go to, and any other byte with bit 7 set subtracts it 256 minus that many times; the place moves on. Clobbers: A, Y, flags and $FE/$FF; X is kept."
   },
   {
    "address": 18167,
@@ -2865,42 +2865,42 @@
   {
    "address": 18867,
    "type": "line",
-   "text": "Instrument 1, $49B3-$49BD: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $04 and sustain/release $8C; the note is released when 1 tick of it remains; pulse width $303; flags $20; then the filter setting 0 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 1, $49B3-$49BD: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $04 and sustain/release $8C; the note is released when 1 step of it remains (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $303; flags $20; then the filter setting 0 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18878,
    "type": "line",
-   "text": "Instrument 2, $49BE-$49C8: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $C9; the note is released when 1 tick of it remains; pulse width $404; flags $20; then the filter setting 64 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 2, $49BE-$49C8: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $C9; the note is released when 1 step of it remains (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $404; flags $20; then the filter setting 64 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18889,
    "type": "line",
-   "text": "Instrument 3, $49C9-$49D3: waveform register $41 at the start of a note; byte 1, 1, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 3, $49C9-$49D3: waveform register $41 at the start of a note; byte 1, 1, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the player does not release it, but its waveform list ($4977) turns the gate off on the note's fourth tick; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18900,
    "type": "line",
-   "text": "Instrument 4, $49D4-$49DE: waveform register $41 at the start of a note; byte 1, 3, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the note is held to its end; pulse width $808; flags $B0; then the filter setting 80 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 4, $49D4-$49DE: waveform register $41 at the start of a note; byte 1, 3, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the player does not release it, but its waveform list ($499C) turns the gate off on the note's third tick; pulse width $808; flags $B0; then the filter setting 80 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18911,
    "type": "line",
-   "text": "Instrument 5, $49DF-$49E9: waveform register $13 at the start of a note; $12 written there at the release; attack/decay $00 and sustain/release $89; the note is released when 1 tick of it remains; pulse width $000; flags $20; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 5, $49DF-$49E9: waveform register $13 at the start of a note; $12 written there at the release; attack/decay $00 and sustain/release $89; the note is released when 1 step of it remains (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $000; flags $20; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18922,
    "type": "line",
-   "text": "Instrument 6, $49EA-$49F4: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $04 and sustain/release $6C; the note is released when 1 tick of it remains; pulse width $303; flags $20; then the filter setting 0 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 6, $49EA-$49F4: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $04 and sustain/release $6C; the note is released when 1 step of it remains (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $303; flags $20; then the filter setting 0 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18933,
    "type": "line",
-   "text": "Instrument 7, $49F5-$49FF: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $FC; the note is released after 0 ticks; pulse width $404; flags $60; then the filter setting 48 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 7, $49F5-$49FF: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $FC; the note is released after 2 ticks, on its third (byte 4 is 0, but the release is first tested on a note's third tick); pulse width $404; flags $60; then the filter setting 48 and the pulse sweep 32, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18944,
    "type": "line",
-   "text": "Instrument 8, $4A00-$4A0A: waveform register $41 at the start of a note; byte 1, 2, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F8; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 8, $4A00-$4A0A: waveform register $41 at the start of a note; byte 1, 2, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F8; the player does not release it, but its waveform list ($4992) turns the gate off on the note's third tick; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18955,
@@ -2910,12 +2910,12 @@
   {
    "address": 18966,
    "type": "line",
-   "text": "Instrument 10, $4A16-$4A20: waveform register $21 at the start of a note; $10 written there at the release; attack/decay $00 and sustain/release $F9; the note is released after 0 ticks; pulse width $000; flags $60; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 10, $4A16-$4A20: waveform register $21 at the start of a note; $10 written there at the release; attack/decay $00 and sustain/release $F9; the note is released after 2 ticks, on its third (byte 4 is 0, but the release is first tested on a note's third tick); pulse width $000; flags $60; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18977,
    "type": "line",
-   "text": "Instrument 11, $4A21-$4A2B: waveform register $41 at the start of a note; $20 written there at the release; attack/decay $05 and sustain/release $7B; the note is released when 2 ticks of it remain; pulse width $707; flags $20; then the filter setting 0 and the pulse sweep 96, offsets into the filter and pulse settings, and the vibrato setting 32, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 11, $4A21-$4A2B: waveform register $41 at the start of a note; $20 written there at the release; attack/decay $05 and sustain/release $7B; the note is released when 2 steps of it remain (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $707; flags $20; then the filter setting 0 and the pulse sweep 96, offsets into the filter and pulse settings, and the vibrato setting 32, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18988,
@@ -2925,7 +2925,7 @@
   {
    "address": 18991,
    "type": "line",
-   "text": "Vibrato settings, $4A2F-$4A40, read with half of an instrument's byte 9 in Y: the tick it starts on, the ticks between which it changes depth, a pointer to its up-and-down list, the interval in semitones, how far it divides that interval, the depth step, and the tick it stops changing."
+   "text": "Vibrato settings, eight bytes each from $4A2F, read with half of an instrument's byte 9 in Y: the tick it starts on, the tick from which it changes depth, a pointer to its up-and-down list, the interval in semitones, how far it divides that interval, the depth step, and the tick it stops changing. The tune's instruments use the settings at 8 and 16, $4A37-$4A3E and $4A3F-$4A46: the second runs on past $4A40 into the first sixteen bytes of the filter and pulse settings at $4A41, which no instrument reads as a filter or pulse setting, and the up-and-down list both point at, $4A47, lies there too."
   },
   {
    "address": 18992,
@@ -2965,7 +2965,7 @@
   {
    "address": 19009,
    "type": "line",
-   "text": "Filter and pulse settings, $4A41-$4AB0, read with an instrument's byte 8 (filter) or byte 10 (pulse sweep) in Y: the cutoff low and high bytes, the resonance and routing byte, the volume byte's filter mode bits, a direction bit, and a pointer to the sweep list."
+   "text": "Filter and pulse settings, $4A41-$4AB0, read with an instrument's byte 8 (filter) or byte 10 (pulse sweep) in Y: the cutoff low and high bytes, the resonance and routing byte, the volume byte's filter mode bits, a direction bit, and a pointer to the sweep list. The settings are sixteen bytes each, and the first sixteen ($4A41-$4A50), setting 0, are never read as one, since 0 in an instrument means none: they hold the end of the last vibrato setting and the vibrato's up-and-down list at $4A47."
   },
   {
    "address": 19010,
@@ -3055,17 +3055,17 @@
   {
    "address": 19129,
    "type": "line",
-   "text": "Playlist, $4AB9-$4B0F, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC and $FD (with a byte) fade the volume out, $FE stops the tune, and $FF is followed by the position to go back to."
+   "text": "Playlist, $4AB9-$4B0F, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC puts the volume back to full and ends a fade, $FD and a byte fade the volume out, one step every that many ticks, $FE stops the tune, and $FF is followed by the position to go back to."
   },
   {
    "address": 19216,
    "type": "line",
-   "text": "Playlist, $4B10-$4B58, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC and $FD (with a byte) fade the volume out, $FE stops the tune, and $FF is followed by the position to go back to."
+   "text": "Playlist, $4B10-$4B58, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC puts the volume back to full and ends a fade, $FD and a byte fade the volume out, one step every that many ticks, $FE stops the tune, and $FF is followed by the position to go back to."
   },
   {
    "address": 19289,
    "type": "line",
-   "text": "Playlist, $4B59-$4B7D, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC and $FD (with a byte) fade the volume out, $FE stops the tune, and $FF is followed by the position to go back to."
+   "text": "Playlist, $4B59-$4B7D, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC puts the volume back to full and ends a fade, $FD and a byte fade the volume out, one step every that many ticks, $FE stops the tune, and $FF is followed by the position to go back to."
   },
   {
    "address": 19326,
@@ -3080,102 +3080,102 @@
   {
    "address": 19364,
    "type": "line",
-   "text": "Phrase, $4BA4-$4BBE (phrase 0): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BA4-$4BBE (phrase 0): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19391,
    "type": "line",
-   "text": "Phrase, $4BBF-$4BE7 (phrase 1): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BBF-$4BE7 (phrase 1): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19432,
    "type": "line",
-   "text": "Phrase, $4BE8-$4C10 (phrase 3): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BE8-$4C10 (phrase 3): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19473,
    "type": "line",
-   "text": "Phrase, $4C11-$4C3A (phrase 2): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C11-$4C3A (phrase 2): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19515,
    "type": "line",
-   "text": "Phrase, $4C3B-$4C42 (phrase 5): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C3B-$4C42 (phrase 5): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19523,
    "type": "line",
-   "text": "Phrase, $4C43-$4C58 (phrase 6): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C43-$4C58 (phrase 6): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19545,
    "type": "line",
-   "text": "Phrase, $4C59-$4C6D (phrase 16): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C59-$4C6D (phrase 16): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19566,
    "type": "line",
-   "text": "Phrase, $4C6E-$4C79 (phrase 7): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C6E-$4C79 (phrase 7): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase. This one has no $FF of its own: after its second slide it runs on into phrase 14's bytes at $4C7A and ends with that phrase's $FF at $4C86."
   },
   {
    "address": 19578,
    "type": "line",
-   "text": "Phrase, $4C7A-$4C86 (phrase 14): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C7A-$4C86 (phrase 14): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19591,
    "type": "line",
-   "text": "Phrase, $4C87-$4CA1 (phrase 8): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C87-$4CA1 (phrase 8): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19618,
    "type": "line",
-   "text": "Phrase, $4CA2-$4CBB (phrase 15): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4CA2-$4CBB (phrase 15): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19644,
    "type": "line",
-   "text": "Phrase, $4CBC-$4CC6 (phrase 9): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4CBC-$4CC6 (phrase 9): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19655,
    "type": "line",
-   "text": "Phrase, $4CC7-$4CF9 (phrase 10): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4CC7-$4CF9 (phrase 10): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19706,
    "type": "line",
-   "text": "Phrase, $4CFA-$4D23 (phrase 11): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4CFA-$4D23 (phrase 11): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19748,
    "type": "line",
-   "text": "Phrase, $4D24-$4D53 (phrase 12): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4D24-$4D53 (phrase 12): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19796,
    "type": "line",
-   "text": "Phrase, $4D54-$4D59 (phrase 13): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4D54-$4D59 (phrase 13): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19802,
    "type": "line",
-   "text": "Phrase, $4D5A-$4D6F (phrase 17): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4D5A-$4D6F (phrase 17): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19824,
    "type": "line",
-   "text": "Phrase, $4D70-$4DC9 (phrase 18): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4D70-$4DC9 (phrase 18): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19914,
    "type": "line",
-   "text": "Phrase, $4DCA-$4DE3 (phrase 4): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4DCA-$4DE3 (phrase 4): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19940,
    "type": "line",
-   "text": "Scene header: 118 scene pointers follow at $4E27, which the one-time relocation at the start of play adjusts by the word at $4DE5; every pointer is an offset from this address, $4DE4."
+   "text": "Scene header: 118 scene pointers follow at $4E27, which the one-time relocation at the start of play adjusts by the word at $4DE5; every pointer is an offset from this address, $4DE4. This load holds only the header's first 28 bytes, $4DE4-$4DFF: the rest of the area slots and all of the pointers come with the play load, which writes over this one from $4E00 on (here $4E00 is DrawTitleCard)."
   },
   {
    "address": 19941,
@@ -3190,7 +3190,7 @@
   {
    "address": 19943,
    "type": "line",
-   "text": "32 two-byte area slots, $4DE7-$4E26: the scene that draws the area, then its background colour in the low nibble. 19 areas have a scene (area 1: scene 112, area 2: scene 89, area 3: scene 91, area 4: scene 72, area 5: scene 73, area 6: scene 74, area 7: scene 75, area 8: scene 76, area 9: scene 77, area 10: scene 78, area 11: scene 79, area 12: scene 80, area 13: scene 85, area 14: scene 82, area 15: scene 86, area 16: scene 84, area 17: scene 88, area 18: scene 113, area 19: scene 116); $FF marks a slot no area uses."
+   "text": "32 two-byte area slots, $4DE7-$4E26: the scene that draws the area, then its background colour in the low nibble. 19 areas have a scene (area 1: scene 112, area 2: scene 89, area 3: scene 91, area 4: scene 72, area 5: scene 73, area 6: scene 74, area 7: scene 75, area 8: scene 76, area 9: scene 77, area 10: scene 78, area 11: scene 79, area 12: scene 80, area 13: scene 85, area 14: scene 82, area 15: scene 86, area 16: scene 84, area 17: scene 88, area 18: scene 113, area 19: scene 116); $FF marks a slot no area uses. This load holds the slots only up to $4DFF, that is areas 0 to 11 and area 12's scene byte: the rest, areas 13 to 19 among them, come with the play load, which writes over this one from $4E00 on (here $4E00 is DrawTitleCard)."
   },
   {
    "address": 19944,

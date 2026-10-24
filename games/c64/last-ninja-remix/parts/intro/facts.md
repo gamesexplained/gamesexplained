@@ -59,8 +59,18 @@ here is this part's. Unless marked *live*, a fact comes from the code in
   the KERNAL and loads `NINJA*` (`$03A6`).
 - Left over: `OldLoaderStub` (`$0B9F`), which loads a file named L2 to
   `$A000` and copies it to `$D000`, and which nothing calls; a
-  `JMP $0800` at `$1346`; source text in the bytes after the sprites and
-  over the cleared screen, with a copy of the credits at `$5715`.
+  `JMP $0800` at `$1346`; source text over the screen, which each
+  picture clears before it is shown; and five stretches packed with a
+  run-length code (a `$CB`, a count and a byte stand for a run of that
+  byte, any other byte for itself), each of which unpacks to bytes held
+  elsewhere in the snapshot: `$53C6-$5710` to the source text at
+  `$7BF1-$7FFF`, `$5711-$5FFF` to `$8000-$8B2D` (the credits, their font
+  and most of the second drawing of the kneeling ninjas), `$AD4D-$AFFF`
+  to `$67DA-$6B39`, `$CBE3-$CFFF` to the city's bitmap at `$96DE-$9B5D`,
+  and `$FF40-$FFF9`, with the interrupt vectors' six bytes after it, to
+  the temple's at `$F9DA-$FF3F`. None of them is unpacked: the copy of
+  the temple at `$0B5A` carries the 186 bytes from `$FF40` past the end
+  of the bitmap on show, and no other code reads any of them.
 
 ## Live tests
 

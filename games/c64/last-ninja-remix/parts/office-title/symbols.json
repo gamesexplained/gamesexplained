@@ -994,7 +994,7 @@
   },
   {
    "address": 17883,
-   "name": "LoadVoiceTargetFrequency",
+   "name": "LoadVoiceNoteFrequency",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -2741,7 +2741,7 @@
   {
    "address": 16585,
    "type": "line",
-   "text": "Implement The Office's retained music sequencer and track-bytecode parser. Inputs: song descriptor, three voice streams, and player state. Outputs: updated music/SID state. Clobbers: A, X, Y, flags, and player state. Hardware: writes SID registers during tick service."
+   "text": "The body of MusicInit, which the JMP at $4000 reaches with the song number in A, and the start of the player's code. It multiplies A by eight to index the song table at $4ACB, copies the song's first two bytes into the tempo reloads $4053 and $4054, and sets the volume $4059 to 15. For each of the three voices it copies the playlist pointer into $407B and $407E, sets the duration countdown $405A to 1, and clears the playlist place $4078, the phrase place $4075, the repeat count $4081, the instrument base $4066, the transpose $4072 and the pulse-width switch $40C5; $4052 is set to 1. It then clears the filter switch $40C8, the filter mode bits $4058, the tick divider $4051 and the gate $4050, writes zero to the three voices' control registers ($D404, $D40B, $D412) and to $4055-$4057, and returns. Clobbers: A, X, Y and flags."
   },
   {
    "address": 16676,
@@ -2766,17 +2766,17 @@
   {
    "address": 17731,
    "type": "line",
-   "text": "Fetch and interpret the next note or effect command for a voice. Inputs: phase-local voice index, stream pointers, and player state. Outputs: stream cursors, note/effect parameters, and target-frequency state are updated. Clobbers: A, X, Y, flags, indirect-pointer scratch, and voice scratch."
+   "text": "Steps the instrument's waveform list and pitch list for voice X, once a tick; the tick routine calls it at $445C for an instrument whose byte 7 has bit 7 set. Byte 1 of the instrument ($4970, with the record offset from $406C in Y) is the number of both lists: it is written into the operand of the LDY at $457B and picks the waveform list's pointer from $4930 and $4934. The first time it runs for a note ($4060 still zero) both list places, $4087 and $408A, are cleared. The waveform list's byte at the place goes to $4084, the voice's waveform and gate byte, and the place moves on; $FE leaves both as they are, and $FF is followed by the place to go to, whose byte is used. It then goes on into the pitch list at $457B. Clobbers: A, Y, flags and $FE/$FF; X is kept."
   },
   {
    "address": 17787,
    "type": "side",
-   "text": "[offcut 4564] Self-modified immediate operand of `LDY #$00` at `$457B`. The Office music sequencer writes the selected sequence index here at `$4549`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
+   "text": "[offcut 457C] Self-modified immediate operand of `LDY #$00` at `$457B`. The Office music sequencer writes the selected sequence index here at `$4549`; the following indexed table reads install the sequence pointer in `$FE/$FF`."
   },
   {
    "address": 17788,
    "type": "line",
-   "text": "The operand of the LDY #$00 at $457B, which the instruction at $4549, earlier in the same routine, rewrites: with the voice's instrument number from $406C it reads the instrument's byte in the table at $4970, stores it here, and the LDY then loads it, the number of the instrument's pitch sequence."
+   "text": "The operand of the LDY #$00 at $457B, which the instruction at $4549, earlier in the same routine, rewrites: with the offset of the voice's instrument record from $406C (eleven times the instrument's number) it reads the instrument's byte 1 from the table at $4970, stores it here, and the LDY then loads it, the number of the instrument's pitch sequence."
   },
   {
    "address": 17789,
@@ -2786,22 +2786,22 @@
   {
    "address": 17843,
    "type": "line",
-   "text": "Advance a voice's auxiliary effect sequence. Inputs: selected voice and its auxiliary pointer and cursor. Outputs: the next auxiliary value or control state is installed. Clobbers: A, Y, flags, cursor state, and voice scratch."
+   "text": "One tick of voice X's arpeggio, called at $4454 when the voice's arpeggio number $4090 is nonzero and bit 4 of the instrument's flags is clear. Y is the arpeggio number: it picks the list's pointer from $48FF and $4902. The place $4093 moves on one byte; that byte is added to the note $406F as a signed number of semitones and the voice's frequency is set to that note's ($45DB). $80 leaves the place and the frequency as they are, and $81 is followed by the place to go to, whose byte is used. Clobbers: A, Y, flags, $FE/$FF, the place $4093 and the frequency $4096/$4099; X is kept."
   },
   {
    "address": 17883,
    "type": "line",
-   "text": "Load a note's target frequency into the selected voice state. Inputs: note-table index and voice-state index. Outputs: target-frequency low and high bytes are updated. Clobbers: A, indexed voice state, and flags."
+   "text": "Set the voice's frequency to a note's. Inputs: Y is the note number and X the voice. Outputs: the low and high bytes from $4840,Y and $48A0,Y go to $4096,X and $4099,X, the frequency the tick writes to the voice's $D400/$D401. Clobbers: A and flags."
   },
   {
    "address": 17896,
    "type": "line",
-   "text": "Move current pitch toward its target under the current pitch-step rule. Inputs: current and target frequency plus signed step state. Outputs: current frequency is stepped and clamped, with a next target loaded when required. Clobbers: A, X, Y, flags, and voice arithmetic scratch."
+   "text": "One tick of a slide for voice X (set up by a phrase's $FB-$FE command), called at $43FE once the note's tick count $4060 reaches the slide's start $409C. Inputs: Y is the slide speed from $409F; the step is four times it, a 16-bit amount in $FE/$FF. If the target note $40A2 is at or above the note $406F the step is added to the voice's frequency $4096/$4099, otherwise subtracted. Outputs: once the frequency goes past the target note's, it is set to that note's ($45DB), the speed $409F and $40AE are cleared and the target becomes the voice's note $406F. Clobbers: A, Y, flags and $FE/$FF; X is kept."
   },
   {
    "address": 17998,
    "type": "line",
-   "text": "Update one voice's pitch envelope for the current music tick. Inputs: voice index, envelope cursor, current frequency, and envelope stream. Outputs: frequency, cursor, and envelope counters are advanced. Clobbers: A, X, Y, flags, and voice scratch."
+   "text": "One tick of voice X's vibrato, called at $4416 once the note's tick count $4060 reaches the setting's byte 0. Inputs: Y is the vibrato setting's offset, half the instrument's byte 9. The first run for a note ($40AE zero) only works out the depth, the frequency difference between the note $406F and the note byte 4 above it, halved as many times as byte 5 says, into $40A8/$40AB, clears the list place $40A5 and sets $40AE. Later runs add byte 6 to the depth while the tick count is at least byte 1 and below byte 7, set the frequency back to the note's ($45DB) and step the up-and-down list that bytes 2 and 3 point at: a byte from 1 to $7F adds the depth that many times, 0 adds nothing, $81 is followed by the place to go to, and any other byte with bit 7 set subtracts it 256 minus that many times; the place moves on. Clobbers: A, Y, flags and $FE/$FF; X is kept."
   },
   {
    "address": 18191,
@@ -2981,17 +2981,17 @@
   {
    "address": 18810,
    "type": "line",
-   "text": "Instrument 1, $497A-$4984: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $AA; the note is released after 1 ticks; pulse width $606; flags $20; then the filter setting 0 and the pulse sweep 96, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 1, $497A-$4984: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $AA; the note is released after 2 ticks, on its third (byte 4 is 1, but the release is first tested on a note's third tick); pulse width $606; flags $20; then the filter setting 0 and the pulse sweep 96, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18821,
    "type": "line",
-   "text": "Instrument 2, $4985-$498F: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $AA; the note is released after 1 ticks; pulse width $404; flags $20; then the filter setting 0 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 2, $4985-$498F: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $AA; the note is released after 2 ticks, on its third (byte 4 is 1, but the release is first tested on a note's third tick); pulse width $404; flags $20; then the filter setting 0 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18832,
    "type": "line",
-   "text": "Instrument 3, $4990-$499A: waveform register $41 at the start of a note; byte 1, 0, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the note is held to its end; pulse width $808; flags $90; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 3, $4990-$499A: waveform register $41 at the start of a note; byte 1, 0, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F9; the player does not release it, but its waveform list ($4940) turns the gate off on the note's third tick; pulse width $808; flags $90; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18843,
@@ -3001,32 +3001,32 @@
   {
    "address": 18854,
    "type": "line",
-   "text": "Instrument 5, $49A6-$49B0: waveform register $11 at the start of a note; $10 written there at the release; attack/decay $00 and sustain/release $F9; the note is released after 0 ticks; pulse width $000; flags $20; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 5, $49A6-$49B0: waveform register $11 at the start of a note; $10 written there at the release; attack/decay $00 and sustain/release $F9; the note is released after 2 ticks, on its third (byte 4 is 0, but the release is first tested on a note's third tick); pulse width $000; flags $20; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18865,
    "type": "line",
-   "text": "Instrument 6, $49B1-$49BB: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $AC; the note is released after 0 ticks; pulse width $808; flags $60; then the filter setting 48 and the pulse sweep 64, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 6, $49B1-$49BB: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $AC; the note is released after 2 ticks, on its third (byte 4 is 0, but the release is first tested on a note's third tick); pulse width $808; flags $60; then the filter setting 48 and the pulse sweep 64, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18876,
    "type": "line",
-   "text": "Instrument 7, $49BC-$49C6: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $EC; the note is released after 0 ticks; pulse width $404; flags $60; then the filter setting 32 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 7, $49BC-$49C6: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $EC; the note is released after 2 ticks, on its third (byte 4 is 0, but the release is first tested on a note's third tick); pulse width $404; flags $60; then the filter setting 32 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18887,
    "type": "line",
-   "text": "Instrument 8, $49C7-$49D1: waveform register $41 at the start of a note; byte 1, 1, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F7; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 8, $49C7-$49D1: waveform register $41 at the start of a note; byte 1, 1, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F7; the player does not release it, but its waveform list ($494E) turns the gate off on the note's fourth tick; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18898,
    "type": "line",
-   "text": "Instrument 9, $49D2-$49DC: waveform register $11 at the start of a note; byte 1, 2, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F6; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 9, $49D2-$49DC: waveform register $11 at the start of a note; byte 1, 2, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $F6; the player does not release it, but its waveform list ($495B) turns the gate off on the note's third tick; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 0, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18909,
    "type": "line",
-   "text": "Instrument 10, $49DD-$49E7: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $EC; the note is released after 0 ticks; pulse width $808; flags $60; then the filter setting 32 and the pulse sweep 80, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 10, $49DD-$49E7: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $EC; the note is released after 2 ticks, on its third (byte 4 is 0, but the release is first tested on a note's third tick); pulse width $808; flags $60; then the filter setting 32 and the pulse sweep 80, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18920,
@@ -3036,17 +3036,17 @@
   {
    "address": 18931,
    "type": "line",
-   "text": "Instrument 12, $49F3-$49FD: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $58; the note is released when 1 tick of it remains; pulse width $808; flags $60; then the filter setting 0 and the pulse sweep 64, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 12, $49F3-$49FD: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $58; the note is released when 1 step of it remains (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $808; flags $60; then the filter setting 0 and the pulse sweep 64, offsets into the filter and pulse settings, and the vibrato setting 16, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18942,
    "type": "line",
-   "text": "Instrument 13, $49FE-$4A08: waveform register $11 at the start of a note; byte 1, 3, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $E5; the note is held to its end; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 13, $49FE-$4A08: waveform register $11 at the start of a note; byte 1, 3, picks the waveform and pitch lists (byte 7 has bit 7 set); attack/decay $00 and sustain/release $E5; the player does not release it, but its waveform list ($4965) turns the gate off on the note's third tick; pulse width $808; flags $B0; then the filter setting 0 and the pulse sweep 16, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18953,
    "type": "line",
-   "text": "Instrument 14, $4A09-$4A13: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $69; the note is released when 1 tick of it remains; pulse width $707; flags $20; then the filter setting 128 and the pulse sweep 96, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
+   "text": "Instrument 14, $4A09-$4A13: waveform register $41 at the start of a note; $40 written there at the release; attack/decay $00 and sustain/release $69; the note is released when 1 step of it remains (steps of the tempo, the unit the note lengths count in, not ticks); pulse width $707; flags $20; then the filter setting 128 and the pulse sweep 96, offsets into the filter and pulse settings, and the vibrato setting 0, twice its offset into the vibrato settings (0 for none in each)."
   },
   {
    "address": 18964,
@@ -3056,7 +3056,7 @@
   {
    "address": 18967,
    "type": "line",
-   "text": "Vibrato settings, $4A17-$4A20, read with half of an instrument's byte 9 in Y: the tick it starts on, the ticks between which it changes depth, a pointer to its up-and-down list, the interval in semitones, how far it divides that interval, the depth step, and the tick it stops changing."
+   "text": "Vibrato settings, eight bytes each from $4A17, read with half of an instrument's byte 9 in Y: the tick it starts on, the tick from which it changes depth, a pointer to its up-and-down list, the interval in semitones, how far it divides that interval, the depth step, and the tick it stops changing. The tune's instruments use only the setting at 8, $4A1F-$4A26, which runs on past $4A20 into the first sixteen bytes of the filter and pulse settings at $4A21, which no instrument reads as a filter or pulse setting, and its up-and-down list, $4A27, lies there too."
   },
   {
    "address": 18968,
@@ -3096,7 +3096,7 @@
   {
    "address": 18977,
    "type": "line",
-   "text": "Filter and pulse settings, $4A21-$4ACA, read with an instrument's byte 8 (filter) or byte 10 (pulse sweep) in Y: the cutoff low and high bytes, the resonance and routing byte, the volume byte's filter mode bits, a direction bit, and a pointer to the sweep list."
+   "text": "Filter and pulse settings, $4A21-$4ACA, read with an instrument's byte 8 (filter) or byte 10 (pulse sweep) in Y: the cutoff low and high bytes, the resonance and routing byte, the volume byte's filter mode bits, a direction bit, and a pointer to the sweep list. The settings are sixteen bytes each, and the first sixteen ($4A21-$4A30), setting 0, are never read as one, since 0 in an instrument means none: they hold the end of the last vibrato setting and the vibrato's up-and-down list at $4A27."
   },
   {
    "address": 18978,
@@ -3186,17 +3186,17 @@
   {
    "address": 19155,
    "type": "line",
-   "text": "Playlist, $4AD3-$4B00, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC and $FD (with a byte) fade the volume out, $FE stops the tune, and $FF is followed by the position to go back to."
+   "text": "Playlist, $4AD3-$4B00, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC puts the volume back to full and ends a fade, $FD and a byte fade the volume out, one step every that many ticks, $FE stops the tune, and $FF is followed by the position to go back to."
   },
   {
    "address": 19201,
    "type": "line",
-   "text": "Playlist, $4B01-$4B3A, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC and $FD (with a byte) fade the volume out, $FE stops the tune, and $FF is followed by the position to go back to."
+   "text": "Playlist, $4B01-$4B3A, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC puts the volume back to full and ends a fade, $FD and a byte fade the volume out, one step every that many ticks, $FE stops the tune, and $FF is followed by the position to go back to."
   },
   {
    "address": 19259,
    "type": "line",
-   "text": "Playlist, $4B3B-$4B56, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC and $FD (with a byte) fade the volume out, $FE stops the tune, and $FF is followed by the position to go back to."
+   "text": "Playlist, $4B3B-$4B56, one voice's order of phrases: a byte below $80 plays that phrase; $80-$BF set the transpose to the low six bits, $C0-$DF the instrument base to the low five, $E0-$FA the number of repeats; $FB and two bytes set the tempo, $FC puts the volume back to full and ends a fade, $FD and a byte fade the volume out, one step every that many ticks, $FE stops the tune, and $FF is followed by the position to go back to."
   },
   {
    "address": 19287,
@@ -3211,92 +3211,92 @@
   {
    "address": 19321,
    "type": "line",
-   "text": "Phrase, $4B79-$4B7D (phrase 0): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4B79-$4B7D (phrase 0): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19326,
    "type": "line",
-   "text": "Phrase, $4B7E-$4B90 (phrase 1): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4B7E-$4B90 (phrase 1): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19345,
    "type": "line",
-   "text": "Phrase, $4B91-$4BAD (phrase 2): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4B91-$4BAD (phrase 2): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19374,
    "type": "line",
-   "text": "Phrase, $4BAE-$4BB9 (phrase 3): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BAE-$4BB9 (phrase 3): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19386,
    "type": "line",
-   "text": "Phrase, $4BBA-$4BC7 (phrase 4): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BBA-$4BC7 (phrase 4): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19400,
    "type": "line",
-   "text": "Phrase, $4BC8-$4BEA (phrase 5): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BC8-$4BEA (phrase 5): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19435,
    "type": "line",
-   "text": "Phrase, $4BEB-$4BFA (phrase 6): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BEB-$4BFA (phrase 6): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19451,
    "type": "line",
-   "text": "Phrase, $4BFB-$4C1F (phrase 7): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4BFB-$4C1F (phrase 7): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19488,
    "type": "line",
-   "text": "Phrase, $4C20-$4C38 (phrase 8): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C20-$4C38 (phrase 8): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19513,
    "type": "line",
-   "text": "Phrase, $4C39-$4C4F (phrase 12): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C39-$4C4F (phrase 12): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19536,
    "type": "line",
-   "text": "Phrase, $4C50-$4C71 (phrase 14): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C50-$4C71 (phrase 14): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19570,
    "type": "line",
-   "text": "Phrase, $4C72-$4C7E (phrase 15): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C72-$4C7E (phrase 15): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19583,
    "type": "line",
-   "text": "Phrase, $4C7F-$4CAA (phrase 16): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4C7F-$4CAA (phrase 16): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19627,
    "type": "line",
-   "text": "Phrase, $4CAB-$4CF3 (phrase 9): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4CAB-$4CF3 (phrase 9): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19700,
    "type": "line",
-   "text": "Phrase, $4CF4-$4D07 (phrase 10): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4CF4-$4D07 (phrase 10): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19720,
    "type": "line",
-   "text": "Phrase, $4D08-$4D1A (phrase 11): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4D08-$4D1A (phrase 11): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19739,
    "type": "line",
-   "text": "Phrase, $4D1B-$4D53 (phrase 13): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' ticks; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch the filter and the instrument's pulse width on or off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
+   "text": "Phrase, $4D1B-$4D53 (phrase 13): a note is a byte below $60, added to the transpose; $60-$7F rest for the low five bits' steps of the tempo; $80-$AF set the length of the notes after them, $B0-$BF their sustain level, $C0-$DF their instrument, $E0-$F7 their arpeggio; $F8 turns the filter off, $F9 and $FA switch off, or back on, the setting up of the filter and of the pulse width by each new note's instrument, which carry on as they were while it is off, any other byte from $FB is followed by four that slide from one note to another, and $FF ends the phrase."
   },
   {
    "address": 19796,
    "type": "line",
-   "text": "Scene header: 122 scene pointers follow at $4D97, which the one-time relocation at the start of play adjusts by the word at $4D55; every pointer is an offset from this address, $4D54."
+   "text": "Scene header: 122 scene pointers follow at $4D97, which the one-time relocation at the start of play adjusts by the word at $4D55; every pointer is an offset from this address, $4D54. This load holds only the first 52 of them, $4D97-$4DFE, and the low byte of the 53rd at $4DFF: the rest come with the play load, which writes over this one from $4E00 on."
   },
   {
    "address": 19797,
@@ -3321,7 +3321,7 @@
   {
    "address": 19863,
    "type": "line",
-   "text": "Scene pointer 000: $8139, bit 15 set: a picture, at $4E8D, the offset plus the scene base $4D54."
+   "text": "Scene pointer 000: $8939 as loaded, $8139 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $4E8D, the offset plus the scene base $4D54."
   },
   {
    "address": 19864,
@@ -3331,262 +3331,262 @@
   {
    "address": 19865,
    "type": "line",
-   "text": "Scene pointer 001: $814E, bit 15 set: a picture, at $4EA2, the offset plus the scene base $4D54."
+   "text": "Scene pointer 001: $894E as loaded, $814E once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $4EA2, the offset plus the scene base $4D54."
   },
   {
    "address": 19867,
    "type": "line",
-   "text": "Scene pointer 002: $816D, bit 15 set: a picture, at $4EC1, the offset plus the scene base $4D54."
+   "text": "Scene pointer 002: $896D as loaded, $816D once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $4EC1, the offset plus the scene base $4D54."
   },
   {
    "address": 19869,
    "type": "line",
-   "text": "Scene pointer 003: $8182, bit 15 set: a picture, at $4ED6, the offset plus the scene base $4D54."
+   "text": "Scene pointer 003: $8982 as loaded, $8182 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $4ED6, the offset plus the scene base $4D54."
   },
   {
    "address": 19871,
    "type": "line",
-   "text": "Scene pointer 004: $8223, bit 15 set: a picture, at $4F77, the offset plus the scene base $4D54."
+   "text": "Scene pointer 004: $8A23 as loaded, $8223 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $4F77, the offset plus the scene base $4D54."
   },
   {
    "address": 19873,
    "type": "line",
-   "text": "Scene pointer 005: $0260, bit 15 clear: a composite scene, at $4FB4, the offset plus the scene base $4D54."
+   "text": "Scene pointer 005: $0A60 as loaded, $0260 once the relocation at the start of play has taken $0800 off it; bit 15 clear: a composite scene, at $4FB4, the offset plus the scene base $4D54."
   },
   {
    "address": 19875,
    "type": "line",
-   "text": "Scene pointer 006: $8261, bit 15 set: a picture, at $4FB5, the offset plus the scene base $4D54."
+   "text": "Scene pointer 006: $8A61 as loaded, $8261 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $4FB5, the offset plus the scene base $4D54."
   },
   {
    "address": 19877,
    "type": "line",
-   "text": "Scene pointer 007: $832A, bit 15 set: a picture, at $507E, the offset plus the scene base $4D54."
+   "text": "Scene pointer 007: $8B2A as loaded, $832A once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $507E, the offset plus the scene base $4D54."
   },
   {
    "address": 19879,
    "type": "line",
-   "text": "Scene pointer 008: $83F3, bit 15 set: a picture, at $5147, the offset plus the scene base $4D54."
+   "text": "Scene pointer 008: $8BF3 as loaded, $83F3 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5147, the offset plus the scene base $4D54."
   },
   {
    "address": 19881,
    "type": "line",
-   "text": "Scene pointer 009: $846C, bit 15 set: a picture, at $51C0, the offset plus the scene base $4D54."
+   "text": "Scene pointer 009: $8C6C as loaded, $846C once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $51C0, the offset plus the scene base $4D54."
   },
   {
    "address": 19883,
    "type": "line",
-   "text": "Scene pointer 010: $84E5, bit 15 set: a picture, at $5239, the offset plus the scene base $4D54."
+   "text": "Scene pointer 010: $8CE5 as loaded, $84E5 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5239, the offset plus the scene base $4D54."
   },
   {
    "address": 19885,
    "type": "line",
-   "text": "Scene pointer 011: $855E, bit 15 set: a picture, at $52B2, the offset plus the scene base $4D54."
+   "text": "Scene pointer 011: $8D5E as loaded, $855E once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $52B2, the offset plus the scene base $4D54."
   },
   {
    "address": 19887,
    "type": "line",
-   "text": "Scene pointer 012: $85D7, bit 15 set: a picture, at $532B, the offset plus the scene base $4D54."
+   "text": "Scene pointer 012: $8DD7 as loaded, $85D7 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $532B, the offset plus the scene base $4D54."
   },
   {
    "address": 19889,
    "type": "line",
-   "text": "Scene pointer 013: $8628, bit 15 set: a picture, at $537C, the offset plus the scene base $4D54."
+   "text": "Scene pointer 013: $8E28 as loaded, $8628 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $537C, the offset plus the scene base $4D54."
   },
   {
    "address": 19891,
    "type": "line",
-   "text": "Scene pointer 014: $8679, bit 15 set: a picture, at $53CD, the offset plus the scene base $4D54."
+   "text": "Scene pointer 014: $8E79 as loaded, $8679 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $53CD, the offset plus the scene base $4D54."
   },
   {
    "address": 19893,
    "type": "line",
-   "text": "Scene pointer 015: $86CA, bit 15 set: a picture, at $541E, the offset plus the scene base $4D54."
+   "text": "Scene pointer 015: $8ECA as loaded, $86CA once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $541E, the offset plus the scene base $4D54."
   },
   {
    "address": 19895,
    "type": "line",
-   "text": "Scene pointer 016: $86F3, bit 15 set: a picture, at $5447, the offset plus the scene base $4D54."
+   "text": "Scene pointer 016: $8EF3 as loaded, $86F3 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5447, the offset plus the scene base $4D54."
   },
   {
    "address": 19897,
    "type": "line",
-   "text": "Scene pointer 017: $871C, bit 15 set: a picture, at $5470, the offset plus the scene base $4D54."
+   "text": "Scene pointer 017: $8F1C as loaded, $871C once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5470, the offset plus the scene base $4D54."
   },
   {
    "address": 19899,
    "type": "line",
-   "text": "Scene pointer 018: $876D, bit 15 set: a picture, at $54C1, the offset plus the scene base $4D54."
+   "text": "Scene pointer 018: $8F6D as loaded, $876D once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $54C1, the offset plus the scene base $4D54."
   },
   {
    "address": 19901,
    "type": "line",
-   "text": "Scene pointer 019: $8782, bit 15 set: a picture, at $54D6, the offset plus the scene base $4D54."
+   "text": "Scene pointer 019: $8F82 as loaded, $8782 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $54D6, the offset plus the scene base $4D54."
   },
   {
    "address": 19903,
    "type": "line",
-   "text": "Scene pointer 020: $8797, bit 15 set: a picture, at $54EB, the offset plus the scene base $4D54."
+   "text": "Scene pointer 020: $8F97 as loaded, $8797 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $54EB, the offset plus the scene base $4D54."
   },
   {
    "address": 19905,
    "type": "line",
-   "text": "Scene pointer 021: $87C0, bit 15 set: a picture, at $5514, the offset plus the scene base $4D54."
+   "text": "Scene pointer 021: $8FC0 as loaded, $87C0 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5514, the offset plus the scene base $4D54."
   },
   {
    "address": 19907,
    "type": "line",
-   "text": "Scene pointer 022: $87E9, bit 15 set: a picture, at $553D, the offset plus the scene base $4D54."
+   "text": "Scene pointer 022: $8FE9 as loaded, $87E9 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $553D, the offset plus the scene base $4D54."
   },
   {
    "address": 19909,
    "type": "line",
-   "text": "Scene pointer 023: $8812, bit 15 set: a picture, at $5566, the offset plus the scene base $4D54."
+   "text": "Scene pointer 023: $9012 as loaded, $8812 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5566, the offset plus the scene base $4D54."
   },
   {
    "address": 19911,
    "type": "line",
-   "text": "Scene pointer 024: $8827, bit 15 set: a picture, at $557B, the offset plus the scene base $4D54."
+   "text": "Scene pointer 024: $9027 as loaded, $8827 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $557B, the offset plus the scene base $4D54."
   },
   {
    "address": 19913,
    "type": "line",
-   "text": "Scene pointer 025: $883C, bit 15 set: a picture, at $5590, the offset plus the scene base $4D54."
+   "text": "Scene pointer 025: $903C as loaded, $883C once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5590, the offset plus the scene base $4D54."
   },
   {
    "address": 19915,
    "type": "line",
-   "text": "Scene pointer 026: $8865, bit 15 set: a picture, at $55B9, the offset plus the scene base $4D54."
+   "text": "Scene pointer 026: $9065 as loaded, $8865 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $55B9, the offset plus the scene base $4D54."
   },
   {
    "address": 19917,
    "type": "line",
-   "text": "Scene pointer 027: $887A, bit 15 set: a picture, at $55CE, the offset plus the scene base $4D54."
+   "text": "Scene pointer 027: $907A as loaded, $887A once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $55CE, the offset plus the scene base $4D54."
   },
   {
    "address": 19919,
    "type": "line",
-   "text": "Scene pointer 028: $888F, bit 15 set: a picture, at $55E3, the offset plus the scene base $4D54."
+   "text": "Scene pointer 028: $908F as loaded, $888F once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $55E3, the offset plus the scene base $4D54."
   },
   {
    "address": 19921,
    "type": "line",
-   "text": "Scene pointer 029: $88A4, bit 15 set: a picture, at $55F8, the offset plus the scene base $4D54."
+   "text": "Scene pointer 029: $90A4 as loaded, $88A4 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $55F8, the offset plus the scene base $4D54."
   },
   {
    "address": 19923,
    "type": "line",
-   "text": "Scene pointer 030: $88B9, bit 15 set: a picture, at $560D, the offset plus the scene base $4D54."
+   "text": "Scene pointer 030: $90B9 as loaded, $88B9 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $560D, the offset plus the scene base $4D54."
   },
   {
    "address": 19925,
    "type": "line",
-   "text": "Scene pointer 031: $88CE, bit 15 set: a picture, at $5622, the offset plus the scene base $4D54."
+   "text": "Scene pointer 031: $90CE as loaded, $88CE once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5622, the offset plus the scene base $4D54."
   },
   {
    "address": 19927,
    "type": "line",
-   "text": "Scene pointer 032: $88E3, bit 15 set: a picture, at $5637, the offset plus the scene base $4D54."
+   "text": "Scene pointer 032: $90E3 as loaded, $88E3 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5637, the offset plus the scene base $4D54."
   },
   {
    "address": 19929,
    "type": "line",
-   "text": "Scene pointer 033: $890C, bit 15 set: a picture, at $5660, the offset plus the scene base $4D54."
+   "text": "Scene pointer 033: $910C as loaded, $890C once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5660, the offset plus the scene base $4D54."
   },
   {
    "address": 19931,
    "type": "line",
-   "text": "Scene pointer 034: $0971, bit 15 clear: a composite scene, at $56C5, the offset plus the scene base $4D54."
+   "text": "Scene pointer 034: $1171 as loaded, $0971 once the relocation at the start of play has taken $0800 off it; bit 15 clear: a composite scene, at $56C5, the offset plus the scene base $4D54."
   },
   {
    "address": 19933,
    "type": "line",
-   "text": "Scene pointer 035: $8972, bit 15 set: a picture, at $56C6, the offset plus the scene base $4D54."
+   "text": "Scene pointer 035: $9172 as loaded, $8972 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $56C6, the offset plus the scene base $4D54."
   },
   {
    "address": 19935,
    "type": "line",
-   "text": "Scene pointer 036: $89C3, bit 15 set: a picture, at $5717, the offset plus the scene base $4D54."
+   "text": "Scene pointer 036: $91C3 as loaded, $89C3 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5717, the offset plus the scene base $4D54."
   },
   {
    "address": 19937,
    "type": "line",
-   "text": "Scene pointer 037: $8A14, bit 15 set: a picture, at $5768, the offset plus the scene base $4D54."
+   "text": "Scene pointer 037: $9214 as loaded, $8A14 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5768, the offset plus the scene base $4D54."
   },
   {
    "address": 19939,
    "type": "line",
-   "text": "Scene pointer 038: $8AB5, bit 15 set: a picture, at $5809, the offset plus the scene base $4D54."
+   "text": "Scene pointer 038: $92B5 as loaded, $8AB5 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5809, the offset plus the scene base $4D54."
   },
   {
    "address": 19941,
    "type": "line",
-   "text": "Scene pointer 039: $8B10, bit 15 set: a picture, at $5864, the offset plus the scene base $4D54."
+   "text": "Scene pointer 039: $9310 as loaded, $8B10 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5864, the offset plus the scene base $4D54."
   },
   {
    "address": 19943,
    "type": "line",
-   "text": "Scene pointer 040: $8C29, bit 15 set: a picture, at $597D, the offset plus the scene base $4D54."
+   "text": "Scene pointer 040: $9429 as loaded, $8C29 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $597D, the offset plus the scene base $4D54."
   },
   {
    "address": 19945,
    "type": "line",
-   "text": "Scene pointer 041: $8D42, bit 15 set: a picture, at $5A96, the offset plus the scene base $4D54."
+   "text": "Scene pointer 041: $9542 as loaded, $8D42 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5A96, the offset plus the scene base $4D54."
   },
   {
    "address": 19947,
    "type": "line",
-   "text": "Scene pointer 042: $8E5B, bit 15 set: a picture, at $5BAF, the offset plus the scene base $4D54."
+   "text": "Scene pointer 042: $965B as loaded, $8E5B once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5BAF, the offset plus the scene base $4D54."
   },
   {
    "address": 19949,
    "type": "line",
-   "text": "Scene pointer 043: $8F74, bit 15 set: a picture, at $5CC8, the offset plus the scene base $4D54."
+   "text": "Scene pointer 043: $9774 as loaded, $8F74 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5CC8, the offset plus the scene base $4D54."
   },
   {
    "address": 19951,
    "type": "line",
-   "text": "Scene pointer 044: $8F93, bit 15 set: a picture, at $5CE7, the offset plus the scene base $4D54."
+   "text": "Scene pointer 044: $9793 as loaded, $8F93 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5CE7, the offset plus the scene base $4D54."
   },
   {
    "address": 19953,
    "type": "line",
-   "text": "Scene pointer 045: $8FB2, bit 15 set: a picture, at $5D06, the offset plus the scene base $4D54."
+   "text": "Scene pointer 045: $97B2 as loaded, $8FB2 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5D06, the offset plus the scene base $4D54."
   },
   {
    "address": 19955,
    "type": "line",
-   "text": "Scene pointer 046: $8FD1, bit 15 set: a picture, at $5D25, the offset plus the scene base $4D54."
+   "text": "Scene pointer 046: $97D1 as loaded, $8FD1 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5D25, the offset plus the scene base $4D54."
   },
   {
    "address": 19957,
    "type": "line",
-   "text": "Scene pointer 047: $8FFA, bit 15 set: a picture, at $5D4E, the offset plus the scene base $4D54."
+   "text": "Scene pointer 047: $97FA as loaded, $8FFA once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5D4E, the offset plus the scene base $4D54."
   },
   {
    "address": 19959,
    "type": "line",
-   "text": "Scene pointer 048: $904B, bit 15 set: a picture, at $5D9F, the offset plus the scene base $4D54."
+   "text": "Scene pointer 048: $984B as loaded, $904B once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5D9F, the offset plus the scene base $4D54."
   },
   {
    "address": 19961,
    "type": "line",
-   "text": "Scene pointer 049: $909C, bit 15 set: a picture, at $5DF0, the offset plus the scene base $4D54."
+   "text": "Scene pointer 049: $989C as loaded, $909C once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5DF0, the offset plus the scene base $4D54."
   },
   {
    "address": 19963,
    "type": "line",
-   "text": "Scene pointer 050: $90C5, bit 15 set: a picture, at $5E19, the offset plus the scene base $4D54."
+   "text": "Scene pointer 050: $98C5 as loaded, $90C5 once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5E19, the offset plus the scene base $4D54."
   },
   {
    "address": 19965,
    "type": "line",
-   "text": "Scene pointer 051: $90EE, bit 15 set: a picture, at $5E42, the offset plus the scene base $4D54."
+   "text": "Scene pointer 051: $98EE as loaded, $90EE once the relocation at the start of play has taken $0800 off it; bit 15 set: a picture, at $5E42, the offset plus the scene base $4D54."
   },
   {
    "address": 19967,
    "type": "line",
-   "text": "Scene pointer 052: $912B, bit 15 set: a picture, at $5E7F, the offset plus the scene base $4D54."
+   "text": "Scene pointer 052: only its low byte, $2B, is in this load; its high byte, at $4E00, comes with the play load, which writes over this one from $4E00 on (here $4E00 is DrawTitleCard's first byte). In play it is $912B, bit 15 set: a picture, at $5E7F, the offset plus the scene base $4D54."
   },
   {
    "address": 19968,
