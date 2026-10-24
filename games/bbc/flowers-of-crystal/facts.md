@@ -169,10 +169,10 @@ lines 1-6, 32220 and 32225, selects Mode 7 and runs the game
 - `River` and `Danger Area` are refused as places (`choose_place`).
 - Each arrival at the Centre gives a new weather report (`PROCw`), one of
   six forecasts with equal chances, two for each of sun, snow and rain;
-  `PROChaz` then rejects the two hazards the forecast rules out, so each
-  of a journey's hazards is one of seven with equal chances: green fog,
-  the forecast weather, Fright Freak, Blids, Pouncer, Grubble's Grabbers
-  or a scene, never the same one twice on one journey.
+  `PROChaz` then rejects the two kinds of weather the forecast did not
+  give, so each of a journey's hazards is one of seven with equal
+  chances: green fog, the forecast weather, Fright Freak, Blids, Pouncer,
+  Grubble's Grabbers or a scene, never the same one twice on one journey.
 - The hazards' outcomes are in `hazard_fog` to `hazard_grabbers`: each
   offers two choices, and the equipment decides most of them. The
   `Some of your belongings` messages of the Fright Freak, the Pouncer and
