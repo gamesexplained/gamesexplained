@@ -58,3 +58,15 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - The tune player's bytes panel needed each note's offset into its tune:
   `reference/tunes.js` logs the tune's address at $0D00 and each note's
   at $0D49.
+
+## 24 October 2026, sound and a scrubber for the demo
+
+- Aaron asked for the demo widget's sound, the CRT switch and a scrubber
+  over its flips. The first round is 571 flips: flip 572 shows the
+  credits page flip 1 showed, and the second round runs 518 flips, since
+  the fight's random numbers carry on.
+- Run in Apple2TS from the title's snapshot with its sound recorded, the
+  round made 16,141 clicks, as the 6502 run did, at the same spacings
+  within every flip; only the first click after a flip, in 52 flips,
+  came 4 cycles apart, and the flips came later on the IIe, which waits
+  for the vertical blank (`work/verify/demo_sound_live.py`).
