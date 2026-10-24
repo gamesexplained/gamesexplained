@@ -25,9 +25,6 @@ Next: Review Painted scenery against the original collision surfaces before exte
   side of it. Hearing the tune on a real C64, or measuring a recording
   of one, would say where this game's setting lands on the chips it
   shipped with.
-- How an enemy was once hit. The kill code and the fire sprite in
-  `switch_check` survive, but no code that moves that sprite along has
-  been found (`facts.md`, "Enemies that could be killed").
 
 ## Resolved on the way to Gold, with evidence
 
@@ -64,15 +61,21 @@ Next: Review Painted scenery against the original collision surfaces before exte
 
 ## Still to establish (open, not absent)
 
-- What `$1000`-`$1FFF` held: not sprite data (`work/render_1000.py`
-  renders it as multicolour sprites and it is visual noise), but the
-  64-byte periodicity is real and unexplained.
-- What `$4B00`-`$50FD` and `$6BCD`-`$6FFD` held: `$4A90`-`$4AFF`, right
-  after `path_scripts`, is shaped exactly like more of them (direction
-  bytes ended by `$FF`) but no level record points at it; `$4B00` on no
-  longer fits that pattern and nothing narrower was found.
-- What the `(ANTISOFT)` watermark in the rewritten BASIC stub denotes.
-- Which of the manual's ghouls, zombies, ghosts and bats is which shape.
+- What `$1000`-`$1FFF` and `$6BCD`-`$6FFD` held: most likely RAM nothing
+  had written to, saved with the program (copies of one pattern with
+  scattered bit flips; `facts.md`). Not provable from the image alone.
+- What the `$00`-`$03` runs in `$4B00`-`$4DFF` mean, beside the runs that
+  look like saved colour RAM; and where the unused tile set at
+  `$4E00`-`$50FD` came from.
+- Why `$4A90`-`$4AEA`, a 90-step path that drifts upward, was left unused.
+- Whether `(ANTISOFT)` is the cracking group ASI (Antisoft Inc.) named on
+  CSDb: the CSDb release and group pages need reading
+  (<https://csdb.dk/release/?id=91658>).
+- Which of the crawling and hunched enemies, if any, are the manual's
+  ghouls (the ghost, zombies and bats are matched by eye; `discoveries.html`).
+  The inlay's OCR text on the Internet Archive may tie names to screens.
+- How the shot was meant to hit: `joy_move` `$C700` moves it, but nothing
+  links a shot's collision to `unused_shot_hit` (`facts.md`).
 
 ## Working notes
 

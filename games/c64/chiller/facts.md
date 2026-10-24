@@ -9,7 +9,7 @@ from reading the code in the snapshot named in `orientation.md`.
 
 No build identifier was found in the image: the string sweep
 (`work/sweep_strings.py`) turned up no version or date text. The loader's
-`(ANTISOFT)` mark is a third party's (`orientation.md`). This copy is the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
+`(ANTISOFT)` mark is a third party's (`orientation.md`). A CSDb page found by web search (24 October 2026, <https://csdb.dk/release/?id=91658>) mentions ASI, "Antisoft Inc.", a C64 cracking group said to have joined 1001 Crew at the end of 1985, so the mark is most likely a cracker's; CSDb could not be opened from this session to confirm. This copy is the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
 
 ## Memory layout
 
@@ -483,8 +483,18 @@ start) executed or read it; each is described in `symbols.json`.
   gravity, framed for his facing (`$4508`), with a sound on voice 3;
   every screen has gravity. `sprite1_hit_scenery` `$C4FB` switches sprite 1
   off when it hits the scenery, and waits on `$45FE`, which is 0. Together
-  they look like the start of a shot, but no code found moves sprite 1
-  along (inferred, not run).
+  they look like the start of a shot. The mover survives: `joy_move`
+  `$C700` steps sprite 1 a pixel in the direction of its frame
+  (`$07F9` - `$E0`, the value `switch_check` gives it from `$4508`), and
+  `main_loop` calls it at `$CA0F` when `player_step` returns A equal to
+  `$CA07` (8, from `$45FD` via `title_start`), clearing the pass count
+  `$CF02` as it does. `player_step` ends in `drain_step`, whose A is the
+  in-air flag or a direction, so the call never happens. *Live* (the port
+  on the Play page, 24 October 2026): with `$45FF` = 0 and the stick up,
+  sprite 1 appeared on the boy; `joy_move` ran 0 times in 4,700 passes.
+  With `player_step` made to return 8 every eighth call, sprite 1 flew in
+  a straight line to the screen edge (x 134 to 8) and stayed there. No
+  code links the shot touching an enemy to `unused_shot_hit`.
 - **Screen-editor tools.** `unused_editor_tools` `$5198` (a box drawer, a
   character plotter) and `unused_screen_tools` `$C038` (fills, a glyph
   mirror) call only each other.
@@ -501,17 +511,34 @@ start) executed or read it; each is described in `symbols.json`.
   established. Looked into further for Gold:
   - `$1000`-`$1FFF`: not sprite data. Read as 64-byte multicolour sprites
     (`work/render_1000.py`, printed and checked by eye), every block is
-    visual noise, no recognisable shape; the "near-identical rows"
-    description holds (64-byte periods differ by only a few bytes) but
-    what repeats at that period is not established.
+    visual noise. Compared byte for byte (24 October 2026), it is four
+    copies of one 1 KB pattern: 83 % of bytes match 1 KB on, 75 % 256
+    bytes on, 5 % 64 bytes on, and the copies differ by scattered single
+    bits. That is the look of RAM nothing has written to, so it is most
+    likely the developers' machine's memory saved with the program
+    (inferred). `$6BCD`-`$6FFD` has the same look at a 256-byte period
+    (77 %).
   - `$4A90`-`$4AFF`: shaped exactly like `path_scripts` (`$4A00`-`$4A8F`,
     immediately before it) — bytes `$00`-`$03` ended by `$FF`, several
     scripts' worth back to back — but no level record's `+$3B`-`+$44`
-    names any address in it. Very likely more enemy paths that no
-    screen's enemy table points at, cut along with a design that did not
-    ship. `$4B00` on no longer fits that pattern.
-  - `$4B00`-`$50FD`, `$6BCD`-`$6FFD`: no pattern as clear as the above was
-    found; still open.
+    names any address in it. Decoded (24 October 2026) it is one script
+    of 90 steps ended by `$FF` at `$4AEA`: right 5, a tight loop of
+    up-right-down-left runs of 2 and 3, right 5, up 2, left 3, a jitter,
+    down 15, up 19. Each step is 8 pixels (`path_step` reads a byte every
+    8th move). Unlike the shipped scripts it ends 6 steps right and 8 up
+    of where it starts, so an enemy looping it would drift off the top.
+    `$4AEA`-`$4AEF` is `$FF` six times; `$4AF0` on is direction bytes
+    again with no `$FF` before `$4B00`.
+  - `$4B00`-`$4DFF`: 768 bytes, all but 14 either `$F0`-`$FF` (357) or
+    `$00`-`$03` (397), in runs of 8 to 32, mostly in equal pairs. `$F0`-`$FF`
+    is what colour RAM reads back as (its top four bits read as 1), so the
+    `$F` runs look like colours saved from colour RAM; what the `$00`-`$03`
+    runs mean is not established.
+  - `$4E00`-`$50FD`: character graphics. Drawn as 8x8 glyphs they are
+    tiles (platform edges, arrows, fences, solid blocks). Only 3 of the 83
+    non-blank glyphs match any glyph of the five outward screens' character
+    sets (live, 24 October 2026), so they are a tile set the game does not
+    use.
 
 The RAM under the I/O chips (`$D000`-`$DFFF`) and under the KERNAL above
 the stores (`$F000`-`$FFFF`) is loaded and never read; `game.json`
