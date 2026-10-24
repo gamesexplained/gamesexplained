@@ -1,10 +1,12 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 33.3 % of the play snapshot's ledger (2026-10-22).
+Tier: Bronze (2026-10-08). Coverage 42.4 % of the play snapshot's ledger (2026-10-24).
+
+Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), cheat_flag in cheats.md, nmi_frame, the $95A4 raster handler, the unnamed gap $9150-$9179. Player movement ($8603-$91E4) is named as of 2026-10-24.
 
 For Silver:
 
-- 50-coverage: the burn-down from 33.3 %. Named and commented on
+- 50-coverage: the burn-down from 42.4 % (was 33.3 %). Named and commented on
   2026-10-22: `stage_load`, `stage_start`, `sound_frame`, the main loop
   (`main_loop`, `round_start`, `stage_begin`, `wait_nmi`, `wait_frame`),
   and the two panel interrupts (`irq_panel`, `irq_panel_on`). Also named
