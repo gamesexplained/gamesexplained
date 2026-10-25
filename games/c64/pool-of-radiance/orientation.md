@@ -91,6 +91,7 @@ play snapshot is beside it.
 | `title` | `INIT` (module 3), `MDRIVER`, `CHARSET`, `TITLEPG`, `SPR.TP`, `MUSIC` | `$0800`, `$BA00`, `$6500`, `$6F00`, `$C000`, `$C400` | step 3 above; `title_play` |
 | `tables` | `SOUNDFX`, `ITEMS`, `ITEMNAMES`, `DUNGEON2`, loaded by `INIT` after the code word | `$BA00`, `$7B00`, `$6F00`, `$7A00` | entry: the stop into `GEN`; play: `phlan_party` |
 | `gen` | `GEN` (module 0) | `$0800` | after the code word; `party_menu` |
+| `icons` | `SPELLN64`, loaded by `GEN`'s CREATE NEW CHARACTER; `CHARPIC00` and `SPELLE64`, loaded by its own first lines | `$AF00`, `$9900`, `$A700` | create a character from `party_menu` (side 3 in the drive) and answer YES to SAVE? and KEEP to the portrait: entry, a stop at `$AF3A` after its two loads; play: `icon_editor`, the menu ICON: PARTS COLOR SIZE EXIT |
 | `view` | `GDRIVE01`, loaded by `DUNGEON` as it starts | `$C000` | entry: the stop into `DUNGEON`; play: `phlan_party` |
 | `dungeon` | `DUNGEON` (module 1) | `$0800` | BEGIN ADVENTURING; `phlan_party` |
 | `camp` | `CAMP` (module 9) | `$0800` | ENCAMP from the Adventure Menu; `camp` |
@@ -131,6 +132,9 @@ every file the game loads):
 | `ITEMNAMES` | tables | `$6F00`-`$797B` | 2684 |
 | `DUNGEON2` | tables | `$7A00`-`$7AB8` | 185 |
 | `GEN` | gen | `$0800`-`$2B7A` | 9083 |
+| `SPELLN64` | icons | `$AF00`-`$B655` | 1878 |
+| `CHARPIC00` | icons | `$9900`-`$A0ED` | 2030 |
+| `SPELLE64` | icons | `$A700`-`$AE59` | 1882 |
 | `GDRIVE01` | view | `$C000`-`$C9FF` | 2560 |
 | `DUNGEON` | dungeon | `$0800`-`$2B7F` | 9088 |
 | `CAMP` | camp | `$0800`-`$2B7F` | 9088 |
