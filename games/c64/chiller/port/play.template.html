@@ -50,6 +50,12 @@ th{font-weight:700;color:var(--ink-soft)}
 #pl-layers{position:absolute;inset:0;background:#05060a;perspective:1100px;overflow:hidden;line-height:1.2}
 #pl-layers[hidden]{display:none}
 #pl-layers .stage{position:absolute;inset:10% 27% 24% 23%;transform-style:preserve-3d}
+#pl-layers .ctl{position:absolute;top:8px;right:10px;display:flex;gap:12px;align-items:center;font:11px var(--fm);color:#cfd3e6;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:4px}
+#pl-layers .ctl label{display:flex;gap:5px;align-items:center}
+#pl-layers .ctl input{width:80px}
+#pl-layers .ctl button{font:inherit;color:inherit;background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:3px;padding:1px 6px;cursor:pointer}
+#pl-layers{cursor:grab;touch-action:none}
+#pl-layers.drag{cursor:grabbing}
 #pl-layers .key{position:absolute;left:12px;right:12px;bottom:8px;font:11px/1.45 var(--fm);color:#cfd3e6;margin:0}
 #pl-layers .pane{position:absolute;inset:0;transform-style:preserve-3d}
 #pl-layers .pane.off canvas{outline-style:dashed;outline-color:rgba(255,255,255,.18)}
@@ -130,7 +136,7 @@ section table{margin:6px 0 18px}
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
       <canvas id="pl-fx" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The game drawn another way, as the View row sets"></canvas>
-      <div id="pl-layers" hidden role="img" aria-label="The video chip's layers as a stack of ten panes, each labelled"><div class="stage"></div><p class="key">Back to front: <b>BG</b> the border and background colour, <b>CH</b> the characters (the scenery and the score), then a pane for each sprite, <b>S0</b> to <b>S7</b>. S0 is the one you steer; S2 to S6 are the enemies, each on its path script. A sprite the game puts behind the scenery slides back behind CH; a dashed pane is a sprite switched off.</p></div>
+      <div id="pl-layers" hidden role="group" aria-label="The video chip's layers as a stack of ten panes, each labelled"><div class="stage"></div><div class="ctl"><label>Spread <input type="range" min="8" max="100" value="40" data-l="gap"></label><label>Zoom <input type="range" min="-900" max="300" value="-420" data-l="zoom"></label><button type="button" data-l="reset">Reset</button></div><p class="key">Drag to turn the stack. Back to front: <b>BG</b> the border and background colour, <b>CH</b> the characters (the scenery and the score), then a pane for each sprite, <b>S0</b> to <b>S7</b>. S0 is the one you steer; S2 to S6 are the enemies, each on its path script. A sprite the game puts behind the scenery slides back behind CH; a dashed pane is a sprite switched off.</p></div>
       <div class="pl-race" id="pl-race" hidden><span id="pl-race-msg"></span> <button type="button" id="pl-race-go">👻 Race your ghost</button> <button type="button" id="pl-race-no" aria-label="No thanks">✕</button></div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
@@ -214,7 +220,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, and a sprite whose priority bit is set slides back behind the scenery's pane), and the screen dark but for the boy's light.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, a sprite whose priority bit is set sliding back behind the scenery's pane; drag to turn the stack, and the sliders spread it and bring it nearer), and the screen dark but for the boy's light.</p>
   </div>
 </section>
 <section id="port">
@@ -336,7 +342,28 @@ const fx = (function () {
   // sprite the game puts behind the scenery (priority bit $D01B set) slides back behind the
   // characters' pane rather than changing places; a sprite switched off ($D015 clear) keeps its
   // empty pane. The stack leans as you steer.
-  const GAP = 40, Z_BG = -7 * GAP, Z_CH = -3 * GAP;
+  // the stack's turn, tilt, spread and distance: dragging turns and tilts it, the sliders
+  // spread the panes and bring them nearer, and Reset puts all four back
+  const VIEW0 = { yaw: -48, pitch: 10, gap: 40, zoom: -420 }, view = { ...VIEW0 };
+  const ctl = lay.querySelector('.ctl'), gapIn = ctl.querySelector('[data-l="gap"]'), zoomIn = ctl.querySelector('[data-l="zoom"]');
+  const redraw = () => { if (rt && mode === 'layers') layers(); };
+  gapIn.addEventListener('input', () => { view.gap = +gapIn.value; redraw(); });
+  zoomIn.addEventListener('input', () => { view.zoom = +zoomIn.value; redraw(); });
+  ctl.querySelector('[data-l="reset"]').addEventListener('click', () => { Object.assign(view, VIEW0); gapIn.value = view.gap; zoomIn.value = view.zoom; redraw(); });
+  let drag = null;
+  lay.addEventListener('pointerdown', e => {
+    if (e.target.closest('.ctl')) return;
+    drag = { x: e.clientX, y: e.clientY, yaw: view.yaw, pitch: view.pitch }; lay.setPointerCapture(e.pointerId); lay.classList.add('drag');
+  });
+  lay.addEventListener('pointermove', e => {
+    if (!drag) return;
+    view.yaw = Math.max(-89, Math.min(89, drag.yaw + (e.clientX - drag.x) * 0.3));
+    view.pitch = Math.max(-80, Math.min(80, drag.pitch - (e.clientY - drag.y) * 0.3));
+    redraw();
+  });
+  const drop = () => { if (!drag) return; drag = null; lay.classList.remove('drag'); screen.focus(); };
+  lay.addEventListener('pointerup', drop); lay.addEventListener('pointercancel', drop);
+  lay.addEventListener('wheel', e => { e.preventDefault(); view.zoom = Math.max(-900, Math.min(300, view.zoom - e.deltaY * 0.5)); zoomIn.value = view.zoom; redraw(); }, { passive: false });
   const panes = [], sz = new Array(8).fill(null);
   function pane(i) {
     if (!panes[i]) {
@@ -370,7 +397,8 @@ const fx = (function () {
     background();
     const st = stick(), ease = (a, b, k) => a + (b - a) * k;
     lean = ease(lean, st.r - st.l, 0.08); lift = ease(lift, st.u ? 1 : 0, 0.1);
-    stage.style.transform = 'translateZ(-420px) rotateX(' + (10 - 8 * lift).toFixed(2) + 'deg) rotateY(' + (-48 + 12 * lean).toFixed(2) + 'deg)';
+    const GAP = view.gap, Z_BG = -7 * GAP, Z_CH = -3 * GAP;
+    stage.style.transform = 'translateZ(' + view.zoom + 'px) rotateX(' + (view.pitch - 8 * lift).toFixed(2) + 'deg) rotateY(' + (view.yaw + 12 * lean).toFixed(2) + 'deg)';
     const P0 = pane(0), P1 = pane(1);
     fill(P0, bg, () => true, i => inside(i) ? b0 : bc);
     P0.lab.textContent = 'BG'; P0.el.style.transform = 'translateZ(' + Z_BG + 'px)';
@@ -384,7 +412,7 @@ const fx = (function () {
       else P.ctx.clearRect(0, 0, 384, 272);
       // behind: packed between the background and the characters; in front: spread out before them
       const want = behind ? Z_BG + (1 + n * 0.4) * GAP : Z_CH + (2 + n) * GAP;
-      sz[n] = sz[n] === null ? want : ease(sz[n], want, 0.15);
+      sz[n] = sz[n] === null || drag || Math.abs(sz[n] - want) > 6 * GAP ? want : ease(sz[n], want, 0.15);
       P.el.style.transform = 'translateZ(' + sz[n].toFixed(1) + 'px)';
       P.el.classList.toggle('off', !on);
       P.lab.textContent = 'S' + n + (on ? (behind ? ' behind' : '') : ' off');
