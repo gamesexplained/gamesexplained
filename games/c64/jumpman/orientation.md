@@ -33,7 +33,7 @@ The disk contains 32 level files, `PLF01`–`PLF24`, `PLF2A`–`PLF2C`, and `PLF
 
 ## Parts and capture route
 
-The standard `parts/` layout records one resident/startup image and 32 level programs. Each level uses `over: resident` and owns $3000–$3FFF: the loader writes its file to $3800–$3FFF, then copies it to the active $3000–$37FF. Coverage counts the active copy once. The resident map owns everything outside that changing workspace. Its original five sprite slots at $3000–$313F are documented in the [resident facts](source-resident.html#facts), but are not counted again. This changes aggregate coverage from the earlier 90,583 bytes to 90,263, still 100% explained.
+The standard `parts/` layout records one resident/startup image and 32 level programs. Each level uses `over: resident` and owns $3000–$3FFF: the loader writes its file to $3800–$3FFF, then copies it to the active $3000–$37FF. Coverage counts the active copy once. The resident map owns everything outside that changing workspace. Its original five sprite slots at $3000–$313F are documented in the resident facts (`parts/resident/facts.md`), but are not counted again. This changes aggregate coverage from the earlier 90,583 bytes to 90,263, still 100% explained.
 
 Reproduce each controlled level capture as follows:
 
