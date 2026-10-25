@@ -132,6 +132,7 @@ every file the game loads):
 | `ITEMS` | tables | `$7B00`-`$82FF` | 2048 |
 | `ITEMNAMES` | tables | `$6F00`-`$797B` | 2684 |
 | `DUNGEON2` | tables | `$7A00`-`$7AB8` | 185 |
+| `COMBAT3` | tables | `$7AC0`-`$7AFE` | 63 |
 | `GEN` | gen | `$0800`-`$2B7A` | 9083 |
 | `SPELLN64` | icons | `$AF00`-`$B655` | 1878 |
 | `CHARPIC00` | icons | `$9900`-`$A0ED` | 2030 |
