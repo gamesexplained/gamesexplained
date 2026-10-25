@@ -20,7 +20,7 @@
     if (!root || !globalThis.C64Sid) return;
     const arr = (G, a, n) => Array.from(G.ram.subarray(a, a + n));
     const data = { tunes: [
-      { notes: arr(I, 0x8500, 0xA00), state: arr(I, 0xC600, 0x40) },   // copied to $E000 by $8000
+      { notes: arr(I, 0xE000, 0xA00), state: arr(I, 0xC600, 0x40) },   // as $8000 copied them from $8500; the listing holds $8500 empty
       { notes: arr(P, 0xE000, 0x2000), state: arr(P, 0x7A18, 0x28) },
     ] };
     C64Sid.mount(root, {

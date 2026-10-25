@@ -30,3 +30,85 @@ The kit gained a layout for a game that loads in parts, and this game was the ca
 ## Typed data no label reached (22 October 2026)
 
 The ledger began counting typed data that no label reaches, and the Central Park listing lacked 206 such bytes in nine stretches (#485). Comments now describe them: three runs of zero padding, an `rti` that both NMI vectors point at, three unreached instructions left between routines, a one-record scene list that `CentralParkDrawUiImageRecord` hands the renderer, and the NMI and IRQ vectors at `$FFFA` and `$FFFE`, now typed as words. A keyboard table and a raster wait at `$FFA9–$FFF9`, which no instruction in the load reads or runs, and the reset vector, which the 6510 reads only from ROM, are left out of coverage in `part.json`. The new bytes came from a capture of side A of a copy cracked by The Force with Ikari+Talent's trainer, because the contributor's disks were not to hand; it agreed with every byte the listing already held but one, and the rebuild kept the listing's own bytes. Coverage stays 99.6 %.
+
+## 24 October 2026 — every part, to Silver
+
+The run that took the game from one level to all sixteen parts, on
+claude-opus-5-5[1m].
+
+**The images.** The contributor's disks were still not to hand, so the
+whole game came from The Force's crack with Ikari+Talent's trainer, both
+sides, from archive.org (`orientation.md`). X-Rated's crack was fetched
+to compare bytes; it lacks the trainer's three patched instructions,
+which is how they were recognised as the crackers'.
+
+**Telling the engine from Central Park.** The imported map held both in
+one image. Booting twice with RAM filled with `$00` and then `$FF`
+(`work/fill_boot.py`) showed which bytes the engine's load writes, and
+watching the level loader's segment headers (`work/watchload.py`) gave
+each level file's two ranges. `work/split.py` cut the map three ways:
+the engine, Central Park's title load and its play load.
+
+**Six more levels.** Each later level is Central Park's code reassembled
+at other addresses with its own data. Walking instruction streams from
+unique anchors (`work/align.py`, `work/reloc.py`) paired almost every
+routine, and Central Park's comments were carried to the same routine in
+each level (`work/xfer/gen.py`), with operands rewritten. What differed
+(The Office's helicopter, The Basement's code copy, the Final Battle's
+lock) was written by hand. A fix to Central Park therefore reaches every
+level only after the levels are generated again, which is why the audit
+applies fixes in two stages.
+
+**The intro** is unpacked from `NINJA INTRO /I+T` and stops on `$0800`.
+Its hidden credits are in `ScanKeys` and the scroller; holding L on the
+logo in the emulator confirmed them.
+
+**Coverage** reached 100 % in all sixteen parts. The levels' generated
+templates (frames, scenes, packed sprites, walls) were the bulk of the
+comments.
+
+**Accuracy.** The run's own sample of 80 found 19 wrong; each was
+corrected along with every comment that said the same, 1,109 in all.
+The maintainer's sample, on the contributor's say-so and with a new
+seed, found 10 of 60 wrong, over the mark, so every comment was audited
+by fresh checkers one unit at a time.
+
+**The audit.** Seventeen units, 1,942 items (a template's comments
+counted once, checked through a few of its instances), covered every
+comment but the 1,428 carried over to the later levels unchanged, which
+stand with the Central Park comment they copy. Checkers found 382 items
+wrong in a detail. Two findings reached beyond their units. The first:
+the end of the engine's interrupt, `$1F52-$1F6B`, is the crack's
+trainer, not the game's; X-Rated's crack of the same disk goes from the
+clock straight to restoring `$01`. The second: a carried comment can be
+wrong on code of the same shape, when the level calls its own routine in
+place of Central Park's or loads another constant. Comparing every
+paired call's target and every paired immediate with Central Park's,
+by script, found about sixty such
+comments, which were rewritten for each level (`work/xfer/rules.py` and
+`own()` in `gen.py`), and a last unit checked the rewrites. The facts
+files were audited claim by claim: 66 of 355 were wrong in a detail.
+
+**The second sample**, seed 25956, found 1 of 60 wrong: the condition
+lists' template called the largest depth at which a picture is tested
+the smallest. The audit had found that, and the correction had gone
+only to the instances the checker was shown. Searching every member of
+every family a checker marked wrong, for the words its correction
+replaced, found 66 condition lists and eight comments in The Mansion
+and The Final Battle still wrong, and a search for each correction's
+replaced phrase across all comments found four wall counts in The
+Office. All were corrected: 2,257 comments differ from the listing the
+maintainer's first sample was drawn from.
+
+**Pages, and two mistakes the pages caught.** The title card first
+came out with the panel's lettering broken: the card's routine writes
+colour RAM only for the window, and the panel's colours come from the
+copy of colour RAM the engine keeps at `$0800`. The page's test had
+fingerprinted only the window's bitmap and screen colours, so it passed;
+a screenshot showed the fault, and the test now compares painted pixels,
+the whole screen for Central Park. The level-skip port first counted
+changed readings; the game counts readings the next scan finds
+unchanged, and the test, held on 20,000 readings against `$95AB`, said
+so. The hidden credits were first said to run for 3,210 frames, which
+was how long the live test watched them, not the length of the text:
+1,058 characters take 4,232 frames.

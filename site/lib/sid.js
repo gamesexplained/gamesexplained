@@ -12,7 +12,8 @@
 //               a period where the page passes one (below)
 //   sid         a Uint8Array(25): $D400-$D418 as the driver last wrote them
 //   playing()   true while a tune runs, false once it has ended or been stopped
-//   voice(x)    optional: plain data about voice x (0-2) for the display's rows
+//   voice(x)    optional: plain data about voice x (0-2) for the display's rows; a field named
+//               as one the player reads from the chip (freq, pw, ctrl, ad, sr, env) is ignored
 //   readback(env3, osc3, bus)  optional: called before each play() with what $D41C and $D41B
 //               read, voice 3's envelope level and the top eight bits of its waveform, and what a
 //               register the chip does not answer reads (bus, below), as the model has them at
@@ -77,14 +78,44 @@
 // 6581 voice a DC of $800 * $FF against a swing of ($FFF - $380) * $FF, about 0.64, so about 2 for
 // the three voices of a 6581; the 8580's is close to 0, and 0, the default, leaves it out.
 //
-//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
-//                                per voice
-//   C64Sid.host(options)         the sound alone, for a page with its own controls
+//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a bouncing ball a voice
+//                                (../../lib/bounce.js) or a piano roll, and a panel per voice
+//   C64Sid.host(options)         the sound alone, for a page with its own controls; with live:
+//                                true, the writes a Play tab's game makes as it runs
 //   C64Sid.engine()              the model, the bus and the frame player without a page, for
 //                                tests
 //   C64Sid.worklet(driver)       the source text host() runs in the AudioWorklet, for tests
+//   C64Sid.live                  the driver host() runs for live: true, for C64Sid.worklet in tests
+//   C64Sid.waveLevel(ctrl, pw)   how loud a voice's waveform is against its envelope, 0 to 1
 globalThis.C64Sid = (function () {
   'use strict';
+  // How loud a voice's waveform is, 0 to 1, against the level its envelope sets: none with no
+  // waveform or with the test bit holding the oscillator, and for a pulse its RMS against a
+  // square's, 2 sqrt(d (1 - d)) for a width d of the cycle, as the model's output measures it (a
+  // pulse 100 of 4096 wide is a third as loud as a square). A sweep of a pulse's width from 0 is
+  // how a driver fades a voice in (Wizball's title, voice 3).
+  function waveLevel(ctrl, pw) {
+    if (!(ctrl & 0xF0) || ctrl & 8) return 0;
+    if (!(ctrl & 0x40)) return 1;
+    const d = (pw & 0xFFF) / 4096;
+    return 2 * Math.sqrt(d * (1 - d));
+  }
+
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (globalThis.NoteBounce) return Promise.resolve(globalThis.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => globalThis.NoteBounce ? ok(globalThis.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
 
   // Everything that makes sound is inside engine(), which refers to nothing outside itself:
   // host() runs it in an AudioWorklet from its own source text, and node runs it for tests.
@@ -399,8 +430,8 @@ globalThis.C64Sid = (function () {
         const s = drv.sid, v = [];
         for (let x = 0; x < 3; x++) {
           const r = 7 * x;
-          v.push(Object.assign({ freq: s[r] | s[r + 1] << 8, pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF,
-            ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: sid.V[x].env }, drv.voice ? drv.voice(x) : null));
+          v.push(Object.assign({}, drv.voice ? drv.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
+            pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: sid.V[x].env }));
         }
         return { t, run, frame: frames, vol: s[24] & 15, playing: drv.playing(), v };
       }
@@ -429,7 +460,34 @@ globalThis.C64Sid = (function () {
       return { drv, sid, command, render };
     }
 
-    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer };
+    // ------------------------------------------------------------------ a game's writes, live
+    // createLive({ most }) is the driver for a Play tab, whose game makes its SID writes as it runs
+    // (host's live option, below). init(tune) queues tune.frames, each the writes [register, value,
+    // ...] of one call; each call plays the next. With none waiting the registers hold, and the
+    // queue is a call longer from then on, so it grows to what the page's uneven frames and the
+    // audio device's buffer need. With more than most waiting the oldest are written at once and
+    // the sound catches up. liveMost(opts) is half a second of calls: the device alone can take
+    // 100 ms at a time, and a queue shorter than the two together runs dry and overflows by turns,
+    // which is heard as music skipping (kit/lessons/2026-10-24-master-of-magic-sound.md).
+    function createLive(o) {
+      const most = Math.max(1, (o && o.most) | 0), sid = new Uint8Array(25), queue = [];
+      const d = { sid, writes: [], playing: () => true, stop() {},
+        queued: () => queue.length,
+        init(t) {
+          if (t && t.frames) for (const f of t.frames) queue.push(f);
+          while (queue.length > most) { const f = queue.shift(); queue[0] = f.concat(queue[0]); }
+        },
+        play() {
+          const f = queue.shift();
+          d.writes = f || [];
+          if (f) for (let i = 0; i + 1 < f.length; i += 2) if (f[i] < 25) sid[f[i]] = f[i + 1];
+        } };
+      return d;
+    }
+    const liveMost = (opts) => Math.ceil(0.5 * clockOf(opts) / periodOf(opts));
+
+    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer,
+      createLive, liveMost };
   }
 
   // ------------------------------------------------------------------ the sound, on a page
@@ -462,15 +520,22 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 
   // host({driver, data, gain, filter, ntsc, period, digi, onFrame}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
-  // {ctx, mode, send(command)}. onFrame(snapshot), if given, receives every driver frame when it
-  // is computed, ahead of the sound; show it once snapshot.t has reached ctx.currentTime.
+  // {ctx, mode, send(command), push(frames)}. onFrame(snapshot), if given, receives every driver
+  // frame when it is computed, ahead of the sound; show it once snapshot.t has reached
+  // ctx.currentTime.
+  // A Play tab, whose game makes its SID writes as it runs, passes live: true instead of a driver:
+  // the driver is then createLive's, and push(frames) queues the writes of each call to come,
+  // [[register, value, ...], ...], one call a frame or a period. The first push is usually all 25
+  // registers as they stand.
+  const LIVE = function (data) { return E.createLive(data); };   // in the worklet, where E is the model
   async function host(o) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) throw new Error('This browser has no Web Audio.');
     const ctx = new AC();
     ctx.resume();
     const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc, period: o.period, digi: o.digi }, post = o.onFrame || null;
-    const code = worklet(o.driver);
+    const E = engine(), data = o.live ? { most: E.liveMost(opts) } : o.data;
+    const code = worklet(o.live ? LIVE : o.driver);
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
     let node = null, local = null;
@@ -478,13 +543,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       try {
         await ctx.audioWorklet.addModule(typeof u === 'function' ? u() : u);
         node = new AudioWorkletNode(ctx, 'c64-sid', { numberOfInputs: 0, outputChannelCount: [1],
-          processorOptions: { data: o.data, opts, frames: !!post } });
+          processorOptions: { data, opts, frames: !!post } });
         if (post) node.port.onmessage = (e) => post(e.data);
         break;
       } catch (e) { node = null; }
     }
     if (!node) {                                             // no worklet: the older ScriptProcessorNode
-      local = engine().createPlayer(o.driver(o.data, globalThis.C64Cpu), ctx.sampleRate, opts);
+      local = E.createPlayer(o.live ? E.createLive(data) : o.driver(data, globalThis.C64Cpu), ctx.sampleRate, opts);
       node = ctx.createScriptProcessor(4096, 1, 1);
       node.onaudioprocess = (e) => {
         const out = e.outputBuffer.getChannelData(0);
@@ -492,8 +557,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       };
     }
     node.connect(ctx.destination);
-    return { ctx, mode: local ? 'script-processor' : 'worklet',
-      send: (c) => { if (local) local.command(c); else node.port.postMessage(c); } };
+    const send = (c) => { if (local) local.command(c); else node.port.postMessage(c); };
+    return { ctx, mode: local ? 'script-processor' : 'worklet', send,
+      push: (frames) => send({ cmd: 'start', tune: { frames } }) };
   }
 
   // ------------------------------------------------------------------ the player
@@ -519,6 +585,14 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-seek input:disabled{opacity:.45}
 .sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
+.sid-roll[hidden],.sid-stagebox[hidden],.sid-filt[hidden]{display:none}
+.sid-stagebox{position:relative}
+.sid-stage{display:block;width:100%;height:min(480px,56vw,80vh);border-radius:8px;background:#060607}
+@media (orientation:portrait){.sid-stage{height:min(72vh,150vw)}}
+.sid-stagebox:fullscreen{background:#060607}
+.sid-stagebox:fullscreen .sid-stage{height:100vh;border-radius:0}
+.sid-player .sid-full{position:absolute;right:10px;top:10px;padding:3px 9px;font-size:11.5px;background:rgba(30,30,32,.7);color:#e9e7e1;border-color:rgba(255,255,255,.18)}
+.sid-player .sid-full[hidden]{display:none}
 .sid-voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:12px}
 .sid-v{border:1px solid var(--line,#d5d3cc);border-radius:8px;padding:9px 12px 10px;background:var(--surface,#fff);min-width:0}
 .sid-vh{display:flex;align-items:center;gap:8px;font-weight:700}
@@ -565,6 +639,14 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //   onFrame optional: (frame, tune) => ..., called with each frame the reader hears, as the
   //           display shows it, for a page that draws something in step with the music (lyrics,
   //           a screen); frame counts from the tune's start, as the seek bar does
+  //   bounce  optional: false for the piano roll alone. Otherwise the player shows a bouncing
+  //           ball in its place, with a switch between the two and a full-screen button: a ball
+  //           a voice hops from note to note as the reader hears them, and rides the voice's
+  //           pitch as it bends or wavers between (NoteBounce, ../../lib/bounce.js, loaded from
+  //           beside this script unless the page has loaded it; where it cannot load, the piano
+  //           roll). The player runs the driver ahead when a tune starts, as for its length, and
+  //           takes a note where mark says one starts, and where the pitch steps to a new note
+  //           and holds
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -580,6 +662,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
     const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
+    const BOUNCE = o.bounce !== false;
     const line = (r, i) => r.k
       ? `<div class="sid-l"><span class="sid-k">${esc(r.k)}</span><span class="sid-m" data-row="${i}">-</span></div>`
       : `<div class="sid-l${r.in ? ' sid-in' : ''}${r.mono ? ' sid-m' : ''}" data-row="${i}">-</div>`;
@@ -592,12 +675,19 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         '<span class="sid-fsw"><span class="sid-k">Filter</span>' +
         FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
         '</span><span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
+      (BOUNCE ? '<span class="sid-filt" data-views role="group" aria-label="What the player shows"><span class="sid-k">View</span>' +
+        '<button type="button" data-view="ball" aria-pressed="true">Ball</button>' +
+        '<button type="button" data-view="roll" aria-pressed="false">Piano roll</button></span>' : '') +
       '<span class="sid-stat">' +
       '<span><span class="sid-k">Volume</span><span data-g="vol">-</span><span class="sid-vol">' +
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
       '<div class="sid-seek"><input type="range" min="0" max="1" step="1" value="0" disabled ' +
       'aria-label="Position in the tune"><span data-g="time">0:00.0</span></div>' +
-      '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"></canvas>' +
+      (BOUNCE ? '<div class="sid-stagebox"><canvas class="sid-stage" role="img" aria-label="A ball for each voice ' +
+        'hopping from note to note as they play"></canvas><button type="button" class="sid-full" data-full hidden>' +
+        'Full screen</button></div>' : '') +
+      '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"' +
+      (BOUNCE ? ' hidden' : '') + '></canvas>' +
       '<div class="sid-voices">' + [0, 1, 2].map((x) => `<div class="sid-v" data-voice="${x}">
         <div class="sid-vh"><i class="sid-sw" style="background:${COLORS[x]}"></i>Voice ${x + 1}
           <button type="button" data-mute="${x}" aria-pressed="false">Mute</button></div>
@@ -621,14 +711,45 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const FONT_B = getComputedStyle(root).getPropertyValue('--fb').trim() || "'Lato', sans-serif";
     let ctx = null, send = () => {}, starting = null, raf = 0, playing = -1, quietSince = 0, runs = 0;
     let queue = [], hist = [], tune = -1, dragging = false;
+    // The bouncing ball: drawn every animation frame from the last frame heard, moved on by the
+    // time since, so that it flies smoothly between the player's frames.
+    const box = BOUNCE ? $('.sid-stagebox') : null, full = BOUNCE ? $('[data-full]') : null;
+    let ball = null, view = BOUNCE ? 'ball' : 'roll', heard = null, heardAt = 0;
     // Each tune's length in frames, or null where it runs on past LONG: measured once, by running
     // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
     // gets a bar LONG long, which grows if the tune is played past it. The same run notes whether
-    // the tune ever routes a voice through the filter ($D417 bits 0-2), for the filter switch.
-    const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [];
+    // the tune ever routes a voice through the filter ($D417 bits 0-2), for the filter switch,
+    // and, for the bouncing ball, the frame and pitch of every note each voice starts, and each
+    // voice's pitch and loudness at every frame. The loudness is the envelope's, from the chip's
+    // model run alongside without sound (about 0.1 s for five minutes of music), so that a note
+    // still sounds while it is released, times what the waveform lets out (waveLevel), so that a
+    // pulse swept wider from nothing fades in.
+    const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [], scores = [];
     function length(t) {
       if (lengths[t] === undefined) {
         let n = 0, f = false;
+        const notes = [[], [], []], prev = [null, null, null];
+        const line = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1).fill(NaN)) : null;
+        const level = BOUNCE ? [0, 1, 2].map(() => new Float32Array(LONG + 1)) : null;
+        const chip = BOUNCE ? E.createSID(8000, { ntsc: o.ntsc }) : null;
+        const semis = (freq) => 12 * Math.log2(freq * HZ / C0);
+        const collect = BOUNCE ? (d, k) => {
+          const w = d.writes, s = d.sid;                     // as the player sets the chip
+          if (w) for (let i = 0; i + 1 < w.length; i += 2) chip.write(w[i], w[i + 1]);
+          chip.setRegs(s);
+          const env = chip.V.map((c) => c.env);
+          chip.skip(PERIOD);
+          for (let x = 0; x < 3; x++) {
+            const r = 7 * x;
+            const v = Object.assign({}, d.voice ? d.voice(x) : null, { freq: s[r] | s[r + 1] << 8,
+              pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] });
+            const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
+            level[x][k] = lv * waveLevel(v.ctrl, v.pw);
+            if (lv && v.freq && wave && wave !== 0x80) line[x][k] = semis(v.freq);   // noise has no pitch to show
+            if (mark(v, prev[x]) && v.freq) notes[x].push({ t: k, n: semis(v.freq) });
+            prev[x] = v;
+          }
+        } : null;
         const routes = (d) => {
           if (d.sid[23] & 7) return true;
           const w = d.writes;
@@ -638,10 +759,17 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         try {
           const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);
-          for (; n < LONG; n++) { d.play(); f = f || routes(d); if (!d.playing()) break; }
+          for (; n < LONG; n++) {
+            if (chip && d.readback) d.readback(...chip.read3(), chip.peek());
+            d.play(); f = f || routes(d);
+            if (!d.playing()) break;
+            if (collect) collect(d, n + 1);                  // the frame the display numbers it
+          }
         } catch (e) { n = LONG; f = true; }
         lengths[t] = n < LONG ? n : null;
         filtered[t] = f;
+        if (BOUNCE) scores[t] = { rate: FPS, voices: notes.map((x, i) =>
+          ({ notes: x, line: line[i].slice(0, n + 2), level: level[i].slice(0, n + 2) })) };
       }
       return lengths[t];
     }
@@ -677,6 +805,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       if (t !== tune) {
         tune = t;
         const n = length(t);
+        if (ball) ball.score(scores[t]);
         seek.max = String(n != null ? Math.max(1, n) : LONG);
         seek.disabled = false;
         const sw = root.querySelector('.sid-fsw'), note = root.querySelector('.sid-fnote');
@@ -684,12 +813,12 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       }
       at = Math.max(0, Math.min(at || 0, +seek.max));
       send({ cmd: 'start', tune: t, run: ++runs, at });
-      queue = []; hist = [];
+      queue = []; hist = []; heard = null; heardAt = at;
       if (!dragging) seek.value = String(at);
       time(at);
       playing = t; quietSince = 0;
       buttons();
-      draw();
+      draw(); drawBall();
       if (!raf) raf = requestAnimationFrame(loop);
     }
 
@@ -721,9 +850,25 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         muted[x] = !muted[x];
         b.setAttribute('aria-pressed', String(muted[x]));
         send({ cmd: 'mute', voice: x, on: muted[x] });
-        draw();
+        draw(); drawBall();
+      }
+      else if (b.dataset.view !== undefined) {
+        view = b.dataset.view;
+        root.querySelectorAll('[data-view]').forEach((v) => v.setAttribute('aria-pressed', String(v === b)));
+        box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
+        draw(); drawBall();
+      }
+      else if (b.hasAttribute('data-full')) {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (box.requestFullscreen) box.requestFullscreen().catch(() => {});
       }
     });
+    if (full) {
+      full.hidden = !document.fullscreenEnabled;
+      document.addEventListener('fullscreenchange', () => {
+        full.textContent = document.fullscreenElement === box ? 'Exit full screen' : 'Full screen';
+      });
+    }
 
     function loop() {
       raf = requestAnimationFrame(loop);
@@ -733,8 +878,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         const q = queue.shift();
         if (q.run === runs) { s = q; hist.push(q); }         // frames of an earlier start are dropped
       }
+      if (s) heard = s;
+      drawBall();
       if (!s) return;
-      const keep = Math.ceil(canvas.clientWidth / px) + 2;
+      const keep = Math.ceil((canvas.clientWidth || root.clientWidth) / px) + 2;   // the roll's width, hidden or not
       if (hist.length > keep) hist.splice(0, hist.length - keep);
       show(s);
       draw();
@@ -799,9 +946,32 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       g.globalAlpha = 1;
     }
 
+    // the ball at the frame last heard, and between frames as far on as the time since says
+    function drawBall() {
+      if (!ball || view !== 'ball') return;
+      let f = heardAt;
+      if (heard) {
+        f = heard.frame;
+        if (heard.playing && ctx) f += Math.min(1, Math.max(0, (ctx.currentTime - (ctx.outputLatency || 0) - heard.t) * FPS));
+      }
+      ball.draw(f, { muted });
+    }
+
     draw();
     window.addEventListener('resize', draw);
+    if (BOUNCE) noteBounce().then((NB) => {
+      ball = NB.create($('.sid-stage'), { colors: COLORS, font: FONT_B });
+      if (tune >= 0) ball.score(scores[tune]);
+      if (globalThis.ResizeObserver) new ResizeObserver(drawBall).observe(box);   // drawn again whenever
+      else window.addEventListener('resize', drawBall);                          // the stage changes size
+      drawBall();
+    }, () => {                                               // no ball: the piano roll alone
+      view = 'roll';
+      box.hidden = true; canvas.hidden = false;
+      $('[data-views]').hidden = true;
+      draw();
+    });
   }
 
-  return { engine, host, mount, worklet, hex, bytes, noteName };
+  return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel };
 })();

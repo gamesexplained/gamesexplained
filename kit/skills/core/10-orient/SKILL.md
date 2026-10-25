@@ -25,7 +25,11 @@ annotate it byte by byte.
 1. **Attach and autostart** the contributor's image with the emulator.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
-   otherwise, and record the choice in `orientation.md`.
+   otherwise, and record the choice in `orientation.md`. A trainer
+   changes the game's code (`games/c64/master-of-magic/cheats.md`) and
+   can leave code of its own on the game's interrupt with its options
+   off, so compare the code in play with another release's when one can
+   be had, and mark what differs as the crackers'.
 
    **Read the file's header before trusting its name.** An extension
    says what the file was called, not what it is: a file named as a

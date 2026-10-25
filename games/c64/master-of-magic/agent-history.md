@@ -205,3 +205,20 @@ play, and the SID's volume turned down elsewhere. W, A, S and D are the
 stick, and a click on a menu's word steers the cursor there with the
 stick and holds fire until the chooser reads it, so a recording made
 with CTRL and R records it.
+
+## The skipping music and a click for fire (24 October 2026)
+
+Aaron heard the Play tab's music skip badly. The page sent each frame's
+SID writes, in twelfths of a frame, to a queue in the audio worklet that
+kept 48 of them, 80 ms. That is less than the page's uneven frames and
+the audio device's buffer need together, so the queue ran dry and
+overflowed by turns: in headless Chromium with a 100 ms device buffer
+it did so about 130 times a second. The queue is now the site's, in
+`site/lib/sid.js` (`host({ live: true })`), half a second long, and the
+other Play tabs that kept a copy of it use it too
+(`kit/lessons/2026-10-24-master-of-magic-sound.md`).
+
+A click anywhere on the picture but a menu's word is now fire, held
+until the game has read it and, in play with no menu up, until the menu
+comes back: so a click stops a RUN, and the chooser, which waits for
+fire to be released, picks nothing.

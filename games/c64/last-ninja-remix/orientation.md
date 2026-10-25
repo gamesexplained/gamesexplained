@@ -1,23 +1,115 @@
 # Last Ninja Remix — orientation
 
-## Disk and power-on route
+How to get from a copy of the game to the states the listings are built
+from. Someone else must be able to follow this exactly.
 
-The contributor’s I-TAL disks were recovered from repository history into private `work/disk-047.d64` and `work/disk-048.d64`. This capture uses disk 047. Its relevant directory entries are `L.NINJA2 RMX/TSM`, `N.REMIX DEMO/I+T`, `NINJA 3+PLAY/I+T`, and `01.CENTRAL PARK!`.
+## The image
 
-On a hard-reset PAL C64, resume and autostart disk 047’s first file. Wait for the TSM intro. Hold control-port-1 fire for 60 frames and release; wait for I+T (600 frames sufficed in this run). Hold Space for 60 frames and release; wait for the trainer (600 frames). Both cheat options show NO. Press F7 for 60 frames and release. Wait for the Central Park presentation. Press Space for 60 frames and release, then wait for the level credits after the disk load. Warp may be enabled only for this wait; switch it off before gameplay or timing measurements. At the credits, **port 2 fire**, held 60 frames, starts the room; port 1 fire does not. Release and advance 120 frames. Confirm the isometric park and ninja, then save `work/central-game.vsf` without ROMs, using `pause()` before the save.
+Two disk images from archive.org, one item each, cracked by The Force
+with Ikari+Talent's trainer (TOSEC: `Last Ninja Remix, The (1990)(System
+3)(Side A)[cr Force][t +2 I+T]` and the same with `(Side B)`):
 
-VICE MCP 3.13.1 passed 55/57 health checks on 30 September 2026: `pause-at-instruction` and `unpaced-calls` failed. Use the kit pause workaround and paced calls. At the contributor’s request it runs on a virtual display with dummy audio, preserving SID emulation without playing samples. The private `vicerc` sets `Sound=1`, `SoundDeviceName="dummy"`.
+- https://archive.org/details/Last_Ninja_Remix_The_1990_System_3_Side_A_cr_Force_t_2_IT,
+  SHA-1 `5597c4896f0a6ada501fb13ad94359063a8c1e29`, saved as
+  `work/side-a.d64`
+- https://archive.org/details/Last_Ninja_Remix_The_1990_System_3_Side_B_cr_Force_t_2_IT,
+  SHA-1 `22f881cff073a4797580f95ca6225903a0bfaa99`, saved as
+  `work/side-b.d64`
 
-## Chosen image and comparison
+Side A holds `LAST NINJA REMIX` (The Force's intro), `NINJA INTRO /I+T`
+(System 3's intro, the engine, and Ikari+Talent's intro and trainer,
+packed together), `01.CENTRAL PARK` and `02.THE STREET`. Side B holds
+`03.THE SEWERS` to `07.FINAL BATTLE`. This is not the original release:
+the crackers' intros come first, and the trainer adds code of its own to
+the end of the engine's interrupt (`$1F52-$1F6B`): a level skip on the ←
+key, which is always on (`CoordinateLevelLoad` turns it off for the Final
+Battle, at `$171D`), and two `BIT` instructions it turns into `STA`s when
+its options are turned on. Every snapshot was taken with both options
+off, so the only trainer code that acts in them is the level skip, and
+only when ← is pressed; the engine's listing marks the trainer's code. A
+second crack, X-Rated's (`[cr X-Rated][h LXT][t +30 X-Rated]` in the same
+collection), was used only to compare bytes: its interrupt goes from the
+clock straight to restoring `$01`.
 
-The supplied Ghidra analysis was a composition, not a stopped machine. In active Central Park, 288 of its 15,889 code bytes differ: 286 in `$0E00–$0F2B`, one at `$1F5B`, one at `$8A0F`. 4,247 of 45,809 data bytes also differ. The game really writes sprite output into `$0C00–$0FFF`; a live store checkpoint traced the write to `$BF02`. The former startup code at `$0E00` is overwritten there. Its stale names/comments and code classification are removed. Other imported annotations remain verification leads.
+The game's manual is the archive.org item
+`Last_Ninja_Remix_The_1990_System_3`.
 
-The listing uses the active `central-game.vsf`, whose bytes and CPU state existed together. Runtime screen `$0400`, bitmap `$2000–$3F3F`, low state and sprite output are excluded from coverage. The packed sprite source pool under I/O is retained as game data. Processor port `$35`, DDR `$2F`; vectors `$0314=$1E06`, `$0318=$1582`; VIC bank `$0000`.
+## From power-on to play
 
-The contributor's disks were not to hand on 22 October 2026, so the 123 bytes the listing lacked then (the zero runs at `$11FD`, `$1781` and `$1FFE`, the NMI handler's `rti` at `$1582`, the unreached instructions at `$A523`, `$B11D` and `$BBD3`, the scene list at `$B444`, and the NMI and IRQ vectors) were taken from a capture of side A of another copy, cracked by The Force with Ikari+Talent's trainer, reached by the same route with The Force's intro in place of TSM's. In active Central Park it matched every byte the listing already held but one in `$4000–$4FFF`, and the listing keeps its own byte there.
+On a PAL C64 in VICE (`kit/c64/INSTALL.md`), hard reset, then:
 
-## Scope and rebuilding
+1. Autostart `work/side-a.d64`, file `LAST NINJA REMIX`, and wait 30
+   seconds for The Force's intro.
+2. Hold port 1 fire for 60 frames; wait 600 frames for Ikari+Talent's
+   intro. Hold Space for 60 frames; wait 600 frames for the trainer.
+   Leave F1 (unlimited lives) and F3 (unlimited power) at NO. The trainer
+   says LEFT ARROW TO SKIP LEVEL whatever the options are.
+3. Press F7. System 3's intro starts: its first instruction is `$0800`,
+   where `parts/intro/work/entry.vsf` stops. The logo comes first, then
+   the temple (by frame 505) and the city (by 1,535); once the city has
+   been shown, port 2 fire or the second button ends the intro, which
+   otherwise goes back to the logo (by 1,790). Its hand-over (`$0340`)
+   loads `NINJA*`, which unpacks the engine; `parts/engine/work/entry.vsf`
+   stops on `MachineSetup` (`$0E00`).
+4. The engine loads `01*`. The title card is drawn and the tune plays
+   (`work/central-title.vsf`, the loader waiting at `$111D`). Press Space;
+   the second segment loads and the level's credits appear. Port 2 fire, held for 60 frames, starts play;
+   port 1 fire does not. 120 frames later, Central Park in play, is
+   `work/central-game.vsf`.
 
-The game is in seven parts (`kit/scripts/parts.py`), one for each level as it is loaded: Central Park, The Street, Sewers, Basement, Office, Mansion and Final Battle. One is analysed, `parts/central-park`, and its image holds the engine as well as the level: the two have not been told apart. The other six have a folder and nothing in it but their name; none has been loaded in this analysis, so this file gives no route to them. No composed binary image is published.
+Warp is safe during the loads only; switch it off before play or any
+timing.
 
-Load the committed symbol map into regenerator2000 on your own gameplay snapshot with `symbols_import.py games/c64/last-ninja-remix/parts/central-park <snapshot>`, export with `symbols_export.py`, and build with `listing.py games/c64/last-ninja-remix/parts/central-park <snapshot>`, the snapshot being the one saved above as `central-game.vsf`. Snapshots, disk images, projects and the original text export stay in `work/`. `game.json.imported` records the original export hash and unknown models.
+## The parts
+
+Sixteen parts (`kit/scripts/parts.py`), in the order the game uses them:
+System 3's intro, the engine, then for each level its title load and its
+play load. A level is one file that the engine's loader unpacks
+backwards in two segments; `work/watchload.py` records each segment's
+range at `$103B` and stops at the loader's return, `$10F8`.
+
+| Part | Snapshot | How it was reached |
+|---|---|---|
+| `intro` | `work/entry.vsf` | F7 at the trainer, stopped on `$0800` |
+| `engine` | `work/entry.vsf` | after the intro's fire, stopped on `$0E00` |
+| `<level>-title` | `work/title.vsf` | the title card on show, the loader at `$111D` |
+| `<level>-title` | `work/entry.vsf` | the first segment in, the loader at `$1108` about to call `$4E00` (`work/title_entry.py`) |
+| `<level>` | `work/entry.vsf` | the second segment in, the loader at `$10F8` |
+| `<level>` | `work/game.vsf` | 300 frames on, port 2 fire for 60 frames, then 120 frames: the level in play |
+
+From one level in play to the next (`work/nextlevel.py`): hold the ←
+key, then push the stick left and press fire to answer YES to ARE YOU
+SURE YOU ARE PREPARED FOR THE NEXT LEVEL. Before The Sewers the engine
+asks for side two (INSERT SIDE TWO, PRESS SPACE): attach
+`work/side-b.d64` and press Space once fire is released. The game's own
+joystick sequence (`discoveries.html`, "Secret: a joystick sequence ends
+any level") does the same without the trainer.
+
+The levels are Central Park, The Street, The Sewers, The Basement, The
+Office, The Mansion and The Final Battle (`central-park`, `street`,
+`sewers`, `basement`, `office`, `mansion`, `final-battle`). Each level's
+snapshots are in its parts' `work/` folders under the names above; the
+game folder's `work/` keeps the same captures as `<tag>-entry.vsf`,
+`<tag>-title.vsf` and `<tag>-game.vsf`.
+
+## Steady state
+
+In play `$01` is `$35`: RAM everywhere, with the I/O at `$D000-$DFFF` and
+no ROM. The hardware IRQ vector `$FFFE` points at the engine's
+`GameplayIrqDispatcher` (`$1E15`), and both NMI vectors at the `RTI` at
+`$1582`. The video chip sees bank 0: screen `$0400`, multicolour bitmap
+`$2000`. The engine (`$1000-$1FFF` and the status panel in the bitmap)
+stays in memory through every level; each level file replaces
+everything from `$3FF3` up. The engine keeps pages 0 to 3 at
+`$0C00-$0FFF` while a level loads and puts them back after. `facts.md`
+has the whole memory map.
+
+## The loader, in a paragraph
+
+The engine's own loader (`LoadAndExpandLevelFile`, `$1000`) reads the
+level file through the KERNAL and unpacks it as it reads, from the end
+backwards: literal runs come straight from the disk and matches are
+copied from bytes already written, with bit widths from a table at
+`$17E6`. It changes the border colour as it reads. The first segment
+ends with the title card, which the loader calls at `$4E00`; it then
+plays the level's tune until Space or fire, and unpacks the second.

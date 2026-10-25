@@ -1,4 +1,4 @@
-## next · 2026-10-24 · The Sacred Armour of Antiriad (C64) · air with Claude
+## 0.0.232 · 2026-10-24 · The Sacred Armour of Antiriad (C64) · air with Claude
 
 - **Check that the kit's machine raises every interrupt the game
   enables.** The game finds every touch, of the armour, an add-on or a

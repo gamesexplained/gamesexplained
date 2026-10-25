@@ -49,8 +49,9 @@
 //                        game made them, each a flat list [t, reg, value, ...] with t the T-state
 //                        within the 128K's frame of 70,908 (reg 16 the beeper, as above). They play
 //                        one a frame of the chip's own time, each write at its T-state; with none
-//                        waiting the registers hold. More than most waiting (default 4) and the
-//                        oldest are applied at once, so that the sound keeps up with the game.
+//                        waiting the registers hold. More than most waiting (default MOST, half a
+//                        second) and the oldest are applied at once, so that the sound keeps up
+//                        with the game.
 //   host({ gain, most }) an AudioContext playing live() in an AudioWorklet (or the older
 //                        ScriptProcessorNode), resolving to { ctx, mode, push(frames) }. Call it
 //                        inside a click or a key press, where a browser lets a page start sound.
@@ -58,6 +59,10 @@ globalThis.SpectrumAY = (function () {
 // The model's own source text goes into the worklet, so it refers to nothing outside itself.
 function spectrumAYModel() {
   const CLOCK = 3546900 / 2, FRAME_T = 70908, STEPS = FRAME_T / 16;
+  // the frames live() keeps waiting at most: half a second's. The page's frames come unevenly and
+  // the audio device can take 100 ms at a time, and a queue shorter than the two runs dry and
+  // overflows by turns, which is heard as the music skipping
+  const MOST = 25;
   const UNITS = [0, 0.45, 0.6, 0.8, 1.05, 1.6, 2.2, 3, 4, 6, 8, 10, 14, 16, 20, 24];
   const VOLUME = Float32Array.from(UNITS, u => u / 48);   // a channel's swing at full volume is 0.5
   const BEEPER = 100 / 48 * VOLUME[15];
@@ -104,7 +109,7 @@ function spectrumAYModel() {
     return {
       chip: c,
       get queued() { return queue.length; },
-      push(frames, most = 4) {
+      push(frames, most = MOST) {
         for (const f of frames) queue.push(f);
         while (queue.length > most) { const f = queue.shift(); for (let k = 0; k + 2 < f.length; k += 3) c.write(f[k + 1], f[k + 2]); }
       },
@@ -119,7 +124,7 @@ function spectrumAYModel() {
       },
     };
   }
-  return { CLOCK, FRAME_T, STEPS, VOLUME, BEEPER, tp, chip, output, live };
+  return { CLOCK, FRAME_T, STEPS, MOST, VOLUME, BEEPER, tp, chip, output, live };
 }
 
   const MODEL = spectrumAYModel(), { CLOCK, VOLUME, BEEPER, tp, chip, output, live } = MODEL;
@@ -212,7 +217,7 @@ class SpectrumAYProcessor extends AudioWorkletProcessor {
   constructor(o) {
     super();
     const q = o.processorOptions || {};
-    this.l = MODEL.live(sampleRate); this.gain = q.gain || 1; this.most = q.most || 4;
+    this.l = MODEL.live(sampleRate); this.gain = q.gain || 1; this.most = q.most || MODEL.MOST;
     this.port.onmessage = (e) => { if (e.data && e.data.frames) this.l.push(e.data.frames, this.most); };
   }
   process(inputs, outputs) {
@@ -230,7 +235,7 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
     if (!AC) throw new Error('This browser has no Web Audio.');
     const ctx = new AC();
     ctx.resume();
-    const gain = o.gain || 1, most = o.most || 4, code = worklet();
+    const gain = o.gain || 1, most = o.most || MODEL.MOST, code = worklet();
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
     let node = null, local = null;

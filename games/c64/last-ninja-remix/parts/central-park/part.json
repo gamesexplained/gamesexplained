@@ -1,61 +1,55 @@
 {
-  "title": "Central Park and the engine",
-  "order": 1,
+  "title": "Central Park",
+  "order": 4,
+  "over": "central-park-title",
+  "ranges": [
+    [
+      "$4E00",
+      "$FEFF"
+    ]
+  ],
   "video": {
     "screen": "$0400",
     "charset": ""
   },
   "coverage": {
+    "exclude": [
+      [
+        "$FEF9",
+        "$FFA8",
+        "Collision records the compiler writes at run time for the area on screen: at most 29 records and a two-byte terminator over the 18 areas"
+      ]
+    ],
     "extra": [
       [
         "$CE54",
         "$CF97",
-        "162 main packed-sprite pointer words, independently validated"
+        "162 pointer words to the main packed sprites"
       ],
       [
         "$C4C2",
         "$C595",
-        "106 absolute frame pointer words, all destinations checked"
+        "106 absolute pointer words to the frame records"
       ],
       [
         "$4E27",
         "$4F12",
-        "118 biased scene pointer words, all record boundaries checked"
-      ],
-      [
-        "$1AE8",
-        "$1C2F",
-        "Retained eight-byte multicolor glyph cells, inline text renderer base $1AE8; resident code starts $1C30"
-      ],
-      [
-        "$1200",
-        "$12FF",
-        "All 256 multicolor pair-reversal entries, formula checked"
-      ],
-      [
-        "$1300",
-        "$13FF",
-        "All 256 bit-reversal entries, formula checked"
+        "118 biased pointer words to the scene records"
       ],
       [
         "$4F15",
         "$8A0D",
-        "Complete scene record pool: all 118 lengths/boundaries independently checked"
+        "The scene record pool: all 118 records, end to end"
       ],
       [
         "$CF98",
         "$E927",
-        "Complete 162-record packed sprite pool, all expansion lengths and boundaries checked"
+        "The packed sprite pool: all 162 records, end to end"
       ],
       [
         "$99D4",
         "$A04D",
-        "Condition lists and collision source lists; complete boundaries traced and collision output checked for all 18 areas"
-      ],
-      [
-        "$4828",
-        "$4DE3",
-        "Retained music directories, instruments, frequency tables, playlists and phrase pool; consumers traced"
+        "Condition lists and collision source lists for the 18 areas, end to end"
       ]
     ],
     "include": [
@@ -63,43 +57,6 @@
         "$D000",
         "$DFFF",
         "Packed sprite source pool beneath I/O; part of $CF98\u2013$E927"
-      ]
-    ],
-    "exclude": [
-      [
-        "$0000",
-        "$0FFF",
-        "Runtime state, screens and double-buffered sprite output; $0E00 startup code has been overwritten"
-      ],
-      [
-        "$2000",
-        "$3F3F",
-        "Runtime bitmap output"
-      ],
-      [
-        "$4036",
-        "$40B0",
-        "Runtime music state: initialized at $40B1-$40FF and updated by $4116 onward, three voice arrays and shared tick/filter/fade state"
-      ],
-      [
-        "$3F92",
-        "$3FAF",
-        "30 runtime enemy-meter slots initialized to 44; elapsed-tick regeneration traced and checked"
-      ],
-      [
-        "$FEF9",
-        "$FFA8",
-        "Runtime collision compiler output; maximum 29 records plus two-byte terminator, checked for all 18 loaded areas"
-      ],
-      [
-        "$FFA9",
-        "$FFF9",
-        "A keyboard table and a raster wait in the RAM under the KERNAL; no instruction in this load reads or runs them"
-      ],
-      [
-        "$FFFC",
-        "$FFFD",
-        "The reset vector, which the 6510 always reads from the KERNAL ROM, never from this RAM"
       ]
     ]
   },
