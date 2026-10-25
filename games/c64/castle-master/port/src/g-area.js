@@ -212,8 +212,8 @@ G.area = function (P) {
       place(M[0x82], 0x2409);
     }
     if (x === 3) {
-      y = 4; M[0x2410] = at(0x7C, 4);
-      y = 5; a = at(0x7C, 5); M[0x2411] = a;
+      y = 4; M[0x2410] = at(0x7C, 4); P.plug.whole(0x2410);
+      y = 5; a = at(0x7C, 5); M[0x2411] = a; P.plug.whole(0x2411);
     }
     return { a, x, y };
   };

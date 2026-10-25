@@ -267,3 +267,53 @@ view goes round as fast and would do the same. The actions that switch
 something (the speeds, facing forward, turning about, the sights, act,
 the pointer and the information screen) now act once a press; a shot and
 Ctrl's quarter turns and looks still repeat each pace while held.
+
+## 25 October 2026: Fast CPU rebuilt from the spec
+
+Fast CPU was built again from a written spec, on a branch from main, after
+the first one turned out to show the game a tick behind and to count each
+loop's cost a second way. Its `port/page/fast.js`, the runtime's hold at a
+loop's start, the cost counting and what was left of smooth motion came
+out. Native resolution, the C64-pixel painter, the CRT screen, the sound
+switch and the live sound queue stayed.
+
+The port's routines gained plug-in points of nine kinds at 22 places, set
+out in `port/src/core.js`: a move's step, a turn, the share of a step an
+angle stands past the game's, an angle the game sets itself, the controls
+read again, whether an action is taken, whether a job that adds up runs, a
+byte shown for one loop, and the message put back after its countdown.
+`P.trig`, the sines and cosines between two angles, is used at five more.
+Each gives what the game's code gives until something is plugged in, and
+with nothing plugged in the lockstep matched the game on all 199 moments,
+in the same frames as before the points went in.
+
+The page's runtime gained one command for the clock, `runTicks`. The game
+waits at its main loop's start (`$47F0`) for the next tick of CIA 1's
+timer A, a loop's own work takes no time, a wait inside a loop takes its
+ticks, and a refresh runs at most four loops and lets the rest of the time
+go. `port/page/fast.js` plugs a loop's share of each step into the port,
+and `port/page/fast-table.js` holds Castle Master's Speeds and what each
+key does.
+
+`test_fast.js` was written again for the spec's tests, and three of its
+first failures were the tests' own. The loop that shows the lightning's
+streak returns before it reads the controls, so a key held for K loops
+came up a share short and a timed walk three ticks long; the tests now
+count the loops that read the keys, and put the lightning off while they
+time a move. The clock's jobs came up to 4.3 ticks later with Fast CPU off
+than on, because the page's C64 serves an interrupt at the end of the
+stretch of code it falls in. The pointer's pace, measured on
+`kit/c64/machine.js` with the video chip's fetches, is 12,560 cycles a
+pixel over 48 runs (median 12,587), where the page's cost model gives
+about 13,137. Every part passes on the built page in 162 s, and
+`port/test/fast-browser.js` checks in Chromium that the view stops on the
+first refresh after a key comes up and that a press of U from 80 to
+400 ms turns about once at each Speed.
+
+`port/test/fast-walls.js` walked three steps from each of the 199 moments
+four ways, on the C64 and with Fast CPU at 1×. Of 780 walks (16 more were
+left out: the session ended or a loop never came), 265 (34 %) ended more
+than 64 units apart and 45 (6 %) at another height, 28 of them lower.
+These are not the random play's figures above, which came from other
+places and the first Fast CPU. Dropping the rest of a step's shares once
+a wall stops one, which might bring the two closer, was not tried.

@@ -61,11 +61,15 @@ G.view = function (P) {
         a = (a - 0x48) & 255;
       }
       P.MUL_S8_S8_TO_S16({ x: a, y: 0x0B });
+      // plug-in point: a pitch between two steps, the horizon 11 rows a step
+      const part = Math.round(0x0B * P.plug.frac(0x2410));
+      if (part) { const v = (M[0x82] | M[0x83] << 8) + part; M[0x82] = v & 255; M[0x83] = (v >> 8) & 255; }
       let s = 0x40 + M[0x82]; M[0x82] = s & 255; x = M[0x82];
       M[0x83] = (M[0x83] + (s >> 8)) & 255;
       if (M[0x83] & 0x80) x = 0;
       else if (x >= 0x78) { x = 0x78; y = 0; break draw; }
-      if (P.irqByte(0x2459) === 1) {
+      // plug-in point: the streak kept on show for longer than the loop that shows it
+      if (P.plug.held(0x2459, P.irqByte(0x2459)) === 1) {
         s = 0x5F + M[0x82]; const yy = s & 255;
         const hi = (M[0x83] + (s >> 8)) & 255;
         if (!(hi & 0x80)) {
@@ -136,7 +140,8 @@ G.view = function (P) {
     if (M[0x2429] !== 1) return P.FILL_BACKGROUND_ROWS_WITH_PATTERN({ a: M[0x4B8E], x: r.x, y: M[0x4B89] });
     const keep = M[0x4B89];
     setp(0x7C, 0x21FA);
-    M[0x82] = ((M[0x2411] & 7) << 1) & 255;
+    // plug-in point: a yaw between two steps, the scenery 8 pixels (two bytes) a step
+    M[0x82] = (((M[0x2411] & 7) << 1) + Math.floor(2 * P.plug.frac(0x2411))) & 15;
     for (let y = M[0x4B8A]; y; y--) setp(0x7C, ptr(0x7C) + 0x10);
     let x, y;
     do {
@@ -161,7 +166,8 @@ G.view = function (P) {
   // APPLY_LIGHTNING_STREAK_MASK: the streak's picture ($20F8, three bytes a row from $4B8C) ORed
   // into $4B8B rows of the buffer, at a column the clock picks (0-26 bytes in).
   P.APPLY_LIGHTNING_STREAK_MASK = function (r) {
-    let a = P.irqByte(0x1C64);
+    // plug-in point: the column kept while the streak is kept on show
+    let a = P.plug.held(0x1C64, P.irqByte(0x1C64));
     while (a >= 0x1B) a -= 0x1B;
     M[0x4B8F] = a;
     const keep = ptr(0x7A);

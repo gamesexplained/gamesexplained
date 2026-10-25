@@ -48,6 +48,34 @@ function makePort(M, io, opts = {}) {
   P.N = { row: 0, fill: 0, step: 0, xstep: 0, line: 0, vline: 0, vclear: 0 };
   // and the interrupt's own: the view's colours filled in a sensor's flash
   P.NI = { fill: 0 };
+  // The plug-in points: the places in the routines where the page's Fast CPU (page/fast.js) passes
+  // in a value or skips a job, each marked "plug-in point" where it is used. These are the game's
+  // own: with nothing plugged in, each gives the value the game's code gives, so the lockstep
+  // holds the port and its plug-in points together. Fast CPU replaces them.
+  //   step(key, v)     a move's step: what of it this loop takes (all of it)
+  //   turn(a, by)      a turn of the angle at a by `by` steps: how many whole steps it turns this
+  //                    loop (all of them)
+  //   frac(a)          the share of a step the angle at a stands past M[a] (none)
+  //   whole(a)         the game has set the angle at a itself, to a whole step
+  //   read()           the controls have been read again
+  //   take(act)        whether the action a control asks for is taken (always)
+  //   once(key)        whether a job whose effect adds up with each call runs this time (always)
+  //   held(a, v)       a byte that shows something for one loop, read as v: what the routine takes
+  //                    it to be (v)
+  //   after(asked, a)  a message asked to be put back once the countdown at a has run out: whether
+  //                    the loop waits for it and puts it back now (when asked)
+  P.plug = {
+    step: (key, v) => v, turn: (a, by) => Math.abs(by), frac: a => 0, whole: a => {}, read: () => {},
+    take: act => true, once: key => true, held: (a, v) => v, after: (asked, a) => asked,
+  };
+  // The sine or cosine ($123C on, two bytes a step of 72) of the angle at a, as a signed byte;
+  // between two steps (plug-in point: frac) the same share of the way from one step's to the next's
+  P.trig = (t, a) => {
+    const x = (M[a] << 1) & 255, f = P.plug.frac(a);
+    if (!f) return M[t + x];
+    const sb = v => (v << 24) >> 24, y = x + 2 >= 144 ? x + 2 - 144 : x + 2;
+    return Math.round(sb(M[t + x]) * (1 - f) + sb(M[t + y]) * f) & 255;
+  };
   // A read and a write through the processor's map as $01 has it: the I/O at $D000-$DFFF when its
   // bits say so. The port has no ROMs: reading one is an error, as it would be a byte the port
   // cannot know.

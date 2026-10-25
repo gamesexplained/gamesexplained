@@ -258,7 +258,15 @@ G.aim = function (P) {
       return {};
     }
     if (M[0x2467]) {
-      const nudge = (a, d, stop) => { if (M[a] !== stop) { M[a] = (M[a] + d) & 255; P.POSITION_ENABLE_AIM_SPRITES({}); } return {}; };
+      // a pixel a loop; plug-in point: the pixels of it this loop takes
+      const nudge = (a, d, stop) => {
+        let n = P.plug.step(a, d) * d;
+        if (n > 0 && M[a] !== stop) {
+          do M[a] = (M[a] + d) & 255; while (--n > 0 && M[a] !== stop);
+          P.POSITION_ENABLE_AIM_SPRITES({});
+        }
+        return {};
+      };
       if (act === 0x18) return nudge(0x2465, -1, 0);
       if (act === 0x17) return nudge(0x2465, 1, 0x77);
       if (act === 0x19) return nudge(0x2466, -1, 1);

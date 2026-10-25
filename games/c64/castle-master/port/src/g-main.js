@@ -45,7 +45,8 @@ G.main = function (P) {
   P.UPDATE_FRAME_INPUT_EVENTS = function* (r) {
     for (const a of [0x1059, 0x105A, 0x1065, 0x1082, 0x1084, 0x105E, 0x105D, 0x1085, 0x1081]) M[a] = 0;
     const lc = P.irqByte(0x2459);
-    let c = r.c ? 1 : 0, lightning = lc === 0;
+    // plug-in point: a streak kept on show puts the flash and the next countdown off until it goes
+    let c = r.c ? 1 : 0, lightning = lc === 0 && P.plug.held(0x2459, lc) !== 1;
     if (lc === 1) {
       c = 1;
       if (M[0x2464]) { M[0x105A] = 8; return { a: 8, c: 1 }; }
@@ -67,6 +68,7 @@ G.main = function (P) {
     if (M[0x243C] & 0x40) { M[0x109B] = 5; return yield* P.session_end(); }
     if (M[0x1087] && !M[0x109B]) { P.DROP_PLAYER_TO_SUPPORT({}); return {}; }
     const controls = P.READ_CONTROL_INPUT({}).c;
+    P.plug.read();
     if (M[0x109B]) return yield* P.session_end();
     const tick = P.irqByte(0x246D);
     if (tick !== M[0x246C]) { M[0x246C] = tick; M[0x1085] = 8; }
@@ -89,8 +91,9 @@ G.main = function (P) {
     M[0x480A] = 0;
     for (;;) {
       // $48F1: actions 1-20 move the player (3-6 move the aiming cursor instead while it is on),
-      // 21-30 aim, fire and act, 41 opens the information menu
-      if (a >= 1) {
+      // 21-30 aim, fire and act, 41 opens the information menu; plug-in point: whether a held
+      // control's action is taken again
+      if (a >= 1 && P.plug.take(a)) {
         if (a < 0x15 && !(a >= 3 && a < 7 && M[0x2467])) yield* P.DISPATCH_PLAYER_MOVEMENT({ a });
         else {
           if (a < 0x15) { M[0x4803] = a; a = (0x1D - a) & 255; }
@@ -177,7 +180,8 @@ G.main = function (P) {
     const ev = M[0x1084] | M[0x1085];
     if (!ev) return { a: 0 };
     M[0x1084] = ev;
-    if (M[0x1082]) {
+    // plug-in point: the script of an object a step alone runs into, which adds up with each run
+    if (M[0x1082] && (ev !== 1 || P.plug.once(0x1082))) {
       M[0x105C] = M[0x1082];
       if (P.FIND_OBJECT_BY_ID({ a: 0 }).z) {
         const base = 0x13DF + (M[ptr(0x7C)] & 0x0F);
@@ -297,7 +301,8 @@ G.main = function (P) {
       const o = P.BLIT_PACKED_2BPP_GRAPHIC({ a: M[0x1081], x: 1, y, c });
       x = o.x; y = o.y; c = o.c;
     }
-    if (!(M[0x105A] & 0x20)) return { a: M[0x105A] & 0x20, x, y, c };
+    // plug-in point: whether the loop waits now to put the area's name back
+    if (!P.plug.after(M[0x105A] & 0x20, 0x1063)) return { a: M[0x105A] & 0x20, x, y, c };
     while (M[0x1063]) yield;
     setp(0x7C, 0x1D6F); setp(0x7E, 0x2419);
     return P.DRAW_TEXT_TO_BITMAP({ a: 0x0F, x: 2, y, c });

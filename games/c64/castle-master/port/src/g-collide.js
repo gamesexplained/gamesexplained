@@ -429,7 +429,7 @@ G.collide = function (P) {
   // APPLY_FALL_DAMAGE: 5 points of strength lost (none left: the game over, $109B 4), the view
   // cleared to black for a frame, and the thud.
   P.APPLY_FALL_DAMAGE = function (r) {
-    M[0x2410] = 0;
+    M[0x2410] = 0; P.plug.whole(0x2410);
     let a = (P.irqByte(0x2455) - 5) & 255;
     if (a & 0x80) { M[0x109B] = 4; a = 0; }
     M[0x2455] = a;

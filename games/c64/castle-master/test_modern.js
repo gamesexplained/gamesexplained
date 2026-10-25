@@ -1,5 +1,5 @@
 'use strict';
-// Holds the Play tab's modern view (port/page/modern.js), which Native resolution and the fast CPU
+// Holds the Play tab's modern view (port/page/modern.js), which Native resolution and Fast CPU
 // draw with, to the port it watches. The page's own blocks run in node: the port, the
 // page's machine (port/page/runtime.js) and the modern view, on the memory the page carries. Two
 // machines start from the loader's jump and go through the title, the language and the character

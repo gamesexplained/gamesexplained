@@ -1,6 +1,6 @@
 // The Play page's modern view of Castle Master: the 3D view drawn at the screen's own resolution,
-// and, for the fast CPU (page/fast.js), between the game's pictures. The game is not changed: the
-// routines below are watched, and its memory is only read.
+// or, for Fast CPU (page/fast.js), in the C64's own pixels at a fractional angle. The game is not
+// changed: the routines below are watched, and its memory is only read.
 //
 // Each picture the game draws, the page keeps what the drawing works from. As the game's painter's
 // sort finishes (PAINTER_SORT_VISIBLE_ENTRIES): where the player stands and which way the view
@@ -20,6 +20,8 @@
 //   CMModern.onShow(st, F)                 the picture on show in frame F ({pic, t, n}), or null when
 //                                          the view shows anything else (a menu, the viewport
 //                                          opening, a message)
+//   CMModern.latest(st)                    the last copy to the view's bitmap ({pic, t, n}), its pic
+//                                          null when it put anything but the 3D view there
 //   CMModern.scene(P, pic, pose)           a picture's scene, from its own pose or one given: the
 //                                          background's line and the faces in drawing order, in
 //                                          the view's coordinates (0-120 across from the left,
@@ -58,9 +60,9 @@ const topology = (M, at) => {
   return faces;
 };
 const TOPO = { cuboid: 0, pyr5: 0x25, pyr6a: 0x40, pyr6b: 0x5D, pyr8: 0x7A };
-// the view's angles, 72 steps to a turn: the game's, or with the fast CPU on, the fractions of a
-// step it turns by (page/fast.js, P.angles)
-const angles = (M, P) => (P && P.angles && P.angles()) || { yaw: M[0x2411], pitch: M[0x2410] };
+// the view's angles, 72 steps to a turn, and the share of a step past each that Fast CPU turns by
+// (page/fast.js, the port's plug-in point frac)
+const angles = (M, P) => ({ yaw: M[0x2411] + P.plug.frac(0x2411), pitch: M[0x2410] + P.plug.frac(0x2410) });
 // what the scene is built from, read as the game's sort finishes: the place, the objects, the
 // objects the game queued and the tables; a draw with no rebuild before it (the game draws the
 // view again when only the sky or the sight changed) draws what the last rebuild queued
@@ -95,8 +97,8 @@ function capture(M, P, built) {
     buffer: w16(M, 0x10A0),
     cells: { bg: M[0x2431], hi: M[0x2432], lo: M[0x2433], ram: M[0x2434] },
     reticle: !M[0x2467] && !!M[0x246B],
-    // the lightning's streak, drawn while $2459 is 1, at a column the clock's byte $1C64 picks
-    lightning: M[0x2459] === 1, clock: M[0x1C64],
+    // the lightning's streak, when the game draws it (attach), at the column it draws it in
+    lightning: false, clock: 0,
     streak: Array.from(M.subarray(0x20F8, 0x20F8 + 0x55 * 3)),
   });
 }
@@ -138,7 +140,8 @@ const CASES = [[0, 0x7F, 2, 0x3F, 4, 0x7F], [0, 0x7F, 3, 0, 4, 0x7F], [0, 0x7F, 
   [1, 0, 2, 0x3F, 5, 0], [1, 0, 3, 0, 5, 0], [1, 0, 2, 0x3F, 4, 0x7F], [1, 0, 3, 0, 4, 0x7F]];
 function coarse(pose) {
   const box = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
-  const yaw = ((Math.round(pose.yaw) % 72) + 72) % 72, pitch = ((Math.round(pose.pitch) % 72) + 72) % 72;
+  // the game's whole steps: its samples between two steps open the box as at the lower step
+  const yaw = ((Math.floor(pose.yaw) % 72) + 72) % 72, pitch = ((Math.floor(pose.pitch) % 72) + 72) % 72;
   for (const [dy, dp] of [[-8, -8], [-8, 8], [8, -8], [8, 8]]) {
     const y = (yaw + dy + 72) % 72, p = (pitch + dp + 72) % 72;
     let x = y < 18 ? 1 : y < 36 ? 3 : y < 54 ? 5 : 7;
@@ -319,7 +322,7 @@ function sort(list) {
   }
   return list;
 }
-// The scene of a picture from a pose (its own, or one between two): for each object the game would
+// The scene of a picture from a pose (its own, or another): for each object the game would
 // queue (of those it drew, when the picture says), its faces clipped and projected, in the
 // painter's order; and the background
 function scene(P, pic, pose) {
@@ -353,7 +356,7 @@ function scene(P, pic, pose) {
     // an object the game drew stays in the sort, faces or none, so that the others keep its order
     if (faces.length || (pic.drawn && pic.drawn.has(rec))) queued.push({ id: rec[7], b: s.b, faces });
   }
-  // the background from the draw's own angles at the picture's place, the pose's between two
+  // the background from the draw's own angles at the picture's place, or the pose's
   const bg = own ? pic.bg : pose;
   return { pic, pose, objects: sort(queued), s: horizon(bg.pitch), yaw: bg.yaw };
 }
@@ -520,14 +523,26 @@ function attach(rt) {
     st.pending = pic;
   });
   wrap(P, 'CLEAR_LINEAR_30BYTE_ROWS', () => { st.pending = null; });
-  const flip = () => {
+  // the streak as the game draws it: at the column it picks ($4B8F)
+  wrap(P, 'APPLY_LIGHTNING_STREAK_MASK', null, () => { if (st.pending) { st.pending.lightning = true; st.pending.clock = M[0x4B8F]; } });
+  // each copy to the view's bitmap: the buffer's 3D view (the frame's own copy, and the viewport
+  // opened on it), or anything else (a menu or a message copied as it stands, a step of the
+  // viewport's opening or closing, the viewport closed)
+  const flip = pic => {
     const at = w16(M, 0x1237);
-    st.flips.push({ pic: st.pending, t: rt.t, goal: rt.goal, n: ++st.n, snap: viewBytes(M, at), at });
+    st.flips.push({ pic, t: rt.t, n: ++st.n, snap: viewBytes(M, at), at });
     if (st.flips.length > 24) st.flips.shift();
   };
-  wrap(P, 'BLIT_LINEAR_VIEWPORT_TO_VIC_BITMAP', null, flip);
-  wrap(P, 'RUN_VIEWPORT_TRANSITION', null, flip);
+  wrap(P, 'BLIT_LINEAR_VIEWPORT_TO_VIC_BITMAP', null, () => flip(st.pending));
+  wrap(P, 'BLIT_LINEAR_BUFFER_FORWARD_TO_VIC_BITMAP', null, () => flip(null));
+  wrap(P, 'APPLY_VERTICAL_BITMAP_TRANSITION_STEP', null, () => flip(null));
+  wrap(P, 'RUN_VIEWPORT_TRANSITION', null, r => flip(r.c ? st.pending : null));
   return st;
+}
+// the last copy to the view's bitmap, for Fast CPU: the game's own state at the copy says what is on
+// show, with no look at the screen's bytes
+function latest(st) {
+  return st && st.flips.length ? st.flips[st.flips.length - 1] : null;
 }
 
 // ---- what is on show
@@ -547,39 +562,6 @@ function onShow(st, F) {
     return f;
   }
   return null;
-}
-
-// ---- between two pictures
-// the pose a fraction f of the way: the place slid, each angle turned the shorter way
-function between(a, b, f) {
-  const turn = (x, y) => { let d = y - x; d -= 72 * Math.round(d / 72); return (((x + d * f) % 72) + 72) % 72; };
-  return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, z: a.z + (b.z - a.z) * f, yaw: turn(a.yaw, b.yaw), pitch: turn(a.pitch, b.pitch) };
-}
-// the objects part of the way: the nearer picture's, an object that moved (a door, a lift; the
-// same id, type and size in both) slid between its two places
-// (each drawn when the game drew it in either picture)
-function objectsBetween(a, b, f) {
-  const near = f < 0.5 ? a : b, far = f < 0.5 ? b : a, g = f < 0.5 ? f : 1 - f, drawn = new Set();
-  const objects = near.objects.map(r => {
-    const o = far.objects.find(q => q[7] === r[7] && (q[0] & 15) === (r[0] & 15) && q[4] === r[4] && q[5] === r[5] && q[6] === r[6] && q.length === r.length);
-    const seen = near.drawn.has(r) || (o && far.drawn.has(o));
-    let m = r;
-    if (o) {
-      let moved = false;
-      for (let k = 1; k < 4; k++) if (o[k] !== r[k]) moved = true;
-      if (moved) {
-        m = Float64Array.from(r);
-        for (let k = 1; k < 4; k++) m[k] = r[k] + (o[k] - r[k]) * g;
-      }
-    }
-    if (seen) drawn.add(m);
-    return m;
-  });
-  return { objects, drawn };
-}
-// two pictures the motion does not slide across: another area, or a jump in place
-function cut(a, b) {
-  return a.area !== b.area || Math.abs(a.pose.x - b.pose.x) > 1024 || Math.abs(a.pose.y - b.pose.y) > 1024 || Math.abs(a.pose.z - b.pose.z) > 1024;
 }
 
 // ---- colours. A pixel's two bits are the background ($D021), its cell's high nibble or low
@@ -670,7 +652,7 @@ function stripImage(pic, cols) {
   return cv;
 }
 // Draws the faithful frame (a canvas of 384 by 272) scaled to cv's pixels, and the view over it
-// from view (the fast CPU's, or the picture on show's scene); the sprites over the view stay on top.
+// from view (a scene); the sprites over the view stay on top.
 // F is the frame on show, px its pixels
 function draw(cv, faithful, view, F, px) {
   const dpr = root.devicePixelRatio || 1, css = cv.getBoundingClientRect();
@@ -740,9 +722,9 @@ function draw(cv, faithful, view, F, px) {
   for (const o of spritePixels(F, px)) { g.fillStyle = pal[px[o]]; g.fillRect((o % 384) * k, Math.floor(o / 384) * k, k, k); }
 }
 
-// ---- a view between two pictures in the C64's own pixels: painted as the game would paint the pose,
-// into px, the frame of palette indices on show, the sprites over the view left as they are; a
-// still view is the frame's own, and is left as it is (false)
+// ---- the view in the C64's own pixels, painted as the game would paint the pose (Fast CPU's
+// fractional angles), into px, the frame of palette indices on show, the sprites over the view
+// left as they are; a still view is the frame's own, and is left as it is (false)
 function paint(px, view, F) {
   if (!view || !F || view.still) return false;
   const buf = paintBuffer(view.scene), cols = colours(F), keep = new Set(spritePixels(F, px));
@@ -757,6 +739,6 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, scene, draw, paint, paintBuffer, capture, spritePixels, between, objectsBetween, cut, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, latest, scene, draw, paint, paintBuffer, capture, spritePixels, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);

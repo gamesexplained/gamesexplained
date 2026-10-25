@@ -110,12 +110,14 @@ G.move = function (P) {
         x = M[0x82]; y = M[0x83];
       }
       M[0x5DD6] = x; M[0x5DD7] = y;
+      // the sine or cosine at the facing, between two steps when it stands between them (P.trig);
+      // plug-in point: the share of the step this loop takes
       const along = t => {
-        P.MUL_S16_S8_TO_S24({ a: M[0x5DD6], x: M[0x5DD7], y: M[t + M[0x5DD1]] });
+        P.MUL_S16_S8_TO_S24({ a: M[0x5DD6], x: M[0x5DD7], y: P.trig(t, 0x2411) });
         times4();
         let v = M[0x83] | M[0x84] << 8;
         if (act === 4) { v = (-v) & 0xFFFF; M[0x84] = v >> 8; M[0x83] = v & 255; }
-        return v;
+        return P.plug.step(t, (v << 16) >> 16);
       };
       M[0x5DD1] = (M[0x2411] << 1) & 255;
       setw(0x1050, along(0x123D) + w(0x240B));
@@ -131,9 +133,10 @@ G.move = function (P) {
       return moved();
     }
     if (act === 5 || act === 6) {
-      // a turn by the step the area allows ($9D4C), or a fixed one when $1380 is set
+      // a turn by the step the area allows ($9D4C), or a fixed one when $1380 is set; plug-in point:
+      // a share of the area's step
       M[0x5DD3] = 0x24;
-      const step = M[0x1380] ? 0x12 : M[0x9D4C];
+      const step = M[0x1380] ? 0x12 : P.plug.turn(0x2411, act === 5 ? -M[0x9D4C] : M[0x9D4C]);
       let a;
       if (act === 5) { M[0x82] = step; y = 3; a = (M[0x2411] - step) & 255; if (a & 0x80) a = (a + 0x48) & 255; }
       else { y = 4; a = (step + M[0x2411]) & 255; if (a >= 0x48) a -= 0x48; }
@@ -144,6 +147,7 @@ G.move = function (P) {
     let a;
     if (act === 0x0C) {
       // the view levelled, the panel's picture turning back in four frames
+      P.plug.whole(0x2410);
       if (!M[0x2410]) return moved();
       M[0x7A] = 0xB0; M[0x7B] = 0x1F; M[0x7C] = 0x65; M[0x7D] = 0x1D;
       a = 4;
@@ -158,11 +162,13 @@ G.move = function (P) {
       a = 0;
     } else if (act === 7 || act === 8) {
       P.PRESENT_ACTION_FEEDBACK({ y: act === 7 ? 1 : 2 });
-      if (M[0x1380]) a = act === 7 ? 0x36 : 0x12;
+      if (M[0x1380]) { a = act === 7 ? 0x36 : 0x12; P.plug.whole(0x2410); }
       else {
-        if (act === 7) { a = M[0x2410] - M[0x9D4C]; if (a < 0) a = (a + 0x48) & 255; }
-        else { a = (M[0x2410] + M[0x9D4C]) & 255; if (a >= 0x48) a -= 0x48; }
-        if (a < 0x36 && a >= 0x12) a = act === 7 ? 0x36 : 0x12;
+        // plug-in point: a share of the area's step
+        const step = P.plug.turn(0x2410, act === 7 ? -M[0x9D4C] : M[0x9D4C]);
+        if (act === 7) { a = M[0x2410] - step; if (a < 0) a = (a + 0x48) & 255; }
+        else { a = (M[0x2410] + step) & 255; if (a >= 0x48) a -= 0x48; }
+        if (a < 0x36 && a >= 0x12) { a = act === 7 ? 0x36 : 0x12; P.plug.whole(0x2410); }
       }
     } else if (act === 0x0D) {
       M[0x5DD3] = 0x24;

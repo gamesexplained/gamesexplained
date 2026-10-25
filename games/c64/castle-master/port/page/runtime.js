@@ -13,21 +13,20 @@
 //     onSave   optional: (name, bytes) when the game saves one
 //   rt.runFrame()      one frame of time: the program runs until the clock reaches the frame's end;
 //                      returns the frame that ends there, for C64.renderFrame
+//   rt.runTicks(cycles, loop)   Fast CPU's clock (page/fast.js), in place of runFrame: real time owed,
+//                      in cycles. The main loop goes round once on each tick of CIA 1's timer A,
+//                      its own work taking no time: loop.start is the checkpoint where a loop
+//                      starts, loop.work the checkpoints its stretches start at, loop.cap the most
+//                      loops a call runs (time owed past them is dropped), loop.between() called
+//                      after each. A wait inside a loop, and the program outside the loop (the
+//                      title, a menu, a message waiting for a key), take the C64's time. Returns
+//                      the loops run
+//   rt.now()           the screen as memory and the chips stand now, for C64.renderFrame
+//   rt.ticks           how many times timer A has counted down
 //   rt.shown           that frame's number: the clock can be ahead of it (below)
 //   rt.input           { keys: Set of key names (kit/c64/machine.js's), joy: port 2, active low }
 //   rt.onSid(f)        f(register, value, cycle) for every write to the SID
 //   rt.target          the clock at the end of the frame runFrame last ran to (null before the first)
-//   rt.runTo(c)        the program run until the clock reaches c, part of a frame or more; returns
-//                      the last frame finished
-//   rt.runSteps(c, most, each)   the fast CPU's clock (below): c more cycles of real time owed, and
-//                      the program run on by whole passes of rt.step cycles while it owes one, at
-//                      most `most` of them, each(n) after each; returns how many it ran
-//   rt.step            a pass on the fast CPU: the timer's period, 16,422 cycles
-//   rt.phase           how far the clock owes into the next pass, 0 to 1
-//   rt.fast            the fast CPU (below): set by rt.setFast(on), null when off
-//   rt.pass            { work }: the cycles the main loop's stretches have cost so far, as the C64
-//                      would spend them, kept in either mode
-//   rt.goal            the clock the program is being run to (runFrame's or runTo's)
 //   rt.restore(state, entry)   a machine saved by the tests (kit/c64/machine.js's save()), and the
 //                      program started at entry(P), a generator (test/t-page.js)
 //
@@ -43,23 +42,17 @@
 // port runs a stretch at once, so the clock can stand up to a view's drawing ahead of the frame the
 // page is at: the frames it has finished are kept (AHEAD) and each shown when its time comes.
 //
+// Fast CPU's clock is the same clock with the main loop's own work free: as a C64 with a much faster
+// processor would, the game goes round its loop as soon as the loop starts and then waits, at the
+// loop's start, for the next tick of the timer, which keeps all the game counts by it (strength,
+// the scripts' timer, the lightning, a wait inside a loop) to the C64's time.
+//
 // The interrupts. The game enables none on the video chip: CIA 1's timer A, as the KERNAL left it
 // (60 times a second), is the only source. Its handler looks at the video chip's latch first, which
 // the beam sets each frame on line $28 whether or not it is enabled: when it is set, the handler
 // plays the music's frame and leaves the timer's interrupt waiting, so it runs again at once for
 // the timer's own work. So the music has a frame each 50th of a second and the clock its tick each
 // 60th, as on the C64.
-//
-// The fast CPU (page/fast.js's switch). The main loop's stretches (between its checkpoints, PASS)
-// cost a FASTth of what they cost the C64, and each pass of play waits at its start for the clock
-// the page runs to (runTo), so that the program draws a view for each pass the page runs. The
-// interrupts and every wait on them keep the C64's time, and so does what runs outside the main
-// loop's stretches: the start, the title, the menus, a message held until a key. What the C64
-// would have spent on each pass is counted either way (rt.pass), for page/fast.js to scale the
-// pass's steps by. The page runs the clock on a pass at a time (runSteps), each the timer's period,
-// so that a pass begins at the same count of the timer as the last and sees one tick of it: the
-// game is then the same, pass for pass, at whatever rate the page is drawn. A machine too slow to
-// keep up lets the time it owes go, and plays slower than the C64.
 (function (root) {
 'use strict';
 const LINE = 63, LINES = 312, FRAME = LINE * LINES;
@@ -83,11 +76,6 @@ const IRQ_MUSIC = 1040, IRQ_TIMER = 250, IRQ_FILL = 4950;
 const AHEAD = 160;
 // the least a stretch between two checkpoints costs (step())
 const MIN_STRETCH = 10;
-// the main loop's checkpoints (src/g-main.js's main_loop), the first a pass's start; and how many
-// times faster the fast CPU runs the stretches between them: the longest pass, about two million
-// cycles, takes it two thousand, a tenth of a frame
-const PASS_START = 0x47F0, PASS = new Set([0x47C5, 0x47D7, PASS_START, 0x47F3, 0x47ED, 0x47FD]);
-const FAST = 1000;
 
 function create(o) {
   const CM = root.CMPort;
@@ -102,7 +90,7 @@ function create(o) {
   const input = { keys: new Set(), joy: 0x1F, joy1: 0x1F };
 
   // ---- the clock, and the frames as the beam draws them
-  let t = 0, lastLine = -1, ciaAt = 0, irqsOn = false;
+  let t = 0, lastLine = -1, ciaAt = 0, irqsOn = false, ticks = 0;
   const lineNow = () => Math.floor(t / LINE);
   const keep = {};
   const vm = root.C64 ? root.C64.videoMemory(M, colour, { keep, frames: AHEAD + 2 }) : null;
@@ -130,7 +118,7 @@ function create(o) {
     if (!(ta.cr & 1) || left <= 0) return;
     while (left > 0) {
       if (ta.cnt >= left) { ta.cnt -= left; break; }
-      left -= ta.cnt + 1; ta.cnt = ta.lat; ta.icr |= 1;
+      left -= ta.cnt + 1; ta.cnt = ta.lat; ta.icr |= 1; ticks++;
       if (ta.cr & 8) { ta.cr &= ~1; break; }
     }
   }
@@ -247,10 +235,8 @@ function create(o) {
   P.INSTALL_RUNTIME_VECTORS = function (r) { const v = install.call(this, r); irqsOn = true; return v; };
   const model = o.cost || { seg: {}, call: {} };
   let calls = Object.create(null), counting = true, owed = 0;
-  // the fast CPU, when on: { carry } the cycles it owes the clock, less than one; { grid, bank }
-  // the clock its last pass ran to and the real time owed since (runSteps)
-  let fast = null;
-  const pass = { work: 0 };
+  // free: the stretch running is the main loop's own work, with Fast CPU's clock (runTicks)
+  let free = false;
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
   for (const name of Object.keys(model.call)) {
     const f = P[name];
@@ -264,7 +250,7 @@ function create(o) {
   function called(name, c) {
     calls[name] = (calls[name] || 0) + 1;
     owed += c;
-    if (owed >= LINE) { const d = callsCost(); if (d >= 1) work(Math.round(d)); }
+    if (owed >= LINE) { const d = callsCost(); if (d >= 1 && !free) advance(Math.round(d)); }
   }
   // the routines called and the work counted since the clock last moved, at their cost
   function callsCost() {
@@ -280,19 +266,8 @@ function create(o) {
   // A byte the interrupt writes, read in the middle of a stretch: the clock first moves on by what
   // the stretch has cost so far, so that the interrupts due in that time have run
   function irqByte(a) {
-    if (counting) { const c = callsCost(); if (c >= 1) work(Math.round(c)); }
+    if (counting) { const c = callsCost(); if (c >= 1 && !free) advance(Math.round(c)); }
     return M[a];
-  }
-  // dt cycles of the main program's work: counted for the pass when it is the main loop's, and on
-  // the fast CPU a FASTth of them on the clock
-  function work(dt) {
-    if (lastCp === null || !PASS.has(lastCp)) return advance(dt);
-    pass.work += dt;
-    if (!fast) return advance(dt);
-    fast.carry += dt / FAST;
-    const d = Math.floor(fast.carry);
-    fast.carry -= d;
-    if (d) advance(d);
   }
 
   // ---- the interrupts: the timer's underflow (or the video chip's, were it enabled) runs the
@@ -322,13 +297,12 @@ function create(o) {
   }
   // the clock's cycles by what took them: the main program's work, its waits, the interrupts
   const spent = { work: 0, wait: 0, irq: 0 };
-  // (the interrupts that fall due take their time on top, but for a wait to a clock, `to`)
-  function advance(dt, wait, to) {
+  function advance(dt, wait) {
     spent[wait ? 'wait' : 'work'] += dt;
     let end = t + dt;
     for (;;) {
       ciaCatchUp();
-      if (irqsOn && pending()) { const t0 = t; runIrqs(); if (!to) end += t - t0; spent.irq += t - t0; continue; }
+      if (irqsOn && pending()) { const t0 = t; runIrqs(); end += t - t0; spent.irq += t - t0; continue; }
       const at = nextIrq();
       if (at > end) break;
       t = Math.max(t, at); roll();
@@ -336,29 +310,32 @@ function create(o) {
     t = Math.max(t, end); roll(); ciaCatchUp();
   }
 
-  let it = null, lastCp = null, goal = 0;
+  // loop: Fast CPU's clock's (runTicks), null with the C64's; parked: the program stands at a loop's
+  // start, waiting for the timer's tick
+  let it = null, lastCp = null, atCp = false, loop = null, parked = false, going = false;
   function step() {
     const r = it.next();
     if (r.done) throw new Error('the program ended');
     const y = r.value;
     if (y && y.cp !== undefined) {
       // a stretch takes the game some cycles, whatever the fit gave it: a loop of nothing the fit
-      // knows still lets the clock, and with it the keys, move on
-      const dt = lastCp === null ? 0 : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
-      work(dt);
-      lastCp = y.cp;
-      // on the fast CPU a pass waits for the frame the page draws next
-      if (fast && y.cp === PASS_START && t < goal) advance(goal - t, true, true);
+      // knows still lets the clock, and with it the keys, move on; the main loop's own, none with
+      // Fast CPU's clock
+      const dt = lastCp === null ? 0 : free ? (callsCost(), 0) : Math.max(MIN_STRETCH, cost(lastCp, y.cp));
+      lastCp = y.cp; atCp = true;
+      advance(dt);
+      free = !!loop && loop.work.has(y.cp);
+      parked = !!loop && y.cp === loop.start;
     } else {
       // a turn of a polling loop: what the stretch has cost so far, then on to the next line
       const c = callsCost();
-      if (c >= 1) work(Math.round(c));
+      if (c >= 1 && !free) advance(Math.round(c));
+      atCp = false;
       advance(LINE - t % LINE, true);
     }
   }
   function runUntil(until) {
     let guard = 0;
-    goal = until;
     while (t < until) {
       step();
       if (++guard > 2e6) throw new Error('runUntil: no progress');
@@ -371,33 +348,44 @@ function create(o) {
     return done[Math.max(0, Math.min(done.length - 1, i))];
   }
   function runFrame() {
+    if (loop) { loop = null; free = false; parked = false; going = false; }
     if (target === null) target = t;
     target += FRAME;
     if (t < target) runUntil(target);
     return frameAt(Math.floor(target / FRAME) - 1);
   }
-  function runTo(c) {
+  // Fast CPU's clock: the real time owed banked, and a loop run on each tick it reaches, up to the
+  // cap; less than a tick stays in the bank, and what is owed past the cap is dropped
+  function runTicks(cycles, o) {
+    if (loop !== o) { loop = o; free = o.work.has(lastCp) && atCp; parked = atCp && lastCp === o.start; }
     if (target === null) target = t;
-    target = Math.max(target, c);
-    if (t < target) runUntil(target);
-    return frameAt(Math.floor(target / FRAME) - 1);
-  }
-  function runSteps(c, most, each) {
-    if (!fast) return 0;
-    if (target === null) target = t;
-    if (fast.grid === null) fast.grid = target;
-    const step = ta.lat + 1;
-    let n = 0;
-    fast.bank += c;
-    while (fast.bank >= step && n < most) {
-      fast.bank -= step; fast.grid += step;
-      runTo(fast.grid);
-      if (each) each(++n); else n++;
+    target += cycles;
+    let loops = 0, guard = 0;
+    for (;;) {
+      if (++guard > 2e6) throw new Error('runTicks: no progress');
+      if (!parked) {
+        // in a loop's wait, or outside the loop: the C64's time, as far as is owed
+        if (t >= target) break;
+        step();
+        if (parked && going) { going = false; if (o.between) o.between(); }
+        continue;
+      }
+      ciaCatchUp();
+      if (!(ta.cr & 1)) throw new Error('runTicks: timer A is stopped');
+      const tick = ciaAt + ta.cnt + 1;
+      if (tick > target) break;
+      if (loops === o.cap) { target = t; break; }
+      // the tick, its interrupt run, then the loop
+      advance(tick - t, true);
+      parked = false; going = true; loops++;
     }
-    if (fast.bank >= step) fast.bank %= step;
-    return n;
+    return loops;
   }
-  function setFast(on) { fast = on ? fast || { carry: 0, grid: null, bank: 0 } : null; }
+  // the screen now: memory, colour RAM and the chips as they stand, with nothing still to change
+  const keepNow = {};
+  function now() {
+    return { frame: frameIdx, vic: Array.from(vic.subarray(0, 47)), cia2: [pra2, ddra2], writes: [], mem: M, colourMem: colour, keep: keepNow };
+  }
 
   const b64 = s => typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(s, 'base64')) : Uint8Array.from(atob(s), c => c.charCodeAt(0));
   function restore(s, entry) {
@@ -415,18 +403,16 @@ function create(o) {
     frameIdx = Math.floor(t / FRAME);
     if (vm) vm.at(-1, [], 0);
     done.length = 0; begin();
-    it = entry(P); lastCp = null; calls = Object.create(null); owed = 0;
+    it = entry(P); lastCp = null; atCp = false; free = false; parked = false; going = false; calls = Object.create(null); owed = 0;
     for (const k in P.N) P.N[k] = 0;
     P.NI.fill = 0;
   }
   restore(o.data, p => p.start());
   return {
-    M, colour, vic, sidw, input, KEY, P, files, spent, pass, setFast,
-    get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; },
-    get goal() { return goal; }, get fast() { return fast; },
-    get step() { return ta.lat + 1; }, get phase() { return fast ? fast.bank / (ta.lat + 1) : 0; },
+    M, colour, vic, sidw, input, KEY, P, files, spent,
+    get t() { return t; }, get frame() { return frameIdx; }, get target() { return target; }, get ticks() { return ticks; },
     get shown() { return target === null ? frameIdx - 1 : Math.floor(target / FRAME) - 1; },
-    runFrame, runTo, runSteps, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
+    runFrame, runTicks, now, runUntil, restore, lastFrame: () => (target === null ? done[done.length - 1] : frameAt(Math.floor(target / FRAME) - 1)),
     onSid: f => sidListeners.push(f),
   };
 }

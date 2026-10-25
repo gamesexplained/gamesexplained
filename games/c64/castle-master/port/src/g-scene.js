@@ -161,16 +161,15 @@ G.scene = function (P) {
   P.viewport_effect_return = r => r;
   P.BUILD_VIEW_PROJECTION_MATRIX = function (r) {
     for (let x = 9; x > 0; x--) M[0x106B + x] = M[0x2C72 + x];
-    if (M[0x2411]) {
-      const x = (M[0x2411] << 1) & 255;
-      M[0x1072] = M[0x123C + x]; M[0x106E] = (0 - M[0x1072]) & 255;
-      M[0x106C] = M[0x1074] = M[0x123D + x];
+    // plug-in point: an angle that stands between two steps (P.trig)
+    if (M[0x2411] || P.plug.frac(0x2411)) {
+      M[0x1072] = P.trig(0x123C, 0x2411); M[0x106E] = (0 - M[0x1072]) & 255;
+      M[0x106C] = M[0x1074] = P.trig(0x123D, 0x2411);
     }
-    if (M[0x2410]) {
+    if (M[0x2410] || P.plug.frac(0x2410)) {
       for (let x = 9; x > 0; x--) M[0x1074 + x] = M[0x2C72 + x];
-      const x = (M[0x2410] << 1) & 255;
-      M[0x107A] = M[0x123C + x]; M[0x107C] = (0 - M[0x107A]) & 255;
-      M[0x1079] = M[0x107D] = M[0x123D + x];
+      M[0x107A] = P.trig(0x123C, 0x2410); M[0x107C] = (0 - M[0x107A]) & 255;
+      M[0x1079] = M[0x107D] = P.trig(0x123D, 0x2410);
       P.MULTIPLY_3X3_FIXED_MATRICES({});
     }
     for (let x = 9; x > 0; x--) M[0x1074 + x] = M[0x2C7B + x];
