@@ -57,6 +57,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
 .pl-bar button,.pl-over button,.pl-mod button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
 .pl-bar button[aria-pressed="true"],.pl-mod button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button[disabled]{opacity:.45;cursor:not-allowed}
 .pl-bar button:hover,.pl-mod button:hover{border-color:var(--ink-mute)}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
@@ -261,20 +262,51 @@ const view3d = (function () {
   const bgpx = new Uint8Array(W * H), vic0 = new Uint8Array(0x40);
   const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
   const prog = (vs, fs) => { const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); return p; };
-  const cubeP = prog(`#version 300 es
-layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 iAt; layout(location=3) in vec3 iCol;
+  // The light comes from above, left and in front (LX, LY, LZ, toward it). A face turned to the
+  // viewer is lit at full strength, so the picture is as bright as the flat screen; the sides are
+  // shaded by how far they turn from the light. Shadows: a depth map drawn from the light, which
+  // the blocks and the wall look up (four samples, for a soft edge).
+  const LX = -0.42, LY = 0.55, LZ = 0.72, LN = Math.hypot(LX, LY, LZ);
+  const L = `vec3(${(LX / LN).toFixed(4)}, ${(LY / LN).toFixed(4)}, ${(LZ / LN).toFixed(4)})`;
+  const CUBE = `layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 iAt; layout(location=3) in vec3 iCol;
 layout(location=4) in float iW;
-uniform mat4 uMVP; out vec3 vCol;
+vec3 place() { return vec3(iAt.x + aPos.x * iW, -(iAt.y + aPos.y), iAt.z + aPos.z * iAt.w); }`;
+  const SHADOW = `precision highp float; precision highp sampler2DShadow; uniform sampler2DShadow uSh; in vec4 vLP;
+float lit() {
+  vec3 s = vLP.xyz / vLP.w * 0.5 + 0.5; float t = 1.0 / 2048.0, b = s.z - 0.006;   // 5 units: blocks of one height never shadow each other
+  return 0.25 * (texture(uSh, vec3(s.xy + vec2(-t, -t), b)) + texture(uSh, vec3(s.xy + vec2(t, -t), b))
+               + texture(uSh, vec3(s.xy + vec2(-t, t), b)) + texture(uSh, vec3(s.xy + vec2(t, t), b)));
+}
+const float SHADE = 0.62;`;
+  const cubeP = prog(`#version 300 es
+${CUBE}
+uniform mat4 uMVP, uLVP; out vec3 vCol; out vec4 vLP;
 void main() {
-  vec3 p = vec3(iAt.x + aPos.x * iW, -(iAt.y + aPos.y), iAt.z + aPos.z * iAt.w);
-  float l = 0.78 + 0.22 * dot(aNrm, normalize(vec3(-0.35, 0.45, 0.82)));
-  vCol = iCol * l; gl_Position = uMVP * vec4(p, 1.0);
+  vec3 p = place();
+  float l = 1.0 + 0.4 * (dot(aNrm, ${L}) - ${L}.z);
+  vCol = iCol * l; vLP = uLVP * vec4(p, 1.0); gl_Position = uMVP * vec4(p, 1.0);
 }`, `#version 300 es
-precision mediump float; in vec3 vCol; out vec4 o; void main() { o = vec4(vCol, 1.0); }`);
+${SHADOW}
+in vec3 vCol; out vec4 o; void main() { o = vec4(vCol * mix(SHADE, 1.0, lit()), 1.0); }`);
+  const depthP = prog(`#version 300 es
+${CUBE}
+uniform mat4 uLVP; void main() { gl_Position = uLVP * vec4(place(), 1.0); }`, `#version 300 es
+precision mediump float; void main() {}`);
   const wallP = prog(`#version 300 es
-layout(location=0) in vec2 aPos; uniform mat4 uMVP; out vec2 vUV;
-void main() { vUV = aPos; gl_Position = uMVP * vec4(aPos.x * ${W}.0, -aPos.y * ${H}.0, -0.5, 1.0); }`, `#version 300 es
-precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(uTex, vUV).rgb * 0.92, 1.0); }`);
+layout(location=0) in vec2 aPos; uniform mat4 uMVP, uLVP; out vec2 vUV; out vec4 vLP;
+void main() { vUV = aPos; vec4 p = vec4(aPos.x * ${W}.0, -aPos.y * ${H}.0, -0.5, 1.0); vLP = uLVP * p; gl_Position = uMVP * p; }`, `#version 300 es
+${SHADOW}
+uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(uTex, vUV).rgb * mix(SHADE, 1.0, lit()), 1.0); }`);
+  const SM = 2048, shTex = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shTex);
+  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.DEPTH_COMPONENT24, SM, SM);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+  const shFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, shFB);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, shTex, 0);
+  gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.activeTexture(gl.TEXTURE0);
   // a unit cube, from 0 to 1 on each axis, its faces' normals (y down the screen, so flipped)
   const F = [[0,0,1, [0,0,0,1,0,0,1,1,0,0,1,0]], [0,0,-1, [0,0,0,0,1,0,1,1,0,1,0,0]], [0,-1,0, [0,1,0,0,1,1,1,1,1,1,1,0]],
              [0,1,0, [0,0,0,1,0,0,1,0,1,0,0,1]], [1,0,0, [1,0,0,1,1,0,1,1,1,1,0,1]], [-1,0,0, [0,0,0,0,0,1,0,1,1,0,1,0]]];
@@ -308,15 +340,24 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
   const COL = RGB.map(c => c.map(v => v / 255));
   function persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2); return [t / a,0,0,0, 0,t,0,0, 0,0,(fa + n) / (n - fa),-1, 0,0,2 * fa * n / (n - fa),0]; }
   function mul(a, b) { const o = new Array(16).fill(0); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) o[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k]; return o; }
+  function lookAt(ex, ey, ez, cx, cy, cz) {
+    let fx = cx - ex, fy = cy - ey, fz = cz - ez; const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
+    let sx = -fz, sy = 0, sz = fx; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
+    const ux = sy * fz - sz * fy, uy = sz * fx - sx * fz, uz = sx * fy - sy * fx;
+    return [sx, ux, -fx, 0, sy, uy, -fy, 0, sz, uz, -fz, 0, -(sx * ex + sy * ey + sz * ez), -(ux * ex + uy * ey + uz * ez), fx * ex + fy * ey + fz * ez, 1];
+  }
+  // the light's view: square on to the light, wide enough for the whole frame and its shadows
+  const LVP = (function () {
+    const cx = W / 2, cy = -H / 2, r = 250, n = 400, f = 1200, k = 800 / LN;
+    const O = [1 / r, 0, 0, 0, 0, 1 / r, 0, 0, 0, 0, -2 / (f - n), 0, 0, 0, -(f + n) / (f - n), 1];
+    return new Float32Array(mul(O, lookAt(cx + LX * k, cy + LY * k, LZ * k, cx, cy, 0)));
+  })();
   function view() {
     // the camera on a sphere round the play area's middle, looking at it
-    const cx = W / 2, cy = -H / 2, d = 440, yw = yaw + lean, pt = pitch + lift;
+    const cx = W / 2, cy = -H / 2, d = 372,        // near enough that the frame fills the view
+          yw = yaw + lean, pt = pitch + lift;
     const ex = cx + d * Math.sin(yw) * Math.cos(pt), ey = cy + d * Math.sin(pt), ez = d * Math.cos(yw) * Math.cos(pt);
-    let fx = cx - ex, fy = cy - ey, fz = -ez; const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
-    let sx = fy * 0 - fz * 1, sy = fz * 0 - fx * 0, sz = fx * 1 - fy * 0; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
-    const ux = sy * fz - sz * fy, uy = sz * fx - sx * fz, uz = sx * fy - sy * fx;
-    const V = [sx, ux, -fx, 0, sy, uy, -fy, 0, sz, uz, -fz, 0, -(sx * ex + sy * ey + sz * ez), -(ux * ex + uy * ey + uz * ez), fx * ex + fy * ey + fz * ez, 1];
-    return mul(persp(0.75, c3.width / c3.height, 10, 3000), V);
+    return mul(persp(0.75, c3.width / c3.height, 10, 3000), lookAt(ex, ey, ez, cx, cy, 0));
   }
   function frame() {
     if (!rt) return;
@@ -356,29 +397,43 @@ precision mediump float; uniform sampler2D uTex; in vec2 vUV; out vec4 o; void m
       }
     }
     if (SHOW.paths && !rt.busy) paths.points().forEach(([x, y], i) => { if (i % 4 === 0) { put(x - 1, y - 1, 2, 12, 2, 1); put(x - 1, y, 2, 12, 2, 1); } });   // the same dots, floating
-    gl.viewport(0, 0, c3.width, c3.height);
-    // beyond the wall's edges, the border colour as the wall shows it, so the screen stays full
-    const bc = COL[rt.chips.vic[0x20] & 15];
-    gl.clearColor(bc[0] * 0.92, bc[1] * 0.92, bc[2] * 0.92, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
+    gl.bindVertexArray(cubeVA);
+    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 8), gl.DYNAMIC_DRAW);
+    // the depth map, from the light
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(depthP); gl.uniformMatrix4fv(gl.getUniformLocation(depthP, 'uLVP'), false, LVP);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, c3.width, c3.height);
+    // beyond the wall's edges, the border colour, so the screen stays full
+    const bc = COL[rt.chips.vic[0x20] & 15];
+    gl.clearColor(bc[0], bc[1], bc[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const mvp = new Float32Array(view());
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.activeTexture(gl.TEXTURE0);
     gl.useProgram(wallP);
     gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, wallRGB);
     gl.uniformMatrix4fv(gl.getUniformLocation(wallP, 'uMVP'), false, mvp);
+    gl.uniformMatrix4fv(gl.getUniformLocation(wallP, 'uLVP'), false, LVP);
+    gl.uniform1i(gl.getUniformLocation(wallP, 'uTex'), 0); gl.uniform1i(gl.getUniformLocation(wallP, 'uSh'), 1);
     gl.bindVertexArray(wallVA); gl.drawArrays(gl.TRIANGLES, 0, 6);
     gl.useProgram(cubeP);
     gl.uniformMatrix4fv(gl.getUniformLocation(cubeP, 'uMVP'), false, mvp);
+    gl.uniformMatrix4fv(gl.getUniformLocation(cubeP, 'uLVP'), false, LVP);
+    gl.uniform1i(gl.getUniformLocation(cubeP, 'uSh'), 1);
     gl.bindVertexArray(cubeVA);
-    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 8), gl.DYNAMIC_DRAW);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
     gl.bindVertexArray(null);
   }
   let crtWas = false;
+  const crtBtn = document.querySelector('[data-crt]'), crtTitle = crtBtn.title;
   const v = { on: false, frame,
     set(want) {
       v.on = want; c3.hidden = !want; btn.setAttribute('aria-pressed', String(want));
       if (want) { crtWas = crt.on; if (crt.on) crt.set(false); if (rt) frame(); }
       else if (crtWas) crt.set(true);
+      // the CRT screen draws over the flat picture only, so its switch rests while the model shows
+      crtBtn.disabled = want; crtBtn.title = want ? 'The CRT screen draws over the flat picture, so it is off while the 3D view is on' : crtTitle;
     } };
   btn.addEventListener('click', () => { v.set(!v.on); screen.focus(); });
   return v;
