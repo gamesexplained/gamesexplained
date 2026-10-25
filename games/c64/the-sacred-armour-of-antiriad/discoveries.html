@@ -71,6 +71,13 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .an-sprite{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
 .an-sprite canvas{image-rendering:pixelated;background:#000;border-radius:4px}
 @media (max-width:720px){.an-two,.an-pics{grid-template-columns:1fr}.an-world button,.an-world span{font-size:0}}
+.an-range{width:100%;margin:12px 0 4px;accent-color:var(--accent)}
+.an-stages{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.an-stage{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 9px;color:var(--ink);cursor:pointer;text-align:left}
+.an-stage:hover{border-color:var(--ink-mute)}
+.an-stage[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.an-stage .an-n{color:var(--ink-mute);margin-right:6px}
+.an-bar-group{display:inline-flex;flex-wrap:wrap;gap:8px;margin-right:10px}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -196,8 +203,23 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p><code>start_new_game</code> (<code>$8E43</code>) picks the end by bit 0 of <code>zp_pass_count</code>, a count of passes of the main loop. The count starts at 0 and the title screen does not run the main loop, so on the first game it is still 0 and Tal starts in <code>$38</code>. Every later game starts at whichever end the last game's count left.</p>
 </section>
 
+<section id="throw">
+  <p class="fig">10 · The first stone</p>
+  <h2 class="t">Bug: until Tal's first stone lands, a doorway can take him two rooms on</h2>
+  <p class="lede">The game keeps a flag for a stone Tal has asked to throw, and nothing clears it when a game starts. On a machine that has just loaded the game the flag is already set, and until his first stone has landed, walking out of a room at the side can carry him straight through the next one too.</p>
+  <div class="plate">
+    <div class="an-bar" id="an-throw-bar"></div>
+    <div class="an-wrapx"><table class="an-tbl" id="an-throw"></table></div>
+    <p class="an-out" id="an-throw-out"></p>
+    <p class="cap">The eight instructions at <code>$A3BE</code>-<code>$A3CD</code> in <code>throw_stone</code>, run on a 6502 from the listing, with the exit to the right in <code>move_right</code> (<code>$99FA</code>-<code>$9A0B</code>) put in where the raster interrupt takes it. Tal starts at X 292 with both his high bits set and no stone out. In the emulator, from this build's start with no stone thrown, Tal walked out of room <code>$3E</code> at the right and was in <code>$40</code> seven frames later. With <code>$7C</code> set to 0 first, the same walk stopped in <code>$3F</code>.</p>
+  </div>
+  <p><code>zp_throw</code> (<code>$7C</code>) has bit 7 set while Tal has asked to throw. The game sets it when he throws, and clears it only when the stone has gone, off the screen or broken on the scenery. Bytes <code>$73</code> to <code>$8F</code> of zero page are where the KERNAL copies BASIC's routine for reading the next character of a line, and the seed of its random numbers, when the machine is switched on. <code>$7C</code> is that routine's <code>CMP</code> instruction, <code>$C9</code>, which has bit 7 set.</p>
+  <p>While the flag is set and the stone's sprite is free, <code>throw_stone</code> runs on every pass of the main loop, dozens of times a frame, waiting for Tal's throwing picture. Each time it copies bit 0 of <code>spr_xhi</code>, the ninth bit of Tal's X, into bit 2, the stone's, reading and writing <code>spr_xhi</code> twice. When Tal walks out at the right, the raster interrupt moves him to X 50 and clears his high bits. If it comes between a read and the write after it, that write puts the old bits back. Tal is then at X 306, past the right edge, and he goes straight out of the new room as well. Walking out at the left it works the other way round: he is put back at X 44, past the left edge.</p>
+  <p>The first stone Tal throws ends it. When that stone lands the flag is cleared, and it stays clear for every later game until the machine is switched off.</p>
+</section>
+
 <section id="umlauts">
-  <p class="fig">10 · The alphabet</p>
+  <p class="fig">11 · The alphabet</p>
   <h2 class="t">Secret: the panel can spell German words</h2>
   <p class="lede">Besides A to Z, the panel's text has eight more marks. Three of them are A, O and U with umlauts, which no message in this release uses.</p>
   <div class="plate">
@@ -761,7 +783,49 @@ function startWidget(ram) {
   [ram[0xC5DB], ram[0xC5DC]].forEach((r, i) => show($('an-start-' + i), ANT.paint(ram, ANT.room(ram, r), { sprites: true }), 1));
 }
 
-// ---- 10 the alphabet
+// ---- 10 the first stone
+// throw_stone's copy of Tal's high X bit to the stone's ($A3BE-$A3CD), run on the 6502 from the
+// listing with move_right's exit to the right ($99FA-$9A0B) put in after `at` instructions, the
+// registers kept as the interrupt keeps them
+function throwRun(ram, at) {
+  const m = ram.slice(), cpu = new C64Cpu.CPU(m), rows = [];
+  m[0x0200] = 292 - 256; m[0x0210] = 0x03;
+  cpu.pc = 0xA3BE;
+  for (let k = 0; ; k++) {
+    if (k === at) {
+      const keep = [cpu.pc, cpu.a, cpu.x, cpu.y, cpu.p];
+      cpu.pc = 0x99FA;
+      while (cpu.pc !== 0x9A0E) cpu.step();
+      rows.push({ exit: true, xhi: m[0x0210] });
+      [cpu.pc, cpu.a, cpu.x, cpu.y, cpu.p] = keep;
+    }
+    if (cpu.pc === 0xA3D0) break;
+    const pc = cpu.pc;
+    cpu.step();
+    rows.push({ pc, a: cpu.a, xhi: m[0x0210] });
+  }
+  return { rows, x: m[0x0200] + (m[0x0210] & 1 ? 256 : 0) };
+}
+function throwWidget(L) {
+  const ram = L.ram, recs = new Map(L.listing.records.map((r) => [r.a, r]));
+  const ins = (a) => { const r = recs.get(a); return r.m + (r.o ? ' ' + r.o : ''); };
+  const bits = (v) => '%' + (v & 7).toString(2).padStart(3, '0');
+  const bar = $('an-throw-bar'), steps = throwRun(ram, -1).rows.map((r) => r.pc);
+  ['Before them'].concat(steps.map((a) => 'After ' + hex(a, 4))).forEach((l, at) => {
+    const b = button(bar, l, () => {
+      const run = throwRun(ram, at);
+      $('an-throw').innerHTML = '<tr><th>Address</th><th>Instruction</th><th>A</th><th><code>spr_xhi</code> bits 2-0</th></tr>' + run.rows.map((r) => r.exit ?
+        '<tr class="an-sel"><td class="an-n">' + hex(0x99FA, 4) + '</td><td>the interrupt: Tal leaves at the right, X 50, high bits cleared</td><td></td><td class="an-n">' + bits(r.xhi) + '</td></tr>' :
+        '<tr><td class="an-n">' + hex(r.pc, 4) + '</td><td class="an-n">' + esc(ins(r.pc)) + '</td><td class="an-n">' + hex(r.a) + '</td><td class="an-n">' + bits(r.xhi) + '</td></tr>').join('');
+      $('an-throw-out').innerHTML = run.x >= 300
+        ? 'A write puts Tal\'s old high bits back: he is at <b>X ' + run.x + '</b>, past the right edge, and he goes straight out of the new room too.'
+        : 'Tal stays at <b>X ' + run.x + '</b>, at the left edge of the new room.';
+    });
+    if (at === 1) b.click();
+  });
+}
+
+// ---- 11 the alphabet
 function umlautWidget(ram) {
   const box = $('an-uml'), punct = [...ram.subarray(0xC5CB, 0xC5D3)], codes = [...ram.subarray(0xC5D3, 0xC5DB)];
   const marks = [['A', 0x41 + 0x5B], ['O', 0x4F + 0x5B], ['U', 0x55 + 0x5B]].concat(
@@ -780,7 +844,7 @@ function umlautWidget(ram) {
 
 C64.load('listing.json').then((L) => {
   const m = L.ram;
-  titleWidget(m); cellWidget(m); scoreWidget(m); bomberWidget(m); colourWidget(m); ntscWidget(m); holeWidget(m); startWidget(m); umlautWidget(m);
-}).catch((e) => { for (const id of ['an-cell-out', 'an-bomber-out', 'an-ntsc', 'an-hole-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
+  titleWidget(m); cellWidget(m); scoreWidget(m); bomberWidget(m); colourWidget(m); ntscWidget(m); holeWidget(m); startWidget(m); throwWidget(L); umlautWidget(m);
+}).catch((e) => { for (const id of ['an-cell-out', 'an-bomber-out', 'an-ntsc', 'an-hole-out', 'an-throw-out']) $(id).textContent = 'This widget runs in the built site, which serves the listing it reads (' + e.message + ').'; });
 // end of ant-discoveries
 </script>

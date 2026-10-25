@@ -129,6 +129,17 @@ no umlaut. Letters become panel character codes `$9C`-`$B5`
   `run_paths`, `move_sprites`, `animate_sprites`, `sprite_effects`,
   `sprite_hits`, `tal_lives`, `suit_hover`, `power_centre`,
   `check_quit_key`. They are skipped while a room change is pending.
+- Each band's handler clears I before its long work (`raster_bands`:
+  `$AF3D` before the frame's tasks, `$AEAC` before the message and the
+  score, `$AEF2` before the panel's messages), so the music's timers, the
+  collision interrupts and the next band are taken inside it; `zpa_AB`
+  is set while the frame's tasks run, and a band at line `$FA` that comes
+  before they end skips them. `irq_handler` reads `$D01E` and `$D01F`
+  before it returns. *Live*: a joystick played a stick read at a time
+  matched VICE for 1,380 reads on the kit's machine with interrupts
+  taken inside handlers, and for 711 with each handler run whole, where
+  the line-`$32` handler's read cleared a scenery collision before
+  `latch_bg_hits` had kept it.
 - The main loop runs with no wait (`main_loop`): *live*, 16,731 passes in
   500 frames, about 33 a frame. Its routines are timed by waits that
   `count_timers` counts down once a frame.
@@ -418,8 +429,34 @@ except in rooms `$00`-`$09`.
   latch and the throw flag. The path and the flag still read as off, but
   a 1 or 2 left in the latch is taken on the next pass as Tal touching scenery, which
   costs energy only if a hazard is beside him.
+- A touch of the scenery can be lost. `scenery_hits` reads `zp_bg_hits`
+  at `$A44C` and `$A490` and stores 0 there at `$A4AE`, and a collision
+  that `latch_bg_hits` keeps between the read and the store is cleared
+  without being looked at, so that touch costs nothing. Whether it happens
+  depends on where the main loop, which runs with no wait, is in its pass
+  when the collision's interrupt comes. *Live*: on the kit's machine, on
+  the Maps page's route in room `$14`, the interrupt for sprite 0's touch
+  on line 133 came at `$A4AC` and the touch was cleared; in VICE the same
+  touch, latched on the same line, was found at `$A44C` on line 136 and
+  cost 4 points.
 - Instruments 0 and 3, paths `$8F`, `$97`, `$A0` and `$A5`, and character
   list 3 are never used.
+- Nothing clears `zp_throw` (`$7C`) when a game starts. `foot_fire`
+  sets it when Tal throws (`$931A`, `$932F`), and it is cleared only when
+  the stone goes: off the screen in `move_left` and `move_right` (`$992C`,
+  `$998C`, `$99F0`), on the scenery in `scenery_hits` (`$A48D`) and at
+  `$A62D`. On a machine that has just loaded the game it holds `$C9`, the
+  `CMP` of the routine BASIC's start-up copies from `$E3A2` to `$0073`
+  (`kit/skills/c64/c64-reference`). Bit 7 set reads as a throw asked
+  for, so until Tal's first stone has gone, `throw_stone` copies Tal's X
+  high bit into the stone's on every pass of the main loop (`$A3BE`-
+  `$A3CD`: `lda spr_xhi`, `and #$FB`, `sta spr_xhi`, `asl`, `asl`,
+  `and #$04`, `ora spr_xhi`, `sta spr_xhi`). A room exit at the side,
+  which the raster interrupt makes in `move_right` (`$99F9`) or
+  `move_left` (`$9995`), sets Tal's X and his two high bits; one taken
+  after `$A3BE`, `$A3C1` or `$A3CA` is undone by the store that follows.
+  Going right Tal is then at X 306, past the edge, and leaves the new room
+  too; going left he is at X 44. *Live*, below.
 
 ## The listing's error rate
 
@@ -499,3 +536,31 @@ running whole frames.
   started its dissolve on the first frame of contact, hit points 255, and
   the binary score rose by 40; a Pulsar Beam shot (`$BE`) in the same
   place left 254 and scored 20.
+
+From `work/entry.vsf`, the game's start, on the same VICE, with the
+Maps page's route replayed a stick read at a time: stopped at each read
+of `$DC00` in play (`foot_control` `$909C`, `suit_control` `$9383`) and
+given the stick the kit's machine read there.
+
+- At the start, `$007C`-`$008F` held `$E3AB`-`$E3BE` of the KERNAL ROM
+  (901227-03) byte for byte; `$7C` was `$C9`. In the kit's machine's
+  first 700 frames from `$8009` the game read nine bytes the listing does
+  not carry before writing them: `$32` (`$08` in VICE), `$69` (`$8C`),
+  `$7C` (`$C9`), `$7D` (`$3A`), `$87` (`$38`), `$8C` (`$4F`), `$8E`
+  (`$52`), `$0358` (`$AD`) and `$035B` (`$90`).
+- With no stone thrown, Tal walking right out of room `$3E` at X 292 was
+  in room `$40` at X 54 at the next read, seven frames later. With `$7C`
+  set to 0 after the snapshot was loaded, the same reads took him into
+  `$3F`, and every read matched the kit's machine started with all nine
+  at 0 for 528 reads.
+- The route as the Maps page draws it, found on the kit's machine with
+  interrupts taken inside handlers: of its 1,954 reads, all but 20 were
+  the same in VICE. The 20 come in a row from the 1,465th, in rooms `$14`
+  and `$15`, where VICE's Tal had 4 points less energy, from the touch of
+  the scenery the kit's machine lost (Quirks). His energy ran out on the
+  same read in both, and every read after it was the same. With the stick
+  held as the route holds it after the last read, the mine had gone off
+  (`zp_victory` `$80`) five frames later, and the last message (`$95`)
+  had come 615 frames after the read, with the score at 1,080 and the
+  game not over.
+

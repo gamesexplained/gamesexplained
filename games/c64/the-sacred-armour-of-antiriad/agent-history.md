@@ -96,3 +96,70 @@ section 08 had drawn its letters in hires red. A screenshot of the strip
 in VICE, decoded pixel by pixel, matched the strip's bytes drawn in
 multicolour with dark grey, light blue and cyan (colour RAM 11), and
 both widgets now draw it so.
+
+## Follow-up: the route (24 October 2026)
+
+A beam search played the game on the kit's machine from `$8009`, a leg
+at a time (into the armour, each add-on, the mine), trying the stick in
+steps of seven frames, the game's own rate of reading it, and keeping
+the paths that cost Tal least energy.
+
+On the kit's machine Tal first walked through the armour, the add-ons
+and the creatures alike. The game finds every touch in its collision
+interrupt, which the machine never raised. Collision interrupts were
+recorded in VICE (`frame.py irq`) and the machine now raises them; the
+kit's changes say how.
+
+Replaying the bot's route in VICE a frame at a time drifted at once:
+the game started two frames later there, from timer counts and memory
+the kit's machine does not hold. Replayed a stick read at a time instead
+(a stop at each read of `$DC00` in play, given the stick the kit's
+machine read there), it matched for 122 reads and then took Tal from
+room `$3E` through `$3F` into `$40` in seven frames. A watch on stores
+to `spr_xhi` showed `throw_stone` writing it dozens of times a frame,
+though no stone had been thrown. The difference at the first read was
+`zp_throw`: 0 on the kit's machine and `$C9` in VICE, the byte BASIC's
+start-up leaves at `$7C`. With `$7C` set to 0 in VICE the replay went on
+through `$3F` and matched for 528 reads. At the 529th, Tal lost a life
+in room `$3B` in VICE and not on the kit's machine; the other eight
+bytes below the listing still differed there, and that difference was
+not run down. The kit's processor's read and write trackers found nine
+bytes the game reads before it writes them; the route's test starts
+them as VICE held them, and the bot's route now begins with a stone.
+
+With all nine bytes set, the route matched VICE for 710 reads. At the
+711th, in room `$2B`, VICE had taken 16 points off Tal where the kit's
+machine took 8: a creature's touch in both, and a scenery hit in VICE
+alone. Logging every read of `$D01F` and every interrupt on the kit's
+machine showed why. The raster handler at line 50 clears I and runs
+`scroll_message`, `roll_score` and, when the timer is due, the music,
+for about fifty lines, and at its end it reads `$D01E` and `$D01F` to
+clear them. On the machine the collision's interrupt comes inside that
+handler and `latch_bg_hits` keeps it; the kit's machine ran each handler
+whole, so the handler's own read cleared the collision first. The
+machine gained an option, `nest`, which takes interrupts between a
+handler's instructions. Fed VICE's stick read by read, it matched VICE
+for 1,380 reads, through five deaths to the game over, where whole
+handlers had matched 711; it also reads the stick every 7 frames, as
+VICE does, where whole handlers let some reads come 6 frames apart. The
+bot's route up to the ledge in C13 was carried to the new model a read
+at a time, each read the same, and the bot searched the rest again on
+it.
+
+The new route, played in VICE a read at a time, matched for 1,934 of its
+1,954 reads and reached the ending there, the mine and the last message,
+with the same score. The 20 that differed came in a row in H8, after
+Tal's first death there, where VICE's Tal had 4 points less energy.
+Logging every latch of `$D01F`, every pass of `scenery_hits` and the
+address each interrupt broke into, on both machines, showed the same
+collision latched on the same line of the same frame. On the kit's
+machine its interrupt had come at `$A4AC`, after `scenery_hits` had read
+the latch as empty and before it stored 0 there, so the touch was wiped;
+in VICE the main loop was elsewhere and the touch cost 4 points. That is
+the game's own race, and which way it falls depends on where the main
+loop, which runs with no wait, is in its pass, which the kit's machine
+does not hold to the cycle over thirteen thousand frames. Tal's energy
+ran out on the same read in both, and the two runs joined again. A first
+check of the ending in VICE let go of the stick before the last read had
+been taken, and Tal never landed: the read is taken once the run goes on,
+so the stick it is given has to stay until then.

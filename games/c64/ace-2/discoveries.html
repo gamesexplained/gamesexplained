@@ -1,0 +1,235 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACE 2: Discoveries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+a{color:var(--link)}
+.a2-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.a2-wide{width:100%}
+.a2-stack{position:relative;line-height:0}
+.a2-stack canvas+canvas{position:absolute;left:0;top:0;background:transparent}
+.a2-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;align-items:center}
+.a2-btn{font:inherit;font-family:var(--fm);font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:var(--ink);cursor:pointer;line-height:1.3}
+.a2-btn:hover{border-color:var(--ink-mute)}
+.a2-btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.a2-out{font-size:15px;color:var(--ink);margin:12px 0 0;min-height:3em;line-height:1.55}
+.a2-shots{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.a2-shots figure{margin:0}
+.a2-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.a2-shots figcaption{font-size:13px;color:var(--ink-mute);margin-top:6px;line-height:1.45}
+.a2-tbl{border-collapse:collapse;font-size:14px;width:100%;margin:4px 0 0}
+.a2-tbl th,.a2-tbl td{text-align:left;vertical-align:top;padding:5px 8px;border-bottom:1px solid var(--line-soft)}
+.a2-tbl th{font-weight:700;color:var(--ink-soft)}
+.a2-tbl td.a2-n,.a2-tbl th.a2-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.a2-tbl tr.a2-on td{background:var(--hl)}
+.a2-tbl tr.a2-off td{color:var(--ink-mute)}
+.a2-scroll{overflow-x:auto}
+.a2-msgs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+.a2-panel{background:#000;border-radius:6px;padding:10px}
+.a2-grid{display:grid;grid-template-columns:28px repeat(32,minmax(0,1fr));gap:1px;font-family:var(--fm);font-size:9px;color:var(--ink-mute);user-select:none}
+.a2-grid span{text-align:center;line-height:14px;height:14px}
+.a2-grid i{display:block;height:14px;border-radius:2px;background:var(--surface-2);cursor:pointer}
+.a2-grid i.a2-ask{outline:3px solid var(--coral);outline-offset:1px}
+.a2-sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid var(--line)}
+@media (max-width:760px){
+  :root{--gx:16px;--h1:36px;--pp:16px}
+  .a2-shots,.a2-msgs{grid-template-columns:minmax(0,1fr)}
+  .a2-grid{font-size:7px}
+}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Cascade Games</p>
+  <h1>ACE 2</h1>
+  <p class="sub">A hamster's name that makes plane one immortal, a cockpit message nobody ever sees, and what the code does when a pilot runs out of chaff.</p>
+</header>
+<main class="wrap">
+
+<section id="hamster">
+  <p class="fig">01 · The hamster</p>
+  <h2 class="t">Secret: entering DUSTY BUG on the high-score table makes plane one immortal for good</h2>
+  <p class="lede">The programmer left a message in the code: enter the name of the programmer's hamster on the high-score table and player one becomes immortal. The name is in the code too, scrambled. Press Next letter to unscramble it.</p>
+  <div class="plate">
+    <div class="a2-bar"><button type="button" class="a2-btn" id="a2-step">Next letter</button><button type="button" class="a2-btn" id="a2-all">All of it</button></div>
+    <div class="a2-scroll"><table class="a2-tbl" id="a2-cipher"></table></div>
+    <p class="cap">The nine bytes at <code>$6A30</code>, from the listing, each looked up in the game's letter table at <code>$6F7F</code> as <code>$56DA</code> and the other text printers do: the stored byte plus <code>$6F7F</code> gives the real letter. The text COMMENCE CONFLICT follows at once, with no end mark between.</p>
+  </div>
+  <p>The message, in plain ASCII (the usual codes for letters) at <code>$51B4</code>-<code>$53D3</code>, is never printed. It ends: "IF YOU ENTER THE NAME OF MY HAMSTER ON THE HIGH SCORE TABLE, PLAYER ONE WILL BE IMMORTAL. A REAL HACKER WILL FIND HER NAME FROM THE CODE". The hamster is DUSTY BUG.</p>
+  <p>After every game, <code>$5634</code> compares the first eight letters of the name buffer (<code>$6933</code>) with the hamster's name, so DUSTY BU is enough. It makes the comparison whether or not anyone qualified for the table, and whichever pilot typed the name, so a name entered by pilot two makes plane one immortal. A match sets the flag at <code>$0975</code>, and nothing in the game ever clears it. The flag is the last byte of the high-score table, so it is written to the disk with the scores (<code>$1F30</code>) and read back the next time the game loads (<code>$09E5</code>).</p>
+  <p>With the flag set, plane one burns no fuel (<code>$43FC</code>) and the side panel shows IMMORTAL where it counted the planes left (<code>$1C44</code>). In the kit's machine, from a recorded flight, plane one's fuel stayed at 247 for 300 frames with the flag set and fell to 245 without it. A crash or a kill still marks the plane as lost, but the check that would take it away passes over plane one while the flag is set (<code>$0D93</code>). The other pilot still scores 200 points for each kill (<code>$282F</code>), so an immortal plane one can be shot down again and again for points.</p>
+</section>
+
+<section id="traitor">
+  <p class="fig">02 · YOU TRAITOR</p>
+  <h2 class="t">Secret: the game has a YOU TRAITOR message that it never shows</h2>
+  <p class="lede">Message 12 in each pilot's list reads YOU TRAITOR. No instruction in the game raises it.</p>
+  <div class="plate a2-scroll">
+    <table class="a2-tbl" id="a2-calls"></table>
+    <p class="cap">Every call of the message routine <code>$34F8</code> in the game, 31 of them, with the message number each one loads into X just before it. Numbers 12 and 19 never appear, and nothing else writes their timers at <code>$0350</code> and <code>$0370</code>. The texts are from the listing, through pilot one's list at <code>$7432</code>.</p>
+  </div>
+  <p>The message routine takes the message's number in the processor's X register and a time in its Y register. Every caller loads X with a number written into the instruction itself, so the list above is the whole of what the cockpits can show. Message 19 is a first copy of TARGET LOCKED, pointing at the same text as message 20, which the lock uses. Message 12 has its own text, YOU TRAITOR, at <code>$6CEC</code>. It is also in the older copy of the game's text that the game loads at <code>$C000</code> and never reads (<a href="#leftovers">below</a>), so it was in the game's message list in an earlier build too, and nothing in this build says what it was for.</p>
+</section>
+
+<section id="chaff">
+  <p class="fig">03 · Out of chaff</p>
+  <h2 class="t">Bug: pressing for chaff with none left nudges plane two</h2>
+  <p class="lede">With an enemy radar missile in the air and no chaff left, the decoy key shows NO CHAFF. The code then carries on into the lines meant for a pilot who has chaff, with the wrong number in the X register, which those lines use to find the pilot's count.</p>
+  <div class="plate a2-scroll">
+    <table class="a2-tbl">
+      <tr><th>Byte</th><th>What it is</th><th class="a2-n">Before</th><th class="a2-n">After</th></tr>
+      <tr><td><code>$0293</code></td><td>the low byte of plane two's missile's position across</td><td class="a2-n">0</td><td class="a2-n">255</td></tr>
+      <tr><td><code>$0297</code></td><td>the middle byte of plane two's position across</td><td class="a2-n">252</td><td class="a2-n">8</td></tr>
+      <tr><td><code>$0288</code></td><td>pilot one's chaff left</td><td class="a2-n">0</td><td class="a2-n">0</td></tr>
+      <tr><td><code>$028C</code></td><td>pilot one's chaff timer</td><td class="a2-n">0</td><td class="a2-n">0</td></tr>
+    </table>
+    <p class="cap">The decoy routine <code>$2531</code> run in the kit's simulator from a recorded flight, for pilot one with no chaff and a radar missile in flight: it reached <code>$25EF</code> with X = 11, the message number of NO CHAFF.</p>
+  </div>
+  <p>The decoy routine shows NO CHAFF through the message routine with X = 11, the message's number. There is no jump past the next lines, which take a chaff from this pilot's count and start its timer, both indexed by X. With 11 in X they hit the object table instead: one is taken from <code>$0293</code>, and 8 is written into <code>$0297</code>, the middle byte of plane two's position across. Plane two moves by less than an eighth of a square of the map, whichever pilot pressed the key, every pass the key is held.</p>
+</section>
+
+<section id="weight">
+  <p class="fig">04 · Weight</p>
+  <h2 class="t">Bug: plane two's weight comes from plane one's fuel tank</h2>
+  <p class="lede">Each pass the game weighs the plane it is working on: its missiles, plus its fuel. The fuel it reads is always plane one's.</p>
+  <div class="plate a2-scroll">
+    <table class="a2-tbl">
+      <tr><th>Address</th><th>Instruction</th><th>What it does</th></tr>
+      <tr><td><code>$2837</code></td><td class="a2-n">LDA $0344,X ... ADC $0342,X</td><td>the current plane's missiles: X is 0 for plane one and 8 for plane two</td></tr>
+      <tr><td><code>$2846</code></td><td class="a2-n">LDA $0284</td><td>plane one's fuel, with no index, for both planes</td></tr>
+      <tr><td><code>$2849</code></td><td class="a2-n">LSR × 6</td><td>the fuel over 64, added to the missiles' weight</td></tr>
+      <tr><td><code>$2855</code></td><td class="a2-n">STA $69</td><td>the weight, which the flight routine multiplies into the drag</td></tr>
+    </table>
+    <p class="cap">From <code>$282F</code>, the per-pass warnings and weight, and <code>$4252</code>, the flight routine. Plane two's own fuel is at <code>$0285</code>.</p>
+  </div>
+  <p>Fuel is 0-255, so after the division it adds 0 to 3 to the weight. Plane two's drag follows plane one's fuel gauge: while plane one is full, plane two flies as if full, and once plane one has burnt its fuel, or refuelled, plane two's drag changes with it.</p>
+</section>
+
+<section id="repair">
+  <p class="fig">05 · The repair</p>
+  <h2 class="t">The game breaks two of its own bytes twice a frame and a timer mends them</h2>
+  <p class="lede">Both of the game's raster interrupts call <code>$6066</code>, which writes two wrong bytes into the game and starts a timer that, a few cycles later, makes the chip interrupt the processor with an NMI that puts them back.</p>
+  <div class="plate a2-scroll">
+    <table class="a2-tbl">
+      <tr><th>Byte</th><th>Correct</th><th>Broken</th><th>Where</th></tr>
+      <tr><td><code>$43FC</code></td><td class="a2-n">$85 (STA)</td><td class="a2-n">$86 (STX)</td><td>the first instruction of the play interrupt</td></tr>
+      <tr><td><code>$16E9</code></td><td class="a2-n">$EA (NOP)</td><td class="a2-n">$60 (RTS)</td><td>inside the routine that draws objects into the view</td></tr>
+    </table>
+    <p class="cap">In the kit's machine, from a recorded flight: 600 NMIs in 300 frames, two a frame, with both bytes correct afterwards. With the NMI vector pointed at an RTI instead, both bytes stayed broken.</p>
+  </div>
+  <p><code>$6066</code> starts timer A of the second CIA chip with a count of 5 and its interrupt on, reaching the chip's registers through an index (<code>$DCF0</code> + X) so that the CIA 2 addresses never appear in the code. The NMI handler, <code>$2AA6</code>, acknowledges the chip and writes the two correct bytes back. The game sets the NMI vector itself, and the reset vector too, through a pointer built at run time (<code>$0A07</code>). Anything that points the NMI vector elsewhere leaves the play interrupt starting with the wrong instruction and the object drawer returning early.</p>
+</section>
+
+<section id="noz">
+  <p class="fig">06 · The alphabet</p>
+  <h2 class="t">The game's letters have no Z</h2>
+  <p class="lede">All the game's screen text is stored scrambled, one byte per letter, and read back through a table of 26 entries for the codes <code>$41</code>-<code>$5A</code>. Twenty-five of them give a letter. The last gives 0.</p>
+  <div class="plate a2-scroll">
+    <table class="a2-tbl" id="a2-alpha"></table>
+    <p class="cap">The table at <code>$6F7F</code> + <code>$41</code> to <code>$5A</code>, from the listing: the stored code, and the letter it stands for. Every letter but Z appears once.</p>
+  </div>
+  <p>The scrambling keeps the text from showing in a memory dump. With no code for Z, no word with a Z in it can be written, and the colour code's grid shows the gap: its column names run A to Y, then AA to FF, and the 26th name in the table at <code>$675E</code>, where Z belongs, is the code <code>$5A</code>, which reads back as a 0 byte. None of the 40 squares the game asks about is in that column.</p>
+</section>
+
+<section id="leftovers">
+  <p class="fig">07 · Leftovers</p>
+  <h2 class="t">A plain copy of the scrambled text loads beside it</h2>
+  <p class="lede">The loader brings in 2,560 bytes from track 17 to <code>$C000</code> that no instruction reads: an older build's copy of the game's text and tables, with the text in plain letters.</p>
+  <div class="plate a2-scroll">
+    <table class="a2-tbl">
+      <tr><th>Where</th><th>What</th><th>Read by</th></tr>
+      <tr><td><code>$C000</code>-<code>$C9FF</code></td><td>the block now at <code>$6730</code>-<code>$712F</code>, from a build where it sat at <code>$2000</code>: its text pointers point there. The words are the same, in plain ASCII, including YOU TRAITOR</td><td>nothing</td></tr>
+      <tr><td><code>$7880</code>-<code>$7FFD</code></td><td>a byte-for-byte copy of the code at <code>$3000</code>-<code>$377D</code></td><td>nothing</td></tr>
+      <tr><td><code>$51B4</code>-<code>$53D3</code></td><td>the programmer's message, in plain ASCII</td><td>nothing</td></tr>
+      <tr><td><code>$7556</code></td><td>"S0:QZ", a disk drive's command to delete a file called QZ, then "QZ"</td><td>nothing</td></tr>
+    </table>
+    <p class="cap">Each found with the references search over the whole game and the access records of runs in the kit's machine: no instruction names these bytes, by address, by pointer or through an index.</p>
+  </div>
+  <p>The game goes to the trouble of scrambling every word it prints, then loads a plain copy of most of them into memory, where any memory dump shows them. The programmer's message, with its dedication "TO THE VERY WONDERFUL TERESA" and its hint about the hamster, is plain ASCII too, among the code.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* a2-disc */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const letter = (m, c) => (c >= 0x41 && c <= 0x5A ? (m[0x6F7F + c] ? String.fromCharCode(m[0x6F7F + c]) : '(0)') : String.fromCharCode(c));
+const CALLS = [['$5AB9', 0], ['$286E', 1], ['$5A6A', 2], ['$5B44', 3], ['$28B1', 4], ['$2571', 5], ['$257F', 6], ['$1FEF', 7], ['$1FF6', 8],
+  ['$28CC', 9], ['$25C9', 10], ['$25EC', 11], ['$25AE', 13], ['$259E', 14], ['$14BF', 15], ['$249A', 16], ['$24A1', 17], ['$24A8', 18],
+  ['$2446', 20], ['$2482', 20], ['$2477', 21], ['$0DE5', 22], ['$2560', 22], ['$2347', 23], ['$1FD0', 24], ['$5ADF', 25], ['$24D1', 26],
+  ['$24D8', 27], ['$2413', 28], ['$0D42', 31], ['$0F74', 31]];
+
+function cipherWidget(m) {
+  const tbl = $('a2-cipher');
+  let shown = 0;
+  function draw() {
+    let h = '<tr><th>Address</th><th class="a2-n">Stored</th><th class="a2-n">$6F7F + stored</th><th class="a2-n">Letter</th></tr>';
+    for (let i = 0; i < 9; i++) {
+      const a = 0x6A30 + i, c = m[a];
+      h += '<tr' + (i === shown - 1 ? ' class="a2-on"' : '') + '><td><code>' + hex(a, 4) + '</code></td><td class="a2-n">' + hex(c) + '</td><td class="a2-n">' +
+        (i < shown ? (c >= 0x41 && c <= 0x5A ? hex(0x6F7F + c, 4) + ' = ' + hex(m[0x6F7F + c]) : 'as stored') : '') + '</td><td class="a2-n">' + (i < shown ? esc(letter(m, c)) : '') + '</td></tr>';
+    }
+    tbl.innerHTML = h;
+  }
+  $('a2-step').onclick = () => { shown = shown >= 9 ? 0 : shown + 1; draw(); };
+  $('a2-all').onclick = () => { shown = 9; draw(); };
+  draw();
+}
+
+function callsTable(m) {
+  const msg = (i) => { const p = m[0x7432 + 2 * i] | m[0x7433 + 2 * i] << 8; let s = ''; for (let k = 0; k < 14; k++) s += letter(m, m[p + k]); return (s.slice(0, 7).trim() + ' ' + s.slice(7).trim()).trim() || '(blank)'; };
+  let h = '<tr><th class="a2-n">Message</th><th>Text</th><th>Raised at</th></tr>';
+  for (let i = 0; i < 32; i++) {
+    const at = CALLS.filter((c) => c[1] === i).map((c) => '<code>' + c[0] + '</code>');
+    if (!at.length && i >= 29 && i <= 30) continue;
+    h += '<tr' + (at.length ? '' : ' class="a2-on"') + '><td class="a2-n">' + i + '</td><td class="a2-n">' + esc(msg(i)) + '</td><td>' + (at.join(' ') || 'nothing') + '</td></tr>';
+  }
+  $('a2-calls').innerHTML = h + '<tr><td colspan="3">Messages 29 and 30 are blank, like 31, and nothing raises them either.</td></tr>';
+}
+
+function alphaTable(m) {
+  let out = '';
+  for (const lo of [0x41, 0x4E]) {
+    let h = '<tr><th>Stored</th>', h2 = '<tr><th>Letter</th>';
+    for (let c = lo; c < lo + 13; c++) { h += '<td class="a2-n">' + hex(c).slice(1) + '</td>'; h2 += '<td class="a2-n">' + esc(letter(m, c)) + '</td>'; }
+    out += h + '</tr>' + h2 + '</tr>';
+  }
+  $('a2-alpha').innerHTML = out;
+}
+
+C64.load('listing.json').then(({ ram }) => { cipherWidget(ram); callsTable(ram); alphaTable(ram); }).catch((e) => console.error(e));
+// end of a2-disc
+</script>

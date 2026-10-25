@@ -643,12 +643,15 @@ a block's layout garbled.
   Catching it live is hard; reading `$D015` from the code that writes it is
   not.
 - Colour RAM in a VICE snapshot is not at `$D800` in the RAM image; it is
-  in the VIC-II module. Loading the snapshot back and reading `$D800`
-  through the emulator is quicker than finding it in the file, as long as
-  you stop the machine the instant it loads. To find it in the file
-  instead, scan for a run of 1024 bytes that are all less than 16: in a
-  snapshot saved without ROMs there is usually exactly one, and it is the
-  colour RAM.
+  in the VIC-II module. From an x64sc snapshot whose `VIC-IISC` module is
+  format 1.4, `readSnapshot` (`kit/cpu/cpu6502.js`) gives it as `colour`
+  and `Machine.fromSnapshot` loads it, so a test that reads the screen's
+  colours starts with the game's. From any other format both leave it out
+  (`colour` is null, and the machine's colour RAM starts at 0): load the
+  snapshot back and read `$D800` through the emulator, stopping the
+  machine the instant it loads, or scan the file for a run of 1024 bytes
+  that are all less than 16; in a snapshot saved without ROMs there is
+  usually exactly one, and it is the colour RAM.
 - **Uninitialised RAM is not data.** VICE fills unwritten RAM with a
   repeating pattern of `$00` and `$FF` runs (the run length depends on its
   RAM-init settings; one build showed `FF FF 00 00 00 00 FF FF`). A region
@@ -659,6 +662,19 @@ a block's layout garbled.
   differ only where the game wrote. A snapshot from a VICE started another
   way has a few hundred such bits scattered through its unwritten RAM: a
   stray `$01` or `$FB` in the pattern is one of them, not a value.
+- **Zero page is not zero when a game starts.** BASIC's start-up copies
+  `$E3A2`-`$E3BE` of the KERNAL ROM to `$0073`-`$008F` (the loop at
+  `$E3E0`, ROM 901227-03): the routine BASIC reads the next character of
+  a line with, `$0073`-`$008A`, and the seed of `RND`, `$008B`-`$008F`.
+  BASIC and a loader leave their own bytes elsewhere in zero page and in
+  pages 2 and 3. A game that uses one of those bytes as a variable before
+  it writes it starts with that value on the machine, and a listing does
+  not carry it, so `kit/c64/machine.js` starts it at 0. Before running a
+  game from its listing for a check, find the bytes it reads before it
+  writes them (`kit/cpu/cpu6502.js`'s `reads` and `writes` trackers,
+  given to each `run`, `irq` and `nmi`) and set them as the emulator
+  holds them at the game's start
+  (`kit/lessons/2026-10-24-antiriad-route.md`).
 - The RAM image in a VICE `.vsf` saved **without ROMs** starts at file
   offset 209; confirm by reading two known bytes before relying on it.
   Choose those two bytes carefully. `$0000` and `$0001` are the worst
