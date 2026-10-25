@@ -49,11 +49,13 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-screen canvas.pl-3d[hidden]{display:none}
 #pl-layers{position:absolute;inset:0;background:#05060a;perspective:1100px;overflow:hidden;line-height:1.2}
 #pl-layers[hidden]{display:none}
-#pl-layers .stage{position:absolute;inset:12% 16%;transform-style:preserve-3d}
+#pl-layers .stage{position:absolute;inset:10% 27% 24% 23%;transform-style:preserve-3d}
+#pl-layers .key{position:absolute;left:12px;right:12px;bottom:8px;font:11px/1.45 var(--fm);color:#cfd3e6;margin:0}
 #pl-layers .pane{position:absolute;inset:0;transform-style:preserve-3d}
-#pl-layers .pane[hidden]{display:none}
+#pl-layers .pane.off canvas{outline-style:dashed;outline-color:rgba(255,255,255,.18)}
+#pl-layers .pane.off span{opacity:.55}
 #pl-layers .pane canvas{display:block;width:100%;height:100%;image-rendering:pixelated;outline:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.03)}
-#pl-layers .pane span{position:absolute;left:4px;top:4px;font:11px var(--fm);color:#fff;white-space:nowrap;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:3px}
+#pl-layers .pane span{position:absolute;left:4px;top:4px;font-weight:600;font:11px var(--fm);color:#fff;white-space:nowrap;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:3px}
 .pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
 .pl-over[hidden]{display:none}
 .pl-race{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:3;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.82);color:#fff;border:2px solid #fff;border-radius:10px;padding:8px 10px 8px 14px;font-family:var(--fm);font-size:13px;line-height:1.3;max-width:92%}
@@ -127,9 +129,8 @@ section table{margin:6px 0 18px}
   <div class="plate pl-plate">
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
-      <canvas id="pl-3d" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The same screen as a model: the scenery raised in blocks, the sprites standing in front. It leans as you steer."></canvas>
       <canvas id="pl-fx" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The game drawn another way, as the View row sets"></canvas>
-      <div id="pl-layers" hidden role="img" aria-label="The video chip's layers as a stack of panes, each labelled"><div class="stage"></div></div>
+      <div id="pl-layers" hidden role="img" aria-label="The video chip's layers as a stack of ten panes, each labelled"><div class="stage"></div><p class="key">Back to front: <b>BG</b> the border and background colour, <b>CH</b> the characters (the scenery and the score), then a pane for each sprite, <b>S0</b> to <b>S7</b>. S0 is the one you steer; S2 to S6 are the enemies, each on its path script. A sprite the game puts behind the scenery slides back behind CH; a dashed pane is a sprite switched off.</p></div>
       <div class="pl-race" id="pl-race" hidden><span id="pl-race-msg"></span> <button type="button" id="pl-race-go">👻 Race your ghost</button> <button type="button" id="pl-race-no" aria-label="No thanks">✕</button></div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
@@ -155,12 +156,7 @@ section table{margin:6px 0 18px}
     <div class="pl-levels" id="pl-view" aria-label="How to see the game">
       <span>View</span>
       <button type="button" data-view="flat" aria-pressed="true" title="The C64's own picture">Flat</button>
-      <button type="button" data-view="3d" aria-pressed="false" title="The screen as a model: the scenery raised in blocks, the sprites in front, seen through the screen as through a window">🧊 3D</button>
-      <button type="button" data-view="beads" aria-pressed="false" title="The screen nearly dark: each enemy's path a lit wire with the enemy a bead on it, the boy a comet, the crosses still to take as stars">Beads on wires</button>
-      <button type="button" data-view="exposure" aria-pressed="false" title="The sprites leave light behind them that fades over about ten seconds">Long exposure</button>
       <button type="button" data-view="layers" aria-pressed="false" title="The video chip's layers pulled apart: border and background, the sprites behind the scenery, the characters, the sprites in front">Layers</button>
-      <button type="button" data-view="tiles" aria-pressed="false" title="The screen as the game stores it: a character code in each of the 1,000 cells, with the sprites as labelled frames">Tile codes</button>
-      <button type="button" data-view="slit" aria-pressed="false" title="Time as a picture: the boy's column of the screen, every frame, side by side">Slit-scan</button>
       <button type="button" data-view="torch" aria-pressed="false" title="Darkness, but for the light the boy carries; enemies beyond it are two eyes">Torchlight</button>
     </div>
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
@@ -218,7 +214,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the scenery as raised blocks, the enemies' path scripts as wires, the sprites' movement as light, the video chip's layers pulled apart (a sprite whose priority bit is set sits behind the scenery's pane), the character codes the screen holds, the boy's column of the screen over time, and the screen dark but for the boy's light.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, and a sprite whose priority bit is set slides back behind the scenery's pane), and the screen dark but for the boy's light.</p>
   </div>
 </section>
 <section id="port">
@@ -3153,204 +3149,8 @@ function draw() {
   if (SHOW.ghost) ghost.paint(d);
   ctx.putImageData(img, 0, 0);
   if (SHOW.paths && !rt.busy) paths.paint(ctx);
-  if (view3d.on) view3d.frame();
   if (fx.mode) fx.frame();
 }
-
-// --- the 3D view: the picture the port drew, as a model. It reads the port's memory and the
-// video chip's registers and changes nothing. The background is a flat back wall; every other
-// pixel of the play area's characters is a block standing out from it; every sprite pixel is a
-// block in front of the scenery. Drawn with WebGL2, one cube instanced per pixel.
-const view3d = (function () {
-  const c3 = $('pl-3d'), btn = document.querySelector('[data-view="3d"]');
-  const gl = c3.getContext('webgl2', { antialias: true });
-  if (!gl) { btn.hidden = true; return { on: false, frame() {}, set() {} }; }
-  const W = 384, H = 272, X0 = 32, X1 = 351, Y0 = 35, Y1 = 234;   // the play area in the frame
-  const bgpx = new Uint8Array(W * H), vic0 = new Uint8Array(0x40);
-  const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
-  const prog = (vs, fs) => { const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); return p; };
-  // The light comes from above, left and in front (LX, LY, LZ, toward it). A face turned to the
-  // viewer is lit at full strength, so the picture is as bright as the flat screen; the sides are
-  // shaded by how far they turn from the light. Shadows: a depth map drawn from the light, which
-  // the blocks and the wall look up (four samples, for a soft edge).
-  const LX = -0.42, LY = 0.55, LZ = 0.72, LN = Math.hypot(LX, LY, LZ);
-  const L = `vec3(${(LX / LN).toFixed(4)}, ${(LY / LN).toFixed(4)}, ${(LZ / LN).toFixed(4)})`;
-  const CUBE = `layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 iAt; layout(location=3) in vec3 iCol;
-layout(location=4) in vec2 iWH;
-// the sides stop just short of the front face, so that along an edge two blocks share the front
-// face always wins the depth test, and no dark line of a side shows between rows
-vec3 place() { float z = aNrm.z > 0.5 ? aPos.z : aPos.z * 0.97; return vec3(iAt.x + aPos.x * iWH.x, -(iAt.y + aPos.y * iWH.y), iAt.z + z * iAt.w); }`;
-  const SHADOW = `precision highp float; precision highp sampler2DShadow; uniform sampler2DShadow uSh; in vec4 vLP;
-float lit() {
-  vec3 s = vLP.xyz / vLP.w * 0.5 + 0.5; float t = 1.0 / 2048.0, b = s.z - 0.006;   // 5 units: blocks of one height never shadow each other
-  return 0.25 * (texture(uSh, vec3(s.xy + vec2(-t, -t), b)) + texture(uSh, vec3(s.xy + vec2(t, -t), b))
-               + texture(uSh, vec3(s.xy + vec2(-t, t), b)) + texture(uSh, vec3(s.xy + vec2(t, t), b)));
-}
-const float SHADE = 0.75;`;
-  const cubeP = prog(`#version 300 es
-${CUBE}
-uniform mat4 uMVP, uLVP; out vec3 vCol; out vec4 vLP;
-void main() {
-  vec3 p = place();
-  float l = 1.0 + 0.18 * (dot(aNrm, ${L}) - ${L}.z);
-  vCol = iCol * l; vLP = uLVP * vec4(p, 1.0); gl_Position = uMVP * vec4(p, 1.0);
-}`, `#version 300 es
-${SHADOW}
-in vec3 vCol; out vec4 o; void main() { o = vec4(vCol * mix(SHADE, 1.0, lit()), 1.0); }`);
-  const depthP = prog(`#version 300 es
-${CUBE}
-uniform mat4 uLVP; void main() { gl_Position = uLVP * vec4(place(), 1.0); }`, `#version 300 es
-precision mediump float; void main() {}`);
-  const wallP = prog(`#version 300 es
-layout(location=0) in vec2 aPos; uniform mat4 uMVP, uLVP; out vec2 vUV; out vec4 vLP;
-void main() { vUV = aPos; vec4 p = vec4(aPos.x * ${W}.0, -aPos.y * ${H}.0, -0.5, 1.0); vLP = uLVP * p; gl_Position = uMVP * p; }`, `#version 300 es
-${SHADOW}
-uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(uTex, vUV).rgb * mix(SHADE, 1.0, lit()), 1.0); }`);
-  const SM = 2048, shTex = gl.createTexture();
-  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shTex);
-  gl.texStorage2D(gl.TEXTURE_2D, 1, gl.DEPTH_COMPONENT24, SM, SM);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
-  const shFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, shFB);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, shTex, 0);
-  gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.activeTexture(gl.TEXTURE0);
-  // a unit cube, from 0 to 1 on each axis, its faces' normals (y down the screen, so flipped)
-  const F = [[0,0,1, [0,0,0,1,0,0,1,1,0,0,1,0]], [0,0,-1, [0,0,0,0,1,0,1,1,0,1,0,0]], [0,-1,0, [0,1,0,0,1,1,1,1,1,1,1,0]],
-             [0,1,0, [0,0,0,1,0,0,1,0,1,0,0,1]], [1,0,0, [1,0,0,1,1,0,1,1,1,1,0,1]], [-1,0,0, [0,0,0,0,0,1,0,1,1,0,1,0]]];
-  const cv3 = [];
-  for (const [nx, ny, nz, q] of F) {
-    const v = i => [q[i * 3], q[i * 3 + 1], q[i * 3 + 2]];
-    for (const i of [0, 1, 2, 0, 2, 3]) cv3.push(...v(i), nx, ny, nz);
-  }
-  // a pixel's front face is at z = depth; a quad's corner order above faces the camera from +z
-  const cubeVA = gl.createVertexArray(); gl.bindVertexArray(cubeVA);
-  const cb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cv3), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
-  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
-  const ib = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib);
-  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 36, 0); gl.vertexAttribDivisor(2, 1);
-  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 36, 16); gl.vertexAttribDivisor(3, 1);
-  gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 2, gl.FLOAT, false, 36, 28); gl.vertexAttribDivisor(4, 1);
-  const wallVA = gl.createVertexArray(); gl.bindVertexArray(wallVA);
-  const wb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, wb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 1,1, 0,0, 1,1, 0,1]), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  gl.bindVertexArray(null);
-  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  const wallRGB = new Uint8Array(W * H * 4);
-  let inst = new Float32Array(9 * 20000);             // x, y, z, depth, r, g, b, width, height
-  // The view is a window: the screen's own plane stays exactly where the flat picture is, filling
-  // the frame, and the camera moves behind it, a little above to begin with. Steering moves it
-  // toward the side pushed and a jump lifts it, so the blocks and sprites shift against the
-  // screen behind them (lean and lift, from -1 to 1, ease to their targets a frame at a time).
-  let lean = 0, lift = 0;
-  const COL = RGB.map(c => c.map(v => v / 255));
-  function persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2); return [t / a,0,0,0, 0,t,0,0, 0,0,(fa + n) / (n - fa),-1, 0,0,2 * fa * n / (n - fa),0]; }
-  function mul(a, b) { const o = new Array(16).fill(0); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) o[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k]; return o; }
-  function lookAt(ex, ey, ez, cx, cy, cz) {
-    let fx = cx - ex, fy = cy - ey, fz = cz - ez; const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
-    let sx = -fz, sy = 0, sz = fx; const sl = Math.hypot(sx, sy, sz); sx /= sl; sy /= sl; sz /= sl;
-    const ux = sy * fz - sz * fy, uy = sz * fx - sx * fz, uz = sx * fy - sy * fx;
-    return [sx, ux, -fx, 0, sy, uy, -fy, 0, sz, uz, -fz, 0, -(sx * ex + sy * ey + sz * ez), -(ux * ex + uy * ey + uz * ez), fx * ex + fy * ey + fz * ez, 1];
-  }
-  // the light's view: square on to the light, wide enough for the whole frame and its shadows
-  const LVP = (function () {
-    const cx = W / 2, cy = -H / 2, r = 250, n = 400, f = 1200, k = 800 / LN;
-    const O = [1 / r, 0, 0, 0, 0, 1 / r, 0, 0, 0, 0, -2 / (f - n), 0, 0, 0, -(f + n) / (f - n), 1];
-    return new Float32Array(mul(O, lookAt(cx + LX * k, cy + LY * k, LZ * k, cx, cy, 0)));
-  })();
-  function view() {
-    const cx = W / 2, cy = -H / 2, fov = 0.75, d = (H / 2) / Math.tan(fov / 2);   // the frame's height fills the view
-    const ox = lean * 60, oy = 30 + lift * 30;
-    // looking straight ahead from the offset camera, the projection skewed back by the offset so
-    // that the screen's plane (z = 0) lands where it would with the camera in the middle
-    const P = persp(fov, c3.width / c3.height, 10, 3000);
-    P[8] = -P[0] * ox / d; P[9] = -P[5] * oy / d;
-    return mul(P, lookAt(cx + ox, cy + oy, d, cx + ox, cy + oy, 0));
-  }
-  function frame() {
-    if (!rt) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1), wantW = Math.round(c3.clientWidth * dpr), wantH = Math.round(c3.clientHeight * dpr);
-    if (wantW && (c3.width !== wantW || c3.height !== wantH)) { c3.width = wantW; c3.height = wantH; }
-    const st = stick(), ease = (a, b, k) => a + (b - a) * k;
-    lean = ease(lean, st.r - st.l, 0.08); lift = ease(lift, st.u ? 1 : 0, 0.1);
-    vic0.set(rt.chips.vic); vic0[0x15] = 0;               // the same picture without the sprites
-    ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bgpx);
-    const b0 = rt.chips.vic[0x21] & 15;
-    let n = 0;
-    const put = (x, y, w, z, dep, ci) => {
-      if (n * 9 + 9 > inst.length) { const g = new Float32Array(inst.length * 2); g.set(inst); inst = g; }
-      const c = COL[ci], o = n * 9;
-      inst[o] = x; inst[o + 1] = y; inst[o + 2] = z; inst[o + 3] = dep; inst[o + 4] = c[0]; inst[o + 5] = c[1]; inst[o + 6] = c[2]; inst[o + 7] = w; inst[o + 8] = 1;
-      return n++;
-    };
-    // each run of same-coloured pixels along a row is one block, and a run the row above also has
-    // (same ends, same colour) makes that block a row taller: fewer edges between blocks, so a
-    // solid shape is one block with no seams across it
-    let upS = new Map(), upC = new Map(), nowS = new Map(), nowC = new Map();
-    const run = (up, now, x, y, e, z, dep, c) => {
-      const k = (x * 512 + e) * 16 + c, i = up.get(k);
-      if (i !== undefined) { inst[i * 9 + 8]++; now.set(k, i); }
-      else now.set(k, put(x, y, e - x, z, dep, c));
-    };
-    const spr = i => px[i] !== bgpx[i] ? px[i] : -1;
-    const scn = (x, y) => (x >= X0 && x <= X1 && y >= Y0 && y <= Y1 && bgpx[y * W + x] !== b0) ? bgpx[y * W + x] : -1;
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; ) {                                         // the sprites, in front
-        const c = spr(y * W + x); let e = x + 1;
-        if (c < 0) { x = e; continue; }
-        while (e < W && spr(y * W + e) === c) e++;
-        run(upS, nowS, x, y, e, 7, 3, c); x = e;
-      }
-      for (let x = 0; x < W; ) {                                         // the scenery, raised
-        const c = scn(x, y); let e = x + 1;
-        if (c < 0) { x = e; continue; }
-        while (e < W && scn(e, y) === c) e++;
-        run(upC, nowC, x, y, e, 0, 3, c); x = e;
-      }
-      [upS, nowS] = [nowS, upS]; nowS.clear(); [upC, nowC] = [nowC, upC]; nowC.clear();
-      // the wall: the flat picture without the sprites, so that where two blocks meet no hairline
-      // of the wall's dark background can show between them
-      for (let x = 0; x < W; x++) {
-        const i = y * W + x, c = RGB[bgpx[i]], o = i * 4;
-        wallRGB[o] = c[0]; wallRGB[o + 1] = c[1]; wallRGB[o + 2] = c[2]; wallRGB[o + 3] = 255;
-      }
-    }
-    if (SHOW.paths && !rt.busy) paths.points().forEach(([x, y], i) => { if (i % 4 === 0) { put(x - 1, y - 1, 2, 11, 2, 1); put(x - 1, y, 2, 11, 2, 1); } });   // the same dots, floating
-    gl.enable(gl.DEPTH_TEST);
-    gl.bindVertexArray(cubeVA);
-    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 9), gl.DYNAMIC_DRAW);
-    // the depth map, from the light
-    gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
-    gl.useProgram(depthP); gl.uniformMatrix4fv(gl.getUniformLocation(depthP, 'uLVP'), false, LVP);
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, c3.width, c3.height);
-    // beyond the wall's edges, the border colour, so the screen stays full
-    const bc = COL[rt.chips.vic[0x20] & 15];
-    gl.clearColor(bc[0], bc[1], bc[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    const mvp = new Float32Array(view());
-    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.activeTexture(gl.TEXTURE0);
-    gl.useProgram(wallP);
-    gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, wallRGB);
-    gl.uniformMatrix4fv(gl.getUniformLocation(wallP, 'uMVP'), false, mvp);
-    gl.uniformMatrix4fv(gl.getUniformLocation(wallP, 'uLVP'), false, LVP);
-    gl.uniform1i(gl.getUniformLocation(wallP, 'uTex'), 0); gl.uniform1i(gl.getUniformLocation(wallP, 'uSh'), 1);
-    gl.bindVertexArray(wallVA); gl.drawArrays(gl.TRIANGLES, 0, 6);
-    gl.useProgram(cubeP);
-    gl.uniformMatrix4fv(gl.getUniformLocation(cubeP, 'uMVP'), false, mvp);
-    gl.uniformMatrix4fv(gl.getUniformLocation(cubeP, 'uLVP'), false, LVP);
-    gl.uniform1i(gl.getUniformLocation(cubeP, 'uSh'), 1);
-    gl.bindVertexArray(cubeVA);
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
-    gl.bindVertexArray(null);
-  }
-  const v = { on: false, frame, set(want) { v.on = want; c3.hidden = !want; if (want && rt) frame(); } };
-  return v;
-})();
 
 // --- other ways to see the game: each draws the live game again from the port's memory and the
 // video chip's registers, over the flat picture, and changes nothing
@@ -3362,9 +3162,7 @@ const fx = (function () {
   const bg = new Uint8Array(384 * 272), vic0 = new Uint8Array(0x40), one = new Uint8Array(384 * 272);
   const hexc = n => '#' + RGB[n].map(v => v.toString(16).padStart(2, '0')).join('');
   const rgba = (n, a) => 'rgba(' + RGB[n].join(',') + ',' + a + ')';
-  let mode = null, t = 0, trail = [];
-  const exp = document.createElement('canvas'); exp.width = FW; exp.height = FH; const ectx = exp.getContext('2d');
-  const slit = document.createElement('canvas'); slit.width = FW; slit.height = FH; const sctx = slit.getContext('2d');
+  let mode = null, t = 0, lean = 0, lift = 0;
   // the flat picture without the sprites, and the sprites as the game has them
   function background() { vic0.set(rt.chips.vic); vic0[0x15] = 0; ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bg); }
   function sprites() {
@@ -3400,73 +3198,6 @@ const fx = (function () {
     c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
   };
   const MODES = {
-    // Beads on wires: the screen almost dark; each enemy's path ahead a fine lit wire, the enemy a
-    // bead on it; the boy a comet; the crosses he still needs, slow pulsing stars
-    beads() {
-      c.fillStyle = '#04050a'; c.fillRect(0, 0, FW, FH);
-      background(); paint(c, bg, 0.13);
-      c.globalCompositeOperation = 'lighter';
-      const sp = sprites();
-      for (const s of sp) {
-        if (s.n < 2 || s.n > 6) continue;
-        const p = paths.trace(s.n - 2).pts;
-        c.beginPath(); c.lineWidth = 2; c.strokeStyle = rgba(s.col === 0 ? 11 : s.col, 0.7); c.shadowColor = rgba(s.col === 0 ? 11 : s.col, 1); c.shadowBlur = 10;
-        p.forEach(([x, y], i) => { const X = (x + 20) * S, Y = (y - 5) * S; if (i) c.lineTo(X, Y); else c.moveTo(X, Y); });
-        c.stroke(); c.shadowBlur = 0;
-        glow(s.cx * S, s.cy * S, 16, s.col === 0 ? 11 : s.col, 0.95);
-      }
-      const boy = sp.find(s => s.n === 0);
-      if (boy) { trail.push([boy.cx, boy.cy]); if (trail.length > 36) trail.shift(); }
-      trail.forEach(([x, y], i) => glow(x * S, y * S, 3 + i * 0.25, 7, 0.04 + 0.5 * (i / trail.length) ** 2));
-      for (const s of sp) if (s.n === 1 || s.n === 7) glow(s.cx * S, s.cy * S, 18, s.col, 0.8);
-      for (const k of crosses()) {
-        const a = 0.5 + 0.4 * Math.sin(t / 12 + k.x), X = k.x * S, Y = k.y * S;
-        glow(X, Y, 14, 14, a);
-        c.strokeStyle = 'rgba(255,255,255,' + a + ')'; c.lineWidth = 1; c.beginPath(); c.moveTo(X - 12, Y); c.lineTo(X + 12, Y); c.moveTo(X, Y - 12); c.lineTo(X, Y + 12); c.stroke();
-      }
-      c.globalCompositeOperation = 'source-over';
-    },
-    // Long exposure: the sprites leave light that fades over about ten seconds, over a dimmed screen
-    exposure() {
-      ectx.globalCompositeOperation = 'source-over'; ectx.fillStyle = 'rgba(0,0,0,0.012)'; ectx.fillRect(0, 0, FW, FH);
-      background();
-      ectx.globalCompositeOperation = 'lighter';
-      paint(ectx, px, 0.35, i => px[i] !== bg[i]);
-      c.fillStyle = '#000'; c.fillRect(0, 0, FW, FH);
-      paint(c, bg, 0.35);
-      c.globalCompositeOperation = 'lighter'; c.drawImage(exp, 0, 0); c.globalCompositeOperation = 'source-over';
-    },
-    // Tile codes: the screen as the game stores it, a character code in each of the 40 x 25 cells,
-    // in the cell's colour; the sprites, which are not in that memory, as labelled frames
-    tiles() {
-      const M = rt.M, v = rt.chips.vic, scr = (v[0x18] >> 4) << 10;
-      c.fillStyle = '#05060a'; c.fillRect(0, 0, FW, FH);
-      c.font = '600 9px ' + getComputedStyle(document.body).getPropertyValue('--fm'); c.textAlign = 'center'; c.textBaseline = 'middle';
-      for (let i = 0; i < 1000; i++) {
-        const code = M[scr + i], col = rt.chips.colour[i] & 15, x = (32 + (i % 40) * 8 + 4) * S, y = (35 + Math.floor(i / 40) * 8 + 4) * S;
-        c.fillStyle = code === 0xA0 || code === 0x20 ? 'rgba(255,255,255,.08)' : hexc(col === 0 ? 11 : col & (rt.chips.vic[0x16] & 16 ? 7 : 15));
-        c.fillText(code.toString(16).toUpperCase().padStart(2, '0'), x, y);
-      }
-      c.textAlign = 'left'; c.lineWidth = 1.5;
-      for (const s of sprites()) {
-        const x = (s.cx - 12) * S, y = (s.cy - 10) * S;
-        c.strokeStyle = hexc(s.col === 0 ? 1 : s.col); c.strokeRect(x, y, 24 * S, 21 * S);
-        c.fillStyle = '#fff'; c.fillText('sprite ' + s.n + (s.behind ? ', behind' : ''), x, y - 7);
-      }
-      c.textBaseline = 'alphabetic';
-    },
-    // Slit-scan: the column of the screen the boy stands in, every frame, side by side: time runs
-    // left to right, so what moves through his column draws its own shape; the screen small, inset
-    slit() {
-      const boy = sprites().find(s => s.n === 0), x = boy ? Math.max(0, Math.min(383, Math.round(boy.cx))) : 192;
-      sctx.drawImage(slit, -2, 0);
-      for (let y = 0; y < 272; y++) { sctx.fillStyle = hexc(px[y * 384 + x]); sctx.fillRect(FW - 2, y * S, 2, S); }
-      c.drawImage(slit, 0, 0);
-      const iw = 192, ih = 136, ix = 12, iy = FH - ih - 12;                // the screen, small, with the slit marked
-      c.fillStyle = '#000'; c.fillRect(ix - 2, iy - 2, iw + 4, ih + 4);
-      c.save(); c.imageSmoothingEnabled = false; c.drawImage(cv, ix, iy, iw, ih); c.restore();
-      c.fillStyle = '#fff'; c.fillRect(Math.round(ix + x * iw / 384), iy, 2, ih);
-    },
     // Torchlight: the whole screen dark but for a pool of light round the boy that flickers like a
     // flame; enemies outside it show only as two faint eyes
     torch() {
@@ -3487,10 +3218,13 @@ const fx = (function () {
       }
     },
   };
-  // Layers: the video chip's layers as panes in a slowly turning stack, back to front: the border
-  // and background colour, the sprites the game puts behind the scenery (priority bit $D01B set),
-  // the characters, then the sprites in front. Each pane is labelled.
-  const panes = [];
+  // Layers: the video chip's layers as ten panes that are always there, back to front: the
+  // border and background colour, the characters, and one pane for each of the eight sprites. A
+  // sprite the game puts behind the scenery (priority bit $D01B set) slides back behind the
+  // characters' pane rather than changing places; a sprite switched off ($D015 clear) keeps its
+  // empty pane. The stack leans as you steer.
+  const GAP = 40, Z_BG = -7 * GAP, Z_CH = -3 * GAP;
+  const panes = [], sz = new Array(8).fill(null);
   function pane(i) {
     if (!panes[i]) {
       const el = document.createElement('div'); el.className = 'pane';
@@ -3502,32 +3236,47 @@ const fx = (function () {
     }
     return panes[i];
   }
+  const inside = i => { const x = i % 384, y = (i / 384) | 0; return x >= 32 && x <= 351 && y >= 35 && y <= 234; };
+  function fill(P, src, keep, col) {
+    const d = P.img.data;
+    for (let k = 0, o = 0; k < src.length; k++, o += 4) {
+      if (!keep(k)) { d[o + 3] = 0; continue; }
+      const q = RGB[col ? col(k) : src[k]]; d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
+    }
+    P.ctx.putImageData(P.img, 0, 0);
+  }
+  // a thin frame round a sprite's pixels, so a small sprite can be found on its pane
+  function outline(P, src) {
+    let x0 = 384, y0 = 272, x1 = -1, y1 = -1;
+    for (let k = 0; k < src.length; k++) if (src[k] !== bg[k]) { const x = k % 384, y = (k / 384) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return;
+    P.ctx.strokeStyle = 'rgba(255,255,255,.75)'; P.ctx.lineWidth = 1; P.ctx.strokeRect(x0 - 2.5, y0 - 2.5, x1 - x0 + 6, y1 - y0 + 6);
+  }
   function layers() {
     const v = rt.chips.vic, b0 = v[0x21] & 15, bc = v[0x20] & 15;
     background();
-    const list = [];
-    list.push({ name: 'border and background', keep: i => true, src: bg, col: i => { const x = i % 384, y = (i / 384) | 0; return x >= 32 && x <= 351 && y >= 35 && y <= 234 ? b0 : bc; } });
-    const sp = sprites();
+    const st = stick(), ease = (a, b, k) => a + (b - a) * k;
+    lean = ease(lean, st.r - st.l, 0.08); lift = ease(lift, st.u ? 1 : 0, 0.1);
+    stage.style.transform = 'translateZ(-420px) rotateX(' + (10 - 8 * lift).toFixed(2) + 'deg) rotateY(' + (-48 + 12 * lean).toFixed(2) + 'deg)';
+    const P0 = pane(0), P1 = pane(1);
+    fill(P0, bg, () => true, i => inside(i) ? b0 : bc);
+    P0.lab.textContent = 'BG'; P0.el.style.transform = 'translateZ(' + Z_BG + 'px)';
+    fill(P1, bg, i => inside(i) && bg[i] !== b0);
+    P1.lab.textContent = 'CH'; P1.lab.style.top = '18px'; P1.el.style.transform = 'translateZ(' + Z_CH + 'px)';
     // a sprite's own pixels: the screen drawn with only that sprite, in front, against the screen
     // drawn with none
-    const solo = n => { vic0.set(v); vic0[0x15] = 1 << n; vic0[0x1B] = 0; ChillerScreen.draw(rt.M, vic0, rt.chips.colour, one); return one.slice(); };
-    const chars = { name: 'characters: the scenery and the score', src: bg, keep: i => { const x = i % 384, y = (i / 384) | 0; return x >= 32 && x <= 351 && y >= 35 && y <= 234 && bg[i] !== b0; } };
-    const sl = sp.map(s => { const img = solo(s.n); return { name: 'sprite ' + s.n + (s.n === 0 ? ', the one you steer' : '') + (s.behind ? ', behind the scenery' : ''), src: img, keep: i => img[i] !== bg[i], behind: s.behind }; });
-    list.push(...sl.filter(s => s.behind), chars, ...sl.filter(s => !s.behind));
-    const turn = -34 + 8 * Math.sin(t / 140), gap = 64;           // degrees: turned well to one side, swaying a little
-    stage.style.transform = 'translateZ(-420px) rotateX(10deg) rotateY(' + turn.toFixed(2) + 'deg)';
-    list.forEach((L, i) => {
-      const P = pane(i), d = P.img.data;
-      for (let k = 0, o = 0; k < L.src.length; k++, o += 4) {
-        if (!L.keep(k)) { d[o + 3] = 0; continue; }
-        const q = RGB[L.col ? L.col(k) : L.src[k]]; d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
-      }
-      P.ctx.putImageData(P.img, 0, 0);
-      P.lab.textContent = L.name;
-      P.el.hidden = false;
-      P.el.style.transform = 'translateZ(' + ((i - (list.length - 1) / 2) * gap) + 'px)';
-    });
-    for (let i = list.length; i < panes.length; i++) panes[i].el.hidden = true;
+    for (let n = 0; n < 8; n++) {
+      const P = pane(2 + n), on = !!(v[0x15] >> n & 1), behind = !!(v[0x1B] >> n & 1);
+      if (on) { vic0.set(v); vic0[0x15] = 1 << n; vic0[0x1B] = 0; ChillerScreen.draw(rt.M, vic0, rt.chips.colour, one); fill(P, one, i => one[i] !== bg[i]); outline(P, one); }
+      else P.ctx.clearRect(0, 0, 384, 272);
+      // behind: packed between the background and the characters; in front: spread out before them
+      const want = behind ? Z_BG + (1 + n * 0.4) * GAP : Z_CH + (2 + n) * GAP;
+      sz[n] = sz[n] === null ? want : ease(sz[n], want, 0.15);
+      P.el.style.transform = 'translateZ(' + sz[n].toFixed(1) + 'px)';
+      P.el.classList.toggle('off', !on);
+      P.lab.textContent = 'S' + n + (on ? (behind ? ' behind' : '') : ' off');
+      P.lab.style.top = (4 + 14 * (n + 2)) + 'px';
+    }
   }
   function frame() {
     if (!rt || !mode) return;
@@ -3535,14 +3284,13 @@ const fx = (function () {
     if (mode === 'layers') layers(); else MODES[mode]();
   }
   function set(m) {
-    mode = m === 'flat' || m === '3d' ? null : m;
+    mode = m === 'flat' ? null : m;
     cvx.hidden = !mode || mode === 'layers'; lay.hidden = mode !== 'layers';
-    trail = []; ectx.clearRect(0, 0, FW, FH); sctx.fillStyle = '#000'; sctx.fillRect(0, 0, FW, FH);
     if (rt) frame();
   }
   return { frame, set, get mode() { return mode; } };
 })();
-// the View row: the flat picture (with or without the CRT screen), the 3D model, or one of fx's
+// the View row: the flat picture (with or without the CRT screen), or one of fx's
 // views; the CRT screen draws over the flat picture only, so its switch rests in the others
 (function () {
   const crtBtn = document.querySelector('[data-crt]'), crtTitle = crtBtn.title;
@@ -3554,7 +3302,7 @@ const fx = (function () {
     if (m !== 'flat' && crtWas === null) { crtWas = crt.on; if (crt.on) crt.set(false); }
     if (m === 'flat' && crtWas !== null) { if (crtWas) crt.set(true); crtWas = null; }
     crtBtn.disabled = m !== 'flat'; crtBtn.title = m !== 'flat' ? 'The CRT screen draws over the flat picture, so it is off in the other views' : crtTitle;
-    view3d.set(m === '3d'); fx.set(m);
+    fx.set(m);
     if (rt && (paused || !running)) draw();
     screen.focus();
   });
@@ -3685,13 +3433,7 @@ const paths = (function () {
     }
     c.restore();
   }
-  // the paths as points in the frame, for the 3D view
-  function points() {
-    const v = rt.chips.vic, out = [];
-    for (let s = 0; s < 5; s++) if (v[0x15] >> (s + 2) & 1) for (const [x, y] of trace(s).pts) out.push([fx(x), fy(y)]);
-    return out;
-  }
-  return { paint, points, trace };
+  return { paint, trace };
 })();
 
 // The memory: a dot per byte, in the Source tab's colours, written bytes flashing white
@@ -3907,7 +3649,7 @@ const KEY = { Z: 0x0C, C: 0x14, LSHIFT: 0x0F, '/': 0x37, SPACE: 0x3C, RETURN: 0x
 const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, Space: 16, ControlRight: 16 };
 const held = new Map();
 let joyBits = 0, padBits = 0;
-// the stick as the 3D view leans to it: the joystick, the pad, and the keys that walk and jump
+// the stick as the Layers view leans to it: the joystick, the pad, and the keys that walk and jump
 function stick() {
   const b = joyBits | padBits, k = new Set(held.values());
   return { l: +(!!(b & 4) || k.has(KEY.Z)), r: +(!!(b & 8) || k.has(KEY.C)), u: !!(b & 17) || k.has(KEY.LSHIFT) };
