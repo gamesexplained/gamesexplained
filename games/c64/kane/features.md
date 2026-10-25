@@ -38,7 +38,7 @@ Sources:
 | Losing every token ends the game (review) | confirmed: game over and the title, with the hall of fame check | `$22FC`, `marshall_dies` `$8BC5` |
 | An ending text after the last level ("So war with the Wagari Indians was finally ended ...") | live | `ending_text` `$8CAC` |
 | Music: the William Tell Overture at the start and in both riding stages; a drum beat in the canyon (review) | differs: the tune plays on the title, ride 1 and the ending; the train has hoofbeats instead. The drum is confirmed, its writes held against the game's code by `test_music.js` | `start_ride` `$1F3B`, `drum_sound` `$92C9` |
-| Sampled sounds: a screech when a duck is hit, and a cry when the Marshall dies (review; Zzap!64 praised them, per Wikipedia) | confirmed: five sounds, one recording of a cry used for a duck, a gunman and the Marshall, the whinny and the ending | `play_hit` `$9337`, `$935B`, `$9349` |
+| Sampled sounds: a screech when a duck is hit, and a cry when the Marshall dies (review; Zzap!64 praised them, per Wikipedia) | confirmed: five sounds, one recording of a cry used for a duck, a gunman and the Marshall, the whinny, and a man's voice saying "Well done" at the ending (heard by the contributor) | `play_hit` `$9337`, `$935B`, `$9349` |
 | RESTORE or a reset restarts the game (the `CBM80` signature at `$8004`) | differs: a reset restarts it (live), RESTORE does nothing (the NMI vector points at an RTI) | `start_stage` `$3163`, `nmi_ignore` `$3162` |
 
 ## Beyond the documentation

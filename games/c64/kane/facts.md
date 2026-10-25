@@ -44,7 +44,7 @@ from reading the code in the snapshot named in `orientation.md`.
 | The rides' sprite shapes, packed | `$DA50`-`$F3C4` |
 | The hit sample | `$F3F0`-`$F6AF` |
 | The rides' character set | `$F6C0`-`$FEBF` |
-| The ending's sample (the character set's last 64 characters) | `$FCC0`-`$FF8F` |
+| The ending's sample, a man's voice saying "Well done" (the character set's last 64 characters) | `$FCC0`-`$FF8F` |
 
 Everything from `$A000` up lies under BASIC, the I/O area or the KERNAL;
 the unpacking and sample routines set `$01` to 0 for each byte they read.
@@ -205,7 +205,8 @@ digits at `$30`-`$39`.
 - Five samples, one bit a sample on voice 1's test bit, timed by CIA 2's
   timer A (`$9337`, `$9349`, `$935B`): the hit sample at `$F3F0` at three
   speeds and volumes for a duck, a gunman and the Marshall, the whinny at
-  `$9E00` and the ending at `$FCC0`.
+  `$9E00` and, at the end of the game, a man's voice saying "Well done"
+  at `$FCC0` (heard on 25 October 2026).
 
 ## The listing's error rate
 
