@@ -1,6 +1,6 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 65.0 % of the play snapshot's ledger (2026-10-24).
+Tier: Bronze (2026-10-08). Coverage 100.0 % (2026-10-25). Sample check 2026-10-25 (seed 7301, Opus 5.5): 13 of 60 wrong, over the mark; corrected. Next: full audit by a proven model, then a second sample, then a maintainer check (kit/CHECKING.md) since rounds 10-15 ran on Sonnet 5.5.
 
 Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the remaining bare runs ($B259, $9443, $5108, $686D, $6D81, $442C; queue via coverage.py). Named 2026-10-24 (latest pass: bank record unpacker $059A, joystick read $4082, intro loop $4095, terrain probe $9C1E; before it: init_round_state $4EDD, map-row copy $4593, SID sound driver $66A9, object phase handlers $A990, char-block slots $AC4F, player tile probe $9D3C; before it: the view-scroll engine, recolour_screen $5BC2, player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat).
 

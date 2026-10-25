@@ -11732,7 +11732,7 @@
   {
    "address": 128,
    "type": "line",
-   "text": "More of sprite_overflow_queue, which starts at $7E and has room up to here; it holds sprite numbers while there are many left-over sprites and a closing $FF."
+   "text": "More of sprite_overflow_queue, which starts at $7E; carry_over_sprite_overflow counts its index up with no limit until it meets the closing $7F, so the queue runs on past here (to $8E). It holds sprite numbers while there are many left-over sprites."
   },
   {
    "address": 143,
@@ -11947,7 +11947,7 @@
   {
    "address": 657,
    "type": "line",
-   "text": "Property byte of the block in the probe's far column (player_prev_x plus $1F), stored by probe_far_column and player_probe_tiles_and_platforms; 0 when the probe is outside the map. The ground routines read it: bits 2 and 3 mean a slope (air_slope_land tests bit 2), mode1_up_end tests it for non-zero and mode1_down_end tests bit 4."
+   "text": "Property byte of the block in the probe's far column (player_prev_x plus $1F), stored by probe_far_column, player_probe_tiles_and_platforms and probe_player_tiles_one_row ($9D17, which runs on into probe_far_column's store and stores 0 when the probe is outside the map; mode1_up_end calls it before testing this byte); 0 when the probe is outside the map. The ground routines read it: bits 2 and 3 mean a slope (air_slope_land tests bit 2), mode1_up_end tests it for non-zero and mode1_down_end tests bit 4."
   },
   {
    "address": 658,
@@ -12237,7 +12237,7 @@
   {
    "address": 1446,
    "type": "line",
-   "text": "Definition numbers, continued (names from Euan's older notes, matched by position; ? = inside that heading's section, not at its start; 24 and 25 point to one record). 1C-36: 1C Cupper; 1D Flying Shardu small; 1E Canon ball / bomb; 1F Horizontal moving platform; 20 Horizontal moving platform; 21 Pike - incline; 22 Pike - incline; 23 Key; 24 Lava burst; 25 Lava burst; 26 Raktura; 27 Ice platform; 28 Timagon; 29 1 Up?; 2A Timagon?; 2B Galator; 2C Galator?; 2D Galator?; 2E Galator?; 2F Mogulvar; 30 ZARZAMOTH; 31 1 Up; 32 1 Up?; 33 KATYEROWS; 34 KATYEROWS?; 35 Catecormos; 36 Bashtar"
+   "text": "Definition numbers, continued (names from Euan's older notes, matched by position; ? = inside that heading's section, not at its start; 24 and 25 point to one record). 1C-36: 1C Cupper; 1D Flying Shardu small; 1E Canon ball / bomb; 1F Horizontal moving platform; 20 Horizontal moving platform; 21 Pike - incline; 22 Pike - incline; 23 Key; 24 Lava burst; 25 Lava burst; 26 Raktura; 27 Ice platform; 28 Timagon; 29 Raktura / Timagon flame splash; 2A Timagon?; 2B Galator; 2C Galator?; 2D Galator?; 2E Galator?; 2F Mogulvar; 30 ZARZAMOTH; 31 1 Up; 32 Raktura / Timagon flame splash?; 33 KATYEROWS; 34 KATYEROWS?; 35 Catecormos; 36 Bashtar"
   },
   {
    "address": 1473,
@@ -13122,7 +13122,7 @@
   {
    "address": 2294,
    "type": "line",
-   "text": "Frame counter: the main loop adds one each time round ($80F9), wait_frame sets it to 0 when a stage is cleared. Its low bits time blinking and flashing, and update_objects uses its low three bits to choose which eighth of the objects moves."
+   "text": "Frame counter: the main loop adds one each time round ($80F9), wait_frame sets it to 0 when a stage is cleared. Its low bits time blinking and flashing, and update_objects uses its low three bits to pick one bit of frame_bits; an object moves in the frames where that bit is set in its own mask in $3484 ($FF every frame, $55 or $AA every other frame, $11-$88 one frame in four, $01 one in eight)."
   },
   {
    "address": 2295,
@@ -13172,7 +13172,7 @@
   {
    "address": 2305,
    "type": "line",
-   "text": "Hold counter of the player's animation (with $0296 and $0903), cleared by init_round_state and when the state or facing changes."
+   "text": "Hold counter of the player's animation (with $0296 and $0903), cleared by init_round_state, when the state or facing changes, and when it reaches its limit (3, 4 or 6 in the three animation routines, so it cycles); the fire path ($B1E6) sets it to $FF."
   },
   {
    "address": 2306,
@@ -13627,7 +13627,7 @@
   {
    "address": 13006,
    "type": "line",
-   "text": "Motion byte of each stage object, chosen in update_objects ($A283). $00-$7F: number of a movement script (index into the script address tables reached through the pointers $36/$38), run by object_script_step ($B207) with the position in obj_script_pos. $FF: the object is driven by the table handlers of $B1F7 when bit 5 of obj_flags is set. Any other negative value (for example $FE): no script, the object is moved by object_arc_step (a jump or fall). Written by the phase handlers ($A9B9 copies obj_off_y, $A9FA and $AA45 write 2 and 1, $AB2B writes $FE), by the hit handlers $A8E8 and $A904, by script commands ($B87F) and by the swap at $4C9D; the initial values come from the stage data (source of the initial values not traced)."
+   "text": "Motion byte of each stage object, chosen in update_objects ($A283). $00-$7F: number of a movement script (index into the script address tables reached through the pointers $36/$38), run by object_script_step ($B207) with the position in obj_script_pos. $FF: update_objects clears obj_flags (sets it to 1 on landing) and skips the $B1F7 table handlers. Any other negative value (for example $FE): no script, and the $B1F7 table handlers run when bit 5 of obj_flags is set (and bit 3 of obj_state is clear). object_arc_step runs first for any object whose arc state is non-zero, whatever this byte holds. Written by the phase handlers ($A9B9 copies obj_off_y, $A9FA and $AA45 write 2 and 1, $AB2B writes $FE), by the hit handlers $A8E8 and $A904, by script commands ($B87F, $BCF7 storing $FE, and $BD2C swapping it with $3322), by object_walk_land_stop ($B4BD, stores 0) and by the swap at $4C9D; the initial values come from the stage data (source of the initial values not traced)."
   },
   {
    "address": 13090,
@@ -14017,7 +14017,7 @@
   {
    "address": 17632,
    "type": "line",
-   "text": "Address inside the instruction at $44DE: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $44DE: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 17634,
@@ -14457,7 +14457,7 @@
   {
    "address": 20744,
    "type": "line",
-   "text": "Background loader that copies cartridge data into RAM $C000+ in pieces of 63 bytes (the pointers step 64), one per call, so the game never stalls. If section_scroll_flags ($08FD) bits 2-3 are clear it returns. Bit 3 set starts a new stream: it clears the bit, takes the stream number from the low flag bits and begins at the destination. Otherwise it copies the next piece with ROM banked in ($DE00 selects the cartridge bank, $01 flips ROM/RAM), and moves on to the next stream when the count in $08A2 runs out."
+   "text": "Background loader that copies cartridge data into RAM $C000+ in pieces of 63 bytes (the pointers step 64), one per call, so the game never stalls. If section_scroll_flags ($08FD) bits 2-3 are clear it returns. Bit 3 set starts a new stream: it clears the bit, takes the stream number from the low flag bits and begins at the destination. Otherwise it copies the next piece with ROM banked in ($DE00 selects the cartridge bank, $01 flips ROM/RAM), and when the count in $08A2 runs out it moves to the next entry of the stream table, the next segment of the same stream with its own count; a zero entry ends the stream and clears bit 2."
   },
   {
    "address": 20840,
@@ -14602,12 +14602,12 @@
   {
    "address": 25862,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which)."
   },
   {
    "address": 25863,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $6507."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6507."
   },
   {
    "address": 25864,
@@ -14622,12 +14622,12 @@
   {
    "address": 25868,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $650C."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $650C."
   },
   {
    "address": 25869,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $650D."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $650D."
   },
   {
    "address": 25870,
@@ -14637,12 +14637,12 @@
   {
    "address": 25871,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $650F."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $650F."
   },
   {
    "address": 25872,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $6510."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6510."
   },
   {
    "address": 25873,
@@ -14652,12 +14652,12 @@
   {
    "address": 25874,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $6512."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6512."
   },
   {
    "address": 25875,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; no routine in the listing reads it. This is the byte at $6513."
+   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6513."
   },
   {
    "address": 25876,
@@ -14677,12 +14677,12 @@
   {
    "address": 25884,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520); no routine in the listing reads this byte."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). Low byte of voice 1's sequence script address (seq_script_ptr_lo), which advance_effect_voice_script loads indexed by the voice number."
   },
   {
    "address": 25885,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520); no routine in the listing reads this byte. This is the byte at $651D."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). Low byte of voice 2's sequence script address (seq_script_ptr_lo), which advance_effect_voice_script loads indexed by the voice number."
   },
   {
    "address": 25886,
@@ -14692,12 +14692,12 @@
   {
    "address": 25887,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520); no routine in the listing reads this byte. This is the byte at $651F."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). High byte of voice 1's sequence script address (seq_script_ptr_hi), which advance_effect_voice_script loads indexed by the voice number."
   },
   {
    "address": 25888,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520); no routine in the listing reads this byte. This is the byte at $6520."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). High byte of voice 2's sequence script address (seq_script_ptr_hi, $651E-$6520), which advance_effect_voice_script loads with lda $651E,x, X = 2."
   },
   {
    "address": 25889,
@@ -14877,7 +14877,7 @@
   {
    "address": 25977,
    "type": "line",
-   "text": "Three bytes, one per voice ($6579-$657B). Only sid_init_voice_loop and sid_reset_voice_state write them (clearing); no routine in the listing reads them."
+   "text": "Three bytes, one per voice ($6579-$657B). Only sid_init_voice_loop and sid_reset_voice_state write them (clearing); the routines that index this array from its first byte read it (the references list which)."
   },
   {
    "address": 25980,
@@ -14892,12 +14892,12 @@
   {
    "address": 25984,
    "type": "line",
-   "text": "Written by script_cmd_set_filter; no routine in the listing reads it."
+   "text": "Written by script_cmd_set_filter; the routines that index this array from its first byte read it (the references list which)."
   },
   {
    "address": 25985,
    "type": "line",
-   "text": "Written by script_cmd_set_filter; no routine in the listing reads it. This is the byte at $6581."
+   "text": "Written by script_cmd_set_filter; the routines that index this array from its first byte read it (the references list which). This is the byte at $6581."
   },
   {
    "address": 25986,
@@ -15042,12 +15042,12 @@
   {
    "address": 26054,
    "type": "line",
-   "text": "Written by sid_silence_all; no routine in the listing reads it."
+   "text": "Written by sid_silence_all; the routines that index this array from its first byte read it (the references list which)."
   },
   {
    "address": 26055,
    "type": "line",
-   "text": "Written by sid_silence_all; no routine in the listing reads it. This is the byte at $65C7."
+   "text": "Written by sid_silence_all; the routines that index this array from its first byte read it (the references list which). This is the byte at $65C7."
   },
   {
    "address": 26056,
@@ -15187,7 +15187,7 @@
   {
    "address": 26733,
    "type": "line",
-   "text": "Reads the next event for one music voice (X selects the voice, script pointer $F5, position in $65A9,x). A negative byte is a command, handled by dispatch_voice_command; $60 ends the note stream; any other byte becomes the new note in $6568,x, restarts the voice counters and, unless the voice's mask in $65C5,x says otherwise, re-arms the pitch/vibrato/envelope slots for it. The next byte, or the repeated value, is stored as the duration in $6505,x and the position is saved."
+   "text": "Reads the next event for one music voice (X selects the voice, script pointer $F5, position in $65A9,x). A negative byte is a command, handled by dispatch_voice_command; $60 is a rest: it takes a duration and the script goes on, with no new note; any other byte becomes the new note in $6568,x, restarts the voice counters and, unless the voice's mask in $65C5,x says otherwise, re-arms the pattern, pulse, pitch, arpeggio and filter slots for it. The next byte, or the repeated value, is stored as the duration in $6505,x and the position is saved."
   },
   {
    "address": 26897,
@@ -15202,12 +15202,12 @@
   {
    "address": 26935,
    "type": "line",
-   "text": "Address inside the instruction at $6936: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $6936: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 26936,
    "type": "line",
-   "text": "Address inside the instruction at $6936: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $6938."
+   "text": "Address inside the instruction at $6936: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $6938."
   },
   {
    "address": 26943,
@@ -15227,12 +15227,12 @@
   {
    "address": 27028,
    "type": "line",
-   "text": "Address inside the instruction at $6993: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $6993: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 27029,
    "type": "line",
-   "text": "Address inside the instruction at $6993: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $6995."
+   "text": "Address inside the instruction at $6993: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $6995."
   },
   {
    "address": 27071,
@@ -15247,12 +15247,12 @@
   {
    "address": 27217,
    "type": "line",
-   "text": "Address inside the instruction at $6A50: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $6A50: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 27218,
    "type": "line",
-   "text": "Address inside the instruction at $6A50: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $6A52."
+   "text": "Address inside the instruction at $6A50: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $6A52."
   },
   {
    "address": 27282,
@@ -15307,12 +15307,12 @@
   {
    "address": 28297,
    "type": "line",
-   "text": "Address inside the instruction at $6E88: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $6E88: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 28298,
    "type": "line",
-   "text": "Address inside the instruction at $6E88: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $6E8A."
+   "text": "Address inside the instruction at $6E88: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $6E8A."
   },
   {
    "address": 28310,
@@ -15322,12 +15322,12 @@
   {
    "address": 28311,
    "type": "line",
-   "text": "Address inside the instruction at $6E96: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $6E96: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 28312,
    "type": "line",
-   "text": "Address inside the instruction at $6E96: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $6E98."
+   "text": "Address inside the instruction at $6E96: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $6E98."
   },
   {
    "address": 28329,
@@ -15482,7 +15482,7 @@
   {
    "address": 31934,
    "type": "line",
-   "text": "Entry 1 of sprite_y_buckets (position Y / 2 on the screen line, one byte for each); j_A43A writes it. $FF marks an empty position."
+   "text": "Entry 1 of sprite_y_buckets (position Y / 2 on the screen line, one byte for each); many routines write it through $7CBD,x. $FF marks an empty position; $7F is the end-of-list marker, which j_A43A stores at $7CBE plus sprite_bucket_max, so it reaches this entry only when that maximum is 0."
   },
   {
    "address": 32597,
@@ -15552,7 +15552,7 @@
   {
    "address": 32769,
    "type": "line",
-   "text": "Address inside the instruction at $8000: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8000: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 32771,
@@ -15562,12 +15562,12 @@
   {
    "address": 32777,
    "type": "line",
-   "text": "Address inside the instruction at $8008: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8008: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 32778,
    "type": "line",
-   "text": "Address inside the instruction at $8008: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $800A."
+   "text": "Address inside the instruction at $8008: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $800A."
   },
   {
    "address": 32779,
@@ -15577,7 +15577,7 @@
   {
    "address": 32780,
    "type": "line",
-   "text": "Address inside the instruction at $800B: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $800B: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 32781,
@@ -15587,12 +15587,12 @@
   {
    "address": 32782,
    "type": "line",
-   "text": "Address inside the instruction at $800D: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $800D: the label sits on an operand byte, not on an instruction start. cart_copy reads it as the base of an indexed table (lda $800E,x at $0138, with ROM bank 0 selected), the destination high byte of a cartridge directory entry; it is not a patched operand of the RAM instruction."
   },
   {
    "address": 32783,
    "type": "line",
-   "text": "Address inside the instruction at $800D: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction. This is the byte at $800F."
+   "text": "Address inside the instruction at $800D: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction. This is the byte at $800F."
   },
   {
    "address": 32784,
@@ -15617,12 +15617,12 @@
   {
    "address": 33033,
    "type": "line",
-   "text": "Address inside the instruction at $8107: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8107: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 33038,
    "type": "line",
-   "text": "Address inside the instruction at $810D: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $810D: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 33043,
@@ -15632,12 +15632,12 @@
   {
    "address": 33048,
    "type": "line",
-   "text": "Address inside the instruction at $8116: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8116: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 33053,
    "type": "line",
-   "text": "Address inside the instruction at $811C: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $811C: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 33058,
@@ -15742,7 +15742,7 @@
   {
    "address": 34307,
    "type": "line",
-   "text": "Mode 0 movement for one frame, called from player_mode_step. Reads joy_bits ($08), fire_flags ($08C6), and jump_state ($08FA). While player_hit ($0292) is non-zero it goes to player_hit_step. Calls $8D67 unless $1A is negative. On the ground: down ($0D) goes to player_down_enter_mode1, right ($07) to player_walk_right, left ($0B) to player_walk_left, down-right ($05) and down-left ($09) to player_down_right and player_down_left (or to player_stop_facing when $0C is non-zero and bit 7 of $08C6 is set), up-right ($06) and up-left ($0A) to the jump routines (walks instead while bit 7 of $08C6 is set), and up ($0E) to player_jump_up. In the air only right and left count. Anything else sets move_dir ($0D) to $FF and $0299 to 0, then runs player_jump_motion when airborne or sets $0905 to 1 when on the ground."
+   "text": "Mode 0 movement for one frame, called from player_mode_step. Reads joy_bits ($08), fire_flags ($08C6), and jump_state ($08FA). While player_hit ($0292) is non-zero it goes to player_hit_step. Calls $8D67 unless $1A is negative. On the ground: down ($0D) goes to player_down_enter_mode1, right ($07) to player_walk_right, left ($0B) to player_walk_left, down-right ($05) and down-left ($09) to player_down_right and player_down_left when $0C is zero (when $0C is non-zero they go to player_stop_facing if bit 7 of $08C6 is set, otherwise they walk right or left), up-right ($06) and up-left ($0A) to the jump routines (walks instead while bit 7 of $08C6 is set), and up ($0E) to player_jump_up only while bit 7 of $08C6 is clear (with it set, up is idle). In the air only right and left count. Anything else sets move_dir ($0D) to $FF and $0299 to 0, then runs player_jump_motion when airborne or sets $0905 to 1 when on the ground."
   },
   {
    "address": 34458,
@@ -15782,7 +15782,7 @@
   {
    "address": 34635,
    "type": "line",
-   "text": "Vertical step that goes with a horizontal one when $0C is non-zero (A holds $0C). Ends in $430F (subtracts move_step from player_prev_y) or $4326 (adds it), whichever the direction calls for, and the rts of that routine returns to the caller, so no jump motion follows. With $0C equal to 1 the player goes down when bit 3 of move_dir ($0D) is set (moving left) and up when it is clear (moving right). With any other value it goes up when moving left and down when moving right."
+   "text": "Vertical step that goes with a horizontal one when $0C is non-zero (A holds $0C). Ends in $430F (subtracts move_step from player_prev_y) or $4326 (adds it), whichever the direction calls for, and the rts of that routine returns to the caller, so no jump motion follows. With $0C equal to 1 the player goes down when bit 3 of move_dir ($0D) is set (moving left) and up when it is clear (moving right). With any other value it goes up when moving left and down when moving right. $430F and $4326 do nothing while bit 7 of $08C6 is set."
   },
   {
    "address": 34657,
@@ -15932,7 +15932,7 @@
   {
    "address": 35847,
    "type": "line",
-   "text": "Address inside the instruction at $8C05: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8C05: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 35851,
@@ -16057,7 +16057,7 @@
   {
    "address": 36506,
    "type": "line",
-   "text": "Address inside the instruction at $8E98: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8E98: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 36507,
@@ -16127,7 +16127,7 @@
   {
    "address": 37311,
    "type": "line",
-   "text": "Address inside the instruction at $91BE: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $91BE: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 37312,
@@ -16152,7 +16152,7 @@
   {
    "address": 37378,
    "type": "line",
-   "text": "Address inside the instruction at $9201: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $9201: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 37383,
@@ -16177,7 +16177,7 @@
   {
    "address": 37445,
    "type": "line",
-   "text": "Address inside the instruction at $9244: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $9244: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 37454,
@@ -16207,7 +16207,7 @@
   {
    "address": 37506,
    "type": "line",
-   "text": "Address inside the instruction at $9281: the label sits on an operand byte, not on an instruction start. Other code refers to this address (a patched operand or a jump into the middle of the instruction); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $9281: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
   },
   {
    "address": 37507,
@@ -16727,7 +16727,7 @@
   {
    "address": 44429,
    "type": "line",
-   "text": "If mask $0725,x is nonzero and $90 is zero, queues sound $18 via queue_sound $0B8C (meaning of $90 unknown)."
+   "text": "If mask $0725,x is nonzero and $90 is zero, queues sound $18 via queue_sound $0B8C ($90 is sound_queue_count)."
   },
   {
    "address": 44443,
@@ -16832,7 +16832,7 @@
   {
    "address": 45919,
    "type": "line",
-   "text": "High bytes of the 35 script command routines: $B35F-$B381, partner of script_cmd_lo (values $B5 to $B8, $BC and $BD)."
+   "text": "High bytes of the 35 script command routines: $B35F-$B381, partner of script_cmd_lo (values $B5 to $B8, $BC and $BD, except command 5 ($0B), command $15 ($91) and command $18 ($4C))."
   },
   {
    "address": 45954,
@@ -16942,7 +16942,7 @@
   {
    "address": 48930,
    "type": "line",
-   "text": "Byte patched to $19 by stage3_patch (with $00 at $BF23, $01 at $BF24 and $00 at $BF25). Zero in the saved stage 0 state; this lies in the part of the stage code area that other stages fill. The bytes read as two words, $0019 and $0001, but no routine in the listing reads them by address."
+   "text": "Byte patched to $19 by stage3_patch (with $00 at $BF23, $01 at $BF24 and $00 at $BF25). Zero in the saved stage 0 state; this lies in the part of the stage code area that other stages fill. The bytes read as two words, $0019 and $0001, but the routines that index this array from its first byte read it (the references list which) by address."
   },
   {
    "address": 48931,
@@ -17097,7 +17097,7 @@
   {
    "address": 65024,
    "type": "line",
-   "text": "A 256-byte page: the between-stage screen routine at $4016 clears it, then runs $8C07 with the ROM visible (probably unpacking data into it). All zero in the saved state; no routine in the listing reads it."
+   "text": "A 256-byte page: the between-stage screen routine at $4016 clears it, then runs $8C07 with the ROM visible (probably unpacking data into it). All zero in the saved state; the routines that index this array from its first byte read it (the references list which)."
   },
   {
    "address": 65280,
