@@ -55,10 +55,11 @@ G.tiles = function (P) {
     M[0x17] = M[at(0x12, 5)];
     return { a: M[0x17], y: 5 };
   };
-  // copy_tile_frame ($8CC5): zp_count characters from zp_ptr_14 to zp_ptr_16, the last byte first.
+  // copy_tile_frame ($8CC5): zp_count characters from zp_ptr_14 to zp_ptr_16, the last byte first,
+  // each counted for the page's clock (P.N).
   P.copy_tile_frame = function () {
     let y = ((M[0x58] << 3) - 1) & 255, a = 0;
-    do { a = M[at(0x14, y)]; M[at(0x16, y)] = a; y = (y - 1) & 255; } while (y !== 0xFF);
+    do { a = M[at(0x14, y)]; M[at(0x16, y)] = a; y = (y - 1) & 255; P.N.bytes = (P.N.bytes || 0) + 1; } while (y !== 0xFF);
     return { a, y: 0xFF };
   };
   // tile_anim_sound ($8CD6): the effect for slot X's animation and step, if tile_sound_anims ($C600)

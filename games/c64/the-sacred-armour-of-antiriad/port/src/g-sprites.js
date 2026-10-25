@@ -20,6 +20,7 @@ G.sprites = function (P) {
     let y = 0;
     for (let x = 7; x >= 0; x--) {
       if ((R(0x0290 + x) | R(0x02A8 + x)) & 0x80) continue;
+      P.count('moves');
       y = (x << 1) & 255;
       M[0x59] = R(0x02C8 + x);
       const bit = () => { const c = M[0x59] & 1; M[0x59] >>= 1; return c; };
@@ -129,6 +130,7 @@ G.sprites = function (P) {
   P.animate_sprites = function () {
     for (let x = 7; x >= 0; x--) {
       if ((R(0x02A8 + x) | R(0x0290 + x)) & 0x80) continue;
+      P.count('animated');
       if (R(0x0260 + x) & 0x80) {
         M[0x0215] = R(0x0215) | M[BIT + x];
         P.step_animation({ x });

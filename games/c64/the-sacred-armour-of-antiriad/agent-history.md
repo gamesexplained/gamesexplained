@@ -163,3 +163,81 @@ ran out on the same read in both, and the two runs joined again. A first
 check of the ending in VICE let go of the stick before the last read had
 been taken, and Tal never landed: the read is taken once the run goes on,
 so the stick it is given has to stay until then.
+
+## Follow-up: the Play tab (25 October 2026)
+
+Every routine the game runs was ported to JavaScript in `port/src`, one
+file to a group of the listing, and the sound driver runs on the site's
+6502 as the music player does. Each routine was checked alone against
+the game's code on states made from 56 moments of play (`port/test`),
+and the whole program in lockstep with the game on the kit's machine
+with nested interrupts: from the cold start for 500,000 passes (19,315
+frames, past the ending) and from each of the 56 moments for 6,000,
+every pass identical. The moment in the ending waits for fire at
+`$8B4C`; with fire pressed after the route it went on identical through
+the title.
+
+The page paces the port by the cycles each routine cost the game on the
+route (`port/scripts/time-routines.js`). Five things put it out of step
+with the C64, each found by running the page beside the machine from
+the same moment:
+
+- `add_weight` loops by branching back to its own first instruction,
+  and the measure took each turn for a call of its own, where the port
+  runs the loop in one call. A return to a routine's label with the
+  stack as it was is now a turn of the call under way, and the port
+  counts the turns.
+- The music handler stops CIA 1's timer A, clears I and runs the
+  driver, and a raster band that comes inside it holds the timer. The
+  page ran the driver whole and the band after it, so the sound's timer
+  drifted against the frame. The driver's core now asks the page
+  between its instructions whether an interrupt is due. Of the 56
+  moments, 43 kept Tal in step for 300 frames, where 40 had. Moving the
+  chips' clock on through a handler by the cost of its routines so far
+  was tried as well and made it worse, 29 of 56: a band's last read of
+  the interrupt flags then cleared flags that should have come as
+  interrupts of their own.
+- `colour_panel` returns at once on all but one call, and on that one,
+  the first time the armour is worn, recolours the panel for most of six
+  frames. Costed by its mean, the page lit the panel eight frames early.
+  Its looks in the list of colours are now counted and paid a row at a
+  time.
+- The tasks the game runs every frame (moving the sprites, Tal's
+  footing, the score, the panel's messages and its power-up) return
+  after a test or two on most frames. Costed by their means, each idle
+  call paid a share of the busy ones, and in the game's first room the
+  page reached `clear_room_objects` 177 lines after the C64. Each task's
+  turns past its first test are now counted, and it is 10 lines.
+- The ending dissolves the playfield's character set in nine steps,
+  each 2,048 bytes ANDed with a mask and then a wait of ten frames.
+  The routine waits, so it takes what time the game gives it and had no
+  cost of its own, and the page ran the ANDs in no time: it showed the
+  last message 65 frames before the C64. Each turn of that loop is now
+  timed on the route, 41 cycles, and counted.
+
+`test_play.js` holds the published page on a clean checkout. The C64
+replays the route; at each of its stages the page, restored from a
+moment made 120 frames before it, reaches the stage within two frames
+of the C64, and keeps Tal in step for 50 frames, a frame either way
+allowed, since the page runs a handler whole where the C64 takes its
+fifty lines. From power-on the game starts on the same frame as the
+C64's.
+
+Measured as the test measures, on the frames the page draws and a frame
+either way, 48 of the 56 moments keep Tal in step for 300 frames.
+Counting the frame tasks put the room build in step and left that
+figure where it was, 47 of 56 either way before the ending's dissolve
+was costed.
+
+What is left apart is where the two meet the stick. The page runs an
+interrupt's handler whole at its line, line 250 for the band that runs
+`tal_control`, where the C64 reaches the read in it about line 262. A
+change of the stick that falls in the twelve lines between can move
+`tal_control`'s reads, one every seventh frame, a frame apart from then
+on. From power-on the page's Tal falls a step behind the C64's at frame
+842, and the page enters room `$39` on frame 975 against the C64's 967.
+
+`test_play.js` hung in the ending at first: once the C64 ran past the
+route's last frame, the test asked it for runs of no cycles, over and
+over. Past the route's end the stick is now let go and the C64 runs on
+whole.

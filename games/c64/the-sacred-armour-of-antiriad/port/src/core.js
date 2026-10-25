@@ -61,7 +61,7 @@ const RESTART = { restart: true };
 function makePort(M, io, opts = {}) {
   const P = { M, GEN, CHECKPOINTS: [], taken: false, inIrq: 0 };
   // The main program's work whose length varies, counted for the page's pacing (port/scripts/
-  // fit-cost.js); the interrupt's own go in P.NI.
+  // time-routines.js); the interrupt's own go in P.NI.
   P.N = {};
   P.NI = {};
   Object.defineProperty(P, 'RESTART', { value: RESTART });
@@ -76,6 +76,13 @@ function makePort(M, io, opts = {}) {
   // until the CLI) and the lockstep does not: the game's machine keeps its own
   P.sei = () => { if (IO.sei) IO.sei(); };
   P.cli = () => { if (IO.cli) IO.cli(); };
+  // The work counted so far (P.N) paid to the page's clock in the middle of a long routine, so that
+  // what it writes after comes when the C64 writes it; the lockstep has no clock to pay
+  P.paid = () => { if (IO.pay) IO.pay(); };
+  // A turn of a routine's work counted for the page's pacing, in the main program's P.N or the
+  // interrupt's P.NI: the work a routine does past its first test, where the game's cost of one
+  // call depends on whether it gets there
+  P.count = k => { const n = P.inIrq ? P.NI : P.N; n[k] = (n[k] || 0) + 1; };
   // A checkpoint of the main program: the yield, then the restart an interrupt asked for
   Object.defineProperty(P, 'cp', { value: function* (a) { yield { cp: a }; if (P.taken) { P.taken = false; throw RESTART; } } });
   // The chips at $D000-$DFFF, as the processor port's $05 shows them, and RAM everywhere else.

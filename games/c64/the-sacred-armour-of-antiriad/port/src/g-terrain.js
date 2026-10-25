@@ -25,6 +25,7 @@ G.terrain = function (P) {
     if (R(0xB0) & 0x80) return {};
     const a = R(0x0260);
     if (a === 0xA6 || a === 0xAA || a === 0xA8 || a === 0x88) return {};
+    P.count('grounds');
     M[0x59] = R(0x02C8);
     const bit = () => { const c = M[0x59] & 1; M[0x59] >>= 1; return c; };
     if (R(0x7B) & 0x80) {

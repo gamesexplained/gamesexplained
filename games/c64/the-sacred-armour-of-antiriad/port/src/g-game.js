@@ -25,9 +25,11 @@ G.game = function (P) {
         for (let y = 0; y < 256; y++) {
           M[0xB2] = y;
           M[at(0x3C, y)] = M[at(0x3C, y)] & M[at(0x3E, y & 0x3F)];
+          P.count('dissolved');
         }
         M[0x3D] = (M[0x3D] + 1) & 255;
       }
+      P.paid();                                            // the step's 2,048 bytes, before the wait
       const p = w(0x3E) + 0x40;
       M[0x3E] = p & 255; M[0x3F] = (p >> 8) & 255;
       io.vicWrite(0x11, io.vicRead(0x11) ^ 0x03);

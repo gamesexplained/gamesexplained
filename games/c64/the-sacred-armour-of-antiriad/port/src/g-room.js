@@ -99,13 +99,15 @@ G.room = function (P) {
   // load_room_chars ($85E8): room A's character list (room_charset, char_list_ptrs): a count of
   // runs, each a first and a last character code and an offset into the shape pool ($2400) and
   // the colour pool ($3C00): each run's colours into char_colour ($0561) and its shapes into the
-  // playfield's character set at $7800.
+  // playfield's character set at $7800. The runs and the characters are counted for the page's
+  // clock (P.N).
   P.load_room_chars = function (r) {
     const x0 = (M[0xF761 + r.a] << 1) & 255;
     M[0x26] = M[0x3F00 + x0]; M[0x27] = M[0x3F01 + x0];
     M[0x62] = 0;
     M[0x53] = M[w(0x26)];
     while (M[0x53]) {
+      P.N.runs = (P.N.runs || 0) + 1;
       let y = M[0x62];
       y = (y + 1) & 255; M[0x16] = M[at(0x26, y)];
       y = (y + 1) & 255; M[0x58] = (((M[at(0x26, y)] - M[0x16]) & 255) + 1) & 255;
@@ -120,6 +122,7 @@ G.room = function (P) {
       M[0x17] = (M[0x17] + 0x78) & 255;
       M[0x15] = (M[0x15] + 0x24) & 255;
       do {
+        P.N.chars = (P.N.chars || 0) + 1;
         for (let j = 7; j >= 0; j--) M[at(0x16, j)] = M[at(0x14, j)];
         setw(0x14, w(0x14) + 8); setw(0x16, w(0x16) + 8);
         M[0x58] = (M[0x58] - 1) & 255;

@@ -73,7 +73,9 @@ G.messages = function (P) {
   // next_message ($ADC4): the panel on and no message scrolling, the highest waiting entry of the
   // queue ($066A, bit 7) freed and started.
   P.next_message = function () {
-    if (!(R(0x8A) & 0x80) || (R(0x54) & 0x80)) return {};
+    if (!(R(0x8A) & 0x80)) return {};
+    P.count('queued');
+    if (R(0x54) & 0x80) return {};
     for (let x = 7; x >= 0; x--) {
       const v = R(0x066A + x);
       if (!(v & 0x80)) continue;
@@ -135,6 +137,7 @@ G.messages = function (P) {
   // down into its character two rows a frame; at the end the count steps towards the score.
   P.roll_score = function () {
     if (!(R(0x8A) & 0x80)) return {};
+    P.count('scores');
     for (let x = 4; x >= 0; x--) {
       if (R(0x41) === 7) {
         if (R(0x0687 + x) === R(0x0682 + x)) continue;
@@ -196,10 +199,13 @@ G.messages = function (P) {
     }
     return { y: 0xFF };
   };
-  // add_weight ($AC1C): the weight in zpa_A5/zpa_A6 added X times to the sum at $0694.
+  // add_weight ($AC1C): the weight in zpa_A5/zpa_A6 added X times to the sum at $0694, each time
+  // counted for the page's clock (P.N, or P.NI in the interrupt).
   P.add_weight = function (r) {
     let x = r.x;
+    const n = P.inIrq ? P.NI : P.N;
     do {
+      n.weights = (n.weights || 0) + 1;
       let s = R(0x0694) + R(0xA5);
       M[0x0694] = s & 255;
       s = R(0x0695) + R(0xA6) + (s >> 8);
@@ -216,6 +222,7 @@ G.messages = function (P) {
   // panel's band.
   P.panel_sprites = function () {
     if (!(R(0x8A) & 0x80)) return {};
+    P.count('panelled');
     const x = R(0x75) ^ 0x03;
     M[0x43FD] = (x + 0x70) & 255;
     io.vicWrite(0x0A, 0xF1);
@@ -283,6 +290,7 @@ G.messages = function (P) {
   P.panel_power_up = function () {
     for (;;) {
       if (!(R(0x8A) & 0x80)) return {};
+      P.count('powered');
       const x = R(0x48);
       if (x >= 6) {
         M[0x4A] = 0x10; M[0x48] = 0x10;

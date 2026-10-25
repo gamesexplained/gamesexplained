@@ -9,7 +9,9 @@ G.panel = function (P) {
   // colour_panel ($89C2): the first time the armour is activated, once its wait (zpa_87) is over
   // and voice 1 is off track $8C: screen rows 17-24 recoloured by panel_chars ($FC60) and
   // panel_colours ($FC7C), 11 for a character not in the list; then tracks $8F-$91 asked for and
-  // the panel switched on (zp_panel_on).
+  // the panel switched on (zp_panel_on). It takes the C64 most of six frames: each look in the list
+  // is counted (P.N.tries) and paid a row at a time, so the rows change colour as the C64 changes
+  // them.
   P.colour_panel = function () {
     if (!(M[0x89] & 0x80) || R(0x87) || R(0x0355) === 0x8C) return {};
     for (let x = 0x11; x < 0x19; x++) {
@@ -20,8 +22,10 @@ G.panel = function (P) {
         const c = M[(screen + i) & 0xFFFF];
         let k = 0x1B;
         while (k >= 0 && M[0xFC60 + k] !== c) k--;
+        P.N.tries = (P.N.tries || 0) + (k >= 0 ? 0x1C - k : 0x1C);
         P.wr((colour + i) & 0xFFFF, k >= 0 ? M[0xFC7C + k] : 0x0B);
       }
+      P.paid();
     }
     M[0x035E] = 0x8F; M[0x035F] = 0x90; M[0x0360] = 0x91;
     M[0x89] = 0x00; M[0x8A] = 0x80;
