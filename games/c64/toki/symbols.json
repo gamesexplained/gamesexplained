@@ -13687,32 +13687,32 @@
   {
    "address": 13901,
    "type": "line",
-   "text": "Not an array of its own: one byte after obj_flags ($364C), so $364D,x is obj_flags of slot x+1. The contact code at $A74E tests it: when non-zero (the player has stood on, or hit, the object in slot x+1), it queues sound $10, sets jump_state ($08FA) to $FF and clears it again ($A796); otherwise it starts the link with slot x+1 (see $3F1A). That the slots x and x+1 are a linked pair is inferred."
+   "text": "Not an array of its own: one byte after obj_flags ($364C), so $364D,x is obj_flags of slot x+1. The contact code at $A74E tests it. When non-zero it queues sound $10, sets stance ($0299) to 0, jump_state ($08FA) to $FF, jump_counter ($08FB) to $A0 plus jump_start_count and player_action ($0905) to 3, and clears $364D,x again ($A796) (inferred: the player bounces). When zero, and only if jump_state is positive and non-zero, bit 1 of move_dir ($0D) is clear and obj_flags of slot x is zero, it sets obj_flags,x to 1, toggles bit 0 of obj_anim_index,x and starts a rise in slot x+1 (see $3F1A). That the slots x and x+1 are a linked pair is inferred."
   },
   {
    "address": 13984,
    "type": "line",
-   "text": "Direction of each object in the low four bits, in the joystick pattern: $0B left, $07 right, $0E up, $0D down, $06 up-right, $05 down-right, $09 down-left, $0A up-left. Written by apply_object_direction (step_object_by_script) from the script byte and by the phase 2 handlers ($0E, $0D). Read by apply_dir_and_speed, which hands it to the player as $19 when the object carries the player, and by the walking code at $B5D5: bit 3 set means left, bit 2 set means sideways, and XOR $0C turns the object round at a ledge or wall."
+   "text": "Direction of each object in the low four bits, in the joystick pattern: $0B left, $07 right, $0E up, $0D down, $06 up-right, $05 down-right, $09 down-left, $0A up-left. Written by apply_object_direction (step_object_by_script) from the script byte, by the phase 2 handlers ($0E, $0D) and by the walking code at $B5FE. Read by apply_dir_and_speed, which hands it to the player as $19 when the object carries the player, and by the walking code at $B5D5: bit 2 clear is a left direction; bit 2 and bit 3 both set (up or down) make it return without moving; otherwise bit 3 set moves left (speed subtracted at $B616) and clear moves right. XOR $0C turns the object round at a ledge or wall."
   },
   {
    "address": 14068,
    "type": "line",
-   "text": "A follower's X offset from its parent (signed byte)."
+   "text": "For a follower (bit 6 of obj_flags set), its X offset from the leader (signed byte): position minus leader_x_lo, stored at $8935 and $B24C, added back to leader_x at $A1E0. Other objects reuse the byte: object_run_script_handler ($B1F7) takes it as the index of its handler in script_cmd2, the phase 5 and phase 3 handlers ($A9C2, $AA61) keep a sub-state in it (counted up with inc, reset at $AA15), and phase1_pull_back_y ($AB69) compares obj_y_lo with it as a lower limit."
   },
   {
    "address": 14152,
    "type": "line",
-   "text": "A follower's Y offset from its parent (signed byte)."
+   "text": "For a follower (bit 6 of obj_flags set), its Y offset from the leader (signed byte): position minus leader_y_lo, stored at $893E and $B255, added back to leader_y at $A200. Other objects reuse the byte: the phase 5 handlers count it down as a timer ($A9CF, $A9FE, $AA23; reloaded with $0E, $07 and $4B), phase4_wait_flag7 ($A9B6) copies it to obj_motion, and phase3_land_check ($AA93) compares it with obj_y divided by 16."
   },
   {
    "address": 14236,
    "type": "line",
-   "text": "Position of each object in its movement script (offset into the script bytes found through the pointers $36/$38 and obj_motion). object_script_step ($B207) reads the byte there: below $80 a command, run through $88AF; $80 and above a move. It is advanced when a command or move finishes, cleared by the trigger at $4C9D (after saving it in $3844), and set to 0 by the hit handlers at $A91D."
+   "text": "Position of each object in its movement script (offset into the script bytes found through the pointers $36/$38 and obj_motion). object_script_step ($B207) reads the byte there: below $80 a command, run through $88AF; $80 and above a move. It is advanced when a command or move finishes ($B22A, $B236) and by script command 13 ($B6F1) just before that command calls the trigger at $4C9D, which saves it in $3844 and clears it; $BD40 puts the saved value back and resumes the script. Set to 0 when an object is spawned ($4D09, $B69D) and by the hit handlers at $A91D ($A934)."
   },
   {
    "address": 14320,
    "type": "line",
-   "text": "Repeat counter of the current move in the object's movement script. step_object_by_script ($B259) loads it from the byte after the direction byte, with bit 7 set to mark it loaded, counts it down once per step and moves on to the next script byte when it underflows. Zeroed when a command finishes ($B22F) and by the hit handlers at $A91D; the trigger at $4C9D saves it in $3898."
+   "text": "Repeat counter of the current move in the object's movement script. step_object_by_script ($B259) loads it from the byte after the direction byte, with bit 7 set to mark it loaded, counts it down once per step and moves on to the next script byte when it underflows. Script command 5 ($0BA0) keeps its own count in it the same way. Zeroed when a command or move finishes ($B22F), when an object is spawned ($4D0C, $B6A0) and by the hit handlers at $A91D; the trigger at $4C9D saves it in $3898 and zeroes it, and $BD3A puts it back."
   },
   {
    "address": 14572,
@@ -13752,7 +13752,7 @@
   {
    "address": 14944,
    "type": "line",
-   "text": "Frame countdown of each object's animation. advance_object_animation ($B57A) decrements it while bit 0 of obj_state is set; when it goes below zero it is reloaded from obj_anim_delay and obj_anim_index goes up. Set to $FF by the type 2 hit handler ($A8F5) and cleared when a pool object becomes a short animation ($8510)."
+   "text": "Frame countdown of each object's animation. advance_object_animation ($B57A) decrements it while bit 0 of obj_state is set; when it goes below zero it is reloaded from obj_anim_delay and obj_anim_index goes up. Set to $FF when an object is spawned ($4D11, $B6A8) and by the type 2 hit handler ($A8F5); set to obj_anim_delay by the spawner at $B77F and to obj_anim_delay plus 1 by script command 12 ($B833); cleared when a pool object becomes a short animation ($8510)."
   },
   {
    "address": 15037,
@@ -13777,7 +13777,7 @@
   {
    "address": 15409,
    "type": "line",
-   "text": "Left edge of each object's hit box, high byte (low byte obj_hit_left_lo). Set by set_object_hitbox, read by the shot and player contact tests."
+   "text": "Left edge of each object's hit box, high byte (low byte obj_hit_left_lo). Set by set_object_hitbox, and to $3E by the spawner at $B801 (with obj_hit_top_hi), which keeps a new object's box out of reach until set_object_hitbox runs (inferred). Read by the shot and player contact tests."
   },
   {
    "address": 15502,
@@ -13797,7 +13797,7 @@
   {
    "address": 15781,
    "type": "line",
-   "text": "Top edge of each object's hit box, high byte (low byte obj_hit_top_lo). Set by set_object_hitbox."
+   "text": "Top edge of each object's hit box, high byte (low byte obj_hit_top_lo). Set by set_object_hitbox, and to $3E by the spawner at $B804 (with obj_hit_left_hi at $B801)."
   },
   {
    "address": 15874,
@@ -13817,7 +13817,7 @@
   {
    "address": 16060,
    "type": "line",
-   "text": "Index of the object's current step in its animation (frame sequence of the animation block selected by obj_anim_num). advance_object_animation ($B57A) adds 1 each time obj_anim_timer runs out and wraps to 0 at the count in byte 0 of the block; $B5B5 stores it and loads obj_frame_ptr and obj_draw_min_y for it. Cleared when a script command ends ($B853), by the hit handlers at $A91D and by the spawner at $B7A5; bit 0 is toggled at $A76D and $A2A4."
+   "text": "Index of the object's current step in its animation (frame sequence of the animation block selected by obj_frame). advance_object_animation ($B57A) adds 1 each time obj_anim_timer runs out and wraps to 0 at the count in byte 0 of the block; script command 9 ($B838) steps it the same way and stores it at $B853. $B5B5 stores it and loads obj_frame_ptr and obj_draw_min_y for it. Cleared by script command 12 ($B824) when it selects a new animation, by the hit handlers at $A91D ($A93A), by the spawners at $B6A3 and $B7A5 and when a pool object becomes a short animation ($850D); bit 0 is toggled at $A76D and $A2A4 (the latter through $3EBB, the entry of slot x-1)."
   },
   {
    "address": 16153,
@@ -13827,12 +13827,12 @@
   {
    "address": 16154,
    "type": "line",
-   "text": "Not an array of its own: one byte after obj_arc_state ($3F19), so $3F1A,x is obj_arc_state of slot x+1. $A772 sets it to $80 (start a rise) for slot x+1 when the contact code at $A74E starts (inferred: launches the linked child of the object in slot x)."
+   "text": "Not an array of its own: one byte after obj_arc_state ($3F19), so $3F1A,x is obj_arc_state of slot x+1. $A772 sets it to $80 (start a rise) for slot x+1, with that slot's obj_arc_counter ($3F77) set to $2A, when the contact code at $A74E finds $364D,x zero, jump_state positive and non-zero, bit 1 of move_dir clear and obj_flags of slot x zero (inferred: launches the linked child of the object in slot x)."
   },
   {
    "address": 16246,
    "type": "line",
-   "text": "Counter that object_arc_step uses to step through its speed tables."
+   "text": "Counter that object_arc_step uses: in a rise or fall (obj_arc_state bit 7 set) it steps through the speed tables jump_rise_steps ($02CE) and jump_fall_steps ($02DF); in a path move it is instead the number of the path, the index path_advance ($894C) uses into the path state at $5C, $60 and $64."
   },
   {
    "address": 16247,
@@ -13872,12 +13872,12 @@
   {
    "address": 16406,
    "type": "line",
-   "text": "Start of the between-stage screen. Clears the page at $FE00, runs the routine at $8C07 with $01 set to $37 (ROM visible; probably unpacks data from $8B27 into $FE00, inferred), then looks at $0294. If the stage number $08E7 is 5 or more, it switches off CIA2 interrupts and the screen ($D011), calls $BD5D and restarts the game at game_start. Otherwise it sets $D018 to $31, calls $8E9A and polls read_joystick_ports until fire (bit 4) is seen, blanks the screen, bumps $0294, then increments $089D and continues into stage_begin. The $0294 branch and $089D meaning are not established here."
+   "text": "Start of the between-stage screen. Clears the page at $FE00, runs the routine at $8C07 with $01 set to $37 (ROM visible; probably unpacks data from $8B27 into $FE00, inferred), then looks at $0294: negative goes to the loop at $4095, positive skips to $407C. When it is zero: if the stage number $08E7 is 5 or more, it switches off the CIA2 timer A interrupt and the screen ($D011), calls $BD5D and restarts the game at game_start. Otherwise it sets $D018 to $31, calls $8E9A and polls read_joystick_ports while bit 4 reads 0, that is until fire is released (at once if it is not held), blanks the screen, bumps $0294, then increments $089D and continues into stage_begin. The $0294 branch and $089D meaning are not established here."
   },
   {
    "address": 16514,
    "type": "line",
-   "text": "Reads both joystick ports: writes $7F to $DC00 and $DC01 (CIA 1 ports A/B), reads $DC00 and, if no direction/fire pressed there ($7F), reads $DC01 instead. Returns the port value in A (fire is bit 4, active low). Called from the wait loop at $4069 (title/start waiting for fire: AND #$10)."
+   "text": "Reads both joystick ports: writes $7F to $DC00 and $DC01 (CIA 1 ports A/B), reads $DC00 and, if no direction/fire pressed there ($7F), reads $DC01 instead. Returns the port value in A (fire is bit 4, active low). Its one caller is the loop at $4069 in stage_intro_start, which repeats while bit 4 is 0 (AND #$10): it waits for fire to be released."
   },
   {
    "address": 16533,
@@ -13932,7 +13932,7 @@
   {
    "address": 17144,
    "type": "line",
-   "text": "Moves player_try_x ($08BB/$08BC) right by move_step ($0A), with carry into the high byte, unless bit 7 of fire_flags ($08C6) is set, in which case it does nothing. Called by mode 1 movement for a step to the right."
+   "text": "Moves player_prev_x ($08BB/$08BC) right by move_step ($0A), with carry into the high byte, unless bit 7 of fire_flags ($08C6) is set, in which case it does nothing. Called for a step to the right by player_jump_right and walk_right_move (mode 0), by mode2_step_right, mode2_up_right and mode2_down_right, and by mode1_right."
   },
   {
    "address": 17167,
@@ -13992,7 +13992,7 @@
   {
    "address": 17307,
    "type": "line",
-   "text": "Adds a score award to the five-byte score at $08D0-$08D4. The top two bits of A pick the award class 0-2 (class 3 returns with nothing added). Pointer $4A/$4B comes from the tables at $042E and $0431, and its five bytes are added digit by digit from the last place with carry. A digit reaching $CB wraps by subtracting $0A, so the digits are stored as $C0 plus the digit value (inferred from the compare). Role as the score is inferred from this arithmetic."
+   "text": "Adds a score award to the five-byte score at $08D0-$08D4. The top two bits of A pick the award class 0-2 (class 3 returns with nothing added). Pointer $4A/$4B comes from the tables at $042E and $0431, and its five bytes are added digit by digit from the last place with carry. A digit reaching $CB wraps by subtracting $0A, leaving the carry set for the next place, so the digits are stored as $C1 plus the digit value (the snapshot's score is five $C1 bytes). The three awards ($02BB, $02C0, $02C5) are 10, 50 and 100. Role as the score is inferred from this arithmetic."
   },
   {
    "address": 17349,
@@ -14077,7 +14077,7 @@
   {
    "address": 18188,
    "type": "line",
-   "text": "Move the view by one step toward where it should be; called every frame from track_stage_section while the player is not hit. First it sets scroll_step to 2. Bits 7 and 6 of section_scroll_flags then choose the mode. Bit 7 clear: auto_scroll_horizontal, which scrolls right (bit 5 set) or left (bit 5 clear) until the section limit, then follows the player vertically. Bit 7 set and bit 6 clear: auto_scroll_vertical, down (bit 5 set) or up, then follows the player horizontally. Both set: follow_player_both. Following means that a player_screen_x or player_screen_y outside the zone makes the view scroll toward that side. A limit reached is stored in view_pinned_edges, and the scroll then goes idle through stop_scroll."
+   "text": "Move the view by one step toward where it should be; called from track_stage_section each frame that $08CB is zero and the player is not hit. First it sets scroll_step to 2. Bits 7 and 6 of section_scroll_flags then choose the mode. Bit 7 clear: auto_scroll_horizontal, which scrolls right (bit 5 set) or left (bit 5 clear) until the section limit, then follows the player vertically. Bit 7 set and bit 6 clear: auto_scroll_vertical, down (bit 5 set) or up, then follows the player horizontally. Both set: follow_player_both. Following means that a player_screen_x or player_screen_y outside the zone makes the view scroll toward that side; inside the zone the scroll goes idle through stop_scroll. A straight follow move that meets a limit stores it in view_pinned_edges and also goes idle; the auto modes store it and go on to follow, and a diagonal move pins an edge without storing it."
   },
   {
    "address": 18198,
@@ -14147,7 +14147,7 @@
   {
    "address": 18589,
    "type": "line",
-   "text": "One step of the view to the right. If the scroll direction $0F is not 2 yet, set_dir_right makes it 2 and the step waits for the next call. The step is skipped while the previous tile's redraw is still too recent: the fine position scaled by scroll_step (fine_x_steps or fine_y_steps) has to be above scroll_phase. The step clears the left bit of view_pinned_edges and subtracts scroll_step from scroll_fine_x ($06). When that goes below 0 the value wraps into 0 to 7, scroll_x ($1C) grows by 1, and tile_scroll_done starts the redraw."
+   "text": "One step of the view to the right. If the scroll direction $0F is not 2 yet, set_dir_right makes it 2 and the step waits for the next call. The step is skipped while the previous tile's redraw is still too recent: scroll_fine_x scaled by scroll_step (fine_x_steps) has to be above scroll_phase. The step clears the left bit of view_pinned_edges and subtracts scroll_step from scroll_fine_x ($06). When that goes below 0 the value wraps into 0 to 7, scroll_x ($1C) grows by 1, and tile_scroll_done starts the redraw."
   },
   {
    "address": 18656,
@@ -14227,7 +14227,7 @@
   {
    "address": 19234,
    "type": "line",
-   "text": "Diagonal step up and to the left (direction 7), allowed when scroll_fine_x equals scroll_fine_y. Otherwise the view scrolls left by itself (scroll_left) until they are equal. The first four instructions are two compares whose branches lead to the next instruction."
+   "text": "Diagonal step up and to the left (direction 7), allowed when scroll_fine_x equals scroll_fine_y. Otherwise the view scrolls left by itself (scroll_left) until they are equal. The first six instructions are two compares whose branches lead to the next instruction."
   },
   {
    "address": 19262,
@@ -14362,7 +14362,7 @@
   {
    "address": 20024,
    "type": "line",
-   "text": "Stage 2. When section_index ($0298) is below 2, reads two pointers from ($2A),$13 and ($2C),$13 into $E1/$E2, writes $36 at offsets $28 and $29 of that target, and sets $1D08/$1D0A to $A0 and $1D09/$1D0B to $00. Falls into stage2_common."
+   "text": "Stage 2. When section_index ($0298) is below 2, reads a pointer into $E1/$E2, its low byte from ($2A),$13 and its high byte from ($2C),$13, writes $36 at offsets $28 and $29 of that target, and sets $1D08/$1D0A to $A0 and $1D09/$1D0B to $00. Falls into stage2_common."
   },
   {
    "address": 20066,
@@ -14392,7 +14392,7 @@
   {
    "address": 20189,
    "type": "line",
-   "text": "Resets per-round state: stores zero or $FF into about 30 game variables ($0898-$0914, $06-$1A, player_effect $08B1, player_hit $0292, jump_state $08FA, view_pinned_edges $08FE), loads section 0's record from table $0D22 indexed by $0C06 to get byte $18 into $16, marks every obj_state $3592-$35E5 as $FF (free), then runs the start-position lookup, spawns objects, and ends by jumping to player_pose $413A."
+   "text": "Resets per-round state: stores starting values (mostly 0 or $FF, also $19, 4, 3, $FE and 7) into about 30 game variables ($0898-$0913, zero page $06-$1A and $6B, player_effect $08B1, player_hit $0292, jump_state $08FA, view_pinned_edges $08FE), loads the record of the section numbered by $0C06 from table $0D22 to get byte $18 into $16, marks every obj_state $3592-$35E5 as $FF (free), then runs the start-position lookup, spawns objects, and ends by jumping to player_pose $413A."
   },
   {
    "address": 20305,
@@ -14407,12 +14407,12 @@
   {
    "address": 20357,
    "type": "line",
-   "text": "Start of the per-record test: record pointer is $E1/$E2 (from stage tables $8113/$8118, read after writing $85 to the cartridge bank register $DE00). Compares player_hit_x $08E3/$08E4 and player_hit_y $08E5/$08E6 against the record's min and max x and y (bytes 0-7); any miss branches to skip_to_next_start_record."
+   "text": "Start of the per-record test: record pointer is $E1/$E2 (from stage tables $8113/$8118, read with bank $80 selected; $85 is then written to the cartridge bank register $DE00 before the records are read). Compares player_hit_x $08E3/$08E4 and player_hit_y $08E5/$08E6 against the record's min and max x and y (bytes 0-7); any miss branches to skip_to_next_start_record."
   },
   {
    "address": 20418,
    "type": "line",
-   "text": "Record did not contain the player position: scans forward from byte $10 for a byte with bit 7 set, adds that length to $E1/$E2, and retests the next record at find_start_record_loop."
+   "text": "Record did not contain the player position: scans forward from byte $11 (past the section byte $10) for a byte with bit 7 set, adds that byte's index plus 1 to $E1/$E2, and retests the next record at find_start_record_loop."
   },
   {
    "address": 20420,
@@ -14467,7 +14467,7 @@
   {
    "address": 20877,
    "type": "line",
-   "text": "Reads the next stream entry from the table at $0773,x. The high byte gives the cartridge bank (top 3 bits, selects bank via $DE00 and $08A4) and the address in $8000-$9FFF; a zero high byte ends the list (clears flag bit 2 in $08FD and moves to the next entry). The first source byte is the number of 64-byte pieces to copy and is stored in $08A2."
+   "text": "Reads the next stream entry from the table at $0773,x. The high byte gives the cartridge bank (top 3 bits, selects bank via $DE00 and $08A4) and the address in $8000-$9FFF; a zero high byte ends the list (clears flag bit 2 in $08FD and moves to the next entry). The first source byte is the number of pieces to copy (64 bytes apart, 63 copied from each) and is stored in $08A2."
   },
   {
    "address": 20945,
