@@ -10302,7 +10302,7 @@
   },
   {
    "address": 44051,
-   "name": "compute_prev_position_box_edges",
+   "name": "compute_trial_box_edges",
    "type": "code",
    "kind": "user"
   },
@@ -11787,7 +11787,7 @@
   {
    "address": 229,
    "type": "line",
-   "text": "Low byte of a 16-bit scratch word used as a pointer or an X position: the screen destination in the screen column copies (the block character source in draw_screen_from_tile_map), the colour RAM address in the shot-cell drawing, the source in unpack_bank_record, the animation data pointer in advance_object_animation, and an edge of the player's box in the terrain probes (the right edge in probe_player_tiles, the left edge in the others and in compute_prev_position_box_edges)."
+   "text": "Low byte of a 16-bit scratch word used as a pointer or an X position: the screen destination in the screen column copies (the block character source in draw_screen_from_tile_map), the colour RAM address in the shot-cell drawing, the source in unpack_bank_record, the animation data pointer in advance_object_animation, and an edge of the player's box in the terrain probes (the right edge in probe_player_tiles, the left edge in the others and in compute_trial_box_edges)."
   },
   {
    "address": 230,
@@ -11832,7 +11832,7 @@
   {
    "address": 238,
    "type": "line",
-   "text": "Temporary: low byte of the player box's Y edge ($EE/$EF) in compute_prev_position_box_edges and platform_scan_next."
+   "text": "Temporary: low byte of the player box's Y edge ($EE/$EF) in compute_trial_box_edges and platform_scan_next."
   },
   {
    "address": 239,
@@ -12077,7 +12077,7 @@
   {
    "address": 796,
    "type": "line",
-   "text": "Offset from player_y to the top of hit box 1 (player_box_top = player_y + this). track_stage_section also adds it to player_y; the terrain probes and compute_prev_position_box_edges add it to player_try_y."
+   "text": "Offset from player_y to the top of hit box 1 (player_box_top = player_y + this). track_stage_section also adds it to player_y; the terrain probes and compute_trial_box_edges add it to player_try_y."
   },
   {
    "address": 797,
@@ -16432,7 +16432,7 @@
   {
    "address": 41919,
    "type": "line",
-   "text": "Once a frame, draw the stage's objects and test them against the player. It first builds the player's two hit boxes in zero page: box 1 ($4C/$4D left, $4E/$4F right, $50/$51 top, $52/$53 bottom) has left = player_x ($08B7) + $031A, right = left + $031B, top = player_y ($08B9) + $031C, and bottom = top + $031D; box 2 ($54-$5B, same order) has left and right = $08B3 + $031E and + $031F, top and bottom = $08B5 + $0320 and + $0321. Then for each object from obj_first to obj_end and afterwards from temp_first to temp_end (flag $F0 is $FF for the second group): unless bit 7 of obj_state or bit 6 of $35EF is set, it converts the object's position to screen coordinates and walks the part list of its current frame (pointer $3B1A/$3B77, part count in byte 4), adding one logical sprite entry to the tables at $0808-$0880 for each part that is on the screen (at most $16 entries in all, counted from sprite_count) and filing it into sprite_y_buckets at Y / 2 or the next free position; at the end it writes $7F after the highest position used. Every object, drawn or not, then goes to the hit tests. When its obj_state bits pass the check at $A54A, $0292 is zero, and $3427 is not negative, an object with $3427 below 2 is tested against box 2 and, if it misses, box 1; the others are tested against box 1 only. Objects with bit 7 of obj_state clear and bit 5 of $35EF set are tested against the six player shot slots at $06DD-$073D. A shot that overlaps is used up; it sets a short-lived object's obj_state to $FF, or for other objects calls $439B with the object's $327A byte (by the top three bits it adds a per-type amount, none for type 3, to five digits at $08D0-$08D4, probably the score) and takes 1 (2 when $08E0 is 1) off the hit points in the low five bits of $327A, calling $A88E when that would go below zero; sound 4 is queued with queue_sound. Contact leads, by $3427 and the group, to $A7A1 (retire and run the object's routine), $A88E, or $A5B2 and $A630, which among other things set $0292 and $08FA to $FF and queue sound $24; those paths are not fully traced."
+   "text": "Per frame: draw the objects and test them against the player. Box 1 ($4C-$53: left, right, top, bottom): player_x + $031A, that + $031B, player_y + $031C, that + $031D. Box 2 ($54-$5B): player_third_x + $031E and + $031F, player_third_y + $0320 and + $0321. For obj_first to obj_end, then temp_first to temp_end ($F0 = $FF): unless obj_state bit 7 or obj_kind bit 6 is set, each on-screen part of the current frame ($3B1A/$3B77, count in byte 4) adds a sprite entry at $0808-$0880 (at most $16 in all), filed in sprite_y_buckets at Y/2 or the next free place; $7F goes after the highest. If $A54A's check passes, player_hit is 0 and obj_phase is not negative, phase 0-1 objects meet box 2 first (a miss tries box 1 unless the object is wholly above box 2), others box 1; contact goes by phase and group to $A7A1, $A5B2, $A616, $A741 or $A74E. Objects with obj_state bit 7 clear and obj_kind bit 5 set then meet the six shots: a hit clears the shot and kills a pool object or takes hit points ($A6F0)."
   },
   {
    "address": 43112,
@@ -16447,7 +16447,7 @@
   {
    "address": 43130,
    "type": "line",
-   "text": "Low bytes of the ten handlers that object_run_type_handler ($A88E) jumps to, indexed by the low four bits of obj_kind. With obj_kind_reaction_hi the addresses are: 0 $A8FA, 1 $A8D8, 2 $A8E0, 3 $A93D (nothing), 4 $A0E1 (stage code), 5 $A93E, 6 $A8A6 (object_type_reset_group), 7 $A96D, 8 $A981, 9 $A902."
+   "text": "Low bytes of the ten handlers that object_run_type_handler ($A88E) jumps to, indexed by the low four bits of obj_kind. With obj_kind_reaction_hi the addresses are: 0 $A8FA, 1 $A8D8, 2 $A8E0, 3 $A93D (nothing), 4 $A0E1 (in the resident code copied from bank 4), 5 $A93E, 6 $A8A6 (object_type_reset_group), 7 $A96D, 8 $A981, 9 $A902."
   },
   {
    "address": 43140,
@@ -16457,7 +16457,7 @@
   {
    "address": 43150,
    "type": "line",
-   "text": "Queue sound $14, then jump through a table indexed by the low four bits of f_35EF,x (the object's type): the low bytes are at $A87A and the high bytes at $A884, ten entries in all, starting with $A8FA, $A8D8, $A8E0, $A93D, and $A0E1. Called from $A61A (the contact code, after the health test at $A600) and from $A72B. By type, the handlers are $A8FA (0, launch up in an arc), $A8D8 (1), $A8E0 (2), $A93D (3, does nothing), $A0E1 (4, a stage-dependent address), $A93E (5), $A8A6 (6), $A96D (7), $A981 (8), and $A902 (9)."
+   "text": "Queue sound $14, then jump through a table indexed by the low four bits of obj_kind ($35EF,x): low bytes at $A87A, high bytes at $A884, ten entries. Called from $A61A (contact: after the jump-on health test at $A600, or from $A5AA when player_effect bit 7 is set), from $A72B (a shot takes the last hit point) and from $BD56 (script command 34, $BD54). By type, the handlers are $A8FA (0, launch up in an arc), $A8D8 (1), $A8E0 (2), $A93D (3, does nothing), $A0E1 (4, resident code from bank 4), $A93E (5), $A8A6 (6), $A96D (7), $A981 (8), and $A902 (9)."
   },
   {
    "address": 43174,
@@ -16467,7 +16467,7 @@
   {
    "address": 43224,
    "type": "line",
-   "text": "Handler for object type 1, and also reached by a jump from $A96A. Replace obj_anim_num ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_reset_motion ($A8E0)."
+   "text": "Handler for object type 1; also called from object_type_reset_group ($A8B4) and reached by a jump from $A96A. Replace obj_anim_num ($33CA) with the byte at the pointer ($3E) indexed by the old number, then carry on into object_reset_motion ($A8E0)."
   },
   {
    "address": 43232,
@@ -16477,7 +16477,7 @@
   {
    "address": 43258,
    "type": "line",
-   "text": "Handler for object type 0, and also reached by a jump from $B432. Replace obj_anim_num ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_start_rise_arc ($A902)."
+   "text": "Handler for object type 0, and also reached by a jump from $B432. Replace obj_anim_num ($33CA) with the byte at the pointer ($3E) indexed by the old number, then carry on into object_start_rise_arc ($A902)."
   },
   {
    "address": 43266,
@@ -16502,7 +16502,7 @@
   {
    "address": 43373,
    "type": "line",
-   "text": "Handler for object type 7. Store $09 in $2D32, $CD in $2D56, and $CE in $2D46 (addresses in the per-stage area, probably patching stage code or data), set obj_state of object 51 ($35C5) to $FF, and return."
+   "text": "Handler for object type 7. Store $09 in $2D32, $CD in $2D56, and $CE in $2D46 (in the data unpacked once at start-up from entries 12-15, above every stage block; what they hold is unknown), set obj_state of object 51 ($35C5) to $FF, and return."
   },
   {
    "address": 43393,
@@ -16687,7 +16687,7 @@
   {
    "address": 44051,
    "type": "line",
-   "text": "Computes the edges of the player's box from its previous position. $EE/$EF is the previous y ($08BD/$08BE) plus $031C and $031D (vertical offsets, with carry into the high byte). $E5/$E6 is the previous x ($08BB/$08BC) plus $031A, and $EC/$ED is that plus $031B. It then jumps to $9E17, which starts a loop over the objects counted in $0910 (inferred to be the overlap test against them). Which offset is the box's near edge and which its size is inferred."
+   "text": "Computes the edges of the player's box at the trial position. $EE/$EF is player_try_y ($08BD/$08BE) plus $031C and $031D (vertical offsets, with carry into the high byte). $E5/$E6 is player_try_x ($08BB/$08BC) plus $031A, and $EC/$ED is that plus $031B. It then jumps to $9E17, which starts a loop over the objects counted in $0910 (inferred to be the overlap test against them). Which offset is the box's near edge and which its size is inferred."
   },
   {
    "address": 44111,
@@ -16747,7 +16747,7 @@
   {
    "address": 44688,
    "type": "line",
-   "text": "Pops the saved-background stack and puts the characters back on the screen and their colours into colour RAM. $0904 holds the top of the stack; it does nothing if it is zero. Each record is 5, 6 or 8 bytes ending at offset X in $073B..$0742: a tag in $073F,x (0 = 1 cell, 1 = 2 cells, 2 or more = 2x2 cells), a screen pointer in $0740/$0741 and a colour RAM pointer in $0741/$0742. Each saved character is stored back at the screen address, and its colour is looked up in char_colour_table ($0C22) and stored at the colour RAM address. It loops until the stack is empty, then clears $0904. Pairs with slot_save_draw_4_cells, which saves the cells; role inferred."
+   "text": "Pops the saved-background stack and puts the characters back on the screen and their colours into colour RAM. $0904 holds the top of the stack; it does nothing if it is zero. Each record is 5, 6 or 8 bytes ending at offset X in $073B..$0742: a tag in $073F,x (0 = 1 cell, 1 = 2 cells, 2 or more = 2x2 cells), a screen pointer in $0740/$0741 and a colour RAM pointer in $0741/$0742. Each saved character is stored back at the screen address, and its colour is looked up in char_colour_table ($0C22) and stored at the colour RAM address. It loops until the stack is empty, then clears $0904. Pairs with slot_save_draw_1_cell, _2_cells and _4_cells, which push the records; role inferred."
   },
   {
    "address": 44790,
@@ -16762,7 +16762,7 @@
   {
    "address": 44852,
    "type": "line",
-   "text": "Fire a shot, called by update_player only while bit 6 of fire_flags ($08C6) is clear, which means the fire button is pressed. Nothing happens while $08FF or player_hit ($0292) is non-zero. Player_mode picks the way aim_dir ($0297) is chosen: mode 0 reads joy_bits ($08) on the ground (up, up-right, right, down-right, down, down-left, left, and up-left give the values 0, 1, 2, 3, 4/5, 6, 7, and 8, with 9 for up when the facing flag $18 has bit 3 set), mode 0 in the air uses only left or right from the facing flag, mode 2 goes straight to the shot with the direction already in aim_dir, and mode 1 goes to $B16B. A direction that is chosen sets fire_flags to $80 and $0902 to $FE. The shot itself is made only when bit 7 of the countdown $08DE is set: it reloads $08DE and $08DF from the weapon record at ($28) offsets $14 and $15, then fills a free slot among six (flag byte at $06DD, bit 7 means in use) with four speed bytes from the record, a start position taken from player_third_x and player_third_y plus the pair at $0334 for the aim direction (rounded down to a multiple of 8), and a second corner 8 further on. Weapon level $08E0 below 3 makes one shot and plays sound $1C (not when it is 2); level 3 or more takes two slots at once ($B088) and plays sound $20."
+   "text": "Fire a shot; update_player calls it while fire_flags bit 6 is clear (fire pressed). Nothing while $08FF or player_hit is non-zero. player_mode picks how aim_dir is set. Mode 0 on a slope with stance set uses slope_aim_dir; else on the ground joy_bits up gives 0 (9 when player_facing bit 3 is set), up-right 1, right 2, left 7, up-left 8, and anything else 2 or 7 by the facing ($AFAB-$AFBF, for 3-6, is never reached); in the air only the facing (7 or 2). On the ground it then sets fire_flags and $0903 to $80 and $0902 to $FE. Mode 1 goes to $B16B, mode 2 or more straight on. A shot needs shot_delay bit 7 set: it reloads $08DE/$08DF from weapon record ($28) bytes $14/$15 and fills a free shot slot with bytes $16-$19 (frames left, frame-list end, list type, animation mask), a start at player_third_x/_y + shot_start_offsets (rounded down to 8), a corner 8 further on, and a path from record bytes 2 x aim_dir. weapon_level under 3: one shot, sound $1C (not at 2); 3 up: two ($B088), sound $20."
   },
   {
    "address": 45559,
