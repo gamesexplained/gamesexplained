@@ -3222,9 +3222,10 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   const wallRGB = new Uint8Array(W * H * 4);
   let inst = new Float32Array(9 * 20000);             // x, y, z, depth, r, g, b, width, height
-  const yaw = 0, pitch = 0.12;                         // straight on, a little from above
-  // the lean: the model turns a little toward the way the stick is pushed and tips back on a jump,
-  // each easing to its target a frame at a time; the camera does nothing else
+  // The view is a window: the screen's own plane stays exactly where the flat picture is, filling
+  // the frame, and the camera moves behind it, a little above to begin with. Steering moves it
+  // toward the side pushed and a jump lifts it, so the blocks and sprites shift against the
+  // screen behind them (lean and lift, from -1 to 1, ease to their targets a frame at a time).
   let lean = 0, lift = 0;
   const COL = RGB.map(c => c.map(v => v / 255));
   function persp(f, a, n, fa) { const t = 1 / Math.tan(f / 2); return [t / a,0,0,0, 0,t,0,0, 0,0,(fa + n) / (n - fa),-1, 0,0,2 * fa * n / (n - fa),0]; }
@@ -3242,18 +3243,20 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
     return new Float32Array(mul(O, lookAt(cx + LX * k, cy + LY * k, LZ * k, cx, cy, 0)));
   })();
   function view() {
-    // the camera on a sphere round the play area's middle, looking at it
-    const cx = W / 2, cy = -H / 2, d = 335,        // near enough that the frame fills the view
-          yw = yaw + lean, pt = pitch + lift;
-    const ex = cx + d * Math.sin(yw) * Math.cos(pt), ey = cy + d * Math.sin(pt), ez = d * Math.cos(yw) * Math.cos(pt);
-    return mul(persp(0.75, c3.width / c3.height, 10, 3000), lookAt(ex, ey, ez, cx, cy, 0));
+    const cx = W / 2, cy = -H / 2, fov = 0.75, d = (H / 2) / Math.tan(fov / 2);   // the frame's height fills the view
+    const ox = lean * 60, oy = 30 + lift * 30;
+    // looking straight ahead from the offset camera, the projection skewed back by the offset so
+    // that the screen's plane (z = 0) lands where it would with the camera in the middle
+    const P = persp(fov, c3.width / c3.height, 10, 3000);
+    P[8] = -P[0] * ox / d; P[9] = -P[5] * oy / d;
+    return mul(P, lookAt(cx + ox, cy + oy, d, cx + ox, cy + oy, 0));
   }
   function frame() {
     if (!rt) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1), wantW = Math.round(c3.clientWidth * dpr), wantH = Math.round(c3.clientHeight * dpr);
     if (wantW && (c3.width !== wantW || c3.height !== wantH)) { c3.width = wantW; c3.height = wantH; }
     const st = stick(), ease = (a, b, k) => a + (b - a) * k;
-    lean = ease(lean, (st.r - st.l) * 0.1, 0.06); lift = ease(lift, st.u ? 0.05 : 0, 0.08);
+    lean = ease(lean, st.r - st.l, 0.08); lift = ease(lift, st.u ? 1 : 0, 0.1);
     vic0.set(rt.chips.vic); vic0[0x15] = 0;               // the same picture without the sprites
     ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bgpx);
     const b0 = rt.chips.vic[0x21] & 15;
