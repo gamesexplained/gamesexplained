@@ -17,3 +17,7 @@ Five handwritten comments were re-read and supported with bounded simulator chec
 Validation: binary, documentation, and listing checks passed. The site built all 67 games. The full kit run passed 308 tests, skipped seven unavailable Spectrum/SkoolKit oracle tests, and failed four tests on environment restrictions or the macOS `/var` versus `/private/var` temporary-path alias. Rerunning those four with local execution access and `TMPDIR=/private/tmp` passed all four. The combined result is 312 passed and seven skipped; unavailable oracle checks were not claimed as passing. The existing Toki listing warning was observed before and after this game's final listing rebuild; its files were not changed.
 
 The rendered page, its external reference image, and the $8000 Source link were inspected in the in-app browser. The build's first attempt caught a Markdown link to an unpublished facts.md and a stale listing build label; both were corrected and checks rerun. A private pass-skill note was written in work/skill-suggestions.md. No PR notes or issue were written.
+
+## 25 October 2026 — model identification
+
+The contributor identified this session as 6.1 Sol. The run record now uses gpt-6.1-sol, and models.py confirms that identifier is proven. The page was rebuilt to remove the model-check warning. Bronze remains the chosen and achieved tier; this correction adds no analysis or independent verification.

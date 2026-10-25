@@ -13,7 +13,7 @@ Next: trace the EasyFlash copy directory and reach the second load, then separat
 - Resolve the listing's short untyped gaps and check self-modifying instructions. Preserve initialization code around $020D using the entry image.
 - Exercise every documented attack from a neutral snapshot. Trace damage, endurance, lives, timer, scoring, weapons, enemy decisions, and stage completion. Investigate the five-life supplied edition against the manual's three without assuming the original was identical.
 - Attribute the SID player and every tune/effect, then provide the required tune players for Silver.
-- Complete verification, independent comment sampling, and the maintainer's proven-model check under kit/CHECKING.md. GPT-6 is the only model name supplied by this session; it is not a recognized proven identifier. Keep Bronze until all Silver requirements hold.
+- Complete verification and independent comment sampling. The contributor identified the session as gpt-6.1-sol, a proven model; an additional maintainer check is not required solely for model provenance. Keep Bronze until all Silver requirements hold.
 - Expand the page only from verified findings; create maps/levels and discoveries tabs as the analysis supports them.
 
 ## Delivery preference
