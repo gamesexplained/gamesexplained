@@ -3626,9 +3626,9 @@
   },
   {
    "address": 16658,
-   "name": "s_4112",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "carry_over_sprite_overflow",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 16665,
@@ -5912,9 +5912,9 @@
   },
   {
    "address": 26163,
-   "name": "s_6633",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "sid_load_song_voices",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 26170,
@@ -5936,9 +5936,9 @@
   },
   {
    "address": 26219,
-   "name": "s_666B",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "sid_reset_voice_state",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 26281,
@@ -6212,9 +6212,9 @@
   },
   {
    "address": 27784,
-   "name": "j_6C88",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "script_cmd_set_filter",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 27838,
@@ -6410,9 +6410,9 @@
   },
   {
    "address": 28336,
-   "name": "s_6EB0",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "sid_silence_all",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 28376,
@@ -6668,9 +6668,9 @@
   },
   {
    "address": 32784,
-   "name": "f_8010",
-   "type": "Field",
-   "kind": "auto"
+   "name": "new_game_reset",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 32786,
@@ -6896,9 +6896,9 @@
   },
   {
    "address": 33563,
-   "name": "s_831B",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "draw_segment_gauge",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 33574,
@@ -10112,9 +10112,9 @@
   },
   {
    "address": 44051,
-   "name": "s_AC13",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "compute_prev_position_box_edges",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 44078,
@@ -13866,6 +13866,11 @@
    "text": "Per-frame loop of the pre-round/intro screen. Points the IRQ vector ($FFFE/$FFFF) to irq_panel $837E and the raster line $D012 to $D5, sets sprite X positions in $D000-$D00E (sprites 0 and 2 from player_screen_x $029B with high bit $029C, sprites 1 and 3 at +24, sprites 4-7 at fixed $8C/$A4/$BC/$D4, high bits into $D010), waits for frame_flag $08F7 to change, then increments frame_count $08F6. At $80 frames it enables all sprites ($D015=$FF) and calls $6ED8 with A=$19 (caller of $6ED8); when the count wraps to 0 it increments $0294, turns the display off ($D011=0), sets $08B0=$FF and jumps back to $4044. Entered from $403D when $0294 is negative, and loops back to $4095 each frame otherwise."
   },
   {
+   "address": 16658,
+   "type": "line",
+   "text": "Moves the sort-list entries left over after the eight-sprite limit into a queue at $7E. Returns at once if sprite_more ($6B) is zero. Otherwise it walks the sprite sort list $7CBD from position $6B, skipping empty entries (bit 7 set); each real entry is copied to $7E,Y and the list slot is set to $FF. An entry of $7F ends the walk: the queue gets a closing $FF, that slot and $0807 are set to $FF. Purpose is inferred from the names of the data it touches."
+  },
+  {
    "address": 16698,
    "type": "line",
    "text": "Choose the player's current animation frame and place the extra parts that depend on it. Depending on player_mode ($09), the facing bit 3 of $18, the animation number $0297, and state flags ($08FA, $0900, $0299, $0B), it finds a frame record (through the pointer tables at $0A4B-$0A91, or the fixed records at $0A29, $0A3A, $095D, and $0962) and then: sets the shape number player_shape_3 ($08EC) from the record's first byte (plus 20 and colour $0E in $0916 while bit 7 of $08B2 is set, otherwise plus 10 while the countdown $08DF is not negative, which it decrements); sets the third sprite's position ($08B3/$08B4 and $08B5/$08B6) to player_x and player_y plus an X and a Y offset from the record (chosen by $0902) and $0322/$0323; and loads the extents $031E-$0321 from the tables at $03F7, $040B, $0401, and $0415 indexed by the record's first byte. In mode 1, with $0B zero and bit 7 of $08C6 set, it also loads player_shape_1 and player_shape_2 ($08EA, $08EB) from bytes 9 and 10 of the record."
@@ -14501,6 +14506,16 @@
    "text": "Sound start-up: clears the filter resonance ($D417) and sets volume 15 with the low-pass filter ($D418 = $1F). The SID writes in the census all fall in $6615-$6ED4."
   },
   {
+   "address": 26163,
+   "type": "line",
+   "text": "Starts a set of up to three sound voices from a song list. Does nothing if the sound-enabled flag $6501 is zero. X is the first entry in the list at $7C15; for each of the three voices, an entry with bit 7 set is skipped, otherwise it is doubled and used to fetch a two-byte script pointer from $7C3D/$7C3E into $655C/$655F (indexed by voice). It then calls sid_reset_voice_state and writes 0 to that voice's SID control register ($D404 + the offset in the table at $65FF), which gates the old note off. Which song or effect the list means is inferred."
+  },
+  {
+   "address": 26219,
+   "type": "line",
+   "text": "Resets the sound-engine state for one voice slot (Y = 0..2). Sets the flag byte at $00FC+Y to 1, stores Y+1 in $6505+Y (the voice's tick countdown, inferred), and zeroes a set of per-voice tables ($6576, $6579, $657C, $6582, $6585, $6588, $658E, $65A9, $65C5 and others, indexed by Y). It also sets the two-byte slot tables at $6521/$6524 to 2 and $6527/$652A to $66, and clears $6530+Y. Called by sid_load_song_voices before a voice starts its script. Roles of the individual tables are inferred from addresses only."
+  },
+  {
    "address": 26281,
    "type": "line",
    "text": "Sound driver setup: sets busy flag $6502 (incremented here, cleared at $6781), then copies six bytes from $70BA,x ($70BA-$70BF plus the caller's x) into $651B-$6520. Zeroes per-voice state for voices 2 to 0 in $6515-$65C5 and calls $693F for each. Clears SID registers $D400-$D417, sets the per-voice flags $FC-$FE to 1, and loads $650x-$651x counters with 1, 2, and 3. If $65C3 is zero, sets volume $65C2 and SID $D418 to $1F."
@@ -14601,6 +14616,11 @@
    "text": "Sound engine: steps one music voice (X selects it) every tick. Counts down $650B,x and returns until it hits zero. If $658B,x is set, it clears it and loads $6562,x and $6565,x from tables at $6F06 and $6F64, indexed by $6568,x plus $658E,x. Then the voice's pattern pointer ($6521,x low, $6527,x high) is put in $F5/$F6 and the next pattern byte is read. That byte indexes a command-address table at $65F1/$65F8, written into the jump at $6A51/$6A52, and it jumps on to $6AB8 (role of the jump inferred)."
   },
   {
+   "address": 27784,
+   "type": "line",
+   "text": "Sound script command handler (inferred to be the SID filter setup command). Reads four parameter bytes through the script pointer ($F5),Y: the first goes to $6548, the next two are stored twice each at $654C/$654E and $654D/$654F, and the fourth is held on the stack. It saves the new script position in $65A9,X, clears $657F-$6581, writes the fourth byte to the SID filter control register $D417 (and to $657F,X), then jumps to advance_voice_script."
+  },
+  {
    "address": 27838,
    "type": "line",
    "text": "Sound engine: per-voice sweep of the SID pulse width. Counts down the step timer $650E,x. At zero it reads the next entry of the table at $711E using index $652D,x: a zero duration means loop, with the next byte as the new index. Otherwise it loads the duration, then a 16-bit delta into $659D,x and $65A0,x. Every call adds the delta to the 16-bit value in $6591,x and $6597,x, and writes it to the voice's SID registers +2 and +3 (pulse width low and high) at offset $656F. A pulse-width sweep, which gives the voice its moving tone."
@@ -14631,6 +14651,11 @@
    "text": "Voice has a pending change: saves the voice number in $6503 and the value in A in $6504, then copies table bytes from $6550/$6553/$6556/$6559,x into operands of later instructions at $6E89/$6E8A and $6E97/$6E98 (self-modifying code). It then loads Y from $65FF,x and writes the byte at $6FFD,x to SID register +0 (frequency low). The routine continues past this range."
   },
   {
+   "address": 28336,
+   "type": "line",
+   "text": "Silences the sound chip and clears the voice state. Zeroes the three voice flag bytes $FC-$FE, $65BF and $65C3, writes 0 to the SID volume register $D418, sets $65C5-$65C7 to $FF, and writes $08 (test bit set, gate off) to the control registers of all three voices ($D404, $D40B, $D412)."
+  },
+  {
    "address": 31933,
    "type": "line",
    "text": "Sort list for the logical sprites: an entry is filed at position Y / 2 of its screen line, or at the next free position after it, so walking the list from the start gives top-to-bottom order. A position whose value has bit 7 clear holds an entry number; $FF marks a free position, and $7F, written one past the highest position used, ends the list."
@@ -14639,6 +14664,11 @@
    "address": 32768,
    "type": "line",
    "text": "Start of a game: initialise, set the CIA 2 timer for the per-frame NMI, wait for raster line $EE, blank the screen and enter the stage."
+  },
+  {
+   "address": 32784,
+   "type": "line",
+   "text": "Begins a new game after the title. Waits for raster line $EE, writes $91 to CIA 2 control register A ($DD0E), blanks the screen by clearing $D011, sets the stage number $08E7 to 0 and $089C to 2, and calls init_video_and_object_defaults. Then it turns on the raster interrupt ($D01A = 1), clears $DD00 (selects the video bank), clears cheat_flag and $08C1, $08BF and $0294, and jumps to $403A in the stage intro. The meaning of $089C, $08C1 and $08BF is not established here."
   },
   {
    "address": 32838,
@@ -14689,6 +14719,11 @@
    "address": 33506,
    "type": "line",
    "text": "Draws the clock: each digit ($0899, $089A, $089B) plus $C1 is stored in the status-line cells $7FAE, $7FB0 and $7FB1 (the cell between them, $7FAF, is skipped; the $C1 digit base is read from the code, the glyphs are not checked here). Carry is clear going in, so the adds do not chain."
+  },
+  {
+   "address": 33563,
+   "type": "line",
+   "text": "Draws an 11-cell bar gauge into the status line at $7F58-$7F62 from the value in $08A1. The value divided by 4 is the whole-cell count: cells above it get tile $D5, cells below it get tile $D7, and the boundary cell gets a partial tile fetched from $0434 indexed by the low two bits of the value (four fill steps). What $08A1 measures is inferred only, likely an energy or time meter."
   },
   {
    "address": 33662,
@@ -15569,6 +15604,11 @@
    "address": 44038,
    "type": "line",
    "text": "Table handler for index 13. Count down obj_off_y ($3748), used here as a timer. When it reaches zero, reload it with $32 and jump to $4C9D, which sets bit 7 of f_35EF and swaps the motion byte at $32CE with the one at $3322."
+  },
+  {
+   "address": 44051,
+   "type": "line",
+   "text": "Computes the edges of the player's box from its previous position. $EE/$EF is the previous y ($08BD/$08BE) plus $031C and $031D (vertical offsets, with carry into the high byte). $E5/$E6 is the previous x ($08BB/$08BC) plus $031A, and $EC/$ED is that plus $031B. It then jumps to $9E17, which starts a loop over the objects counted in $0910 (inferred to be the overlap test against them). Which offset is the box's near edge and which its size is inferred."
   },
   {
    "address": 44111,
