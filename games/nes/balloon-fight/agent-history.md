@@ -136,3 +136,33 @@ whose pitch rises from 440 Hz to about 660 Hz in 90 ms, which is what
 the sweep's negate bit does. The Play tab's year read 1986, the
 American release; it now reads 1985, as `game.json` and the other
 pages do.
+
+## 25 October 2026: mods on the Play tab
+
+Zihe asked for a Play tab with more to switch on, and chose all four
+groups offered: cheats, flight, a look inside, and rewind with a
+Balloon Trip ghost. They live in `reference/bf-mods.js`, apart from the
+port, and each works through the game's own state: the shield sets the
+game's invulnerable flag only while the two hit routines run (the flag
+also flashes the player and, in Balloon Trip, drags the player along
+with the scroll), calm skies keep the storm's counter above the value
+that starts a flash, the fish's search finds no one, the lives byte is
+held at 2, and gravity scales the game's own table.
+
+Rewind needed a saved state, and the port is generators, which cannot
+be copied. At the top of the phase loop and the trip loop the port's
+stack holds only start_game's loop above it, so `bf-play.js` saves the
+RAM, the PPU and its clock there and resumes with a generator that
+enters the loop and carries on as start_game and main would. The first
+test of it failed after 430 frames: the test's controller had
+overwritten the start script, so the game saved was the title's
+demonstration, whose phase loop returns to the title rather than to
+main. States are now refused in the demonstration. `test_mods.js`
+restores states from phase 1, phase 10 and Balloon Trip and finds the
+copy identical to the original, byte and pixel, for 3,000 frames; each
+cheat is played beside the same game with the cheat off, so a check
+cannot pass because nothing happened. The fish's first control woke
+the fish once in 9,000 frames, so it was given a controller that skims
+the water. In the browser, the ghost first never appeared, because a
+run cut short by a restart was thrown away; a restart now ends the run
+as a fall does.

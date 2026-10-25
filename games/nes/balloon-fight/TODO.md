@@ -9,6 +9,10 @@ later run could add.
   found 13 of 60 wrong in a detail, over the mark of 2; the kinds of
   error are in `facts.md`, "The listing's error rate". A later run should
   audit every comment and sample again.
+- The Play tab's rewind saves only at the top of the phase and Balloon
+  Trip loops; the bonus round's loop is inline in `bonus_round_play`,
+  and resuming there needs the round's tail written as a routine of its
+  own in the page.
 - The Play tab's controller 2 is on the keyboard only; a gamepad through
   the browser's Gamepad API, and a second on-screen pad, would let two
   people play on a phone.
