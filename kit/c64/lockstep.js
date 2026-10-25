@@ -77,6 +77,19 @@
 //   program writes after an interrupt has written it in the same stretch (a title's SEI and its
 //   new screen modes) needs a checkpoint before that write: replayed at the port's next yield, the
 //   interrupt's value would land after the main program's.
+// - A machine made with nest (kit/c64/machine.js) takes an interrupt inside a handler that has
+//   cleared I, as the processor does. Each is followed from its take to the RTI that leaves it,
+//   the stack as the take left it, and what is read and written meanwhile is the innermost one's.
+//   They run in the port in the order they ended, so one that came inside another runs first, and
+//   a byte both wrote gets the value of the one that wrote it last in the game: the port's handlers
+//   stay plain functions, each run whole (kit/c64/test_lockstep_nest.js). A handler that resets the
+//   stack above its frame (a TXS, then a JMP to the game's start) has left there, and what runs on
+//   is the main program's. When the game then stops at another checkpoint than the port named, the
+//   lockstep runs the interrupts in the port and lets the port's program run on instead of calling
+//   it a divergence: the port's handler tells its program, which goes where the game went and
+//   names that checkpoint (kit/c64/test_lockstep_nest.js). What replay cannot give
+//   is a handler reading, after another came inside it, a byte it had read before: it gets its
+//   first reading again.
 // - The raster: between yields the port reads the line the game was on at the last one. A bare
 //   yield runs the game on to its next line, taking any interrupt that falls due, so a polling
 //   loop in the port sees the flags and lines the game's loop does, when it does.
@@ -334,7 +347,10 @@ class Lockstep {
     this.polled = false;                           // the main program has read the raster since its last stop
     this.pending = [];                             // interrupts the game took, not yet run in the port
     this.fix = new Map();                          // bytes they wrote, until the next checkpoint
-    this.irq = null;                               // the one running on the machine
+    this.irq = null;                               // the one running on the machine (with nest, the innermost)
+    this.wseq = 0;                                 // with nest, the interrupts' writes numbered
+    this.applied = new Map();                      // and the last of each byte's the port has run, until the next checkpoint
+    this.tookOver = false;                         // with nest, a handler left by a stack reset since the last stop
     this.replaying = null;                         // the one running in the port
     this.irqCycles = 0; this.irqCount = 0;
     this.cycles0 = m.cpu.cycles;
@@ -366,6 +382,11 @@ class Lockstep {
     const out = new Map(), B = this.irqBytes;
     for (const [a, vs] of this.ib.live) out.set(a, vs.slice());
     let depth = 0, stop = false, skip = g.cpu.pc, polled = this.polled;
+    // with nest, the interrupts under way on the machine are under way on the copy: each one's
+    // stack pointer, the RTI that leaves it restoring it
+    const sps = [];
+    for (let q = this.irq; q !== null; q = q.up) sps.unshift(q.sp);
+    depth = sps.length;
     Object.assign(g.hooks, this.hooks);
     for (const a of [...this.cps, ...this.waits]) {
       const prev = g.hooks[a];
@@ -384,12 +405,23 @@ class Lockstep {
     };
     const irq = g.cpu.irq, run = g.cpu.run;
     g.cpu.irq = function (h, o) { depth++; try { return irq.call(this, h, o); } finally { depth--; } };
+    if (g.nest) {
+      const take = g.take;
+      g.take = function (v) { take.call(this, v); sps.push(this.cpu.sp); depth++; };
+    }
     const reads = new Proxy({}, { set(t, k) {
       const a = +k;
       if (!depth && B.has(a)) { if (!out.has(a)) out.set(a, []); out.get(a).push(g.ram[a]); }
       return true;
     } });
-    g.cpu.run = function (o) { return run.call(this, Object.assign({}, o, { reads })); };
+    const executed = new Proxy({}, { set(t, k) {
+      const a = +k;
+      while (depth && g.cpu.sp > sps[sps.length - 1]) { sps.pop(); depth--; }
+      if (depth && g.ram[a] === 0x40 && g.cpu.sp === sps[sps.length - 1]) { sps.pop(); depth--; }
+      return true;
+    } });
+    const maps = g.nest ? { reads, executed } : { reads };
+    g.cpu.run = function (o) { return run.call(this, Object.assign({}, o, maps)); };
     const end = g.frames + this.maxFrames;
     while (!stop && g.frames < end) g.runCycles(FRAME);
     return out;
@@ -424,7 +456,7 @@ class Lockstep {
     const m = this.m, cpu = m.cpu, ls = this;
     if (this.at >= 0 && cpu.pc !== this.at) throw new Error('Lockstep: the machine has run since the lockstep stopped it');
     const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
-    const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), run: own(cpu, 'run') };
+    const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), run: own(cpu, 'run'), take: own(m, 'take') };
     m.onPass = null;
     for (const [a, h] of Object.entries(this.hooks)) { s.hooks[a] = m.hooks[a]; m.hooks[a] = h; }
     for (const a of [...this.cps, ...this.waits]) {
@@ -443,9 +475,10 @@ class Lockstep {
     // (seen) and what it wrote (wrote, with the values it left), through the simulator's maps of
     // the addresses a run reads and writes as data; the stack's traffic is not in them.
     const irq = cpu.irq, RAM_R = cpu.rk[2], RAM_W = cpu.wk[2];          // page 2 is RAM on any map
+    const newIrq = (at, cycle) => ({ at, line: m.line, frame: m.frames, cycle, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0,
+      flags: new Map(), seen: new Map(), wrote: new Map(), seq: new Map(), sp: -1, up: null });
     cpu.irq = function (handler, opts) {
-      const c = this, q = { at: handler != null ? handler & 0xFFFF : c.vector(0xFFFE, 'IRQ'), line: m.line, frame: m.frames,
-        cycle: c.cycles, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0, flags: new Map(), seen: new Map(), wrote: new Map() };
+      const c = this, q = newIrq(handler != null ? handler & 0xFFFF : c.vector(0xFFFE, 'IRQ'), c.cycles);
       const reads = new Proxy({}, { set(t, k) {
         const a = +k;
         if ((a < 0x100 ? a > 1 : c.rk[a >>> 8] === RAM_R) && !q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, c.m[a]);
@@ -477,15 +510,60 @@ class Lockstep {
         ls.pending.push(q);
       }
     };
-    // the main program's reads of irqBytes, as it makes them
-    if (this.irqBytes.size) {
-      const run = cpu.run, B = this.irqBytes, live = () => ls.ib.live;
+    // With nest (kit/c64/machine.js) an interrupt is begun by the machine's take and then runs as
+    // the machine's own code, where another may begin: each is followed from its take to the RTI
+    // that leaves it with the stack as the take left it, and what is read and written meanwhile is
+    // the innermost one's. Each write is numbered, for settle to keep the game's last writer of a
+    // byte two of them wrote.
+    if (m.nest) {
+      const take = m.take;
+      m.take = function (v) {
+        take.call(this, v);
+        const q = newIrq(this.cpu.pc, this.cpu.cycles - 7);
+        q.sp = this.cpu.sp; q.up = ls.irq; ls.irq = q;
+      };
+    }
+    // the main program's reads of irqBytes, as it makes them, and with nest the interrupts' reads,
+    // writes and instructions
+    const B = this.irqBytes;
+    if (B.size || m.nest) {
+      const run = cpu.run, live = () => ls.ib.live;
       const reads = new Proxy({}, { set(t, k) {
-        const a = +k;
-        if (ls.irq === null && B.has(a) && !ls.ib.list) { const L = live(); if (!L.has(a)) L.set(a, []); L.get(a).push(cpu.m[a]); }
+        const a = +k, q = ls.irq;
+        if (q !== null) { if (m.nest && (a < 0x100 ? a > 1 : cpu.rk[a >>> 8] === RAM_R) && !q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, cpu.m[a]); }
+        else if (B.has(a) && !ls.ib.list) { const L = live(); if (!L.has(a)) L.set(a, []); L.get(a).push(cpu.m[a]); }
         return true;
       } });
-      cpu.run = function (o) { return run.call(this, Object.assign({}, o, { reads })); };
+      const writes = new Proxy({}, { set(t, k) {
+        const a = +k, q = ls.irq;
+        if (q !== null && (a < 0x100 ? a > 1 : cpu.wk[a >>> 8] === RAM_W)) { q.wrote.set(a, 0); q.seq.set(a, ++ls.wseq); }
+        return true;
+      } });
+      const end = (q, rti) => {
+        for (const b of q.wrote.keys()) q.wrote.set(b, cpu.m[b]);
+        q.cycles = cpu.cycles + rti - q.cycle; q.end = m.line;
+        if (q.up === null) ls.irqCycles += q.cycles;
+        ls.irqCount++;
+        ls.pending.push(q);
+        ls.irq = q.up;
+        if (!rti) ls.tookOver = true;
+      };
+      const executed = new Proxy({}, { set(t, k) {
+        const a = +k;
+        // a stack reset above a handler's frame (a TXS and a JMP to the game's start) leaves it, and
+        // the code goes on as the main program
+        while (ls.irq !== null && cpu.sp > ls.irq.sp) end(ls.irq, 0);
+        const q = ls.irq;
+        if (q === null || cpu.rk[a >>> 8] !== RAM_R) return true;
+        if (cpu.m[a] === 0x40 && cpu.sp === q.sp) { end(q, 6); return true; }   // the RTI that leaves it
+        for (let i = 1; i < LENGTH[cpu.m[a]]; i++) {
+          const b = (a + i) & 0xFFFF;
+          if (cpu.rk[b >>> 8] === RAM_R && !q.seen.has(b) && !q.wrote.has(b)) q.seen.set(b, cpu.m[b]);
+        }
+        return true;
+      } });
+      const maps = m.nest ? { reads, writes, executed } : { reads };
+      cpu.run = function (o) { return ls.irq !== null || B.size ? run.call(this, Object.assign({}, o, maps)) : run.call(this, o); };
     }
     const ioRead = m.ioRead;
     m.ioRead = function (a) {
@@ -507,6 +585,7 @@ class Lockstep {
     if (s.irq) m.cpu.irq = s.irq; else delete m.cpu.irq;
     if (s.ioRead) m.ioRead = s.ioRead; else delete m.ioRead;
     if (s.run) m.cpu.run = s.run; else delete m.cpu.run;
+    if (s.take) m.take = s.take; else delete m.take;
     m.onPass = s.onPass;
     this.saved = null;
   }
@@ -529,7 +608,9 @@ class Lockstep {
     if (this.at >= 0 && !this.matched) return false;
     if (this.at >= 0) { this.resume = this.at; this.at = -1; }
     if (n <= 0) { m.runCycles(1); return true; }
-    const c0 = cpu.cycles, i0 = this.irqCycles, own = () => (cpu.cycles - c0) - (this.irqCycles - i0);
+    // an interrupt under way (with nest) is not the game's own work either
+    const inIrq = () => { let q = this.irq; if (q === null) return 0; while (q.up !== null) q = q.up; return cpu.cycles - q.cycle; };
+    const c0 = cpu.cycles, i0 = this.irqCycles, u0 = inIrq(), own = () => (cpu.cycles - c0) - (this.irqCycles - i0) - inIrq() + u0;
     while (this.at < 0 && own() < n) m.runCycles(n - own());
     return true;
   }
@@ -537,6 +618,9 @@ class Lockstep {
   // game's raster line. Each runs on the bytes the game's handler read, as it read them, which go
   // back to the port's values after unless it wrote them. What each wrote is kept in fix for
   // lastWriters: the port's value before (b), the handler's (h) and the game's handler's (v).
+  // With nest they come in the order they ended, an inner one before the one it interrupted, and a
+  // byte both wrote keeps the value of the one that wrote it last in the game: a handler's write
+  // that came before one the port has already run is put back.
   settle() {
     const list = this.pending, c = this.chips, P = this.P, M = P.M, fix = this.fix;
     if (list.length) {
@@ -558,13 +642,21 @@ class Lockstep {
             if (!x) fix.set(a, { b: M[a], h: -1, v: -1 });
             else if (M[a] !== x.h) x.b = M[a];                  // the port's program has written it since
           }
+          const later = a => q.seq.has(a) && (this.applied.get(a) || 0) > q.seq.get(a);
+          const older = [];
+          for (const a of q.wrote.keys()) if (!kept(a) && later(a)) older.push(a, M[a]);
           const put = [];
           for (const [a, v] of q.seen) if (M[a] !== v) { put.push(a, M[a]); M[a] = v; }
           this.replaying = q; c.raster = q.end; c.latch |= 1;
           const r = f.call(P);
           if (r && typeof r.next === 'function') throw new Error('Lockstep: the handler for ' + hex(q.at) + ' is a generator; an interrupt runs to its end');
           for (let i = 0; i < put.length; i += 2) if (!q.wrote.has(put[i]) || kept(put[i])) M[put[i]] = put[i + 1];
-          for (const [a, v] of q.wrote) { if (kept(a)) continue; const x = fix.get(a); x.v = v; x.h = M[a]; }
+          for (let i = 0; i < older.length; i += 2) M[older[i]] = older[i + 1];
+          for (const [a, v] of q.wrote) {
+            if (kept(a) || later(a)) continue;
+            if (q.seq.has(a)) this.applied.set(a, q.seq.get(a));
+            const x = fix.get(a); x.v = v; x.h = M[a];
+          }
         }
       } catch (e) { throw this.annotate(e); }
       finally { this.replaying = null; this.counting = counting; }
@@ -578,6 +670,7 @@ class Lockstep {
     const M = this.P.M, R = this.m.ram;
     for (const [a, x] of this.fix) if (R[a] !== x.v && M[a] === x.h) M[a] = x.b;
     this.fix.clear();
+    this.applied.clear();
   }
 
   // --- one yield of the port's program ---
@@ -615,10 +708,18 @@ class Lockstep {
     // and the main loop's first checkpoint, say): one place
     if (a === this.last && this.at === a && this.matched && this.since === 1 && this.lastAt) return;
     const at = this.toStop();
+    if (at !== a && at >= 0 && this.tookOver) {
+      // an interrupt took the main program elsewhere: the port's handler, run now, tells its
+      // program, which goes there when it runs on and names the stop the game is waiting at
+      this.tookOver = false;
+      this.settle();
+      return;
+    }
     if (at !== a) {
       return this.diverge(at < 0 ? this.lost('checkpoint ' + hex(a))
         : 'the game went to ' + hex(at) + (this.waits.has(at) ? ' (a raster wait\'s exit)' : '') + ', the port to ' + hex(a), { game: at, port: a });
     }
+    this.tookOver = false;
     this.sync(a, false);
     this.lastAt = y.cp === undefined;                 // named by { cycles, at }: may be named again as a { cp }
     if (a === this.passAt) this.passStart();
