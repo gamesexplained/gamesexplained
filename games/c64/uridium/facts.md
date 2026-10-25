@@ -229,8 +229,8 @@ layout; `orientation.md` lists the moves, each compared byte for byte.
   `level_names_b`).
 - **Scores.** Entries 0-11 of `score_hi`/`score_lo`: 0, 10, 25, 50,
   100, 150, 250, 500, 750, 1000, 2000, 5000.
-- **Hall of fame.** Eight entries from 12000 to 5000, all with the
-  initials AEB at first (`hall_of_fame`).
+- **Hall of fame.** Eight entries from 12000 to 5000; only the top one
+  carries initials at first, AEB (`hall_of_fame`).
 
 ## Sound
 
