@@ -9,6 +9,13 @@ request (one agent, no subagents).
 - `kit/skills/core/20-features`: "A hosted session's network policy can refuse every page fetch, on every site": features rest on search summaries, marked second-hand.
 - `kit/skills/core/40-sweep`: "Registers *never* touched are as informative as those hammered": the SID writes by name stop at voice 1 because the driver indexes by voice, which the census table says.
 
+## Gold pass (25 October 2026)
+
+- **Page prose written by a model that is not proven needs an independent check before it is pushed.** The first draft of the Controls, Gameplay, Music, Discoveries, and frame sections had 16 wrong claims when a checker on another model read it against the code. Examples: a table offset read as the third tune set when it was the second, a lives count that left out the life each round takes, and a counter named a power level. A script that compares each `<code>$XXXX</code>` cite with `symbols.json` caught only the cites that were not symbol starts.
+- **A stage-skip cheat gives the other stages for free.** `kit/skills/core/50-coverage` does not say that a game with a skip can reach later stages with a joystick script, which gives screenshots, snapshots, and maps for every stage in minutes. This pass reached all five that way.
+- **The emulator needs libraries outside the repository in a fresh container.** `get-vice download` names them, and `kit/c64/INSTALL.md` gives the apt line. A virtual display (Xvfb) is also needed before `tools.py vice` starts the GUI build. The install worked on Ubuntu 24.04 in a container.
+- **Map pages follow from the game's own tables.** A game that scrolls over a block map (row pointer tables, a block table of characters, a character colour table) can have every stage drawn from a snapshot with about 60 lines, and the result is the most useful picture the page has. `kit/skills/core/70-minisite` lists a Maps / levels tab but not how to find the tables.
+
 ## What was changed in the kit
 
 None.

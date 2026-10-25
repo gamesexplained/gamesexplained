@@ -1,10 +1,12 @@
 # Toki — TODO
 
-Tier: Bronze (2026-10-08). Coverage 33.3 % of the play snapshot's ledger (2026-10-22).
+Tier: silver-claimed (Gold started 2026-10-25, section 04 The frame added; Euan to say what is dull). Was Silver (2026-10-25, kit/CHECKING.md). Coverage 100.0 %. Sample 7301: 13 of 60 wrong; full audit by Opus 5.5 (275 of 1,173 comments rewritten, facts.md 27 claims, 18 renames); sample 4417: 4 of 60 wrong, corrected. Open: 15 comments on cartridge banks (sprite shapes, object definitions) need the cartridge image or Euan's bank sources to check.
+
+Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the remaining bare runs ($B259, $9443, $5108, $686D, $6D81, $442C; queue via coverage.py). Named 2026-10-24 (latest pass: bank record unpacker $059A, joystick read $4082, intro loop $4095, terrain probe $9C1E; before it: init_round_state $4EDD, map-row copy $4593, SID sound driver $66A9, object phase handlers $A990, char-block slots $AC4F, player tile probe $9D3C; before it: the view-scroll engine, recolour_screen $5BC2, player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat).
 
 For Silver:
 
-- 50-coverage: the burn-down from 33.3 %. Named and commented on
+- 50-coverage: the burn-down from 42.4 % (was 33.3 %). Named and commented on
   2026-10-22: `stage_load`, `stage_start`, `sound_frame`, the main loop
   (`main_loop`, `round_start`, `stage_begin`, `wait_nmi`, `wait_frame`),
   and the two panel interrupts (`irq_panel`, `irq_panel_on`). Also named
