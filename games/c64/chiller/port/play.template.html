@@ -47,6 +47,13 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-screen canvas.pl-native{image-rendering:auto}
 .pl-screen canvas.pl-3d{position:absolute;inset:0;width:100%;height:100%}
 .pl-screen canvas.pl-3d[hidden]{display:none}
+#pl-layers{position:absolute;inset:0;background:#05060a;perspective:1100px;overflow:hidden;line-height:1.2}
+#pl-layers[hidden]{display:none}
+#pl-layers .stage{position:absolute;inset:12% 16%;transform-style:preserve-3d}
+#pl-layers .pane{position:absolute;inset:0;transform-style:preserve-3d}
+#pl-layers .pane[hidden]{display:none}
+#pl-layers .pane canvas{display:block;width:100%;height:100%;image-rendering:pixelated;outline:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.03)}
+#pl-layers .pane span{position:absolute;left:4px;top:4px;font:11px var(--fm);color:#fff;white-space:nowrap;background:rgba(0,0,0,.7);padding:1px 5px;border-radius:3px}
 .pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
 .pl-over[hidden]{display:none}
 .pl-race{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:3;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.82);color:#fff;border:2px solid #fff;border-radius:10px;padding:8px 10px 8px 14px;font-family:var(--fm);font-size:13px;line-height:1.3;max-width:92%}
@@ -121,6 +128,8 @@ section table{margin:6px 0 18px}
     <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
       <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
       <canvas id="pl-3d" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The same screen as a model: the scenery raised in blocks, the sprites standing in front. It leans as you steer."></canvas>
+      <canvas id="pl-fx" class="pl-3d" width="768" height="544" hidden role="img" aria-label="The game drawn another way, as the View row sets"></canvas>
+      <div id="pl-layers" hidden role="img" aria-label="The video chip's layers as a stack of panes, each labelled"><div class="stage"></div></div>
       <div class="pl-race" id="pl-race" hidden><span id="pl-race-msg"></span> <button type="button" id="pl-race-go">👻 Race your ghost</button> <button type="button" id="pl-race-no" aria-label="No thanks">✕</button></div>
       <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
     </div>
@@ -141,8 +150,18 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
-      <button type="button" data-3d aria-pressed="false" title="Show the screen as a model: each pixel of the scenery a block standing out from the background, the sprites in front of it. It leans as you steer and tips back as you jump.">🧊 3D view</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-levels" id="pl-view" aria-label="How to see the game">
+      <span>View</span>
+      <button type="button" data-view="flat" aria-pressed="true" title="The C64's own picture">Flat</button>
+      <button type="button" data-view="3d" aria-pressed="false" title="The screen as a model: the scenery raised in blocks, the sprites in front, seen through the screen as through a window">🧊 3D</button>
+      <button type="button" data-view="beads" aria-pressed="false" title="The screen nearly dark: each enemy's path a lit wire with the enemy a bead on it, the boy a comet, the crosses still to take as stars">Beads on wires</button>
+      <button type="button" data-view="exposure" aria-pressed="false" title="The sprites leave light behind them that fades over about ten seconds">Long exposure</button>
+      <button type="button" data-view="layers" aria-pressed="false" title="The video chip's layers pulled apart: border and background, the sprites behind the scenery, the characters, the sprites in front">Layers</button>
+      <button type="button" data-view="tiles" aria-pressed="false" title="The screen as the game stores it: a character code in each of the 1,000 cells, with the sprites as labelled frames">Tile codes</button>
+      <button type="button" data-view="slit" aria-pressed="false" title="Time as a picture: the boy's column of the screen, every frame, side by side">Slit-scan</button>
+      <button type="button" data-view="torch" aria-pressed="false" title="Darkness, but for the light the boy carries; enemies beyond it are two eyes">Torchlight</button>
     </div>
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
       <span>Start on</span>
@@ -199,7 +218,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the scenery as raised blocks, the enemies' path scripts as wires, the sprites' movement as light, the video chip's layers pulled apart (a sprite whose priority bit is set sits behind the scenery's pane), the character codes the screen holds, the boy's column of the screen over time, and the screen dark but for the boy's light.</p>
   </div>
 </section>
 <section id="port">
@@ -248,6 +267,7 @@ function draw() {
   ctx.putImageData(img, 0, 0);
   if (SHOW.paths && !rt.busy) paths.paint(ctx);
   if (view3d.on) view3d.frame();
+  if (fx.mode) fx.frame();
 }
 
 // --- the 3D view: the picture the port drew, as a model. It reads the port's memory and the
@@ -255,9 +275,9 @@ function draw() {
 // pixel of the play area's characters is a block standing out from it; every sprite pixel is a
 // block in front of the scenery. Drawn with WebGL2, one cube instanced per pixel.
 const view3d = (function () {
-  const c3 = $('pl-3d'), btn = document.querySelector('[data-3d]');
+  const c3 = $('pl-3d'), btn = document.querySelector('[data-view="3d"]');
   const gl = c3.getContext('webgl2', { antialias: true });
-  if (!gl) { btn.hidden = true; return { on: false, frame() {} }; }
+  if (!gl) { btn.hidden = true; return { on: false, frame() {}, set() {} }; }
   const W = 384, H = 272, X0 = 32, X1 = 351, Y0 = 35, Y1 = 234;   // the play area in the frame
   const bgpx = new Uint8Array(W * H), vic0 = new Uint8Array(0x40);
   const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
@@ -441,18 +461,216 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 36, n);
     gl.bindVertexArray(null);
   }
-  let crtWas = false;
-  const crtBtn = document.querySelector('[data-crt]'), crtTitle = crtBtn.title;
-  const v = { on: false, frame,
-    set(want) {
-      v.on = want; c3.hidden = !want; btn.setAttribute('aria-pressed', String(want));
-      if (want) { crtWas = crt.on; if (crt.on) crt.set(false); if (rt) frame(); }
-      else if (crtWas) crt.set(true);
-      // the CRT screen draws over the flat picture only, so its switch rests while the model shows
-      crtBtn.disabled = want; crtBtn.title = want ? 'The CRT screen draws over the flat picture, so it is off while the 3D view is on' : crtTitle;
-    } };
-  btn.addEventListener('click', () => { v.set(!v.on); screen.focus(); });
+  const v = { on: false, frame, set(want) { v.on = want; c3.hidden = !want; if (want && rt) frame(); } };
   return v;
+})();
+
+// --- other ways to see the game: each draws the live game again from the port's memory and the
+// video chip's registers, over the flat picture, and changes nothing
+const fx = (function () {
+  const cvx = $('pl-fx'), c = cvx.getContext('2d'), FW = 768, FH = 544, S = 2;   // drawn at twice the C64's pixels
+  const lay = $('pl-layers'), stage = lay.querySelector('.stage');
+  const flat = document.createElement('canvas'); flat.width = 384; flat.height = 272;
+  const fctx = flat.getContext('2d'), fimg = fctx.createImageData(384, 272);
+  const bg = new Uint8Array(384 * 272), vic0 = new Uint8Array(0x40), one = new Uint8Array(384 * 272);
+  const hexc = n => '#' + RGB[n].map(v => v.toString(16).padStart(2, '0')).join('');
+  const rgba = (n, a) => 'rgba(' + RGB[n].join(',') + ',' + a + ')';
+  let mode = null, t = 0, trail = [];
+  const exp = document.createElement('canvas'); exp.width = FW; exp.height = FH; const ectx = exp.getContext('2d');
+  const slit = document.createElement('canvas'); slit.width = FW; slit.height = FH; const sctx = slit.getContext('2d');
+  // the flat picture without the sprites, and the sprites as the game has them
+  function background() { vic0.set(rt.chips.vic); vic0[0x15] = 0; ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bg); }
+  function sprites() {
+    const v = rt.chips.vic, out = [];
+    for (let n = 0; n < 8; n++) {
+      if (!(v[0x15] >> n & 1)) continue;
+      const x = v[2 * n] | ((v[0x10] >> n & 1) << 8), y = v[2 * n + 1];
+      out.push({ n, cx: x + 8 + 12, cy: y + 1 - 16 + 10, col: v[0x27 + n] & 15, behind: !!(v[0x1B] >> n & 1) });
+    }
+    return out;
+  }
+  function paint(ctx2, src, alpha, keep) {                 // a colour-index picture into an image, scaled up
+    const d = fimg.data;
+    for (let i = 0, o = 0; i < src.length; i++, o += 4) {
+      const k = src[i]; if (keep && !keep(i)) { d[o + 3] = 0; continue; }
+      const q = RGB[k]; d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
+    }
+    fctx.putImageData(fimg, 0, 0);
+    ctx2.save(); ctx2.imageSmoothingEnabled = false; ctx2.globalAlpha = alpha; ctx2.drawImage(flat, 0, 0, FW, FH); ctx2.restore();
+  }
+  // the crosses still to take, from the screen's settings (+$5E: their places in screen memory)
+  function crosses() {
+    const M = rt.M, rec = M[0x11] | (M[0x12] << 8), scr = (rt.chips.vic[0x18] >> 4) << 10, out = [];
+    for (let k = 0; k < 10; k++) {
+      const a = M[rec + 0x5E + 2 * k] | (M[rec + 0x5F + 2 * k] << 8), i = a - 0x0400;
+      if (i >= 0 && i < 1000 && M[scr + i] !== 0xA0) out.push({ x: 32 + (i % 40) * 8 + 4, y: 35 + Math.floor(i / 40) * 8 + 4 });
+    }
+    return out;
+  }
+  const glow = (x, y, r, n, a) => {
+    const g = c.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(255,255,255,' + a + ')'); g.addColorStop(0.25, rgba(n, a * 0.9)); g.addColorStop(1, rgba(n, 0));
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  };
+  const MODES = {
+    // Beads on wires: the screen almost dark; each enemy's path ahead a fine lit wire, the enemy a
+    // bead on it; the boy a comet; the crosses he still needs, slow pulsing stars
+    beads() {
+      c.fillStyle = '#04050a'; c.fillRect(0, 0, FW, FH);
+      background(); paint(c, bg, 0.13);
+      c.globalCompositeOperation = 'lighter';
+      const sp = sprites();
+      for (const s of sp) {
+        if (s.n < 2 || s.n > 6) continue;
+        const p = paths.trace(s.n - 2).pts;
+        c.beginPath(); c.lineWidth = 2; c.strokeStyle = rgba(s.col === 0 ? 11 : s.col, 0.7); c.shadowColor = rgba(s.col === 0 ? 11 : s.col, 1); c.shadowBlur = 10;
+        p.forEach(([x, y], i) => { const X = (x + 20) * S, Y = (y - 5) * S; if (i) c.lineTo(X, Y); else c.moveTo(X, Y); });
+        c.stroke(); c.shadowBlur = 0;
+        glow(s.cx * S, s.cy * S, 16, s.col === 0 ? 11 : s.col, 0.95);
+      }
+      const boy = sp.find(s => s.n === 0);
+      if (boy) { trail.push([boy.cx, boy.cy]); if (trail.length > 36) trail.shift(); }
+      trail.forEach(([x, y], i) => glow(x * S, y * S, 3 + i * 0.25, 7, 0.04 + 0.5 * (i / trail.length) ** 2));
+      for (const s of sp) if (s.n === 1 || s.n === 7) glow(s.cx * S, s.cy * S, 18, s.col, 0.8);
+      for (const k of crosses()) {
+        const a = 0.5 + 0.4 * Math.sin(t / 12 + k.x), X = k.x * S, Y = k.y * S;
+        glow(X, Y, 14, 14, a);
+        c.strokeStyle = 'rgba(255,255,255,' + a + ')'; c.lineWidth = 1; c.beginPath(); c.moveTo(X - 12, Y); c.lineTo(X + 12, Y); c.moveTo(X, Y - 12); c.lineTo(X, Y + 12); c.stroke();
+      }
+      c.globalCompositeOperation = 'source-over';
+    },
+    // Long exposure: the sprites leave light that fades over about ten seconds, over a dimmed screen
+    exposure() {
+      ectx.globalCompositeOperation = 'source-over'; ectx.fillStyle = 'rgba(0,0,0,0.012)'; ectx.fillRect(0, 0, FW, FH);
+      background();
+      ectx.globalCompositeOperation = 'lighter';
+      paint(ectx, px, 0.35, i => px[i] !== bg[i]);
+      c.fillStyle = '#000'; c.fillRect(0, 0, FW, FH);
+      paint(c, bg, 0.35);
+      c.globalCompositeOperation = 'lighter'; c.drawImage(exp, 0, 0); c.globalCompositeOperation = 'source-over';
+    },
+    // Tile codes: the screen as the game stores it, a character code in each of the 40 x 25 cells,
+    // in the cell's colour; the sprites, which are not in that memory, as labelled frames
+    tiles() {
+      const M = rt.M, v = rt.chips.vic, scr = (v[0x18] >> 4) << 10;
+      c.fillStyle = '#05060a'; c.fillRect(0, 0, FW, FH);
+      c.font = '600 9px ' + getComputedStyle(document.body).getPropertyValue('--fm'); c.textAlign = 'center'; c.textBaseline = 'middle';
+      for (let i = 0; i < 1000; i++) {
+        const code = M[scr + i], col = rt.chips.colour[i] & 15, x = (32 + (i % 40) * 8 + 4) * S, y = (35 + Math.floor(i / 40) * 8 + 4) * S;
+        c.fillStyle = code === 0xA0 || code === 0x20 ? 'rgba(255,255,255,.08)' : hexc(col === 0 ? 11 : col & (rt.chips.vic[0x16] & 16 ? 7 : 15));
+        c.fillText(code.toString(16).toUpperCase().padStart(2, '0'), x, y);
+      }
+      c.textAlign = 'left'; c.lineWidth = 1.5;
+      for (const s of sprites()) {
+        const x = (s.cx - 12) * S, y = (s.cy - 10) * S;
+        c.strokeStyle = hexc(s.col === 0 ? 1 : s.col); c.strokeRect(x, y, 24 * S, 21 * S);
+        c.fillStyle = '#fff'; c.fillText('sprite ' + s.n + (s.behind ? ', behind' : ''), x, y - 7);
+      }
+      c.textBaseline = 'alphabetic';
+    },
+    // Slit-scan: the column of the screen the boy stands in, every frame, side by side: time runs
+    // left to right, so what moves through his column draws its own shape; the screen small, inset
+    slit() {
+      const boy = sprites().find(s => s.n === 0), x = boy ? Math.max(0, Math.min(383, Math.round(boy.cx))) : 192;
+      sctx.drawImage(slit, -2, 0);
+      for (let y = 0; y < 272; y++) { sctx.fillStyle = hexc(px[y * 384 + x]); sctx.fillRect(FW - 2, y * S, 2, S); }
+      c.drawImage(slit, 0, 0);
+      const iw = 192, ih = 136, ix = 12, iy = FH - ih - 12;                // the screen, small, with the slit marked
+      c.fillStyle = '#000'; c.fillRect(ix - 2, iy - 2, iw + 4, ih + 4);
+      c.save(); c.imageSmoothingEnabled = false; c.drawImage(cv, ix, iy, iw, ih); c.restore();
+      c.fillStyle = '#fff'; c.fillRect(Math.round(ix + x * iw / 384), iy, 2, ih);
+    },
+    // Torchlight: the whole screen dark but for a pool of light round the boy that flickers like a
+    // flame; enemies outside it show only as two faint eyes
+    torch() {
+      c.drawImage(cv, 0, 0, FW, FH);
+      const sp = sprites(), boy = sp.find(s => s.n === 0), bx = boy ? boy.cx * S : FW / 2, by = boy ? boy.cy * S : FH / 2;
+      const r = 120 + 8 * Math.sin(t / 3) + 5 * Math.sin(t / 1.7);
+      const g = c.createRadialGradient(bx, by, r * 0.25, bx, by, r);
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.7, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0.97)');
+      c.fillStyle = g; c.fillRect(0, 0, FW, FH);
+      c.fillStyle = 'rgba(0,0,0,0.97)';
+      for (const s of sp) {
+        if (s.n === 0 || s.n === 1) continue;
+        const dx = s.cx * S - bx, dy = s.cy * S - by;
+        if (dx * dx + dy * dy < r * r * 0.5) continue;
+        const a = 0.55 + 0.3 * Math.sin(t / 5 + s.n);
+        c.fillStyle = 'rgba(255,240,200,' + a + ')';
+        c.fillRect(s.cx * S - 5, s.cy * S - 8, 3, 3); c.fillRect(s.cx * S + 3, s.cy * S - 8, 3, 3);
+      }
+    },
+  };
+  // Layers: the video chip's layers as panes in a slowly turning stack, back to front: the border
+  // and background colour, the sprites the game puts behind the scenery (priority bit $D01B set),
+  // the characters, then the sprites in front. Each pane is labelled.
+  const panes = [];
+  function pane(i) {
+    if (!panes[i]) {
+      const el = document.createElement('div'); el.className = 'pane';
+      const cnv = document.createElement('canvas'); cnv.width = 384; cnv.height = 272;
+      const lab = document.createElement('span');
+      el.append(cnv, lab); stage.appendChild(el);
+      panes[i] = { el, cnv, ctx: cnv.getContext('2d'), img: null, lab };
+      panes[i].img = panes[i].ctx.createImageData(384, 272);
+    }
+    return panes[i];
+  }
+  function layers() {
+    const v = rt.chips.vic, b0 = v[0x21] & 15, bc = v[0x20] & 15;
+    background();
+    const list = [];
+    list.push({ name: 'border and background', keep: i => true, src: bg, col: i => { const x = i % 384, y = (i / 384) | 0; return x >= 32 && x <= 351 && y >= 35 && y <= 234 ? b0 : bc; } });
+    const sp = sprites();
+    // a sprite's own pixels: the screen drawn with only that sprite, in front, against the screen
+    // drawn with none
+    const solo = n => { vic0.set(v); vic0[0x15] = 1 << n; vic0[0x1B] = 0; ChillerScreen.draw(rt.M, vic0, rt.chips.colour, one); return one.slice(); };
+    const chars = { name: 'characters: the scenery and the score', src: bg, keep: i => { const x = i % 384, y = (i / 384) | 0; return x >= 32 && x <= 351 && y >= 35 && y <= 234 && bg[i] !== b0; } };
+    const sl = sp.map(s => { const img = solo(s.n); return { name: 'sprite ' + s.n + (s.n === 0 ? ', the one you steer' : '') + (s.behind ? ', behind the scenery' : ''), src: img, keep: i => img[i] !== bg[i], behind: s.behind }; });
+    list.push(...sl.filter(s => s.behind), chars, ...sl.filter(s => !s.behind));
+    const turn = -34 + 8 * Math.sin(t / 140), gap = 64;           // degrees: turned well to one side, swaying a little
+    stage.style.transform = 'translateZ(-420px) rotateX(10deg) rotateY(' + turn.toFixed(2) + 'deg)';
+    list.forEach((L, i) => {
+      const P = pane(i), d = P.img.data;
+      for (let k = 0, o = 0; k < L.src.length; k++, o += 4) {
+        if (!L.keep(k)) { d[o + 3] = 0; continue; }
+        const q = RGB[L.col ? L.col(k) : L.src[k]]; d[o] = q[0]; d[o + 1] = q[1]; d[o + 2] = q[2]; d[o + 3] = 255;
+      }
+      P.ctx.putImageData(P.img, 0, 0);
+      P.lab.textContent = L.name;
+      P.el.hidden = false;
+      P.el.style.transform = 'translateZ(' + ((i - (list.length - 1) / 2) * gap) + 'px)';
+    });
+    for (let i = list.length; i < panes.length; i++) panes[i].el.hidden = true;
+  }
+  function frame() {
+    if (!rt || !mode) return;
+    t++;
+    if (mode === 'layers') layers(); else MODES[mode]();
+  }
+  function set(m) {
+    mode = m === 'flat' || m === '3d' ? null : m;
+    cvx.hidden = !mode || mode === 'layers'; lay.hidden = mode !== 'layers';
+    trail = []; ectx.clearRect(0, 0, FW, FH); sctx.fillStyle = '#000'; sctx.fillRect(0, 0, FW, FH);
+    if (rt) frame();
+  }
+  return { frame, set, get mode() { return mode; } };
+})();
+// the View row: the flat picture (with or without the CRT screen), the 3D model, or one of fx's
+// views; the CRT screen draws over the flat picture only, so its switch rests in the others
+(function () {
+  const crtBtn = document.querySelector('[data-crt]'), crtTitle = crtBtn.title;
+  let crtWas = null;
+  $('pl-view').addEventListener('click', e => {
+    const b = e.target.closest('button[data-view]'); if (!b) return;
+    const m = b.dataset.view;
+    document.querySelectorAll('#pl-view button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (m !== 'flat' && crtWas === null) { crtWas = crt.on; if (crt.on) crt.set(false); }
+    if (m === 'flat' && crtWas !== null) { if (crtWas) crt.set(true); crtWas = null; }
+    crtBtn.disabled = m !== 'flat'; crtBtn.title = m !== 'flat' ? 'The CRT screen draws over the flat picture, so it is off in the other views' : crtTitle;
+    view3d.set(m === '3d'); fx.set(m);
+    if (rt && (paused || !running)) draw();
+    screen.focus();
+  });
 })();
 
 // --- what the page can show over the game. Each reads the port's memory and chips and changes
@@ -586,7 +804,7 @@ const paths = (function () {
     for (let s = 0; s < 5; s++) if (v[0x15] >> (s + 2) & 1) for (const [x, y] of trace(s).pts) out.push([fx(x), fy(y)]);
     return out;
   }
-  return { paint, points };
+  return { paint, points, trace };
 })();
 
 // The memory: a dot per byte, in the Source tab's colours, written bytes flashing white
