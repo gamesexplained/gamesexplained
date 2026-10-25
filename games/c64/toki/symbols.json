@@ -16037,17 +16037,17 @@
   {
    "address": 36370,
    "type": "line",
-   "text": "Harmful block while riding an object (bit 1 set): sets player_hit ($0292) to 1, jump_state ($08FA) to $FF, and jump_counter ($08FB) to $10. Sound $24 is queued with queue_sound ($0B8C), and when $DF is non-zero sound $25 is also started through $6ED8. It falls into hit_save_pos."
+   "text": "Harmful block while riding an object (bit 1 set), reached from ride_down ($8D98): sets player_hit ($0292) to 1, jump_state ($08FA) to $FF, and jump_counter ($08FB) to $10. Sound $24 is queued with queue_sound ($0B8C), and when music_mode ($DF) is non-zero a fade-out is started with sid_start_fade_out ($6ED8, A = $25). It falls into hit_save_pos."
   },
   {
    "address": 36399,
    "type": "line",
-   "text": "Remember where the player was hit: stores player_x ($08B7/$08B8) in player_hit_x ($08E3/$08E4) and player_y ($08B9/$08BA) in player_hit_y ($08E5/$08E6). A word whose high byte is negative is stored as 0. Reached by falling in from ride_hit and by a jump from air_hit_hazard."
+   "text": "Remember where the player was hit: stores player_x ($08B7/$08B8) in player_hit_x ($08E3/$08E4) and player_y ($08B9/$08BA) in player_hit_y ($08E5/$08E6). A word whose high byte is negative is stored as 0. Reached by falling in from ride_hit, by a jump from air_hit_hazard ($8B95), and by jsr from level_timer_tick ($82DF, when time runs out) and the hit code at $A64E; each first queues sound $24 and, with music on, starts the fade-out."
   },
   {
    "address": 36453,
    "type": "line",
-   "text": "Put the player on the object in X: stores the object's Y position (obj_y_lo $39A6 and obj_y_hi $3A03) minus $031D and then minus $031C in player_try_y ($08BD/$08BE). It loads Y from stand_obj ($1A) but does not use it. The caller commits the Y with restore_player_y ($4256)."
+   "text": "Put the player on the object in X: stores the object's Y position (obj_y_lo $39A6 and obj_y_hi $3A03) minus $031D and then minus $031C in player_try_y ($08BD/$08BE). It loads Y from stand_obj ($1A) but does not use it. ride_up commits the Y with restore_player_y ($4256) straight after; ride_down does so only when the probe that follows finds no harmful block."
   },
   {
    "address": 36488,
@@ -16057,7 +16057,7 @@
   {
    "address": 36506,
    "type": "line",
-   "text": "Address inside the instruction at $8E98: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $8E98 (jmp $8F73 in player_mode2_step): the label sits on an operand byte. Its one reference is jsr $8E9A at $4066 in j_403A, made with $01 = $37, so it runs the cartridge's code at $8E9A (in whichever bank $DE00 last selected), not these RAM bytes. What that cartridge routine does is not read here."
   },
   {
    "address": 36507,
@@ -16067,12 +16067,12 @@
   {
    "address": 36626,
    "type": "line",
-   "text": "Vertical motion of the mode 2 jump, the reverse of player_jump_motion, using jump_state ($08FA) and jump_counter ($08FB) on player_try_y ($08BD/$08BE). A jump_state of 0 does nothing. A negative one clears bit 1 of move_dir ($0D), adds $02CE[x] to player_try_y, where x is jump_counter limited to 16, and subtracts the same amount from jump_counter; when jump_counter would reach zero or below, jump_state becomes 1 and jump_counter 0. A positive one clears bit 0 of move_dir, subtracts $02DF[x] with x as jump_counter, and then adds one to jump_counter, or sets jump_state to 0 when x is 8 or more. Mode 2 is entered with $FF and $30, so the player first moves down the screen and then back up."
+   "text": "Vertical motion of the mode 2 jump, the reverse of player_jump_motion, using jump_state ($08FA) and jump_counter ($08FB) on player_try_y ($08BD/$08BE). A jump_state of 0 does nothing. A negative one clears bit 1 of move_dir ($0D), adds $02CE[x] to player_try_y, where x is jump_counter limited to 16, and subtracts the same amount from jump_counter; when jump_counter would reach zero or below, jump_state becomes 1 and jump_counter 0. A positive one clears bit 0 of move_dir, subtracts $02DF[x] with x as jump_counter, and then adds one to jump_counter, or sets jump_state to 0 when x is 8 or more. Entering mode 2 from the air ($8B37) sets $FF and $30, so the player first moves down the screen and then back up; the stage-start entry at $500A sets neither."
   },
   {
    "address": 36723,
    "type": "line",
-   "text": "Second half of mode 2 movement, reached from player_mode2_step. While jump_state ($08FA) is non-zero it commits player_try_y with $4256 without a block test, then probes the sideways step ($9BF6 when bit 3 of move_dir ($0D) is set, otherwise $9C1E). When bit 0 is clear in $E1, $E2, and $E3 it commits X with $4249; otherwise it flips bits 2 and 3 of move_dir and stores the result in move_dir and $18, which turns the player round. On the ground it returns while move_dir is negative; otherwise it probes left or right the same way, commits X with $4249 or cancels it with save_player_x ($4263), then handles up ($0D bit 0 clear, probe $9D17) and down (bit 1 clear, probe $9D3C). A block with bit 0 set stops the step; otherwise it commits Y with $4256. Going up with bit 6 clear in the probe results also sets player_mode ($09) to 0, jump_state to $FF, jump_counter ($08FB) to $08FC plus $10, and player_action ($0905) to 3."
+   "text": "Second half of mode 2 movement (from player_mode2_step). While jump_state ($08FA) is non-zero it commits player_try_y with $4256 unchecked, then probes the sideways step ($9BF6 when bit 3 of move_dir ($0D) is set, otherwise $9C1E). When bit 0 is clear in $E1, $E2, and $E3 it commits X with $4249; otherwise it flips bits 2 and 3 of move_dir and stores the result in move_dir and $18, turning the player round. On the ground it returns while move_dir is negative; otherwise bit 2 clear probes left ($9BF6), else bit 3 clear probes right ($9C1E), and it commits X with $4249 or cancels it with save_player_x ($4263), cancelling without a probe when both bits are set. Then it handles up ($0D bit 0 clear, probe $9D17) and down (bit 1 clear, probe $9D3C). A block with bit 0 set stops the step; otherwise it commits Y with $4256. Going up with bit 6 clear in the probe results also sets player_mode ($09) to 0, jump_state to $FF, jump_counter ($08FB) to $08FC plus $10, and player_action ($0905) to 3."
   },
   {
    "address": 36901,
@@ -16082,22 +16082,22 @@
   {
    "address": 36949,
    "type": "line",
-   "text": "Mode 1 movement when $0B is zero. Returns at once while bit 7 of fire_flags ($08C6) is set. Sets player_action ($0905) to 6, and sets jump_state ($08FA) to $FF when bits 2 and 3 of joy_bits ($08) are both set. While jump_state is not negative only up ($0E, step with $430F) and down ($0D, step with $4326) count; any other joy_bits value sets move_dir ($0D) to $FF. With jump_state negative, up and down work the same way, and left or right (diagonals included) sets move_dir to $0B or $07, moves player_try_x by 4 that way, and probes with $9BF6 or $9C1E. When bit 0 is clear in $E1, $E2, and $E3 it sets player_mode ($09) to 0, player_third_on ($0913) to 1, and queues sound 0 with queue_sound ($0B8C); otherwise up and down apply."
+   "text": "Mode 1 movement when $0B is zero. Returns at once while bit 7 of fire_flags ($08C6) is set. Sets player_action ($0905) to 6, and sets jump_state ($08FA) to $FF when bits 2 and 3 of joy_bits ($08) are both set (neither left nor right). While jump_state is not negative only the vertical bits count: bit 1 clear steps down ($0D, $4326), else bit 0 clear steps up ($0E, $430F), and with neither move_dir ($0D) becomes $FF. With jump_state negative, exactly $0E and $0D step up and down, and otherwise left or right (diagonals included) sets move_dir to $0B or $07, moves player_try_x by 4 that way, and probes with $9BF6 or $9C1E. When bit 0 is clear in $E1, $E2, and $E3 it sets player_mode ($09) to 0, player_third_on ($0913) to 1, and queues sound 0 with queue_sound ($0B8C); otherwise mode1_step_blocked tries down, then up."
   },
   {
    "address": 37056,
    "type": "line",
-   "text": "Tail of mode1_step_left, entered from its probe at $90B9: ORs the three probe results $E1/$E2/$E3. If bit 0 is set the step is blocked and it branches to mode1_step_blocked. Otherwise it clears $09, sets player_third_on to 1 and queues sound 0 (a footstep or move sound, inferred) through queue_sound."
+   "text": "Tail of mode1_step_left, fallen into after its probe at $90B9 and the first two ORs: ORs in $E3, and if bit 0 of $E1/$E2/$E3 is set the step is blocked and it branches to mode1_step_blocked. Otherwise it clears $09, sets player_third_on to 1 and queues sound 0 through queue_sound. The label is here because stage_start ($0B25) reads $90C0,x with $01 = $37 and cartridge bank 13 selected, copying 256 bytes of the cartridge from $90C0 to $FD00; that read never touches this RAM."
   },
   {
    "address": 37075,
    "type": "line",
-   "text": "The step was blocked. Reads the direction bits in $08: if bit 1 is set it goes to mode1_down_set, else if bit 0 is set it goes to mode1_up_set (try moving vertically instead). With neither, it stores $FF in $0D (no animation frame) and returns."
+   "text": "The step was blocked. Reads the direction bits in joy_bits ($08, 0 = pressed): if bit 1 is clear (down) it goes to mode1_down_set, else if bit 0 is clear (up) it goes to mode1_up_set (try moving vertically instead). With neither, it stores $FF in move_dir ($0D, no move) and returns. Reached from mode1_step_left ($90C4) and mode1_step_right ($9104)."
   },
   {
    "address": 37092,
    "type": "line",
-   "text": "Walks the player right by 4 pixels in the 16-bit previous X position (player_try_x, player_try_x_hi), after setting $0D to 7 (the walking-right animation frame, inferred). Then probe_player_tiles checks the tiles there. If blocked it goes to mode1_step_blocked, else it clears $09, sets player_third_on to 1 and queues sound 0."
+   "text": "Walks the player right by 4 pixels in the 16-bit try X position (player_try_x, player_try_x_hi), after setting move_dir ($0D) to 7, the right direction code. Then probe_player_tiles checks the tiles there. If blocked it goes to mode1_step_blocked, else it clears $09, sets player_third_on to 1 and queues sound 0. Reached from mode1_move_vertical ($9085) when right is pressed."
   },
   {
    "address": 37139,
@@ -16107,7 +16107,7 @@
   {
    "address": 37200,
    "type": "line",
-   "text": "Start an object on a path from a four-byte record at ($E3),Y. X is the object. Y is advanced past the first byte, then the next bytes go to obj_arc_state ($3F19,X) and obj_arc_counter ($3F76,X, the slot in the path tables). The third byte is kept in $ED and the fourth is stored in path_end ($5C), $ED in path_axes ($60), and 0 in path_pos ($64), all at that slot. Y is restored from $EB and the routine returns with carry set. No caller was found in the stage 1 snapshot; stage code that is not loaded may call it."
+   "text": "Start an object on a path from the record at ($E3),Y. X is the object. The byte at Y is skipped; the bytes at Y+1 and Y+2 go to obj_arc_state ($3F19,X) and obj_arc_counter ($3F76,X, the slot in the path tables). The byte at Y+3 is kept in $ED and the one at Y+4 is stored in path_end ($5C), $ED in path_axes ($60), and 0 in path_pos ($64), all at that slot. Y is left at Y+4 (from $EB) and the routine returns with carry set. No caller was found in the stage 1 snapshot; stage code that is not loaded may call it."
   },
   {
    "address": 37242,
@@ -16127,7 +16127,7 @@
   {
    "address": 37311,
    "type": "line",
-   "text": "Address inside the instruction at $91BE: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $91BE (beq $91CF in mode1_vertical_collide): the label sits on an operand byte. Its references are lda $91BF,x at $50C8 and $50E9 in copy_sprite_shapes, made with $01 = $37 and cartridge bank 13 selected: they read the low bytes of the shape addresses for player_shape_1 and player_shape_2 from the cartridge (high bytes at $9202), not these RAM bytes."
   },
   {
    "address": 37312,
@@ -16152,7 +16152,7 @@
   {
    "address": 37378,
    "type": "line",
-   "text": "Address inside the instruction at $9201: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $9201 (and #$01 in mode1_down_check): the label sits on an operand byte. Its references are lda $9202,x at $50CD and $50EE in copy_sprite_shapes, made with $01 = $37 and cartridge bank 13 selected: they read the high bytes of the shape addresses for player_shape_1 and player_shape_2 from the cartridge (low bytes at $91BF), not these RAM bytes."
   },
   {
    "address": 37383,
@@ -16177,7 +16177,7 @@
   {
    "address": 37445,
    "type": "line",
-   "text": "Address inside the instruction at $9244: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $9244 (lda #$03 in mode1_start_jump): the label sits on an operand byte. Its reference is lda $9245,x at $50A7 in copy_sprite_shapes, made with $01 = $37 and cartridge bank 13 selected: it reads the low bytes of the shape addresses for player_shape_3 from the cartridge (high bytes at $9263), not these RAM bytes."
   },
   {
    "address": 37454,
@@ -16202,17 +16202,17 @@
   {
    "address": 37494,
    "type": "line",
-   "text": "Resolve a player move step: probe the tiles around the player (probe_player_tiles). If any of $E1-$E3 has bit 0 set the move is blocked and the routine ends at $92AC. Otherwise it continues at $9283, which undoes the horizontal move and probes again. Entry is the sibling of $92AD; which direction each serves is inferred, not traced."
+   "text": "Resolve a mode 1 sideways step to the right: reached only from mode1_horizontal_collide ($91E8) when move_dir is $07 ($92AD is the left-hand sibling, for $0B). Probes the tiles around the player (probe_player_tiles); if any of $E1-$E3 has bit 0 set the move is blocked and the routine ends at $92AC without committing. Otherwise it continues at $9283, which commits the new X with restore_player_x and probes again."
   },
   {
    "address": 37506,
    "type": "line",
-   "text": "Address inside the instruction at $9281: the label sits on an operand byte, not on an instruction start. Other code refers to this address (an indexed table or buffer base, a patched operand, or a jump into the middle of the instruction; the references show which); the routine that contains it is commented at its first instruction."
+   "text": "Address inside the instruction at $9281 (bne $92AC in player_step_check_first_dir): the label sits on an operand byte. Its reference is lda $9282,x at $5227 in game_init, made with $01 = $37 and cartridge bank 13 selected: it copies 64 bytes of the cartridge ($9282-$92C1) to the RAM under I/O at $D040, and never touches these RAM bytes."
   },
   {
    "address": 37507,
    "type": "line",
-   "text": "Second half of player_step_check_first_dir, reached when none of $E1-$E3 has bit 0 set. Calls restore_player_x ($4249) to put the previous x back, probes again with player_probe_tiles_and_platforms, and returns if bit 0 of $E1 is clear. Otherwise it picks a direction code from bit 1 of $08: set gives $07 (jumps to $92CE), clear gives $05, which is stored in $18 and move_dir ($0D) here; $09, jump_state ($08FA) and $0C are cleared and stance ($0299) set to 1. The two codes are the right-hand pair; which input they answer is inferred, not traced. The run before this address ends in the operand of the bne at $9281, so the first real instruction is at $9283."
+   "text": "Second half of player_step_check_first_dir, reached when none of $E1-$E3 has bit 0 set. Calls restore_player_x ($4249), which commits the new X (player_try_x to player_x), probes again with player_probe_tiles_and_platforms, and returns if bit 0 of $E1 is clear. Otherwise it picks a direction code from bit 1 of joy_bits ($08, 0 = pressed): set (down not pressed) gives $07 (jumps to $92CE), clear (down) gives $05, which is stored in $18 and move_dir ($0D) here; $09, jump_state ($08FA) and $0C are cleared and stance ($0299) set to 1. The run before this address ends in the operand of the bne at $9281, so the first real instruction is at $9283."
   },
   {
    "address": 37549,
@@ -16227,7 +16227,7 @@
   {
    "address": 37742,
    "type": "line",
-   "text": "Copy the settings of the section record at ($26) into working variables: bytes 0 to 5 to $0908, $0909, $0906, $0907, $090A, and $090B, byte $16 to $08FD, and bytes $17 and $18 to obj_first and obj_end. $08FE is cleared, and bit 2 of $08FD is cleared unless it is set and the low two bits of $08FD differ from $08A7, in which case those bits are stored in $08A7 and bits 2 and 3 of $08FD are set. Called when the player enters a new section, and from $5048 during stage setup. What the individual settings mean is not yet known."
+   "text": "Copy the settings of the section record at ($26) into working variables: bytes 0 to 5 to zone_left ($0908/$0909), zone_right ($0906/$0907), zone_top ($090A) and zone_bottom ($090B), the edges of the zone in which the view does not follow the player; byte $16 to section_scroll_flags ($08FD); and bytes $17 and $18 to obj_first and obj_end. view_pinned_edges ($08FE) is cleared, and bit 2 of $08FD is cleared unless it is set and the low two bits of $08FD differ from stream_current ($08A7), in which case those bits are stored in $08A7 and bits 2 and 3 of $08FD are set (start a new background stream). Called when the player enters a new section (falling in from track_stage_section), and from $5048 (finish_round_setup) during stage setup."
   },
   {
    "address": 37837,
@@ -16237,7 +16237,7 @@
   {
    "address": 37888,
    "type": "line",
-   "text": "Look up the block property at a position. The inputs are A (added to the x position $E7/$E8), Y (added to the y position $E9/$EA), and the 16-bit position itself. Both are divided by 16 to give a block column ($EB) and row ($EC); the row picks a row pointer from the tables at ($2A) and ($2C), the column picks a block number from that row, and the block number picks the property byte in the table at ($30), which comes back in A. A row above the top of the map ($EA negative) returns 0. Used by the object code at $84B5 and $AA3C; the same lookup idea gives the tile bits that the player code tests (for example bit 0 solid and bit 1 harmful)."
+   "text": "Look up the block property at a position. The inputs are A (added to the x position $E7/$E8), Y (added to the y position $E9/$EA), and the 16-bit position itself. Both sums are divided by 16 to give a block column ($EB) and row ($EC); the row picks a row pointer from the tables at ($2A) and ($2C), the column picks a block number from that row, and the block number picks the property byte in the table at ($30), which comes back in A. A row above the top of the map (the high byte of Y plus $E9/$EA negative) returns 0. Used by the object code at $84B5 and $AA3C; the same lookup idea gives the tile bits that the player code tests (for example bit 0 solid and bit 1 harmful)."
   },
   {
    "address": 37955,
@@ -16252,7 +16252,7 @@
   {
    "address": 38308,
    "type": "line",
-   "text": "Raster interrupt that reuses the eight hardware sprites for the logical sprites left over after copy_sprites_to_tables ($951A) filled them. wait_nmi ($8134) points the vector here, and nmi_frame installs it, when $6B (sprite_more) is non-zero. It saves A, X, and Y in $68-$6A, acknowledges the raster flag ($D019), and takes Y from $0807 (the position of the last entry placed, $FF at the start of a frame). Each pass of the loop at $95B0 advances Y and loads X from the list at $007E,Y: a logical sprite number, or a negative value that ends the list. The entry is then given the first hardware sprite whose free line in $6C-$73 has passed. $0200-$0278 hold the logical sprite's colour with bit 7 for double size ($0200), height ($0218), pointer ($0230), X low ($0248), X high ($0260), and Y ($0278)."
+   "text": "Raster interrupt that reuses the eight hardware sprites for the logical sprites left over after copy_sprites_to_tables ($951A) filled them. wait_nmi ($8134) puts this address in raster_vector ($07AB) for nmi_frame to install when $6B (sprite_more) is non-zero. It saves A, X, and Y in $68-$6A, acknowledges the raster flag ($D019), and takes Y from $0807 (the position of the last entry placed, $FF at the start of a frame). Each pass of the loop at $95B0 advances Y and loads X from the list at $007E,Y: a logical sprite number, or a negative value that ends the list. The entries are then dealt to hardware sprites 0 to 7 in turn: each takes the next sprite in that order whose free line in $6C-$73 has passed, and the walk wraps back to sprite 0 only after sprite 7. $0200-$0278 hold the logical sprite's colour with bit 7 for double size ($0200), height ($0218), pointer ($0230), X low ($0248), X high ($0260), and Y ($0278)."
   },
   {
    "address": 38320,
@@ -16297,12 +16297,12 @@
   {
    "address": 38979,
    "type": "line",
-   "text": "Try to use hardware sprite 7 for the logical sprite in X. The sprite is free when its free line $73 (minus one) is below the raster line in $D012; if it is not, the code goes on to reuse_wait_free_sprite ($989B), since all eight are busy. When free it copies Y ($0278,X) to $D00F, X low ($0248,X) to $D00E, and X high ($0260,X, non-zero sets the bit) into bit 7 of $D010; the colour ($0200,X) to $D02E, with bit 7 setting bit 7 of both the double-width ($D01D) and double-height ($D017) registers; and the pointer ($0230,X) to $CBFF and $CFFF on both screens. It then stores Y plus the height ($0218,X) in $73 as the line where the sprite frees up and goes back to reuse_next_entry ($95B0)."
+   "text": "Try to use hardware sprite 7 for the logical sprite in X. The sprite is free when its free line $73 (minus one) is below the raster line in $D012; if it is not, the code goes on to reuse_wait_free_sprite ($989B): the walk for this entry has reached the last sprite. When free it copies Y ($0278,X) to $D00F, X low ($0248,X) to $D00E, and X high ($0260,X, non-zero sets the bit) into bit 7 of $D010; the colour ($0200,X) to $D02E, with bit 7 setting bit 7 of both the double-width ($D01D) and double-height ($D017) registers; and the pointer ($0230,X) to $CBFF and $CFFF on both screens. It then stores Y plus the height ($0218,X) in $73 as the line where the sprite frees up and goes back to reuse_next_entry ($95B0), which starts again at sprite 0."
   },
   {
    "address": 39067,
    "type": "line",
-   "text": "All eight hardware sprites are busy. Y is stepped back so the same entry is tried again, and lowest_free_line ($98C5) returns the earliest free line in A. When that line minus two is still ahead of the raster line, it jumps to reuse_set_next_irq ($98B8) to schedule the interrupt there; otherwise the line is about to pass and it retries at reuse_next_entry ($95B0)."
+   "text": "Reached when hardware sprite 7 is busy at the end of the walk for an entry (the sprites before the walk's starting point were not retested). Y is stepped back so the same entry is tried again, and lowest_free_line ($98C5) returns the earliest free line of all eight in A. When that line minus two is still ahead of the raster line, it jumps to reuse_set_next_irq ($98B8) to schedule the interrupt at that line; otherwise the line is about to pass and it retries at reuse_next_entry ($95B0), from sprite 0."
   },
   {
    "address": 39082,
@@ -16322,7 +16322,7 @@
   {
    "address": 39155,
    "type": "line",
-   "text": "Choose the player's two body sprite shapes and their offsets, once a frame, from the action number $0905 and the facing flag $18 (bit 3 set for left; the values used are $07 for right and $0B for left, with others such as $05, $06, $09, $0A, and $0E in some states). While player_hit ($0292) is non-zero it only switches the third sprite off and sets player_shape_1 and player_shape_2 to fixed shapes ($28 and $34, or $29 and $35 by bit 2 of $18). Otherwise $0905 below 5 uses the table at $0458, $046C, $0480, $0490, $04A0, $04AC, $04B6, $04C0, or $04CA by facing; 5 and 6 go to $9A2A, and 7 goes to $9BAB. Each table starts with its length, and the frame index $0902 steps by 2 and wraps at that length; the pair of shape numbers is read at offset 8 plus the index, and bytes 1 to 7 give the sprite offsets $0322 and $0323, the second-sprite flag $0900, and the offsets $031A to $031D. A change of state or facing restarts the sequence (the hold counters are $0901, $0903, and $0296). While $08FF is non-zero it plays a transition sequence from the frames at $04E8 and the offsets at $04EC, moves player_y, and for the value 6 (at $9B17) either sets $0B to 1 and the third sprite on or sets player_mode to 0 ($9B85)."
+   "text": "Choose the player's two body shapes and offsets each frame from the action number $0905 and the facing flag $18 (bit 3 set for left; $07 right, $0B left, and $05, $06, $09, $0A or $0E in some states). While player_hit ($0292) is non-zero it switches the third sprite off, clears $0900 and sets player_shape_1 and player_shape_2 to $28 and $34, or $29 and $35, by bit 2 of $18. Otherwise actions 0-2 use the table at $0458 or $046C by facing, 3 uses $04C0 or $04CA, 4 uses $04AC or $04B6; 5 and 6 go to $9A2A ($0480, $0490, $04A0) and 7 to $9BAB ($0438, $0448). Each table starts with its length; the frame index $0902 steps by 2 and wraps at it, the shape pair is read at offset 8 plus the index, and bytes 1 to 7 give $0322, $0323, $0900 and $031A-$031D. A step comes after a hold count in $0901, at once when $0903 is set or when the state-and-facing key in $0296 changes ($0902 is kept). While $08FF is non-zero ($9A2A) it plays a transition from $04E8 and $04EC and moves player_y."
   },
   {
    "address": 39926,
@@ -16337,7 +16337,7 @@
   {
    "address": 39966,
    "type": "line",
-   "text": "Player terrain probe: looks up the map tile attribute values around the player and stores them in $E1 (upper left/centre cell), $E2 (next cell below, when the height $031D allows), $E3 (cell at the lower edge). Position = player_try_x $08BB/$08BC plus offsets $031A and $031B, player_try_y $08BD/$08BE plus $031C plus 2 (clamped to 0 if negative), divided by 16 into tile columns/rows; it indexes the row pointer tables at ($2A)/($2C) with the row, then the block map row with the column ($E9), then the tile attribute table at ($30). If the player is on the right side of the screen ($029C set and player_screen_x $029B >= $25) it just sets $E2-$E4 = 3 and returns."
+   "text": "Player terrain probe for the box's right-hand edge: looks up the map tile attribute values in the column at player_try_x ($08BB/$08BC) plus offsets $031A and $031B, and stores them in $E1 (top cell of that column), $E2 (the next cell below when the height $031D allows, otherwise the same as $E1) and $E3 (the cell at the lower edge). The top is player_try_y ($08BD/$08BE) plus $031C plus 2 (clamped to 0 if negative); positions are divided by 16 into tile columns and rows; it indexes the row pointer tables at ($2A)/($2C) with the row, then the block map row with the column ($E9), then the tile attribute table at ($30). If the player is on the right side of the screen ($029C set and player_screen_x $029B >= $25) it just sets $E2-$E4 = 3 and returns. probe_player_tiles_one_column ($9BF6) is the left-edge sibling."
   },
   {
    "address": 40215,
@@ -16362,7 +16362,7 @@
   {
    "address": 40381,
    "type": "line",
-   "text": "Reached when $031B is $10 or less (second column not read): takes the tile at prev_x plus $1F and stores its attribute in $0291, then computes the right edge column into $E3."
+   "text": "Runs on every pass of the probe: branched to when $031B is $10 or less (second column not read), and fallen into after the second column. Takes the tile at try X ($08BB/$08BC) plus $1F in the same row and stores its attribute in far_column_prop ($0291), then computes the right edge column (the left X in $E5/$E6 plus $031B, also kept in $EC/$ED) and stores its attribute in $E3."
   },
   {
    "address": 40455,
@@ -16397,7 +16397,7 @@
   {
    "address": 40709,
    "type": "line",
-   "text": "Set aim_dir ($0297) when the player is not shooting; update_player skips it while bit 7 of fire_flags ($08C6) is set. In mode 1 with $0B equal to 0 it folds the direction to 0 (up, facing right) when it is below 5 and to 9 (up, facing left) otherwise. In the other cases it uses $AB74 when $0C and $0299 are both non-zero, which picks one of 1, 3, 6, or 8 from the facing flag $18, and otherwise sets 7 when bit 3 of $18 is set (left) or 2 (right). The result is the direction that player_fire ($AF34) uses for the next shot."
+   "text": "Set aim_dir ($0297) when the player is not shooting; update_player skips it while bit 7 of fire_flags ($08C6) is set. In mode 1 with $0B equal to 0 it folds the direction to 0 (up, facing right) when it is below 5 and to 9 (up, facing left) otherwise. In mode 2 it always uses the facing: 7 when bit 3 of $18 is set (left), otherwise 2 (right). In mode 0, and in mode 1 with $0B non-zero, it uses slope_aim_dir ($AB74) when slope_kind ($0C) and stance ($0299) are both non-zero, which picks 3 or 8 for slope kind 2 and 1 or 6 for any other by the facing flag $18; otherwise the same 7 or 2 by facing. The result is the direction that player_fire ($AF34) uses for the next shot."
   },
   {
    "address": 40770,
@@ -16422,7 +16422,7 @@
   {
    "address": 41252,
    "type": "line",
-   "text": "Per-frame timer for object slot $08CC (probably the player; role inferred). $0290 is a two-phase countdown: while positive it counts down and sets bit $40 of the slot's flag byte in $35EF; on underflow it becomes $81, and while bit 7 is set it counts down with the flag bit cleared, then resets to 0 after one more tick. Each pass through the clear phase also decrements the low six bits of $08CB (keeping its top two bits), setting it to $80 when it would underflow. Looks like a blink or invulnerability cycle with a lives-style counter, but the code does not say which."
+   "text": "Blink timer for the goal object whose number is in $08CC, called by wait_frame ($826C) only while the low six bits of $08CB are non-zero. $0290 is a two-phase countdown: while positive it counts down and sets bit 6 ($40, not drawn and not hit) of the object's obj_kind byte ($35EF); when it would go below 0 it becomes $81, and while bit 7 is set it counts down with that bit cleared, until $80 gives 0 again with the bit set. From 0 it cycles 0, $81, $80, so the object shows on two calls in three. Each pass through the clear phase also decrements the low six bits of $08CB (keeping its top two bits), setting it to $80 when it would underflow; $08CB is the time the gauge shows the object's health (track_stage_section), so the object blinks while the gauge is up."
   },
   {
    "address": 41336,
