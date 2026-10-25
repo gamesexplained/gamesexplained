@@ -2904,13 +2904,13 @@
   },
   {
    "address": 2655,
-   "name": "pose_move_lo",
+   "name": "pose_stance_lo",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 2665,
-   "name": "pose_move_hi",
+   "name": "pose_stance_hi",
    "type": "Field",
    "kind": "user"
   },
@@ -3186,7 +3186,7 @@
   },
   {
    "address": 6949,
-   "name": "stage_table_3E",
+   "name": "anim_swap_table",
    "type": "Field",
    "kind": "user"
   },
@@ -3366,7 +3366,7 @@
   },
   {
    "address": 13258,
-   "name": "obj_frame",
+   "name": "obj_anim_num",
    "type": "Field",
    "kind": "user"
   },
@@ -12907,7 +12907,7 @@
   {
    "address": 2246,
    "type": "line",
-   "text": "The fire state of the player. Bit 6 is the fire button copied by update_player (1 means not pressed, 0 pressed) and bit 7 means the player is shooting. In mode 0 player_mode_step sets $40 when fire is not pressed, otherwise $00 while $08FA is non-zero and $80 when it is zero; player_fire sets $80 when it starts a shot. While bit 7 is set set_idle_aim ($9F05) is skipped and, in mode 1, the movement handler at $9055 returns at once."
+   "text": "The fire state of the player. Bit 6 is the fire button copied by update_player (1 means not pressed, 0 pressed) and bit 7 means the player is shooting. In mode 0 player_mode_step sets $40 when fire is not pressed, otherwise $00 while $08FA is non-zero and $80 when it is zero; player_fire also sets $80 when it starts a shot on the ground in mode 0 (a shot in the air or in mode 1 or 2 leaves it). In mode 1 player_mode1_step sets $80 while fire is pressed and $40 otherwise; in mode 2 player_mode2_step keeps only bit 6. While bit 7 is set set_idle_aim ($9F05) is skipped and, in mode 1, the movement handler at $9055 returns at once."
   },
   {
    "address": 2247,
@@ -12917,7 +12917,7 @@
   {
    "address": 2248,
    "type": "line",
-   "text": "Bit 0 of the map row of the cell being copied (0 even, 1 odd): selects the upper or lower pair of characters of each block. Set from scroll_y or scroll_y plus or minus 1 by the row and column copy routines."
+   "text": "Bit 0 of the map row of the cell being copied (0 even, 1 odd): selects the upper or lower pair of characters of each block. Set from scroll_y, scroll_y plus or minus 1, or scroll_y plus $15 (the bottom row) by the row and column copy routines."
   },
   {
    "address": 2249,
@@ -12932,7 +12932,7 @@
   {
    "address": 2251,
    "type": "line",
-   "text": "While non-zero, track_stage_section shows the health of object $08CC in the gauge instead of running update_view_scroll. The low six bits are counted down by slot_blink_timer (it sets $80 when they run out); the top two bits are kept. round_start clears it. Nothing in the listing sets it to a non-zero start value."
+   "text": "While non-zero, track_stage_section shows the health of object $08CC in the gauge instead of running update_view_scroll. The low six bits are counted down by slot_blink_timer (on two calls in three, as $0290 cycles), which the main loop calls only while they are non-zero; the top two bits are kept. Its $80 store, for a borrow from 0, is therefore not reached. round_start clears it. Nothing in the listing sets it to a non-zero start value."
   },
   {
    "address": 2252,
@@ -13007,7 +13007,7 @@
   {
    "address": 2271,
    "type": "line",
-   "text": "Countdown set from byte $15 of the weapon record when a shot is made: while it is not negative, player_pose adds 10 to the third sprite's shape (the firing frame) and decrements it."
+   "text": "Countdown set from byte $15 of the weapon record when a shot is made: while it is not negative and the effect flash (bit 7 of $08B2) is off, player_pose adds 10 to the third sprite's shape (the firing frame) and decrements it. While the flash is on, player_pose adds 20 instead and leaves it alone."
   },
   {
    "address": 2272,
@@ -13062,7 +13062,7 @@
   {
    "address": 2282,
    "type": "line",
-   "text": "Shape number of the player's first sprite (0 for none). Its data is loaded to $FF00 at $50BB; set by $98F3 and player_pose."
+   "text": "Shape number of the player's first sprite. place_player_sprites skips the sprite when it is 0, but copy_sprite_shapes loops on itself at $50BB while it is 0, so 0 would hang it there. Its data is loaded to $FF00 at $50BB; set by $98F3 and player_pose."
   },
   {
    "address": 2283,
@@ -13122,7 +13122,7 @@
   {
    "address": 2294,
    "type": "line",
-   "text": "Frame counter: the main loop adds one each time round ($80F9), wait_frame sets it to 0 when a stage is cleared. Its low bits time blinking and flashing, and update_objects uses its low three bits to pick one bit of frame_bits; an object moves in the frames where that bit is set in its own mask in $3484 ($FF every frame, $55 or $AA every other frame, $11-$88 one frame in four, $01 one in eight)."
+   "text": "Frame counter: the main loop adds one each time round ($80F9), wait_frame sets it to 0 when a stage is cleared. Its low bits time blinking and flashing, and update_objects uses its low three bits to pick one bit of frame_bits; an object moves in the frames where that bit is set in its own mask in $3484 ($FF every frame, $55 or $AA every other frame, $11, $22, $44 or $88 one frame in four, $42 two frames in eight, $01 one in eight)."
   },
   {
    "address": 2295,
@@ -13152,7 +13152,7 @@
   {
    "address": 2301,
    "type": "line",
-   "text": "Scroll mode of the current section, copied from byte $16 of the section record by load_section_record. Read by update_view_scroll: bit 7 clear, the section scrolls horizontally by itself; bit 7 set and bit 6 clear, vertically by itself; both set, the view only follows the player. Bit 5 gives the direction of the automatic scroll (set: right or down, clear: left or up). Bits 0 to 3 are handled by load_section_record."
+   "text": "Scroll mode of the current section, copied from byte $16 of the section record by load_section_record. Read by update_view_scroll: bit 7 clear, the section scrolls horizontally by itself; bit 7 set and bit 6 clear, vertically by itself; both set, the view only follows the player. Bit 5 gives the direction of the automatic scroll (set: right or down, clear: left or up). Bits 0 to 3 run the background stream: bits 0 and 1 are the stream number (compared with stream_current $08A7), bit 2 is set while a stream runs and bit 3 asks for a new one. load_section_record sets them, and stream_cartridge_data_to_ram, load_stream_source and the code at $80C9 test and clear them."
   },
   {
    "address": 2302,
@@ -13162,27 +13162,27 @@
   {
    "address": 2303,
    "type": "line",
-   "text": "Non-zero while the player is in a transition between modes: player_fire does nothing, player_mode1_step goes straight to mode1_collide, and player_animate plays the frames at $04E8 and the boxes at $04EC for it. player_down_enter_mode1 sets $44, the code at $9AF3 sets $80, and mode1_collide clears a negative value."
+   "text": "Non-zero while the player is in a transition between modes: player_fire does nothing, player_mode1_step goes straight to mode1_collide, and player_animate plays the frames at $04E8 and the boxes at $04EC for it, rewriting it as it steps ($9AE8, $9AEF). player_down_enter_mode1 sets $44, mode1_up_end sets 2, and the code at $9AF3 and $9B3D sets $80. mode1_collide clears a negative value; round_start, ground_floor_check, air_mode1_check and $9B8A also clear it."
   },
   {
    "address": 2304,
    "type": "line",
-   "text": "Flag from the player's animation tables: non-zero puts the second body sprite 24 pixels to the right of the first, zero puts it 21 lines below (player_sprite_coords). Cleared by player_down_enter_mode1."
+   "text": "Flag from the player's animation tables: non-zero puts the second body sprite 24 pixels to the right of the first, zero puts it 21 lines below (player_sprite_coords); player_pose also uses it to pick the mode 1 records in mode 0. Cleared by player_down_enter_mode1, and by player_animate while the player is hit."
   },
   {
    "address": 2305,
    "type": "line",
-   "text": "Hold counter of the player's animation (with $0296 and $0903), cleared by init_round_state, when the state or facing changes, and when it reaches its limit (3, 4 or 6 in the three animation routines, so it cycles); the fire path ($B1E6) sets it to $FF."
+   "text": "Hold counter of the player's animation (with $0296 and $0903): player_animate counts it up while the action and facing stay the same and $0903 is 0, and does not count while bit 7 of move_dir $0D is set. It is reset to 0 when the state or facing changes, when $0903 is non-zero, and when it reaches its limit (3, 4 or 6 in the three animation routines, so it cycles). init_round_state clears it; the fire path ($B1E6) sets it to $FF."
   },
   {
    "address": 2306,
    "type": "line",
-   "text": "Index of the current frame in the player's animation table: player_animate steps it by 2 and wraps it at the table length; player_pose uses it to pick the third sprite's offsets. $FE is set when a shot starts (player_fire), and player_land sets it too; a negative value takes the first entry."
+   "text": "Index of the current frame in the player's animation table: player_animate steps it by 2 and wraps it at the table length; player_pose uses it to pick the third sprite's offsets. player_fire sets $FE when a shot starts on the ground in mode 0 or in mode 1 with $0B non-zero, and 0 or 2 in mode 1 with $0B zero; player_land, init_round_state and $9B8D also set $FE. A negative value takes the first entry."
   },
   {
    "address": 2307,
    "type": "line",
-   "text": "Hold counter of the player's animation (with $0296 and $0901); set by player_fire ($80), the jump code and mode1_up_end, and compared by player_animate."
+   "text": "Restart request for the player's animation (with $0296 and $0901): while it is non-zero, player_animate restarts the animation, clearing $0901, and clears it. Set by player_fire ($80 on the ground in mode 0, $FE in mode 1 with $0B non-zero), the mode 1 fire code ($FF at $9039), jump_start_state, the code at $8DB3, mode1_up_end (1) and reserve_player_object_slots_loop (8)."
   },
   {
    "address": 2308,
@@ -13192,7 +13192,7 @@
   {
    "address": 2309,
    "type": "line",
-   "text": "The action number of the player, which player_animate ($98F3) reads together with the facing flag $18. The movement code writes 1, 3, 5, 6, and 7: mode 1 uses 6 (vertical) and 5 (horizontal), mode 2 uses 7, and jumps and falls use 3."
+   "text": "The action number of the player, which player_animate ($98F3) reads together with the facing flag $18. The movement code writes 1, 3, 4, 5, 6 and 7: 4 by player_stop; 5 by mode 1's horizontal movement and by mode 0 code for pressing down, slopes and floors; 6 by mode 1's vertical movement and on entering mode 1; 7 in mode 2; and 3 for jumps and falls."
   },
   {
    "address": 2310,
@@ -13252,12 +13252,12 @@
   {
    "address": 2321,
    "type": "line",
-   "text": "Set to 0 by init_round_state ($4F21); no code in the listing reads it."
+   "text": "Set to $FF by init_round_state ($4F21); no code in the listing reads it."
   },
   {
    "address": 2322,
    "type": "line",
-   "text": "Set to 0 by init_round_state ($4F24), next to $0911; no code in the listing reads it."
+   "text": "Set to $FF by init_round_state ($4F24), next to $0911; no code in the listing reads it."
   },
   {
    "address": 2323,
@@ -13297,12 +13297,12 @@
   {
    "address": 2655,
    "type": "line",
-   "text": "Table of 10 bytes indexed by aim_dir ($0297): low bytes of the frame record addresses for the player moving in mode 0 ($0299 non-zero); a 0 entry makes player_pose fall back to a fixed record. player_pose reads the pair of tables and puts the address in $E1/$E2."
+   "text": "Table of 10 bytes indexed by aim_dir ($0297): low bytes of the frame record addresses for the player in mode 0 when stance ($0299) is non-zero ($FF after player_stop or a step with down held, 1 after the mode 1 exit); a 0 entry would make player_pose fall back to a fixed record, but none is 0 (entries 0, 4, 5 and 9 hold $01, with high byte $00). player_pose reads the pair of tables and puts the address in $E1/$E2."
   },
   {
    "address": 2665,
    "type": "line",
-   "text": "Table of 10 bytes indexed by aim_dir ($0297): high bytes for the moving player (see pose_move_lo, $0A5F). player_pose reads the pair of tables and puts the address in $E1/$E2."
+   "text": "Table of 10 bytes indexed by aim_dir ($0297): high bytes for mode 0 with stance ($0299) non-zero (see pose_stance_lo, $0A5F); entries 0, 4, 5 and 9 are $00. player_pose reads the pair of tables and puts the address in $E1/$E2."
   },
   {
    "address": 2675,
@@ -13327,7 +13327,7 @@
   {
    "address": 2715,
    "type": "line",
-   "text": "Load one stage's set from the cartridge directory: copy entry X, then X+8, X+16 and on, until an entry whose flag bit 5 marks it packed; that one is unpacked in place by bank 0's unpacker at $8DA2, which returns to the caller. X comes from the per-stage table in bank 0 at $8127 ($88, $A0, $B8, $D0, $E8)."
+   "text": "Load a set from the cartridge directory: copy entry X, then X+8, X+16 and on, until an entry whose flag bit 5 marks it packed; that one is unpacked in place by bank 0's unpacker at $8DA2, which returns to the caller (an entry with flag bit 7 would end the routine without unpacking; none has it). stage_start passes X from the per-stage table in bank 0 at $8127 ($88, $A0, $B8, $D0, $E8); game_init calls it with $80 and $60."
   },
   {
    "address": 2815,
@@ -13352,22 +13352,22 @@
   {
    "address": 3074,
    "type": "line",
-   "text": "Byte 2 of the stage block header that is loaded at $0C00. The stage-intro code stores 7 here at $5245 before it calls the routine at $0C05; nothing reads it in play."
+   "text": "Byte 1 of the stage block, which is loaded from $0C01 (saved value $38). game_init stores 7 here at $5245 at power-on, when $0C01 onward still holds the start-up stream (directory entries 12-15) it has just unpacked, before it calls the routine at $0C05; the stage block replaces it later. Nothing reads it in play."
   },
   {
    "address": 3075,
    "type": "line",
-   "text": "Background colour 0 of the stage ($D021): stage_setup_tables copies this byte to bg_colour0. The stage-intro code also stores $8C here at $524A."
+   "text": "Background colour 0 of the stage ($D021): stage_setup_tables copies this byte to bg_colour0. At power-on game_init also stores $8C here ($524A), into the start-up stream that the stage block later replaces."
   },
   {
    "address": 3076,
    "type": "line",
-   "text": "Background colour 1 of the stage ($D022): copied to bg_colour1 by stage_setup_tables. The stage-intro code stores $E0 here at $524F."
+   "text": "Background colour 1 of the stage ($D022): copied to bg_colour1 by stage_setup_tables. At power-on game_init stores the value of zero-page $E0 here ($524F), into the start-up stream that the stage block later replaces."
   },
   {
    "address": 3077,
    "type": "line",
-   "text": "Background colour 2 of the stage ($D023): copied to bg_colour2 by stage_setup_tables. The stage-intro code calls the routine that starts here ($5254)."
+   "text": "Background colour 2 of the stage ($D023): copied to bg_colour2 by stage_setup_tables. At power-on, before any stage block is loaded, game_init calls a routine of the start-up stream that starts here ($5254)."
   },
   {
    "address": 3078,
@@ -13432,7 +13432,7 @@
   {
    "address": 3362,
    "type": "line",
-   "text": "Table of section record addresses: one word for each section of the stage (eight words, $0D22-$0D31, in the saved state: $19D9, $19F2, $1A0B and on, each 25 bytes on). store_section_index, track_stage_section and init_round_state index it with section_index times 2. The low byte is here, the high byte at $0D23."
+   "text": "Table of section record addresses: one word for each section of the stage (eight words, $0D22-$0D31, in the saved state: $19D9, $19F2, $1A0B and on, each 25 bytes on). store_section_index indexes it with section_index times 2, track_stage_section with the next and the previous section's index times 2, and init_round_state with the last section's ($0C06); stage_setup_tables reads the first word through $24. The low byte is here, the high byte at $0D23."
   },
   {
    "address": 3363,
@@ -13442,7 +13442,7 @@
   {
    "address": 3378,
    "type": "line",
-   "text": "The map block table: four screen characters for each block number (upper left, upper right, lower left, lower right), pointed to by block_chars_ptr ($2E). The first blocks are blank and the later ones hold consecutive character numbers. The table's length depends on the stage."
+   "text": "The map block table: four screen characters for each block number (upper left, upper right, lower left, lower right), pointed to by block_chars_ptr ($2E). The first three blocks are blank; most later ones hold runs of consecutive character numbers, but many repeat character $16 or one character or pair, and blocks at $0E66-$0E77 are blank again. The table's length depends on the stage."
   },
   {
    "address": 6470,
@@ -13492,12 +13492,12 @@
   {
    "address": 6949,
    "type": "line",
-   "text": "Fifteen bytes $1B25-$1B33, the stage's eleventh table pointer (stored at $3E by stage_setup_tables from $0C20). No code in the listing reads it. The saved values are tile-like numbers ($22 to $37) and one $B4."
+   "text": "Fifteen bytes $1B25-$1B33, the stage's eleventh table, which $3E points to (stored by stage_setup_tables from $0C20): the hit reactions 0 and 1 ($A8FA, $A8D8) replace an object's obj_anim_num with the entry at that index, so it maps an animation number to the animation the object switches to when hit. The saved values are $22 to $37."
   },
   {
    "address": 6964,
    "type": "line",
-   "text": "Low bytes of the addresses of the object movement scripts: 61 entries $1B34-$1B70, the table that script_ptr_a ($36) points to. object_script_step loads the pair (script_ptr_a, script_ptr_b) into $E3/$E4 and then reads script bytes at $379C,x. The high bytes are script_addr_hi."
+   "text": "Low bytes of the addresses of the object movement scripts: 61 entries $1B34-$1B70, the table that script_ptr_a ($36) points to. object_script_step loads the pair (script_ptr_a, script_ptr_b) into $E3/$E4 and then reads the script byte at ($E3) + obj_script_pos ($379C,x). The high bytes are script_addr_hi."
   },
   {
    "address": 7025,
@@ -13507,7 +13507,7 @@
   {
    "address": 7086,
    "type": "line",
-   "text": "Object movement script bytes, first part, $1BAE-$1FAD (1024 bytes in the saved state). A byte below $80 is a command number: object_script_step looks it up in script_cmd_lo/hi at $B33C/$B35F and runs it; a byte with bit 7 set is a move (low four bits the direction, next byte the repeat count). Two words inside this area are rewritten by the stage patches: $1D08 and $1D0A."
+   "text": "Object movement script bytes, first part, $1BAE-$1FAD (1024 bytes in the saved state). A byte below $80 is a command number: object_script_step looks it up in script_cmd_lo/hi at $B33C/$B35F and runs it; a byte with bit 7 set is a move (low four bits the direction, next byte the repeat count). Three words inside this area are rewritten by the stage patches: $1D08 and $1D0A (stage2_patch, then the handler at $A7F3) and $1D6A (stage2_common)."
   },
   {
    "address": 7432,
@@ -13547,17 +13547,17 @@
   {
    "address": 8145,
    "type": "line",
-   "text": "Table of path data addresses that path_table_ptr ($32) points to: the bytes $1FD2-$1FDD hold six words, $1FDE, $201F, $2040, $2070, $20B0 and $2098, each the start of a path in path_data. $1FD1 itself is $07 in the saved state, and the pointer at $34 (copy of $0C16) is $1FD6, which no code reads."
+   "text": "Table of path data addresses that path_table_ptr ($32) points to, indexed by obj_arc_state: the bytes $1FD2-$1FDD hold six words, $1FDE, $201F, $2040, $2070, $20B0 and $2098. $1FD1 itself is $07 in the saved state. The pointer at $34 (copy of $0C16) is $1FD6, so the last four words are also the table that script command 22 ($B722) reads through ($34) at $B72D to find the record of an object it sets up; whether those four are also paths is not established."
   },
   {
    "address": 8158,
    "type": "line",
-   "text": "Path data read by path_advance, $1FDE-$20BF: signed 16-bit words (low byte first) that are added to an object's X or Y position, step by step. The first path ($1FDE) steps -2 four times, -1 three times, 0 twice, then 1 and 2, which is a curved arc. The saved state is the first stage; stage1_patch rewrites bytes $2018-$201A and $2019 inside it."
+   "text": "Path data read by path_advance, from $1FDE: signed 16-bit words (low byte first) that are added to an object's X or Y position, step by step; a low byte of $80 sends the path back to its start. The first path ($1FDE-$201E) steps -2 four times, -1 three times, 0 twice, 1 three times, 2 eight times, then the same back down, an arc. From $2040 the area also holds the object records that script command 22 finds through ($34) ($2040, $2070, $2098, $20B0), so where the path data ends is not established. The saved state is the first stage; stage1_patch rewrites bytes $2018-$201A."
   },
   {
    "address": 8216,
    "type": "line",
-   "text": "Low byte of a path data word ($2018-$2019). stage1_patch stores $00 here and in $2019 and $201A, and copies the byte at $202E into $2019, so in stage 1 the word at $2018 reads zero. The saved stage 0 holds $FE, $FF, which is a step of -2."
+   "text": "Low byte of a path data word ($2018-$2019). stage1_patch stores $00 here and in $201A and copies the byte at $202E into $2019, so in stage 1 the word at $2018 reads zero when $202E holds 0, as it does in the saved state. The saved stage 0 holds $FE, $FF, which is a step of -2."
   },
   {
    "address": 8217,
@@ -13587,12 +13587,12 @@
   {
    "address": 8510,
    "type": "line",
-   "text": "Second byte of a nine-byte frame record in an animation block ($2122, animation 12): the saved state holds $BC, which patch_stage_code writes for stage 0 (it also writes $C1 to $2150). The neighbouring records hold $54 and $53, so the byte looks like a shape number (inferred)."
+   "text": "Last (ninth) byte of the nine-byte frame record at $2136, the first frame of animation 13 ($2117): the saved state holds $BC, which patch_stage_code writes for stage 0 (it also writes $C1 to $2150). The same byte of the neighbouring records ($212D, $213F) holds $54 and $53, so it looks like a shape number (inferred)."
   },
   {
    "address": 8528,
    "type": "line",
-   "text": "Second byte of a frame record in an animation block, set to $C1 by patch_stage_code for stage 0 (with $BC at $213E). Looks like a shape number (inferred)."
+   "text": "Last (ninth) byte of the frame record at $2148, which animation 12 ($2122) uses for its second and third frames; set to $C1 by patch_stage_code for stage 0 (with $BC at $213E). Looks like a shape number (inferred)."
   },
   {
    "address": 11570,
@@ -13622,27 +13622,27 @@
   {
    "address": 12922,
    "type": "line",
-   "text": "Object type in the top three bits and hit points in the low five bits: player shots take hit points off (see object_sprites_and_hits)."
+   "text": "Hit points in the low five bits; the top three bits are kept when hit points are taken off, and the byte goes to add_score_points, whose top two bits choose the award class. Player shots take 1 hit point off (2 at weapon_level 1, $A707-$A71A), and the player landing on the object from a jump takes 2 off ($A5F9-$A60B, when bit 4 of obj_kind is set); see object_sprites_and_hits. track_stage_section shows the low five bits of object $08CC in gauge_value."
   },
   {
    "address": 13006,
    "type": "line",
-   "text": "Motion byte of each stage object, chosen in update_objects ($A283). $00-$7F: number of a movement script (index into the script address tables reached through the pointers $36/$38), run by object_script_step ($B207) with the position in obj_script_pos. $FF: update_objects clears obj_flags (sets it to 1 on landing) and skips the $B1F7 table handlers. Any other negative value (for example $FE): no script, and the $B1F7 table handlers run when bit 5 of obj_flags is set (and bit 3 of obj_state is clear). object_arc_step runs first for any object whose arc state is non-zero, whatever this byte holds. Written by the phase handlers ($A9B9 copies obj_off_y, $A9FA and $AA45 write 2 and 1, $AB2B writes $FE), by the hit handlers $A8E8 and $A904, by script commands ($B87F, $BCF7 storing $FE, and $BD2C swapping it with $3322), by object_walk_land_stop ($B4BD, stores 0) and by the swap at $4C9D; the initial values come from the stage data (source of the initial values not traced)."
+   "text": "Motion byte of each stage object, chosen in update_objects ($A283). $00-$7F: number of a movement script (index into the script address tables at $36/$38), run by object_script_step ($B207) with the position in obj_script_pos; unless that leaves bit 1 or 5 of obj_state set, the $B1F7 table handlers then run as below. $FF: update_objects clears obj_flags (sets it to 1 on landing) and skips the table handlers. Any other negative value (for example $FE): no script; the $B1F7 table handlers run when bit 5 of obj_flags is set and bit 3 of obj_state is clear. object_arc_step runs first for any object whose arc state is non-zero. Written by the phase handlers ($A9B9 copies obj_off_y, $A9FA and $AA45 write 2 and 1, $AB2B $FE), the hit handlers $A8E8 and $A904, script commands ($B87F, $BCF7 storing $FE, $BD2C swapping it with $3322), object_walk_land_stop ($B4BD, 0) and the swap at $4C9D; initial values come from the stage data (not traced)."
   },
   {
    "address": 13090,
    "type": "line",
-   "text": "Second motion byte. The trigger code at $4C9D swaps it with obj_motion and also saves the script position and repeat count in $3844 and $3898, so the object switches to the other motion when the player comes near (table handlers 0, 1, 2 and 13 jump there). Phase 5 objects ($A9EC) instead read it as a saved Y position, low byte, and copy it into obj_y_lo; the two uses suit different kinds of object. Initial value comes from the stage data (not traced)."
+   "text": "Second motion byte. The trigger code at $4C9D swaps it with obj_motion and also saves the script position and repeat count in $3844 and $3898, so the object switches to the other motion when the player comes near (table handlers 0, 2 and 13 jump there, and script command 13 calls it); script command 14 ($BD22) swaps the two as well. Phase 5 objects ($A9EC) instead read it as a saved Y position, low byte, and copy it into obj_y_lo, and destroy routine 1 ($A841) copies it into weapon_level; the uses suit different kinds of object. Initial value comes from the stage data (not traced)."
   },
   {
    "address": 13174,
    "type": "line",
-   "text": "Motion byte that replaces obj_motion when the object is hit by the type 2 or 0 reaction ($A8E5) or when a movement script ends with the command at $B86F, which also sets bit 7 of obj_kind and obj_move_bits to $FF. Phase 5 objects ($A9F2) read it as a saved Y position, high byte, and copy it into obj_y_hi. Initial value comes from the stage data (not traced)."
+   "text": "Motion byte that replaces obj_motion when the object is hit by the type 1 or 2 reaction ($A8E5) or when a movement script reaches the command at $B86F, which also sets bit 7 of obj_kind and obj_move_bits to $FF. Phase 5 objects ($A9F2) read it as a saved Y position, high byte, and copy it into obj_y_hi. Initial value comes from the stage data (not traced)."
   },
   {
    "address": 13258,
    "type": "line",
-   "text": "Index of each object's current frame record in the tables the pointers $3A and $3C (low and high bytes) point to."
+   "text": "Animation number of each object: the index into the tables that the pointers $3A and $3C (low and high bytes) point to, which give the address of its animation block; obj_anim_index picks the frame within the block. The hit reactions 0 and 1 replace it through anim_swap_table ($3E), and script command 22 sets it from an object record."
   },
   {
    "address": 13351,
@@ -13672,12 +13672,12 @@
   {
    "address": 13807,
    "type": "line",
-   "text": "Object kind and flag bits. Low four bits: reaction type used by $A88E when a player shot or the player destroys the object (0-9, table at $A87A). Bit 7: for a pool object, makes it blink (see update_temp_objects); for a stage object, set by the trigger at $4C9D and by the hit handlers, which also clear bits 4 and 5 at $A91D. Bit 6: object not drawn and not hit (object_sprites_and_hits tests it; the blink sets it on alternate frames; phase 2 and 5 set or clear it). Bit 5: the object can be hit by the player's shots (the six shot slots at $06DD). Meaning of bit 4 not traced."
+   "text": "Object kind and flag bits. Low four bits: reaction type used by $A88E when a player shot or the player destroys the object (0-9, table at $A87A). Bit 7: for a pool object, makes it blink (see update_temp_objects); for a stage object, set by the trigger at $4C9D, by script command 6 ($B86F) and by the hit handlers, which also clear bits 4 and 5 at $A91D; script command 14 ($BD1A) clears it. Bit 6: object not drawn and not hit (object_sprites_and_hits tests it; the blink sets it on alternate frames; phase 5 clears and sets it, $A124 does so for object $08CC, script command 20 toggles it). Bit 5: the object can be hit by the player's shots (the six shot slots at $06DD). Bit 4: the player can land on it from a jump and take 2 hit points off ($A5BB); when it is clear, that contact hits the player ($A630)."
   },
   {
    "address": 13899,
    "type": "line",
-   "text": "Not an array of its own: this is one byte before obj_flags ($364C), so $364B,x is obj_flags of slot x-1. The code at $A28E-$A2AF clears obj_flags of slot x and of slot x-1 together and toggles bit 0 of obj_anim_index of slot x-1 ($3EBB,x) when the object in slot x lands level with slot x-1 ($39A5,x is obj_y_lo of slot x-1). Reads as a pair of linked slots (a child object at x and its parent at x-1); that reading is inferred."
+   "text": "Not an array of its own: this is one byte before obj_flags ($364C), so $364B,x is obj_flags of slot x-1. For an object whose obj_motion is $FF, update_objects clears its obj_flags ($A28E); when it is falling (bit 6 of obj_arc_state) and lands level with slot x-1 ($39A5,x is obj_y_lo of slot x-1), it sets the flags of slot x to 1, clears its arc state and the flags of slot x-1 ($A2AF), and toggles bit 0 of obj_anim_index of slot x-1 ($3EBB,x). Reads as a pair of linked slots (a child object at x and its parent at x-1); that reading is inferred."
   },
   {
    "address": 13900,
@@ -13817,7 +13817,7 @@
   {
    "address": 16060,
    "type": "line",
-   "text": "Index of the object's current step in its animation (frame sequence of the animation block selected by obj_frame). advance_object_animation ($B57A) adds 1 each time obj_anim_timer runs out and wraps to 0 at the count in byte 0 of the block; $B5B5 stores it and loads obj_frame_ptr and obj_draw_min_y for it. Cleared when a script command ends ($B853), by the hit handlers at $A91D and by the spawner at $B7A5; bit 0 is toggled at $A76D and $A2A4."
+   "text": "Index of the object's current step in its animation (frame sequence of the animation block selected by obj_anim_num). advance_object_animation ($B57A) adds 1 each time obj_anim_timer runs out and wraps to 0 at the count in byte 0 of the block; $B5B5 stores it and loads obj_frame_ptr and obj_draw_min_y for it. Cleared when a script command ends ($B853), by the hit handlers at $A91D and by the spawner at $B7A5; bit 0 is toggled at $A76D and $A2A4."
   },
   {
    "address": 16153,
@@ -16427,7 +16427,7 @@
   {
    "address": 41336,
    "type": "line",
-   "text": "Once a frame, update the stage's objects (enemies and the like) from obj_first ($14) up to obj_end ($15). First it sets move_mask ($029A) to $FF when bit 7 of $94 is set, otherwise to one bit chosen by the low three bits of frame_count from $029E, clears the count at $0910 (it counts the objects with bits 3 and 4 of obj_state set, whose numbers are listed from $74), and moves obj_first up by one when the first object is retired (bit 5, $20, of obj_state). Then for each object that is not retired: a follower (bit 6, $40, of obj_flags $364C) takes its position from the last object before it with bit 7 set plus its own offsets ($36F4 for X, $3748 for Y), any other object keeps the position in obj_x_lo/obj_x_hi/obj_y_lo/obj_y_hi ($38EC, $3949, $39A6, $3A03). An object whose bit mask in $3484 shares a bit with move_mask is moved this frame (bit 6 of obj_state cleared first): it is skipped if it lies far outside the view, otherwise given jumps and falls by object_arc_step ($88CE) and moved and animated through $B207, $B1F7, and $B57A according to its flags and its motion byte ($32CE); when those set bit 1 or bit 5 of obj_state, the object is marked not drawn and skipped. The new position is stored back. An object that does not move this frame and has bit 1 of obj_state set is skipped. The others are compared with the view window ($40-$47): outside it, bit 7 ($80) of obj_state is set (not drawn; with bit 6 as well when it is above or below the view) and, when bit 4 ($10) of obj_flags is set, bits 7 and 5 ($A0, retired for good); inside it, bit 6 ($40) is set and bit 7 cleared. An object that moved this frame, is inside the view horizontally, and has bit 4 ($10) of obj_state set gets its hit box from set_object_hitbox ($ABC7); one with bit 3 set calls $A990. The frame data it reads is reached through the stage-block pointers $3A and $3C, indexed by obj_frame ($33CA)."
+   "text": "Once a frame, update the stage's objects (enemies and the like) from obj_first ($14) up to obj_end ($15). First it sets move_mask ($029A) to $FF when bit 7 of $94 is set, otherwise to one bit chosen by the low three bits of frame_count from $029E, clears the count at $0910 (it counts the objects with bits 3 and 4 of obj_state set, whose numbers are listed from $74), and moves obj_first up by one when the first object is retired (bit 5, $20, of obj_state). Then for each object that is not retired: a follower (bit 6, $40, of obj_flags $364C) takes its position from the last object before it with bit 7 set plus its own offsets ($36F4 for X, $3748 for Y), any other object keeps the position in obj_x_lo/obj_x_hi/obj_y_lo/obj_y_hi ($38EC, $3949, $39A6, $3A03). An object whose bit mask in $3484 shares a bit with move_mask is moved this frame (bit 6 of obj_state cleared first): it is skipped if it lies far outside the view, otherwise given jumps and falls by object_arc_step ($88CE) and moved and animated through $B207, $B1F7, and $B57A according to its flags and its motion byte ($32CE); when those set bit 1 or bit 5 of obj_state, the object is marked not drawn and skipped. The new position is stored back. An object that does not move this frame and has bit 1 of obj_state set is skipped. The others are compared with the view window ($40-$47): outside it, bit 7 ($80) of obj_state is set (not drawn; with bit 6 as well when it is above or below the view) and, when bit 4 ($10) of obj_flags is set, bits 7 and 5 ($A0, retired for good); inside it, bit 6 ($40) is set and bit 7 cleared. An object that moved this frame, is inside the view horizontally, and has bit 4 ($10) of obj_state set gets its hit box from set_object_hitbox ($ABC7); one with bit 3 set calls $A990. The frame data it reads is reached through the stage-block pointers $3A and $3C, indexed by obj_anim_num ($33CA)."
   },
   {
    "address": 41919,
@@ -16467,7 +16467,7 @@
   {
    "address": 43224,
    "type": "line",
-   "text": "Handler for object type 1, and also reached by a jump from $A96A. Replace obj_frame ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_reset_motion ($A8E0)."
+   "text": "Handler for object type 1, and also reached by a jump from $A96A. Replace obj_anim_num ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_reset_motion ($A8E0)."
   },
   {
    "address": 43232,
@@ -16477,7 +16477,7 @@
   {
    "address": 43258,
    "type": "line",
-   "text": "Handler for object type 0, and also reached by a jump from $B432. Replace obj_frame ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_start_rise_arc ($A902)."
+   "text": "Handler for object type 0, and also reached by a jump from $B432. Replace obj_anim_num ($33CA) with the byte at the pointer ($3E) indexed by the old frame, then carry on into object_start_rise_arc ($A902)."
   },
   {
    "address": 43266,
@@ -16847,7 +16847,7 @@
   {
    "address": 46016,
    "type": "line",
-   "text": "Table handler for index 1. While obj_off_y ($3748) is nonzero it counts that down; when it reaches zero, it starts a rising arc (obj_arc_counter $30, obj_arc_state $80) and sets obj_frame and obj_dir ($36A0) to face the player (frame 0 and direction $07 when the object is left of player_x + $1F, otherwise frame 1 and $0B). At other times, with obj_speed ($34E1) nonzero it walks sideways through $B5D5, which moves the object by obj_speed according to bit 3 of obj_dir (left when set) and flips the direction bits $0C at ledges and walls. It then sets obj_frame from that bit. While falling (bit 6 of obj_arc_state), it tests the block under the object with block_property_at ($9400): a result of 2 or 3 jumps to $A8FA, 1 lands the object and sets obj_off_y to $0A (the wait before the next hop), and 0 changes nothing else. When bit 6 is clear, bit 0 of obj_state is set while obj_arc_counter is below $10."
+   "text": "Table handler for index 1. While obj_off_y ($3748) is nonzero it counts that down; when it reaches zero, it starts a rising arc (obj_arc_counter $30, obj_arc_state $80) and sets obj_anim_num and obj_dir ($36A0) to face the player (frame 0 and direction $07 when the object is left of player_x + $1F, otherwise frame 1 and $0B). At other times, with obj_speed ($34E1) nonzero it walks sideways through $B5D5, which moves the object by obj_speed according to bit 3 of obj_dir (left when set) and flips the direction bits $0C at ledges and walls. It then sets obj_anim_num from that bit. While falling (bit 6 of obj_arc_state), it tests the block under the object with block_property_at ($9400): a result of 2 or 3 jumps to $A8FA, 1 lands the object and sets obj_off_y to $0A (the wait before the next hop), and 0 changes nothing else. When bit 6 is clear, bit 0 of obj_state is set while obj_arc_counter is below $10."
   },
   {
    "address": 46130,
@@ -16887,12 +16887,12 @@
   {
    "address": 46458,
    "type": "line",
-   "text": "Advances one object's animation. X is the object slot. The object's obj_frame indexes the pointer tables at ($3A) and ($3C), giving the animation data block in $E5/$E6. If bit 0 of obj_state is set, the per-object delay $3A60,x counts down; when it passes zero it is reloaded from $3535,x and the frame index $3EBC,x goes up by one, wrapping to 0 at the count in the block's first byte."
+   "text": "Advances one object's animation. X is the object slot. The object's obj_anim_num indexes the pointer tables at ($3A) and ($3C), giving the animation data block in $E5/$E6. If bit 0 of obj_state is set, the per-object delay $3A60,x counts down; when it passes zero it is reloaded from $3535,x and the frame index $3EBC,x goes up by one, wrapping to 0 at the count in the block's first byte."
   },
   {
    "address": 46503,
    "type": "line",
-   "text": "Alternate entry (no caller found in this range): reloads the data block pointer $E5/$E6 for the object's obj_frame without advancing the frame index, then falls into the common code at $B5B2."
+   "text": "Alternate entry (no caller found in this range): reloads the data block pointer $E5/$E6 for the object's obj_anim_num without advancing the frame index, then falls into the common code at $B5B2."
   },
   {
    "address": 46514,
