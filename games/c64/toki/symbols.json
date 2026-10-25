@@ -15287,7 +15287,7 @@
   {
    "address": 28110,
    "type": "line",
-   "text": "Per-frame SID filter-cutoff sweep. Returns at once if $6501 is non-zero or if any of the three voices ($657F,x) is active with $6582,x non-zero. Otherwise counts down $6514; when it expires it reads the next (length, step low, step high) triple from the table at $72C5 (a zero length skips ahead via the next byte). Each frame the 16-bit step in $654A/$654B is added to the accumulator $654E/$654F, and the result is written to the filter cutoff registers $D415 and $D416. Purpose (a sound effect sweep) inferred from the register writes."
+   "text": "Per-frame SID filter-cutoff sweep. Returns at once if $6501 is non-zero or if the highest-numbered voice with $657F,x non-zero has $6582,x non-zero (the loop stops at the first active voice, counting down from voice 2). Otherwise counts down $6514; when it expires it reads the next (length, step low, step high) triple from the table at $72C5 (a zero length skips ahead via the next byte). Each frame the 16-bit step in $654A/$654B is added to the accumulator $654E/$654F, and the result is written to the filter cutoff registers $D415 and $D416. Purpose (a sound effect sweep) inferred from the register writes."
   },
   {
    "address": 28222,
@@ -16402,7 +16402,7 @@
   {
    "address": 40770,
    "type": "line",
-   "text": "Put the player's first two sprites into the logical sprite list. player_sprite_coords ($9FC0) first turns the player's world position into screen coordinates. Then, if the shape number player_shape_1 ($08EA) is non-zero and its Y ($08ED) is between $1A and $D3, it fills entry 0 of the tables at $0808-$0880 (colour from $0914, X from $08F0/$08F3, Y from $08ED, height $15, pointer $FC, which is the shape block at $FF00) and files the entry in sprite_y_buckets ($7CBD) at Y / 2. The same is done for player_shape_2 ($08EB) with pointer $FD (the block at $FF40), colour $0915, and X and Y from $08F1/$08F4 and $08EE. It leaves the number of entries in sprite_count ($12) and the bucket position in sprite_bucket_max ($13), where object_sprites_and_hits carries on."
+   "text": "Put the player's first two sprites into the logical sprite list. player_sprite_coords ($9FC0) first turns the player's world position into screen coordinates. Then, if the shape number player_shape_1 ($08EA) is non-zero and its Y ($08ED) is between $1A and $D3, it fills entry 0 of the tables at $0808-$0880 (colour from $0914, X from $08F0/$08F3, Y from $08ED, height $15, pointer $FC, which is the shape block at $FF00) and files the entry in sprite_y_buckets ($7CBD) at Y / 2. The same is done for player_shape_2 ($08EB) with pointer $FD (the block at $FF40), colour $0915, and X and Y from $08F1/$08F4 and $08EE. If the bucket at Y / 2 is already taken by the first sprite, the second entry goes in the next bucket. It leaves the number of entries in sprite_count ($12) and the bucket position in sprite_bucket_max ($13), where object_sprites_and_hits carries on."
   },
   {
    "address": 40896,
