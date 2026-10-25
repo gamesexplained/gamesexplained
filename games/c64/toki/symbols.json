@@ -5658,13 +5658,13 @@
   },
   {
    "address": 25932,
-   "name": "filter_init_lo",
+   "name": "filter_acc_init_hi",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 25933,
-   "name": "filter_init_hi",
+   "name": "filter_acc_init_lo",
    "type": "Field",
    "kind": "user"
   },
@@ -14477,12 +14477,12 @@
   {
    "address": 20955,
    "type": "line",
-   "text": "Switches in ROM and I/O ($01 = $37), selects cartridge bank 0 ($DE00 = $80), calls $8194 (which waits for the frame flag $08F7 and re-enables interrupts, inferred), then runs cart_copy for the cartridge directory entries at offsets $40, $48 and $50 and restores the normal map ($01 = $35). Called once from $80AE before the per-frame calls in the main code; the entries' destinations are not read here, so what they hold is not claimed."
+   "text": "Switches in ROM and I/O ($01 = $37), selects cartridge bank 0 ($DE00 = $80) and calls $8194: with the cartridge in view that runs bank 0's routine there, not the RAM copy enable_frame_nmi (facts.md has stage_load use it to refresh the stack-page routines). It then runs cart_copy for the cartridge directory entries at offsets $40, $48 and $50 (entries 8-10) and restores the normal map ($01 = $35). Called once from $80AE before the per-frame calls in the main code; the entries' destinations are not read here, so what they hold is not claimed."
   },
   {
    "address": 20987,
    "type": "line",
-   "text": "First code the game runs from RAM (the hand-over, entry.vsf): clears $C480-$C53F, copies 192 bytes to $44E1 and selects bank 13. With bank 13 selected it also copies three 64-byte blocks into RAM, with the port $01 flipped between ROM ($37) and all RAM ($00) around each write: $8000 to $CFC0, $8300 to $D000 and $9282 to $D040 (sprite shapes $3F, $40 and $41), then selects bank 0 again and runs the routine at $0A9B twice."
+   "text": "First code the game runs from RAM (the hand-over, entry.vsf): clears $C480-$C53F, copies 192 bytes from $FFBF-$FFFE to $44E1-$45A0 and selects bank 13 ($DE00 = $8D). With bank 13 in view it copies three 64-byte blocks into RAM (sprite shapes $3F, $40 and $41): $8000 to $CFC0 with ROM in view ($01 = $37), and $8300 to $D000 and $9282 to $D040 with $01 switched to $00 (all RAM) for each store under I/O and back to $37 for the next read. It then selects bank 0 again, runs stage_load ($0A9B) twice (X = $80, then $60), stores $07, $8C and the byte in $E0 at $0C02-$0C04, calls $0C05, sets $E0 to 9 and copies 59 bytes from $44E1 back to $FFBF-$FFF9."
   },
   {
    "address": 21095,
@@ -14507,12 +14507,12 @@
   {
    "address": 23427,
    "type": "line",
-   "text": "Draw the strip of the background that a one-tile scroll will bring into view. It does nothing unless scroll_phase ($0E) is zero. It then picks from scroll_dir ($0F: 0 is up, 2 right, 4 down, 6 left, and the odd numbers 1, 3, 5, and 7 are the diagonals between them) the row, the column, or both that are about to appear at the edge of the screen, and fills them into the off-screen character buffer whose address is in $08C1/$08C2. The stage map is read through the row pointer tables $2A and $2C (low and high bytes of each map row's address); each map byte is a tile, expanded to a 2 by 2 block of characters taken from the table at $2E/$2F, with $08C7 and $08C8 choosing which half of the tile the row or column starts in. A row is 40 characters (20 tiles) wide and a column 21 characters tall. The routines at $433D-$438B set $0F and clear $0E, $4B8A sets $0E to 1 once a tile step is made, and $888D then counts $0E down."
+   "text": "Draw the strip of the background that a one-tile scroll will bring into view. It does nothing unless scroll_phase ($0E) is zero. It then picks from scroll_dir ($0F: 0 is up, 2 right, 4 down, 6 left, and the odd numbers 1, 3, 5, and 7 are the diagonals between them) the row, the column, or both that are about to appear at the edge of the screen, and fills them into the off-screen character buffer whose address is in $08C1/$08C2. The stage map is read through the row pointer tables $2A and $2C (low and high bytes of each map row's address); each map byte is a tile, expanded to a 2 by 2 block of characters taken from the table at $2E/$2F, with $08C7 and $08C8 choosing which half of the tile the row or column starts in. A row is 40 characters (20 tiles) wide and a column 21 characters tall. The routines at $433D-$438B set $0F and clear $0E, except $4361, which sets both to $FF, as the reset at $4F1D does; $4B8A sets $0E to 1 once a tile step is made, and $888D then counts $0E down."
   },
   {
    "address": 23490,
    "type": "line",
-   "text": "Refresh the colour RAM of the 21 playfield rows ($D800-$DB47, 840 characters) so it matches the screen buffer that is now on show. The screen buffer is swapped by the tile step at $4B8A, which flips $10 (0 shows the buffer at $C800, 1 shows $CC00; build_vic_shadows turns that into $D018 $21 or $31). Colour RAM exists only once, so it is rewritten rather than swapped: the tile step sets scroll_phase ($0E) to 1, and the countdown at $888D calls this routine when it sees the old value 1, one frame later. Each character's colour is taken from char_colour_table ($0C22). Reached by the jump at $889B and by the stub at $9517. The copy is unrolled, 32 characters per loop pass with Y as the index, in four loops (three pages of 256 characters and a last one of 72): recolour_c800_0 and the loops after it do the $C800 buffer, and recolour_cc00_0 and its loops do the $CC00 buffer."
+   "text": "Refresh the colour RAM of the 21 playfield rows ($D800-$DB47, 840 characters) so it matches the screen buffer that is now on show. The screen buffer is swapped by the tile step at $4B8A, which flips $10 (0 shows the buffer at $C800, 1 shows $CC00; build_vic_shadows turns that into $D018 $21 or $31). Colour RAM exists only once, so it is rewritten rather than swapped: the tile step sets scroll_phase ($0E) to 1, and the countdown at $888D calls this routine when it sees the old value 1, one frame later. Each character's colour is taken from char_colour_table ($0C22). Reached by the jump at $889B and by the stub at $9517. The copy is unrolled with Y as the index, in four loops: three of 32 characters a pass, each covering a page of 256, and a last one of 72 (36 a pass for $C800, 24 for $CC00): recolour_c800_0 and the loops after it do the $C800 buffer, and recolour_cc00_0 and its loops do the $CC00 buffer."
   },
   {
    "address": 23497,
@@ -14542,7 +14542,7 @@
   {
    "address": 24730,
    "type": "line",
-   "text": "Colour-RAM refresh from the screen buffer at $CC00, used when $10 is non-zero (jumped to from $5BC6). Same four loops as recolour_c800 with the source moved up by $0400; clears carry and starts Y at 0."
+   "text": "Colour-RAM refresh from the screen buffer at $CC00, used when $10 is non-zero (jumped to from $5BC6). The same four loops as recolour_c800 with the source moved up by $0400, except that the last one is unrolled 24 steps a pass (Y moving on by $18) rather than 36 ($24); clears carry and starts Y at 0."
   },
   {
    "address": 24733,
@@ -14577,7 +14577,7 @@
   {
    "address": 25857,
    "type": "line",
-   "text": "Mode flag. sound_init sets it to $1F (nonzero); sid_player_init clears it. While it is nonzero, sid_load_song_voices works, update_filter_sweep is held off, and sid_voice_change_check silences a voice whose one-shot sound has run out. While it is zero, sid_load_song_voices does nothing and the filter sweep runs. Which of the two the game means (sound effects against a music player) is inferred from the callers."
+   "text": "Mode flag. sound_init sets it to $1F (nonzero); sid_player_init clears it. While it is nonzero, sid_load_song_voices works, update_filter_sweep is held off, and sid_voice_change_check silences a voice whose one-shot sound has run out. While it is zero, sid_load_song_voices does nothing and update_filter_sweep passes this test (it still returns when the voice it finds owning the filter has a one-shot sound active). Which of the two the game means (sound effects against a music player) is inferred from the callers."
   },
   {
    "address": 25858,
@@ -14587,7 +14587,7 @@
   {
    "address": 25859,
    "type": "line",
-   "text": "Scratch byte. sid_voice_start_change saves the voice number here; pattern command 6B52 also uses it as a temporary for the pattern index doubled."
+   "text": "Scratch byte. sid_voice_start_change saves the voice number here; script command $81 (the pattern select at $6B52) also uses it as a temporary for the pattern index doubled."
   },
   {
    "address": 25860,
@@ -14597,17 +14597,17 @@
   {
    "address": 25861,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Frames left in the current note of the voice's script. tick_voice_script counts it down and reads the next script event at zero; the duration byte of each note (voice_store_duration) is stored here. Bytes $6505-$6507. Pattern command 4 also reads it to time a gate-off before the note ends."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Frames left in the current note of the voice's script. tick_voice_script counts it down and reads the next script event at zero; the duration byte of each note (voice_store_duration) is stored here. Bytes $6505-$6507. Pattern command 4 also reads it, scheduling the next pattern step that many frames before the note ends (taken to be a gate-off; not proven)."
   },
   {
    "address": 25862,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which)."
+   "text": "Voice 1's byte of voice_script_timer ($6505-$6507). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 2 here (voice 0 gets 1 and voice 2 gets 3), so the voices' timers run out on different frames. sid_reset_voice_state also stores 2 here (Y + 1) for voice 1. The code that indexes voice_script_timer by voice number reads and writes it."
   },
   {
    "address": 25863,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6507."
+   "text": "Voice 2's byte of voice_script_timer ($6505-$6507). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 3 here (voices 0 and 1 get 1 and 2), so the voices' timers run out on different frames. sid_reset_voice_state also stores 3 here (Y + 1) for voice 2. The code that indexes voice_script_timer by voice number reads and writes it."
   },
   {
    "address": 25864,
@@ -14622,12 +14622,12 @@
   {
    "address": 25868,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $650C."
+   "text": "Voice 1's byte of voice_pattern_timer ($650B-$650D). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 2 here (voice 0 gets 1 and voice 2 gets 3), so the voices' timers run out on different frames. The code that indexes voice_pattern_timer by voice number reads and writes it."
   },
   {
    "address": 25869,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $650D."
+   "text": "Voice 2's byte of voice_pattern_timer ($650B-$650D). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 3 here (voices 0 and 1 get 1 and 2), so the voices' timers run out on different frames. The code that indexes voice_pattern_timer by voice number reads and writes it."
   },
   {
    "address": 25870,
@@ -14637,12 +14637,12 @@
   {
    "address": 25871,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $650F."
+   "text": "Voice 1's byte of voice_pulse_timer ($650E-$6510). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 2 here (voice 0 gets 1 and voice 2 gets 3), so the voices' timers run out on different frames. The code that indexes voice_pulse_timer by voice number reads and writes it."
   },
   {
    "address": 25872,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6510."
+   "text": "Voice 2's byte of voice_pulse_timer ($650E-$6510). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 3 here (voices 0 and 1 get 1 and 2), so the voices' timers run out on different frames. The code that indexes voice_pulse_timer by voice number reads and writes it."
   },
   {
    "address": 25873,
@@ -14652,17 +14652,17 @@
   {
    "address": 25874,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6512."
+   "text": "Voice 1's byte of voice_pitch_timer ($6511-$6513). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 2 here (voice 0 gets 1 and voice 2 gets 3), so the voices' timers run out on different frames. The code that indexes voice_pitch_timer by voice number reads and writes it."
   },
   {
    "address": 25875,
    "type": "line",
-   "text": "Byte of the sound-state block $6501-$6514 that sid_clear_registers_loop clears; the routines that index this array from its first byte read it (the references list which). This is the byte at $6513."
+   "text": "Voice 2's byte of voice_pitch_timer ($6511-$6513). It is not cleared: right after sid_clear_registers_loop, sid_player_init stores 3 here (voices 0 and 1 get 1 and 2), so the voices' timers run out on different frames. The code that indexes voice_pitch_timer by voice number reads and writes it."
   },
   {
    "address": 25876,
    "type": "line",
-   "text": "Single byte, not per voice. Frames left in the current step of the filter-cutoff program read from filter_sweep_table by update_filter_sweep. Reset to 1 at a note start when the voice owns the filter."
+   "text": "Single byte, not per voice. Frames left in the current step of the filter-cutoff program read from filter_sweep_table by update_filter_sweep. sid_player_init sets it to 1, and a note start resets it to 1 when the voice owns the filter (voice_filter_ctrl nonzero) and restart-mask bit 3 is clear."
   },
   {
    "address": 25877,
@@ -14702,7 +14702,7 @@
   {
    "address": 25889,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Low byte of the voice's current position in its pattern stream (music_voice_step). Bytes $6521-$6523. Both halves start at $6602, an idle pattern, until pattern command select ($81) picks a real one."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Low byte of the voice's current position in its pattern stream (music_voice_step). Bytes $6521-$6523. Both halves are set to $6602, an idle pattern, at a reset; script command $81 (at $6B52) sets voice_pattern_start to a real pattern, which the next note copies here unless restart-mask bit 2 is set."
   },
   {
    "address": 25892,
@@ -14732,7 +14732,7 @@
   {
    "address": 25907,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Chooses the pitch-program table: 0 reads pitch_program_a ($7184), nonzero reads pitch_program_b ($7277). Script commands $83 (sets 0) and $8D (sets nonzero) write it. Bytes $6533-$6535."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Chooses the pitch-program table: 0 reads pitch_program_a ($7184), nonzero reads pitch_program_b ($7277). Script commands $83 (sets 0) and $8D (sets nonzero) write it, and pattern command 6 ($6B23) sets it to 0. Bytes $6533-$6535."
   },
   {
    "address": 25910,
@@ -14742,7 +14742,7 @@
   {
    "address": 25913,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Index where the pitch program starts, set by script commands $83 and $8D; each new note copies it to voice_pitch_pos unless restart-mask bit 0 is set. Bytes $6539-$653B."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Index where the pitch program starts, set by script commands $83 and $8D; each new note copies it to voice_pitch_pos when voice_pitch_enabled is nonzero and restart-mask bit 0 is clear. Bytes $6539-$653B."
   },
   {
    "address": 25916,
@@ -14757,7 +14757,7 @@
   {
    "address": 25928,
    "type": "line",
-   "text": "Single byte. Start index into filter_sweep_table, set by script command $85 (first operand); copied to filter_index at a note start. The initialisation loops also store 0 to $6549 and $654A by indexing this label with the voice number, which is harmless because those bytes are cleared anyway."
+   "text": "Single byte. Start index into filter_sweep_table, set by script command $85 (first operand); copied to filter_index at a note start. sid_player_init's voice loop also stores 0 at $6548,x for X = 2 to 0, so it zeroes this byte, filter_index ($6549) and filter_step_lo ($654A); nothing else clears those two."
   },
   {
    "address": 25929,
@@ -14777,17 +14777,17 @@
   {
    "address": 25932,
    "type": "line",
-   "text": "Single byte. Low byte of the filter accumulator's starting value, set by script command $85; copied into $654E at a note start."
+   "text": "Single byte. High byte of the filter accumulator's starting value, set by script command $85 (second operand, stored straight into filter_acc_hi too); copied into filter_acc_hi ($654E) at a note start."
   },
   {
    "address": 25933,
    "type": "line",
-   "text": "Single byte. High byte of the filter accumulator's starting value; copied into $654F at a note start."
+   "text": "Single byte. Low byte of the filter accumulator's starting value, set by script command $85 (third operand, stored straight into filter_acc_lo too); copied into filter_acc_lo ($654F) at a note start."
   },
   {
    "address": 25934,
    "type": "line",
-   "text": "Single byte. High byte of the filter-cutoff accumulator. update_filter_sweep adds the step to it every frame and writes its top bits to $D416 (cutoff high); the low three bits of $654F go to $D415."
+   "text": "Single byte. High byte of the filter-cutoff accumulator; only its low three bits reach the SID. update_filter_sweep adds filter_step_hi to it, with the carry from $654F, each time it runs, and writes the value shifted right three times to $D416: bits 0-2 of $654E become the top three bits of $D416, above the top five bits of $654F, whose low three bits go to $D415."
   },
   {
    "address": 25935,
@@ -14807,12 +14807,12 @@
   {
    "address": 25942,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. High byte of the waveform address (low byte in voice_oneshot_wave_lo). Bytes $6556-$6558. Note that $6557 is also the high-byte table for the script commands: see voice_cmd_table_hi."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. High byte of the waveform address (low byte in voice_oneshot_wave_lo). Bytes $6556-$6558. dispatch_voice_command's lda $6557,x has $6557 as its base, but its X is the command byte ($80 up), so it reads voice_cmd_table_hi at $65D7, not these bytes."
   },
   {
    "address": 25943,
    "type": "line",
-   "text": "Two bytes at $6557-$6558. dispatch_voice_command reads $6557,x with x set to the command byte (the voice command table high bytes), so these two bytes are only the start of that indexed range, not data of their own."
+   "text": "Voice 1's and 2's bytes of voice_oneshot_wave_hi ($6556-$6558): script command $86 writes them and sid_voice_start_change reads them, indexed by the voice. dispatch_voice_command's lda $6557,x only uses $6557 as its base: X is the command byte, $80 or more, so it reads voice_cmd_table_hi at $65D7 onward."
   },
   {
    "address": 25945,
@@ -14857,7 +14857,7 @@
   {
    "address": 25967,
    "type": "line",
-   "text": "Single byte. SID register offset of the voice being processed: 0, 7 or 14, copied from sid_voice_offsets by sid_update_voice_loop. Every SID write of the voice code adds it to $D400."
+   "text": "Single byte. SID register offset of the voice being processed: 0, 7 or 14, copied from sid_voice_offsets by sid_update_voice_loop. The per-voice update code adds it to $D400 for its SID writes; sid_load_song_voices and sid_voice_change_check take the offset from sid_voice_offsets directly instead."
   },
   {
    "address": 25968,
