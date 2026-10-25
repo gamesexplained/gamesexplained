@@ -53,6 +53,12 @@ img{max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
     <figure><img src="reference/stage1.png" width="384" height="272" alt="Fighter standing in the car park above the score and endurance panel"><figcaption class="cap">Stage one. The panel shows score, level, time, endurance, and remaining lives.</figcaption></figure>
   </div>
 </section>
+<section data-part="resident" id="music">
+  <p class="fig">02 · Sound</p><h2 class="t">Music: nine cues</h2>
+  <p>Gary Biasillo's music uses three voices. Each voice reads a stream of notes and commands. Commands can repeat a phrase, change an instrument or bend a note while it plays. The five longer cues keep running; four shorter cues end by switching off their streams.</p>
+  <div class="plate" id="tr-music">Loading music…</div>
+  <p class="cap">The player runs the isolated music driver at <code>$0700</code> and <code>$07BF</code> through the site's C64 sound-chip model. All nine cues were checked against the full game image: 150,497 calls, with every sound-chip write matching in order. The chip model approximates the sound of a real SID.</p>
+</section>
 <section>
   <h2 class="t">Five lives in this edition</h2>
   <p>The supplied EasyFlash edition starts with five lives. At <code>$8000</code>, initialization takes the low nibble of <code>$35</code> and stores the resulting five in the lives counter at <code>$020C</code>. The first-stage display agrees.</p>
@@ -60,7 +66,57 @@ img{max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
 </section>
 <section>
   <h2 class="t">The stages</h2>
-  <p>The manual groups stages 1–3 in the first load and stages 4–5 in the second. The later load and the cartridge's bank copying remain unanalysed. This reference shows the documented settings beyond the first captured fight.</p>
-  <figure class="plate" style="margin:0"><img src="reference/wiki-stages.gif" alt="Animated C64-Wiki reference showing the game's five stage settings"><figcaption class="cap">External reference from <a href="https://www.c64-wiki.de/wiki/Target_Renegade">C64-Wiki</a>. These scenes are documented references; this pass reached stage one.</figcaption></figure>
+  <p>Stages 1–3 share the first resource load; stages 4–5 use a second load. Native loading and stage setup reproduced all five settings. The engine keeps running while fonts, colours and enemy graphics are exchanged.</p>
+  <figure class="plate" style="margin:0"><img src="reference/wiki-stages.gif" alt="Animated C64-Wiki reference showing the game's five stage settings"><figcaption class="cap">External reference from <a href="https://www.c64-wiki.de/wiki/Target_Renegade">C64-Wiki</a>. An external view of the five stage settings, alongside the native captures recorded in the analysis.</figcaption></figure>
 </section>
 </main>
+
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* trMusic */
+function createDriver(data, C64Cpu) {
+  const base = new Uint8Array(65536);
+  base.set(data.bytes, 0x0700);
+  const sid = new Uint8Array(25);
+  let cpu, m, writes = [], bus = 0, stopped = true;
+  const io = {
+    read() { return bus; },
+    write(a, v) {
+      if (a >= 0xD400 && a <= 0xD418) {
+        sid[a - 0xD400] = v; writes.push(a - 0xD400, v); bus = v;
+      }
+    }
+  };
+  return {
+    sid,
+    get writes() { return writes; },
+    readback(env, osc, value) { bus = value; },
+    init(cue) {
+      m = base.slice(); cpu = new C64Cpu.CPU(m, {port: 0x35, io});
+      sid.fill(0); writes = []; bus = 0; stopped = false;
+      cpu.call(0x0700, {x: cue}, {maxSteps: 100000});
+    },
+    play() {
+      writes = [];
+      if (!stopped) cpu.call(0x07BF, {}, {maxSteps: 100000});
+    },
+    stop() {
+      stopped = true; writes = [24, 0]; sid[24] = 0;
+    },
+    playing() { return !stopped && !!(m[0x20AC] | m[0x20AD] | m[0x20AE]); },
+    voice(x) { return {stream: m[0x84+x*2] | m[0x85+x*2] << 8, remaining: m[0x2023+x]}; }
+  };
+}
+// end of trMusic
+(async () => {
+  const root = document.getElementById('tr-music');
+  try {
+    const L = await C64.load('parts/resident/listing.json');
+    C64Sid.mount(root, {driver: createDriver, data: {bytes: L.ram.slice(0x0700, 0x2023)},
+      tunes: ['0 · Title', '1 · Stages 1 and 3', '2 · Stage 4', '3 · Stages 2 and 5', '4 · Ending', '5 · Short cue', '6 · Short cue', '7 · Short cue', '8 · Transition'],
+      rows: [{k: 'Stream', f: v => '$'+v.stream.toString(16).toUpperCase().padStart(4,'0')}, {k: 'Countdown', f: v => String(v.remaining)}]});
+  } catch (e) { root.textContent = 'Music could not load: '+e.message; }
+})();
+</script>

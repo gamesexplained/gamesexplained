@@ -1,21 +1,15 @@
-# Target Renegade — next work
+# Target Renegade — Silver work
 
-Next: trace the EasyFlash copy directory and reach the second load, then separate shared engine bytes from load-specific data before extending annotations.
+Next: finish shared combat/AI/animation and raster routines, then complete live verification and the maps/Discoveries pages. The contributor's goal is Silver.
 
-- Bronze complete: title and first-stage play captured; initial feature checklist, register/string sweeps, 22 comments, and compact page.
-- Measured first-load coverage: 720 / 61,942 bytes, 1.2%. The cartridge banks and second load remain unstarted (1 of 13 parts has an analysed image). The percentage is not whole-game completion.
-- Listing source: `parts/resident/work/entry.vsf`, SHA-256 recorded by listing.json. Preserve this exact image and `work/play-round1.vsf`. Restart the part's disassembler from entry.vsf so symbols.json restores annotations.
-
-## Before Silver
-
-- Map bank copying using the native loader, proving duplicates before exclusions. Resolve first-load shared engine versus load data, and capture stages 2–5 plus the ending through the game's own paths. A second-load folder exists without a snapshot.
-- Classify all unannotated code/data, including RAM beneath I/O. Follow the part's coverage queue; do not mistake automatic labels for explanations.
-- Resolve the listing's short untyped gaps and check self-modifying instructions. Preserve initialization code around $020D using the entry image.
-- Exercise every documented attack from a neutral snapshot. Trace damage, endurance, lives, timer, scoring, weapons, enemy decisions, and stage completion. Investigate the five-life supplied edition against the manual's three without assuming the original was identical.
-- Attribute the SID player and every tune/effect, then provide the required tune players for Silver.
-- Complete verification and independent comment sampling. The contributor identified the session as gpt-6.1-sol, a proven model; an additional maintainer check is not required solely for model provenance. Keep Bronze until all Silver requirements hold.
-- Expand the page only from verified findings; create maps/levels and discoveries tabs as the analysis supports them.
+- Aggregate ledger: all           83620 of  92955 bytes explained   90.0 %  in 15 of 15 parts. Resident engine work remains; the two resource loads and ending are substantially described. Recompute after every export.
+- Native captures cover all five stage setups, E/F/G, H/I and the ending. Snapshots are private under the four parts' work/ folders.
+- Music player and its nine-cue comparison pass. Finish effects playback, level reconstruction, interactive mechanic checks and browser review.
+- Resolve short untyped gaps and stale automatic aliases after all code recovery; preserve self-modifying operands and explicit LAX instructions.
+- Complete neutral-state control tests and live checks of health, scoring, timer, pause/music and stage progression. Features may remain explicitly open with evidence; do not infer absence.
+- Independent foundation sample found 19 wrong-detail comments out of 60, one doubtful and four unverifiable citations. All repeated errors and unsupported wording were corrected. A full audit is recommended after Silver; this sample is not a full audit.
+- Keep tier Bronze until coverage is 100%, all Silver pages/players and required checks pass. Record further annotation and verification in accuracy.
 
 ## Delivery preference
 
-Commit and push the branch as unorig. Open no PR, file no issue, and write no PR notes until requested.
+Commit and push as unorig. Open no PR, file no issue, and write no PR notes until requested.
