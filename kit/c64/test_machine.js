@@ -150,7 +150,7 @@ if (require.main === module) {
       h.write(name, 0, 'latin1'); h[16] = major; h[17] = minor; h.writeUInt32LE(22 + body.length, 18);
       return Buffer.concat([h, body]);
     };
-    const vsf = ({ d011, d012, irq = 0, p = 0x20, vic = true }) => {
+    const vsf = ({ d011, d012, irq = 0, p = 0x20, vic = true, colour = null }) => {
       const head = Buffer.alloc(58);
       head.write('VICE Snapshot File\x1a', 0, 'latin1'); head[19] = 2; head.write('C64SC', 21, 'latin1');
       head.write('VICE Version\x1a', 37, 'latin1'); head[50] = 3; head[51] = 10;
@@ -165,7 +165,8 @@ if (require.main === module) {
       at(0xC100, [0x48, 0xE6, 0x02, 0xAD, 0x12, 0xD0, 0x85, 0x04, 0xAD, 0x11, 0xD0, 0x85, 0x05,
         0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40]);
       at(0xFFFE, [0x00, 0xC1]);
-      const v = Buffer.alloc(200);
+      const v = Buffer.alloc(colour ? 761 + 1024 + 100 : 200);
+      if (colour) for (let i = 0; i < 1024; i++) v[761 + i] = colour(i);
       v[0] = 1; v[1 + 0x11] = d011; v[1 + 0x12] = d012; v[1 + 0x1A] = 0x01; v[1 + 0x20] = 0x0E;
       v[78] = irq; v.writeUInt32LE(d012 | ((d011 & 0x80) << 1), 79);
       return Buffer.concat([head, mod('MAINC64CPU', 1, 5, cpu), mod('C64MEM', 0, 1, mem), mod('CIA1', 2, 5, Buffer.alloc(77)),
@@ -196,6 +197,12 @@ if (require.main === module) {
       check('a latched interrupt held off by SEI', [v.latch, v.cpu.i].join(), '1,1');
       v.cpu.i = 0; v.runCycles(63);
       check('is taken once the processor allows it', v.ram[0x02], 1);
+
+      check('colour RAM starts at 0 when the module is too short to hold it', v.colour.every((c) => c === 0), true);
+      fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0xFB, colour: (i) => (i * 7) & 15 }));
+      v = Machine.fromSnapshot(file);
+      check('colour RAM from bytes 761-1784 of VIC-IISC 1.4', [v.colour[0], v.colour[1], v.colour[1023], readSnapshot(file).colour.length].join(), '0,7,9,1024');
+      check('and read back through $D800 with the upper four bits high', v.cpu.rd(0xD801), 0xF7);
 
       fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0xFB, vic: false }));
       let threw = '';

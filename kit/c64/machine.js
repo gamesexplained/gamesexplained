@@ -72,8 +72,9 @@
 //   compare line is 0 and the raster interrupt is off until the game sets them.
 // - Machine.fromSnapshot(vsf, opts): the machine as an x64sc snapshot left it, for a start in the
 //   middle of play: the RAM, the port, the processor's registers and the video chip, its raster
-//   interrupt included. The raster starts at line 0, wherever the snapshot's was, and the CIAs
-//   and colour RAM start as new Machine starts them: the snapshot's are not read.
+//   interrupt included, and the colour RAM when the file's VIC-IISC module is format 1.4
+//   (readSnapshot's colour). The raster starts at line 0, wherever the snapshot's was, and the
+//   CIAs start as new Machine starts them: the snapshot's are not read.
 //   opts as for new Machine, but ram, port, pc and vic come from the file.
 // - passAt: the address of the main loop's first instruction. Each time the processor reaches it,
 //   passes counts one and onPass(machine) runs, the place to set the next pass's input; onPass
@@ -184,6 +185,7 @@ class Machine {
     }
     const m = new Machine(Object.assign({}, opts, { ram: s.ram, port: s.port, pc: s.regs.pc, vic: s.vic }));
     m.cpu.setRegs(s.regs);
+    if (s.colour) m.colour.set(s.colour);
     return m;
   }
   get line() { return Math.floor(this.cpu.cycles / LINE) % LINES; }

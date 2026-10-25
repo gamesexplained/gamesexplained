@@ -643,12 +643,15 @@ a block's layout garbled.
   Catching it live is hard; reading `$D015` from the code that writes it is
   not.
 - Colour RAM in a VICE snapshot is not at `$D800` in the RAM image; it is
-  in the VIC-II module. Loading the snapshot back and reading `$D800`
-  through the emulator is quicker than finding it in the file, as long as
-  you stop the machine the instant it loads. To find it in the file
-  instead, scan for a run of 1024 bytes that are all less than 16: in a
-  snapshot saved without ROMs there is usually exactly one, and it is the
-  colour RAM.
+  in the VIC-II module. From an x64sc snapshot whose `VIC-IISC` module is
+  format 1.4, `readSnapshot` (`kit/cpu/cpu6502.js`) gives it as `colour`
+  and `Machine.fromSnapshot` loads it, so a test that reads the screen's
+  colours starts with the game's. From any other format both leave it out
+  (`colour` is null, and the machine's colour RAM starts at 0): load the
+  snapshot back and read `$D800` through the emulator, stopping the
+  machine the instant it loads, or scan the file for a run of 1024 bytes
+  that are all less than 16; in a snapshot saved without ROMs there is
+  usually exactly one, and it is the colour RAM.
 - **Uninitialised RAM is not data.** VICE fills unwritten RAM with a
   repeating pattern of `$00` and `$FF` runs (the run length depends on its
   RAM-init settings; one build showed `FF FF 00 00 00 00 FF FF`). A region

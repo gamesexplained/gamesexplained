@@ -61,11 +61,14 @@
 //   cpu.call(0x82FA, { x: 0x40, y: 0x0C });          // runs the routine until it returns
 //   cpu.a, cpu.x, cpu.m[0x08], cpu.cycles ...
 //
-//   const s = readSnapshot(path);   // { ram, port: { dir, data, out }, exrom, game, regs, clock, vic }
+//   const s = readSnapshot(path);   // { ram, port: { dir, data, out }, exrom, game, regs, clock, vic,
+//                                   //   colour }
 //                                   // regs { a, x, y, sp, pc, p } and clock (the emulator's cycle
 //                                   // count) come from x64sc's MAINC64CPU module, null without it;
 //                                   // vic { regs, irq }, the video chip's 64 registers and its
-//                                   // interrupt latch, from its VIC-IISC module, null without it.
+//                                   // interrupt latch, from its VIC-IISC module, null without it;
+//                                   // colour, the colour RAM's 1,024 cells (0-15), from that
+//                                   // module when it is format 1.4, null otherwise.
 //                                   // kit/c64/machine.js's Machine.fromSnapshot takes them
 //   loadSnapshot(path)              // the RAM alone, a fresh Uint8Array(65536)
 //
@@ -126,6 +129,9 @@
   // interrupt enable), three 4-byte words (the raster's cycle, flags and line), a byte, then the
   // interrupt latch ($D019's bits 0-3, bit 7 the IRQ line). From VICE's src/viciisc/vicii-snapshot.c
   // (format 1.4), checked on vice-mcp v3.13.2 snapshots of a raster interrupt, 10 October 2026.
+  // In format 1.4 the colour RAM's 1,024 cells are bytes 761-1784 of that body, one to a byte: in
+  // eight vice-mcp v3.13.2 snapshots of one game every byte there was below 16, and in one taken in
+  // play all 1,024 equalled the colour RAM frame.py read from the emulator, 25 October 2026.
   function readSnapshot(path) {
     const buf = fs.readFileSync(path);
     if (buf.toString('latin1', 0, 19) !== 'VICE Snapshot File\x1a') throw new Error(path + ': not a VICE snapshot');
@@ -134,7 +140,7 @@
     while (off + 22 <= buf.length) {
       const name = buf.toString('latin1', off, off + 16).replace(/\0+$/, ''), size = buf.readUInt32LE(off + 18);
       if (size < 22 || off + size > buf.length) break;
-      mods[name] = { at: off + 22, size: size - 22, major: buf[off + 16] };
+      mods[name] = { at: off + 22, size: size - 22, major: buf[off + 16], minor: buf[off + 17] };
       off += size;
     }
     const mem = mods.C64MEM;
@@ -149,6 +155,8 @@
       clock: cpu && cpu.size >= 8 ? Number(buf.readBigUInt64LE(cpu.at)) : null,
       vic: vic && vic.major === 1 && vic.size >= 79 ? { regs: Uint8Array.from(buf.subarray(vic.at + 1, vic.at + 65)),
         irq: buf[vic.at + 78] } : null,
+      colour: vic && vic.major === 1 && vic.minor === 4 && vic.size >= 761 + 1024
+        ? Uint8Array.from(buf.subarray(vic.at + 761, vic.at + 761 + 1024), (c) => c & 15) : null,
     };
   }
 
