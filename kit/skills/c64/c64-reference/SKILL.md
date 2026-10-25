@@ -71,6 +71,9 @@ License: cite it, and write your own words.
 | `$35` (`%101`) | RAM | I/O | RAM |
 | `$34` (`%100`) | RAM | RAM | RAM |
 | `$33` (`%011`) | BASIC ROM | character ROM | KERNAL ROM |
+| `$32` (`%010`) | RAM | character ROM | KERNAL ROM |
+| `$31` (`%001`) | RAM | character ROM | RAM |
+| `$30` (`%000`) | RAM | RAM | RAM |
 
 Games that run under the ROMs use `$35` and install their own handlers at
 the hardware vectors `$FFFA`–`$FFFF`. When you see `LDA #$35 / STA $01`,
@@ -284,6 +287,10 @@ CIA1 `$DC00`–`$DC0F`: port A `$DC00`, port B `$DC01`, timer A latch
 timer rather than the raster. Compute the rate from the latch: clock /
 (latch + 1). A latch of `$411B` is about 59 Hz on PAL, not 50. Every
 tempo, lifetime and duration derived from a tick count inherits this.
+A game that keeps the KERNAL's interrupt, or never reprograms CIA 1's
+timer A, ticks 60 times a second on both machines: the KERNAL writes the
+latch `$4025` on a PAL machine and `$4295` on NTSC (`$FDDD`), so count
+the handler's calls live before writing a rate (`kit/lessons/2026-10-25-pool-of-radiance.md`).
 
 **Timer B can count timer A.** A control byte for timer B (`$DC0F`) with
 bits 5-6 set to `%10` makes it count timer A's underflows instead of

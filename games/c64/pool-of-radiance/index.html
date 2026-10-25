@@ -44,6 +44,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .por-m{font-family:var(--fm);font-size:.86em}
 .por-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
 .por-map{width:100%;max-width:420px;image-rendering:pixelated;cursor:crosshair;display:block;border-radius:4px}
+.por-frame{width:100%;max-width:768px;image-rendering:pixelated;display:block;border-radius:4px}
 .por-area{width:100%;max-width:420px;image-rendering:pixelated;display:block;border-radius:4px}
 .por-out{font-family:var(--fm);font-size:13px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin-top:12px;min-height:3.2em;white-space:pre-wrap}
 .por-btns{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
@@ -65,7 +66,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1988 · SSI</p>
   <h1>Pool of Radiance</h1>
-  <p class="sub">Every block of the ruined city is a 16 by 16 grid of walls held in 1,024 bytes, and everything that happens on it, from the city watch moving you along to the dragon at the end, is a script in a small language of 62 commands that the game reads as the party walks.</p>
+  <p class="sub">Every block of the ruined city is a 16 by 16 grid of walls, stored in 1,024 bytes. Everything that happens there, from the city watch moving the party along to the dragon at the end, is a script: a small program in the game's own language of 62 commands, read as the party walks.</p>
 </header>
 <main class="wrap">
 
@@ -73,7 +74,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">01 · The game</p>
   <h2 class="t">A party of six in the ruins of Phlan</h2>
   <p>Pool of Radiance was the first computer game made under licence from TSR's Advanced Dungeons &amp; Dragons. The player builds a party of up to six characters, choosing each one's race, class and alignment and rolling the six ability scores. The party arrives in New Phlan, the one civilised quarter of a city overrun by monsters, and the city council sends it out to clear the rest, block by block.</p>
-  <p>Towns and dungeons are seen from inside, in a small picture framed at the top left, and the party moves one square at a time. When monsters appear the game offers combat, waiting, fleeing, advancing or talking. A fight moves to a battlefield seen from above, where each character takes a turn, swings, shoots, casts a spell or flees. Between fights the party camps to heal and memorise spells. The game ends when the party kills the dragon in which Tyranthraxus, the spirit behind the monsters, is living.</p>
+  <p>Towns and dungeons are seen from inside, in a small picture framed at the top left, and the party moves one square at a time. When monsters appear the game offers combat, waiting, fleeing, advancing or talking. A fight moves to a battlefield seen from above, where each character in turn swings, shoots, casts a spell or flees. Between fights the party camps to heal and memorise spells. The game ends when the party kills the dragon in which Tyranthraxus, the spirit behind the monsters, is living.</p>
   <div class="por-shots">
     <figure><img src="reference/live-title.png" alt="The title screen"><figcaption>The title picture, with its tune.</figcaption></figure>
     <figure><img src="reference/live-phlan.png" alt="The 3D view at New Phlan's gateway"><figcaption>New Phlan: the 3D view, the party, the clock and the square, and the adventure menu.</figcaption></figure>
@@ -81,27 +82,38 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </div>
 </section>
 
+<section data-part="resident">
+  <p class="fig">02 · The screen</p>
+  <h2 class="t">The 3D view is drawn with text characters</h2>
+  <p class="lede">At New Phlan's gateway the play screen uses no bitmap and no sprites. Everything on it, from the frame of rope and the party list to the picture of the street ahead, is 1,000 characters on a grid of 40 by 25. Monsters met in the view are the one thing drawn with sprites (<code>$CFF8</code>).</p>
+  <div class="plate">
+    <canvas id="por-frame" class="por-frame" width="768" height="544"></canvas>
+    <p class="cap">The play screen at New Phlan's gateway, drawn by this page from the game's own memory: the screen, the character shapes and the video chip's settings, recorded over one frame in the emulator. All 104,448 pixels match the emulator's picture of the same frame.</p>
+  </div>
+  <p>The C64's video chip draws a text screen from two things in memory: a list of 1,000 character numbers, one for each place on the grid, and the shapes of 256 characters, 8 bytes each. Pool of Radiance keeps its list at <code>$CC00</code> and its shapes at <code>$D000</code>, and turns on multicolour mode (<code>$3A72</code>). In that mode a character whose colour number is 8 or more is drawn as 4 double-width pixels across and 8 down, in up to four colours, and any other character in single pixels of one colour. The place <code>$D000</code> is also where the processor finds the sound, video and input chips. The video chip always reads the memory underneath, but the processor has to switch the chips out of the way to write there, holding off the interrupts while it does (<code>$84D8</code>). The pictures shown in the window, a whole scene or a body and a head, are drawn by rewriting the shapes of characters 128 to 255 (<code>$841C</code>).</p>
+</section>
+
 <section data-part="title">
-  <p class="fig">02 · Music</p>
+  <p class="fig">03 · Music</p>
   <h2 class="t">Music: the title tune, played by the game's own driver</h2>
   <p class="lede">There is one tune in the game. It plays over the title picture until a key is pressed, or until it has ended and the title has waited through 256 more silent passes.</p>
   <div class="plate">
     <div id="por-sid"></div>
-    <p class="cap">The page runs the game's own sound driver, its code and the tune from the title's memory (<code>$BA00</code>-<code>$BDD2</code> and <code>$C400</code>-<code>$CF5A</code>), on a model of the 6502, and plays what it writes through a model of the SID sound chip. It starts the tune as the title starts it (<code>start_tune</code>, <code>$0D4A</code>) and calls the driver 60 times a second, as the C64's own interrupt does, and every write it makes to the chip is the same, call for call, as the driver's in the game. The notes are tuned for an American (NTSC) machine, and the page plays them at its speed. The lowest notes, near 33 Hz, are below what a laptop's or a phone's speaker plays.</p>
+    <p class="cap">The page plays the tune with the game's own sound driver, the code that turns the tune's bytes into sound. The driver and the tune are copied from the title's memory (<code>$BA00</code>-<code>$BDD2</code> and <code>$C400</code>-<code>$CF5A</code>, addresses in the C64's memory written in hexadecimal, each a link to the code) and run on a model of the C64's processor, the 6502. What the driver writes goes to a model of the SID, the C64's sound chip. The page starts the tune the way the title does (<code>start_tune</code>, <code>$0D4A</code>) and calls the driver 60 times a second, as the C64's timer interrupt does, so the chip gets the same values in the same order as in the game. The notes are tuned for an American (NTSC) machine, and the page plays them at that machine's speed. The lowest notes, near 33 Hz, are below what a laptop's or a phone's speaker can play.</p>
   </div>
-  <p>The driver plays three streams of commands, one for each of the SID's three voices. A note is two bytes: the first gives its length and its instrument, the second its pitch. There are eight lengths, from 6 to 96 sixtieths of a second (<code>$BD7B</code>), and a quarter note of 24 makes the tempo 150 beats a minute. There are eight instruments of nine bytes each (<code>$BD8B</code>): the waveform, the envelope, a transposition and the pulse width. A note takes whichever voice is free, so the title tune is written as a single stream and still plays chords: a pitch byte with its top bit set says another note starts at the same moment, and that note finds another voice.</p>
-  <p>The tune is entry 12 of the title's music table (<code>$C400</code>). Its 1,100 notes and 92 rests last 5,976 sixtieths of a second, a minute and 40 seconds. Entries 13 to 19 start the same stream partway through, at the beginning of each of its later sections, and nothing in the game asks for them. The buttons after the first play them.</p>
+  <p>The driver plays three streams of commands, one for each of the SID's three voices. A note is two bytes: the first gives its length and its instrument, the second its pitch. There are eight lengths, from 6 to 96 sixtieths of a second (<code>$BD7B</code>), and a quarter note of 24 makes the tempo 150 beats a minute. There are eight instruments of nine bytes each (<code>$BD8B</code>). Each gives the waveform, the envelope (how the note's volume rises and falls), a transposition (a shift up or down in pitch), and the pulse width, which changes the tone of a square wave. A note takes whichever voice is free, so the title tune is written as a single stream and still plays chords. A pitch byte with its top bit set says another note starts at the same moment, and that note finds another free voice.</p>
+  <p>The tune is entry 12 of the title's music table (<code>$C400</code>). Its 1,100 notes and 92 rests last 5,976 sixtieths of a second, a minute and 40 seconds. Entries 13 to 19 start the same stream partway through, at the beginning of each of its later sections. The game never asks for them. The buttons after the first play them.</p>
 </section>
 
 <section data-part="tables">
-  <p class="fig">03 · Sound</p>
+  <p class="fig">04 · Sound</p>
   <h2 class="t">Sound: eleven effects from the same driver</h2>
-  <p class="lede">In play the title's driver is replaced by a twin, SOUNDFX, with the same code and twelve short sounds of its own in place of the tune.</p>
+  <p class="lede">Once play begins, the title's driver is replaced by a twin, SOUNDFX. It has the same code, with eleven short sounds and a silence in place of the tune.</p>
   <div class="plate">
     <div id="por-sfx"></div>
-    <p class="cap">The game's SOUNDFX driver and sounds (<code>$BA00</code>-<code>$BF53</code>), run as for the tune and started as the modules start a sound, with its number in A at <code>$BA03</code>. Sound 0 is silence.</p>
+    <p class="cap">The game's SOUNDFX driver and sounds (<code>$BA00</code>-<code>$BF53</code>), run as for the tune. Each button starts a sound the way the game does: a call to <code>$BA03</code> with the sound's number in the processor's A register. Sound 0 is the silence.</p>
   </div>
-  <p>The sounds use no notes. Each sets the voice's frequency, waveform and envelope directly, then lets the driver slide the frequency or the pulse width a little on every call, so a single command makes a rising burst or a warble. These are what ask for each sound:</p>
+  <p>The sounds are not made of notes. Each one sets a voice's frequency, waveform and envelope directly. The driver then slides the frequency or the pulse width a little on every call, so a single command makes a rising burst or a warble. The table shows where the game asks for each sound.</p>
   <table class="por-tbl">
     <tr><th>Sound</th><th>When it plays</th><th>Asked for at</th></tr>
     <tr><td>1</td><td>A missile or a spell flies across the battlefield</td><td data-part="combat-set"><code>$657B</code></td></tr>
@@ -112,14 +124,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>8</td><td>A step, in a town or a dungeon and on the battlefield; some scripts ask for it too</td><td data-part="dungeon"><code>$098B</code></td></tr>
     <tr><td>9</td><td>A step into a wall</td><td data-part="dungeon"><code>$08F4</code></td></tr>
     <tr><td>10</td><td>The spirit leaves the dragon's body; one other script asks for it</td><td data-part="final"><code>$0A0B</code></td></tr>
-    <tr><td>5, 7, 11</td><td>Nothing in the modules asks for these, nor any script that starts a sound through its CALL command</td><td></td></tr>
+    <tr><td>5, 7, 11</td><td>Never asked for: the game's code does not start them, and neither does any script that starts a sound through its CALL command</td><td></td></tr>
   </table>
 </section>
 
 <section data-part="view">
-  <p class="fig">04 · The maps</p>
+  <p class="fig">05 · The maps</p>
   <h2 class="t">Each block is a 16 by 16 grid of walls</h2>
-  <p class="lede">Every town quarter and dungeon level is one file of four 256-byte pages, one byte of each page for each square.</p>
+  <p class="lede">Every town quarter and dungeon level is one file of four pages of 256 bytes. Each of the 256 squares has one byte in each page.</p>
   <div class="plate">
     <div class="por-two">
       <div><canvas id="por-map" class="por-map" width="420" height="420"></canvas></div>
@@ -128,39 +140,39 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="por-out" id="por-map-out">Click a square.</div>
     <p class="cap">Left: New Phlan, the block the game starts in, drawn from its map file GEO00 as the game loads it at <code>$0400</code>. White lines are walls, a gap with yellow ends is a door that opens, and red is a locked door. Right: the game's own AREA command at the gateway, showing the 11 by 11 squares at the top left of the same map. AREA draws only the north and east side of each square (<span data-part="dungeon"><code>$1266</code></span>), so a wall the map gives only to a south or west side does not show there.</p>
   </div>
-  <p>A square's number is its row times 16 plus its column (<code>$C29D</code>). The first page holds the walls on its north and east sides, four bits each, and the second the south and west sides (<code>$C39A</code>). A wall's number picks one of the wall pictures the area loads, and 0 is open. The fourth page holds two bits for each side that turn a wall into a door: 1 is a door that opens when the party walks into it, and 2 or 3 a locked one, which the party must pick or bash (<span data-part="dungeon"><code>$0E64</code></span>); only the strongest characters can bash a door of type 3. The third page holds a byte for each square, which the 3D view reads with the walls (<code>$C3D2</code>).</p>
+  <p>A square's number is its row times 16 plus its column (<code>$C29D</code>). The first page holds the walls on a square's north and east sides, four bits (half a byte) each, and the second page the south and west sides (<code>$C39A</code>). A wall's number picks one of the wall pictures the area loads, and 0 is open. The fourth page holds two bits for each side that turn a wall into a door. A 1 is a door that opens when the party walks into it, and a 2 or 3 is a locked one, which the party must pick or bash (<span data-part="dungeon"><code>$0E64</code></span>). Only the strongest characters can bash a door of type 3. The third page holds a byte for each square, which the 3D view reads with the walls (<code>$C3D2</code>).</p>
   <p>A wall between two squares is stored twice, as a side of each square, and the two can differ. Each side has its own picture number, and in 16 of the 29 maps some walls are there on one side only. A step is judged by the side the party faces in its own square (<span data-part="dungeon"><code>$10EC</code></span>), so such a wall stops the party from one direction and lets it through from the other. A door the party bashes open is marked open on both sides (<span data-part="dungeon"><code>$0EE8</code></span>). Every one of the 29 maps on the disks is drawn on the <a href="levels.html">Maps tab</a>.</p>
 </section>
 
 <section data-part="dungeon" id="por-scripts">
-  <p class="fig">05 · The scripts</p>
+  <p class="fig">06 · The scripts</p>
   <h2 class="t">Everything that happens in a place is a script</h2>
-  <p class="lede">Each block has a script file (ECL) beside its map. The adventure module has no idea where the shops are, who lives where or what a room holds: the script decides, and the module runs it.</p>
+  <p class="lede">Each block has a script file (ECL) beside its map. The game is split into modules, programs loaded from disk one at a time, and the adventure module is the one that walks the party through towns and dungeons. It does not know where the shops are or what a room holds. The script decides, and the module runs it.</p>
   <div class="plate">
     <div class="por-btns" id="por-ecl-btns"></div>
     <div class="por-ecl" id="por-ecl"></div>
     <p class="cap">New Phlan's script, ECL00, decoded from its bytes as the game reads it (<code>$1581</code>), loaded at <span class="por-m">$9900</span>. A choice above shows where the game enters it. An address in square brackets is a variable in the game's memory: <span class="por-m">[$6DD2]</span> and <span class="por-m">[$6DD3]</span> are how often a rest is interrupted, and <span class="por-m">[$49C9]</span> is the hour. Command names are descriptions of what each command's routine does.</p>
   </div>
-  <p>A script starts with five GOTO commands at fixed places, which are its five entries (<code>$1A0B</code>). The module enters at the first before every step, at the second when the party arrives on a square, at the third when the party makes camp, at the fourth when it comes back from a camp whose rest was interrupted, and at the fifth when the block is first entered. New Phlan's camp entry is why camping in the town never lasts: it sets the rest to be interrupted on every pass, with a chance of 101 in 100 against a roll of 0 to 99 (<span data-part="camp"><code>$1E0F</code></span>). Its fourth entry then has the city watch move the party along.</p>
-  <p>There are 62 commands (<code>$15A9</code>). Each operand starts with a byte saying what it is (<code>$1663</code>): a number, the byte or word at an address, a text packed six bits to a letter, or an address itself. The commands include arithmetic, comparisons and six IFs that skip the next command, menus, monster encounters, treasure, and a CALL that runs machine code anywhere in memory.</p>
+  <p>A script starts with five GOTO commands at fixed places, which are its five entries (<code>$1A0B</code>). The module enters the script at the first before every step and at the second when the party arrives on a square. It enters at the third when the party makes camp, at the fourth when the party comes back from a camp whose rest was interrupted, and at the fifth when the block is first entered. New Phlan's camp entry is why camping in the town never lasts. It sets the rest to be interrupted on every pass, with a chance of 101 in 100 against a roll of 0 to 99 (<span data-part="camp"><code>$1E0F</code></span>). The script's fourth entry then has the city watch move the party along.</p>
+  <p>There are 62 commands (<code>$15A9</code>). A command is followed by its operands, the values it works on, and each operand starts with a byte saying what kind it is (<code>$1663</code>). It can be a number, the value stored at an address in memory, a text packed six bits to a letter, or an address itself. Among the commands are arithmetic, comparisons, menus, monster encounters and treasure. Six IF commands skip the next command when their test fails, and CALL runs the processor's own machine code anywhere in memory.</p>
 </section>
 
 <section data-part="gen">
-  <p class="fig">06 · Creating a character</p>
+  <p class="fig">07 · Creating a character</p>
   <h2 class="t">Each ability score is the best of six rolls</h2>
-  <p class="lede">The rule book says ability scores are rolled. The game rolls three six-sided dice six times for each score and keeps the highest total.</p>
+  <p class="lede">A character has six ability scores, such as strength and intelligence. The game rolls three six-sided dice six times for each score and keeps the highest total.</p>
   <div class="plate">
     <button type="button" class="por-btn" id="por-roll">Roll an ability score</button>
     <div class="por-dice" id="por-dice"></div>
-    <p class="cap">Each press runs GEN's own routine (<code>roll_ability</code>, <code>$0D1F</code>) and the dice routines it calls in the resident engine, on a model of the 6502, with the six bytes of the game's random-number generator (<span data-part="resident"><code>$03C2</code></span>-<span data-part="resident"><code>$03C7</code></span>) set at random by the page. The highlighted total is the one the game keeps.</p>
+    <p class="cap">Each press runs the code of GEN, the character-creation module (<code>roll_ability</code>, <code>$0D1F</code>), and the dice code it calls in the part of the game that stays in memory, on a model of the 6502. The page first sets the six bytes of the game's random-number generator (<span data-part="resident"><code>$03C2</code></span>-<span data-part="resident"><code>$03C7</code></span>) at random. The highlighted total is the one the game keeps.</p>
   </div>
-  <p>A single roll of three dice averages 10.5. The best of six averages just over 14, and is 15 or more a little under half the time. A score of 3 needs all eighteen dice to come up 1. GEN then adjusts the score from a table by race and gender (<code>$0D4A</code>), which gave a new human one point more strength and constitution than the dice did, and holds it between that race's and gender's lowest and highest score.</p>
+  <p>A single roll of three dice averages 10.5. The best of six averages just over 14, and comes to 15 or more a little under half the time. A score of 3 needs all eighteen dice to come up 1. GEN then adjusts the score from a table by race and gender (<code>$0D4A</code>), which gave a new human one point more strength and constitution than the dice did, and holds it between that race's and gender's lowest and highest score.</p>
 </section>
 
 <section data-part="combat">
-  <p class="fig">07 · Combat</p>
+  <p class="fig">08 · Combat</p>
   <h2 class="t">To hit, a d20 must reach THAC0 minus the target's armour class</h2>
-  <p class="lede">THAC0 is AD&amp;D's "to hit armour class 0": the roll a character needs to hit a target of armour class 0. Lower is better for both numbers.</p>
+  <p class="lede">An attack is a roll of a d20, a twenty-sided die. THAC0 is AD&amp;D's "to hit armour class 0": the roll a character needs to hit a target of armour class 0. Lower is better for both numbers.</p>
   <div class="plate">
     <div class="por-row">
       <label>THAC0 <input type="range" id="por-thac0" min="1" max="25" value="20"> <b id="por-thac0-v"></b></label>
@@ -391,8 +403,17 @@ const POR_ECL00 = 'AQEUmQEB65kBAV6aAQGTmgEB8poJAAABe24JAAsBfW4DAclJAA4bCQAIAX1uC
 // end of por-data
 </script>
 <script>
+/* por-frame */
+// One frame of the play screen at New Phlan's gateway, recorded by kit/c64/frame.py and trimmed to
+// the memory the drawing reads.
+const POR_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"New Phlan's gateway, the party standing, as the game shows it in play","vic":[156,52,81,116,81,137,81,116,81,137,234,181,0,0,0,0,0,27,0,209,0,0,216,0,53,121,240,0,25,0,63,255,240,240,249,255,243,249,250,242,240,240,248,246,241,247,252],"cia2":[16,63],"cpu":[47,54],"writes":[],"colour":"BwICAgICAgICAgICAgICAgcCAgICAgICAgICAgICAgICAgICAgICBwIFBQUFBQUFBQUFBQUFBQUCBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQICBQcCAgICAgICAgICAgcFAgEBAQEFBQUFBQUFBQUFBQUBAQEBAQUCAgUCCwsLCwsLCwsLCwsCBQIFBQUFBQUFBQUFBQUFBQUFBQUFBQUFAgIFAg0LCwsLCwsLCwsLAgUCAQEBAQEBAQEBAQEBAQUFBQUFBQUFBQICBQINCwsLCwsLCwsLCwIFAgMDAwMDAwMDAwMDAwMDAwUFBQUFBQUCAgUCDQ0LCwsLCwsLCwsCBQIDAwMDAwMDAwMFBQUFBQUFBQUFBQUFAgIFAg0NCwsLCwsLCw0LAgUCAwMDAwMDAwUFBQUFBQUFBQUFBQUFBQICBQINDQsGBgsGBgsNDQIFAgMDAwMDAwMDAwMDAwMDBQUFBQUFBQUCAgUCDQ0LBgYDBgYLDQ0CBQIDAwMDAwMDBQUFBQUFBQUFBQUFBQUFAgIFAg0NCwYICwgGCw0NAgUCBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQICBQINDQsICwsLCAsNDQIFAgUFBQUFBQUFBQUFBQUFBQUFBQUFBQUCAgUCDQ0KCgoKCgoKCgoCBQIFBQUFBQUFBQUFBQUFBQUFBQUFBQUFAgIFAg0LCgoKCgoKCgoKAgUCBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQICBQcCAgICAgICAgICAgcFAgUFBQUFBQUFBQUFBQUFBQUFBQUFBQUCAgUFBQUFBQUFBQUFBQUFBQIFBQUFBQUFBQUFBQUFBQUFBQUFBQUFAgcCAgICAgICAgICAgICAgIHAgICAgICAgICAgICAgICAgICAgICAgcCBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUCAgUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFAgIFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQICBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUCAgUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFAgIFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQIHAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHAQEBAQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":52224,"b":"ABsbGxsbGxsbGxsbGxsbGwAbGxsbGxsbGxsbGxsbGxsbGxsbGxsbACQgICAgICAgICAgICAgICAkICAgICAgICAgICAgICAgICAgICAgICQkIAAbGxsbGxsbGxsbGwAgJA4BDQUgICAgICAgICAgICABAyAIECAkJCAkUUBAQEBAQEBAQEAkICQgICAgICAgICAgICAgICAgICAgICAgJCQgJLlRb29vb29vb29vJCAkARIBGCAUCAUgAg8MBCAgICAwIDExICQkICS4TFhMTExMTFlMTCQgJAwBEgEgExAFDAwTFw8SBCAtMSA5ICAkJCAkubhYTExMTExZTEwkICQUAQ4BEgELCRMgICAgICAgIDEgOCAgJCQgJLa4WKogICCpWblMJCAkCA8HARIUCCAgICAgICAgICAxIDEwICQkICS5tFggICAgIFm3tSQgJBMIARIBIBQIBSAHEgEZICAgMCA5ICAkJCAktbZYICBLICBZtrkkICQaARISAQQBICAgICAgICAgIDIgOSAgJCQgJLa6WCBhQmAgWbe3JCAkICAgICAgICAgICAgICAgICAgICAgICQkICS6tFhhQkJCYFm6uiQgJCAgICAgICAgICAgICAgICAgICAgICAkJCAktbtCQkJCQkJCQkIkICQgICAgICAgICAgICAgICAgICAgICAgJCQgJLtCQkJCQkJCQkJCJCAkICAgICAgICAgICAgICAgICAgICAgICQkIAAbGxsbGxsbGxsbGwAgJBcgMDowMCAwLDQgICAgICAgICAgICAkJCAgICAgICAgICAgICAgICQgICAgICAgICAgICAgICAgICAgICAgJAAbGxsbGxsbGxsbGxsbGxsAGxsbGxsbGxsbGxsbGxsbGxsbGxsbGwAkGQ8VIAESBSACGSAUCAUgBwEUBRcBGSAUDyAUCAUgICAgICAgICAkJBUOEwUUFAwFBCABEgUBEy4gFAgFIAMJFBkgFwEUAwggBRkFEyAgJCQZDxUgExUTEAkDCQ8VEwwZLiAgICAgICAgICAgICAgICAgICAgICQkICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAkJCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJCQgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICQAGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsADQ8WBSAWCQUXIAMBExQgARIFASAFDgMBDRAgEwUBEgMIIAwPDwsgIA=="},{"a":53248,"b":"//399eX9gf8PNmZ+ZjZ3AHw2fDYzM34ADDZjYGAzHgB8NnMzMzN+ADx2YDhgcz4A"},{"a":53304,"b":"DDZjYG82HgJ3MzN/NzN3ADxMHAwMDhgA"},{"a":53336,"b":"dzR8NjY2YwB4MHAwMTN+AON3f2tjY+YAZzN7PzczdwAMNmNjY3Y8AH4zNjhwMHAA"},{"a":53392,"b":"fjM2PHY2cwANNjAeAzNeAD9tLEwMDBgAdzMzY2MzHgB3MzNjZjwYAOZjY2t/d+MA52Y0GCxm5wB3MzMfBjNuAHteBj0YM34AAMP3OB7ngwA="},{"a":53504,"b":"AAAAAAAAAAA="},{"a":53536,"b":"LBg0NmZmZmw="},{"a":53600,"b":"AAAAAAAYGDAAAD9+AAAAAAAAAAAQOBAA"},{"a":53632,"b":"HDY2NjY2HAAMDBwMDAweABw2BgwYMD4A"},{"a":53664,"b":"AgYONj8GBgA="},{"a":53696,"b":"HDY2HDY2HAAcNjYeBjYcAAAYCAAYCAAA"},{"a":53760,"b":"//////////8="},{"a":53776,"b":"VVVVVVVVVVU="},{"a":53848,"b":"llVVqlVVqlWqqqqqqqqqqg=="},{"a":53896,"b":"Pz+Pj6OjqKg="},{"a":53952,"b":"qmqqaqpqqmqqqaqpqqmqqQ=="},{"a":54016,"b":"Pz9PT1NTVFT8/PHxxcUVFQ=="},{"a":54136,"b":"////////AAA="},{"a":54600,"b":"ahoKBgIBAQCppKCQgEBAAA=="},{"a":54688,"b":"Ov+z7jv4s/47/L+O/zzzzLrOvqPuOuusvrPvzvus7zqusq66jrq6jrqOuq6yrq6yzrvo/ju+8y7sP/G99cUVlQ=="},{"a":65535,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":4,"colour_cells_changed_during_frame":0}};
+// end of por-frame
+</script>
+<script>
 // The How it works page's widgets.
 const $ = (id) => document.getElementById(id);
+
+C64.drawFrame($('por-frame'), POR_FRAME, 2);
 
 (function music() {
   if (!window.C64Sid || !window.C64Cpu) { $('por-sid').textContent = $('por-sfx').textContent = 'The players need the site\'s scripts: open this page from the built site.'; return; }

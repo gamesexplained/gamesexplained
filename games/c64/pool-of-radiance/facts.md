@@ -207,6 +207,12 @@ that the driver's fields all belong to the streams, and it was written in
 found the interrupt is CIA 1's timer at 60 a second, where ten comments
 said a raster interrupt at 50 (resident `irq`, title `note_lengths` and
 the title tune's eight sections); they were corrected too.
+After the sample, two more were corrected while the pages were built.
+Holding the script decoder to the game's own `get_operand` showed that
+dungeon `operand_counts` (`$1625`) gives ADD NPC one operand fewer than
+its routine reads, where the comment named only two such commands. Camp
+`$1E0F` said the rest's roll is 1 to 100 under the chance; the roll is
+0 to 99, roll_die's result less one, so the chance is that many in 100.
 
 ## Live tests
 
