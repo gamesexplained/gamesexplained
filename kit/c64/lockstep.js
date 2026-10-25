@@ -95,7 +95,9 @@
 //   is a handler reading, after another came inside it, a byte it had read or written before: it
 //   gets its first reading, or its own write, again. List such a byte in irqBytes (a pointer two
 //   handlers share): a handler's reads of it through P.io.irqByte are the game's handler's, in
-//   turn, and a stand-in handler (standIn, irq) reads it so too.
+//   turn, and a stand-in handler (standIn, irq) reads it so too. A port's handler that reads one
+//   through irqByte reads it so every time the game's does: the lockstep stops when the counts
+//   differ, since a read made from P.M first would take the game's first value.
 // - The raster: between yields the port reads the line the game was on at the last one. A bare
 //   yield runs the game on to its next line, taking any interrupt that falls due, so a polling
 //   loop in the port sees the flags and lines the game's loop does, when it does.
@@ -731,6 +733,10 @@ class Lockstep {
           this.replaying = q; c.raster = q.end; c.latch |= 1;
           const r = f.call(P);
           if (r && typeof r.next === 'function') throw new Error('Lockstep: the handler for ' + hex(q.at) + ' is a generator; an interrupt runs to its end');
+          for (const [a, j] of q.ibUsed) {
+            const n = (q.ib.get(a) || []).length;
+            if (j !== n) throw new Error('Lockstep: the port\'s handler for ' + hex(q.at) + ' read ' + hex(a) + ' through irqByte ' + j + ' times, and the game\'s read it ' + n + ' times: a handler reads such a byte through irqByte every time');
+          }
           for (let i = 0; i < chipsBack.length; i += 2) c.ioWrite(chipsBack[i], chipsBack[i + 1]);
           for (const [a, n] of q.cseq) if (!laterChip(a)) {
             this.appliedChip.set(a, n);
