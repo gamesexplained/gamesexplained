@@ -77,6 +77,27 @@
 //   program writes after an interrupt has written it in the same stretch (a title's SEI and its
 //   new screen modes) needs a checkpoint before that write: replayed at the port's next yield, the
 //   interrupt's value would land after the main program's.
+// - A machine made with nest (kit/c64/machine.js) takes an interrupt inside a handler that has
+//   cleared I, as the processor does. Each is followed from its take to the RTI that leaves it,
+//   the stack as the take left it, and what is read and written meanwhile is the innermost one's.
+//   They run in the port in the order they ended, so one that came inside another runs first, and
+//   a byte both wrote gets the value of the one that wrote it last in the game: the port's handlers
+//   stay plain functions, each run whole (kit/c64/test_lockstep_nest.js). So does a chip's
+//   register both set (a raster band's next line, set before its CLI and again by the band that
+//   came inside it), and one the main program set after an interrupt had in the same stretch (a
+//   sprite placed while the interrupt copies its shadows) keeps the main program's value, as RAM
+//   does; strobes, timers and the CIAs' interrupt control are not kept so. A handler that resets the
+//   stack above its frame (a TXS, then a JMP to the game's start) has left there, and what runs on
+//   is the main program's. When the game then stops at another checkpoint than the port named, the
+//   lockstep runs the interrupts in the port and lets the port's program run on instead of calling
+//   it a divergence: the port's handler tells its program, which goes where the game went and
+//   names that checkpoint (kit/c64/test_lockstep_nest.js). What replay cannot give
+//   is a handler reading, after another came inside it, a byte it had read or written before: it
+//   gets its first reading, or its own write, again. List such a byte in irqBytes (a pointer two
+//   handlers share): a handler's reads of it through P.io.irqByte are the game's handler's, in
+//   turn, and a stand-in handler (standIn, irq) reads it so too. A port's handler that reads one
+//   through irqByte reads it so every time the game's does: the lockstep stops when the counts
+//   differ, since a read made from P.M first would take the game's first value.
 // - The raster: between yields the port reads the line the game was on at the last one. A bare
 //   yield runs the game on to its next line, taking any interrupt that falls due, so a polling
 //   loop in the port sees the flags and lines the game's loop does, when it does.
@@ -105,8 +126,10 @@
 //   and the ROMs the machine was given. A machine
 //   class that keeps more than Machine does extends save() and restore(), or the copy is not the
 //   game. Input onFrame gives inside the stretch, after the copy is made, is not in it, and a copy
-//   made at the head of a raster wait's loop stops at that head the first time round. On the page,
-//   outside the lockstep, the port's io gives irqByte: a => M[a].
+//   made at the head of a raster wait's loop stops at that head the first time round. With nest,
+//   a handler being run reads them so too, from what its game's handler read (irqs above). On the
+//   page, outside the lockstep, the port's io gives irqByte: a => M[a]. With nest the lockstep's
+//   io gives the list too, as irqBytes, a Set.
 // - hooks: the machine's own stand-ins, by address, as Machine's hooks take them (a KERNAL routine
 //   the game calls and the simulator holds no ROM for): put on the machine for the run and on the
 //   copies irqBytes runs on ahead, which a hook set on the machine alone never reaches. A hook acts
@@ -273,6 +296,35 @@ function chipIO(c, rd = a => c.ioRead(a & 0xFFFF)) {
   };
 }
 
+// A chip register an interrupt's write sets to a value, by the address of its first mirror; -1
+// for a strobe ($D019, a CIA's interrupt control), a timer and what is only read.
+function chipKey(a) {
+  if (a >= 0xD000 && a < 0xD400) { const r = a & 0x3F; return r === 0x19 || r === 0x1E || r === 0x1F || r > 0x2E ? -1 : 0xD000 | r; }
+  if (a >= 0xD400 && a < 0xD800) return (a & 0x1F) < 0x19 ? 0xD400 | (a & 0x1F) : -1;
+  if (a >= 0xD800 && a < 0xDC00) return a;
+  if (a >= 0xDC00 && a < 0xDD00) { const r = a & 15; return r === 0 || r === 2 || r === 3 ? 0xDC00 | r : -1; }
+  if (a >= 0xDD00 && a < 0xDE00) { const r = a & 15; return r === 0 || r === 2 ? 0xDD00 | r : -1; }
+  return -1;
+}
+// A chip register a handler reads, by the address of its first mirror, but the raster's and the
+// flags' (flagRegister); -1 outside the chips.
+function chipRead(a) {
+  if (a >= 0xD000 && a < 0xD400) { const r = a & 0x3F; return r === 0x11 || r === 0x12 ? -1 : 0xD000 | r; }
+  if (a >= 0xD400 && a < 0xD800) return 0xD400 | (a & 0x1F);
+  if (a >= 0xD800 && a < 0xDC00) return a;
+  if (a >= 0xDC00 && a < 0xDE00) return (a & 0xFF00) | (a & 15);
+  return -1;
+}
+// What the chips hold at such a register, as it was last written.
+function asWritten(c, a) {
+  if (a < 0xD400) { const r = a & 0x3F; return r === 0x12 ? c.cmp & 0xFF : r === 0x1A ? c.enable : c.vic[r]; }
+  if (a < 0xD800) return c.sidw[a & 0x1F];
+  if (a < 0xDC00) return c.colour[a - 0xD800];
+  const r = a & 15;
+  if (a < 0xDD00) return r === 0 ? c.pra : r === 2 ? c.ddra : c.ddrb;
+  return r === 0 ? c.pra2 : c.ddra2;
+}
+
 // The port's chips: a second machine's, never run, whose raster line is the lockstep's and whose
 // keyboard and joystick are the game's machine's.
 class PortChips extends Machine {
@@ -334,7 +386,12 @@ class Lockstep {
     this.polled = false;                           // the main program has read the raster since its last stop
     this.pending = [];                             // interrupts the game took, not yet run in the port
     this.fix = new Map();                          // bytes they wrote, until the next checkpoint
-    this.irq = null;                               // the one running on the machine
+    this.irq = null;                               // the one running on the machine (with nest, the innermost)
+    this.wseq = 0;                                 // with nest, the interrupts' writes numbered
+    this.applied = new Map();                      // and the last of each byte's the port has run, until the next checkpoint
+    this.appliedChip = new Map();                  // and of each chip register's
+    this.fixChip = new Map();                      // with nest, the registers they wrote, as fix
+    this.tookOver = false;                         // with nest, a handler left by a stack reset since the last stop
     this.replaying = null;                         // the one running in the port
     this.irqCycles = 0; this.irqCount = 0;
     this.cycles0 = m.cpu.cycles;
@@ -345,11 +402,18 @@ class Lockstep {
 
   // --- the port's chips ---
   makeIO() {
-    return Object.assign(chipIO(this.chips, a => this.portRead(a & 0xFFFF)), { irqByte: a => this.irqByte(a & 0xFFFF) });
+    return Object.assign(chipIO(this.chips, a => this.portRead(a & 0xFFFF)), {
+      colourRead: i => this.portRead(0xD800 | (i & 0x3FF)) & 15, irqByte: a => this.irqByte(a & 0xFFFF), irqBytes: this.m.nest ? this.irqBytes : null });
   }
   // A byte an interrupt writes, as the game's main program read it at this point of the stretch.
   irqByte(a) {
     if (!this.irqBytes.has(a)) throw this.annotate(new Error('Lockstep: the port read ' + hex(a) + ' through irqByte, and it is not in irqBytes'));
+    const q = this.replaying;
+    if (q !== null) {                               // a handler: what the game's read, in turn
+      const vs = q.ib.get(a) || [], j = q.ibUsed.get(a) || 0;
+      q.ibUsed.set(a, j + 1);
+      return j < vs.length ? vs[j] : this.P.M[a];
+    }
     const s = this.ib, i = s.used.get(a) || 0;
     s.used.set(a, i + 1);
     let vs = (s.list || s.live).get(a) || [];
@@ -366,6 +430,11 @@ class Lockstep {
     const out = new Map(), B = this.irqBytes;
     for (const [a, vs] of this.ib.live) out.set(a, vs.slice());
     let depth = 0, stop = false, skip = g.cpu.pc, polled = this.polled;
+    // with nest, the interrupts under way on the machine are under way on the copy: each one's
+    // stack pointer, the RTI that leaves it restoring it
+    const sps = [];
+    for (let q = this.irq; q !== null; q = q.up) sps.unshift(q.sp);
+    depth = sps.length;
     Object.assign(g.hooks, this.hooks);
     for (const a of [...this.cps, ...this.waits]) {
       const prev = g.hooks[a];
@@ -384,12 +453,23 @@ class Lockstep {
     };
     const irq = g.cpu.irq, run = g.cpu.run;
     g.cpu.irq = function (h, o) { depth++; try { return irq.call(this, h, o); } finally { depth--; } };
+    if (g.nest) {
+      const take = g.take;
+      g.take = function (v) { take.call(this, v); sps.push(this.cpu.sp); depth++; };
+    }
     const reads = new Proxy({}, { set(t, k) {
       const a = +k;
       if (!depth && B.has(a)) { if (!out.has(a)) out.set(a, []); out.get(a).push(g.ram[a]); }
       return true;
     } });
-    g.cpu.run = function (o) { return run.call(this, Object.assign({}, o, { reads })); };
+    const executed = new Proxy({}, { set(t, k) {
+      const a = +k;
+      while (depth && g.cpu.sp > sps[sps.length - 1]) { sps.pop(); depth--; }
+      if (depth && g.ram[a] === 0x40 && g.cpu.sp === sps[sps.length - 1]) { sps.pop(); depth--; }
+      return true;
+    } });
+    const maps = g.nest ? { reads, executed } : { reads };
+    g.cpu.run = function (o) { return run.call(this, Object.assign({}, o, maps)); };
     const end = g.frames + this.maxFrames;
     while (!stop && g.frames < end) g.runCycles(FRAME);
     return out;
@@ -400,10 +480,13 @@ class Lockstep {
     if (q !== null && a >= 0xD000 && a < 0xD400) {
       const r = a & 0x3F;
       if (r === 0x12 && q.i12 < q.d012.length) return q.d012[q.i12++];
-      if (r === 0x11 && q.i11 < q.d011.length) return (v & 0x7F) | (q.d011[q.i11++] & 0x80);
+      if (r === 0x11 && q.i11 < q.d011.length) return this.m.nest ? q.d011[q.i11++] : (v & 0x7F) | (q.d011[q.i11++] & 0x80);
     }
     const f = q !== null ? flagRegister(a) : -1;
     if (f >= 0 && q.flags.has(f)) { const x = q.flags.get(f); if (x.i < x.v.length) return x.v[x.i++]; }
+    // with nest, the rest as the game's handler read them: one that came inside another read what
+    // the other had written, which the port has not run yet
+    if (q !== null && f < 0) { const x = q.chip.get(chipRead(a)); if (x && x.i < x.v.length) return x.v[x.i++]; }
     return v;
   }
 
@@ -424,7 +507,7 @@ class Lockstep {
     const m = this.m, cpu = m.cpu, ls = this;
     if (this.at >= 0 && cpu.pc !== this.at) throw new Error('Lockstep: the machine has run since the lockstep stopped it');
     const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
-    const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), run: own(cpu, 'run') };
+    const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), ioWrite: own(m, 'ioWrite'), run: own(cpu, 'run'), take: own(m, 'take') };
     m.onPass = null;
     for (const [a, h] of Object.entries(this.hooks)) { s.hooks[a] = m.hooks[a]; m.hooks[a] = h; }
     for (const a of [...this.cps, ...this.waits]) {
@@ -443,9 +526,10 @@ class Lockstep {
     // (seen) and what it wrote (wrote, with the values it left), through the simulator's maps of
     // the addresses a run reads and writes as data; the stack's traffic is not in them.
     const irq = cpu.irq, RAM_R = cpu.rk[2], RAM_W = cpu.wk[2];          // page 2 is RAM on any map
+    const newIrq = (at, cycle) => ({ at, line: m.line, frame: m.frames, cycle, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0,
+      flags: new Map(), seen: new Map(), wrote: new Map(), seq: new Map(), cseq: new Map(), cval: new Map(), ib: new Map(), ibUsed: new Map(), chip: new Map(), under: new Set(), sp: -1, up: null });
     cpu.irq = function (handler, opts) {
-      const c = this, q = { at: handler != null ? handler & 0xFFFF : c.vector(0xFFFE, 'IRQ'), line: m.line, frame: m.frames,
-        cycle: c.cycles, cycles: 0, end: 0, d011: [], d012: [], i11: 0, i12: 0, flags: new Map(), seen: new Map(), wrote: new Map() };
+      const c = this, q = newIrq(handler != null ? handler & 0xFFFF : c.vector(0xFFFE, 'IRQ'), c.cycles);
       const reads = new Proxy({}, { set(t, k) {
         const a = +k;
         if ((a < 0x100 ? a > 1 : c.rk[a >>> 8] === RAM_R) && !q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, c.m[a]);
@@ -477,15 +561,78 @@ class Lockstep {
         ls.pending.push(q);
       }
     };
-    // the main program's reads of irqBytes, as it makes them
-    if (this.irqBytes.size) {
-      const run = cpu.run, B = this.irqBytes, live = () => ls.ib.live;
+    // With nest (kit/c64/machine.js) an interrupt is begun by the machine's take and then runs as
+    // the machine's own code, where another may begin: each is followed from its take to the RTI
+    // that leaves it with the stack as the take left it, and what is read and written meanwhile is
+    // the innermost one's. Each write is numbered, for settle to keep the game's last writer of a
+    // byte two of them wrote.
+    if (m.nest) {
+      const take = m.take;
+      m.take = function (v) {
+        take.call(this, v);
+        const q = newIrq(this.cpu.pc, this.cpu.cycles - 7);
+        q.sp = this.cpu.sp; q.up = ls.irq; ls.irq = q;
+      };
+    }
+    // the main program's reads of irqBytes, as it makes them, and with nest the interrupts' reads,
+    // writes and instructions
+    const B = this.irqBytes;
+    if (B.size || m.nest) {
+      const run = cpu.run, live = () => ls.ib.live;
       const reads = new Proxy({}, { set(t, k) {
-        const a = +k;
-        if (ls.irq === null && B.has(a) && !ls.ib.list) { const L = live(); if (!L.has(a)) L.set(a, []); L.get(a).push(cpu.m[a]); }
+        const a = +k, q = ls.irq;
+        if (q !== null) {
+          if (m.nest && (a < 0x100 ? a > 1 : cpu.rk[a >>> 8] === RAM_R) && !q.seen.has(a) && !q.wrote.has(a)) q.seen.set(a, cpu.m[a]);
+          if (m.nest && B.has(a)) { if (!q.ib.has(a)) q.ib.set(a, []); q.ib.get(a).push(cpu.m[a]); }
+        }
+        else if (B.has(a) && !ls.ib.list) { const L = live(); if (!L.has(a)) L.set(a, []); L.get(a).push(cpu.m[a]); }
         return true;
       } });
-      cpu.run = function (o) { return run.call(this, Object.assign({}, o, { reads })); };
+      const writes = new Proxy({}, { set(t, k) {
+        const a = +k, q = ls.irq;
+        if (q !== null && (a < 0x100 ? a > 1 : cpu.wk[a >>> 8] === RAM_W)) {
+          q.wrote.set(a, 0); q.seq.set(a, ++ls.wseq); own.push(q, a);
+          for (let u = q.up; u !== null; u = u.up) u.under.add(a);      // written under the ones it came inside
+        }
+        return true;
+      } });
+      // the value each wrote, taken once its instruction is done: what the byte holds when it
+      // ends may be one that came inside it
+      const own = [];
+      const ownValues = () => { for (let i = 0; i < own.length; i += 2) own[i].wrote.set(own[i + 1], cpu.m[own[i + 1]]); own.length = 0; };
+      const end = (q, rti) => {
+        q.cycles = cpu.cycles + rti - q.cycle; q.end = m.line;
+        if (q.up === null) ls.irqCycles += q.cycles;
+        ls.irqCount++;
+        ls.pending.push(q);
+        ls.irq = q.up;
+        if (!rti) ls.tookOver = true;
+      };
+      const executed = new Proxy({}, { set(t, k) {
+        const a = +k;
+        if (own.length) ownValues();
+        // a stack reset above a handler's frame (a TXS and a JMP to the game's start) leaves it, and
+        // the code goes on as the main program
+        while (ls.irq !== null && cpu.sp > ls.irq.sp) end(ls.irq, 0);
+        const q = ls.irq;
+        if (q === null || cpu.rk[a >>> 8] !== RAM_R) return true;
+        if (cpu.m[a] === 0x40 && cpu.sp === q.sp) { end(q, 6); return true; }   // the RTI that leaves it
+        for (let i = 1; i < LENGTH[cpu.m[a]]; i++) {
+          const b = (a + i) & 0xFFFF;
+          if (cpu.rk[b >>> 8] === RAM_R && !q.seen.has(b) && !q.wrote.has(b)) q.seen.set(b, cpu.m[b]);
+        }
+        return true;
+      } });
+      const maps = m.nest ? { reads, writes, executed } : { reads };
+      cpu.run = function (o) { return ls.irq !== null || B.size ? run.call(this, Object.assign({}, o, maps)) : run.call(this, o); };
+    }
+    // with nest, the chips' registers each interrupt writes, numbered with its RAM
+    if (m.nest) {
+      const ioWrite = m.ioWrite;
+      m.ioWrite = function (a, v) {
+        if (ls.irq !== null) { const k = chipKey(a); if (k >= 0) { ls.irq.cseq.set(k, ++ls.wseq); ls.irq.cval.set(k, v & 0xFF); } }
+        return ioWrite.call(this, a, v);
+      };
     }
     const ioRead = m.ioRead;
     m.ioRead = function (a) {
@@ -497,6 +644,10 @@ class Lockstep {
       }
       const f = q !== null ? flagRegister(a) : -1;
       if (f >= 0) { if (!q.flags.has(f)) q.flags.set(f, { v: [], i: 0 }); q.flags.get(f).v.push(v); }
+      else if (q !== null && m.nest) {
+        const k = chipRead(a);
+        if (k >= 0) { if (!q.chip.has(k)) q.chip.set(k, { v: [], i: 0 }); q.chip.get(k).v.push(v); }
+      }
       return v;
     };
   }
@@ -506,7 +657,9 @@ class Lockstep {
     for (const a of Object.keys(s.hooks)) { if (s.hooks[a]) m.hooks[a] = s.hooks[a]; else delete m.hooks[a]; }
     if (s.irq) m.cpu.irq = s.irq; else delete m.cpu.irq;
     if (s.ioRead) m.ioRead = s.ioRead; else delete m.ioRead;
+    if (s.ioWrite) m.ioWrite = s.ioWrite; else delete m.ioWrite;
     if (s.run) m.cpu.run = s.run; else delete m.cpu.run;
+    if (s.take) m.take = s.take; else delete m.take;
     m.onPass = s.onPass;
     this.saved = null;
   }
@@ -529,7 +682,9 @@ class Lockstep {
     if (this.at >= 0 && !this.matched) return false;
     if (this.at >= 0) { this.resume = this.at; this.at = -1; }
     if (n <= 0) { m.runCycles(1); return true; }
-    const c0 = cpu.cycles, i0 = this.irqCycles, own = () => (cpu.cycles - c0) - (this.irqCycles - i0);
+    // an interrupt under way (with nest) is not the game's own work either
+    const inIrq = () => { let q = this.irq; if (q === null) return 0; while (q.up !== null) q = q.up; return cpu.cycles - q.cycle; };
+    const c0 = cpu.cycles, i0 = this.irqCycles, u0 = inIrq(), own = () => (cpu.cycles - c0) - (this.irqCycles - i0) - inIrq() + u0;
     while (this.at < 0 && own() < n) m.runCycles(n - own());
     return true;
   }
@@ -537,6 +692,9 @@ class Lockstep {
   // game's raster line. Each runs on the bytes the game's handler read, as it read them, which go
   // back to the port's values after unless it wrote them. What each wrote is kept in fix for
   // lastWriters: the port's value before (b), the handler's (h) and the game's handler's (v).
+  // With nest they come in the order they ended, an inner one before the one it interrupted, and a
+  // byte both wrote keeps the value of the one that wrote it last in the game: a handler's write
+  // that came before one the port has already run is put back.
   settle() {
     const list = this.pending, c = this.chips, P = this.P, M = P.M, fix = this.fix;
     if (list.length) {
@@ -550,21 +708,48 @@ class Lockstep {
           if (typeof f !== 'function') throw new Error('Lockstep: no port handler for the interrupt at ' + hex(q.at) + ' (irqs)');
           // a byte the handler read and left as it read it, saved and put back (a handler that
           // pushes the main program's pointers and pulls them before it returns): not the
-          // interrupt's to change, so the port's value stays
-          const kept = a => q.seen.has(a) && q.seen.get(a) === q.wrote.get(a);
+          // interrupt's to change, so the port's value stays; unless one that came inside it wrote
+          // the byte meanwhile, when its own write is a write like any other
+          const kept = a => q.seen.has(a) && q.seen.get(a) === q.wrote.get(a) && !q.under.has(a);
           for (const a of q.wrote.keys()) {
             if (kept(a)) continue;
             const x = fix.get(a);
             if (!x) fix.set(a, { b: M[a], h: -1, v: -1 });
             else if (M[a] !== x.h) x.b = M[a];                  // the port's program has written it since
           }
+          const later = a => q.seq.has(a) && (this.applied.get(a) || 0) > q.seq.get(a);
+          const older = [];
+          for (const a of q.wrote.keys()) if (!kept(a) && later(a)) older.push(a, M[a]);
           const put = [];
           for (const [a, v] of q.seen) if (M[a] !== v) { put.push(a, M[a]); M[a] = v; }
+          // a register of a chip one that came inside it wrote later in the game: written back after
+          const laterChip = a => (this.appliedChip.get(a) || 0) > q.cseq.get(a);
+          const chipsBack = [];
+          for (const a of q.cseq.keys()) {
+            if (laterChip(a)) { chipsBack.push(a, asWritten(c, a)); continue; }
+            const x = this.fixChip.get(a), b = asWritten(c, a);
+            if (!x) this.fixChip.set(a, { b, h: -1, v: -1 }); else if (b !== x.h) x.b = b;
+          }
           this.replaying = q; c.raster = q.end; c.latch |= 1;
           const r = f.call(P);
           if (r && typeof r.next === 'function') throw new Error('Lockstep: the handler for ' + hex(q.at) + ' is a generator; an interrupt runs to its end');
+          for (const [a, j] of q.ibUsed) {
+            const n = (q.ib.get(a) || []).length;
+            if (j !== n) throw new Error('Lockstep: the port\'s handler for ' + hex(q.at) + ' read ' + hex(a) + ' through irqByte ' + j + ' times, and the game\'s read it ' + n + ' times: a handler reads such a byte through irqByte every time');
+          }
+          for (let i = 0; i < chipsBack.length; i += 2) c.ioWrite(chipsBack[i], chipsBack[i + 1]);
+          for (const [a, n] of q.cseq) if (!laterChip(a)) {
+            this.appliedChip.set(a, n);
+            const x = this.fixChip.get(a);
+            if (x) x.v = q.cval.get(a), x.h = asWritten(c, a);
+          }
           for (let i = 0; i < put.length; i += 2) if (!q.wrote.has(put[i]) || kept(put[i])) M[put[i]] = put[i + 1];
-          for (const [a, v] of q.wrote) { if (kept(a)) continue; const x = fix.get(a); x.v = v; x.h = M[a]; }
+          for (let i = 0; i < older.length; i += 2) M[older[i]] = older[i + 1];
+          for (const [a, v] of q.wrote) {
+            if (kept(a) || later(a)) continue;
+            if (q.seq.has(a)) this.applied.set(a, q.seq.get(a));
+            const x = fix.get(a); x.v = v; x.h = M[a];
+          }
         }
       } catch (e) { throw this.annotate(e); }
       finally { this.replaying = null; this.counting = counting; }
@@ -578,6 +763,11 @@ class Lockstep {
     const M = this.P.M, R = this.m.ram;
     for (const [a, x] of this.fix) if (R[a] !== x.v && M[a] === x.h) M[a] = x.b;
     this.fix.clear();
+    const c = this.chips;
+    for (const [a, x] of this.fixChip) if (asWritten(this.m, a) !== x.v && asWritten(c, a) === x.h) c.ioWrite(a, x.b);
+    this.fixChip.clear();
+    this.applied.clear();
+    this.appliedChip.clear();
   }
 
   // --- one yield of the port's program ---
@@ -615,10 +805,18 @@ class Lockstep {
     // and the main loop's first checkpoint, say): one place
     if (a === this.last && this.at === a && this.matched && this.since === 1 && this.lastAt) return;
     const at = this.toStop();
+    if (at !== a && at >= 0 && this.tookOver) {
+      // an interrupt took the main program elsewhere: the port's handler, run now, tells its
+      // program, which goes there when it runs on and names the stop the game is waiting at
+      this.tookOver = false;
+      this.settle();
+      return;
+    }
     if (at !== a) {
       return this.diverge(at < 0 ? this.lost('checkpoint ' + hex(a))
         : 'the game went to ' + hex(at) + (this.waits.has(at) ? ' (a raster wait\'s exit)' : '') + ', the port to ' + hex(a), { game: at, port: a });
     }
+    this.tookOver = false;
     this.sync(a, false);
     this.lastAt = y.cp === undefined;                 // named by { cycles, at }: may be named again as a { cp }
     if (a === this.passAt) this.passStart();
@@ -743,10 +941,18 @@ class Lockstep {
 // The simulator a port's stand-ins share, one for each P, and the stack pointer a call starts at:
 // $FF, or below the stack of a standInGen that is waiting.
 const simulators = new WeakMap();
+// While it runs a handler for irqs, its reads of RAM in the lockstep's irqBytes go through
+// P.io.irqByte, as a port's handler's do.
+class HandlerCPU extends CPU {
+  rd(a) { return this.handler && this.rk[a >>> 8] === this.rk[2] && this.handler.has(a) ? this.P.io.irqByte(a) : super.rd(a); }
+  rdz(a) { return this.handler && a > 1 && this.handler.has(a) ? this.P.io.irqByte(a) : super.rdz(a); }
+}
 function simulator(P, opts) {
   let s = simulators.get(P);
   if (!s) {
-    s = { cpu: new CPU(P.M, { port: opts.port || { dir: 0x2F, data: 0x35 }, io: { read: a => P.io.read(a), write: (a, v) => P.io.write(a, v) } }), top: 0xFF };
+    const cpu = new HandlerCPU(P.M, { port: opts.port || { dir: 0x2F, data: 0x35 }, io: { read: a => P.io.read(a), write: (a, v) => P.io.write(a, v) } });
+    cpu.P = P; cpu.handler = null;
+    s = { cpu, top: 0xFF };
     simulators.set(P, s);
   }
   return s;
@@ -762,7 +968,11 @@ function standIn(P, address, opts = {}) {
   return function (r) {
     const s = simulator(P, opts), cpu = s.cpu;
     cpu.setRegs(regsIn(r));
-    if (opts.irq) { cpu.sp = s.top; cpu.irq(address, { maxSteps: opts.maxSteps }); }
+    if (opts.irq) {
+      cpu.sp = s.top;
+      cpu.handler = P.io && P.io.irqBytes && P.io.irqBytes.size ? P.io.irqBytes : null;
+      try { cpu.irq(address, { maxSteps: opts.maxSteps }); } finally { cpu.handler = null; }
+    }
     else cpu.call(address, { sp: s.top }, { maxSteps: opts.maxSteps });
     return regsOut(cpu);
   };
@@ -833,7 +1043,7 @@ function* waiting(P, address, opts, polls, r) {
     }
     own += cpu.step();
     if (old >= 0 && DATA[op] === 1) M[e] = old;     // a read leaves the port's byte as it was
-    if (++steps > max) throw new Error('standInGen: the routine at ' + hex(address) + ' ran ' + max + ' instructions without returning');
+    if (++steps > max) throw new Error('standInGen: the routine at ' + hex(address) + ' ran ' + max + ' instructions without returning (at ' + hex(cpu.pc) + ')');
   }
   yield* catchUp(0);
   return regsOut(cpu);

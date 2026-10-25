@@ -15,14 +15,18 @@ works** (`index.html`, authored), **Play** (`play.html`, authored, only
 when a JavaScript version exists), **Discoveries** (`discoveries.html`,
 authored, the secrets, quirks and bugs), **Maps / levels** (`levels.html`,
 authored, for every game with more than one level, map, room, stage or
-screen), **Source code** (`source.html`, generated from `listing.json`
-plus `facts.md` and `cheats.md`), **About** (generated from `game.json`,
-`features.md`, `orientation.md`, git). `kit/scripts/build.py` assembles
-them; you write the authored ones. A game that needs other tabs lists all
-of its tabs as `[file, label]` pairs in `game.json`'s `"tabs"`; the build
-publishes the pages named there and warns about any other `.html` in the
-folder. The bar always opens with How it works, Play and Discoveries and
-closes with Source code and About; the list orders the tabs between.
+screen), **Source code** (`source.html`, generated from `listing.json`),
+**About** (generated from `game.json`, `features.md` and git).
+`kit/scripts/build.py` assembles them; you write the authored ones.
+`facts.md`, `cheats.md` and `orientation.md` stay in the repository and
+no tab shows them, so what a reader should see from them goes on an
+authored page, in copy: always a cheat the player enters in the game
+itself (a word typed, keys held, a code), as players look for those. A
+game that needs other tabs lists all of its tabs as `[file, label]` pairs
+in `game.json`'s `"tabs"`; the build publishes the pages named there and
+warns about any other `.html` in the folder. The bar always opens with
+How it works, Play and Discoveries and closes with Source code and About;
+the list orders the tabs between.
 
 When merging or renaming a page, keep its old URL in `game.json`'s
 `"redirects"`, for example `{"old.html": "levels.html#area-name"}`. The target

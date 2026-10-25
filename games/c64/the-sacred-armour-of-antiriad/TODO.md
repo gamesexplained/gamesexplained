@@ -5,9 +5,11 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver: coverage is 100 %, `facts.md` is written, every feature is
-confirmed, traced or open, the listing has had one sample, and the
-minisite is built with a player for every tune.
+Platinum: a Silver (coverage is 100 %, `facts.md` is written, every
+feature is confirmed, traced or open, the listing has had one sample,
+and the minisite is built with a player for every tune) whose Play tab
+is the whole game, every routine ported and held to the game's code in
+lockstep, with `test_play.js` holding the published page.
 
 ## For a listing the page calls checked
 
@@ -18,19 +20,21 @@ minisite is built with a player for every tune.
   (`kit/skills/core/60-verify`). Fresh checkers should audit every
   comment, and a new sample on a new seed should follow.
 
-## For Gold
+## For Diamond
 
-- A human's pass over each section of the three pages, rewriting,
-  cutting and adding (`AGENTS.md`, "Definition of done").
+- A human's pass over each section of the pages, rewriting, cutting and
+  adding (`AGENTS.md`, "Definition of done"), makes the game Gold and,
+  with the Play tab, Diamond.
 
-## For Platinum
+## The Play tab
 
-- A Play tab that is the whole game, every routine ported and run in
-  lockstep with the game's code (`kit/skills/core/70-minisite/play.md`).
-  The pages already carry ports of `build_room`, `place_room_sprites`,
-  `animate_tiles`, the title, the sound driver, `scroll_message` and the
-  ending's dissolve, held by `test_rooms.js`, `test_music.js` and
-  `test_ending.js`.
+- The page runs an interrupt's handler whole at the line it comes on,
+  so the band that runs `tal_control` reads the stick at line 250 where
+  the C64 reads it about line 262. A change of the stick in the twelve
+  lines between can put the page's reads a frame apart from the C64's
+  (`agent-history.md`). Moving the page's clock through a handler as
+  its routines run, so each reaches its line when the C64's does, is
+  untried; moving only the chips' clock that way made the page worse.
 
 ## Article ideas
 

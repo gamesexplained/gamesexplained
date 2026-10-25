@@ -9,6 +9,8 @@ time, operating system and tool versions.
 
 - `70-minisite`: "A widget that runs a mechanic is a claim too": I ported `build_room`, `place_room_sprites`, `draw_title_screen` and the sound driver into the pages and wrote `test_rooms.js` and `test_music.js`, which hold them against the game's own routines on the kit's 6502 for all 69 rooms and every button of both sound players.
 - `60-verify`: "every other comment that says the same thing": the sample found one generated sentence wrong in one room's sprite list, and I corrected it in all seven room lists that put creatures after a striped one; its other generated finding, in one splash's animation, I corrected in all three splashes.
+- `70-minisite/play.md`: "Then check the pace itself: passes in the same frames from the same moment, on the machine and on the page": running the Play page beside the machine from the 56 moments of play found the five pacing faults the history lists (`agent-history.md`, "Follow-up: the Play tab"), none of which the measured costs showed on their own.
+- `70-minisite/play.md`: "Memory as the beam meets it": the page keeps each frame's memory as the frame began, and `test_play.js` holds that, what the page draws, beside the C64's.
 
 ## What was changed in the kit
 
@@ -24,6 +26,8 @@ time, operating system and tool versions.
 ## Candidates
 
 - A script that runs a game from its listing and lists the bytes it reads before it writes them that the listing does not carry, with the first reader's address and the snapshot's value. Here a dozen lines wrapped round the machine's `cpu` did it once; a second game that needs it is the time to make it a kit script.
+- `port/scripts/time-routines.js`, which costs each of a port's routines by its own cycles on the route, from its label to its return, fits the work that varies by the port's counters, times each turn of a loop inside a routine that waits, and names a routine costed by its mean whose longest call is more than 1,000 cycles over it. `play.md` fits costs over the stretches between checkpoints instead. A second game whose port is paced a routine at a time is the time to move it into `kit/c64`. The lesson is `kit/lessons/2026-10-25-antiriad-play.md`.
+- `Machine.runFrames` runs each frame on to the end of an instruction and starts the next from there, so a route's frames fall behind a clock of whole frames by about four cycles a frame, 71,390 cycles over this route's 17,681. A test that holds a page beside a route takes the cycle each of the route's frames ended at, as `test_play.js` does; carrying the overshoot into the next frame would end the drift, but it moves every recorded route's frames.
 
 ## Maintainer asks
 
@@ -39,6 +43,8 @@ time, operating system and tool versions.
 - **Auto symbols on the high bytes of pointer tables.** The game reads each pointer table at `table,y` and `table+1,y`, so the disassembler made an auto data symbol one byte into each table, and the ledger counted its 64-byte reach as the end of the table's comment. `coverage.py` named each one ("past f_B4A7's 64-byte reach"), and naming them as user labels (`..._hi`) fixed it.
 - **The route's check in VICE** matched for 711 stick reads and then parted. Logging every hit on Tal in both showed a scenery hit only VICE took, and logging every read of `$D01F` and every interrupt on the kit's machine showed the raster handler's own read clearing the collision fifty lines into a handler that ran whole. About two hours, and the bot's route from the Gravity Displacer on was searched again on the new model.
 - **A checkpoint on `$8109`** (the first part of the title tune) loaded from the hand-over snapshot did not stop within 60 seconds, though the title starts that tune within a second. Left unexplained; the music check used a state recorded another way.
+- **The Play page's pace.** Costed by their means, `colour_panel` lit the panel eight frames early and the tasks the game runs every frame held the page half a frame behind in a room's build; and the ending's dissolve, inside a routine that waits and so had no cost, ran in no time, the last message 65 frames early. Each showed only with the page beside the C64 a frame at a time; each is now counted (`agent-history.md`).
+- **Comparing the page's memory** when its clock reached a frame's end showed the panel lit early on a frame the page drew it on time: a routine run whole moves the clock past several frames at once. The frame the page draws keeps memory as it began (`rt.frameAt`), and compared on that it matched.
 
 ## What cost the most time
 

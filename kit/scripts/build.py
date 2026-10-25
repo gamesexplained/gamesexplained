@@ -6,9 +6,9 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   discoveries.html copied through if authored    (Discoveries)
   levels.html  copied through if authored          (Maps / levels)
-  source.html  from site/source.html + facts.md + cheats.md   (Source code)
+  source.html  from site/source.html + listing.json   (Source code)
                + original-source.md, for a game whose authors' source survives
-  about.html   from site/about.html + game.json + features.md + orientation.md + git log
+  about.html   from site/about.html + game.json + features.md + git log
   listing.json, symbols.json, reference/           copied
 Every tab but Source draws from the same listing.json: C64.load, BBC.load and
 Spectrum.load fetch it whole, one download the browser caches for all of a
@@ -515,7 +515,7 @@ WITHHELD = "The annotations for this game are not published."
 
 def withheld_source(game, out, nav, ban, common, present):
     """The Source tab of a game whose listing is withheld: its title, the banner, the line on the
-    comments and one sentence, with none of the listing, the facts or the part pages."""
+    comments and one sentence, with none of the listing or the part pages."""
     tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
     head = tpl[:tpl.index('<div class="facts">')]
     body = ('<div class="facts">\n'
@@ -676,13 +676,14 @@ def banner_body(game, cons, tier, repo):
 
 
 # the tabs build.py assembles, which every game has, and the file each one's edit link opens:
-# the prose the reader sees most of. Every other tab is a page in the game folder, edited as it is
-ASSEMBLED = {"source.html": "facts.md", "about.html": "features.md"}
+# what the reader sees most of (the listing's names and comments, the features). Every other tab
+# is a page in the game folder, edited as it is
+ASSEMBLED = {"source.html": "symbols.json", "about.html": "features.md"}
 
 
 def edit_footer(game, tab, f=None):
     """The 'Edit this page' footer: a link to GitHub's editor for the file behind this tab,
-    or for f, a path in the game folder, when the page is made from another (a part's facts).
+    or for f, a path in the game folder, when the page is made from another (a part's symbols).
 
     GitHub's /edit/ URL forks the repository for anyone without write access and turns
     the edit into a pull request, so a reader can fix a mistake without cloning anything.
@@ -1222,25 +1223,16 @@ def part_card(p):
     return out
 
 
-def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
-    """One Source page per part that has a listing, each with the part's own facts, then the
-    game's. Addresses in a part's facts link into its own page; the game's facts and cheats
-    name addresses in several parts, so they link to none. In either, an address written with
-    a part's name before it ("engine `$25BD`") links into that part's page."""
+def part_sources(gdir, game, P, out, nav, ban, common, present):
+    """One Source page per part that has a listing, each with the parts above it and the
+    listing laid over those it is loaded over."""
     shown = [p for p in P if listed(p)]
     pages = part_pages(P)
-    whole = read(os.path.join(gdir, "facts.md"))
-    whole = ('<h2>The whole game</h2><div data-part="">' + markdown(whole, addr=False, shift=1, parts=pages)
-             + "</div>") if whole.strip() else ""
-    if cheats.strip():
-        whole += '<h2>Cheats</h2><div data-part="">' + markdown(cheats, addr=False, parts=pages) + "</div>"
     tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
     tpl = tpl.replace("<!-- accuracy -->", source_note(game) + virtual_note(virtual(game, P)))
     tpl = tpl.replace("<!-- original -->", original_source(gdir, addr=False))
     for p in shown:
         page, beneath = part_page(p), [q for q in reversed(under(P, p)) if listed(q)]
-        facts = f"<h2>{html.escape(p['title'])}</h2>" + markdown(read(os.path.join(p["dir"], "facts.md")), addr=page, shift=1,
-                                                                   parts=pages)
         note, bank = "", p.get("bank") is not None
         if beneath:
             note = (f'<p class="mute">{html.escape(p["title"])} is {"switched in at " + span_text([p]) + ", over" if bank else "loaded over"} '
@@ -1256,8 +1248,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
                 + each + "</p>")
         # pages: where an operand that reads a bank, or the RAM beneath one, links to (source.html)
         info = dict(part_card(p), under=[part_card(q) for q in beneath], pages=pages)
-        src = tpl.replace("<!-- facts -->", facts + whole)
-        src = src.replace("<!-- parts -->", lead + pills + note + uncounted_note(os.path.join(p["dir"], "listing.json")))
+        src = tpl.replace("<!-- parts -->", lead + pills + note + uncounted_note(os.path.join(p["dir"], "listing.json")))
         src = src.replace("<!-- pick -->", part_step(P, p))
         src = src.replace("<!-- part -->", '<script type="application/json" id="part">'
                           + json.dumps(info).replace("</", "<\\/") + "</script>")
@@ -1265,7 +1256,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats, present):
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{LIB}/site.js"></script>\n'
         src = at_end(src, next_tab(game, present, "source.html")
-                     + edit_footer(game, "source.html", f"parts/{p['id']}/facts.md"))
+                     + edit_footer(game, "source.html", f"parts/{p['id']}/symbols.json"))
         for name in ([page, "source.html"] if p is shown[0] else [page]):
             open(os.path.join(out, name), "w").write(src)
         dst = os.path.join(out, "parts", p["id"])
@@ -1390,17 +1381,13 @@ def build_game(gdir, out_root):
         open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban, present=present))
     # source: one page, or one for each part of a game of several; none for a game with no listing,
     # and for a game whose listing is withheld, one page that says so
-    cheats = read(os.path.join(gdir, "cheats.md"))
     hidden = withheld(game) and not bare
     if hidden:
         withheld_source(game, out, nav, ban, common, present)
     elif P and not bare:
-        part_sources(gdir, game, P, out, nav, ban, common, cheats, present)
+        part_sources(gdir, game, P, out, nav, ban, common, present)
     elif not bare:
-        facts = markdown(read(os.path.join(gdir, "facts.md")))
-        if cheats.strip():
-            facts += "<h2>Cheats</h2>" + markdown(cheats)
-        src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
+        src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
         src = src.replace("<!-- accuracy -->", source_note(game) + uncounted_note(os.path.join(gdir, "listing.json"))
                           + virtual_note(virtual(game)))
         src = src.replace("<!-- original -->", original_source(gdir))
@@ -1464,9 +1451,7 @@ def build_game(gdir, out_root):
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
                  features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare or hidden), shift=1,
-                                         parts={} if hidden else part_pages(P), urls=True)),
-                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare or hidden), shift=1,
-                                            parts={} if hidden else part_pages(P)))).replace("<!-- tabs -->", nav)
+                                         parts={} if hidden else part_pages(P), urls=True))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
     about = at_end(about, next_tab(game, present, "about.html") + edit_footer(game, "about.html"))
     open(os.path.join(out, "about.html"), "w").write(pagenav(about))
@@ -1754,8 +1739,8 @@ def featured_game(games):
 
 
 # --- the home page's New and updated row: the latest games added or changed, from git history
-PUBLISHED = re.compile(r"(index|levels|play)\.html|(facts|cheats|features|orientation)\.md|(game|listing|symbols)\.json|reference/.+"
-                       r"|parts/[^/]+/(facts\.md|(part|listing|symbols)\.json)")
+PUBLISHED = re.compile(r"(index|levels|play)\.html|features\.md|(game|listing|symbols)\.json|reference/.+"
+                       r"|parts/[^/]+/(part|listing|symbols)\.json")
 
 
 def recent_changes(games, n=20):

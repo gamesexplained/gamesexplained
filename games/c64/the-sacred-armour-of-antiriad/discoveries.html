@@ -593,16 +593,26 @@ const $ = (id) => document.getElementById(id);
 const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const RGB = C64.PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
-// img {w, h, px} of colour indices into canvas cv, s pixels a pixel; returns the 2D context
+// img {w, h, px} of colour indices into canvas cv, s pixels a pixel; returns the 2D context. The
+// pixels go through one ImageData and one small canvas for each size of picture, kept from one
+// drawing to the next, and cv keeps its size, so a picture drawn every frame makes no garbage
+const scratch = new Map();
 function show(cv, img, s) {
-  const k = s || 1, id = new ImageData(img.w, img.h);
+  const k = s || 1, key = img.w + 'x' + img.h;
+  let sc = scratch.get(key);
+  if (!sc) {
+    const t = document.createElement('canvas'); t.width = img.w; t.height = img.h;
+    sc = { t, tctx: t.getContext('2d'), id: new ImageData(img.w, img.h) };
+    scratch.set(key, sc);
+  }
+  const id = sc.id;
   for (let i = 0; i < img.w * img.h; i++) { const c = RGB[img.px[i]]; id.data.set(c, 4 * i); id.data[4 * i + 3] = 255; }
-  cv.width = img.w * k; cv.height = img.h * k;
+  if (cv.width !== img.w * k || cv.height !== img.h * k) { cv.width = img.w * k; cv.height = img.h * k; }
   const ctx = cv.getContext('2d');
+  if (ctx.reset) ctx.reset(); else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; }
   if (k === 1) { ctx.putImageData(id, 0, 0); return ctx; }
-  const t = document.createElement('canvas'); t.width = img.w; t.height = img.h;
-  t.getContext('2d').putImageData(id, 0, 0);
-  ctx.imageSmoothingEnabled = false; ctx.drawImage(t, 0, 0, img.w * k, img.h * k);
+  sc.tctx.putImageData(id, 0, 0);
+  ctx.imageSmoothingEnabled = false; ctx.drawImage(sc.t, 0, 0, img.w * k, img.h * k);
   return ctx;
 }
 function pressed(box, b) { box.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }
@@ -622,17 +632,26 @@ function pick(sel, labels, draw) {
   return go;
 }
 // frames of the machine, 50 a second, for every animation on the page; each tick(f) runs once a
-// frame while its canvas is on the screen
+// frame while its canvas is on the screen. A device that cannot keep up drops frames: running every
+// frame it owes at each draw would make each draw slower still, until the page all but stops
 const Frames = (() => {
-  const ticks = new Set();
+  const ticks = new Set(), seen = new Set();
+  const watch = 'IntersectionObserver' in window
+    ? new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)))) : null;
+  const onScreen = (el) => (watch ? seen.has(el) : el.getBoundingClientRect().bottom > 0 && el.getBoundingClientRect().top < innerHeight);
   let last = 0, acc = 0;
   function loop(t) {
     acc += Math.min(200, t - (last || t)); last = t;
-    while (acc >= 20) { acc -= 20; for (const k of ticks) if (!k.el || k.el.getBoundingClientRect().bottom > 0 && k.el.getBoundingClientRect().top < innerHeight) k.f(); }
+    let n = Math.floor(acc / 20);
+    if (n > 2) { n = 2; acc = 0; } else acc -= 20 * n;
+    if (n) {
+      const due = [...ticks].filter((k) => !k.el || onScreen(k.el));
+      for (let i = 0; i < n; i++) for (const k of due) k.f();
+    }
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
-  return { add(el, f) { const k = { el, f }; ticks.add(k); return () => ticks.delete(k); } };
+  return { add(el, f) { const k = { el, f }; ticks.add(k); if (el && watch) watch.observe(el); return () => { ticks.delete(k); if (el && watch) watch.unobserve(el); }; } };
 })();
 // a sprite animation as step_animation runs it: header byte 0 the frames each picture lasts, byte 1
 // the colour and multicolour bit; then pictures ($10 and up), 0 back to the first, 1 the end, 2 n
