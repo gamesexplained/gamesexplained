@@ -12232,12 +12232,42 @@
   {
    "address": 1441,
    "type": "line",
-   "text": "Definition numbers for the object definition table (the A given to unpack_bank_record), named from the section headings in Euan's older notes of the cartridge banks, matched by byte position; a name with ? means the record lies inside that heading's section but not at its start, so it may be one of several records of that creature or object. 01-1B: 01 Gate of Moornah?; 02 Horizontal moving platform; 03 Horizontal moving platform; 04 Pike projectile; 05 Webstamite projectile; 06 Pike - incline; 07 Pike - incline?; 08 Shartoesi?; 09 Shartoesi?; 0A Herbamo?; 0B Killer Harnas?; 0C Flying Shardu?; 0D Coin?; 0E Thorpedo?; 0F Blastums - Going left?; 10 Blastums - Going right?; 11 Geeshergam?; 12 Kalgatrobe?; 13 Webstamite?; 14 Webstamite?; 15 Kalgatrobe?; 16 Boloragog?; 17 Neptuna?; 18 Rambacha?; 19 Mortoise?; 1A Shoshanu?; 1B Gabranha small?"
+   "text": "Definition numbers for the object definition table (the A given to unpack_bank_record), named from the section headings in Euan's older notes of the cartridge banks, matched by byte position; a name with ? means the record lies inside that heading's section but not at its start, so it may be one of several records of that creature or object. 00 Gate of Moornah, a record of its own at $806E; 01-1B: 01 Falling platform (Wedge shape); 02 Unknown; 03 Pike projectile; 04 Webstamite projectile; 05 Pike - standard; 06 Pike - incline?; 07 Shartoesi; 08 Shartoesi?; 09 Herbamo; 0A Killer Harnas; 0B Flying Shardu; 0C Coin; 0D Thorpedo; 0E Blastums - Going left; 0F Blastums - Going right; 10 Kalgatrobe; 11 Kalgatrobe; 12 Webstamite; 13 Webstamite?; 14 Geeshergam; 15 Boloragog; 16 Neptuna; 17 Rambacha; 18 Mortoise; 19 Shoshanu; 1A Gabranha small; 1B Gabranha small?"
   },
   {
    "address": 1446,
    "type": "line",
-   "text": "Definition numbers, continued (names from Euan's older notes, matched by position; ? = inside that heading's section, not at its start; 24 and 25 point to one record). 1C-36: 1C Gabranha small?; 1D Cupper?; 1E Flying Shardu small?; 1F Unknown; 20 Falling platform (Wedge shape); 21 Pike - standard; 22 Pike - incline; 23 Canon ball / bomb?; 24 Key; 25 Key; 26 Lava burst?; 27 Raktura?; 28 Ice platform?; 29 1 Up; 2A Timagon?; 2B Timagon?; 2C Galator?; 2D Galator?; 2E Galator?; 2F Galator?; 30 Mogulvar?; 31 ZARZAMOTH?; 32 1 Up?; 33 1 Up?; 34 KATYEROWS?; 35 KATYEROWS?; 36 Catecormos?"
+   "text": "Definition numbers, continued (names from Euan's older notes, matched by position; ? = inside that heading's section, not at its start; 24 and 25 point to one record). 1C-36: 1C Cupper; 1D Flying Shardu small; 1E Canon ball / bomb; 1F Horizontal moving platform; 20 Horizontal moving platform; 21 Pike - incline; 22 Pike - incline; 23 Key; 24 Lava burst; 25 Lava burst; 26 Raktura; 27 Ice platform; 28 Timagon; 29 1 Up?; 2A Timagon?; 2B Galator; 2C Galator?; 2D Galator?; 2E Galator?; 2F Mogulvar; 30 ZARZAMOTH; 31 1 Up; 32 1 Up?; 33 KATYEROWS; 34 KATYEROWS?; 35 Catecormos; 36 Bashtar"
+  },
+  {
+   "address": 1473,
+   "type": "line",
+   "text": "Reads the first byte of an object definition record into $E7 and $E9: the number of animation frames. A record is three bytes (frame count, then a 16-bit pointer to the object's sprite shapes with the bank in its top 3 bits), then one 5-byte header per frame, then the frame's box and part lists, ended by a first byte of $FF. The layout was checked against the bank 7 record at $8182 and matches the section layout in Euan's older notes."
+  },
+  {
+   "address": 1492,
+   "type": "line",
+   "text": "Copies one frame header, 5 bytes, from ($E5) to the buffer at ($E1). The header is the part count, then four box size bytes ($18,$15,$18,$15 for the falling platform, definition 01). X ends up holding the first byte, the number of 2-byte offsets that follow. Both pointers then step 5."
+  },
+  {
+   "address": 1526,
+   "type": "line",
+   "text": "Copies a 2-byte offset of a frame header into the buffer and adds the buffer address ($E1/$E2) to it, which turns the stored distance into an address of the frame's part list in RAM. Repeats X times, each time stepping both pointers by 2."
+  },
+  {
+   "address": 1620,
+   "type": "line",
+   "text": "Second pass over the record, after all frame headers: each list starts with a byte whose bit 7 is set at the end ($FF in bank 7) or with the hitbox x offset. A set bit 7 jumps to the tail at b_06AD. Otherwise the list is 5 bytes (hitbox x offset, y offset, width, height, then the number of parts) followed by that many 4-byte parts."
+  },
+  {
+   "address": 1662,
+   "type": "line",
+   "text": "Copies one 4-byte part: relative x offset, relative y offset, sprite colour, then the sprite shape number with the base shape number $08A6 added, so every shape number in the record is relative to where the record's shapes were loaded. Euan's older notes call the fourth byte 'sprite selection'."
+  },
+  {
+   "address": 1709,
+   "type": "line",
+   "text": "End of the record: stores the 16-bit pointer from the record's bytes 1 and 2 (the stream of sprite shapes to be copied by the background loader) into the list at $0773 and $0774 indexed by $08A3, selects the cartridge bank named by its top 3 bits and forms the address in $E5/$E6, then advances $08A3 by 2."
   },
   {
    "address": 1757,
