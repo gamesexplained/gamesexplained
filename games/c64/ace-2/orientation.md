@@ -20,9 +20,8 @@ directory names the disk `ACE2 C64`, id `1.`, and lists six files:
 
 All 683 standard sectors decode with good checksums (`kit/c64/disk.py`);
 the game is stored in plain sectors, read raw by block number and
-scrambled with EOR `$FD` (below). `disk.py` stops at the first decoy's
-chain with "the chain from (75, 1) loops or leaves the disk" and prints
-nothing after `ACE2`; `c1541 -list` shows the whole directory.
+scrambled with EOR `$FD` (below). `disk.py` lists the five decoys as
+"not a file", each one sector and then a link that leaves the disk.
 
 No trainer, no crack intro: the boot, the loading picture and the
 colour-code check are the publisher's own.
@@ -88,13 +87,16 @@ the table after it starts) and the work areas at `$8000`-`$8DFF`.
   handlers rewrite twice a frame (to `$4678` on line 145 and to `$43FC`
   on line 212 in `work/frame-play.json`), NMI `$FFFA` = `$2AA6`. The
   KERNAL's RAM vectors at `$0314` and `$0318` read `$0000`.
-- `$D01A` = `$F1` (raster interrupt on). The frame record shows no write
+- The game stores `$81` in `$D01A` (raster interrupt on; `$0A6A`,
+  `$0C6D`, `$5551`), which reads back as `$F1`. The frame record shows no write
   to `$D012` during the frame; the sprite registers and pointers are
   rewritten on lines 88-90, 115-119, 173-174, 193-196 and 272-276, and
   `$D018` on lines 115, 149, 211 and 281 (the two cockpits and the side
   panel).
 - VIC bank 2 (`$DD00` = `$C5`): screens at `$8000` and `$8400`
-  (`$D018` = `$19`, `$1F`, `$13` and `$1D` in the frame).
+  (`$D018` stored as `$18`, `$1E`, `$12` and `$1C` in the frame, by
+  code that `$4C5C` patches at each screen flip; the frame record shows
+  them read back, bit 0 set, as `$19`, `$1F`, `$13` and `$1D`).
 - Everything is in memory before the game's first instruction; nothing
   is loaded per level. The game reads the disk only for its options and
   high scores.

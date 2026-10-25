@@ -71,7 +71,7 @@ a{color:var(--link)}
 <header class="hero">
   <p class="eyebrow">1987 · Cascade Games</p>
   <h1>ACE 2</h1>
-  <p class="sub">Two jets share one screen, each pilot with half of it and a joystick of their own. Behind the cockpits the game guards itself twice: with a colour code whose answers it carries in its own memory, and with a timer that repairs two bytes of the game a few cycles after the game breaks them, twice a frame.</p>
+  <p class="sub">Two jets share one screen, and each pilot has half of it and a joystick. The game also guards itself twice. Its colour code question has the answers stored in the game's own memory. And twice a frame the game breaks two bytes of its own code, which a timer mends a few millionths of a second later.</p>
 </header>
 <main class="wrap">
 
@@ -92,29 +92,29 @@ a{color:var(--link)}
 <section id="music">
   <p class="fig">02 · Music</p>
   <h2 class="t">Music: Rob Hubbard's title tune, five minutes before it repeats</h2>
-  <p class="lede">The title pages play one tune, by Rob Hubbard. It runs 5,880 note steps, 5 minutes 14 seconds, before it starts again. Press it to play.</p>
+  <p class="lede">The title pages play one tune, by Rob Hubbard. It runs for 5,880 note steps, 5 minutes 14 seconds, before it starts again. Press Title music to hear it.</p>
   <div class="plate">
     <div id="a2-sid"></div>
-    <p class="cap">The page runs the game's own music driver (<code>$E03F</code>, with its tables, <code>$E000</code>-<code>$ECFF</code>, from the listing) on the kit's 6502, once a frame as the title's interrupt calls it, and plays what it writes through the site's model of the SID chip. Every register write in 16,000 frames matches the driver run in the kit's simulator on the game's memory. The bass is filtered, and the filter switch starts on the curve of one 6581 chip: real chips differ.</p>
+    <p class="cap">The page runs the game's own music driver on the kit's model of the C64's processor, the 6502. The driver is the routine at <code>$E03F</code>, with its tables at <code>$E000</code>-<code>$ECFF</code>, taken from the listing. (An address such as <code>$E03F</code> is a place in the C64's memory, written in hexadecimal.) The page calls it once a frame, as the title's interrupt does, and plays what it writes through the site's model of the SID, the C64's sound chip. Every register write in 16,000 frames matches the driver run in the kit's simulator on the game's memory. The bass is filtered, and the filter switch starts on the curve of one 6581 chip: real chips differ.</p>
   </div>
-  <p>The driver keeps the three voices apart. Each follows its own track list (<code>$E6CE</code>, <code>$E712</code> and <code>$E7CB</code>), a string of pattern numbers, and the 38 patterns hold the notes (pointers at <code>$E682</code> and <code>$E6A8</code>). A note step falls on three calls in every eight (<code>$E570</code>-<code>$E572</code>), 18.75 steps a second at 50 calls a second. A note's first byte gives its length in steps and whether it is a rest; an instrument byte can come before it.</p>
-  <p>Eleven instruments fill two tables of eight bytes each (<code>$E5CB</code> and <code>$E624</code>): the waveform, the envelope, a pulse width that sweeps between two limits, vibrato, and effects for a note's first frames, such as a burst of noise before a pulse tone. Four instruments are drums, which step through a table of waveforms and pitches a frame at a time (<code>$E5A2</code>, <code>$E9A9</code> and <code>$EB0A</code>). Instrument 0, the bass on voice 3, sweeps the filter's cutoff down by 3 a call from each note's start, with the resonance at its highest (<code>$D417</code> = <code>$F4</code>).</p>
+  <p>The SID has three voices, and the driver gives each its own part. Each voice follows its own track list (<code>$E6CE</code>, <code>$E712</code> and <code>$E7CB</code>), a string of pattern numbers, and the 38 patterns hold the notes (pointers at <code>$E682</code> and <code>$E6A8</code>). The driver is called 50 times a second, and a note step falls on three calls in every eight (<code>$E570</code>-<code>$E572</code>): 18.75 steps a second. A note's first byte gives its length in steps and whether it is a rest; an instrument byte can come before it.</p>
+  <p>Eleven instruments fill two tables of eight bytes each (<code>$E5CB</code> and <code>$E624</code>): the waveform, the envelope, a pulse width that sweeps between two limits, vibrato, and effects for a note's first frames, such as a burst of noise before a pulse tone. Four instruments are drums, which step through a table of waveforms and pitches a frame at a time (<code>$E5A2</code>, <code>$E9A9</code> and <code>$EB0A</code>). The SID's filter takes the high frequencies out of a sound above a cutoff that the music can move. Instrument 0, the bass on voice 3, lowers the cutoff by 3 on every call from the start of each note. Its resonance, a ringing at the cutoff, is at its highest (<code>$D417</code> = <code>$F4</code>).</p>
   <p>The same driver silences the chip when a game starts. F5, held during play, switches between the music and the engine noises, which share the chip (<code>$11E9</code>).</p>
 </section>
 
 <section id="frame">
   <p class="fig">03 · One frame</p>
   <h2 class="t">One frame of play, rebuilt from memory</h2>
-  <p class="lede">The video chip is told four times a frame which character set to draw from, once for each pilot's view and once for each panel. Press a band to see the lines it rules.</p>
+  <p class="lede">The C64's screen is made of characters, tiles of 8 by 8 pixels whose shapes come from a character set in memory. Four times a frame the game tells the video chip which set to use: once for each pilot's view and once for each panel. Press a band to see the screen lines it covers.</p>
   <div class="plate">
     <div class="a2-bar" id="a2-bands"></div>
     <div class="a2-stack"><canvas id="a2-frame" class="a2-cv a2-wide" width="384" height="272"></canvas><canvas id="a2-frame-hi" class="a2-cv a2-wide" width="384" height="272"></canvas></div>
     <p class="a2-out" id="a2-band-out">The whole frame, as the video chip drew it.</p>
     <p class="cap">Drawn by the page from one frame of play recorded in VICE (plane one over the sea, plane two over land, one player against the computer): every write to the video chip with the raster line and cycle it landed on, and the memory the drawing reads, drawn with the site's renderer. 0 of the 104,448 pixels differ from VICE's own picture of the same frame.</p>
   </div>
-  <p>Both views are multicolour character graphics, four colours to a cell. Each pilot has two character sets for the view, and each pass of the game draws the horizon, the enemy and the ground targets into the set that is not on show; the interrupt then swaps them (<code>$6225</code>, <code>$4C5C</code>). Plane one uses the sets at <code>$A000</code> and <code>$B000</code>, plane two those at <code>$A800</code> and <code>$B800</code>. The panels are drawn into the same sets, character by character: the bars, the dials and the message text are bitmaps written into the characters the panel's screen codes point at.</p>
-  <p>The sky is the chip's first shared colour (<code>$D022</code>, light blue). The ground is the colour in colour RAM, which the game sets to blue while the plane is over the sea and yellow while it is over land (<code>$46C8</code>). The cockpit frame round each view is made of sprites, set again for each band.</p>
-  <p>A pass of the game, both pilots' halves and the shared work, takes several frames. In a recorded flight from <code>play.vsf</code> the game made 156 passes in 500 frames, about 15 a second. The music or the engine sounds, the fuel and the turn run in the interrupt instead, on a clock of 50 ticks a second (<code>$43FC</code>).</p>
+  <p>Both views are multicolour character graphics, four colours to a cell. Each pilot has two character sets for the view. Each pass of the game's main loop draws the horizon, the enemy and the ground targets into the set that is not on show. Then the interrupt swaps them (<code>$6225</code>, <code>$4C5C</code>). The interrupt is a routine the video chip starts at set lines of every frame, whatever the main loop is doing. Plane one uses the sets at <code>$A000</code> and <code>$B000</code>, plane two those at <code>$A800</code> and <code>$B800</code>. The panels are drawn into the same sets, character by character: the bars, the dials and the message text are bitmaps written into the characters the panel's screen codes point at.</p>
+  <p>The sky is the chip's first shared colour (<code>$D022</code>, light blue). The ground is the colour in colour RAM, the memory that holds a colour for each character on the screen. The game sets it to blue while the plane is over the sea and yellow while it is over land (<code>$46C8</code>). The cockpit frame round each view is made of sprites, small pictures the video chip draws over the screen, set again for each band.</p>
+  <p>A pass of the main loop does plane one's half, plane two's half and the work they share, and takes several frames. In a recorded one-player flight the game made 156 passes in 500 frames, about 16 a second. The music or the engine sounds, the fuel and the turn run in the interrupt instead, on a clock of 50 ticks a second (<code>$43FC</code>).</p>
 </section>
 
 <section id="map">
@@ -126,8 +126,8 @@ a{color:var(--link)}
     <p class="a2-out" id="a2-map-out">Move the pointer over the map.</p>
     <p class="cap">The map picture, 30 by 12 characters at <code>$9800</code> in the character set at <code>$B000</code>, drawn by the page from the listing in the colours the video chip is given in plane one's map view in the kit's machine: black, light blue (<code>$D022</code>), white (<code>$D023</code>) and yellow (colour RAM <code>$0F</code>). The read-out is <code>$14AF</code>'s lookup, checked against the game's own routine for every position on the map. The marks are the two ground targets (<code>$308C</code>) and where each plane takes off in the full-scale game (<code>$2F8E</code>).</p>
   </div>
-  <p>Once a pass, <code>$14AF</code> takes the plane's position, finds the character of the map picture under it and reads the pair of pixels inside that character's shape. Light blue pixels (<code>%01</code>) are sea and yellow (<code>%11</code>) are land. When the answer changes, the cockpit's ground changes colour, and each ground target appears in the view only over its own kind of ground (<code>$61E4</code>): the spy ship over the sea, the radar station over land. Black and white pixels, the map's north arrow, its scale bar and its border, change nothing.</p>
-  <p>Positions are 24-bit numbers, and the map shows the top byte of each. The map runs from 4 to 235 across and from 4 to 91 down. A plane is held at the edge, and at its own edge it may land: the west edge for plane one, the east edge for plane two (<code>$3D57</code>). Below 1,024 feet with the nose near level the message panel says OK FOR LANDING, and with the wings level the plane lands and is refuelled, rearmed and repaired (<code>$1FAD</code>, <code>$208E</code>).</p>
+  <p>Once a pass, <code>$14AF</code> takes the plane's position, finds the character of the map picture under it and reads the pair of pixels inside that character's shape. Light blue pixels (binary <code>%01</code>) are sea and yellow ones (<code>%11</code>) are land. When the answer changes, the cockpit's ground changes colour, and each ground target appears in the view only over its own kind of ground (<code>$61E4</code>): the spy ship over the sea, the radar station over land. Black and white pixels, the map's north arrow, its scale bar and its border, change nothing.</p>
+  <p>Each position is a 24-bit number, three bytes, and the map shows only the top byte. The map runs from 4 to 235 across and from 4 to 91 down. A plane is held at the edge, and at its own edge it may land: the west edge for plane one, the east edge for plane two (<code>$3D57</code>). Below 1,024 feet with the nose near level the message panel says OK FOR LANDING, and with the wings level the plane lands and is refuelled, rearmed and repaired (<code>$1FAD</code>, <code>$208E</code>).</p>
 </section>
 
 <section id="messages">
@@ -139,7 +139,7 @@ a{color:var(--link)}
       <div class="a2-panel"><canvas id="a2-msg" class="a2-cv" width="168" height="78"></canvas></div>
       <div class="a2-scroll"><table class="a2-tbl" id="a2-msg-tbl"></table></div>
     </div>
-    <p class="cap">Each message is drawn by the page from the listing: the pointer for its number in pilot one's list (<code>$7432</code>), fourteen character codes there, and for each code the five-row picture that <code>$6F66</code> points at in the small font at <code>$9500</code>, as <code>$17D1</code> draws it. The table says which instruction raises each message; the game passes every number to <code>$34F8</code> as a constant, so the list is complete.</p>
+    <p class="cap">Each message is drawn by the page from the listing: the pointer for its number in pilot one's list (<code>$7432</code>), fourteen character codes there, and for each code the five-row picture that <code>$6F66</code> points at in the small font at <code>$9500</code>, as <code>$17D1</code> draws it. The table says which instruction raises each message; every instruction that raises a message gives <code>$34F8</code> its number written into the code itself, so the list is complete.</p>
   </div>
   <p>A message lives for as long as its timer runs (<code>$0350</code> for pilot one, <code>$0370</code> for pilot two), and every pass counts every timer down (<code>$11E9</code>). The panel cycles through the live ones (<code>$2E57</code>). Some messages carry figures that the game writes into the text before it is shown: the range of the enemy plane or missile, the altitude, and the flares and chaff left. Pilot two has its own copies of those, and its message 26 reads ENEMY SPYSHIP where pilot one's reads RADAR STATION.</p>
   <p>Message 12, YOU TRAITOR, and message 19, a first copy of TARGET LOCKED, are in both lists, but no instruction in the game raises either (<a href="discoveries.html#traitor">Discoveries</a>).</p>
@@ -156,7 +156,7 @@ a{color:var(--link)}
       <tr><td>Thrust</td><td>(throttle − bank) × (126 + altitude / 512) / 256, halved below throttle 192, then halved again</td><td><code>$4252</code></td></tr>
       <tr><td>Drag</td><td>weight × speed / 8 / 256</td><td><code>$4252</code></td></tr>
       <tr><td>Speed</td><td>changes by half of thrust minus drag each pass; a nose-up attitude loses speed and nose-down gains it</td><td><code>$41FB</code>, <code>$4232</code></td></tr>
-      <tr><td>Weight</td><td>the missiles carried plus plane one's fuel / 64</td><td><code>$282F</code></td></tr>
+      <tr><td>Weight</td><td>the missiles carried plus the fuel / 64, plane one's fuel for both planes (<a href="discoveries.html#weight">Discoveries</a>)</td><td><code>$282F</code></td></tr>
       <tr><td>Fuel</td><td>burnt by the throttle in the interrupt, at half the rate below 192</td><td><code>$43FC</code></td></tr>
       <tr><td>Stall</td><td>below speed 140: STALL WARNING and the nose pushed down</td><td><code>$5A1C</code></td></tr>
       <tr><td>Ceiling</td><td>above 58,880 feet: CEILING 60000 and the nose pushed down now and then</td><td><code>$5A1C</code></td></tr>
@@ -227,7 +227,7 @@ a{color:var(--link)}
     </table>
     <p class="cap">The key flags at <code>$0200</code>-<code>$020D</code>, set by <code>$366B</code> from the keyboard rows, and the calls that hand them to the flight routine: plane one passes F as more and S as less (<code>$0D74</code>), plane two passes K as more and H as less (<code>$0FD8</code>).</p>
   </div>
-  <p>Joystick port 1 shares its wires with the keyboard, so the game scans all eight keyboard rows and ORs them together: a key pulls one row low, while the stick pulls all of them. Plane two's weapon selector slides down the panel to the weapon chosen, and plane two cannot fire until it arrives (<code>$4C1A</code>). Outside a game, in a one-player game, or when neither pilot has planes left, the stick in port 2 also drives plane one, so a lone player can use either port.</p>
+  <p>Joystick port 1 shares its wires with the keyboard. A key pulls one row of the keyboard low, while the stick pulls all eight. So the game reads all eight rows and keeps only what is low in every one of them. That is the stick, because a key shows in one row only. Plane two's weapon selector slides down the panel to the weapon chosen, and plane two cannot fire until it arrives (<code>$4C1A</code>). Outside a game, in a one-player game, or when neither pilot has planes left, the stick in port 2 also drives plane one, so a lone player can use either port.</p>
 </section>
 
 </main>
@@ -318,10 +318,10 @@ function soundWidget(m) {
 
 // ---- 03 the frame
 const BANDS = [
-  ["Plane one's view", [[265, 272], [0, 99]], "Lines 281 to 114: plane one's view, rows 0-7. From line 281 of the frame before, the video chip reads the screen at <code>$8400</code> and the character set at <code>$B000</code> (<code>$D018</code> = <code>$1D</code>), with light blue for the sky (<code>$D022</code>) and white (<code>$D023</code>). On the next frame the set at <code>$A000</code> takes its turn."],
-  ["Plane one's panel", [[99, 133]], "Lines 115 to 148: plane one's instrument panel, rows 8-11. The character set moves to <code>$A000</code> (<code>$D018</code> = <code>$19</code>), with dark grey and grey as the shared colours. The radar, the dials, the bars and the message text are bitmaps written into these characters."],
-  ["Plane two's view", [[133, 195]], "Lines 149 to 210: the last lines of row 12 and plane two's view, rows 13-19, from the set at <code>$B800</code> (<code>$D018</code> = <code>$1F</code>), light blue and white again. Plane two is over land, so its ground is yellow."],
-  ["Plane two's panel", [[195, 265]], "Lines 211 to 280: plane two's panel, rows 20-24, from the set at <code>$8800</code> (<code>$D018</code> = <code>$13</code>), dark grey and grey. The side strip down the left of the screen comes from whichever set the band uses."],
+  ["Plane one's view", [[265, 272], [0, 99]], "Lines 281 to 114: plane one's view, rows 0-7. From line 281 of the frame before, the video chip reads the screen at <code>$8400</code> and the character set at <code>$B000</code> (<code>$D018</code> = <code>$1C</code>), with light blue for the sky (<code>$D022</code>) and white (<code>$D023</code>). On the next frame the set at <code>$A000</code> takes its turn."],
+  ["Plane one's panel", [[99, 133]], "Lines 115 to 148: plane one's instrument panel, rows 8-11. The character set moves to <code>$A000</code> (<code>$D018</code> = <code>$18</code>), with dark grey and grey as the shared colours. The radar, the dials, the bars and the message text are bitmaps written into these characters."],
+  ["Plane two's view", [[133, 195]], "Lines 149 to 210: the last lines of row 12 and plane two's view, rows 13-19, from the set at <code>$B800</code> (<code>$D018</code> = <code>$1E</code>), light blue and white again. Plane two is over land, so its ground is yellow."],
+  ["Plane two's panel", [[195, 265]], "Lines 211 to 280: plane two's panel, rows 20-24, from the set at <code>$8800</code> (<code>$D018</code> = <code>$12</code>), dark grey and grey. The side strip down the left of the screen comes from whichever set the band uses."],
 ];
 function frameWidget() {
   C64.drawFrame($('a2-frame'), A2_FRAME, 1);
