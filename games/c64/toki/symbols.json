@@ -16827,7 +16827,7 @@
   {
    "address": 45884,
    "type": "line",
-   "text": "Low bytes of the 35 script command routines that object_script_step runs for a script byte below $80 (index y): 35 bytes $B33C-$B35E. The high bytes are script_cmd_hi. The targets lie between $B5xx and $B8xx and in $BCxx and $BDxx."
+   "text": "Low bytes of the 35 script command routines that object_script_step runs for a script byte below $80 (index y): 35 bytes $B33C-$B35E. The high bytes are script_cmd_hi. Most targets lie between $B5xx and $B8xx and in $BCxx and $BDxx; command 5 is $0BA0, command $15 is $9150 (path_start_from_record) and command $18 is $4CC7."
   },
   {
    "address": 45919,
@@ -16837,17 +16837,17 @@
   {
    "address": 45954,
    "type": "line",
-   "text": "Low bytes of a second table of 31 routine addresses, $B382-$B3A0, read by object_run_script_handler; the high bytes are in script_cmd2_hi. Some targets are stage code that is not resident in the stage 0 state (for example $B3C0 is object_hop_at_player, $BD76 and up are stage code)."
+   "text": "Low bytes of a second table of 31 routine addresses, $B382-$B3A0, read by object_run_script_handler; the high bytes are in script_cmd2_hi. Indexes 0-3, 13, 14 and 18 are resident code ($AB8E, $B3C0, $B47B, $B4B3, $AC06, $B4C4, $B4C1). The rest are not fixed: $23F7-$2705 (indexes 4, 5, 8, 11, 12, 15) hold data in the saved state, and $BD76 and up are stage code that changes with the stage; some of those targets ($BE73, $BE8D, $BE91, $BEB3, $BF80, $BFCB) lie past the first stage code ($BD76-$BE6A) or inside one of its instructions, so they belong to other stages."
   },
   {
    "address": 45985,
    "type": "line",
-   "text": "High bytes of the 31 routine addresses of script_cmd2_lo, $B3A1-$B3BF (values $AB to $BF)."
+   "text": "High bytes of the 31 routine addresses of script_cmd2_lo, $B3A1-$B3BF: $AB to $BF, except $23 to $27 for indexes 4, 5, 8, 11, 12 and 15."
   },
   {
    "address": 46016,
    "type": "line",
-   "text": "Table handler for index 1. While obj_off_y ($3748) is nonzero it counts that down; when it reaches zero, it starts a rising arc (obj_arc_counter $30, obj_arc_state $80) and sets obj_anim_num and obj_dir ($36A0) to face the player (frame 0 and direction $07 when the object is left of player_x + $1F, otherwise frame 1 and $0B). At other times, with obj_speed ($34E1) nonzero it walks sideways through $B5D5, which moves the object by obj_speed according to bit 3 of obj_dir (left when set) and flips the direction bits $0C at ledges and walls. It then sets obj_anim_num from that bit. While falling (bit 6 of obj_arc_state), it tests the block under the object with block_property_at ($9400): a result of 2 or 3 jumps to $A8FA, 1 lands the object and sets obj_off_y to $0A (the wait before the next hop), and 0 changes nothing else. When bit 6 is clear, bit 0 of obj_state is set while obj_arc_counter is below $10."
+   "text": "Table handler for index 1. While obj_off_y ($3748) is nonzero it counts that down; when it reaches zero it starts a rising arc (obj_arc_counter $30, obj_arc_state $80) and sets obj_anim_num ($33CA) and obj_dir ($36A0) to face the player (0 and $07 when the object is left of player_x + $1F, otherwise 1 and $0B). At other times, with obj_speed ($34E1) nonzero it walks through $B5D5, which moves the object by obj_speed (left when bit 3 of obj_dir is set) and flips bits $0C of obj_dir at a block with property bit 0 beside it or at X 0, and then sets obj_anim_num from that bit. While falling (bit 6 of obj_arc_state) it tests the block under it with block_property_at ($9400), property AND 3: 2 or 3 jumps to $A8FA, 1 lands the object and sets obj_off_y to $0A (the wait before the next hop), and 0 clears bit 0 of obj_state when obj_arc_counter is 7. When bit 6 is clear, bit 0 of obj_state is set while obj_arc_counter is below $10."
   },
   {
    "address": 46130,
@@ -16857,7 +16857,7 @@
   {
    "address": 46203,
    "type": "line",
-   "text": "Table handler for index 2. Do nothing when bit 7 of f_35EF is set or the animation index ($3EBC) is nonzero, and count obj_off_y ($3748) down when it is nonzero. Otherwise, compare player_box_left ($4C/$4D) with the object's X: when bit 3 of $18 is clear, jump to $4C9D if the player is left of the object by less than $40, and when it is set, if the player is right of it by less than $40. Before jumping it sets obj_off_y to $0A. $4C9D sets bit 7 of f_35EF and swaps the motion byte at $32CE with the one at $3322."
+   "text": "Table handler for index 2. Do nothing when bit 7 of obj_kind ($35EF) is set or the animation index ($3EBC) is nonzero, and count obj_off_y ($3748) down when it is nonzero. Otherwise subtract the object's X from player_box_left ($4C/$4D): when bit 3 of $18 is clear, jump to $4C9D if the player is left of the object by 1 to $40, and when it is set, if the player is level with it or right of it by up to $3F (only the low byte of the difference is compared with the limit). Before jumping it sets obj_off_y to $0A. $4C9D sets bit 7 of obj_kind and swaps the motion byte at $32CE with the one at $3322."
   },
   {
    "address": 46259,
@@ -16897,12 +16897,12 @@
   {
    "address": 46514,
    "type": "line",
-   "text": "Common end: store the frame index, then read that frame's pair of bytes (at offset 5 + 2 x index of the data block) into $3B1A,x and $3B77,x (and copies in $EB/$EC), and set $3ABD,x to $38 minus the block's byte 4. What those fields are drawn from (offsets or sizes) is inferred, not traced."
+   "text": "Common end: store the frame index, then read that frame's pair of bytes (at offset 5 + 2 x index of the data block) into $3B1A,x and $3B77,x (and copies in $EB/$EC), and set $3ABD,x to $37 minus the block's byte 4 ($38 with sbc and the carry clear). What those fields are drawn from (offsets or sizes) is inferred, not traced."
   },
   {
    "address": 47311,
    "type": "line",
-   "text": "Count down a timed player effect, once a frame. While player_effect ($08B1) is non-zero, on every second frame it decrements player_effect_timer ($08CE); when that reaches zero it clears player_effect and player_effect_flash ($08B2). While the timer is below $24 it sets bit 7 of player_effect_flash from bit 0 of the timer, so the flag toggles with each tick. player_pose uses the flag (bit 7 of $08B2) to change the third sprite's colour to $0E and its shape number, and the contact code at $A5A7 tests bit 7 of $08B1. No store that sets $08B1 or $08CE to a non-zero value was found in the traced code, so what starts the effect is not yet known; it is probably a power-up or invulnerability timer."
+   "text": "Count down a timed player effect, once a frame. While player_effect ($08B1) is non-zero, on every second frame it decrements player_effect_timer ($08CE); when that reaches zero it clears player_effect and player_effect_flash ($08B2). While the timer is below $24 it sets bit 7 of player_effect_flash from bit 0 of the timer, so the flag toggles with each tick. player_pose uses the flag (bit 7 of $08B2) to change the third sprite's colour to $0E and its shape number, and the contact code at $A5A7 tests bit 7 of $08B1. The routine at $0BBE starts it: it queues sound 8 and sets $08B1 and $08B2 to $FF and the timer to $E0 (448 frames); init_round_state clears it at $4EF5. It is probably an invulnerability or power-up timer."
   },
   {
    "address": 47352,
@@ -16922,7 +16922,7 @@
   {
    "address": 48477,
    "type": "line",
-   "text": "Converts the five score digit tiles ($08D0-$08D4) to plain digit values (tile minus $C1) and stores them at $FFF5-$FFF9. Called from round_start at $8075 when the lives count has run out, just before the jump to title_entry ($4000). What reads the stored digits is not established here, so the name is neutral. The zero bytes after the final return at $BD6C onward are padding."
+   "text": "Converts the five score digit tiles ($08D0-$08D4) to plain digit values (tile minus $C1) and stores them at $FFF5-$FFF9. Called from round_start at $8075 when the lives count has run out, just before the jump to title_entry ($4000), and from stage_intro_start at $4057 when the stage number has reached 5, just before the jump to game_start. What reads the stored digits is not established here, so the name is neutral. The zero bytes after the final return at $BD6C onward are padding."
   },
   {
    "address": 48502,
@@ -16932,17 +16932,17 @@
   {
    "address": 48608,
    "type": "line",
-   "text": "Table handler for index 9, in the stage code of the first stage. Count down obj_off_y ($3748). At zero, set obj_state to $FF and stop. Otherwise move the object's X ($E7/$E8) by 4, left when bit 3 of obj_dir ($36A0) is set and right when clear. While it falls (bit 6 of obj_arc_state), it tests the block under it with block_property_at ($9400) and on a hit starts a new rise (obj_arc_state $80, obj_arc_counter $30). It is probably the handler for the objects that $BD76 creates, which have obj_off_y $AC and a direction of $07 or $0B."
+   "text": "Table handler for index 9, in the stage code of the first stage. Count down obj_off_y ($3748). At zero, set obj_state to $FF and stop. Otherwise move the object's X ($E7/$E8) by 4, left when bit 3 of obj_dir ($36A0) is set and right when clear. While it falls (bit 6 of obj_arc_state) and (Y + $15) AND $0C is zero, it tests the block under it with block_property_at ($9400) and on a hit starts a new rise (obj_arc_state $80, obj_arc_counter $30). It is probably the handler for the objects that $BD76 creates, which have obj_off_y $AC and a direction of $07 or $0B."
   },
   {
    "address": 48689,
    "type": "line",
-   "text": "Table handler for index 30, in the stage code of the first stage. Take the object's Y minus $15 ($E9) and, for each of objects 27, 28, and 29 whose obj_state bit 0 is set ($35AD, $35AE, and $35AF), store it in their obj_y_lo ($39C1-$39C3) and store the low byte of the object's X ($E7) plus $18, $08, and $3E in their obj_x_lo ($3907-$3909). This places three attached objects relative to this one."
+   "text": "Table handler for index 30, in the stage code of the first stage. Take the object's Y minus $15 ($E9) and, for each of objects 27, 28, and 29 whose obj_state bit 0 is set ($35AD, $35AE, and $35AF), store it in their obj_y_lo ($39C1-$39C3) and store the low byte of the object's X ($E7) plus $18, $08, and $3E in their obj_x_lo ($3907-$3909). There is no clc, so a sum is one more when the carry is set; for the first that is when Y is $15 or more. This places three attached objects relative to this one."
   },
   {
    "address": 48930,
    "type": "line",
-   "text": "Byte patched to $19 by stage3_patch (with $00 at $BF23, $01 at $BF24 and $00 at $BF25). Zero in the saved stage 0 state; this lies in the part of the stage code area that other stages fill. The bytes read as two words, $0019 and $0001, but the routines that index this array from its first byte read it (the references list which) by address."
+   "text": "Byte patched to $19 by stage3_patch (with $00 at $BF23, $01 at $BF24 and $00 at $BF25). Zero in the saved stage 0 state; this lies in the part of the stage code area that other stages fill. The bytes read as two words, $0019 and $0001. No instruction in the saved state reads them (the stage code that would is not loaded), so their use is not known."
   },
   {
    "address": 48931,
@@ -16972,12 +16972,12 @@
   {
    "address": 49152,
    "type": "line",
-   "text": "The character set of the playfield: 2048 bytes $C000-$C7FF, eight pixel rows for each of 256 characters (VIC bank 3, $D018 $21 or $31). The background loader $5108 fills it from the cartridge as 63-byte pieces. stage2_tail writes $00, $00, $01, $80, $06, $FF, $FF and $00 to character 0 for stage 2 (a blank character in the saved state)."
+   "text": "The character set of the playfield: 2048 bytes $C000-$C7FF, eight pixel rows for each of 256 characters (VIC bank 3, $D018 $21 or $31). stage_load copies each stage's set to $C000 from the cartridge at stage start (directory entries 17, 20, 23, 26 and 29), and entry 6 adds $C7A0-$C7F7. stage2_tail writes $00, $00, $01, $80, $06, $FF, $FF and $00 to character 0 for stage 2 (all $FF, a solid character, in the saved state)."
   },
   {
    "address": 50176,
    "type": "line",
-   "text": "Second half of the playfield character set: characters $80 to $8F ($C400-$C47F), eight bytes each. Same layout as charset_start; the background loader fills it with the first half."
+   "text": "Characters $80 to $8F of the playfield character set ($C400-$C47F), eight bytes each. Same layout as charset_start, and copied with it from the cartridge by the stage's directory entry at stage start."
   },
   {
    "address": 50303,
@@ -16992,27 +16992,27 @@
   {
    "address": 51072,
    "type": "line",
-   "text": "Shapes of characters $F0-$F3 (32 bytes $C780-$C79F): patch_stage_code copies them from $20C0 for stage 0, or clears them if bit 5 of $35A8 is set."
+   "text": "Shapes of characters $F0-$F3 (32 bytes $C780-$C79F): patch_stage_code copies them from $20C0 for stage 0, or clears them if bit 5 of $35A8 is set. In stage 0 the routine at $0BBE (which starts the timed player effect) also clears them, at $0BD9."
   },
   {
    "address": 51200,
    "type": "line",
-   "text": "Character screen buffer A: 40 columns by 21 rows of character codes, $C800-$CB47 (840 bytes). It is shown when $10 is 0 (D018 $21). The saved state shows blocks of the map as pairs of characters. recolour_c800_0 to _3 read it character by character to set colour RAM; those loops read the addresses $C800-$C81F, $C900-$C91F, $CA00-$CA1F and $CA48-$CA6B directly and the rest by stepping Y, so the symbols the disassembler put inside the buffer, and the 41 bytes between $CA1F and $CA48, are all part of it."
+   "text": "Character screen buffer A: 40 columns by 21 rows of character codes, $C800-$CB47 (840 bytes). It is shown when $10 is 0 (D018 $21). The saved state shows blocks of the map as pairs of characters. recolour_c800_0 to _3 read it character by character to set colour RAM; those loops read the addresses $C800-$C81F, $C900-$C91F, $CA00-$CA1F and $CA48-$CA6B directly and the rest by stepping Y, so the symbols the disassembler put inside the buffer, and the 40 bytes $CA20-$CA47, are all part of it."
   },
   {
    "address": 52040,
    "type": "line",
-   "text": "The 176 bytes $CB48-$CBF7 after the 840 playfield characters of screen_buffer_c800 (the screen's rows 21 to 24). The saved state holds 28 tile codes ($12, $92, $29) at $CB4E-$CB69 and zeros after them. No routine in the listing addresses them directly."
+   "text": "The 176 bytes $CB48-$CBF7 after the 840 playfield characters of screen_buffer_c800 (the screen's rows 21 to 24 and 16 unused bytes). The saved state holds 28 tile codes ($12, $29, $92, $98 and $9A) at $CB4E-$CB69 and zeros after them. No routine in the listing addresses them directly."
   },
   {
    "address": 52216,
    "type": "line",
-   "text": "The eight sprite pointers of the screen at $C800 (screen base + $3F8): copy_sprite_shadows ($4D4A) and a routine at $81E5 store the shadow pointers from $07E7 here and in sprite_pointers_cc00, so both screens show the same sprites. The saved state holds $C7, $5D, $5B, $FC, $FD, $5C, $FF, $00."
+   "text": "The eight sprite pointers of the screen at $C800 (screen base + $3F8): copy_sprite_shadows ($4D47) copies the shadow pointers from $07E7 here and to sprite_pointers_cc00, so both screens show the same sprites. The loop at $81E5 sets both screens' pointers to $F4-$FB (sprites 0 to 7) with sprite colour 1. The saved state holds $C7, $5D, $5B, $FC, $FD, $5C, $FF, $00."
   },
   {
    "address": 52224,
    "type": "line",
-   "text": "Character screen buffer B: the same layout as screen_buffer_c800 at $CC00-$CF47, shown when $10 is 1 (D018 $31). recolour_cc00_0 to _3 read it, the first three loops at $CC00-$CC1F, $CD00-$CD1F and $CE00-$CE1F by fixed address and the rest by stepping Y; the bytes $CE1F-$CE47 are part of it."
+   "text": "Character screen buffer B: the same 40 by 21 layout as screen_buffer_c800 at $CC00-$CF47, shown when $10 is 1 (D018 $31). recolour_cc00_0 to _3 read it, by fixed address at $CC00-$CC1F, $CD00-$CD1F, $CE00-$CE1F and $CE48-$CE5F (the fourth loop is 24 bytes wide, where recolour_c800_3 is 36) and the rest by stepping Y; the bytes $CE20-$CE47 are part of it."
   },
   {
    "address": 53064,
@@ -17022,7 +17022,7 @@
   {
    "address": 53184,
    "type": "line",
-   "text": "Fifty-six bytes $CFC0-$CFF7, all $27 in the saved state (the blank character the playfield uses): screen row 24 and part of row 23 of the screen at $CC00. Not read or written by any routine in the listing."
+   "text": "Fifty-six bytes $CFC0-$CFF7, all $27 in the saved state (the blank character the playfield uses): screen row 24 ($CFC0-$CFE7) of the screen at $CC00 and the 16 unused bytes before its sprite pointers. game_init writes $CFC0-$CFFF at $5218 from $8000-$803F of cartridge bank 13; no other routine in the listing names them."
   },
   {
    "address": 53248,
@@ -17087,17 +17087,17 @@
   {
    "address": 64512,
    "type": "line",
-   "text": "Sprite shape area $FC00-$FCFF, shapes $F0-$FF, 64 bytes each (RAM under the KERNAL ROM; the VIC-II reads it in bank 3). Shapes present in the saved state, with the cartridge bank and address they match byte for byte and Euan's label for that place in his annotated bank sources: $F4-$F7: TOKI $90C0 - Vicotry pose - body left to TOKI $9180 - Vicotry pose - legs right (bank 13 $90C0); $FC: TOKI $89C0 - Bum hit facing right (bank 13 $89C0); $FD: TOKI (bank 13 $8CC0); $FE: TOKI $9282 - Neutral right (bank 13 $9282); $FF: (not found in the cartridge). Blank shapes are omitted; shapes marked not found are not a copy of cartridge data (built at run time or from a packed stream, origin not established)."
+   "text": "Sprite shape area $FC00-$FFFF, shapes $F0-$FF, 64 bytes each (RAM under the KERNAL ROM; the VIC-II reads it in bank 3). Shapes present in the saved state, with the cartridge bank and address they match byte for byte and Euan's label for that place in his annotated bank sources: $F4-$F7: TOKI $90C0 - Vicotry pose - body left to TOKI $9180 - Vicotry pose - legs right (bank 13 $90C0); $FC: TOKI $89C0 - Bum hit facing right (bank 13 $89C0); $FD: TOKI (bank 13 $8CC0); $FE: TOKI $9282 - Neutral right (bank 13 $9282); $FF: (not found in the cartridge; $FFC0-$FFFF holds score records and the processor vectors). Blank shapes are omitted; shapes marked not found are not a copy of cartridge data (built at run time or from a packed stream, origin not established)."
   },
   {
    "address": 64768,
    "type": "line",
-   "text": "A 256-byte page copied from cartridge bank 13 to $FD00 when a stage starts (b_0B25 in the stage-start routine at $0AFF). The values look packed (many $5x, $6x, $Ax). No routine in the listing reads it by address."
+   "text": "A 256-byte page copied from cartridge bank 13 ($90C0-$91BF) to $FD00 when a stage starts (b_0B25 in the stage-start routine at $0AFF). It is sprite shapes $F4-$F7 of VIC bank 3, the player's victory pose (see sprite_shapes_f0_ff). No routine in the listing reads it by address."
   },
   {
    "address": 65024,
    "type": "line",
-   "text": "A 256-byte page: the between-stage screen routine at $4016 clears it, then runs $8C07 with the ROM visible (probably unpacking data into it). All zero in the saved state; the routines that index this array from its first byte read it (the references list which)."
+   "text": "A 256-byte page, sprite shapes $F8-$FB of VIC bank 3: the between-stage screen routine at $4016 clears it, then runs $8C07 with the ROM visible and $E1/$E2 = $FE00, $E3/$E4 = $8B27 (STAGE CLEAR in bank 0), probably drawing that text into it (inferred). All zero in the saved state; only that clear loop names it by address."
   },
   {
    "address": 65280,
@@ -17137,7 +17137,7 @@
   {
    "address": 65525,
    "type": "line",
-   "text": "Five bytes $FFF5-$FFF9 ($1C each in the saved state), written by b_BD60 (end-of-game routine at $BD5D); the last label record."
+   "text": "Five bytes $FFF5-$FFF9 ($1C each in the saved state), written by b_BD60 (store_score_digits at $BD5D) with the final score as digit values 0 to 9. They follow the six 9-byte records that draw_status_label reads (the last record ends with its flag at $FFF4); what reads them is not established."
   },
   {
    "address": 65530,
