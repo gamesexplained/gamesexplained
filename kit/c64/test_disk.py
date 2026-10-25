@@ -5,8 +5,9 @@ The disk holds a PRG of two sectors, a SEQ of one, a scratched entry, and a sect
 used that no file holds (what a game reads with the drive's block commands). Both images must give
 the same directory, files and unowned sectors; the .g64's data blocks are GCR-coded with the
 1541's table, and one of them gets a bad checksum. Then pack writes both files and the sector for
-kit/c64/c64run.js, and they read back as the same bytes. Last, extract writes a disk whose
-names hold $00, "*" and "/" as files the host can hold.
+kit/c64/c64run.js, and they read back as the same bytes. Then extract writes a disk whose
+names hold $00, "*" and "/" as files the host can hold. Last, a disk with a decoy entry, whose
+chain leaves the disk after one sector, is listed whole.
 
   python3 kit/c64/test_disk.py
 """
@@ -140,5 +141,30 @@ disk.main(["extract", odd, out])
 check(sorted(os.listdir(out)) == ["$00", "$2A", "A$2FB"] and
       all(open(os.path.join(out, n), "rb").read() == text for n in os.listdir(out)),
       "extract: names with $00, * and / written as $00, $2A and A$2FB")
+
+# a decoy: a directory entry whose first sector links off the disk. The listing names it and goes
+# on to the next entry, files() leaves it out, and the other files and the unowned sector stand.
+decoy = os.path.join(tmp, "decoy.d64")
+d = bytearray(S[(18, 1)])
+d[0:32], d[32:64], d[64:96] = d[64:96], d[0:32], d[32:64]       # the decoy first, then PROG, TEXT
+d[2], d[3], d[4] = 0x82, 15, 3
+d[5:21] = b"DECOY".ljust(16, b"\xa0")
+link = bytearray(256); link[0:2] = bytes([75, 1])
+with open(decoy, "wb") as f:
+    for t in range(1, 36):
+        for s in range(disk.SPT[t]):
+            f.write(d if (t, s) == (18, 1) else link if (t, s) == (15, 3) else S[(t, s)])
+D = disk.Disk(decoy)
+check(D.follow(15, 3) == ([(15, 3)], "the chain from (75, 1) loops or leaves the disk"),
+      "follow: the decoy's one sector, and where its chain leaves the disk")
+check(D.files() == {"PROG": prog, "TEXT": text} and D.unowned() == [(20, 5)],
+      "a decoy entry: files() leaves it out, and the others and the unowned sector stand")
+import io, contextlib
+listing = io.StringIO()
+with contextlib.redirect_stdout(listing):
+    disk.main([decoy])
+lines = listing.getvalue().splitlines()
+check(len(lines) == 5 and "DECOY" in lines[1] and "not a file" in lines[1] and "PROG" in lines[2] and "TEXT" in lines[3],
+      "the listing names the decoy and goes on to every entry after it")
 
 sys.exit(1 if failed else 0)

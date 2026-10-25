@@ -22,7 +22,12 @@ game allocates and no file holds is data it reads with the drive's block command
   disk.directory()         [{"name", "type", "track", "sector", "blocks"}], the names as bytes
                            decoded as Latin-1 (what C64Run's names compare with)
   disk.read(track, sector) a file's bytes from its first sector: its two-byte address first
-  disk.files()             {name: bytes} of every closed PRG, SEQ and USR file
+  disk.follow(track, sector) (sectors, problem): the chain as far as it goes, and None or why it
+                           stops (a link that loops or leaves the disk: a damaged file, or a
+                           decoy, a directory entry whose chain is not a file); chain() and read()
+                           raise ValueError on such a chain
+  disk.files()             {name: bytes} of every closed PRG, SEQ and USR file whose chain ends
+                           (the others are named on stderr and left out)
   disk.unowned()           the sectors the BAM marks used that no file and no directory holds
 
 Usage:
@@ -132,13 +137,19 @@ class Disk:
             t, s = p[0], p[1]
         return out
 
-    def chain(self, t, s):
+    def follow(self, t, s):
         out, seen = [], set()
         while t:
             if (t, s) in seen or (t, s) not in self.sectors:
-                raise ValueError(f"the chain from ({t}, {s}) loops or leaves the disk")
+                return out, f"the chain from ({t}, {s}) loops or leaves the disk"
             seen.add((t, s)); out.append((t, s))
             t, s = self.sectors[(t, s)][0], self.sectors[(t, s)][1]
+        return out, None
+
+    def chain(self, t, s):
+        out, problem = self.follow(t, s)
+        if problem:
+            raise ValueError(problem)
         return out
 
     def read(self, t, s):
@@ -149,14 +160,21 @@ class Disk:
         return bytes(out)
 
     def files(self):
-        return {f["name"]: self.read(f["track"], f["sector"]) for f in self.directory()
-                if f["type"] & 0x80 and f["type"] & 7 in TYPES}
+        out = {}
+        for f in self.directory():
+            if f["type"] & 0x80 and f["type"] & 7 in TYPES:
+                problem = self.follow(f["track"], f["sector"])[1]
+                if problem:
+                    print(f"{f['name']!r} left out: {problem}", file=sys.stderr)
+                else:
+                    out[f["name"]] = self.read(f["track"], f["sector"])
+        return out
 
     def unowned(self):
         owned = set()
         for f in self.directory():
             if f["type"] & 7 in TYPES:
-                owned.update(self.chain(f["track"], f["sector"]))
+                owned.update(self.follow(f["track"], f["sector"])[0])
         bam = self.sectors[(18, 0)]
         out = []
         for t in range(1, 36):
@@ -215,7 +233,12 @@ def main(argv):
     print(f"{d.name!r} id {d.id!r}: {len(d.sectors)} sectors, {len(d.bad)} with a bad checksum")
     for f in d.directory():
         kind = TYPES.get(f["type"] & 7, "DEL" if f["type"] & 7 == 0 else "REL")
-        data = d.read(f["track"], f["sector"]) if f["type"] & 7 in TYPES else b""
+        chain, problem = d.follow(f["track"], f["sector"]) if f["type"] & 7 in TYPES else ([], None)
+        if problem:
+            print(f"  {f['name']:<16} {kind} {f['blocks']:4} blocks, not a file: {len(chain)} sector(s)"
+                  f" from ({f['track']}, {f['sector']}), then {problem}")
+            continue
+        data = d.read(f["track"], f["sector"]) if chain else b""
         at = f" loads at ${data[0] | data[1] << 8:04X}" if len(data) > 1 else ""
         print(f"  {f['name']:<16} {kind} {f['blocks']:4} blocks, {len(data):6} bytes{at}")
     u = d.unowned()
