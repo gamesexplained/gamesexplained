@@ -241,3 +241,26 @@ on. From power-on the page's Tal falls a step behind the C64's at frame
 route's last frame, the test asked it for runs of no cycles, over and
 over. Past the route's end the stick is now let go and the C64 runs on
 whole.
+
+## Follow-up: the solution on the Play tab (25 October 2026)
+
+Aaron asked for the Play tab to play the route. Given the route's stick
+frame by frame from power-on, the page's Tal lost a life at frame 1,250,
+in room `$3A`, where the route loses none, and on the frame the route
+puts on the armour he was in another room. Given each change of the
+stick at the cycle the C64 first read it, the page kept to the route
+through three add-ons and parted at frame 11,070, in room 9: the page's
+rooms draw at their own pace, and by then it was five frames behind the
+C64, so a change came to Tal at another moment of his walk.
+
+The game reads the stick at four instructions: `foot_control`
+(`$909C`) and `suit_control` (`$9383`), from the interrupt every seventh
+frame of play, 1,954 reads on the route; and `read_fire` (`$8417`) and
+the ending's wait (`$8B4C`), which poll for fire as fast as they can.
+`port/scripts/solution.js` keeps the stick at each of the controls'
+reads, and the polls' by the clock (three changes: the stick let go, and
+fire pressed and let go at the title). `port/page/solution.js` gives the
+page's controls the C64's value read by read, and the polls theirs by
+the clock. From power-on the page then plays the whole route: its 17
+stages in their rooms, at most 19 frames from the route's, and every one
+of the 1,954 reads used.

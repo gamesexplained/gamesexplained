@@ -19,8 +19,12 @@
 //   an interrupt's handler whole as it comes, where the C64 takes its fifty lines or so, so a move
 //   the handler makes can show on the page a frame before the C64's.
 // - Q in play brings the title back.
-// - Over 6,000 frames of the page alone no frame throws, the raster's three bands come in each, and
-//   the clock keeps to the frames shown.
+// - The solution the page carries (port/page/solution.js, port/solution.json) is the stick the C64
+//   reads on the route here: at each read of Tal's controls, and by the clock at the waits for fire.
+// - The page alone, playing the solution from power-on, passes every stage of the route in the
+//   route's room, in order, within 30 frames of the route's frame, and gives every read of Tal's
+//   controls; over it no frame throws, the raster's three bands come in each, and the clock keeps
+//   to the frames shown.
 //   node games/c64/the-sacred-armour-of-antiriad/test_play.js
 const path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
@@ -31,11 +35,13 @@ g.lib('c64'); g.lib('sid'); g.lib('collide');
 g.lib('cpu6502');                   // the 6502 the port's sound driver runs on, as play.html loads it
 const PAGE = 'play.html', page = g.read(PAGE);
 const blocks = [...page.matchAll(/^\/\* (port\/\S+\.js) \*\/$/gm)].map(m => m[1]);
-for (const b of ['port/src/core.js', 'port/page/runtime.js']) if (!blocks.includes(b)) { console.log('FAIL: play.html has no ' + b); process.exit(1); }
-for (const b of blocks) g.run(PAGE, b, b === 'port/src/core.js' ? 'AntPort' : b === 'port/page/runtime.js' ? 'AntPage' : 'AntGroups');
-const { AntPage } = globalThis;
+for (const b of ['port/src/core.js', 'port/page/runtime.js', 'port/page/solution.js']) if (!blocks.includes(b)) { console.log('FAIL: play.html has no ' + b); process.exit(1); }
+const GIVES = { 'port/src/core.js': 'AntPort', 'port/page/runtime.js': 'AntPage', 'port/page/solution.js': 'AntSolution' };
+for (const b of blocks) g.run(PAGE, b, GIVES[b] || 'AntGroups');
+const { AntPage, AntSolution } = globalThis;
 const cost = JSON.parse(/^window\.ANT_COST = (.*);$/m.exec(page)[1]);
 const data = JSON.parse(/<script type="application\/json" id="ant-data">([^<]*)<\/script>/.exec(page)[1]);
+const solution = JSON.parse(/<script type="application\/json" id="ant-solution">([^<]*)<\/script>/.exec(page)[1]);
 const lib = require('./port/test/lib.js');
 const route = require('./route.json');
 const joy = lib.joystick();
@@ -70,13 +76,15 @@ const stages = route.stages.filter(s => FIELD[s.what] || s.what === 'a life lost
 const ends = [];
 const copies = [];
 {
-  const m = lib.boot();
+  const m = lib.boot(), rec = require('./port/scripts/solution.js').hook(m);
   for (let f = 0, k = 0; f < joy.length; f++) {
     m.joy = stickAt(f);
     m.runFrames(1);
     ends.push(m.cpu.cycles);
     while (k < stages.length && f + 1 >= stages[k].frame - BEFORE) { copies.push(m.save()); k++; }
   }
+  if (JSON.stringify(rec.packed()) !== JSON.stringify(solution)) fail('the solution the page carries is not the stick the C64 reads on the route: node port/scripts/solution.js, then build-play.js');
+  else console.log('the solution the page carries: the stick the C64 reads on the route');
 }
 // the route's frame a cycle is in, and the C64 run on to a cycle with the route's stick
 const frameOf = c => { let lo = 0, hi = ends.length; while (lo < hi) { const h = (lo + hi) >> 1; if (ends[h] > c) hi = h; else lo = h + 1; } return lo; };
@@ -197,17 +205,40 @@ let inPlay = null;
   else fail('Q in play: no title in 110 frames');
 }
 
-// ---- the page alone, from power-on with the route's joystick: no frame throws, the raster's bands
-// come, and the clock keeps to the frames shown
+// ---- the page alone, playing the solution from power-on: the route's stages in its rooms, and no
+// frame throws, the raster's bands come, and the clock keeps to the frames shown
 {
-  const N = 6000, rt = AntPage.create({ data, cost });
+  const N = joy.length + 100, rt = AntPage.create({ data, cost }), sol = AntSolution.attach(rt, solution);
   let threw = null, bands = 0;
   const rb = rt.P.raster_bands;
   rt.P.raster_bands = function () { bands++; return rb.apply(this, arguments); };
+  // the stages as test_route.js finds them, from the game's own flags
+  const ADDONS = ['the Pulsar Beam', 'the Particle Negator', 'the Gravity Displacer', 'the Implosion Mine'];
+  const r = rt.M, seen = [];
+  const flags = () => ({ game: r[0xB0] >> 7 || !r[0x260] ? 0 : 1, thrown: r[0x7C] >> 7 ? 0 : 1, arm: r[0x7B] >> 7, panel: r[0x8A] >> 7,
+    addons: [0, 1, 2, 3].map(i => r[0x67E + i] >> 7), victory: r[0xB1] ? 1 : 0, end: r[0x54] === 0x95 ? 1 : 0, rej: r[0xAC] });
+  let was = flags();
+  sol.start();
   for (let f = 0; f < N && !threw; f++) {
-    rt.input.joy = stickAt(f);
-    try { rt.runFrame(); } catch (e) { threw = e; fail('frame ' + rt.shown + ': ' + e.message); }
+    try { rt.runFrame(); } catch (e) { threw = e; fail('the solution, frame ' + rt.shown + ': ' + e.message); }
+    const now = flags(), at = what => seen.push({ what, frame: f + 1, room: r[0x5B] });
+    if (now.game && !was.game) at('the game starts');
+    if (now.game && now.thrown && !was.thrown && !seen.some(x => x.what === 'the first stone lands')) at('the first stone lands');
+    if (now.arm && !was.arm) at('into the armour');
+    if (!now.arm && was.arm) at('out of the armour');
+    if (now.panel && !was.panel) at('the panel lights');
+    now.addons.forEach((a, i) => { if (a && !was.addons[i]) at(ADDONS[i]); });
+    if (now.victory && !was.victory) at('the mine goes off');
+    if (now.end && !was.end) at('the last message');
+    if (now.rej > was.rej) at('a life lost');
+    was = now;
   }
+  const want = route.stages.map(x => x.what + ' in room ' + x.room).join('; '), got = seen.map(x => x.what + ' in room ' + x.room).join('; ');
+  const late = seen.length === route.stages.length ? Math.max(...seen.map((x, i) => Math.abs(x.frame - route.stages[i].frame))) : -1;
+  if (got !== want) fail('the solution on the page: ' + got + '; the route: ' + want);
+  else if (late > 30) fail('the solution on the page: a stage ' + late + ' frames from the route\'s');
+  else if (!sol.done) fail('the solution on the page: Tal\'s controls did not read every value of the route');
+  else console.log('the solution on the page: the route\'s ' + seen.length + ' stages in its rooms, at most ' + late + ' frames from the route\'s');
   const ahead = rt.t / FRAME - (rt.shown + 1);
   if (ahead > 40 || ahead < 0) fail('the clock ' + ahead.toFixed(1) + ' frames from the frame shown');
   if (Math.abs(bands - 3 * N) > N / 20) fail(bands + ' raster bands in ' + N + ' frames');
