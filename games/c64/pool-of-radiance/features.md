@@ -83,5 +83,9 @@ Found in the code, not in the manual.
 | Spells cast from a scroll are cast at level 6 | traced | camp part, camp_use (`$1156`) |
 | The heading for fourth-level spells reads 7TH LEVEL | traced | camp part, level_headings (`$2AC1`) |
 | Cancelling DROP for a character: BREATHES A SIGH OF RELIEF; a dropped character who is down IS DUMPED IN A DITCH | traced | camp part, drop_command (`$0BC8`) |
+| A battle in a town or dungeon is fought over the 25 squares round the party: each square becomes a slanted block of the battlefield with its walls drawn on: a door that opens as the wall's two ends only, a locked door as a whole wall | traced | com-prep part, read_walls_around (`$0ADB`), draw_walls (`$0BE2`) |
+| Outdoors the battlefield is scattered at random: 133 tries at a random square, about one in five a two-square piece | traced | com-prep part, random_terrain (`$169C`) |
+| A combatant that finds no room on the battlefield, and every later one of its side, is out of the battle before it starts | traced | com-prep part, no_room (`$0F0B`) |
+| Outdoors, three times in four the monsters' four start squares are written to the wrong place, and all of them start in the same corner block | traced | com-prep part, `$15C2` |
 
 ## Open questions
