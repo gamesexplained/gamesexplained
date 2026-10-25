@@ -44,10 +44,13 @@ LAB_MUSIC.tunes.forEach((t, n) => {
 // Sound effects: the reset $1C6C and the request $1C0C, then $253F and $1C2D a frame at a time until no slot is active ($1C0A).
 // The same entries run over the opening's listing; the requests are the ones the selector table at $1FA9 allows.
 const LR = g.listing('parts/opening/listing.json');
+// Requests 0 and 55 to 58 are not requests: the selector table has 55 bytes, and the streams follow it at $1FE0.
+assert.equal(LR.ram[0x1FE0], 0xF0, 'stream 0 should be the filter-form stream the caption describes');
+assert.equal(LR.ram[0x1FA9 + 55], LR.ram[0x1FE0], 'selector 55 should read the first stream byte');
 const fxData = { common: LAB_MUSIC.common, tunes: LAB_MUSIC.effects };
 const wanted = [];
 for (let n = 1; n <= 54; n++) if (LR.ram[0x1FA9 + n] & 0x80) wanted.push(n);
-assert.deepEqual(LAB_MUSIC.effects.map((e) => e.fx), wanted, 'effect list differs from the requests the selector table allows');
+assert.deepEqual(LAB_MUSIC.effects.filter((e) => !e.pitch).map((e) => e.fx), wanted, 'effect list differs from the requests the selector table allows');
 let fxFrames = 0;
 LAB_MUSIC.effects.forEach((e, n) => {
   for (const [a, h] of e.at) assert.equal(h, hex(LR, a, h.length / 2), e.name + ': page bytes differ from the listing');
@@ -55,7 +58,7 @@ LAB_MUSIC.effects.forEach((e, n) => {
   const cpu = new CPU(Uint8Array.from(LR.ram), { port: 0x35, io: { read: () => { throw new Error('I/O read'); }, write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) game.push(a - 0xD400, v); } } });
   const drv = createDriver(fxData, require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js')));
   drv.init(n);
-  cpu.call(0x1C6C, {}); cpu.call(0x1C0C, { a: e.fx });
+  cpu.call(0x1C6C, {}); if (e.pitch) cpu.call(0x0860, { x: e.fx, a: e.pitch[0], y: e.pitch[1] }); else cpu.call(0x1C0C, { a: e.fx });
   let f = 0;
   for (; f < 5000; f++) {
     game.length = 0;
