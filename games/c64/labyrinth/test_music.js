@@ -41,4 +41,32 @@ LAB_MUSIC.tunes.forEach((t, n) => {
   assert.equal(f, t.frames - 1, t.name + ': length differs from the page data note');
   frames += f + 1;
 });
-console.log('labyrinth music: ' + LAB_MUSIC.tunes.length + ' tunes, ' + frames + ' frames, ' + writes + ' SID writes, same as the game’s own code');
+// Sound effects: the reset $1C6C and the request $1C0C, then $253F and $1C2D a frame at a time until no slot is active ($1C0A).
+// The same entries run over the opening's listing; the requests are the ones the selector table at $1FA9 allows.
+const LR = g.listing('parts/opening/listing.json');
+const fxData = { common: LAB_MUSIC.common, tunes: LAB_MUSIC.effects };
+const wanted = [];
+for (let n = 1; n <= 54; n++) if (LR.ram[0x1FA9 + n] & 0x80) wanted.push(n);
+assert.deepEqual(LAB_MUSIC.effects.map((e) => e.fx), wanted, 'effect list differs from the requests the selector table allows');
+let fxFrames = 0;
+LAB_MUSIC.effects.forEach((e, n) => {
+  for (const [a, h] of e.at) assert.equal(h, hex(LR, a, h.length / 2), e.name + ': page bytes differ from the listing');
+  const game = [];
+  const cpu = new CPU(Uint8Array.from(LR.ram), { port: 0x35, io: { read: () => { throw new Error('I/O read'); }, write: (a, v) => { if (a >= 0xD400 && a <= 0xD418) game.push(a - 0xD400, v); } } });
+  const drv = createDriver(fxData, require(path.resolve(__dirname, '../../../kit/cpu/cpu6502.js')));
+  drv.init(n);
+  cpu.call(0x1C6C, {}); cpu.call(0x1C0C, { a: e.fx });
+  let f = 0;
+  for (; f < 5000; f++) {
+    game.length = 0;
+    cpu.call(0x253F, {}); cpu.call(0x1C2D, {});
+    drv.play();
+    assert.equal(game.join(), drv.writes.join(), e.name + ': frame ' + f + ' differs');
+    writes += game.length / 2;
+    if (!cpu.m[0x1C0A]) break;
+  }
+  assert(!drv.playing(), e.name + ' never ended');
+  assert.equal(f + 1, e.frames, e.name + ': length differs from the page data note');
+  fxFrames += f + 1;
+});
+console.log('labyrinth music: ' + LAB_MUSIC.tunes.length + ' tunes, ' + frames + ' frames, ' + LAB_MUSIC.effects.length + ' effects, ' + fxFrames + ' frames, ' + writes + ' SID writes, same as the game’s own code');
