@@ -42,8 +42,8 @@ Sources:
 | Shop Menu: buy, view, take, pool, share, appraise, exit; sold items vanish from the shop; ID costs money | open | |
 | Temple Menu: heal spells for a price | open | |
 | Encamp Menu: save, view, magic, rest, alter, exit | live | camp part |
-| Rest: each 24 uninterrupted hours heals 1 HP; memorising takes at least 4 hours, 6 for third level; rest can be interrupted | open | camp part |
-| Alter: order (first four are the front rank), drop, speed (slower, faster), icon, pics (characters on/off, monsters on/off) | open | camp part |
+| Rest: each 24 uninterrupted hours heals 1 HP; memorising takes at least 4 hours, 6 for third level; rest can be interrupted | traced | camp part: daily_heal (`$1FB6`) gives every member 1 hit point each 24 hours of rest, counted from arrival in camp, so two rests on one visit add up; rest_hours_by_level (`$1A83`) 4 hours before spells of levels 1-2, 6 before 3-4, then 15 minutes per spell level; the interruption roll at `$1E0F` |
+| Alter: order (first four are the front rank), drop, speed (slower, faster), icon, pics (characters on/off, monsters on/off) | traced | camp part: alter_command (`$08E9`) and its five routines; the front rank is not in this module |
 | Encounter Menu: combat, wait, flee, advance or parlay | live | dungeon part |
 | Surprise: a free round for whichever side surprises the other | open | |
 | Parlay attitudes: haughty, sly, meek, nice, abusive | open | |
@@ -63,10 +63,10 @@ Sources:
 | Treasure Menu after combat: view, take (items, money), pool, share, detect, exit, with a reminder of treasure left | live | post-com part |
 | Experience shared after a won fight | live | post-com part |
 | Coins: copper, silver, electrum, gold, platinum, gems and jewelry; weight slows a character | open | |
-| Magic: clerics and magic-users memorise spells in camp; first to third level spell lists | open | camp part, combat part |
-| Item Menu: ready, use, trade, drop, halve, join, sell, ID; some items ready only in combat or camp ("NOT HERE") | open | |
+| Magic: clerics and magic-users memorise spells in camp; first to third level spell lists | traced | camp part: magic_command (`$14E2`), memorize_command (`$184A`), scribe_command (`$152E`), spell_level (`$2B35`) |
+| Item Menu: ready, use, trade, drop, halve, join, sell, ID; some items ready only in combat or camp ("NOT HERE") | traced | camp part: camp_item_actions (`$1082`) fills READY, USE, TRADE, DROP, HALVE and JOIN, and the camp lets NOT HERE items be readied (`$6DE4` = 1); SELL and ID are not in the camp |
 | Portraits shown only in the civilised area | open | |
-| Saving and loading games on a save disk | open | camp part, gen part |
+| Saving and loading games on a save disk | traced | camp part: save_command (`$0CAB`) writes SAVEDGAME1 and SAVEDGAME0; gen part loads them |
 | Runes shown in play, translated with the wheel | open | |
 | Journal entries named by number in messages | open | ECL scripts |
 | Ending: the dragon dies and Tyranthraxus speaks from its body | live | final part |
@@ -74,5 +74,14 @@ Sources:
 ## Beyond the documentation
 
 Found in the code, not in the manual.
+
+| Feature | Status | Where |
+|---|---|---|
+| Casting a combat-only spell in camp asks ARE YOU SURE, then loses the spell with no effect | traced | camp part, combat_only_spell (`$1467`) |
+| ORDER moves each member's timed effects one slot at a time, so an effect can be moved twice and end on the wrong member | traced | camp part, `$0AF9` |
+| Days rested in camp add to the days-gone-by count (`$49EC`) only when a month turns over; the adventure module adds every day | traced | camp part, clock_add (`$124A`); dungeon part, count_step (`$7A5F`) |
+| Spells cast from a scroll are cast at level 6 | traced | camp part, camp_use (`$1156`) |
+| The heading for fourth-level spells reads 7TH LEVEL | traced | camp part, level_headings (`$2AC1`) |
+| Cancelling DROP for a character: BREATHES A SIGH OF RELIEF; a dropped character who is down IS DUMPED IN A DITCH | traced | camp part, drop_command (`$0BC8`) |
 
 ## Open questions
