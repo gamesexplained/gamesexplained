@@ -6264,7 +6264,7 @@
   },
   {
    "address": 26943,
-   "name": "advance_effect_voice_script",
+   "name": "advance_voice_sequence",
    "type": "code",
    "kind": "user"
   },
@@ -6282,7 +6282,7 @@
   },
   {
    "address": 27012,
-   "name": "effect_voice_run_command",
+   "name": "seq_run_command",
    "type": "code",
    "kind": "user"
   },
@@ -6300,7 +6300,7 @@
   },
   {
    "address": 27071,
-   "name": "voice_cmd_set_transpose",
+   "name": "seq_cmd_set_transpose",
    "type": "code",
    "kind": "user"
   },
@@ -6336,7 +6336,7 @@
   },
   {
    "address": 27282,
-   "name": "voice_cmd_set_control",
+   "name": "pattern_cmd_set_control",
    "type": "code",
    "kind": "user"
   },
@@ -11867,7 +11867,7 @@
   {
    "address": 247,
    "type": "line",
-   "text": "Low byte of the pointer ($F8 is the high byte) to a voice's sequence in the tune that sid_player_init starts, copied from $651B/$651E by advance_effect_voice_script (called only from sid_init_voice_loop); its bytes below $F0 choose the phrase that goes into voice_script_ptr ($F5), and higher bytes are commands. Sound effects do not use it."
+   "text": "Low byte of the pointer ($F8 is the high byte) to a voice's sequence in the tune that sid_player_init starts, copied from $651B/$651E by advance_voice_sequence (called only from sid_init_voice_loop); its bytes below $F0 choose the phrase that goes into voice_script_ptr ($F5), and higher bytes are commands. Sound effects do not use it."
   },
   {
    "address": 248,
@@ -11877,7 +11877,7 @@
   {
    "address": 251,
    "type": "line",
-   "text": "Temporary of the sound engine: the control register value that voice_cmd_set_control reads from the script. When its bit 3 (test) is set it is written to the voice's control register as it is and then with bit 3 cleared; otherwise it is written once."
+   "text": "Temporary of the sound engine: the control register value that pattern_cmd_set_control reads from the script. When its bit 3 (test) is set it is written to the voice's control register as it is and then with bit 3 cleared; otherwise it is written once."
   },
   {
    "address": 252,
@@ -14667,7 +14667,7 @@
   {
    "address": 25877,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Read position in the voice's top-level sequence script (the one pointed to by seq_script_ptr_lo and seq_script_ptr_hi, copied to $F7/$F8 by advance_effect_voice_script). Bytes $6515-$6517; $6518-$651A are not used by the code."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Read position in the voice's top-level sequence script (the one pointed to by seq_script_ptr_lo and seq_script_ptr_hi, copied to $F7/$F8 by advance_voice_sequence). Bytes $6515-$6517; $6518-$651A are not used by the code."
   },
   {
    "address": 25883,
@@ -14677,12 +14677,12 @@
   {
    "address": 25884,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). Low byte of voice 1's sequence script address (seq_script_ptr_lo), which advance_effect_voice_script loads indexed by the voice number."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). Low byte of voice 1's sequence script address (seq_script_ptr_lo), which advance_voice_sequence loads indexed by the voice number."
   },
   {
    "address": 25885,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). Low byte of voice 2's sequence script address (seq_script_ptr_lo), which advance_effect_voice_script loads indexed by the voice number."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). Low byte of voice 2's sequence script address (seq_script_ptr_lo), which advance_voice_sequence loads indexed by the voice number."
   },
   {
    "address": 25886,
@@ -14692,12 +14692,12 @@
   {
    "address": 25887,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). High byte of voice 1's sequence script address (seq_script_ptr_hi), which advance_effect_voice_script loads indexed by the voice number."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). High byte of voice 1's sequence script address (seq_script_ptr_hi), which advance_voice_sequence loads indexed by the voice number."
   },
   {
    "address": 25888,
    "type": "line",
-   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). High byte of voice 2's sequence script address (seq_script_ptr_hi, $651E-$6520), which advance_effect_voice_script loads with lda $651E,x, X = 2."
+   "text": "Byte written by sid_player_init when a song starts (it copies six bytes to $651B-$6520). High byte of voice 2's sequence script address (seq_script_ptr_hi, $651E-$6520), which advance_voice_sequence loads with lda $651E,x, X = 2."
   },
   {
    "address": 25889,
@@ -14847,7 +14847,7 @@
   {
    "address": 25963,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Sequence script repeat counter. advance_effect_voice_script keeps the same phrase playing while it counts down, then moves on; sequence command $F1 sets it. Bytes $656B-$656D."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Sequence script repeat counter. advance_voice_sequence keeps the same phrase playing while it counts down, then moves on; sequence command $F1 sets it. Bytes $656B-$656D."
   },
   {
    "address": 25966,
@@ -14877,7 +14877,7 @@
   {
    "address": 25977,
    "type": "line",
-   "text": "Three bytes, one per voice ($6579-$657B). Only sid_init_voice_loop and sid_reset_voice_state write them (clearing); the routines that index this array from its first byte read it (the references list which)."
+   "text": "Three bytes, one per voice ($6579-$657B). Only sid_init_voice_loop and sid_reset_voice_state write them, both storing zero, and no instruction reads them (no base reaches them with an index of 0 to 2), so the array is unused."
   },
   {
    "address": 25980,
@@ -14917,12 +14917,12 @@
   {
    "address": 25995,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Set by pattern commands to ask music_voice_step to reload voice_freq_lo/hi from the tables (index voice_note plus voice_transpose) at the next pattern step. Bytes $658B-$658D."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Set only by pattern command 5 (the handler at $6AE2): to its third operand when that is nonzero, or to 1 when it is zero (after the frequency is set to $FFFF). While nonzero it is also a note offset: sid_voice_run and the arpeggio step at $6D81 add it to voice_note and voice_transpose when they index note_freq_lo/hi. At the voice's next pattern step music_voice_step clears it and reloads voice_freq_lo/hi from voice_note plus voice_transpose, without the offset. Bytes $658B-$658D."
   },
   {
    "address": 25998,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Transposition in semitones added to voice_note before every frequency lookup. Set by sequence command $F3 and cleared by advance_effect_voice_script once the repeat counter has run out. Bytes $658E-$6590."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Transposition in semitones added to voice_note before every frequency lookup. Set by sequence command $F3 and cleared by advance_voice_sequence once the repeat counter has run out. Bytes $658E-$6590."
   },
   {
    "address": 26001,
@@ -14932,7 +14932,7 @@
   {
    "address": 26004,
    "type": "line",
-   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Low byte of the pulse width a note starts from (third operand of script command $82); copied into voice_pulse_lo at each note start. Bytes $6594-$6596."
+   "text": "Per-voice array: three bytes, one for each SID voice 0 to 2, indexed by X. Low byte of the pulse width a note starts from (third operand of script command $82); copied into voice_pulse_lo when a new note starts, unless bit 1 of voice_restart_mask is set. Bytes $6594-$6596."
   },
   {
    "address": 26007,
@@ -15007,7 +15007,7 @@
   {
    "address": 26047,
    "type": "line",
-   "text": "Single byte. Nonzero while the master volume fades down. Set (with $65C0 and $65C1) to the same value by sequence command $F4 and by s_6ED8, which the game calls to start a fade-out; sid_check_fade does the stepping."
+   "text": "Single byte. Nonzero while the master volume fades down. Set (with $65C0 and $65C1) to the same value by sequence command $F4 and by sid_start_fade_out ($6ED8), which the game calls to start a fade-out; sid_check_fade does the stepping."
   },
   {
    "address": 26048,
@@ -15042,17 +15042,17 @@
   {
    "address": 26054,
    "type": "line",
-   "text": "Written by sid_silence_all; the routines that index this array from its first byte read it (the references list which)."
+   "text": "Voice 1's byte of voice_restart_mask ($65C5-$65C7). sid_silence_all sets it to $FF directly; sid_reset_voice_state, sid_init_voice_loop and script command $89 (the handler at $6C16) write it through $65C5 indexed by the voice, and advance_voice_script reads it as $65C5,x when a new note starts."
   },
   {
    "address": 26055,
    "type": "line",
-   "text": "Written by sid_silence_all; the routines that index this array from its first byte read it (the references list which). This is the byte at $65C7."
+   "text": "Voice 2's byte of voice_restart_mask ($65C5-$65C7). sid_silence_all sets it to $FF directly; sid_reset_voice_state, sid_init_voice_loop and script command $89 (the handler at $6C16) write it through $65C5 indexed by the voice, and advance_voice_script reads it as $65C5,x when a new note starts."
   },
   {
    "address": 26056,
    "type": "line",
-   "text": "Single byte. Keeps the position in the song list at $7C15 while sid_load_song_voices handles one voice."
+   "text": "Single byte of scratch for sid_load_song_voices. It keeps the position in the song list at $7C15 (X) across the call to sid_reset_voice_state, then briefly holds the voice number (Y) while X indexes sid_voice_offsets, and gives Y back before the next entry."
   },
   {
    "address": 26057,
@@ -15067,7 +15067,7 @@
   {
    "address": 26085,
    "type": "line",
-   "text": "Low bytes of the sequence-script command handlers for bytes $F0 to $F5, $65E5-$65EA; effect_voice_run_command reads them as $64F5,x. Handlers: $F0 6996 (jump to a position), $F1 699F (repeat count), $F2 69AE (stop the voice), $F3 69BF (transpose), $F4 69CE (start fade-out), $F5 69E3 (start fade-in)."
+   "text": "Low bytes of the sequence-script command handlers for bytes $F0 to $F5, $65E5-$65EA; seq_run_command reads them as $64F5,x. Handlers: $F0 6996 (jump to a position), $F1 699F (repeat count), $F2 69AE (stop the voice), $F3 69BF (transpose), $F4 69CE (start fade-out), $F5 69E3 (start fade-in)."
   },
   {
    "address": 26091,
@@ -15097,17 +15097,17 @@
   {
    "address": 26125,
    "type": "line",
-   "text": "Sound start-up: clears the filter resonance ($D417) and sets volume 15 with the low-pass filter ($D418 = $1F). The SID writes in the census all fall in $6615-$6ED4."
+   "text": "Sound start-up: clears the fade flags sid_fade_in_active and sid_fade_out_active and the filter resonance ($D417), sets sid_volume, sid_effects_enabled ($6501) and $D418 to $1F (volume 15 with the low-pass filter), then zeroes SID registers $D400-$D416 and $6530-$6546. The sound code's SID writes run from $6615 to $6EEE; the last, $D404,y at $6EEE, is in the $8A stop-voice handler at $6EE7, which the listing has not reached."
   },
   {
    "address": 26163,
    "type": "line",
-   "text": "Starts a set of up to three sound voices from a song list. Does nothing if the sound-enabled flag $6501 is zero. X is the first entry in the list at $7C15; for each of the three voices, an entry with bit 7 set is skipped, otherwise it is doubled and used to fetch a two-byte script pointer from $7C3D/$7C3E into $655C/$655F (indexed by voice). It then calls sid_reset_voice_state and writes 0 to that voice's SID control register ($D404 + the offset in the table at $65FF), which gates the old note off. Which song or effect the list means is inferred."
+   "text": "Starts a set of up to three sound voices from a song list. Does nothing if sid_effects_enabled ($6501) is zero. X is the position of the first entry in the list at $7C15; voice Y = 0 to 2 takes the entry at X+Y. An entry with bit 7 set is skipped; otherwise it is doubled and used to fetch a two-byte script pointer from $7C3D/$7C3E into $655C/$655F for that voice. It then calls sid_reset_voice_state and writes 0 to a SID control register: $D404 plus sid_voice_offsets indexed by the list position X, not by the voice. Only for a list that starts at position 0 is that the voice's own register; for a later list it reads the bytes after the table ($6602 on) and clears some other SID register. Which song or effect a list means is inferred."
   },
   {
    "address": 26219,
    "type": "line",
-   "text": "Resets the sound-engine state for one voice slot (Y = 0..2). Sets the flag byte at $00FC+Y to 1, stores Y+1 in $6505+Y (the voice's tick countdown, inferred), and zeroes a set of per-voice tables ($6576, $6579, $657C, $6582, $6585, $6588, $658E, $65A9, $65C5 and others, indexed by Y). It also sets the two-byte slot tables at $6521/$6524 to 2 and $6527/$652A to $66, and clears $6530+Y. Called by sid_load_song_voices before a voice starts its script. Roles of the individual tables are inferred from addresses only."
+   "text": "Resets the sound-engine state for one voice slot (Y = 0..2). Sets the voice flag $FC+Y to 1, stores Y+1 in voice_script_timer ($6505+Y), and zeroes nine per-voice tables at Y: voice_transpose, voice_script_pos, voice_repeat_flag, voice_restart_mask, voice_pitch_enabled, f_6579, voice_arp_enabled, voice_oneshot_active and voice_freq_pending. It points the voice's pattern stream at sid_idle_pattern ($6602: 2 into voice_pattern_ptr_lo and voice_pattern_start_lo, $66 into the high bytes $6527/$652A) and clears voice_pulse_start ($6530+Y). Its only caller is sid_load_song_voices, before a voice starts its script."
   },
   {
    "address": 26281,
@@ -15197,7 +15197,7 @@
   {
    "address": 26919,
    "type": "line",
-   "text": "Handles a command byte (bit 7 set) in a voice script: looks the handler address up in the tables at $6549,x/$6557,x, patches it into the jump at $6936 (operand $6937/$6938), restores X from $FF and jumps to the common command parser at $6C88."
+   "text": "Handles a command byte (bit 7 set) in a voice script: looks the handler address up in voice_cmd_table_lo/hi, read as $6549,x/$6557,x with X = the command byte ($80-$8D), patches it into the jmp at $6936 (operand $6937/$6938), restores X from $FF and takes the jmp. The $6C88 (script_cmd_set_filter) that the jmp shows is only the last handler patched in before the snapshot."
   },
   {
    "address": 26935,
@@ -15212,7 +15212,7 @@
   {
    "address": 26943,
    "type": "line",
-   "text": "Advances one voice's event script in the second table set at $651B/$651E (script pointer, copied to $F7/$F8), $6515 (position) and $656B (duration counter), with X = voice number from $FF. Role inferred: a sibling of advance_voice_script for sound effects or a separate voice group; it is called with jsr from the stub at $6939 which then jumps to advance_voice_script. Clears $65A9,x, and clears the hold flag $658E,x once the duration counter has run out. A script byte below $F0 is a note: its pointer is fetched from $70CC/$70F5 into $F5/$F6, the duration counter is counted down and the position advances when it is spent."
+   "text": "Steps one voice's sequence (order list), with X = voice number from $FF. The sequence pointer comes from $651B/$651E,x into $F7/$F8 and the position from voice_seq_pos ($6515,x). It clears voice_script_pos, and clears voice_transpose if it is set while the repeat count voice_repeat_count ($656B,x) is zero. A sequence byte of $F0 or more is a command (seq_run_command); any other byte is a phrase number, whose address from phrase_ptr_lo/hi ($70CC/$70F5) goes into $F5/$F6 as the voice's new note script. A nonzero repeat count is decremented and the position stays put while it is still nonzero, so the phrase plays again; otherwise the position moves on one byte. Called from sid_init_voice_loop and from the stub at $6939 (voice-script command $80), which then reads the new phrase with advance_voice_script."
   },
   {
    "address": 27008,
@@ -15222,7 +15222,7 @@
   {
    "address": 27012,
    "type": "line",
-   "text": "Script byte of $F0 or more is a command: the handler address is taken from the tables at $64F5 and $64FB, indexed by the command byte, and written into the operand of the jmp at $6993 (the bytes $6994/$6995), then X is restored from $FF and the jmp runs (initially jumps to $69BF; the first handler sets $658E,x from the next script byte and skips two bytes). Patching a jmp operand is the same trick dispatch_voice_command uses at $6936."
+   "text": "Sequence byte of $F0 or more is a command: the handler address is taken from seq_cmd_table_lo/hi, read as $64F5,x and $64FB,x with X = the command byte, and written into the operand of the jmp at $6993 (the bytes $6994/$6995); then X is restored from $FF and the jmp runs. The $69BF it shows in the snapshot is only the last handler patched in, that of command $F3 (transpose). Patching a jmp operand is the same trick dispatch_voice_command uses at $6936."
   },
   {
    "address": 27028,
@@ -15242,7 +15242,7 @@
   {
    "address": 27145,
    "type": "line",
-   "text": "Sound engine: steps one music voice (X selects it) every tick. Counts down $650B,x and returns until it hits zero. If $658B,x is set, it clears it and loads $6562,x and $6565,x from tables at $6F06 and $6F64, indexed by $6568,x plus $658E,x. Then the voice's pattern pointer ($6521,x low, $6527,x high) is put in $F5/$F6 and the next pattern byte is read. That byte indexes a command-address table at $65F1/$65F8, written into the jump at $6A51/$6A52, and it jumps on to $6AB8 (role of the jump inferred)."
+   "text": "Sound engine: steps one voice's pattern stream (X selects the voice). Counts down voice_pattern_timer ($650B,x) and returns until it hits zero. If voice_freq_lookup ($658B,x) is set, it clears it and reloads voice_freq_lo/hi ($6562,x/$6565,x) from note_freq_lo/hi ($6F06/$6F64) indexed by voice_note plus voice_transpose. Then the voice's pattern pointer ($6521,x low, $6527,x high) goes into $F5/$F6 and the pattern bytes are read: each command byte indexes pattern_cmd_table_lo/hi ($65F1/$65F8) and the handler is patched into the jmp at $6A50 (operand $6A51/$6A52). Commands 1, 2 and 6 go back to $6A3C for the next byte; 0, 3, 4 and 5 set a new wait and end at voice_save_pattern_ptr. The $6AB8 the jmp shows is only the last handler patched in (command 4)."
   },
   {
    "address": 27217,
@@ -15257,12 +15257,12 @@
   {
    "address": 27282,
    "type": "line",
-   "text": "Voice script command handler (reached by jump from the command dispatch, ends by jumping to $6B3E). Reads two operand bytes from the script at ($F5),y: the first goes to $FB, the second to the voice counter $650B,x (a countdown for this voice; its exact role is inferred). Then writes $FB to the voice's SID control register ($D404 plus voice offset $656F) if bit 3 (test bit) is set, and always writes it again with bit 3 cleared. The extra write with the test bit set resets the oscillator before the real waveform/gate value goes in (inferred from the SID register layout)."
+   "text": "Pattern-stream command 3 (reached through the patched jmp at $6A50, ends by jumping to voice_save_pattern_ptr at $6B3E). Reads two operand bytes from the pattern at ($F5),y: the first goes to $FB, the second to voice_pattern_timer ($650B,x), the frames until the voice's next pattern step. Then writes $FB to the voice's SID control register ($D404 plus the offset in $656F) if bit 3 (test bit) is set, and always writes it again with bit 3 cleared. The extra write with the test bit set resets the oscillator before the real waveform/gate value goes in (inferred from the SID register layout)."
   },
   {
    "address": 27454,
    "type": "line",
-   "text": "End of a voice script command (jumped to from voice_cmd_set_control at $6AB5): adds one to the position counter sid_pattern_pos ($656E), then stores the 16-bit pointer ($F5/$F6 plus that position) in voice_pattern_ptr_lo/hi ($6521,x / $6527,x) for voice X, so the voice resumes after the bytes just read. Then returns."
+   "text": "Common end of the pattern commands that wait (0 at $6A5C, 3 at $6AB5, 4 at $6ADF, 5 at $6B0E): adds one to sid_pattern_pos ($656E), then stores the 16-bit pointer ($F5/$F6 plus that position) in voice_pattern_ptr_lo/hi ($6521,x / $6527,x) for voice X, so the next pattern step starts after the bytes just read. Then returns."
   },
   {
    "address": 27784,
