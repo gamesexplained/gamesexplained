@@ -13142,7 +13142,7 @@
   {
    "address": 2299,
    "type": "line",
-   "text": "Counter of a jump or fall. While the player rises it holds the rise left: a jump starts it at jump_start_count ($08FC) or, from mode 1, at $10; each frame player_jump_motion subtracts the $02CE entry it indexes (limited to 16) from it and from player_try_y, and when it would reach 0 the fall begins (jump_state 1, counter 0). While falling it indexes the $02DF table and rises by one up to 8."
+   "text": "Counter of a jump or fall. While the player rises it holds the rise left: a jump starts it at jump_start_count ($08FC), or from mode 1 at $10, and other rises start it at $30 ($8B3E), $20 ($A5E1), jump_start_count plus $10 ($8FE4-$8FE9), or jump_start_count plus $A0 ($A78B-$A791); each frame player_jump_motion subtracts the $02CE entry it indexes (limited to 16) from it and from player_try_y, and when it would reach 0 the fall begins (jump_state 1, counter 0). While falling it indexes the $02DF table and rises by one up to 8."
   },
   {
    "address": 2300,
@@ -14012,7 +14012,7 @@
   {
    "address": 17452,
    "type": "line",
-   "text": "Redraws the playfield column just left of the view (map x = scroll_x minus 1, map y = scroll_y plus 1) into the screen buffer pointed to by $08C1/$08C2, one character column down the screen (21 rows, counter in $E9). Bit 0 of the map x and y positions go to $08C7 and $08C8 and select which half of each 2x2-character block is copied. Map blocks are found through the row pointer tables at ($2A)/($2C) indexed by y/2, then the block number times 4 plus $2E gives the block's characters. Odd-row starts are handed to draw_column_odd_start. Used while the screen scrolls; role inferred from the code."
+   "text": "Redraws the playfield column just left of the view (map x = scroll_x minus 1, map y low byte = scroll_y plus 1; the carry into the high byte is added to $1F, not to $23, so $23 keeps its old value) into the screen buffer pointed to by $08C1/$08C2, one character column down the screen (21 rows, counter in $E9). Bit 0 of the map x and y positions go to $08C7 and $08C8 and select which half of each 2x2-character block is copied. Map blocks are found through the row pointer tables at ($2A)/($2C) indexed by y/2, then the block number times 4 plus $2E gives the block's characters. Odd-row starts are handed to draw_column_odd_start. Used while the screen scrolls; role inferred from the code."
   },
   {
    "address": 17632,
@@ -16107,7 +16107,7 @@
   {
    "address": 37200,
    "type": "line",
-   "text": "Start an object on a path from the record at ($E3),Y. X is the object. The byte at Y is skipped; the bytes at Y+1 and Y+2 go to obj_arc_state ($3F19,X) and obj_arc_counter ($3F76,X, the slot in the path tables). The byte at Y+3 is kept in $ED and the one at Y+4 is stored in path_end ($5C), $ED in path_axes ($60), and 0 in path_pos ($64), all at that slot. Y is left at Y+4 (from $EB) and the routine returns with carry set. No caller was found in the stage 1 snapshot; stage code that is not loaded may call it."
+   "text": "Start an object on a path from the record at ($E3),Y. X is the object. The byte at Y is skipped; the bytes at Y+1 and Y+2 go to obj_arc_state ($3F19,X) and obj_arc_counter ($3F76,X, the slot in the path tables). The byte at Y+3 is kept in $ED and the one at Y+4 is stored in path_end ($5C), $ED in path_axes ($60), and 0 in path_pos ($64), all at that slot. Y is left at Y+4 (from $EB) and the routine returns with carry set. It is the handler for script command $15 (entry 21 of the tables at $B33C/$B35F), reached from the dispatch at $B217-$B224."
   },
   {
    "address": 37242,
@@ -16987,7 +16987,7 @@
   {
    "address": 50304,
    "type": "line",
-   "text": "The 192 bytes $C480-$C53F (characters $90 to $A7) that the routine at $51FD fills with $00 while it saves $FFBF-$FFFE to $44E1."
+   "text": "The 192 bytes $C480-$C53F (characters $90 to $A7) that the routine at $51FD fills with $00 while it saves $FFBF-$FFFE to $44E1. The bytes are characters $90 to $A7 of the stage character set: each stage's directory entry 17 overwrites them, so in play 186 of the 192 are non-zero and the clearing is only the start-up state."
   },
   {
    "address": 51072,
