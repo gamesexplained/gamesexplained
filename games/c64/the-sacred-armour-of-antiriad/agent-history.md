@@ -145,3 +145,21 @@ VICE does, where whole handlers let some reads come 6 frames apart. The
 bot's route up to the ledge in C13 was carried to the new model a read
 at a time, each read the same, and the bot searched the rest again on
 it.
+
+The new route, played in VICE a read at a time, matched for 1,934 of its
+1,954 reads and reached the ending there, the mine and the last message,
+with the same score. The 20 that differed came in a row in H8, after
+Tal's first death there, where VICE's Tal had 4 points less energy.
+Logging every latch of `$D01F`, every pass of `scenery_hits` and the
+address each interrupt broke into, on both machines, showed the same
+collision latched on the same line of the same frame. On the kit's
+machine its interrupt had come at `$A4AC`, after `scenery_hits` had read
+the latch as empty and before it stored 0 there, so the touch was wiped;
+in VICE the main loop was elsewhere and the touch cost 4 points. That is
+the game's own race, and which way it falls depends on where the main
+loop, which runs with no wait, is in its pass, which the kit's machine
+does not hold to the cycle over thirteen thousand frames. Tal's energy
+ran out on the same read in both, and the two runs joined again. A first
+check of the ending in VICE let go of the stick before the last read had
+been taken, and Tal never landed: the read is taken once the run goes on,
+so the stick it is given has to stay until then.

@@ -7,7 +7,7 @@
 // few bytes below it that the game reads before it writes them as the machine has them (START), the
 // stick on port 2 set from route.json before each frame, and:
 // - each stage is found again where route.json says, from the game's own flags: the game under way
-//   (zp_title bit 7 clear), the first stone landed (zp_throw bit 7 clear), the armour worn and left (zp_armour_state bit 7), the panel lit
+//   (zp_title bit 7 clear and Tal's animation set), the first stone landed (zp_throw bit 7 clear), the armour worn and left (zp_armour_state bit 7), the panel lit
 //   (zp_panel_on), each add-on taken ($067E-$0681), the mine gone off (zp_victory) and the last
 //   message ($95, zp_msg_scroll);
 // - Tal's room and place every `every` frames from the game's start (`from`) are route.json's;
@@ -38,7 +38,7 @@ function boot() {
 function replay(joy) {
   const m = boot();
   const r = m.ram, stages = [], trace = [];
-  const look = () => ({ game: r[0xB0] >> 7 ? 0 : 1, thrown: r[0x7C] >> 7 ? 0 : 1, arm: r[0x7B] >> 7, panel: r[0x8A] >> 7, addons: [0, 1, 2, 3].map((i) => r[0x67E + i] >> 7), victory: r[0xB1] ? 1 : 0, end: r[0x54] === 0x95 ? 1 : 0 });
+  const look = () => ({ game: r[0xB0] >> 7 || !r[0x260] ? 0 : 1, thrown: r[0x7C] >> 7 ? 0 : 1, arm: r[0x7B] >> 7, panel: r[0x8A] >> 7, addons: [0, 1, 2, 3].map((i) => r[0x67E + i] >> 7), victory: r[0xB1] ? 1 : 0, end: r[0x54] === 0x95 ? 1 : 0 });
   const place = () => ({ room: r[0x5B], x: r[0x200] + (r[0x210] & 1 ? 256 : 0), y: r[0x201] });
   let was = look(), deaths = 0, rej = r[0xAC], from = 0;
   for (let f = 0; f < joy.length; f++) {
