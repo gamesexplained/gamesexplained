@@ -22,7 +22,7 @@ Sources:
 | Boot asks "DISABLE FASTLOADER (Y/N)"; N uses the game's own fast loader | live | BOOT line 30000; FAST1.O at `$B700` |
 | Title picture with music, any key passes it, then the credits | live | title part |
 | Code word from the translation wheel: two runes and a path, type the word read along the path | live | title part (INIT) |
-| Two wrong code words and the game stops | open | title part (INIT) |
+| Two wrong code words and the game stops | traced | title part (wrong_word, `$12DF`: the second wrong word jumps to itself at `$12F4`) |
 | Party Creation Menu: create, drop, modify, train, view, add, remove, load saved game, save, begin adventuring | live | gen part |
 | Create a character: race (6), gender, rolled ability scores (reroll or keep), class, alignment, name (15 letters) | open | gen part |
 | Portrait chosen from heads and bodies; combat icon chosen (weapon, head, colours, size) | open | gen part, camp part (Alter, Icon) |

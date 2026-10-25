@@ -43,8 +43,9 @@ a D64 the game formatted from the party menu.
 3. `INIT` loads the title picture and its music. Any key passes the
    title; the credits follow, then a menu: press RETURN to play.
 4. The code word: two runes and a path are shown, and the word read along
-   that path on the translation wheel must be typed (six letters, or five
-   when the path starts with a number). The word is picked at random from
+   that path on the translation wheel must be typed: one of twelve
+   six-letter words, the same whichever of the three paths is shown. The
+   word is picked at random from
    a table in `INIT` (the pick is at `$1376` and `$1377`, the table at
    `$1039`), so it differs from one boot to the next; the snapshot
    `codeword_prompt` wanted KNIGHT. Two wrong words stop the game.
@@ -169,7 +170,7 @@ the KERNAL's vector at `$0314`, which points to `$3BEA` in `LIBRARY`
 (`$EA31`, the KERNAL's own, in the party menu). The video chip uses bank
 3 (`$C000`-`$FFFF`): in play a multicolour text screen at `$CC00` with
 its character set at `$D000`, in the RAM under the I/O chips; the title
-is a multicolour bitmap at `$E000` with its colours at `$DC00`.
+is a hires bitmap at `$E000` with its colours at `$DC00`, unpacked there from `TITLEPG`.
 
 ## The loader, in a paragraph
 
