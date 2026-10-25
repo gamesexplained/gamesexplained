@@ -6426,7 +6426,7 @@
   },
   {
    "address": 28033,
-   "name": "music_voice_step",
+   "name": "voice_arp_step",
    "type": "code",
    "kind": "user"
   },
@@ -15282,12 +15282,12 @@
   {
    "address": 28033,
    "type": "line",
-   "text": "Steps one sound voice (voice number in X) by one frame. Does nothing if the voice is off ($657C,x zero). Otherwise counts down $65AC,x; on zero it reads the next note byte from the voice's pattern (pointer $653C/$6542,x, index $65B2,x), adds three transpose offsets ($6568, $658B, $658E,x), looks the sum up in the frequency tables $6F06 (low) and $6F64 (high) and writes them to the voice's SID frequency registers ($D400/$D401 plus the voice offset in $656F). It then reloads the countdown from $65AF,x and advances the index, wrapping to 0 at the pattern length $65B5,x. Role inferred from the SID writes and the note-table lookup."
+   "text": "Arpeggio step for one voice (voice number in X). Does nothing unless the voice's arpeggio flag $657C,x is set (script command $84 sets it). Otherwise counts down $65AC,x; on zero it reloads the count from $65AF,x (frames per step), reads the next semitone offset from the arpeggio record (pointer $653C/$6542,x, index $65B2,x), adds voice_note ($6568,x) and the offsets $658B,x and $658E,x, looks the sum up in note_freq_lo/hi ($6F06/$6F64) and writes the result to the voice's SID frequency registers ($D400/$D401 plus the voice offset in $656F). It then advances the index, wrapping to 0 at the record's step count $65B5,x."
   },
   {
    "address": 28110,
    "type": "line",
-   "text": "Per-frame SID filter-cutoff sweep. Returns at once if $6501 is non-zero or if the highest-numbered voice with $657F,x non-zero has $6582,x non-zero (the loop stops at the first active voice, counting down from voice 2). Otherwise counts down $6514; when it expires it reads the next (length, step low, step high) triple from the table at $72C5 (a zero length skips ahead via the next byte). Each frame the 16-bit step in $654A/$654B is added to the accumulator $654E/$654F, and the result is written to the filter cutoff registers $D415 and $D416. Purpose (a sound effect sweep) inferred from the register writes."
+   "text": "Per-frame SID filter-cutoff sweep. Returns at once if $6501 is non-zero or if the highest-numbered voice with $657F,x non-zero has $6582,x non-zero (the loop stops at the first active voice, counting down from voice 2). Otherwise counts down $6514; when it expires it reads the next (length, step low, step high) triple from the table at $72C5 (a zero length is a jump: the next byte is the new index). Each frame the 16-bit step in $654A/$654B is added to the accumulator $654F (low)/$654E (high); bits 0-2 of the low byte go to $D415 and the sum shifted right three to $D416, the 11-bit filter cutoff. Purpose (a sound effect sweep) inferred from the register writes."
   },
   {
    "address": 28222,
@@ -15297,7 +15297,7 @@
   {
    "address": 28260,
    "type": "line",
-   "text": "Voice has a pending change: saves the voice number in $6503 and the value in A in $6504, then copies table bytes from $6550/$6553/$6556/$6559,x into operands of later instructions at $6E89/$6E8A and $6E97/$6E98 (self-modifying code). It then loads Y from $65FF,x and writes the byte at $6FFD,x to SID register +0 (frequency low). The routine continues past this range."
+   "text": "Voice has a pending change: saves the voice number in $6503 and the step in A (voice_oneshot_step, $65BC,x) in $6504, then copies table bytes from $6550/$6553/$6556/$6559,x into operands of later instructions at $6E89/$6E8A and $6E97/$6E98 (self-modifying code). It then loads Y from $65FF,x and X from $6504, and writes the byte of the voice's frequency data at that step (the patched lda at $6E88; the $6FFD the listing shows is only the last value patched in) to SID registers +0 and +1. The routine continues past this range."
   },
   {
    "address": 28296,
@@ -15342,12 +15342,12 @@
   {
    "address": 28376,
    "type": "line",
-   "text": "Starts a fade-out: stores A in sid_fade_out_active ($65BF), sid_fade_delay ($65C0) and sid_fade_rate ($65C1), clears sid_fade_in_active ($65C3), and returns. Called with A = $19 from $40FC and $25 from $82DC. The sequence command at $69CE stores a script byte into the same three bytes. What each of the three does in the fade is not traced here."
+   "text": "Starts a fade-out: stores A in sid_fade_out_active ($65BF), sid_fade_delay ($65C0) and sid_fade_rate ($65C1), clears sid_fade_in_active ($65C3), and returns. Called with A = $19 from $40FC and with A = $25 from $82DC, $8B92, $8E2C and $A64B. The sequence command at $69CE stores a script byte into the same three bytes. What each of the three does in the fade is not traced here."
   },
   {
    "address": 28422,
    "type": "line",
-   "text": "SID frequency low bytes, 94 entries ($6F06-$6F63), indexed by note number. Entries 1 to 92 are the equal-tempered notes C#0 to G#7 (entry 57, $1D60, is A4 at 441.6 Hz on a PAL clock); entry 0 is $0578 where C0 would be about $0117, and entry 93 is $EB00. The index is the note byte of a script plus the transposition and arpeggio offsets."
+   "text": "SID frequency low bytes, 94 entries ($6F06-$6F63), indexed by note number. Entries 1 to 93 are the equal-tempered notes C#0 to A7 (entry 57, $1D60, is A4 at 441.6 Hz on a PAL clock, and entry 93, $EB00, is twice entry 81); only entry 0 is out of place: $0578 where C0 would be about $0117. The index is the note byte of a script plus the transposition and arpeggio offsets."
   },
   {
    "address": 28516,
@@ -15362,7 +15362,7 @@
   {
    "address": 28660,
    "type": "line",
-   "text": "Waveform bytes of one-shot sound 0 (9 steps, $6FF4-$6FFC): one byte per frame written to $D404 after a write of $08 (test bit); bit 7 noise, bit 6 pulse, bit 5 sawtooth, bit 4 triangle, bit 0 gate. The step data of all ten sounds follows in $6FFD-$70B9 with no gaps."
+   "text": "Waveform bytes of one-shot sound 0 (9 steps, $6FF4-$6FFC): one byte per frame written to $D404 after a write of $08 (test bit); bit 7 noise, bit 6 pulse, bit 5 sawtooth, bit 4 triangle, bit 0 gate. The step data of the ten sounds follows in $6FFD-$70B9; no record reaches $7068-$707D or $7096-$70A3."
   },
   {
    "address": 28669,
@@ -15417,7 +15417,7 @@
   {
    "address": 29060,
    "type": "line",
-   "text": "Pitch programs, table A ($7184-$7276). Same format as pulse_program_table: frame count, delta low, delta high, with 0 and an index to jump. The delta is added to the voice's SID frequency every frame (music_voice_advance); small alternating deltas give a vibrato, for example the program entered at index 5: +8 for 3 frames, -8 for 6, +8 for 3, then jump back. Selected by script command $83. The boundary with table B is where the label $7277 starts; indexes are bytes, so it is inferred."
+   "text": "Pitch programs, table A ($7184-$7276). Same format as pulse_program_table: frame count, delta low, delta high, with 0 and an index to jump. The delta is added to the voice's SID frequency every frame (music_voice_advance); small alternating deltas give a vibrato, for example the program entered at index 5: delta 0 for 25 frames (a delay), then from index 8 +8 for 3 frames, -8 for 6, +8 for 3, and a jump back to index 8. Selected by script command $83. The boundary with table B is where the label $7277 starts; indexes are bytes, so it is inferred."
   },
   {
    "address": 29303,
@@ -15457,12 +15457,12 @@
   {
    "address": 31765,
    "type": "line",
-   "text": "List read by sid_load_song_voices at $663A: the byte at $7C15+X is a number into voice_script_table, or has bit 7 set ($80) when the slot is unused. The 40 bytes $7C15-$7C3C are laid out in groups of three or four per song; the grouping is not decoded here."
+   "text": "List read by sid_load_song_voices at $663A: the byte at $7C15+X+Y is voice Y's number into voice_script_table, or has bit 7 set ($80) when the slot is unused. The 40 bytes $7C15-$7C3C are ten groups of four, one per sound: every request queued through $0B8C is a multiple of 4 from 0 to $24, so all ten are used, and the fourth byte of each group (0) is never read, since only Y = 0 to 2 are taken."
   },
   {
    "address": 31805,
    "type": "line",
-   "text": "Table of ten note script addresses, words low byte first, $7C3D-$7C50: $7C51, $7C5C, $7C67, $7C72, $7C7D, $7C88, $7C93, $7C9A, $7CA5 and $7CB2. sid_load_song_voices doubles the number from song_voice_list and copies the word's two bytes to voice_script_ptr and the voice's high byte array."
+   "text": "Table of ten note script addresses, words low byte first, $7C3D-$7C50: $7C51, $7C5C, $7C67, $7C72, $7C7D, $7C88, $7C93, $7C9A, $7CA5 and $7CB2. sid_load_song_voices doubles the number from song_voice_list and copies the word's two bytes to voice_script_ptr_lo ($655C,y) and voice_script_ptr_hi ($655F,y), Y being the voice."
   },
   {
    "address": 31806,
@@ -15477,7 +15477,7 @@
   {
    "address": 31933,
    "type": "line",
-   "text": "Sort list for the logical sprites: an entry is filed at position Y / 2 of its screen line, or at the next free position after it, so walking the list from the start gives top-to-bottom order. A position whose value has bit 7 clear holds an entry number; $FF marks a free position, and $7F, written one past the highest position used, ends the list."
+   "text": "Sort list for the logical sprites: an entry is filed at position Y / 2 of its screen line, or at the next free position after it, so walking the list from the start gives top-to-bottom order. A position holding $00-$7E holds an entry number; $FF marks a free position, and $7F, written one past the highest position used, ends the list."
   },
   {
    "address": 31934,
@@ -15487,12 +15487,12 @@
   {
    "address": 32597,
    "type": "line",
-   "text": "Status line cell: the stage number as a digit tile, written by s_8353 as stage ($08E7) + $C2 (tile $C1 is digit 0, so stage 0 shows 1). Row 21, column 13 of the panel screen at $7C00."
+   "text": "Status line cell: the stage number as a digit tile, written by draw_status_stage ($8353) as stage ($08E7) + $C2 (tile $C1 is digit 0, so stage 0 shows 1). Row 21, column 13 of the panel screen at $7C00."
   },
   {
    "address": 32600,
    "type": "line",
-   "text": "Eleven status line cells $7F58-$7F62 (row 21, columns 16 to 26) drawn by draw_segment_gauge from the value in $08A1: tile $D5 for full cells, $D7 for empty cells and a partial tile at the edge. The saved state shows $D4 at the left end of the row and $D6 at the right end."
+   "text": "Eleven status line cells $7F58-$7F62 (row 21, columns 16 to 26) drawn by draw_segment_gauge from the value in $08A1: cells left of value / 4 get tile $D7, cells right of it $D5 (the empty cell), and the edge cell a partial tile from gauge_tiles ($0434) by the value's low two bits. With $08A1 = 0 in the saved state all eleven show $D5; the saved state also shows $D4 at the left end of the row and $D6 at the right end."
   },
   {
    "address": 32617,
@@ -15502,22 +15502,22 @@
   {
    "address": 32665,
    "type": "line",
-   "text": "Status line cell written with tile $C1 (digit 0) by s_8347 each frame: the first digit of the lives pair. Row 23, column 1."
+   "text": "Status line cell written with tile $C1 (digit 0) by draw_status_lives ($8347): the first digit of the lives pair. update_status_line calls it each frame unless player_hit ($0292) is set; $80BA and $A862 call it too. Row 23, column 1."
   },
   {
    "address": 32666,
    "type": "line",
-   "text": "Status line cell for the lives counter: s_8347 stores lives_tile ($089D) here each frame. Row 23, column 2."
+   "text": "Status line cell for the lives counter: draw_status_lives ($8347) stores lives_tile ($089D) here, each frame through update_status_line unless player_hit ($0292) is set, and when called from $80BA and $A862. Row 23, column 2."
   },
   {
    "address": 32668,
    "type": "line",
-   "text": "Status line cell, row 23 column 4: update_status_line copies $089E here each frame (a digit tile, $C1 at the start)."
+   "text": "Status line cell, row 23 column 4: update_status_line copies $089E here each frame unless player_hit ($0292) is set (a digit tile, $C1 at the start)."
   },
   {
    "address": 32669,
    "type": "line",
-   "text": "Status line cell, row 23 column 5: update_status_line copies $089F here each frame (digit tile)."
+   "text": "Status line cell, row 23 column 5: update_status_line copies $089F here each frame unless player_hit ($0292) is set (digit tile)."
   },
   {
    "address": 32686,
@@ -15557,7 +15557,7 @@
   {
    "address": 32771,
    "type": "line",
-   "text": "Calls nmi_and_first_copy ($5271), then loads the CIA 2 timer A latch with $4CC7 (19655; low byte $C7 at $DD04, high byte $4C at $DD05), the interval for the per-frame NMI. The run starts inside the operand of the jsr at $8000, so the first real instruction here is $8003. Reading the value as one PAL frame (19656 cycles) is inferred from the machine's timing."
+   "text": "Calls nmi_and_first_copy ($5271), then loads the CIA 2 timer A latch with $4CC7 (19655; low byte $C7 at $DD04, high byte $4C at $DD05), the interval for the per-frame NMI. The timer runs latch + 1 = 19656 cycles, one PAL frame of 312 lines of 63 cycles."
   },
   {
    "address": 32777,
@@ -15607,7 +15607,7 @@
   {
    "address": 32847,
    "type": "line",
-   "text": "A round begins (at a stage's start and after losing a life): stop the interrupts, reset the frame state, count $089D down (below $C1 the game is over: $BD5D, then back to the title at $4000), start the sound, set the raster interrupt to irq_panel at line $DE, set up the stage, then wait 20 frames."
+   "text": "A round begins (at a stage's start and after losing a life): stop the interrupts, reset the frame state, count $089D down (below $C1 the game is over: $BD5D, then back to the title at $4000), start the sound, set the raster interrupt to irq_panel_on ($BCE1) at line $DE, set up the stage, then wait 20 frames."
   },
   {
    "address": 33017,
