@@ -3832,17 +3832,17 @@
   {
    "address": 47667,
    "type": "line",
-   "text": "Steps stream X (0, 2 or 4, also its SID voice): nothing when its wait ($BD35) and gate time ($BD42) are both over. Adds the frequency slide ($BD65) to the frequency ($BD53) and the pulse sweep ($BD6B) to the pulse width ($BD59), counts the gate time down and clears the gate bit when it reaches the release point ($BD48), counts the wait down and at 0 reads the stream's next commands (sound_commands). Then writes frequency, pulse width, envelope and control to the voice's SID registers ($D400 + the offset at $BC78)."
+   "text": "Steps stream X and the SID voice of the same number (0, 2 or 4): nothing when the stream's wait ($BD35) and the voice's gate time ($BD42) are both over. Adds the voice's frequency slide ($BD65) to its frequency ($BD53) and its pulse sweep ($BD6B) to its pulse width ($BD59), counts the gate time down and clears the gate bit when it reaches the release point ($BD48), counts the stream's wait down and at 0 reads the stream's next commands (sound_commands). Then writes the voice's frequency, pulse width, envelope and control to its SID registers ($D400 + the offset at $BC78)."
   },
   {
    "address": 47796,
    "type": "line",
-   "text": "Reads a stream's commands until one makes it wait. A byte $00-$0F sets field n of the stream (its offset in $BC7D) to the next byte, or the next two from field 10 on, and $00, the wait, ends the step. $40+n is a repeat: two bytes, high first, give a target from the data's base, and the counter n bytes on from the stream's wait is counted down: the stream jumps back while it is not yet 0, and a counter at 0 jumps always. $80+ is a note: bits 3-6 pick its length from a list in the data, bits 0-2 its instrument, the next byte its pitch ($3F a rest, bit 7 another note at once); the note takes a voice whose stream is idle, loads the instrument's nine bytes from $BD7B (sound_note, $BB0E)."
+   "text": "Reads a stream's commands until one makes it wait. A byte $00-$0F sets field n under the stream's number (its offset in $BC7D) to the next byte, or the next two from field 10 on, and $00, the wait, ends the step. $40+n is a repeat: two bytes, high first, give a target from the data's base, and the counter n bytes on from the stream's wait is counted down: the stream jumps back while it is not yet 0, and a counter at 0 jumps always. $80+ is a note (sound_note, $BB0E): bits 3-6 pick its length from a list in the data, bits 0-2 its instrument, the next byte its pitch ($3F a rest, bit 7 another note at once). The note takes a free voice, one whose gate time and the wait of the stream of its number are both 0, or the stream's own voice when none is free, and loads the instrument's nine bytes from $BD7B into it unless that voice holds the instrument already."
   },
   {
    "address": 47886,
    "type": "line",
-   "text": "Starts a note for stream X: its length from the data at $BD7B plus the stream's length base ($BD36), its instrument (bits 0-2, plus one), a free SID voice ($BD7A, one whose stream waits for nothing), the instrument's control, transposition, release point, envelope and pulse loaded unless the voice holds it already ($BD4E), the frequency from the note table ($BC8D, pitch plus transposition) and the gate opened. A pitch byte with bit 7 starts another note in the same step. None of SOUNDFX's twelve sounds has a note: they set the fields directly."
+   "text": "Starts a note for stream X: its length from the data at $BD7B plus the stream's length base ($BD36), its instrument (bits 0-2, plus one), and a SID voice for it ($BD7A): from the third voice down, the first free one (its gate time, $BD42, and the wait of the stream of its number both 0) that already holds the instrument ($BD4E), or else the lowest free one, or the stream's own voice when none is free. The instrument's control, transposition, release point, envelope and pulse are loaded into that voice unless it holds the instrument already, the frequency set from the note table ($BC8D, pitch plus transposition), the voice's gate time set to the note's length and the gate opened. A pitch byte with bit 7 starts another note in the same step. None of SOUNDFX's twelve sounds has a note: they set the fields directly."
   },
   {
    "address": 48109,
@@ -3872,7 +3872,7 @@
   {
    "address": 48248,
    "type": "line",
-   "text": "Each stream's first SID register, by stream number 0, 2 or 4: $D400, $D407, $D40E."
+   "text": "Each voice's first SID register, by number 0, 2 or 4: $D400, $D407, $D40E."
   },
   {
    "address": 48253,
@@ -3892,7 +3892,7 @@
   {
    "address": 48437,
    "type": "line",
-   "text": "The streams' fields: eleven rows of six bytes, a pair for each of the three streams (the row and offset in field_offsets, $BC7D): waits and length bases, repeat counters, gate times, control and release points, transposition and instrument, frequency, pulse width, envelope, frequency slide, pulse sweep, starting pulse width."
+   "text": "The fields, eleven rows of six bytes with a pair for each number 0, 2 and 4 (the row and offset in field_offsets, $BC7D): waits and length bases, repeat counters, gate times, control and release points, transposition and instrument, frequency, pulse width, envelope, frequency slide, pulse sweep, starting pulse width. The wait, length base and repeat counters are a stream's; the rest are the SID voice's of that number, which a note writes into whichever voice it takes and a stream's own commands write under the stream's number."
   },
   {
    "address": 48438,
@@ -3902,7 +3902,7 @@
   {
    "address": 48450,
    "type": "line",
-   "text": "Each stream's gate time, counted down by sound_voice: the voice's gate closes when it reaches the release point ($BD48)."
+   "text": "Each voice's gate time: a note sets it to the note's length in the voice it takes (sound_note), and sound_voice counts it down; the voice's gate closes when it reaches the release point ($BD48)."
   },
   {
    "address": 48455,
@@ -3912,7 +3912,7 @@
   {
    "address": 48456,
    "type": "line",
-   "text": "Each stream's release point, the gate time at which sound_voice closes the gate."
+   "text": "Each voice's release point, the gate time at which sound_voice closes the gate."
   },
   {
    "address": 48461,

@@ -182,6 +182,32 @@ something else (resident `$6E13`-`$6E2B`).
 
 ## The listing's error rate
 
+One sample, seed 20261025, drawn from 4,157 comments in two strata:
+3,905 written by hand and 252 written by a script from the item-name
+table's bytes (the "Item word N" comments in the tables part). 80 were
+drawn, 60 from the first stratum, spread over all 13 parts by their
+size, and 20 from the second, and checked by one checker on
+claude-opus-5-5[1m] with `kit/skills/core/60-verify/checker.md`. Every
+verdict of wrong was read against the code, and all three held, all
+among the 60 written by hand. The plain rate is 3 of 80, 3.75 % (95 %
+interval 1.3 % to 10.5 %); weighted by the strata's sizes, about 4.7 %.
+Both are over the mark (3 of the 60 written by hand) and are a lower
+bound on the true rate. All three were wrong in a detail. dungeon
+`run_square_script` (`$19FA`) said the square's script runs before each
+MOVE key; it runs when MOVE starts and after each step, blocked or not,
+and not after a turn. tables `sound_commands` (`$BAB4`) said a note
+takes a voice whose stream is idle; it takes one whose gate time and
+whose stream's wait are both 0, or the stream's own voice when none is
+free. title `$BD42` called the gate times the streams'; they are the
+voices', set under the voice a note takes. The last two were one belief,
+that the driver's fields all belong to the streams, and it was written in
+15 more comments of the title and tables parts (`sound_voice`,
+`sound_note`, `sound_fields`, `voice_registers`, the release points and
+`tune_silent`); all 18 were corrected. Before the sample, a live test
+found the interrupt is CIA 1's timer at 60 a second, where ten comments
+said a raster interrupt at 50 (resident `irq`, title `note_lengths` and
+the title tune's eight sections); they were corrected too.
+
 ## Live tests
 
 - Two wrong code words: from `codeword_prompt`, ZZZZZZ typed twice. The

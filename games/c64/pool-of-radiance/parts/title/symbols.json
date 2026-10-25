@@ -2347,7 +2347,7 @@
   {
    "address": 4545,
    "type": "line",
-   "text": "Counts silent_count down when none of the three streams has a wait or a gate time left ($BD35/$BD42, $BD37/$BD44, $BD39/$BD46), with interrupts off while it reads them. Returns zero when the count comes back round to 0, after 256 silent passes."
+   "text": "Counts silent_count down when none of the three streams has a wait left and none of the three voices a gate time ($BD35/$BD42, $BD37/$BD44, $BD39/$BD46), with interrupts off while it reads them. Returns zero when the count comes back round to 0, after 256 silent passes."
   },
   {
    "address": 4575,
@@ -2522,17 +2522,17 @@
   {
    "address": 47667,
    "type": "line",
-   "text": "Steps stream X (0, 2 or 4, also its SID voice): nothing when its wait ($BD35) and gate time ($BD42) are both over. Adds the frequency slide ($BD65) to the frequency ($BD53) and the pulse sweep ($BD6B) to the pulse width ($BD59), counts the gate time down and clears the gate bit when it reaches the release point ($BD48), counts the wait down and at 0 reads the stream's next commands (sound_commands). Then writes frequency, pulse width, envelope and control to the voice's SID registers ($D400 + the offset at $BC78)."
+   "text": "Steps stream X and the SID voice of the same number (0, 2 or 4): nothing when the stream's wait ($BD35) and the voice's gate time ($BD42) are both over. Adds the voice's frequency slide ($BD65) to its frequency ($BD53) and its pulse sweep ($BD6B) to its pulse width ($BD59), counts the gate time down and clears the gate bit when it reaches the release point ($BD48), counts the stream's wait down and at 0 reads the stream's next commands (sound_commands). Then writes the voice's frequency, pulse width, envelope and control to its SID registers ($D400 + the offset at $BC78)."
   },
   {
    "address": 47796,
    "type": "line",
-   "text": "Reads a stream's commands until one makes it wait. A byte $00-$0F sets field n of the stream (its offset in $BC7D) to the next byte, or the next two from field 10 on, and $00, the wait, ends the step (a wait of 0 ends the stream). $40+n is a repeat: two bytes, high first, give a target from the data's base, and the counter n bytes on from the stream's wait is counted down: the stream jumps back while it is not yet 0, and a counter at 0 jumps always. $80+ is a note (sound_note, $BB0E). The title tune is notes from start to end, then $00 $00."
+   "text": "Reads a stream's commands until one makes it wait. A byte $00-$0F sets field n under the stream's number (its offset in $BC7D) to the next byte, or the next two from field 10 on, and $00, the wait, ends the step (a wait of 0 ends the stream). $40+n is a repeat: two bytes, high first, give a target from the data's base, and the counter n bytes on from the stream's wait is counted down: the stream jumps back while it is not yet 0, and a counter at 0 jumps always. $80+ is a note (sound_note, $BB0E). The title tune is notes from start to end, then $00 $00."
   },
   {
    "address": 47886,
    "type": "line",
-   "text": "Starts a note for stream X. Bits 3-6 of the note byte pick its length from note_lengths ($BD7B, plus the stream's length base, $BD36), which becomes the stream's wait; bits 0-2 its instrument, plus one. The next byte is its pitch: $3F a rest; otherwise a free SID voice is found ($BD7A: one whose own wait and gate time are 0, best one that holds this instrument already), the instrument's nine bytes loaded from $BD8B unless the voice holds it already ($BD4E), the frequency set from the note table ($BC8D, pitch plus transposition), the gate time set to the note's length and the gate opened. A pitch with bit 7 set means another note follows in the same step, on another voice: a chord."
+   "text": "Starts a note for stream X. Bits 3-6 of the note byte pick its length from note_lengths ($BD7B, plus the stream's length base, $BD36), which becomes the stream's wait; bits 0-2 its instrument, plus one. The next byte is its pitch: $3F a rest; otherwise a SID voice is taken ($BD7A): from the third voice down, the first free one (its gate time, $BD42, and the wait of the stream of its number both 0) that holds this instrument already, or else the lowest free one, or the stream's own voice when none is free. The instrument's nine bytes are loaded into it from $BD8B unless it holds the instrument already ($BD4E), the frequency set from the note table ($BC8D, pitch plus transposition), the voice's gate time set to the note's length and the gate opened. A pitch with bit 7 set means another note follows in the same step, on another voice when one is free: a chord."
   },
   {
    "address": 47924,
@@ -2582,7 +2582,7 @@
   {
    "address": 48248,
    "type": "line",
-   "text": "Each stream's first SID register, by stream number 0, 2 or 4: $D400, $D407, $D40E."
+   "text": "Each voice's first SID register, by number 0, 2 or 4: $D400, $D407, $D40E."
   },
   {
    "address": 48253,
@@ -2602,7 +2602,7 @@
   {
    "address": 48437,
    "type": "line",
-   "text": "The streams' fields: eleven rows of six bytes, a pair for each of the three streams (the row and offset in field_offsets, $BC7D): waits and length bases, repeat counters, gate times, control and release points, transposition and instrument, frequency, pulse width, envelope, frequency slide, pulse sweep, starting pulse width. The first stream's wait, $BD35, is one of the six bytes tune_silent ($11C1) reads to know the tune has ended."
+   "text": "The fields, eleven rows of six bytes with a pair for each number 0, 2 and 4 (the row and offset in field_offsets, $BC7D): waits and length bases, repeat counters, gate times, control and release points, transposition and instrument, frequency, pulse width, envelope, frequency slide, pulse sweep, starting pulse width. The wait, length base and repeat counters are a stream's; the rest are the SID voice's of that number, which a note writes into whichever voice it takes and a stream's own commands write under the stream's number. The first stream's wait, $BD35, is one of the six bytes tune_silent ($11C1) reads to know the tune has ended."
   },
   {
    "address": 48438,
@@ -2622,17 +2622,17 @@
   {
    "address": 48450,
    "type": "line",
-   "text": "Each stream's gate time, counted down by sound_voice: the voice's gate closes when it reaches the release point ($BD48)."
+   "text": "Each voice's gate time: a note sets it to the note's length in the voice it takes (sound_note), and sound_voice counts it down; the voice's gate closes when it reaches the release point ($BD48)."
   },
   {
    "address": 48452,
    "type": "line",
-   "text": "The second stream's gate time, which tune_silent reads."
+   "text": "The second voice's gate time, which tune_silent reads."
   },
   {
    "address": 48454,
    "type": "line",
-   "text": "The third stream's gate time, which tune_silent reads."
+   "text": "The third voice's gate time, which tune_silent reads."
   },
   {
    "address": 48455,
@@ -2642,7 +2642,7 @@
   {
    "address": 48456,
    "type": "line",
-   "text": "Each stream's release point, the gate time at which sound_voice closes the gate."
+   "text": "Each voice's release point, the gate time at which sound_voice closes the gate."
   },
   {
    "address": 48461,
@@ -2737,7 +2737,7 @@
   {
    "address": 48507,
    "type": "line",
-   "text": "The note lengths in interrupts (fiftieths of a second), by a note byte's bits 3-6: 6, 12, 18, 24, 36, 48, 72 and 96 at numbers 3, 6, 8, 9, 11, 12, 14 and 15, and 0 at the others. A quarter note of 24 makes the tune 125 beats a minute."
+   "text": "The note lengths in interrupts (sixtieths of a second), by a note byte's bits 3-6: 6, 12, 18, 24, 36, 48, 72 and 96 at numbers 3, 6, 8, 9, 11, 12, 14 and 15, and 0 at the others. A quarter note of 24 is 0.4 seconds, so the tune runs at 150 beats a minute."
   },
   {
    "address": 48523,
@@ -2832,42 +2832,42 @@
   {
    "address": 50697,
    "type": "line",
-   "text": "The title tune, the third stream of entry 12: notes from start to end, two bytes each, the length and instrument then the pitch (bit 7 of the pitch for another note in the same step, a chord), and $00 $00 at $CF59. The tune lasts about two minutes (5,976 interrupts) in eight sections, 1,100 notes and 92 rests. Section 1, from the start: 23.5 seconds, 180 notes and 42 rests on instruments 1, 4 and 5."
+   "text": "The title tune, the third stream of entry 12: notes from start to end, two bytes each, the length and instrument then the pitch (bit 7 of the pitch for another note in the same step, a chord), and $00 $00 at $CF59. The tune lasts 5,976 interrupts, about a minute and 40 seconds at 60 a second, in eight sections, 1,100 notes and 92 rests. Section 1, from the start: 19.6 seconds, 180 notes and 42 rests on instruments 1, 4 and 5."
   },
   {
    "address": 51141,
    "type": "line",
-   "text": "Section 2, where entry 13 starts, 23.5 seconds in: 11.6 seconds, 148 notes on instruments 1 and 3."
+   "text": "Section 2, where entry 13 starts, 19.6 seconds in: 9.7 seconds, 148 notes on instruments 1 and 3."
   },
   {
    "address": 51437,
    "type": "line",
-   "text": "Section 3, entry 14, 35.2 seconds in: 20.8 seconds, 217 notes and 26 rests on instruments 1, 3 and 6."
+   "text": "Section 3, entry 14, 29.3 seconds in: 17.3 seconds, 217 notes and 26 rests on instruments 1, 3 and 6."
   },
   {
    "address": 51923,
    "type": "line",
-   "text": "Section 4, entry 15, 55.9 seconds in: 8.2 seconds, 88 notes and 6 rests on instruments 1, 2 and 3."
+   "text": "Section 4, entry 15, 46.6 seconds in: 6.8 seconds, 88 notes and 6 rests on instruments 1, 2 and 3."
   },
   {
    "address": 52111,
    "type": "line",
-   "text": "Section 5, entry 16, 64.1 seconds in: 17 seconds, 126 notes and 4 rests on instruments 2, 5 and 6."
+   "text": "Section 5, entry 16, 53.4 seconds in: 14.2 seconds, 126 notes and 4 rests on instruments 2, 5 and 6."
   },
   {
    "address": 52371,
    "type": "line",
-   "text": "Section 6, entry 17, 81.1 seconds in: 11.6 seconds, 107 notes and 6 rests on instruments 3, 4 and 8."
+   "text": "Section 6, entry 17, 67.6 seconds in: 9.7 seconds, 107 notes and 6 rests on instruments 3, 4 and 8."
   },
   {
    "address": 52597,
    "type": "line",
-   "text": "Section 7, entry 18, 92.8 seconds in: 11.4 seconds, 91 notes on instruments 1, 2, 3, 7 and 8."
+   "text": "Section 7, entry 18, 77.3 seconds in: 9.5 seconds, 91 notes on instruments 1, 2, 3, 7 and 8."
   },
   {
    "address": 52779,
    "type": "line",
-   "text": "Section 8, entry 19, 104.2 seconds in: about 15 seconds to the end, 143 notes and 8 rests on instruments 1 to 5."
+   "text": "Section 8, entry 19, 86.8 seconds in: about 12.8 seconds to the end, 143 notes and 8 rests on instruments 1 to 5."
   },
   {
    "address": 53081,
