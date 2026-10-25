@@ -5048,9 +5048,9 @@
   },
   {
    "address": 20955,
-   "name": "s_51DB",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "copy_three_cart_entries",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 20987,
@@ -6020,9 +6020,9 @@
   },
   {
    "address": 26664,
-   "name": "s_6828",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "sid_fade_in_step",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 26699,
@@ -6032,9 +6032,9 @@
   },
   {
    "address": 26700,
-   "name": "s_684C",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "tick_voice_script",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 26706,
@@ -6194,9 +6194,9 @@
   },
   {
    "address": 27282,
-   "name": "j_6A92",
-   "type": "Jump",
-   "kind": "auto"
+   "name": "voice_cmd_set_control",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 27310,
@@ -6842,9 +6842,9 @@
   },
   {
    "address": 33397,
-   "name": "s_8275",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "update_status_line",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 33403,
@@ -6878,9 +6878,9 @@
   },
   {
    "address": 33536,
-   "name": "f_8300",
-   "type": "Field",
-   "kind": "auto"
+   "name": "flash_last_minute_colour",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 33547,
@@ -6932,9 +6932,9 @@
   },
   {
    "address": 33629,
-   "name": "s_835D",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "draw_status_label",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 33632,
@@ -9068,15 +9068,15 @@
   },
   {
    "address": 39926,
-   "name": "s_9BF6",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "probe_player_tiles_one_column",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 39947,
-   "name": "b_9C0B",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "probe_one_column_x",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 39966,
@@ -9110,15 +9110,15 @@
   },
   {
    "address": 40215,
-   "name": "s_9D17",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "probe_player_tiles_one_row",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 40240,
-   "name": "b_9D30",
-   "type": "Branch",
-   "kind": "auto"
+   "name": "probe_outside_map",
+   "type": "code",
+   "kind": "user"
   },
   {
    "address": 40252,
@@ -14426,6 +14426,11 @@
    "text": "Common exit of the stream loader: puts cartridge bank 0 back ($DE00 = $80) and restores the normal memory map ($01 = $35, I/O visible), then returns."
   },
   {
+   "address": 20955,
+   "type": "line",
+   "text": "Switches in ROM and I/O ($01 = $37), selects cartridge bank 0 ($DE00 = $80), calls $8194 (which waits for the frame flag $08F7 and re-enables interrupts, inferred), then runs cart_copy for the cartridge directory entries at offsets $40, $48 and $50 and restores the normal map ($01 = $35). Called once from $80AE before the per-frame calls in the main code; the entries' destinations are not read here, so what they hold is not claimed."
+  },
+  {
    "address": 20987,
    "type": "line",
    "text": "First code the game runs from RAM (the hand-over, entry.vsf): clears $C480-$C53F, copies 192 bytes to $44E1 and selects bank 13."
@@ -14581,6 +14586,16 @@
    "text": "After the last voice: calls $6E3E, then jumps to $6DCE."
   },
   {
+   "address": 26664,
+   "type": "line",
+   "text": "Volume fade-up step, the counterpart of the fade-down code at $67A8. Decrements the delay $65C0; when it reaches zero, reloads it from $65C1, increments the volume byte $65C2 and writes it to SID $D418 (master volume and filter mode). When the low nibble (the volume) equals the target in $65C4, clears $65C3, which stops the fade (inferred to be the fade-in flag)."
+  },
+  {
+   "address": 26700,
+   "type": "line",
+   "text": "Per-frame step of one music voice (X selects the voice). Decrements the note duration $6505,x and returns unless it hits zero. Then loads the voice's script pointer from $655C,x/$655F,x into $F5/$F6, runs advance_voice_script to read the next event, advances the script position $65A9,x and saves the pointer back."
+  },
+  {
    "address": 26733,
    "type": "line",
    "text": "Reads the next event for one music voice (X selects the voice, script pointer $F5, position in $65A9,x). A negative byte is a command, handled by dispatch_voice_command; $60 ends the note stream; any other byte becomes the new note in $6568,x, restarts the voice counters and, unless the voice's mask in $65C5,x says otherwise, re-arms the pitch/vibrato/envelope slots for it. The next byte, or the repeated value, is stored as the duration in $6505,x and the position is saved."
@@ -14614,6 +14629,11 @@
    "address": 27145,
    "type": "line",
    "text": "Sound engine: steps one music voice (X selects it) every tick. Counts down $650B,x and returns until it hits zero. If $658B,x is set, it clears it and loads $6562,x and $6565,x from tables at $6F06 and $6F64, indexed by $6568,x plus $658E,x. Then the voice's pattern pointer ($6521,x low, $6527,x high) is put in $F5/$F6 and the next pattern byte is read. That byte indexes a command-address table at $65F1/$65F8, written into the jump at $6A51/$6A52, and it jumps on to $6AB8 (role of the jump inferred)."
+  },
+  {
+   "address": 27282,
+   "type": "line",
+   "text": "Voice script command handler (reached by jump from the command dispatch, ends by jumping to $6B3E). Reads two operand bytes from the script at ($F5),y: the first goes to $FB, the second to the voice counter $650B,x (a countdown for this voice; its exact role is inferred). Then writes $FB to the voice's SID control register ($D404 plus voice offset $656F) if bit 3 (test bit) is set, and always writes it again with bit 3 cleared. The extra write with the test bit set resets the oscillator before the real waveform/gate value goes in (inferred from the SID register layout)."
   },
   {
    "address": 27784,
@@ -14701,6 +14721,11 @@
    "text": "Wait for frame_flag to change once more, clear it and allow interrupts, then check for a cleared stage (bit 5 of $3592 at the current position $08CC): if so, increment stage and play the stage-clear sequence."
   },
   {
+   "address": 33397,
+   "type": "line",
+   "text": "Per-frame status line update. Returns at once if player_hit is non-zero, so the clock stops while the player is dying. Otherwise calls $8347 (stores $C1 at $7F99 and $089D at $7F9A), copies the five bytes $08D0-$08D4 to $7FB9-$7FBD and $089E/$089F to $7F9C/$7F9D, then falls into level_timer_tick. The copied values are probably score or counter digits already in tile form (inferred)."
+  },
+  {
    "address": 33429,
    "type": "line",
    "text": "Level countdown timer, called once per frame (inferred). $0898 counts frames down from $19 (25); each wrap ticks the clock digits $089B (units, 9..0), $089A (tens, 5..0) and $0899 (minutes) down like a minutes:seconds display. When the minutes count below zero the time has run out: the digits are set to zero and the routine runs the time-out sequence (calls $0B8C and $8E2F; the player is killed there, inferred). Falls into draw_level_timer for the other frames."
@@ -14721,9 +14746,19 @@
    "text": "Draws the clock: each digit ($0899, $089A, $089B) plus $C1 is stored in the status-line cells $7FAE, $7FB0 and $7FB1 (the cell between them, $7FAF, is skipped; the $C1 digit base is read from the code, the glyphs are not checked here). Carry is clear going in, so the adds do not chain."
   },
   {
+   "address": 33536,
+   "type": "line",
+   "text": "Reached from draw_level_timer when the clock's minute digit $0899 is zero, so the last minute. Chooses colour $0E or $0A from bit 2 of frame_count, so it alternates every four frames, and writes it to the five colour RAM bytes $DBA8-$DBAC. The cells are probably the clock's label next to the digits, a time-running-out warning (inferred)."
+  },
+  {
    "address": 33563,
    "type": "line",
    "text": "Draws an 11-cell bar gauge into the status line at $7F58-$7F62 from the value in $08A1. The value divided by 4 is the whole-cell count: cells above it get tile $D5, cells below it get tile $D7, and the boundary cell gets a partial tile fetched from $0434 indexed by the low two bits of the value (four fill steps). What $08A1 measures is inferred only, likely an energy or time meter."
+  },
+  {
+   "address": 33629,
+   "type": "line",
+   "text": "Writes a five-character label into the status line cells $7F69-$7F6D. Scans 9-byte records starting at $FFC7 (X steps by 9, skipping records whose byte at $FFC7+X has bit 6 set), then copies five bytes from $FFC2+X, each plus $A5, as screen tile codes. What the text is (and what picks the record) is not established here, so the name is neutral; called once per frame from the main loop at $80B4."
   },
   {
    "address": 33662,
@@ -15291,9 +15326,29 @@
    "text": "Choose the player's two body sprite shapes and their offsets, once a frame, from the action number $0905 and the facing flag $18 (bit 3 set for left; the values used are $07 for right and $0B for left, with others such as $05, $06, $09, $0A, and $0E in some states). While player_hit ($0292) is non-zero it only switches the third sprite off and sets player_shape_1 and player_shape_2 to fixed shapes ($28 and $34, or $29 and $35 by bit 2 of $18). Otherwise $0905 below 5 uses the table at $0458, $046C, $0480, $0490, $04A0, $04AC, $04B6, $04C0, or $04CA by facing; 5 and 6 go to $9A2A, and 7 goes to $9BAB. Each table starts with its length, and the frame index $0902 steps by 2 and wraps at that length; the pair of shape numbers is read at offset 8 plus the index, and bytes 1 to 7 give the sprite offsets $0322 and $0323, the second-sprite flag $0900, and the offsets $031A to $031D. A change of state or facing restarts the sequence (the hold counters are $0901, $0903, and $0296). While $08FF is non-zero it plays a transition sequence from the frames at $04E8 and the offsets at $04EC, moves player_y, and for the value 6 (at $9B17) either sets $0B to 1 and the third sprite on or sets player_mode to 0 ($9B85)."
   },
   {
+   "address": 39926,
+   "type": "line",
+   "text": "Player terrain probe, one-column variant (sibling of probe_player_tiles at $9C1E, which also adds the second X offset $031B). If $029C is clear and player_screen_x is below $0C (player at the left screen edge), sets the probe results $E2, $E3 and $E4 to 3 and returns without reading the map; 3 is probably a solid attribute, inferred, so the edge acts as a wall. Otherwise falls to $9C0B."
+  },
+  {
+   "address": 39947,
+   "type": "line",
+   "text": "Computes the probe X position: player_prev_x ($08BB/$08BC) plus offset $031A, stored in $E5/$E6, then jumps to $9C50, the Y computation shared with probe_player_tiles."
+  },
+  {
    "address": 39966,
    "type": "line",
    "text": "Player terrain probe: looks up the map tile attribute values around the player and stores them in $E1 (upper left/centre cell), $E2 (next cell below, when the height $031D allows), $E3 (cell at the lower edge). Position = player_prev_x $08BB/$08BC plus offsets $031A and $031B, player_prev_y $08BD/$08BE plus $031C plus 2 (clamped to 0 if negative), divided by 16 into tile columns/rows; it indexes the row pointer tables at ($2A)/($2C) with the row, then the block map row with the column ($E9), then the tile attribute table at ($30). If the player is on the right side of the screen ($029C set and player_screen_x $029B >= $25) it just sets $E2-$E4 = 3 and returns."
+  },
+  {
+   "address": 40215,
+   "type": "line",
+   "text": "Player terrain probe, one-row variant (sibling of player_probe_tiles_and_platforms at $9D3C, which also adds the second Y offset $031D). Sets $F0 to $FF, computes Y = player_prev_y ($08BD/$08BE) plus offset $031C into $EA/$EB, and if the result is negative (above the top of the map) goes to $9D30. Otherwise jumps to probe_columns_from_y ($9D61) to work out the X columns."
+  },
+  {
+   "address": 40240,
+   "type": "line",
+   "text": "Probe result for a position outside the map: clears the tile attribute results $E1, $E2 and $E3 and $0291 to zero and returns."
   },
   {
    "address": 40252,
