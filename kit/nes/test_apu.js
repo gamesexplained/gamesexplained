@@ -4,7 +4,9 @@
 // the frequency the wiki's formula gives, the triangle at half of it, a length counter stops a
 // note when it runs out, the sweep moves a pitch, the frame counter's mode is restarted by every
 // write, the noise channel makes something, pack() and unpack() round-trip a log, and record()
-// stops a driver's log where the driver ends. Run as a script; exits non-zero on failure.
+// stops a driver's log where the driver ends, and live() keeps half a second of frames waiting and
+// makes an older frame's writes when more come rather than losing them. Run as a script; exits
+// non-zero on failure.
 const path = require('path');
 const assert = require('assert');
 require(path.resolve(__dirname, '../../site/lib/apu.js'));
@@ -86,5 +88,17 @@ check('record() stops a driver that has ended, after the tail', () => {
   assert.ok(frames < 20, 'ran ' + frames + ' frames');
   assert.strictEqual(l.writes[0][0], 10);
   assert.strictEqual(l.writes[2][0], Math.round(A.FRAME_CYCLES) + 10);
+});
+check('live() keeps half a second of frames, and plays an older frame\'s writes rather than losing them', () => {
+  assert.strictEqual(A.LIVE_FRAMES, 31);
+  // 40 frames, each setting the first pulse's volume to its own number; then enough sound for all
+  const l = A.live(rate, {}), frames = [];
+  for (let f = 0; f < 40; f++) frames.push([[100, 0x4000, 0x30 | (f & 15)]]);
+  frames[0].unshift([0, 0x4015, 0x01]);
+  l.command({ cmd: 'frames', frames });
+  const seen = [], chip = A.Chip.prototype, write = chip.write;
+  chip.write = function (a, v) { if (a === 0x4000) seen.push(v & 15); return write.call(this, a, v); };
+  try { l.render(new Float32Array(rate), rate); } finally { chip.write = write; }
+  assert.deepStrictEqual(seen, Array.from({ length: 40 }, (_, f) => f & 15));
 });
 console.log(passed + ' passed');

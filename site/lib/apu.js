@@ -34,6 +34,8 @@
 //                        counted from the frame's start; opts.framesCycles (29780.5) spaces the
 //                        frames. Stops early when driver.playing() is false and the writes have
 //                        ended, after opts.tail frames (60).
+//   live(rate, opts)     the chip fed a frame of writes at a time, for a Play tab (host, below)
+//   host(opts)           the live chip in an AudioWorklet, from this file's own text at opts.url
 //   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log, or make: a
 //                        function that returns the log when first needed }), a stop button and a
 //                        piano roll (rows by pitch, the noise along the foot), its playhead moving
@@ -343,5 +345,88 @@ globalThis.NESApu = (function () {
     return { play, stop, draw: (i) => draw(i, null) };
   }
 
-  return { CLOCK, FRAME_CYCLES, LENGTH, NOISE_PERIOD, NAMES, COLOURS, Chip, pack, unpack, decode, notes, render, record, mount, hzOfPulse, hzOfTri };
+  // ------------------------------------------------------------------ a live chip for a Play tab
+  // The chip stepped in real time from the writes a page's port makes, a frame at a time: the
+  // page sends each frame's writes ([cycle in the frame, address, value]) after its NMI, and
+  // the processor plays them 29,780.5 cycles a frame. It keeps up to `lag` frames waiting, half a
+  // second unless the page says otherwise, since a page's frames come unevenly and the audio
+  // device can ask for 100 ms at once (kit/scripts/test_live_sound.js); when more wait, the oldest
+  // frame's writes are made at once, in order, at the start of the next, so no note is lost. When
+  // the page falls behind, the chip holds its registers and plays on. The processor's class and the chip's code run in an AudioWorklet from this
+  // file's own text, so the page must say where the file is (url, the src it loaded it from);
+  // without a worklet, a ScriptProcessorNode runs the same chip on the page.
+  //   const h = await NESApu.host({ url: '../../lib/apu.js', gain: 0.6 })
+  //   h.send({ cmd: 'frames', frames: [[[cycle, address, value], ...], ...] })
+  //   h.send({ cmd: 'reset' })      the chip silent and the queue empty
+  //   h.ctx                         the AudioContext, to suspend and resume
+  const LIVE_FRAMES = Math.ceil(0.5 * CLOCK / FRAME_CYCLES);   // half a second of frames: 31
+  function live(sampleRate, opts) {
+    const chip = new Chip(), queue = [], lag = opts.lag || LIVE_FRAMES, per = CLOCK / sampleRate;
+    let frame = null, wi = 0, cyc = 0, pos = 0, dc = 0, acc = 0, n = 0;
+    const gain = opts.gain === undefined ? 0.6 : opts.gain;
+    return {
+      command(c) {
+        if (c.cmd === 'frames') {
+          for (const f of c.frames) queue.push(f);
+          while (queue.length > lag) { const f = queue.shift(); queue[0] = f.map((w) => [0, w[1], w[2]]).concat(queue[0]); }
+        }
+        else if (c.cmd === 'reset') { queue.length = 0; frame = null; Object.assign(chip, new Chip()); }
+      },
+      render(out, len) {
+        for (let i = 0; i < len; i++) {
+          pos += per;
+          while (pos >= 1) {
+            pos -= 1;
+            if (!frame && queue.length) { frame = queue.shift(); wi = 0; cyc = 0; }
+            if (frame) {
+              while (wi < frame.length && frame[wi][0] <= cyc) { chip.write(frame[wi][1], frame[wi][2]); wi++; }
+              if (++cyc >= FRAME_CYCLES) frame = null;
+            }
+            acc += chip.step(); n++;
+          }
+          const s = n ? acc / n : 0; acc = 0; n = 0;
+          dc += (s - dc) * 0.0005;
+          out[i] = (s - dc) * 1.5 * gain;
+        }
+      },
+    };
+  }
+  const PROCESSOR = `
+class NesApuProcessor extends AudioWorkletProcessor {
+  constructor(o) { super(); this.live = NESApu.live(sampleRate, o.processorOptions || {}); this.port.onmessage = (e) => this.live.command(e.data); }
+  process(inputs, outputs) { const out = outputs[0][0]; this.live.render(out, out.length); return true; }
+}
+registerProcessor('nes-apu', NesApuProcessor);
+`;
+  async function host(o = {}) {
+    const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
+    if (!AC) throw new Error('This browser has no Web Audio.');
+    const ctx = new AC();
+    ctx.resume();
+    const opts = { gain: o.gain, lag: o.lag };
+    let node = null, local = null;
+    if (ctx.audioWorklet && o.url) {
+      try {
+        const text = await (await fetch(o.url)).text();
+        const code = text + '\n' + PROCESSOR;
+        const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code), () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
+        for (const u of urls) {
+          try {
+            await ctx.audioWorklet.addModule(typeof u === 'function' ? u() : u);
+            node = new AudioWorkletNode(ctx, 'nes-apu', { numberOfInputs: 0, outputChannelCount: [1], processorOptions: opts });
+            break;
+          } catch (e) { node = null; }
+        }
+      } catch (e) { node = null; }
+    }
+    if (!node) {
+      local = live(ctx.sampleRate, opts);
+      node = ctx.createScriptProcessor(4096, 1, 1);
+      node.onaudioprocess = (e) => { const out = e.outputBuffer.getChannelData(0); local.render(out, out.length); };
+    }
+    node.connect(ctx.destination);
+    return { ctx, mode: local ? 'script-processor' : 'worklet', send: (c) => { if (local) local.command(c); else node.port.postMessage(c); } };
+  }
+
+  return { CLOCK, FRAME_CYCLES, LENGTH, NOISE_PERIOD, NAMES, COLOURS, Chip, pack, unpack, decode, notes, render, record, mount, hzOfPulse, hzOfTri, LIVE_FRAMES, live, host };
 })();

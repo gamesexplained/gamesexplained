@@ -52,3 +52,68 @@ the propeller quadrants and the bonus round's sprite palette were read
 right. The flight widget is the game's flap and physics, tested in
 lockstep. The pages were checked in headless Chrome. The run ends at
 Silver with the one sample over the mark and an audit recommended.
+
+## 21 October 2026: the Play tab
+
+The NES had no `machine` and no `lockstep` row, so they were built first,
+on the C64's pattern: a PPU register model shared by the page and the
+kit (`NES.ppu` in `site/lib/nes.js`), an NES around the kit's 6502
+(`kit/nes/machine.js`), held to jsnes from five snapshots of play for
+6,500 frames, and a frame-based lockstep (`kit/nes/lockstep.js`). The
+port was written routine by routine from the listing: the 22 routines
+that wait for a frame as generators with a checkpoint at every call, the
+rest as functions, and the sound driver left as the game's bytes on the
+kit's 6502. Each plain routine was checked alone against the game's on
+up to 150 real call states recorded from a 150,000-frame session
+(`work/port/check.js`), then the whole in lockstep from the reset vector
+with a pilot through every mode. The pass had to move from the wait's
+RTS to the DEC before it, since a branch returns through that RTS too.
+Three real mistakes the lockstep found: a lost player's lives drawn from
+the wrong byte, a demonstration player steered like a bird, and the
+propeller push's branch. One difference survived in 100,000 frames, the
+twinkle counter's INC against the handler's DEC on a lagging frame, and
+`irqBytes` closed it. The port showed seven comments wrong in a detail
+(the fish's two frame tables and flag, misnamed; the spark's right-edge
+test; the propeller's swirl and its two slips; the lives row of a lost
+one-player game), corrected in `symbols.json`. The page's clock charges
+each stretch its median cost from the lockstep and holds the pace within
+1 % of the machine's over 12,000 frames (`test_pace.js`). The levels
+page had carried the whole PRG ROM as its data; it carries the data-only
+image now, as the Play page does.
+
+## 24 October 2026: new pictures for the Play tab
+
+The contributor asked for the Play tab to keep the game's play and lose
+Nintendo's pictures, because Nintendo takes down fan recreations. Every
+tile the Play page draws is new: a blue cat for the player, blue frogs
+for the birds, a green sea serpent for the fish, a thin 5 by 7 font, and
+striped block lettering, clouds, platforms, water, propellers and vents
+of their own. They were drawn as text pictures in `work/art/` and cut
+into tiles by the game's own tables (the actor layouts with their X
+offsets, the bolt, spark, splash and popup tiles, the propeller's four
+positions), with a check that a tile drawn twice comes out the same. A
+second check (`work/art/check.py`) holds that every tile the game can
+show is drawn, 206 sprite tiles and 133 of the background's, from the
+tables and from 80,000 frames of the pilot, and that none equals the
+cartridge's. The pictures cannot change the play: the game reads the
+PPU back only from the nametables and the attribute table, never the
+pattern tables, and there is no sprite 0 test. `test_play.js` and
+`test_pace.js` pass as before. Taking pictures of Balloon Trip showed
+that the phase picker's Balloon Trip button stopped on the title: its
+start script let go of Start before the cursor reached the third line.
+It now waits for the cursor and holds Start 20 frames later.
+
+## 25 October 2026: brought up to the kit of that day
+
+The branch was cut from kit 0.0.199 and moved onto 0.0.236 before its
+pull request. Four changes in between touched this game. Platinum now
+means a Play tab that is the whole game, checked against the game's code
+by a `test_play.js` beside the page, and this game's is, so its tier is
+`platinum`. Every Play tab's CRT screen now starts on. A live sound
+queue must hold half a second: the NES's held four frames and dropped
+the oldest when more came, which is the skipping the site's other chips
+were fixed for, so `site/lib/apu.js` now holds 31 frames and plays an
+older frame's writes at the start of the next instead of losing them.
+The C16 had added `ioPages` to the kit's 6502 for the same need as the
+NES's `map`, so the NES uses `ioPages` and a new `romPages` for its
+cartridge's ROM, and `map` is gone.

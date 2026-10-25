@@ -1880,7 +1880,7 @@
   },
   {
    "address": 1162,
-   "name": "fish_missed",
+   "name": "fish_sinking",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -3404,13 +3404,13 @@
   },
   {
    "address": 50615,
-   "name": "fish_frames_missed",
+   "name": "fish_frames_rising",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 50619,
-   "name": "fish_frames_caught",
+   "name": "fish_frames_sinking",
    "type": "Field",
    "kind": "user"
   },
@@ -9756,7 +9756,7 @@
   {
    "address": 1162,
    "type": "line",
-   "text": "Fish: set when it reached the surface without catching anything."
+   "text": "Set when the fish has reached the top of its rise (Y $C4) or lost its target: from then on it sinks, and its frames come from fish_frames_sinking."
   },
   {
    "address": 1163,
@@ -10291,17 +10291,17 @@
   {
    "address": 50615,
    "type": "line",
-   "text": "The fish's animation frame for each eighth of fish_timer when it rose and caught nothing: 1, 2, 3, 3."
+   "text": "The fish's animation frame for each eighth of fish_timer while it rises (fish_sinking clear): 1, 2, 3, 3."
   },
   {
    "address": 50619,
    "type": "line",
-   "text": "The fish's frames when it has a catch: 2, 1, then hidden, 3, 4, 5, 6 (the chewing), then hidden."
+   "text": "The fish's frames once fish_sinking is set, by eighth of fish_timer: 2, 1, hidden, then the chewing 3, 4, 5, 6, then hidden; the same sequence whether or not it caught anything."
   },
   {
    "address": 50627,
    "type": "line",
-   "text": "Picks the fish's frame from fish_timer and the two frame tables, draws the fish (actor 8), and while it has a catch draws the victim in its mouth: at the fish's X plus or minus 4 by facing, 10 above fish_y, and from fish_timer $20 on the victim is gone (actor_balloons $FF)."
+   "text": "Picks the fish's frame from fish_timer, through fish_frames_rising while it rises and fish_frames_sinking once fish_sinking is set, draws the fish (actor 8), and while it has a catch draws the victim in its mouth: at the fish's X plus or minus 4 by facing, 10 above fish_y, and from fish_timer $20 on the victim is gone (actor_balloons $FF)."
   },
   {
    "address": 50708,
@@ -10491,7 +10491,7 @@
   {
    "address": 51815,
    "type": "line",
-   "text": "Bounces a spark off every platform: for each (from platform_count down) tests whether the spark is within 3 pixels of the top or bottom edge (8 pixels allowed for) while between the sides, or of the left or right edge while between top and bottom, and negates the matching velocity, only if it was moving toward that edge. A platform whose left edge is $10 or right edge $FF (the screen edge) skips that side."
+   "text": "Bounces a spark off every platform: for each (from platform_count down) tests whether the spark is within 3 pixels of the top or bottom edge (8 pixels allowed for) while between the sides, or of the left edge while between top and bottom, and negates the matching velocity, only if it was moving toward that edge. A platform whose left edge is $10 or right edge $FF (the screen edge) skips that side. The right edge is never met: its test subtracts 3 from the edge and branches on the borrow with no compare against the spark, so bit 3 is set only for an edge under 3, which no platform has; a spark coming from the right passes into the platform until the top or bottom test catches it."
   },
   {
    "address": 51995,
@@ -10511,7 +10511,7 @@
   {
    "address": 52136,
    "type": "line",
-   "text": "For a spinning propeller: every actor alive and flying (a bird on its parachute is skipped) within 18 pixels each way is thrown off: 2 pixels a frame vertically, then horizontally, away from the centre, moved at once, with the bounce sound. A propeller not spinning goes to propeller_touch."
+   "text": "For a spinning propeller: every actor alive and flying (a bird on its parachute is skipped) within 18 pixels each way is swirled round it, 2 pixels a frame, moved at once, with the bounce sound: to the right of the centre it is thrown down, to the left up, below it right, above it left. Two slips: after a vertical throw the horizontal test reads tmp13 after swap_xy has overwritten it with the propeller's index, so the horizontal throw is to the right for propellers 3 and up and none for the first three; and after a throw down the branch tests the actor's index instead of the offset, so player 1 on the right is thrown down and then up, and leaves moving up as if it had been on the left. A propeller not spinning goes to propeller_touch."
   },
   {
    "address": 52275,
@@ -10921,7 +10921,7 @@
   {
    "address": 55334,
    "type": "line",
-   "text": "Writes 7 cells: a balloon tile for each life left and blanks after; for a player whose lives are negative in a two-player game, GAME OVER instead (gameover_text_rev written backwards)."
+   "text": "Writes 7 cells: a balloon tile for each life left and blanks after; for a player whose lives are negative, GAME OVER in a two-player game (gameover_text_rev written backwards) and seven blanks in a one-player game, where the count written is two_players, 0."
   },
   {
    "address": 55371,

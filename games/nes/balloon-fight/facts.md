@@ -378,6 +378,25 @@ code on the play snapshot (`kit/cpu/census.py`, 19 October 2026).
 - **The ranking table's last entry spills over.** `insert_trip_rank`
   moves 5-byte entries down from the rank found, and the fiftieth moves
   into `$07FA-$07FE`: the signature and the driver's bytes.
+- **A spinning propeller swirls, and swirls player 1 wrongly.**
+  `propeller_push` (`$CBA8`) throws an actor within 18 pixels of a
+  spinning propeller round it: to the right of the centre down, to the
+  left up, below it right, above it left, 2 pixels a frame. After the
+  vertical throw the horizontal test reads `tmp13`, which `swap_xy` has
+  just overwritten with the propeller's index, so the horizontal throw
+  is to the right for propellers 3 and up and none for the first three;
+  and after a throw down the code branches on the actor's index instead
+  of the offset, so player 1 on the right is thrown down and then up and
+  leaves moving up, as if it had been on the left. Shown on the game's
+  own routine with each player placed on each side of a spinning
+  propeller (21 October 2026): player 2 on the right leaves with
+  `actor_vy_hi` 2, player 1 with `$FE`.
+- **A spark never bounces off a platform's right edge.**
+  `spark_platforms` (`$CA67`) tests the left edge within 3 pixels and
+  sets bit 2; its right-edge test subtracts 3 from the edge and branches
+  on the borrow with no compare against the spark, so bit 3 is set only
+  for an edge under 3, which no platform has. A spark coming from the
+  right passes into the platform until the top or bottom test catches it.
 - **An IRQ would hang the game**: `irq_hang`. None is ever enabled.
 - **The invulnerability is cancelled by any input**, not by time alone
   (`actor_controls`, `$EC45`).
