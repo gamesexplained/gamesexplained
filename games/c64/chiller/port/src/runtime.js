@@ -8,6 +8,10 @@
 // rt.frame, rt.cycles, rt.chips (vic, colour, sidw, keys, joy), rt.P, rt.onSid(fn(r, v, t))
 // rt.jump(n)        a fresh game taken to level n (0-9) as finishing each level before it does;
 //                   the caller runs it fast (rt.busy is true until the level has started)
+// rt.tracing, rt.seen  set tracing, and rt.seen holds the names of the routines called since it was cleared
+// rt.wantSave      set it, and at the next pass (main_loop's top) rt.saved is the whole state;
+//                   create(image, { cost, state: rt.saved }) goes on from there exactly as the
+//                   saved one did, as the lockstep starts the port at a pass
 // rt.cheats         { energy, ghosts } switched on and off by the page; rt.skip() ends the level
 (function (root) {
 'use strict';
@@ -82,16 +86,18 @@ function create(image, opts = {}) {
   K().boot(M);
   // the routines' calls since the last yield, for the cost of the stretch
   const COST = opts.cost || {};
+  rt.tracing = false; rt.seen = new Set();   // with tracing on, the routines called since the page last cleared seen
   let spent = 0;
   const GENF = Object.getPrototypeOf(function* () {}).constructor;
   for (const name of Object.keys(P)) {
     const f = P[name], w = COST[name] || 0;
     if (typeof f !== 'function' || !w) continue;
-    P[name] = f instanceof GENF ? function* (...a) { spent += w; return yield* f.apply(this, a); }
-      : function (...a) { spent += w; return f.apply(this, a); };
+    P[name] = f instanceof GENF ? function* (...a) { spent += w; if (rt.tracing) rt.seen.add(name); return yield* f.apply(this, a); }
+      : function (...a) { spent += w; if (rt.tracing) rt.seen.add(name); return f.apply(this, a); };
   }
   const base = COST['@yield'] || 30, IRQ = COST['@irq'] || 0;
   let nextIrq = TIMER, lastLine = 0, due = false;
+  const st = opts.state;
   // The loader hands over with interrupts off; the game first allows them in music_start (its
   // SEI ... CLI round the vector, which it leaves at music_irq), and an underflow of the timer
   // while they were off is taken then.
@@ -142,8 +148,10 @@ function create(image, opts = {}) {
   }
   let jumpTo = null;
   function* driver() {
-    for (;;) {
-      const it = P.program('game_entry');
+    for (let resume = !!st; ; resume = false) {
+      // a saved state was made at a pass: start at main_loop, whose first yield is that pass
+      const it = P.program(resume ? 'main_loop' : 'game_entry');
+      if (resume) it.next();
       for (;;) {
         const y = it.next().value;
         if (y && y.cp === 0xCA00 && jumpTo !== null) {
@@ -165,12 +173,28 @@ function create(image, opts = {}) {
       }
     }
   }
+  rt.wantSave = false; rt.saved = null;
+  function save() {
+    const c = chips;
+    return { M: M.slice(), vic: c.vic.slice(), colour: c.colour.slice(), sidw: c.sidw.slice(),
+      pra: c.pra, ddra: c.ddra, joy: c.joy, keys: [...c.keys], collide: c.collide.save(),
+      cycles: rt.cycles, frame: rt.frame, nextIrq, lastLine, due, irqOn: rt.irqOn,
+      cheats: Object.assign({}, rt.cheats), skip };
+  }
+  if (st) {
+    M.set(st.M); chips.vic.set(st.vic); chips.colour.set(st.colour); chips.sidw.set(st.sidw);
+    Object.assign(chips, { pra: st.pra, ddra: st.ddra, joy: st.joy, keys: new Set(st.keys) });
+    chips.collide.load(st.collide);
+    rt.cycles = st.cycles; rt.frame = st.frame; nextIrq = st.nextIrq; lastLine = st.lastLine;
+    due = st.due; rt.irqOn = st.irqOn; Object.assign(rt.cheats, st.cheats); skip = st.skip;
+  }
   const it = driver();
   // one yield of the port: its stretch's cost, then the time it waits
   function step() {
     spent = 0;
     const y = it.next().value;
     advance(rt.cycles + base + spent, true);
+    if (rt.wantSave && y && y.cp === 0xCA00 && jumpTo === null) { rt.saved = save(); rt.wantSave = false; }
     if (y && y.wait !== undefined) {
       const now = Math.floor(rt.cycles / LINE) % LINES;
       advance(rt.cycles + ((y.wait - now + LINES) % LINES) * LINE + 1);

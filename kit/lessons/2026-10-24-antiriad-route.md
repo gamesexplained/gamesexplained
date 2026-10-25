@@ -1,4 +1,4 @@
-## next · 2026-10-24 · The Sacred Armour of Antiriad (C64) · air with Claude
+## 0.0.237 · 2026-10-24 · The Sacred Armour of Antiriad (C64) · air with Claude
 
 - **Start a check from the listing with the bytes the game reads before
   it writes them as the machine holds them.** A listing carries the

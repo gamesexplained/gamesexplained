@@ -141,6 +141,11 @@ format, how to check the result against it, and how to read it back
   commonest case is wrong for every other. Make the template choose its
   sentence from the record's own bytes (`60-verify` says how such
   comments are sampled).
+- **A pace in a comment is a measurement.** "Once a frame" or "every
+  20 frames" is what `60-verify`'s "Time it" counts with checkpoints;
+  until it has been counted, say what the loop waits on (a raster line,
+  a delay routine, a flag its interrupt sets), because a delay routine
+  reads as one frame and seldom is one.
 - **Runtime state is excluded** from the denominator: stack, screen
   memory, I/O. Authored data nothing references by address (a character
   set, a packed string block) is **added** through the `coverage` object

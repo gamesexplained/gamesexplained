@@ -9,7 +9,7 @@ time, operating system and tool versions.
 
 - `70-minisite`: "A widget that runs a mechanic is a claim too": I ported `build_room`, `place_room_sprites`, `draw_title_screen` and the sound driver into the pages and wrote `test_rooms.js` and `test_music.js`, which hold them against the game's own routines on the kit's 6502 for all 69 rooms and every button of both sound players.
 - `60-verify`: "every other comment that says the same thing": the sample found one generated sentence wrong in one room's sprite list, and I corrected it in all seven room lists that put creatures after a striped one; its other generated finding, in one splash's animation, I corrected in all three splashes.
-- `70-minisite/play.md`: "Then check the pace itself: passes in the same frames from the same moment, on the machine and on the page": running the Play page beside the machine from the 56 moments of play found the four pacing faults the history lists (`agent-history.md`, "Follow-up: the Play tab"), none of which the measured costs showed on their own.
+- `70-minisite/play.md`: "Then check the pace itself: passes in the same frames from the same moment, on the machine and on the page": running the Play page beside the machine from the 56 moments of play found the five pacing faults the history lists (`agent-history.md`, "Follow-up: the Play tab"), none of which the measured costs showed on their own.
 - `70-minisite/play.md`: "Memory as the beam meets it": the page keeps each frame's memory as the frame began, and `test_play.js` holds that, what the page draws, beside the C64's.
 
 ## What was changed in the kit
