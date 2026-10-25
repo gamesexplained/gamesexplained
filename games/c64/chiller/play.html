@@ -3156,21 +3156,23 @@ const view3d = (function () {
   const LX = -0.42, LY = 0.55, LZ = 0.72, LN = Math.hypot(LX, LY, LZ);
   const L = `vec3(${(LX / LN).toFixed(4)}, ${(LY / LN).toFixed(4)}, ${(LZ / LN).toFixed(4)})`;
   const CUBE = `layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNrm; layout(location=2) in vec4 iAt; layout(location=3) in vec3 iCol;
-layout(location=4) in float iW;
-vec3 place() { return vec3(iAt.x + aPos.x * iW, -(iAt.y + aPos.y), iAt.z + aPos.z * iAt.w); }`;
+layout(location=4) in vec2 iWH;
+// the sides stop just short of the front face, so that along an edge two blocks share the front
+// face always wins the depth test, and no dark line of a side shows between rows
+vec3 place() { float z = aNrm.z > 0.5 ? aPos.z : aPos.z * 0.97; return vec3(iAt.x + aPos.x * iWH.x, -(iAt.y + aPos.y * iWH.y), iAt.z + z * iAt.w); }`;
   const SHADOW = `precision highp float; precision highp sampler2DShadow; uniform sampler2DShadow uSh; in vec4 vLP;
 float lit() {
   vec3 s = vLP.xyz / vLP.w * 0.5 + 0.5; float t = 1.0 / 2048.0, b = s.z - 0.006;   // 5 units: blocks of one height never shadow each other
   return 0.25 * (texture(uSh, vec3(s.xy + vec2(-t, -t), b)) + texture(uSh, vec3(s.xy + vec2(t, -t), b))
                + texture(uSh, vec3(s.xy + vec2(-t, t), b)) + texture(uSh, vec3(s.xy + vec2(t, t), b)));
 }
-const float SHADE = 0.62;`;
+const float SHADE = 0.75;`;
   const cubeP = prog(`#version 300 es
 ${CUBE}
 uniform mat4 uMVP, uLVP; out vec3 vCol; out vec4 vLP;
 void main() {
   vec3 p = place();
-  float l = 1.0 + 0.4 * (dot(aNrm, ${L}) - ${L}.z);
+  float l = 1.0 + 0.18 * (dot(aNrm, ${L}) - ${L}.z);
   vCol = iCol * l; vLP = uLVP * vec4(p, 1.0); gl_Position = uMVP * vec4(p, 1.0);
 }`, `#version 300 es
 ${SHADOW}
@@ -3208,9 +3210,9 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 24, 0);
   gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 24, 12);
   const ib = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ib);
-  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 32, 0); gl.vertexAttribDivisor(2, 1);
-  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 32, 16); gl.vertexAttribDivisor(3, 1);
-  gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 1, gl.FLOAT, false, 32, 28); gl.vertexAttribDivisor(4, 1);
+  gl.enableVertexAttribArray(2); gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 36, 0); gl.vertexAttribDivisor(2, 1);
+  gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 36, 16); gl.vertexAttribDivisor(3, 1);
+  gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 2, gl.FLOAT, false, 36, 28); gl.vertexAttribDivisor(4, 1);
   const wallVA = gl.createVertexArray(); gl.bindVertexArray(wallVA);
   const wb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, wb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 1,1, 0,0, 1,1, 0,1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
@@ -3219,8 +3221,8 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   const wallRGB = new Uint8Array(W * H * 4);
-  let inst = new Float32Array(8 * 20000);
-  const yaw = 0, pitch = 0.22;                         // straight on, a little from above
+  let inst = new Float32Array(9 * 20000);             // x, y, z, depth, r, g, b, width, height
+  const yaw = 0, pitch = 0.12;                         // straight on, a little from above
   // the lean: the model turns a little toward the way the stick is pushed and tips back on a jump,
   // each easing to its target a frame at a time; the camera does nothing else
   let lean = 0, lift = 0;
@@ -3241,7 +3243,7 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
   })();
   function view() {
     // the camera on a sphere round the play area's middle, looking at it
-    const cx = W / 2, cy = -H / 2, d = 372,        // near enough that the frame fills the view
+    const cx = W / 2, cy = -H / 2, d = 335,        // near enough that the frame fills the view
           yw = yaw + lean, pt = pitch + lift;
     const ex = cx + d * Math.sin(yw) * Math.cos(pt), ey = cy + d * Math.sin(pt), ez = d * Math.cos(yw) * Math.cos(pt);
     return mul(persp(0.75, c3.width / c3.height, 10, 3000), lookAt(ex, ey, ez, cx, cy, 0));
@@ -3251,18 +3253,26 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
     const dpr = Math.min(2, window.devicePixelRatio || 1), wantW = Math.round(c3.clientWidth * dpr), wantH = Math.round(c3.clientHeight * dpr);
     if (wantW && (c3.width !== wantW || c3.height !== wantH)) { c3.width = wantW; c3.height = wantH; }
     const st = stick(), ease = (a, b, k) => a + (b - a) * k;
-    lean = ease(lean, (st.r - st.l) * 0.22, 0.1); lift = ease(lift, st.u ? 0.08 : 0, 0.12);
+    lean = ease(lean, (st.r - st.l) * 0.1, 0.06); lift = ease(lift, st.u ? 0.05 : 0, 0.08);
     vic0.set(rt.chips.vic); vic0[0x15] = 0;               // the same picture without the sprites
     ChillerScreen.draw(rt.M, vic0, rt.chips.colour, bgpx);
     const b0 = rt.chips.vic[0x21] & 15;
     let n = 0;
     const put = (x, y, w, z, dep, ci) => {
-      if (n * 8 + 8 > inst.length) { const g = new Float32Array(inst.length * 2); g.set(inst); inst = g; }
-      const c = COL[ci], o = n++ * 8;
-      inst[o] = x; inst[o + 1] = y; inst[o + 2] = z; inst[o + 3] = dep; inst[o + 4] = c[0]; inst[o + 5] = c[1]; inst[o + 6] = c[2]; inst[o + 7] = w;
+      if (n * 9 + 9 > inst.length) { const g = new Float32Array(inst.length * 2); g.set(inst); inst = g; }
+      const c = COL[ci], o = n * 9;
+      inst[o] = x; inst[o + 1] = y; inst[o + 2] = z; inst[o + 3] = dep; inst[o + 4] = c[0]; inst[o + 5] = c[1]; inst[o + 6] = c[2]; inst[o + 7] = w; inst[o + 8] = 1;
+      return n++;
     };
-    // each run of same-coloured pixels along a row is one block, so no two blocks share a face
-    // and nothing flickers where they meet
+    // each run of same-coloured pixels along a row is one block, and a run the row above also has
+    // (same ends, same colour) makes that block a row taller: fewer edges between blocks, so a
+    // solid shape is one block with no seams across it
+    let upS = new Map(), upC = new Map(), nowS = new Map(), nowC = new Map();
+    const run = (up, now, x, y, e, z, dep, c) => {
+      const k = (x * 512 + e) * 16 + c, i = up.get(k);
+      if (i !== undefined) { inst[i * 9 + 8]++; now.set(k, i); }
+      else now.set(k, put(x, y, e - x, z, dep, c));
+    };
     const spr = i => px[i] !== bgpx[i] ? px[i] : -1;
     const scn = (x, y) => (x >= X0 && x <= X1 && y >= Y0 && y <= Y1 && bgpx[y * W + x] !== b0) ? bgpx[y * W + x] : -1;
     for (let y = 0; y < H; y++) {
@@ -3270,23 +3280,26 @@ uniform sampler2D uTex; in vec2 vUV; out vec4 o; void main() { o = vec4(texture(
         const c = spr(y * W + x); let e = x + 1;
         if (c < 0) { x = e; continue; }
         while (e < W && spr(y * W + e) === c) e++;
-        put(x, y, e - x, 10, 4, c); x = e;
+        run(upS, nowS, x, y, e, 7, 3, c); x = e;
       }
       for (let x = 0; x < W; ) {                                         // the scenery, raised
         const c = scn(x, y); let e = x + 1;
         if (c < 0) { x = e; continue; }
         while (e < W && scn(e, y) === c) e++;
-        put(x, y, e - x, 0, 6, c); x = e;
+        run(upC, nowC, x, y, e, 0, 3, c); x = e;
       }
-      for (let x = 0; x < W; x++) {                                      // the wall: background only
-        const i = y * W + x, c = RGB[scn(x, y) >= 0 ? b0 : bgpx[i]], o = i * 4;
+      [upS, nowS] = [nowS, upS]; nowS.clear(); [upC, nowC] = [nowC, upC]; nowC.clear();
+      // the wall: the flat picture without the sprites, so that where two blocks meet no hairline
+      // of the wall's dark background can show between them
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x, c = RGB[bgpx[i]], o = i * 4;
         wallRGB[o] = c[0]; wallRGB[o + 1] = c[1]; wallRGB[o + 2] = c[2]; wallRGB[o + 3] = 255;
       }
     }
-    if (SHOW.paths && !rt.busy) paths.points().forEach(([x, y], i) => { if (i % 4 === 0) { put(x - 1, y - 1, 2, 12, 2, 1); put(x - 1, y, 2, 12, 2, 1); } });   // the same dots, floating
+    if (SHOW.paths && !rt.busy) paths.points().forEach(([x, y], i) => { if (i % 4 === 0) { put(x - 1, y - 1, 2, 11, 2, 1); put(x - 1, y, 2, 11, 2, 1); } });   // the same dots, floating
     gl.enable(gl.DEPTH_TEST);
     gl.bindVertexArray(cubeVA);
-    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 8), gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, ib); gl.bufferData(gl.ARRAY_BUFFER, inst.subarray(0, n * 9), gl.DYNAMIC_DRAW);
     // the depth map, from the light
     gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.useProgram(depthP); gl.uniformMatrix4fv(gl.getUniformLocation(depthP, 'uLVP'), false, LVP);
