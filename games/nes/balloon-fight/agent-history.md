@@ -117,3 +117,22 @@ older frame's writes at the start of the next instead of losing them.
 The C16 had added `ioPages` to the kit's 6502 for the same need as the
 NES's `map`, so the NES uses `ioPages` and a new `romPages` for its
 cartridge's ROM, and `map` is gone.
+
+## 25 October 2026: the pages rewritten for a reader of fifteen
+
+The kit added a last copy step, a rewrite of every authored page for a
+reader of fifteen who has never programmed (`70-minisite`, "ELI15
+pass"). How it works, Discoveries, Maps / levels and Play were
+rewritten: each term explained where it first appears on a page, long
+sentences split. A second agent compared each page with the version
+before, sentence by sentence. It found no fact lost, and five added
+explanations that were wrong or loose (the program's size, when the
+PPU can be written, the sprite-zero hit, the reset vector, the pattern
+tables as part of the PPU); each was corrected. The check also showed
+a claim older than the rewrite to be wrong: the flap's sound is not
+"half volume with a downward sweep". Rendered from its four bytes on
+the page's model of the APU, it is a quiet pulse at a fixed volume
+whose pitch rises from 440 Hz to about 660 Hz in 90 ms, which is what
+the sweep's negate bit does. The Play tab's year read 1986, the
+American release; it now reads 1985, as `game.json` and the other
+pages do.
