@@ -8,7 +8,7 @@ For every games/<platform>/<slug>/game.json:
   levels.html  copied through if authored          (Maps / levels)
   source.html  from site/source.html + listing.json   (Source code)
                + original-source.md, for a game whose authors' source survives
-  about.html   from site/about.html + game.json + features.md + orientation.md + git log
+  about.html   from site/about.html + game.json + features.md + git log
   listing.json, symbols.json, reference/           copied
 Every tab but Source draws from the same listing.json: C64.load, BBC.load and
 Spectrum.load fetch it whole, one download the browser caches for all of a
@@ -1451,9 +1451,7 @@ def build_game(gdir, out_root):
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
                  features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare or hidden), shift=1,
-                                         parts={} if hidden else part_pages(P), urls=True)),
-                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare or hidden), shift=1,
-                                            parts={} if hidden else part_pages(P)))).replace("<!-- tabs -->", nav)
+                                         parts={} if hidden else part_pages(P), urls=True))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
     about = at_end(about, next_tab(game, present, "about.html") + edit_footer(game, "about.html"))
     open(os.path.join(out, "about.html"), "w").write(pagenav(about))
@@ -1741,7 +1739,7 @@ def featured_game(games):
 
 
 # --- the home page's New and updated row: the latest games added or changed, from git history
-PUBLISHED = re.compile(r"(index|levels|play)\.html|(features|orientation)\.md|(game|listing|symbols)\.json|reference/.+"
+PUBLISHED = re.compile(r"(index|levels|play)\.html|features\.md|(game|listing|symbols)\.json|reference/.+"
                        r"|parts/[^/]+/(part|listing|symbols)\.json")
 
 
