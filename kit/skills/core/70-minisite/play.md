@@ -176,7 +176,9 @@ demonstration.
 A 3D game's Play tab can offer two switches: the 3D view drawn at the
 screen's own resolution, and moved at the screen's frame rate from one
 of the game's pictures to the next (`port/page/modern.js`). They are
-views of the port, never changes to it.
+views of the port, never changes to it. Smooth motion shows the game
+behind its own frames, so Fast CPU (`fast-cpu.md`) replaces it in a game
+once Fast CPU is shown faithful there.
 
 - **Read, never write.** Watch the port's routines and read the game's
   memory. Hold that with two machines side by side, one with the view
@@ -205,67 +207,10 @@ views of the port, never changes to it.
 
 ## Fast CPU
 
-A game whose main loop moves the player a fixed step each time round,
-and spends a second or more of it drawing the view, can offer Fast CPU:
-the game as a machine with a much faster processor would play it, kept
-playable. It adds two pieces to the port and nothing else, a frame
-limiter and step scaling, from general code and a table of the game's
-own facts (`games/c64/castle-master/port/page/fast.js`, with
-`fast-table.js` beside it).
-
-- **Off means off.** Fast CPU changes the loop only through plug-in
-  points in the port, each of which takes the game's own value when
-  nothing is plugged in, so the lockstep still proves the port.
-- **One loop on each tick of the game's clock.** Start each loop on a
-  tick of the timer that keeps the game's time, never two on one tick,
-  and give the loop's own work no time: that is what a fast processor
-  does, and it leaves everything the clock counts in absolute time.
-- **Waits keep their absolute time.** A wait on the clock inside a loop
-  holds play as long in seconds as on the machine, and the next loop
-  starts on the first tick after it, because the game's timing is the
-  game. The one exception is a wait that only keeps something on
-  screen: on a fast processor it would freeze play, so play goes on and
-  the thing comes back after the same time.
-- **One command for the clock.** The page's runtime runs whole ticks for
-  the real time owed, at most the loops a second over 15 in a refresh,
-  and drops the rest; with no second way of counting a loop's cost, the
-  same keys on the same loops make the same game at any refresh rate.
-- **What the game counts in ticks stays; what it counts in loops is
-  scaled.** K is the ticks one of the machine's steps takes at the
-  chosen Speed. A move takes 1/K of its step each loop through the
-  game's own step code, the leftover carried while the key is held,
-  so K shares end where one step ends; a job whose effect adds up with
-  each call runs once every K ticks; what the game shows for one loop
-  is shown for K ticks.
-- **Read every job a move sets off before letting it run every loop.**
-  Only a job that ends the same however often it runs may, since one
-  that counts calls (a wall check that cuts each blocked step short, a
-  dice roll, a count of loops) runs K times as often.
-- **Take the Speeds from the machine.** Time its loops in play; put 1×
-  near the middle value and the fastest setting at its quickest loop, so
-  each setting is a speed the machine reaches somewhere.
-- **Sort each key by what the game's code does with it.** A move takes a
-  share each loop and nothing once it is up, so the player stops at
-  once; a switch acts once when it goes down, because a repeat would
-  undo it; a repeat acts at the press and every K ticks. Hold every key
-  for at least three video frames, so that no press goes missing.
-  Something the machine moves at a pace of its own, in a loop that draws
-  no view, moves by its share of that pace measured on the game's code.
-- **A share of a turn is a fractional angle.** The game builds its view
-  at that angle for every job it uses the view for, so what is in sight
-  and what a shot hits agree with what is shown; the renderers draw the
-  same draw list at the same angle, and at the game's own angles the
-  screen is the game's own frame.
-- **Show each frame on the first refresh after its loop.** A frame is new
-  when the game's copy to the screen runs (double buffering), read from
-  the game's state at the copy rather than from the screen's bytes.
-  Never render between two loops or hold a frame back, which would show
-  the game a tick late.
-- **Measure each difference and say it on the page.** A step the game
-  cuts short at a wall throws its rest away a share at a time, so the
-  player slides along walls the machine stops them at; count it against
-  the machine's own walks from the port's moments, and test every rule
-  above on the published page (`games/c64/castle-master/test_fast.js`).
+A game whose speed rides on its render can offer Fast CPU: the game as
+its machine with a much faster processor would play it, at 60 frames a
+second, kept playable. Read `fast-cpu.md` beside this file before you
+start one.
 
 ## The page's test
 

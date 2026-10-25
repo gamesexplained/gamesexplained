@@ -1,4 +1,4 @@
-// Castle Master's table for Fast CPU (page/fast.js): what Fast CPU knows about the game. The names in
+// Castle Master's table for Fast CPU (site/lib/fast-cpu.js): what Fast CPU knows about the game. The names in
 // capitals are the game's routines (src/), the numbers places in its memory.
 (function (root) {
 'use strict';
@@ -21,26 +21,24 @@ root.CM_FAST = {
   // it draws no view for, so it goes at the C64's own speed whatever the Speed: a pixel each 12,560
   // cycles, measured on the game's code
   steps: { 0x123C: 'pace', 0x123D: 'pace', 0x2465: 12560, 0x2466: 12560 },
-  // the angles (plug-in points turn, frac, whole): which way you face ($2411) and up or down
-  // ($2410), 72 steps to a full turn
-  angles: [0x2411, 0x2410], turn: 72,
+  // the angles the plug-in points turn, frac and whole are given: which way you face ($2411) and
+  // up or down ($2410), 72 steps to a full turn
+  turn: 72,
   // the controls, as actions (READ_CONTROL_INPUT's codes turned into actions by the map at $1382):
   // those that switch something, taken once a press (the speeds, face forward, turn about, the
   // sights, act, the pointer, the information screen); those that repeat, taken at the press and
   // every K ticks while held (a rock), and with Ctrl ($1380) the quarter turns and the looks all the
   // way up or down. The rest are moves
   switches: [9, 10, 11, 12, 13, 21, 27, 30, 41], repeats: [22], ctrl: 0x1380, ctrlRepeats: [5, 6, 7, 8],
-  // the jobs whose effect adds up with each run (plug-in point once), once a pace: the script of the
-  // object a step runs into ($1082, DISPATCH_FRAME_CONDITIONS). The 5 general scripts and the
-  // condition scripts of 11 areas that a step sets off show or hide objects by flags, the same
-  // however often they run, so they run each loop
-  once: [0x1082],
   // what the game shows for one loop, shown for a pace (plug-in point held): the lightning's streak,
   // drawn while $2459 reads 1, which the game takes to 0 once it has drawn it; its column from the
   // clock's byte $1C64
   held: [{ at: 0x2459, shown: 1, gone: 0, with: [0x1C64] }],
-  // a wait that only keeps a message up (plug-in point after): REFRESH_ACTION_STATUS puts the
+  // The plug-in points give Fast CPU the rest themselves. A job whose effect adds up with each run,
+  // once a pace (once, given $1082): the script of the object a step runs into
+  // (DISPATCH_FRAME_CONDITIONS); the 5 general scripts and the condition scripts of 11 areas that a
+  // step sets off show or hide objects by flags, the same however often they run, so they run each
+  // loop. A wait that only keeps a message up (after, given $1063): REFRESH_ACTION_STATUS puts the
   // area's name back once the countdown at $1063 (50 ticks) has run out
-  after: [0x1063],
 };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -14,7 +14,7 @@ const lib = require('./lib.js');
 const { game } = require(path.join(lib.REPO, 'kit/scripts/port_check.js'));
 const g = game(GAME);
 globalThis.window = globalThis;
-g.lib('c64'); g.lib('sid'); g.lib('cpu6502');
+g.lib('c64'); g.lib('sid'); g.lib('cpu6502'); g.lib('fast-cpu');
 const page = g.read('play.html');
 for (const b of [...page.matchAll(/^\/\* (port\/\S+\.js) \*\/$/gm)].map(m => m[1])) g.run('play.html', b, 'CMPort');
 const { CMPage, FastCPU, CM_FAST: T } = globalThis;

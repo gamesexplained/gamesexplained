@@ -1,5 +1,5 @@
 // The Play page's modern view of Castle Master: the 3D view drawn at the screen's own resolution,
-// or, for Fast CPU (page/fast.js), in the C64's own pixels at a fractional angle. The game is not
+// or, for Fast CPU (site/lib/fast-cpu.js), in the C64's own pixels at a fractional angle. The game is not
 // changed: the routines below are watched, and its memory is only read.
 //
 // Each picture the game draws, the page keeps what the drawing works from. As the game's painter's
@@ -22,6 +22,8 @@
 //                                          opening, a message)
 //   CMModern.latest(st)                    the last copy to the view's bitmap ({pic, t, n}), its pic
 //                                          null when it put anything but the 3D view there
+//   CMModern.between(st, P, always)        with Fast CPU, the last copy's 3D view at the angles it was
+//                                          built at, {scene, shown}, or null at the game's own angles
 //   CMModern.scene(P, pic, pose)           a picture's scene, from its own pose or one given: the
 //                                          background's line and the faces in drawing order, in
 //                                          the view's coordinates (0-120 across from the left,
@@ -61,7 +63,7 @@ const topology = (M, at) => {
 };
 const TOPO = { cuboid: 0, pyr5: 0x25, pyr6a: 0x40, pyr6b: 0x5D, pyr8: 0x7A };
 // the view's angles, 72 steps to a turn, and the share of a step past each that Fast CPU turns by
-// (page/fast.js, the port's plug-in point frac)
+// (site/lib/fast-cpu.js, the port's plug-in point frac)
 const angles = (M, P) => ({ yaw: M[0x2411] + P.plug.frac(0x2411), pitch: M[0x2410] + P.plug.frac(0x2410) });
 // what the scene is built from, read as the game's sort finishes: the place, the objects, the
 // objects the game queued and the tables; a draw with no rebuild before it (the game draws the
@@ -544,6 +546,17 @@ function attach(rt) {
 function latest(st) {
   return st && st.flips.length ? st.flips[st.flips.length - 1] : null;
 }
+// what the page draws over the screen with Fast CPU: the last copy's 3D view, rendered from the draw
+// list the game drew it from at the angles the game stood at, {scene, shown}; null when those are
+// the game's own angles (the screen is then the game's frame; with always, the view all the same)
+// or the copy put anything but the 3D view there
+function between(st, P, always) {
+  const f = latest(st);
+  if (!f || !f.pic) return null;
+  const p = f.pic.pose, b = f.pic.bg, whole = v => v === Math.floor(v);
+  if (!always && whole(p.yaw) && whole(p.pitch) && whole(b.yaw) && whole(b.pitch)) return null;
+  return { scene: f.scene || (f.scene = scene(P, f.pic)), shown: f };
+}
 
 // ---- what is on show
 // The picture on show in frame F: the last put on the screen before the middle of the view, still
@@ -739,6 +752,6 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, latest, scene, draw, paint, paintBuffer, capture, spritePixels, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, latest, between, scene, draw, paint, paintBuffer, capture, spritePixels, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);

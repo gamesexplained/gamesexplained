@@ -220,6 +220,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <script>
 /* port/src/core.js */
 // Castle Master's port: P, the game's routines on the game's memory. Each group of routines is a
@@ -272,7 +273,7 @@ function makePort(M, io, opts = {}) {
   P.N = { row: 0, fill: 0, step: 0, xstep: 0, line: 0, vline: 0, vclear: 0 };
   // and the interrupt's own: the view's colours filled in a sensor's flash
   P.NI = { fill: 0 };
-  // The plug-in points: the places in the routines where the page's Fast CPU (page/fast.js) passes
+  // The plug-in points: the places in the routines where the page's Fast CPU (site/lib/fast-cpu.js) passes
   // in a value or skips a job, each marked "plug-in point" where it is used. These are the game's
   // own: with nothing plugged in, each gives the value the game's code gives, so the lockstep
   // holds the port and its plug-in points together. Fast CPU replaces them.
@@ -5175,7 +5176,7 @@ G.view = function (P) {
 //     onSave   optional: (name, bytes) when the game saves one
 //   rt.runFrame()      one frame of time: the program runs until the clock reaches the frame's end;
 //                      returns the frame that ends there, for C64.renderFrame
-//   rt.runTicks(cycles, loop)   Fast CPU's clock (page/fast.js), in place of runFrame: real time owed,
+//   rt.runTicks(cycles, loop)   Fast CPU's clock (site/lib/fast-cpu.js), in place of runFrame: real time owed,
 //                      in cycles. The main loop goes round once on each tick of CIA 1's timer A,
 //                      its own work taking no time: loop.start is the checkpoint where a loop
 //                      starts, loop.work the checkpoints its stretches start at, loop.cap the most
@@ -5584,7 +5585,7 @@ root.CMPage = { create, LINE, LINES, FRAME, KEY };
 <script>
 /* port/page/modern.js */
 // The Play page's modern view of Castle Master: the 3D view drawn at the screen's own resolution,
-// or, for Fast CPU (page/fast.js), in the C64's own pixels at a fractional angle. The game is not
+// or, for Fast CPU (site/lib/fast-cpu.js), in the C64's own pixels at a fractional angle. The game is not
 // changed: the routines below are watched, and its memory is only read.
 //
 // Each picture the game draws, the page keeps what the drawing works from. As the game's painter's
@@ -5607,6 +5608,8 @@ root.CMPage = { create, LINE, LINES, FRAME, KEY };
 //                                          opening, a message)
 //   CMModern.latest(st)                    the last copy to the view's bitmap ({pic, t, n}), its pic
 //                                          null when it put anything but the 3D view there
+//   CMModern.between(st, P, always)        with Fast CPU, the last copy's 3D view at the angles it was
+//                                          built at, {scene, shown}, or null at the game's own angles
 //   CMModern.scene(P, pic, pose)           a picture's scene, from its own pose or one given: the
 //                                          background's line and the faces in drawing order, in
 //                                          the view's coordinates (0-120 across from the left,
@@ -5646,7 +5649,7 @@ const topology = (M, at) => {
 };
 const TOPO = { cuboid: 0, pyr5: 0x25, pyr6a: 0x40, pyr6b: 0x5D, pyr8: 0x7A };
 // the view's angles, 72 steps to a turn, and the share of a step past each that Fast CPU turns by
-// (page/fast.js, the port's plug-in point frac)
+// (site/lib/fast-cpu.js, the port's plug-in point frac)
 const angles = (M, P) => ({ yaw: M[0x2411] + P.plug.frac(0x2411), pitch: M[0x2410] + P.plug.frac(0x2410) });
 // what the scene is built from, read as the game's sort finishes: the place, the objects, the
 // objects the game queued and the tables; a draw with no rebuild before it (the game draws the
@@ -6129,6 +6132,17 @@ function attach(rt) {
 function latest(st) {
   return st && st.flips.length ? st.flips[st.flips.length - 1] : null;
 }
+// what the page draws over the screen with Fast CPU: the last copy's 3D view, rendered from the draw
+// list the game drew it from at the angles the game stood at, {scene, shown}; null when those are
+// the game's own angles (the screen is then the game's frame; with always, the view all the same)
+// or the copy put anything but the 3D view there
+function between(st, P, always) {
+  const f = latest(st);
+  if (!f || !f.pic) return null;
+  const p = f.pic.pose, b = f.pic.bg, whole = v => v === Math.floor(v);
+  if (!always && whole(p.yaw) && whole(p.pitch) && whole(b.yaw) && whole(b.pitch)) return null;
+  return { scene: f.scene || (f.scene = scene(P, f.pic)), shown: f };
+}
 
 // ---- what is on show
 // The picture on show in frame F: the last put on the screen before the middle of the view, still
@@ -6324,169 +6338,13 @@ function paint(px, view, F) {
   return true;
 }
 
-root.CMModern = { attach, onShow, latest, scene, draw, paint, paintBuffer, capture, spritePixels, bands, streak, sort, viewMatrix,
+root.CMModern = { attach, onShow, latest, between, scene, draw, paint, paintBuffer, capture, spritePixels, bands, streak, sort, viewMatrix,
   gameMatrix, coarse, clip, project, winds, keeps, FRAME, LINE, VIEW_RECT: { x: VX, y: VY, w: 240, h: 120 } };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
-/* port/page/fast.js */
-// Fast CPU: the game played as a C64 with a much faster processor would play it. The game's own code
-// runs unchanged; only the time it takes changes. A faster processor breaks two things a game like
-// this never had to handle, so Fast CPU adds two pieces and nothing else:
-// - a frame limiter: the main loop goes round at most once a tick of the game's clock, its own work
-//   taking no time (the page's runtime, rt.runTicks). Each refresh runs the loops it owes, at most
-//   the table's cap, and the page draws the last one's frame in that refresh;
-// - step scaling: the game moves you a fixed step each loop, so what it counts in loops is scaled
-//   to the pace, K ticks to the step of one C64 loop, and the Speed, not the frame rate, sets how
-//   fast you move. A move takes 1/K of its step each loop through the game's own code, the
-//   leftover carried while the key is held; a share of a turn leaves you at a fractional angle,
-//   which the game builds its view at; a switch is taken once a press, a repeat at the press and
-//   every K ticks; a job whose effect adds up runs once a pace; what the game shows for one loop is
-//   shown for a pace; a wait that only keeps a message up does not hold play.
-// What the game counts in ticks is left alone, so it keeps its time in seconds.
-//
-// Fast CPU plugs into the port's plug-in points (src/core.js, P.plug), and knows the game only from
-// its table (fast-table.js): another game would bring its own table and plug-in points.
-//
-//   const fx = FastCPU.attach(rt, table)   Fast CPU for the page's machine (page/runtime.js), off
-//   FastCPU.set(fx, on, speed)             on or off (off, the port has its own plug-in points
-//                                          back), and the Speed, an index into table.speeds
-//   FastCPU.run(fx, ms, between)           the frame limiter: the loops owed for ms of real time,
-//                                          at most the cap; between() after each. Returns them
-//   FastCPU.view(fx, MM, always)           what the page draws over the screen after them: the last
-//                                          loop's 3D view (MM is page/modern.js) at its fractional
-//                                          angle, {scene, shown}; null when the angle is the game's
-//                                          own (the screen is the game's frame) or the 3D view is
-//                                          not on show. With always, at the game's angles too
-(function (root) {
-'use strict';
-
-function attach(rt, T) {
-  const P = rt.P, M = P.M;
-  const fx = {
-    rt, T, on: false, speed: 0, K: T.speeds[0].K, game: P.plug,
-    loop: { start: T.start, work: new Set(T.work), cap: T.cap, between: null },
-  };
-  const tick = () => rt.ticks;
-  // an angle: the whole step the game holds, and the share of a step past it in K-ths; the game
-  // setting the angle itself (a whole step, plug-in point whole, or another value) ends the share
-  const angle = a => {
-    let s = fx.ang.get(a);
-    if (!s || s.at !== M[a]) { s = { at: M[a], n: 0 }; fx.ang.set(a, s); }
-    return s;
-  };
-  const kind = act => (T.switches.includes(act) ? 'switch'
-    : T.repeats.includes(act) || (T.ctrlRepeats.includes(act) && M[T.ctrl]) ? 'repeat' : 'move');
-  const holding = () => fx.hold && tick() - fx.hold.from < fx.hold.K;
-  fx.plug = {
-    // a move: 1/K of the step each loop (the pointer: its share of the C64's own pace), and what is
-    // left of a unit carried to the next loop while the key stays down
-    step(key, v) {
-      const r = T.steps[key], num = r === 'pace' ? 1 : T.tick, den = r === 'pace' ? fx.K : r;
-      fx.stepped.add(key);
-      let acc = fx.carry.has(key) ? fx.carry.get(key) : Math.floor(den / 2);
-      acc += v * num;
-      const out = Math.floor(acc / den);
-      fx.carry.set(key, acc - out * den);
-      return out;
-    },
-    // a share of a turn: 1/K of the step, the whole steps crossed given to the game
-    turn(a, by) {
-      const s = angle(a);
-      s.n += by;
-      const w = Math.floor(s.n / fx.K);
-      s.n -= w * fx.K;
-      s.at = (((s.at + w) % T.turn) + T.turn) % T.turn;
-      return Math.abs(w);
-    },
-    frac(a) { const s = fx.ang.get(a); return s && s.at === M[a] ? s.n / fx.K : 0; },
-    whole(a) { fx.ang.delete(a); },
-    // the controls read: a step whose key was up since the last read has nothing carried
-    read() {
-      for (const k of [...fx.carry.keys()]) if (!fx.stepped.has(k)) fx.carry.delete(k);
-      fx.stepped.clear();
-      fx.before = fx.now; fx.now = new Set();
-    },
-    // a move each loop; a switch when its key goes down; a repeat then and every K ticks
-    take(act) {
-      const k = kind(act), id = k === 'repeat' && !T.repeats.includes(act) ? act + 0x100 : act, t = tick();
-      fx.now.add(id);
-      if (k === 'move') return true;
-      if (!fx.before.has(id)) { fx.last.set(id, t); return true; }
-      if (k === 'repeat' && fx.last.has(id) && t - fx.last.get(id) >= fx.K) { fx.last.set(id, t); return true; }
-      return false;
-    },
-    once(key) {
-      const t = tick(), l = fx.onceAt.get(key);
-      if (l !== undefined && t - l < fx.K) return false;
-      fx.onceAt.set(key, t);
-      return true;
-    },
-    // shown for one loop: from the loop that shows it, for K ticks, the game reads it as shown
-    // after it has taken it down, and what goes with it as it was
-    held(a, v) {
-      const h = T.held.find(x => x.at === a);
-      if (h) {
-        if (v === h.shown) { if (!holding()) fx.hold = { from: tick(), K: fx.K, with: new Map() }; return v; }
-        return v === h.gone && holding() ? h.shown : v;
-      }
-      if (!holding() || !T.held.some(x => x.with.includes(a))) return v;
-      if (!fx.hold.with.has(a)) fx.hold.with.set(a, v);
-      return fx.hold.with.get(a);
-    },
-    // the message's wait: play goes on, and the name goes back on the first loop after the
-    // countdown has run out
-    after(asked, a) {
-      if (asked) fx.owed = true;
-      if (!fx.owed || M[a]) return false;
-      fx.owed = false;
-      return true;
-    },
-  };
-  reset(fx);
-  return fx;
-}
-function reset(fx) {
-  Object.assign(fx, { ang: new Map(), carry: new Map(), stepped: new Set(), before: new Set(), now: new Set(),
-    last: new Map(), onceAt: new Map(), hold: null, owed: false });
-}
-
-function set(fx, on, speed) {
-  if (speed !== undefined && speed !== fx.speed) {
-    // a fractional angle keeps its place; a carry starts again
-    const K = fx.T.speeds[speed].K;
-    for (const s of fx.ang.values()) s.n = Math.min(K - 1, Math.round(s.n * K / fx.K));
-    fx.carry.clear();
-    fx.speed = speed; fx.K = K;
-  }
-  if (on !== fx.on) {
-    fx.on = on;
-    reset(fx);
-    fx.rt.P.plug = on ? fx.plug : fx.game;
-  }
-}
-
-function run(fx, ms, between) {
-  fx.loop.between = between || null;
-  return fx.rt.runTicks(ms * fx.T.hz / 1000, fx.loop);
-}
-
-// the 3D view to draw over the screen: the last copy to the view's bitmap, when it was the 3D view,
-// rendered from the draw list the game drew it from, at the angles the game stood at
-function view(fx, MM, always) {
-  const f = MM.latest(MM.attach(fx.rt));
-  if (!f || !f.pic) return null;
-  const p = f.pic.pose, b = f.pic.bg, whole = v => v === Math.floor(v);
-  if (!always && whole(p.yaw) && whole(p.pitch) && whole(b.yaw) && whole(b.pitch)) return null;
-  return { scene: f.scene || (f.scene = MM.scene(fx.rt.P, f.pic)), shown: f };
-}
-
-root.FastCPU = { attach, set, run, view };
-})(typeof window !== 'undefined' ? window : globalThis);
-</script>
-<script>
 /* port/page/fast-table.js */
-// Castle Master's table for Fast CPU (page/fast.js): what Fast CPU knows about the game. The names in
+// Castle Master's table for Fast CPU (site/lib/fast-cpu.js): what Fast CPU knows about the game. The names in
 // capitals are the game's routines (src/), the numbers places in its memory.
 (function (root) {
 'use strict';
@@ -6509,27 +6367,25 @@ root.CM_FAST = {
   // it draws no view for, so it goes at the C64's own speed whatever the Speed: a pixel each 12,560
   // cycles, measured on the game's code
   steps: { 0x123C: 'pace', 0x123D: 'pace', 0x2465: 12560, 0x2466: 12560 },
-  // the angles (plug-in points turn, frac, whole): which way you face ($2411) and up or down
-  // ($2410), 72 steps to a full turn
-  angles: [0x2411, 0x2410], turn: 72,
+  // the angles the plug-in points turn, frac and whole are given: which way you face ($2411) and
+  // up or down ($2410), 72 steps to a full turn
+  turn: 72,
   // the controls, as actions (READ_CONTROL_INPUT's codes turned into actions by the map at $1382):
   // those that switch something, taken once a press (the speeds, face forward, turn about, the
   // sights, act, the pointer, the information screen); those that repeat, taken at the press and
   // every K ticks while held (a rock), and with Ctrl ($1380) the quarter turns and the looks all the
   // way up or down. The rest are moves
   switches: [9, 10, 11, 12, 13, 21, 27, 30, 41], repeats: [22], ctrl: 0x1380, ctrlRepeats: [5, 6, 7, 8],
-  // the jobs whose effect adds up with each run (plug-in point once), once a pace: the script of the
-  // object a step runs into ($1082, DISPATCH_FRAME_CONDITIONS). The 5 general scripts and the
-  // condition scripts of 11 areas that a step sets off show or hide objects by flags, the same
-  // however often they run, so they run each loop
-  once: [0x1082],
   // what the game shows for one loop, shown for a pace (plug-in point held): the lightning's streak,
   // drawn while $2459 reads 1, which the game takes to 0 once it has drawn it; its column from the
   // clock's byte $1C64
   held: [{ at: 0x2459, shown: 1, gone: 0, with: [0x1C64] }],
-  // a wait that only keeps a message up (plug-in point after): REFRESH_ACTION_STATUS puts the
+  // The plug-in points give Fast CPU the rest themselves. A job whose effect adds up with each run,
+  // once a pace (once, given $1082): the script of the object a step runs into
+  // (DISPATCH_FRAME_CONDITIONS); the 5 general scripts and the condition scripts of 11 areas that a
+  // step sets off show or hide objects by flags, the same however often they run, so they run each
+  // loop. A wait that only keeps a message up (after, given $1063): REFRESH_ACTION_STATUS puts the
   // area's name back once the countdown at $1063 (50 ticks) has run out
-  after: [0x1063],
 };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -6550,7 +6406,7 @@ let data = null, rt = null, fx = null, running = false, paused = false, native =
 
 // --- drawing: the frame the video chip would show, composed when the clock finishes one. With
 // native resolution the 3D view is drawn again over it at the screen's own resolution (page/
-// modern.js). With Fast CPU (page/fast.js) each refresh draws the screen as the refresh's last loop
+// modern.js). With Fast CPU (site/lib/fast-cpu.js) each refresh draws the screen as the refresh's last loop
 // left it, and, when that loop stood at a fractional angle, the 3D view over it from the loop's
 // draw list at that angle: in the C64's pixels, or at the screen's own resolution with native
 // resolution on
@@ -6572,7 +6428,7 @@ function present() {
   const MM = window.CMModern;
   let view = null, p = px;
   if (MM && fast && fx) {
-    view = FastCPU.view(fx, MM, native);
+    view = MM.between(MM.attach(rt), rt.P, native);
     if (view && !native) { work = work || new Uint8Array(px.length); work.set(px); p = work; inOff = null; MM.paint(work, view, frame); }
   } else if (MM && native) {
     const s = MM.onShow(MM.attach(rt), frame);

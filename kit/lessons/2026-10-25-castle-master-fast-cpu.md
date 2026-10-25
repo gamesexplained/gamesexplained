@@ -40,3 +40,24 @@
   apart, 45 (6 %) at another height, 28 of them lower
   (`games/c64/castle-master/port/test/fast-walls.js`). In open space
   K shares end exactly where one step ends, at every Speed.
+- **Two kinds of Fast CPU, chosen by the game's pace.** Aaron's call on
+  the first one: an action game wants 60 frames a second at its own
+  pace, with no Speed to set; a very slow game wants 60 frames a second
+  and a faster pace. A message's wait never holds play, sliding along
+  walls is a fair price for keys that answer at once, and Fast CPU
+  replaces Smooth motion in a game once it is shown faithful there.
+- **Read against two more games, the guide needed a beat of its own.**
+  Neither `games/c64/mercenary` nor `games/c64/space-rogue` has a clock
+  that ticks 60 times a second: both count the raster interrupt's video
+  frames, 50.12 a second, so `fast-cpu.md` gives such a game a beat of
+  16,422 cycles of its own and leaves its clock to count its time. The
+  first waits for raster line 224 before each swap of its buffers, which
+  would hold a fast loop to 50 a second, and takes 4.4 to 13 video
+  frames a pass by its facts; the guide makes that wait a plug-in point.
+  The second has no wait at all and leaves the drawing out of a pass
+  once it is three frames behind, 8.4 to 16.5 passes a second. Both move
+  every craft each pass, and the second counts passes for its
+  instruments and its chance of a new ship (every 7th, 16th and 256th),
+  so each mover and each count needs a plug-in point. Their tables would hold that beat, a cap
+  of 4 and one setting: about 10 beats a step for the first (8 frames a
+  pass in the middle) and 4 for the second (it allows 3 frames a pass).

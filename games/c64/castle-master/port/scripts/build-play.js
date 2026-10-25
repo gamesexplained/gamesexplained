@@ -1,11 +1,11 @@
 'use strict';
 // Writes games/c64/castle-master/play.html: port/play.template.html with, at <!-- port -->, the
 // port's sources (each file of port/src as a script of its own, core.js first), the page's
-// machine (page/runtime.js), its modern view of the 3D view (page/modern.js), Fast CPU and the
-// game's table for it (page/fast.js, fast-table.js), the pacing the fit wrote (cost.json) and the
-// machine as the page carries it (scripts/pack-data.js: memory and chips at the loader's jump, the
-// code left out); and the sections that describe the port (page/port-results.html, modern.html,
-// fast.html, differences.html).
+// machine (page/runtime.js), its modern view of the 3D view (page/modern.js), the game's table for
+// Fast CPU (page/fast-table.js; the page loads Fast CPU itself, site/lib/fast-cpu.js), the pacing
+// the fit wrote (cost.json) and the machine as the page carries it (scripts/pack-data.js: memory
+// and chips at the loader's jump, the code left out); and the sections that describe the port
+// (page/port-results.html, modern.html, fast.html, differences.html).
 //   node build-play.js
 // pack-data.js reads the snapshot from work/, which only a contributor with the game has; without
 // it the data already in play.html is kept.
@@ -16,7 +16,7 @@ let html = fs.readFileSync(path.join(ROOT, 'play.template.html'), 'utf8');
 const parts = [];
 const src = ['core.js'].concat(fs.readdirSync(path.join(ROOT, 'src')).filter(f => f.endsWith('.js') && f !== 'core.js').sort());
 for (const f of src) parts.push(script('src/' + f, fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')));
-for (const f of ['runtime.js', 'modern.js', 'fast.js', 'fast-table.js']) parts.push(script('page/' + f, fs.readFileSync(path.join(ROOT, 'page', f), 'utf8')));
+for (const f of ['runtime.js', 'modern.js', 'fast-table.js']) parts.push(script('page/' + f, fs.readFileSync(path.join(ROOT, 'page', f), 'utf8')));
 parts.push('<script>\nwindow.CM_COST = ' + fs.readFileSync(path.join(ROOT, 'cost.json'), 'utf8').trim() + ';\n</script>');
 let data;
 try {

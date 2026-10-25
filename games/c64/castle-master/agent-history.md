@@ -317,3 +317,16 @@ than 64 units apart and 45 (6 %) at another height, 28 of them lower.
 These are not the random play's figures above, which came from other
 places and the first Fast CPU. Dropping the rest of a step's shares once
 a wall stops one, which might bring the two closer, was not tried.
+
+Aaron then asked for the work to serve any game whose speed rides on its
+render. The rules went into a guide of their own,
+`kit/skills/core/70-minisite/fast-cpu.md`, and the general code moved to
+`site/lib/fast-cpu.js`, so this game keeps only its table and its
+plug-in points; the view at a fractional angle moved into `modern.js`,
+which is this game's renderer. Read against two other games' folders, the
+guide was wrong for both on the clock: they count video frames, 50 a
+second, so it now gives such a game a 60 Hz beat of its own. Aaron's
+answers settled the spec's questions: a message never holds play, the
+sliding at walls stays, the plug-in points stay, an action game keeps its
+own pace with no Speed while a slow one like this gets the Speeds, and
+Fast CPU replaces Smooth motion in a game once it is shown faithful there.

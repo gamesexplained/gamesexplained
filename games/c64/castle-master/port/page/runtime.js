@@ -13,7 +13,7 @@
 //     onSave   optional: (name, bytes) when the game saves one
 //   rt.runFrame()      one frame of time: the program runs until the clock reaches the frame's end;
 //                      returns the frame that ends there, for C64.renderFrame
-//   rt.runTicks(cycles, loop)   Fast CPU's clock (page/fast.js), in place of runFrame: real time owed,
+//   rt.runTicks(cycles, loop)   Fast CPU's clock (site/lib/fast-cpu.js), in place of runFrame: real time owed,
 //                      in cycles. The main loop goes round once on each tick of CIA 1's timer A,
 //                      its own work taking no time: loop.start is the checkpoint where a loop
 //                      starts, loop.work the checkpoints its stretches start at, loop.cap the most

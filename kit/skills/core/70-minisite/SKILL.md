@@ -507,7 +507,8 @@ a queue of its own.
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in
 lockstep, pace it by the machine's clock, give it a level picker and the
-chips it leans on.
+chips it leans on. A game whose speed rides on its render can also offer Fast CPU,
+at 60 frames a second: `fast-cpu.md` beside it says how.
 
 ## Check it in a browser
 

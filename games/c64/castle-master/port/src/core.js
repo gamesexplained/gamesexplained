@@ -48,7 +48,7 @@ function makePort(M, io, opts = {}) {
   P.N = { row: 0, fill: 0, step: 0, xstep: 0, line: 0, vline: 0, vclear: 0 };
   // and the interrupt's own: the view's colours filled in a sensor's flash
   P.NI = { fill: 0 };
-  // The plug-in points: the places in the routines where the page's Fast CPU (page/fast.js) passes
+  // The plug-in points: the places in the routines where the page's Fast CPU (site/lib/fast-cpu.js) passes
   // in a value or skips a job, each marked "plug-in point" where it is used. These are the game's
   // own: with nothing plugged in, each gives the value the game's code gives, so the lockstep
   // holds the port and its plug-in points together. Fast CPU replaces them.

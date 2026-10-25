@@ -1,5 +1,5 @@
 'use strict';
-// The Play tab's Fast CPU (port/page/fast.js, with Castle Master's table in port/page/fast-table.js)
+// The Play tab's Fast CPU (site/lib/fast-cpu.js, with Castle Master's table in port/page/fast-table.js)
 // as the page runs it, in node on the memory the page carries, from the loader's jump. A refresh is
 // FastCPU.run for the real time since the last, as the page's tick calls it; K is the Speed's ticks
 // to a C64 step.
@@ -37,10 +37,11 @@ const ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const g = game(__dirname);
 globalThis.window = globalThis;                    // the page's scripts hand over on window
-g.lib('c64'); g.lib('sid'); g.lib('cpu6502');
+g.lib('c64'); g.lib('sid'); g.lib('cpu6502'); g.lib('fast-cpu');
 const PAGE = 'play.html', page = g.read(PAGE);
 const blocks = [...page.matchAll(/^\/\* (port\/\S+\.js) \*\/$/gm)].map(m => m[1]);
-for (const b of ['port/page/fast.js', 'port/page/fast-table.js']) if (!blocks.includes(b)) { console.log('FAIL: play.html has no ' + b); process.exit(1); }
+if (!page.includes('<script src="../../lib/fast-cpu.js"></script>')) { console.log('FAIL: play.html does not load ../../lib/fast-cpu.js'); process.exit(1); }
+if (!blocks.includes('port/page/fast-table.js')) { console.log('FAIL: play.html has no port/page/fast-table.js'); process.exit(1); }
 for (const b of blocks) g.run(PAGE, b, 'CMPort');
 const { CMPage, CMModern, FastCPU, CM_FAST: T } = globalThis;
 const cost = JSON.parse(/^window\.CM_COST = (.*);$/m.exec(page)[1]);
@@ -446,7 +447,7 @@ if (part('random')) {
     if (k % 3600 === 3599) FastCPU.set(m.fx, !m.fx.on);
     if (k % 1800 === 900) FastCPU.set(m.fx, m.fx.on, Math.floor(rnd() * SPEEDS.length));
     try {
-      if (m.fx.on) { loops += FastCPU.run(m.fx, REFRESH, angles); FastCPU.view(m.fx, CMModern, true); }
+      if (m.fx.on) { loops += FastCPU.run(m.fx, REFRESH, angles); CMModern.between(m.st, rt.P, true); }
       else rt.runFrame();
     } catch (e) { threw = e; fail('random play, ' + t.toFixed(1) + ' s: ' + e.message); }
     areas.add(M[0x2429]);
@@ -470,7 +471,7 @@ if (part('behind')) {
     if (!r.n) return null;
     N.refreshes++;
     if (st.n !== r.end) N.ahead++;
-    r.view = FastCPU.view(m.fx, CMModern, true); r.f = CMModern.latest(st);
+    r.view = CMModern.between(st, rt.P, true); r.f = CMModern.latest(st);
     if (r.f && r.f.pic && (!r.view || r.view.shown !== r.f)) N.behind++;
     if (r.view && (!st.flips.includes(r.view.shown) || !r.view.shown.pic || r.view.shown.t > rt.t)) N.notGame++;
     return r;

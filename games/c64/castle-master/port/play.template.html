@@ -145,6 +145,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/fast-cpu.js"></script>
 <!-- port -->
 <script>
 /* the page: the port on a virtual PAL clock, drawn each frame, the keyboard and the joystick */
@@ -159,7 +160,7 @@ let data = null, rt = null, fx = null, running = false, paused = false, native =
 
 // --- drawing: the frame the video chip would show, composed when the clock finishes one. With
 // native resolution the 3D view is drawn again over it at the screen's own resolution (page/
-// modern.js). With Fast CPU (page/fast.js) each refresh draws the screen as the refresh's last loop
+// modern.js). With Fast CPU (site/lib/fast-cpu.js) each refresh draws the screen as the refresh's last loop
 // left it, and, when that loop stood at a fractional angle, the 3D view over it from the loop's
 // draw list at that angle: in the C64's pixels, or at the screen's own resolution with native
 // resolution on
@@ -181,7 +182,7 @@ function present() {
   const MM = window.CMModern;
   let view = null, p = px;
   if (MM && fast && fx) {
-    view = FastCPU.view(fx, MM, native);
+    view = MM.between(MM.attach(rt), rt.P, native);
     if (view && !native) { work = work || new Uint8Array(px.length); work.set(px); p = work; inOff = null; MM.paint(work, view, frame); }
   } else if (MM && native) {
     const s = MM.onShow(MM.attach(rt), frame);
