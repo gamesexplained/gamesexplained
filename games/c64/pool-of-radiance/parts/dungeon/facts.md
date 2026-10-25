@@ -55,9 +55,14 @@ own `facts.md`.
   itself.
 - A packed string is a count of bytes read as six-bit characters, 1 to
   31 the letters (`$150A`).
-- `operand_counts` (`$1625`) gives SETUP MONSTER 2 operands and ENCOUNTER
-  MENU 13, one fewer than their routines read, so either one would be
-  skipped wrongly after a false IF.
+- `operand_counts` (`$1625`) gives SETUP MONSTER 2 operands, ENCOUNTER
+  MENU 13 and ADD NPC 1, one fewer than their routines read, so any of
+  them would be skipped wrongly after a false IF. In the 32 files named ECL
+  on the disks, decoded command by command from their start (the How it
+  works page's decoder, held to `get_operand` by `test_widgets.js`), none
+  of the three follows an IF; the decoding stops at the first table some
+  files keep among their commands, so the rest of those files is
+  unchecked.
 - ENCOUNTER MENU (`cmd_encounter_menu`, `$21FB`) shows COMBAT WAIT FLEE
   ADVANCE PARLAY and settles the outcome from the party's choice and the
   monsters' answer given by the script (`party_choice_bits`, `$2304`;

@@ -27,8 +27,8 @@ tests are listed in the game's own `facts.md`.
   `$1D74`); every quarter hour a member who is studying counts its spell
   down, every hour a member still resting before its studies counts its
   hours down.
-- In an area that sets `$6DD2`, every that many passes a roll of 1 to 100
-  under `$6DD3` interrupts the rest: YOUR REST IS RUDELY INTERRUPTED!, the
+- In an area that sets `$6DD2`, every that many passes a roll of 0 to 99
+  under `$6DD3` (a chance of `$6DD3` in 100) interrupts the rest: YOUR REST IS RUDELY INTERRUPTED!, the
   studies cancelled, and the camp leaves for the encounter (`$1E0F`).
   *Live*: New Phlan sets 1 and 101, so a rest there ends after five
   minutes.
