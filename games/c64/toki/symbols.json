@@ -2370,25 +2370,25 @@
   },
   {
    "address": 2235,
-   "name": "player_prev_x",
+   "name": "player_try_x",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 2236,
-   "name": "player_prev_x_hi",
+   "name": "player_try_x_hi",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 2237,
-   "name": "player_prev_y",
+   "name": "player_try_y",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 2238,
-   "name": "player_prev_y_hi",
+   "name": "player_try_y_hi",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -11332,7 +11332,7 @@
   {
    "address": 10,
    "type": "line",
-   "text": "Pixels the player moves in one step: always 2. Every writer stores 2: init_video_and_object_defaults, the walk routines, the mode 1 entries (ground_floor_check, air_mode1_check, player_down_enter_mode1), mode1_start_jump and mode1_set_dir_tail. $42F8 and $4326 add it to player_prev_x and player_prev_y, $42E1 and $430F subtract it."
+   "text": "Pixels the player moves in one step: always 2. Every writer stores 2: init_video_and_object_defaults, the walk routines, the mode 1 entries (ground_floor_check, air_mode1_check, player_down_enter_mode1), mode1_start_jump and mode1_set_dir_tail. $42F8 and $4326 add it to player_try_x and player_try_y, $42E1 and $430F subtract it."
   },
   {
    "address": 11,
@@ -11947,7 +11947,7 @@
   {
    "address": 657,
    "type": "line",
-   "text": "Property byte of the block in the probe's far column (player_prev_x plus $1F), stored by probe_far_column, which probe_player_tiles_one_row ($9D17) and player_probe_tiles_and_platforms reach through probe_columns_from_y; probe_outside_map stores 0 when the probe is outside the map. mode1_up_end calls $9D17 before testing it for non-zero. Bits 2 and 3 mean a slope to ground_slope_or_fall, ground_set_slope, the ground_slope_* routines and air_block_flags (air_slope_land tests bit 2); air_slope_check tests bits 0 and 3, mode1_down_end bit 4 and player_animate bit 0."
+   "text": "Property byte of the block in the probe's far column (player_try_x plus $1F), stored by probe_far_column, which probe_player_tiles_one_row ($9D17) and player_probe_tiles_and_platforms reach through probe_columns_from_y; probe_outside_map stores 0 when the probe is outside the map. mode1_up_end calls $9D17 before testing it for non-zero. Bits 2 and 3 mean a slope to ground_slope_or_fall, ground_set_slope, the ground_slope_* routines and air_block_flags (air_slope_land tests bit 2); air_slope_check tests bits 0 and 3, mode1_down_end bit 4 and player_animate bit 0."
   },
   {
    "address": 658,
@@ -12047,7 +12047,7 @@
   {
    "address": 718,
    "type": "line",
-   "text": "Table of 17 bytes: pixels risen in one frame of a jump or arc, indexed by the jump counter (limited to 16): 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 6. player_jump_motion subtracts the entry from player_prev_y (mode2_jump_motion adds it) and from the counter, so the rise slows toward the top; object_arc_step uses it for objects."
+   "text": "Table of 17 bytes: pixels risen in one frame of a jump or arc, indexed by the jump counter (limited to 16): 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 6. player_jump_motion subtracts the entry from player_try_y (mode2_jump_motion adds it) and from the counter, so the rise slows toward the top; object_arc_step uses it for objects."
   },
   {
    "address": 735,
@@ -12077,7 +12077,7 @@
   {
    "address": 796,
    "type": "line",
-   "text": "Offset from player_y to the top of hit box 1 (player_box_top = player_y + this). track_stage_section also adds it to player_y; the terrain probes and compute_prev_position_box_edges add it to player_prev_y."
+   "text": "Offset from player_y to the top of hit box 1 (player_box_top = player_y + this). track_stage_section also adds it to player_y; the terrain probes and compute_prev_position_box_edges add it to player_try_y."
   },
   {
    "address": 797,
@@ -12107,7 +12107,7 @@
   {
    "address": 802,
    "type": "line",
-   "text": "Offset added to the X of the player's first sprite in player_sprite_coords (24 in the saved state); the pose tables set it, byte 1 of each animation table. player_pose adds it to the third sprite's position too."
+   "text": "Offset added to the X of the player's first sprite in player_sprite_coords (24 in the saved state). player_animate sets it from byte 1 of each animation table, and player_down_enter_mode1 sets it to $12. player_pose adds it to the third sprite's position too."
   },
   {
    "address": 803,
@@ -12127,7 +12127,7 @@
   {
    "address": 820,
    "type": "line",
-   "text": "Table of ten pairs of bytes, one pair for each aim direction (aim_dir 0 to 9): the X and Y offsets that player_fire adds to player_third_x and player_third_y to find where a shot starts. The result is rounded down to a multiple of 8. The Y bytes are at $0335, $0337 and on."
+   "text": "Table of ten pairs of bytes, one pair for each aim direction (aim_dir 0 to 9): the X and Y offsets that player_fire adds to player_third_x and player_third_y to find where a shot starts. The result is rounded down to a multiple of 8; the two-shot weapon (b_B08F) then sets its low bits to 3 in the first slot and 4 in the second. The Y bytes are at $0335, $0337 and on."
   },
   {
    "address": 821,
@@ -12152,22 +12152,22 @@
   {
    "address": 1015,
    "type": "line",
-   "text": "Table of 10 bytes indexed by the first byte of the player's frame record (the third sprite's shape class): the left offset of hit box 2. player_pose copies the entry to box2_left_off ($031E)."
+   "text": "Table indexed by the first byte of the player's frame record (the third sprite's shape class), which runs 1 to 10 in the records, so the ten entries are $03F8-$0401: the left offset of hit box 2. player_pose copies the entry to box2_left_off ($031E)."
   },
   {
    "address": 1025,
    "type": "line",
-   "text": "Table of 10 bytes indexed like box2_left_tab: the top offset of hit box 2, copied to box2_top_off ($0320)."
+   "text": "Table indexed like box2_left_tab (1 to 10, so the entries are $0402-$040B): the top offset of hit box 2, copied to box2_top_off ($0320)."
   },
   {
    "address": 1035,
    "type": "line",
-   "text": "Table of 10 bytes indexed like box2_left_tab: the width of hit box 2, copied to box2_right_off ($031F)."
+   "text": "Table indexed like box2_left_tab (1 to 10, so the entries are $040C-$0415): the width of hit box 2, copied to box2_width ($031F)."
   },
   {
    "address": 1045,
    "type": "line",
-   "text": "Table of 10 bytes ($0415-$041E) indexed like box2_left_tab: the height of hit box 2, copied to box2_height ($0321). The bytes up to $042D after it are not read by any code in the listing."
+   "text": "Table indexed like box2_left_tab (1 to 10, so the entries are $0416-$041F): the height of hit box 2, copied to box2_height ($0321). The bytes $0420-$042D after it are not read by any code in the listing."
   },
   {
    "address": 1070,
@@ -12182,12 +12182,12 @@
   {
    "address": 1076,
    "type": "line",
-   "text": "The partial tiles of the energy gauge: draw_segment_gauge takes the boundary cell from here by the low two bits of the value ($D5, $DA, $D9, $D8; $D5 is also the empty cell). The 32 bytes after the first four, up to $0457, are not read by any code in the listing."
+   "text": "The partial tiles of the energy gauge: draw_segment_gauge takes the boundary cell from here by the low two bits of the value ($D5, $DA, $D9, $D8; $D5 is also the empty cell). The 32 bytes after them, $0438-$0457, are the two animation tables of action 7 (mode 2), at $0438 and $0448 (see player_anim_tables)."
   },
   {
    "address": 1112,
    "type": "line",
-   "text": "The player's animation tables read by player_animate for actions below 5, one for each facing, at $0458, $046C, $0480, $0490, $04A0, $04AC, $04B6, $04C0 and $04CA. A table starts with the length of its shape list; bytes 1 and 2 are the sprite offsets $0322 and $0323, byte 3 the second-sprite flag $0900, bytes 4 to 7 the hit box offsets $031A-$031D, and from byte 8 come pairs of shape numbers (player_shape_1, player_shape_2) that the frame index $0902 steps through two at a time."
+   "text": "The player's animation tables, chosen by player_animate by action and facing: $0458, $046C, $04AC, $04B6, $04C0 and $04CA for actions below 5, $0480, $0490 and $04A0 for actions 5 and 6 (also used by the transitions), and $0438 and $0448 for action 7. A table starts with the length of its shape list; bytes 1 and 2 are the sprite offsets $0322 and $0323, byte 3 the second-sprite flag $0900, bytes 4 to 7 the hit box offsets $031A-$031D, and from byte 8 come pairs of shape numbers (player_shape_1, player_shape_2) that the frame index $0902 steps through two at a time."
   },
   {
    "address": 1256,
@@ -12202,7 +12202,7 @@
   {
    "address": 1260,
    "type": "line",
-   "text": "Four bytes for each transition state, indexed by four times (the state minus 2): the hit box offsets that go to $031A-$031D (left offset, width, top offset, height) while the transition plays."
+   "text": "Four bytes for each transition step, indexed by four times ((the state AND $3F) minus 2): the hit box offsets that go to $031A-$031D (left offset, width, top offset, height) while the transition plays. States 2 and $42 use $04EC-$04EF, states 4 and $44 use $04F4-$04F7; $04F0-$04F3 is not used."
   },
   {
    "address": 1261,
@@ -12217,7 +12217,7 @@
   {
    "address": 1263,
    "type": "line",
-   "text": "The fourth byte of each four-byte entry of transition_boxes: box1_height ($031D). The entries run on to $04FF."
+   "text": "The fourth byte of each four-byte entry of transition_boxes: box1_height ($031D). The last entry read is at $04F4, so $04F7 is the last byte used; $04F8-$04FF are not read."
   },
   {
    "address": 1280,
@@ -12242,7 +12242,7 @@
   {
    "address": 1473,
    "type": "line",
-   "text": "Reads the first byte of an object definition record into $E7 and $E9: the number of animation frames. A record is three bytes (frame count, then a 16-bit pointer to the object's sprite shapes with the bank in its top 3 bits), then one 5-byte header per frame, then the frame's box and part lists, ended by a first byte of $FF. The layout was checked against the bank 7 record at $8182 and matches the section layout in Euan's older notes."
+   "text": "Reads the first byte of an object definition record into $E7 and $E9: the number of animation frames. A record is three bytes (frame count, then a 16-bit pointer to the object's sprite shapes with the bank in its top 3 bits), then for each frame a 5-byte header followed by as many 2-byte offsets as the header's first byte, then the box and part lists, ended by a first byte with bit 7 set ($FF in bank 7). The layout was checked against the bank 7 record at $8182 and matches the section layout in Euan's older notes."
   },
   {
    "address": 1492,
@@ -12257,7 +12257,7 @@
   {
    "address": 1620,
    "type": "line",
-   "text": "Second pass over the record, after all frame headers: each list starts with a byte whose bit 7 is set at the end ($FF in bank 7) or with the hitbox x offset. A set bit 7 jumps to the tail at b_06AD. Otherwise the list is 5 bytes (hitbox x offset, y offset, width, height, then the number of parts) followed by that many 4-byte parts."
+   "text": "Second pass over the record, after all frame headers: each list starts with a byte whose bit 7 is set at the end ($FF in bank 7) or with the hitbox x offset. A set bit 7 jumps to the tail at b_06AD. Otherwise the list is 5 bytes (hit box left and top offsets, then right and bottom offsets, all from the object's X and Y as set_object_hitbox adds them, then the number of parts) followed by that many 4-byte parts."
   },
   {
    "address": 1662,
@@ -12272,7 +12272,7 @@
   {
    "address": 1757,
    "type": "line",
-   "text": "Flag byte of each of the six player shot slots (one byte each for slots 0 to 5): bit 7 set means the slot is in use. player_fire sets it to $80 when it creates a shot; update_char_block_slots runs the active slots; slot_deactivate and the hit tests clear it. The slots share this address area with the stage loader, which has finished by the time they are used."
+   "text": "Flag byte of each of the six player shot slots (one byte each for slots 0 to 5): bit 7 set means the slot is in use. player_fire sets it to $80 when it creates a shot; update_char_block_slots runs the active slots; slot_deactivate and the hit test of shots against objects (b_A6A1) clear it, and the round setup (clear_06dd_table_loop, $4F5B) clears all six. The slots share this address area with the stage loader, which has finished by the time they are used."
   },
   {
    "address": 1758,
@@ -12282,7 +12282,7 @@
   {
    "address": 1763,
    "type": "line",
-   "text": "Low bytes of the left edge (X) of the six shot slots, rounded down to a multiple of 8; the high bytes are at shot_x_hi ($06E9). slot_apply_path_step adds the path step to it; slot_active compares it with the view. The saved snapshot shows leftover loader code here (the slots are empty)."
+   "text": "Low bytes of the left edge (X) of the six shot slots; the high bytes are at shot_x_hi ($06E9). player_fire starts it on a multiple of 8 (plus 3 or 4 for the two-shot weapon), and slot_apply_path_step adds the path step to it, which need not be a multiple of 8; slot_active compares it with the view. The saved snapshot shows leftover loader code here (the slots are empty)."
   },
   {
    "address": 1764,
@@ -12292,7 +12292,7 @@
   {
    "address": 1766,
    "type": "line",
-   "text": "Stage-load helper called by the record loader load_stage_bank_records for each entry (from $0563). It selects cartridge bank 0, takes the list of animation ids at ($0C09) with its last index in $0C0B, and looks for $F0 in it; for a hit it steps over the matching 5-byte-plus-3-per-part records in the block at $EA/$ED and stores the resulting address in the tables ($3A) and ($3C) at that index. The loaders are used only while a stage loads; in play $06DD-$0745 is reused for the shot slots."
+   "text": "Stage-load helper called by the record loader load_stage_bank_records for each entry (from $0563). It selects cartridge bank 0, takes the list at ($0C09) with its last index in $0C0B, and looks in it for the definition number in $F0; for each hit it steps over as many frames as ($3C) holds at that index, each a 5-byte header plus 2 bytes per offset, in the record just unpacked at $EA/$ED, and stores the resulting address in the tables ($3A) and ($3C) at that index. The loaders are used only while a stage loads; in play $06DD-$0742 holds the shot slot tables."
   },
   {
    "address": 1769,
@@ -12307,7 +12307,7 @@
   {
    "address": 1775,
    "type": "line",
-   "text": "Low bytes of the top edge (Y) of the six shot slots, rounded down to a multiple of 8; the high bytes are at shot_y_hi ($06F5)."
+   "text": "Low bytes of the top edge (Y) of the six shot slots; the high bytes are at shot_y_hi ($06F5). player_fire starts it on a multiple of 8 (plus 3 or 4 for the two-shot weapon), and the path steps then move it."
   },
   {
    "address": 1776,
@@ -12392,7 +12392,7 @@
   {
    "address": 1829,
    "type": "line",
-   "text": "Animation mask of each shot slot: the slot steps its frame only on frames where frame_count AND the mask is zero; a non-zero mask also makes the frame offset wrap to $0A, and slot_step_sound_check queues sound $18 for it."
+   "text": "Animation mask of each shot slot: the slot steps its frame and its path only on frames where frame_count AND the mask is zero; a non-zero mask also makes the frame offset wrap to $0A and the path go back one step at its end, and slot_step_sound_check then queues sound $18 for it when the sound queue is empty."
   },
   {
    "address": 1830,
@@ -12442,7 +12442,7 @@
   {
    "address": 1853,
    "type": "line",
-   "text": "Also reached as $073D,x by restore_saved_cells: the third saved character of a four-cell record (the second of a two-cell record), counted from the end of the record. As a shot table it is shot_y2_hi: the first entry of the high bytes of the bottom edges of the shot boxes."
+   "text": "Also reached as $073D,x by restore_saved_cells: the third saved character of a four-cell record (the first of a two-cell record), counted from the end of the record. As a shot table it is shot_y2_hi: the first entry of the high bytes of the bottom edges of the shot boxes."
   },
   {
    "address": 1854,
@@ -12522,7 +12522,7 @@
   {
    "address": 1963,
    "type": "line",
-   "text": "The raster interrupt nmi_frame installs each frame: handler $07AB/$07AC into $FFFE, line $07AD into $D012. The main loop sets irq_panel at line $D5, or $95A4 when $6B is set."
+   "text": "The raster interrupt that nmi_frame installs on each full-update frame (copy_sprite_shadows, frame_mode 2 or more): handler $07AB/$07AC into $FFFE, line $07AD into $D012. wait_nmi sets irq_panel ($837E) at line $D5, or sprite_reuse_irq ($95A4) at the earliest free sprite line when sprite_more ($6B) is set; round_start sets $BCE1 at line $DE."
   },
   {
    "address": 1964,
@@ -12542,7 +12542,7 @@
   {
    "address": 1967,
    "type": "line",
-   "text": "Value for $D016 that apply_vic_shadows writes each frame: $10 combined with scroll_fine_x ($06) (multicolour text, 40 columns), set by build_vic_shadows."
+   "text": "Value for $D016 that apply_vic_shadows writes each frame: $10 combined with scroll_fine_x ($06) (multicolour text, 38 columns), set by build_vic_shadows."
   },
   {
    "address": 1968,
@@ -12642,7 +12642,7 @@
   {
    "address": 2008,
    "type": "line",
-   "text": "Y of slot 0 and the X and Y pairs of slots 1 to 3 of the hardware sprite table (the continuation of spr_xy, $07D7-$07DE). place_third_sprite writes slot 0; copy_sprites_to_tables writes the others."
+   "text": "Y of slot 0 and the X and Y pairs of slots 1 to 3 of the hardware sprite table (the continuation of spr_xy, $07D7-$07DE). place_third_sprite writes slot 0 when it shows the third sprite; copy_sprites_to_tables writes the others, and slot 0 too when place_third_sprite left it free."
   },
   {
    "address": 2015,
@@ -12727,12 +12727,12 @@
   {
    "address": 2204,
    "type": "line",
-   "text": "Set to 2 by new_game_reset. No code in the listing reads it."
+   "text": "Set to 2 by new_game_reset. The untraced code at $4007 counts it down (dec $089C at $400B): while it stays non-negative it goes on at $802B, otherwise back to game_start at $8000. Probably the number of continues left; nothing in the traced code reads it."
   },
   {
    "address": 2205,
    "type": "line",
-   "text": "The lives counter as a status-line tile code: $C1 plus the number of lives (the digit tile for 0 is $C1). init_video_and_object_defaults sets $C6, the stage intro adds one, and round_start takes one off at every round, ending the game when the result is below $C1. update_status_line shows it at $7F9A."
+   "text": "The lives counter as a status-line tile code: $C1 plus the number of lives (the digit tile for 0 is $C1). init_video_and_object_defaults sets $C6, the stage intro adds one, the item handler at $A7B9 adds one for every 20 items collected ($08A0), and round_start takes one off at every round, ending the game when the result is below $C1. update_status_line shows it at $7F9A (draw_status_lives)."
   },
   {
    "address": 2206,
@@ -12747,7 +12747,7 @@
   {
    "address": 2208,
    "type": "line",
-   "text": "Cleared by init_video_and_object_defaults. No code in the listing reads it."
+   "text": "Count of items collected towards an extra life. Cleared by init_video_and_object_defaults. The item handler at $A7B9 (obj_flags handler 0, not traced) adds one with each item, alongside the digit tiles $089E/$089F; at 20 it adds a life to lives_tile ($089D) and resets the count to 0 and both digits to $C1."
   },
   {
    "address": 2209,
@@ -12782,12 +12782,12 @@
   {
    "address": 2215,
    "type": "line",
-   "text": "Number (0 to 3) of the background stream last started: the low two bits of section_scroll_flags. load_section_record compares the bits with it to see whether a new stream must start; the stream loader sets it."
+   "text": "Number (0 to 3) of the background stream last started: the low two bits of section_scroll_flags. load_section_record compares the bits with it to see whether a new stream must start, and stores the new number here when they differ ($93C1); round_start ($80C5) and the stream loader ($511E) set it too."
   },
   {
    "address": 2216,
    "type": "line",
-   "text": "Four bytes: the index into stream_table where the list of each of the four streams begins. start_stream_destination takes the one for the stream number in Y.  load_stage_bank_records uses $08A8 as a running count while it builds the lists and leaves it 0."
+   "text": "Four bytes: the index into stream_table where the list of each of the four streams begins. stream_cartridge_data_to_ram takes the one for the stream number in Y ($5122) and passes it in X to start_stream_destination. load_stage_bank_records uses $08A8 as a running count while it builds the lists and leaves it 0."
   },
   {
    "address": 2220,
@@ -12797,12 +12797,12 @@
   {
    "address": 2224,
    "type": "line",
-   "text": "Tells nmi_frame what to do this frame: negative leaves at once, 0 blanks the screen (blank_screen_exit), 1 skips the sprite copy (wait_and_set_vic) and 2 or more runs the full update (copy_sprite_shadows). The main loop sets $7F ($80F0) when play starts; round_start and other setup code set 0 or $FF while they work."
+   "text": "Tells nmi_frame what to do this frame: negative leaves at once, 0 blanks the screen (blank_screen_exit), 1 skips the sprite copy (wait_and_set_vic) and 2 or more runs the full update (copy_sprite_shadows). round_start sets 0 while it works and $7F ($80F0) just before the main loop starts; wait_frame sets 1 when a stage is cleared ($81BE); nmi_and_first_copy and the code at $4102 set $FF."
   },
   {
    "address": 2225,
    "type": "line",
-   "text": "Non-zero while a timed player effect runs (see player_effect_tick). Only ever set to 0 in the traced code."
+   "text": "Non-zero while a timed player effect runs (see player_effect_tick). The item handler at $0BBE (obj_flags handler 2, not traced) sets it to $FF and its timer $08CE to $E0; player_effect_tick clears it when $08CE runs out, and init_round_state clears it."
   },
   {
    "address": 2226,
@@ -12837,7 +12837,7 @@
   {
    "address": 2232,
    "type": "line",
-   "text": "High byte of player_x ($08B7). Used for the section probe at $930A, the sprite position at $9FC8, and the saved position code."
+   "text": "High byte of player_x ($08B7). Read and written wherever the player's X is used or moved: player_pose, save and restore_player_x, load_start_record, the movement code, the section probe at $930A, the sprite position at $9FC8, object_sprites_and_hits and the saved position code (hit_save_pos)."
   },
   {
    "address": 2233,
@@ -12847,27 +12847,27 @@
   {
    "address": 2234,
    "type": "line",
-   "text": "High byte of player_y ($08B9). Used for the section probe at $9319, the sprite position at $A016, and the moves at $9ADC and $9B7B."
+   "text": "High byte of player_y ($08B9). Read and written wherever the player's Y is used or moved: player_pose, save and restore_player_y, load_start_record, the movement code ($9ADC, $9AFC, $9B51, $9B7B), the section probe at $9319, the sprite position at $A016, object_sprites_and_hits and the saved position code (hit_save_y)."
   },
   {
    "address": 2235,
    "type": "line",
-   "text": "The player's X saved by save_player_x ($08BC is the high byte); restore_player_x copies it back."
+   "text": "The player's trial X ($08BC is the high byte): save_player_x copies player_x here, the movement code steps it (move_prev_x_left and _right, the mode 1 steps, ride_left and ride_right), the tile probes test the tiles there, and restore_player_x copies it to player_x when the step is allowed."
   },
   {
    "address": 2236,
    "type": "line",
-   "text": "High byte of player_prev_x ($08BB)."
+   "text": "High byte of player_try_x ($08BB)."
   },
   {
    "address": 2237,
    "type": "line",
-   "text": "The player's Y saved by save_player_y ($08BE is the high byte); restore_player_y copies it back."
+   "text": "The player's trial Y ($08BE is the high byte): save_player_y copies player_y here, the movement and jump code steps it (move_prev_y_up and _down and others), the tile probes test the tiles there, and restore_player_y copies it to player_y when the move is allowed."
   },
   {
    "address": 2238,
    "type": "line",
-   "text": "High byte of player_prev_y ($08BD)."
+   "text": "High byte of player_try_y ($08BD)."
   },
   {
    "address": 2239,
@@ -13137,12 +13137,12 @@
   {
    "address": 2298,
    "type": "line",
-   "text": "Vertical state of a jump or fall: 0 on the ground, $FF while rising, 1 while falling (mode1_set_dir_tail starts a fall with 1); $FF is also set when the player is hit and when time runs out. player_jump_motion and its siblings work on player_prev_y with it and jump_counter."
+   "text": "Vertical state of a jump or fall: 0 on the ground, $FF while rising, 1 while falling (mode1_set_dir_tail starts a fall with 1); $FF is also set when the player is hit and when time runs out. player_jump_motion and its siblings work on player_try_y with it and jump_counter."
   },
   {
    "address": 2299,
    "type": "line",
-   "text": "Counter of a jump or fall. While the player rises it holds the rise left: a jump starts it at jump_start_count ($08FC) or, from mode 1, at $10; each frame player_jump_motion subtracts the $02CE entry it indexes (limited to 16) from it and from player_prev_y, and when it would reach 0 the fall begins (jump_state 1, counter 0). While falling it indexes the $02DF table and rises by one up to 8."
+   "text": "Counter of a jump or fall. While the player rises it holds the rise left: a jump starts it at jump_start_count ($08FC) or, from mode 1, at $10; each frame player_jump_motion subtracts the $02CE entry it indexes (limited to 16) from it and from player_try_y, and when it would reach 0 the fall begins (jump_state 1, counter 0). While falling it indexes the $02DF table and rises by one up to 8."
   },
   {
    "address": 2300,
@@ -13902,22 +13902,22 @@
   {
    "address": 16969,
    "type": "line",
-   "text": "Copy player_prev_x ($08BB/$08BC) back to player_x ($08B7/$08B8)."
+   "text": "Copy player_try_x ($08BB/$08BC) back to player_x ($08B7/$08B8)."
   },
   {
    "address": 16982,
    "type": "line",
-   "text": "Copy player_prev_y ($08BD/$08BE) back to player_y ($08B9/$08BA)."
+   "text": "Copy player_try_y ($08BD/$08BE) back to player_y ($08B9/$08BA)."
   },
   {
    "address": 16995,
    "type": "line",
-   "text": "Save the player's X position ($08B7/$08B8) in player_prev_x ($08BB/$08BC)."
+   "text": "Save the player's X position ($08B7/$08B8) in player_try_x ($08BB/$08BC)."
   },
   {
    "address": 17008,
    "type": "line",
-   "text": "Save the player's Y position ($08B9/$08BA) in player_prev_y ($08BD/$08BE)."
+   "text": "Save the player's Y position ($08B9/$08BA) in player_try_y ($08BD/$08BE)."
   },
   {
    "address": 17021,
@@ -13927,22 +13927,22 @@
   {
    "address": 17121,
    "type": "line",
-   "text": "Moves player_prev_x ($08BB/$08BC) left by move_step ($0A), with borrow into the high byte, unless bit 7 of fire_flags ($08C6) is set, in which case it does nothing. Mirror of move_prev_x_right."
+   "text": "Moves player_try_x ($08BB/$08BC) left by move_step ($0A), with borrow into the high byte, unless bit 7 of fire_flags ($08C6) is set, in which case it does nothing. Mirror of move_prev_x_right."
   },
   {
    "address": 17144,
    "type": "line",
-   "text": "Moves player_prev_x ($08BB/$08BC) right by move_step ($0A), with carry into the high byte, unless bit 7 of fire_flags ($08C6) is set, in which case it does nothing. Called by mode 1 movement for a step to the right."
+   "text": "Moves player_try_x ($08BB/$08BC) right by move_step ($0A), with carry into the high byte, unless bit 7 of fire_flags ($08C6) is set, in which case it does nothing. Called by mode 1 movement for a step to the right."
   },
   {
    "address": 17167,
    "type": "line",
-   "text": "Subtracts move_step ($0A) from player_prev_y ($08BD/$08BE), with borrow into the high byte, unless bit 7 of fire_flags ($08C6) is set. A smaller Y is taken as up (inferred from the scroll direction table, where direction 0 is up)."
+   "text": "Subtracts move_step ($0A) from player_try_y ($08BD/$08BE), with borrow into the high byte, unless bit 7 of fire_flags ($08C6) is set. A smaller Y is taken as up (inferred from the scroll direction table, where direction 0 is up)."
   },
   {
    "address": 17190,
    "type": "line",
-   "text": "Adds move_step ($0A) to player_prev_y ($08BD/$08BE), with carry into the high byte, unless bit 7 of fire_flags ($08C6) is set. Mirror of move_prev_y_up."
+   "text": "Adds move_step ($0A) to player_try_y ($08BD/$08BE), with carry into the high byte, unless bit 7 of fire_flags ($08C6) is set. Mirror of move_prev_y_up."
   },
   {
    "address": 17213,
@@ -15747,7 +15747,7 @@
   {
    "address": 34458,
    "type": "line",
-   "text": "Start a jump to the right (joy_bits $06). When jump_state ($08FA) is non-zero it goes to walk_right_dir instead. Otherwise it calls $42F8 (adds move_step to player_prev_x, skipped while bit 7 of $08C6 is set), loads A with 6, and falls into player_jump_start."
+   "text": "Start a jump to the right (joy_bits $06). When jump_state ($08FA) is non-zero it goes to walk_right_dir instead. Otherwise it calls $42F8 (adds move_step to player_try_x, skipped while bit 7 of $08C6 is set), loads A with 6, and falls into player_jump_start."
   },
   {
    "address": 34468,
@@ -15757,7 +15757,7 @@
   {
    "address": 34516,
    "type": "line",
-   "text": "Start a jump to the left (joy_bits $0A). When jump_state ($08FA) is non-zero it goes to walk_left_dir instead. Otherwise it calls $42E1 (subtracts move_step from player_prev_x, skipped while bit 7 of $08C6 is set), loads A with $0A, and goes to player_jump_start."
+   "text": "Start a jump to the left (joy_bits $0A). When jump_state ($08FA) is non-zero it goes to walk_left_dir instead. Otherwise it calls $42E1 (subtracts move_step from player_try_x, skipped while bit 7 of $08C6 is set), loads A with $0A, and goes to player_jump_start."
   },
   {
    "address": 34529,
@@ -15772,17 +15772,17 @@
   {
    "address": 34563,
    "type": "line",
-   "text": "Step right. On the ground ($08FA zero) it sets $0905 to 1. Sets move_dir ($0D) to $07 and $0299 to 0, then calls $42F8, which adds move_step ($0A) to player_prev_x unless bit 7 of $08C6 is set. When $0C is non-zero it goes to player_slope_step. Otherwise it sets move_step to 2 and, when jump_state is non-zero, goes on to player_jump_motion."
+   "text": "Step right. On the ground ($08FA zero) it sets $0905 to 1. Sets move_dir ($0D) to $07 and $0299 to 0, then calls $42F8, which adds move_step ($0A) to player_try_x unless bit 7 of $08C6 is set. When $0C is non-zero it goes to player_slope_step. Otherwise it sets move_step to 2 and, when jump_state is non-zero, goes on to player_jump_motion."
   },
   {
    "address": 34599,
    "type": "line",
-   "text": "Step left. On the ground ($08FA zero) it sets $0905 to 1. Sets move_dir ($0D) to $0B and $0299 to 0, then calls $42E1, which subtracts move_step ($0A) from player_prev_x unless bit 7 of $08C6 is set. When $0C is non-zero it goes to player_slope_step. Otherwise it sets move_step to 2 and, when jump_state is non-zero, goes on to player_jump_motion."
+   "text": "Step left. On the ground ($08FA zero) it sets $0905 to 1. Sets move_dir ($0D) to $0B and $0299 to 0, then calls $42E1, which subtracts move_step ($0A) from player_try_x unless bit 7 of $08C6 is set. When $0C is non-zero it goes to player_slope_step. Otherwise it sets move_step to 2 and, when jump_state is non-zero, goes on to player_jump_motion."
   },
   {
    "address": 34635,
    "type": "line",
-   "text": "Vertical step that goes with a horizontal one when $0C is non-zero (A holds $0C). Ends in $430F (subtracts move_step from player_prev_y) or $4326 (adds it), whichever the direction calls for, and the rts of that routine returns to the caller, so no jump motion follows. With $0C equal to 1 the player goes down when bit 3 of move_dir ($0D) is set (moving left) and up when it is clear (moving right). With any other value it goes up when moving left and down when moving right. $430F and $4326 do nothing while bit 7 of $08C6 is set."
+   "text": "Vertical step that goes with a horizontal one when $0C is non-zero (A holds $0C). Ends in $430F (subtracts move_step from player_try_y) or $4326 (adds it), whichever the direction calls for, and the rts of that routine returns to the caller, so no jump motion follows. With $0C equal to 1 the player goes down when bit 3 of move_dir ($0D) is set (moving left) and up when it is clear (moving right). With any other value it goes up when moving left and down when moving right. $430F and $4326 do nothing while bit 7 of $08C6 is set."
   },
   {
    "address": 34657,
@@ -15792,7 +15792,7 @@
   {
    "address": 34682,
    "type": "line",
-   "text": "Vertical motion of a jump, using jump_state ($08FA) and jump_counter ($08FB) on player_prev_y ($08BD/$08BE). A jump_state of 0 does nothing. A negative one (rising) clears bit 0 of move_dir ($0D), subtracts $02CE[x] from player_prev_y, where x is jump_counter limited to 16, and subtracts the same amount from jump_counter. When jump_counter would reach zero or below it sets jump_state to 1 and jump_counter to 0. A positive one (falling) clears bit 1 of move_dir, adds $02DF[x] with x as jump_counter, and raises jump_counter by one until it reaches 8."
+   "text": "Vertical motion of a jump, using jump_state ($08FA) and jump_counter ($08FB) on player_try_y ($08BD/$08BE). A jump_state of 0 does nothing. A negative one (rising) clears bit 0 of move_dir ($0D), subtracts $02CE[x] from player_try_y, where x is jump_counter limited to 16, and subtracts the same amount from jump_counter. When jump_counter would reach zero or below it sets jump_state to 1 and jump_counter to 0. A positive one (falling) clears bit 1 of move_dir, adds $02DF[x] with x as jump_counter, and raises jump_counter by one until it reaches 8."
   },
   {
    "address": 34773,
@@ -15867,12 +15867,12 @@
   {
    "address": 35241,
    "type": "line",
-   "text": "Second half of mode 0 movement, reached from player_move. Checks the new position that player_move left in player_prev_x and player_prev_y against the blocks. While player_hit ($0292) is non-zero it goes to restore_player_pos ($4246). On the ground (jump_state $08FA zero) it looks at move_dir ($0D): with bit 3 clear it goes to collide_ground_right, with bit 3 set and bit 2 clear to collide_ground_left, and otherwise it returns. In the air it goes by move_dir: $05 to air_down_right_x, $09 to air_down_left_x, $0D to air_vertical, $0E to $8D10, $06 to $8CDF, and $0A to $8CF6. Any other value returns."
+   "text": "Second half of mode 0 movement, reached from player_move. Checks the new position that player_move left in player_try_x and player_try_y against the blocks. While player_hit ($0292) is non-zero it goes to restore_player_pos ($4246). On the ground (jump_state $08FA zero) it looks at move_dir ($0D): with bit 3 clear it goes to collide_ground_right, with bit 3 set and bit 2 clear to collide_ground_left, and otherwise it returns. In the air it goes by move_dir: $05 to air_down_right_x, $09 to air_down_left_x, $0D to air_vertical, $0E to $8D10, $06 to $8CDF, and $0A to $8CF6. Any other value returns."
   },
   {
    "address": 35316,
    "type": "line",
-   "text": "Ground check for a step to the left (move_dir with bit 3 set and bit 2 clear). When slope_kind ($0C) is non-zero it goes to $8C60. Otherwise it calls $9BF6, merges $E1, $E2, and $E3 into $E1, and tests bit 0 (solid). If it is set, save_player_x ($4263) copies player_x over player_prev_x, so the step is dropped. If it is clear, restore_player_x ($4249) copies player_prev_x into player_x, so the step stands. Either way it goes on to ground_floor_check."
+   "text": "Ground check for a step to the left (move_dir with bit 3 set and bit 2 clear). When slope_kind ($0C) is non-zero it goes to $8C60. Otherwise it calls $9BF6, merges $E1, $E2, and $E3 into $E1, and tests bit 0 (solid). If it is set, save_player_x ($4263) copies player_x over player_try_x, so the step is dropped. If it is clear, restore_player_x ($4249) copies player_try_x into player_x, so the step stands. Either way it goes on to ground_floor_check."
   },
   {
    "address": 35346,
@@ -15902,12 +15902,12 @@
   {
    "address": 35567,
    "type": "line",
-   "text": "Decide what the blocks under an airborne player do, then commit or adjust player_prev_y. First it calls $9D3C and merges $E1, $E2, and $E3. If bit 5 is set in all three, it sets $0905 to 5, $0B and player_mode ($09) to 1, ORs 3 into $18, copies $18 to move_dir ($0D), and goes to land_and_snap (mode 1 is entered). Otherwise, with bit 1 set in the merged value it goes to air_hit_hazard. If $0291 has bit 2 or bit 3 set it goes to $8C0B. When stand_obj ($1A) is not negative it goes to air_on_object. Otherwise bit 0 (solid) goes to air_land_solid. With bit 0 clear and bit 6 set it sets player_mode to 2, jump_state to $FF, jump_counter to $30, and $0905 to 7. In all other cases it commits the new Y with restore_player_y ($4256)."
+   "text": "Decide what the blocks under an airborne player do, then commit or adjust player_try_y. First it calls $9D3C and merges $E1, $E2, and $E3. If bit 5 is set in all three, it sets $0905 to 5, $0B and player_mode ($09) to 1, ORs 3 into $18, copies $18 to move_dir ($0D), and goes to land_and_snap (mode 1 is entered). Otherwise, with bit 1 set in the merged value it goes to air_hit_hazard. If $0291 has bit 2 or bit 3 set it goes to $8C0B. When stand_obj ($1A) is not negative it goes to air_on_object. Otherwise bit 0 (solid) goes to air_land_solid. With bit 0 clear and bit 6 set it sets player_mode to 2, jump_state to $FF, jump_counter to $30, and $0905 to 7. In all other cases it commits the new Y with restore_player_y ($4256)."
   },
   {
    "address": 35662,
    "type": "line",
-   "text": "Land on a stage object: sets $0905 to 1, calls player_land, and sets player_prev_y to obj_hit_top for the object stand_obj ($1A), minus $031C and $031D. Then it commits the Y with restore_player_y ($4256)."
+   "text": "Land on a stage object: sets $0905 to 1, calls player_land, and sets player_try_y to obj_hit_top for the object stand_obj ($1A), minus $031C and $031D. Then it commits the Y with restore_player_y ($4256)."
   },
   {
    "address": 35704,
@@ -15922,7 +15922,7 @@
   {
    "address": 35778,
    "type": "line",
-   "text": "Snap the player's feet to a block boundary. Adds $031C and $031D to player_prev_y ($08BD/$08BE), rounds the sum down to a multiple of $10, subtracts $031D and $031C again, and stores the result in player_prev_y. Then it commits the Y with restore_player_y ($4256)."
+   "text": "Snap the player's feet to a block boundary. Adds $031C and $031D to player_try_y ($08BD/$08BE), rounds the sum down to a multiple of $10, subtracts $031D and $031C again, and stores the result in player_try_y. Then it commits the Y with restore_player_y ($4256)."
   },
   {
    "address": 35836,
@@ -15937,27 +15937,27 @@
   {
    "address": 35851,
    "type": "line",
-   "text": "Slope check for an airborne player, entered from air_floor_check when $0291 has bit 2 or bit 3 set. When bit 0 of $0291 is set it goes straight to air_slope_land. Otherwise it takes (player_prev_x $08BB plus $1F) AND $0F into $E2, and turns that into $0F minus itself when bit 3 of $0291 is clear. Then it compares ((player_prev_y $08BD AND $0E) plus 1 plus $031C plus $031D) AND $0F with $E2. If that is smaller it goes to air_slope_commit, because the feet are still above the slope. If not, it falls into air_slope_land."
+   "text": "Slope check for an airborne player, entered from air_floor_check when $0291 has bit 2 or bit 3 set. When bit 0 of $0291 is set it goes straight to air_slope_land. Otherwise it takes (player_try_x $08BB plus $1F) AND $0F into $E2, and turns that into $0F minus itself when bit 3 of $0291 is clear. Then it compares ((player_try_y $08BD AND $0E) plus 1 plus $031C plus $031D) AND $0F with $E2. If that is smaller it goes to air_slope_commit, because the feet are still above the slope. If not, it falls into air_slope_land."
   },
   {
    "address": 35901,
    "type": "line",
-   "text": "Land on a slope from the air: move_dir ($0D) becomes $FF, jump_state ($08FA) becomes 0, slope_kind ($0C) becomes 1 when bit 2 of $0291 is set and 2 otherwise, and $0905 becomes 1. Then player_prev_y ($08BD/$08BE) is increased by 1 and it falls into air_slope_commit."
+   "text": "Land on a slope from the air: move_dir ($0D) becomes $FF, jump_state ($08FA) becomes 0, slope_kind ($0C) becomes 1 when bit 2 of $0291 is set and 2 otherwise, and $0905 becomes 1. Then player_try_y ($08BD/$08BE) is increased by 1 and it falls into air_slope_commit."
   },
   {
    "address": 35933,
    "type": "line",
-   "text": "Commit the step: goes to restore_player_pos ($4246), which copies player_prev_x and player_prev_y into player_x and player_y."
+   "text": "Commit the step: goes to restore_player_pos ($4246), which copies player_try_x and player_try_y into player_x and player_y."
   },
   {
    "address": 35936,
    "type": "line",
-   "text": "Ground step to the left while slope_kind ($0C) is non-zero, entered from collide_ground_left. When slope_kind is 1 it goes to ground_slope_left_one. Otherwise it calls $9D3C and, if $0291 has bit 2 or bit 3 set (still on a slope), goes to ground_slope_commit. If not, it adds 6 to player_prev_y ($08BD/$08BE) and goes to land_and_snap."
+   "text": "Ground step to the left while slope_kind ($0C) is non-zero, entered from collide_ground_left. When slope_kind is 1 it goes to ground_slope_left_one. Otherwise it calls $9D3C and, if $0291 has bit 2 or bit 3 set (still on a slope), goes to ground_slope_commit. If not, it adds 6 to player_try_y ($08BD/$08BE) and goes to land_and_snap."
   },
   {
    "address": 35972,
    "type": "line",
-   "text": "Ground step to the right with slope_kind ($0C) not equal to 1, reached from ground_slope_right. Calls $9D3C and, if $0291 has bit 2 or bit 3 set, goes to ground_slope_commit. Otherwise it goes to land_and_snap with player_prev_y unchanged."
+   "text": "Ground step to the right with slope_kind ($0C) not equal to 1, reached from ground_slope_right. Calls $9D3C and, if $0291 has bit 2 or bit 3 set, goes to ground_slope_commit. Otherwise it goes to land_and_snap with player_try_y unchanged."
   },
   {
    "address": 35985,
@@ -15967,7 +15967,7 @@
   {
    "address": 36011,
    "type": "line",
-   "text": "Ground step to the right while slope_kind ($0C) is non-zero, entered from collide_ground_right. When slope_kind is not 1 it goes to ground_slope_right_two. Otherwise it calls $9D3C and, if $0291 has bit 2 or bit 3 set, goes to ground_slope_commit. If not, it adds 6 to player_prev_y ($08BD/$08BE) and, unless bit 1 of joy_bits ($08) is set, sets $0905 and $0B to 5. It ends in land_and_snap."
+   "text": "Ground step to the right while slope_kind ($0C) is non-zero, entered from collide_ground_right. When slope_kind is not 1 it goes to ground_slope_right_two. Otherwise it calls $9D3C and, if $0291 has bit 2 or bit 3 set, goes to ground_slope_commit. If not, it adds 6 to player_try_y ($08BD/$08BE) and, unless bit 1 of joy_bits ($08) is set, sets $0905 and $0B to 5. It ends in land_and_snap."
   },
   {
    "address": 36060,
@@ -16002,7 +16002,7 @@
   {
    "address": 36199,
    "type": "line",
-   "text": "Carry the player along with the object it stands on; player_move calls it with X as stand_obj ($1A) when that is not negative. It acts on $19: $0E goes to ride_up, $0D to ride_down, $0B to ride_left, $07 to ride_right, and any other value returns. Each case moves player_prev_x or player_prev_y, tests the blocks, and commits with restore_player_x ($4249) or restore_player_y ($4256) before ending in ride_finish."
+   "text": "Carry the player along with the object it stands on; player_move calls it with X as stand_obj ($1A) when that is not negative. It acts on $19: $0E goes to ride_up, $0D to ride_down, $0B to ride_left, $07 to ride_right, and any other value returns. Each case moves player_try_x or player_try_y, tests the blocks, and commits with restore_player_x ($4249) or restore_player_y ($4256) before ending in ride_finish."
   },
   {
    "address": 36218,
@@ -16022,12 +16022,12 @@
   {
    "address": 36279,
    "type": "line",
-   "text": "Case $0B of player_ride_object. Subtracts obj_speed ($34E1) for the object in X from player_prev_x ($08BB/$08BC), calls $9BF6, and merges $E1, $E2, and $E3. With bit 0 set the step is not committed and it goes to ride_finish. Otherwise it commits with restore_player_x ($4249) and, when stand_obj ($1A) is not negative, goes to ride_finish; else it returns."
+   "text": "Case $0B of player_ride_object. Subtracts obj_speed ($34E1) for the object in X from player_try_x ($08BB/$08BC), calls $9BF6, and merges $E1, $E2, and $E3. With bit 0 set the step is not committed and it goes to ride_finish. Otherwise it commits with restore_player_x ($4249) and, when stand_obj ($1A) is not negative, goes to ride_finish; else it returns."
   },
   {
    "address": 36315,
    "type": "line",
-   "text": "Case $07 of player_ride_object. Same as ride_left, but it adds obj_speed ($34E1) to player_prev_x, and the block probe is $9C1E instead of $9BF6."
+   "text": "Case $07 of player_ride_object. Same as ride_left, but it adds obj_speed ($34E1) to player_try_x, and the block probe is $9C1E instead of $9BF6."
   },
   {
    "address": 36351,
@@ -16047,7 +16047,7 @@
   {
    "address": 36453,
    "type": "line",
-   "text": "Put the player on the object in X: stores the object's Y position (obj_y_lo $39A6 and obj_y_hi $3A03) minus $031D and then minus $031C in player_prev_y ($08BD/$08BE). It loads Y from stand_obj ($1A) but does not use it. The caller commits the Y with restore_player_y ($4256)."
+   "text": "Put the player on the object in X: stores the object's Y position (obj_y_lo $39A6 and obj_y_hi $3A03) minus $031D and then minus $031C in player_try_y ($08BD/$08BE). It loads Y from stand_obj ($1A) but does not use it. The caller commits the Y with restore_player_y ($4256)."
   },
   {
    "address": 36488,
@@ -16062,17 +16062,17 @@
   {
    "address": 36507,
    "type": "line",
-   "text": "Choose the direction in mode 2 and step player_prev_x or player_prev_y. Sets move_dir ($0D) to $FF first. While jump_state ($08FA) is non-zero it runs mode2_jump_motion ($8F12) and then steps sideways by the facing flag $18: bit 3 clear steps right ($0D masked with $07, then $42F8), bit 3 set steps left ($0D masked with $0B, then $42E1). When jump_state is zero it follows joy_bits ($08): $07 is right, $0B left, $0E up ($430F), and $0D down ($4326), and the diagonals $06, $05, $09, and $0A do one vertical step and one horizontal step. The joy_bits value is stored in move_dir; any other value leaves $FF."
+   "text": "Choose the direction in mode 2 and step player_try_x or player_try_y. Sets move_dir ($0D) to $FF first. While jump_state ($08FA) is non-zero it runs mode2_jump_motion ($8F12) and then steps sideways by the facing flag $18: bit 3 clear steps right ($0D masked with $07, then $42F8), bit 3 set steps left ($0D masked with $0B, then $42E1). When jump_state is zero it follows joy_bits ($08): $07 is right, $0B left, $0E up ($430F), and $0D down ($4326), and the diagonals $06, $05, $09, and $0A do one vertical step and one horizontal step. The joy_bits value is stored in move_dir; any other value leaves $FF."
   },
   {
    "address": 36626,
    "type": "line",
-   "text": "Vertical motion of the mode 2 jump, the reverse of player_jump_motion, using jump_state ($08FA) and jump_counter ($08FB) on player_prev_y ($08BD/$08BE). A jump_state of 0 does nothing. A negative one clears bit 1 of move_dir ($0D), adds $02CE[x] to player_prev_y, where x is jump_counter limited to 16, and subtracts the same amount from jump_counter; when jump_counter would reach zero or below, jump_state becomes 1 and jump_counter 0. A positive one clears bit 0 of move_dir, subtracts $02DF[x] with x as jump_counter, and then adds one to jump_counter, or sets jump_state to 0 when x is 8 or more. Mode 2 is entered with $FF and $30, so the player first moves down the screen and then back up."
+   "text": "Vertical motion of the mode 2 jump, the reverse of player_jump_motion, using jump_state ($08FA) and jump_counter ($08FB) on player_try_y ($08BD/$08BE). A jump_state of 0 does nothing. A negative one clears bit 1 of move_dir ($0D), adds $02CE[x] to player_try_y, where x is jump_counter limited to 16, and subtracts the same amount from jump_counter; when jump_counter would reach zero or below, jump_state becomes 1 and jump_counter 0. A positive one clears bit 0 of move_dir, subtracts $02DF[x] with x as jump_counter, and then adds one to jump_counter, or sets jump_state to 0 when x is 8 or more. Mode 2 is entered with $FF and $30, so the player first moves down the screen and then back up."
   },
   {
    "address": 36723,
    "type": "line",
-   "text": "Second half of mode 2 movement, reached from player_mode2_step. While jump_state ($08FA) is non-zero it commits player_prev_y with $4256 without a block test, then probes the sideways step ($9BF6 when bit 3 of move_dir ($0D) is set, otherwise $9C1E). When bit 0 is clear in $E1, $E2, and $E3 it commits X with $4249; otherwise it flips bits 2 and 3 of move_dir and stores the result in move_dir and $18, which turns the player round. On the ground it returns while move_dir is negative; otherwise it probes left or right the same way, commits X with $4249 or cancels it with save_player_x ($4263), then handles up ($0D bit 0 clear, probe $9D17) and down (bit 1 clear, probe $9D3C). A block with bit 0 set stops the step; otherwise it commits Y with $4256. Going up with bit 6 clear in the probe results also sets player_mode ($09) to 0, jump_state to $FF, jump_counter ($08FB) to $08FC plus $10, and player_action ($0905) to 3."
+   "text": "Second half of mode 2 movement, reached from player_mode2_step. While jump_state ($08FA) is non-zero it commits player_try_y with $4256 without a block test, then probes the sideways step ($9BF6 when bit 3 of move_dir ($0D) is set, otherwise $9C1E). When bit 0 is clear in $E1, $E2, and $E3 it commits X with $4249; otherwise it flips bits 2 and 3 of move_dir and stores the result in move_dir and $18, which turns the player round. On the ground it returns while move_dir is negative; otherwise it probes left or right the same way, commits X with $4249 or cancels it with save_player_x ($4263), then handles up ($0D bit 0 clear, probe $9D17) and down (bit 1 clear, probe $9D3C). A block with bit 0 set stops the step; otherwise it commits Y with $4256. Going up with bit 6 clear in the probe results also sets player_mode ($09) to 0, jump_state to $FF, jump_counter ($08FB) to $08FC plus $10, and player_action ($0905) to 3."
   },
   {
    "address": 36901,
@@ -16082,7 +16082,7 @@
   {
    "address": 36949,
    "type": "line",
-   "text": "Mode 1 movement when $0B is zero. Returns at once while bit 7 of fire_flags ($08C6) is set. Sets player_action ($0905) to 6, and sets jump_state ($08FA) to $FF when bits 2 and 3 of joy_bits ($08) are both set. While jump_state is not negative only up ($0E, step with $430F) and down ($0D, step with $4326) count; any other joy_bits value sets move_dir ($0D) to $FF. With jump_state negative, up and down work the same way, and left or right (diagonals included) sets move_dir to $0B or $07, moves player_prev_x by 4 that way, and probes with $9BF6 or $9C1E. When bit 0 is clear in $E1, $E2, and $E3 it sets player_mode ($09) to 0, player_third_on ($0913) to 1, and queues sound 0 with queue_sound ($0B8C); otherwise up and down apply."
+   "text": "Mode 1 movement when $0B is zero. Returns at once while bit 7 of fire_flags ($08C6) is set. Sets player_action ($0905) to 6, and sets jump_state ($08FA) to $FF when bits 2 and 3 of joy_bits ($08) are both set. While jump_state is not negative only up ($0E, step with $430F) and down ($0D, step with $4326) count; any other joy_bits value sets move_dir ($0D) to $FF. With jump_state negative, up and down work the same way, and left or right (diagonals included) sets move_dir to $0B or $07, moves player_try_x by 4 that way, and probes with $9BF6 or $9C1E. When bit 0 is clear in $E1, $E2, and $E3 it sets player_mode ($09) to 0, player_third_on ($0913) to 1, and queues sound 0 with queue_sound ($0B8C); otherwise up and down apply."
   },
   {
    "address": 37056,
@@ -16097,7 +16097,7 @@
   {
    "address": 37092,
    "type": "line",
-   "text": "Walks the player right by 4 pixels in the 16-bit previous X position (player_prev_x, player_prev_x_hi), after setting $0D to 7 (the walking-right animation frame, inferred). Then probe_player_tiles checks the tiles there. If blocked it goes to mode1_step_blocked, else it clears $09, sets player_third_on to 1 and queues sound 0."
+   "text": "Walks the player right by 4 pixels in the 16-bit previous X position (player_try_x, player_try_x_hi), after setting $0D to 7 (the walking-right animation frame, inferred). Then probe_player_tiles checks the tiles there. If blocked it goes to mode1_step_blocked, else it clears $09, sets player_third_on to 1 and queues sound 0."
   },
   {
    "address": 37139,
@@ -16332,17 +16332,17 @@
   {
    "address": 39947,
    "type": "line",
-   "text": "Computes the probe X position: player_prev_x ($08BB/$08BC) plus offset $031A, stored in $E5/$E6, then jumps to $9C50, the Y computation shared with probe_player_tiles."
+   "text": "Computes the probe X position: player_try_x ($08BB/$08BC) plus offset $031A, stored in $E5/$E6, then jumps to $9C50, the Y computation shared with probe_player_tiles."
   },
   {
    "address": 39966,
    "type": "line",
-   "text": "Player terrain probe: looks up the map tile attribute values around the player and stores them in $E1 (upper left/centre cell), $E2 (next cell below, when the height $031D allows), $E3 (cell at the lower edge). Position = player_prev_x $08BB/$08BC plus offsets $031A and $031B, player_prev_y $08BD/$08BE plus $031C plus 2 (clamped to 0 if negative), divided by 16 into tile columns/rows; it indexes the row pointer tables at ($2A)/($2C) with the row, then the block map row with the column ($E9), then the tile attribute table at ($30). If the player is on the right side of the screen ($029C set and player_screen_x $029B >= $25) it just sets $E2-$E4 = 3 and returns."
+   "text": "Player terrain probe: looks up the map tile attribute values around the player and stores them in $E1 (upper left/centre cell), $E2 (next cell below, when the height $031D allows), $E3 (cell at the lower edge). Position = player_try_x $08BB/$08BC plus offsets $031A and $031B, player_try_y $08BD/$08BE plus $031C plus 2 (clamped to 0 if negative), divided by 16 into tile columns/rows; it indexes the row pointer tables at ($2A)/($2C) with the row, then the block map row with the column ($E9), then the tile attribute table at ($30). If the player is on the right side of the screen ($029C set and player_screen_x $029B >= $25) it just sets $E2-$E4 = 3 and returns."
   },
   {
    "address": 40215,
    "type": "line",
-   "text": "Player terrain probe, one-row variant (sibling of player_probe_tiles_and_platforms at $9D3C, which also adds the second Y offset $031D). Sets $F0 to $FF, computes Y = player_prev_y ($08BD/$08BE) plus offset $031C into $EA/$EB, and if the result is negative (above the top of the map) goes to $9D30. Otherwise jumps to probe_columns_from_y ($9D61) to work out the X columns."
+   "text": "Player terrain probe, one-row variant (sibling of player_probe_tiles_and_platforms at $9D3C, which also adds the second Y offset $031D). Sets $F0 to $FF, computes Y = player_try_y ($08BD/$08BE) plus offset $031C into $EA/$EB, and if the result is negative (above the top of the map) goes to $9D30. Otherwise jumps to probe_columns_from_y ($9D61) to work out the X columns."
   },
   {
    "address": 40240,
@@ -16352,12 +16352,12 @@
   {
    "address": 40252,
    "type": "line",
-   "text": "Probes the tile attribute bytes around the player's previous position (player_prev_x $08BB/$08BC, player_prev_y $08BD/$08BE plus offsets $031A-$031D) and then checks the object list. Y sum goes to $EA/$EB and $EE/$EF, X to $E5/$E6; a negative high byte jumps to $9D30 (outside this stretch, which zeroes $E1-$E3 and $0291). Tile row pointers come from ($2A) and ($2C) indexed by row, tile ids from the row, attribute bytes from table ($30): left column to $E1, second column to $E2 (only when $031B is above $10), column at prev_x+$1F to $0291, right edge column to $E3. Sets $F0 to 0 here; the sibling entry at $9D17 sets it to $FF and joins at $9D61. Callers are not shown."
+   "text": "Probes the tile attribute bytes around the player's previous position (player_try_x $08BB/$08BC, player_try_y $08BD/$08BE plus offsets $031A-$031D) and then checks the object list. Y sum goes to $EA/$EB and $EE/$EF, X to $E5/$E6; a negative high byte jumps to $9D30 (outside this stretch, which zeroes $E1-$E3 and $0291). Tile row pointers come from ($2A) and ($2C) indexed by row, tile ids from the row, attribute bytes from table ($30): left column to $E1, second column to $E2 (only when $031B is above $10), column at prev_x+$1F to $0291, right edge column to $E3. Sets $F0 to 0 here; the sibling entry at $9D17 sets it to $FF and joins at $9D61. Callers are not shown."
   },
   {
    "address": 40289,
    "type": "line",
-   "text": "Entry for the sibling code at $9D17 (jmp from $9D2D) and fall-in point of $9D3C: starts the x tile computation from player_prev_x with offset $031A."
+   "text": "Entry for the sibling code at $9D17 (jmp from $9D2D) and fall-in point of $9D3C: starts the x tile computation from player_try_x with offset $031A."
   },
   {
    "address": 40381,
