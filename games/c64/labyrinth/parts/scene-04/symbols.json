@@ -3212,12 +3212,12 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "M4 map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the map repeats through mask $3F). The low nibble of a cell selects its block type through the table at $073E. Every cell is zero except column 1 ($01), column 3 ($01), column 6 ($80). Cell 1 translates to type 2, the closed door that OPEN and CLOSE change through the replacement tables at $071E and $072E."
+   "text": "M4 map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Every cell is zero except column 1 ($01), column 3 ($01), column 6 ($80). Cell 1 translates to type 2, the closed door that OPEN and CLOSE change through the replacement tables at $071E and $072E."
   },
   {
    "address": 1600,
    "type": "line",
-   "text": "192 bytes ($0640-$06FF) after the 64-cell strip, all zero except $06FE ($80), which has the same value as the strip cell in column 6. The map position is masked with $3F, so the scene never indexes these bytes."
+   "text": "192 bytes ($0640-$06FF) after the 64-cell strip, all zero except $06FE ($80), which has the same value as the strip cell in column 6. The position mask $5E is $FF in this scene ($59A1 indexed by header byte $0705 = 0), so columns 64 to 255 reach these bytes; whether the scene's bounds keep the player inside the first 64 columns was not checked."
   },
   {
    "address": 1792,
@@ -3272,7 +3272,7 @@
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so nothing reads them."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
   },
   {
    "address": 1902,

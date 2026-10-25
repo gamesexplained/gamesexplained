@@ -2430,12 +2430,12 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "MF map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the map repeats through mask $3F). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 34 hold 06 00 00 02 00 01 00 03 00 01 00 04 00 01 00 05 00 06 00 02 00 01 00 04 00 01 00 03 01 00 00 05 00 01 06; the rest of the strip is zero."
+   "text": "MF map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $3F here, from $59A1 indexed by header byte $0705 = 2). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 34 hold 06 00 00 02 00 01 00 03 00 01 00 04 00 01 00 05 00 06 00 02 00 01 00 04 00 01 00 03 01 00 00 05 00 01 06; the rest of the strip is zero."
   },
   {
    "address": 1600,
    "type": "line",
-   "text": "192 bytes ($0640-$06FF) after the 64-cell strip, all zero except $06FF ($06). The map position is masked with $3F, so the scene never indexes these bytes."
+   "text": "192 bytes ($0640-$06FF) after the 64-cell strip, all zero except $06FF ($06). The position mask $5E is $3F in this scene ($59A1 indexed by header byte $0705 = 2), so the scene does not index them."
   },
   {
    "address": 1792,
@@ -2490,7 +2490,7 @@
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it does not read them."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
   },
   {
    "address": 1902,
