@@ -16,7 +16,7 @@ Sources:
 - Wikipedia, "Toki (video game)", https://en.wikipedia.org/wiki/Toki_(video_game): Ocean published the C64 version in 1991; the arcade original is TAD Corporation's (1989).
 - The C64 manual as summarised from https://api.regvault.org/api/v1/game/c64/30244052ac1b8bbbd702969d0a451f34/manual: program Al Dukes; graphics Mike Clayton, Joff Scarcliffe, William Harbison; music and effects Keith Tinman. CPCWiki credits David Looker instead; unresolved.
 - Retro Gamer, "Conversion Capers", 29 November 2018, https://www.pressreader.com/uk/retro-gamer/20181129/282415580330175: the only 8-bit computer version Ocean released; missing the full intro, one music track, one arcade level missing.
-- Zzap!64 issue 80 (January 1992, p17, Stuart Wynne and Phil King): 73 % on Lemon64, 82 % on UVList (checked 2026-10-25 via search summaries; unresolved, no scan seen). UVList also lists Commodore Format 86 % and Commodore Force 79 %, unconfirmed elsewhere.
+- Zzap!64 issue 80 (January 1992, p17, Stuart Wynne and Phil King), from the steward's scan (2026-10-25): £14.99 cart only; presentation 70, graphics 79, sound 74, hookability 83, lastability 81, overall 82 %. Lemon64's 73 % is wrong. UVList also lists Commodore Format 86 % and Commodore Force 79 %, unconfirmed.
 - Credits agree between the manual summary and the Dave's Retro Forge remaster page (Dukes, Harbison, Tinman).
 - The game's own screens and stored text (this run).
 
