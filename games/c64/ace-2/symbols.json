@@ -19,7 +19,7 @@
    [
     0,
     2303,
-    "zero page, stack and the game's variables in pages 2 to 8: runtime state, cleared at each start ($30D9) and never loaded"
+    "zero page, the stack and pages 2 to 8: the game's variables, never loaded; $30D9 clears zero page and pages 2 to 4 at each start, and no recorded run touches pages 5 to 8"
    ],
    [
     32768,
@@ -9884,7 +9884,7 @@
   },
   {
    "address": 19963,
-   "name": "engine_sound",
+   "name": "noise_start",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -14811,7 +14811,7 @@
   {
    "address": 2421,
    "type": "line",
-   "text": "The immortal flag, 0 or 1. Only $5643 writes it, when a name entered on the high-score table begins with the eight letters at $6A30 (DUSTY BU). While it is set, plane one does not die (checked at $0D93), burns no fuel ($44C6) and the side panel says IMMORTAL ($1C5C). It sits inside the high-score block, so saving the table writes it to the disk and start-up reads it back."
+   "text": "The immortal flag, 0 or 1. The game sets it at $5643 when the name buffer ($6933) begins with the eight letters at $6A30 (DUSTY BU), which $5634 checks after every game whether or not a name was entered, and start-up's copy of the saved high-score table ($09F4-$09FB) loads it from the disk; nothing clears it. While it is set, plane one does not die (checked at $0D93), burns no fuel ($44C6), the side panel says IMMORTAL ($1C5C), and whenever a plane's damage reaches 255 plane one's damage is cleared first ($2809). It sits inside the high-score block, so saving the table writes it to the disk."
   },
   {
    "address": 2422,
@@ -15001,7 +15001,7 @@
   {
    "address": 4963,
    "type": "line",
-   "text": "Move a menu cursor with the stick: X and Y give the lowest and highest line, and up or down ($6D) steps the cursor at $0256,X (X = $D1). It moves at once when the stick moves, then, while it is held, again on every pass after three ($7B); off the game ($81 = 0) no faster than every fourth frame ($93). With two players the options screen's skill line is stepped over."
+   "text": "Move a menu cursor with the stick: X and Y give the lowest and highest line, and up or down ($6D) steps the cursor at $0256,X (X = $D1). The stick is compared with $7E, which only the computer's escape sets (to 1, $5EF1) and the zero-page clear zeroes: while they differ, $7B goes back to 1 and the cursor moves on this call; while they are equal, the call waits until $7B has counted to 4. With $7E at 0, as on every menu, a stick held up or down moves the cursor on every call, which off the game ($81 = 0) is held to every fourth frame ($93). With two players the options screen's skill line is stepped over."
   },
   {
    "address": 5058,
@@ -15021,7 +15021,7 @@
   {
    "address": 5295,
    "type": "line",
-   "text": "Find what the current plane is over. With the off-map state $0262,X at 2 it does nothing; at 1 it shows FLYING OFF MAP (message 15) and clears the state. Then it reads the map picture under the plane: the row pointer from $71D0/$71DC (Y / 8), the character at X / 8, and the pair of pixels inside that character's shape in the character set at $B000 (row from Y's low byte, pair from X's). Sea (%01) or land (%11) that differs from the last one ($6A) is stored as 0 or 1 in record byte 7 ($0307 or $0327) and in $67, and the view is redrawn ($46B6): the cockpit's ground is light blue over the sea and light grey over land ($46D4), and each ground target shows in the view only over its own kind ($61E4: the spy ship over the sea, the radar station over land). Colours %00 and %10 change nothing."
+   "text": "Find what the current plane is over. With the off-map state $0262,X at 2 it does nothing; at 1 it shows FLYING OFF MAP (message 15) and clears the state. Then it reads the map picture under the plane: the row pointer from $71D0/$71DC (Y / 8), the character at X / 8, and the pair of pixels inside that character's shape in the character set at $B000 (row from Y's low byte, pair from X's). Sea (%01) or land (%11) that differs from the last one ($6A) is stored as 0 or 1 in record byte 7 ($0307 or $0327) and in $67, and the view is redrawn ($46B6): the cockpit's ground is blue over the sea and yellow over land ($46D4), and each ground target shows in the view only over its own kind ($61E4: the spy ship over the sea, the radar station over land). Colours %00 and %10 change nothing."
   },
   {
    "address": 5469,
@@ -15211,7 +15211,7 @@
   {
    "address": 6561,
    "type": "line",
-   "text": "Draw both planes' bank indicators: one of the pictures listed at $654E (plane one) and $6556 (plane two), chosen through $655E by the bank angle (record byte $15), written into the panel graphics ($A1F0, and $8C48 over $9DC8 for plane two) through index tables in page $97 chosen by the quarter of the roll (byte $19), and mirrored through $9000 in quarters 0 and 1. Every fourth pass ($1F) it also redraws the slow instruments ($1A28)."
+   "text": "Draw both planes' bank indicators: one of the pictures listed at $654E (plane one) and $6556 (plane two), chosen through $655E by the bank angle (record byte $15), written into the panel graphics ($A1F0, and $8C48 over $9DC8 for plane two) through index tables chosen by the quarter of the roll (byte $19), for plane one in page $97 ($7145) and for plane two at $7389, $7301, $72A1 and $7259 ($656E, $6572), and mirrored through $9000 in quarters 0 and 1. Every fourth pass ($1F) it also redraws the slow instruments ($1A28)."
   },
   {
    "address": 6604,
@@ -15596,7 +15596,7 @@
   {
    "address": 9711,
    "type": "line",
-   "text": "Bug: with no chaff left, X still holds the message number 11 here, so instead of the count and timer of this pilot the code decrements $0293 and writes 8 into $0297, the low byte of plane two's position across."
+   "text": "Bug: with no chaff left, the call to $34F8 that shows NO CHAFF returns with X still 11, the message number, and there is no jump past this code, so instead of this pilot's count and timer it decrements $0293 (the low byte of plane two's missile's position across) and writes 8 into $0297 (the middle byte of plane two's position across), whichever pilot pressed the key: plane two moves by less than an eighth of a square of the map."
   },
   {
    "address": 9819,
@@ -15741,7 +15741,7 @@
   {
    "address": 12460,
    "type": "line",
-   "text": "Keep the current plane's attitude for the other plane's view: $0272 = the roll as 0-63 (the quarter \u00d7 16 plus the bank, mirrored in quarters 1 and 3) and $0274 = the pitch's height change ($6582 by the pitch, negative when diving)."
+   "text": "Keep the current plane's attitude for both cockpit views: $0272,X = the roll as 0-63 (the quarter \u00d7 16 plus the bank, mirrored in quarters 1 and 3) and $0274,X = the pitch's height change ($6582 by the pitch, negative when diving). The other plane's view reads them with Y to draw this plane ($2D22, $2D30, $353C, $354A); this plane's own view reads them with X = $D1 to choose the enemy's and the ground targets' pictures by its own roll and pitch ($2D74, $2DA6, $356D, $357F, $6135, $617C)."
   },
   {
    "address": 12505,
@@ -15761,7 +15761,7 @@
   {
    "address": 12587,
    "type": "line",
-   "text": "Colour plane two's view (rows 13-20, columns 10-39) with A."
+   "text": "Colour plane two's view with A: colour RAM rows 13-20, columns 10-39. Plane two's view is rows 13-19 ($0F52-$0F58); row 20 is the top row of plane two's panel, which $3149 (rows 21-24) leaves to this routine."
   },
   {
    "address": 12617,
@@ -15881,7 +15881,7 @@
   {
    "address": 13560,
    "type": "line",
-   "text": "Show message X (0-31, the texts listed at $7432) to the current pilot for Y ticks: the timer goes to $0350,X (plane one) or $0370,X (plane two). When the message was not already live, the pilot's panel is told to show it next ($82 or $83 = X - 1, and $80 = $FF so the change happens on the next pass)."
+   "text": "Show message X (0-31, the texts listed at $7432) to the current pilot for Y ticks: the timer goes to $0350,X (plane one) or $0370,X (plane two). When the message was not already live, the pilot's panel is told to show it next ($82 or $83 = X - 1, and $80 = $FF so the change happens on the next pass). Every caller loads X with a fixed number, and none passes 12 (YOU TRAITOR) or 19 (the first TARGET LOCKED); nothing else writes those timers, so those two messages never appear."
   },
   {
    "address": 13612,
@@ -16126,12 +16126,17 @@
   {
    "address": 18120,
    "type": "line",
-   "text": "Colour plane one's half for its new view state. Cockpit: the view's colour RAM light blue or light grey by the ground under the plane ($0307), the instrument rows green (13), the instrument faces brown ($7149) and two cells light red. Map: all light grey. Shot down: unchanged. Hangar: brown, the hangar picture's last 32 characters ($CD-$EC, which the view draws over in flight) copied back to $A668 from $F637, two rows white. Arming: white with brown cells."
+   "text": "Colour plane one's half for its new view state. Cockpit: the view's colour RAM $0E or $0F by the ground under the plane ($0307); in multicolour the %11 pixels take its low three bits, so the ground shows blue over the sea and yellow over land; the instrument rows green (13), the instrument faces brown ($7149) and two cells light red. Map: all $0F, so the map's land shows yellow. Shot down: unchanged. Hangar: brown, the hangar picture's last 32 characters ($CD-$EC, which the view draws over in flight) copied back to $A668 from $F637, two rows white. Arming: white with brown cells."
+  },
+  {
+   "address": 18145,
+   "type": "line",
+   "text": "Plane one's second multicolour ($4854), chosen by plane two's ground ($0327) between 1 and 1: white either way."
   },
   {
    "address": 18158,
    "type": "line",
-   "text": "Plane one's view colour, light blue or light grey by the ground ($0307), patched by $46DE."
+   "text": "Plane one's view colour RAM value, $0E over the sea or $0F over land ($0307), patched by $46DE: the ground shows blue or yellow."
   },
   {
    "address": 18297,
@@ -16371,7 +16376,7 @@
   {
    "address": 19963,
    "type": "line",
-   "text": "Start the engine sound when the sound effects are on ($4EAD bit 7): the chip cleared ($4E2C), then the three voices' envelopes set and gated (noise on voice 3 through the filter)."
+   "text": "Start the noise that the engine and explosion sounds are made from, when the sound effects are on ($4EAD bit 7): the chip cleared ($4E2C), attack and decay 0 on all three voices, sustain and release $20, $20 and $F0, voice 3 routed through the filter ($D417 = $C4), and all three gated with noise ($81). The frequencies and the volume stay 0 until the frame's effects ($4EAE) set them. Called when the effects start ($1FA9), when plane one is lost ($0DA9), when a plane is killed ($2822) and from $1348."
   },
   {
    "address": 20012,
@@ -16401,7 +16406,7 @@
   {
    "address": 20857,
    "type": "line",
-   "text": "Each 50th call (once a second, on the music clock): the chaff and flare timers ($028C, $028E) count down, the seconds counter $0218 counts up to 255, and $91 counts to 60 for the minutes at $0210."
+   "text": "Each 50th call: the chaff and flare timers ($028C, $028E) count down, the seconds counter $0218 counts up to 255, and $91 counts to 60 for the minutes at $0210. In play it is called on each tick of the music clock ($44E9, 50 ticks a second), so the work comes once a second; on the title it is called at every interrupt ($43E7), so the work comes every 50 frames, a second on a PAL machine and about 0.83 of one on NTSC."
   },
   {
    "address": 20916,
@@ -16726,7 +16731,7 @@
   {
    "address": 25986,
    "type": "line",
-   "text": "The pitch (0-19) to the height change kept for the other plane's view at $0274 ($30C9): 0, 4, 8 and so on up to 60, then 63 from pitch 16."
+   "text": "The pitch (0-19) to the height change kept at $0274 for both cockpit views ($30C9): 0, 4, 8 and so on up to 60, then 63 from pitch 16."
   },
   {
    "address": 26006,
@@ -16846,12 +16851,12 @@
   {
    "address": 26462,
    "type": "line",
-   "text": "The security grid's column names, two characters each, 32 of them: A to Z, then AA, BB, CC, DD, EE and FF. $380D takes the square's column from $FA00, doubles it and copies the name into the question at $68AB. All the game's text is stored this way: letters enciphered (decoded through $6F7F), digits, spaces and punctuation as plain ASCII, $FF ending a string."
+   "text": "The security grid's column names, two stored characters each, 32 of them: A to Y, then where Z would be the code $5A, which the cipher at $6F7F turns into a 0 byte, then AA, BB, CC, DD, EE and FF. $380D takes the square's column from $FA00, doubles it and copies the name into the question at $68AB. The letters are enciphered and read back through $6F7F, like the game's other screen text."
   },
   {
    "address": 26463,
    "type": "line",
-   "text": "The second character of each column name, read with $675E: a space for A to Z, the letter again for AA to FF."
+   "text": "The second character of each column name, read with $675E: a space for the 26 single-letter names, the letter again for AA to FF."
   },
   {
    "address": 26526,
@@ -17101,7 +17106,7 @@
   {
    "address": 28543,
    "type": "line",
-   "text": "The text cipher, read as $6F7F + the stored letter ($1911, $35F1, $56DA): for $41-$59, the real letter, in the bytes $6FC0-$6FD8 (A means H, B R, C F, D L, E K, F T, G J, H N, I U, J Y, K E, L X, M O, N W, O G, P C, Q D, R B, S A, T S, U M, V P, W I, X V, Y Q); Z is not enciphered. The bytes before $6FC0 are the message glyph table above."
+   "text": "The text cipher, read as $6F7F + the stored letter ($1911, $35F1, $56DA): for $41-$59, the real letter, in the bytes $6FC0-$6FD8 (A means H, B R, C F, D L, E K, F T, G J, H N, I U, J Y, K E, L X, M O, N W, O G, P C, Q D, R B, S A, T S, U M, V P, W I, X V, Y Q); $5A, where Z would be, gives a 0 byte ($6FD9), so no stored code gives Z. The bytes before $6FC0 are the message glyph table above."
   },
   {
    "address": 28633,
@@ -17601,7 +17606,7 @@
   {
    "address": 35488,
    "type": "line",
-   "text": "Plane two's message panel, two lines of seven letters in pixel rows 24-36 of columns 21-28; this is column 21, cleared 13 bytes at a time by $2F35 and written by $17D1 five bytes at a time (rows 24-28 and 30-34)."
+   "text": "Plane two's message panel: two lines of seven letters in pixel rows 24-28 and 30-34 of columns 21-27, 40 bytes a letter (from $8AA0 and $8AA6, $2F57); this is column 21. $2F35 clears 13 bytes of each of columns 21-28."
   },
   {
    "address": 35528,
@@ -17866,7 +17871,7 @@
   {
    "address": 40646,
    "type": "line",
-   "text": "Two bytes, $55 and $AA, after the compass face, that nothing reads."
+   "text": "Two bytes, $55 and $AA, after plane one's second radar scope ($9E68-$9EC5): the last two bytes of its fourth 24-byte column, which ends 00 55 AA like the other three. The 94-byte copy at $1922 leaves them out, and nothing reads them."
   },
   {
    "address": 40648,
@@ -17891,7 +17896,7 @@
   {
    "address": 40960,
    "type": "line",
-   "text": "Plane one's character set. The video chip shows it for plane one's instrument panel (rows 8-11), for plane one's view on alternate frames (the other buffer is the set at $B000), and for the top of plane one's hangar picture (rows 0-5). Characters 0-25 are the side panel's letters, as in the set at $8800; a game's set-up copies the first 16 from $B000 ($0CA4). From character $1A ($A0D0) the set holds plane one's panel picture, each screen column four characters (32 bytes) in the order of the screen codes at $93D8, and the game draws its instruments into it."
+   "text": "Plane one's character set. The video chip shows it for plane one's instrument panel (rows 8-11), for plane one's view on alternate frames (the other buffer is the set at $B000), and for the top of plane one's hangar picture (rows 0-5). Characters 0-25 are the side panel's digits and letters, as in the set at $8800; a game's set-up copies the first 16 from $B000 ($0CA4). From character $1A ($A0D0) the set holds plane one's panel picture, each screen column four characters (32 bytes) in the order of the screen codes at $93D8, and the game draws its instruments into it."
   },
   {
    "address": 41176,
@@ -17921,7 +17926,7 @@
   {
    "address": 41733,
    "type": "line",
-   "text": "Plane one's message panel, columns 11-18 of rows 8-10, 32 bytes a column: two lines of letters in pixel rows 5-17 ($2EB3 clears 13 bytes, $17D1 writes them) and below them the selected weapon's name ($A312, $5F89); this is column 11."
+   "text": "Plane one's message panel, columns 11-18 of rows 8-10, 32 bytes a column. The two lines of seven letters go in columns 12-18 (from $A325 and $A32B, pixel rows 5-9 and 11-15, $2ED5), and the selected weapon's name, eight letters from $A312 (pixel rows 18-22, $5F89), starts in this column; $2EB3 clears 13 bytes of every column. This is column 11, which holds only the weapon name's first letter."
   },
   {
    "address": 41765,
@@ -17981,7 +17986,7 @@
   {
    "address": 43008,
    "type": "line",
-   "text": "Plane two's other character set: the video chip shows it for plane two's view on alternate frames (the other buffer is $B800) and for the top of plane two's hangar picture (rows 13-17). Characters 0-25 are the side panel's letters, then six characters ($1A-$1F) that no recorded screen shows."
+   "text": "Plane two's other character set: the video chip shows it for plane two's view on alternate frames (the other buffer is $B800) and for the top of plane two's hangar picture (rows 13-17). Characters 0-25 are the side panel's digits and letters, as in the set at $8800 (the digits 0-9, a blank, then A C D E W I L M N P R S T U V), then six characters ($1A-$1F) that no recorded screen shows."
   },
   {
    "address": 43264,
@@ -18006,7 +18011,7 @@
   {
    "address": 45056,
    "type": "line",
-   "text": "Plane one's second character set, and the map's: the video chip shows it for plane one's view on the frames when the set at $A000 is being drawn, for the map (both pilots, $13EA), and for the deck under plane one's jet in the hangar (rows 6-8). Characters 0-25 are the side panel's letters, which a game's set-up copies from here into $8800 and $A000 ($0C9E)."
+   "text": "Plane one's second character set, and the map's: the video chip shows it for plane one's view on the frames when the set at $A000 is being drawn, for the map (both pilots, $13EA), and for the deck under plane one's jet in the hangar (rows 6-8). Characters 0-25 are the side panel's digits and letters (as in the set at $8800), which a game's set-up copies from here into $8800 and $A000 ($0C9E)."
   },
   {
    "address": 45264,
@@ -18046,7 +18051,7 @@
   {
    "address": 47104,
    "type": "line",
-   "text": "The full font, and plane two's second view set. The video chip shows it for the options, colour code and arming screens, the hangar's TAKE OFF and ARM AIRCRAFT lines, the runway under plane two's jet (rows 18-21), and plane two's view on the frames when the set at $A800 is being drawn. Characters 0-25 are the side panel's letters; $1A-$59 are the printable characters $20-$5F less 6, as $56A3 prints them (space, punctuation, the cursor arrow at $1E-$1F, digits, then A-Z from $3B); $55-$5C the frame round the options and colour code screens."
+   "text": "The full font, and plane two's second view set. The video chip shows it for the options, colour code and arming screens, the hangar's TAKE OFF and ARM AIRCRAFT lines, the runway under plane two's jet (rows 18-21), and plane two's view on the frames when the set at $A800 is being drawn. Characters 0-25 are the side panel's digits and letters (as in the set at $8800); $1A-$59 are the printable characters $20-$5F less 6, as $56A3 prints them (space, punctuation, the cursor arrow at $1E-$1F, digits, then A-Z from $3B); $55-$5C the frame round the options and colour code screens."
   },
   {
    "address": 47848,
@@ -18626,7 +18631,7 @@
   {
    "address": 58421,
    "type": "line",
-   "text": "Effect bit 6: for the instrument's frame count the voice plays the note in the second table's byte 0 instead of its own (instrument 3, note $42), then the note's own frequency again."
+   "text": "Effect bit 6: while the frame count runs, the voice plays the note in the second table's byte 0 instead of its own (instrument 3, the only one with the bit, note $42), then the note's own frequency again. Instrument 3 also has bit 2, whose code runs first and counts down the same counter ($E584), so note $42 sounds for one frame, on the call after the note starts, not for the two the table gives."
   },
   {
    "address": 58462,
