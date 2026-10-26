@@ -174,9 +174,10 @@ if (part('limiter')) {
 
 // ---- same keys, same game
 if (part('same')) {
-  // the controls by the loop, round again every 600: walks forward and back, turns, a curve, turns
-  // about, looks, the run and the walk, the pointer moved, face forward; out and back, so that at
-  // 5× too the player stays on the Wilderness's grass
+  // the controls in twelfths of a step (K/12 loops each), round again every 600: walks forward and
+  // back, turns, a curve, turns about, looks, the run and the walk, the pointer moved, face forward;
+  // out and back over the same ground at every Speed, so that the player stays on the Wilderness's
+  // grass
   const PLAN = [[0, 1], [40, 2], [80, 4], [140, 8], [230, 0, 'U'], [240, 1], [270, 0, 'U'], [280, 1], [310, 0, 'P'], [330, 9],
     [370, 6], [410, 0, 'L'], [430, 0, 'R'], [440, 1], [460, 0, 'W'], [470, 2], [500, 0, 'SPACE'], [510, 8], [560, 0, 'SPACE'],
     [570, 0, 'F'], [580, 0]];
@@ -187,7 +188,7 @@ if (part('same')) {
     const out = [];
     let k = 0;
     const controls = () => {
-      const c = k % 600;
+      const c = Math.floor(k * 12 / speed.K) % 600;
       let p = 0;
       while (p + 1 < PLAN.length && PLAN[p + 1][0] <= c) p++;
       m.press(PLAN[p][2] && c - PLAN[p][0] < 6 ? [PLAN[p][2]] : [], PLAN[p][1]);

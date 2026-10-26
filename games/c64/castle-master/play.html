@@ -94,7 +94,7 @@ section table{margin:6px 0 18px}
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the 3D view at the screen's own resolution">Native resolution</button>
       <button type="button" data-act="fast" aria-pressed="false" title="Play the game as a C64 with a much faster processor would: a new frame 60 times a second, as fast as the Speed sets">Fast CPU</button>
-      <label class="pl-speed" title="How fast you move with Fast CPU: 1× as fast as a C64 that renders a frame a second, about its usual speed in play; 5× as fast as its quickest, with nothing in view">Speed <input type="range" id="pl-speed" min="0" max="2" step="1" value="0"><output id="pl-speed-v">1×</output></label>
+      <label class="pl-speed" title="How fast you move with Fast CPU: 1× as fast as a C64 at its quickest, with little in view; 2× and 5× faster still">Speed <input type="range" id="pl-speed" min="0" max="2" step="1" value="0"><output id="pl-speed-v">1×</output></label>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
@@ -116,7 +116,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Fast CPU</b> plays the game as a C64 with a much faster processor would, with a new frame 60 times a second, and <b>Speed</b> sets how fast you move: 1× about as fast as a C64 in play, 2× twice that, 5× as fast as a C64 with nothing in view (section 03).</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace: a new view takes the game one to two seconds to draw, and appears when it is done. A saved game (<kbd>I</kbd>, then <kbd>S</kbd>) is kept in this browser under the name you type, whether you choose tape or disk, and <kbd>I</kbd>, then <kbd>L</kbd> and the same name loads it. <b>Native resolution</b> draws the 3D view (the same objects, from the same place, in the same order) as sharp shapes at the screen's own resolution. <b>Fast CPU</b> plays the game as a C64 with a much faster processor would, with a new frame 60 times a second, and <b>Speed</b> sets how fast you move: 1× as fast as a C64 at its quickest, with little in view, and 2× and 5× faster still (section 03).</p>
   </div>
 </section>
 <section id="port">
@@ -168,11 +168,12 @@ section table{margin:6px 0 18px}
 <h3>The Speed sets how far each loop takes you</h3>
 <p>Fast CPU makes many loops where the C64 made one. Anything the game counts in loops would happen that many times as often, so each loop takes only a share of a step. The <b>Speed</b> slider sets how many ticks one C64 step takes, K. Each loop walks, turns or looks 1/K of the C64's step, through the game's own code for a step, and carries the part of a unit left over to the next loop. Holding a key for K ticks moves you exactly one C64 step, whatever is on screen. You travel as fast as a C64 that draws 60/K frames a second, and see 60.</p>
 <table>
-  <tr><th>Speed</th><th>K, in ticks</th><th>One step takes</th><th>Where a real C64 runs this fast</th></tr>
-  <tr><td>1×</td><td>60</td><td>1 s</td><td>a normal loop in play: the middle value is 0.92 s</td></tr>
-  <tr><td>2×</td><td>30</td><td>0.5 s</td><td>looking up at the sky takes 0.67 s</td></tr>
-  <tr><td>5×</td><td>12</td><td>0.2 s</td><td>the C64's quickest loop, with nothing in view</td></tr>
+  <tr><th>Speed</th><th>K, in ticks</th><th>One step takes</th><th>Against a real C64</th></tr>
+  <tr><td>1×</td><td>10</td><td>a sixth of a second</td><td>as fast as a C64 at its quickest, turning in the Wilderness with little in view</td></tr>
+  <tr><td>2×</td><td>5</td><td>a twelfth of a second</td><td>twice as fast as a C64 ever goes</td></tr>
+  <tr><td>5×</td><td>2</td><td>a thirtieth of a second</td><td>five times as fast as a C64 ever goes</td></tr>
 </table>
+<p>A C64 with a faster processor would be nowhere slower than a C64, so even 1× keeps up with a C64 at its quickest. Timed from 199 places in every area, facing four ways from each, a C64 turns 90 degrees in 1.02 s at best and 4.51 s in the middle; at 1× it takes 1 s anywhere.</p>
 <p>What the game counts in ticks of its clock stays as it is. So at any one Speed you cover the same ground between two of the scripts' ten-second ticks whichever way you face, where on a C64 you cover less while the view is slow to draw. A faster Speed covers more ground between the clock's events, as a faster C64 would, so the drain on strength matters less. Moving the slider turns Fast CPU on, and the page remembers the Speed with its other view settings.</p>
 <h3>What each loop does</h3>
 <table>
@@ -193,9 +194,9 @@ section table{margin:6px 0 18px}
 <h3>You slide along walls that stop a C64 dead</h3>
 <p>When a step runs into a wall or over an edge, the game cuts the step short and throws the rest away. On a C64 a whole step that meets a wall at an angle stops against it. With Fast CPU each share creeps a little along the wall before it is cut, 60 times a second, so you slide along walls the C64 stops you at, and now and then step off a ledge the C64 keeps you on.</p>
 <table>
-  <tr><th>780 walks of three steps, from 199 places in every area, four ways from each</th><th>With Fast CPU at 1×</th></tr>
-  <tr><td>Ended more than 64 units from where the C64's three steps end</td><td>265 (34 %)</td></tr>
-  <tr><td>Ended at another height</td><td>45 (6 %), 28 of them lower</td></tr>
+  <tr><th>781 walks of three steps, from 199 places in every area, four ways from each</th><th>With Fast CPU at 1×</th></tr>
+  <tr><td>Ended more than 64 units from where the C64's three steps end</td><td>272 (35 %)</td></tr>
+  <tr><td>Ended at another height</td><td>31 (4 %), 22 of them lower</td></tr>
 </table>
 <p>In open space the shares of a step end exactly where the C64's step ends, at every Speed. Taking each whole step once every K ticks would end every walk where the C64 does, but you would glide on after letting go of the key to finish the step, and the keys would no longer answer at once.</p>
 </section>
@@ -210,7 +211,7 @@ section table{margin:6px 0 18px}
   <tr><td>Each instruction takes its cycles, and a view takes as long as its polygons do.</td><td>The port executes no instructions. Each routine and each row, byte and edge step it draws costs what it cost the game, fitted on the game's own timings, so a view takes about as long as on the C64 (01, The pace) and appears when its drawing is done.</td></tr>
   <tr><td>The SID plays the music and the effects.</td><td>The game's own music driver runs on the site's 6502 in the port, as the How it works page's tune player runs it, and the site's model of the SID plays what it writes, each frame of it as the frame is shown.</td></tr>
   <tr><td>The game draws the 3D view in its patterns, 120 pixels by 120, and changes it when a picture is done, about once a second.</td><td>With Native resolution on, the page draws the same faces from the game's own positions and rules as sharp shapes and solid shades, which never appear on a C64 (02).</td></tr>
-  <tr><td>The main loop goes round when the C64 has drawn the view, and each loop moves the player a whole step.</td><td>With Fast CPU on, the main loop goes round once each tick of the game's clock, 60 times a second, and each loop takes its share of a step, so that you move as fast as the Speed sets whatever is in view: a step a second, half a second or a fifth (03). Shares of a step slide along walls a whole step stops at, and a message no longer pauses play. No C64 was ever this fast.</td></tr>
+  <tr><td>The main loop goes round when the C64 has drawn the view, and each loop moves the player a whole step.</td><td>With Fast CPU on, the main loop goes round once each tick of the game's clock, 60 times a second, and each loop takes its share of a step, so that you move as fast as the Speed sets whatever is in view: a step in a sixth of a second, a twelfth or a thirtieth, never slower than a C64 (03). Shares of a step slide along walls a whole step stops at, and a message no longer pauses play. No C64 was ever this fast.</td></tr>
   <tr><td>The video chip draws the screen.</td><td>The site's model of the video chip draws each frame from the port's memory, with each change the port makes during the frame applied where the beam meets it.</td></tr>
 </table>
 </section>
@@ -6358,9 +6359,10 @@ root.CM_FAST = {
   // the main loop's checkpoints (src/g-main.js): a loop starts at UPDATE_FRAME_INPUT_EVENTS's call
   // ($47F0); the stretches that start at these are the loop's own work
   start: 0x47F0, work: [0x47C5, 0x47D7, 0x47F0, 0x47F3, 0x47ED, 0x47FD],
-  // the Speed: K, the ticks the step of one C64 loop takes. The C64's loops in play take 0.20 to
-  // 3.02 s, 0.92 s in the middle: 1x is about that, 5x the quickest, with nothing in view
-  speeds: [{ name: '1×', K: 60 }, { name: '2×', K: 30 }, { name: '5×', K: 12 }],
+  // the Speed: K, the ticks the step of one C64 loop takes. A C64 with a faster processor is
+  // nowhere slower than a C64, so 1x is the C64's quickest in play: turning in the Wilderness with
+  // little in view, 90 degrees in 1.02 s, a loop each 10 ticks; 2x and 5x faster still
+  speeds: [{ name: '1×', K: 10 }, { name: '2×', K: 5 }, { name: '5×', K: 2 }],
   // the steps (plug-in point step), by the key the port gives each: a walk's two parts (along the
   // sine at $123C and the cosine at $123D, DISPATCH_PLAYER_MOVEMENT), 1/K of each a loop; and the
   // pointer, across ($2465) and down ($2466, DISPATCH_AIM_FIRE_ACTIVATE), which a loop that moves

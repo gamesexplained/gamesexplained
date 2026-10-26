@@ -115,10 +115,13 @@ rate). When two aims clash the higher wins:
 - **Take the pace from the machine's timings.** For the same pace, K is
   the middle of its loops in play, or the pace the game itself aims at
   when it has one (a loop it allows a fixed number of frames). For a
-  faster pace, put 1× near that middle and the fastest setting at its
-  quickest loop, so each setting is a speed the machine reaches
-  somewhere; a faster setting covers more ground between the clock's
-  events, as a faster machine would.
+  faster pace, put the slowest setting at the machine's quickest loop in
+  play, timed while turning and while walking from every saved moment,
+  and the others faster still: a faster processor is nowhere slower than
+  the machine, and a setting at the middle of its loops is several times
+  slower than the machine wherever little is in view
+  (`games/c64/castle-master`). A faster setting covers more ground
+  between the clock's events, as a faster machine would.
 - **Scale each kind of job by what scaling does to it.** A job that ends
   the same however often it runs (a script that shows or hides objects
   by flags) runs every loop; one whose effect adds up with each call (a

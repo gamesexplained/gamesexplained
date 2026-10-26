@@ -12,9 +12,10 @@ root.CM_FAST = {
   // the main loop's checkpoints (src/g-main.js): a loop starts at UPDATE_FRAME_INPUT_EVENTS's call
   // ($47F0); the stretches that start at these are the loop's own work
   start: 0x47F0, work: [0x47C5, 0x47D7, 0x47F0, 0x47F3, 0x47ED, 0x47FD],
-  // the Speed: K, the ticks the step of one C64 loop takes. The C64's loops in play take 0.20 to
-  // 3.02 s, 0.92 s in the middle: 1x is about that, 5x the quickest, with nothing in view
-  speeds: [{ name: '1×', K: 60 }, { name: '2×', K: 30 }, { name: '5×', K: 12 }],
+  // the Speed: K, the ticks the step of one C64 loop takes. A C64 with a faster processor is
+  // nowhere slower than a C64, so 1x is the C64's quickest in play: turning in the Wilderness with
+  // little in view, 90 degrees in 1.02 s, a loop each 10 ticks; 2x and 5x faster still
+  speeds: [{ name: '1×', K: 10 }, { name: '2×', K: 5 }, { name: '5×', K: 2 }],
   // the steps (plug-in point step), by the key the port gives each: a walk's two parts (along the
   // sine at $123C and the cosine at $123D, DISPATCH_PLAYER_MOVEMENT), 1/K of each a loop; and the
   // pointer, across ($2465) and down ($2466, DISPATCH_AIM_FIRE_ACTIVATE), which a loop that moves

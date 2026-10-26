@@ -330,3 +330,16 @@ answers settled the spec's questions: a message never holds play, the
 sliding at walls stays, the plug-in points stay, an action game keeps its
 own pace with no Speed while a slow one like this gets the Speeds, and
 Fast CPU replaces Smooth motion in a game once it is shown faithful there.
+
+On 26 October 2026 Aaron found that turning 90 degrees with Fast CPU at 1×
+took about six times as long as on the page's C64. It was the pace, not the
+clock: at every refresh rate from 60 to 240 a second 1× turned 90 degrees in
+6 s, as its K of 60 ticks a step said. Timed from the 199 moments, facing
+four ways, the C64 turned 90 degrees in 1.02 s at best, in the Wilderness
+with little in view, and 4.51 s in the middle, so 1× was slower than the C64
+in 527 of 792 turns and 5.9 times slower at worst. Its loops took 8.3 ticks
+at the quickest and 54.1 in the middle while turning, 13.3 and 52.3 while
+walking (leaving out loops that changed area). A C64 with a faster
+processor is nowhere slower than a C64, so 1× is now 10 ticks a step, the
+C64's quickest, and 2× and 5× are 5 and 2. The guide's rule for a faster
+pace says the same.
