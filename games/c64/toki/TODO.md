@@ -2,7 +2,7 @@
 
 Tier: gold (Gold pass 2 on 8 November 2026: every page reviewed with the steward; the sound driver's 23 command handlers and tune data typed and described; the effect-start bug at $6659 found). For Diamond: a Play tab ported to JavaScript (Platinum). Open: a proven model's read of the edits to How it works, Controls, Gameplay, Maps, and Graphics, drafted on Sonnet 5.5; 15 comments on cartridge banks need the cartridge image or the steward's bank sources; which script uses command 31 to start tune sets 0 and 2. The stage split into parts is on fork branch game/c64/toki-gold (d086b75), not on main.
 
-Next: later stages' handlers (table-2 indexes 7, 16, 17, 23, 24, 28 need snapshots of other stages), the remaining bare runs ($B259, $9443, $5108, $686D, $6D81, $442C; queue via coverage.py). Named 2026-10-24 (latest pass: bank record unpacker $059A, joystick read $4082, intro loop $4095, terrain probe $9C1E; before it: init_round_state $4EDD, map-row copy $4593, SID sound driver $66A9, object phase handlers $A990, char-block slots $AC4F, player tile probe $9D3C; before it: the view-scroll engine, recolour_screen $5BC2, player movement, nmi_frame and its stage patcher, the $95A4 sprite reuse handler, path_start_from_record, the stage-skip cheat).
+Next: stages 2-5 are parts (26 October 2026, all 100 %); open: stage code entries that fall inside instructions (left unnamed), one stray Stage 4 map byte ($1178 = $3F, above its 61 blocks), Stage 2's $2E87 and Stage 3's $30CA-$30DA patch targets (animation data), the stage 2 sequence tables' purpose, 15 bank comments, reviews (Commodore Format 86 % unconfirmed), Play tab (not at this stage).
 
 For Silver:
 

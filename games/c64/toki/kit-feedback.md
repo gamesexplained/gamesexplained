@@ -16,13 +16,22 @@ request (one agent, no subagents).
 - **The emulator needs libraries outside the repository in a fresh container.** `get-vice download` names them, and `kit/c64/INSTALL.md` gives the apt line. A virtual display (Xvfb) is also needed before `tools.py vice` starts the GUI build. The install worked on Ubuntu 24.04 in a container.
 - **Map pages follow from the game's own tables.** A game that scrolls over a block map (row pointer tables, a block table of characters, a character colour table) can have every stage drawn from a snapshot with about 60 lines, and the result is the most useful picture the page has. `kit/skills/core/70-minisite` lists a Maps / levels tab but not how to find the tables.
 
+## Gold pass 2 (26 October 2026): the stages as parts
+
+- **A game whose loader writes one set of addresses five times is five parts, and the snapshot of the first one hides it.** Toki was listed as one image with stage 1 in play. The stage loader writes a character set at $C000, code at $BD76 and a block at $0C01 for each stage; comparing the five play snapshots showed the same table at $B382 reaching different code in each. `15-parts` says this in general ("Resident code ... add each load with --over"), but it takes the directory entries to know the ranges, and the ranges are not the same for any two stages.
+- **A patch routine named by the stage variable puts the patched bytes in the wrong stage.** The patcher at $4DDB counts stages from 0, so the routine that patches the second stage was named `stage1_patch`, and every byte it wrote was documented as part of stage 1's data (script words, animation entries, path data). Only the five snapshots, each read after its own patch, showed that most of them were section-record fields of Stages 3 and 4 and the timed-step tables of Stage 2; the rest are state bytes in the stage code area ($BF22-$BF25 for Stage 4, $BFFE-$C007 for Stage 3), map row 19 of Stage 3, and animation-data bytes ($2D32 and $2E87 for Stage 2, $30CA-$30DA for Stage 3). The names now follow the player's numbers.
+- **Splitting a game into parts drops every bare address link in the hand-written pages.** `site.js` sends a bare `<code>$XXXX</code>` to the page named by the nearest `data-part`; with none it goes to `source.html`, which a game of parts does not have as a listing. Adding `data-part="resident"` to `<main>` restored them. The build said nothing about it.
+- **Hosted sessions need no cartridge image for this.** The five snapshots (made with the stage-skip cheat) were enough to find every range; the directory's destinations and lengths came from the earlier static read.
+
 ## What was changed in the kit
 
 None.
 
 ## Candidates
 
-None.
+- `15-parts`: when stages or levels are loaded by the game's own loader over the same addresses, read the loader's destination and length table first and give each load its `ranges` from it, not from a byte comparison of the snapshots (the comparison also finds run-time state, which is about three times larger). Seen in Toki only.
+- `10-orient`: a hand-over from the stage-skip cheat gives a snapshot of every stage, which is what `15-parts` step 2 asks for. Toki only so far.
+- `70-minisite`: say that a hand-written page of a game with parts needs `data-part` on its container for address links. Toki only so far; Lemmings' pages carry it already.
 
 ## Maintainer asks
 
