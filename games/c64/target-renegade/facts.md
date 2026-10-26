@@ -1,6 +1,6 @@
 # Target Renegade — facts
 
-These findings refer to the supplied OneLoad64 EasyFlash cartridge. Listings use the four recorded entry snapshots in orientation.md. Silver analysis is in progress; unnamed routines and explicitly open roles are not established mechanics.
+These findings refer to the supplied OneLoad64 EasyFlash cartridge. Listings use the four recorded entry snapshots in orientation.md. The scoped engine/resource ledger explains 92,945 of 92,945 bytes. Explicitly open roles remain open; coverage is not a claim that every historical or visual question has been settled.
 
 ## Memory and loading
 
@@ -38,3 +38,15 @@ The isolated driver $0700–$2022 agrees with the full snapshot in every ordered
 ## The listing's error rate
 
 Foundation sample seed 2026102501 drew 40 of 60 handwritten and 20 of 856 generated comments. The independent gpt-6-astra checker found 19 wrong-detail comments, no wholly wrong comments, one doubtful claim and four unverifiable citations. Native checks supported the 19 errors: four handwritten details and fifteen instances of an incorrect sprite-writer reference. All occurrences were corrected through the generators. The unsupported mutation claim and future-browser citations were removed. The unweighted wrong-detail rate was 31.7% (Wilson 95% interval about 21.3–44.2%); the stratum-weighted estimate was 70.7%, dominated by that repeated sprite citation. The sample is over the mark and gives a lower bound on the error rate; correcting sampled claims does not establish the remaining comments as correct. A full audit is recommended.
+
+Sample seed 2026102601 drew 40 of 379 handwritten comments and 20 of 1,243 generated comments. An independent gpt-6-astra checker completed the first 40, then hit its usage limit. A fresh independent gpt-6.1-sol checker completed the remaining 20. Combined findings were 55 right and five wrong-detail comments, with no doubtful or unverifiable comments. The five errors concerned a retained fragment's A precondition, the one-slot effect reset, a selector's destination, the active condition for sequence updates, and a sequence-boundary tick that reads no table entry. The run corrected all five and every matching generated sentence; the caller's reset description and page player's active test were also corrected. The unweighted rate was 8.3% (Wilson 95% interval 3.6–18.1%); weighting by stratum size gives 2.9%. This sample is over the mark and neither sample is a full audit. A full audit is recommended.
+
+
+## Live verification
+
+Native tests used a saved neutral first-stage state with ordinary and special enemy slots explicitly cleared. Thirty-six joystick/facing cases exercised movement and directional-fire dispatch. A held front attack ran for one action cycle without repeating; a diagonal jump moved raw X across 36 units over its active sequence. Commodore presses toggled pause from 0 to 1 and back to 0. Space changed title selection 0 to 1 after release, while the tested normal-play passes retained selection 0. These observations are phase-specific.
+
+Live score fixtures kept five lives at exactly 50,000, awarded a sixth at 50,100 and retained nine at the cap; both greater-score cases advanced the threshold to 150,000. Zero endurance with one remaining life set the negative end flag. Invoking the native object-damage routine in a controlled 44-endurance state produced 40. Timer tests observed successive decrements 51 main-loop calls apart. Full state traces stay private under work/.
+
+The committed page tests compare nine music cues over 150,497 calls, thirteen effect requests on each of three voices over 78,000 calls, 51,200 native map characters, 300,000 valid score cases, 198 stored-component mirrors and all 256 uniform-byte patterns in both modes. Five native stage snapshots matched the browser's font and colour allocations exactly. The trimmed frame and full native-compared frame share pixel hash `b70d6f5361c41a3c062b47f434ebd3a6de32e7dc364b90f1fd16cf8050f7c111`; the page embeds 2,229 RAM bytes read by that drawing.
+

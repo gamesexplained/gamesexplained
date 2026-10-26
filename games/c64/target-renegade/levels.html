@@ -1,0 +1,86 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Target Renegade</title>
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+img{max-width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:20px}.shots figure{margin:0}
+@media(max-width:700px){:root{--gx:24px;--h1:36px}.shots{grid-template-columns:1fr}}
+</style>
+<style>.tr-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.tr-controls label{display:flex;gap:8px;align-items:center}.tr-controls input{max-width:170px}.tr-scroll{overflow:auto;margin-top:18px;border:1px solid var(--line)}.tr-scroll canvas{display:block;image-rendering:pixelated;width:1280px;height:320px;max-width:none}.tr-view{display:block;width:100%;max-width:640px;height:auto;image-rendering:pixelated;background:#000;margin:20px auto}.tr-info{font-family:var(--fm);font-size:13px}button,select{font:inherit;padding:6px 10px}</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">1988 · Imagine Software · Commodore 64</p><h1>Target Renegade</h1><p class="sub">Five stages, drawn from two maps and three sets of character shapes per load.</p></header>
+<main class="wrap">
+<section data-part="resident" id="stage-browser"><p class="fig">01 · Maps</p><h2 class="t">The stage backgrounds</h2>
+<p>Each map is 80 columns wide and 20 rows tall. A map square holds a number that chooses a block of 4 × 4 characters. Each character chooses an 8 × 8 picture. That makes the whole stored background 2,560 × 640 pixels. The game shows a 320 × 160 window above the status panel.</p>
+<div class="plate"><div class="pick"><button class="step" id="tr-prev" aria-label="Previous stage">←</button><select id="tr-stage" aria-label="Stage"><option>1 · Car park</option><option>2 · Street</option><option>3 · Park</option><option>4 · Shopping street</option><option>5 · Bar</option></select><button class="step" id="tr-next" aria-label="Next stage">→</button></div>
+<canvas class="tr-view" id="tr-view" width="320" height="160" aria-label="Rebuilt background window"></canvas>
+<div class="tr-controls"><label>Left column <input id="tr-x" type="range" min="0" max="280" value="200"></label><label>Top row <input id="tr-y" type="range" min="0" max="60" value="0"></label><button id="tr-home">Stage start</button><label><input id="tr-grid" type="checkbox">Tile grid</label></div>
+<p class="tr-info" id="tr-map-info" aria-live="polite">Loading map data…</p>
+<div class="tr-scroll"><canvas id="tr-world" width="2560" height="640" aria-label="Full stored map with current window outlined"></canvas></div>
+<p class="cap">The full stored map appears below the window at half size. Scroll sideways to see its width. Changing stages also changes the character shapes and colours. Some stored areas lie outside a stage's usual route. The browser shows the stored data without claiming that every area is reachable in that stage.</p></div>
+<p>The column renderer at <code>$2A6C</code> reads map indices from <a href="source-first-load.html#2dc0">first-load $2DC0</a> or <a href="source-second-load.html#2dc0">second-load $2DC0</a>. It selects sixteen character codes from the tile table at $B000. Resource swaps at <code>$84FE</code> put the chosen font and colour table into the active allocations.</p>
+<p class="cap">The map lookup was checked against the game's own renderer for 51,200 character cells across both loads. The five font/colour selections were also compared with initialized native stage snapshots. The window omits fighters and the status panel.</p>
+</section>
+<section id="stage-reference"><p class="fig">02 · In play</p><h2 class="t">The native stage view</h2><figure class="plate" style="margin:0"><img id="tr-shot" src="reference/stage1.png" width="384" height="272" alt="Native stage 1 in VICE"><figcaption class="cap">Captured after native stage setup. The later stages were reached with explicit state changes and the game's loading routines.</figcaption></figure></section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* trMap */
+const TR_STAGES = [
+ {part:'first-load',font:0x4800,colours:0x2CC0,x:200,y:0,bg1:11,bg2:12},
+ {part:'first-load',font:0xC000,colours:0xC800,x:0,y:0,bg1:11,bg2:12},
+ {part:'first-load',font:0xDE00,colours:0xE600,x:0,y:24,bg1:9,bg2:8},
+ {part:'second-load',font:0xC000,colours:0xC800,x:20,y:0,bg1:11,bg2:12},
+ {part:'second-load',font:0xDE00,colours:0xE600,x:0,y:20,bg1:8,bg2:9}
+];
+function trMapCell(m,stage,x,y) {
+ const tile=m[0x2DC0+Math.floor(x/4)*20+Math.floor(y/4)];
+ const glyph=m[0xB000+tile*16+(y&3)*4+(x&3)];
+ return {tile,glyph,colour:m[stage.colours+glyph]&15};
+}
+// end of trMap
+(async()=>{
+ const $=id=>document.getElementById(id),pick=$('tr-stage'),view=$('tr-view'),world=$('tr-world');
+ try {
+  const [first,second]=await Promise.all([C64.load('parts/first-load/listing.json'),C64.load('parts/second-load/listing.json')]);
+  const data={'first-load':first.ram,'second-load':second.ram};let background=document.createElement('canvas');background.width=2560;background.height=640;
+  function cell(ctx,m,s,x,y,px,py){const c=trMapCell(m,s,x,y),font=m.subarray(s.font,s.font+2048);if(c.colour&8)C64.drawGlyphMC(ctx,font,c.glyph,px,py,1,[C64.PAL[0],C64.PAL[s.bg1],C64.PAL[s.bg2],C64.PAL[c.colour&7]]);else C64.drawGlyph(ctx,font,c.glyph,px,py,1,C64.PAL[c.colour],C64.PAL[0]);}
+  function windowDraw(){const s=TR_STAGES[pick.selectedIndex],x=+$('tr-x').value,y=+$('tr-y').value,m=data[s.part],ctx=view.getContext('2d');for(let r=0;r<20;r++)for(let c=0;c<40;c++)cell(ctx,m,s,x+c,y+r,c*8,r*8);
+   if($('tr-grid').checked){ctx.strokeStyle='#ffffff88';for(let c=0;c<=40;c++)if((x+c)%4===0){ctx.beginPath();ctx.moveTo(c*8+.5,0);ctx.lineTo(c*8+.5,160);ctx.stroke();}for(let r=0;r<=20;r++)if((y+r)%4===0){ctx.beginPath();ctx.moveTo(0,r*8+.5);ctx.lineTo(320,r*8+.5);ctx.stroke();}}
+   const w=world.getContext('2d');w.drawImage(background,0,0);w.strokeStyle='#fff';w.lineWidth=3;w.strokeRect(x*8,y*8,320,160);$('tr-map-info').textContent=`${s.part} · columns ${x}–${x+39} · rows ${y}–${y+19} · font $${s.font.toString(16).toUpperCase()}`;
+  }
+  function home() {const s=TR_STAGES[pick.selectedIndex];$('tr-x').value=s.x;$('tr-y').value=s.y;windowDraw();}
+  function choose(){const s=TR_STAGES[pick.selectedIndex],m=data[s.part],ctx=background.getContext('2d');for(let y=0;y<80;y++)for(let x=0;x<320;x++)cell(ctx,m,s,x,y,x*8,y*8);$('tr-shot').src=`reference/stage${pick.selectedIndex+1}.png`;$('tr-shot').alt=`Native stage ${pick.selectedIndex+1} in VICE`;home();}
+  pick.addEventListener('change',choose);$('tr-prev').onclick=()=>{pick.selectedIndex=(pick.selectedIndex+4)%5;choose();};$('tr-next').onclick=()=>{pick.selectedIndex=(pick.selectedIndex+1)%5;choose();};$('tr-home').onclick=home;for(const id of ['tr-x','tr-y','tr-grid'])$(id).addEventListener('input',windowDraw);choose();
+ } catch(e){$('tr-map-info').textContent='Map could not load: '+e.message;}
+})();
+</script>

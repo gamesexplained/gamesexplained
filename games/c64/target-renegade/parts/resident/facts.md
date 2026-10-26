@@ -1,7 +1,7 @@
-# First load — facts
+# Shared engine — facts
 
-The title checks fire at $26CC. New-game initialization at $8000 stores five lives at $020C. Interrupt setup at $AF0F installs IRQ $AAF0 and NMI $A973. The score renderer at $FC43 writes two characters from the two nibbles of A; it passed all 256 input-byte cases in the kit's simulator.
+This part owns the common game engine, music/effects, title/status font and shared sprite components. It uses the cold `work/entry.vsf` at PC $2600, preserving the loader template source in the first-load part before it is copied to low RAM. Runtime actor state, generated screen buffers, mirror caches, sound workspaces and hardware vectors are excluded explicitly.
 
-The six title text rows at $2791–$2832 contain 27 characters each. Their starts and contents were checked against the title's copy loop. The generated comments preserve the exact rows, including spaces.
+The engine selects stage resources through $84FE/$A768, draws map columns at $2A6C, dispatches attacks at $A035 and IRQ phases at $AB2F, and publishes sprite pointers through $AD10–$AD15. $FC00 awards lives only above its BCD threshold. Its ledger has zero bare bytes; the canonical listing is rebuilt from the recorded snapshot.
 
-This part's listing uses `work/entry.vsf`; the play image is `work/play-round1.vsf`. The symbol map and listing are exported from the live disassembler. These are Bronze findings with author review only. The full census and unresolved bank ownership are recorded in the game-level facts.md and orientation.md.
+Independent sample results and native verification are recorded in the game-level facts.md. Two samples found details requiring correction; both were settled, and a full audit remains recommended.

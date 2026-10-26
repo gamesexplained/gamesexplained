@@ -107,3 +107,11 @@ named by no instruction:
   $DD0E-$DD0F  cia2_control_a to cia2_control_b
 ```
 
+
+## 26 October 2026 — Silver close-out
+
+Completed the 92,945-byte scoped ledger with zero bare bytes. Recovered computed-dispatch routines, described combat/AI/pose tables and raster/reflection code, and removed stale automatic interior aliases after their enclosing routines/data had descriptions. The retained alternate sound fragment was kept in scope with its input precondition explicit. Code/data-sharing bytes and self-modified operands are identified in the listing.
+
+Native input tests covered 36 neutral cases and complete held front-attack/diagonal-jump sequences. Live counter tests covered extra lives, last life, pause, title music selection, timer spacing and controlled object damage. Five native font/colour selections matched the map browser. Four committed page tests cover maps, music, effects and mechanics/frame data. Desktop and 390-pixel map layouts were inspected; every control family was exercised and browser diagnostics showed no errors.
+
+The final sixty-comment draw was checked by two independent agents after the first hit its usage limit at forty. Five sound-detail errors were corrected in all matching comments. Following the same active/sequence condition corrected the page effects player's end test as well. Both samples remain over the mark; a full audit is recommended. The contributor then asked to finish the active part and prepare a PR.

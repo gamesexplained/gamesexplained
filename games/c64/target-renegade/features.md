@@ -10,31 +10,29 @@
 
 ## Features
 
-| Feature | Status | Evidence / next check |
+| Feature | Status | Evidence / remaining question |
 |---|---|---|
-| Title credits Dave Collier, John Palmer, Martin McDonald, and Gary Biasillo | live | `reference/title-ready.png` |
-| Fire on joystick port 1 starts play | live | 100 frames held from title; port 2 fire for 150 frames left title unchanged |
-| Single-player street fighting | live | `reference/stage1.png` |
-| Two original loads: stages 1–3, then 4–5 | open | Commodore manual; second-load snapshot and cartridge mapping pending |
-| Five stages: car park, Seedy Street, park, shopping street, bar | open | Wiki descriptions and animated reference; capture each loaded stage |
-| Joystick movement across the floor | open | Commodore manual / wiki controls; compare from neutral state |
-| Up + fire jumps; diagonally up + fire performs a jump kick | open | Commodore manual / wiki controls; test from a neutral pose |
-| Down + fire ducks and collects a weapon | open | Commodore manual / wiki controls |
-| Horizontal direction + fire punches/swings or back-kicks | open | Commodore manual / wiki controls; determine facing dependence |
-| Lower diagonals + fire provide a special move and crouching punch | open | Commodore manual / wiki controls; trace exact direction/facing rules |
-| Enemies can hold the fighter while another attacks | open | Commodore manual / wiki stage-one description |
-| Motorbike riders can be kicked off their bikes | open | Commodore manual / wiki stage-one description |
-| A baseball bat can be taken from an enemy | open | Commodore manual / wiki stage-one description |
-| Stage two includes an armed enemy with a reload interval | open | Wiki description |
-| Later enemies include dogs and Mr. Big | open | Commodore manual / wiki stage descriptions |
-| Bottom panel displays endurance, lives, score, level, and time | live | First-stage screen shows score 000000, level 1, endurance bar, lives 5, and a running timer |
-| Supplied edition starts with five lives; wiki describes three | differs | $8000 stores $35 AND $0F = 5 at $020C; first-stage display says LIVES 5 |
-| Extra life at 50,000 points, then each additional 100,000 | open | Commodore manual / wiki; trace before treating as a rule |
-| Attack scores vary from 200 to 2,000 | open | Commodore manual / wiki; trace award table |
-| Commodore key pauses/resumes | open | Title legend and wiki; test during play |
-| Space switches music on/off | open | Title legend; test during play |
-| Ending follows the final fight | open | Wiki ending picture; reach native ending load |
+| Title credits and joystick-port-1 start | live | Native title, source records and port comparison. |
+| Single-player fighting and floor movement | live | Thirty-six neutral input/facing cases; all eight movement directions. |
+| Two resource loads: stages 1–3 and 4–5 | traced/live | Native E/F/G load; exact directory/payload comparisons and stage captures. |
+| Five stage settings and an ending | live, state-assisted | Native setup/load snapshots and reference images for stages 1–5 plus H/I ending. Fights were not completed. |
+| Up+fire jump; diagonal-up jump movement | live | Jump state and Y change in both facings; a held diagonal jump moved raw X by 36 over its active sequence. |
+| Down+fire duck and weapon pickup | traced/live dispatch | $A2D6 tests dropped state 3, Y/X windows and makes state 2 player-held. Neutral down-fire pose verified; the pickup window was traced. |
+| Horizontal fire front attack, bat swing or back kick | traced/live dispatch | $A278 branches by facing and held-object state. Both facing-dependent unarmed entries were exercised; named bat animation remains a visual identification question. |
+| Lower-diagonal special moves | traced, names open | $A1A4/$A21C select different poses and resolve held states. All four facing/direction dispatch cases were exercised; precise manual move-name mapping remains open. |
+| Enemy holds while another attacks | traced | $9418/$94C7 set grab ownership and align actors; $99CF and $A1D4/$A1E0 resolve holds. Detailed live combat choreography remains open. |
+| Motorbike rider can be kicked off | traced | $8E44 tests elevated-player overlap, $902B starts dismount and $8F8E transfers the rider to an ordinary enemy slot. |
+| A bat can be acquired | traced, visual assignment open | Shared object state supports drop, pickup, ownership and player-held animation; exact weapon/pose identification remains open. |
+| Armed enemy and reload interval | partly traced, interval open | Type-1 handler $9232, projectile creation $99DD and shared action state $0635. Exact documented reload pacing has not been verified live. |
+| Dogs and Mr. Big | documented/traced, mapping open | Type-4 special-hit path and type-8 death/end path are traced. Exact visual type mapping remains an explicit question. |
+| Endurance, lives, score, stage and timer panel | live/traced | HUD copy, live game view and state fixtures. Timer decrement interval is 51 normal-loop calls. |
+| Supplied edition starts with five lives | differs/live | $8000, $020C and native HUD. Manual says three; reason for the edition difference is open. |
+| Extra life at 50,000 then 100,000 intervals | differs/traced/live | $FC00 requires strictly greater. Equal, greater and nine-life native cases agree; threshold advances by 100,000. |
+| Attack scores from 200 to 2,000 in manual | partly traced, full schedule open | $A0AD stores per-type awards and $A0F9 applies pending BCD score. Documented event-by-event schedule remains open. |
+| Commodore pause/resume | live | Two key presses toggled $0689 from 0 to 1 to 0. |
+| Space music switch | phase-specific live | Title selection changed on release. Normal-play passes tested did not change $0200; no whole-game absence claim is made. |
+| Music and effects | traced/verified | All nine cues and thirteen requests have page players and native ordered-write comparisons. |
 
 ## Open questions
 
-Detailed fighting, scoring, and level rules remain open for a later pass. A documented feature has not been declared absent because it has not been reached.
+The remaining open items concern exact visual move/type names, the documented reload/event-score schedule and the supplied edition's provenance. They are explicit gaps, rather than inferred absences. Listing coverage describes the scoped bytes; it does not resolve these historical or observational questions.

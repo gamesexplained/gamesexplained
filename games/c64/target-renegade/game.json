@@ -8,8 +8,8 @@
   "developer": "Imagine Software",
   "title_image": "reference/title-ready.png",
   "build": "Supplied OneLoad64 EasyFlash edition; cartridge SHA-256 4a15d0ee31f58427723170975a31bd05a900e9a5914bd84f8fc28c742e4ed924",
-  "tier": "bronze",
-  "coverage_percent": 90.0,
+  "tier": "silver",
+  "coverage_percent": 100,
   "copy": "agent-draft",
   "steward": "",
   "credits": [
@@ -34,7 +34,8 @@
     "host": "macOS arm64",
     "emulator": "release v3.13.2, v3.13.2-macos-arm64-gui.dmg (VICE MCP)",
     "disassembler": "regenerator2000 0.9.20",
-    "analysis": "Python 3.9; kit cartridge/snapshot readers, 6502 simulator, pixel comparator and native loader comparisons"
+    "analysis": "Python 3.9; Node.js 25.8.1; kit cartridge/snapshot readers, native VICE state tests, 6502 simulator and pixel comparison",
+    "browser": "Codex in-app browser; desktop and 390-pixel iframe checks"
   },
   "model": "gpt-6.1-sol",
   "step_models": {
@@ -63,7 +64,8 @@
       "gpt-6.1-sol"
     ],
     "60-verify": [
-      "gpt-6.1-sol"
+      "gpt-6.1-sol",
+      "gpt-6-astra"
     ]
   },
   "accuracy": [
@@ -87,7 +89,7 @@
       "models": [
         "gpt-6.1-sol"
       ],
-      "note": "Silver work: partitioned native resource loads, decoded graphics, music, sound effects, stage transitions and combat routines. Analysis remains in progress."
+      "note": "Partitioned native resource loads, decoded graphics, music, sound effects, stage transitions and the initial combat routines."
     },
     {
       "step": "sample",
@@ -99,6 +101,33 @@
         "gpt-6-astra"
       ],
       "note": "Foundation sample: 40 of 60 handwritten comments and 20 of 856 generated comments. Four handwritten details and fifteen generated sprite-writer citations were wrong. All occurrences of those claims were corrected. One unsupported table-mutation claim was removed; four unverifiable references to a future browser were removed. No full audit. Weighted error estimate before corrections: 70.7%, dominated by the repeated sprite citation."
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "note": "Completed the shared engine, pointer-dispatched code, combat/AI/pose tables and raster/mirror routines. All four RAM ledgers have zero bare bytes."
+    },
+    {
+      "step": "port",
+      "fixed": 1,
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "note": "Native map, score, sound and reflection comparisons. Following the effect-driver active/sequence flags also corrected the page player's end condition."
+    },
+    {
+      "step": "sample",
+      "size": 60,
+      "wrong": 5,
+      "fixed": 5,
+      "seed": 2026102601,
+      "models": [
+        "gpt-6-astra",
+        "gpt-6.1-sol"
+      ],
+      "note": "Draw from 379 handwritten and 1,243 generated comments: 40 handwritten and 20 generated selected. The first checker completed 40 before its usage limit; a fresh independent checker completed the remaining 20. Five handwritten sound-driver detail errors were corrected, including every matching sequence-table sentence. No full audit. Unweighted rate 8.3%; stratum-weighted estimate 2.9%. Recommend a full audit."
     }
   ],
   "kit_version": "0.0.236",
