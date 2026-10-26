@@ -228,7 +228,8 @@ variables. About nine passes a second.
 
 When stepping is not available, or when a replay is long enough that the
 game should run at its own speed, stop stepping and patch the game
-instead. Find its one `jsr` to the control reader, and replace it with a
+instead (what to record, and how to replay it elsewhere:
+`kit/skills/core/65-inputs`). Find its one `jsr` to the control reader, and replace it with a
 `jsr` to a routine in free RAM that takes this pass's input from a table,
 sets the same flags the reader would, and copies the state variables into
 a log, sixteen bytes per pass. Let the game run and read the log

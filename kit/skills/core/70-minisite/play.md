@@ -9,18 +9,13 @@ runs the port (`SKILL.md`, "Play").
 ## A demonstration is the test
 
 If the game has a demonstration that replays recorded input, that is the
-test for the whole port. Record the real demonstration in the emulator,
-one record per pass of the game loop with every variable the port keeps,
-then feed the port the demonstration's own input, poll by poll, exactly
-where the game reads the controls, and compare every pass. Menus,
-movement, fights and spells all come in one run, and a port that
-matches it byte for byte is the game's logic, not a likeness of it. For
-what the demonstration never does, write short input scripts in the same
-format and run them through both the port and the game's code in the
-kit's simulator for the machine's processor
-(`kit/skills/<platform>/steps`, "simulator"). The port must count polls, not time: the game's delay loops do
-not read the controls, so a port paced by the clock drifts off the
-recording within a menu or two.
+test for the whole port: record it, feed the port its input and compare
+every pass, as `kit/skills/core/65-inputs` says. Menus, movement, fights
+and spells all come in one run, and a port that matches it byte for byte
+is the game's logic, not a likeness of it. Run the input scripts for what
+the demonstration never does through both the port and the game's code
+in the kit's simulator for the machine's processor
+(`kit/skills/<platform>/steps`, "simulator").
 
 ## A whole game, checked against its own code
 

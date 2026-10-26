@@ -287,10 +287,8 @@ tested. Typical tests:
   the state unreachable from any legal one, and that is a fact worth more
   than the poke. Search for an input sequence from a state the player can
   plainly reach with the game's own movement code ("Negative results",
-  above), then replay it in the emulator with the game's control read
-  redirected to a table (see the platform's tool notes). Publish the
-  sequence with the result; a route someone else can replay is the
-  evidence.
+  above), then record it, replay it in the emulator and publish it with
+  the result, as `kit/skills/core/65-inputs` says.
 
 ## Measuring without fooling yourself
 

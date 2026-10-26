@@ -244,12 +244,13 @@ game did, and `kit/spectrum/codemap.py` turns the first into a check.
   crash ran through, in the machine stack: leave that session out of
   `--map`.
 
-**Record sessions that replay.** A session timed by the wall clock presses
-its keys at different moments on each run. Stop the machine and count in
-frames: `set_input`, `frames(n)`, `release_input`, `frames(n)`. Every run
-from the same snapshot then does the same thing, a menu that ignored a
-short press ignores it every time, and the session is a route someone else
-can replay. A key held for 10 frames and released for 20 was read by every
+**Record sessions that replay.** A session timed by the wall clock
+presses its keys at different moments on each run. Stop the machine and
+count in frames: `set_input`, `frames(n)`, `release_input`, `frames(n)`
+(a route for another machine is recorded by the game's reads instead:
+`kit/skills/core/65-inputs`). Every run from the same snapshot then does
+the same thing, a menu that ignored a short press ignores it every time,
+and the session is a route someone else can replay. A key held for 10 frames and released for 20 was read by every
 menu of the first game; 6 frames was not always enough. `--emulatorspeed
 800` at launch makes frame stepping about five times real speed
 (measured: 250 frames in 0.94 s).
