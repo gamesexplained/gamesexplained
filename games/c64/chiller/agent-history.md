@@ -220,3 +220,11 @@ jump, which restores only the 24 jump timing bytes. Preset selection is
 computed from the live timing table, so a rewind or manual edit cannot leave
 a misleading selection. The byte editor and its full Undo my edits remain
 available below the grouped controls.
+
+### Tweak tabs
+
+Replaced the stacked Visual tweaks and Gameplay tweaks sections with a shared
+tab bar and one visible panel. The panels retain their control state when
+hidden. The tab bar supports arrow keys, Home and End, with labelled panels
+and a single tab stop. A minimum panel height reduces movement below the
+controls when switching between the two.
