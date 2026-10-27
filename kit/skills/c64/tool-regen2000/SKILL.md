@@ -47,7 +47,11 @@ it and says so: a session restarted after a crash or a stop comes back
 with the work of the last export. It names any annotation log written
 after that export, with the `r2000.py --replay` that brings its work
 back. A game's first session, with nothing exported, starts on the
-snapshot itself.
+snapshot itself. Restarted on another snapshot than the listing's, the
+project holds less than `symbols.json` wherever the two snapshots'
+bytes differ, so `symbols_export.py` refuses an export that would lose
+labels, comments or covered bytes and names them; `--force` writes it
+when the loss is meant.
 
 Its native HTTP server binds port 3000 with no option to change it;
 it needs a pseudo-terminal even headless. A second clone's disassembler

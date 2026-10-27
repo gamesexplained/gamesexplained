@@ -242,13 +242,26 @@ class Parts(unittest.TestCase):
             proj = g / 'park.regen2000proj'
             run(KIT / 'scripts' / 'symbols_import.py', g / 'parts' / 'park', g / 'park.vsf', proj)
             out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
-            self.assertNotIn('more than this session holds', out)
+            self.assertNotIn('holds less', out)
+            f = g / 'parts' / 'park' / 'symbols.json'
+            kept = f.read_text()
             p = json.loads(proj.read_text())
             del p['labels'][str(0x4010)]                            # a session that lacks one of the park's names
             proj.write_text(json.dumps(p))
+            r = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj, ok=False)
+            self.assertNotEqual(r.returncode, 0)                    # refused, and the file left as it was
+            self.assertIn('user labels 2 in the file, 1 in this export', r.stderr)
+            self.assertIn('$4010  park_vector', r.stderr)
+            self.assertEqual(f.read_text(), kept)
+            p['labels'][str(0x4010)] = [{'name': 'vector', 'label_type': 'AbsoluteAddress', 'kind': 'User'}]
+            proj.write_text(json.dumps(p))                          # renamed: nothing lost
             out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
-            self.assertIn('had 2 user labels', out)
-            self.assertIn('more than this session holds', out)
+            self.assertNotIn('holds less', out)
+            del p['labels'][str(0x4010)]
+            proj.write_text(json.dumps(p))
+            out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj, '--force').stdout
+            self.assertIn('written with --force', out)
+            self.assertEqual(sum(1 for s in json.loads(f.read_text())['symbols'] if s['kind'] == 'user'), 1)
 
     def test_clip_cuts_a_block_at_the_edge(self):
         blocks, syms, comments, left = P.clip(

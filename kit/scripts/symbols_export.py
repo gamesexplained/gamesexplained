@@ -11,6 +11,15 @@ Usage:
   symbols_export.py <game dir> --ctl <file>         from a SkoolKit control file (spectrum)
   symbols_export.py <part dir> --from <part dir>    a part's share of the live session that was
                                                     started on another part's snapshot
+  ... --force                                       write it even when it holds less than the
+                                                    symbols.json it replaces (below)
+
+An export that holds fewer user labels or comments than the symbols.json it
+would replace, or fewer bytes tracked or explained by the ledger, is not
+written: it says what would be lost. A session restarted on another snapshot
+than the listing's rebuilds from the file and that snapshot, and where their
+bytes differ it holds less than the file did (#562). A label renamed or a
+comment reworded loses nothing; deleting work on purpose needs --force.
 
 Coverage regions come from game.json. The platform rule is the same for
 every game: "video" names the screen base (excluded: it is output) and the
@@ -218,6 +227,35 @@ def read_file(plat, path, kind="project"):
     return platform_fn(plat, "read_file", ("skoolkit",) if kind == "ctl" else ("project",))(path)
 
 
+def losses(path, out, reg):
+    """What writing out over the symbols.json at path would lose, as lines to print, or []: fewer
+    user labels or comments, or fewer bytes the ledger tracks or explains, both counted in reg."""
+    if not os.path.isfile(path):
+        return []
+    try:
+        B = json.load(open(path))
+        old = (B["blocks"], B["symbols"], B["comments"])
+    except (ValueError, KeyError):
+        return []
+    from ledger import compute
+
+    def figures(blocks, syms, comments):
+        state = compute(blocks, syms, comments, reg)["state"]
+        return {"user labels": sum(1 for x in syms if x.get("kind") == "user"), "comments": len(comments),
+                "bytes tracked": sum(1 for v in state if v), "bytes explained": sum(1 for v in state if v == 2)}
+    was, now = figures(*old), figures(out["blocks"], out["symbols"], out["comments"])
+    down = [k for k in was if now[k] < was[k]]
+    if not down:
+        return []
+    users = {x["address"] for x in out["symbols"] if x.get("kind") == "user"}
+    said = {(x["address"], x["type"]) for x in out["comments"]}
+    gone = [f"${x['address']:04X}  {x['name']}" for x in old[1] if x.get("kind") == "user" and x["address"] not in users]
+    gone += [f"${x['address']:04X}  {x['type']} comment: {x['text'][:60]}" for x in old[2]
+             if (x["address"], x["type"]) not in said]
+    return ([", ".join(f"{k} {was[k]} in the file, {now[k]} in this export" for k in down)]
+            + [f"  {x}" for x in gone[:8]] + ([f"  and {len(gone) - 8} more"] if len(gone) > 8 else []))
+
+
 def platform_of(game):
     """game.json's platform, which every game must name (kit/PLATFORMS.md)."""
     plat = game.get("platform")
@@ -305,13 +343,13 @@ def main():
         "comments": comments,
     })
     path = os.path.join(gdir, "symbols.json")
-    before = None
-    if os.path.isfile(path):
-        try:
-            B = json.load(open(path))
-            before = (sum(1 for s in B["symbols"] if s.get("kind") == "user"), len(B["comments"]))
-        except (ValueError, KeyError):
-            pass
+    lost = losses(path, out, reg)
+    if lost and "--force" not in argv:
+        sys.exit(f"{path} not written: this export holds less than the file it would replace.\n  " + "\n".join(lost)
+                 + "\nThe session holds older or other work than the file: most often it was started on another "
+                 "snapshot than the listing's, and rebuilt from the file and that snapshot, which differ where "
+                 "their bytes do. Start it again on the listing's snapshot, or seed it with symbols_import.py. If "
+                 "the loss is meant (labels or comments deleted, a table typed again), add --force.")
     with open(path, "w") as f:
         json.dump(out, f, indent=1)
     users = sum(1 for s in syms if s['kind'] == 'user')
@@ -319,12 +357,8 @@ def main():
     if stray:
         print(f"left out {stray} automatic symbol(s) that only the code of a part beneath refers to, at addresses "
               "this part's load replaced: the session minted them tracing that code")
-    if before and (users < before[0] or len(comments) < before[1]):
-        # a session restarted from an old project, or a project file never saved, exports less than it holds
-        print(f"\nThe symbols.json this replaced had {before[0]} user labels and {before[1]} comments, more than this "
-              f"session holds. If that was not meant, the session started from older work than the file had: "
-              f"restore the file (`git checkout -- {path}`, when it was committed) and seed a session from it "
-              f"with symbols_import.py.")
+    if lost:
+        print("written with --force, holding less than the file it replaced:\n  " + "\n".join(lost))
     if left:
         # what the session holds at addresses another part owns: kept only if that part has it too
         top = home(gdir)[0]
