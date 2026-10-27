@@ -210,3 +210,13 @@ railings and fourteen ledge cells use the live character pixels, recoloured
 in ivory, including every erosion stage and the final empty tile. The ledge
 cells were read from a fresh forest on the original code; test_play.js checks
 that list and checks item removal and sprite priority.
+
+### Separate visual and gameplay tweaks
+
+Grouped the player controls into Visual tweaks (views, painted scenery, CRT
+and overlays) and Gameplay tweaks (jump presets, cheats and level starts).
+Moved the existing jump presets out of the byte editor and added Original
+jump, which restores only the 24 jump timing bytes. Preset selection is
+computed from the live timing table, so a rewind or manual edit cannot leave
+a misleading selection. The byte editor and its full Undo my edits remain
+available below the grouped controls.
