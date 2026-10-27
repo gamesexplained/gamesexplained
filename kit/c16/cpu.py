@@ -31,7 +31,7 @@ from m6502 import OPS, LEN, UNDOCUMENTED, FORMAT, decode, operand  # noqa: E402,
 _spec = importlib.util.spec_from_file_location("c64_cpu_text", os.path.join(os.path.dirname(HERE), "c64", "cpu.py"))
 _c64 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_c64)
-petscii, screencode = _c64.petscii, _c64.screencode
+petscii, screencode, sweep_runs = _c64.petscii, _c64.screencode, _c64.sweep_runs
 
 TEXT_TYPES = ("PETSCII", "Screencode")
 

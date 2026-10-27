@@ -34,8 +34,11 @@ the registers nothing names.
 Decode the whole image as screen codes (and again as the system's text
 encoding) and print runs of five or more printable characters. This finds
 attract text, control legends, version markers, build identifiers and
-credits in seconds. If the game has a custom character set, follow with
-`30-text`.
+credits in seconds. `python3 kit/cpu/strings.py <game or part dir>
+[<snapshot>]` does it in every encoding the machine's `cpu.py` knows and
+keeps the runs that read as text; `--all` prints every run, since a
+string of names or abbreviations can read as noise. If the game has a
+custom character set, follow with `30-text`.
 
 ## Twin-copy check
 

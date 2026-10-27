@@ -67,7 +67,7 @@ copy of the C64's.
 
 | `kit/<platform>/` | Provides | Called by |
 |---|---|---|
-| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES`, and optionally `text_items(kind, ram, start, end) -> (texts, starts) or None` for a text type whose items run over many bytes (the Spectrum's BASIC) | `listing.py`, through `platform_modules(platform)` |
+| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES`, and optionally `text_items(kind, ram, start, end) -> (texts, starts) or None` for a text type whose items run over many bytes (the Spectrum's BASIC), and `sweep_runs(kind, ram) -> [(first, last, text)]` for a text type whose runs the string sweep must read whole (the C64's two character sets) | `listing.py`, through `platform_modules(platform)`; `kit/cpu/strings.py` |
 | `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else. A machine whose cartridges switch banks also takes `read(path, bank=n)`, the bank's chips at their addresses, for a bank's part (`kit/c64/crt.py`) | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
 | `project.py` or `skoolkit.py` | `read_file(path) -> (blocks, symbols, comments)`, `write(gdir, snapshot, out=None) -> path` | `symbols_export.py` (`read_file`, `--project`/`--ctl`), `symbols_import.py` (`write`) |
 | `r2000.py` or `skoolkit.py` | `read_live(gdir=None) -> (blocks, symbols, comments)` from the running disassembler; `gdir` is the game's folder or a part's (`kit/scripts/parts.py`), for a client that keeps a disassembler per part | `symbols_export.py` (`read_live`), `coverage.py --live` |
@@ -78,7 +78,8 @@ A processor that two machines share lives in `kit/cpu/`: `m6502.py`, the
 assembler the C64's test programs and the BBC's are written in;
 `opcodes.py`, the undocumented opcodes and the references search;
 `census.py`, the register census, which takes the machine's chips from
-its `registers.py`; and `cpu6502.js`, the simulator the tests and the
+its `registers.py`; `strings.py`, the string sweep, which takes its text
+from the machine's `cpu.py` and so serves any processor; and `cpu6502.js`, the simulator the tests and the
 pages run. Each machine's `cpu.py` re-exports `m6502.py` and adds its
 own text: the C64's PETSCII and screen codes, the BBC Micro's ASCII. What
 the core skills say about the processor's idioms is in
