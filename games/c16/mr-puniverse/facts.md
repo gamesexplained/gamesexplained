@@ -194,14 +194,15 @@ fall. Because a ladder holds him as ground does, he cannot climb down
 one; he climbs it by jumping, since a jump ends early on a ladder rung.
 
 **What kills him** (`player_pass`, `player_move`): a shot (`$C5`) or a
-force field (`$C6`-`$C7`) or a crusher (`$CC`-`$D5`) in the middle or
-bottom cell of the column he stands in (the left one facing right, the
-right one facing left); standing on the deadly floor; D; the EGY bar
-running out (`energy_tick` returns the carry set); and the clock
+force field (`$C6`-`$C7`) or a crusher (`$CC`-`$D5`) in the middle cell
+of the column he stands in (the left one facing right, the right one
+facing left), or in that column's bottom cell when the figure is low in
+the block (`player_y` 3 or more); standing on the deadly floor; D; the
+EGY bar running out (`energy_tick` returns the carry set); and the clock
 reaching 4.00 (`clock_tick` sets his lives to 1 first, so his game
-ends). Exits, switches and the vitamin are found in the same two cells,
-switches and the vitamin only when the figure is low in the block
-(`player_y` 3 or more).
+ends). Exits are found in the same cells, the bottom one only when the
+figure is low; switches and the vitamin only in the bottom one, and
+only then.
 
 ### Lives, turns and the end
 
@@ -297,7 +298,30 @@ never named.
 
 ## The listing's error rate
 
-Not measured yet.
+One sample of the listing's comments, seed 20261027, checked against
+the bytes and in the kit's simulator by an agent (on
+`claude-opus-5-5[1m]`) with `kit/skills/core/60-verify/checker.md`,
+that wrote none of them. The 269 comments fell in two strata: 244
+written by hand on the code, the variables and the tables, and the 25
+room records' comments, written by a script from the records' bytes.
+The sample drew 60 from the first and 20 from the second.
+
+4 of the 80 were wrong, 5.0 % (Wilson 95 % interval 2.0-12.2 %): 4 of
+the 60 by hand (6.7 %, 2.6-15.9 %) and none of the 20 by the script
+(0-16.1 %), so 6.0 % weighted by the strata's sizes. That is over the
+mark of one in 30, and a lower bound on the true rate, since a checker
+misses some. Each was wrong in a detail. `$0800` said the game draws
+over the loading screen's colours at once, where only the panel's are
+recoloured at once and the play area's wait for the first room.
+`$0FC4` left `setup_machine`, which writes the whole EGY bar empty,
+out of the routines that change it. `$32D0` had the clock stepping on
+the first pass after a death, where `clock_count` = 1 makes it the
+second. `$3E30` said touching a force field kills, where only the middle
+cell of the column he stands in counts, and the bottom cell when he is
+low in his block. All four were corrected, and with them the same
+belief in two more comments, the crusher's characters (`$3E60`) and
+`player_pass` (`$2581`), which counted the bottom cell for exits and
+deaths whatever his height, and in this file's "What kills him".
 
 ## Live tests
 

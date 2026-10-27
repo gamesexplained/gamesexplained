@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c16",
  "game": "mr-puniverse",
- "build": "",
+ "build": "Mastertronic cassette, Novaload, from the TOSEC raw tape (2016-11-11)",
  "source": "live",
  "regions": {
   "exclude": [
@@ -22,9 +22,19 @@
     "the ROMs and I/O"
    ],
    [
+    2048,
+    4095,
+    "screen RAM"
+   ],
+   [
     0,
     2047,
     "runtime: nothing of the game is loaded below $0800. Zero page and pages 3 and 5, which hold the game's variables (cleared by new_game from $0345) and the KERNAL's (the key code at $C6, the SHIFT flag at $0543); the stack; the KERNAL's vectors at $0314-$0315, which setup_machine points at irq; and the leftovers of the Novaload loader in pages 1 to 3"
+   ],
+   [
+    2768,
+    2807,
+    "not shown: row 18's colours, the line between the play area and the panel, which the game never writes; they keep the loading screen's colours, unseen under the blank character $D6 that setup_machine puts in every cell of the row"
    ],
    [
     3048,
@@ -57,7 +67,13 @@
     "runtime: merge_player's work buffer, where copy_under_glyphs puts the scenery behind the player (where characters $FA-$FF would be)"
    ]
   ],
-  "extra": [],
+  "extra": [
+   [
+    14336,
+    15359,
+    "character set"
+   ]
+  ],
   "edges": [
    0,
    256,
@@ -3851,7 +3867,7 @@
   {
    "address": 2048,
    "type": "line",
-   "text": "The colours of the screen, one byte for each of its 1,000 cells (bits 0-3 the colour, 4-6 the brightness, and in a multicolour cell bit 3 set); screen_chars is its characters. As loaded, and when the game takes over, it holds the loading screen's colours, which came from the tape with the game; the game draws over them at once. The play area's colours, rows 0-17, are filled with the room's colour by draw_room, and the panel's, rows 19-24, by setup_machine."
+   "text": "The colours of the screen, one byte for each of its 1,000 cells (bits 0-3 the colour, 4-6 the brightness, and in a multicolour cell bit 3 set); screen_chars is its characters. As loaded, and when the game takes over, it holds the loading screen's colours, which came from the tape with the game. setup_machine colours the panel's, rows 19-24, at once. The play area's, rows 0-17, keep the loading screen's colours, unseen under blank characters, through the title and the menu (only the title's lines, its dots and the menu's lines get colours of their own), until draw_room fills them with the room's colour at the first room. Row 18's are never written but for PAUSED's six cells (pause_check)."
   },
   {
    "address": 2098,
@@ -4036,7 +4052,7 @@
   {
    "address": 4036,
    "type": "line",
-   "text": "Row 24, column 4: the 34 cells of the EGY bar, which energy_tick, refill_energy and the death sequence change."
+   "text": "Row 24, column 4: the 34 cells of the EGY bar. setup_machine writes them empty ($71) with the rest of the panel; refill_energy, energy_tick and the death sequence change them."
   },
   {
    "address": 4071,
@@ -4561,7 +4577,7 @@
   {
    "address": 9601,
    "type": "line",
-   "text": "The player's part of a pass of the main loop. The D key ($C6 = $12) loses a life at once. Then pause_check, then player_move. Then the middle and bottom cells of the column he stands in (from under_player: $0334 and $0335 facing right, $0337 and $0338 facing left) decide what he has touched: an exit ($C1-$C4) in either takes him to the next room (leave_room); a shot or a force field ($C5-$C7) or a crusher ($CC-$D5) in either kills him. With the figure low in the block (player_y 3 or more) the bottom cell also counts for a switch: the lit half $BE turns it off (switch_off), the unlit half $BF turns it on (switch_on); and for a vitamin ($D7, collect_vitamin). A death leaves through the death sequence, by taking the return address off the stack."
+   "text": "The player's part of a pass of the main loop. The D key ($C6 = $12) loses a life at once. Then pause_check, then player_move. Then the cells of the column he stands in (from under_player: $0334 and $0335 facing right, $0337 and $0338 facing left) decide what he has touched. The middle cell always counts: an exit ($C1-$C4) takes him to the next room (leave_room); a shot or a force field ($C5-$C7) or a crusher ($CC-$D5) kills him. The bottom cell counts only with the figure low in the block (player_y 3 or more), and then for those and for a switch too: the lit half $BE turns it off (switch_off), the unlit half $BF turns it on (switch_on); and for a vitamin ($D7, collect_vitamin). A death leaves through the death sequence, by taking the return address off the stack."
   },
   {
    "address": 9748,
@@ -4746,7 +4762,7 @@
   {
    "address": 13008,
    "type": "line",
-   "text": "The death sequence. Turns the tune off and voice 2's noise on, empties the EGY bar ($71 in all 34 cells, bar_pos 0), and puts the scenery back where the player was. Then the room's background colour steps through the colours while voice 2 rises, one step per delay (10) with the objects still moving (update_objects), until the pitch reaches $FD. Then it restores the background, sets the clock to tick on the next pass, clears the play area and fades the volume from 15 to 0. The player loses a life; with none left he is out. With both players out, GAME OVER shows for four long delays and the game starts again (new_game); otherwise the next active player takes his turn (start_turn)."
+   "text": "The death sequence. Turns the tune off and voice 2's noise on, empties the EGY bar ($71 in all 34 cells, bar_pos 0), and puts the scenery back where the player was. Then the room's background colour steps through the colours while voice 2 rises, one step per delay (10) with the objects still moving (update_objects), until the pitch reaches $FD. Then it restores the background, sets clock_count to 1, so that the clock steps on the second pass of the main loop after it, clears the play area and fades the volume from 15 to 0. The player loses a life; with none left he is out. With both players out, GAME OVER shows for four long delays and the game starts again (new_game); otherwise the next active player takes his turn (start_turn)."
   },
   {
    "address": 13227,
@@ -4911,7 +4927,7 @@
   {
    "address": 15920,
    "type": "line",
-   "text": "Characters $C6 beside $C7, a force field, whose glyphs animate_chars scrolls up on every third pass. Touching it kills."
+   "text": "Characters $C6 beside $C7, a force field, whose glyphs animate_chars scrolls up on every third pass. It kills him when it is in the middle cell of the column he stands in, or in that column's bottom cell with player_y 3 or more (player_pass); anywhere else in his block it does nothing, and it does not stop him (is_solid)."
   },
   {
    "address": 15921,
@@ -4946,7 +4962,7 @@
   {
    "address": 15968,
    "type": "line",
-   "text": "Characters $CC-$D5, a crusher: $CC beside $D1 its shaft, and $CD to $D0 beside $D2 to $D5 the four stages of its head within a cell. Touching any of them kills."
+   "text": "Characters $CC-$D5, a crusher: $CC beside $D1 its shaft, and $CD to $D0 beside $D2 to $D5 the four stages of its head within a cell. Any of them kills him when it is in the middle cell of the column he stands in, or in that column's bottom cell with player_y 3 or more (player_pass)."
   },
   {
    "address": 16048,
