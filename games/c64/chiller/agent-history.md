@@ -150,3 +150,16 @@ from the earlier listing into `work/play-idle.vsf`, so the rebuilt
 listing keeps every byte it had and takes only the 17 new ones from
 that copy; the unpatched snapshot is `work/play-antisoft-archive.vsf`.
 
+
+## 28 October 2026: forest parallax concept
+
+Added an optional Parallax view alongside Flat, Layers and Torchlight. New
+procedural woodland planes, a dithered moon, stepped mist and edge shrubs
+sit around the original forest picture on both journeys. Camera movement
+follows the boy; reduced-motion preferences stop the movement. Other rooms
+use the original picture. No game memory or collision rules are changed.
+
+The renderer supplies a background mask so black character and sprite pixels
+stay opaque. A regression check covers those cases and an unchanged flat
+frame. The gameplay comparison passed 30,000 main-loop passes across all
+ten levels. Browser inspection covered both forest records.

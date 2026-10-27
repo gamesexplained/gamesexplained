@@ -4,7 +4,7 @@
 // the cost table the pacing fit wrote (port/cost.json).
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
-const ORDER = ['kernal.js', 'core.js', 'g-fabric.js', 'g-player.js', 'g-energy.js', 'g-enemies.js', 'g-screens.js', 'screen.js', 'runtime.js'];
+const ORDER = ['kernal.js', 'core.js', 'g-fabric.js', 'g-player.js', 'g-energy.js', 'g-enemies.js', 'g-screens.js', 'screen.js', 'parallax.js', 'runtime.js'];
 let html = fs.readFileSync(path.join(ROOT, 'play.template.html'), 'utf8');
 const parts = [];
 for (const f of ORDER) {
