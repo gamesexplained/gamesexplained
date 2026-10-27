@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Test the kit's NES against kit/EMULATOR.md, with a test cartridge of its own.
 
-    python3 kit/scripts/tools.py --platform nes check-emulator     (the usual way in)
-    python3 kit/nes/check_emulator.py [--keep]
+    python3 kit/scripts/tools.py --platform nes check-emulator [--emulator mesen]   (the usual way in)
+    python3 kit/nes/check_emulator.py [--keep] [--emulator mesen]
 
-The machine is jsnes inside the kit's server (kit/nes/jsnes_server.mjs), and every check goes
+The machine is jsnes inside the kit's server (kit/nes/jsnes_server.mjs), or with `--emulator
+mesen` MesenCE inside kit/nes/mesen_server.py, which speaks the same protocol. Every check goes
 through kit/nes/jsnes.py, the client a script uses, so what passes here is what a script gets.
-Needs the server up (`tools.py jsnes`) and nothing else: no game. It puts in a test cartridge
+Needs the server up (`tools.py jsnes`, or `tools.py mesen`) and nothing else: no game. It puts in a test cartridge
 assembled below, an NROM-128 board (16 KB of PRG at $C000 and its mirror at $8000, 8 KB of
 CHR), sent to the server as bytes and never written to disk, and measures the four phases on
 it. Whatever cartridge was in is taken out. It restarts the server once (phase 2, "after a
@@ -31,8 +32,9 @@ Before it turns the picture on it writes four palette entries and three tiles of
 through $2006 and $2007, which phase 1 reads back from the PPU's memory.
 
 Every check has a name. The summary lists the names that failed, and
-kit/skills/nes/tool-jsnes/workarounds.md says, per name, what to do instead. Run it after
-installing, and again after a new jsnes release or a change to the server.
+kit/skills/nes/tool-jsnes/workarounds.md (tool-mesen/workarounds.md for MesenCE) says, per
+name, what to do instead. Run it after installing, and again after a new release or a change
+to either server.
 
 A check fails for what the machine does, never for how fast the host runs it: counts are
 compared with the test program's own counters, and the host's speed is reported on lines of
@@ -49,11 +51,14 @@ from asm6502 import assemble   # noqa: E402
 from m6502 import decode   # noqa: E402
 import snapshot   # noqa: E402  kit/nes/snapshot.py, the reader the listing uses
 
-PORT = DEFAULT_PORT        # KIT_JSNES_PORT, which the launcher's --port sets
-SNAPDIR = os.path.join(ROOT, "tools", "nes-home", "snapshots")
+MESEN = "--emulator" in sys.argv[:-1] and sys.argv[sys.argv.index("--emulator") + 1] == "mesen"
+# KIT_JSNES_PORT or KIT_MESEN_PORT, which the launcher's --port sets
+PORT = int(os.environ.get("KIT_MESEN_PORT") or 6857) if MESEN else DEFAULT_PORT
+SERVER = "mesen" if MESEN else "jsnes"     # the launcher's name for the server, for the restart
+SNAPDIR = os.path.join(ROOT, "tools", "mesen-home" if MESEN else "nes-home", "snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
-RESULT = "nes.json"        # each platform's check writes its own file here; `status` prints the last
-WORKAROUNDS = "kit/skills/nes/tool-jsnes/workarounds.md"
+RESULT = "nes-mesen.json" if MESEN else "nes.json"   # each emulator's check writes its own file; `status` prints the last
+WORKAROUNDS = f"kit/skills/nes/tool-{SERVER}/workarounds.md"
 SNAPS = ("emutest_p1", "emutest_stopped", "emutest_running", "emutest_c_stopped", "emutest_c_running",
          "emutest_rollback")
 APU_FRAME_IRQ = 29830      # cycles between two frame interrupts in four-step mode (jsnes, src/papu/index.js)
@@ -343,7 +348,7 @@ def fresh(m):
 @phase("start: the test cartridge in, powered on")
 def p_start(m):
     h = m.call("hello")
-    print(f"   server protocol {h['protocol']}, jsnes {h['jsnes']}, {h['model']}, node {h['node']}")
+    print(f"   server protocol {h['protocol']}, {emulator(h)}, {h['model']}")
     m.delete()
     r = m.cartridge(data=test_cartridge(), name="kit test cartridge")
     c = r["cartridge"]
@@ -383,7 +388,10 @@ def p1(m):
     names = m.read(0x2000, 3, space="ppu")
     mirror = m.read(0x2800, 3, space="ppu")       # vertical mirroring: $2800 is $2000
     oam = m.read(0, 256, space="oam")
-    check("read-ppu", pal == PALETTE and names == bytes([1, 2, 3]) and mirror == names and oam == img[0x0200:0x0300],
+    # bits 2-4 of a sprite's attribute byte are not wired in the PPU and read as 0 (NESdev, PPU OAM):
+    # MesenCE clears them as the console does, jsnes keeps what was sent; only the wired bits count
+    wired = lambda b: bytes(v & (0xE3 if i % 4 == 2 else 0xFF) for i, v in enumerate(b))   # noqa: E731
+    check("read-ppu", pal == PALETTE and names == bytes([1, 2, 3]) and mirror == names and wired(oam) == wired(img[0x0200:0x0300]),
           "the PPU's memory and sprite table: the palette and nametable the program wrote, the nametable through "
           "its mirror, and the sprite page the NMI sent", f"palette {pal.hex(' ')}; tiles {names.hex(' ')}; "
           f"$2800 {mirror.hex(' ')}; sprite 0 {oam[:4].hex(' ')}")
@@ -523,8 +531,8 @@ def p2_restart(m):
     path, ref = STOP["stopped"]
     m.close()
     port = ("--port", str(PORT))
-    print("  ", tools("stop", "jsnes", *port).replace("\n", "\n   "))
-    print("  ", tools("jsnes", *port).replace("\n", "\n   "))
+    print("  ", tools("stop", SERVER, *port).replace("\n", "\n   "))
+    print("  ", tools(SERVER, *port).replace("\n", "\n   "))
     try:
         m = connect(port=PORT, timeout=60)
         m.cartridge(data=test_cartridge(), name="kit test cartridge")   # the snapshot names it; it was sent as bytes
@@ -757,6 +765,13 @@ def p4(m):
           f"{differ(s0, s1)}; keep and back {pair:.1f} ms a pair, save and load through a file {filepair:.0f} ms a pair")
 
 
+def emulator(h):
+    """The emulator a server's hello names, with what it runs on."""
+    if "mesen" in h:
+        return f"MesenCE {h['mesen']}, python {h['python']}"
+    return f"jsnes {h['jsnes']}, node {h['node']}"
+
+
 def main():
     if "-h" in sys.argv or "--help" in sys.argv:   # it replaces the cartridge: never on a request for usage
         print(__doc__)
@@ -769,7 +784,7 @@ def main():
         h = m.call("hello")
     except JsnesError as e:
         sys.exit(f"{e}\nthen run check-emulator again.")
-    build = f"jsnes {h['jsnes']} in the kit's server (protocol {h['protocol']}), node {h['node']}, on {sys.platform}"
+    build = f"{emulator(h)} in the kit's server (protocol {h['protocol']}), on {sys.platform}"
     print(build)
     started = time.time()
     p_start(m)

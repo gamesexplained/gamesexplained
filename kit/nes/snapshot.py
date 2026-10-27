@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """Read an NES snapshot into a flat 64 KB image.
 
-The kit's NES snapshot is what the kit's server writes (`save` in kit/nes/jsnes.py):
-JSON, gzipped, {"format": "kit-nes-snapshot", "kit": {...}, "state": jsnes's own toJSON()}.
-`state.cpu.mem` is jsnes's CPU array, 65,536 numbers, which holds the 2 KB of RAM at
-$0000-$07FF, the cartridge's RAM at $6000-$7FFF, and the PRG ROM banks the mapper had
-selected at $8000-$FFFF (jsnes copies a bank into it when the mapper switches one in;
-jsnes, src/mappers/mapper0.js, loadRomBank).
+The kit's NES snapshot is what the kit's servers write (`save` in kit/nes/jsnes.py): JSON,
+gzipped, {"format": "kit-nes-snapshot", "kit": {...}, ...}. The jsnes server's holds
+"state", jsnes's own toJSON(); the MesenCE server's (kit/nes/mesen_server.py) holds
+"machine", the parts below already taken out (the CPU's 64 KB, the PPU's 16 KB, the sprite
+table and the registers, base64), and "mesen_state", Mesen's own save state, for a load. Both
+read the same here.
+
+In the jsnes server's, `state.cpu.mem` is jsnes's CPU array, 65,536 numbers, which holds
+the 2 KB of RAM at $0000-$07FF, the cartridge's RAM at $6000-$7FFF, and the PRG ROM banks
+the mapper had selected at $8000-$FFFF (jsnes copies a bank into it when the mapper
+switches one in; jsnes, src/mappers/mapper0.js, loadRomBank).
 
 `read` returns 0x10000 bytes, each address holding the bytes that are its own:
 
@@ -40,7 +45,7 @@ Usage:
 
 Its test is kit/nes/test_snapshot.py.
 """
-import gzip, json, os, sys
+import base64, gzip, json, os, sys
 
 RAM_SIZE = 0x10000
 FORMAT = "kit-nes-snapshot"
@@ -67,11 +72,19 @@ def load(path):
     return snap
 
 
+def machine(snap, part):
+    """A part of a MesenCE snapshot's "machine", as bytes."""
+    return base64.b64decode(snap["machine"][part])
+
+
 def image(snap, bank=None):
     if bank is not None:
         sys.exit("read(path, bank=n): a bank the mapper had not selected is not in an NES snapshot; "
                  "see kit/skills/nes/steps, \"snapshot\"")
-    mem = snap["state"]["cpu"]["mem"]
+    if "machine" in snap:
+        mem = machine(snap, "cpu")
+    else:
+        mem = snap["state"]["cpu"]["mem"]
     if len(mem) != RAM_SIZE:
         sys.exit(f"the snapshot's CPU array is {len(mem)} bytes, not 65,536")
     out = bytearray(mem)
@@ -87,13 +100,19 @@ def ppu(path):
     """The PPU's 16 KB as the PPU sees it: pattern tables, the four nametables through the
     cartridge's mirroring, and the palettes with their mirrors (jsnes, src/ppu/index.js,
     mirroredLoad)."""
-    st = load(path)["state"]["ppu"]
+    snap = load(path)
+    if "machine" in snap:
+        return machine(snap, "ppu")
+    st = snap["state"]["ppu"]
     vram, table = st["vramMem"], st["vramMirrorTable"]
     return bytes(vram[table[a]] & 0xFF for a in range(0x4000))
 
 
 def oam(path):
-    return bytes(load(path)["state"]["ppu"]["spriteMem"])
+    snap = load(path)
+    if "machine" in snap:
+        return machine(snap, "oam")
+    return bytes(snap["state"]["ppu"]["spriteMem"])
 
 
 def registers(path):
@@ -101,8 +120,12 @@ def registers(path):
     updateControlReg2), and the scroll from the PPU's temporary address, which jsnes keeps in
     parts (regHT and regFH across, regVT and regFV down, regH and regV the nametable): what
     the game last set with $2005 and $2000, unless a write to $2006 came after it. PPUCTRL's
-    nametable bits are those two, as the PPU keeps them."""
-    p = load(path)["state"]["ppu"]
+    nametable bits are those two, as the PPU keeps them. A MesenCE snapshot has them as the
+    server worked them out from Mesen's PPU the same way (kit/nes/mesen_bridge.lua)."""
+    snap = load(path)
+    if "machine" in snap:
+        return dict(snap["machine"]["ppu_registers"])
+    p = snap["state"]["ppu"]
     ctrl = ((p["f_nmiOnVblank"] << 7) | (p["f_spriteSize"] << 5) | (p["f_bgPatternTable"] << 4)
             | (p["f_spPatternTable"] << 3) | (p["f_addrInc"] << 2) | (p["regV"] << 1) | p["regH"])
     mask = ((p["f_color"] << 5) | (p["f_spVisibility"] << 4) | (p["f_bgVisibility"] << 3)
@@ -112,6 +135,9 @@ def registers(path):
 
 def header(path):
     snap = load(path)
+    if "machine" in snap:
+        r = snap["machine"]["registers"]
+        return {**{k: r[k] for k in ("pc", "a", "x", "y", "s", "p", "cycles")}, "kit": snap.get("kit", {})}
     c = snap["state"]["cpu"]
     p = (c["F_CARRY"] | ((1 if c["F_ZERO"] == 0 else 0) << 1) | (c["F_INTERRUPT"] << 2) | (c["F_DECIMAL"] << 3)
          | (c["F_BRK"] << 4) | (c["F_NOTUSED"] << 5) | (c["F_OVERFLOW"] << 6) | (c["F_SIGN"] << 7))
@@ -127,7 +153,8 @@ def main(argv):
     img = read(argv[0])
     cart = h["kit"].get("cartridge") or {}
     print(f"cartridge {cart.get('name')}: mapper {cart.get('mapper')}, PRG {cart.get('prg_kb')} KB, "
-          f"CHR {cart.get('chr_kb')} KB, {cart.get('mirroring')} mirroring; saved by jsnes {h['kit'].get('jsnes')}")
+          f"CHR {cart.get('chr_kb')} KB, {cart.get('mirroring')} mirroring; saved by "
+          f"{h['kit'].get('emulator') or 'jsnes ' + str(h['kit'].get('jsnes'))}")
     print(f"PC ${h['pc']:04X} A ${h['a']:02X} X ${h['x']:02X} Y ${h['y']:02X} S ${h['s']:02X} P ${h['p']:02X}  "
           f"cycle {h['cycles']}, frame {h['kit'].get('frames')}")
     w = lambda a: img[a] | (img[a + 1] << 8)

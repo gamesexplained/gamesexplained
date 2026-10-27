@@ -8,7 +8,10 @@ description: Which of the kit's tools each core step uses on the NES: the snapsh
 The core skills (`kit/skills/core/`) say what each step needs and name a
 row of this table where a tool does it; this says which tool does it on
 the NES. The machine's facts are in `nes-reference`, and how to drive the
-emulator in `tool-jsnes`. Every script prints its usage with `-h`, and
+emulator in `tool-jsnes`. Where this says jsnes, MesenCE can stand in
+through its own server, which speaks the same protocol (`tool-mesen`): use
+it when a result rests on the console's exact behaviour, where jsnes is
+known to be wrong in places, and compare the two there. Every script prints its usage with `-h`, and
 every JavaScript file's header is its manual. A row marked "none yet"
 names what to do until a run on this platform builds the tool.
 

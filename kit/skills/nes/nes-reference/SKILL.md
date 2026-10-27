@@ -198,7 +198,7 @@ Each OAM entry (NESdev, PPU OAM):
 |---|---|
 | 0 | Y of the top, minus one; `$EF-$FF` hides it |
 | 1 | the tile; for 8 by 16 sprites, bit 0 picks the pattern table and the top tile is the rest, the bottom the next |
-| 2 | bits 0-1 the palette (4 to 7); bit 5 behind the background; bit 6 flipped horizontally; bit 7 flipped vertically |
+| 2 | bits 0-1 the palette (4 to 7); bits 2-4 do not exist in the PPU and read back as 0 through `$2004`; bit 5 behind the background; bit 6 flipped horizontally; bit 7 flipped vertically |
 | 3 | X of the left |
 
 - At most **eight sprites on a scanline** are drawn; the ninth and later
@@ -371,4 +371,5 @@ map, iNES, Mapper, NROM, UxROM, CNROM, MMC1, MMC3, PPU memory map, PPU
 registers, PPU pattern tables, PPU nametables, PPU attribute tables, PPU
 palettes, PPU OAM, PPU scrolling, Cycle reference chart, CPU interrupts,
 APU, CPU, Standard controller and Controller reading code, each read as its
-raw wiki text on 17 October 2026.
+raw wiki text on 17 October 2026; PPU OAM read again on 26 October 2026 for byte 2's
+unwired bits.

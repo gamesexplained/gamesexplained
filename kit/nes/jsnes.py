@@ -9,6 +9,10 @@ the loops that are too slow as one call each (kit/EMULATOR.md, "the two transpor
 protocol is the BBC Micro's server's (kit/bbc/jsbeeb.py), with the NES's own commands for the
 cartridge and the controllers.
 
+The same client drives the second emulator, MesenCE, inside kit/nes/mesen_server.py, which
+speaks this protocol on 127.0.0.1:6857 (`python3 kit/scripts/tools.py mesen`): connect with
+`connect(port=6857)`. Where it answers differently, kit/skills/nes/tool-mesen says so.
+
     from jsnes import connect
     m = connect()
     m.cartridge("games/nes/<slug>/work/game.nes")
