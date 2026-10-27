@@ -137,6 +137,8 @@ def test_documented_commands():
                 # checks their dispatch with both one and multiple platforms.
                 if args == ["browser"] or args in (["stop", "browser"], ["stop", "browser", "--force"]):
                     continue
+                if args[0] in tools.SHARED:           # the Z-machine's: test_shared_commands
+                    continue
                 seen += 1
                 r = resolves(args, explicit=explicit)
                 ok = isinstance(r, list)
@@ -146,6 +148,20 @@ def test_documented_commands():
                     bad += 1
                     check(f"documented command at {rel}:{n}: tools.py {' '.join(args)}", False, str(r))
     check(f"every documented launcher command resolves ({seen} found)", bad == 0 and seen > 0)
+
+
+def test_shared_commands():
+    """The Z-machine's commands reach kit/zmachine/bocfel.py with no platform named, however
+    many platforms there are, and status names Bocfel's build when it is installed."""
+    r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), "bocfel", "status"],
+                       capture_output=True, text=True, cwd=ROOT)
+    check("tools.py bocfel status reaches bocfel.py",
+          r.returncode == 0 and ("Bocfel" in r.stdout or "MISSING" in r.stdout), r.stdout + r.stderr)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "tools.py"), "bocfel", "-h"],
+                       capture_output=True, text=True, cwd=ROOT)
+    check("tools.py bocfel -h prints bocfel.py's usage", "verify-footprint" in r.stdout, r.stdout + r.stderr)
+    check("no platform declares a shared command",
+          not any(c in tools.SHARED for d in decls().values() for c in d["COMMANDS"]))
 
 
 STUB = '''import os, sys
@@ -256,6 +272,7 @@ if __name__ == "__main__":
     test_declarations()
     test_rules()
     test_documented_commands()
+    test_shared_commands()
     test_end_to_end()
     test_spectrum_bundle_layout()
     test_spectrum_statistics_stay_off()

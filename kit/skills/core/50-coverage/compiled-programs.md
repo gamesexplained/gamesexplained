@@ -8,7 +8,9 @@ stream and check that its branch targets land on instruction boundaries.
 Keep those bytes typed as data in a CPU disassembler; describe each
 bytecode routine and its control flow, and count the authored program in
 the ledger. Do not mistake a successful CPU trace for an explanation of
-the program it interprets.
+the program it interprets. When the program is Infocom's Z-machine story,
+the kit already decodes it in every version and checks the decoder
+against an interpreter that runs it: `kit/skills/cpu/zmachine`.
 
 A level file can contain executable callbacks among its header, tile
 patches and map. Follow indirect calls into loaded buffers for every

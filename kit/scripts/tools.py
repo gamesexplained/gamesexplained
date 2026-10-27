@@ -3,13 +3,17 @@
 
 Every tool the kit uses is started only through this script (AGENTS.md,
 "Leave the cleanest footprint you can"), so that the containment lives in
-kit/scripts/browser.py for browser checks, and kit/<platform>/tools.py for
-platform tools. Browser commands need no platform selection.
+kit/scripts/browser.py for browser checks, kit/zmachine/bocfel.py for the
+Z-machine interpreter, and kit/<platform>/tools.py for platform tools. Browser
+and Bocfel commands need no platform selection: Infocom's games run on the
+Z-machine whatever machine they were sold for (kit/zmachine/INSTALL.md).
 
 Usage:
   tools.py [--platform <name>] <command> [args]     e.g. tools.py status
   tools.py browser                                 installed browser, isolated profile (browser.py documents Chromium selection)
   tools.py stop browser                            stop only this clone's browser
+  tools.py get-bocfel                              download and build Bocfel, with the kit's trace
+  tools.py bocfel run <story> [...]                play a story on it (bocfel.py -h for the rest)
   tools.py --platforms                              list platforms that have a launcher
   tools.py -h                                       this, and every platform's commands
 
@@ -39,6 +43,14 @@ KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(KIT)
 SELF_DIR = os.path.basename(os.path.dirname(os.path.abspath(__file__)))   # "scripts" is not a platform
 EVERY_PLATFORM = ("status", "stop")    # safe to run on every platform's tools at once
+SHARED = ("get-bocfel", "bocfel")      # the Z-machine's, which every platform's Infocom games share
+
+
+def bocfel():
+    """kit/zmachine/bocfel.py, imported when a command needs it."""
+    sys.path.insert(0, os.path.join(KIT, "zmachine"))
+    import bocfel as b
+    return b
 
 
 def platforms(kit=KIT):
@@ -129,6 +141,10 @@ def main():
         browser.start(); return
     if a in (["stop", "browser"], ["stop", "browser", "--force"]):
         browser.stop(); return
+    if a == ["get-bocfel"]:
+        bocfel().get(); return
+    if a and a[0] == "bocfel":
+        sys.exit(bocfel().main(a[1:]))
     avail = platforms()
     decl = {p: declared(p) for p in avail}
     if not explicit and not os.environ.get("KIT_PLATFORM") and len(avail) > 1 \
@@ -140,6 +156,8 @@ def main():
         sys.exit(f"{e}\n\n{usage(avail, decl)}")
     if a == ["status"]:
         browser.status()
+        if os.path.isdir(os.path.join(ROOT, "tools", "zmachine")):
+            print(f"bocfel        {bocfel().build_line()}")
     if a and a[0] == "stop" and all(x in ("all", "--force") for x in a[1:]):
         browser.stop()
     if not a or a[0] in ("-h", "--help"):
