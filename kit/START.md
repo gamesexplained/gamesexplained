@@ -15,10 +15,16 @@ step needs something only they have.
    which). Write access here is kept to maintainers, so a contributor's
    cloud session must start on their fork: started on this repository,
    it can push nothing, and you tell them now to fork it on GitHub and
-   start a new session on the fork. A session on a fork pushes to the
-   fork and cannot reach this repository at all, so you open neither
-   the pull request nor issues here: step 7 says how the contributor
-   opens the pull request, and the retrospective how the asks are filed.
+   start a new session on the fork. A hosted session can push only to the
+   repositories attached to it, so one that pushes to a fork it did not
+   start on needs that fork added to the session first, by the
+   contributor or by you where your tools can add one. Check before the
+   work starts, with `git push --dry-run <remote> HEAD:refs/heads/<branch>`:
+   a refused push otherwise shows only at the end, hours in. A session
+   on a fork pushes to the fork and cannot reach this repository at all,
+   so you open neither the pull request nor issues here: step 7 says how
+   the contributor opens the pull request, and the retrospective how the
+   asks are filed.
 
    Start each run from an up-to-date `main`, so it has the newest kit.
    In a clone used before, `git switch main` and
