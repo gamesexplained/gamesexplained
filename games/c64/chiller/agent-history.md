@@ -274,3 +274,11 @@ bevelled shape, a blue aura and a diagonal specular sweep across its own
 surface, replacing the external sparkle and whole-icon flash. Both still
 use game time, preserve sprite priority and honour reduced motion. Added
 a check that every coin frame keeps its centre, top and bottom fixed.
+
+### Playback controls beside Start again
+
+Moved the VCR controls and time display into the toolbar directly beneath
+the game, beside Start again and Sound. Removed the duplicate Pause button
+and its old state updates. The transport's own buttons now provide the
+single pause/play state, and starting a game refreshes them immediately.
+The lower lab retains the paused routine list and advanced memory editor.
