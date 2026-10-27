@@ -152,6 +152,34 @@ PLATFORM_DEFAULTS = {
         "io_only": [["$FD00", "$FF3F", "the ACIA, the 6529s, the ROM banking port, the disk drive's port and TED"]],
         "basic_start": "$1001",    # check_listing.py, as the C64's
     },
+    "nes": {
+        # No system ROM: everything the CPU runs is the cartridge's, or the game's in RAM. Left out
+        # are the stack, the three mirrors of the 2 KB of RAM, the PPU's registers and their
+        # repeats, the APU's and the I/O's, and the expansion area no NROM board answers in
+        # (kit/skills/nes/nes-reference, "Memory map"). An NROM-128 cartridge's 16 KB appears at
+        # both $8000 and $C000, and the game.json "coverage" excludes the half its code does not
+        # run in (kit/skills/nes/steps, "snapshot").
+        "cpu": "6502",             # the 2A03's 6502, without decimal mode: kit/cpu/
+        "exclude": [["$0100", "$01FF", "stack"], ["$0800", "$1FFF", "the RAM's mirrors"],
+                    ["$2000", "$3FFF", "the PPU's registers and their repeats"],
+                    ["$4000", "$401F", "the APU's and the I/O registers"],
+                    ["$4020", "$5FFF", "the cartridge's expansion area"]],
+        "extra": [],
+        # zero page, the stack, the page most games copy to the sprite table, the end of RAM, the
+        # registers, the cartridge's RAM, and each 16 KB of PRG ROM
+        "edges": ["$0000", "$0100", "$0200", "$0300", "$0800", "$2000", "$4000", "$4020",
+                  "$6000", "$8000", "$C000"],
+        # The picture and the tiles are in the PPU's own memory, not the CPU's (kit/nes/snapshot.py,
+        # ppu): "video" names nothing in this image, so neither size is used.
+        "screen_size": 0,
+        "charset_size": 0,
+        "snapshot_ext": "json.gz", # the kit's jsnes server saves gzipped JSON (kit/nes/snapshot.py)
+        "hidden": [],              # no RAM lies under the registers
+        "system": [],              # no machine's own work area: zero page and RAM are all the game's
+        # addresses where only the chips answer, with no RAM beneath: an operand there always
+        # means the register (listing.py, io_meaning)
+        "io_only": [["$2000", "$401F", "the PPU's, the APU's and the I/O registers"]],
+    },
 }
 
 
@@ -237,12 +265,14 @@ def regions(game):
     exclude = [[hexint(a), hexint(b), n] for a, b, n in d["exclude"]]
     extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
     video = game.get("video") or {}
-    if video.get("screen"):
+    # a machine whose picture is not in the CPU's image (the NES's, in the PPU's own memory) gives
+    # both sizes as 0, and "video" then names nothing here
+    if video.get("screen") and ("screen_top" in d or d.get("screen_size", 0x400)):
         # a machine whose screen always ends at the top of RAM (the BBC's) gives that address
         # instead of a size: the start alone then says how much the screen takes
         a = hexint(video["screen"])
         exclude.append([a, d["screen_top"] if "screen_top" in d else a + d.get("screen_size", 0x400) - 1, "screen RAM"])
-    if video.get("charset"):
+    if video.get("charset") and d.get("charset_size", 0x800):
         a = hexint(video["charset"]); extra.append([a, a + d.get("charset_size", 0x800) - 1, "character set"])
     cov = game.get("coverage", {})
     exclude += [[hexint(a), hexint(b), n] for a, b, n in cov.get("exclude", [])]

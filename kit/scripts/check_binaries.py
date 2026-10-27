@@ -7,7 +7,8 @@ a file starting with a known snapshot magic; a JSON file carrying a
 "raw_data_base64" field; a jsbeeb snapshot (the BBC Micro's), gzipped or
 not; an Apple II snapshot, the kit's, Apple2TS's own or AppleWin's. A
 plus4emu snapshot (the Commodore 16's and Plus/4's) is caught by its magic,
-whatever its name. work/ folders are skipped except their README.
+whatever its name. The kit's NES snapshot is gzipped JSON as jsbeeb's is, found
+the same way. work/ folders are skipped except their README.
 Game data a page's widgets need, embedded in its HTML, is not a binary
 (AGENTS.md, "No binaries, ever").
 
@@ -51,6 +52,7 @@ MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge
 JSBEEB = re.compile(rb'"format"\s*:\s*"jsbeeb-snapshot"')   # the BBC Micro's snapshot, kit/bbc/snapshot.py
 # the Apple II's: the kit's (kit/apple2/snapshot.py), Apple2TS's own save state, and AppleWin's
 APPLE2 = re.compile(rb'"format"\s*:\s*"apple2ts-kit-snapshot"|"state6502"\s*:|AppleWin Save State')
+KIT_NES = re.compile(rb'"format"\s*:\s*"kit-nes-snapshot"')  # the NES's, kit/nes/snapshot.py
 SKIP_DIRS = {".git", "__pycache__", "node_modules", "tools", "_site"}
 
 
@@ -74,7 +76,7 @@ def check(path):
         with open(path, "rb") as f:
             if b"raw_data_base64" in f.read():
                 return "JSON with an embedded memory image"
-    if head.startswith(b"\x1f\x8b"):     # gzip: what jsbeeb's snapshot is, whatever the name
+    if head.startswith(b"\x1f\x8b"):     # gzip: what jsbeeb's snapshot and the NES's are, whatever the name
         with open(path, "rb") as f:
             try:
                 head = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(f.read(65536), 256)
@@ -86,6 +88,8 @@ def check(path):
         with open(path, "rb") as f:
             if APPLE2.search(f.read(4096)):
                 return "Apple II snapshot"
+    if KIT_NES.search(head):
+        return "NES snapshot"
     return None
 
 

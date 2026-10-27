@@ -14,6 +14,7 @@ platform's own notes:
 | BBC Micro | `kit/bbc/INSTALL.md` |
 | Apple II | `kit/apple2/INSTALL.md` |
 | Commodore 16 and Plus/4 | `kit/c16/INSTALL.md` |
+| NES | `kit/nes/INSTALL.md` |
 
 What "an emulator with an agent interface" has to be able to do, phase
 by phase, and the test for each, is `kit/EMULATOR.md`. Read it before

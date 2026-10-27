@@ -85,9 +85,11 @@ multicolour bitmap mode (`$D011` = `$3B`, `$D016` = `$D8`), with `$D018` =
 `$81`: the bitmap at `$4000`-`$5F3F` and the screen matrix at
 `$6000`-`$63E7`, over the loader's own code. Sprites 0-3 and 6 are on
 (`$D015` = `$4F`). The raster interrupt is the only source enabled
-(`$D01A` = `$F1`). One recorded frame (`kit/c64/frame.py capture`, NTSC)
-saw two writes, both to the background colour `$D021`: `$F2` on line 51
-(the white spy's half) and `$F5` on line 151 (the black spy's).
+(the game writes `$01` to `$D01A`, at `$8EBB`; it reads back as `$F1`,
+since the register's unused bits read 1). One recorded frame
+(`kit/c64/frame.py capture`, NTSC) saw two writes, both to the background
+colour `$D021`: `$F2` on line 51 (the white spy's half) and `$F5` on line
+151 (the black spy's).
 `frame.py compare` refuses an NTSC frame: the site's renderer models only
 the PAL chip.
 
