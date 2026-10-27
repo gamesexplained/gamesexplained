@@ -163,3 +163,14 @@ The renderer supplies a background mask so black character and sprite pixels
 stay opaque. A regression check covers those cases and an unchanged flat
 frame. The gameplay comparison passed 30,000 main-loop passes across all
 ten levels. Browser inspection covered both forest records.
+
+### Concept artwork in the player
+
+The steward asked for the approved concept's artwork rather than a
+procedural approximation, with full RGB colours and individual pixels freed
+from the C64's multicolour restrictions. The Parallax view now loads
+`reference/parallax-forest-art.png`, an imagegen background plate derived
+from that concept with the static gameplay objects removed. The image is
+sampled onto the game's logical pixel grid before compositing. The painted
+woodland, an added fog veil and isolated edge ferns move at different rates.
+The original gameplay art and live sprites remain in front of the new scene.
