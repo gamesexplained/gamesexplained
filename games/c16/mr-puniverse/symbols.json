@@ -1,0 +1,4967 @@
+{
+ "schema": 1,
+ "platform": "c16",
+ "game": "mr-puniverse",
+ "build": "",
+ "source": "live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    16384,
+    32767,
+    "RAM a 16 KB C16 does not have"
+   ],
+   [
+    32768,
+    65535,
+    "the ROMs and I/O"
+   ],
+   [
+    0,
+    2047,
+    "runtime: nothing of the game is loaded below $0800. Zero page and pages 3 and 5, which hold the game's variables (cleared by new_game from $0345) and the KERNAL's (the key code at $C6, the SHIFT flag at $0543); the stack; the KERNAL's vectors at $0314-$0315, which setup_machine points at irq; and the leftovers of the Novaload loader in pages 1 to 3"
+   ],
+   [
+    3048,
+    3071,
+    "not shown: the 24 bytes after the screen's last colour, which nothing writes; as loaded they hold the pattern of memory nothing had written"
+   ],
+   [
+    4072,
+    4239,
+    "runtime: the switch states and the object tables (switch_state to shot_lo), which draw_room clears for every room. As loaded, $0FE8-$0FFF hold the pattern of memory nothing had written, $1001-$100C the BASIC line 0 SYS6900 that names the game's start, and the rest zeros"
+   ],
+   [
+    6823,
+    6899,
+    "not the game's: 77 bytes between the tune's second voice and the code, which nothing reads; after one stray byte they hold the pattern of memory nothing had written"
+   ],
+   [
+    13425,
+    14267,
+    "not the game's: 843 bytes between the title's dot path and the strings, which nothing reads, mostly the pattern of memory nothing had written"
+   ],
+   [
+    15296,
+    15343,
+    "runtime: characters $78-$7D, the player as drawn, which merge_player rebuilds on every pass of the main loop"
+   ],
+   [
+    16336,
+    16383,
+    "runtime: merge_player's work buffer, where copy_under_glyphs puts the scenery behind the player (where characters $FA-$FF would be)"
+   ]
+  ],
+  "extra": [],
+  "edges": [
+   0,
+   256,
+   512,
+   2048,
+   3072,
+   4096,
+   16384,
+   32768,
+   49152,
+   64768,
+   65344
+  ]
+ },
+ "blocks": [
+  {
+   "start": 0,
+   "end": 2047,
+   "type": "Undefined"
+  },
+  {
+   "start": 2048,
+   "end": 3047,
+   "type": "Byte"
+  },
+  {
+   "start": 3048,
+   "end": 3071,
+   "type": "Undefined"
+  },
+  {
+   "start": 3072,
+   "end": 4071,
+   "type": "Byte"
+  },
+  {
+   "start": 4072,
+   "end": 4239,
+   "type": "Undefined"
+  },
+  {
+   "start": 4240,
+   "end": 6822,
+   "type": "Byte"
+  },
+  {
+   "start": 6823,
+   "end": 6899,
+   "type": "Undefined"
+  },
+  {
+   "start": 6900,
+   "end": 7024,
+   "type": "Code"
+  },
+  {
+   "start": 7025,
+   "end": 7145,
+   "type": "Undefined"
+  },
+  {
+   "start": 7146,
+   "end": 13324,
+   "type": "Code"
+  },
+  {
+   "start": 13325,
+   "end": 13424,
+   "type": "Byte"
+  },
+  {
+   "start": 13425,
+   "end": 14267,
+   "type": "Undefined"
+  },
+  {
+   "start": 14268,
+   "end": 15295,
+   "type": "Byte"
+  },
+  {
+   "start": 15296,
+   "end": 15343,
+   "type": "Undefined"
+  },
+  {
+   "start": 15344,
+   "end": 16335,
+   "type": "Byte"
+  },
+  {
+   "start": 16336,
+   "end": 65438,
+   "type": "Undefined"
+  },
+  {
+   "start": 65439,
+   "end": 65535,
+   "type": "Code"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 0,
+   "name": "zpf_00",
+   "type": "ZeroPageField",
+   "kind": "auto"
+  },
+  {
+   "address": 1,
+   "name": "zpf_01",
+   "type": "ZeroPageField",
+   "kind": "auto"
+  },
+  {
+   "address": 3,
+   "name": "controls",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 10,
+   "name": "colour_ptr_lo",
+   "type": "ZeroPagePointer",
+   "kind": "user"
+  },
+  {
+   "address": 11,
+   "name": "zpa_0B",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 63,
+   "name": "block_ptr",
+   "type": "ZeroPagePointer",
+   "kind": "user"
+  },
+  {
+   "address": 64,
+   "name": "zpa_40",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 65,
+   "name": "player_x",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 66,
+   "name": "player_y",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 67,
+   "name": "rec_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 68,
+   "name": "zpa_44",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 73,
+   "name": "zpa_49",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 74,
+   "name": "zpa_4A",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 75,
+   "name": "zpa_4B",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 76,
+   "name": "zpa_4C",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 77,
+   "name": "zpa_4D",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 78,
+   "name": "zpa_4E",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 79,
+   "name": "zpa_4F",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 198,
+   "name": "key_code",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 208,
+   "name": "tune_frame",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 209,
+   "name": "tune_step",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 210,
+   "name": "tune_volume",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 211,
+   "name": "tune_voices",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 788,
+   "name": "a_0314",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 789,
+   "name": "a_0315",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 819,
+   "name": "under_player",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 820,
+   "name": "a_0334",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 821,
+   "name": "a_0335",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 822,
+   "name": "a_0336",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 823,
+   "name": "a_0337",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 824,
+   "name": "a_0338",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 825,
+   "name": "room_colours",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 826,
+   "name": "a_033A",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 827,
+   "name": "a_033B",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 828,
+   "name": "anim_phase",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 829,
+   "name": "exit_up",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 830,
+   "name": "exit_down",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 831,
+   "name": "exit_left",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 832,
+   "name": "exit_right",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 833,
+   "name": "saved_ptr_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 834,
+   "name": "a_0342",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 835,
+   "name": "saved_ptr_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 836,
+   "name": "a_0344",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 837,
+   "name": "lives",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 838,
+   "name": "a_0346",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 839,
+   "name": "room",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 841,
+   "name": "active",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 842,
+   "name": "a_034A",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 843,
+   "name": "player",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 844,
+   "name": "bar_pos",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 845,
+   "name": "keyboard",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 846,
+   "name": "jumping",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 847,
+   "name": "jump_count",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 849,
+   "name": "energy_count",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 850,
+   "name": "energy_rate",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 851,
+   "name": "unused_0353",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 852,
+   "name": "clock_count",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 853,
+   "name": "vitamin_count",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 855,
+   "name": "saved_x",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 857,
+   "name": "saved_y",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 859,
+   "name": "vitamin_lo",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 860,
+   "name": "a_035C",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 861,
+   "name": "vitamin_id",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 862,
+   "name": "vitamin_colour",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 863,
+   "name": "energy_mode",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 870,
+   "name": "vitamins_got",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 901,
+   "name": "music_on",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 955,
+   "name": "old_music_flag",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 1020,
+   "name": "shot_char",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 1347,
+   "name": "shift_flag",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 2048,
+   "name": "screen_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2098,
+   "name": "title1_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2178,
+   "name": "title2_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2288,
+   "name": "colours_row6",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2337,
+   "name": "menu1_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2423,
+   "name": "message_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2456,
+   "name": "menu2_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2528,
+   "name": "colours_row12",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2657,
+   "name": "copyright_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2785,
+   "name": "paused_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2808,
+   "name": "panel_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 2888,
+   "name": "time2_label_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3046,
+   "name": "panel_colours_end",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 3047,
+   "name": "last_colour",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 3072,
+   "name": "screen_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3073,
+   "name": "screen_chars_1",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 3122,
+   "name": "title1_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3202,
+   "name": "title2_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3312,
+   "name": "chars_row6",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3361,
+   "name": "menu1_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3447,
+   "name": "message_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3480,
+   "name": "menu2_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3552,
+   "name": "chars_row12",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3681,
+   "name": "copyright_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3792,
+   "name": "row18_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3809,
+   "name": "paused_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3832,
+   "name": "panel_screen",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3838,
+   "name": "time_digits",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3839,
+   "name": "time_digits_r",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3854,
+   "name": "vitam_digits",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3855,
+   "name": "vitam_digits_r",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3864,
+   "name": "lives_row",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3878,
+   "name": "time_digits_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3879,
+   "name": "time_digits_low_r",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3894,
+   "name": "vitam_digits_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3895,
+   "name": "vitam_digits_low_r",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 3904,
+   "name": "lives_row_low",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4036,
+   "name": "egy_bar",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4071,
+   "name": "last_char",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 4072,
+   "name": "switch_state",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4080,
+   "name": "obj_type",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4100,
+   "name": "obj_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4120,
+   "name": "obj_colour",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4140,
+   "name": "obj_param",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4160,
+   "name": "obj_timer",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4180,
+   "name": "obj_reload",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4200,
+   "name": "shot_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4220,
+   "name": "shot_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4240,
+   "name": "room_ptr_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4270,
+   "name": "room_ptr_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 4300,
+   "name": "room_00",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4383,
+   "name": "room_01",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4457,
+   "name": "room_02",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4545,
+   "name": "room_gap_11C1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4546,
+   "name": "room_03",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4650,
+   "name": "room_04",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4752,
+   "name": "room_05",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4854,
+   "name": "room_06",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4916,
+   "name": "room_07",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4990,
+   "name": "room_08",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5102,
+   "name": "room_21",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5170,
+   "name": "room_gap_1432",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5182,
+   "name": "room_09",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5291,
+   "name": "room_10",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5359,
+   "name": "room_11",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5427,
+   "name": "room_12",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5497,
+   "name": "room_13",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5559,
+   "name": "room_14",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5687,
+   "name": "room_15",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5797,
+   "name": "room_16",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5923,
+   "name": "room_17",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5991,
+   "name": "room_18",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6077,
+   "name": "room_19",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6144,
+   "name": "old_tune_v1",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6145,
+   "name": "room_20",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6221,
+   "name": "room_22",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6240,
+   "name": "old_tune_v2",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6295,
+   "name": "room_gap_1897",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6297,
+   "name": "room_23",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6336,
+   "name": "old_freq_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6360,
+   "name": "old_freq_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6417,
+   "name": "room_gap_1911",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6418,
+   "name": "room_24",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6502,
+   "name": "room_gap_1966",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6510,
+   "name": "tune_voice1",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6638,
+   "name": "note_freq_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6666,
+   "name": "note_freq_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6695,
+   "name": "tune_voice2",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 6900,
+   "name": "entry",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6903,
+   "name": "music_tick",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 6915,
+   "name": "b_1B03",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6933,
+   "name": "b_1B15",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6963,
+   "name": "b_1B33",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6969,
+   "name": "b_1B39",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6988,
+   "name": "b_1B4C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6994,
+   "name": "b_1B52",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7017,
+   "name": "b_1B69",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7025,
+   "name": "txt_paused",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 7031,
+   "name": "wimpo_path",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 7081,
+   "name": "txt_presents",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 7102,
+   "name": "txt_programmed",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 7123,
+   "name": "txt_copyright",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 7146,
+   "name": "print_title_text",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7148,
+   "name": "b_1BEC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7159,
+   "name": "b_1BF7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7174,
+   "name": "b_1C06",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7185,
+   "name": "b_1C11",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7200,
+   "name": "b_1C20",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7214,
+   "name": "b_1C2E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7224,
+   "name": "j_1C38",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7238,
+   "name": "title_dot_step",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7243,
+   "name": "b_1C4B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7263,
+   "name": "j_1C5F",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7291,
+   "name": "b_1C7B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7308,
+   "name": "b_1C8C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7319,
+   "name": "b_1C97",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7343,
+   "name": "b_1CAF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7352,
+   "name": "b_1CB8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7361,
+   "name": "b_1CC1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7370,
+   "name": "r_1CCA",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 7371,
+   "name": "add_to_ptr43",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7383,
+   "name": "colour_ptr",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7395,
+   "name": "ptr_down",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7402,
+   "name": "j_1CEA",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7409,
+   "name": "ptr_right",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7419,
+   "name": "ptr_up",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7426,
+   "name": "j_1D02",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7433,
+   "name": "ptr_left",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7443,
+   "name": "animate_chars",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7455,
+   "name": "b_1D1F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7470,
+   "name": "b_1D2E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7489,
+   "name": "b_1D41",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7502,
+   "name": "j_1D4E",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7508,
+   "name": "b_1D54",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7516,
+   "name": "b_1D5C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7577,
+   "name": "b_1D99",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7595,
+   "name": "b_1DAB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7641,
+   "name": "r_1DD9",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 7642,
+   "name": "save_under_player",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7682,
+   "name": "glyph_addr",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7686,
+   "name": "b_1E06",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7710,
+   "name": "copy_under_glyphs",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7716,
+   "name": "b_1E24",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7730,
+   "name": "b_1E32",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7752,
+   "name": "merge_player",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 7770,
+   "name": "b_1E5A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7790,
+   "name": "b_1E6E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7825,
+   "name": "b_1E91",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7832,
+   "name": "j_1E98",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7880,
+   "name": "b_1EC8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7882,
+   "name": "b_1ECA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7894,
+   "name": "shift_scenery_bit",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7906,
+   "name": "shift_figure_bit",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7918,
+   "name": "draw_player",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 7952,
+   "name": "object_place",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7974,
+   "name": "fill_cells",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 7979,
+   "name": "b_1F2B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 7993,
+   "name": "object_ptr",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8011,
+   "name": "player_cell",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8038,
+   "name": "r_1F66",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 8039,
+   "name": "shot_erase",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8076,
+   "name": "b_1F8C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8080,
+   "name": "j_1F90",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 8085,
+   "name": "draw_column",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 8113,
+   "name": "b_1FB1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8115,
+   "name": "b_1FB3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8146,
+   "name": "clear_play_area",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8148,
+   "name": "b_1FD4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8165,
+   "name": "draw_lives",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8186,
+   "name": "draw_lives_row",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8188,
+   "name": "b_1FFC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8211,
+   "name": "b_2013",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8221,
+   "name": "j_201D",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 8228,
+   "name": "refill_energy",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8241,
+   "name": "b_2031",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8288,
+   "name": "vitamin_count_up",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8299,
+   "name": "b_206B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8318,
+   "name": "b_207E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8319,
+   "name": "draw_big_digit",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8341,
+   "name": "voice1_on_unused",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 8350,
+   "name": "voice1_off_unused",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 8359,
+   "name": "voice2_on",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8368,
+   "name": "voice2_off",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 8377,
+   "name": "show_get_ready",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8379,
+   "name": "b_20BB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8396,
+   "name": "show_game_over",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8398,
+   "name": "b_20CE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8415,
+   "name": "show_menu",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8417,
+   "name": "b_20E1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8465,
+   "name": "delay",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8467,
+   "name": "b_2113",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8474,
+   "name": "move_right",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8490,
+   "name": "b_212A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8508,
+   "name": "b_213C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8517,
+   "name": "b_2145",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8526,
+   "name": "b_214E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8534,
+   "name": "move_left",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8550,
+   "name": "b_2166",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8568,
+   "name": "b_2178",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8577,
+   "name": "b_2181",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8586,
+   "name": "b_218A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8594,
+   "name": "move_up",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8605,
+   "name": "b_219D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8619,
+   "name": "b_21AB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8622,
+   "name": "j_21AE",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 8632,
+   "name": "b_21B8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8692,
+   "name": "move_down",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8703,
+   "name": "b_21FF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8716,
+   "name": "b_220C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8718,
+   "name": "j_220E",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 8730,
+   "name": "b_221A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8790,
+   "name": "shift_block_right",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8862,
+   "name": "shift_block_left",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8934,
+   "name": "is_solid",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 8979,
+   "name": "b_2313",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8981,
+   "name": "b_2315",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 8983,
+   "name": "crumble_redraw",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 9028,
+   "name": "b_2344",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9039,
+   "name": "b_234F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9046,
+   "name": "j_2356",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9066,
+   "name": "b_236A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9077,
+   "name": "b_2375",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9091,
+   "name": "b_2383",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9114,
+   "name": "b_239A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9125,
+   "name": "crumble_step",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9144,
+   "name": "b_23B8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9165,
+   "name": "b_23CD",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9170,
+   "name": "b_23D2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9183,
+   "name": "b_23DF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9185,
+   "name": "j_23E1",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9193,
+   "name": "player_move",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9209,
+   "name": "b_23F9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9211,
+   "name": "j_23FB",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9225,
+   "name": "b_2409",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9247,
+   "name": "b_241F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9257,
+   "name": "b_2429",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9265,
+   "name": "b_2431",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9273,
+   "name": "b_2439",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9281,
+   "name": "b_2441",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9292,
+   "name": "b_244C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9304,
+   "name": "b_2458",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9312,
+   "name": "b_2460",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9320,
+   "name": "b_2468",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9330,
+   "name": "j_2472",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9355,
+   "name": "b_248B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9367,
+   "name": "j_2497",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9373,
+   "name": "j_249D",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9379,
+   "name": "j_24A3",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9413,
+   "name": "b_24C5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9416,
+   "name": "j_24C8",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9454,
+   "name": "b_24EE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9475,
+   "name": "b_2503",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9485,
+   "name": "b_250D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9490,
+   "name": "j_2512",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9500,
+   "name": "j_251C",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9508,
+   "name": "b_2524",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9509,
+   "name": "j_2525",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9521,
+   "name": "b_2531",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9530,
+   "name": "j_253A",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9539,
+   "name": "read_input",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9557,
+   "name": "b_2555",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9567,
+   "name": "b_255F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9573,
+   "name": "b_2565",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9579,
+   "name": "b_256B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9585,
+   "name": "b_2571",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9595,
+   "name": "b_257B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9601,
+   "name": "player_pass",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9612,
+   "name": "b_258C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9639,
+   "name": "b_25A7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9649,
+   "name": "j_25B1",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9664,
+   "name": "b_25C0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9669,
+   "name": "j_25C5",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 9674,
+   "name": "b_25CA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9684,
+   "name": "b_25D4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9706,
+   "name": "b_25EA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9714,
+   "name": "b_25F2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9722,
+   "name": "b_25FA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9740,
+   "name": "b_260C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9747,
+   "name": "r_2613",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 9748,
+   "name": "switch_off",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 9753,
+   "name": "b_2619",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9772,
+   "name": "switch_on",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 9777,
+   "name": "b_2631",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9796,
+   "name": "draw_switch_off",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9818,
+   "name": "b_265A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9831,
+   "name": "draw_switch_on",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9852,
+   "name": "b_267C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9866,
+   "name": "clock_tick",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 9877,
+   "name": "b_2695",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9891,
+   "name": "b_26A3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9909,
+   "name": "b_26B5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9929,
+   "name": "b_26C9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9950,
+   "name": "b_26DE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 9965,
+   "name": "draw_clock_digit",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 9987,
+   "name": "leave_room",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 10042,
+   "name": "b_273A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10068,
+   "name": "b_2754",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10094,
+   "name": "b_276E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10113,
+   "name": "j_2781",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10136,
+   "name": "pause_check",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 10143,
+   "name": "b_279F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10145,
+   "name": "b_27A1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10169,
+   "name": "b_27B9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10175,
+   "name": "b_27BF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10181,
+   "name": "b_27C5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10199,
+   "name": "b_27D7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10208,
+   "name": "collect_vitamin",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 10224,
+   "name": "b_27F0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10229,
+   "name": "j_27F5",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10250,
+   "name": "b_280A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10258,
+   "name": "j_2812",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10290,
+   "name": "b_2832",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10296,
+   "name": "b_2838",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10307,
+   "name": "r_2843",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 10308,
+   "name": "rotate_vitamin_chars",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 10310,
+   "name": "b_2846",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10321,
+   "name": "b_2851",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10334,
+   "name": "b_285E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10344,
+   "name": "draw_room",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 10441,
+   "name": "b_28C9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10497,
+   "name": "b_2901",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10503,
+   "name": "b_2907",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10525,
+   "name": "b_291D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10532,
+   "name": "j_2924",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10578,
+   "name": "b_2952",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10619,
+   "name": "b_297B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10641,
+   "name": "b_2991",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10649,
+   "name": "draw_room_objects",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 10662,
+   "name": "b_29A6",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10685,
+   "name": "b_29BD",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10695,
+   "name": "b_29C7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10707,
+   "name": "b_29D3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10729,
+   "name": "b_29E9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10739,
+   "name": "b_29F3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10754,
+   "name": "b_2A02",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10764,
+   "name": "b_2A0C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10791,
+   "name": "b_2A27",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10803,
+   "name": "j_2A33",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10829,
+   "name": "r_2A4D",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 10830,
+   "name": "j_2A4E",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10842,
+   "name": "b_2A5A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10852,
+   "name": "b_2A64",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10862,
+   "name": "b_2A6E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10872,
+   "name": "b_2A78",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10882,
+   "name": "b_2A82",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10892,
+   "name": "b_2A8C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10902,
+   "name": "b_2A96",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10903,
+   "name": "update_objects",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 10907,
+   "name": "j_2A9B",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 10923,
+   "name": "b_2AAB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10928,
+   "name": "b_2AB0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10938,
+   "name": "b_2ABA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10948,
+   "name": "b_2AC4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10958,
+   "name": "b_2ACE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10968,
+   "name": "b_2AD8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10978,
+   "name": "b_2AE2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 10979,
+   "name": "make_bridge",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11021,
+   "name": "make_field",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11104,
+   "name": "make_cannon",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11213,
+   "name": "j_2BCD",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11234,
+   "name": "b_2BE2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11253,
+   "name": "b_2BF5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11267,
+   "name": "make_decor",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11321,
+   "name": "b_2C39",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11338,
+   "name": "j_2C4A",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11399,
+   "name": "j_2C87",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11404,
+   "name": "b_2C8C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11413,
+   "name": "make_switch",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11451,
+   "name": "b_2CBB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11453,
+   "name": "j_2CBD",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11478,
+   "name": "update_bridge",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11502,
+   "name": "b_2CEE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11532,
+   "name": "b_2D0C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11542,
+   "name": "b_2D16",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11569,
+   "name": "b_2D31",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11600,
+   "name": "update_cannon",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11624,
+   "name": "b_2D68",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11649,
+   "name": "object_timer",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11657,
+   "name": "b_2D89",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11676,
+   "name": "r_2D9C",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 11677,
+   "name": "move_shot",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 11689,
+   "name": "b_2DA9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11695,
+   "name": "j_2DAF",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11708,
+   "name": "b_2DBC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11726,
+   "name": "b_2DCE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11749,
+   "name": "b_2DE5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11754,
+   "name": "j_2DEA",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11765,
+   "name": "j_2DF5",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11777,
+   "name": "j_2E01",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11784,
+   "name": "b_2E08",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11797,
+   "name": "j_2E15",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 11806,
+   "name": "update_field",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11839,
+   "name": "b_2E3F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11850,
+   "name": "b_2E4A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11859,
+   "name": "b_2E53",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11880,
+   "name": "update_random_cannon",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 11904,
+   "name": "b_2E80",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11963,
+   "name": "b_2EBB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 11989,
+   "name": "make_crusher",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 12033,
+   "name": "j_2F01",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 12078,
+   "name": "b_2F2E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12131,
+   "name": "update_crusher",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 12137,
+   "name": "b_2F69",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12157,
+   "name": "b_2F7D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12186,
+   "name": "b_2F9A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12221,
+   "name": "b_2FBD",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12228,
+   "name": "j_2FC4",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 12242,
+   "name": "b_2FD2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12285,
+   "name": "b_2FFD",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12295,
+   "name": "j_3007",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 12297,
+   "name": "j_3009",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 12363,
+   "name": "read_cell",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 12379,
+   "name": "b_305B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12382,
+   "name": "write_cell",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 12401,
+   "name": "b_3071",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12405,
+   "name": "setup_machine",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 12464,
+   "name": "b_30B0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12476,
+   "name": "b_30BC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12492,
+   "name": "b_30CC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12502,
+   "name": "b_30D6",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12512,
+   "name": "b_30E0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12522,
+   "name": "b_30EA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12524,
+   "name": "j_30EC",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 12590,
+   "name": "irq",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12629,
+   "name": "b_3155",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12662,
+   "name": "j_3176",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 12671,
+   "name": "old_music_tick",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12707,
+   "name": "b_31A3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12749,
+   "name": "r_31CD",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 12750,
+   "name": "flash_time_label",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 12759,
+   "name": "b_31D7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12773,
+   "name": "b_31E5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12775,
+   "name": "b_31E7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12789,
+   "name": "new_game",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 12798,
+   "name": "b_31FE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12812,
+   "name": "b_320C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12835,
+   "name": "b_3223",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12846,
+   "name": "b_322E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12858,
+   "name": "b_323A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12877,
+   "name": "b_324D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12897,
+   "name": "b_3261",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12920,
+   "name": "b_3278",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 12943,
+   "name": "start_turn",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 12965,
+   "name": "room_start",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 12988,
+   "name": "main_loop",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 13008,
+   "name": "death",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 13025,
+   "name": "b_32E1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13083,
+   "name": "b_331B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13121,
+   "name": "b_3341",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13174,
+   "name": "b_3376",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13188,
+   "name": "b_3384",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13207,
+   "name": "b_3397",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13227,
+   "name": "energy_tick",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 13234,
+   "name": "b_33B2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13263,
+   "name": "b_33CF",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13280,
+   "name": "b_33E0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13282,
+   "name": "b_33E2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13291,
+   "name": "b_33EB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13304,
+   "name": "b_33F8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 13314,
+   "name": "death_sound",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 13325,
+   "name": "title_path",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 14268,
+   "name": "txt_game_over",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 14277,
+   "name": "txt_get_ready",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 14286,
+   "name": "txt_menu1",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 14310,
+   "name": "txt_menu2",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 14336,
+   "name": "font",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 14632,
+   "name": "big_digits",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 14952,
+   "name": "player_frames",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15208,
+   "name": "panel_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15296,
+   "name": "f_3BC0",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 15344,
+   "name": "wall_top_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15360,
+   "name": "ladder_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15424,
+   "name": "wall_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15488,
+   "name": "cannon_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15552,
+   "name": "spinner_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15560,
+   "name": "spinner_99",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15576,
+   "name": "spinner_9B",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15584,
+   "name": "spinner_9C",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15592,
+   "name": "spinner_9D",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15608,
+   "name": "spinner_9F",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15616,
+   "name": "crumble_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15808,
+   "name": "conveyor_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15816,
+   "name": "conveyor_B9",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15824,
+   "name": "conveyor_BA",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15832,
+   "name": "conveyor_BB",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15840,
+   "name": "lift_char",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15841,
+   "name": "lift_line1",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15847,
+   "name": "lift_line7",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15848,
+   "name": "switch_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15880,
+   "name": "exit_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15912,
+   "name": "shot_glyph",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15920,
+   "name": "field_chars",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15921,
+   "name": "field_C6_line1",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15927,
+   "name": "field_C6_line7",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15928,
+   "name": "field_C7",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15929,
+   "name": "field_C7_line1",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 15935,
+   "name": "field_C7_line7",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15936,
+   "name": "deadly_floor_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15968,
+   "name": "crusher_chars",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16048,
+   "name": "blank_char",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16056,
+   "name": "vitamin_chars",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 16064,
+   "name": "vitamin_D8",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 16080,
+   "name": "vitamin_DA",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 16096,
+   "name": "panel_layout",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 16336,
+   "name": "f_3FD0",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 65439,
+   "name": "KERNAL_SCNKEY",
+   "type": "Predefined",
+   "kind": "system"
+  }
+ ],
+ "comments": [
+  {
+   "address": 3,
+   "type": "line",
+   "text": "The controls read by read_input, a bit each, 0 when pressed: 0 up, 1 down, 2 left, 3 right, 7 fire."
+  },
+  {
+   "address": 10,
+   "type": "line",
+   "text": "colour_ptr's result, the address of a cell's colour ($0A/$0B)."
+  },
+  {
+   "address": 63,
+   "type": "line",
+   "text": "The screen address of the player's block, its top-left cell ($3F/$40)."
+  },
+  {
+   "address": 65,
+   "type": "line",
+   "text": "The player's frame in his block: bits 2-3 the step (0, 4, 8, 12), bit 4 set facing left."
+  },
+  {
+   "address": 66,
+   "type": "line",
+   "text": "The line in his three-row block where the player's 16-line figure starts, 0 to 6, in steps of 2."
+  },
+  {
+   "address": 67,
+   "type": "line",
+   "text": "A pointer that walks through a room record ($43/$44), and a scratch byte for glyph_addr and merge_player."
+  },
+  {
+   "address": 198,
+   "type": "line",
+   "text": "The key held, as the KERNAL's keyboard scan in irq leaves it: $40 for none, otherwise the key's place in the keyboard matrix (row times 8 plus column). The game reads RETURN, F1-F3, HELP, X, Z, K, M, D and P here."
+  },
+  {
+   "address": 208,
+   "type": "line",
+   "text": "The frame within the tune's step, 0 to 5."
+  },
+  {
+   "address": 209,
+   "type": "line",
+   "text": "The tune's step, 0 to 127."
+  },
+  {
+   "address": 210,
+   "type": "line",
+   "text": "Voice 1's volume, set to 8 by each note and lowered each frame."
+  },
+  {
+   "address": 211,
+   "type": "line",
+   "text": "The voice bits music_tick builds for $FF11."
+  },
+  {
+   "address": 819,
+   "type": "line",
+   "text": "The six characters of scenery behind the player's block: $0333-$0335 the left column, top to bottom, and $0336-$0338 the right."
+  },
+  {
+   "address": 825,
+   "type": "line",
+   "text": "The room's three background colours, which irq puts into $FF15-$FF17 on line 250."
+  },
+  {
+   "address": 828,
+   "type": "line",
+   "text": "Which of animate_chars's three jobs is next."
+  },
+  {
+   "address": 829,
+   "type": "line",
+   "text": "The room the top row's openings lead to."
+  },
+  {
+   "address": 830,
+   "type": "line",
+   "text": "The room the bottom row's openings lead to."
+  },
+  {
+   "address": 831,
+   "type": "line",
+   "text": "The room the left edge's openings lead to."
+  },
+  {
+   "address": 832,
+   "type": "line",
+   "text": "The room the right edge's openings lead to."
+  },
+  {
+   "address": 833,
+   "type": "line",
+   "text": "Each player's block address, low bytes, player 1 then 2."
+  },
+  {
+   "address": 835,
+   "type": "line",
+   "text": "Each player's block address, high bytes."
+  },
+  {
+   "address": 837,
+   "type": "line",
+   "text": "Each player's lives."
+  },
+  {
+   "address": 839,
+   "type": "line",
+   "text": "Each player's room."
+  },
+  {
+   "address": 841,
+   "type": "line",
+   "text": "1 for each player still in the game."
+  },
+  {
+   "address": 843,
+   "type": "line",
+   "text": "The player in play, 0 or 1."
+  },
+  {
+   "address": 844,
+   "type": "line",
+   "text": "The EGY bar's working cell, 0 to 33."
+  },
+  {
+   "address": 845,
+   "type": "line",
+   "text": "1 when the players use the keys, 0 for joysticks."
+  },
+  {
+   "address": 846,
+   "type": "line",
+   "text": "1 during a jump."
+  },
+  {
+   "address": 847,
+   "type": "line",
+   "text": "The jump's counter: 0-15 rising, $80-$8F falling."
+  },
+  {
+   "address": 849,
+   "type": "line",
+   "text": "Passes left until the next step of the EGY bar."
+  },
+  {
+   "address": 850,
+   "type": "line",
+   "text": "The room's energy rate, energy_count's reload."
+  },
+  {
+   "address": 851,
+   "type": "line",
+   "text": "Set to $92 by setup_machine; nothing reads it."
+  },
+  {
+   "address": 852,
+   "type": "line",
+   "text": "Passes left until the TIME clock's next tick."
+  },
+  {
+   "address": 853,
+   "type": "line",
+   "text": "Each player's vitamins."
+  },
+  {
+   "address": 855,
+   "type": "line",
+   "text": "Each player's player_x, kept between rooms and turns."
+  },
+  {
+   "address": 857,
+   "type": "line",
+   "text": "Each player's player_y, kept between rooms and turns."
+  },
+  {
+   "address": 859,
+   "type": "line",
+   "text": "The room's vitamin's screen address ($035B/$035C)."
+  },
+  {
+   "address": 861,
+   "type": "line",
+   "text": "The room's vitamin's number, 0 to 24."
+  },
+  {
+   "address": 862,
+   "type": "line",
+   "text": "The room's vitamin's colour."
+  },
+  {
+   "address": 863,
+   "type": "line",
+   "text": "The room's energy mode: 1 drains the EGY bar, 0 refills it."
+  },
+  {
+   "address": 870,
+   "type": "line",
+   "text": "25 bytes, one for each vitamin: bit 0 set when player 1 has it, bit 1 when player 2 has."
+  },
+  {
+   "address": 901,
+   "type": "line",
+   "text": "1 while the tune plays."
+  },
+  {
+   "address": 955,
+   "type": "line",
+   "text": "old_music_tick's flag, which nothing else uses."
+  },
+  {
+   "address": 1020,
+   "type": "line",
+   "text": "The shot's character, $C5, set before each move."
+  },
+  {
+   "address": 1347,
+   "type": "line",
+   "text": "Set by the KERNAL's keyboard scan while SHIFT is held, 0 otherwise; the jump key with the keys."
+  },
+  {
+   "address": 2048,
+   "type": "line",
+   "text": "The colours of the screen, one byte for each of its 1,000 cells (bits 0-3 the colour, 4-6 the brightness, and in a multicolour cell bit 3 set); screen_chars is its characters. As loaded, and when the game takes over, it holds the loading screen's colours, which came from the tape with the game; the game draws over them at once. The play area's colours, rows 0-17, are filled with the room's colour by draw_room, and the panel's, rows 19-24, by setup_machine."
+  },
+  {
+   "address": 2098,
+   "type": "line",
+   "text": "Row 1, column 10 of the colours: where print_title_text colours its first line white (as loaded, part of the loading screen's colours, like all of screen_colours)."
+  },
+  {
+   "address": 2178,
+   "type": "line",
+   "text": "Row 3, column 10 of the colours: print_title_text's second line, yellow."
+  },
+  {
+   "address": 2288,
+   "type": "line",
+   "text": "Row 6 of the colours: draw_room fills rows 0-17 in three runs of 240 bytes, from $0800, here and $09E0."
+  },
+  {
+   "address": 2337,
+   "type": "line",
+   "text": "Row 7, column 9 of the colours: show_menu's first line, white."
+  },
+  {
+   "address": 2423,
+   "type": "line",
+   "text": "Row 9, column 15 of the colours: GET READY and GAME OVER, white."
+  },
+  {
+   "address": 2456,
+   "type": "line",
+   "text": "Row 10, column 8 of the colours: show_menu's second line, white."
+  },
+  {
+   "address": 2528,
+   "type": "line",
+   "text": "Row 12 of the colours: the third of draw_room's runs."
+  },
+  {
+   "address": 2657,
+   "type": "line",
+   "text": "Row 15, column 9 of the colours: print_title_text's copyright line, red."
+  },
+  {
+   "address": 2785,
+   "type": "line",
+   "text": "Row 18, column 17 of the colours: PAUSED, red."
+  },
+  {
+   "address": 2808,
+   "type": "line",
+   "text": "Row 19 of the colours, the start of the panel's, which setup_machine sets for rows 19-24; its first five are TIME1's, which flash_time_label flips while player 1 is in play."
+  },
+  {
+   "address": 2888,
+   "type": "line",
+   "text": "Row 21 of the colours: TIME2's five, which flash_time_label flips while player 2 is in play."
+  },
+  {
+   "address": 3046,
+   "type": "line",
+   "text": "Row 24, column 38 of the colours, which setup_machine copies to column 39."
+  },
+  {
+   "address": 3047,
+   "type": "line",
+   "text": "Row 24, column 39, the screen's last colour; bytes $0BE8-$0BFF after it are not shown."
+  },
+  {
+   "address": 3072,
+   "type": "line",
+   "text": "The characters of the screen, 25 rows of 40: the play area in rows 0-17, row 18 for PAUSED, and the panel in rows 19-24. As loaded, and when the game takes over, it holds the loading screen in the machine's own font: MASTERTRONIC PRESENT on rows 1 and 3, BY TONY KELLY on row 19 and (C)1986 MR. CHIP SOFTWARE on row 24, round a figure built from graphics characters. The game draws over it at once."
+  },
+  {
+   "address": 3073,
+   "type": "line",
+   "text": "Row 0, column 1: with screen_chars ($0C00), the room's top-left wall pair, whose characters and colour update_bridge builds its bridges from."
+  },
+  {
+   "address": 3122,
+   "type": "line",
+   "text": "Row 1, column 10: print_title_text's first line, PROGRAMMED BY T KELLY."
+  },
+  {
+   "address": 3202,
+   "type": "line",
+   "text": "Row 3, column 10: print_title_text's second line, MASTERTRONIC PRESENTS."
+  },
+  {
+   "address": 3312,
+   "type": "line",
+   "text": "Row 6: clear_play_area blanks rows 0-17 in three runs of 240, from $0C00, here and $0DE0."
+  },
+  {
+   "address": 3361,
+   "type": "line",
+   "text": "Row 7, column 9: show_menu's first line."
+  },
+  {
+   "address": 3447,
+   "type": "line",
+   "text": "Row 9, column 15: GET READY and GAME OVER."
+  },
+  {
+   "address": 3480,
+   "type": "line",
+   "text": "Row 10, column 8: show_menu's second line."
+  },
+  {
+   "address": 3552,
+   "type": "line",
+   "text": "Row 12: the third of clear_play_area's runs."
+  },
+  {
+   "address": 3681,
+   "type": "line",
+   "text": "Row 15, column 9: print_title_text's copyright line."
+  },
+  {
+   "address": 3792,
+   "type": "line",
+   "text": "Row 18, between the play area and the panel, which setup_machine and pause_check blank."
+  },
+  {
+   "address": 3809,
+   "type": "line",
+   "text": "Row 18, column 17: PAUSED."
+  },
+  {
+   "address": 3832,
+   "type": "line",
+   "text": "Row 19, the start of the panel, rows 19-24, which setup_machine copies from panel_layout."
+  },
+  {
+   "address": 3838,
+   "type": "line",
+   "text": "Row 19, column 6: the top row of the TIME1 clock's big digits (the first at columns 6-7, then 9-10 and 11-12), drawn by clock_tick; TIME2's are 80 cells on."
+  },
+  {
+   "address": 3839,
+   "type": "line",
+   "text": "Row 19, column 7: the right half of the clock's digits' top row, at the same offsets."
+  },
+  {
+   "address": 3854,
+   "type": "line",
+   "text": "Row 19, column 22: the top row of VITAM1's two big digits (columns 22-23 and 24-25), drawn by vitamin_count_up; VITAM2's are 80 cells on."
+  },
+  {
+   "address": 3855,
+   "type": "line",
+   "text": "Row 19, column 23: the right half of the vitamin digits' top row."
+  },
+  {
+   "address": 3864,
+   "type": "line",
+   "text": "Row 19, column 32: the heads of player 1's eight lives, and on row 21 player 2's."
+  },
+  {
+   "address": 3878,
+   "type": "line",
+   "text": "Row 20, column 6: the bottom row of the clock's big digits."
+  },
+  {
+   "address": 3879,
+   "type": "line",
+   "text": "Row 20, column 7: the right half of their bottom row."
+  },
+  {
+   "address": 3894,
+   "type": "line",
+   "text": "Row 20, column 22: the bottom row of the vitamin digits."
+  },
+  {
+   "address": 3895,
+   "type": "line",
+   "text": "Row 20, column 23: the right half of their bottom row."
+  },
+  {
+   "address": 3904,
+   "type": "line",
+   "text": "Row 20, column 32: the feet of player 1's lives, and on row 22 player 2's."
+  },
+  {
+   "address": 4036,
+   "type": "line",
+   "text": "Row 24, column 4: the 34 cells of the EGY bar, which energy_tick, refill_energy and the death sequence change."
+  },
+  {
+   "address": 4071,
+   "type": "line",
+   "text": "Row 24, column 39, the screen's last cell, where setup_machine puts $77, the second half of the T.K mark."
+  },
+  {
+   "address": 4072,
+   "type": "line",
+   "text": "The eight switches' states, 1 on and 0 off, set from the room's switch records."
+  },
+  {
+   "address": 4080,
+   "type": "line",
+   "text": "Each object slot's type (low four bits) and the high byte of its screen address (high four bits); 20 slots, 0 ending the list."
+  },
+  {
+   "address": 4100,
+   "type": "line",
+   "text": "Each object's screen address, low byte."
+  },
+  {
+   "address": 4120,
+   "type": "line",
+   "text": "Each object's colour (a field's and a crusher's left cell)."
+  },
+  {
+   "address": 4140,
+   "type": "line",
+   "text": "A cannon's flags and switch, a bridge's switch, a field's or a crusher's right colour."
+  },
+  {
+   "address": 4160,
+   "type": "line",
+   "text": "A cannon's timer, a bridge's length, a field's switch, a crusher's switch and direction."
+  },
+  {
+   "address": 4180,
+   "type": "line",
+   "text": "A cannon's rate, a field's height, a crusher's timer."
+  },
+  {
+   "address": 4200,
+   "type": "line",
+   "text": "A cannon's shot's screen address, high byte; a crusher's rate."
+  },
+  {
+   "address": 4220,
+   "type": "line",
+   "text": "A cannon's shot's screen address, low byte."
+  },
+  {
+   "address": 4240,
+   "type": "line",
+   "text": "The low bytes of the addresses of the 25 room records, room 0 first, which draw_room reads by the room number. The five bytes after them are not part of the table: nothing reads them, and they hold the pattern $00 and $FF of memory nothing had written."
+  },
+  {
+   "address": 4270,
+   "type": "line",
+   "text": "The high bytes of the room records' addresses, room 0 first, as room_ptr_lo. Room 21's record lies at $13EE, between room 8's and room 9's. The five bytes after them are unused, as in room_ptr_lo."
+  },
+  {
+   "address": 4300,
+   "type": "line",
+   "text": "Room 0, row 0 column 0 of the 5 by 5 map. Its openings lead down to room 5, right to room 1. The up and left exit bytes are unused: no opening on those edges. Vitamin 0 at row 16 column 2, colour $71. Walls $89 beside $8D in colour $6A (also the colour of the whole play area), tops in $7F; background colours $00 $31 $32. Objects: a crusher from row 6 column 36, 4 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 6, 2 rows long, starting up, a stage every pass, switch 8, always on; a cannon on a base at row 4 column 36 firing left, its shot moving a cell every 2 passes, switch 8, always on. The EGY bar drains a step every 20 passes. Its last byte, the energy mode, is also the first byte of room 1's record, at $111F."
+  },
+  {
+   "address": 4383,
+   "type": "line",
+   "text": "Room 1, row 0 column 1 of the 5 by 5 map. Its openings lead left to room 0, right to room 2. The up and down exit bytes are unused: no opening on those edges. Vitamin 1 at row 7 column 24, colour $72. Walls $89 beside $8D in colour $6F (also the colour of the whole play area), tops in $7E; background colours $00 $31 $32. Objects: crumbling floor, 18 blocks from row 4 column 2; a cannon on a base at row 4 column 36 firing left, its shot moving a cell every 2 passes, switch 8, always on. The EGY bar refills a step every 3 passes."
+  },
+  {
+   "address": 4457,
+   "type": "line",
+   "text": "Room 2, row 0 column 2 of the 5 by 5 map. Its openings lead down to room 0 (the room that way on the map is 7), left to room 1, right to room 3. The up exit byte is unused: no opening on that edge. Vitamin 2 at row 8 column 12, colour $72. Walls $8B beside $8F in colour $6E (also the colour of the whole play area), tops in $7A; background colours $00 $31 $32. Objects: a force field on a base at row 16 column 36, 5 rows high, on while switch 1 is on; switch 1 at row 11 column 14, starting lit (on); a crusher from row 3 column 18, 6 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 3 column 20, 6 rows long, starting down, a stage every pass, switch 8, always on. The EGY bar drains a step every 10 passes."
+  },
+  {
+   "address": 4545,
+   "type": "line",
+   "text": "One byte, $FF, between room 2's record and room 3's, which nothing reads."
+  },
+  {
+   "address": 4546,
+   "type": "line",
+   "text": "Room 3, row 0 column 3 of the 5 by 5 map. Its openings lead down to room 8, left to room 2. The up and right exit bytes are unused: no opening on those edges. Vitamin 3 at row 5 column 36, colour $73. Walls $8A beside $8E in colour $7F (also the colour of the whole play area), tops in $69; background colours $00 $31 $32. Objects: a crusher from row 8 column 32, 6 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 8 column 30, 6 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 12 column 10, 1 rows long, starting down, a stage every pass, switch 8, always on; a random cannon on a base at row 6 column 18, its shot moving a cell every 2 passes, switch 8, always on; conveyor belt, 1 blocks from row 13 column 16; conveyor belt, 7 blocks from row 6 column 4. The EGY bar drains a step every 20 passes."
+  },
+  {
+   "address": 4650,
+   "type": "line",
+   "text": "Room 4, row 0 column 4 of the 5 by 5 map. Its openings lead down to room 9. The up and left and right exit bytes are unused: no opening on those edges. Vitamin 4 at row 11 column 24, colour $74. Walls $88 beside $8C in colour $6E (also the colour of the whole play area), tops in $7F; background colours $00 $31 $32. Objects: a random cannon on a base at row 7 column 20, its shot moving a cell every 2 passes, switch 8, always on; switch 1 at row 16 column 36, starting lit (on); a force field on a base at row 12 column 26, 3 rows high, on while switch 1 is on; a crusher from row 1 column 8, 5 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 30, 3 rows long, starting up, a stage every pass, switch 8, always on; a crusher from row 9 column 20, 4 rows long, starting up, a stage every pass, switch 8, always on. The EGY bar refills a step every 2 passes."
+  },
+  {
+   "address": 4752,
+   "type": "line",
+   "text": "Room 5, row 1 column 0 of the 5 by 5 map. Its openings lead up to room 0, down to room 10, right to room 6. The left exit byte is unused: no opening on that edge. Vitamin 5 at row 14 column 30, colour $77. Walls $89 beside $8D in colour $7A (also the colour of the whole play area), tops in $7F; background colours $00 $31 $32. Objects: a ladder 17 rows high up from row 17 column 2; a ladder 11 rows high up from row 14 column 36; switch 1 at row 6 column 10, starting lit (on); a cannon on a base at row 6 column 30 firing left, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 16 column 10 firing right, its shot moving a cell every 2 passes, switch 8, always on; a force field on a base at row 16 column 24, 3 rows high, on while switch 1 is on; conveyor belt, 6 blocks from row 16 column 12. The EGY bar drains a step every 10 passes."
+  },
+  {
+   "address": 4854,
+   "type": "line",
+   "text": "Room 6, row 1 column 1 of the 5 by 5 map. Its openings lead up to room 1, left to room 5, right to room 7. The down exit byte is unused: no opening on that edge. Vitamin 6 at row 5 column 16, colour $72. Walls $89 beside $8D in colour $7F (also the colour of the whole play area), tops in $7E; background colours $00 $31 $32. No objects. The EGY bar refills a step every pass."
+  },
+  {
+   "address": 4916,
+   "type": "line",
+   "text": "Room 7, row 1 column 2 of the 5 by 5 map. Its openings lead left to room 6. The up and down and right exit bytes are unused: no opening on those edges. Vitamin 7 at row 5 column 36, colour $72. Walls $89 beside $8D in colour $7A (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a ladder 5 rows high up from row 12 column 32; a cannon on a base at row 14 column 36 firing left, its shot moving a cell every 2 passes, switch 8, always on. The EGY bar drains a step every 4 passes."
+  },
+  {
+   "address": 4990,
+   "type": "line",
+   "text": "Room 8, row 1 column 3 of the 5 by 5 map. Its openings lead up to room 3, down to room 13. The left and right exit bytes are unused: no opening on those edges. Vitamin 8 at row 15 column 14, colour $71. Walls $8A beside $8E in colour $7F (also the colour of the whole play area), tops in $76; background colours $00 $31 $32. Objects: switch 1 at row 14 column 10, starting lit (on); switch 2 at row 8 column 32, starting lit (on); a force field on a base at row 11 column 14, 4 rows high, on while switch 1 is on; a force field on a base at row 11 column 26, 4 rows high, on while switch 1 is on; a force field on a base at row 5 column 26, 4 rows high, on while switch 2 is on; a force field on a base at row 5 column 14, 4 rows high, on while switch 2 is on; a random cannon on a base at row 11 column 20, its shot moving a cell every 2 passes, switch 8, always on; a random cannon on a base at row 5 column 22, its shot moving a cell every 2 passes, switch 8, always on; a random cannon on a base at row 16 column 16, its shot moving a cell every 2 passes, switch 8, always on. The EGY bar drains a step every 20 passes."
+  },
+  {
+   "address": 5102,
+   "type": "line",
+   "text": "Room 21, row 4 column 1 of the 5 by 5 map. Its openings lead left to room 20, right to room 22. The up and down exit bytes are unused: no opening on those edges. Vitamin 21 at row 12 column 34, colour $79. Walls $8A beside $8E in colour $7D (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a cannon on a base at row 4 column 36 firing left, its shot moving a cell every pass, switch 8, always on. The EGY bar drains a step every 10 passes."
+  },
+  {
+   "address": 5170,
+   "type": "line",
+   "text": "Twelve bytes after room 21's record and before room 9's, which nothing reads."
+  },
+  {
+   "address": 5182,
+   "type": "line",
+   "text": "Room 9, row 1 column 4 of the 5 by 5 map. Its openings lead up to room 4, down to room 14. The left and right exit bytes are unused: no opening on those edges. Vitamin 9 at row 2 column 26, colour $71. Walls $8A beside $8E in colour $7F (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a ladder 7 rows high up from row 7 column 18; a bridge of 4 cells on row 9 from column 18, up while switch 1 is on; switch 1 at row 5 column 20, starting lit (on); switch 1 at row 6 column 8, starting lit (on); deadly floor, 13 blocks from row 16 column 10; a cannon on a base at row 9 column 0 firing right, its shot moving a cell every 2 passes, switch 8, always on; a crusher from row 1 column 32, 2 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 34, 2 rows long, starting down, a stage every pass, switch 8, always on. The EGY bar drains a step every 15 passes."
+  },
+  {
+   "address": 5291,
+   "type": "line",
+   "text": "Room 10, row 2 column 0 of the 5 by 5 map. Its openings lead up to room 5, right to room 11. The down and left exit bytes are unused: no opening on those edges. Vitamin 10 at row 11 column 38, colour $72. Walls $8B beside $8F in colour $6C (also the colour of the whole play area), tops in $6A; background colours $00 $31 $32. Objects: a ladder 17 rows high up from row 17 column 2. The EGY bar drains a step every 3 passes."
+  },
+  {
+   "address": 5359,
+   "type": "line",
+   "text": "Room 11, row 2 column 1 of the 5 by 5 map. Its openings lead left to room 10, right to room 12. The up and down exit bytes are unused: no opening on those edges. Vitamin 11 at row 10 column 14, colour $72. Walls $8B beside $8F in colour $6C (also the colour of the whole play area), tops in $6A; background colours $00 $31 $32. Objects: a cannon on a base at row 5 column 8 firing right, its shot moving a cell every pass, switch 8, always on. The EGY bar refills a step every pass."
+  },
+  {
+   "address": 5427,
+   "type": "line",
+   "text": "Room 12, row 2 column 2 of the 5 by 5 map. Its openings lead left to room 11, right to room 13. The up and down exit bytes are unused: no opening on those edges. Vitamin 12 at row 3 column 28, colour $72. Walls $8B beside $8F in colour $6D (also the colour of the whole play area), tops in $7A; background colours $00 $31 $32. Objects: a crusher from row 1 column 30, 2 rows long, starting down, a stage every pass, switch 8, always on. The EGY bar refills a step every 10 passes."
+  },
+  {
+   "address": 5497,
+   "type": "line",
+   "text": "Room 13, row 2 column 3 of the 5 by 5 map. Its openings lead up to room 8, left to room 12, right to room 14. The down exit byte is unused: no opening on that edge. Vitamin 13 at row 2 column 36, colour $71. Walls $8A beside $8E in colour $7A (also the colour of the whole play area), tops in $69; background colours $00 $31 $32. No objects. The EGY bar drains a step every 8 passes."
+  },
+  {
+   "address": 5559,
+   "type": "line",
+   "text": "Room 14, row 2 column 4 of the 5 by 5 map. Its openings lead up to room 9, down to room 19, left to room 13. The right exit byte is unused: no opening on that edge. Vitamin 14 at row 14 column 12, colour $72. Walls $89 beside $8D in colour $6D (also the colour of the whole play area), tops in $7F; background colours $00 $31 $32. Objects: a cannon on a base at row 10 column 34 firing left, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 13 column 34 firing left, its shot moving a cell every 2 passes, switch 8, always on; a crusher from row 4 column 10, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 4 column 14, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 4 column 18, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 4 column 22, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 4 column 26, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 4 column 30, 3 rows long, starting down, a stage every pass, switch 8, always on; a ladder 15 rows high up from row 17 column 36. The EGY bar refills a step every 10 passes."
+  },
+  {
+   "address": 5687,
+   "type": "line",
+   "text": "Room 15, row 3 column 0 of the 5 by 5 map. Its openings lead up to room 10, down to room 20, right to room 16. The left exit byte is unused: no opening on that edge. Vitamin 15 at row 2 column 6, colour $71. Walls $89 beside $8D in colour $7A (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a ladder 15 rows high up from row 16 column 2; deadly floor, 2 blocks from row 16 column 34; a cannon on a base at row 16 column 32 firing left, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 13 column 32 firing left, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 10 column 32 firing left, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 14 column 4 firing right, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 11 column 4 firing right, its shot moving a cell every 2 passes, switch 8, always on; a cannon on a base at row 4 column 6 firing right, its shot moving a cell every 2 passes, switch 8, always on. The EGY bar drains a step every 20 passes."
+  },
+  {
+   "address": 5797,
+   "type": "line",
+   "text": "Room 16, row 3 column 1 of the 5 by 5 map. Its openings lead down to room 21, left to room 15, right to room 17. The up exit byte is unused: no opening on that edge. Vitamin 16 at row 14 column 4, colour $71. Walls $8B beside $8F in colour $7C (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a crusher from row 5 column 8, 2 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 12, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 16, 4 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 20, 5 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 24, 6 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 28, 7 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 32, 8 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 5 column 36, 6 rows long, starting down, a stage every pass, switch 8, always on. The EGY bar refills a step every 10 passes."
+  },
+  {
+   "address": 5923,
+   "type": "line",
+   "text": "Room 17, row 3 column 2 of the 5 by 5 map. Its openings lead left to room 16, right to room 18. The up and down exit bytes are unused: no opening on those edges. Vitamin 17 at row 14 column 4, colour $72. Walls $88 beside $8C in colour $7F (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a cannon on a base at row 16 column 6 firing right, its shot moving a cell every 2 passes, switch 8, always on. The EGY bar drains a step every 10 passes."
+  },
+  {
+   "address": 5991,
+   "type": "line",
+   "text": "Room 18, row 3 column 3 of the 5 by 5 map. Its openings lead down to room 0 (the room that way on the map is 23), left to room 17, right to room 19. The up exit byte is unused: no opening on that edge. Vitamin 18 at row 14 column 8, colour $74. Walls $8A beside $8E in colour $7C (also the colour of the whole play area), tops in $7D; background colours $00 $31 $32. Objects: a crusher from row 7 column 12, 3 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 3 column 28, 3 rows long, starting up, a stage every pass, switch 8, always on; a crusher from row 1 column 20, 4 rows long, starting down, a stage every pass, switch 8, always on. The EGY bar refills a step every pass."
+  },
+  {
+   "address": 6077,
+   "type": "line",
+   "text": "Room 19, row 3 column 4 of the 5 by 5 map. Its openings lead up to room 14, down to room 0 (the room that way on the map is 24), left to room 18. The right exit byte is unused: no opening on that edge. Vitamin 19 at row 7 column 1, colour $75. Walls $88 beside $8C in colour $7E (also the colour of the whole play area), tops in $7C; background colours $00 $31 $32. Objects: a ladder 15 rows high up from row 16 column 36. The EGY bar drains a step every 4 passes."
+  },
+  {
+   "address": 6144,
+   "type": "line",
+   "text": "Inside room 19's record (its last byte) and room 20's: where old_music_tick would read voice 1's notes, 96 of them."
+  },
+  {
+   "address": 6145,
+   "type": "line",
+   "text": "Room 20, row 4 column 0 of the 5 by 5 map. Its openings lead up to room 15, right to room 21. The down and left exit bytes are unused: no opening on those edges. Vitamin 20 at row 13 column 4, colour $71. Walls $89 beside $8D in colour $7B (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a crusher from row 6 column 34, 5 rows long, starting down, a stage every pass, switch 8, always on; deadly floor, 4 blocks from row 13 column 20. The EGY bar refills a step every 8 passes."
+  },
+  {
+   "address": 6221,
+   "type": "line",
+   "text": "Room 22, row 4 column 2 of the 5 by 5 map. Its openings lead left to room 21, right to room 23. The up and down exit bytes are unused: no opening on those edges. Vitamin 22 at row 16 column 36, colour $71. Walls $88 beside $8C in colour $79 (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a cannon on a base at row 8 column 4 firing right, its shot moving a cell every 2 passes, switch 8, always on; conveyor belt, 12 blocks from row 8 column 6. The EGY bar drains a step every 10 passes."
+  },
+  {
+   "address": 6240,
+   "type": "line",
+   "text": "Inside room 22's record: where old_music_tick would read voice 2's notes."
+  },
+  {
+   "address": 6295,
+   "type": "line",
+   "text": "Two bytes between room 22's record and room 23's, which nothing reads."
+  },
+  {
+   "address": 6297,
+   "type": "line",
+   "text": "Room 23, row 4 column 3 of the 5 by 5 map. Its openings lead left to room 22, right to room 24. The up and down exit bytes are unused: no opening on those edges. Vitamin 23 at row 6 column 34, colour $71. Walls $8B beside $8F in colour $7A (also the colour of the whole play area), tops in $7D; background colours $00 $31 $32. Objects: a crusher from row 1 column 4, 2 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 16, 2 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 20, 2 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 24, 2 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 36, 2 rows long, starting down, a stage every pass, switch 8, always on; a cannon on a base at row 9 column 34 firing left, its shot moving a cell every 3 passes, switch 8, always on; a cannon on a base at row 9 column 6 firing right, its shot moving a cell every 3 passes, switch 8, always on; a ladder 11 rows high up from row 13 column 2. The EGY bar refills a step every pass."
+  },
+  {
+   "address": 6336,
+   "type": "line",
+   "text": "Inside room 23's record: where old_music_tick would read its notes' low frequency bytes."
+  },
+  {
+   "address": 6360,
+   "type": "line",
+   "text": "Inside room 23's record: where old_music_tick would read its notes' high frequency bits."
+  },
+  {
+   "address": 6417,
+   "type": "line",
+   "text": "One byte, $02, between room 23's record and room 24's, which nothing reads."
+  },
+  {
+   "address": 6418,
+   "type": "line",
+   "text": "Room 24, row 4 column 4 of the 5 by 5 map. Its openings lead up to room 14 (the room that way on the map is 19), left to room 0 (the room that way on the map is 23). The down and right exit bytes are unused: no opening on those edges. Vitamin 24 at row 3 column 28, colour $71. Walls $8B beside $8F in colour $79 (also the colour of the whole play area), tops in $79; background colours $00 $31 $32. Objects: a crusher from row 1 column 30, 6 rows long, starting down, a stage every pass, switch 8, always on; a crusher from row 1 column 2, 4 rows long, starting up, a stage every pass, switch 8, always on; a ladder 16 rows high up from row 16 column 36. The EGY bar refills a step every pass."
+  },
+  {
+   "address": 6502,
+   "type": "line",
+   "text": "Eight bytes after room 24's record, before the tune, which nothing reads."
+  },
+  {
+   "address": 6510,
+   "type": "line",
+   "text": "Voice 1 of the tune, 128 steps, one byte each, which music_tick reads at the step number in $D1: 0 keeps the note sounding, a value with bit 7 set silences the voice, and 1 to 17 is a note, an index into note_freq_lo and note_freq_hi. A step lasts six frames of irq. When the tune starts after setup_machine, the step number is $FF for the first six frames, and the entry read for it is the byte at $1A6D, inside tune_voice2."
+  },
+  {
+   "address": 6638,
+   "type": "line",
+   "text": "The low eight bits of TED's frequency value for each note number, 28 entries from note 0 (unused), which music_tick writes to $FF0E for voice 1 and $FF0F for voice 2. Notes 20 and 21 repeat the values of 16 and 17."
+  },
+  {
+   "address": 6666,
+   "type": "line",
+   "text": "The top two bits of each note's frequency value, as note_freq_lo, which music_tick puts into the low bits of $FF12 for voice 1 and $FF10 for voice 2. 29 bytes, one more than note_freq_lo."
+  },
+  {
+   "address": 6695,
+   "type": "line",
+   "text": "Voice 2 of the tune, 128 steps, read as tune_voice1 is: $FF silences the voice, 0 keeps it sounding, and anything else is a note. Notes 1 to 27 are in the frequency tables; three steps hold 84, 85 and 87 ($54, $55, $57), far past them, so their pitches come from bytes of this table instead: the low bits from $1A42, $1A43 and $1A45, the high bits from $1A5E, $1A5F and $1A61. On every eighth step music_tick plays a drum on this voice whatever the table says."
+  },
+  {
+   "address": 6900,
+   "type": "line",
+   "text": "The game's first instruction. The tape's BASIC line, 0 SYS6900, starts the program here at $1AF4 (6900), and the jump goes on to new_game. new_game is also where the game goes back to after GAME OVER."
+  },
+  {
+   "address": 6903,
+   "type": "line",
+   "text": "Plays one frame of the tune. irq calls it from its line-250 half while music_on ($0385) is 1: on the title and menu, and after the 25th vitamin. $D0 counts the frames of a step, 0 to 5; at 6 it goes back to 0 and the step number in $D1 moves on, wrapping at 128. The step's entry in tune_voice1 or tune_voice2 decides each voice: 0 leaves the voice's pitch as it was and the voice on, a value with bit 7 set leaves it off, and any other value is a note number, which sets the voice's pitch from note_freq_lo and note_freq_hi and switches it on. A voice-1 note also sets the volume in $D2 to 8; every call first lowers it by one while it is above 0, so a note dies away over eight frames. On steps 0, 8, 16 and so on voice 2 is switched off, and for the first three frames of that step its noise is switched on instead: a drum every eighth step. The voice bits and the volume are written to $FF11 together at the end."
+  },
+  {
+   "address": 7025,
+   "type": "line",
+   "text": "\"PAUSED\" in the game's alphabet ($01-$1A for A-Z), which pause_check prints under the play area."
+  },
+  {
+   "address": 7031,
+   "type": "line",
+   "text": "A second dot path in the format of title_path, which nothing reads. Drawn the way title_dot_step draws title_path, it makes a frame round the play area and then spells WIMPO in dots, where the game draws MR PUNIVERSE. The inlay calls the weaklings Mr Puniverse is one of \"Wimps\". It ends with the 1 that starts a path again."
+  },
+  {
+   "address": 7081,
+   "type": "line",
+   "text": "\"MASTERTRONIC PRESENTS\" in PETSCII capitals, which print_title_text prints on row 3 in yellow."
+  },
+  {
+   "address": 7102,
+   "type": "line",
+   "text": "\"PROGRAMMED BY T KELLY\" in PETSCII capitals, which print_title_text prints on row 1 in white."
+  },
+  {
+   "address": 7123,
+   "type": "line",
+   "text": "\"@ MR CHIP SOFTWARE 1985\" in PETSCII capitals; the @ becomes character $00, which the game's font draws as a copyright sign. print_title_text prints it on row 15 in red."
+  },
+  {
+   "address": 7146,
+   "type": "line",
+   "text": "Prints the title's three lines: txt_programmed on row 1 from column 10 in white ($71), txt_presents on row 3 from column 10 in yellow ($77), 21 characters each, and txt_copyright on row 15 from column 9 in red ($72), 23 characters. Each byte is cut to its low six bits, which turns a PETSCII capital into the font's letter, and a space becomes $D6, the font's blank. In the third line a digit ($30-$39) becomes $1B-$24, the font's digits. new_game calls it once, on the title."
+  },
+  {
+   "address": 7238,
+   "type": "line",
+   "text": "Draws the next dot of the MR PUNIVERSE title while new_game waits for RETURN. $4D counts the calls down, so only every 255th call does anything; that call waits in delay (42), turns the vitamin's animation on a frame (rotate_vitamin_chars), and draws a dot: the vitamin character $D7 at the screen address in $4A/$4B, in the colour in $4E. The dots follow title_path: $4C is the place in it, $4F the dots left in the stroke and $49 the stroke's direction. A 0 in the path is followed by a new screen address, a 1 starts the path again with the colour's bit 0 flipped (so the second pass over the same dots is blue, $D6, where the first was yellow, $D7), and any other byte is a stroke: its low four bits the number of dots, its high four the step to take after each (bit 4 up a row, 5 down, 6 right a column, 7 left, and two together for a diagonal)."
+  },
+  {
+   "address": 7371,
+   "type": "line",
+   "text": "Adds A to the 16-bit pointer at $43/$44, the place in the room record that draw_room and the object makers are reading."
+  },
+  {
+   "address": 7383,
+   "type": "line",
+   "text": "Points $0A/$0B at the colour byte of a screen cell: X names a pointer in zero page ($3F the player's block, $4A, $4C or $4D another), and the colour is $400 below the character ($0800 below $0C00). Y is left alone, so the caller indexes both with the same Y."
+  },
+  {
+   "address": 7395,
+   "type": "line",
+   "text": "Moves the zero-page pointer X names down a row of the screen, adding 40."
+  },
+  {
+   "address": 7409,
+   "type": "line",
+   "text": "Moves the zero-page pointer X names right a column, adding 1."
+  },
+  {
+   "address": 7419,
+   "type": "line",
+   "text": "Moves the zero-page pointer X names up a row of the screen, taking away 40."
+  },
+  {
+   "address": 7433,
+   "type": "line",
+   "text": "Moves the zero-page pointer X names left a column, taking away 1."
+  },
+  {
+   "address": 7443,
+   "type": "line",
+   "text": "Animates the scenery by rewriting its glyphs, one of three jobs on each pass of the main loop, counted in anim_phase ($033C). Phase 1 turns two runs of four characters, $98-$9B and $9C-$9F, on a frame each: every glyph takes the next one's bytes and the first's go to the last, so the random cannon's head ($98 beside $9C) spins. Phase 2 rolls the 16-pixel strips made by characters $B8 and $B9, and by $BA and $BB, left by one multicolour pixel, the pixel leaving one end coming back at the other: the conveyor belts run. Phase 3 scrolls the glyphs of $BC (the lift), and $C6 and $C7 (the force field), up a line, the top line going to the bottom, and sets anim_phase back to 0. Each phase then rebuilds the player's characters (copy_under_glyphs, merge_player), since he may stand in front of what changed."
+  },
+  {
+   "address": 7642,
+   "type": "line",
+   "text": "Copies the six screen characters the player's block covers, two columns of three from the screen address in $3F/$40, into under_player ($0333-$0338): the left column, top to bottom, into $0333-$0335 and the right into $0336-$0338. The room start calls it after draw_room."
+  },
+  {
+   "address": 7682,
+   "type": "line",
+   "text": "Turns the character code in $43 into the address of its glyph in the character set at $3800: $43/$44 becomes the code times 8, plus $3800."
+  },
+  {
+   "address": 7710,
+   "type": "line",
+   "text": "Copies the glyphs of the six characters in under_player into the 48-byte buffer at $3FD0, in the order $0333 to $0338, so the buffer holds the scenery behind the player as two columns of 24 lines. merge_player draws him over it next; every caller (animate_chars twice, player_vertical, the shots and crushers when they touch his cells, and the room start) follows it with merge_player."
+  },
+  {
+   "address": 7752,
+   "type": "line",
+   "text": "Draws the player's figure over the scenery in the buffer at $3FD0 and copies the result to characters $78-$7D ($3BC0-$3BEF), the six characters draw_player puts on the screen. The figure is 16 lines high and two columns wide; its frame is player_x ($41) times 8 into player_frames ($3A68), 32 bytes, the left column's 16 bytes then the right's. It is drawn from line player_y ($42) of the 24-line column. Each byte is taken a multicolour pixel (two bits) at a time: where the figure's pixel is 0 the scenery's shows, and anything else is the figure's."
+  },
+  {
+   "address": 7894,
+   "type": "line",
+   "text": "One bit of merge_player's work: shifts the top bit of the scenery byte in $43 into the bottom of $4B. merge_player calls it twice for each pixel."
+  },
+  {
+   "address": 7906,
+   "type": "line",
+   "text": "One bit of merge_player's work: shifts the top bit of the figure byte in $44 into the bottom of $4C. merge_player calls it twice for each pixel."
+  },
+  {
+   "address": 7918,
+   "type": "line",
+   "text": "Puts the player's six characters on the screen at $3F/$40: $78, $79 and $7A down the left column and $7B, $7C and $7D down the right. Their colours are left alone, so the player takes the colours of the cells he stands in. The room start and the end of player_vertical jump here."
+  },
+  {
+   "address": 7952,
+   "type": "line",
+   "text": "Reads an object record's first two bytes for the makers of bridges, force fields, cannons and crushers (four callers). The first byte's high four bits are the high byte of the object's screen address and its low four bits the object's type: it goes whole into obj_type ($0FF0) and its high four bits into $4D. The second byte, the address's low byte, goes into obj_lo ($1004) and $4C. X is the object's slot, from $49; Y is left at 1."
+  },
+  {
+   "address": 7974,
+   "type": "line",
+   "text": "Fills Y+1 cells rightward from the screen address in $4C/$4D with the character in $4F and the colour in $4E. make_bridge and update_bridge draw and rub out bridges with it."
+  },
+  {
+   "address": 7993,
+   "type": "line",
+   "text": "Sets $4C/$4D to the screen address of the object in slot $49, from obj_type's high four bits and obj_lo, and leaves the slot in X. It also adds one to Y, which none of its three callers uses."
+  },
+  {
+   "address": 8011,
+   "type": "line",
+   "text": "Says which of the player's characters the code in A is, as an index into under_player: $78 gives 0, $79 1, $7A 2, $7B 3, $7C 4, and any other code 5 (meant for $7D). A shot or a crusher that reaches a cell holding one of the player's characters calls it to read or change the scenery behind him instead of the screen."
+  },
+  {
+   "address": 8039,
+   "type": "line",
+   "text": "Rubs out the shot of the cannon in slot X: reads its screen address from shot_hi ($1068) and shot_lo ($107C) into $4C/$4D and the cannon's colour into $4E, and writes the blank $D6 there, or into under_player when the cell holds one of the player's characters (with $4F set, so the player is rebuilt). Returns Y = 0 and X = $4C, ready for a pointer move."
+  },
+  {
+   "address": 8085,
+   "type": "line",
+   "text": "Draws a column X+1 rows high, upward from the screen address in $4C/$4D. Each row gets the character in $4A and, to its right, a partner: $4A+4 below $88, $4A itself for the blank $D6 and the lift $BC, and $4A+1 otherwise; the left cell takes the colour in $4E and the right one $4F. The force field's makers draw and rub out their columns with it ($C6 beside $C7, or blanks), and make_decor its columns of scenery."
+  },
+  {
+   "address": 8146,
+   "type": "line",
+   "text": "Fills the screen's top 18 rows, the play area ($0C00-$0ECF), with the blank $D6; the colours are left alone. Five callers: new_game twice, the start of a turn, the start of a room and the death sequence."
+  },
+  {
+   "address": 8165,
+   "type": "line",
+   "text": "Draws both players' lives at the right of the panel: player 1's count from lives ($0345) on rows 19 and 20, and player 2's from $0346 on rows 21 and 22, both by draw_lives_row."
+  },
+  {
+   "address": 8186,
+   "type": "line",
+   "text": "Draws eight places from column 32 of row 19, X cells further on (0 for player 1, 80 for player 2): a little man (character $74 above $75) for each life the count in $49 holds, and blanks in the rest."
+  },
+  {
+   "address": 8228,
+   "type": "line",
+   "text": "Fills the EGY bar along the foot of the panel at the start of each turn, with a sound: from the cell in bar_pos ($034C) to the right end, each of the 34 cells counts down from $71, empty, to $6D, full, a step every delay (10), while voice 2 plays a tone that rises a little at each step and jumps between two pitches. It leaves bar_pos at 33, the right end, and voice 2 off. At the first turn the panel's cells are all empty, and the death sequence empties them again."
+  },
+  {
+   "address": 8288,
+   "type": "line",
+   "text": "Adds one to the big two-digit vitamin count of the player in play, at row 19 column 24 for player 1 and row 21 for player 2: the units digit goes up, and from 9 it goes to 0 and the tens digit goes up. collect_vitamin calls it."
+  },
+  {
+   "address": 8319,
+   "type": "line",
+   "text": "Draws a big digit two cells wide and two high at $0F0E+X: its top-left character is A ($25 for 0 up to $2E for 9), and the other three are A+10, A+20 and A+30."
+  },
+  {
+   "address": 8341,
+   "type": "line",
+   "text": "Switches TED's voice 1 on, setting bit 4 of $FF11. Nothing calls it, nor voice1_off_unused after it; voice2_on and voice2_off, the same for voice 2, are used."
+  },
+  {
+   "address": 8350,
+   "type": "line",
+   "text": "Switches TED's voice 1 off, clearing bit 4 of $FF11. Nothing calls it."
+  },
+  {
+   "address": 8359,
+   "type": "line",
+   "text": "Switches TED's voice 2 on, setting bit 5 of $FF11. The jump, the fall and refill_energy sound on it."
+  },
+  {
+   "address": 8368,
+   "type": "line",
+   "text": "Switches TED's voice 2 off, clearing bit 5 of $FF11."
+  },
+  {
+   "address": 8377,
+   "type": "line",
+   "text": "Prints GET READY (txt_get_ready) in white on row 9 from column 15, at the start of each turn."
+  },
+  {
+   "address": 8396,
+   "type": "line",
+   "text": "Prints GAME OVER (txt_game_over) in white on row 9 from column 15, where GET READY was."
+  },
+  {
+   "address": 8415,
+   "type": "line",
+   "text": "Prints the menu in white: txt_menu1 (F1 one player with the joystick, F2 one player with the keys) on row 7 from column 9, and txt_menu2 (F3 two players with joysticks, HELP two with the keys) on row 10 from column 8, 24 and 26 characters."
+  },
+  {
+   "address": 8465,
+   "type": "line",
+   "text": "Waits in a loop of Y times 256 turns of X, about 1,285 cycles for each unit of Y, and 256 units when Y is 0. Its callers pass the length in Y."
+  },
+  {
+   "address": 8474,
+   "type": "line",
+   "text": "Moves the player a step right, for player_move. The figure moves within his block of two columns by the frame in player_x ($41): 0, 4, 8 and 12 face right and step a multicolour pixel each, and bit 4 set faces left. Facing left, he turns: the block moves a column right (shift_block_right) and player_x becomes 0. Below 12 the frame moves on by 4. At 12 the block moves a column right and player_x goes back to 0, unless the middle or bottom cell of the block's right column, from under_player ($0337, $0338), is solid (is_solid); then he stays where he is."
+  },
+  {
+   "address": 8534,
+   "type": "line",
+   "text": "Moves the player a step left, the mirror of move_right: the left-facing frames are $1C, $18, $14 and $10. Facing right, he turns: the block moves a column left (shift_block_left) and player_x becomes $1C. Above $10 the frame goes back by 4. At $10 the block moves a column left and player_x becomes $1C, unless the middle or bottom cell of the block's left column ($0334, $0335) is solid. Called by player_move for the left control, and for a conveyor belt under his feet."
+  },
+  {
+   "address": 8594,
+   "type": "line",
+   "text": "Moves the player up two lines, for a jump and for a lift. player_y ($42), the figure's top line in his three-row block, goes down by 2. Below 0 the block must move up a row: if the top cell of the column he stands in (the left one, $0333, facing right; the right one, $0336, facing left) is solid he stops with player_y at 0. Otherwise player_y becomes 6, the block's bottom row goes back on the screen from under_player, the saved characters move down a row, $3F/$40 moves up 40, and the new top row is read into $0333 and $0336."
+  },
+  {
+   "address": 8692,
+   "type": "line",
+   "text": "Moves the player down two lines, for falling. player_y goes up by 2; at 8 the block must move down a row: if the cell below the column he stands in (row 3 of the block, left column facing right, right column facing left) is solid he stays with player_y at 6. Otherwise player_y becomes 0, the block's top row goes back on the screen, the saved characters move up a row, $3F/$40 moves down 40, and the new bottom row is read into $0335 and $0338."
+  },
+  {
+   "address": 8790,
+   "type": "line",
+   "text": "Moves the player's block a column right: puts the saved characters of its left column back on the screen, moves the right column's saved characters into the left's, reads the column beyond into $0336-$0338, adds 1 to $3F/$40 and clears the facing-left bit of player_x."
+  },
+  {
+   "address": 8862,
+   "type": "line",
+   "text": "Moves the player's block a column left: subtracts 1 from $3F/$40, puts the saved characters of the old right column back on the screen, moves the left column's saved characters into the right's, reads the new left column into $0333-$0335, and sets the facing-left bit of player_x."
+  },
+  {
+   "address": 8934,
+   "type": "line",
+   "text": "Says whether the character in A stops the player, with the carry set if it does: everything below $7E (the letters, the panel's characters and the player's own), $88-$9F (walls, cannons), $A8-$B7 (crumbling floor), $BA-$BB (a conveyor belt's body) and $CA-$CB. The rest are not: $7E-$87 (wall tops, and the ladders, which he can stand on and jump up through), $A0-$A7, $B8-$B9, $BC-$C9 (lifts, switches, exits, shots, fields) and $CC and above (crushers, the blank, vitamins). Called by the moves, and by player_move to end a jump."
+  },
+  {
+   "address": 8983,
+   "type": "line",
+   "text": "Draws the crumbling floor under the player's feet at its next stage, the character in $4B. The floor is pairs of characters, an even one on the left and an odd one on the right, so which cells hold the pair depends on whether the character under his feet is the pair's left or right half and on which way he faces. Stages below $B0 also have a top half, the pair's characters minus 8, in the row above, which is part of the player's block and so goes into under_player. Reached from crumble_step."
+  },
+  {
+   "address": 9125,
+   "type": "line",
+   "text": "Wears away the crumbling floor the player stands on, once a pass: the character under his feet ($4B) goes up by 2, to the pair's next stage, and crumble_redraw draws it. From $B8 on the floor is gone: both cells of the pair become the blank $D6. Eight stages, from $A8 to $B6, are the floor's life."
+  },
+  {
+   "address": 9193,
+   "type": "line",
+   "text": "The player's movement for one pass of the main loop. It reads the controls (read_input), then the character under his feet ($4B): row 3 of his block, the left column facing right and the right column facing left. In a jump (jumping, $034E, is 1) it goes on at the jump below. Otherwise, while the figure is not at the bottom of his block (player_y not 6), he falls (move_down), unless the character under his feet is $B5 or $B6. Standing at the bottom, the character under him decides: solid ground (below $7E, and $80-$9F) lets the fire button start a jump; a crumbling floor ($A8-$B7) crumbles a stage and is ground; a conveyor's body ($BA-$BB) moves him left and is ground; a lift ($BC) moves him up; the deadly floor ($CA-$CB) kills him; anything else lets him fall, with a falling note on voice 2. A jump rises 16 times two lines (move_up), with a note rising on voice 2, then falls 16 times (move_down), ending early when the character under his feet is solid or a ladder ($80-$87). Then the left and right controls move him (move_right, move_left), and his characters are rebuilt and drawn (copy_under_glyphs, merge_player, draw_player)."
+  },
+  {
+   "address": 9539,
+   "type": "line",
+   "text": "Reads the controls into $03, one bit for each, 0 when pressed: bit 0 up, 1 down, 2 left, 3 right and 7 fire. With the joystick (keyboard, $034D, 0) it reads port 2 at $FF08. With the keys it builds the same bits from the KERNAL's key code in $C6: X right, Z left, K up and M down, one key at a time, and the SHIFT flag ($0543) for fire. Nothing reads the up and down bits."
+  },
+  {
+   "address": 9601,
+   "type": "line",
+   "text": "The player's part of a pass of the main loop. The D key ($C6 = $12) loses a life at once. Then pause_check, then player_move. Then the middle and bottom cells of the column he stands in (from under_player: $0334 and $0335 facing right, $0337 and $0338 facing left) decide what he has touched: an exit ($C1-$C4) in either takes him to the next room (leave_room); a shot or a force field ($C5-$C7) or a crusher ($CC-$D5) in either kills him. With the figure low in the block (player_y 3 or more) the bottom cell also counts for a switch: the lit half $BE turns it off (switch_off), the unlit half $BF turns it on (switch_on); and for a vitamin ($D7, collect_vitamin). A death leaves through the death sequence, by taking the return address off the stack."
+  },
+  {
+   "address": 9748,
+   "type": "line",
+   "text": "The player has touched a lit switch ($BE): draws it unlit (draw_switch_off) and sets its state in switch_state ($0FE8) to 0. The switch's number is the low three bits of its colour, read from the cell draw_switch_off leaves Y on."
+  },
+  {
+   "address": 9772,
+   "type": "line",
+   "text": "The player has touched an unlit switch ($BF): draws it lit (draw_switch_on) and sets its state in switch_state to 1, the switch's number again the low three bits of its colour."
+  },
+  {
+   "address": 9796,
+   "type": "line",
+   "text": "Draws the switch the player touches unlit, $BF beside $C0, in place of the lit $BD beside $BE: in the bottom row of his block, one column to the left facing right, and in his own two columns facing left. The cells in his block go into under_player. Returns Y at the cell whose colour holds the switch's number."
+  },
+  {
+   "address": 9831,
+   "type": "line",
+   "text": "Draws the switch the player touches lit, $BD beside $BE, in place of the unlit $BF beside $C0: in his own two columns facing right, and one column to the right facing left. Returns Y at the cell whose colour holds the switch's number."
+  },
+  {
+   "address": 9866,
+   "type": "line",
+   "text": "The TIME clock of the player in play, at the left of the panel (TIME1 on row 19, TIME2 on row 21). Every 71st pass of the main loop ($0354 counts them down from 70) the clock's last digit goes up; a 9 goes to 0 and carries into the digit before it, and that one carries into the first, which stands before the point. When the first digit reaches 4 (4.00), the player's lives become 1 and he dies, which ends his game."
+  },
+  {
+   "address": 9965,
+   "type": "line",
+   "text": "Draws a big digit of the TIME clock at $0EFE+X, its top-left character A and the other three A+10, A+20 and A+30, as draw_big_digit does for the vitamin count."
+  },
+  {
+   "address": 9987,
+   "type": "line",
+   "text": "The player has walked into an exit; A is its character. The exit on the top row ($C1) takes him to the room in exit_up ($033D) and moves his block down 15 rows to the bottom of the screen; the one on the bottom row ($C2) to exit_down ($033E) and 15 rows up; the left edge ($C3) to exit_left ($033F) and 38 columns right; the right edge ($C4) to exit_right ($0340) and 38 columns left. The new room number, the block's place and player_x and player_y are saved for the player in play, and the game goes to the room start, which draws the new room. Before the move up it puts the scenery back under the top two rows of the block, with $0336 written to the middle row's right cell where $0337 belongs; the room start clears the screen anyway."
+  },
+  {
+   "address": 10136,
+   "type": "line",
+   "text": "The P key pauses: prints PAUSED in red under the play area, turns the volume down to 0, and waits for P to be let go, pressed again and let go again; then turns the volume up to 15 and blanks the row again."
+  },
+  {
+   "address": 10208,
+   "type": "line",
+   "text": "The player has touched the room's vitamin: it goes from under_player, the bit for this player in the room's entry in vitamins_got ($0366 plus the room's vitamin number; bit 0 for player 1, bit 1 for player 2) is set, so the vitamin is not drawn for him again, and his vitamin count goes up on the panel and in vitamin_count ($0355). The 25th vitamin ends his game: his lives become 1, the tune starts, the game waits for a key to be pressed, and he dies, the death sequence finding no lives left. In a game for two, the other player goes on."
+  },
+  {
+   "address": 10308,
+   "type": "line",
+   "text": "Turns the vitamin's four frames, characters $D7-$DA, on by one: each glyph takes the next one's bytes and $D7's go to $DA. Called on each pass of the main loop and on each dot of the title."
+  },
+  {
+   "address": 10344,
+   "type": "line",
+   "text": "Draws the room the player in play is in (room, $0347) from its record, found through room_ptr_lo and room_ptr_hi. It copies the four exits to $033D-$0340 and the vitamin's number, screen address and colour to $035B-$035E; restores the player's block address, player_x and player_y; fills the colours of the play area with the room's colour and keeps its three background colours for irq at $0339-$033B. Then it draws the walls from the room's 45-byte bitmap: each bit, from the top left, is two cells, a set bit the room's wall character beside the same plus 4 and a clear one two blanks, 16 cells to a byte and 18 rows of 40. Then each blank cell above the left half of a wall gets the wall top, $7E beside $7F, in the room's fourth colour. The object tables, $0FE8-$108E, are cleared before the objects are made."
+  },
+  {
+   "address": 10649,
+   "type": "line",
+   "text": "draw_room's second half: makes each object of the room record in turn, by the type in its first byte's low four bits (make_bridge, make_field, make_cannon for 3 and 4, make_crusher, make_decor, make_switch), until a $FF. The two bytes after the $FF are the energy rate (energy_rate, $0352) and the energy mode ($035F). Then every blank cell on an edge of the play area becomes an exit: $C3 in column 0, $C4 in column 39, $C1 on the top row and $C2 on the bottom row. Last it draws the vitamin, $D7 in its colour at its address, unless this player has collected it."
+  },
+  {
+   "address": 10903,
+   "type": "line",
+   "text": "Moves the room's objects: each slot from 0 in turn, by the type in the low four bits of obj_type ($0FF0), until an empty slot (type 0) or slot 20. Type 1 is update_bridge, 2 update_field, 3 update_cannon, 4 update_random_cannon and 5 update_crusher; any other type reaches a BRK, which the room records never give it. The main loop calls it once a pass, and the death sequence on each of its steps, so the room goes on moving while the player dies."
+  },
+  {
+   "address": 10979,
+   "type": "line",
+   "text": "Makes a bridge (type 1) from its 5-byte record: the address and type (object_place), its colour (obj_colour, $1018), its length less one (obj_timer, $1040) and its switch's number (obj_param, $102C). It blanks that many cells plus one from the address, in the bridge's colour; update_bridge draws the bridge in the row below while its switch is on."
+  },
+  {
+   "address": 11021,
+   "type": "line",
+   "text": "Makes a force field (type 2) from its 6-byte record: the address and type, the colours of its left and right cells (obj_colour, obj_param), its switch's number (obj_timer) and its height less one (obj_reload, $1054). It draws the field's base, $90 beside $91, at the address, keeps the cell above as the object's address, and draws the field above it, a column of $C6 beside $C7 (draw_column). update_field takes it away while its switch is off."
+  },
+  {
+   "address": 11104,
+   "type": "line",
+   "text": "Makes a cannon from its 6-byte record, type 3 firing one way and type 4 firing either way at random: the address and type, its colour (obj_colour), a byte whose bit 6 makes a type 3 fire right, its rate (obj_timer and obj_reload) and its switch's number. obj_param gets the direction bit, the switch's number in its low four bits and bit 7, which means no shot is in flight. It draws the base, $92 beside $93, at the address and the head in the row above, coloured like the base's left cell: for type 4 the spinning head, $98 beside $9C; for type 3 firing right $96 beside $97, its shots starting two cells right of the head's left cell; firing left $94 beside $95, its shots starting a cell left of the head. A type 3 keeps that starting cell as its address, a type 4 the base's."
+  },
+  {
+   "address": 11267,
+   "type": "line",
+   "text": "Draws a piece of scenery (type 7) from its 6-byte record and keeps no slot for it: the address, the colours of the top and bottom rows (or of the left and right columns), the character, and a count. A character from $A0 to $BB is a row of count blocks, two cells wide and two high, rightward from the address: the character and the next on top, and below them the character plus 8 and the next (crumbling floor, $A0 over $A8), or for $B8 the character plus 2 and the next (a conveyor belt, $B8 over $BA). From $C8 the row has the character plus 2 below it (the deadly floor, $C8 over $CA). Any other character is a column count+1 rows high, upward from the address (draw_column): the ladders, $80-$83."
+  },
+  {
+   "address": 11413,
+   "type": "line",
+   "text": "Draws a switch (type 8) from its 4-byte record and keeps no slot for it: the address, its colour, whose low three bits are the switch's number, and its state at the start of the room, which goes into switch_state ($0FE8). A switch that is on is drawn lit, $BD beside $BE, and one that is off unlit, $BF beside $C0, both cells in its colour."
+  },
+  {
+   "address": 11478,
+   "type": "line",
+   "text": "Shows or hides the bridge in slot $49 by its switch (obj_param). The bridge is the row below the object's address, length plus one cells, drawn as pairs of the two characters in the screen's top-left cells ($0C00, $0C01) in the top-left cell's colour ($0800): the room's own wall. Whether the bridge is up is read from the first cell below the address, compared with $0C00. With the switch on and the bridge down, the row at the address is blanked in the bridge's colour and the bridge drawn below it; with the switch off and the bridge up, both rows are blanked."
+  },
+  {
+   "address": 11600,
+   "type": "line",
+   "text": "Works the one-way cannon (type 3) in slot X, when object_timer lets it: with a shot in flight (bit 7 of obj_param clear) it moves the shot, the character $C5, a cell on (move_shot); without one, it puts a new shot at the cannon's starting cell, to be moved there next time."
+  },
+  {
+   "address": 11649,
+   "type": "line",
+   "text": "The rate and the switch of a cannon. Counts the object's obj_timer ($1040) down, and at 0 reloads it from obj_reload ($1054); the cannon acts only then, and only while its switch, the low four bits of obj_param, is on in switch_state. Otherwise it returns from the cannon's routine as well, taking the return address off the stack. A switch number of 8 or more reads past switch_state into obj_type, the first object's type, which is never 0: the records give their always-on cannons and crushers switch 8."
+  },
+  {
+   "address": 11677,
+   "type": "line",
+   "text": "Moves the shot of the cannon in slot X one cell, right when bit 6 of obj_param is set and left when it is clear: rubs it out (shot_erase) and looks at the next cell, through under_player when the cell holds one of the player's characters. Anything but a blank there ends the shot: bit 7 of obj_param is set, and the cannon fires again from its start. A blank gets the shot character ($03FC) in the cannon's colour, written into under_player when the cell is one of the player's, where player_pass finds it; then the player's characters are rebuilt, so the shot shows through him."
+  },
+  {
+   "address": 11806,
+   "type": "line",
+   "text": "Takes away or puts back the force field in slot $49 by its switch (obj_timer): off, and the column's bottom cell holds $C6, the column is blanked; on, and the bottom cell is blank, the column of $C6 beside $C7 is drawn again in the field's two colours (draw_column)."
+  },
+  {
+   "address": 11880,
+   "type": "line",
+   "text": "Works the random cannon (type 4) in slot X, when object_timer lets it. A shot in flight is moved as update_cannon moves one. A new shot goes left or right by bit 0 of $FF1F, the line of its character row that TED's beam is on, which the main loop's timing makes as good as random: 1 sends it left from the cell left of the head (the base's address less 41), and 0 right from the cell right of the head (the address less 38)."
+  },
+  {
+   "address": 11989,
+   "type": "line",
+   "text": "Makes a crusher (type 5) from its 8-byte record: the address and type, the colours of its left and right cells (obj_colour, obj_param), a byte whose bit 6 starts it moving down, its length in rows, its switch's number (with the direction bit, in obj_timer) and its rate (obj_reload, $1054, which update_crusher counts down, and shot_hi, $1068, which holds a crusher's reload). It draws the crusher down from the address: a shaft of $CC beside $D1 for all but the last row, and the head, $CD beside $D2, in the last, which becomes the object's address."
+  },
+  {
+   "address": 12131,
+   "type": "line",
+   "text": "Moves the crusher in slot X when its timer (obj_reload, reloaded from $1068) runs out and its switch is on. Its head has four stages in a cell, $CD to $D0 on the left and five characters on ($D2-$D5) on the right. Moving up (bit 6 of obj_timer clear) the head goes a stage on; from $D0 its cell is blanked, and it carries on as $CD in the cell above if that is shaft, or else turns round at $D0 where it was. Moving down it goes a stage back; from $CD its cell becomes shaft and it carries on as $D0 in the cell below if that is blank, or else turns round at $CD. Each cell it changes goes through write_cell, so it can crush the player."
+  },
+  {
+   "address": 12363,
+   "type": "line",
+   "text": "Reads the character in the cell at $4C/$4D, or the scenery behind the player when the cell holds one of his characters."
+  },
+  {
+   "address": 12382,
+   "type": "line",
+   "text": "Writes X into the cell at $4C/$4D, or into under_player when the cell holds one of the player's characters, setting $4F so that he is rebuilt."
+  },
+  {
+   "address": 12405,
+   "type": "line",
+   "text": "Sets the machine up for the game; new_game calls it first. With interrupts off: volume 15 and both voices off; the character set at $3800 in the RAM ($FF13, $FF12 bit 2); 256 characters and multicolour ($FF07 bits 7 and 4); the raster interrupt on line 0 ($FF0A, $FF0B) through irq ($0314-$0315); a dark blue border ($FF19). It blanks row 18 and copies the panel, panel_layout, to rows 19-24, colouring each cell by its character: red below $24 (the letters), yellow for the big digits ($67 for their top halves, $77 for the bottom), multicolour for $4D-$73 (the EGY bar and the point and stroke between the digits), white from $74 (the little men and the T.K mark). Both players' blocks start at $0C52, row 2 column 2; music_on becomes 1 and the tune's counters $FF. $0353 gets $92, and no instruction reads it."
+  },
+  {
+   "address": 12590,
+   "type": "line",
+   "text": "The game's raster interrupt, which the KERNAL's interrupt entry reaches through $0314 with A, X and Y on the stack. It acknowledges TED and takes turns between two lines. On line 146 ($92), below the play area, it sets the next interrupt for line 250 ($FA), the panel's background colours ($06, $77, $F0 to $FF15-$FF17) and flips the brightness of the TIME label of the player in play (flash_time_label). On line 250 it sets the next for line 146, the room's colours from $0339-$033B, and plays a frame of the tune (music_tick) while music_on is 1. Each time it then calls the KERNAL's keyboard scan (SCNKEY, $FF9F), which keeps the key code in $C6 and the SHIFT flag up to date, and returns."
+  },
+  {
+   "address": 12671,
+   "type": "line",
+   "text": "A tune player nothing calls, in the shape of music_tick: while the byte at $03BB is 0 it counts 7 frames a step in $D0 and 96 steps in $D1, takes voice 1's note from $1800 and voice 2's from $1860 at the step, and their frequencies from $18C0 and $18D8 at the note, with both voices on at volume 8. Those addresses hold room records, so it would play noise; it looks left from a time when its tables lay there."
+  },
+  {
+   "address": 12750,
+   "type": "line",
+   "text": "Flips bit 5 of the colours of the five cells of TIME1 (row 19) or TIME2 (row 21), whichever player is in play, so the label changes brightness each time irq passes line 146."
+  },
+  {
+   "address": 12789,
+   "type": "line",
+   "text": "The game's start, after GAME OVER too. Sets the machine up (setup_machine), clears the play area and the players' variables ($0345-$037E) and the animation's phase, draws the lives, and waits for no key. Then the title: print_title_text and the dotted MR PUNIVERSE (title_dot_step, called in a loop) until RETURN. Then the menu (show_menu) until F1 (one player, joystick), F2 (one player, keys), F3 (two players, joysticks) or HELP (two players, keys): each player in the game gets 8 lives and is marked active ($0349, $034A), and the keys set keyboard ($034D)."
+  },
+  {
+   "address": 12943,
+   "type": "line",
+   "text": "The start of a turn, for the player in play: draws the lives, clears the play area, shows GET READY, turns the tune off, sets the volume to 15 and fills the EGY bar (refill_energy). Then on to the room start."
+  },
+  {
+   "address": 12965,
+   "type": "line",
+   "text": "Starts the player in his room: the energy counter to 1, so the EGY bar moves on the first pass; the play area cleared and the room drawn (draw_room); the scenery under his block saved, and his characters built and drawn. leave_room comes here too."
+  },
+  {
+   "address": 12988,
+   "type": "line",
+   "text": "The game's main loop, one pass after another with no wait on the beam: player_pass, animate_chars, rotate_vitamin_chars, update_objects, clock_tick and energy_tick, until energy_tick returns the carry set (the EGY bar empty). The deaths that player_pass and clock_tick find leave it for the death sequence too."
+  },
+  {
+   "address": 13008,
+   "type": "line",
+   "text": "The death sequence. Turns the tune off and voice 2's noise on, empties the EGY bar ($71 in all 34 cells, bar_pos 0), and puts the scenery back where the player was. Then the room's background colour steps through the colours while voice 2 rises, one step per delay (10) with the objects still moving (update_objects), until the pitch reaches $FD. Then it restores the background, sets the clock to tick on the next pass, clears the play area and fades the volume from 15 to 0. The player loses a life; with none left he is out. With both players out, GAME OVER shows for four long delays and the game starts again (new_game); otherwise the next active player takes his turn (start_turn)."
+  },
+  {
+   "address": 13227,
+   "type": "line",
+   "text": "The EGY bar, along the bottom of the panel. bar_pos ($034C) is the cell being worked; a cell's character goes from $6D, full (lit), to $71, empty. Each time energy_count ($0351) runs down, reloaded from the room's energy_rate ($0352), the room's energy mode ($035F) decides. Mode 1 drains: the cell goes a step toward $71, and once it is empty bar_pos moves left; when the leftmost is empty it returns the carry set, and the player dies. Mode 0 refills: the cell goes a step toward $6D, and once it is full bar_pos moves right, stopping at the right end (33). Otherwise it returns the carry clear."
+  },
+  {
+   "address": 13314,
+   "type": "line",
+   "text": "Turns the tune off (music_on 0) and sets $FF11 to $4F: volume 15 and voice 2's noise on, the death's sound."
+  },
+  {
+   "address": 13325,
+   "type": "line",
+   "text": "The dot path title_dot_step follows on the title: a 0 and a screen address to start a stroke, strokes whose low four bits count the dots and high four bits give the step after each (bit 4 up, 5 down, 6 right, 7 left), and a 1 at the end to start again. It draws a frame round the play area, MR in small dots in the middle of the top half, and PUNIVERSE in larger ones below it."
+  },
+  {
+   "address": 14268,
+   "type": "line",
+   "text": "\"GAME OVER\" in the game's alphabet ($01-$1A for A-Z, $D6 for a space), which show_game_over prints."
+  },
+  {
+   "address": 14277,
+   "type": "line",
+   "text": "\"GET READY\" in the game's alphabet, which show_get_ready prints at the start of each turn."
+  },
+  {
+   "address": 14286,
+   "type": "line",
+   "text": "\"F1 1PLY JOY  F2 1PLY KEY\" in the game's alphabet (digits $1B-$24), the menu's first line, which show_menu prints on row 7."
+  },
+  {
+   "address": 14310,
+   "type": "line",
+   "text": "\"F3 2PLY JOY  HELP 2PLY KEY\", the menu's second line, which show_menu prints on row 10."
+  },
+  {
+   "address": 14336,
+   "type": "line",
+   "text": "The start of the game's 256-character set, which TED reads from $3800 ($FF13 = $38). Characters $00-$24, the alphabet the game's text is written in: $00 the copyright sign, $01-$1A the letters A to Z and $1B-$24 the digits 0 to 9. They are drawn one bit a pixel, as text, since their colours have bit 3 clear."
+  },
+  {
+   "address": 14632,
+   "type": "line",
+   "text": "Characters $25-$4C, the big digits of the TIME and VITAM counters on the panel: each digit is four characters, two by two, the digit's own number ($25 for 0 up to $2E for 9) at the top left, plus 10 at the top right, plus 20 at the bottom left and plus 30 at the bottom right."
+  },
+  {
+   "address": 14952,
+   "type": "line",
+   "text": "The player's eight frames, 32 bytes each, in multicolour: 16 lines of the left column then 16 of the right. merge_player takes the frame at player_x times 8: the first four for player_x 0, 4, 8 and 12, facing right, and the next four for $10, $14, $18 and $1C, facing left. Nothing draws them as characters, though they lie where characters $4D-$6C would be."
+  },
+  {
+   "address": 15208,
+   "type": "line",
+   "text": "Characters $6D-$77 of the panel: $6D-$71 the five stages of a cell of the EGY bar, from $6D (full) to $71 (empty); $72, which nothing draws; $73, the point in the TIME counters and the stroke in the VITAM ones; $74 and $75, the little man of a life, head over feet; and $76 and $77, the T.K mark at the panel's bottom right."
+  },
+  {
+   "address": 15344,
+   "type": "line",
+   "text": "Characters $7E and $7F, the top of a wall, which draw_room puts on each blank cell above a wall's left half and the cell beside it."
+  },
+  {
+   "address": 15360,
+   "type": "line",
+   "text": "Characters $80-$87, the ladders: four styles, each a left character beside the same plus 4, which make_decor stacks in columns. The player can stand on them at any height and jump up through them."
+  },
+  {
+   "address": 15424,
+   "type": "line",
+   "text": "Characters $88-$8F, the walls: four styles, $88 to $8B on the left of a block and the same plus 4 on the right. Each room record names its style."
+  },
+  {
+   "address": 15488,
+   "type": "line",
+   "text": "Characters $90-$97: $90 beside $91, the base of a force field; $92 beside $93, the base of a cannon; $94 beside $95, a cannon's head facing left; and $96 beside $97, facing right."
+  },
+  {
+   "address": 15552,
+   "type": "line",
+   "text": "Characters $98-$9F, the random cannon's head, $98 on the left and $9C on the right: animate_chars turns $98-$9B, and $9C-$9F, a frame on every third pass of the main loop, so the head spins."
+  },
+  {
+   "address": 15560,
+   "type": "line",
+   "text": "Character $99, the random cannon head's left half, second frame; animate_chars moves $99-$9B's glyphs down to $98-$9A."
+  },
+  {
+   "address": 15576,
+   "type": "line",
+   "text": "Character $9B, the left half's last frame, which takes $98's old glyph."
+  },
+  {
+   "address": 15584,
+   "type": "line",
+   "text": "Character $9C, the random cannon head's right half, first frame."
+  },
+  {
+   "address": 15592,
+   "type": "line",
+   "text": "Character $9D, the right half's second frame; $9D-$9F's glyphs move down to $9C-$9E."
+  },
+  {
+   "address": 15608,
+   "type": "line",
+   "text": "Character $9F, the right half's last frame, which takes $9C's old glyph."
+  },
+  {
+   "address": 15616,
+   "type": "line",
+   "text": "Characters $A0-$B7, the crumbling floor: blocks of two cells wide, $A0 beside $A1 over $A8 beside $A9 when new. Each pass the player stands on it, crumble_step moves the pair under his feet two characters on, through $AA, $AC and $AE (each with its own top, the character minus 8, $A2-$A7) and then $B0-$B6 without one, until at $B8 it is gone."
+  },
+  {
+   "address": 15808,
+   "type": "line",
+   "text": "Characters $B8-$BB, the conveyor belt: $B8 beside $B9 on top of $BA beside $BB. animate_chars rolls both pairs a pixel left on every third pass, and a player standing on $BA or $BB is carried left."
+  },
+  {
+   "address": 15816,
+   "type": "line",
+   "text": "Character $B9, the right half of the conveyor's top, rolled with $B8 as one 16-pixel strip."
+  },
+  {
+   "address": 15824,
+   "type": "line",
+   "text": "Character $BA, the left half of the conveyor's body, rolled with $BB."
+  },
+  {
+   "address": 15832,
+   "type": "line",
+   "text": "Character $BB, the right half of the conveyor's body."
+  },
+  {
+   "address": 15840,
+   "type": "line",
+   "text": "Character $BC, a lift, whose glyph animate_chars scrolls up on every third pass: a player with $BC under his feet is carried up (player_move). No room record places one."
+  },
+  {
+   "address": 15841,
+   "type": "line",
+   "text": "Lines 1-6 of the lift, character $BC, which animate_chars moves up a line."
+  },
+  {
+   "address": 15847,
+   "type": "line",
+   "text": "Line 7 of the lift, which takes line 0's byte."
+  },
+  {
+   "address": 15848,
+   "type": "line",
+   "text": "Characters $BD-$C0, a switch: $BD beside $BE lit (on), $BF beside $C0 unlit (off)."
+  },
+  {
+   "address": 15880,
+   "type": "line",
+   "text": "Characters $C1-$C4, the exits draw_room puts in every blank cell on an edge of the play area: $C1 on the top row, $C2 on the bottom row, $C3 in the left column and $C4 in the right. A player who has one in the middle or bottom cell of the column he stands in leaves the room that way."
+  },
+  {
+   "address": 15912,
+   "type": "line",
+   "text": "Character $C5, a cannon's shot."
+  },
+  {
+   "address": 15920,
+   "type": "line",
+   "text": "Characters $C6 beside $C7, a force field, whose glyphs animate_chars scrolls up on every third pass. Touching it kills."
+  },
+  {
+   "address": 15921,
+   "type": "line",
+   "text": "Lines 1-6 of character $C6, the force field's left half, which animate_chars moves up a line."
+  },
+  {
+   "address": 15927,
+   "type": "line",
+   "text": "Line 7 of $C6, which takes line 0's byte."
+  },
+  {
+   "address": 15928,
+   "type": "line",
+   "text": "Character $C7, the force field's right half, scrolled up with $C6."
+  },
+  {
+   "address": 15929,
+   "type": "line",
+   "text": "Lines 1-6 of $C7."
+  },
+  {
+   "address": 15935,
+   "type": "line",
+   "text": "Line 7 of $C7, which takes line 0's byte."
+  },
+  {
+   "address": 15936,
+   "type": "line",
+   "text": "Characters $C8-$CB, the deadly floor: $C8 beside $C9 over $CA beside $CB. Standing on $CA or $CB kills."
+  },
+  {
+   "address": 15968,
+   "type": "line",
+   "text": "Characters $CC-$D5, a crusher: $CC beside $D1 its shaft, and $CD to $D0 beside $D2 to $D5 the four stages of its head within a cell. Touching any of them kills."
+  },
+  {
+   "address": 16048,
+   "type": "line",
+   "text": "Character $D6, the blank: the game's space and empty cell."
+  },
+  {
+   "address": 16056,
+   "type": "line",
+   "text": "Characters $D7-$DA, the four frames of a vitamin, which rotate_vitamin_chars turns on each pass of the main loop and on each dot of the title. The title's dots are $D7 too. $DB after them is drawn by nothing."
+  },
+  {
+   "address": 16064,
+   "type": "line",
+   "text": "Character $D8, the vitamin's second frame; rotate_vitamin_chars moves $D8-$DA's glyphs down to $D7-$D9."
+  },
+  {
+   "address": 16080,
+   "type": "line",
+   "text": "Character $DA, the vitamin's last frame, which takes $D7's old glyph."
+  },
+  {
+   "address": 16096,
+   "type": "line",
+   "text": "Not characters: the bottom panel's six rows of 40 character codes, which setup_machine copies to rows 19-24 of the screen. Rows 19 and 20 hold TIME1 with its big 0.00, VITAM1 with its big 00 and 25, and player 1's eight lives; rows 21 and 22 the same for player 2; row 23 is blank; and row 24 holds EGY, the bar's 34 empty cells ($71) and the T.K mark."
+  }
+ ]
+}
