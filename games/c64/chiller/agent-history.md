@@ -253,3 +253,13 @@ buttons move five seconds through the saved recording and pause there; they
 stop at its ends. Play resumes from the selected moment using the existing
 branching replay behaviour, so it replaces the old future. Button availability
 and pressed states follow the shared pause and recording state.
+
+### Collapsible jump duration slider
+
+Added Fine-tune jump beneath the jump presets in Gameplay tweaks. Its
+50–200% duration slider scales the original 24 timing bytes using the same
+rounding and limits as the Snappy and Floaty presets, with 100% restoring the
+original. It changes the live game and is recorded for rewind. Presets,
+rewinds and manual edits update the slider's displayed state; the slider is
+disabled when reviewing the old future until Play resumes. The general byte
+editor remains available in a collapsed Advanced memory editor section.
