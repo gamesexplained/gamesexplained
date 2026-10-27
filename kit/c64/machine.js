@@ -5,7 +5,9 @@
 // what a game that has banked the KERNAL out usually touches:
 // - a PAL raster, 312 lines of 63 cycles, with the raster-compare interrupt ($D012 and bit 7 of
 //   $D011, the latch $D019 and the enable $D01A) taken through the vector at $FFFE when the
-//   processor allows it, and $D011/$D012 reading the current line;
+//   processor allows it, and $D011/$D012 reading the current line. The IRQ line is a level: a
+//   handler that returns with a source it has not acknowledged still holding it is interrupted
+//   again straight after its RTI, as on the machine (tick, below);
 // - CIA 1's keyboard matrix and joystick port 2 ($DC00-$DC03): keys are held as the KERNAL numbers
 //   them (row x 8 + column, KEY below), the stick as the port's five bits, active low. Port A starts
 //   as the KERNAL leaves it, not as at power-on: $DC02 $FF (all outputs) and $DC00 $7F (row 7 low),
@@ -178,6 +180,7 @@ class Machine {
       rom: opts.rom,
     });
     this.lastCycles = 0;
+    if (this.nest) this.cpu.onRti = () => self.tick();   // a source still held interrupts the RTI's next instruction
     this.cpu.pc = opts.pc === undefined ? 0 : opts.pc;
     this.cpu.i = 1;
     if (this.collide) this.collide.at(this.cpu.cycles);
@@ -388,23 +391,34 @@ class Machine {
     }
     return true;
   }
+  // The chips brought up to the processor's cycle, and the interrupts they hold taken. The IRQ line
+  // is a level: a handler that returns while CIA 1 or the video chip still holds it (a source it
+  // has not acknowledged) is interrupted again at once, as the processor does straight after the
+  // RTI, so the main program runs no instruction in between. With nest the handler runs on with
+  // the program, and its RTI comes back here (the CPU's onRti).
   tick() {
-    if (this.dma) this.dmaCatchUp();
-    if (this.collide) this.latch |= this.collide.irq(this.cpu.cycles - 1);
-    const ln = Math.floor(this.cpu.cycles / LINE);
-    while (this.lastLine < ln) {
-      this.lastLine++;
-      const l = this.lastLine % LINES;
-      if (l === 0) this.frames++;
-      if (l === this.cmp) this.latch |= 1;
+    for (let n = 0; ; n++) {
+      if (this.dma) this.dmaCatchUp();
+      if (this.collide) this.latch |= this.collide.irq(this.cpu.cycles - 1);
+      const ln = Math.floor(this.cpu.cycles / LINE);
+      while (this.lastLine < ln) {
+        this.lastLine++;
+        const l = this.lastLine % LINES;
+        if (l === 0) this.frames++;
+        if (l === this.cmp) this.latch |= 1;
+      }
+      let held = (this.latch & this.enable & 0x0F) !== 0;
+      if (this.cia) {
+        this.ciaCatchUp();
+        if (this.nmiDue) { this.nmiDue = false; this.nmis++; this.take(0xFFFA); }
+        const c = this.cia[0];
+        if (c.icr & c.mask) held = true;
+      }
+      if (!held || this.cpu.i) return;
+      if (n >= 100000) throw new Error('Machine: the interrupt was taken 100,000 times without a return to the main program');
+      this.take(0xFFFE);
+      if (this.nest) return;
     }
-    if (this.cia) {
-      this.ciaCatchUp();
-      if (this.nmiDue) { this.nmiDue = false; this.nmis++; this.take(0xFFFA); }
-      const c = this.cia[0];
-      if ((c.icr & c.mask) && !this.cpu.i) { this.take(0xFFFE); return; }
-    }
-    if ((this.latch & this.enable & 0x0F) && !this.cpu.i) this.take(0xFFFE);
   }
   // An interrupt through the vector at v: run whole, or with nest only begun
   take(v) {
