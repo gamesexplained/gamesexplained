@@ -24,6 +24,14 @@ interrupt entry, which reaches `irq` through the vector at `$0314`
 `$C6` and the SHIFT flag in `$0543` (`read_input`, `player_pass`,
 `pause_check`). `$FF3E` and `$FF3F` are never written.
 
+Nothing in the game sets the title's colours: `irq` copies them to TED
+from `room_colours` (`$0339`-`$033B`), which lies in the KERNAL's
+cassette buffer, and the load leaves `$4C`, `$4A` and `$F0` there, a
+blue-green, a yellow-green and black, until `draw_room` writes a room's. The
+load also leaves `$A1` in `$034B` (`player`), which the first interrupts
+read to flip a TIME label before `new_game` clears it. *(live: the
+bytes at the hand-over, and the title's picture, against plus4emu)*
+
 ## Memory layout
 
 | Thing | Where |
@@ -269,8 +277,9 @@ drum.
 
 **Effects**, on voice 2 with the tune off (`death_sound` turns
 `music_on` to 0): a jump's note rises (`player_move`), a fall has its
-own note, the EGY bar's refill at each turn plays a tone that rises a
-step at each cell (`refill_energy`), and the death sequence turns on the
+own note, held until he lands, the EGY bar's refill at each turn plays
+a warble that jumps between a low tone and a high one at every step of
+the bar, both creeping up (`refill_energy`), and the death sequence turns on the
 noise and raises the pitch while the room's colours step round
 (`death`). `voice1_on_unused` and `voice1_off_unused` are never called.
 

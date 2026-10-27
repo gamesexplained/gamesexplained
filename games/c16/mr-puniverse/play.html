@@ -1,0 +1,2142 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
+.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.pl-pad button.on{background:var(--ink);color:#fff}
+@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
+.pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.pl-levels button:hover{border-color:var(--ink-mute)}
+.pl-levels button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Play the whole game in your browser, from its title to the 25th vitamin, alone or taking turns with a friend.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 16 screen of Mr Puniverse"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-cheat="lives" aria-pressed="false" title="Plus/4 World's poke: the DEC that takes a life becomes a load">Unlimited lives</button>
+      <button type="button" data-cheat="energy" aria-pressed="false" title="Plus/4 World's poke: the DEC that counts down the energy becomes a load">Unlimited energy</button>
+      <button type="button" data-cheat="tough" aria-pressed="false" title="Plus/4 World's poke: an RTS where the way to the death sequence starts">Nothing kills him</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-levels" id="pl-levels" aria-label="Start a game">
+      <span>Start a game for</span>
+      <button type="button" data-players="1">One player</button>
+      <button type="button" data-players="2">Two players</button>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>←</kbd> <kbd>→</kbd> walk, <kbd>Space</kbd> jumps</li>
+      <li><kbd>Enter</kbd> on the title goes to the menu</li>
+      <li><kbd>F1</kbd> <kbd>F2</kbd> <kbd>F3</kbd> <kbd>F4</kbd>, or <kbd>1</kbd> to <kbd>4</kbd>, are the menu's F1, F2, F3 and HELP</li>
+      <li><kbd>P</kbd> pauses, <kbd>P</kbd> again goes on</li>
+      <li><kbd>D</kbd> gives up a life</li>
+      <li><kbd>Z</kbd> <kbd>X</kbd> and <kbd>Shift</kbd> are the game's own keys, with a keyboard game chosen</li>
+    </ul>
+    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
+      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
+      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
+      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
+    </div>
+    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the room in its colours above, the panel in its own below. The arrows and Space are a joystick in port 2, or the game's own keys when the menu's choice was a keyboard game. <b>One player</b> and <b>Two players</b> press RETURN on the title and then F1 or F3 on the menu, as a player would. The three cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
+  </div>
+</section>
+<section id="differences">
+  <p class="fig">01 · Differences</p>
+  <h2 class="t">What differs from a Commodore 16</h2>
+  <ul class="pl-list">
+    <li><b>The loading.</b> There is none: the page starts where the tape's loader hands over, at the game's first instruction at <code>$1AF4</code>, the address its BASIC line calls with <code>SYS 6900</code>. That sets the machine up and shows the title.</li>
+    <li><b>The KERNAL.</b> The game takes TED's raster interrupt through the C16's ROM, which saves the registers and jumps through the vector at <code>$0314</code>; the game's handler puts the registers back and returns by itself. The page does not carry the ROM. It calls the game's handler itself and charges the ROM's cycles on the way in. The handler also calls the ROM's keyboard scan, which finds the key held and the SHIFT key for the game. The page runs the site's copy of that scan, the ROM's routine written again in JavaScript with the ROM's table of key codes, so the game sees the codes a C16 gives it. The few bytes of memory the ROM leaves set up for the scan, such as the length of each function key's text, are added to the game's memory as the C16 holds them when the game starts.</li>
+    <li><b>The screen.</b> TED reads the screen as its beam meets it. The page keeps the memory as each row of characters began and TED's registers line by line, a write taking effect on the line after the one it was made on, and draws the frame from those. The game's raster interrupt changes the background colours twice a frame: to the room's colours on line 250, for the top of the next frame, and to the panel's on line 146, below the room. The port makes those writes as its interrupt is taken, and the page puts each on the line where the game's own lands, from the cycles the game takes to reach it.</li>
+    <li><b>The interrupt.</b> On the C16 the raster interrupt can come between any two instructions. On the page it comes between the port's steps: at each call <code>main_loop</code> makes, at each pause in the title, the death and the EGY bar's refill, and at each turn of a loop that waits for a key. The game's main program reads two bytes that the interrupt's keyboard scan writes, the key code and the SHIFT flag. On a C16 one of those can change between two of its reads; on the page it cannot.</li>
+    <li><b>The random cannon.</b> The cannon that fires either way chooses its side from TED's register <code>$FF1F</code>, whose lowest bit gives the line within its character row that the beam is drawing. The page reads it from its own clock, at about the place in the pass where the game's code reads it, so the cannon fires left or right as a C16 would on some run, never as one particular run did.</li>
+    <li><b>The sound.</b> The game's writes to TED's sound registers, the tune on the title and the notes of the jumps, falls and deaths, go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.</li>
+    <li><b>Start a game.</b> The game has no way to start but its own keys. <b>One player</b> and <b>Two players</b> press them for you: RETURN on the title, then F1 or F3 on the menu, the joystick choices. A keyboard game is F2 or HELP, which you can press yourself.</li>
+    <li><b>The cheats.</b> <b>Unlimited lives</b>, <b>Unlimited energy</b> and <b>Nothing kills him</b> are Plus/4 World's pokes: the page writes the same bytes into the game's code, and the port reads its instructions there, so the game does what it does on a C16 with the same pokes.</li>
+    <li><b>The keys.</b> The arrows and Space are the joystick in port 2, or, with a keyboard game chosen, the game's own keys: Z and X to walk, K and M, which the game reads and never uses, and SHIFT to jump. Enter is RETURN. The C16's F1, F2, F3 and HELP are the browser's F1 to F4, or 1 to 4, since some browsers keep the F keys for themselves. P pauses and D gives up a life, as on the C16.</li>
+  </ul>
+</section>
+</main>
+<script src="../../lib/c16.js"></script>
+<script src="../../lib/ted-sound.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script>
+/* port/src/core.js */
+// Mr Puniverse's port: P, the game's routines on the game's memory. Each group of routines is a
+// file of its own that adds its functions to P (PuniGroups); this makes P and installs them.
+//
+// The conventions every routine keeps:
+// - P.M is the game's memory, the C16's 16 KB at $0000-$3FFF of a Uint8Array(65536), read and
+//   written at the game's addresses: the screen at $0800-$0FFF, the objects' tables from $0FE8, the
+//   characters the game rewrites to animate its scenery and to draw the player ($3800-$3FFF), and
+//   the operands Plus/4 World's pokes change (cheats.md), which the port reads where the game's
+//   code has them.
+// - P.io is TED and the keyboard: read(a) and write(a, v) for $FD30 and $FF00-$FF3F, irqByte(a),
+//   sei() and cli() (kit/c16/lockstep.js lists them). A read-modify-write of a register (the
+//   death's INC $FF0F) reads it and writes the old value back before the new one, as the 6502 does.
+// - A routine is P.<its listing label>(r): r holds the registers it is entered with ({ a, x, y },
+//   those it reads), and it returns the registers its callers read, and the carry ({ c }) where a
+//   caller carries it into an SBC (move_down) or tests it (is_solid, energy_tick).
+// - A routine that waits, or calls one that does, is a generator, called with yield*: it yields
+//   P.POLL at each turn of a loop that polls the key code an interrupt changes, { cycles: n } for a
+//   delay loop's time, and { cp: a } at the checkpoints test/lockstep.js lists, as
+//   kit/c16/lockstep.js describes. P.GEN lists them.
+// - The game leaves a routine for the death sequence or the next room by taking its return address
+//   off the stack (PLA, PLA, JMP death) or by jumping on (JMP leave_room, which jumps to
+//   room_start). The port's routines return where the game goes next instead: 'death' or
+//   'room_start', which main_loop returns to program; a routine that returns nothing went back to
+//   its caller.
+// - The key code and the SHIFT flag the KERNAL's keyboard scan leaves in $C6 and $0543 are read by
+//   the main program through B(a), P.irqByte: on the page that is M[a]; in the lockstep it is what
+//   the game's code read there. Every read the game's main program makes of them goes through it,
+//   in the game's order, so that each gets the value the game's read got (P.IRQ_BYTES).
+// - N counts the work inside routines whose length varies, for the page's pacing (runtime.js):
+//   scan, the cycles of the KERNAL's keyboard scan in irq, as C16.scnkey counts them; fig, the
+//   pixels of the figure merge_player draws over the scenery; wall, the wall pairs draw_room draws;
+//   top, the wall tops; edge, the cells draw_room_objects turns into exits; cell, the cells
+//   fill_cells and draw_column fill; block, the blocks make_decor draws.
+// - Each group keeps its helpers to itself (at, the address (pointer),y reaches), so that P holds
+//   only the game's routines, which the lockstep and the page count as calls.
+(function (root) {
+'use strict';
+const G = root.PuniGroups = root.PuniGroups || {};
+const POLL = Object.freeze({ poll: true });
+
+// The game's zero page, by the listing's names.
+const Z = Object.freeze({
+  controls: 0x03, colour_ptr_lo: 0x0A, block_ptr: 0x3F, player_x: 0x41, player_y: 0x42, rec_ptr: 0x43,
+  key_code: 0xC6, tune_frame: 0xD0, tune_step: 0xD1, tune_volume: 0xD2, tune_voices: 0xD3,
+});
+// The variables above zero page, the objects' tables and the game's tables, by the listing's names.
+const T = Object.freeze({
+  under_player: 0x0333, room_colours: 0x0339, anim_phase: 0x033C, exit_up: 0x033D, exit_down: 0x033E,
+  exit_left: 0x033F, exit_right: 0x0340, saved_ptr_lo: 0x0341, saved_ptr_hi: 0x0343, lives: 0x0345,
+  room: 0x0347, active: 0x0349, player: 0x034B, bar_pos: 0x034C, keyboard: 0x034D, jumping: 0x034E,
+  jump_count: 0x034F, energy_count: 0x0351, energy_rate: 0x0352, unused_0353: 0x0353, clock_count: 0x0354,
+  vitamin_count: 0x0355, saved_x: 0x0357, saved_y: 0x0359, vitamin_lo: 0x035B, vitamin_id: 0x035D,
+  vitamin_colour: 0x035E, energy_mode: 0x035F, vitamins_got: 0x0366, music_on: 0x0385, old_music_flag: 0x03BB,
+  shot_char: 0x03FC, shift_flag: 0x0543,
+  screen_colours: 0x0800, screen_chars: 0x0C00, egy_bar: 0x0FC4,
+  switch_state: 0x0FE8, obj_type: 0x0FF0, obj_lo: 0x1004, obj_colour: 0x1018, obj_param: 0x102C,
+  obj_timer: 0x1040, obj_reload: 0x1054, shot_hi: 0x1068, shot_lo: 0x107C,
+  room_ptr_lo: 0x1090, room_ptr_hi: 0x10AE, tune_voice1: 0x196E, note_freq_lo: 0x19EE, note_freq_hi: 0x1A0A,
+  tune_voice2: 0x1A27, title_path: 0x340D, player_frames: 0x3A68, player_chars: 0x3BC0, glyph_buffer: 0x3FD0,
+  vitamins_to_win: 0x281F,
+});
+
+// The bytes of RAM below the game that the KERNAL and the tape leave as the tape's BASIC line
+// hands over at entry ($1AF4), which the game and the KERNAL's keyboard scan (irq) read before
+// anything writes them: the key code and the table pointer, the keyboard's state and its vector at
+// $0545, the function keys' lengths, and two flags of the screen editor's; and four bytes of the
+// tape buffer ($0333-$03F2) as the load leaves them: $0339-$033B, which irq reads as the room's
+// three colours until the first room is drawn, so they colour the title and the menu, and $034B,
+// the player in play, whose TIME label the first interrupts flip before new_game clears it. The
+// rest of the RAM below $1090 is 0 there as far as the game is concerned: it clears or writes all
+// of it before reading it.
+const KERNAL_RAM = Object.freeze([
+  [0x00C6, [0x40]], [0x00EC, [0x00, 0x00, 0xFF, 0x00, 0x00]],
+  [0x0339, [0x4C, 0x4A, 0xF0]], [0x034B, [0xA1]],
+  [0x053F, [0x0A, 0x80, 0x04, 0x0A, 0x00, 0x00, 0x7A, 0xDB, 0x00]],
+  [0x055F, [0x07, 0x06, 0x0A, 0x07, 0x06, 0x04, 0x05, 0x05]],
+  [0x07F6, [0x40, 0x00]],
+]);
+
+// The routines that are generators: those whose code can reach a wait, a poll or a checkpoint.
+const GEN = new Set(['program', 'new_game', 'start_turn', 'room_start', 'main_loop', 'death', 'delay',
+  'title_dot_step', 'refill_energy', 'player_pass', 'pause_check', 'collect_vitamin']);
+// Bytes an interrupt writes that the main program reads: the key code and the SHIFT flag.
+const IRQ_BYTES = [0xC6, 0x0543];
+
+function makePort(M, io, opts = {}) {
+  const P = { M, Z, T, POLL, GEN, IRQ_BYTES };
+  // P.io is one object for good, so that a routine may keep it: giving P a new set of chips (the
+  // lockstep does) replaces its members
+  const IO = Object.assign({}, io);
+  Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
+    set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
+  P.irqByte = a => (IO.irqByte ? IO.irqByte(a) : M[a]);
+  P.N = { scan: 0, fig: 0, wall: 0, top: 0, edge: 0, cell: 0, block: 0 };
+  for (const name of Object.keys(G)) G[name](P);
+  return P;
+}
+root.PuniPort = { makePort, POLL, GEN, IRQ_BYTES, KERNAL_RAM, Z, T };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-irq.js */
+// The raster interrupt: irq, which takes turns between line 146 (the panel's colours and the TIME
+// label's flash) and line 250 (the room's colours and the tune), then the KERNAL's keyboard scan;
+// music_tick, flash_time_label, and old_music_tick, which nothing calls.
+(function (root) {
+'use strict';
+(root.PuniGroups = root.PuniGroups || {}).irq = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, N = P.N;
+const wr = (a, v) => { M[a] = v; }, rd = a => M[a];
+
+// The interrupt (irq, $312E), reached through the KERNAL's way in. Its scan of the keyboard
+// (JSR $FF9F) is the KERNAL's own, as C16.scnkey (site/lib/c16.js) runs it, on the chips the port
+// is given; its cycles go into N.scan.
+P.irq = function () {
+  io.write(0xFF09, io.read(0xFF09));
+  if (io.read(0xFF0B) !== 0xFA) {
+    io.write(0xFF0B, 0xFA);
+    io.write(0xFF15, 0x06); io.write(0xFF16, 0x77); io.write(0xFF17, 0xF0);
+    P.flash_time_label();
+  } else {
+    io.write(0xFF0B, 0x92);
+    io.write(0xFF15, M[T.room_colours]); io.write(0xFF16, M[T.room_colours + 1]); io.write(0xFF17, M[T.room_colours + 2]);
+    if (M[T.music_on] === 0x01) P.music_tick();
+  }
+  N.scan += root.C16.scnkey(rd, wr, io).cycles;
+};
+
+// The TIME label of the player in play flipped in brightness (flash_time_label, $31CE).
+P.flash_time_label = function () {
+  const a = M[T.player] === 0 ? 0x0AF8 : 0x0B48;
+  for (let x = 0; x < 5; x++) M[a + x] ^= 0x20;
+};
+
+// A frame of the tune (music_tick, $1AF7).
+P.music_tick = function () {
+  M[Z.tune_voices] = 0;
+  M[Z.tune_frame] = (M[Z.tune_frame] + 1) & 0xFF;
+  if (M[Z.tune_volume] !== 0) M[Z.tune_volume]--;
+  if (M[Z.tune_frame] === 0x06) {
+    M[Z.tune_frame] = 0;
+    M[Z.tune_step] = (M[Z.tune_step] + 1) & 0x7F;
+  }
+  const x = M[Z.tune_step];
+  let y = M[T.tune_voice1 + x];
+  if (!(y & 0x80)) {
+    if (y !== 0) {
+      M[Z.tune_volume] = 0x08;
+      io.write(0xFF0E, M[T.note_freq_lo + y]);
+      io.write(0xFF12, (io.read(0xFF12) & 0xFC) | M[T.note_freq_hi + y]);
+    }
+    M[Z.tune_voices] |= 0x10;
+  }
+  y = M[T.tune_voice2 + x];
+  if (!(y & 0x80)) {
+    if (y !== 0) {
+      io.write(0xFF0F, M[T.note_freq_lo + y]);
+      io.write(0xFF10, M[T.note_freq_hi + y]);
+    }
+    M[Z.tune_voices] |= 0x20;
+  }
+  if ((x & 0x07) === 0) {
+    M[Z.tune_voices] &= 0xDF;
+    if (M[Z.tune_frame] < 0x03) M[Z.tune_voices] |= 0x40;
+  }
+  io.write(0xFF11, M[Z.tune_volume] | M[Z.tune_voices]);
+};
+
+// The older tune player nothing calls (old_music_tick, $317F), as it is.
+P.old_music_tick = function () {
+  if (M[T.old_music_flag] !== 0) return;
+  M[Z.tune_frame] = (M[Z.tune_frame] + 1) & 0xFF;
+  if (M[Z.tune_frame] !== 0x07) return;
+  M[Z.tune_frame] = 0;
+  io.write(0xFF11, 0x38);
+  M[Z.tune_step] = (M[Z.tune_step] + 1) & 0xFF;
+  if (M[Z.tune_step] === 0x60) M[Z.tune_step] = 0;
+  const x = M[Z.tune_step];
+  let y = M[0x1800 + x];
+  io.write(0xFF0E, M[0x18C0 + y]);
+  io.write(0xFF12, (io.read(0xFF12) & 0xFC) | M[0x18D8 + y]);
+  y = M[0x1860 + x];
+  io.write(0xFF0F, M[0x18C0 + y]);
+  io.write(0xFF10, (io.read(0xFF10) & 0xFC) | M[0x18D8 + y]);
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-main.js */
+// The main program: new_game (the title and the menu), start_turn, room_start, main_loop and the
+// death sequence; setup_machine; the panel (draw_lives, the clock, the vitamin count, the EGY bar);
+// the title's text and dots; delay and the sound's small routines.
+(function (root) {
+'use strict';
+(root.PuniGroups = root.PuniGroups || {}).main = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, B = P.irqByte, POLL = P.POLL, N = P.N;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+// A JSR delay at a, with Y = y: the checkpoints before it and after.
+function* wait(a, y) { yield { cp: a }; yield* P.delay({ y }); yield { cp: a + 3 }; }
+// Where the game goes from j_25C5: PLA, PLA, JMP death; or, with Plus/4 World's RTS poked there
+// (cheats.md), back to the caller's caller.
+const kill = () => (M[0x25C5] === 0x60 ? undefined : 'death');
+
+// The program from entry ($1AF4, JMP new_game): each part returns the part the game goes to next.
+P.program = function* () {
+  let next = 'new_game';
+  for (;;) next = yield* P[next]();
+};
+P.entry = P.program;
+
+// Y times 256 turns of X (delay, $2111): 1,284 cycles a unit of Y, with the JSR and RTS 13 more;
+// Y = 0 is 256.
+P.delay = function* (r) {
+  yield { cycles: 1284 * (r.y || 0x100) + 13 };
+  return { x: 0, y: 0 };
+};
+
+// The game's start (new_game, $31F5): the machine set up, the players' variables cleared, the
+// lives drawn; no key; the title, a dot each 255 turns, until RETURN, and let go; the menu until
+// F1, F2, F3 or HELP.
+P.new_game = function* () {
+  P.setup_machine();
+  P.clear_play_area();
+  for (let x = 0; x < 0x3A; x++) M[T.lives + x] = 0;
+  M[T.anim_phase] = 0;
+  P.draw_lives();
+  while (B(Z.key_code) !== 0x40) yield POLL;
+  M[0x4C] = 0xFF; M[0x4D] = 0x01; M[0x4F] = 0x01; M[0x4E] = 0xD7;
+  P.print_title_text();
+  do {
+    yield { cp: 0x3225 };
+    yield* P.title_dot_step({ y: 0x0A });
+  } while (B(Z.key_code) !== 0x01);
+  while (B(Z.key_code) !== 0x40) yield POLL;
+  P.clear_play_area();
+  P.show_menu();
+  for (;;) {
+    const a = B(Z.key_code);
+    if (a === 0x04) { M[T.active] = 1; M[T.lives] = 8; break; }
+    if (a === 0x05) { M[T.active] = 1; M[T.keyboard] = 1; M[T.lives] = 8; break; }
+    if (a === 0x06) { M[T.active] = 1; M[T.active + 1] = 1; M[T.lives] = 8; M[T.lives + 1] = 8; break; }
+    if (a === 0x03) { M[T.active] = 1; M[T.active + 1] = 1; M[T.keyboard] = 1; M[T.lives] = 8; M[T.lives + 1] = 8; break; }
+    yield POLL;
+  }
+  return 'start_turn';
+};
+
+// A turn's start (start_turn, $328F): the lives, GET READY, the tune off and the volume up, the EGY
+// bar filled; then the room.
+P.start_turn = function* () {
+  P.draw_lives();
+  P.clear_play_area();
+  P.show_get_ready();
+  M[T.music_on] = 0;
+  io.write(0xFF11, 0x0F);
+  yield* P.refill_energy();
+  return 'room_start';
+};
+
+// The room's start (room_start, $32A5): the energy counter to 1, the room drawn, the player built
+// over it; then the main loop.
+P.room_start = function* () {
+  M[T.energy_count] = 0x01;
+  P.clear_play_area();
+  P.draw_room();
+  P.save_under_player();
+  P.copy_under_glyphs();
+  P.merge_player();
+  P.draw_player();
+  return yield* P.main_loop();
+};
+
+// The main loop ($32BC): six routines a pass, until a death or the next room.
+P.main_loop = function* () {
+  for (;;) {
+    yield { cp: 0x32BC };
+    let next = yield* P.player_pass();
+    if (next) return next;
+    yield { cp: 0x32BF }; P.animate_chars();
+    yield { cp: 0x32C2 }; P.rotate_vitamin_chars();
+    yield { cp: 0x32C5 }; P.update_objects();
+    yield { cp: 0x32C8 };
+    next = P.clock_tick();
+    if (next) return next;
+    yield { cp: 0x32CB };
+    if (P.energy_tick().c) return 'death';
+  }
+};
+
+// The death sequence (death, $32D0): the noise, the bar emptied, the scenery put back; the room's
+// background stepped through the colours while the noise rises, the room still moving; the play
+// area cleared and the volume faded; a life lost, and the next player's turn, or GAME OVER and the
+// game's start.
+P.death = function* () {
+  P.death_sound();
+  io.write(0xFF0F, 0x90);
+  io.write(0xFF10, 0x03);
+  for (let x = 0; x < 0x22; x++) M[T.egy_bar + x] = 0x71;
+  M[T.bar_pos] = 0;
+  const colour = M[T.room_colours];
+  const u = T.under_player, bp = Z.block_ptr;
+  M[at(bp, 0x00)] = M[u]; M[at(bp, 0x01)] = M[u + 3];
+  M[at(bp, 0x28)] = M[u + 1]; M[at(bp, 0x29)] = M[u + 4];
+  M[at(bp, 0x50)] = M[u + 2]; M[at(bp, 0x51)] = M[u + 5];
+  do {
+    M[T.room_colours] = (M[T.room_colours] + 1) & 0xFF;
+    yield* wait(0x3320, 0x0A);
+    const v = io.read(0xFF0F);                           // INC $FF0F
+    io.write(0xFF0F, v);
+    io.write(0xFF0F, (v + 1) & 0xFF);
+    P.update_objects();
+  } while (io.read(0xFF0F) !== 0xFD);
+  io.write(0xFF0F, 0xA0);
+  M[T.room_colours] = colour;
+  M[T.clock_count] = 0x01;
+  P.clear_play_area();
+  do {
+    M[0x43] = io.read(0xFF11) & 0x0F;
+    M[0x43] = (M[0x43] - 1) & 0xFF;
+    io.write(0xFF11, (io.read(0xFF11) & 0xF0) | M[0x43]);
+    yield* wait(0x3356, 0);
+  } while (M[0x43] !== 0);
+  io.write(0xFF11, 0x0F);
+  const x = M[T.player];
+  if (M[0x3367] === 0xDE) M[T.lives + x] = (M[T.lives + x] - 1) & 0xFF;   // DEC lives,X, or the poke's LDA (cheats.md)
+  if (M[T.lives + x] === 0) M[T.active + x] = 0;
+  if (M[T.active] === 0 && M[T.active + 1] === 0) {
+    P.show_game_over();
+    yield { cp: 0x339C }; yield* P.delay({ y: 0 });
+    yield { cp: 0x339F }; yield* P.delay({ y: 0 });
+    yield { cp: 0x33A2 }; yield* P.delay({ y: 0 });
+    yield { cp: 0x33A5 }; yield* P.delay({ y: 0 });
+    yield { cp: 0x33A8 };
+    return 'new_game';
+  }
+  do M[T.player] ^= 0x01; while (M[T.active + M[T.player]] !== 0x01);
+  return 'start_turn';
+};
+// The tune off and the death's noise on, at volume 15 (death_sound, $3402).
+P.death_sound = function () {
+  M[T.music_on] = 0;
+  io.write(0xFF11, 0x4F);
+};
+
+// The EGY bar (energy_tick, $33AB): the carry set when it has run out.
+P.energy_tick = function () {
+  if (M[0x33AB] === 0xCE) M[T.energy_count] = (M[T.energy_count] - 1) & 0xFF;   // DEC, or the poke's LDA (cheats.md)
+  if (M[T.energy_count] !== 0) return { c: 0 };
+  M[T.energy_count] = M[T.energy_rate];
+  const x = M[T.bar_pos], cell = T.egy_bar + x;
+  if (M[T.energy_mode] === 0x01) {
+    M[cell] = (M[cell] + 1) & 0xFF;
+    if (M[cell] < 0x71) return { c: 0 };
+    M[cell] = 0x71;
+    M[T.bar_pos] = (M[T.bar_pos] - 1) & 0xFF;
+    return { c: M[T.bar_pos] === 0xFF ? 1 : 0 };
+  }
+  if (x === 0x21) return { c: 0 };
+  M[cell] = (M[cell] - 1) & 0xFF;
+  if (M[cell] >= 0x6E) return { c: 0 };
+  M[cell] = 0x6D;
+  M[T.bar_pos] = (M[T.bar_pos] + 1) & 0xFF;
+  return { c: 0 };
+};
+
+// The TIME clock (clock_tick, $268A): every 71st pass its last digit goes up, carrying; at 4.00
+// the player's lives become 1 and he dies.
+P.clock_tick = function () {
+  M[T.clock_count] = (M[T.clock_count] - 1) & 0xFF;
+  if (M[T.clock_count] !== 0xFF) return;
+  M[T.clock_count] = 0x46;
+  let x = M[T.player];
+  if (x === 0x01) x = 0x50;
+  x = (x + 5) & 0xFF;
+  let y = (M[0x0EFE + x] + 1) & 0xFF;
+  if (y !== 0x2F) { P.draw_clock_digit({ a: y, x }); return; }
+  P.draw_clock_digit({ a: 0x25, x });
+  x = (x - 2) & 0xFF;
+  y = (M[0x0EFE + x] + 1) & 0xFF;
+  if (y !== 0x2F) { P.draw_clock_digit({ a: y, x }); return; }
+  P.draw_clock_digit({ a: 0x25, x });
+  x = (x - 3) & 0xFF;
+  y = (M[0x0EFE + x] + 1) & 0xFF;
+  P.draw_clock_digit({ a: y, x });
+  if (y !== 0x29) return;
+  M[T.lives + M[T.player]] = 0x01;
+  return kill();
+};
+// A big digit of the clock at $0EFE+X (draw_clock_digit, $26ED).
+P.draw_clock_digit = function (r) {
+  const x = r.x;
+  let a = r.a;
+  M[0x0EFE + x] = a; a = (a + 0x0A) & 0xFF;
+  M[0x0EFF + x] = a; a = (a + 0x0A) & 0xFF;
+  M[0x0F26 + x] = a; a = (a + 0x0A) & 0xFF;
+  M[0x0F27 + x] = a;
+};
+// One more vitamin on the panel (vitamin_count_up, $2060).
+P.vitamin_count_up = function () {
+  let x = M[T.player] === 0 ? 0x02 : 0x52;
+  for (;;) {
+    const y = (M[0x0F0E + x] + 1) & 0xFF;
+    if (y !== 0x2F) { P.draw_big_digit({ a: y, x }); return; }
+    P.draw_big_digit({ a: 0x25, x });
+    x = (x - 2) & 0xFF;
+  }
+};
+// A big digit of the vitamin count at $0F0E+X (draw_big_digit, $207F).
+P.draw_big_digit = function (r) {
+  const x = r.x;
+  let a = r.a;
+  M[0x0F0E + x] = a; a = (a + 0x0A) & 0xFF;
+  M[0x0F0F + x] = a; a = (a + 0x0A) & 0xFF;
+  M[0x0F36 + x] = a; a = (a + 0x0A) & 0xFF;
+  M[0x0F37 + x] = a;
+};
+
+// The EGY bar filled from bar_pos, a step each delay of 10, with a rising tone (refill_energy, $2024).
+P.refill_energy = function* () {
+  P.voice2_on();
+  io.write(0xFF10, 0x03);
+  io.write(0xFF0F, 0x00);
+  for (;;) {
+    yield* wait(0x2033, 0x0A);
+    io.write(0xFF0F, ((io.read(0xFF0F) + 1) & 0xFF) ^ 0x80);
+    const cell = T.egy_bar + M[T.bar_pos];
+    M[cell] = (M[cell] - 1) & 0xFF;
+    if (M[cell] !== 0x6D) continue;
+    M[T.bar_pos] = (M[T.bar_pos] + 1) & 0xFF;
+    if (M[T.bar_pos] === 0x22) break;
+  }
+  M[T.bar_pos] = 0x21;
+  P.voice2_off();
+};
+
+// Both players' lives (draw_lives, $1FE5), each row by draw_lives_row ($1FFA).
+P.draw_lives = function () {
+  M[0x49] = M[T.lives];
+  P.draw_lives_row({ x: 0x00 });
+  M[0x49] = M[T.lives + 1];
+  P.draw_lives_row({ x: 0x50 });
+};
+P.draw_lives_row = function (r) {
+  let x = r.x;
+  for (let y = 8; y > 0; y--, x = (x + 1) & 0xFF) {
+    M[0x49] = (M[0x49] - 1) & 0xFF;
+    if (M[0x49] === 0xFF) { M[0x49] = 0; M[0x0F18 + x] = 0xD6; M[0x0F40 + x] = 0xD6; }
+    else { M[0x0F18 + x] = 0x74; M[0x0F40 + x] = 0x75; }
+  }
+};
+
+// The play area's 18 rows blanked (clear_play_area, $1FD2).
+P.clear_play_area = function () {
+  for (let x = 0; x < 0xF0; x++) { M[0x0C00 + x] = 0xD6; M[0x0CF0 + x] = 0xD6; M[0x0DE0 + x] = 0xD6; }
+};
+// GET READY and GAME OVER on row 9 (show_get_ready, $20B9; show_game_over, $20CC).
+P.show_get_ready = function () { for (let x = 0; x < 9; x++) { M[0x0D77 + x] = M[0x37C5 + x]; M[0x0977 + x] = 0x71; } };
+P.show_game_over = function () { for (let x = 0; x < 9; x++) { M[0x0D77 + x] = M[0x37BC + x]; M[0x0977 + x] = 0x71; } };
+// The menu's two lines (show_menu, $20DF).
+P.show_menu = function () {
+  let x;
+  for (x = 0; x < 0x18; x++) {
+    M[0x0D21 + x] = M[0x37CE + x]; M[0x0D98 + x] = M[0x37E6 + x];
+    M[0x0921 + x] = 0x71; M[0x0998 + x] = 0x71;
+  }
+  M[0x0D98 + x] = M[0x37E6 + x];
+  x++;
+  M[0x0D98 + x] = M[0x37E6 + x];
+  M[0x0998 + x] = 0x71;
+  M[0x0998 + x - 1] = 0x71;
+};
+// The title's three lines of text (print_title_text, $1BEA).
+P.print_title_text = function () {
+  for (let x = 0; x < 0x15; x++) {
+    const a = M[0x1BBE + x] & 0x3F;
+    M[0x0C32 + x] = a === 0x20 ? 0xD6 : a;
+    M[0x0832 + x] = 0x71;
+  }
+  for (let x = 0; x < 0x15; x++) {
+    const a = M[0x1BA9 + x] & 0x3F;
+    M[0x0C82 + x] = a === 0x20 ? 0xD6 : a;
+    M[0x0882 + x] = 0x77;
+  }
+  for (let x = 0; x < 0x17; x++) {
+    let a = M[0x1BD3 + x] & 0x3F;
+    if (a === 0x20) a = 0xD6;
+    else if (a >= 0x30) a = (a & 0x0F) + 0x1B;
+    M[0x0E61 + x] = a;
+    M[0x0A61 + x] = 0x72;
+  }
+};
+// A dot of the title every 255th call (title_dot_step, $1C46): a delay of 42, the vitamin turned,
+// and a dot at $4A/$4B along title_path.
+P.title_dot_step = function* () {
+  M[0x4D] = (M[0x4D] - 1) & 0xFF;
+  if (M[0x4D] !== 0) return;
+  M[0x4D] = 0xFF;
+  yield* wait(0x1C51, 0x2A);
+  P.rotate_vitamin_chars();
+  M[0x4F] = (M[0x4F] - 1) & 0xFF;
+  if (M[0x4F] === 0) {
+    for (;;) {                                             // j_1C5F
+      M[0x4C] = (M[0x4C] + 1) & 0xFF;
+      let x = M[0x4C];
+      const a = M[T.title_path + x];
+      if (a === 0x00) {
+        x = (x + 1) & 0xFF; M[0x4A] = M[T.title_path + x];
+        x = (x + 1) & 0xFF; M[0x4B] = M[T.title_path + x];
+        M[0x4C] = x;
+        continue;
+      }
+      if (a === 0x01) { M[0x4C] = 0xFF; M[0x4E] ^= 0x01; continue; }
+      M[0x4F] = a & 0x0F;
+      M[0x49] = a & 0xF0;
+      break;
+    }
+  }
+  M[at(0x4A, 0)] = 0xD7;
+  P.colour_ptr({ x: 0x4A });
+  M[at(0x0A, 0)] = M[0x4E];
+  if (M[0x49] & 0x10) P.ptr_up({ x: 0x4A });
+  if (M[0x49] & 0x20) P.ptr_down({ x: 0x4A });
+  if (M[0x49] & 0x40) P.ptr_right({ x: 0x4A });
+  if (M[0x49] & 0x80) P.ptr_left({ x: 0x4A });
+};
+
+// The vitamin's four frames turned on by one (rotate_vitamin_chars, $2844).
+P.rotate_vitamin_chars = function () {
+  const s = M.slice(0x3EB8, 0x3EC0);
+  M.copyWithin(0x3EB8, 0x3EC0, 0x3ED8);
+  M.set(s, 0x3ED0);
+};
+
+// The machine set up for the game (setup_machine, $3075), with interrupts off: the sound, the
+// character set, multicolour, the raster interrupt through irq, the border; row 18 blanked and the
+// panel copied and coloured; both players' blocks; the tune on.
+P.setup_machine = function () {
+  io.sei();
+  io.write(0xFF11, 0x0F);
+  io.write(0xFF13, 0x38);
+  io.write(0xFF12, io.read(0xFF12) & 0xFB);
+  io.write(0xFF07, io.read(0xFF07) | 0x90);
+  io.write(0xFF0A, 0x02);
+  io.write(0xFF0B, 0x00);
+  io.write(0xFF19, 0x06);
+  M[0x0314] = 0x2E; M[0x0315] = 0x31;
+  M[T.unused_0353] = 0x92;
+  for (let x = 0; x < 0x28; x++) M[0x0ED0 + x] = 0xD6;
+  for (let x = 0; x < 0xF0; x++) {
+    const a = M[0x3EE0 + x];
+    M[0x0EF8 + x] = a;
+    M[0x0AF8 + x] = a < 0x24 ? 0x72 : a < 0x39 ? 0x67 : a < 0x4D ? 0x77 : a < 0x74 ? 0x08 : 0x71;
+  }
+  M[T.saved_ptr_lo] = 0x01; M[T.saved_ptr_lo + 1] = 0x01;
+  M[Z.tune_frame] = 0xFF; M[Z.tune_step] = 0xFF;
+  M[0x0FE7] = 0x77;
+  M[0x0BE7] = M[0x0BE6];
+  M[T.saved_ptr_lo] = 0x52; M[T.saved_ptr_lo + 1] = 0x52;
+  M[T.saved_ptr_hi] = 0x0C; M[T.saved_ptr_hi + 1] = 0x0C;
+  M[T.music_on] = 0x01;
+  M[Z.tune_frame] = 0xFF; M[Z.tune_step] = 0xFF;
+  M[Z.tune_volume] = 0x00;
+  io.cli();
+};
+
+// TED's voices on and off ($2095-$20B8); voice 1's two, which nothing calls, as they are.
+P.voice1_on_unused = function () { io.write(0xFF11, io.read(0xFF11) | 0x10); };
+P.voice1_off_unused = function () { io.write(0xFF11, io.read(0xFF11) & 0xEF); };
+P.voice2_on = function () { io.write(0xFF11, io.read(0xFF11) | 0x20); };
+P.voice2_off = function () { io.write(0xFF11, io.read(0xFF11) & 0xDF); };
+
+// The pointers' small sums: A added to rec_ptr (add_to_ptr43, $1CCB); the colour's address of the
+// cell the zero-page pointer X names, into $0A/$0B (colour_ptr, $1CD7); that pointer a row down or
+// up, a column right or left ($1CE3-$1D10). Each returns the carry its last ADC or SBC leaves.
+P.add_to_ptr43 = function (r) {
+  const t = M[0x43] + r.a;
+  M[0x43] = t & 0xFF;
+  const h = M[0x44] + (t >> 8);
+  M[0x44] = h & 0xFF;
+  return { c: h >> 8 };
+};
+P.colour_ptr = function (r) {
+  const x = r.x;
+  M[0x0A] = M[x];
+  const h = M[(x + 1) & 0xFF] - 4;
+  M[0x0B] = h & 0xFF;
+  return { c: h >= 0 ? 1 : 0 };
+};
+function add(x, d) {
+  const t = M[x] + d, x1 = (x + 1) & 0xFF;
+  M[x] = t & 0xFF;
+  const h = M[x1] + (t >> 8);
+  M[x1] = h & 0xFF;
+  return { c: h >> 8 };
+}
+function sub(x, d) {
+  const t = M[x] - d, x1 = (x + 1) & 0xFF;
+  M[x] = t & 0xFF;
+  const h = M[x1] - (t < 0 ? 1 : 0);
+  M[x1] = h & 0xFF;
+  return { c: h >= 0 ? 1 : 0 };
+}
+P.ptr_down = function (r) { return add(r.x, 0x28); };
+P.ptr_right = function (r) { return add(r.x, 0x01); };
+P.ptr_up = function (r) { return sub(r.x, 0x28); };
+P.ptr_left = function (r) { return sub(r.x, 0x01); };
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-player.js */
+// The player: player_pass and player_move, the controls, the moves within his block and of the
+// block, the crumbling floor, what he touches (switches, exits, vitamins), the pause; and his
+// figure, drawn over the scenery behind it into six characters ($78-$7D), and the scenery's
+// animation, which redraws it.
+(function (root) {
+'use strict';
+(root.PuniGroups = root.PuniGroups || {}).player = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, B = P.irqByte, POLL = P.POLL, N = P.N;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+const bp = Z.block_ptr, u = T.under_player;
+const left = () => (M[Z.player_x] & 0x10) === 0x10;
+// j_25C5: PLA, PLA, JMP death; with Plus/4 World's RTS poked there (cheats.md), back to main_loop
+const kill = () => (M[0x25C5] === 0x60 ? undefined : 'death');
+
+// The player's pass (player_pass, $2581): D, the pause, the move; then what the middle cell of
+// the column he stands in holds, and the bottom cell with player_y 3 or more. Returns 'death' or
+// 'room_start' where the game leaves for them.
+P.player_pass = function* () {
+  if (B(Z.key_code) === 0x12) return 'death';
+  yield* P.pause_check();
+  if (P.player_move() === 'kill') return kill();
+  if (!left()) { M[0x4B] = M[u + 1]; M[0x4C] = M[u + 2]; } else { M[0x4B] = M[u + 4]; M[0x4C] = M[u + 5]; }
+  let a = M[0x4B];
+  if (a >= 0xC1) {
+    if (a < 0xC5) return P.leave_room({ a });
+    if (a < 0xC8) return kill();
+    if (a >= 0xCC && a < 0xD6) return kill();
+  }
+  if (M[Z.player_y] < 0x03) return;
+  a = M[0x4C];
+  if (a < 0xBD) return;
+  if (a < 0xBF) { P.switch_off({ a }); return; }
+  if (a < 0xC1) { P.switch_on({ a }); return; }
+  if (a < 0xC5) return P.leave_room({ a });
+  if (a < 0xC8) return kill();
+  if (a < 0xCC) return;
+  if (a < 0xD6) return kill();
+  if (a !== 0xD7) return;
+  return yield* P.collect_vitamin();
+};
+
+// The controls into $03 (read_input, $2543): port 2's stick, or X, Z, K and M and SHIFT.
+P.read_input = function () {
+  if (M[T.keyboard] === 0) {
+    io.write(0xFF08, 0xFD);
+    M[Z.controls] = io.read(0xFF08);
+    return;
+  }
+  let x = 0x0F;
+  const a = B(Z.key_code);
+  if (a === 0x17) x = 0x07;
+  if (a === 0x0C) x = 0x0B;
+  if (a === 0x25) x = 0x0E;
+  if (a === 0x24) x = 0x0D;
+  M[Z.controls] = x;
+  if (B(T.shift_flag) !== 0) return;
+  M[Z.controls] = x | 0x80;
+};
+
+// A pass's move (player_move, $23E9): the fall, the ground under his feet, the jump, then left or
+// right, and his characters rebuilt and drawn. Returns 'kill' on the deadly floor, where the game
+// takes its return address and goes to j_25C5. Y is kept as the game's code leaves it on the way
+// to move_left, whose SBC Plus/4 World's poke turns into an AND indexed by Y (cheats.md).
+P.player_move = function () {
+  P.read_input();
+  let y = left() ? 0x79 : 0x78;
+  M[0x4B] = M[at(bp, y)];
+  let fall = false, ground = false;
+  if (M[T.jumping] === 0x01) {
+    if (M[T.jump_count] < 0x7F) {
+      y = P.move_up({ y }).y;
+      M[T.jump_count] = (M[T.jump_count] + 1) & 0xFF;
+      io.write(0xFF0F, (io.read(0xFF0F) + 0x08) & 0xFF);
+      if (M[T.jump_count] === 0x10) M[T.jump_count] = 0x80;
+    } else {
+      const r = P.move_down({ y });
+      y = r.y;
+      io.write(0xFF0F, (io.read(0xFF0F) - 0x08 - (1 - r.c)) & 0xFF);   // SBC #$08 on move_down's carry
+      let end = P.is_solid({ a: M[0x4B] }).c === 1;
+      if (!end) {
+        const a = M[0x4B];
+        if (a >= 0x80 && a < 0x88) end = true;
+        else {
+          M[T.jump_count] = (M[T.jump_count] + 1) & 0xFF;
+          end = M[T.jump_count] === 0x90;
+        }
+      }
+      if (end) { M[T.jumping] = 0; P.voice2_off(); }
+    }
+  } else if (M[Z.player_y] !== 0x06 && M[0x4B] !== 0xB5 && M[0x4B] !== 0xB6) {
+    y = P.move_down({ y }).y;
+  } else {
+    const a = M[0x4B];
+    if (a < 0x7E) ground = true;
+    else if (a < 0x80) fall = true;
+    else if (a < 0xA0) ground = true;
+    else if (a < 0xA8) fall = true;
+    else if (a < 0xB8) { y = P.crumble_step().y; ground = true; }
+    else if (a < 0xBA) fall = true;
+    else if (a < 0xBC) { y = P.move_left({ y }).y; ground = true; }
+    else if (a < 0xBD) y = P.move_up({ y }).y;
+    else if (a < 0xCA) fall = true;
+    else if (a < 0xCC) return 'kill';
+    else fall = true;
+  }
+  if (fall) {                                               // j_2472
+    y = P.move_down({ y }).y;
+    if ((io.read(0xFF11) & 0x20) !== 0x20) {
+      P.voice2_on();
+      io.write(0xFF0F, 0xC8);
+      io.write(0xFF10, 0x03);
+    }
+    io.write(0xFF0F, (io.read(0xFF0F) - 0x08) & 0xFF);
+  }
+  if (ground) {                                             // j_24A3
+    P.voice2_off();
+    if ((M[Z.controls] & 0x80) !== 0x80) {
+      M[T.jumping] = 0x01;
+      M[T.jump_count] = 0;
+      io.write(0xFF10, 0x03);
+      io.write(0xFF0F, 0x64);
+      P.voice2_on();
+    }
+  }
+  if ((M[Z.controls] & 0x08) === 0) P.move_right();         // j_2525
+  else if ((M[Z.controls] & 0x04) === 0) P.move_left({ y });
+  P.copy_under_glyphs();
+  P.merge_player();
+  P.draw_player();
+};
+
+// A step right (move_right, $211A) and left (move_left, $2156) within the block, or the block a
+// column on; a turn first if he faces the other way.
+P.move_right = function () {
+  if (left()) { P.shift_block_right(); M[Z.player_x] = 0; return; }
+  M[Z.player_x] &= 0x0F;
+  if (M[Z.player_x] !== 0x0C) { M[Z.player_x] = (M[Z.player_x] + 0x04) & 0xFF; return; }
+  if (P.is_solid({ a: M[u + 4] }).c) return;
+  if (P.is_solid({ a: M[u + 5] }).c) return;
+  P.shift_block_right();
+  M[Z.player_x] = 0;
+};
+P.move_left = function (r) {
+  if (!left()) { const y = P.shift_block_left().y; M[Z.player_x] = 0x1C; return { y }; }
+  M[Z.player_x] |= 0x10;
+  if (M[Z.player_x] !== 0x10) {
+    if (M[0x2172] === 0x39) M[Z.player_x] &= M[((M[0x2173] | M[0x2174] << 8) + r.y) & 0x3FFF];   // the poke's AND $04E9,Y
+    else M[Z.player_x] = (M[Z.player_x] - 0x04) & 0xFF;
+    return { y: r.y };
+  }
+  if (P.is_solid({ a: M[u + 1] }).c) return { y: r.y };
+  if (P.is_solid({ a: M[u + 2] }).c) return { y: r.y };
+  const y = P.shift_block_left().y;
+  M[Z.player_x] = 0x1C;
+  return { y };
+};
+// Two lines up (move_up, $2192), the block a row up below line 0 unless the cell above is solid.
+P.move_up = function (r) {
+  M[Z.player_y] = (M[Z.player_y] - 2) & 0xFF;
+  if (M[Z.player_y] !== 0xFE) return { y: r.y };
+  if (P.is_solid({ a: left() ? M[u + 3] : M[u] }).c) { M[Z.player_y] = 0; return { y: r.y }; }
+  M[Z.player_y] = 0x06;
+  M[at(bp, 0x50)] = M[u + 2]; M[at(bp, 0x51)] = M[u + 5];
+  M[u + 2] = M[u + 1]; M[u + 1] = M[u]; M[u + 5] = M[u + 4]; M[u + 4] = M[u + 3];
+  P.ptr_up({ x: bp });
+  M[u] = M[at(bp, 0)]; M[u + 3] = M[at(bp, 1)];
+  return { y: 0x01 };
+};
+// Two lines down (move_down, $21F4), the block a row down at line 8 unless the cell below is
+// solid. Returns the carry the game's code leaves, which player_move's SBC takes.
+P.move_down = function (r) {
+  M[Z.player_y] = (M[Z.player_y] + 2) & 0xFF;
+  if (M[Z.player_y] !== 0x08) return { c: M[Z.player_y] >= 0x08 ? 1 : 0, y: r.y };
+  const y = left() ? 0x79 : 0x78;
+  if (P.is_solid({ a: M[at(bp, y)] }).c) { M[Z.player_y] = 0x06; return { c: 1, y }; }
+  M[Z.player_y] = 0;
+  M[at(bp, 0)] = M[u]; M[at(bp, 1)] = M[u + 3];
+  M[u] = M[u + 1]; M[u + 1] = M[u + 2]; M[u + 3] = M[u + 4]; M[u + 4] = M[u + 5];
+  const c = P.ptr_down({ x: bp }).c;
+  M[u + 2] = M[at(bp, 0x50)]; M[u + 5] = M[at(bp, 0x51)];
+  return { c, y: 0x51 };
+};
+// The block a column right (shift_block_right, $2256) or left (shift_block_left, $229E).
+P.shift_block_right = function () {
+  M[at(bp, 0x00)] = M[u]; M[at(bp, 0x28)] = M[u + 1]; M[at(bp, 0x50)] = M[u + 2];
+  M[u] = M[u + 3]; M[u + 1] = M[u + 4]; M[u + 2] = M[u + 5];
+  M[u + 3] = M[at(bp, 0x02)]; M[u + 4] = M[at(bp, 0x2A)]; M[u + 5] = M[at(bp, 0x52)];
+  P.ptr_right({ x: bp });
+  M[Z.player_x] &= 0x0F;
+  return { y: 0x52 };
+};
+P.shift_block_left = function () {
+  P.ptr_left({ x: bp });
+  M[at(bp, 0x02)] = M[u + 3]; M[at(bp, 0x2A)] = M[u + 4]; M[at(bp, 0x52)] = M[u + 5];
+  M[u + 3] = M[u]; M[u + 4] = M[u + 1]; M[u + 5] = M[u + 2];
+  M[u] = M[at(bp, 0x00)]; M[u + 1] = M[at(bp, 0x28)]; M[u + 2] = M[at(bp, 0x50)];
+  M[Z.player_x] |= 0x10;
+  return { y: 0x50 };
+};
+// Whether the character in A stops him (is_solid, $22E6): the carry.
+P.is_solid = function (r) {
+  const a = r.a;
+  const c = a < 0x7E ? 1 : a < 0x88 ? 0 : a < 0xA0 ? 1 : a < 0xA8 ? 0 : a < 0xB8 ? 1 : a < 0xBA ? 0 :
+    a < 0xBC ? 1 : a < 0xCA ? 0 : a < 0xCC ? 1 : 0;
+  return { c };
+};
+
+// The crumbling floor a stage on under his feet (crumble_step, $23A5), drawn by crumble_redraw
+// ($2317), or gone from $B8.
+P.crumble_step = function () {
+  M[0x4B] = (M[0x4B] + 2) & 0xFF;
+  if (M[0x4B] < 0xB8) { M[0x4C] = 0x01; return P.crumble_redraw(); }
+  const y = (M[0x4B] & 0x01) ? (left() ? 0x78 : 0x77) : (left() ? 0x79 : 0x78);
+  M[at(bp, y)] = 0xD6; M[at(bp, y + 1)] = 0xD6;
+  return { y: y + 1 };
+};
+P.crumble_redraw = function () {
+  // the pair from its left half at offset y, its top half (below $B0) into the row above
+  const j2356 = a => {
+    if (a < 0xB0) { a = (a - 8) & 0xFF; M[u + 2] = a; a = (a + 1) & 0xFF; M[u + 5] = a; a = (a + 7) & 0xFF; }
+    M[at(bp, 0x78)] = a; M[at(bp, 0x79)] = (a + M[0x4C]) & 0xFF;
+    return { y: 0x79 };
+  };
+  if (M[0x4B] & 0x01) {
+    let a = M[0x4B] = (M[0x4B] - 1) & 0xFF;
+    if (left()) return j2356(a);
+    if (a < 0xB0) { a = (a - 8) & 0xFF; M[at(bp, 0x4F)] = a; a = (a + 1) & 0xFF; M[u + 2] = a; a = (a + 7) & 0xFF; }
+    M[at(bp, 0x77)] = a; M[at(bp, 0x78)] = (a + M[0x4C]) & 0xFF;
+    return { y: 0x78 };
+  }
+  if (!left()) return j2356(M[0x4B]);
+  let a = M[0x4B];
+  if (a < 0xB0) { a = (a - 8) & 0xFF; M[u + 5] = a; a = (a + 1) & 0xFF; M[at(bp, 0x52)] = a; a = (a + 7) & 0xFF; }
+  M[at(bp, 0x79)] = a; M[at(bp, 0x7A)] = (a + M[0x4C]) & 0xFF;
+  return { y: 0x7A };
+};
+
+// The switches he touches (switch_off, $2614; switch_on, $262C), drawn by draw_switch_off ($2644)
+// and draw_switch_on ($2667); the switch's number is the low three bits of a cell's colour.
+P.switch_off = function (r) {
+  if (r.a !== 0xBE) return;
+  const y = P.draw_switch_off().y;
+  P.colour_ptr({ x: bp });
+  M[T.switch_state + (M[at(Z.colour_ptr_lo, y)] & 0x07)] = 0;
+};
+P.switch_on = function (r) {
+  if (r.a !== 0xBF) return;
+  const y = P.draw_switch_on().y;
+  P.colour_ptr({ x: bp });
+  M[T.switch_state + (M[at(Z.colour_ptr_lo, y)] & 0x07)] = 0x01;
+};
+P.draw_switch_off = function () {
+  if (!left()) { M[at(bp, 0x4F)] = 0xBF; M[u + 2] = 0xC0; return { y: 0x50 }; }
+  M[u + 2] = 0xBF; M[u + 5] = 0xC0;
+  return { y: 0x50 };
+};
+P.draw_switch_on = function () {
+  if (!left()) { M[u + 2] = 0xBD; M[u + 5] = 0xBE; return { y: 0x50 }; }
+  M[u + 5] = 0xBD; M[at(bp, 0x52)] = 0xBE;
+  return { y: 0x51 };
+};
+
+// An exit (leave_room, $2703): the room it leads to, the block moved to the far side, all kept
+// for the player in play; then room_start.
+P.leave_room = function (r) {
+  const x = M[T.player], a = r.a;
+  const move = d => {
+    const t = (M[bp] | M[bp + 1] << 8) + d;
+    M[bp] = t & 0xFF; M[bp + 1] = (t >> 8) & 0xFF;
+  };
+  if (a === 0xC1) {
+    M[at(bp, 0x00)] = M[u]; M[at(bp, 0x01)] = M[u + 3]; M[at(bp, 0x28)] = M[u + 1]; M[at(bp, 0x29)] = M[u + 3];
+    move(0x0258);
+    M[T.room + x] = M[T.exit_up];
+  } else if (a === 0xC2) { move(-0x0258); M[T.room + x] = M[T.exit_down]; }
+  else if (a === 0xC3) { move(0x26); M[T.room + x] = M[T.exit_left]; }
+  else { move(-0x26); M[T.room + x] = M[T.exit_right]; }
+  M[T.saved_ptr_lo + x] = M[bp]; M[T.saved_ptr_hi + x] = M[bp + 1];
+  M[T.saved_x + x] = M[Z.player_x]; M[T.saved_y + x] = M[Z.player_y];
+  return 'room_start';
+};
+
+// P pauses (pause_check, $2798): PAUSED, the volume down, P let go, pressed and let go; the volume
+// up and row 18 blanked.
+P.pause_check = function* () {
+  if (B(Z.key_code) !== 0x29) return;
+  for (let x = 0; x < 6; x++) { M[0x0EE1 + x] = M[0x1B71 + x]; M[0x0AE1 + x] = 0x72; }
+  io.write(0xFF11, io.read(0xFF11) & 0xF0);
+  while (B(Z.key_code) !== 0x40) yield POLL;
+  while (B(Z.key_code) !== 0x29) yield POLL;
+  while (B(Z.key_code) !== 0x40) yield POLL;
+  io.write(0xFF11, io.read(0xFF11) | 0x0F);
+  for (let x = 0; x < 0x28; x++) M[0x0ED0 + x] = 0xD6;
+};
+
+// The room's vitamin taken (collect_vitamin, $27E0): gone from behind him, kept in vitamins_got,
+// counted; the 25th (the CMP's operand at $281F) ends his game with the tune, after a key.
+P.collect_vitamin = function* () {
+  if (left()) M[u + 5] = 0xD6; else M[u + 2] = 0xD6;
+  const x = M[T.vitamin_id];
+  M[T.vitamins_got + x] |= M[T.player] === 0 ? 0x01 : 0x02;
+  P.vitamin_count_up();
+  const p = M[T.player];
+  M[T.vitamin_count + p] = (M[T.vitamin_count + p] + 1) & 0xFF;
+  if (M[T.vitamin_count + p] !== M[T.vitamins_to_win]) return;
+  M[T.lives + M[T.player]] = 0x01;
+  M[T.music_on] = 0x01;
+  io.write(0xFF11, 0x01);
+  while (B(Z.key_code) !== 0x40) yield POLL;
+  while (B(Z.key_code) === 0x40) yield POLL;
+  return 'death';
+};
+
+// Which of his characters the code in A is, as an index into under_player (player_cell, $1F4B).
+P.player_cell = function (r) {
+  const i = [0x78, 0x79, 0x7A, 0x7B, 0x7C].indexOf(r.a);
+  return { y: i < 0 ? 5 : i };
+};
+
+// The six cells under his block into under_player (save_under_player, $1DDA).
+P.save_under_player = function () {
+  M[u] = M[at(bp, 0x00)]; M[u + 3] = M[at(bp, 0x01)];
+  M[u + 1] = M[at(bp, 0x28)]; M[u + 4] = M[at(bp, 0x29)];
+  M[u + 2] = M[at(bp, 0x50)]; M[u + 5] = M[at(bp, 0x51)];
+};
+// His six characters on the screen (draw_player, $1EEE).
+P.draw_player = function () {
+  M[at(bp, 0x00)] = 0x78; M[at(bp, 0x01)] = 0x7B;
+  M[at(bp, 0x28)] = 0x79; M[at(bp, 0x29)] = 0x7C;
+  M[at(bp, 0x50)] = 0x7A; M[at(bp, 0x51)] = 0x7D;
+};
+// The glyph's address of the character in $43, into $43/$44 (glyph_addr, $1E02).
+P.glyph_addr = function () {
+  M[0x44] = 0;
+  for (let x = 0; x < 3; x++) {
+    const t = M[0x43] << 1;
+    M[0x43] = t & 0xFF;
+    M[0x44] = ((M[0x44] << 1) | (t >> 8)) & 0xFF;
+  }
+  M[0x44] = (M[0x44] + 0x38) & 0xFF;
+};
+// The glyphs of the six characters behind him into the buffer at $3FD0 (copy_under_glyphs, $1E1E).
+P.copy_under_glyphs = function () {
+  M[0x49] = 0; M[0x4A] = 0;
+  do {
+    M[0x43] = M[u + M[0x4A]];
+    P.glyph_addr();
+    let x = M[0x49];
+    for (let y = 0; y < 8; y++, x = (x + 1) & 0xFF) M[(T.glyph_buffer + x) & 0x3FFF] = M[at(0x43, y)];
+    M[0x49] = x;
+    M[0x4A] = (M[0x4A] + 1) & 0xFF;
+  } while (M[0x4A] !== 0x06);
+};
+// His figure over the buffer, two bits a pixel, and the buffer into characters $78-$7D
+// (merge_player, $1E48); a bit a call by shift_scenery_bit ($1ED6) and shift_figure_bit ($1EE2).
+P.merge_player = function () {
+  M[0x4E] = 0;
+  M[0x49] = (M[Z.player_x] << 3) & 0xFF;
+  let y = M[Z.player_y];
+  M[0x4F] = 0;
+  for (;;) {
+    M[0x43] = M[(T.glyph_buffer + y) & 0x3FFF];
+    M[0x44] = M[(T.player_frames + M[0x49]) & 0x3FFF];
+    M[0x4A] = 0; M[0x4B] = 0; M[0x4C] = 0;
+    for (let x = 0; x < 4; x++) {
+      P.shift_scenery_bit(); P.shift_scenery_bit();
+      P.shift_figure_bit(); P.shift_figure_bit();
+      M[0x4A] = (M[0x4A] << 2) & 0xFF;
+      if (M[0x4C] === 0) M[0x4A] = (M[0x4A] + M[0x4B]) & 0xFF;
+      else { M[0x4A] = (M[0x4A] + M[0x4C]) & 0xFF; N.fig++; }
+      M[0x4B] = 0; M[0x4C] = 0;
+    }
+    M[(T.glyph_buffer + y) & 0x3FFF] = M[0x4A];
+    y = (y + 1) & 0xFF;
+    M[0x49] = (M[0x49] + 1) & 0xFF;
+    M[0x4F] = (M[0x4F] + 1) & 0xFF;
+    if (M[0x4F] !== 0x10) continue;
+    M[0x4E] = (M[0x4E] + 1) & 0xFF;
+    if (M[0x4E] === 0x02) break;
+    y = (M[Z.player_y] + 0x18) & 0xFF;
+    M[0x4F] = 0;
+  }
+  M.copyWithin(T.player_chars, T.glyph_buffer, T.glyph_buffer + 0x30);
+};
+P.shift_scenery_bit = function () {
+  const t = M[0x43] << 1;
+  M[0x43] = t & 0xFF;
+  M[0x4B] = ((M[0x4B] << 1) | (t >> 8)) & 0xFF;
+};
+P.shift_figure_bit = function () {
+  const t = M[0x44] << 1;
+  M[0x44] = t & 0xFF;
+  M[0x4C] = ((M[0x4C] << 1) | (t >> 8)) & 0xFF;
+};
+
+// The scenery's animation (animate_chars, $1D13), a job a pass: the random cannon's head turned,
+// the conveyor belts rolled a pixel, the lift and the force field scrolled up a line; each then
+// rebuilds the player over what changed.
+P.animate_chars = function () {
+  M[T.anim_phase] = (M[T.anim_phase] + 1) & 0xFF;
+  const ph = M[T.anim_phase];
+  if (ph === 1) {
+    const a = M.slice(0x3CC0, 0x3CC8), b = M.slice(0x3CE0, 0x3CE8);
+    M.copyWithin(0x3CC0, 0x3CC8, 0x3CE0);
+    M.copyWithin(0x3CE0, 0x3CE8, 0x3D00);
+    M.set(b, 0x3CF8); M.set(a, 0x3CD8);
+  } else if (ph === 2) {
+    for (let x = 0; x < 8; x++) {
+      for (let k = 0; k < 2; k++) {
+        for (const [l, r] of [[0x3DC0, 0x3DC8], [0x3DD0, 0x3DD8]]) {
+          const t = M[l + x] << 1, s = (M[r + x] << 1) | (t >> 8);
+          M[r + x] = s & 0xFF;
+          M[l + x] = (t & 0xFF) + (s >> 8);
+        }
+      }
+    }
+  } else if (ph === 3) {
+    const a = M[0x3DE0], b = M[0x3E30], c = M[0x3E38];
+    M.copyWithin(0x3DE0, 0x3DE1, 0x3DE8);
+    M.copyWithin(0x3E30, 0x3E31, 0x3E38);
+    M.copyWithin(0x3E38, 0x3E39, 0x3E40);
+    M[0x3E3F] = c; M[0x3E37] = b; M[0x3DE7] = a;
+    M[T.anim_phase] = 0;
+  } else return;
+  P.copy_under_glyphs();
+  P.merge_player();
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-room.js */
+// The rooms: draw_room and draw_room_objects, the objects' makers (bridges, force fields, cannons,
+// crushers, scenery, switches) and their moves (update_objects and the updates), the shots, and the
+// small routines they share (object_place, object_ptr, fill_cells, draw_column, read_cell,
+// write_cell, shot_erase, object_timer).
+(function (root) {
+'use strict';
+(root.PuniGroups = root.PuniGroups || {}).room = function (P) {
+const M = P.M, io = P.io, Z = P.Z, T = P.T, N = P.N;
+const at = (z, y) => ((M[z] | M[(z + 1) & 0xFF] << 8) + y) & 0x3FFF;
+const rec = y => M[at(Z.rec_ptr, y)];
+const u = T.under_player, C = Z.colour_ptr_lo;
+// j_2E01: the player rebuilt when a cell of his changed ($4F), slot $49 kept
+function rebuild() {
+  if (M[0x4F] === 0) return;
+  const s = M[0x49];
+  P.copy_under_glyphs();
+  P.merge_player();
+  M[0x49] = s;
+}
+
+// The room the player in play is in (draw_room, $2868): its exits, its vitamin, his block, the
+// play area's colours and the room's three, the walls from the bitmap and their tops; the
+// objects' tables cleared and the objects made (draw_room_objects).
+P.draw_room = function () {
+  const r = M[T.room + M[T.player]];
+  M[0x43] = M[T.room_ptr_lo + r]; M[0x44] = M[T.room_ptr_hi + r];
+  for (let y = 0; y < 4; y++) M[T.exit_up + y] = rec(y);
+  M[T.vitamin_id] = rec(4); M[T.vitamin_lo] = rec(5); M[T.vitamin_lo + 1] = rec(6); M[T.vitamin_colour] = rec(7);
+  const p = M[T.player];
+  M[Z.block_ptr] = M[T.saved_ptr_lo + p]; M[Z.block_ptr + 1] = M[T.saved_ptr_hi + p];
+  M[Z.player_x] = M[T.saved_x + p]; M[Z.player_y] = M[T.saved_y + p];
+  M[0x49] = rec(8);
+  for (let x = 0; x < 0xF0; x++) { const c = rec(9); M[0x0800 + x] = c; M[0x08F0 + x] = c; M[0x09E0 + x] = c; }
+  M[T.room_colours] = rec(10); M[T.room_colours + 1] = rec(11); M[T.room_colours + 2] = rec(12);
+  M[0x4A] = rec(13);
+  P.add_to_ptr43({ a: 0x0E });
+  M[0x4E] = 0x0C; M[0x4D] = 0; M[0x4B] = 0; M[0x4C] = 0;
+  do {
+    M[0x4F] = rec(0);
+    do {
+      const bit = M[0x4F] >> 7;
+      M[0x4F] = (M[0x4F] << 1) & 0xFF;
+      if (bit) { M[at(0x4D, 0)] = M[0x49]; M[at(0x4D, 1)] = (M[0x49] + 4) & 0xFF; N.wall++; }
+      else { M[at(0x4D, 0)] = 0xD6; M[at(0x4D, 1)] = 0xD6; }
+      const t = M[0x4D] + 2;
+      M[0x4D] = t & 0xFF; M[0x4E] = (M[0x4E] + (t >> 8)) & 0xFF;
+      M[0x4B] = (M[0x4B] + 1) & 0xFF;
+    } while (M[0x4B] !== 0x08);
+    M[0x4B] = 0;
+    M[0x4C] = (M[0x4C] + 1) & 0xFF;
+    P.add_to_ptr43({ a: 0x01 });
+  } while (M[0x4C] !== 0x2D);
+  M[0x4D] = 0; M[0x4E] = 0x0C;
+  do {
+    if (M[at(0x4D, 0)] === 0xD6 && M[at(0x4D, 0x28)] === M[0x49]) {
+      M[at(0x4D, 0)] = 0x7E; M[at(0x4D, 1)] = 0x7F;
+      P.colour_ptr({ x: 0x4D });
+      M[at(C, 0)] = M[0x4A]; M[at(C, 1)] = M[0x4A];
+      N.top++;
+    }
+    P.ptr_right({ x: 0x4D });
+  } while (M[0x4D] !== 0xD0 || M[0x4E] !== 0x0E);
+  M[0x49] = 0;
+  for (let x = 0; x < 0xA7; x++) M[T.switch_state + x] = 0;
+  P.draw_room_objects();
+};
+
+// The objects of the record, each by its type, to the $FF; the energy's rate and mode; the edges'
+// blanks made exits; the vitamin, unless this player has it (draw_room_objects, $2999).
+P.draw_room_objects = function () {
+  for (;;) {
+    const a = rec(0);
+    if (a === 0xFF) break;
+    const t = a & 0x0F;
+    if (t === 1) P.make_bridge();
+    else if (t === 2) P.make_field();
+    else if (t === 3 || t === 4) P.make_cannon();
+    else if (t === 5) P.make_crusher();
+    else if (t === 7) P.make_decor();
+    else if (t === 8) P.make_switch();
+    else throw new Error('draw_room_objects: an object of type ' + t + ' at $' + at(Z.rec_ptr, 0).toString(16) + ' reaches the BRK at $2A96');
+  }
+  M[T.energy_rate] = rec(1); M[T.energy_mode] = rec(2);
+  M[0x4C] = 0; M[0x4D] = 0x0C;
+  for (let x = 0; x !== 0x12; ) {
+    if (M[at(0x4C, 0x00)] === 0xD6) { M[at(0x4C, 0x00)] = 0xC3; N.edge++; }
+    if (M[at(0x4C, 0x27)] === 0xD6) { M[at(0x4C, 0x27)] = 0xC4; N.edge++; }
+    x++;
+    P.ptr_down({ x: 0x4C });
+  }
+  M[0x4C] = 0; M[0x4D] = 0x0C;
+  for (let y = 0; y < 0x28; y++) if (M[at(0x4C, y)] === 0xD6) { M[at(0x4C, y)] = 0xC1; N.edge++; }
+  M[0x4D] = 0x0E; M[0x4C] = 0xA8;
+  for (let y = 0; y < 0x28; y++) if (M[at(0x4C, y)] === 0xD6) { M[at(0x4C, y)] = 0xC2; N.edge++; }
+  const bit = M[T.player] === 0 ? 0x01 : 0x02;
+  if ((M[T.vitamins_got + M[T.vitamin_id]] & bit) === bit) return;
+  M[0x4C] = M[T.vitamin_lo]; M[0x4D] = M[T.vitamin_lo + 1];
+  M[at(0x4C, 0)] = 0xD7;
+  P.colour_ptr({ x: 0x4C });
+  M[at(C, 0)] = M[T.vitamin_colour];
+};
+
+// An object record's address and type into the slot $49 and $4C/$4D (object_place, $1F10); the
+// slot's address back into $4C/$4D (object_ptr, $1F39).
+P.object_place = function (r) {
+  const x = M[0x49];
+  let y = r.y;
+  const a = M[at(Z.rec_ptr, y)];
+  M[T.obj_type + x] = a; M[0x4D] = a >> 4;
+  y = (y + 1) & 0xFF;
+  M[T.obj_lo + x] = M[0x4C] = M[at(Z.rec_ptr, y)];
+  return { x, y };
+};
+P.object_ptr = function (r) {
+  const x = M[0x49];
+  M[0x4D] = M[T.obj_type + x] >> 4;
+  M[0x4C] = M[T.obj_lo + x];
+  return { x, y: ((r && r.y) + 1) & 0xFF };
+};
+// Y+1 cells from $4C/$4D in the character $4F and the colour $4E (fill_cells, $1F26).
+P.fill_cells = function (r) {
+  P.colour_ptr({ x: 0x4C });
+  let y = r.y;
+  do { M[at(0x4C, y)] = M[0x4F]; M[at(C, y)] = M[0x4E]; N.cell++; y = (y - 1) & 0xFF; } while (y !== 0xFF);
+};
+// A column X+1 rows high, upward from $4C/$4D: $4A and its partner, in the colours $4E and $4F
+// (draw_column, $1F95).
+P.draw_column = function (r) {
+  let x = r.x;
+  for (;;) {
+    let a = M[0x4A];
+    M[at(0x4C, 0)] = a;
+    if (a < 0x88) a = (a + 4) & 0xFF;
+    else if (a !== 0xD6 && a !== 0xBC) a = (a + 1) & 0xFF;
+    M[at(0x4C, 1)] = a;
+    P.colour_ptr({ x: 0x4C });
+    M[at(C, 0)] = M[0x4E]; M[at(C, 1)] = M[0x4F];
+    N.cell++;
+    P.ptr_up({ x: 0x4C });
+    x = (x - 1) & 0xFF;
+    if (x === 0xFF) break;
+  }
+};
+
+// The makers. A bridge (make_bridge, $2AE3): its row blanked in its colour.
+P.make_bridge = function () {
+  const { x } = P.object_place({ y: 0 });
+  M[0x4E] = M[T.obj_colour + x] = rec(2);
+  M[T.obj_timer + x] = rec(3);
+  M[T.obj_param + x] = rec(4);
+  M[0x4F] = 0xD6;
+  P.fill_cells({ y: M[T.obj_timer + x] });
+  P.add_to_ptr43({ a: 0x05 });
+  M[0x49] = (M[0x49] + 1) & 0xFF;
+};
+// A force field (make_field, $2B0D): its base, and the field above it.
+P.make_field = function () {
+  const { x } = P.object_place({ y: 0 });
+  M[0x4E] = M[T.obj_colour + x] = rec(2);
+  M[0x4F] = M[T.obj_param + x] = rec(3);
+  M[T.obj_timer + x] = rec(4);
+  M[T.obj_reload + x] = rec(5);
+  M[at(0x4C, 0)] = 0x90; M[at(0x4C, 1)] = 0x91;
+  P.ptr_up({ x: 0x4C });
+  const s = M[0x49];
+  M[T.obj_lo + s] = M[0x4C];
+  M[T.obj_type + s] = ((M[0x4D] << 4) | 0x02) & 0xFF;
+  M[0x4A] = 0xC6;
+  P.draw_column({ x: M[T.obj_reload + s] });
+  M[0x49] = (M[0x49] + 1) & 0xFF;
+  P.add_to_ptr43({ a: 0x06 });
+};
+// A cannon (make_cannon, $2B60), type 3 one way, type 4 either: its base, and its head coloured
+// like the base.
+P.make_cannon = function () {
+  const { x } = P.object_place({ y: 0 });
+  M[T.obj_colour + x] = rec(2);
+  M[T.obj_param + x] = rec(3) | 0x80;
+  M[T.obj_timer + x] = M[T.obj_reload + x] = rec(4);
+  M[T.obj_param + x] |= rec(5);
+  P.add_to_ptr43({ a: 0x06 });
+  M[at(0x4C, 0)] = 0x92; M[at(0x4C, 1)] = 0x93;
+  P.ptr_up({ x: 0x4C });
+  P.colour_ptr({ x: 0x4C });
+  const c = M[at(C, 0x28)];
+  M[at(C, 0)] = c; M[at(C, 1)] = c;
+  const s = M[0x49];
+  if ((M[T.obj_type + s] & 0x0F) === 0x04) {
+    M[at(0x4C, 0)] = 0x98; M[at(0x4C, 1)] = 0x9C;
+    M[0x49] = (M[0x49] + 1) & 0xFF;
+    return;
+  }
+  if ((M[T.obj_param + s] & 0x40) === 0x40) {
+    M[at(0x4C, 0)] = 0x96; M[at(0x4C, 1)] = 0x97;
+    P.ptr_right({ x: 0x4C }); P.ptr_right({ x: 0x4C });
+  } else {
+    P.ptr_left({ x: 0x4C });
+    M[at(0x4C, 1)] = 0x94; M[at(0x4C, 2)] = 0x95;
+  }
+  M[T.obj_lo + s] = M[0x4C];
+  M[T.obj_type + s] = ((M[0x4D] << 4) | 0x03) & 0xFF;
+  M[0x49] = (M[0x49] + 1) & 0xFF;
+};
+// A crusher (make_crusher, $2ED5): its shaft down from the address, and its head.
+P.make_crusher = function () {
+  const { x } = P.object_place({ y: 0 });
+  M[T.obj_colour + x] = rec(2);
+  M[T.obj_param + x] = rec(3);
+  M[T.obj_timer + x] = rec(4);
+  M[0x4F] = rec(5);
+  M[T.obj_timer + x] |= rec(6);
+  M[T.obj_reload + x] = M[T.shot_hi + x] = rec(7);
+  const colours = () => {
+    P.colour_ptr({ x: 0x4C });
+    const s = M[0x49];
+    M[at(C, 1)] = M[T.obj_param + s]; M[at(C, 0)] = M[T.obj_colour + s];
+  };
+  for (;;) {
+    M[0x4F] = (M[0x4F] - 1) & 0xFF;
+    if (M[0x4F] === 0) break;
+    M[at(0x4C, 0)] = 0xCC; M[at(0x4C, 1)] = 0xD1;
+    colours();
+    P.ptr_down({ x: 0x4C });
+  }
+  M[at(0x4C, 0)] = 0xCD; M[at(0x4C, 1)] = 0xD2;
+  colours();
+  const s = M[0x49];
+  M[T.obj_lo + s] = M[0x4C];
+  M[T.obj_type + s] = ((M[0x4D] << 4) | 0x05) & 0xFF;
+  P.add_to_ptr43({ a: 0x08 });
+  M[0x49] = (M[0x49] + 1) & 0xFF;
+};
+// Scenery (make_decor, $2C03): a row of blocks two cells square ($A0-$BB, and from $C8), or a
+// column (draw_column).
+P.make_decor = function () {
+  M[0x4D] = rec(0) >> 4;
+  M[0x4C] = rec(1);
+  M[0x4E] = rec(2);
+  M[0x4F] = rec(3);
+  const a = M[0x4A] = rec(4);
+  if (a < 0xA0 || (a >= 0xBC && a < 0xC8)) P.draw_column({ x: rec(5) });
+  else {
+    M[0x4B] = a >= 0xC8 ? 0x01 : a === 0xB8 ? 0x01 : 0x07;
+    let x = rec(5);
+    do {
+      let v = M[0x4A];
+      M[at(0x4C, 0x00)] = v;
+      v = v + 1; let c = v >> 8; v &= 0xFF;
+      M[at(0x4C, 0x01)] = v;
+      v = v + M[0x4B] + c; c = v >> 8; v &= 0xFF;
+      M[at(0x4C, 0x28)] = v;
+      v = (v + 1 + c) & 0xFF;
+      M[at(0x4C, 0x29)] = v;
+      P.colour_ptr({ x: 0x4C });
+      M[at(C, 0x00)] = M[0x4E]; M[at(C, 0x01)] = M[0x4E];
+      M[at(C, 0x28)] = M[0x4F]; M[at(C, 0x29)] = M[0x4F];
+      N.block++;
+      P.ptr_right({ x: 0x4C }); P.ptr_right({ x: 0x4C });
+      x = (x - 1) & 0xFF;
+    } while (x !== 0);
+  }
+  P.add_to_ptr43({ a: 0x06 });
+};
+// A switch (make_switch, $2C95): its state kept, and drawn lit or unlit.
+P.make_switch = function () {
+  M[0x4D] = rec(0) >> 4;
+  M[0x4C] = rec(1);
+  M[0x4E] = rec(2);
+  const st = rec(3);
+  M[T.switch_state + (M[0x4E] & 0x07)] = st;
+  const a = st === 0x01 ? 0xBD : 0xBF;
+  M[at(0x4C, 0)] = a; M[at(0x4C, 1)] = (a + 1) & 0xFF;
+  P.colour_ptr({ x: 0x4C });
+  M[at(C, 1)] = M[0x4E]; M[at(C, 0)] = M[0x4E];
+  P.add_to_ptr43({ a: 0x04 });
+};
+
+// The room's objects moved, slot by slot to an empty one or slot 20 (update_objects, $2A97).
+P.update_objects = function () {
+  M[0x49] = 0xFF;
+  for (;;) {
+    M[0x49] = (M[0x49] + 1) & 0xFF;
+    const x = M[0x49], t = M[T.obj_type + x] & 0x0F;
+    if (t === 0 || x === 0x14) return;
+    if (t === 1) P.update_bridge();
+    else if (t === 2) P.update_field();
+    else if (t === 3) P.update_cannon({ x });
+    else if (t === 4) P.update_random_cannon({ x });
+    else if (t === 5) P.update_crusher({ x });
+    else throw new Error('update_objects: slot ' + x + ' of type ' + t + ' reaches the BRK at $2AE2');
+  }
+};
+// A bridge shown or hidden by its switch (update_bridge, $2CD6).
+P.update_bridge = function () {
+  const { x } = P.object_ptr({ y: 0 });
+  const up = M[at(0x4C, 0x28)] === M[T.screen_chars];
+  if (M[T.switch_state + M[T.obj_param + x]] === 0) {
+    if (!up) return;
+    M[0x4F] = 0xD6; M[0x4E] = M[T.obj_colour + x];
+    P.fill_cells({ y: M[T.obj_timer + x] });
+    const s = M[0x49];
+    P.ptr_down({ x: 0x4C });
+    P.fill_cells({ y: M[T.obj_timer + s] });
+    return;
+  }
+  if (up) return;
+  M[0x4F] = 0xD6; M[0x4E] = M[T.obj_colour + x];
+  P.fill_cells({ y: M[T.obj_timer + x] });
+  P.ptr_down({ x: 0x4C });
+  let y = M[T.obj_timer + M[0x49]];
+  for (;;) {
+    M[at(0x4C, y)] = M[0x0C01];
+    y = (y - 1) & 0xFF;
+    M[at(0x4C, y)] = M[0x0C00];
+    P.colour_ptr({ x: 0x4C });
+    M[at(C, y)] = M[0x0800];
+    M[at(C, (y + 1) & 0xFF)] = M[0x0800];
+    N.cell++;
+    y = (y - 1) & 0xFF;
+    if (y === 0xFF) break;
+  }
+};
+// A force field taken away or put back by its switch (update_field, $2E1E).
+P.update_field = function () {
+  const { x } = P.object_ptr({ y: 0 });
+  M[0x4E] = M[T.obj_colour + x]; M[0x4F] = M[T.obj_param + x];
+  if (M[T.switch_state + M[T.obj_timer + x]] === 0) {
+    if (M[at(0x4C, 0)] !== 0xC6) return;
+    M[0x4A] = 0xD6;
+    P.draw_column({ x: M[T.obj_reload + x] });
+    return;
+  }
+  if (M[at(0x4C, 0)] !== 0xD6) return;
+  M[0x4A] = 0xC6; M[0x4E] = M[T.obj_colour + x]; M[0x4F] = M[T.obj_param + x];
+  P.draw_column({ x: M[T.obj_reload + x] });
+};
+// A cannon's rate and switch (object_timer, $2D81): go is false where the game takes the
+// cannon's return address and goes back to update_objects.
+P.object_timer = function (r) {
+  const x = r.x;
+  M[T.obj_timer + x] = (M[T.obj_timer + x] - 1) & 0xFF;
+  if (M[T.obj_timer + x] !== 0) return { go: false };
+  M[T.obj_timer + x] = M[T.obj_reload + x];
+  const y = M[T.obj_param + x] & 0x0F;
+  return { go: M[T.switch_state + y] !== 0, y };
+};
+// The one-way cannon (update_cannon, $2D50): its shot moved, or a new one at its start.
+P.update_cannon = function (r) {
+  const x = r.x;
+  if (!P.object_timer({ x }).go) return;
+  M[0x4F] = 0;
+  if ((M[T.obj_param + x] & 0x80) !== 0x80) { M[T.shot_char] = 0xC5; P.move_shot({ x }); return; }
+  M[T.shot_hi + x] = M[T.obj_type + x] >> 4;
+  M[T.shot_lo + x] = M[T.obj_lo + x];
+  M[T.obj_param + x] &= 0x7F;
+};
+// The random cannon (update_random_cannon, $2E68): a new shot goes left or right by bit 0 of
+// $FF1F, the line of the character row TED's beam is on.
+P.update_random_cannon = function (r) {
+  const x = r.x;
+  if (!P.object_timer({ x }).go) return;
+  M[0x4F] = 0;
+  if ((M[T.obj_param + x] & 0x80) !== 0x80) { M[T.shot_char] = 0xC5; P.move_shot({ x }); return; }
+  M[T.shot_hi + x] = M[T.obj_type + x] >> 4;
+  M[T.shot_lo + x] = M[T.obj_lo + x];
+  M[T.obj_param + x] &= 0x7F;
+  let d;
+  if ((io.read(0xFF1F) & 0x01) === 0x01) { M[T.obj_param + x] &= 0xBF; d = 0x29; }
+  else { M[T.obj_param + x] |= 0x40; d = 0x26; }
+  const t = M[T.shot_lo + x] - d;
+  M[T.shot_lo + x] = t & 0xFF;
+  M[T.shot_hi + x] = (M[T.shot_hi + x] - (t < 0 ? 1 : 0)) & 0xFF;
+};
+// A shot a cell on (move_shot, $2D9D): anything but a blank ends it; a blank takes it, through
+// under_player in one of the player's cells.
+P.move_shot = function (r) {
+  P.shot_erase({ x: r.x });
+  if ((M[T.obj_param + r.x] & 0x40) === 0x40) P.ptr_right({ x: 0x4C });
+  else P.ptr_left({ x: 0x4C });
+  let a = M[at(0x4C, 0)];
+  if (a < 0x7E) a = M[u + P.player_cell({ a }).y];
+  if (a !== 0xD6) M[T.obj_param + M[0x49]] |= 0x80;
+  else {
+    a = M[at(0x4C, 0)];
+    if (a < 0x7E) { M[u + P.player_cell({ a }).y] = M[T.shot_char]; M[0x4F] = M[T.shot_char]; }
+    else M[at(0x4C, 0)] = M[T.shot_char];
+    P.colour_ptr({ x: 0x4C });
+    M[at(C, 0)] = M[0x4E];
+  }
+  const s = M[0x49];
+  M[T.shot_lo + s] = M[0x4C]; M[T.shot_hi + s] = M[0x4D];
+  rebuild();
+};
+// The shot of slot X rubbed out (shot_erase, $1F67), its cannon's colour into $4E.
+P.shot_erase = function (r) {
+  const x = r.x;
+  M[0x4D] = M[T.shot_hi + x]; M[0x4C] = M[T.shot_lo + x]; M[0x4E] = M[T.obj_colour + x];
+  const a = M[at(0x4C, 0)];
+  if (a < 0x7E) { M[u + P.player_cell({ a }).y] = 0xD6; M[0x4F] = 0xD6; }
+  else M[at(0x4C, 0)] = 0xD6;
+  return { x: 0x4C, y: 0 };
+};
+// A crusher a stage on (update_crusher, $2F63), when its timer runs out and its switch is on: up a
+// stage, or blanked and on into the shaft above, or turned; down a stage, or shaft and on into the
+// blank below, or turned.
+P.update_crusher = function (r) {
+  const x = r.x;
+  M[T.obj_reload + x] = (M[T.obj_reload + x] - 1) & 0xFF;
+  if (M[T.obj_reload + x] !== 0) return;
+  M[T.obj_reload + x] = M[T.shot_hi + x];
+  if (M[T.switch_state + (M[T.obj_timer + x] & 0x0F)] === 0) return;
+  P.object_ptr({ y: 0 });
+  M[0x4F] = 0;
+  const turn = y => { M[T.obj_timer + M[0x49]] ^= 0x40; return y; };
+  let a;
+  if ((M[T.obj_timer + x] & 0x40) === 0) {
+    a = (P.read_cell().a + 1) & 0xFF;
+    if (a === 0xD1) {
+      P.write_cell({ x: 0xD6 });
+      P.ptr_right({ x: 0x4C });
+      P.write_cell({ x: 0xD6 });
+      P.ptr_left({ x: 0x4C });
+      P.ptr_up({ x: 0x4C });
+      if (P.read_cell().a === 0xCC) a = 0xCD;
+      else { P.ptr_down({ x: 0x4C }); a = turn(0xD0); }
+    }
+  } else {
+    a = (P.read_cell().a - 1) & 0xFF;
+    if (a === 0xCC) {
+      P.write_cell({ x: 0xCC });
+      P.ptr_right({ x: 0x4C });
+      P.write_cell({ x: 0xD1 });
+      P.ptr_down({ x: 0x4C });
+      P.ptr_left({ x: 0x4C });
+      if (P.read_cell().a === 0xD6) a = 0xD0;
+      else { P.ptr_up({ x: 0x4C }); a = turn(0xCD); }
+    }
+  }
+  M[0x4B] = a;                                              // j_3009
+  const s = M[0x49];
+  M[T.obj_lo + s] = M[0x4C];
+  M[T.obj_type + s] = ((M[0x4D] << 4) | 0x05) & 0xFF;
+  P.write_cell({ x: M[0x4B] });
+  P.ptr_right({ x: 0x4C });
+  P.write_cell({ x: (M[0x4B] + 5) & 0xFF });
+  P.ptr_left({ x: 0x4C });
+  P.colour_ptr({ x: 0x4C });
+  const s2 = M[0x49];
+  M[at(C, 0)] = M[T.obj_colour + s2]; M[at(C, 1)] = M[T.obj_param + s2];
+  rebuild();
+};
+// The cell at $4C/$4D, or the scenery behind the player in one of his (read_cell, $304B;
+// write_cell, $305E, which sets $4F so that he is rebuilt).
+P.read_cell = function () {
+  const a = M[at(0x4C, 0)];
+  if (a < 0x7E) { const y = P.player_cell({ a }).y; return { a: M[u + y], y }; }
+  return { a, y: 0 };
+};
+P.write_cell = function (r) {
+  const a = M[at(0x4C, 0)];
+  if (a < 0x7E) { const y = P.player_cell({ a }).y; M[u + y] = r.x; M[0x4F] = r.x; return; }
+  M[at(0x4C, 0)] = r.x;
+};
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/page/runtime.js */
+// The Play page's machine: the port (src/) run as the Commodore 16 runs the game, on a TED of its
+// own. It runs in the browser and in node (../test_play.js), and needs PuniPort and its groups,
+// and site/lib/c16.js for TED's beam and its registers (C16.timing, C16.io).
+//
+//   const rt = PuniPage.create({ ram, cost })
+//     ram    the game's memory as the tape hands over at entry ($1AF4), a Uint8Array of 64 KB:
+//            listing.json's bytes (C16.load); the KERNAL's bytes the game reads are added here
+//            (PuniPort.KERNAL_RAM)
+//     cost   what the program's stretches cost, fitted on the game (scripts/fit-cost.js, cost.json),
+//            and when each band of the interrupt writes TED's registers (writes)
+//   rt.runFrame()   runs the program until the clock reaches the end of the next frame, and returns
+//                   that frame: { n, bands, sound }, bands for C16.renderBands and sound the writes
+//                   to TED's sound registers in it, [tick in the frame, register, value, ...], for
+//                   TEDSound's host
+//   rt.input        the chips (C16.io), whose keys (a Set of key numbers, kit/c16/machine.js's
+//                   KEY) and joy (port 2's stick, active low: 1 up, 2 down, 4 left, 8 right,
+//                   16 fire) the page sets
+//   rt.M, rt.ted, rt.P, rt.beam, rt.t (the clock), rt.frame (the frame the clock is in),
+//   rt.passes (the main loop's passes, at $32BC)
+//
+// The clock is TED's: 312 lines of 114 ticks of the double clock a frame, the processor's cycles
+// placed on them as TED gives them (C16.timing.Beam: the single clock on the display's lines, the
+// bad lines' holds). Each stretch of the program between two checkpoints moves it on by what the
+// stretch cost the game (cost: its own cycles, by the checkpoints it runs between, and each
+// routine called and each count of work in it at its own), and a turn of a polling loop moves it to
+// the start of the next line. TED raises its raster interrupt as the beam reaches the compare line
+// ($FF0B, with $FF0A's bit 0); the processor takes it when its interrupt flag is clear, at the
+// port's next yield: the handler the KERNAL's vector at $0314 names runs then, its own stretches
+// costed the same way. The interrupt flag is set at the hand-over, as the loader leaves it, and
+// setup_machine's CLI clears it once the stretch it ends is paid: the game ran that stretch with
+// interrupts off. irq never lets interrupts in itself.
+//
+// The raster interrupt splits the screen in two: the play area in the room's colours, from line
+// 250 to line 146, and the panel in its own, from line 146 to 250; each band's colours take effect
+// from the line its writes to TED land on. The port makes a handler's writes all at once, as the
+// interrupt is taken, so each is put at the moment the game's own makes it: the interrupt's start
+// and the cycles the game takes to reach that write, band by band (cost.writes, measured by
+// scripts/fit-cost.js). The band is the line the interrupt was set for: the panel's when $FF0B
+// does not hold 250, the play area's when it does.
+//
+// What the page shows is made as the beam goes: the memory as each row of the screen begins, and
+// TED's registers line by line, a write taking effect on the line after the one it was made on.
+// The timers count at the single clock, and only the raster interrupt is modelled: the game
+// enables no other. $FF1F's bits 0-2, the line within the character row, are the beam's
+// (C16.timing's charLine): the random cannon reads its bit 0 to choose a way to fire.
+(function (root) {
+'use strict';
+const LINE = 114, LINES = 312, FRAME = LINE * LINES;
+const RASTER_AT = 1, HPOS_AT = 97;      // as kit/c16/machine.js has them, measured on plus4emu
+// TED's registers as the KERNAL leaves them (kit/c16/machine.js, KERNAL_TED)
+const KERNAL_TED = [0xE1, 0x01, 0x71, 0x7E, 0x80, 0x7E, 0x1B, 0x08, 0xFF, 0x7D, 0x02, 0xCC, 0xFC, 0xA0, 0x00, 0x00,
+  0x7C, 0x00, 0x04, 0xD0, 0x08, 0x71, 0x5B, 0x75, 0x77, 0x6E, 0xFC, 0x00, 0xFE, 0x00, 0xC6, 0xA8];
+// the registers the picture is drawn from
+const SHOWN = new Set([0x06, 0x07, 0x0C, 0x0D, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19]);
+// the handlers, by the address the vector at $0314 holds
+const HANDLERS = { 0x312E: 'irq' };
+// the least a stretch costs, for one the fit never saw
+const MIN_STRETCH = 10;
+// the start of a pass of the main loop
+const PASS = 0x32BC;
+// the frames kept after the clock has passed them, for the one shown
+const KEPT = 4;
+
+function create(o) {
+  const C16 = root.C16, Beam = C16.timing.Beam;
+  const M = new Uint8Array(new ArrayBuffer(0x10000));
+  M.set(o.ram);
+  for (const [a, bytes] of root.PuniPort.KERNAL_RAM) M.set(bytes, a);
+  // the chips: TED's registers, read back as TED reads them, and the keyboard and joystick latch
+  // are the site's (C16.io); the timers, the interrupt flags and the beam are this machine's, in
+  // tedRead and tedWrite below
+  const input = C16.io(M, { read: tedRead, write: tedWrite });
+  const ted = input.ted;
+  ted.set(KERNAL_TED);
+  const beam = new Beam({ ff06: ted[0x06] });
+  let t = 0, lineSeen = 0, rasterSeen = -1, rasterMatch = false, flags = ted[0x09] & 0x5E;
+  let passes = 0;
+  // the timers: a count at tick t0, running or not
+  const timers = [0, 1, 2].map(i => ({ count: ted[2 * i] | ted[2 * i + 1] << 8, latch: ted[0] | ted[1] << 8, t0: 0, run: true }));
+  const timerAt = (i, x = t) => {
+    const T = timers[i];
+    if (!T.run) return T.count;
+    const n = Math.floor((x - T.t0) / 2), c = T.count;
+    if (i > 0) return ((c - n) % 0x10000 + 0x10000) % 0x10000;
+    if (n <= c) return c - n;
+    const P = T.latch || 0x10000;
+    return P - 1 - ((n - c - 1) % P);
+  };
+
+  // ---- the frames as the beam draws them: TED's registers as each began and the writes after,
+  // the memory as each of the screen's 25 rows began, and the writes to the sound registers
+  const pool = [];
+  function newFrame(n) {
+    const f = pool.pop() || { rows: Array.from({ length: 25 }, () => new Uint8Array(0x4000)) };
+    f.n = n; f.ted0 = ted.slice(0, 0x20); f.writes = []; f.sound = []; f.got = 0; f.bands = null;
+    return f;
+  }
+  let cur = newFrame(0);
+  const done = [];
+  function lineStart(L) {
+    const y = L % LINES;
+    if (y === 0) {
+      done.push(cur);
+      while (done.length > KEPT) pool.push(done.shift());
+      cur = newFrame(L / LINES);
+      beam.frame();
+    }
+    // the rows begin at lines 4, 12 ... 196 (25 rows with the vertical scroll at 3)
+    if (y >= 4 && y < 204 && (y - 4) % 8 === 0) { cur.rows[(y - 4) >> 3].set(M.subarray(0, 0x4000)); cur.got |= 1 << ((y - 4) >> 3); }
+  }
+  const compare = () => ted[0x0B] | (ted[0x0A] & 1) << 8;
+  function rasterCheck(line) {
+    const m = line === compare();
+    if (m && !rasterMatch) flags |= 0x02;
+    rasterMatch = m;
+  }
+  const nextEvent = () => Math.min((lineSeen + 1) * LINE, (rasterSeen + 1) * LINE + RASTER_AT);
+  // TED up to tick u: the lines begun, the raster flag raised as the count reaches the compare line
+  function events(u) {
+    for (;;) {
+      const a = (lineSeen + 1) * LINE, b = (rasterSeen + 1) * LINE + RASTER_AT;
+      if (Math.min(a, b) > u) return;
+      if (a <= b) { lineSeen++; lineStart(lineSeen); } else { rasterSeen++; rasterCheck(rasterSeen % LINES); }
+    }
+  }
+
+  // ---- the chips
+  // The tick a read of the timers or the beam's place sees: the clock moved on by what the run
+  // owes so far (the routines it has called since its last checkpoint) and by the reads of TED it
+  // has made since then, four cycles each, so that the random cannon's read of $FF1F sees the line
+  // the beam has reached at about the point of the pass the game's own reaches it.
+  const now = () => { const run = top(), n = Math.round(run.owe + run.seen); return n > 0 ? beam.after(t, n) : t; };
+  // A read of TED's registers the beam answers, before C16.io's own (undefined leaves it to them)
+  function tedRead(a) {
+    if (a < 0xFF00 || a >= 0xFF20) return undefined;
+    const r = a & 0x1F;
+    top().seen += 4;
+    if (r <= 5) { const v = timerAt(r >> 1, now()); return r & 1 ? v >> 8 : v & 0xFF; }
+    if (r === 0x09) { const f = flags | 0x25; return f | ((f & ted[0x0A] & 0x5E) ? 0x80 : 0); }
+    if (r === 0x13) return (ted[0x13] & 0xFE) | 1;
+    if (r === 0x1C || r === 0x1D) { const L = (Math.floor((now() - RASTER_AT) / LINE) % LINES + LINES) % LINES; return r === 0x1D ? L & 0xFF : 0xFE | (L >> 8); }
+    if (r === 0x1E) return (((now() + HPOS_AT) % LINE) * 2) & 0xFF;
+    if (r === 0x1F) return (ted[0x1F] & 0x78) | 0x80 | beam.charLine(now());
+    return undefined;
+  }
+  // What a write to TED starts, once C16.io has kept it
+  function tedWrite(a, v) {
+    if (a < 0xFF00 || a >= 0xFF20) return;
+    const r = a & 0x1F;
+    if (r <= 5) {
+      const i = r >> 1, T = timers[i];
+      T.count = timerAt(i); T.t0 = t;
+      if (r & 1) { T.count = (T.count & 0xFF) | v << 8; if (i === 0) T.latch = (T.latch & 0xFF) | v << 8; T.run = true; }
+      else { T.count = (T.count & 0xFF00) | v; if (i === 0) T.latch = (T.latch & 0xFF00) | v; T.run = false; }
+      return;
+    }
+    if (r === 0x09) { flags &= ~(v & 0x5E); return; }
+    if (r === 0x06) beam.ff06 = v;
+    if (r === 0x0A || r === 0x0B) rasterCheck((rasterSeen % LINES + LINES) % LINES);
+    if (r >= 0x0E && r <= 0x12) cur.sound.push(t - cur.n * FRAME, 0xFF00 | r, v);
+    if (SHOWN.has(r)) cur.writes.push([Math.floor(placed(r) / LINE) % LINES, r, v]);
+  }
+
+  // The tick a write to one of the registers the picture is drawn from takes effect at: in a band
+  // of the interrupt, the k-th such write the band makes goes at the cycle the game's makes it,
+  // counted from the interrupt's start; anything else, now.
+  function placed(r) {
+    const run = top(), w = run.at && run.k >= 0 && WRITES[run.band];
+    if (!w || run.k >= w.length || w[run.k][0] !== r) { if (run.at) run.k = -1; return t; }
+    return beam.after(run.t0, w[run.k++][1]);
+  }
+
+  // ---- the program: the main program and the interrupts it lets in, a stack of runs, each a
+  // generator with its interrupt flag, the checkpoint it last passed, and the cycles it owes
+  // a CLI lets the interrupt in once the run's debt is paid (step)
+  const io = { read: input.read, write: input.write, irqByte: a => M[a], sei: () => { const r = top(); r.I = 1; r.cli = false; }, cli: () => { top().cli = true; } };
+  const P = root.PuniPort.makePort(M, io);
+  const model = o.cost || { seg: {}, call: {} };
+  const WRITES = model.writes || {};
+  const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
+  const stack = [];
+  const top = () => stack[stack.length - 1];
+  for (const name of Object.keys(model.call)) {
+    const f = P[name];
+    if (typeof f !== 'function') continue;
+    const c = model.call[name];
+    P[name] = f instanceof GENERATOR
+      ? function* (...a) { top().owe += c; return yield* f.apply(this, a); }
+      : function (...a) { top().owe += c; return f.apply(this, a); };
+  }
+  // the stretch to checkpoint to: its own cycles, with the routines called in it (owed as they
+  // were called) and the counts of work since the last
+  function stretch(run, to) {
+    const key = (run.at ? run.at.toString(16) + ':' : '') + run.cp + '>' + to;
+    let c = model.seg[key];
+    if (c === undefined) c = MIN_STRETCH;
+    for (const k in P.N) { if (P.N[k]) c += (model.call['#' + k] || 0) * P.N[k]; P.N[k] = 0; }
+    run.cp = to;
+    return c;
+  }
+  const canTake = () => (flags & ted[0x0A] & 0x02) !== 0 && top().I === 0;
+  // the clock on to tick u, or to the tick an interrupt can be taken on, if that comes first
+  function runTo(u) {
+    for (;;) {
+      const ev = nextEvent();
+      if (ev > u) { if (u > t) t = u; return true; }
+      if (ev > t) t = ev;
+      events(t);
+      if (canTake()) return false;
+    }
+  }
+  // the cycles a run owes, paid on the clock a line at a time (the display switched off or on
+  // changes the cycles a line gives from the next frame): false when an interrupt came first.
+  // Where the debt ends is looked for only once it fits before the next event: delay owes some
+  // 20 frames at once, and looking each line for where that ends walks all of them every line.
+  function pay(run) {
+    for (;;) {
+      if (run.owe < 0.5) { run.owe = 0; return true; }
+      const ev = nextEvent(), c = beam.cycles(t, ev), n = Math.round(run.owe);
+      if (n <= c) { const u = beam.after(t, n); if (u <= ev) { if (u > t) t = u; run.owe = 0; return true; } }
+      run.owe -= c; t = ev; events(t);
+      if (canTake()) return false;
+    }
+  }
+  function take() {
+    const v = M[0x0314] | M[0x0315] << 8, name = HANDLERS[v];
+    if (!name) throw new Error('an interrupt with the vector at $' + v.toString(16).toUpperCase() + ', which the port has no handler for');
+    const f = P[name];
+    const gen = f instanceof GENERATOR ? f.call(P) : (function* () { f.call(P); })();
+    stack.push({ gen, at: v, I: 1, cp: 'in', owe: 0, seen: 0, done: false, poll: false, until: -1,
+      t0: t, band: ted[0x0B] === 0xFA ? 1 : 0, k: 0 });
+  }
+  function step() {
+    const run = top();
+    if (run.owe > 0) { if (!pay(run)) take(); return; }
+    if (run.cli) { run.cli = false; run.I = 0; }
+    if (run.poll) {                                         // a turn of a polling loop: to the next line
+      if (run.until < 0) run.until = (Math.floor(t / LINE) + 1) * LINE;
+      if (runTo(run.until)) { run.poll = false; run.until = -1; } else take();
+      return;
+    }
+    if (run.done) { stack.pop(); return; }
+    if (canTake()) { take(); return; }
+    const r = run.gen.next();
+    if (r.done) {
+      if (!run.at) throw new Error('the program ended');
+      run.done = true; run.owe += stretch(run, 'out');
+      return;
+    }
+    const y = r.value;
+    run.seen = 0;
+    if (y && y.cp !== undefined) { run.owe += stretch(run, y.cp.toString(16)); if (y.cp === PASS) passes++; }
+    else if (y && y.cycles !== undefined) run.owe += y.cycles;
+    else run.poll = true;                                   // the routines called in the turn are paid first
+  }
+  stack.push({ gen: P.program(), at: 0, I: 1, cp: 'start', owe: 0, seen: 0, done: false, poll: false, until: -1 });
+
+  let target = 0;
+  // one frame of time: the program runs until the clock reaches the frame's end
+  function runFrame() {
+    target += FRAME;
+    let guard = 0;
+    while (t < target) { step(); if (++guard > 5e6) throw new Error('runFrame: no progress'); }
+    return frameAt(target / FRAME - 1);
+  }
+  // the frame numbered n, its bands for C16.renderBands, or the nearest kept
+  function frameAt(n) {
+    let f = done.find(x => x.n === n) || done[done.length - 1];
+    if (!f) return null;
+    if (!f.bands) f.bands = bands(f);
+    return f;
+  }
+  // the frame's lines in bands, each with the memory its row began with and TED's registers then
+  function bands(f) {
+    const out = [], regs = f.ted0.slice();
+    let w = 0, start = 0, mem = null;
+    const rowOf = y => { const r = Math.min(24, y >> 3); return f.got & (1 << r) ? f.rows[r] : M; };
+    for (let y = 0; y < 200; y++) {
+      const L = y + 4;
+      let changed = false;
+      while (w < f.writes.length && f.writes[w][0] < L) { regs[f.writes[w][1]] = f.writes[w][2]; w++; changed = true; }
+      const m = rowOf(y);
+      if (y && (changed || m !== mem)) { out[out.length - 1].y1 = y - 1; start = y; }
+      if (!y || changed || m !== mem) out.push({ y0: start = y, y1: 199, mem: m, ted: regs.slice() });
+      mem = m;
+    }
+    return out;
+  }
+  return { M, ted, input, P, beam, runFrame, frameAt, get t() { return t; }, get frame() { return Math.floor(t / FRAME); }, get passes() { return passes; } };
+}
+root.PuniPage = { create, LINE, LINES, FRAME };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+window.PUNI_COST = {"seg":{"1c51>1c54":0,"1c54>3225":34,"2033>2036":0,"2036>2033":39.4,"2036>32bc":21443.6,"312e:in>out":0,"3225>1c51":0,"3225>3225":8,"32bc>32bc":0,"32bc>32bf":31.1,"32bc>3320":0,"32bf>32c2":0,"32c2>32c5":0,"32c5>32c8":37,"32c8>32cb":0,"32cb>32bc":0,"32cb>3320":32.2,"3320>3323":0,"3323>3320":59,"3323>3356":0,"3356>3359":0,"3359>2033":0,"3359>3356":37,"3359>339c":0,"339c>339f":0,"339f>33a2":0,"33a2>33a5":0,"33a5>33a8":0,"33a8>3225":0,"start>3225":0},"call":{"add_to_ptr43":115.9,"animate_chars":852.7,"clear_play_area":5873.3,"clock_tick":26,"colour_ptr":62,"crumble_redraw":19.1,"crumble_step":91.6,"death":634,"draw_big_digit":162.5,"draw_clock_digit":75.2,"draw_lives_row":430.9,"draw_player":292.4,"energy_tick":28.8,"fill_cells":138.1,"flash_time_label":93.9,"irq":1730.1,"is_solid":83.7,"leave_room":21636.5,"make_bridge":939.7,"make_cannon":433.4,"make_crusher":262.8,"make_decor":135.7,"make_field":228.1,"move_down":16.7,"move_left":20.7,"move_right":13.9,"move_shot":125.8,"move_up":23.7,"new_game":15005.9,"object_ptr":113.8,"object_timer":81,"player_cell":28.1,"ptr_down":44.2,"ptr_left":81.5,"ptr_right":77.9,"ptr_up":50,"rotate_vitamin_chars":639,"shift_block_left":99.1,"shift_block_right":58.2,"shift_figure_bit":100.7,"show_game_over":278,"switch_off":21.6,"title_dot_step":21,"update_crusher":104.6,"update_field":17.5,"update_random_cannon":9,"voice2_on":66,"write_cell":8.1,"#scan":1},"writes":{"0":[[21,70],[22,76],[23,82]],"1":[[21,73],[22,81],[23,89]]}};
+</script>
+<script>
+/* plan */
+// A game started the game's own way, for the page's One player and Two players buttons (and for
+// ../test_play.js, which runs this block in node). PuniPlan.start(rt, players) is a generator:
+// each step yields one frame's keys, as key numbers, for the page to give the game and run the
+// frame. It waits for the title's text, holds RETURN until the menu shows, and holds F1 (one
+// player, the joystick) or F3 (two, joysticks) until the game takes it.
+window.PuniPlan = (function () {
+'use strict';
+const KEY = { RETURN: 1, F1: 4, F3: 6 };                   // kit/c16/machine.js, KEY
+const G = { title: 0x0C32, menu: 0x0D21, menu_text: 0x37CE, active: 0x0349, keyboard: 0x034D };
+function* start(rt, players) {
+  const M = rt.M;
+  for (let f = 0; f < 400 && M[G.title] === 0xD6; f++) yield [];
+  for (let f = 0; f < 400 && M[G.menu] !== M[G.menu_text]; f++) yield f % 20 < 6 ? [KEY.RETURN] : [];
+  for (let f = 0; f < 400 && !M[G.active]; f++) yield f % 20 < 6 ? [players === 2 ? KEY.F3 : KEY.F1] : [];
+  yield [];
+}
+return { start, G, KEY };
+})();
+</script>
+<script>
+/* the page: the port on TED's clock, drawn each frame, the keyboard and the joystick */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const W = 384, H = 272, X0 = 32, Y0 = 36;                 // the 320 by 200 window in the border
+const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H), pic = new Uint8Array(320 * 200);
+CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
+const RGB = Array.from({ length: 128 }, (_, c) => C16.rgb(c));
+const FRAME_MS = 1000 * PuniPage.FRAME / 1773447;           // a PAL TED's frame, 20.06 ms
+let image = null, rt = null, running = false, paused = false, plan = null;
+
+// The pokes (cheats.md): each byte of the game's code, with the poke and as the game has it.
+const CHEATS = {
+  lives: [[0x3367, 0xBD, 0xDE]],                           // DEC lives,X in death becomes LDA
+  energy: [[0x33AB, 0xAD, 0xCE]],                          // DEC energy_count in energy_tick becomes LDA
+  tough: [[0x25C5, 0x60, 0x68]],                           // the PLA at j_25C5 becomes RTS
+};
+const cheats = { lives: false, energy: false, tough: false };
+function poke(name) { if (rt) for (const [a, on, off] of CHEATS[name]) rt.M[a] = cheats[name] ? on : off; }
+
+// --- the picture: the frame's bands as TED drew them, and the border's colour on each line ----
+const bandAt = new Array(200);
+function draw(fr) {
+  C16.renderBands(fr.bands, { size: 0x4000, px: pic });
+  for (const b of fr.bands) for (let y = b.y0; y <= b.y1; y++) bandAt[y] = b;
+  const d = img.data, top = RGB[fr.bands[0].ted[0x19] & 0x7F], bottom = RGB[fr.bands[fr.bands.length - 1].ted[0x19] & 0x7F];
+  for (let y = 0, o = 0; y < H; y++) {
+    const py = y - Y0, inside = py >= 0 && py < 200;
+    const edge = inside ? RGB[bandAt[py].ted[0x19] & 0x7F] : py < 0 ? top : bottom;
+    for (let x = 0; x < W; x++, o += 4) {
+      const px = x - X0, c = inside && px >= 0 && px < 320 ? RGB[pic[py * 320 + px] & 0x7F] : edge;
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: each frame's writes to TED's sound registers, played on site/lib/ted-sound.js -----
+const sound = (function () {
+  let host = null, on = false, fresh = true;
+  async function set(want) {
+    if (want && !host) {
+      try { host = await TEDSound.host({ gain: 0.5 }); } catch (e) { say('No sound: ' + e.message); return false; }
+    }
+    on = want; fresh = true;
+    hold();
+    return on;
+  }
+  // the registers as the frame began go first when the sound starts, so a voice already on sounds
+  function frame(fr) {
+    if (!on || !host || !fr) return;
+    let w = fr.sound;
+    if (fresh) {
+      const r = fr.ted0;
+      w = [0, 0xFF0E, r[0x0E], 0, 0xFF0F, r[0x0F], 0, 0xFF10, r[0x10], 0, 0xFF11, r[0x11], 0, 0xFF12, r[0x12]].concat(w);
+      fresh = false;
+    }
+    host.push([w]);
+  }
+  // quiet while the game is paused or being started
+  function hold() { if (host) { if (on && running && !paused && !plan) host.ctx.resume(); else host.ctx.suspend(); } }
+  return { set, frame, hold, reset() { fresh = true; } };
+})();
+Sound.attach(document.querySelector('[data-sound]'), sound.set);   // the sound switch (site/lib/sound.js)
+
+// --- input: the arrows and Space as the stick in port 2, or as the game's keys ---------------
+// The keys as the KERNAL numbers them, row times 8 plus column (kit/c16/machine.js, KEY).
+const KEY = { RETURN: 1, HELP: 3, F1: 4, F2: 5, F3: 6, Z: 12, SHIFT: 15, D: 18, X: 23, M: 36, K: 37, P: 41 };
+const STICK = { 1: 'up', 2: 'down', 4: 'left', 8: 'right', 16: 'fire' };
+const BIT = { up: 1, down: 2, left: 4, right: 8, fire: 16 };
+// the game's keys for the stick, with a keyboard game chosen on the menu (keyboard, $034D, 1):
+// X right, Z left, K up, M down and SHIFT to fire (read_input)
+const AS_KEYS = { up: KEY.K, down: KEY.M, left: KEY.Z, right: KEY.X, fire: KEY.SHIFT };
+const ARROWS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Space: 'fire' };
+const TYPED = { KeyZ: KEY.Z, KeyX: KEY.X, KeyK: KEY.K, KeyM: KEY.M, ShiftLeft: KEY.SHIFT, ShiftRight: KEY.SHIFT,
+  Enter: KEY.RETURN, NumpadEnter: KEY.RETURN, KeyP: KEY.P, KeyD: KEY.D,
+  F1: KEY.F1, F2: KEY.F2, F3: KEY.F3, F4: KEY.HELP, Digit1: KEY.F1, Digit2: KEY.F2, Digit3: KEY.F3, Digit4: KEY.HELP };
+const held = new Map(), typed = new Map();
+let padBits = 0;
+function apply(stick, keys) {
+  const kb = rt.M[PuniPlan.G.keyboard] !== 0, k = new Set(keys);
+  let joy = 0x1F;
+  for (const s of stick) if (kb) k.add(AS_KEYS[s]); else joy &= ~BIT[s];
+  rt.input.joy = joy; rt.input.keys = k;
+}
+function input() {
+  if (!rt) return;
+  const stick = new Set(held.values());
+  for (const b in STICK) if (padBits & b) stick.add(STICK[b]);
+  apply(stick, typed.values());
+}
+function onKey(e, down) {
+  if (!running || e.metaKey || e.altKey || e.ctrlKey) return;
+  const s = ARROWS[e.code], k = TYPED[e.code];
+  if (s === undefined && k === undefined) return;
+  e.preventDefault();
+  if (s !== undefined) { if (down) held.set(e.code, s); else held.delete(e.code); }
+  else if (down) typed.set(e.code, k); else typed.delete(e.code);
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); typed.clear(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+document.querySelectorAll('#pl-pad button').forEach(b => {
+  const bits = +b.dataset.pad;
+  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); screen.focus(); };
+  const off = () => { padBits &= ~bits; b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+
+// --- the loop: one frame of TED's time per frame of real time -------------------------------
+let acc = 0, last = 0;
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  try {
+    if (plan) {
+      const t0 = performance.now();
+      let fr = null;
+      while (plan && performance.now() - t0 < 30) {
+        const r = plan.next();
+        if (r.done) { plan = null; over.hidden = true; acc = 0; last = now; sound.reset(); sound.hold(); break; }
+        apply([], r.value); fr = rt.runFrame();
+      }
+      if (fr) draw(fr);
+      return;
+    }
+    acc += Math.min(250, now - (last || now)); last = now;
+    let n = 0, fr = null;
+    while (acc >= FRAME_MS && n < 10) { input(); fr = rt.runFrame(); sound.frame(fr); acc -= FRAME_MS; n++; }
+    if (n === 10) acc = 0;
+    if (fr) draw(fr);
+  } catch (e) { running = false; sound.hold(); overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+}
+
+// --- controls ----------------------------------------------------------------------------------
+const pauseButton = document.querySelector('[data-act="pause"]');
+function pause(on) { paused = on; pauseButton.setAttribute('aria-pressed', String(on)); sound.hold(); }
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
+// the game from its first instruction, with players, 1 or 2, a game started for them the game's way
+function start(players) {
+  rt = PuniPage.create({ ram: image, cost: window.PUNI_COST });
+  for (const name in CHEATS) poke(name);
+  plan = players ? PuniPlan.start(rt, players) : null;
+  if (plan) { overMsg.textContent = 'Starting a game for ' + (players === 2 ? 'two players' : 'one player') + '…'; over.hidden = false; } else over.hidden = true;
+  running = true; last = 0; acc = 0;
+  sound.reset(); pause(false);
+  screen.focus();
+}
+$('pl-levels').addEventListener('click', e => {
+  const b = e.target.closest('button[data-players]'); if (!b || !image) return;
+  start(+b.dataset.players);
+});
+$('pl-bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act, cheat = b.dataset.cheat;
+  if (act === 'pause' && running) pause(!paused);
+  else if (act === 'restart' && image) start(null);
+  else if (cheat) { cheats[cheat] = !cheats[cheat]; b.setAttribute('aria-pressed', String(cheats[cheat])); poke(cheat); }
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && image) start(null); });
+C16.load('listing.json').then(L => {
+  image = L.ram;
+  overMsg.textContent = 'Mr Puniverse, from its first instruction: the title. Click, then press Enter for the menu, or start a game below.';
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(null); };
+  over.appendChild(bt);
+  requestAnimationFrame(tick);
+}, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
+window.PuniPlay = { get rt() { return rt; }, start };
+})();
+</script>
