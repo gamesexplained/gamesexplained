@@ -109,20 +109,20 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap">The game's own screen, drawn from the port's memory as TED would draw it, line by line: the room in its colours above, the panel in its own below. The arrows and Space are a joystick in port 2, or the game's own keys when the menu's choice was a keyboard game. <b>One player</b> and <b>Two players</b> press RETURN on the title and then F1 or F3 on the menu, as a player would. The three cheats are Plus/4 World's pokes, made in the game's memory as a monitor would make them.</p>
+    <p class="cap">The page runs the port, the game's code written again in JavaScript, and draws the screen from the port's memory as TED, the C16's video chip, would draw it, line by line: the room in its colours above, the panel in its own below. The arrows and Space are a joystick in port 2, or the game's own keys when the menu's choice was a keyboard game. <b>One player</b> and <b>Two players</b> press RETURN on the title and then F1 or F3 on the menu, as a player would. The three cheats are pokes published by Plus/4 World, changes to single bytes of the game's code. The page makes them in the game's memory, as a machine-code monitor, a tool for changing memory, would make them.</p>
   </div>
 </section>
 <section id="differences">
   <p class="fig">01 · Differences</p>
   <h2 class="t">What differs from a Commodore 16</h2>
   <ul class="pl-list">
-    <li><b>The loading.</b> There is none: the page starts where the tape's loader hands over, at the game's first instruction at <code>$1AF4</code>, the address its BASIC line calls with <code>SYS 6900</code>. That sets the machine up and shows the title.</li>
-    <li><b>The KERNAL.</b> The game takes TED's raster interrupt through the C16's ROM, which saves the registers and jumps through the vector at <code>$0314</code>; the game's handler puts the registers back and returns by itself. The page does not carry the ROM. It calls the game's handler itself and charges the ROM's cycles on the way in. The handler also calls the ROM's keyboard scan, which finds the key held and the SHIFT key for the game. The page runs the site's copy of that scan, the ROM's routine written again in JavaScript with the ROM's table of key codes, so the game sees the codes a C16 gives it. The few bytes of memory the ROM leaves set up for the scan, such as the length of each function key's text, are added to the game's memory as the C16 holds them when the game starts.</li>
-    <li><b>The screen.</b> TED reads the screen as its beam meets it. The page keeps the memory as each row of characters began and TED's registers line by line, a write taking effect on the line after the one it was made on, and draws the frame from those. The game's raster interrupt changes the background colours twice a frame: to the room's colours on line 250, for the top of the next frame, and to the panel's on line 146, below the room. The port makes those writes as its interrupt is taken, and the page puts each on the line where the game's own lands, from the cycles the game takes to reach it.</li>
-    <li><b>The interrupt.</b> On the C16 the raster interrupt can come between any two instructions. On the page it comes between the port's steps: at each call <code>main_loop</code> makes, at each pause in the title, the death and the EGY bar's refill, and at each turn of a loop that waits for a key. The game's main program reads two bytes that the interrupt's keyboard scan writes, the key code and the SHIFT flag. On a C16 one of those can change between two of its reads; on the page it cannot.</li>
+    <li><b>The loading.</b> There is none: the page starts where the tape's loader hands over, at the game's first instruction at <code>$1AF4</code>, the address that the tape's one line of BASIC, the C16's built-in language, calls with <code>SYS 6900</code>. That sets the machine up and shows the title.</li>
+    <li><b>The KERNAL.</b> The KERNAL is the program built into the C16's ROM. TED's raster interrupt stops the game when the beam reaches a chosen line of the picture, and it goes through the KERNAL first. The KERNAL saves the processor's registers and jumps to the address held at <code>$0314</code>, the game's handler. The handler puts the registers back and returns by itself. The page does not carry the ROM. It calls the game's handler itself, and adds to its clock the cycles the ROM's code takes on the way in. The handler also calls the ROM's keyboard scan, which finds the key held and the SHIFT key for the game. The page runs the site's copy of that scan, the ROM's routine written again in JavaScript with the ROM's table of key codes, so the game sees the codes a C16 gives it. The few bytes of memory the ROM leaves set up for the scan, such as the length of each function key's text, are added to the game's memory as the C16 holds them when the game starts.</li>
+    <li><b>The screen.</b> TED reads the screen's memory as its beam meets it. The page keeps a copy of the memory as each row of characters began, and TED's registers line by line, with each write taking effect on the line after the one it was made on. It draws the frame from those. The game's raster interrupt changes the background colours twice a frame: to the room's colours on line 250, for the top of the next frame, and to the panel's on line 146, below the room. The port makes those writes as its interrupt is taken, and the page puts each on the line where the game's own lands, from the cycles the game takes to reach it.</li>
+    <li><b>The interrupt.</b> On the C16 the raster interrupt can come between any two instructions. On the page it comes between the port's steps: at each call <code>main_loop</code> makes, as a new game draws the lives, at each pause in the title, the death and the EGY bar's refill, and at each turn of a loop that waits for a key. The game's main program reads two bytes that the interrupt's keyboard scan writes, the key code and the SHIFT flag. On a C16 one of those can change between two of the main program's reads. On the page it cannot.</li>
     <li><b>The random cannon.</b> The cannon that fires either way chooses its side from TED's register <code>$FF1F</code>, whose lowest bit gives the line within its character row that the beam is drawing. The page reads it from its own clock, at about the place in the pass where the game's code reads it, so the cannon fires left or right as a C16 would on some run, never as one particular run did.</li>
     <li><b>The sound.</b> The game's writes to TED's sound registers, the tune on the title and the notes of the jumps, falls and deaths, go to the site's model of TED's two voices, made from the plus4emu emulator's, each write at the place in the frame where the page's clock made it.</li>
-    <li><b>Start a game.</b> The game has no way to start but its own keys. <b>One player</b> and <b>Two players</b> press them for you: RETURN on the title, then F1 or F3 on the menu, the joystick choices. A keyboard game is F2 or HELP, which you can press yourself.</li>
+    <li><b>Start a game.</b> The game starts only from its own keys. <b>One player</b> and <b>Two players</b> press them for you: RETURN on the title, then F1 or F3 on the menu, the joystick choices. A keyboard game is F2 or HELP, which you can press yourself.</li>
     <li><b>The cheats.</b> <b>Unlimited lives</b>, <b>Unlimited energy</b> and <b>Nothing kills him</b> are Plus/4 World's pokes: the page writes the same bytes into the game's code, and the port reads its instructions there, so the game does what it does on a C16 with the same pokes.</li>
     <li><b>The keys.</b> The arrows and Space are the joystick in port 2, or, with a keyboard game chosen, the game's own keys: Z and X to walk, K and M, which the game reads and never uses, and SHIFT to jump. Enter is RETURN. The C16's F1, F2, F3 and HELP are the browser's F1 to F4, or 1 to 4, since some browsers keep the F keys for themselves. P pauses and D gives up a life, as on the C16.</li>
   </ul>
@@ -360,6 +360,9 @@ P.new_game = function* () {
   P.clear_play_area();
   for (let x = 0; x < 0x3A; x++) M[T.lives + x] = 0;
   M[T.anim_phase] = 0;
+  // the interrupts setup_machine let in come before the wait for no key reads the key code: here,
+  // at the JSR draw_lives, rather than at the wait's first turn
+  yield { cp: 0x3209 };
   P.draw_lives();
   while (B(Z.key_code) !== 0x40) yield POLL;
   M[0x4C] = 0xFF; M[0x4D] = 0x01; M[0x4F] = 0x01; M[0x4E] = 0xD7;
@@ -1664,7 +1667,8 @@ P.write_cell = function (r) {
 //                   KEY) and joy (port 2's stick, active low: 1 up, 2 down, 4 left, 8 right,
 //                   16 fire) the page sets
 //   rt.M, rt.ted, rt.P, rt.beam, rt.t (the clock), rt.frame (the frame the clock is in),
-//   rt.passes (the main loop's passes, at $32BC)
+//   rt.passes (the main loop's passes: each counted once the clock reaches $32BC, the stretch
+//   that leads there paid)
 //
 // The clock is TED's: 312 lines of 114 ticks of the double clock a frame, the processor's cycles
 // placed on them as TED gives them (C16.timing.Beam: the single clock on the display's lines, the
@@ -1881,6 +1885,7 @@ function create(o) {
   function step() {
     const run = top();
     if (run.owe > 0) { if (!pay(run)) take(); return; }
+    if (run.pass) { run.pass = false; passes++; }         // the clock has reached the pass's start
     if (run.cli) { run.cli = false; run.I = 0; }
     if (run.poll) {                                         // a turn of a polling loop: to the next line
       if (run.until < 0) run.until = (Math.floor(t / LINE) + 1) * LINE;
@@ -1897,7 +1902,7 @@ function create(o) {
     }
     const y = r.value;
     run.seen = 0;
-    if (y && y.cp !== undefined) { run.owe += stretch(run, y.cp.toString(16)); if (y.cp === PASS) passes++; }
+    if (y && y.cp !== undefined) { run.owe += stretch(run, y.cp.toString(16)); if (y.cp === PASS) run.pass = true; }
     else if (y && y.cycles !== undefined) run.owe += y.cycles;
     else run.poll = true;                                   // the routines called in the turn are paid first
   }
@@ -1940,7 +1945,7 @@ root.PuniPage = { create, LINE, LINES, FRAME };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
-window.PUNI_COST = {"seg":{"1c51>1c54":0,"1c54>3225":34,"2033>2036":0,"2036>2033":39.4,"2036>32bc":21443.6,"312e:in>out":0,"3225>1c51":0,"3225>3225":8,"32bc>32bc":0,"32bc>32bf":31.1,"32bc>3320":0,"32bf>32c2":0,"32c2>32c5":0,"32c5>32c8":37,"32c8>32cb":0,"32cb>32bc":0,"32cb>3320":32.2,"3320>3323":0,"3323>3320":59,"3323>3356":0,"3356>3359":0,"3359>2033":0,"3359>3356":37,"3359>339c":0,"339c>339f":0,"339f>33a2":0,"33a2>33a5":0,"33a5>33a8":0,"33a8>3225":0,"start>3225":0},"call":{"add_to_ptr43":115.9,"animate_chars":852.7,"clear_play_area":5873.3,"clock_tick":26,"colour_ptr":62,"crumble_redraw":19.1,"crumble_step":91.6,"death":634,"draw_big_digit":162.5,"draw_clock_digit":75.2,"draw_lives_row":430.9,"draw_player":292.4,"energy_tick":28.8,"fill_cells":138.1,"flash_time_label":93.9,"irq":1730.1,"is_solid":83.7,"leave_room":21636.5,"make_bridge":939.7,"make_cannon":433.4,"make_crusher":262.8,"make_decor":135.7,"make_field":228.1,"move_down":16.7,"move_left":20.7,"move_right":13.9,"move_shot":125.8,"move_up":23.7,"new_game":15005.9,"object_ptr":113.8,"object_timer":81,"player_cell":28.1,"ptr_down":44.2,"ptr_left":81.5,"ptr_right":77.9,"ptr_up":50,"rotate_vitamin_chars":639,"shift_block_left":99.1,"shift_block_right":58.2,"shift_figure_bit":100.7,"show_game_over":278,"switch_off":21.6,"title_dot_step":21,"update_crusher":104.6,"update_field":17.5,"update_random_cannon":9,"voice2_on":66,"write_cell":8.1,"#scan":1},"writes":{"0":[[21,70],[22,76],[23,82]],"1":[[21,73],[22,81],[23,89]]}};
+window.PUNI_COST = {"seg":{"1c51>1c54":0,"1c54>3225":102.1,"2033>2036":0,"2036>2033":39.4,"2036>32bc":64173.2,"312e:in>out":0,"3209>3225":0,"3225>1c51":0,"3225>3225":8,"32bc>32bc":0,"32bc>32bf":0,"32bc>3320":0,"32bf>32c2":0,"32c2>32c5":0,"32c5>32c8":37.2,"32c8>32cb":0,"32cb>32bc":0,"32cb>3320":62.6,"3320>3323":0,"3323>3320":59.3,"3323>3356":0,"3356>3359":0,"3359>2033":0,"3359>3356":37,"3359>339c":0,"339c>339f":0,"339f>33a2":0,"33a2>33a5":0,"33a5>33a8":0,"33a8>3209":0,"start>3209":0},"call":{"#block":181.8,"#cell":36.3,"#edge":29.9,"#top":44.5,"add_to_ptr43":98.3,"animate_chars":850.7,"clear_play_area":5874.5,"clock_tick":26,"colour_ptr":16.1,"crumble_redraw":19.8,"crumble_step":90.4,"death":603.6,"draw_big_digit":157.3,"draw_clock_digit":75.2,"draw_lives_row":434.1,"draw_player":291.5,"draw_switch_off":28.8,"energy_tick":28.8,"fill_cells":36.1,"flash_time_label":98.2,"irq":126,"is_solid":79.5,"leave_room":64273.1,"make_bridge":109.4,"make_cannon":457,"make_crusher":411.4,"make_field":4.2,"make_switch":409.2,"move_down":15.6,"move_left":22.3,"move_right":15.1,"move_shot":224.9,"move_up":21.6,"music_tick":114.9,"new_game":12955.5,"object_ptr":114.3,"object_timer":81.1,"player_cell":27.2,"player_pass":30.4,"print_title_text":2042.8,"ptr_down":64.9,"ptr_left":27.9,"ptr_right":19,"ptr_up":66.3,"rotate_vitamin_chars":639,"shift_block_left":154.1,"shift_block_right":121.7,"shift_figure_bit":100.8,"show_game_over":278,"switch_off":22.6,"switch_on":4.4,"title_dot_step":21,"update_crusher":170.4,"update_field":16.4,"update_random_cannon":8.3,"voice2_on":58.4,"write_cell":54.1,"#scan":1},"writes":{"0":[[21,70],[22,76],[23,82]],"1":[[21,73],[22,81],[23,89]]}};
 </script>
 <script>
 /* plan */
@@ -1955,7 +1960,7 @@ const KEY = { RETURN: 1, F1: 4, F3: 6 };                   // kit/c16/machine.js
 const G = { title: 0x0C32, menu: 0x0D21, menu_text: 0x37CE, active: 0x0349, keyboard: 0x034D };
 function* start(rt, players) {
   const M = rt.M;
-  for (let f = 0; f < 400 && M[G.title] === 0xD6; f++) yield [];
+  for (let f = 0; f < 400 && M[G.title] !== 0x10; f++) yield [];        // print_title_text's character there
   for (let f = 0; f < 400 && M[G.menu] !== M[G.menu_text]; f++) yield f % 20 < 6 ? [KEY.RETURN] : [];
   for (let f = 0; f < 400 && !M[G.active]; f++) yield f % 20 < 6 ? [players === 2 ? KEY.F3 : KEY.F1] : [];
   yield [];

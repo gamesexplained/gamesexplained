@@ -97,21 +97,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="music">
   <p class="fig">02 · Music</p>
   <h2 class="t">Music: the title tune plays again at the end</h2>
-  <p class="lede">The title plays a 15-second tune on TED's two voices, over and over on the title and the menu. The same tune plays again when a player takes the 25th vitamin.</p>
+  <p class="lede">The title screen plays a 15-second tune, over and over, on the title and on the menu. It uses both voices of TED, the chip that makes the C16's picture and its sound. The same tune plays again when a player takes the 25th vitamin.</p>
   <div class="plate">
     <div id="pu-tuneplayer"></div>
     <div class="pu-scroll"><table class="pu-tune" id="pu-tune"></table></div>
     <p class="pu-state" id="pu-tunestate"></p>
-    <p class="cap">Played by the game's own <code>music_tick</code> (<code>$1AF7</code>), run on the kit's 6502 once a frame from the counters <code>setup_machine</code> leaves, as <code>irq</code> calls it at line 250. Its writes to TED's sound registers play through the site's model of TED. Run so, it makes the 2,238 writes that plus4emu's sound log shows in the title's first 774 frames, with the same values in the same frames. The grid is <code>tune_voice1</code> over <code>tune_voice2</code>, one column a step: a number is a note, · keeps the note sounding and – silences the voice. Shaded steps play the drum. The second tune is <code>old_music_tick</code>, which the game never calls, playing what its tables hold now (<a href="discoveries.html#oldtune">Discoveries</a>).</p>
+    <p class="cap">Played by the game's own routine <code>music_tick</code>, at address <code>$1AF7</code> in memory (a <code>$</code> marks a number written in hexadecimal, base 16). It runs on the page's copy of the C16's processor, a 6502, once a frame (the picture is redrawn about 50 times a second, and each drawing is a frame). It starts from the counters <code>setup_machine</code> leaves, and runs at line 250 of the picture, where the game's interrupt routine <code>irq</code> calls it. Its writes to TED's sound registers, the settings that drive the voices, play through the site's model of TED. Run that way, it makes the same 2,238 writes as the plus4emu emulator's sound log of the title's first 774 frames, with the same values in the same frames. The grid shows <code>tune_voice1</code> above <code>tune_voice2</code>, one column for each step of the tune: a number is a note, · keeps the note sounding and – silences the voice. Shaded steps play the drum. The second tune is <code>old_music_tick</code>, which the game never calls, playing what its tables hold now (<a href="discoveries.html#oldtune">Discoveries</a>).</p>
   </div>
-  <p>TED, the chip that draws the C16's screen, also makes its sound: two voices, each a square wave, and the second can play noise instead. <code>music_tick</code> runs once a frame, and every six frames it moves on a step, 128 steps in all. At each step it reads one byte for each voice. A note number sets that voice's pitch from <code>note_freq_lo</code> and <code>note_freq_hi</code>; 0 keeps the voice playing as it was; a byte with its top bit set switches the voice off.</p>
-  <p>A note on voice 1 sets the volume to 8, and each frame takes one off, so every note of the tune dies away over eight frames. The two voices share TED's one volume. Every eighth step voice 2 stops, and for the first three frames of that step it plays noise: a drum on the beat.</p>
+  <p>TED has two voices. Each plays a square wave, a plain buzzing tone, and the second can play noise instead. <code>music_tick</code> runs once a frame. Every six frames it moves on to the next step of the tune, 128 steps in all. At each step it reads one byte, a number from 0 to 255, for each voice. A note number looks up that voice's pitch in two tables, <code>note_freq_lo</code> and <code>note_freq_hi</code>. A 0 keeps the voice playing as it was. A byte with its top bit set, 128 or more, switches the voice off.</p>
+  <p>The two voices share TED's one volume setting. A note on voice 1 sets the volume to 8, and each frame takes one off, so every note of the tune dies away over eight frames. Every eighth step, voice 2 stops its note. For the first three frames of that step it plays noise instead, which sounds like a drum on the beat.</p>
 </section>
 
 <section id="objects">
   <p class="fig">03 · The objects</p>
   <h2 class="t">Crushers, cannons and force fields are characters redrawn in place</h2>
-  <p class="lede">The C16 has no sprites, so everything that moves is drawn into the screen as characters. Pick a room and watch its objects run.</p>
+  <p class="lede">The C16's screen is a grid of characters, small square pictures picked from a set of 256. The C16 has no sprites, the moving pictures that other machines' hardware draws over the screen, so everything that moves is drawn into the grid as characters. Pick a room and watch its objects run.</p>
   <div class="plate">
     <div class="pu-bar">
       <div class="pick"><a class="step" id="pu-oprev" aria-label="Previous room">‹</a><select id="pu-oroom" aria-label="Room"></select><a class="step" id="pu-onext" aria-label="Next room">›</a></div>
@@ -120,19 +120,19 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="pu-objects" class="pu-screen" width="640" height="400" aria-label="The room chosen, its objects moving."></canvas>
     <p class="pu-state" id="pu-ostate"></p>
-    <p class="cap">The room drawn by the game's <code>draw_room</code>, then the three routines of <code>main_loop</code> that move things without him, run on the kit's 6502 twenty times a second, about as often as the game runs its main loop: <code>animate_chars</code>, <code>rotate_vitamin_chars</code> and <code>update_objects</code>. A random cannon picks its side from bit 0 of <code>$FF1F</code>, the line of its character row that TED is drawing; here the page picks it at random.</p>
+    <p class="cap">The room is drawn by the game's <code>draw_room</code>. Then three routines of <code>main_loop</code>, the loop the game runs over and over in play, move everything except him: <code>animate_chars</code>, <code>rotate_vitamin_chars</code> and <code>update_objects</code>. They run on the page's 6502 twenty times a second, about as often as the game runs its main loop. A random cannon picks which way to fire from bit 0 of <code>$FF1F</code>, one of TED's registers, which gives the line of the character row that TED is drawing. Here the page picks it at random.</p>
   </div>
   <div class="pu-scroll"><table class="pu-table" style="margin-top:22px" id="pu-otable">
     <tr><th>Object</th><th class="n">In the rooms</th><th class="n">Record</th><th>What it does</th><th>Made by</th></tr>
   </table></div>
-  <p>A room's objects are listed in its record, each with its type and its place on the screen (<a href="#rooms">The rooms</a>). <code>draw_room_objects</code> makes each one, and the moving kinds each get one of 20 slots in the object tables from <code>$0FF0</code>. Each pass of the main loop <code>update_objects</code> works the slots in turn. A cannon's shot is the character <code>$C5</code>, put one cell further on each time the cannon's timer runs out and rubbed out behind it. A crusher moves a quarter of a cell at a time: its head has four pictures to a cell, <code>$CD</code> to <code>$D0</code> on the left and <code>$D2</code> to <code>$D5</code> on the right, and the game steps through them before it moves the head to the next cell.</p>
-  <p>The scenery animates by rewriting characters' pictures, never the screen. <code>animate_chars</code> spins the random cannon's head, rolls the conveyor belts a pixel and scrolls the force fields up a line, one of the three jobs on each pass. Every cell drawn with that character changes at once, wherever it is on the screen.</p>
+  <p>Each room has a record, a block of bytes that describes it (<a href="#rooms">The rooms</a>). The record lists the room's objects, each with its type and its place on the screen, and <code>draw_room_objects</code> makes each one. Each object of a kind that moves gets one of 20 slots in the object tables, which start at <code>$0FF0</code>. On each pass of the main loop, each time round it, <code>update_objects</code> works through the slots in turn. A cannon's shot is the character <code>$C5</code>. Each time the cannon's timer runs out, the shot is put one cell further on and rubbed out behind. A crusher moves a quarter of a cell at a time. Its head has four pictures for each cell, <code>$CD</code> to <code>$D0</code> on the left and <code>$D2</code> to <code>$D5</code> on the right. The game steps through them before it moves the head on to the next cell.</p>
+  <p>The scenery moves by changing the pictures of its characters, and the screen itself is left as it is. On each pass, <code>animate_chars</code> does one of three jobs: it spins the random cannon's head, rolls the conveyor belts on by a pixel, or scrolls the force fields up a line. A changed picture changes every cell drawn with that character at once, wherever the cell is on the screen.</p>
 </section>
 
 <section id="frame">
   <p class="fig">04 · One frame, rebuilt from memory</p>
   <h2 class="t">The colours change under the room, every frame</h2>
-  <p class="lede">The room and the panel below it each have their own three shared colours. The game's raster interrupt switches TED's colour registers twice a frame.</p>
+  <p class="lede">The room and the panel below it each have three colours of their own, shared by the whole area. Twice a frame, the game's raster interrupt switches TED's colour registers from one set to the other. A raster interrupt stops the program when TED's beam reaches a chosen line of the picture, and runs a short routine.</p>
   <div class="plate">
     <div class="pu-bar">
       <label><input type="checkbox" id="pu-fline" checked> Mark the change</label>
@@ -141,16 +141,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <label><input type="checkbox" id="pu-fexits"> The exits</label>
     </div>
     <div class="pu-wrapf"><canvas id="pu-frame" class="pu-screen" width="640" height="400"></canvas><div id="pu-fmarks"></div></div>
-    <p class="cap" id="pu-fcap">Room 0 at the first pass of a game started with F1, drawn from memory by the site's TED renderer: the screen at <code>$0C00</code>, its colours at <code>$0800</code> and the character set at <code>$3800</code>, all as the game's <code>start_turn</code> leaves them, run on the kit's 6502. The window's lines 0 to 143 take the room's three colours (<code>$0339</code>-<code>$033B</code>) and lines 144 to 199, from the top of row 18, the panel's. Against plus4emu's picture of the same moment, <b>0 of the 64,000 pixels</b> differ; drawn with one set of colours, 38,408 do.</p>
+    <p class="cap" id="pu-fcap">Room 0 at the first pass of a game started with F1, drawn from memory by the site's TED renderer: the screen at <code>$0C00</code>, its colours at <code>$0800</code> and the character set at <code>$3800</code>, all as the game's <code>start_turn</code> leaves them, run on the kit's 6502. The screen's lines 0 to 143 take the room's three colours (<code>$0339</code>-<code>$033B</code>) and lines 144 to 199, from the top of row 18, the panel's. Against plus4emu's picture of the same moment, <b>0 of the 64,000 pixels</b> differ; drawn with one set of colours, 38,408 do.</p>
   </div>
-  <p>The screen is TED's multicolour text mode: 40 columns and 25 rows of characters from a set of 256 at <code>$3800</code>, which the game brings with it and points TED at (<code>setup_machine</code>). A multicolour character is four pixels across to a byte, two bits each. A cell is multicolour when its colour byte has bit 3 set. One pair of bits picks the cell's own colour, from the colour memory at <code>$0800</code>; the other three pick from three colours the whole screen shares, held in TED's registers <code>$FF15</code> to <code>$FF17</code>.</p>
-  <p>The play area is rows 0 to 17 and the panel rows 19 to 24. Every room's record gives black, a grey and a dark red for its three shared colours (<code>$00</code>, <code>$31</code>, <code>$32</code>), and the panel uses dark blue, a light yellow and black (<code>$06</code>, <code>$77</code>, <code>$F0</code>). <code>irq</code> sets the raster interrupt for TED's line 146, which is line 142 of the screen, since TED counts its lines from four above the screen's top. There it writes the panel's colours, and they take hold two lines later, at the top of row 18, the blank row between the room and the panel. Then it sets the next interrupt for line 250, below the screen, and there writes the room's colours for the top of the next frame.</p>
+  <p>The screen uses TED's multicolour text mode. It has 40 columns and 25 rows of characters, picked from a set of 256 at <code>$3800</code>. The game brings that set with it and points TED at it (<code>setup_machine</code>). In a multicolour character, each byte of the picture is a row four pixels across, two bits to a pixel. A cell is multicolour when its colour byte has bit 3 set. A pixel's two bits make one of four values. One value picks the cell's own colour, from the colour memory at <code>$0800</code>. The other three pick from three colours that the whole screen shares, held in TED's registers <code>$FF15</code> to <code>$FF17</code>.</p>
+  <p>The play area is rows 0 to 17, and the panel is rows 19 to 24. Every room's record gives black, a grey and a dark red for its three shared colours (<code>$00</code>, <code>$31</code> and <code>$32</code>). The panel uses dark blue, a light yellow and black (<code>$06</code>, <code>$77</code> and <code>$F0</code>). <code>irq</code>, the game's interrupt routine, sets the raster interrupt for TED's line 146. That is line 142 of the screen, since TED counts its lines from four lines above the screen's top. At line 146, <code>irq</code> writes the panel's colours. They take hold two lines later, at the top of row 18, the blank row between the room and the panel. Then <code>irq</code> sets the next interrupt for line 250, below the screen. There it writes the room's colours, ready for the top of the next frame.</p>
 </section>
 
 <section id="him">
   <p class="fig">05 · Mr Puniverse</p>
   <h2 class="t">Mr Puniverse is six characters, redrawn on every pass</h2>
-  <p class="lede">He moves a pixel at a time inside a block two characters wide and three high. The six characters of the block are his alone, and the game draws him into them over a copy of whatever scenery is behind him.</p>
+  <p class="lede">He moves a pixel at a time inside a block two characters wide and three high. The six characters of the block are used for nothing else. The game draws him into them, over a copy of whatever scenery is behind him.</p>
   <div class="plate">
     <div class="pu-small" id="pu-frames"></div>
     <div class="pu-bar" style="margin-top:16px">
@@ -161,12 +161,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <canvas id="pu-block" class="pu-strip" width="128" height="192" aria-label="His block, the six characters as merge_player draws them, eight times their size."></canvas>
       <div>
         <p class="pu-state" id="pu-hstate" style="margin-top:0"></p>
-        <p class="cap">The eight frames are <code>player_frames</code> (<code>$3A68</code>), 32 bytes each. The block is the game's <code>copy_under_glyphs</code> and <code>merge_player</code> run on the kit's 6502, with the scenery chosen in <code>under_player</code> (<code>$0333</code>-<code>$0338</code>), then drawn as <code>draw_player</code> puts characters <code>$78</code>-<code>$7D</code> on the screen, in room 0's colours.</p>
+        <p class="cap">His eight poses are <code>player_frames</code> (<code>$3A68</code>), 32 bytes each. The block is the game's <code>copy_under_glyphs</code> and <code>merge_player</code> run on the kit's 6502, with the scenery chosen in <code>under_player</code> (<code>$0333</code>-<code>$0338</code>), then drawn as <code>draw_player</code> puts characters <code>$78</code>-<code>$7D</code> on the screen, in room 0's colours.</p>
       </div>
     </div>
   </div>
-  <p>The block's place is a screen address, kept at <code>$3F</code>/<code>$40</code>. Inside it, <code>player_x</code> (<code>$41</code>) picks one of eight frames: four facing right and four facing left, each a multicolour pixel further across than the one before. Walking right, he steps through the four frames, one a pass, and after the fourth the block moves a column and the frames start again. <code>player_y</code> (<code>$42</code>) is the line of the block's 24 where the figure's 16 lines begin. A fall or a jump moves him two lines a pass, and after four passes the block moves a row.</p>
-  <p>Each pass, <code>copy_under_glyphs</code> copies the pictures of the six characters behind the block, which the game keeps in <code>under_player</code>, into a buffer of two columns of 24 lines at <code>$3FD0</code>. <code>merge_player</code> draws the frame over them a pixel at a time, where a pixel of 0 lets the scenery show, and copies the result into characters <code>$78</code> to <code>$7D</code>. The block's cells keep the colours the room gave them, so Mr Puniverse takes the colour of whatever he stands in front of.</p>
+  <p>The block's place is kept as a screen address, where in the screen's memory the block starts, in two bytes at <code>$3F</code> and <code>$40</code>. Inside the block, <code>player_x</code> (<code>$41</code>) picks one of his eight poses. Four face right and four face left, and each is a multicolour pixel further across than the one before. Walking right, he steps through the four poses, one each pass. After the fourth, the block moves a column and the poses start again. The block is 24 lines high, and <code>player_y</code> (<code>$42</code>) is the line where the figure's 16 lines begin. A fall or a jump moves him two lines a pass, and after four passes the block moves a row.</p>
+  <p>The game keeps the six characters behind the block in <code>under_player</code>. Each pass, <code>copy_under_glyphs</code> copies their pictures into a buffer, a scratch area of two columns of 24 lines at <code>$3FD0</code>. <code>merge_player</code> draws his pose over them a pixel at a time. Where the pose has a pixel of 0, the scenery shows through. <code>merge_player</code> then copies the result into characters <code>$78</code> to <code>$7D</code>. The block's cells keep the colours the room gave them, so Mr Puniverse takes the colour of whatever he stands in front of.</p>
 </section>
 
 <section id="feet">
@@ -177,11 +177,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pu-scroll"><table class="pu-table" id="pu-chars">
       <tr><th>Characters</th><th></th><th>What they are</th><th>Under his feet</th><th>In the cells that count</th><th>Stop him walking</th></tr>
     </table></div>
-    <p class="cap">Each row drawn from the character set at <code>$3800</code> in room 0's colours. The last column is the game's <code>is_solid</code> (<code>$22E6</code>), run on the kit's 6502 on each character: the ones for which it sets the carry stop him walking into them. The rest follows <code>player_move</code> and <code>player_pass</code> (<a href="#danger">What kills him</a>).</p>
+    <p class="cap">Each row drawn from the character set at <code>$3800</code> in room 0's colours. The last column is the game's <code>is_solid</code> (<code>$22E6</code>), run on the kit's 6502 on each character: the ones for which it sets the carry, a one-bit flag in the processor, stop him walking into them. The rest follows <code>player_move</code> and <code>player_pass</code> (<a href="#danger">What kills him</a>).</p>
   </div>
-  <p><code>player_move</code> reads the character in the row under his block, below his left column when he faces right and his right column when he faces left. A standing figure is at line 6 of the block (<code>player_y</code> 6), with its feet on the block's bottom edge. Anywhere higher, he falls two lines a pass. Standing, solid ground and ladders hold him, and fire starts a jump. A jump rises 16 times two lines, four rows, with a rising note, and then falls; it ends early on a ladder rung, which is how he climbs a ladder. He cannot climb down one.</p>
-  <p>A crumbling floor holds him while it crumbles a stage a pass, eight stages from <code>$A8</code> to <code>$B6</code>, and then both its cells go blank and he falls. A conveyor belt carries him left a step a pass, whichever way he faces. The lift character, <code>$BC</code>, would raise him, but there is no lift in any room (<a href="discoveries.html#lift">Discoveries</a>).</p>
-  <p>Walking checks only the middle and bottom cells of the column ahead (<code>move_right</code>, <code>move_left</code>). So he walks into a corridor two rows high, his block's top row in the wall above, and whatever of the figure lies in that row is drawn over the wall.</p>
+  <p><code>player_move</code> reads the character in the row under his block. It looks below his left column when he faces right, and below his right column when he faces left. A standing figure starts at line 6 of the block (<code>player_y</code> 6), with its feet on the block's bottom edge. Anywhere higher, he falls two lines a pass. When he is standing, solid ground and ladders hold him, and fire starts a jump. A jump rises two lines at a time, 16 times, which makes four rows, with a rising note, and then he falls. A jump ends early on a ladder rung, and that is how he climbs a ladder. He cannot climb down one.</p>
+  <p>A crumbling floor holds him while it crumbles, one stage a pass, through eight stages from <code>$A8</code> to <code>$B6</code>. Then both its cells go blank and he falls. A conveyor belt carries him left a step each pass, whichever way he faces. The lift character, <code>$BC</code>, would carry him up, but there is no lift in any room (<a href="discoveries.html#lift">Discoveries</a>).</p>
+  <p>Walking checks only the middle and bottom cells of the column ahead (<code>move_right</code>, <code>move_left</code>). So he can walk into a corridor two rows high, with his block's top row inside the wall above. Whatever part of the figure lies in that row is drawn over the wall.</p>
 </section>
 
 <section id="danger">
@@ -194,14 +194,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="pu-state" id="pu-dstate"></p>
     <p class="cap">The cells <code>player_pass</code> (<code>$2581</code>) reads from <code>under_player</code>: <code>$0334</code> and <code>$0335</code> facing right, <code>$0337</code> and <code>$0338</code> facing left, the bottom one only with <code>player_y</code> 3 or more. The figure is drawn by the game's <code>merge_player</code> on the kit's 6502.</p>
   </div>
-  <p>After he moves, <code>player_pass</code> looks at what lies behind his block. A shot or a crusher that moves into one of his cells writes into <code>under_player</code> rather than onto the screen, and <code>player_pass</code> finds it there. The middle cell of his column always counts: an exit takes him to the next room, and a shot (<code>$C5</code>), a force field (<code>$C6</code>, <code>$C7</code>) or a crusher (<code>$CC</code> to <code>$D5</code>) kills him. The bottom cell counts only when the figure is low in the block, and there a switch or the vitamin counts too.</p>
-  <p>Three more things kill him. Standing on the deadly floor (<code>$CA</code>, <code>$CB</code>) does, and so do an empty EGY bar and a clock at 4.00 (<a href="#energy">The EGY bar and the clock</a>). The D key gives up a life at once.</p>
+  <p>After he moves, <code>player_pass</code> looks at what lies behind his block. A shot or a crusher that moves into one of his cells writes into <code>under_player</code> instead of onto the screen, and <code>player_pass</code> finds it there. The middle cell of his column always counts. An exit there takes him to the next room, and a shot (<code>$C5</code>), a force field (<code>$C6</code>, <code>$C7</code>) or a crusher (<code>$CC</code> to <code>$D5</code>) kills him. The bottom cell counts only when the figure is low in the block. There, a switch or the vitamin counts too.</p>
+  <p>Three more things kill him: standing on the deadly floor (<code>$CA</code>, <code>$CB</code>), an empty EGY bar, and the clock reaching 4.00 (<a href="#energy">The EGY bar and the clock</a>). The D key gives up a life at once.</p>
 </section>
 
 <section id="rooms">
   <p class="fig">08 · The rooms</p>
   <h2 class="t">A room's walls fit in 45 bytes</h2>
-  <p class="lede">Each room is one record of 62 to 128 bytes: its exits, its vitamin, its colours, its walls as a bitmap and its objects. Every room is drawn on the <a href="levels.html">Maps</a> tab.</p>
+  <p class="lede">Each room is one record of 62 to 128 bytes. It holds the room's exits, its vitamin, its colours, its walls as a bitmap (a picture with one bit for each pair of cells) and its objects. Every room is drawn on the <a href="levels.html">Maps</a> tab.</p>
   <div class="plate">
     <div class="pu-bar">
       <div class="pick"><a class="step" id="pu-rprev" aria-label="Previous room">‹</a><select id="pu-rroom" aria-label="Room"></select><a class="step" id="pu-rnext" aria-label="Next room">›</a></div>
@@ -213,29 +213,29 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The record read as <code>draw_room</code> (<code>$2868</code>) and <code>draw_room_objects</code> (<code>$2999</code>) read it, from <code>room_ptr_lo</code> and <code>room_ptr_hi</code>. On the left, the 45 bytes of walls, one square for each bit, a set bit in the room's wall colour; under it, the room as <code>draw_room</code> draws it.</p>
     <canvas id="pu-rroomcv" class="pu-screen" width="640" height="288" style="margin-top:14px" aria-label="The room as draw_room draws it."></canvas>
   </div>
-  <p>The walls are 45 bytes, 360 bits, read from the top left a row at a time. Each bit is two cells: a set bit draws the room's wall character beside the same code plus 4, and a clear one two blanks. That makes 18 rows of 40 cells, the whole play area. Then <code>draw_room</code> puts a wall top, <code>$7E</code> beside <code>$7F</code>, on every blank cell above the left half of a wall, in the room's own colour for it, so every ledge gets its lit edge.</p>
-  <p>The four exit bytes name the rooms that the top, the bottom, the left and the right edge lead to. <code>draw_room_objects</code> turns every blank cell on an edge of the play area into an exit character, so a room's way out is wherever its walls leave a gap at the edge, and an exit byte of 0 sends him to room 0. Most rooms lead to their neighbours on the five-by-five map, but four lead off it (<a href="discoveries.html#offmap">Discoveries</a>).</p>
+  <p>The walls are 45 bytes, which is 360 bits, read from the top left a row at a time. Each bit stands for two cells. A set bit (a 1) draws the room's wall character, with the character whose code is 4 higher beside it. A clear bit (a 0) draws two blanks. That makes 18 rows of 40 cells, the whole play area. Then <code>draw_room</code> puts a wall top, <code>$7E</code> beside <code>$7F</code>, on every blank cell above the left half of a wall, in the room's own colour for wall tops. So every ledge gets a lit edge.</p>
+  <p>The four exit bytes name the rooms that the top, the bottom, the left and the right edge lead to. <code>draw_room_objects</code> turns every blank cell on an edge of the play area into an exit character. So a room's way out is wherever its walls leave a gap at the edge. An exit byte of 0 sends him to room 0. Most rooms lead to their neighbours on the five-by-five map, but four rooms have exits that lead off it (<a href="discoveries.html#offmap">Discoveries</a>).</p>
 </section>
 
 <section id="energy">
   <p class="fig">09 · The EGY bar and the clock</p>
   <h2 class="t">Each room drains the EGY bar or fills it, at its own rate</h2>
-  <p class="lede">The bar under the panel holds 34 cells of four steps each. A room's record sets how many passes of the main loop each step takes, and whether the steps go down or up.</p>
+  <p class="lede">The EGY bar, at the foot of the panel, holds 34 cells of four steps each. A room's record sets how many passes of the main loop each step takes, and whether the steps go down or up.</p>
   <div class="plate">
     <div class="pu-bar"><label>Steps used <input type="range" id="pu-egy" min="0" max="136" value="0" style="width:240px"></label></div>
     <canvas id="pu-egybar" class="pu-strip" width="640" height="16" aria-label="The EGY bar."></canvas>
     <p class="pu-state" id="pu-egystate"></p>
     <div class="pu-scroll"><table class="pu-table" id="pu-etable"></table></div>
-    <p class="cap">The bar drawn with the game's characters <code>$6D</code> (full) to <code>$71</code> (empty), as <code>energy_tick</code> (<code>$33AB</code>) steps the cell in <code>bar_pos</code>. The rates and modes are the last two bytes of each room's record. The times take 20 passes of the main loop a second, about the speed of the loop in the rooms timed in plus4emu, 0.39 to 0.42 passes a frame.</p>
+    <p class="cap">The bar drawn with the game's characters <code>$6D</code> (full) to <code>$71</code> (empty), as <code>energy_tick</code> (<code>$33AB</code>) steps the cell in <code>bar_pos</code>. The rates and modes are the last two bytes of each room's record. The times take 20 passes of the main loop a second. That is about the speed of the loop in the rooms timed in plus4emu, 0.39 to 0.42 passes a frame.</p>
   </div>
-  <p>A turn starts with the bar full: <code>refill_energy</code> fills it a step at a time with a warbling tone while GET READY shows. <code>energy_tick</code> counts the room's rate down once a pass, and each time it runs out the cell in <code>bar_pos</code> moves a step. Draining, the cell steps from full towards empty and then <code>bar_pos</code> moves left; when the leftmost cell empties, he dies. Filling, the cell steps back and <code>bar_pos</code> moves right, but it never fills the last cell (<a href="discoveries.html#refill">Discoveries</a>).</p>
-  <p>The TIME clock counts up from 0.00, a step every 71 passes of the main loop, about every 3.5 seconds (<code>clock_tick</code>). It does not stop between rooms or turns. When it reaches 4.00, after about 23 minutes of play, his lives become 1 and he dies, which ends his game. Each player in a game for two has a clock of his own.</p>
+  <p>A turn starts with the bar full. <code>refill_energy</code> fills it a step at a time, with a warbling tone, while GET READY shows. <code>energy_tick</code> counts the room's rate down once a pass. Each time the count runs out, the cell that <code>bar_pos</code> points at moves a step. In a room that drains, the cell steps from full towards empty, and then <code>bar_pos</code> moves left. When the leftmost cell empties, he dies. In a room that fills, the cell steps back towards full and <code>bar_pos</code> moves right, but it never fills the last cell (<a href="discoveries.html#refill">Discoveries</a>).</p>
+  <p>The TIME clock counts up from 0.00, a step every 71 passes of the main loop, which is about every 3.5 seconds (<code>clock_tick</code>). The clock keeps running between rooms and between turns. When it reaches 4.00, after about 23 minutes of play, his lives are set to 1 and he dies, which ends his game. Each player in a game for two has a clock of his own.</p>
 </section>
 
 <section id="controls">
   <p class="fig">10 · Controls</p>
   <h2 class="t">Both players use the joystick in port 2</h2>
-  <p class="lede">The menu offers the joystick or the keyboard, for one player or two. The game reads K and M as up and down and then ignores them.</p>
+  <p class="lede">The menu offers the joystick or the keyboard, for one player or for two. The game reads K and M as up and down and then ignores them.</p>
   <div class="plate">
     <table class="pu-table" style="max-width:640px">
       <tr><th>On the menu</th><th>Players</th><th>Controls</th></tr>
@@ -254,8 +254,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </table>
     <p class="cap"><code>new_game</code> (<code>$31F5</code>), <code>read_input</code> (<code>$2543</code>), <code>player_pass</code> and <code>pause_check</code>; all tried in plus4emu.</p>
   </div>
-  <p><code>read_input</code> builds one byte with a bit for each control. With the joystick it reads port 2 through TED's keyboard latch, <code>$FF08</code>; port 1 is never read, and in a game for two both players use port 2. With the keys it reads the key code that the C16's ROM leaves at <code>$C6</code> each time the interrupt calls its keyboard scan. That code holds one key at a time, so the game cannot see Z and X together. SHIFT is a separate flag, at <code>$0543</code>, so Mr Puniverse can jump while he walks.</p>
-  <p>The code turns K and M into up and down bits, as the joystick's up and down give them, and the game never reads those bits. P pauses: PAUSED shows in red under the room, the sound goes quiet, and the game waits for P again (<code>pause_check</code>).</p>
+  <p><code>read_input</code> builds one byte with a bit for each control. With the joystick, it reads port 2 through TED's keyboard latch, <code>$FF08</code>. The game never reads port 1, and in a game for two both players use port 2. With the keys, it reads the key code at <code>$C6</code>. The C16's ROM, the program built into the machine, leaves that code there each time the interrupt calls the ROM's keyboard scan. The code holds one key at a time, so the game cannot see Z and X held together. SHIFT has a flag of its own, at <code>$0543</code>, so Mr Puniverse can jump while he walks.</p>
+  <p>The code turns K and M into up and down bits, the same bits the joystick's up and down give, and the game never reads those bits. P pauses the game. PAUSED shows in red under the room, the sound goes quiet, and the game waits for P again (<code>pause_check</code>).</p>
 </section>
 
 <section id="turns">
@@ -265,10 +265,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <canvas id="pu-vit" class="pu-strip" width="128" height="32" style="margin:0 auto" aria-label="The vitamin turning."></canvas>
     <p class="pu-state" id="pu-vstate" style="text-align:center"></p>
-    <p class="cap">The vitamin's four frames, characters <code>$D7</code> to <code>$DA</code>, turned by the game's <code>rotate_vitamin_chars</code> (<code>$2844</code>) on the kit's 6502, once a pass at 20 passes a second, in room 0's vitamin colour.</p>
+    <p class="cap">The vitamin's four pictures, characters <code>$D7</code> to <code>$DA</code>, turned by the game's <code>rotate_vitamin_chars</code> (<code>$2844</code>) on the kit's 6502, once a pass at 20 passes a second, in room 0's vitamin colour.</p>
   </div>
-  <p>Each player starts with eight lives, shown as little men in the panel. A death runs the death sequence (<code>death</code>): the room's background flashes through the colours while a rising noise plays, the EGY bar empties and a life goes. In a game for two, the other player then takes a turn. Each turn starts in the room the player was in, at the place where he came into it, with the bar full. The clock and the vitamins carry on from where they were.</p>
-  <p>A vitamin taken is gone for good for that player: <code>collect_vitamin</code> sets his bit in the room's entry in <code>vitamins_got</code>, and the room is drawn without it the next time he comes in. The 25th sets his lives to 1, plays the tune and waits for a key, and the death sequence that follows finds no lives left. In a game for two the other player plays on. With both players out, GAME OVER shows and the title comes back.</p>
+  <p>Each player starts with eight lives, shown as little men in the panel. A death runs the death sequence (<code>death</code>). The room's background flashes through the colours while a rising noise plays, the EGY bar empties, and a life goes. In a game for two, the other player then takes a turn. Each turn starts in the room the player was in, at the place where he came into it, with the bar full. The clock and the vitamins carry on from where they were.</p>
+  <p>A vitamin taken is gone for good for that player. <code>collect_vitamin</code> sets his bit in the room's entry in <code>vitamins_got</code>, and the room is drawn without the vitamin the next time he comes in. The 25th vitamin sets his lives to 1, plays the tune and waits for a key, and the death sequence that follows finds no lives left. In a game for two the other player plays on. With both players out, GAME OVER shows and the title comes back.</p>
 </section>
 
 <section id="sound">
@@ -284,7 +284,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div id="pu-sfxroll"></div>
     <p class="cap">Each effect as the game makes it, recorded on the kit's model of the C16 (<code>kit/c16/machine.js</code>) running the game's code from the listing, in room 0 at the start of a game: the refill as the first turn starts, the fall that follows, a jump from the floor, and the D key. plus4emu's sound log of the same steps has the same writes with the same values, each within a fifth of a frame. They play through the site's model of TED.</p>
   </div>
-  <p>The effects write TED's registers straight from the code that causes them. <code>voice2_on</code> and <code>voice2_off</code> switch voice 2, and the rest sets its pitch in <code>$FF0F</code> and <code>$FF10</code>. The tune is off in play: <code>start_turn</code> clears <code>music_on</code>, so the interrupt stops calling <code>music_tick</code>, and the effects have voice 2 to themselves. In play voice 1 is silent: <code>voice1_on_unused</code> and <code>voice1_off_unused</code>, which would switch it, are never called.</p>
+  <p>The effects write TED's registers straight from the code that causes them. <code>voice2_on</code> and <code>voice2_off</code> switch voice 2 on and off, and the rest of the code sets its pitch in <code>$FF0F</code> and <code>$FF10</code>. The tune is off in play. <code>start_turn</code> clears <code>music_on</code>, so the interrupt stops calling <code>music_tick</code>, and the effects have voice 2 to themselves. Voice 1 is silent in play. <code>voice1_on_unused</code> and <code>voice1_off_unused</code>, which would switch it on and off, are never called.</p>
 </section>
 
 </main>
@@ -460,7 +460,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
         for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(0, i * 64 + .5); ctx.lineTo(128, i * 64 + .5); ctx.stroke(); }
         ctx.beginPath(); ctx.moveTo(64.5, 0); ctx.lineTo(64.5, 192); ctx.stroke();
         figs.forEach((f, i) => f.classList.toggle('on', i === frame));
-        out.textContent = `Frame ${frame + 1} of 8, facing ${frame < 4 ? 'right' : 'left'}, ${frame % 4} pixel${frame % 4 === 1 ? '' : 's'} across: player_x ${hex(4 * frame)}, player_y ${y}${y === 6 ? ', standing' : ''}`;
+        out.textContent = `Pose ${frame + 1} of 8, facing ${frame < 4 ? 'right' : 'left'}, ${frame % 4} pixel${frame % 4 === 1 ? '' : 's'} across: player_x ${hex(4 * frame)}, player_y ${y}${y === 6 ? ', standing' : ''}`;
       }
       hy.oninput = draw; bg.onchange = draw;
       draw();

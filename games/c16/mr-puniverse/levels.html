@@ -86,9 +86,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Each room as the game draws it, in its place on the map. Click a room to look at it closely below.</p>
   <div class="plate">
     <div class="pu-wrapf" style="max-width:none"><canvas id="pu-map" class="pu-screen" width="1600" height="720" style="max-width:none;cursor:pointer" aria-label="The 25 rooms in a grid of five by five."></canvas><div id="pu-mapm"></div></div>
-    <p class="cap">Every room drawn by the game's <code>draw_room</code> (<code>$2868</code>) from its record, run on the kit's 6502, with its objects where the record puts them and its vitamin. The numbers are the rooms' own. Five exits lead off the map, to a room that is not next door (<a href="discoveries.html#offmap">Discoveries</a>); they are marked in blue.</p>
+    <p class="cap">Every room drawn by the game's own routine <code>draw_room</code>, at <code>$2868</code> in memory (a <code>$</code> marks a number written in hexadecimal, base 16). It runs from each room's record on the page's copy of the C16's processor, a 6502, and puts the room's objects and its vitamin where the record says. The numbers are the rooms' own. Five exits lead off the map, to a room that is not next door (<a href="discoveries.html#offmap">Discoveries</a>); they are marked in blue.</p>
   </div>
-  <p>Room <i>n</i> sits on row <i>n</i> div 5 and column <i>n</i> mod 5 of the map. Each room's record names the room beyond each of its four edges, and any gap in the walls on an edge is a way through (<a href="index.html#rooms">How it works</a>). The game draws one room at a time, so the map exists only in those four bytes of each record.</p>
+  <p>Room <i>n</i> sits on row <i>n</i> ÷ 5 of the map, rounded down, and in the column given by the remainder: room 13 is on row 2, column 3, counting from 0. Each room's record, the block of bytes that describes it, names the room beyond each of its four edges. Any gap in the walls on an edge is a way through (<a href="index.html#rooms">How it works</a>). The game draws one room at a time, so the map exists only in those four bytes of each record.</p>
 </section>
 
 <section id="room">
@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </div>
     <canvas id="pu-lcanvas" class="pu-screen" width="640" height="288" aria-label="The room chosen, its objects moving."></canvas>
     <div class="pu-scroll"><table class="pu-table" id="pu-ltable" style="margin-top:16px"></table></div>
-    <p class="cap">The room drawn by <code>draw_room</code>, then the game's <code>animate_chars</code>, <code>rotate_vitamin_chars</code> and <code>update_objects</code> run on the kit's 6502 twenty times a second, as the main loop runs them, without Mr Puniverse. The table reads the room's record as <code>draw_room</code> and <code>draw_room_objects</code> read it. Times take 20 passes of the main loop a second.</p>
+    <p class="cap">The room is drawn by <code>draw_room</code>. Then the game's own <code>animate_chars</code>, <code>rotate_vitamin_chars</code> and <code>update_objects</code> run twenty times a second, as the game's main loop runs them, without Mr Puniverse. The main loop is the code the game runs over and over in play, and each time round it is a pass. The table reads the room's record as <code>draw_room</code> and <code>draw_room_objects</code> read it. The times take 20 passes a second.</p>
   </div>
 </section>
 
@@ -112,7 +112,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Every room's EGY bar and objects in one table. Click a row to pick that room above.</p>
   <div class="plate">
     <div class="pu-scroll"><table class="pu-table" id="pu-lall"></table></div>
-    <p class="cap">From the 25 records, read as the game reads them. Full to empty is the time a draining room takes to empty a full bar, 136 steps; a filling room takes the same time to fill an empty one, up to the cell it never fills (<a href="discoveries.html#refill">Discoveries</a>).</p>
+    <p class="cap">From the 25 records, read as the game reads them. Full to empty is the time a draining room takes to empty a full bar of 136 steps. A filling room takes the same time to fill an empty one, up to the cell it never fills (<a href="discoveries.html#refill">Discoveries</a>).</p>
   </div>
   <p>The fastest drain is room 10's, a step every 3 passes, about 20 seconds from full to empty. The slowest rooms drain a step every 20 passes, over two minutes. Five rooms fill the bar a step every pass. Rooms 6 and 13 have no objects at all, and room 16 has the most, eight crushers.</p>
 </section>

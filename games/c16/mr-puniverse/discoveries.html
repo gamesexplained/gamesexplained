@@ -90,10 +90,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <figure style="margin:0"><canvas id="pu-wtitle" class="pu-screen" width="640" height="288" aria-label="The title drawing MR PUNIVERSE in dots."></canvas><figcaption class="cap" style="margin-top:6px"><code>title_path</code> (<code>$340D</code>), 233 dots</figcaption></figure>
       <figure style="margin:0"><canvas id="pu-wwimpo" class="pu-screen" width="640" height="288" aria-label="The title drawing WIMPO in dots."></canvas><figcaption class="cap" style="margin-top:6px"><code>wimpo_path</code> (<code>$1B77</code>), 220 dots</figcaption></figure>
     </div>
-    <p class="cap">The title as <code>new_game</code> leaves it, then the game's <code>title_dot_step</code> (<code>$1C46</code>) run on the kit's 6502 once for each dot, with its wait left out. On the right, the four instructions that read <code>title_path</code> read <code>wimpo_path</code> instead. Changed so in plus4emu, the title drew WIMPO.</p>
+    <p class="cap">The title as <code>new_game</code> leaves it. Then the game's own routine <code>title_dot_step</code>, at <code>$1C46</code> in memory (a <code>$</code> marks a number written in hexadecimal, base 16), runs once for each dot, with its wait left out. It runs on the page's copy of the C16's processor, a 6502. On the right, the four instructions that read <code>title_path</code> read <code>wimpo_path</code> instead. With the same change made in the plus4emu emulator, the title drew WIMPO.</p>
   </div>
-  <p>While the title waits for RETURN, <code>new_game</code> calls <code>title_dot_step</code> over and over. Every 255th call it draws one dot, a vitamin, and moves on along a path of strokes. Each stroke is a byte: its low four bits count the dots and its high four bits give the direction. A 0 starts a new stroke somewhere else on the screen, and a 1 starts the path again in the background colour, so the letters are drawn and then rubbed out, dot by dot.</p>
-  <p>The routine reads its path at <code>$340D</code>. A second path in the same format lies at <code>$1B77</code>, between the PAUSED message and the title's text, and the game never reads it. It draws the same frame round the play area and then WIMPO in tall thin letters, where MR PUNIVERSE goes. The inlay calls the weaklings Mr Puniverse is one of "Wimps".</p>
+  <p>While the title waits for RETURN, <code>new_game</code> calls <code>title_dot_step</code> over and over. Every 255th call draws one dot, a vitamin, and moves on along a path of strokes. Each stroke is one byte, eight bits. Its low four bits count the dots, and its high four bits give the direction. A byte of 0 starts a new stroke somewhere else on the screen. A byte of 1 starts the path again in the background colour, so the letters are drawn and then rubbed out, dot by dot.</p>
+  <p>The routine reads its path at <code>$340D</code>. A second path in the same format lies at <code>$1B77</code>, between the PAUSED message and the title's text, and the game never reads it. It draws the same box round the play area and then WIMPO in tall thin letters, where MR PUNIVERSE goes. The inlay calls the weaklings Mr Puniverse is one of "Wimps".</p>
 </section>
 
 <section id="best">
@@ -102,7 +102,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The walls of room 18 are letters three rows high: BEST along the top and ROOM below.</p>
   <div class="plate">
     <canvas id="pu-best" class="pu-screen" width="640" height="288" aria-label="Room 18, whose walls spell BEST ROOM."></canvas>
-    <p class="cap">Room 18 as the game's <code>draw_room</code> (<code>$2868</code>) draws it from its record, run on the kit's 6502.</p>
+    <p class="cap">Room 18 as the game's <code>draw_room</code> (<code>$2868</code>) draws it from its record, run on the page's 6502.</p>
   </div>
   <p>A room's walls are a bitmap of 45 bytes, one bit for two cells (<a href="index.html#rooms">How it works</a>), so a room can be drawn as freely as a picture. Room 18 is on the fourth row of the map, in the fourth column. It fills the EGY bar a step every pass, the fastest rate any room has. Its floor has nine gaps that lead out to room 0, each under a block of wall (<a href="#offmap">Five exits</a>).</p>
 </section>
@@ -135,10 +135,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="pu-state" style="margin:12px 0 4px">After filling, as long as it will</p>
     <canvas id="pu-rafter" class="pu-strip" width="640" height="16" aria-label="The EGY bar after filling."></canvas>
     <p class="pu-state" id="pu-rstate"></p>
-    <p class="cap">The game's <code>energy_tick</code> (<code>$33AB</code>) on the kit's 6502, called with a rate of 1 in a room that drains (mode 1) as many times as the slider says, then in one that fills (mode 0) until the bar stops changing. Drawn as the panel draws it. In plus4emu, in room 6, cells 30 to 33 at full, full, one step down and empty went to full, full, full and empty.</p>
+    <p class="cap">The game's own <code>energy_tick</code> (<code>$33AB</code>), run on the page's 6502. It is called with a rate of 1, first in a room that drains (mode 1), as many times as the slider says, and then in a room that fills (mode 0), until the bar stops changing. The bar is drawn as the panel draws it. In plus4emu, in room 6, cells 30 to 33 at full, full, one step down and empty went to full, full, full and empty.</p>
   </div>
-  <p>The bar is 34 cells in a row along the foot of the panel, each holding four steps. <code>bar_pos</code> says which cell is being worked. A turn starts with it at 33, the right end, and draining takes a step at a time from that cell and moves left when it is empty. Filling puts a step back into the cell at <code>bar_pos</code> and moves right when it is full.</p>
-  <p>Before it fills, though, <code>energy_tick</code> checks whether <code>bar_pos</code> is 33, and if it is, it does nothing. So it never fills cell 33, and after any drain the bar can come back to at most 33 full cells and whatever cell 33 still held. The first four steps drained in a turn come out of cell 33, and filling never puts them back, in any room. Only the start of the next turn fills the whole bar (<code>refill_energy</code>).</p>
+  <p>The bar is 34 cells in a row along the foot of the panel, numbered 0 to 33, and each cell holds four steps. A variable, <code>bar_pos</code>, says which cell is being worked on. A turn starts with <code>bar_pos</code> at 33, the right end. Draining takes a step at a time from that cell, and moves <code>bar_pos</code> left when the cell is empty. Filling puts a step back into the cell at <code>bar_pos</code>, and moves <code>bar_pos</code> right when the cell is full.</p>
+  <p>Before it fills, though, <code>energy_tick</code> checks whether <code>bar_pos</code> is 33. If it is, <code>energy_tick</code> does nothing, so cell 33 is never filled. After any drain, the bar can come back to at most 33 full cells, plus whatever cell 33 still held. The first four steps drained in a turn come out of cell 33, and filling never puts them back, in any room. Only the start of the next turn fills the whole bar (<code>refill_energy</code>).</p>
 </section>
 
 <section id="lift">
@@ -148,10 +148,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <canvas id="pu-lift" class="pu-strip" width="128" height="256" style="margin:0 auto" aria-label="A column of the lift character, moving."></canvas>
     <p class="pu-state" id="pu-lstate" style="text-align:center"></p>
-    <p class="cap">A column of character <code>$BC</code> beside itself, four rows high, as <code>draw_column</code> would draw it, moved by the game's <code>animate_chars</code> (<code>$1D13</code>) on the kit's 6502 twenty times a second, as often as the main loop calls it. Drawn in the colours of room 24's ladder.</p>
+    <p class="cap">A column of character <code>$BC</code> beside itself, four rows high, as <code>draw_column</code> would draw it, moved by the game's <code>animate_chars</code> (<code>$1D13</code>) on the page's 6502 twenty times a second, as often as the main loop calls it. Drawn in the colours of room 24's ladder.</p>
   </div>
-  <p>Three routines know about the lift. <code>animate_chars</code> scrolls the picture of character <code>$BC</code> up a line every third pass, as it scrolls the force field, so a lift would seem to rise. <code>draw_column</code>, which draws the ladders and force fields, gives the lift a right half of its own character, as it does the blank, where every other column gets a different character beside it. And <code>player_move</code>, finding <code>$BC</code> under his feet, moves him up two lines a pass with <code>move_up</code>, the routine a jump uses.</p>
-  <p>A room would place one as a piece of scenery (<a href="index.html#objects">How it works</a>), whose maker, <code>make_decor</code>, draws rows of floor for the characters from <code>$A0</code> to <code>$BB</code> and from <code>$C8</code>, and a column for any other: <code>$BC</code> would be a column. The records place 18 pieces of scenery, and every one of them is something other than a lift.</p>
+  <p>Three routines know about the lift. <code>animate_chars</code> scrolls the picture of character <code>$BC</code> up a line every third pass, as it scrolls the force field, so a lift would seem to rise. <code>draw_column</code>, which draws the ladders and the force fields, puts a second character beside each one for its right half. For the lift, as for the blank, that second character is the same one again, and every other column gets a different character beside it. Last, <code>player_move</code>, finding <code>$BC</code> under his feet, moves him up two lines a pass with <code>move_up</code>, the routine a jump uses.</p>
+  <p>A room would place a lift as a piece of scenery (<a href="index.html#objects">How it works</a>). Scenery is made by <code>make_decor</code>, which draws a row of floor for the characters <code>$A0</code> to <code>$BB</code> and from <code>$C8</code> up, and a column for any other. So <code>$BC</code> would be a column. The records place 18 pieces of scenery, and every one of them is something other than a lift.</p>
 </section>
 
 <section id="oldtune">
@@ -160,21 +160,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">Beside the title tune's player is another of the same shape, which the game never calls. Its tables lie where the rooms are.</p>
   <div class="plate">
     <div id="pu-oplayer"></div>
-    <p class="cap"><code>old_music_tick</code> (<code>$317F</code>) run on the kit's 6502 once a frame from the start of its tables, as <code>irq</code> runs the title tune, and its writes played through the site's model of TED. The other button is the title tune, for comparison.</p>
+    <p class="cap"><code>old_music_tick</code> (<code>$317F</code>), run on the page's 6502 once a frame (about 50 times a second) from the start of its tables, as <code>irq</code> runs the title tune. Its writes play through the site's model of TED, the chip that makes the C16's picture and sound. The other button plays the title tune, for comparison.</p>
   </div>
   <p><code>old_music_tick</code> works as <code>music_tick</code> does, with seven frames to a step instead of six and 96 steps instead of 128. It takes voice 1's notes from <code>$1800</code>, voice 2's from <code>$1860</code>, and their pitches from tables at <code>$18C0</code> and <code>$18D8</code>. It plays only while the byte at <code>$03BB</code> is 0, and the rest of the game never reads or writes that byte.</p>
-  <p>Those addresses lie in the records of rooms 19, 20, 22 and 23, so the player would read walls and objects as notes. <code>irq</code> calls only <code>music_tick</code>, and the game never reaches <code>$317F</code>.</p>
+  <p>Those addresses lie in the records of rooms 19, 20, 22 and 23, so this second tune player would read walls and objects as notes. <code>irq</code>, the game's interrupt routine, calls only <code>music_tick</code>, and the game never reaches <code>$317F</code>.</p>
 </section>
 
 <section id="tune">
   <p class="fig">07 · Bug</p>
   <h2 class="t">Bug: the title tune reads past its own tables</h2>
-  <p class="lede">The tune starts on a step 255 that reads bytes beyond both tables, and three of its notes take their pitches from beyond the table of pitches.</p>
+  <p class="lede">The tune starts on a step 255, which reads bytes beyond both of the tune's tables. Three of its notes also take their pitches from beyond the table of pitches.</p>
   <div class="plate">
     <div class="pu-scroll"><table class="pu-table" id="pu-ttable"></table></div>
-    <p class="cap">From the listing: <code>tune_voice1</code> at <code>$196E</code>, <code>tune_voice2</code> at <code>$1A27</code>, 128 steps each; <code>note_freq_lo</code> at <code>$19EE</code> and <code>note_freq_hi</code> at <code>$1A0A</code>, read at the note's number. The pitch is TED's: 110,840 ÷ (1023 − the value) Hz on a PAL machine.</p>
+    <p class="cap">From the listing: <code>tune_voice1</code> at <code>$196E</code>, <code>tune_voice2</code> at <code>$1A27</code>, 128 steps each; <code>note_freq_lo</code> at <code>$19EE</code> and <code>note_freq_hi</code> at <code>$1A0A</code>, read at the note's number. The pitch is TED's: 110,840 ÷ (1023 − the value) Hz, vibrations a second, on a PAL machine, the kind sold in Britain and Europe.</p>
   </div>
-  <p><code>setup_machine</code> sets the tune's frame and step counters to <code>$FF</code>. <code>music_tick</code> plays the step in its step counter, so for the tune's first six frames it plays step 255. Voice 1 reads byte 255 of its table, which is inside <code>tune_voice2</code>, and voice 2 reads byte 255 of its own, a byte of <code>music_tick</code>'s code. Both are taken as notes, so the tune opens with a chord that is not in it. Then the counter wraps to 0 and the tune proper begins.</p>
+  <p><code>setup_machine</code> sets the tune's frame and step counters to <code>$FF</code>, which is 255. <code>music_tick</code> plays the step its step counter holds, so for the tune's first six frames it plays step 255. Voice 1 reads byte 255 of its table, which lies inside <code>tune_voice2</code>. Voice 2 reads byte 255 of its own table, which is a byte of <code>music_tick</code>'s code. Both bytes are taken as notes, so the tune opens with a chord that is not in it. Then the counter wraps round to 0 and the tune proper begins.</p>
   <p>The pitch table has 28 entries, for notes 0 to 27. Near the end of the tune, voice 2 plays notes 84, 85 and 87, and their pitches come from bytes of <code>tune_voice2</code> itself, read as if they were the table. Notes 20 and 21 also repeat the pitches of 16 and 17.</p>
 </section>
 
@@ -182,14 +182,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">08 · Bug</p>
   <h2 class="t">Bug: cannons that are always on read another table as their switch</h2>
   <p class="lede">Every cannon and crusher has a switch number in its record. Those without a switch of their own give switch 8, and there are only eight switches, 0 to 7.</p>
-  <p><code>object_timer</code> looks the switch up in <code>switch_state</code> (<code>$0FE8</code>), eight bytes, one for each switch. Switch 8 is the byte after them, which is the first byte of <code>obj_type</code>, the type of the room's first moving object. In a room with a cannon or a crusher that is never 0, so switch 8 is always on. It works, by way of a byte that belongs to another table.</p>
+  <p><code>object_timer</code> looks the switch up in <code>switch_state</code> (<code>$0FE8</code>), a table of eight bytes, one for each switch. Switch 8 would be the byte after them, which is the first byte of the next table, <code>obj_type</code>: the type of the room's first moving object. In a room with a cannon or a crusher, that byte is never 0, so switch 8 is always on. The game works, by way of a byte that belongs to another table.</p>
 </section>
 
 <section id="colours">
   <p class="fig">09 · Bug</p>
   <h2 class="t">Bug: the title's colours are whatever the tape left behind</h2>
-  <p class="lede">Nothing in the game sets the title screen's colours. The interrupt copies three bytes to TED twice a frame, and on the title they still hold what loading the tape left in them.</p>
-  <p>The top of the screen takes its colours from <code>room_colours</code> (<code>$0339</code>-<code>$033B</code>), which <code>draw_room</code> fills each time it draws a room (<a href="index.html#frame">How it works</a>). Those three bytes lie in the KERNAL's cassette buffer, and until the first room is drawn they hold what the tape's loader left there: <code>$4C</code>, <code>$4A</code> and <code>$F0</code>, a blue-green, a yellow-green and black. A loader that left other bytes behind would give the title other colours.</p>
+  <p class="lede">Nothing in the game sets the title screen's colours. Once a frame, the game's interrupt routine copies three bytes into TED, the chip that draws the picture, as the colours for the top of the screen. On the title, those bytes still hold what loading the tape left in them.</p>
+  <p>The top of the screen takes its colours from <code>room_colours</code> (<code>$0339</code>-<code>$033B</code>), which <code>draw_room</code> fills each time it draws a room (<a href="index.html#frame">How it works</a>). Those three bytes lie in the cassette buffer, a part of memory that the C16's built-in program, the KERNAL, uses when it reads a tape. Until the first room is drawn, they hold what the tape's loader left there: <code>$4C</code>, <code>$4A</code> and <code>$F0</code>, a blue-green, a yellow-green and black. A loader that left other bytes behind would give the title other colours.</p>
 </section>
 
 </main>
