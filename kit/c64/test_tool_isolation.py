@@ -329,9 +329,11 @@ class SeededStartTests(unittest.TestCase):
                  patch.object(launcher, "up", return_value=False), \
                  patch.object(launcher, "forget_port"), \
                  patch.object(launcher, "start") as start, \
+                 patch.object(launcher, "deleted_again", return_value=[]) as gone, \
                  patch("sys.stdout", io.StringIO()):
                 launcher.r2000(str(game / "work" / "entry.vsf"))
             self.assertEqual(start.call_args.args[0][-2:], [str(game / "work" / "demo.regen2000proj"), "13000"])
+            gone.assert_called_once_with(str(game))      # rebuilt from symbols.json: its deletions made again (#578)
 
 
 class SnapshotTests(unittest.TestCase):

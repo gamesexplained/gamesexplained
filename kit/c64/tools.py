@@ -332,6 +332,40 @@ def logged_since_export(gdir):
     return sorted(f for f in glob.glob(os.path.join(gdir, "work", "*.jsonl")) if os.path.getmtime(f) > since)
 
 
+def deleted_again(gdir):
+    """Delete again, in a session started on a project rebuilt from symbols.json, the automatic
+    symbols that were deleted before the last export (#578). Returns them as (address, name,
+    whether the deletion held).
+
+    The rebuild leaves automatic symbols out, since the disassembler mints them again from the
+    code, and it mints every one, those an agent deleted too: symbols.json has no record of a
+    deletion. An export keeps every automatic symbol the session holds at the addresses the
+    folder owns, so one there that symbols.json has no symbol for was deleted on purpose. It is
+    renamed and then cleared, the way 0.9.20 removes one (kit/skills/c64/tool-regen2000)."""
+    import json
+    from parts import load_game, owned
+    from r2000 import make_client, call
+    sym = os.path.join(gdir, "symbols.json")
+    if not os.path.isfile(sym):
+        return []
+    have = {s["address"] for s in json.load(open(sym))["symbols"]}
+    away = load_game(gdir).get("elsewhere") or []
+    rpc, live, n = make_client(gdir), None, -1
+    for _ in range(20):                       # the analysis of the rebuilt project, settled
+        live = json.loads(call(rpc, "r2000_get_symbols", {}))
+        if len(live) == n:
+            break
+        n = len(live)
+        time.sleep(0.5)
+    gone = [(x["address"], x["name"]) for x in live if str(x.get("kind", "")).lower() == "auto"
+            and x["address"] not in have and owned(x["address"], away)]
+    for a, name in gone:
+        call(rpc, "r2000_set_label_name", {"address": a, "name": f"deleted_{a:04X}"})
+        call(rpc, "r2000_set_label_name", {"address": a, "name": ""})
+    left = {x["address"] for x in json.loads(call(rpc, "r2000_get_symbols", {}))}
+    return [(a, name, a not in left) for a, name in gone]
+
+
 def r2000(path):
     exe = r2000_exe()
     if not exe:
@@ -347,7 +381,9 @@ def r2000(path):
                      "clone's on another port with KIT_R2000_PORT (kit/c64/INSTALL.md, 'Another program on port 3000')")
         sys.exit(f"something already answers on :{port}; only one disassembler can run on a port. "
                  "`tools.py stop r2000` first")
+    given = path
     path, gdir = seeded(path)
+    rebuilt = gdir and os.path.abspath(path) != os.path.abspath(given)
     os.makedirs(TOOLS, exist_ok=True)
     forget_port(port)
     if part:        # the part's own, read back by every script given the part's folder (kit/c64/r2000.py):
@@ -368,6 +404,16 @@ def r2000(path):
         cmd = [sys.executable, BRIDGE, exe, os.path.abspath(path), str(port)]
     start(cmd, os.path.join(LOGS, "r2000.log" if port == R2000_PORT else f"r2000-{port}.log"), env=env, port=port,
           name="disassembler")
+    gone = deleted_again(gdir) if rebuilt else []
+    if gone:
+        done = [f"${a:04X} {name}" for a, name, ok in gone if ok]
+        stuck = [f"${a:04X} {name}" for a, name, ok in gone if not ok]
+        if done:
+            print(f"deleted again {len(done)} automatic symbol(s) that symbols.json does not hold, deleted before "
+                  f"the last export: " + ", ".join(done[:12]) + (f" and {len(done) - 12} more" if len(done) > 12 else ""))
+        if stuck:
+            print(f"{len(stuck)} automatic symbol(s) symbols.json does not hold came back and could not be deleted, "
+                  "and the next export will hold them: " + ", ".join(stuck[:12]))
     logs = logged_since_export(gdir) if gdir else []
     if logs:
         print(f"\n{', '.join(os.path.relpath(f, ROOT) for f in logs)}: written after the last export, by a session "

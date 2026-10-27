@@ -44,7 +44,10 @@ Started on a snapshot in a game's or a part's folder that has exported
 annotations, the launcher builds `work/<slug>.regen2000proj` from
 `symbols.json` and that snapshot, as `symbols_import.py` does, starts on
 it and says so: a session restarted after a crash or a stop comes back
-with the work of the last export. It names any annotation log written
+with the work of the last export. The disassembler mints every automatic
+symbol again from the code, so the launcher deletes again each one at an
+address the folder owns that `symbols.json` lacks, since it was deleted
+before that export, and names any deletion that did not hold. It names any annotation log written
 after that export, with the `r2000.py --replay` that brings its work
 back. A game's first session, with nothing exported, starts on the
 snapshot itself.
