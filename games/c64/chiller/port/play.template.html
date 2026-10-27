@@ -86,6 +86,9 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-cheats{display:contents}
 .pl-fig{margin:6px 0 18px;max-width:420px}
 .pl-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.pl-painted{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.pl-painted input{accent-color:var(--ink);width:16px;height:16px}
+.pl-levels[hidden]{display:none}
 .pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
@@ -166,6 +169,11 @@ section table{margin:6px 0 18px}
       <button type="button" data-view="parallax" aria-pressed="false" title="A forest remix with distant trees, moonlight, mist and foreground branches">Parallax</button>
       <button type="button" data-view="torch" aria-pressed="false" title="Darkness, but for the light the boy carries; enemies beyond it are two eyes">Torchlight</button>
     </div>
+    <div class="pl-levels" id="pl-art-options" hidden aria-label="Parallax artwork">
+      <span>Artwork</span>
+      <label class="pl-painted"><input type="checkbox" id="pl-painted"> Painted scenery</label>
+      <span>Forest concept · original game rules</span>
+    </div>
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
       <span>Start on</span>
     </div>
@@ -221,7 +229,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, a sprite whose priority bit is set sliding back behind the scenery's pane; drag to turn the stack, and the sliders spread it and bring it nearer), and the screen dark but for the boy's light. <b>Parallax</b> uses full-colour concept artwork at the game’s pixel size, adding imagined scenery to the forest on the outward and homeward journeys: distant trees, a moon, mist and foreground branches move gently as you walk. The game’s platforms, sprites and rules stay the same. Other locations keep their original picture.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, a sprite whose priority bit is set sliding back behind the scenery's pane; drag to turn the stack, and the sliders spread it and bring it nearer), and the screen dark but for the boy's light. <b>Parallax</b> uses full-colour concept artwork at the game’s pixel size, adding imagined scenery to the forest on the outward and homeward journeys: distant trees, a moon, mist and foreground branches move gently as you walk. The game’s platforms, sprites and rules stay the same. With Parallax selected, <b>Painted scenery</b> adds a full-colour concept skin for the playable trees and ropes. It is an imagined rendition of the level; collisions still use the original map, and characters and collectibles remain live. Other locations keep their original picture.</p>
   </div>
 </section>
 <section id="port">
@@ -318,6 +326,11 @@ const fx = (function () {
     c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
   };
   const parallax = ChillerParallax.create();
+  $('pl-painted').addEventListener('change', () => {
+    parallax.setPainted($('pl-painted').checked);
+    if (rt) draw();
+    screen.focus();
+  });
   const MODES = {
     parallax() { parallax.draw(c, rt, cv); },
     // Torchlight: the whole screen dark but for a pool of light round the boy that flickers like a
@@ -429,6 +442,7 @@ const fx = (function () {
   }
   function set(m) {
     mode = m === 'flat' ? null : m;
+    $('pl-art-options').hidden = mode !== 'parallax';
     cvx.hidden = !mode || mode === 'layers'; lay.hidden = mode !== 'layers';
     if (rt) frame();
   }

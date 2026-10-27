@@ -6,9 +6,10 @@
 (function (root) {
 'use strict';
 const W = 384, H = 272;
-function draw(M, vic, colour, px, backdrop) {
+function draw(M, vic, colour, px, backdrop, spritesVisible) {
   // Optional compositing mask: only colour-zero character pixels, never sprite pixels.
   if (backdrop) backdrop.fill(0);
+  if (spritesVisible) spritesVisible.fill(0);
   const bc = vic[0x20] & 15, d11 = vic[0x11], d16 = vic[0x16], d18 = vic[0x18];
   px.fill(bc);
   const fg = new Uint8Array(W * H);                    // 1 where the characters' foreground is
@@ -74,6 +75,7 @@ function draw(M, vic, colour, px, backdrop) {
       if (n && !((vic[0x1B] >> (n - 1) & 1) && fg[o])) {
         px[o] = spc[o];
         if (backdrop) backdrop[o] = 0;
+        if (spritesVisible) spritesVisible[o] = 1;
       }
     }
   }

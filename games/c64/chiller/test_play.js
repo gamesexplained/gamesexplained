@@ -30,18 +30,21 @@ if (bad) process.exit(1);
 require(path.join(PORT, 'src/screen.js'));
 {
   const assert = require('assert'), M = new Uint8Array(65536), v = new Uint8Array(64);
-  const colour = new Uint8Array(1024), a = new Uint8Array(384 * 272), b = a.slice(), mask = a.slice();
+  const colour = new Uint8Array(1024), a = new Uint8Array(384 * 272), b = a.slice(), mask = a.slice(), visible = a.slice();
   v[0x11] = 0x1B; v[0x16] = 8; v[0x18] = 0x12; v[0x21] = 0;
   M[0x800] = 0x80; // black high-resolution character, first pixel set
   ChillerScreen.draw(M, v, colour, a);
-  ChillerScreen.draw(M, v, colour, b, mask);
+  ChillerScreen.draw(M, v, colour, b, mask, visible);
   assert.deepStrictEqual(a, b);
   assert.strictEqual(mask[51 * 384 + 32], 0);
   assert.strictEqual(mask[51 * 384 + 33], 1);
   assert.strictEqual(mask[0], 0); // the border is opaque
+  assert.strictEqual(visible.reduce((sum, value) => sum + value, 0), 0);
   v[0x15] = 1; v[0] = 32; v[1] = 66; M[0x7F8] = 0x80; M[0x2000] = 0x80;
-  ChillerScreen.draw(M, v, colour, b, mask);
+  ChillerScreen.draw(M, v, colour, b, mask, visible);
   assert.strictEqual(mask[51 * 384 + 40], 0); // visible black sprite
+  assert.strictEqual(visible[51 * 384 + 40], 1);
+  assert.strictEqual(visible[51 * 384 + 32], 0); // character, not a sprite
   console.log('backdrop mask preserves black characters, sprites and the border');
 }
 

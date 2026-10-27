@@ -183,3 +183,16 @@ into two narrow strips. Replaced that extraction with a dedicated transparent
 foreground artwork: coherent overhanging branches and corner ferns, drawn
 in front of the game and moving more strongly than the distant woodland.
 Only the playfield boundary clips this plane; the HUD remains clear.
+
+### Painted playable scenery
+
+Added a separate Painted scenery toggle under Parallax. A generated terrain
+plate supplies full-colour leaves, bark, roots and ropes at the game's logical
+pixel size. This is a concept rendition, with the collision map unchanged;
+its painted silhouettes are not a measured replacement for the original
+character tiles. The renderer now optionally reports visible sprite pixels,
+so the reskin preserves the live characters and enemies, including black
+sprite pixels. Cross locations are read from the screen record, and mushrooms,
+toadstools and bonuses remain the game's live tiles. The original artwork
+returns for the game-over text. Turning the toggle off restores the original
+scenery over the same Parallax background without restarting play.

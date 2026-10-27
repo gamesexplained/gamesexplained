@@ -16,7 +16,7 @@ what the code shows. A Play tab runs a JavaScript port of every routine,
 checked in lockstep against the game (357 of 366 sessions identical; the
 other 9 hit the line-16 interrupt race), with a level picker and cheats.
 
-Next: Review the forest Parallax view in play before extending the remix to other locations.
+Next: Review Painted scenery against the original collision surfaces before extending the forest remix to other locations.
 
 ## Open
 
