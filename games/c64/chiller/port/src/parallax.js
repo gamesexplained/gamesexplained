@@ -20,15 +20,56 @@ const INKS = {
   0x56: {a:[255,204,50], b:[255,250,162]},
   0x57: {a:[115,243,255]}
 };
+const COINS = [
+  ['..aaaa..','.abbbba.','.abbcba.','.abbcba.','.abbcba.','.abbbba.','..aaaa..','........'],
+  ['...aa...','..abba..','..abca..','..abca..','..abca..','..abba..','...aa...','........'],
+  ['...a....','...ba...','...ca...','...ca...','...ca...','...ba...','...a....','........'],
+  ['...aa...','..abba..','..acba..','..acba..','..acba..','..abba..','...aa...','........']
+];
+INKS[0x56] = {a:[169,95,20],b:[255,204,50],c:[255,255,184]};
+// Give the deck a dark underside and a thicker lit edge, using each live glyph's
+// remaining pixels. Nothing is painted for an erased cell, including on the return trip.
+function paintBridge(ctx, M, v, colour) {
+  const scr = (v[0x18] >> 4) << 10, chars = ((v[0x18] >> 1) & 7) << 11;
+  for (const cell of BRIDGE_CELLS) {
+    const code = M[scr + cell]; if (code < 0x4D || code > 0x53) continue;
+    const x = 32 + (v[0x16] & 7) + cell % 40 * 8;
+    const y = 32 + (v[0x11] & 7) + Math.floor(cell / 40) * 8;
+    for (let dy = 0; dy < 8; dy++) for (let dx = 0; dx < 8; dx++) {
+      const bits = M[chars + code * 8 + dy];
+      const on = (v[0x16] & 0x10) && (colour[cell] & 8) ? (bits >> (6 - (dx & 6))) & 3 : (bits >> (7 - dx)) & 1;
+      if (!on) continue;
+      ctx.fillStyle = '#251126'; ctx.fillRect(x + dx, y + dy + 1, 1, Math.min(4, 8 - dy));
+      ctx.fillStyle = '#c78c43'; ctx.fillRect(x + dx, y + dy, 1, Math.min(3, 8 - dy));
+      ctx.fillStyle = '#fff4cc'; ctx.fillRect(x + dx, y + dy, 1, 1);
+    }
+  }
+}
 // Draw on the logical pixel grid, above the framing ferns. Sprite pixels are excluded
 // so the boy and enemies keep their priority when they overlap an item.
-function paintItems(ctx, M, v, spritesVisible) {
+function paintItems(ctx, M, v, spritesVisible, frameNumber = 0, animate = true, supports = false) {
   const scr = (v[0x18] >> 4) << 10, frame = ctx.getImageData(0, 0, 384, 272), d = frame.data;
   for (let cell = 80; cell < 1000; cell++) {
-    const code = M[scr + cell], icon = ICONS[code]; if (!icon) continue;
+    const code = M[scr + cell]; if (!ICONS[code]) continue;
+    const phase = animate ? Math.floor(frameNumber / 8) : 0;
+    const icon = code === 0x56 ? COINS[(phase + cell) % COINS.length] : ICONS[code];
     const x0 = 32 + (v[0x16] & 7) + cell % 40 * 8;
     const y0 = 32 + (v[0x11] & 7) + Math.floor(cell / 40) * 8;
-    for (let dy = -1; dy <= 8; dy++) for (let dx = -1; dx <= 8; dx++) {
+    // Anchor food to a small bark ledge at the actual tile baseline. This corrects
+    // the painting's local support height without moving the collectible's hit position.
+    if (supports && (code === 0x54 || code === 0x55)) {
+      const below = M[scr + cell + 40];
+      if ((below >= 0x2A && below <= 0x53) || (below >= 0x58 && below <= 0x7F)) {
+        for (let dx = -2; dx <= 9; dx++) for (let dy = 0; dy < 3; dy++) {
+          const x = x0 + dx, y = y0 + 7 + dy;
+          if (x < 32 || x >= 352 || y >= 235 || spritesVisible[y * 384 + x]) continue;
+          const o = (y * 384 + x) * 4, rgb = dy === 0 ? [218,161,79] : dy === 1 ? [115,66,42] : [40,24,32];
+          d[o] = rgb[0]; d[o+1] = rgb[1]; d[o+2] = rgb[2]; d[o+3] = 255;
+        }
+      }
+    }
+    const sparkle = [[1,-2],[9,1],[7,9],[-2,5]][Math.floor(phase / 2 + cell) % 4];
+    for (let dy = -3; dy <= 10; dy++) for (let dx = -3; dx <= 10; dx++) {
       const x = x0 + dx, y = y0 + dy;
       if (x < 32 || x >= 352 || y < 51 || y >= 235 || spritesVisible[y * 384 + x]) continue;
       const key = icon[dy] && icon[dy][dx], ink = INKS[code][key];
@@ -36,8 +77,10 @@ function paintItems(ctx, M, v, spritesVisible) {
       if (!near) for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) {
         if (icon[dy + yy] && INKS[code][icon[dy + yy][dx + xx]]) near = true;
       }
-      if (!near) continue;
-      const o = (y * 384 + x) * 4, rgb = ink || [12,8,28];
+      const glint = code === 0x57 && animate && ((dx === sparkle[0] && Math.abs(dy - sparkle[1]) <= 1) || (dy === sparkle[1] && Math.abs(dx - sparkle[0]) <= 1));
+      if (!near && !glint) continue;
+      const flash = code === 0x57 && animate && phase % 6 < 2;
+      const o = (y * 384 + x) * 4, rgb = glint || (ink && flash) ? [244,255,255] : ink || [12,8,28];
       d[o] = rgb[0]; d[o + 1] = rgb[1]; d[o + 2] = rgb[2]; d[o + 3] = 255;
     }
   }
@@ -86,7 +129,7 @@ function create() {
     terrainContext.clearRect(240, 69, 80, 22);
     terrainReady = true;
   };
-  terrainArt.src = 'reference/parallax-terrain.png';
+  terrainArt.src = 'reference/parallax-terrain-clean.png';
   let camera = 0, lastFrame = null, record = null;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   function draw(c, rt, original) {
@@ -115,7 +158,7 @@ function create() {
     fog.addColorStop(1, 'rgba(91,113,204,0)');
     s.fillStyle = fog; s.fillRect(24 + drift - shift(9), 190, 336, 40);
     const reskin = painted && terrainReady && !(rt.over & 1);
-    if (reskin) s.drawImage(terrain, 0, 0);
+    if (reskin) { s.drawImage(terrain, 0, 0); paintBridge(s, M, v, rt.chips.colour); }
     ChillerScreen.draw(M, v, rt.chips.colour, px, mask, spritesVisible);
     const screenAddress = (v[0x18] >> 4) << 10;
     // Start with the actual displayed frame so ghost and path overlays are preserved too.
@@ -141,11 +184,11 @@ function create() {
     // playfield boundary. The HUD and border remain clear.
     s.save(); s.beginPath(); s.rect(32, 51, 320, 184); s.clip();
     s.drawImage(foreground, -shift(12), 0); s.restore();
-    if (!(rt.over & 1)) paintItems(s, M, v, spritesVisible);
+    if (!(rt.over & 1)) paintItems(s, M, v, spritesVisible, rt.frame, !reduced.matches, reskin);
     c.imageSmoothingEnabled = false;
     c.drawImage(scene, 0, 0, c.canvas.width, c.canvas.height);
   }
   return { draw, setPainted(value) { painted = !!value; } };
 }
-root.ChillerParallax = { create, bridgeCell, paintItems, BRIDGE_CELLS };
+root.ChillerParallax = { create, bridgeCell, paintBridge, paintItems, BRIDGE_CELLS };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -228,3 +228,19 @@ tab bar and one visible panel. The panels retain their control state when
 hidden. The tab bar supports arrow keys, Home and End, with labelled panels
 and a single tab stop. A minimum panel height reduces movement below the
 controls when switching between the two.
+
+### Anchored items, sparkling crosses, coins and a clearer deck
+
+The steward found that the painted branches did not meet the live item
+positions. Food and poison now have small bark ledges at their real tile
+baselines wherever the original map provides support. Collectible positions
+and hit tests are unchanged. Crosses pulse white and have a small travelling
+sparkle, and the game's 100-point bonus tile is a rotating gold coin. Both
+animations follow game time, freeze on pause and stay still with reduced
+motion enabled. The live bridge deck gains a dark underside, a gold edge and
+an ivory top, drawn only from the remaining pixels of its erosion glyph.
+Regression checks cover animation, reduced motion and an erased deck.
+
+Removed the static cup-like decorations from a revised terrain plate,
+`reference/parallax-terrain-clean.png`, so they cannot be mistaken for live
+bonus items. Only the game's real bonus tiles receive rotating coins.

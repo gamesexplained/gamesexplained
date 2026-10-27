@@ -68,6 +68,25 @@ require(path.join(PORT, 'src/parallax.js'));
     for (const code of [0x4D,0x4E,0x4F,0x50,0x51,0x52,0x53,0xA0])
       assert(ChillerParallax.bridgeCell(cell, code), 'reserve bridge space after erosion too');
   }
+  visible.fill(0); M[0x400 + cell] = 0x57; d.fill(0);
+  ChillerParallax.paintItems(ctx, M, v, visible, 0, true); const cross0 = d.slice();
+  d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 24, true);
+  assert.notDeepStrictEqual(d, cross0, 'crosses flash and sparkle with game time');
+  d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 0, false); const still0 = d.slice();
+  d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 24, false);
+  assert.deepStrictEqual(d, still0, 'reduced motion keeps icons still');
+  M[0x400 + cell] = 0x56; d.fill(0);
+  ChillerParallax.paintItems(ctx, M, v, visible, 0, true); const coin0 = d.slice();
+  d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 8, true);
+  assert.notDeepStrictEqual(d, coin0, 'bonus coins rotate');
+  const rects = [], bridgeCtx = {fillRect: (...r) => rects.push(r)};
+  M.fill(0); const bridge = ChillerParallax.BRIDGE_CELLS[0];
+  M[0x400 + bridge] = 0x4D; M[0x3000 + 0x4D * 8] = 255;
+  ChillerParallax.paintBridge(bridgeCtx, M, v, new Uint8Array(1024));
+  assert(rects.length > 0, 'a live deck has a visible edge and underside');
+  rects.length = 0; M[0x400 + bridge] = 0xA0;
+  ChillerParallax.paintBridge(bridgeCtx, M, v, new Uint8Array(1024));
+  assert.strictEqual(rects.length, 0, 'an eroded deck leaves no painted plank');
   console.log('painted items retain sprite priority and disappear when collected; bridge holes stay open');
 }
 
