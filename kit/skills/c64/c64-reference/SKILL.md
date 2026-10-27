@@ -110,11 +110,12 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 
 Read back, the VIC's unused bits are 1: the top two of `$D016`, bit 0
 of `$D018`, bits 4-6 of `$D019`, the top four of `$D01A` and of every
-colour register `$D020`-`$D02E`. A register dump, a snapshot and
-`kit/c64/frame.py` give the value read back, so a game that writes `$01`
-to `$D01A` shows `$F1` there. When a note names a value a register is
-set to, take it from the instruction that stores it, since a value
-copied from a dump reads as one the game wrote.
+colour register `$D020`-`$D02E`. A register dump and a snapshot give
+the value read back, so a game that writes `$01` to `$D01A` shows `$F1`
+there. When a note names a value a register is set to, take it from the
+instruction that stores it, or from the stored value `kit/c64/frame.py`
+records last in each write, since a value copied from a dump reads as
+one the game wrote.
 
 The raster compare sets `$D019` bit 0 whether or not `$D01A` enables
 it, and the bit stays set until the program writes a 1 to it. The

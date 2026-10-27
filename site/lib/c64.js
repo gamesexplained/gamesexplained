@@ -137,7 +137,10 @@ globalThis.C64 = (function () {
   // in force when the beam got there: the video chip's registers, CIA 2's port A (the video bank)
   // and the sprite pointers as the frame began and at every write, and memory as it began.
   //   F.vic     the 47 registers $D000-$D02E        F.cia2    [$DD00, $DD02]
-  //   F.writes  [[line, cycle, address, value], ...] in the order they happened: a register,
+  //   F.writes  [[line, cycle, address, value, stored], ...] in the order they happened: value is
+  //             as the chip reads it back, which the drawing uses; stored, what the game stored
+  //             (frame.py; null where it could not tell; absent from a Play page's), is not read
+  //             here. The address is a register,
   //             $DD00 or $DD02, RAM (a sprite pointer; on a Play page any byte the chip
   //             reads), RAM under the chips, $D000-$DFFF, as $20000 plus its address (which a
   //             game that shows bank 3 can draw in), or colour RAM as $1D800 plus its index;

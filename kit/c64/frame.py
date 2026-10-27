@@ -5,10 +5,13 @@ A screen split by raster interrupts changes the video chip's registers, and ofte
 pointers, several times a frame, so one read of them draws the wrong picture. This records
 one whole frame of the running machine: the registers as the frame begins, then every write
 to the video chip, to CIA 2's port A (the video bank) and to any sprite pointer, each with the
-raster line and cycle it happened on, and the RAM and colour RAM as the frame began. A
-register's value is as the chip reads it back after the store, so its unused bits read as 1:
-$D01A written as $01 is recorded as $F1, and $D018 always has bit 0 set. Quote what the game
-writes from the instruction that stores it.
+raster line and cycle it happened on, and the RAM and colour RAM as the frame began. A write
+has two values, [line, cycle, address, read back, stored]. The first is the register as the
+chip reads it back after the store, which the drawing uses: its unused bits read as 1, so $D01A
+written as $01 reads back $F1, and $D018 always has bit 0 set. The second is the byte the
+storing instruction wrote, which is the value to quote. It is null where the instruction could
+not be told: one that reads, changes and writes the register (INC and DEC excepted), or an
+interrupt taken straight after the store.
 site/lib/c64.js draws it (C64.renderFrame), line by line with the state in force; `compare`
 checks that drawing against the emulator's own picture of the same frame.
 
@@ -126,6 +129,43 @@ def io_visible(port):
     return bool(eff & 4 and eff & 3)
 
 
+# The instructions that can store to a chip, at the address before the one the machine stopped
+# at: opcode -> (length, the stored value from the registers, the index register). INC and DEC
+# store the value they read (the chip's read back, unused bits and all) plus or minus one; the
+# other read-modify-write instructions, and the unstable illegal stores, give no value
+STORES = {0x8D: (3, "A", None), 0x9D: (3, "A", "X"), 0x99: (3, "A", "Y"), 0x8E: (3, "X", None),
+          0x8C: (3, "Y", None), 0x8F: (3, "AX", None), 0x91: (2, "A", "(zp),Y"), 0x81: (2, "A", "(zp,X)"),
+          0xEE: (3, "+1", None), 0xFE: (3, "+1", "X"), 0xCE: (3, "-1", None), 0xDE: (3, "-1", "X")}
+
+
+def stored(m, same, old):
+    """The byte the instruction just executed stored, or None. same(address) says whether an
+    address is the register written (a chip's registers repeat through its page); old is what
+    the register read before the store, for INC and DEC."""
+    r = m.j("vice_registers_get")
+    pc = r["PC"]
+    code = m.read((pc - 3) & 0xFFFF, 3, "cpu")
+    for n, op in ((3, code[0]), (2, code[1])):
+        if op not in STORES or STORES[op][0] != n:
+            continue
+        _, what, index = STORES[op]
+        if n == 3:
+            a = code[1] | code[2] << 8
+            a += r[index] if index else 0
+        else:
+            zp = code[2] if index == "(zp),Y" else (code[2] + r["X"]) & 0xFF
+            p = m.read(zp, 2, "cpu") if zp < 0xFF else m.read(0xFF, 1, "cpu") + m.read(0, 1, "cpu")
+            a = (p[0] | p[1] << 8) + (r["Y"] if index == "(zp),Y" else 0)
+        if not same(a & 0xFFFF):
+            continue
+        if what == "AX":
+            return r["A"] & r["X"]
+        if what in ("+1", "-1"):
+            return None if old is None else (old + int(what)) & 0xFF
+        return r[what]
+    return None
+
+
 def capture(out, shot=None, watch=()):
     """Record the next whole frame. Returns the frame as a dict and writes it to out. watch: more
     (lo, hi) ranges of RAM whose writes are recorded, as the sprite pointers' are."""
@@ -160,7 +200,7 @@ def capture(out, shot=None, watch=()):
             ours.append((n, lo, hi, what))
         hits = {n: 0 for n, *_ in ours}
         samples = [(0, line0)]            # (stopwatch, raster line): the phase is pinned from these
-        writes = []                       # [stopwatch after the store, address, value]
+        writes = []                       # [stopwatch after the store, address, read back, stored]
         vic, cia2, ram = list(vic0), [cia0[0], cia0[2]], {}
         while True:
             r = m.j("vice_frame_advance", {"frames": 1})
@@ -179,16 +219,18 @@ def capture(out, shot=None, watch=()):
                         v, old = regs[i], vic[i]
                         if i in SELF_CHANGING or (v & 0x7F if i == 0x11 else v) == (old & 0x7F if i == 0x11 else old):
                             continue
-                        writes.append([sw, 0xD000 + i, v]); vic[i] = v
+                        s = stored(m, lambda a: 0xD000 <= a <= 0xD3FF and (a & 0x3F) == i, None if i == 0x11 else old)
+                        writes.append([sw, 0xD000 + i, v, s]); vic[i] = v
                 elif what == "cia2" and io:          # only the two bits that choose the video bank:
                     port = m.read(0xDD00, 3, "io")   # the serial bus moves the others by itself
                     for i, v in ((0, port[0]), (1, port[2])):
                         if v & 3 != cia2[i] & 3:
-                            writes.append([sw, 0xDD00 + 2 * i, v]); cia2[i] = v
+                            s = stored(m, lambda a: 0xDD00 <= a <= 0xDDFF and (a & 0x0F) == 2 * i, None)
+                            writes.append([sw, 0xDD00 + 2 * i, v, s]); cia2[i] = v
                 elif what != "cia2":           # sprite pointers, or the RAM under the I/O area
                     for a, v in zip(range(lo, hi + 1), m.read(lo, hi - lo + 1)):
                         if ram.get(a, ram0[a]) != v:
-                            writes.append([sw, a, v]); ram[a] = v
+                            writes.append([sw, a, v, v]); ram[a] = v
         end_sw = samples[-1][0]
         if shot:
             m.j("vice_display_screenshot", {"path": os.path.abspath(shot), "format": "PNG"})
@@ -228,7 +270,7 @@ def capture(out, shot=None, watch=()):
     frame = {
         "schema": 1, "standard": std, "lines": lines, "cycles": cycles, "about": "",
         "vic": list(vic0), "cia2": [cia0[0], cia0[2]], "cpu": cpu0,
-        "writes": [when(sw) + [a, v] for sw, a, v in writes],
+        "writes": [when(sw) + [a, v, s] for sw, a, v, s in writes],
         "colour": base64.b64encode(colour0).decode(),
         "ram": [{"a": 0, "b": base64.b64encode(ram0).decode()}],
         "charrom": base64.b64encode(charrom).decode(),
@@ -245,6 +287,31 @@ def capture(out, shot=None, watch=()):
     with open(out, "w") as f:
         json.dump(frame, f, separators=(",", ":"))
     return frame
+
+
+def quote(F):
+    """What capture says of the stored values: the writes the chip reads back differently, and
+    the writes with no stored value. A frame file from before the stored value had none."""
+    differ, unknown, n = {}, 0, 0
+    for line, cyc, a, v, *s in F["writes"]:
+        if not s:
+            return []
+        if s[0] is None:
+            unknown += 1
+        elif s[0] != v:
+            n += 1
+            differ.setdefault((a, s[0], v), line)
+    out = []
+    if n:
+        shown = sorted(differ, key=differ.get)
+        out.append(f"  the chip reads back {n} writes differently from what the game stored: "
+                   + ", ".join(f"${a:04X} = ${s:02X} reads ${v:02X}" for a, s, v in shown[:8])
+                   + (f", and {len(shown) - 8} more" if len(shown) > 8 else "")
+                   + ". Quote the stored value, the last number of each write")
+    if unknown:
+        out.append(f"  {unknown} writes have no stored value (null): a read-modify-write other than INC or DEC, "
+                   "or an interrupt taken straight after the store; take the value from the listing")
+    return out
 
 
 def phase(samples, lines, cycles):
@@ -394,7 +461,7 @@ def compare(frame_path, shot_path=None, quiet=False):
     # the window after a mid-line change widens by eight pixels for each cycle of doubt
     near_px = 16 + 8 * (cap.get("phase_cycles_uncertain") or 0)
     dots, switches = set(), {}
-    for line, cyc, a, v in F["writes"]:
+    for line, cyc, a, v, *_ in F["writes"]:
         y = (line - line0) % lines            # the picture's line (NTSC's last lines wrap past 0)
         if not 0 <= y < h:
             continue
@@ -617,7 +684,7 @@ def late_bad_lines(F):
     did not. A write in cycle 13 still meets that check, and one after cycle 53 leaves the line
     no fetch."""
     d011, out = F["vic"][0x11], []
-    for line, cyc, a, v in F["writes"]:
+    for line, cyc, a, v, *_ in F["writes"]:
         if a != 0xD011:
             continue
         if 0x30 <= line <= 0xF7 and 14 <= cyc <= 53 and (line & 7) == (v & 7) != (d011 & 7):
@@ -663,6 +730,23 @@ def test(keep=False):
                           if w[2] == 0xD011 and 48 <= w[0] <= 51))
         return False
     print("VSP: " + ", ".join(f"a bad line started late on line {y}, by a write in cycle {cyc}" for y, cyc in late))
+    # each chip write's stored value is the one the program stored, in the program's order
+    program = [w for _, ws in test_bands(lines) for w in ws]
+    j, lost = 0, None
+    for line, cyc, a, v, s in f["writes"]:
+        while j < len(program) and program[j] != (a, s):
+            j += 1
+        if j == len(program):
+            lost = (line, cyc, a, v, s)
+            break
+        j += 1
+    differ = sum(1 for *_, v, s in f["writes"] if s != v)
+    if lost or not differ:
+        print("FAIL: the stored values: " + (f"line {lost[0]} cycle {lost[1]}: ${lost[2]:04X} read back ${lost[3]:02X}, "
+              f"stored {'unknown' if lost[4] is None else f'${lost[4]:02X}'}, which the program does not store there next"
+              if lost else "every one equals its read back, though $D018's bit 0 reads 1"))
+        return False
+    print(f"the stored values: each is the program's, {differ} of them read back differently")
     bad = compare(path)
     if bad == 0 and not keep:                    # a failure keeps its files, to be looked at
         for name in ("test.json", "test.png", "test-diff.png"):
@@ -1656,6 +1740,8 @@ if __name__ == "__main__":
               + f"; the writes {'account for' if c['writes_account_for_end_state'] else 'DO NOT account for'} "
               f"the registers at the end; {c['ram_bytes_changed_during_frame']} bytes of RAM and "
               f"{c['colour_cells_changed_during_frame']} colour cells changed during the frame")
+        for line in quote(f):
+            print(line)
         if c["picture_lines_low"]:
             n = abs(c["picture_lines_low"])
             print(f"  the emulator's picture of it sits {n} line{'s' if n > 1 else ''} "
