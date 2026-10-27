@@ -171,6 +171,12 @@ def get():
     print(f"built {os.path.relpath(EXE, ROOT)}: {build_line()}")
 
 
+def scratch(prefix):
+    """A new folder in Bocfel's home, which a fresh clone has not made yet, for a run's story and trace."""
+    os.makedirs(HOME, exist_ok=True)
+    return tempfile.mkdtemp(prefix=prefix, dir=HOME)
+
+
 def environment():
     env = dict(os.environ)
     env["HOME"] = HOME
@@ -217,7 +223,7 @@ def verify_footprint():
     import zasm
     words = ["bocfel", "zterp", "zmachine"]
     before = footprint_signatures(words)
-    work = tempfile.mkdtemp(prefix="footprint-", dir=HOME)
+    work = scratch("footprint-")
     try:
         story = os.path.join(work, "check.z5")
         with open(story, "wb") as f:

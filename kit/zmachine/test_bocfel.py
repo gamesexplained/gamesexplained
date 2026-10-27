@@ -21,7 +21,6 @@ import os
 import re
 import shutil
 import sys
-import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -476,7 +475,7 @@ class Bocfel(unittest.TestCase):
             if os.environ.get("KIT_REQUIRE_TOOLS"):
                 raise AssertionError(f"no Bocfel for the test ({bocfel.build_line()}), and KIT_REQUIRE_TOOLS is set")
             raise unittest.SkipTest(f"no Bocfel: {bocfel.build_line()}")
-        cls.work = tempfile.mkdtemp(prefix="test-bocfel-", dir=bocfel.HOME)
+        cls.work = bocfel.scratch("test-bocfel-")
 
     @classmethod
     def tearDownClass(cls):
