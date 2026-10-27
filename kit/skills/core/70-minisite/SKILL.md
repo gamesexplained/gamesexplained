@@ -545,6 +545,14 @@ and record its name/version and Firefox package origin.
 nothing and does not use the contributor's personal browser session. See
 `kit/INSTALL.md`, "Browser checks", for the tested host and containment.
 
+`node kit/scripts/shoot.js <page url> <output prefix> --click` clicks every
+button and steps every select, then saves one picture of each section,
+scrolled into view first: a full-page screenshot is blank below the first
+screen, because the page skips drawing a section off the screen. It prints
+the console, exits 1 on an error, and with `?listing-reads` prints
+`ListingReads.report()`. It needs Playwright, which the kit does not
+install; `-h` says how it uses the browser above instead.
+
 Check, at least: every canvas has drawn something; the console has no
 errors, and for a withheld game none with `?listing-reads` after the
 address either; every control does

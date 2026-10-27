@@ -157,6 +157,12 @@ controlled by an existing Playwright Core 1.59.1 client. No browser package
 was downloaded in that run. This establishes the tested configuration;
 `verify-footprint` still does not scan browser state.
 
+`kit/scripts/shoot.js`, which takes a picture of each section of a page,
+drives Chromium through Playwright, and installs neither. With `--cdp
+http://127.0.0.1:9222` it uses the Chromium started above; without it, it
+starts Playwright's own, with its profile, temporary files and XDG state
+under `tools/shoot/`.
+
 On a Mac, a Firefox in `/Applications` is found without being on `PATH`.
 With no Firefox at all, `tools.py browser` names the Chrome, Chromium or
 Edge it finds there and starts nothing, because using one is the
