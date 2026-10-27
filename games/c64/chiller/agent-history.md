@@ -196,3 +196,17 @@ sprite pixels. Cross locations are read from the screen record, and mushrooms,
 toadstools and bonuses remain the game's live tiles. The original artwork
 returns for the game-over text. Turning the toggle off restores the original
 scenery over the same Parallax background without restarting play.
+
+### Pickup contrast and live bridge erosion
+
+The steward reported that the painted scenery hid the small food and poison
+tiles and left the bridge intact after it eroded. The Parallax view now draws
+outlined pixel icons from live tile codes: amber food, red-and-white poison,
+a gold bonus and cyan crosses. Items render above the foreground ferns but
+exclude visible sprite pixels. A consumed tile immediately loses its icon.
+
+The painted bridge regions are cleared from the static terrain plate. Their
+railings and fourteen ledge cells use the live character pixels, recoloured
+in ivory, including every erosion stage and the final empty tile. The ledge
+cells were read from a fresh forest on the original code; test_play.js checks
+that list and checks item removal and sprite priority.

@@ -48,6 +48,29 @@ require(path.join(PORT, 'src/screen.js'));
   console.log('backdrop mask preserves black characters, sprites and the border');
 }
 
+require(path.join(PORT, 'src/parallax.js'));
+{
+  const assert = require('assert'), M = new Uint8Array(65536), v = new Uint8Array(64);
+  v[0x18] = 0x1C; v[0x11] = 0x1B;
+  const d = new Uint8ClampedArray(384 * 272 * 4), visible = new Uint8Array(384 * 272);
+  const ctx = { getImageData: () => ({data:d}), putImageData() {} };
+  const cell = 961, at = (227 * 384 + 42) * 4;
+  M[0x400 + cell] = 0x55;
+  ChillerParallax.paintItems(ctx, M, v, visible);
+  assert.deepStrictEqual(Array.from(d.slice(at, at + 3)), [255,65,99]);
+  d.fill(0); visible[227 * 384 + 42] = 1;
+  ChillerParallax.paintItems(ctx, M, v, visible);
+  assert.strictEqual(d[at + 3], 0, 'the boy stays in front of item art');
+  d.fill(0); M[0x400 + cell] = 0xA0;
+  ChillerParallax.paintItems(ctx, M, v, visible);
+  assert.strictEqual(d.some(x => x !== 0), false, 'collected items disappear');
+  for (const cell of ChillerParallax.BRIDGE_CELLS) {
+    for (const code of [0x4D,0x4E,0x4F,0x50,0x51,0x52,0x53,0xA0])
+      assert(ChillerParallax.bridgeCell(cell, code), 'reserve bridge space after erosion too');
+  }
+  console.log('painted items retain sprite priority and disappear when collected; bridge holes stay open');
+}
+
 const { boot } = require(path.join(PORT, 'machine.js'));
 const { toLevel } = require(path.join(PORT, 'jump.js'));
 const { run } = require(path.join(PORT, 'test/lockstep.js'));
@@ -60,6 +83,11 @@ for (let n = 0; n < 10; n++) {
   const m = boot();
   m.runUntilPass(() => true);
   toLevel(m, n);
+  if (n === 0) {
+    const assert = require('assert'), cells = [];
+    for (let i = 80; i < 1000; i++) if (m.ram[0x400 + i] >= 0x4D && m.ram[0x400 + i] <= 0x53) cells.push(i);
+    assert.deepStrictEqual(cells, ChillerParallax.BRIDGE_CELLS);
+  }
   for (let i = 0; i < 4; i++) {                    // a while on the level, as gen-states.js plays it
     m.joy = 0x1F & ~DIRS[Math.floor(rnd() * DIRS.length)];
     const f0 = m.frames, hold = 10 + Math.floor(rnd() * 60);
