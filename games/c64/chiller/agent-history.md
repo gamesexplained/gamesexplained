@@ -174,3 +174,12 @@ from that concept with the static gameplay objects removed. The image is
 sampled onto the game's logical pixel grid before compositing. The painted
 woodland, an added fog veil and isolated edge ferns move at different rates.
 The original gameplay art and live sprites remain in front of the new scene.
+
+### A complete foreground frame
+
+The steward spotted dark fragments on the lower trees. They came from
+colour-keying the painted background and clipping the resulting fern pixels
+into two narrow strips. Replaced that extraction with a dedicated transparent
+foreground artwork: coherent overhanging branches and corner ferns, drawn
+in front of the game and moving more strongly than the distant woodland.
+Only the playfield boundary clips this plane; the HUD remains clear.

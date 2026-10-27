@@ -17,17 +17,17 @@ function create() {
   art.onload = () => {
     wood.imageSmoothingEnabled = false;
     wood.drawImage(art, 0, 0, art.naturalWidth, art.naturalHeight, 24, 47, 336, 192);
-    // Isolate only the dark fern tips along the bottom for a nearer moving plane.
-    const fern = wood.getImageData(0, 0, W, H);
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const o = (y * W + x) * 4;
-      if (y < 211 || x < 32 || x >= 352 || fern.data[o] > 12 ||
-          fern.data[o + 1] > 15 || fern.data[o + 2] > 30) fern.data[o + 3] = 0;
-    }
-    front.putImageData(fern, 0, 0);
     ready = true;
   };
   art.src = 'reference/parallax-forest-art.png';
+  const branches = new Image();
+  branches.onload = () => {
+    front.imageSmoothingEnabled = false;
+    // Overscan keeps the roots offscreen while the whole layer moves. Keep each
+    // silhouette intact instead of cutting a colour-keyed fragment into edge strips.
+    front.drawImage(branches, 20, 49, 344, 190);
+  };
+  branches.src = 'reference/parallax-foreground.png';
   let camera = 0, lastFrame = null, record = null;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   function draw(c, rt, original) {
@@ -67,8 +67,9 @@ function create() {
           pixels.data[o + 2] === rgb[2]) pixels.data[o + 3] = 0;
     }
     k.putImageData(pixels, 0, 0); s.drawImage(cut, 0, 0);
-    // Foreground is restricted to the edges: no cover over the playable floor or HUD.
-    s.save(); s.beginPath(); s.rect(32, 211, 13, 24); s.rect(339, 211, 13, 24); s.clip();
+    // The complete foreground sits in front of the game, clipped only at the
+    // playfield boundary. The HUD and border remain clear.
+    s.save(); s.beginPath(); s.rect(32, 51, 320, 184); s.clip();
     s.drawImage(foreground, -shift(12), 0); s.restore();
     c.imageSmoothingEnabled = false;
     c.drawImage(scene, 0, 0, c.canvas.width, c.canvas.height);
