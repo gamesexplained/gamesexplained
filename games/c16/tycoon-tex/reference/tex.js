@@ -1,10 +1,10 @@
 /* tex.js */
 // Tycoon Tex's pages run the game's own routines on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js)
 // over the memory the listing records (C16.load), with the C16's 16 KB of RAM repeating through the
-// 64 KB ({ ramSize: 0x4000 }) and TED's page, $FF00-$FFFF, served here: the registers read back as
-// written (with the bits that read 1, kit/c16/machine.js's READ_ONES, for the two the game reads
-// back), the timers and the raster as random numbers, the joystick and keyboard latch from what the
-// page holds down, and every write to the sound registers into a log. Pictures are drawn with the
+// 64 KB ({ ramSize: 0x4000 }) and the chips served by the site's model of them, C16.io: the
+// registers read back as written, with the bits that read 1; the joystick and keyboard latch from
+// what the page holds down; every write to the sound registers into a log; and here, the timers and
+// the raster as random numbers. Pictures are drawn with the
 // site's TED screen, C16.renderBands. index.html, discoveries.html and levels.html load it after
 // those two; test_tex.js beside the pages holds it to the listing and to plus4emu's picture and sound.
 //
@@ -56,32 +56,19 @@ globalThis.Tex = (function () {
     nextLevel: 0x3A31, out: 0x18DD, bands: [0x1ACC, 0x1B21, 0x1B4C, 0x1B7F, 0x1BAD], pipeEntry: 0x1B7F,
     scrollMessage: 0x226A, tickSounds: 0x361B, shotSound: 0x3628, hitSound: 0x367B, delay: 0x1922,
     count: [0x3916, 0x3942], bsout: 0xFFD2 };
-  // TED's registers that read back with bits set that are not stored (kit/c16/machine.js, READ_ONES)
-  const ONES = { 0xFF10: 0x7C, 0xFF12: 0xC0 };
+  // The reads the game takes as random numbers: the timers, the raster compare and the beam's place
   const RANDOM = a => (a >= 0xFF00 && a <= 0xFF05) || a === 0xFF0B || (a >= 0xFF1C && a <= 0xFF1E);
   const byte = () => Math.random() * 256 | 0;
   const bcd = n => ((n / 10 | 0) << 4) | n % 10;
 
-  // A 6502 over m, TED's page served by io: held is the joystick in port 2 (bits active high: 1 up,
-  // 2 down, 4 left, 8 right, 128 fire), log an array for the sound's writes and now() their cycle
+  // A 6502 over m, the chips served by the site's model of them (C16.io): held is the joystick in
+  // port 2 (bits active high: 1 up, 2 down, 4 left, 8 right, 128 fire), log an array for the
+  // sound's writes and now() their cycle
   function cpuFor(m, rnd = byte, o = {}) {
-    const io = {
-      read(a) {
-        // the latch: port 2's joystick when the value last written selects it (bit 1 low, as
-        // read_controls writes $FD), and no key held on any keyboard row
-        if (a === 0xFF08) return m[0xFF08] & 0x02 ? 0xFF : ~(o.held || 0) & 0xFF;
-        if (RANDOM(a)) return rnd(a) & 0xFF;
-        return m[a] | (ONES[a] || 0);
-      },
-      write(a, v) {
-        if (a === 0xFF08) { m[0xFF08] = v; return; }
-        m[a] = v;
-        if (o.log && a >= 0xFF0E && a <= 0xFF12) o.log.push([o.now(c), a, v]);
-      },
-    };
-    const c = new C64Cpu.CPU(m, { ramSize: 0x4000, ioPages: [0xFF], io });
+    const io = C16.io(m, { read: a => (RANDOM(a) ? rnd(a) : undefined), log: o.log, now: o.now && (() => o.now(c)) });
+    const c = new C64Cpu.CPU(m, { ramSize: 0x4000, ioPages: [0xFD, 0xFF], io });
     c.sp = 0xFF;
-    c.held = held => { o.held = held; };
+    c.held = held => { io.joy = 0x1F & ~((held & 0x0F) | (held & 0x80 ? 0x10 : 0)); };
     return c;
   }
   // The KERNAL's BSOUT, which start calls once, with $93: the screen cleared to spaces

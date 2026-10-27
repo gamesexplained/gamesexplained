@@ -71,6 +71,7 @@ const path = require('path');
 const { CPU, OPCODES, CYCLES } = require('../cpu/cpu6502.js');
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'c16.js'));
 const { LINE, LINES, FRAME, Beam } = globalThis.C16.timing;
+const { READ_ONES, latch } = globalThis.C16;      // the registers' read-back and $FF08's latch, shared with C16.io
 
 function loadListing(file) {
   const L = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -94,11 +95,6 @@ const KEY = {};
 // live values after power-on for the rest).
 const KERNAL_TED = [0xE1, 0x01, 0x71, 0x7E, 0x80, 0x7E, 0x1B, 0x08, 0xFF, 0x7D, 0x02, 0xCC, 0xFC, 0xA0, 0x00, 0x00,
   0x7C, 0x00, 0x04, 0xD0, 0x08, 0x71, 0x5B, 0x75, 0x77, 0x6E, 0xFC, 0x00, 0xFE, 0x00, 0xC6, 0xA8];
-// The bits of each register that read 1 whatever was written ($FF00-$FF05, $FF08, $FF09, $FF13,
-// $FF1C-$FF1E are worked out apart).
-const READ_ONES = new Uint8Array(0x20);
-Object.assign(READ_ONES, { 0x0A: 0xA0, 0x0C: 0xFC, 0x10: 0x7C, 0x12: 0xC0, 0x14: 0x07, 0x15: 0x80, 0x16: 0x80,
-  0x17: 0x80, 0x18: 0x80, 0x19: 0x80, 0x1A: 0xFC, 0x1F: 0x80 });
 const TIMER_FLAG = [0x08, 0x10, 0x40];
 // Each opcode's write cycles, a bit for each (0 the first): stores write in their last cycle,
 // read-modify-writes in their last two (the old value, then the new), PHA and PHP in their third,
@@ -295,13 +291,7 @@ class Machine {
     return this.ted[r] | READ_ONES[r];
   }
   // The keyboard and joystick lines that $FD30 and a write of w to $FF08 select.
-  keyboard(w) {
-    let v = 0xFF;
-    for (const k of this.keys) if (!(this.keyLatch & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
-    if (!(w & 0x04)) v &= 0xB0 | (this.joy1 & 0x0F) | (this.joy1 & 0x10 ? 0x40 : 0) | 0x80;
-    if (!(w & 0x02)) v &= 0x70 | (this.joy & 0x0F) | (this.joy & 0x10 ? 0x80 : 0) | 0x40;
-    return v & 0xFF;
-  }
+  keyboard(w) { return latch(w, this.keyLatch, this.keys, this.joy, this.joy1); }
   ioWrite(a, v) {
     if (a >= 0xFF00 && a < 0xFF40) return this.tedWrite(a & 0x3F, v);
     if (a >= 0xFD30 && a < 0xFD40) { this.keyLatch = v; return; }
