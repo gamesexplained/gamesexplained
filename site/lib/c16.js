@@ -10,7 +10,8 @@
 //   C16.load(url) -> {ram, has, names, byName, listing, bytes(a, n), sym(label)}   listing.json, as
 //                                     C64.load reads it: the 64 KB the listing records, the rest 0
 //   C16.io(m, opts) -> {read(a), write(a, v), ted, keys, joy, joy1}   TED's page for the kit's
-//                                     6502, on a page that runs the game's own code (below)
+//                                     6502, on a page that runs the game's own code, or for a Play
+//                                     tab's port (below)
 //
 // mem is the RAM as the program addresses it: 16 KB on a C16, 64 KB on a Plus/4, or a 64 KB image
 // rebuilt from listing.json. RAM repeats through the 64 KB on a machine with less of it, so an
@@ -48,7 +49,8 @@
 // [0xFD, 0xFF], io: C16.io(m, opts) }). It is kit/c16/machine.js's registers without its beam, which
 // takes these two from here (kit/skills/c16/c16-reference, "TED" and "Keyboard and joysticks"):
 // - TED's registers, $FF00-$FF1F, are kept in m at their own addresses (io.ted is that stretch)
-//   and read back as written, with the bits that read 1 set (C16.READ_ONES).
+//   and read back as written, with the bits that read 1 set (C16.READ_ONES). A write to $FF09
+//   clears interrupt flags and is not kept, as in machine.js.
 // - $FF08 reads the latch that a write to it makes (C16.latch): the keyboard rows the last write
 //   to $FD30 selected, with io.keys held (a Set of key numbers, row x 8 + column, as machine.js's
 //   KEY counts them), and the joysticks the value written selects, io.joy in port 2 and io.joy1 in
@@ -57,6 +59,8 @@
 //   the timers ($FF00-$FF05), the interrupt flags ($FF09), $FF13's ROM bit and the beam's place
 //   ($FF1C-$FF1E) count nothing here, so a game that reads them for random numbers or waits on them
 //   gets them from there.
+// - opts.write(a, v), when given, sees every write once it is kept: a Play tab's port keeps its
+//   beam, its timers and its interrupt flags there, on top of these registers.
 // - opts.log, an array, gets [opts.now(), address, value] for each write to the sound's registers,
 //   $FF0E-$FF12, the rows of the kit-c16-sound format site/lib/ted-sound.js plays.
 // - The ACIA, the 6529 and the ROM banking ($FD00-$FEFF) and the rest of TED's page ($FF20-$FF3F,
@@ -376,12 +380,16 @@ globalThis.C16 = (function () {
         return r === 0x08 ? ff08 : ted[r] | READ_ONES[r];
       },
       write(a, v) {
-        if (a >= 0xFF40) { m[a & 0x3FFF] = v; return; }
-        if (a < 0xFF00 || a >= 0xFF20) { if (a >= 0xFD30 && a < 0xFD40) rows = v; return; }
-        const r = a & 0x1F;
-        ted[r] = v;
-        if (r === 0x08) ff08 = latch(v, rows, self.keys, self.joy, self.joy1);
-        if (opts.log && r >= 0x0E && r <= 0x12) opts.log.push([opts.now ? opts.now() : 0, a, v]);
+        v &= 0xFF;
+        if (a >= 0xFF40) m[a & 0x3FFF] = v;
+        else if (a < 0xFF00 || a >= 0xFF20) { if (a >= 0xFD30 && a < 0xFD40) rows = v; }
+        else {
+          const r = a & 0x1F;
+          if (r !== 0x09) ted[r] = v;
+          if (r === 0x08) ff08 = latch(v, rows, self.keys, self.joy, self.joy1);
+          if (opts.log && r >= 0x0E && r <= 0x12) opts.log.push([opts.now ? opts.now() : 0, a, v]);
+        }
+        if (opts.write) opts.write(a, v);
       },
     };
     return self;

@@ -3,7 +3,8 @@
 // kit/c16/machine.js, which test_machine.js holds to plus4emu: one program that selects keyboard
 // rows and joystick ports, reads $FF08's latch, reads TED's registers back and writes the sound's
 // must store the same bytes on both. Then what only the page's model has: its own reads first, the
-// sound log, and the RAM above TED's page. Exits 1 on any failure.  node kit/c16/test_c16_io.js
+// sound log, the writes it hands a Play tab's port, and the RAM above TED's page. Exits 1 on any
+// failure.  node kit/c16/test_c16_io.js
 const path = require('path');
 const { Machine, KEY } = require('./machine.js');
 const { CPU } = require('../cpu/cpu6502.js');
@@ -64,6 +65,13 @@ check('the registers are kept in m at their addresses', ramP[0xFF11] === 0x37 &&
   const io3 = C16.io(m3, { log, now: () => t });
   io3.write(0xFF0E, 0x10); t = 200; io3.write(0xFF12, 0xC1); io3.write(0xFF13, 0x00); io3.write(0xFF11, 0x18);
   check('the sound registers\' writes are logged with their time', JSON.stringify(log) === JSON.stringify([[100, 0xFF0E, 0x10], [200, 0xFF12, 0xC1], [200, 0xFF11, 0x18]]), JSON.stringify(log));
+}
+// A Play tab's port sees each write once it is kept; $FF09 clears flags and is kept nowhere
+{
+  const m5 = new Uint8Array(65536), seen = [];
+  const io5 = C16.io(m5, { write: (a, v) => seen.push([a, v, a >= 0xFF00 && a < 0xFF20 ? io5.ted[a & 0x1F] : -1]) });
+  io5.write(0xFF0B, 0x1C2); io5.write(0xFF09, 0x02); io5.write(0xFD30, 0xFE);
+  check('opts.write sees every write, kept first and as a byte', JSON.stringify(seen) === JSON.stringify([[0xFF0B, 0xC2, 0xC2], [0xFF09, 0x02, 0x00], [0xFD30, 0xFE, -1]]), JSON.stringify(seen));
 }
 // $FF40-$FFFF is the RAM beneath, where a page sets the vectors
 {
