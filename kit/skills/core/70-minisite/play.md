@@ -104,7 +104,11 @@ demonstration.
   fit on sessions it was not fitted on, and on every kind of play the
   page offers: a scene the fit never saw can run fast by a routine it
   never costed. Then check the pace itself: passes in the same frames from
-  the same moment, on the machine and on the page.
+  the same moment, on the machine and on the page. Count the page's pass
+  once its clock reaches the checkpoint, the stretch that leads there
+  paid, not when the port yields it: the yield comes before the clock
+  moves, so a long stretch (a room drawn) counts the pass early by its
+  own length, and the check passes a page that is slow.
   Where one pass's cost follows mostly from the game's state (a state
   byte the main loop dispatches on), measure instead of fitting: hook the
   machine where each pass begins and ends, leave out the interrupt

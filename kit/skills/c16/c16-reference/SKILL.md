@@ -779,6 +779,19 @@ VICE manual). The kit's server does not take cartridges.
   raster and on whether the display is on ("Timing").
 - **The jiffy clock counts 60 a second on PAL**, from a 50 Hz interrupt
   ("Interrupts"): a game's 50 Hz loop is not the clock's.
+- **Bytes below the game that it reads before writing them.** A listing
+  carries the game, not what the KERNAL and the loader left below it:
+  the key code, the keyboard's state, the function keys' lengths, and
+  whatever a tape load left in the tape buffer ($0333-$03F2), a turbo
+  loader's own code among it. A game that reads one of those before it
+  writes it starts with that value on the machine. Before running a game
+  from its listing (a check, a port, a page), find those bytes with
+  `kit/cpu/cpu6502.js`'s `reads` and `writes` trackers over the title,
+  the menu and play, its interrupts included, and set each as plus4emu
+  holds it at the hand-over. A port held to the game by a lockstep starts
+  from the same bytes, so the lockstep cannot show one missing: compare
+  the page's first picture with plus4emu's
+  (`kit/lessons/2026-10-27-mr-puniverse.md`).
 
 ## Where the sources disagree
 
