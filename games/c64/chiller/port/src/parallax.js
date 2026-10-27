@@ -20,13 +20,28 @@ const INKS = {
   0x56: {a:[255,204,50], b:[255,250,162]},
   0x57: {a:[115,243,255]}
 };
-const COINS = [
-  ['..aaaa..','.abbbba.','.abbcba.','.abbcba.','.abbcba.','.abbbba.','..aaaa..','........'],
-  ['...aa...','..abba..','..abca..','..abca..','..abca..','..abba..','...aa...','........'],
-  ['...a....','...ba...','...ca...','...ca...','...ca...','...ba...','...a....','........'],
-  ['...aa...','..abba..','..acba..','..acba..','..acba..','..abba..','...aa...','........']
-];
-INKS[0x56] = {a:[169,95,20],b:[255,204,50],c:[255,255,184]};
+// Sixteen centred turn frames. The coin keeps the same height and centre as its
+// face narrows; a fixed light source shades the rim rather than flipping a stripe.
+const COIN_INKS = {a:[124,64,12],b:[203,123,18],c:[255,191,39],d:[255,228,112],e:[255,253,211]};
+const COINS = Array.from({length:16}, (_, phase) => {
+  const angle = phase * Math.PI * 2 / 16, width = 0.7 + 3.6 * Math.abs(Math.cos(angle));
+  return Array.from({length:10}, (_, y) => Array.from({length:10}, (_, x) => {
+    const nx = (x - 4.5) / width, ny = (y - 4.5) / 3.9, q = nx * nx + ny * ny;
+    const rowWidth = Math.max(0.55, width * Math.sqrt(Math.max(0, 1 - ny * ny)));
+    if (Math.abs(ny) > 1 || Math.abs(x - 4.5) > rowWidth) return '.';
+    if (q > 0.64) return ny < -0.25 && nx < 0.4 ? 'e' : nx > 0.2 || ny > 0.4 ? 'a' : 'b';
+    if (Math.abs(nx + 0.18 * Math.sin(angle)) < 0.2 && Math.abs(ny) < 0.55) return nx < 0 ? 'b' : 'e';
+    return nx + ny < -0.45 ? 'd' : 'c';
+  }).join(''));
+});
+const CROSS = Array.from({length:12}, (_, y) => Array.from({length:10}, (_, x) => {
+  if (!((x >= 3 && x <= 6) || (y >= 3 && y <= 6))) return '.';
+  if (((y === 0 || y === 11) && (x === 3 || x === 6)) || ((y === 3 || y === 6) && (x === 0 || x === 9))) return '.';
+  if (x === 3 || y === 3 || y === 0) return 'c';
+  if (x === 6 || y === 6 || y === 11) return 'a';
+  return x === 4 ? 'd' : 'b';
+}).join(''));
+const CROSS_INKS = {a:[24,95,169],b:[52,180,228],c:[136,240,255],d:[214,253,255]};
 // Give the deck a dark underside and a thicker lit edge, using each live glyph's
 // remaining pixels. Nothing is painted for an erased cell, including on the return trip.
 function paintBridge(ctx, M, v, colour) {
@@ -51,8 +66,10 @@ function paintItems(ctx, M, v, spritesVisible, frameNumber = 0, animate = true, 
   const scr = (v[0x18] >> 4) << 10, frame = ctx.getImageData(0, 0, 384, 272), d = frame.data;
   for (let cell = 80; cell < 1000; cell++) {
     const code = M[scr + cell]; if (!ICONS[code]) continue;
-    const phase = animate ? Math.floor(frameNumber / 8) : 0;
-    const icon = code === 0x56 ? COINS[(phase + cell) % COINS.length] : ICONS[code];
+    const clock = animate ? frameNumber : 0;
+    const icon = code === 0x56 ? COINS[animate ? (Math.floor(clock / 5) + cell % 5 * 2) % 16 : 0] : code === 0x57 ? CROSS : ICONS[code];
+    const inks = code === 0x56 ? COIN_INKS : code === 0x57 ? CROSS_INKS : INKS[code];
+    const ox = code === 0x56 || code === 0x57 ? -1 : 0, oy = code === 0x57 ? -2 : code === 0x56 ? -1 : 0;
     const x0 = 32 + (v[0x16] & 7) + cell % 40 * 8;
     const y0 = 32 + (v[0x11] & 7) + Math.floor(cell / 40) * 8;
     // Anchor food to a small bark ledge at the actual tile baseline. This corrects
@@ -68,19 +85,31 @@ function paintItems(ctx, M, v, spritesVisible, frameNumber = 0, animate = true, 
         }
       }
     }
-    const sparkle = [[1,-2],[9,1],[7,9],[-2,5]][Math.floor(phase / 2 + cell) % 4];
-    for (let dy = -3; dy <= 10; dy++) for (let dx = -3; dx <= 10; dx++) {
+    const sweep = animate ? ((clock + cell * 11) % 120) / 120 * 32 - 10 : -20;
+    const breathe = animate ? 0.85 + 0.15 * Math.sin((clock + cell * 7) * Math.PI / 60) : 0.85;
+    for (let dy = -7; dy <= 14; dy++) for (let dx = -7; dx <= 14; dx++) {
       const x = x0 + dx, y = y0 + dy;
       if (x < 32 || x >= 352 || y < 51 || y >= 235 || spritesVisible[y * 384 + x]) continue;
-      const key = icon[dy] && icon[dy][dx], ink = INKS[code][key];
+      const tx = dx - ox, ty = dy - oy, key = icon[ty] && icon[ty][tx], ink = inks[key];
+      const o = (y * 384 + x) * 4;
+      // A coherent blue aura behind the cross, sampled on the same pixel grid.
+      if (code === 0x57) {
+        const r2 = (dx - 3.5) ** 2 + (dy - 3.5) ** 2;
+        const alpha = 0.28 * Math.exp(-r2 / 26) * breathe;
+        const blue = [38,170,255];
+        for (let channel = 0; channel < 3; channel++) d[o + channel] = Math.round(d[o + channel] * (1 - alpha) + blue[channel] * alpha);
+        d[o + 3] = 255;
+      }
       let near = !!ink;
       if (!near) for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) {
-        if (icon[dy + yy] && INKS[code][icon[dy + yy][dx + xx]]) near = true;
+        if (icon[ty + yy] && inks[icon[ty + yy][tx + xx]]) near = true;
       }
-      const glint = code === 0x57 && animate && ((dx === sparkle[0] && Math.abs(dy - sparkle[1]) <= 1) || (dy === sparkle[1] && Math.abs(dx - sparkle[0]) <= 1));
-      if (!near && !glint) continue;
-      const flash = code === 0x57 && animate && phase % 6 < 2;
-      const o = (y * 384 + x) * 4, rgb = glint || (ink && flash) ? [244,255,255] : ink || [12,8,28];
+      if (!near) continue;
+      let rgb = ink || (code === 0x57 ? [8,37,68] : [12,8,28]);
+      if (ink && code === 0x57) {
+        const shine = Math.max(0, 1 - Math.abs(tx + ty * 0.7 - sweep) / 1.8) * 0.85;
+        rgb = rgb.map((v, i) => Math.round(v + ([245,255,255][i] - v) * shine));
+      }
       d[o] = rgb[0]; d[o + 1] = rgb[1]; d[o + 2] = rgb[2]; d[o + 3] = 255;
     }
   }
@@ -190,5 +219,5 @@ function create() {
   }
   return { draw, setPainted(value) { painted = !!value; } };
 }
-root.ChillerParallax = { create, bridgeCell, paintBridge, paintItems, BRIDGE_CELLS };
+root.ChillerParallax = { create, bridgeCell, paintBridge, paintItems, BRIDGE_CELLS, coinFrames: COINS };
 })(typeof window !== 'undefined' ? window : globalThis);

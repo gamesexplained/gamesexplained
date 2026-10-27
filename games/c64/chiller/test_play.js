@@ -71,7 +71,7 @@ require(path.join(PORT, 'src/parallax.js'));
   visible.fill(0); M[0x400 + cell] = 0x57; d.fill(0);
   ChillerParallax.paintItems(ctx, M, v, visible, 0, true); const cross0 = d.slice();
   d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 24, true);
-  assert.notDeepStrictEqual(d, cross0, 'crosses flash and sparkle with game time');
+  assert.notDeepStrictEqual(d, cross0, 'the cross highlight and halo follow game time');
   d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 0, false); const still0 = d.slice();
   d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 24, false);
   assert.deepStrictEqual(d, still0, 'reduced motion keeps icons still');
@@ -79,6 +79,14 @@ require(path.join(PORT, 'src/parallax.js'));
   ChillerParallax.paintItems(ctx, M, v, visible, 0, true); const coin0 = d.slice();
   d.fill(0); ChillerParallax.paintItems(ctx, M, v, visible, 8, true);
   assert.notDeepStrictEqual(d, coin0, 'bonus coins rotate');
+  for (const frame of ChillerParallax.coinFrames) {
+    const points = [];
+    frame.forEach((row,y) => [...row].forEach((pixel,x) => { if (pixel !== '.') points.push([x,y]); }));
+    const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+    assert.strictEqual(Math.min(...xs) + Math.max(...xs), 9, 'the coin centre stays fixed');
+    assert.strictEqual(Math.min(...ys), 1, 'the coin top stays fixed');
+    assert.strictEqual(Math.max(...ys), 8, 'the coin bottom stays fixed');
+  }
   const rects = [], bridgeCtx = {fillRect: (...r) => rects.push(r)};
   M.fill(0); const bridge = ChillerParallax.BRIDGE_CELLS[0];
   M[0x400 + bridge] = 0x4D; M[0x3000 + 0x4D * 8] = 255;

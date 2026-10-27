@@ -263,3 +263,14 @@ original. It changes the live game and is recorded for rewind. Presets,
 rewinds and manual edits update the slider's displayed state; the slider is
 disabled when reviewing the old future until Play resumes. The general byte
 editor remains available in a collapsed Advanced memory editor section.
+
+### Reworked collectible animation after the recording review
+
+The steward's short recording showed that the four-frame coin read as
+uneven stripes and the cross's orbiting sparkle looked detached. Replaced
+the coin with sixteen shaded turn frames on a centred 10-pixel grid, with
+a fixed top and bottom and a consistent light source. The cross now has a
+bevelled shape, a blue aura and a diagonal specular sweep across its own
+surface, replacing the external sparkle and whole-icon flash. Both still
+use game time, preserve sprite priority and honour reduced motion. Added
+a check that every coin frame keeps its centre, top and bottom fixed.
