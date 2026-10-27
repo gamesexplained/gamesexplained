@@ -63,7 +63,12 @@ passed, by date and system, are the table at the top of that file.
    window (`AutostartPrgMode`, disk image by default; `autostart_prg` in
    `vice/src/autostart.c`, read in the v3.13.1 source on 29 September
    2026). If the screen stays on `SEARCHING FOR`, prove the machine is
-   running (step 3) before blaming the load. To pick a file other than
+   running (step 3) before blaming the load. A file that loads over the
+   KERNAL's vectors at `$0314`-`$0333`, or into `$D000`-`$DFFF`, cannot
+   be loaded at all: its first two bytes move the IRQ vector, the next
+   interrupt jumps into what is not loaded yet, and the machine hangs or
+   comes back to `READY.` without the game. `inject()` in `vice.py` puts
+   such a file straight into RAM instead. To pick a file other than
    the first, use `autostart()` in `vice.py`: it takes the file's name,
    or its position as the directory lists it, and like `reset()` it
    resumes a stopped machine, on which the plain call loads nothing.

@@ -1,6 +1,6 @@
 // The Play page's machine: the port (src/) run as the Commodore 16 runs the game, on a TED of its
 // own. It runs in the browser and in node (../test_play.js), and needs TexPort and its groups,
-// and site/lib/c16.js for TED's beam.
+// and site/lib/c16.js for TED's beam and its registers (C16.timing, C16.io).
 //
 //   const rt = TexPage.create({ ram, cost })
 //     ram    the game's memory as the loader leaves it at $1800, a Uint8Array of 64 KB: listing.json's
@@ -11,8 +11,9 @@
 //                   that frame: { n, bands, sound }, bands for C16.renderBands and sound the writes
 //                   to TED's sound registers in it, [tick in the frame, register, value, ...], for
 //                   TEDSound's host
-//   rt.input        { keys: Set of key numbers (kit/c16/machine.js's KEY), joy: port 2's stick,
-//                   active low: 1 up, 2 down, 4 left, 8 right, 16 fire }
+//   rt.input        the chips (C16.io), whose keys (a Set of key numbers, kit/c16/machine.js's
+//                   KEY) and joy (port 2's stick, active low: 1 up, 2 down, 4 left, 8 right,
+//                   16 fire) the page sets
 //   rt.M, rt.ted, rt.P, rt.beam, rt.t (the clock), rt.frame (the frame the clock is in),
 //   rt.passes (the main loop's passes, at $2A28)
 //
@@ -45,13 +46,9 @@
 'use strict';
 const LINE = 114, LINES = 312, FRAME = LINE * LINES;
 const RASTER_AT = 1, HPOS_AT = 97;      // as kit/c16/machine.js has them, measured on plus4emu
-// TED's registers as the KERNAL leaves them, and the bits that read 1 whatever was written
-// (kit/c16/machine.js, KERNAL_TED and READ_ONES)
+// TED's registers as the KERNAL leaves them (kit/c16/machine.js, KERNAL_TED)
 const KERNAL_TED = [0xE1, 0x01, 0x71, 0x7E, 0x80, 0x7E, 0x1B, 0x08, 0xFF, 0x7D, 0x02, 0xCC, 0xFC, 0xA0, 0x00, 0x00,
   0x7C, 0x00, 0x04, 0xD0, 0x08, 0x71, 0x5B, 0x75, 0x77, 0x6E, 0xFC, 0x00, 0xFE, 0x00, 0xC6, 0xA8];
-const READ_ONES = new Uint8Array(0x20);
-Object.assign(READ_ONES, { 0x0A: 0xA0, 0x0C: 0xFC, 0x10: 0x7C, 0x12: 0xC0, 0x14: 0x07, 0x15: 0x80, 0x16: 0x80,
-  0x17: 0x80, 0x18: 0x80, 0x19: 0x80, 0x1A: 0xFC, 0x1F: 0x80 });
 // the registers the picture is drawn from
 const SHOWN = new Set([0x06, 0x07, 0x0C, 0x0D, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19]);
 // the handlers, by the address the vector at $0314 holds
@@ -69,11 +66,15 @@ function create(o) {
   const C16 = root.C16, Beam = C16.timing.Beam;
   const M = new Uint8Array(new ArrayBuffer(0x10000));
   M.set(o.ram);
-  const ted = Uint8Array.from(KERNAL_TED);
+  // the chips: TED's registers, read back as TED reads them, and the keyboard and joystick latch
+  // are the site's (C16.io); the timers, the interrupt flags and the beam are this machine's, in
+  // tedRead and tedWrite below
+  const input = C16.io(M, { read: tedRead, write: tedWrite });
+  const ted = input.ted;
+  ted.set(KERNAL_TED);
   const beam = new Beam({ ff06: ted[0x06] });
-  const input = { keys: new Set(), joy: 0x1F };
   let t = 0, lineSeen = 0, rasterSeen = -1, rasterMatch = false, flags = ted[0x09] & 0x5E;
-  let keyLatch = 0xFF, ff08 = 0xFF, passes = 0;
+  let passes = 0;
   // the timers: a count at tick t0, running or not
   const timers = [0, 1, 2].map(i => ({ count: ted[2 * i] | ted[2 * i + 1] << 8, latch: ted[0] | ted[1] << 8, t0: 0, run: true }));
   const timerAt = (i, x = t) => {
@@ -124,33 +125,25 @@ function create(o) {
   }
 
   // ---- the chips
-  function keyboard(w) {
-    let v = 0xFF;
-    for (const k of input.keys) if (!(keyLatch & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
-    if (!(w & 0x02)) v &= 0x70 | (input.joy & 0x0F) | (input.joy & 0x10 ? 0x80 : 0) | 0x40;
-    return v & 0xFF;
-  }
   // The tick a read of the timers or the beam's place sees: the clock moved on by what the run
   // owes so far (the routines it has called since its last checkpoint) and by the reads of TED it
   // has made since then, four cycles each, so that a loop that draws random numbers from them
   // (find_space, swap_face) sees them change from turn to turn, as the game does.
   const now = () => { const run = top(), n = Math.round(run.owe + run.seen); return n > 0 ? beam.after(t, n) : t; };
-  function read(a) {
-    if (a < 0xFF00 || a >= 0xFF40) return 0xFF;               // the ACIA, the 6529: nothing there
-    const r = a & 0x3F;
-    if (r >= 0x20) return 0xFF;
+  // A read of TED's registers the beam answers, before C16.io's own (undefined leaves it to them)
+  function tedRead(a) {
+    if (a < 0xFF00 || a >= 0xFF20) return undefined;
+    const r = a & 0x1F;
     top().seen += 4;
     if (r <= 5) { const v = timerAt(r >> 1, now()); return r & 1 ? v >> 8 : v & 0xFF; }
-    if (r === 0x08) return ff08;
     if (r === 0x09) { const f = flags | 0x25; return f | ((f & ted[0x0A] & 0x5E) ? 0x80 : 0); }
     if (r === 0x13) return (ted[0x13] & 0xFE) | 1;
     if (r === 0x1C || r === 0x1D) { const L = (Math.floor((now() - RASTER_AT) / LINE) % LINES + LINES) % LINES; return r === 0x1D ? L & 0xFF : 0xFE | (L >> 8); }
     if (r === 0x1E) return (((now() + HPOS_AT) % LINE) * 2) & 0xFF;
-    return ted[r] | READ_ONES[r];
+    return undefined;
   }
-  function write(a, v) {
-    v &= 0xFF;
-    if (a >= 0xFD30 && a < 0xFD40) { keyLatch = v; return; }
+  // What a write to TED starts, once C16.io has kept it
+  function tedWrite(a, v) {
     if (a < 0xFF00 || a >= 0xFF20) return;
     const r = a & 0x1F;
     if (r <= 5) {
@@ -158,12 +151,9 @@ function create(o) {
       T.count = timerAt(i); T.t0 = t;
       if (r & 1) { T.count = (T.count & 0xFF) | v << 8; if (i === 0) T.latch = (T.latch & 0xFF) | v << 8; T.run = true; }
       else { T.count = (T.count & 0xFF00) | v; if (i === 0) T.latch = (T.latch & 0xFF00) | v; T.run = false; }
-      ted[r] = v;
       return;
     }
-    if (r === 0x08) { ff08 = keyboard(v); ted[r] = v; return; }
     if (r === 0x09) { flags &= ~(v & 0x5E); return; }
-    ted[r] = v;
     if (r === 0x06) beam.ff06 = v;
     if (r === 0x0A || r === 0x0B) rasterCheck((rasterSeen % LINES + LINES) % LINES);
     if (r >= 0x0E && r <= 0x12) cur.sound.push(t - cur.n * FRAME, 0xFF00 | r, v);
@@ -182,7 +172,7 @@ function create(o) {
   // ---- the program: the main program and the interrupts it lets in, a stack of runs, each a
   // generator with its interrupt flag, the checkpoint it last passed, and the cycles it owes
   // a CLI lets the interrupt in once the run's debt is paid (step)
-  const io = { read, write, irqByte: a => M[a], sei: () => { const r = top(); r.I = 1; r.cli = false; }, cli: () => { top().cli = true; } };
+  const io = { read: input.read, write: input.write, irqByte: a => M[a], sei: () => { const r = top(); r.I = 1; r.cli = false; }, cli: () => { top().cli = true; } };
   const P = root.TexPort.makePort(M, io);
   const model = o.cost || { seg: {}, call: {} };
   const WRITES = model.writes || {};

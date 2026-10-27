@@ -9,6 +9,9 @@
 //   C16.rgb(colour) -> [r, g, b];  C16.css(colour) -> '#rrggbb'
 //   C16.load(url) -> {ram, has, names, byName, listing, bytes(a, n), sym(label)}   listing.json, as
 //                                     C64.load reads it: the 64 KB the listing records, the rest 0
+//   C16.io(m, opts) -> {read(a), write(a, v), ted, keys, joy, joy1}   TED's page for the kit's
+//                                     6502, on a page that runs the game's own code, or for a Play
+//                                     tab's port (below)
 //
 // mem is the RAM as the program addresses it: 16 KB on a C16, 64 KB on a Plus/4, or a 64 KB image
 // rebuilt from listing.json. RAM repeats through the 64 KB on a machine with less of it, so an
@@ -42,6 +45,28 @@
 // the screen is at $8000 or above, which no game shows on purpose. Modes that set extended colour
 // with bitmap or multicolour show black, as TED does.
 //
+// C16.io: the chips a game's own code touches, for new C64Cpu.CPU(m, { ramSize: 0x4000, ioPages:
+// [0xFD, 0xFF], io: C16.io(m, opts) }). It is kit/c16/machine.js's registers without its beam, which
+// takes these two from here (kit/skills/c16/c16-reference, "TED" and "Keyboard and joysticks"):
+// - TED's registers, $FF00-$FF1F, are kept in m at their own addresses (io.ted is that stretch)
+//   and read back as written, with the bits that read 1 set (C16.READ_ONES). A write to $FF09
+//   clears interrupt flags and is not kept, as in machine.js.
+// - $FF08 reads the latch that a write to it makes (C16.latch): the keyboard rows the last write
+//   to $FD30 selected, with io.keys held (a Set of key numbers, row x 8 + column, as machine.js's
+//   KEY counts them), and the joysticks the value written selects, io.joy in port 2 and io.joy1 in
+//   port 1, five bits active low (1 up, 2 down, 4 left, 8 right, 16 fire; 0x1F holds none).
+// - opts.read(a), when given, answers a read first, or returns undefined to leave it to the rest:
+//   the timers ($FF00-$FF05), the interrupt flags ($FF09), $FF13's ROM bit and the beam's place
+//   ($FF1C-$FF1E) count nothing here, so a game that reads them for random numbers or waits on them
+//   gets them from there.
+// - opts.write(a, v), when given, sees every write once it is kept: a Play tab's port keeps its
+//   beam, its timers and its interrupt flags there, on top of these registers.
+// - opts.log, an array, gets [opts.now(), address, value] for each write to the sound's registers,
+//   $FF0E-$FF12, the rows of the kit-c16-sound format site/lib/ted-sound.js plays.
+// - The ACIA, the 6529 and the ROM banking ($FD00-$FEFF) and the rest of TED's page ($FF20-$FF3F,
+//   where $FF3E and $FF3F page the ROMs) read $FF and keep no write, as in machine.js. $FF40-$FFFF
+//   is the RAM beneath (m at the address less $C000), since a page carries no ROM.
+
 // The scroll: a vertical scroll below 3 brings in a 26th row, from the 40 places after the
 // 1,000th (the screen's spare bytes, then its first 16 again), as plus4emu draws it. What fills
 // the pixels a scroll leaves at the left of each line, or above the first row in 25 rows, is
@@ -326,7 +351,51 @@ globalThis.C16 = (function () {
   }
   const timing = { LINE, LINES, FRAME, BORDER, DISPLAY, BAD, KINDS, Beam };
 
-  return { PALETTE, rgb, css, render, renderBands, rgba, draw, load, hex, timing };
+  // --- the chips, for the kit's 6502 (C16.io, above) ---
+  // The bits of each of TED's registers that read 1 whatever was written ($FF00-$FF05, $FF08, $FF09,
+  // $FF13 and $FF1C-$FF1E are worked out apart).
+  const READ_ONES = new Uint8Array(0x20);
+  Object.assign(READ_ONES, { 0x0A: 0xA0, 0x0C: 0xFC, 0x10: 0x7C, 0x12: 0xC0, 0x14: 0x07, 0x15: 0x80, 0x16: 0x80,
+    0x17: 0x80, 0x18: 0x80, 0x19: 0x80, 0x1A: 0xFC, 0x1F: 0x80 });
+  // $FF08's latch after a write of w: the keys held in the rows the value rows (last written to
+  // $FD30) selects, and the joysticks w selects, bit 2 low port 1 and bit 1 low port 2.
+  function latch(w, rows, keys, joy, joy1) {
+    let v = 0xFF;
+    for (const k of keys) if (!(rows & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
+    if (!(w & 0x04)) v &= 0xB0 | (joy1 & 0x0F) | (joy1 & 0x10 ? 0x40 : 0) | 0x80;
+    if (!(w & 0x02)) v &= 0x70 | (joy & 0x0F) | (joy & 0x10 ? 0x80 : 0) | 0x40;
+    return v & 0xFF;
+  }
+  function io(m, opts = {}) {
+    const ted = m.length >= 0x10000 ? m.subarray(0xFF00, 0xFF20) : new Uint8Array(0x20);
+    let rows = 0xFF, ff08 = 0xFF;
+    const self = {
+      ted, keys: new Set(), joy: 0x1F, joy1: 0x1F,
+      read(a) {
+        const own = opts.read ? opts.read(a) : undefined;
+        if (own !== undefined) return own & 0xFF;
+        if (a >= 0xFF40) return m[a & 0x3FFF];
+        if (a < 0xFF00 || a >= 0xFF20) return 0xFF;
+        const r = a & 0x1F;
+        return r === 0x08 ? ff08 : ted[r] | READ_ONES[r];
+      },
+      write(a, v) {
+        v &= 0xFF;
+        if (a >= 0xFF40) m[a & 0x3FFF] = v;
+        else if (a < 0xFF00 || a >= 0xFF20) { if (a >= 0xFD30 && a < 0xFD40) rows = v; }
+        else {
+          const r = a & 0x1F;
+          if (r !== 0x09) ted[r] = v;
+          if (r === 0x08) ff08 = latch(v, rows, self.keys, self.joy, self.joy1);
+          if (opts.log && r >= 0x0E && r <= 0x12) opts.log.push([opts.now ? opts.now() : 0, a, v]);
+        }
+        if (opts.write) opts.write(a, v);
+      },
+    };
+    return self;
+  }
+
+  return { PALETTE, rgb, css, render, renderBands, rgba, draw, load, hex, timing, READ_ONES, latch, io };
 })();
 
 // The TED machines' names for the footprint categories; the drawing is makeMemMap in memmap.js.

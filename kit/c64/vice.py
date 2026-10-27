@@ -43,6 +43,8 @@ These absorb the server's quirks, on any build; the plain tool calls do not:
                                        a condition on A, X, Y or SP, which crashes the emulator,
                                        is refused
   snapshot_load(rpc, "games/c64/<slug>/work/play.vsf")    a path or a name
+  inject(rpc, "work/game.prg", start=None)    a program file put in RAM, for one the KERNAL's
+                                       LOAD hangs on: it loads over $0314 or under the I/O area
   tape(rpc, "work/side2.tap", offset=441050)    change the tape at a prompt, set its position
                                        (in decimal) and press PLAY; the server has no tape tool
   ask(rpc, tool, args)                 the reply as a dict; a refusal raises ViceError
@@ -824,6 +826,45 @@ def snapshot_load(rpc, snap):
             raise ViceError(f"snapshot_load: {dest} is a different snapshot with the name {name!r}; "
                             "rename one of them")
     return ask(rpc, "vice_snapshot_load", {"name": name})
+
+
+def inject(rpc, path, start=None):
+    """Put a program file straight into RAM, for one the KERNAL's LOAD cannot start (#581).
+
+    A file that loads over the KERNAL's vectors at $0314-$0333 changes the IRQ vector after its
+    first two bytes, and the next interrupt jumps into what is not loaded yet: autostart hangs,
+    or comes back to READY. A file that reaches $D000-$DFFF would be loaded into the chips there,
+    not the RAM beneath. Here the machine is stopped, $01 is set to $34 (RAM everywhere) while
+    the bytes go in, they are read back from the RAM bank, and $01 is set back as it was. With
+    start, the machine runs from that address (the file's SYS); without it, it carries on where
+    it stopped, so a file that sets an interrupt vector starts at the next interrupt. BASIC's
+    pointers are not set. Returns the first and last addresses written."""
+    data = open(path, "rb").read()
+    if len(data) < 3:
+        raise ViceError(f"inject: {path} is not a program file: it needs a load address and a byte")
+    lo, body = data[0] | data[1] << 8, data[2:]
+    hi = lo + len(body) - 1
+    if hi > 0xFFFF:
+        raise ViceError(f"inject: {path} loads {len(body)} bytes at {addr(lo)}, past $FFFF")
+    if lo < 2:
+        raise ViceError(f"inject: {path} loads at {addr(lo)}, over the processor port at $0000-$0001")
+    was_paused = paused(rpc)
+    if not was_paused and not pause(rpc):
+        raise ViceError("inject: the machine did not stop")
+    port = read_mem(rpc, 1, 1, "cpu")[0]
+    poke(rpc, 1, [0x34])
+    for o in range(0, len(body), 4096):
+        poke(rpc, lo + o, body[o:o + 4096])
+    back = read_mem(rpc, lo, len(body), "ram")
+    poke(rpc, 1, [port])
+    if back != body:
+        n = next(i for i in range(len(body)) if back[i] != body[i])
+        raise ViceError(f"inject: RAM at {addr(lo + n)} reads ${back[n]:02X}, not the file's ${body[n]:02X}")
+    if start is not None:
+        ask(rpc, "vice_registers_set", {"register": "PC", "value": int(start)})
+    if not was_paused or start is not None:
+        call(rpc, "vice_execution_run", {})
+    return lo, hi
 
 
 def clear_checkpoints(rpc):
