@@ -244,3 +244,12 @@ Regression checks cover animation, reduced motion and an erased deck.
 Removed the static cup-like decorations from a revised terrain plate,
 `reference/parallax-terrain-clean.png`, so they cannot be mistaken for live
 bonus items. Only the game's real bonus tiles receive rotating coins.
+
+### VCR playback buttons
+
+Replaced the rewind slider and Play from here button with Rewind, Pause,
+Play and Fast forward, alongside a position/recorded-length display. The seek
+buttons move five seconds through the saved recording and pause there; they
+stop at its ends. Play resumes from the selected moment using the existing
+branching replay behaviour, so it replaces the old future. Button availability
+and pressed states follow the shared pause and recording state.

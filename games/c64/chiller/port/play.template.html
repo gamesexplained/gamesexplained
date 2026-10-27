@@ -109,7 +109,11 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-lab h3{margin:0 0 6px;font-size:17px}
 .pl-lab .cap{margin:4px 0 10px}
 .pl-scrub{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.pl-scrub input[type=range]{flex:1 1 260px;min-width:160px}
+.pl-vcr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pl-vcr button{display:flex;align-items:center;gap:7px;min-height:42px}
+.pl-vcr button span{font-size:18px;line-height:1}
+.pl-vcr button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-vcr output{font-variant-numeric:tabular-nums;margin-left:4px}
 .pl-scrub output,.pl-poke output{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .pl-poke{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .pl-poke input[type=text]{font-family:var(--fm);font-size:14px;width:5.5em;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
@@ -231,12 +235,14 @@ section table{margin:6px 0 18px}
     </div>
     <div class="pl-lab" id="pl-lab">
       <h3>Rewind and see what is running</h3>
-      <div class="pl-scrub">
-        <input type="range" id="pl-scrub" min="0" max="0" value="0" step="1" aria-label="Rewind: how far back into this game, in seconds of play">
-        <output id="pl-scrub-t" for="pl-scrub">0.0 s</output>
-        <button type="button" id="pl-resume" disabled>Play from here</button>
+      <div class="pl-scrub pl-vcr" id="pl-transport" role="group" aria-label="Playback controls">
+        <button type="button" data-transport="rewind" title="Move back five seconds in recorded play" disabled><span aria-hidden="true">⏪</span> Rewind</button>
+        <button type="button" data-transport="pause" aria-pressed="false" disabled><span aria-hidden="true">⏸</span> Pause</button>
+        <button type="button" data-transport="play" aria-pressed="false"><span aria-hidden="true">▶</span> Play</button>
+        <button type="button" data-transport="forward" title="Move forward five seconds in recorded play" disabled><span aria-hidden="true">⏩</span> Fast forward</button>
+        <output id="pl-scrub-t" aria-label="Playback position">0.0 s of 0.0 s</output>
       </div>
-      <p class="cap">Drag back to rewind to any moment of this game: the game is replayed from the start with the keys you pressed, from the nearest of the moments it saves every two and a half seconds. Then <b>Play from here</b> to take a different path. While paused, the routines the game ran in the last frame are listed below, each linked to its place in the source.</p>
+      <p class="cap">Rewind and Fast forward move five seconds through recorded play and pause there. Play continues from that moment, letting you take a different path; the old future is replaced when you resume. While paused, the routines the game ran in the last frame are listed below, each linked to its place in the source.</p>
       <ul class="pl-calls" id="pl-calls" aria-label="Routines the game ran in the last frame"></ul>
       <h3>Change a byte and watch</h3>
       <div class="pl-poke">
@@ -752,7 +758,7 @@ $('pl-tune').addEventListener('click', e => {
   const b = e.target.closest('button[data-tune]'); if (!b) return;
   if (!V2) { say('The re-release\'s tune has not loaded.'); return; }
   const v = +b.dataset.tune;
-  if (rt && !rt.busy && played < maxPlayed) { say('Press Play from here first: a change made in the past would drop what came after it.'); return; }
+  if (rt && !rt.busy && played < maxPlayed) { say('Press Play first: a change made in the past would drop what came after it.'); return; }
   tune = v;
   document.querySelectorAll('#pl-tune button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.tune === v)));
   if (rt && !rt.busy) { setTune(rt, v); rec({ t: 'tune', v }); }
@@ -953,7 +959,7 @@ function showStart(t) {
   over.appendChild(bt);
 }
 // --- the lab: rewind by replaying the log, the routines of the last frame, byte edits ----------------
-const scrub = $('pl-scrub'), scrubT = $('pl-scrub-t'), resume = $('pl-resume'), calls = $('pl-calls'), editsEl = $('pl-edits'), now = $('pl-now');
+const transport = $('pl-transport'), scrubT = $('pl-scrub-t'), calls = $('pl-calls'), editsEl = $('pl-edits'), now = $('pl-now');
 const hex = (v, n) => v.toString(16).toUpperCase().padStart(n, '0');
 const secs = f => (f * FRAME / 985248).toFixed(1) + ' s';
 function applyEv(r, e) {
@@ -998,7 +1004,7 @@ function seek(T) {
   played = T; paused = true; ghost.trim(T); memory.reset();
   document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'true');
   sound.attach(); draw(); lab();
-  say('Rewound to ' + secs(T) + ' (' + Math.round(performance.now() - t0) + ' ms to replay)');
+  say('Moved to ' + secs(T) + ' (' + Math.round(performance.now() - t0) + ' ms to replay)');
 }
 function unpause() {
   if (!paused) return;
@@ -1010,8 +1016,15 @@ function unpause() {
   input(); lab();
 }
 function lab() {
-  scrub.max = maxPlayed; scrub.value = played; scrubT.textContent = secs(played) + ' of ' + secs(maxPlayed);
-  resume.disabled = !(paused && played < maxPlayed);
+  scrubT.textContent = secs(played) + ' of ' + secs(maxPlayed);
+  const available = running && rt && !rt.busy;
+  transport.querySelector('[data-transport="rewind"]').disabled = !available || played <= 0;
+  transport.querySelector('[data-transport="forward"]').disabled = !available || played >= maxPlayed;
+  const pauseButton = transport.querySelector('[data-transport="pause"]'), playButton = transport.querySelector('[data-transport="play"]');
+  pauseButton.disabled = !available || paused;
+  pauseButton.setAttribute('aria-pressed', String(!!available && paused));
+  playButton.disabled = !image || !!(rt && rt.busy) || (!!available && !paused);
+  playButton.setAttribute('aria-pressed', String(!!available && !paused));
   calls.innerHTML = '';
   if (paused && rt) for (const n of rt.seen) {
     const li = document.createElement('li'), a = names.get(n);
@@ -1030,32 +1043,41 @@ function lab() {
   editsEl.innerHTML = '';
   for (const t of edits) { const li = document.createElement('li'); li.textContent = t; editsEl.appendChild(li); }
 }
-let seekTimer = 0;
-scrub.addEventListener('input', () => {
-  if (!running || rt.busy) return;
-  scrubT.textContent = secs(+scrub.value) + ' of ' + secs(maxPlayed);
-  clearTimeout(seekTimer); seekTimer = setTimeout(() => seek(+scrub.value), 120);
+transport.addEventListener('click', e => {
+  const button = e.target.closest('button[data-transport]'); if (!button) return;
+  const action = button.dataset.transport;
+  if (action === 'play') {
+    if (!running && image) start(0); else unpause();
+    screen.focus(); return;
+  }
+  if (!running || !rt || rt.busy) return;
+  if (action === 'pause') {
+    paused = true;
+    document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'true');
+    lab(); return;
+  }
+  const step = Math.round(5000 / FRAME_MS);
+  seek(played + (action === 'rewind' ? -step : step));
 });
-resume.addEventListener('click', () => { unpause(); screen.focus(); });
 function poke(a, v) { if (!rt) return; rt.M[a] = v; rec({ t: 'poke', a, v }); }
 function setByte() {
   const a = parseInt($('pl-addr').value, 16), v = parseInt($('pl-val').value, 16);
   if (!running || !rt || rt.busy) { say('Start the game first.'); return; }
   if (!(a >= 0 && a < 0xD000) && !(a >= 0xE000 && a < 0x10000) || !(v >= 0 && v < 256)) { say('Give an address in RAM ($0000-$CFFF, $E000-$FFFF) and a value $00-$FF.'); return; }
-  if (played < maxPlayed) { say('Press Play from here first: an edit made in the past would drop what came after it.'); return; }
+  if (played < maxPlayed) { say('Press Play first: an edit made in the past would drop what came after it.'); return; }
   poke(a, v); edits.push('$' + hex(a, 4) + ' = $' + hex(v, 2) + ' at ' + secs(played)); lab();
 }
 $('pl-set').addEventListener('click', () => { setByte(); });
 $('pl-addr').addEventListener('input', lab);
 document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
   if (!running || !rt || rt.busy) { say('Start the game first.'); return; }
-  if (played < maxPlayed) { say('Press Play from here first: an edit made in the past would drop what came after it.'); return; }
+  if (played < maxPlayed) { say('Press Play first: an edit made in the past would drop what came after it.'); return; }
   const f = b.dataset.preset === 'original' ? v => v : b.dataset.preset === 'floaty' ? v => Math.min(255, v * 2) : v => Math.max(1, v >> 1);
   for (let i = 0; i < 24; i++) poke(0x544A + i, f(image[0x544A + i]));
   edits.push(b.textContent + ': jump_speeds $544A-$5461 at ' + secs(played)); lab();
 }));
 $('pl-undo').addEventListener('click', () => {
-  if (!rt || rt.busy || played < maxPlayed) { say('Press Play from here first.'); return; }
+  if (!rt || rt.busy || played < maxPlayed) { say('Press Play first.'); return; }
   const done = new Set();
   for (const e of log.ev) if (e.t === 'poke' && !done.has(e.a)) { done.add(e.a); }
   for (const a of done) poke(a, image[a]);
