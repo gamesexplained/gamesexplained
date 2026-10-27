@@ -52,9 +52,11 @@ manual announces: a crack, packed into one file. It was not run.
   cassette motor bit set: RAM at `$A000` and `$E000`, I/O at `$D000`.
   `$00` = `$2F`.
 - The IRQ vector at `$FFFE` is `$549B`, with the raster interrupt enabled
-  (`$D01A` = `$F1`). The handler saves the main program's zero-page
-  temporaries and several variables on the stack before it does anything
-  else, so it is a second thread of the game, not just a frame tick.
+  (the game writes `$01` to `$D01A`, at `$41B4`, `$41E3` and `$7861`;
+  it reads back as `$F1`, since the register's unused bits read 1). The
+  handler saves the main program's zero-page temporaries and several
+  variables on the stack before it does anything else, so it is a second
+  thread of the game, not just a frame tick.
 - The NMI vector at `$FFFA` and `$0318` is `$427D`. RESTORE with RUN/STOP
   held resets the stack and returns into the address held at
   `$42D6`/`$42D7`, a restart; without RUN/STOP it returns.
