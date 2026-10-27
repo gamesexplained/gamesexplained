@@ -12,6 +12,8 @@
 //   C16.io(m, opts) -> {read(a), write(a, v), ted, keys, joy, joy1}   TED's page for the kit's
 //                                     6502, on a page that runs the game's own code, or for a Play
 //                                     tab's port (below)
+//   C16.scnkey(rd, wr, io) -> {cycles, a, x, y}   the KERNAL's keyboard scan, for a game whose
+//                                     interrupt calls it (below)
 //
 // mem is the RAM as the program addresses it: 16 KB on a C16, 64 KB on a Plus/4, or a 64 KB image
 // rebuilt from listing.json. RAM repeats through the 64 KB on a machine with less of it, so an
@@ -407,7 +409,188 @@ globalThis.C16 = (function () {
     return self;
   }
 
-  return { PALETTE, rgb, css, render, renderBands, rgba, draw, load, hex, timing, READ_ONES, latch, io };
+  // --- the KERNAL's keyboard scan (C16.scnkey) ---
+  // SCNKEY, $FF9F, as the 318004-05 PAL KERNAL runs it from $DB11 (KERNAL source, ed3.src, keyscn),
+  // for a port whose game calls it from its interrupt, and for the kit's machine, which has no ROM
+  // (kit/c16/machine.js, kernalHooks). It reads the keyboard a row at a time through $FD30 and
+  // $FF08 (each row until two reads agree), leaves the last key found as its matrix number in $C6
+  // ($40 for none) and SHIFT, C= and CTRL as bits 0-2 of $0543; then, through the vector at $0545,
+  // which must hold the KERNAL's $DB7A: C= with SHIFT flips $FF13's bit 2 (the character set, from
+  // $0544's count, unless $0547 has bit 7 set), CTRL with S sets $F0, and a new key, or one held
+  // long enough to repeat, goes into the keyboard buffer ($0527, $EF) or, for a function key,
+  // starts its text ($055D, $055E). rd(a) and wr(a, v) reach the RAM; io.read(a) and
+  // io.write(a, v) the chips, which it reaches in the KERNAL's order, with $FF08 read as
+  // C16.latch gives it. It returns the cycles from the JMP at $FF9F to the RTS, counted as the
+  // ROM's instructions take them, and A, X and Y as it leaves them; the bytes it pushes on the
+  // stack are not written. The decoding tables are the ROM's, $E026-$E129, and its function keys'
+  // codes, $DC41-$DC48. Held to the ROM by kit/c16/test_scnkey.js.
+  const KEYTABS = Uint8Array.from(('140d5c8c85898640335741345a5345013552443643465458375947384248555639494a304d4b4f4e11504c91' +
+    '2e3a2d2c9d2a3b1d1b3d2b2f3113043220025103ff948da9888a878bba23d7c124dad3c50125d2c426c3c6d4d827d9c728c2c8d5d629c9ca5e' +
+    'cdcbcfce11d0cc913e5bdd3c9dc05d1d1b5fdb3f21930422a002d183ff948da8888a878ba496b3b097adaeb10198b2ac99bcbba3bd9ab7a59b' +
+    'bfb4b8be29a2b530a7a1b9aa11afb6913e5bdc3c9ddf5d1d1bdea63f81930495a002ab83ffffff1cffffffffff1c17019f1a1305ff9c12041e' +
+    '030614181f19079e0208151612090a920d0b0f0eff100cff841bff82ffff1dff1b06ffff90ffff05ffff11ffff').match(/../g), h => parseInt(h, 16));
+  const FKEYS = [0x85, 0x89, 0x86, 0x8A, 0x87, 0x8B, 0x88, 0x8C];
+  const KEYTAB_AT = [0xE026, 0xE067, 0xE0A8, 0xE0E9];        // $E01E: the table for each shift state
+  function scnkey(rd, wr, io) {
+    let a, x, y, cy = 3;                                     // JMP $DB11
+    const tab = i => {                                       // LDA ($EC),Y: 5 cycles, 6 across a page
+      const p = rd(0xEC) | rd(0xED) << 8, q = p + i;
+      if (p < 0xE026 || q > 0xE129) throw new Error('C16.scnkey: ($EC),Y reaches $' + q.toString(16) + ', outside the tables');
+      cy += (p & 0xFF) + i > 0xFF ? 6 : 5;
+      return KEYTABS[q - 0xE026];
+    };
+    const row = s => { io.write(0xFD30, s); io.write(0xFF08, s); cy += 24; return io.read(0xFF08); };   // JSR $DB70
+    wr(0x0543, 0); wr(0xC6, 0x40); cy += 11;
+    a = row(0); x = a; cy += 4;
+    let to;                                                  // where the scan goes on: 'dc01' or 'keylog'
+    if (x === 0xFF) { cy += 5; to = 'dc01'; }                // BNE not taken, JMP $DC01
+    else {
+      cy += 3;
+      y = 0; wr(0xEC, 0x26); wr(0xED, 0xE0); cy += 12;
+      let s = 0xFE; cy += 2;
+      for (;;) {                                             // $DB31: a row
+        x = 8; cy += 5;                                      // LDX, PHA
+        let r;
+        for (;;) {
+          cy += 7; wr(0xEE, row(s)); cy += 3;                // PLA, PHA, JSR, STA $EE
+          cy += 7; r = row(s); cy += 3;                      // PLA, PHA, JSR, CMP $EE
+          if (r === rd(0xEE)) { cy += 2; break; }
+          cy += 3;
+        }
+        a = r;
+        let out = false;
+        for (;;) {                                           // $DB44: a column
+          const c = a & 1; a >>= 1; cy += 2;
+          if (c) cy += 3;                                    // not pressed
+          else {
+            cy += 5;                                         // BCS, PHA
+            const k = tab(y); cy += 2;
+            if (k >= 5) { cy += 3; wr(0xC6, y); cy += 3; }   // BCS, STY $C6
+            else {
+              cy += 4;
+              if (k === 3) { cy += 3; wr(0xC6, y); cy += 3; }
+              else { wr(0x0543, k | rd(0x0543)); cy += 13; } // BEQ, ORA, STA, BPL
+            }
+            cy += 4;                                         // PLA
+          }
+          y = (y + 1) & 0xFF; cy += 4;
+          if (y >= 0x41) { cy += 3; out = true; break; }
+          cy += 4; x--;                                      // BCS, DEX
+          if (x !== 0) { cy += 3; continue; }
+          cy += 2; break;
+        }
+        if (out) break;
+        cy += 8;                                             // SEC, PLA, ROL
+        s = ((s << 1) | 1) & 0xFF;
+        if (s === 0) throw new Error('C16.scnkey: the row select ran out');
+        cy += 3;
+      }
+      a = rd(0xC6); cy += 12;                                // PLA, LDA $C6, JMP ($0545)
+      if ((rd(0x0545) | rd(0x0546) << 8) !== 0xDB7A) throw new Error('C16.scnkey: the vector at $0545 is not the KERNAL\'s');
+      to = 'keylog';
+    }
+    if (to === 'keylog') {                                   // $DB7A
+      a = rd(0x0543); cy += 6;
+      let table = true;                                      // whether $DBAF sets the table pointer
+      if (a === 3) {
+        cy += 2;
+        a = rd(0x0547); cy += 4;
+        if (a & 0x80) { cy += 3; table = false; }
+        else {
+          cy += 2; a = rd(0x0544); cy += 4;
+          if (a !== 0) { cy += 3; table = false; }
+          else {
+            cy += 2; a = io.read(0xFF13) ^ 0x04; cy += 6; io.write(0xFF13, a); cy += 4;
+            a = 0x08; wr(0x0544, a); cy += 9; table = false;
+          }
+        }
+      } else {
+        cy += 3; a = (a << 1) & 0xFF; cy += 4;
+        if (a >= 8) {
+          cy += 2; a = 0x06; cy += 2; x = rd(0x07F7); cy += 4;
+          if (x !== 0) cy += 3;
+          else {
+            cy += 2; x = rd(0xC6); cy += 5;
+            if (x !== 0x0D) cy += 3;
+            else { cy += 2; wr(0xF0, x); cy += 9; return { cycles: cy, a, x, y }; }
+          }
+        } else cy += 3;
+      }
+      if (table) { x = a; wr(0xEC, KEYTAB_AT[x >> 1] & 0xFF); wr(0xED, KEYTAB_AT[x >> 1] >> 8); cy += 16; }
+      y = rd(0xC6); cy += 3;                                 // $DBBA
+      a = tab(y); x = a; cy += 6;
+      if (y !== rd(0x07F6)) { cy += 2; y = 0x10; wr(0x0542, y); cy += 10; to = 'dc01'; }
+      else {
+        cy += 3;
+        a &= 0x7F; cy += 2;
+        const m = rd(0x0540); cy += 4;
+        let repeat = false;                                  // on to $DBE8
+        if (m & 0x80) { cy += 3; repeat = true; }
+        else if (cy += 2, m & 0x40) { cy += 4; to = 'rts'; }
+        else {
+          cy += 4;
+          if (a === 0x7F) { cy += 4; to = 'dc01'; }
+          else {
+            cy += 2; let k = 0;
+            for (const v of [0x14, 0x20, 0x1D]) { cy += 2; if (a === v) { cy += 3; k = 1; break; } cy += 2; }
+            if (k) repeat = true;
+            else { cy += 2; if (a !== 0x11) { cy += 4; to = 'rts'; } else { cy += 2; repeat = true; } }
+          }
+        }
+        if (repeat) {                                        // $DBE8
+          let go = true;
+          y = rd(0x0542); cy += 4;
+          if (y === 0) cy += 3;
+          else {
+            cy += 2; const d = (y - 1) & 0xFF; wr(0x0542, d); cy += 6;
+            if (d !== 0) { cy += 4; go = false; to = 'rts'; } else cy += 2;
+          }
+          if (go) {
+            const n = (rd(0x0541) - 1) & 0xFF; wr(0x0541, n); cy += 6;
+            if (n !== 0) { cy += 4; to = 'rts'; }
+            else {
+              cy += 2; y = 4; wr(0x0541, y); cy += 6; y = (rd(0xEF) - 1) & 0xFF; cy += 5;
+              if (!(y & 0x80)) { cy += 3; to = 'rts'; } else { cy += 2; to = 'dc01'; }   // BPL from $DC01
+            }
+          }
+        }
+      }
+    }
+    if (to === 'dc01') {                                     // $DC01
+      cy += 4; wr(0x0544, rd(0x0544) >> 1); cy += 6;
+      y = rd(0xC6); wr(0x07F6, y); cy += 7;
+      if (x === 0xFF) cy += 5;
+      else {
+        a = x; wr(0xF0, 0); x = 7; cy += 13;
+        let f = -1;
+        for (;;) {                                           // $DC16: a function key?
+          cy += 4;
+          if (a === FKEYS[x]) { cy += 3; f = x; break; }
+          x = (x - 1) & 0xFF; cy += 4;
+          if (!(x & 0x80)) { cy += 3; continue; }
+          cy += 2; break;
+        }
+        if (f >= 0) {                                        // $DC2C: its text's length and start
+          a = rd(0x055F + x); wr(0x055D, a); a = 0; cy += 10;
+          for (;;) {
+            x = (x - 1) & 0xFF; cy += 2;
+            if (x & 0x80) { cy += 3; break; }
+            const t = a + rd(0x055F + x); a = t & 0xFF; cy += 8;
+            if (t > 0xFF) { cy += 2; break; }
+            cy += 3;
+          }
+          wr(0x055E, a); cy += 4;
+        } else {                                             // $DC1E: into the keyboard buffer
+          x = rd(0xEF); cy += 7;
+          if (x >= rd(0x053F)) cy += 3;
+          else { cy += 2; wr(0x0527 + x, a); x = (x + 1) & 0xFF; wr(0xEF, x); cy += 10; }
+        }
+      }
+    }
+    return { cycles: cy + 6, a, x, y };                      // RTS
+  }
+
+  return { PALETTE, rgb, css, render, renderBands, rgba, draw, load, hex, timing, READ_ONES, latch, io, scnkey };
 })();
 
 // The TED machines' names for the footprint categories; the drawing is makeMemMap in memmap.js.

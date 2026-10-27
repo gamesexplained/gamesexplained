@@ -61,6 +61,12 @@
 // - press(k), release(k), releaseAll(), keys (a Set of key numbers), joy and joy1.
 // - hooks: { address: fn(cpu) }, run before the instruction there (a stand-in for a KERNAL routine
 //   the game calls): returning true stops the run, and moving cpu.pc skips the instruction.
+//   spend(n) puts a stand-in's n cycles on the beam. kernalHooks(m) gives the kit's stand-ins:
+//   SCNKEY ($FF9F), the keyboard scan a game's interrupt calls, as C16.scnkey (site/lib/c16.js),
+//   held to the ROM by kit/c16/test_scnkey.js. Its reads and writes of the chips go through
+//   ioRead and ioWrite, all at its first cycle's tick, and of the RAM through the processor, so a
+//   lockstep sees them; its cycles are the ROM's, and it leaves A, X and Y as the ROM does, the
+//   flags not.
 // - onIrq(machine, entry) and onRti(machine) are called as an interrupt is taken (entry is the
 //   handler's address; irqStart, cpu.cycles as it began) and as the RTI that ends one runs; depth
 //   counts the interrupts in progress. kit/c16/lockstep.js uses them.
@@ -433,6 +439,18 @@ class Machine {
     return true;
   }
 
+  // n cycles of a hook's stand-in, as reads, from the next instruction's first cycle on.
+  spend(n) {
+    if (n <= 0) return;
+    const cpu = this.cpu;
+    this.kT = this.tick;
+    const t = this.seq(new Uint8Array(n - 1), cpu.i);
+    cpu.cycles += n;
+    this.tick = this.now = this.beam.step(t, 0);
+    this.iFetch = cpu.i; this.fetched = false;
+    this.stall(t, this.iFetch);
+  }
+
   // --- running ---
   // Run for n ticks of TED, the interrupts included. False when onPass stopped the run.
   runTicks(n) {
@@ -480,4 +498,18 @@ class Machine {
   }
 }
 
-module.exports = { Machine, KEY, KERNAL_TED, loadListing, LINE, LINES, FRAME };
+// The kit's stand-ins for KERNAL routines, as hooks for machine m (above).
+function kernalHooks(m) {
+  return {
+    0xFF9F: cpu => {                                         // SCNKEY
+      const r = globalThis.C16.scnkey(a => cpu.rd(a), (a, v) => cpu.wr(a, v),
+        { read: a => m.ioRead(a), write: (a, v) => m.ioWrite(a, v) });
+      cpu.a = r.a; cpu.x = r.x; cpu.y = r.y;
+      cpu.rts();
+      m.spend(r.cycles);
+      return false;
+    },
+  };
+}
+
+module.exports = { Machine, KEY, KERNAL_TED, loadListing, kernalHooks, LINE, LINES, FRAME };
