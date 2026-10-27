@@ -15,7 +15,10 @@ with no emulator. The probes:
   timer    timer 1 interrupts through the KERNAL, at three periods, over a stream of mixed
            instructions with SEI ... CLI and PHP ... PLP in it: the position, the line and the
            address the interrupt returns to;
-  stream   a stream of mixed instructions, stepped one at a time: the tick each one begins on.
+  stream   a stream of mixed instructions, stepped one at a time: the tick each one begins on;
+  charline (four times, the display on: 25 rows with the vertical scroll at 3, 0 and 7, and 24
+           rows): reads $FF1F, $FF1D, $FF1C and $FF1E at places that drift over two frames, into a
+           buffer.
 
 The programs are the kit's, assembled by kit/cpu/asm6502.py: the fixture holds no byte of a game
 or of a ROM.
@@ -93,6 +96,53 @@ d:      dey
         clc
         adc #$05
         sta s5+2
+        dec $40
+        bne round
+end:    jmp end
+"""
+
+CHARLINE = """
+start:  sei
+        lda #$00
+        sta $FF0A
+        lda #$02
+        sta $FF09
+        lda #${ff06:02X}
+        sta $FF06
+        lda #$04
+        sta $40
+round:  ldx #$00
+loop:   lda $FF1F
+s1:     sta $2000,x
+        lda $FF1D
+s2:     sta $2100,x
+        lda $FF1C
+s3:     sta $2200,x
+        lda $FF1E
+s4:     sta $2300,x
+        txa
+        and #$07
+        tay
+d:      dey
+        bpl d
+        inx
+        bne loop
+        lda s1+2
+        clc
+        adc #$04
+        sta s1+2
+        lda s2+2
+        clc
+        adc #$04
+        sta s2+2
+        lda s3+2
+        clc
+        adc #$04
+        sta s3+2
+        lda s4+2
+        clc
+        adc #$04
+        sta s4+2
         dec $40
         bne round
 end:    jmp end
@@ -250,6 +300,9 @@ def probes():
     for i, latch in enumerate((1789, 2003, 997)):
         code, labels = stream(TIMER.replace("{latch}", str(latch)), 3 + i, 2500, True)
         out.append(("timer-%d" % latch, code, labels, {"frames": 40}, (0x3800, 4 * 256)))
+    for ff06 in (0x1B, 0x18, 0x1F, 0x13):
+        code, labels = assemble(CHARLINE.replace("{ff06:02X}", "%02X" % ff06), ORG)
+        out.append(("charline-%02X" % ff06, code, labels, {"until": labels["end"]}, (0x2000, 16 * 256)))
     return out
 
 

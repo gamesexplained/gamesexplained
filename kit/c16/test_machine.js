@@ -22,6 +22,7 @@ function machine(p) {
 }
 
 for (const [name, p] of Object.entries(F.probes)) {
+  if (name.startsWith('charline')) continue;               // below
   const { ram, m } = machine(p);
   if (p.run.until !== undefined) { let n = 0; while (m.cpu.pc !== p.run.until && n++ < 1e7) m.step(); }
   else m.runFrames(p.run.frames);
@@ -43,6 +44,30 @@ for (const [name, p] of Object.entries(F.probes)) {
   }
   check('stream: ' + (p.ticks.length + 1) + ' instructions begin on plus4emu\'s ticks', diff === 0 && m.cpu.pc === p.end,
     diff + ' differ, the first the ' + first + 'th');
+}
+
+// $FF1F's line within the character row, with the display on: each read's bits 0-2 as plus4emu
+// read them. The flash counter, bits 3-6, is not modelled. A read at tick 2 of a line gets the line
+// before's on plus4emu, and now and then that ANDed with the new one: either passes there. The
+// line and place read beside each are left to the position probes: with the vertical scroll at 0,
+// the machine's place is two ticks past plus4emu's over lines 0 to 14 (not modelled).
+for (const [name, p] of Object.entries(F.probes)) {
+  if (!name.startsWith('charline')) continue;
+  const { ram, m } = machine(p);
+  const at = [], read = m.ioRead.bind(m);
+  m.ioRead = function (a) { if (a === 0xFF1F) at.push(this.now); return read(a); };
+  let n = 0;
+  while (m.cpu.pc !== p.run.until && n++ < 1e7) m.step();
+  const want = Buffer.from(p.result, 'hex');
+  let diff = 0, first = '';
+  for (let r = 0; r < 4; r++) {
+    for (let i = 0; i < 256; i++) {
+      const k = r * 256 + i, o = r * 1024 + i, got = ram[0x2000 + o] & 7, w = want[o] & 7;
+      const t = at[k], ok = got === w || (t % LINE === 2 && w === (got & m.beam.charLine(t + 1)));
+      if (!ok) { diff++; if (!first) first = 'read ' + k + ' at line ' + Math.floor(t / LINE) % 312 + ' tick ' + t % LINE; }
+    }
+  }
+  check(name + ': 1,024 reads of $FF1F as plus4emu gave them', diff === 0 && at.length === 1024, diff + ' differ, the first ' + first);
 }
 
 // The keyboard: a write to $FF08 latches the rows $FD30 selects; a key pressed after it is not seen.

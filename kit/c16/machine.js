@@ -21,7 +21,8 @@
 //   on) and the three timers ($FF00-$FF05, counting at the single clock; timer 1 shows 0 for a
 //   count and then the value last written to it less 1, timers 2 and 3 run on through 0; their
 //   flags $FF09 bits 3, 4 and 6, interrupting when $FF0A enables them). $FF1D and $FF1C read the
-//   line, $FF1E the place on it, as plus4emu's do. The processor sees TED's interrupt line two
+//   line, $FF1E the place on it, and $FF1F's bits 0-2 the line within the character row
+//   (C16.timing's charLine), as plus4emu's do. The processor sees TED's interrupt line two
 //   cycles late and takes the interrupt in place of the next instruction it starts after that,
 //   as the 6502 does: one raised before an instruction's last two cycles is taken after it, one a
 //   CLI lets through an instruction later, and one raised just before a SEI still once. An
@@ -37,8 +38,9 @@
 // - TED's other registers read back what was written, with the bits that read 1 set (the
 //   reference's table), and a write to the sound's, $FF0E-$FF12, goes into soundLog when it is an
 //   array, as [tick, register, value]: the plus4emu server's sound log has the same rows.
-// Not modelled: the drawing (C16.render draws memory), the cursor and flash counters, the light
-// pen, the serial bus, the tape, the ACIA and the 6529 (they read $FF), the 7501's own port at $00
+// Not modelled: the drawing (C16.render draws memory), the cursor and flash counters ($FF1F's bits
+// 3-6 read as written), $FF1F's line with the display off, the light pen, the serial bus, the
+// tape, the ACIA and the 6529 (they read $FF), the 7501's own port at $00
 // and $01 (RAM here), writes to TED's line and position counters, a screen fetch started or ended
 // by a write to $FF06 in the middle of a line, the single clock forced by $FF13's bit 1, and the
 // sound itself. Checked against plus4emu by kit/c16/test_machine.js
@@ -288,6 +290,7 @@ class Machine {
       return r === 0x1D ? L & 0xFF : 0xFE | (L >> 8);
     }
     if (r === 0x1E) return (((t + HPOS_AT) % LINE) * 2) & 0xFF;
+    if (r === 0x1F) return (this.ted[0x1F] & 0x78) | 0x80 | this.beam.charLine(t);
     return this.ted[r] | READ_ONES[r];
   }
   // The keyboard and joystick lines that $FD30 and a write of w to $FF08 select.

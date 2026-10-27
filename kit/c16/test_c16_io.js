@@ -45,7 +45,11 @@ const cpu = new CPU(ramP, { ramSize: 0x4000, ioPages: [0xFD, 0xFF], io });
 cpu.pc = 0x1000;
 cpu.run({ until: END, maxSteps: 1e5 });
 
-const got = Array.from(ramP.subarray(OUT, OUT + cases.length)), want = Array.from(ramM.subarray(OUT, OUT + cases.length));
+// $FF1F's bits 0-2 are the beam's line within the character row, which machine.js models and a
+// page gives through opts.read (C16.io keeps no beam): they are left out of the comparison
+const FF1F = 5 + [0x06, 0x07, 0x0A, 0x0C, 0x10, 0x12, 0x14, 0x15, 0x19, 0x1A, 0x1F].indexOf(0x1F);
+const mask = (a, i) => (i === FF1F ? a & 0xF8 : a);
+const got = Array.from(ramP.subarray(OUT, OUT + cases.length), mask), want = Array.from(ramM.subarray(OUT, OUT + cases.length), mask);
 const hex = a => a.map(v => v.toString(16).padStart(2, '0')).join(' ');
 check(`${cases.length} reads of the latch and TED's registers are machine.js's`, hex(got) === hex(want), `\n  C16.io:     ${hex(got)}\n  machine.js: ${hex(want)}`);
 check('a joystick reads in its port only', got[0] !== 0xFF && got[1] !== 0xFF && got[0] !== got[1]);

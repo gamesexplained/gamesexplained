@@ -57,8 +57,9 @@
 //   port 1, five bits active low (1 up, 2 down, 4 left, 8 right, 16 fire; 0x1F holds none).
 // - opts.read(a), when given, answers a read first, or returns undefined to leave it to the rest:
 //   the timers ($FF00-$FF05), the interrupt flags ($FF09), $FF13's ROM bit and the beam's place
-//   ($FF1C-$FF1E) count nothing here, so a game that reads them for random numbers or waits on them
-//   gets them from there.
+//   ($FF1C-$FF1E, and $FF1F's bits 0-2, the line within the character row: Beam's charLine) count
+//   nothing here, so a game that reads them for random numbers or waits on them gets them from
+//   there.
 // - opts.write(a, v), when given, sees every write once it is kept: a Play tab's port keeps its
 //   beam, its timers and its interrupt flags there, on top of these registers.
 // - opts.log, an array, gets [opts.now(), address, value] for each write to the sound's registers,
@@ -280,6 +281,12 @@ globalThis.C16 = (function () {
   //     instruction start at 92 all the same (step, below).
   // TED looks at $FF06's bit 4 once a frame, as line 0 begins: a display turned on or off takes
   // effect at the next frame.
+  // $FF1F's bits 0-2, the line within the character row, as plus4emu gives them with the display
+  // on (charLine, below; the fixture's charline probes, 27 October 2026): 7 until the line after
+  // the vertical scroll's, then (line - scroll - 1) & 7 up to line 204, which keeps its value
+  // through the rest of the frame; the count steps at tick 3 of each line. A read at tick 2 gets
+  // the line before's, and now and then that ANDed with the new one. With the display off,
+  // plus4emu reads 0 there for most reads: not modelled.
   const LINE = 114, LINES = 312, FRAME = LINE * LINES;
   const BORDER = 0, DISPLAY = 1, BAD = 2;
   // For each kind of line, from the ticks of its single clock and of TED's hold: the tick each
@@ -337,6 +344,11 @@ globalThis.C16 = (function () {
       const p = t % LINE;
       if (write && (p === 4 || p === 6 || p === 8) && this.kind(Math.floor(t / LINE)) === BAD) return t + 2;
       return this.next(t + 1);
+    }
+    // $FF1F's bits 0-2 at tick t: the line within the character row (above).
+    charLine(t) {
+      const L = (Math.floor((t - 3) / LINE) % LINES + LINES) % LINES, first = (this.ff06 & 7) + 1;
+      return L < first ? 7 : (Math.min(L, 204) - first) & 7;
     }
     // The processor's cycles that start in ticks t to u - 1.
     cycles(t, u) {

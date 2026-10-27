@@ -429,6 +429,15 @@ The flash counter, $FF1F bits 3-6, goes up once a frame, and the flash
 changes each time it carries into bit 7, every 16 frames (plus4emu,
 ted_main.cpp).
 
+$FF1F bits 0-2, the line within the character row, read 7 until the
+line after the one the vertical scroll names, then count from 0 on that
+line up to line 204, which keeps its count to the end of the frame; the
+count steps at tick 3 of each line. That is with the display on; with it
+off, plus4emu reads 0 there for most reads. A game that takes bit 0 as a
+random bit gets 1 on about a third of a frame's lines with the vertical
+scroll at 3 (C16.timing's `charLine` in `site/lib/c16.js`, held to
+plus4emu by `kit/c16/test_machine.js`).
+
 ## Timing
 
 | | PAL | NTSC |
