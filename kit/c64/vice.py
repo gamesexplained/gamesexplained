@@ -43,6 +43,8 @@ These absorb the server's quirks, on any build; the plain tool calls do not:
                                        a condition on A, X, Y or SP, which crashes the emulator,
                                        is refused
   snapshot_load(rpc, "games/c64/<slug>/work/play.vsf")    a path or a name
+  tape(rpc, "work/side2.tap", offset=441050)    change the tape at a prompt, set its position
+                                       (in decimal) and press PLAY; the server has no tape tool
   ask(rpc, tool, args)                 the reply as a dict; a refusal raises ViceError
 
 A refused or closed connection raises EmulatorDown, whose one line says to run tools.py status.
@@ -766,6 +768,31 @@ def autostart(rpc, path, file=None, run=True):
     r = ask(rpc, "vice_autostart", args)
     _resume_if(rpc, was_paused)
     return r
+
+
+def tape(rpc, path=None, offset=None, play=True):
+    """Change the tape, set its position and press PLAY, for a game on several cassette sides.
+
+    The MCP server has no tape tool, so this types VICE's own monitor commands through
+    codemap.monitor(): attach "<path>" 1, tapeoffs <offset> and tapectrl 1. The monitor reads a
+    bare number as hexadecimal (tapeoffs 441050 set 4,460,624 on a run, #447), so offset, an int,
+    is sent as +<decimal>, which the v3.13.2 monitor reads as decimal (27 October 2026). Like
+    monitor(), nothing is sent while a stopping checkpoint is set. path is made absolute, as in
+    autostart(); a file the emulator cannot attach raises ViceError. Returns the tape's position
+    as the monitor reports it afterwards."""
+    from codemap import monitor   # codemap imports this module
+    if path is not None:
+        r = monitor(f'attach "{os.path.abspath(path)}" 1', rpc)
+        if "Failed" in r:
+            raise ViceError(f'tape: the emulator could not attach {path} (its monitor answered "Failed.")')
+    if offset is not None:
+        if not isinstance(offset, int) or offset < 0:
+            raise ValueError(f"tape: offset {offset!r}: a position counted from 0, as tapeoffs shows it")
+        monitor(f"tapeoffs +{offset}", rpc)
+    if play:
+        monitor("tapectrl 1", rpc)
+    m = re.search(r"Current tape offset is: (\d+)", monitor("tapeoffs", rpc))
+    return int(m.group(1)) if m else None
 
 
 def warp(rpc, on):

@@ -67,6 +67,11 @@ passed, by date and system, are the table at the top of that file.
    the first, use `autostart()` in `vice.py`: it takes the file's name,
    or its position as the directory lists it, and like `reset()` it
    resumes a stopped machine, on which the plain call loads nothing.
+   A game on several cassette sides asks for the next tape at a prompt,
+   and the server has no tape tool: `tape(rpc, path, offset)` in
+   `vice.py` attaches it, sets its position and presses PLAY through
+   VICE's monitor, which reads a bare number as hexadecimal, so give
+   the offset to `tape()` rather than typing `tapeoffs` yourself.
 2. `vice_machine_config_get` to confirm PAL/NTSC, and that warp mode is
    off: autostart turns it on for the load, and on the v3.13.2 release
    VICE turned it off again when the load ended (3 October 2026).
