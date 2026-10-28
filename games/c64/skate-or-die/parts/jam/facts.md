@@ -173,6 +173,15 @@ kit's 6502 machine (`kit/c64/machine.js`). The scripts are in
   with colours `$0B`, `$0C`, `$00` and the cell's colour 0-7.
   `copy_map_chars` `$25FF` and `copy_map_colours` `$2742` copy 22 rows
   from text row 3. (traced)
+- **The secret path** (Rodney's SECRET PATH IN DOWNHILL JAM!, shop
+  `$23BE`). Rows 157-171, columns 0-6 of the attribute map are type 13
+  (shadow), while the character map draws them as the roof of the
+  building that covers columns 0-19; column 7 is a wall (type 1). The
+  passage opens from row 156 (columns 4-6 open) and out through the
+  garage door at row 172. `behaviour_type13` `$1C44` hides the skater
+  under the expanded block sprite `$5D`. LESTER's waypoints go from
+  (row $86, column 6) to ($93, $19) and ($BC, $0E), the right-hand lane.
+  (read from the maps and the handler; not ridden)
 - **Animated characters.** Every 8 frames `animate_charset` `$0BA6`
   swaps characters `$40`-`$42` with `$80`-`$82` and `$60`-`$62` with
   `$A0`-`$A2`. The moving object (character `$52`) is drawn into the map
