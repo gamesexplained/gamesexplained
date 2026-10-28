@@ -13,14 +13,17 @@ to every call of one build.
   decode(ram, a) -> (name, instruction, size) or None   zcode.decode, with the story's text
   operand(a, m, ins, bs, names, regs, chips) -> (text, target)
                     the operands with the map's names: a routine, a string, a branch's or a
-                    jump's target, a global by its word's label, an object by its entry's
+                    jump's target, a global by its word's label, an object by its entry's,
+                    a constant that is a routine's or a string's packed address by its name, and
+                    one that is a dictionary word's address as the word, 'then'; a je compares
+                    with a word before a routine, which the two can share a value with
   TEXT_TYPES        "ZText", the story's own strings; text_items reads them a string at a time
   TEXT_EACH_RUN     the text types read one run of blocks at a time, not over their whole extent
   POINTER_TYPES     word-sized data that points: a byte address, a word address (half the byte
                     address), a packed routine or a packed string (Standard 1.2); and a table
-                    word, which is a routine's or a string's packed address, a dictionary word's
-                    address or a labelled table's, where it names one the map holds, and a
-                    number where it names none, for the tables of strings, objects, routines and
+                    word, which is a dictionary word's address, a routine's or a string's packed
+                    address or a labelled table's, where it names one the map holds (in that
+                    order, as the values can coincide), and a number where it names none, for the tables of strings, objects, routines and
                     numbers mixed that Infocom's games are full of
   pointer(kind, ram, a) -> the address the word at a points to, or None for a number
   WIDTH             5: story addresses are written with five hex digits, as the Standard's are
@@ -145,6 +148,12 @@ def operand(a, m, ins, bs, names, regs=None, chips=None):
             t = names.get(target) or hexa(target)
         elif i in objects and v and names.get(entry(s, v)):
             t = names[entry(s, v)]
+        elif kind == "large" and v in words(s) and (ins.name == "je" or s.unpack(v, "routine") not in HEADERS):
+            t = "'" + word_text(s, v) + "'"     # a dictionary word: what a word of the command is compared with
+        elif kind == "large" and v and s.unpack(v, "routine") in HEADERS:
+            t = names.get(s.unpack(v, "routine")) or f"#{v:04X}"    # a routine handed on: QUEUE's, a property's
+        elif kind == "large" and v and s.unpack(v, "string") in STRINGS:
+            t = names.get(s.unpack(v, "string")) or f"#{v:04X}"     # a string handed on
         else:
             t = f"#{v:02X}" if kind == "small" else f"#{v:04X}"
         out.append(t)
@@ -193,16 +202,22 @@ def text_items(kind, ram, start, end):
 
 
 def words(s):
-    """The addresses of the dictionary's entries."""
+    """The dictionary's entries, by address: {address: the word}."""
     if not hasattr(s, "_entries"):
-        s._entries = {e[0] for e in s.dictionary().entries}
+        s._entries = {e[0]: e[1] for e in s.dictionary().entries}
     return s._entries
+
+
+def word_text(s, v):
+    return words(s)[v].replace("\\", "\\\\").replace("'", "\\'")
 
 
 def pointer(kind, ram, a):
     """The address the word at a points to, as the kind of pointer it is."""
     s = story(ram)
     w = (ram[a] << 8) | ram[a + 1]
+    if kind in ("Packed Routine", "Packed String") and not w:
+        return None             # no routine: a call to 0 returns false
     if kind == "Packed Routine":
         return s.unpack(w, "routine")
     if kind == "Packed String":
@@ -210,11 +225,13 @@ def pointer(kind, ram, a):
     if kind == "Word Address":
         return 2 * w
     if kind == "Table Word":
+        if w in words(s):
+            return w
         if w and s.unpack(w, "routine") in HEADERS:
             return s.unpack(w, "routine")
         if w and s.unpack(w, "string") in STRINGS:
             return s.unpack(w, "string")
-        if w in words(s) or (w in TABLES and w >= s.header["globals"]):
+        if w in TABLES and w >= s.header["globals"]:
             return w
         return None
     return w
