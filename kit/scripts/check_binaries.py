@@ -8,7 +8,9 @@ a file starting with a known snapshot magic; a JSON file carrying a
 not; an Apple II snapshot, the kit's, Apple2TS's own or AppleWin's. A
 plus4emu snapshot (the Commodore 16's and Plus/4's) is caught by its magic,
 whatever its name. The kit's NES snapshot is gzipped JSON as jsbeeb's is, found
-the same way. work/ folders are skipped except their README.
+the same way. A Z-machine story (an Infocom game, whatever the machine) has no
+magic, only a version byte, so it is caught by its extension. work/ folders are
+skipped except their README.
 Game data a page's widgets need, embedded in its HTML, is not a binary
 (AGENTS.md, "No binaries, ever").
 
@@ -31,7 +33,9 @@ EXT = {".d64", ".d71", ".d81", ".g64", ".prg", ".p00", ".t64", ".tap", ".crt", "
        # and two of the formats TOSEC keeps their games in (its tapes are .tap, its disks .d64)
        ".p4emu", ".yss", ".lnx", ".z64",
        # a recording of a tape, which is the game whole (some C16 tapes are kept only as one)
-       ".wav"}
+       ".wav",
+       # a Z-machine story, the whole of an Infocom game on any machine, and the files that wrap one
+       ".z1", ".z2", ".z3", ".z4", ".z5", ".z6", ".z7", ".z8", ".zblorb", ".zlb", ".blb", ".blorb"}
 SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81",
          49179: "48K .sna snapshot", 131103: "128K .sna snapshot", 147487: "128K .sna snapshot with an extra bank",
          102400: "40-track .ssd", 204800: "80-track .ssd or 40-track .dsd", 409600: "80-track .dsd",

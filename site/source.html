@@ -44,8 +44,10 @@
   const L = await get(PART?PART.listing:'listing.json');
   const main=document.getElementById('main'), idx=document.getElementById('idx');
   if(!L){ main.innerHTML='<p class="mute">listing.json could not be loaded. Serve the site over http (python3 -m http.server) rather than opening the file directly.</p>'; return; }
-  const hex4=a=>'$'+a.toString(16).toUpperCase().padStart(4,'0');
-  const id4=a=>a.toString(16).toUpperCase().padStart(4,'0');
+  // a story's listing writes its addresses with five digits and runs past 64 KB (listing.json's width, size)
+  const W=L.width||4, TOP=L.size||0x10000;
+  const hex4=a=>'$'+a.toString(16).toUpperCase().padStart(W,'0');
+  const id4=a=>a.toString(16).toUpperCase().padStart(W,'0');
   const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const UNDER=[], LAYER=[PART];                                 // LAYER[p]: the part a row of layer p is from
   if(PART&&PART.under.length) (await Promise.all(PART.under.map(u=>get(u.listing)))).forEach((g,i)=>{ if(g){ UNDER.push(g); LAYER.splice(1,0,PART.under[i]); } });
@@ -86,7 +88,7 @@
       if(r.x) r.x.sort((x,y)=>x-y); else delete r.x;
       records.push(r);
     }
-    if(a<0x10000) records.push({a:a,t:'gap',n:0x10000-a});
+    if(a<TOP) records.push({a:a,t:'gap',n:TOP-a});
     const index=[]; layers.forEach((Lr,k)=>Lr.index.forEach(e=>index.push(Object.assign({},e,{p:layers.length-1-k}))));
     return {records:records,index:index};
   }
@@ -177,7 +179,7 @@
   }
   document.getElementById('chips').addEventListener('click',e=>{const c=e.target.closest('.chip'); if(!c)return; c.classList.toggle('on'); c.classList.contains('on')?kinds.add(c.dataset.k):kinds.delete(c.dataset.k); renderIdx();});
   document.getElementById('q').addEventListener('input',renderIdx);
-  document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const m=/^\$?([0-9a-f]{1,4})$/i.exec(e.target.value.trim()); if(m) location.hash=m[1].toUpperCase().padStart(4,'0'); }});
+  document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const m=/^\$?([0-9a-f]{1,6})$/i.exec(e.target.value.trim()); if(m) location.hash=id4(parseInt(m[1],16)); }});
   document.getElementById('explained').addEventListener('change',applyOpts);
   document.getElementById('bytes').addEventListener('change',applyOpts);
   // a part laid over others: show it alone, or with what lies beneath. Either is a new listing to draw.
@@ -208,10 +210,11 @@
   function goHash(){
     want=-1; const n=++nav;
     if(miss){ miss.remove(); miss=null; }
-    const id=(location.hash||'').slice(1).toUpperCase(); if(!id) return;
+    let id=(location.hash||'').slice(1).toUpperCase(); if(!id) return;
+    if(/^[0-9A-F]{4,6}$/.test(id)) id=id4(parseInt(id,16));     // $4A24 and $04A24 are one address
     let el=document.getElementById(id), note='';
     if(!el){
-      if(!/^[0-9A-F]{4}$/.test(id)) return;
+      if(!/^[0-9A-F]{4,6}$/.test(id)) return;
       const a=parseInt(id,16);
       if(first.has(a)){ want=first.get(a); return; }              // its row is not rendered yet: slice() calls back
       let lo=0,hi=held.length-1,best=-1;
