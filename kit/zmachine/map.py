@@ -62,9 +62,10 @@ class Map:
     def __init__(self):
         self.blocks, self.symbols, self.comments = [], {}, {}
 
-    def block(self, start, end, kind):
+    def block(self, start, end, kind, alone=False):
+        """alone: a block that joined() leaves apart from a neighbour of its type."""
         if end >= start:
-            self.blocks.append({"start": start, "end": end, "type": kind, "auto": True})
+            self.blocks.append({"start": start, "end": end, "type": kind, "auto": True, "alone": alone})
 
     def label(self, a, name, kind="Field"):
         self.symbols.setdefault(a, {"address": a, "name": name, "type": kind, "kind": "auto"})
@@ -74,15 +75,18 @@ class Map:
 
     def joined(self):
         """The blocks in order, those of one type that meet made one: the ledger ends a table's
-        span at its block's edge, so a table split into blocks would need a comment for each."""
-        out = []
+        span at its block's edge, so a table split into blocks would need a comment for each.
+        A block made alone stays apart, so that a span ends at its edge."""
+        out, alone = [], False
         for b in sorted(self.blocks, key=lambda b: b["start"]):
-            if out and out[-1]["type"] == b["type"] and out[-1]["end"] + 1 == b["start"]:
+            b = dict(b)
+            was, alone = alone, b.pop("alone")
+            if out and out[-1]["type"] == b["type"] and out[-1]["end"] + 1 == b["start"] and not (was or alone):
                 out[-1]["end"] = b["end"]
             elif out and b["start"] <= out[-1]["end"]:
                 sys.exit(f"map.py: two tables overlap at {hexa(b['start'])}: {out[-1]['type']} and {b['type']}")
             else:
-                out.append(dict(b))
+                out.append(b)
         return out
 
 
@@ -375,8 +379,11 @@ def build(s, traced=()):
                     f"and the count of entries, {len(d.entries)}"
                   + (", sorted, so an interpreter can search them by halves." if d.sorted else ", unsorted."))
     wlen = 4 if v <= 3 else 6
+    # the head is a block of its own, so that its description ends where the entries begin and
+    # each run of entries is described by its own comment, whatever the run renames the head
+    M.block(da, da + head - 1, "Byte", alone=True)
     if d.entries:
-        M.block(da, d.entries[-1][0] + d.entry_length - 1, "Byte")
+        M.block(da + head, d.entries[-1][0] + d.entry_length - 1, "Byte")
     for a, w, data in d.entries:
         M.comment(a, quote(w), "side")
     E = d.entries

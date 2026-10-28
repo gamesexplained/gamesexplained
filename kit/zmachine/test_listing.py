@@ -9,7 +9,10 @@ story part of a game folder in a scratch directory, and checks:
   - the listing shows every instruction the assembler wrote, at its address, by its name, with
     each routine's header as .routine, and every string as text, decoded as story.py decodes it;
   - the listing rebuilds from its own bytes (listing.py --rebuild), and check_listing.py passes;
-  - a label, a comment and a block the run wrote survive map.py's next pass.
+  - a label, a comment and a block the run wrote survive map.py's next pass;
+  - below high memory, the ledger finds bare only the global variables, which are the run's to
+    describe: every table map.py describes is explained to its last byte, the dictionary too
+    when the run has named its head.
 
 It needs no tool.
 """
@@ -23,6 +26,8 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.join(HERE, "..", "scripts")
 sys.path.insert(0, HERE)
+sys.path.insert(0, SCRIPTS)
+import ledger  # noqa: E402
 import test_bocfel  # noqa: E402
 from story import Story  # noqa: E402
 
@@ -119,6 +124,39 @@ class Listing(unittest.TestCase):
         L = self.listed(part, path)
         call = [r for r in L["records"] if r.get("t") == "code" and "add_three" in (r.get("o") or "")]
         self.assertTrue(call, "no call shows the run's name for the routine")
+
+    def bare(self, sym, story):
+        """The bare runs below high memory, as (start, length, owner)."""
+        L = ledger.compute(sym["blocks"], sym["symbols"], sym["comments"], {"size": len(story.mem)})
+        out, a = [], 0
+        while a < story.header["high"]:
+            b = a
+            while b < story.header["high"] and L["state"][b] == 1:
+                b += 1
+            if b > a:
+                out.append((a, b - a, L["owner"].get(a, (None,))[0]))
+            a = b + 1
+        return out
+
+    def test_the_templates_explain_their_tables(self):
+        for v in test_bocfel.VERSIONS:
+            with self.subTest(version=v):
+                asm = test_bocfel.build(v)
+                story = Story(asm.story)
+                part, path = self.folder(v, asm)
+                sym = self.mapped(part, path)
+                g = story.header["globals"]
+                self.assertEqual([(a, n) for a, n, who in self.bare(sym, story) if who != "globals"], [],
+                                 "bytes map.py describes that the ledger finds bare")
+                da = story.header["dictionary"]
+                sym["symbols"] = [x for x in sym["symbols"] if x["address"] != da]
+                sym["symbols"].append({"address": da, "name": "dictionary_head", "kind": "user", "type": "Field"})
+                sym["comments"].append({"address": da, "type": "line", "text": "The run's own words for the head."})
+                with open(os.path.join(part, "symbols.json"), "w") as f:
+                    json.dump(sym, f)
+                again = self.mapped(part, path)
+                self.assertEqual([(a, n) for a, n, who in self.bare(again, story) if a != g], [],
+                                 "the dictionary once the run has named its head")
 
 
 if __name__ == "__main__":
