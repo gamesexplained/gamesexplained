@@ -4577,7 +4577,7 @@
   {
    "address": 43607,
    "type": "line",
-   "text": "The drum lists the records at $AA48 point to, 54 bytes. A list is a run of control register values for $D404 followed by a run of the same length of values that $A880 writes to both $D400 and $D401; a record's length is the length of each run. Lists may be shared by several records."
+   "text": "The drum lists the records at $AA48 point to, 54 bytes. A list is a run of control register values for $D404 followed by a run of the same length of values that $A880 writes to both $D400 and $D401; a record's length is the length of each run. Each of the three records has a list of its own, and the three lie end to end: $AA57 (9 steps), $AA69 (12) and $AA81 (6)."
   },
   {
    "address": 43661,
@@ -4812,7 +4812,7 @@
   {
    "address": 45066,
    "type": "line",
-   "text": "Frames until each voice's wave program takes its next step (3 bytes). $B3F8 counts it down and runs the step at zero; a new note sets it to 1 and the wave-program commands set it to the wait they read."
+   "text": "Frames until each voice's wave program takes its next step (3 bytes). $B3F8 counts it down and runs the step at zero; a new note sets it to 1, wave-program commands 0, 3 and 5 set it to the wait they read, and command 4 ($B49A) sets it to the note's frames left in $B004 minus the byte it reads."
   },
   {
    "address": 45069,
@@ -4827,7 +4827,7 @@
   {
    "address": 45075,
    "type": "line",
-   "text": "Frames left in the current filter-sweep step, counted down by $B75E. Notes of a voice with the filter on, the filter command $B618 and the drum command $B5AC set it to 1."
+   "text": "Frames left in the current filter-sweep step, counted down by $B75E and reloaded by it from the sweep table. Notes of a voice with the filter on and the drum command $B5AC set it to 1."
   },
   {
    "address": 45076,
@@ -4877,7 +4877,7 @@
   {
    "address": 45106,
    "type": "line",
-   "text": "Selects each voice's pitch-slide table (3 bytes): $B698 uses the table at $BA07 while it is zero and the one at $BA5B otherwise. Only $B539 and $B138 write it, and only with zero."
+   "text": "Selects each voice's pitch-slide table (3 bytes): $B698 uses the table at $BA07 while it is zero and the one at $BA5B otherwise. Only $B539 and the clearing loop of $B0C8 write it, and only with zero."
   },
   {
    "address": 45109,
@@ -4892,7 +4892,7 @@
   {
    "address": 45115,
    "type": "line",
-   "text": "Low byte of the address of each voice's arpeggio steps (3 bytes), set by stream command $84 to the address of the entry's step list (two bytes after its header). $B711 reads through it. The 3 bytes after it, $B03E-$B040, are not used by the driver."
+   "text": "Low byte of the address of each voice's arpeggio steps (3 bytes), set by stream command $84 or $8D to the address of the entry's step list (two bytes after its header). $B711 reads through it. The 3 bytes after it, $B03E-$B040, are only cleared by the loop in $B0C8 and never read."
   },
   {
    "address": 45121,
@@ -4902,7 +4902,7 @@
   {
    "address": 45127,
    "type": "line",
-   "text": "Start index into the filter-sweep table at $BA62, set by stream command $85 and copied to $B048 at a new note of a voice with the filter on."
+   "text": "Start index into the filter-sweep table at $BA62, set by stream command $85 and copied to $B048 at a new note of a voice with the filter on and by the drum command $B5AC."
   },
   {
    "address": 45128,
