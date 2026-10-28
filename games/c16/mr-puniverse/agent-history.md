@@ -97,3 +97,13 @@ branches that need positions the script never makes.
 **Copy.** Draft, then the rewrite pass (headings that counted or listed,
 "no X" as the subject, a sentence about how the work was done), then the
 plain-English pass, with the pages committed between them.
+
+## 28 October 2026: REST ROOM
+
+air pointed out that room 18's walls spell REST ROOM, and that the room
+is an easy one, which fits. The run had read the first letter as a B
+from plus4emu's screenshot, where the wall tops above the R's middle bar
+make the letter look closed. The screen memory plus4emu saved for the
+room shows an R: no wall across its foot, the same shape as the R of
+ROOM below it. The Discoveries entry, `facts.md` and `features.md` now
+say REST ROOM.
