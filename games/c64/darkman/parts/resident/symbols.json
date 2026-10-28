@@ -3512,7 +3512,7 @@
   {
    "address": 240,
    "type": "line",
-   "text": "Low byte of a pointer shared by both sound drivers: the address of the voice stream, wave program or arpeggio list being read through ($F0),Y. The routines load it from the voice's own pointers first ($B05B, $B020 and $B03B in the driver at $B000; $A05B, $A020 and $A03B in the one at $A000), and the stream reader stores it back to $B05B at $B253."
+   "text": "Low byte of a pointer shared by both sound drivers: the address of the voice stream, wave program or arpeggio list being read through ($F0),Y. The routines load it from the voice's own pointers first ($B05B, $B020 and $B03B in the driver at $B000; $A05B, $A020 and $A03B in the one at $A000); the track routines set it to a pattern's address ($A427, $B35B) and the wave-program jump to the new program ($A524, $B458). The stream readers store it back to $B05B at $B253 and to $A05B at $A31F, and the tune start stores it to $A05B at $A1E0."
   },
   {
    "address": 241,
@@ -3532,7 +3532,7 @@
   {
    "address": 244,
    "type": "line",
-   "text": "Low byte of a pointer to an arpeggio table entry, set by the stream command at $B552 (and $A60C) from the pointer tables and read through ($F4),Y to fetch the entry's step count and length."
+   "text": "Low byte of a pointer to an arpeggio table entry, set by the stream command at $B552 (and $A60C) from the pointer tables and read through ($F4),Y to fetch the entry's first two bytes: the frames each step lasts ($A0AE in the driver at $A000) and the number of steps ($A0B4)."
   },
   {
    "address": 245,
@@ -3542,12 +3542,12 @@
   {
    "address": 246,
    "type": "line",
-   "text": "Scratch byte for the wave-program commands: holds the SID control-register value read from the program until the code has the voice's register offset ready to store it (stores at $B484, $B49D, $B4BA)."
+   "text": "Scratch byte for the wave-program commands: holds the SID control-register value read from the program until the code has the voice's register offset ready to store it (stores at $B484, $B49D and $B4BA in the driver at $B000, and $A550, $A569 and $A586 in the one at $A000)."
   },
   {
    "address": 247,
    "type": "line",
-   "text": "Non-zero while voice 0 (SID registers $D400-$D406) has a stream to play. Set to 1 by the voice set-up at $B138 and $A126, cleared by the end-of-voice commands at $B85F and $A929, by the track command at $B39D and by the silence routines. Voices 1 and 2 use $F8 and $F9."
+   "text": "Non-zero while voice 0 (SID registers $D400-$D406) has a stream to play. Set to 1 by the voice set-up at $B138 and $A126 and by the tune start $A164 (at $A203, after clearing it at $A16C), cleared by the end-of-voice commands at $B85F and $A929, by the track stop commands at $B39D and $A469 and by the silence routines. Voices 1 and 2 use $F8 and $F9."
   },
   {
    "address": 248,
@@ -3572,7 +3572,7 @@
   {
    "address": 1024,
    "type": "line",
-   "text": "Entry of the resident loader. Loads A and X with 0, then calls $042F, which sets the level number $0435 to 0, and runs on into the loader loop at $0407. The levels jump to $0404, skipping the two loads, when the game is over, so the next load is level 1's files."
+   "text": "Entry of the resident loader. Loads A and X with 0, then calls $042F, which sets the level number $0435 to 0, and runs on into the loader loop at $0407. Levels 2 to 6 jump to $0404, skipping the two loads, when the game is over, so the next load is level 1's files; level 1 has no such jump."
   },
   {
    "address": 1031,
@@ -3667,7 +3667,7 @@
   {
    "address": 1225,
    "type": "line",
-   "text": "Loads one file from the drive over the serial bus, bit by bit through CIA 2 port A ($DD00). First it patches the immediate values of the bit routines ($054E, $057A, $0589, $05A4, $05B3, $05CD) with the current video bank bits of $DD00. Then it sends 4 bytes of the name buffer $0707 with $0546, waits with $05C0 and discards two bytes. After that it reads bytes with $0567: a byte other than $AC is stored through ($14),Y at $052A, with the border red and RAM switched in; $AC followed by $AC stores an $AC; $AC followed by $FF ends with carry set, $AC followed by $F7 ends with carry clear, and $AC followed by anything else waits again."
+   "text": "Loads one file from the drive over the serial bus, bit by bit through CIA 2 port A ($DD00). First it patches the immediate values of the bit routines ($054E, $057A, $0589, $05A4, $05B3, $05CD) with the low four bits of $DD00 (the video bank bits 0-1 and bits 2 and 3). Then it sends the count 4 and the first 4 bytes of the name buffer $0707 with $0546, waits with $05C0 and discards two bytes. After that it reads bytes with $0567: a byte other than $AC is stored through ($14),Y at $052A, with the border red and RAM switched in; $AC followed by $AC stores an $AC; $AC followed by $FF ends with carry set, $AC followed by $F7 ends with carry clear, and $AC followed by anything else waits again."
   },
   {
    "address": 1262,
@@ -3687,7 +3687,7 @@
   {
    "address": 1358,
    "type": "line",
-   "text": "Operand of the LDA #$27 at $054D, the value written to $DD00 to start sending. $04C9 rebuilds it from the video bank bits."
+   "text": "Operand of the LDA #$27 at $054D, the value written to $DD00 to start sending. $04C9 rebuilds it from the low four bits of $DD00, with bit 5 set."
   },
   {
    "address": 1383,
@@ -3762,7 +3762,7 @@
   {
    "address": 1713,
    "type": "line",
-   "text": "\"INSERT DISK SIDE #1, THEN PRESS FIRE\"; the side digit is patched to 1 or 2 by $067F before printing."
+   "text": "\"INSERT DISK SIDE #1, THEN PRESS FIRE\", 40 bytes with its spaces, copied to screen row 22 by $066F. The text itself is never changed: after the copy, $067F-$068A writes \"1\" or \"2\" over the digit's screen cell $0783."
   },
   {
    "address": 1753,
@@ -3777,7 +3777,7 @@
   {
    "address": 1794,
    "type": "line",
-   "text": "Two bytes ($02 and $FE) after next_level_text that no traced code reads."
+   "text": "Two bytes ($20 and $05) after next_level_text that no traced code reads."
   },
   {
    "address": 1796,
@@ -3787,7 +3787,7 @@
   {
    "address": 1797,
    "type": "line",
-   "text": "Y saved by $0546 and handed back to the caller by $053D, because the bit routines use Y."
+   "text": "Y saved by $0546 and handed back to the caller by $053D, because the send loop of $0546 and the store loop of $04C9 use Y."
   },
   {
    "address": 1798,
@@ -3797,7 +3797,7 @@
   {
    "address": 1799,
    "type": "line",
-   "text": "Buffer for the file name: $0493 stores the name bytes here up to its zero terminator and $0546 sends them to the drive. After the last load of this run it holds 31 42 00 (\"1B\"). The bytes behind the name, up to $0747, are leftovers of the start-up program's copy loop, which the loader never reads."
+   "text": "Buffer for the file name: $0493 stores the name bytes here, without the zero that ends them, and $0546 sends the first four bytes, $0707-$070A, to the drive. After the last load of this run it holds 31 42 (\"1B\"), and the two bytes sent after it, 00 and $8E, are left over from the start-up program. The bytes behind the name, up to $0747, are leftovers of the start-up program's copy loop and the code after it; the loader reads none of them past $070A."
   },
   {
    "address": 1864,
@@ -3837,17 +3837,17 @@
   {
    "address": 2560,
    "type": "line",
-   "text": "The seven digits of the score, one decimal digit per byte, most significant first ($0A00-$0A06): the levels add to them with a carry towards the lower address and draw them into the panel. The next 9 bytes, $0A07-$0A0F, are not used by the resident code."
+   "text": "The seven digits of the score, one decimal digit per byte, most significant first ($0A00-$0A06): the levels add to them with a carry towards the lower address and draw them into the panel. The next byte, $0A07, is cleared with them by level 1 ($1A9D), whose high-score check $1110 copies eight bytes, $0A00-$0A07; the 8 bytes $0A08-$0A0F are not used."
   },
   {
    "address": 2576,
    "type": "line",
-   "text": "Result of the mask-matching game kept for the next level: the rating routines of levels 1 and 5 store 0, 1 or 2 here (level 3 reads it). The levels read it as a flag: while non-zero the countdown timer starts at 500 and its picture is drawn, and the timer's expiry clears it; the follower checks of levels 4 and 6 return at once when it is non-zero. The continue screens clear it."
+   "text": "Result of the mask-matching game kept for the next level: the rating routines of levels 1, 3 and 5 ($4BF7-$4C12, $43F1-$440C, $2C3D-$2C58) store 0, 1 or 2 here, and their reports and picture flashes read it. Levels 2, 4 and 6 read it as a flag: while non-zero the countdown timer starts at 500 and its picture is drawn, the walking enemies do not start an attack, and the follower checks (level 2 $796D/$79D6, level 4 $751B/$7584, level 6 $80AF/$8118) return at once; the timer's expiry clears it. The continue screens of levels 2, 4 and 6 clear it, and level 1 clears it when its title pages start ($0AD4)."
   },
   {
    "address": 2577,
    "type": "line",
-   "text": "Flag tested by the levels' main loops: while non-zero the key code $20 ends the level and a level with no energy does not go to the game over screen. Level 1's cheat_check ($1385) flips it when BABY AXE MAN is typed on the title pages ($13BB, $13C0); level 1 also clears it at $0AEC. An unreferenced routine of level 6 ($5552) sets it to 1 when CIA 1 port B reads $7F."
+   "text": "Flag tested by the levels' main loops: while non-zero the key code $20 ends the level, and (in every level but level 3, which tests it only for the key) a level with no energy does not go to the game over screen. Level 1's title interrupt ($1585) also reads it and turns the border colour $0B while it is set. Level 1's cheat_check ($1385) flips it when BABY AXE MAN is typed on the title pages ($13BB, $13C0); level 1 also clears it at $0AEC. An unreferenced routine of level 6 ($5552) sets it to 1 when CIA 1 port B reads $7F."
   },
   {
    "address": 2578,
@@ -3882,7 +3882,7 @@
   {
    "address": 40964,
    "type": "line",
-   "text": "Frames left in the current note of each of the three voices (3 bytes). $A307 counts it down and reads the next stream entry at zero; $A328 reloads it from the entry's length byte (or from $A007 in fixed-length mode), the drum command sets it from the byte after the drum number, and $A126 starts it at the voice number plus 1."
+   "text": "Frames left in the current note of each of the three voices (3 bytes). $A307 counts it down and reads the next stream entry at zero; $A328 reloads it from the entry's length byte (or from $A007 in fixed-length mode), the drum command sets it from the byte after the drum number, $A126 starts it at the voice number plus 1, and $A164 starts the three voices at 1, 2 and 3."
   },
   {
    "address": 40967,
@@ -3892,22 +3892,22 @@
   {
    "address": 40970,
    "type": "line",
-   "text": "Frames until each voice's wave program takes its next step (3 bytes). $A4C4 counts it down and runs the step at zero; a new note sets it to 1 and the wave-program commands set it to the wait they read."
+   "text": "Frames until each voice's wave program takes its next step (3 bytes). $A4C4 counts it down and runs the step at zero; a new note sets it to 1 unless the mask $04 is set in the voice's byte in $A0C4, and $A164 starts the three voices at 1, 2 and 3. The wave-program commands $A50E, $A54D and $A583 set it to the wait they read, and $A566 sets it to the frames left in the note minus the byte it reads."
   },
   {
    "address": 40973,
    "type": "line",
-   "text": "Frames left in each voice's current pulse-width step (3 bytes). $A700 counts it down and fetches the next step from the table at $AB47 at zero; a new note sets it to 1 unless the mask $02 is set in the voice's byte in $A0C4."
+   "text": "Frames left in each voice's current pulse-width step (3 bytes). $A700 counts it down and fetches the next step from the table at $AB47 at zero; a new note sets it to 1 unless the mask $02 is set in the voice's byte in $A0C4, and $A164 starts the three voices at 1, 2 and 3."
   },
   {
    "address": 40976,
    "type": "line",
-   "text": "Frames left in each voice's current pitch-slide step (3 bytes), counted down by $A74A. A new note sets it to 1 when the voice has a slide and the mask $01 is clear in its byte in $A0C4."
+   "text": "Frames left in each voice's current pitch-slide step (3 bytes), counted down by $A74A. A new note sets it to 1 when the voice has a slide and the mask $01 is clear in its byte in $A0C4, and $A164 starts the three voices at 1, 2 and 3."
   },
   {
    "address": 40979,
    "type": "line",
-   "text": "Frames left in the current filter-sweep step, counted down by $A810. Notes of a voice with the filter on, the filter command $A6CA and the drum command $A666 set it to 1."
+   "text": "Frames left in the current filter-sweep step, counted down by $A810, which reloads it from the sweep table. Notes of a voice with the filter on set it to 1 unless the mask $08 is set in the voice's byte in $A0C4, and the tune start $A164 sets it to 1."
   },
   {
    "address": 40980,
@@ -3927,12 +3927,12 @@
   {
    "address": 40992,
    "type": "line",
-   "text": "Low byte of the address of each voice's wave program step (3 bytes), the list of SID control-register values and waits that $A4C4 runs. $A5A7 stores the advanced pointer here; a new note copies it from $A023, and $A126 sets it to the idle program at $A981."
+   "text": "Low byte of the address of each voice's wave program step (3 bytes), the list of SID control-register values and waits that $A4C4 runs. $A5A7 stores the advanced pointer here; a new note copies it from $A023 unless the mask $04 is set in the voice's byte in $A0C4, and $A126 and $A164 set it to the idle program at $A981."
   },
   {
    "address": 40995,
    "type": "line",
-   "text": "Low byte of the start of each voice's wave program (3 bytes): $A5BB sets it from the table at $ACF7, and a new note copies it to $A020 unless the mask $04 is set in the voice's byte in $A0C4."
+   "text": "Low byte of the start of each voice's wave program (3 bytes): $A5BB sets it from the table at $ACF7, $A126 and $A164 set it to the idle program at $A981, and a new note copies it to $A020 unless the mask $04 is set in the voice's byte in $A0C4."
   },
   {
    "address": 40998,
@@ -3952,12 +3952,12 @@
   {
    "address": 41007,
    "type": "line",
-   "text": "Start index of each voice into the pulse-width table (3 bytes), set by stream command $82 and cleared by $A0C8 and $A126. A new note copies it to $A02C."
+   "text": "Start index of each voice into the pulse-width table (3 bytes), set by stream command $82 and cleared by $A0C8, $A126 and $A164. A new note copies it to $A02C."
   },
   {
    "address": 41010,
    "type": "line",
-   "text": "Selects each voice's pitch-slide table (3 bytes): $A74A uses the table at $AB85 while it is zero and the one at $ABDA otherwise. Only $A5F3 and $A126 write it, and only with zero."
+   "text": "Selects each voice's pitch-slide table (3 bytes): $A74A uses the table at $AB85 while it is zero and the one at $ABDA otherwise. Only $A5F3 and the clearing loop of $A0C8 write it, and only with zero."
   },
   {
    "address": 41013,
@@ -3972,12 +3972,12 @@
   {
    "address": 41019,
    "type": "line",
-   "text": "Low byte of the address of each voice's arpeggio steps (3 bytes), set by stream command $84 to the address of the entry's step list (two bytes after its header). $A7C3 reads through it. The 3 bytes after it, $A03E-$A040, are not used by the driver."
+   "text": "Low byte of the address of each voice's arpeggio steps (3 bytes), set by stream command $84 (and $8D, which runs the same routine $A60C) to the address of the entry's step list (two bytes after its header). $A7C3 reads through it. The 3 bytes after it, $A03E-$A040, are only cleared by the loop at $A0C8 and never read."
   },
   {
    "address": 41025,
    "type": "line",
-   "text": "High byte of the address of each voice's arpeggio steps (3 bytes); see $A03B. The 3 bytes after it, $A044-$A046, are not used by the driver."
+   "text": "High byte of the address of each voice's arpeggio steps (3 bytes); see $A03B. Of the 3 bytes after it, $A044 and $A045 are only cleared by the loop at $A0C8 and $A046 is not used; nothing reads them."
   },
   {
    "address": 41031,
@@ -3992,12 +3992,12 @@
   {
    "address": 41033,
    "type": "line",
-   "text": "Low byte of the amount $A810 adds to the filter value $A04E each frame, read from the sweep table."
+   "text": "Low byte of the amount $A810 adds to the filter value $A04E on each call that passes its checks (once a frame, except while $A000 is non-zero or the highest voice with the filter on plays a drum), read from the sweep table."
   },
   {
    "address": 41034,
    "type": "line",
-   "text": "High byte of the amount $A810 adds to the filter value $A04D each frame, read from the sweep table."
+   "text": "High byte of the amount $A810 adds to the filter value $A04D on each call that passes its checks (see $A049), read from the sweep table."
   },
   {
    "address": 41035,
