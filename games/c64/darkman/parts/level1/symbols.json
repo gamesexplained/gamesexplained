@@ -11887,7 +11887,7 @@
   {
    "address": 16577,
    "type": "line",
-   "text": "Starts a shot from enemy slot X, called by enemy_throw ($3D4D) at count $2A. Returns at once when a shot is on the screen ($4092). It plays sound effect 8 through $B0EE, puts the shot at the enemy's Y and at 8 pixels beside it (left for direction 0, right otherwise), looks up the screen cell with tile_at_probe ($309D), keeps its row address in $409C/$4099, the character under it in $409F and the column in $4096, and sets the shot flag $4092 and the direction $40AB."
+   "text": "Starts a shot from enemy slot X, called by enemy_throw ($3D4D) at count $2A. Returns at once when a shot is on the screen ($4092). It plays sound effect 2 (X = $08) through $B0EE, puts the shot at the enemy's Y and at 8 pixels beside it (left for direction 0, right otherwise), looks up the screen cell with tile_at_probe ($309D), keeps its row address in $409C/$4099, the character under it in $409F and the column in $4096, and sets the shot flag $4092 and the direction $40AB."
   },
   {
    "address": 16595,
@@ -11902,7 +11902,7 @@
   {
    "address": 16598,
    "type": "line",
-   "text": "The rest of enemy_shoot ($40C1), after the sound call: copies the enemy's Y to $3064 and the shot's Y $40A2 and its X (low and high) to $3063/$3065 and the shot's $40A5/$40A8, then continues with tile_at_probe at $4115 and the setting of the shot variables."
+   "text": "The rest of enemy_shoot ($40C1), after the sound call: copies the enemy's Y to $3064 and the shot's Y $40A2, and the enemy's X minus 8 (direction 0) or plus 8 (otherwise), low and high, to $3063/$3065 and the shot's $40A5/$40A8, then continues with tile_at_probe at $4115 and the setting of the shot variables."
   },
   {
    "address": 16704,
@@ -11962,7 +11962,7 @@
   {
    "address": 17379,
    "type": "line",
-   "text": "Darkman's energy: $21 at the start of play (set by play_setup at $1ADF). player_hit ($43E9) takes 1 from it, draw_bar ($4449) shows it and the play loop ends the play at $17BA when it is 0."
+   "text": "Darkman's energy: $21 at the start of play (set by play_setup at $1ADF) and set to $21 again by mask_setup at $5A18. player_hit ($43E9) takes 1 from it, draw_bar ($4449) shows it and the play loop ends the play at $17BA when it is 0, unless the cheat flag $0A11 is set."
   },
   {
    "address": 17380,
@@ -11972,7 +11972,7 @@
   {
    "address": 17385,
    "type": "line",
-   "text": "Takes one point of energy from $43E3 when it is not zero and plays sound effect 4 through $B0EE; X and Y are kept in the operands at $4402 and $4400. Entered by falling through from player_hurt ($43E4)."
+   "text": "Takes one point of energy from $43E3 and plays sound effect 1 (X = $04) through $B0EE; when the energy is already zero it does neither. X and Y are kept in the operands at $4402 and $4400. Entered by falling through from player_hurt ($43E4)."
   },
   {
    "address": 17408,
@@ -12002,7 +12002,7 @@
   {
    "address": 17481,
    "type": "line",
-   "text": "Builds the panel's bar: fills a column of characters at $CF59 and their colour, writes a striped pattern into the eight character shapes at $4409, masks off as many quarter-cells as the value in $43E3 says are gone, and copies the 64 bytes to the character set at $FAC8."
+   "text": "Builds the panel's bar: fills a row of eight cells at $CF59 with the colour byte $1D and their colour RAM with 5, writes a striped pattern into the eight cells of bar_buffer at $4408, masks off as many quarter-cells as the value in $43E3 says are gone, and copies the 64 bytes to the panel bitmap at $FAC8."
   },
   {
    "address": 17617,
@@ -12082,7 +12082,7 @@
   {
    "address": 18076,
    "type": "line",
-   "text": "The largest X distance that box_test ($46A0) counts as close, set by its callers."
+   "text": "The X distance limit for box_test ($46A0): a distance below it counts as close. Set by its callers."
   },
   {
    "address": 18077,
@@ -12092,12 +12092,12 @@
   {
    "address": 18078,
    "type": "line",
-   "text": "The largest height difference that box_test ($46A0) counts as close, set by its callers."
+   "text": "The height difference limit for box_test ($46A0): a difference below it counts as close. Set by its callers."
   },
   {
    "address": 18080,
    "type": "line",
-   "text": "Returns A=1 when two points are close and A=0 when they are not. The heights $4696 and $4697 must differ by less than $469E, and the positions ($4698 with the ninth bit in $469A, and $4699 with $469B) by less than $469C. Called by exit_touch_test, object_touch_test, object_hit_check and shot_touch_test."
+   "text": "Returns A=1 when two points are close and A=0 when they are not. The heights $4696 and $4697 must differ by less than $469E, and the positions ($4698 with the ninth bit in $469A, and $4699 with $469B) by less than $469C; when the ninth bits differ it works the X distance out as one less than it is. Called by exit_touch_test at $45BC, by object_hit_check at $462B (the end of object_touch_test) and by shot_touch_test at $4686."
   },
   {
    "address": 18187,
@@ -12112,22 +12112,22 @@
   {
    "address": 18277,
    "type": "line",
-   "text": "Draws picture A, 6 characters wide and 5 high: copies five rows of 48 bytes from $4963, $4993, $49C3, $49F3 and $4A23 to the bitmap rows $F8C0, $FA00, $FB40, $FC80 and $FDC0, then six cells in each of five rows of colours from $4A53, $4A59, $4A5F, $4A65 and $4A6B to colour RAM $DB18, $DB40, $DB68, $DB90 and $DBB8 and of character codes from $4A71, $4A77, $4A7D, $4A83 and $4A89 to the screen $CF18, $CF40, $CF68, $CF90 and $CFB8. Called by image_flash at $4733 and $4757."
+   "text": "Draws picture A, 6 cells wide and 5 high: copies five rows of 48 bytes from $4963, $4993, $49C3, $49F3 and $4A23 to the bitmap rows $F8C0, $FA00, $FB40, $FC80 and $FDC0, then six cells in each of five rows of colours from $4A53, $4A59, $4A5F, $4A65 and $4A6B to colour RAM $DB18, $DB40, $DB68, $DB90 and $DBB8 and of screen colour bytes from $4A71, $4A77, $4A7D, $4A83 and $4A89 to the screen $CF18, $CF40, $CF68, $CF90 and $CFB8. Called by image_flash at $4733 and $4757."
   },
   {
    "address": 18382,
    "type": "line",
-   "text": "Draws picture B in the same layout as image_a_draw ($4765): five rows of 48 bytes from $4837, $4867, $4897, $48C7 and $48F7 to $F8C0, $FA00, $FB40, $FC80 and $FDC0, colours from $4927, $492D, $4933, $4939 and $493F to $DB18 ... $DBB8 and character codes from $4945, $494B, $4951, $4957 and $495D to $CF18 ... $CFB8. Called by play_setup at $1B3E and by the end-of-level code at $5A13."
+   "text": "Draws picture B in the same layout as image_a_draw ($4765): five rows of 48 bytes from $4837, $4867, $4897, $48C7 and $48F7 to $F8C0, $FA00, $FB40, $FC80 and $FDC0, colours from $4927, $492D, $4933, $4939 and $493F to $DB18 ... $DBB8 and screen colour bytes from $4945, $494B, $4951, $4957 and $495D to $CF18 ... $CFB8. Called by play_setup at $1B3E and by mask_setup ($58C8) at $5A13."
   },
   {
    "address": 18487,
    "type": "line",
-   "text": "Picture B for image_b_draw ($47CE): five rows of 48 bytes of pixels (six cells of 8 bytes in multicolour bitmap form) at $4837, $4867, $4897, $48C7 and $48F7; then five rows of 6 colour-RAM values at $4927, $492D, $4933, $4939 and $493F; then five rows of 6 screen codes at $4945, $494B, $4951, $4957 and $495D. It is the picture shown in the panel by play_setup ($1B3E) and after the mask game."
+   "text": "Picture B for image_b_draw ($47CE): five rows of 48 bytes of pixels (six cells of 8 bytes in multicolour bitmap form) at $4837, $4867, $4897, $48C7 and $48F7; then five rows of 6 colour-RAM values at $4927, $492D, $4933, $4939 and $493F; then five rows of 6 screen colour bytes at $4945, $494B, $4951, $4957 and $495D. It is the picture shown in the panel by play_setup ($1B3E) and by mask_setup ($5A13) as the mask game begins."
   },
   {
    "address": 18787,
    "type": "line",
-   "text": "Picture A for image_a_draw ($4765): five rows of 48 bytes of pixels (six cells of 8 bytes in multicolour bitmap form) at $4963, $4993, $49C3, $49F3 and $4A23; then five rows of 6 colour-RAM values at $4A53, $4A59, $4A5F, $4A65 and $4A6B; then five rows of 6 screen codes at $4A71, $4A77, $4A7D, $4A83 and $4A89. image_flash ($470C) draws it and clears it by turns."
+   "text": "Picture A for image_a_draw ($4765): five rows of 48 bytes of pixels (six cells of 8 bytes in multicolour bitmap form) at $4963, $4993, $49C3, $49F3 and $4A23; then five rows of 6 colour-RAM values at $4A53, $4A59, $4A5F, $4A65 and $4A6B; then five rows of 6 screen colour bytes at $4A71, $4A77, $4A7D, $4A83 and $4A89. image_flash ($470C) draws it and clears it by turns."
   },
   {
    "address": 19087,
@@ -12152,7 +12152,7 @@
   {
    "address": 19113,
    "type": "line",
-   "text": "Index of the next character that print_scanning ($4ABC), print_mask_complete ($4AF7), print_insufficient ($4B3D) and print_generate_mask ($4B5F) type; mask_report ($4C56) clears it."
+   "text": "Index of the next character that print_scanning ($4ABC), print_mask_complete ($4AF7), print_insufficient ($4B3D) and print_generate_mask ($4B5F) type; mask_setup ($58C8, at $593C) and mask_report ($4C56) clear it."
   },
   {
    "address": 19114,
@@ -12212,7 +12212,7 @@
   {
    "address": 19331,
    "type": "line",
-   "text": "Waits for the scan to finish and rates it. Every $D3 calls ($4B82 counts down from $D2) it toggles $4B81 and swaps the colours $0D and $0A in the colour RAM bytes $DA9F and $DA9E; each call runs print_scanning ($4ABC) and waits $0A ($2027), and it repeats until $5094 is not zero. It then goes through the twelve match flags $5095-$50A0: for each flag that is set it tests the slice type in $50A2 plus the same index and sets $4AA6 (type 2), $4AA7 (type 1) or $4AA8 (any other). It stores in $0A10: 0 if $4AA6 is clear; otherwise 1 when exactly one of $4AA7 and $4AA8 is set, 2 when both are, and 0 when neither is. Called by mask_finish at $4C34."
+   "text": "Waits for the scan to finish and rates it. Every $D3 passes of its loop ($4B82 counts down from $D2) it toggles $4B81 and swaps the colours $0D and $0A in the colour RAM bytes $DA9F and $DA9E; each pass runs print_scanning ($4ABC) and waits $0A ($2027), and it loops until $5094 is not zero. It then goes through the twelve match flags $5095-$50A0: for each flag that is set it tests the slice type in $50A2 plus the same index and sets $4AA6 (type 2), $4AA7 (type 1) or $4AA8 (any other). It stores in $0A10: 0 if $4AA6 is clear; otherwise 1 when exactly one of $4AA7 and $4AA8 is set, 2 when both are, and 0 when neither is. Called by mask_finish at $4C34."
   },
   {
    "address": 19478,
@@ -12302,17 +12302,17 @@
   {
    "address": 20166,
    "type": "line",
-   "text": "Countdown set to $0D by fire_capture ($4EC7) after a capture and counted down by it; at 1 it calls silence_all ($B828) and music_init ($B0C8). Cleared by mask_setup."
+   "text": "Countdown set to $0D by fire_capture ($4EC7) after a capture and counted down by it; at 1 it calls silence_all ($B828) and music_init ($B0C8). Only fire_capture writes it."
   },
   {
    "address": 20167,
    "type": "line",
-   "text": "Handles the fire button for the mask game, called by irq_mask_3 ($5B45) at $5BA7 while $5C67 is zero. It counts $4EC6 down (at 1 it calls silence_all, $B828, and music_init, $B0C8) and holds $4EC1 until fire ($203B bit 4) is released. On a new press it plays sound effect $18 with $B0EE, sets $4EC6 to $0D, $4EC1 to 1, $4EC2 to 4 and $4EC4 to $11, takes the destination from glyph_dest_table ($505C) by twice the slice number $4EC3 and copies the glyphs of the 3 by 3 characters at ($0E) into it with copy_glyph ($500E). It then runs match_check ($4F61) and adds 1 to $4EC3; at 12 it sets $5C67 to 1, clears $4EC2 and runs cursor_home ($5077)."
+   "text": "Handles the fire button for the mask game, called by irq_mask_3 ($5B45) at $5BA7 while $5C67 is zero. It counts $4EC6 down (at 1 it calls silence_all, $B828, and music_init, $B0C8) and holds $4EC1 until fire ($203B bit 4) is released. On a new press it plays sound effect 6 (X = $18) with $B0EE, sets $4EC6 to $0D, $4EC1 to 1, $4EC2 to 4 and $4EC4 to $11, takes the destination from glyph_dest_table ($505C) by twice the slice number $4EC3 and copies the glyphs of the 3 by 3 characters at ($0E) into it with copy_glyph ($500E). It then runs match_check ($4F61) and adds 1 to $4EC3; at 12 it sets $5C67 to 1, clears $4EC2 and runs cursor_home ($5077)."
   },
   {
    "address": 20320,
    "type": "line",
-   "text": "The type of the capture just made, which match_check ($4F61) stores in slice_types ($50A2): set to 2 by objects_spawn ($533E) and by object_flip ($53D9) at count $14; object_flip also toggles it between 0 and 1 (through $53D5)."
+   "text": "The type of the capture just made, which match_check ($4F61) stores in slice_types ($50A2): set to 2 by objects_spawn ($533E), by object_flip ($53D9) at count $14 and by object_slide_out ($55CF, at $55E8) for the target object; object_flip also toggles it between 0 and 1 at count $32 (through $53D5)."
   },
   {
    "address": 20321,
