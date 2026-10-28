@@ -7659,7 +7659,7 @@
   },
   {
    "address": 16100,
-   "name": "sfx_pickup",
+   "name": "sfx_jet",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -7683,7 +7683,7 @@
   },
   {
    "address": 16166,
-   "name": "sfx_jet",
+   "name": "sfx_pickup",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -10611,13 +10611,13 @@
   },
   {
    "address": 61190,
-   "name": "pickup_fx1",
+   "name": "jet_fx1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61221,
-   "name": "pickup_fx2",
+   "name": "jet_fx2",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -10641,19 +10641,19 @@
   },
   {
    "address": 61345,
-   "name": "jet_fx1",
+   "name": "pickup_fx1",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61376,
-   "name": "jet_fx2",
+   "name": "pickup_fx2",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 61407,
-   "name": "jet_fx3",
+   "name": "pickup_fx3",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -11567,7 +11567,7 @@
   {
    "address": 1760,
    "type": "line",
-   "text": "The game's main loop, one pass a frame during play. Waits for the frame (frame_wait, which also runs the three sound players), moves the scroll the interrupt counted into scroll_step, copies the fine scroll for the hit tests, hands the sprites to the interrupt (sprites_to_irq), draws the next map column and shifts the screen when due, updates the status line (lives, score added in, score, hi score, extra life). With boss_on set it leaves for the stage's end-of-stage fight (stage_end_dispatch). Otherwise it releases a paratrooper who was hit (para_hit), then every routine of play in turn: scripted and random enemy spawns, the hero's floor, the screen characters under everyone, ladders, animation, the player's weapon, projectiles, enemies' movement and removal, the jet, sprite sorting, the dropped weapon, deaths and points, enemy contact, char animation, mines, spawn timers, delayed enemies and the end-of-stage check, and loops."
+   "text": "The game's main loop, one pass a frame during play. Waits for the frame (frame_wait, which also runs the three sound players), moves the scroll the interrupt counted into scroll_step, copies the fine scroll (scroll_copy) for finding the screen characters under each enemy (enemies_chars), hands the sprites to the interrupt (sprites_to_irq), draws the next map column and shifts the screen when due, updates the status line (lives, score added in, score, hi score, extra life). With boss_on set it leaves for the stage's end-of-stage fight (stage_end_dispatch). Otherwise it releases a paratrooper who was hit (para_hit), then every routine of play in turn: scripted and random enemy spawns, the hero's floor, the screen characters under everyone, ladders, animation, the player's weapon, projectiles, enemies' movement and removal, the jet, sprite sorting, the dropped weapon, deaths and points, enemy contact, char animation, mines, spawn timers, delayed enemies and the end-of-stage check, and loops."
   },
   {
    "address": 1810,
@@ -11722,7 +11722,7 @@
   {
    "address": 3294,
    "type": "line",
-   "text": "The man who sends the dogs, in enemy slot 0, while the fight runs (boss_phase set). When the slot is empty he is put in at the bottom floor as a type 5, at the edge (spawn_set_x) opposite to the last time (handler_side flips between 4, the right, and 8, the left), with a delay of $1E frames (handler_timer). When the timer runs out he stops for 25 frames (enemy_wait 1, enemy_timer $19) if the hero is on the side he faces, turned towards the hero (handler_shapes), and the timer is reloaded with $3C."
+   "text": "The man who sends the dogs, in enemy slot 0, while the fight runs (boss_phase set). When the slot is empty he is put in at the bottom floor as a type 5, at the edge (spawn_set_x) opposite to the last time (handler_side flips between 4, the right, and 8, the left), with a delay of $1E frames (handler_timer). When the timer runs out he stops for about 13 frames (enemy_wait 1, enemy_timer $19, which this fight counts down twice a frame, in fight_update and again in harbour_fight) if the hero is on the side he faces, turned towards the hero (handler_shapes), and the timer is reloaded with $3C."
   },
   {
    "address": 3424,
@@ -11957,7 +11957,7 @@
   {
    "address": 5162,
    "type": "line",
-   "text": "A stage is won. Blanks the screen, moves to the next stage and its first map column (stage_start_lo, stage_start_hi), plays its tune (stage_tunes), clears the sprites, swaps the title's character set in (block_swap 8) and draws the intermission: the map of the four stages (picture 0) with WELL DONE and the stage's name (texts 1 and 2), or, after the fourth stage, the captives' scene (picture 1; the BIT at $1461 skips LDA #$00) with text 3. The hero walks along the map (or the rescue plays) until the tune ends. Then it swaps the character set back, clears the play variables, places the hero and plays tune $41. After the fourth stage the game starts again at the Missile Base with stage 0 and map column 0, and the soldiers shoot twice as often (fire_frame_b becomes $82). loop_count is meant to add a third chance on the third time round (fire_frame_c $FA), but the DEY and INY leave it at 0 for ever. Then the stage's graphics are swapped in (stage_swaps) and play starts (stage_start)."
+   "text": "A stage is won. Blanks the screen, moves to the next stage and its first map column (stage_start_lo, stage_start_hi), plays its tune (stage_tunes), clears the sprites, swaps the title's character set in (block_swap 8) and draws the intermission: the map of the four stages (picture 0) with RESCUE THE CAPTIVES (text 1) and WELL DONE and TARGET OVERCOME (text 2); the stages' names are part of picture 0, or, after the fourth stage, the captives' scene (picture 1; the BIT at $1461 skips LDA #$00) with text 3. The hero walks along the map (or the rescue plays) until the tune ends. Then it swaps the character set back, clears the play variables, places the hero and plays tune $41. After the fourth stage the game starts again at the Missile Base with stage 0 and map column 0, and the soldiers shoot twice as often (fire_frame_b becomes $82). loop_count is meant to add a third chance on the third time round (fire_frame_c $FA), but the DEY and INY leave it at 0 for ever. Then the stage's graphics are swapped in (stage_swaps) and play starts (stage_start)."
   },
   {
    "address": 5421,
@@ -11972,7 +11972,7 @@
   {
    "address": 5579,
    "type": "line",
-   "text": "Swaps the stage's graphics into place (block_swap) from stage_swap_a, stage_swap_b and stage_swap_c: Harbour swap 0; Bridge swaps 1, 3 and 2; Prison Camp swaps 4, 6 and 5. The Missile Base uses memory as loaded. Then clears the play variables (play_reset)."
+   "text": "Swaps the stage's graphics into place (block_swap) from stage_swap_a, stage_swap_b and stage_swap_c: Harbour swap 0; Bridge swaps 1, 3 and 2; Prison Camp swaps 4, 6 and 5. On the Missile Base, which uses memory as loaded, it returns at once; on the others it then clears the play variables (play_reset)."
   },
   {
    "address": 5616,
@@ -12327,7 +12327,7 @@
   {
    "address": 8138,
    "type": "line",
-   "text": "Type of each scripted enemy: mostly white soldiers (1), crawlers (7), bazooka men lying down (6), and the paratroopers (9)."
+   "text": "Type of each scripted enemy, 60 in all: 16 white soldiers (1), 15 bazooka men lying down (6), 12 crawlers (7), 11 green grenade throwers (4) and 6 paratroopers (9)."
   },
   {
    "address": 8198,
@@ -12637,7 +12637,7 @@
   {
    "address": 9747,
    "type": "line",
-   "text": "Animates each live enemy that is not falling or held: when its direction (enemy_dir) differs from the last animated (enemy_anim_state) the animation restarts, and every 5 frames (enemy_anim_timer) it steps through enemy_anim_tops and enemy_anim_bottoms until the end marker, then starts again. An enemy with no direction faces its facing, except while the hero is on a ladder or in the air."
+   "text": "Animates each live enemy. One with a direction (enemy_dir) that is not falling or held: when its direction differs from the last animated (enemy_anim_state) the animation restarts, and every 5 frames (enemy_anim_timer) it steps through enemy_anim_tops and enemy_anim_bottoms until the end marker, then starts again. One with no direction is restarted on its facing's animation, held or falling or not, except while the hero is on a ladder or in the air."
   },
   {
    "address": 9845,
@@ -12717,7 +12717,7 @@
   {
    "address": 10738,
    "type": "line",
-   "text": "Walks along a floor: right (when the floor character's attributes allow it) by 1 pixel and another whenever walk_speed carries into walk_frac (1.5 pixels a frame at $80), until scroll_limit, where the screen scrolls instead (scroll_right). Left the same, down to X $20. Leaves the ladder and sets his facing."
+   "text": "Walks along a floor: right (when the floor character's attributes allow it) by 1 pixel and another whenever walk_speed carries into walk_frac (1.5 pixels a frame at $80), until scroll_limit, where the screen scrolls instead (scroll_right). Left the same, while his X is $20 or more, so a step can take him to $1F or $1E. Leaves the ladder and sets his facing."
   },
   {
    "address": 10758,
@@ -12752,7 +12752,7 @@
   {
    "address": 11296,
    "type": "line",
-   "text": "Heights of the jump arc, rising from 0 to $21: 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, then by 2 to $1B, then $1E, $21. The hero, the enemies, the dogs and the grenades all fly along it."
+   "text": "The jump arc, 32 heights rising from 0 to $3C: 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, then by 2 to $1B, then $1E, $21, $24, by 4 to $3C, and $3C three more times. The hero's jump uses entries 0-$14 (30 lines); the dogs, the enemies' jumps and the grenades fly along it too, the enemies' grenades as far as entry $1A."
   },
   {
    "address": 11328,
@@ -13407,12 +13407,12 @@
   {
    "address": 16078,
    "type": "line",
-   "text": "A dog's bark: effect $EE4C on the voice in bark_voice, which moves to the next voice each bark (bark_voices)."
+   "text": "A dog's bark: effect $EE4C on the next voice in turn, the one bark_voices gives at bark_voice, which is then kept in bark_voice. The barks go round voices 3, 1 and 2."
   },
   {
    "address": 16094,
    "type": "line",
-   "text": "The voice the next bark uses."
+   "text": "The voice the last bark used, as an index into bark_voices, which gives the next (sfx_bark). As loaded 1, so the first bark is on voice 3 (index 2)."
   },
   {
    "address": 16095,
@@ -13422,7 +13422,7 @@
   {
    "address": 16100,
    "type": "line",
-   "text": "Taking a weapon: effects $EF25 on voice 2 and $EF06 on voice 1."
+   "text": "The jet: effects $EF25 on voice 2 and $EF06 on voice 1."
   },
   {
    "address": 16116,
@@ -13442,7 +13442,7 @@
   {
    "address": 16166,
    "type": "line",
-   "text": "The jet: effects $EFA1, $EFC0 and $EFDF on voices 1, 2 and 3."
+   "text": "Taking a weapon: effects $EFA1, $EFC0 and $EFDF on voices 1, 2 and 3."
   },
   {
    "address": 16191,
@@ -14027,12 +14027,12 @@
   {
    "address": 55296,
    "type": "line",
-   "text": "Under the I/O area and colour RAM: the Bridge's whole character set, characters $00-$7F, which block swap 3 exchanges with $7800. The code that scrolls colour RAM reads and writes these addresses with the I/O switched in, so it never sees this RAM. $DA90 holds the Bridge's mine, $52 and $53."
+   "text": "Under the I/O area and colour RAM: the first half of the Bridge's character set, characters $00-$7F; the rest, $80-$FF, is at $DC00 (chars_bridge_b). Block swap 3 exchanges all 2 KB, $D800-$DFFF, with $7800. The code that scrolls colour RAM reads and writes these addresses with the I/O switched in, so it never sees this RAM. $DA90 holds the Bridge's mine, $52 and $53."
   },
   {
    "address": 56320,
    "type": "line",
-   "text": "The Bridge's characters $80-$FF, under colour RAM, and from $C8 its ladders and floors."
+   "text": "The Bridge's characters $80-$FF, under the I/O area ($DC00-$DFFF: the two CIAs and the I/O 1 and 2 areas), and from $C8 its ladders and floors."
   },
   {
    "address": 57344,
@@ -14127,7 +14127,7 @@
   {
    "address": 57644,
    "type": "line",
-   "text": "Voice 1's JMP to the command's handler: its operand is rewritten for each command, and each handler goes on to the next event itself."
+   "text": "Voice 1's JMP to the command's handler: its operand is rewritten for each command. Each handler goes on to the next event itself, except a return ($C0) with nothing to return to, which ends the voice (v1_playing) and returns."
   },
   {
    "address": 57645,
@@ -14297,7 +14297,7 @@
   {
    "address": 58585,
    "type": "line",
-   "text": "Voice 2's JMP to the command's handler: its operand is rewritten for each command, and each handler goes on to the next event itself."
+   "text": "Voice 2's JMP to the command's handler: its operand is rewritten for each command. Each handler goes on to the next event itself, except a return ($C0) with nothing to return to, which ends the voice (v2_playing) and returns."
   },
   {
    "address": 58586,
@@ -14462,7 +14462,7 @@
   {
    "address": 59525,
    "type": "line",
-   "text": "Voice 3's JMP to the command's handler: its operand is rewritten for each command, and each handler goes on to the next event itself."
+   "text": "Voice 3's JMP to the command's handler: its operand is rewritten for each command. Each handler goes on to the next event itself, except a return ($C0) with nothing to return to, which ends the voice (v3_playing) and returns."
   },
   {
    "address": 59526,
@@ -14797,7 +14797,7 @@
   {
    "address": 60612,
    "type": "line",
-   "text": "Voice 1's live frequency effect flags, from v1_freq_fx_set; 0 when the voice has none."
+   "text": "Voice 1's live frequency effect flags: copied from v1_freq_fx_set at $E1CC, written by sfx_start from byte $0D of a sound effect, and cleared by v3_crash; 0 when the voice has none."
   },
   {
    "address": 60613,
@@ -14882,7 +14882,7 @@
   {
    "address": 60651,
    "type": "line",
-   "text": "Voice 2's live frequency effect flags, from v2_freq_fx_set; 0 when the voice has none."
+   "text": "Voice 2's live frequency effect flags: copied from v2_freq_fx_set at $E579, written by sfx_start from byte $0D of a sound effect, and cleared by v3_crash; 0 when the voice has none."
   },
   {
    "address": 60652,
@@ -14967,7 +14967,7 @@
   {
    "address": 60690,
    "type": "line",
-   "text": "Voice 3's live frequency effect flags, from v3_freq_fx_set; 0 when the voice has none."
+   "text": "Voice 3's live frequency effect flags: copied from v3_freq_fx_set at $E925, written by sfx_start from byte $0D of a sound effect, and cleared by v3_crash; 0 when the voice has none."
   },
   {
    "address": 60691,
@@ -15057,7 +15057,7 @@
   {
    "address": 60728,
    "type": "line",
-   "text": "High bytes of the 95 note frequencies, read at the note plus the transpose: notes 0-$5D are C0 ($0112) up in semitones to A7 ($E6B0), and $5E is 0, silence. On a PAL machine (985,248 Hz) they come out about a quarter of a semitone below concert pitch."
+   "text": "High bytes of the 95 note frequencies, read at the note plus the transpose: notes 0-$5D are C0 ($0112) up in semitones to A7 ($E6B0), and $5E is 0, silence. On a PAL machine (985,248 Hz) they come out about a quarter of a semitone (26 cents) below concert pitch, except D#3 ($0A3C) and A#5 ($3D7E), about 19 and 15 cents below."
   },
   {
    "address": 60823,
@@ -15112,12 +15112,12 @@
   {
    "address": 61190,
    "type": "line",
-   "text": "Voice 1's part of taking a weapon (sfx_pickup), 31 bytes for sfx_start: noise, gate on at frequency $1A5E, attack/decay $A4, sustain/release $AA, the gate on for 70 frames and then 40 frames to silence; a slide of -50 for 255 frames, then the phases again from where it is; no pulse sweep."
+   "text": "Voice 1's part of the jet (sfx_jet), 31 bytes for sfx_start: noise, gate on at frequency $1A5E, attack/decay $A4, sustain/release $AA, the gate on for 70 frames and then 40 frames to silence; a slide of -50 for 255 frames, then the phases again from where it is; no pulse sweep."
   },
   {
    "address": 61221,
    "type": "line",
-   "text": "Voice 2's part of taking a weapon, 31 bytes for sfx_start: noise, gate on at frequency $03E8, attack/decay $A4, sustain/release $AA, the gate on for 70 frames and then 40 frames to silence; a slide of +300 for 10 frames, then -50 for 255 frames after 20 frames (the fourth step during the delay too), then the phases again from where it is; no pulse sweep."
+   "text": "Voice 2's part of the jet, 31 bytes for sfx_start: noise, gate on at frequency $03E8, attack/decay $A4, sustain/release $AA, the gate on for 70 frames and then 40 frames to silence; a slide of +300 for 10 frames, then -50 for 255 frames after 20 frames (the fourth step during the delay too), then the phases again from where it is; no pulse sweep."
   },
   {
    "address": 61252,
@@ -15137,17 +15137,17 @@
   {
    "address": 61345,
    "type": "line",
-   "text": "Voice 1's part of the jet (sfx_jet), 31 bytes for sfx_start: triangle with ring modulation, gate on at frequency $FDE8, attack/decay $00, sustain/release $D9, the gate on for 8 frames and then 14 frames to silence; a slide of +50 for 2 frames, then -50 for 2 frames, then -100 for 2 frames, then +100 for 2 frames, then the phases again from where it is; no pulse sweep."
+   "text": "Voice 1's part of taking a weapon (sfx_pickup), 31 bytes for sfx_start: triangle with ring modulation, gate on at frequency $FDE8, attack/decay $00, sustain/release $D9, the gate on for 8 frames and then 14 frames to silence; a slide of +50 for 2 frames, then -50 for 2 frames, then -100 for 2 frames, then +100 for 2 frames, then the phases again from where it is; no pulse sweep."
   },
   {
    "address": 61376,
    "type": "line",
-   "text": "Voice 2's part of the jet, 31 bytes for sfx_start: noise, gate on at frequency $9A4C, attack/decay $00, sustain/release $98, the gate on for 8 frames and then 14 frames to silence; a slide of -110 for 255 frames; no pulse sweep."
+   "text": "Voice 2's part of taking a weapon, 31 bytes for sfx_start: noise, gate on at frequency $9A4C, attack/decay $00, sustain/release $98, the gate on for 8 frames and then 14 frames to silence; a slide of -110 for 255 frames; no pulse sweep."
   },
   {
    "address": 61407,
    "type": "line",
-   "text": "Voice 3's part of the jet, 31 bytes for sfx_start: triangle with ring modulation, gate on at frequency $9C40, attack/decay $00, sustain/release $D9, the gate on for 8 frames and then 14 frames to silence; a slide of +15000 for 1 frame, then -15000 for 1 frame after 10 frames, then the phases again from where it is; no pulse sweep."
+   "text": "Voice 3's part of taking a weapon, 31 bytes for sfx_start: triangle with ring modulation, gate on at frequency $9C40, attack/decay $00, sustain/release $D9, the gate on for 8 frames and then 14 frames to silence; a slide of +15000 for 1 frame, then -15000 for 1 frame after 10 frames, then the phases again from where it is; no pulse sweep."
   },
   {
    "address": 61438,
@@ -15402,7 +15402,7 @@
   {
    "address": 62612,
    "type": "line",
-   "text": "A tone, 15 bytes for command $D0 (index $1C, offset $0E), which sets the pulse sweep, pulse width and instrument and leaves the frequency effect (the intro, voices 1 and 2 and 3; the intermission after the Missile Base, voices 1 and 2; the intermission after the Harbour, voices 1 and 2; game over, voices 1 and 2; a death, voices 1 and 2 and 3; the intermission after the Bridge, voices 1 and 2): a pulse sweep from $0700 by +64 for 8 frames, then -5 for 255 frames after 3 frames; pulse width $0700; pulse; the gate goes off 3 frames before the note ends, attack/decay $18, sustain/release $79, then 30 frames to silence."
+   "text": "A tone, 15 bytes for command $D0 (index $1C, offset $0E), which sets the pulse sweep, pulse width and instrument and leaves the frequency effect (the intro, voices 1 and 2 and 3; the intermission after the Missile Base, voices 1 and 2; the intermission after the Harbour, voices 1 and 2; game over, voices 1 and 2; a death, voices 1 and 2 and 3; the intermission after the Bridge, voices 1 and 2): a pulse sweep from $0700 by +64 for 8 frames, then -5 for 255 frames after 3 frames; pulse width $0700; pulse; the gate goes off when the note has fewer than 3 frames left, attack/decay $18, sustain/release $79, then 30 frames to silence."
   },
   {
    "address": 62627,
@@ -15542,7 +15542,7 @@
   {
    "address": 63481,
    "type": "line",
-   "text": "A whole sound, 29 bytes for command $D0 (index $1C), which sets every one of the voice's settings (the title, voices 2 and 3): a slide of +40 for 3 frames, then -40 for 6 frames, then +40 for 3 frames after 20 frames (the fourth step during the delay too), then the phases again from where it is; a pulse sweep from $0880 by +20 for 80 frames, then -20 for 80 frames after 9 frames, then the phases again; pulse width $0880; pulse; the gate goes off 30 frames before the note ends, attack/decay $DD, sustain/release $DB, then 200 frames to silence."
+   "text": "A whole sound, 29 bytes for command $D0 (index $1C), which sets every one of the voice's settings (the title, voices 2 and 3): a slide of +40 for 3 frames, then -40 for 6 frames, then +40 for 3 frames after 20 frames (the fourth step during the delay too), then the phases again from where it is; a pulse sweep from $0880 by +20 for 80 frames, then -20 for 80 frames after 9 frames, then the phases again; pulse width $0880; pulse; the gate goes off when the note has fewer than 30 frames left, attack/decay $DD, sustain/release $DB, then 200 frames to silence."
   },
   {
    "address": 63510,
@@ -15612,7 +15612,7 @@
   {
    "address": 64102,
    "type": "line",
-   "text": "An instrument, 5 bytes for command $D6 (the title, voices 2 and 3): pulse; the gate goes off 8 frames before the note ends, attack/decay $09, sustain/release $E7, then 10 frames to silence."
+   "text": "An instrument, 5 bytes for command $D6 (the title, voices 2 and 3): pulse; the gate goes off when the note has fewer than 8 frames left, attack/decay $09, sustain/release $E7, then 10 frames to silence."
   },
   {
    "address": 64107,

@@ -1,66 +1,119 @@
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-:root{
-  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
-  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
-  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
-  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
-  --chip:#2f3136; --chip-ink:#ffffff;
-  --c64blue:#40318d; --c64grey:#686868;
-  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
-  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
-  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
-}
-*{box-sizing:border-box}
-html{background:var(--bg);min-height:100%}
-body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
-h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
-.wrap{padding:0 var(--gx)}
-.hero{padding:48px var(--gx) 8px;text-align:left}
-.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
-.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
-.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
-section{padding:var(--sy) 0 24px}
-section:last-of-type{border-bottom:none}
-.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
-h2.t{font-size:var(--h2);margin-bottom:12px}
-.lede{color:var(--ink-soft);margin:0 0 30px}
-.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
-.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
-.cap b{color:var(--ink);font-weight:700}
-code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
-
-</style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
--->
-<!-- tabs -->
-<header class="hero">
-  <p class="eyebrow">{{year}} · {{publisher}}</p>
-  <h1>{{title}}</h1>
-  <p class="sub">The standfirst, which the agent writes: the most interesting thing inside this game, in a sentence or two.</p>
-</header>
-<main class="wrap">
-<section>
-  <p class="fig">01 · What this section explains</p>
-  <h2 class="t">The finding, spelled out</h2>
-  <p class="lede">What a player would notice, in a sentence or two.</p>
-  <div class="plate"><canvas id="cv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
-  <p>The explanation, with the bytes, the table or the register beside each claim.</p>
-</section>
-</main>
-<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+/* gb-music */
+// createDriver for C64Sid: runs Martin Galway's driver, the game's own code and tables taken from
+// the listing over GB_DRIVER_RANGES, on the kit's 6502 (C64Cpu, from ../../lib/cpu6502.js, which
+// sid.js passes to createDriver). Each button starts as the game starts it: sound_off ($3E5B) and
+// the volume at $0F, as new_game does, then tune_start ($3E00) with the tune's Y, or the routine
+// that starts an effect (sfx_flame, $3EBC, and the rest). Each frame runs what the game runs: the
+// three note readers frame_wait calls ($E85C, $E4B0, $E103, voice 3 first), then the three effects
+// routines irq_player calls from the raster interrupt ($E357, $E704, $EAB0).
+// A button stops when tune_playing ($3E32) says every voice is done, or, for the tunes that go
+// round for ever (the title and the drums under play), when the reader stops it.
+const GB_DRIVER_RANGES = [[0x00E6, 0x00FC], [0x3E00, 0x3FEF], [0xE000, 0xFEB9]];
+const GB_TUNES = [
+  { name: 'Title', y: 0x35 }, { name: 'Rescue the captives', y: 0x05 }, { name: 'Play starts', y: 0x0B },
+  { name: 'Play resumes', y: 0x41 }, { name: 'Alarm', y: 0x47 }, { name: 'The lorry', y: 0x4D },
+  { name: 'The helicopters', y: 0x2F }, { name: 'After the Missile Base', y: 0x17 },
+  { name: 'After the Harbour', y: 0x1D }, { name: 'After the Bridge', y: 0x3B },
+  { name: 'The rescue', y: 0x11 }, { name: 'A death', y: 0x29 }, { name: 'Game over', y: 0x23 },
+];
+const GB_EFFECTS = [
+  { name: 'Knife or shot hits', run: 0x3EF4 }, { name: 'A gunshot', run: 0x3EFD },
+  { name: 'Bazooka or grenade', run: 0x3F3F }, { name: 'Flame thrower', run: 0x3EBC },
+  { name: 'Explosion', run: 0x3F0D }, { name: 'The jet', run: 0x3EE4 },
+  { name: 'Weapon taken', run: 0x3F26 }, { name: 'A dog barks', run: 0x3ECE },
+];
+function createDriver(D, C64Cpu) {
+  const base = new Uint8Array(0x10000);
+  for (const [ad, bytes] of D.mem) base.set(bytes, ad);
+  const sid = new Uint8Array(25);
+  let m, cpu, c, writes = [], over = false;
+  const io = {                                                  // the chips at $D000-$DFFF
+    read(ad) { throw new Error('read $' + ad.toString(16)); },
+    write(ad, val) {
+      if (ad >= 0xD400 && ad < 0xD419) { sid[ad - 0xD400] = val; writes.push(ad - 0xD400, val); return; }
+      throw new Error('write $' + ad.toString(16));
+    },
+  };
+  const run = (ad, regs) => cpu.call(ad, regs || {}, { maxSteps: 100000 });
+  return {
+    sid,
+    get writes() { return writes; },
+    get mem() { return m; },
+    init(t) {
+      c = D.list[t];
+      m = base.slice(); cpu = new C64Cpu.CPU(m, { port: 0x35, io });
+      sid.fill(0); over = false; writes = [];
+      run(0x3E5B);                                              // sound_off
+      io.write(0xD418, 0x0F);                                   // the volume, as new_game sets it
+      if (c.y !== undefined) run(0x3E00, { y: c.y });           // tune_start
+      else run(c.run);                                          // the effect's own start
+    },
+    stop() { over = true; writes = []; },
+    play() {
+      writes = [];
+      if (over) return;
+      run(0xE85C); run(0xE4B0); run(0xE103);                    // frame_wait's note readers
+      run(0xE357); run(0xE704); run(0xEAB0);                    // irq_player's effects
+      run(0x3E32);                                              // tune_playing: Z set when all is done
+      if (cpu.z) over = true;
+    },
+    playing() { return !over; },
+    voice(v) {
+      if (!m) return {};
+      return { at: m[0xE6 + 2 * v] | m[0xE7 + 2 * v] << 8, transpose: m[0xF2 + v], music: m[0xF8 + v] ? 'yes' : 'effect' };
+    },
+  };
+}
+// end of gb-music
+</script>
+<script>
+/* gb-stage */
+// The memory each stage is played in, and its map drawn from it, as the game does both.
+// gbStageMem(ram, s): the listing's memory with the block swaps the game has made by the time
+// stage s (0-3) is played. stage_complete runs stage_swaps ($15CB) for each new stage, which swaps
+// the blocks stage_swap_a ($1610), stage_swap_b ($1613) and stage_swap_c ($1616) name at the
+// stage (0 in the last two means none), and the earlier stages' swaps stay in effect. A swap is
+// block_swap's ($FEEC): the block at swap_a_addrs ($FF5F) exchanged byte for byte with the one at
+// swap_b_addrs ($FF71), swap_lengths ($FF83) bytes long. The Prison Camp also gets prison_setup's
+// ($3CB7) 16 bytes from anim_restore ($3BA6) at $7A90.
+// gbColumn(m, col): the 16 characters and colours column_draw ($39FB) puts in rows 8-23 for map
+// column col, top to bottom, as [char, colour] pairs. The map at $C000 holds two tile numbers for
+// every eight columns (col shifted right twice, made even): the second is the upper tile, rows
+// 8-15, the first the lower, rows 16-23. Tile t is 64 characters at $A000 + 64t, rows stored from
+// the bottom up, with its colours $1000 higher; the column's three low bits pick the tile's column.
+// gbMines(m, s): the mines mines_place ($3AA8) puts at row 23, as [map column, character]: the
+// stage's entries from stage_mine_first to stage_mine_end ($3AD4, $3AD8), each at its column
+// (mine_col_hi, mine_col_lo: $3ADC, $3B20), the stage's mine character (mine_chars, $3B6E) plus
+// the entry's lowest bit.
+function gbStageMem(ram, s) {
+  const m = ram.slice();
+  const w = (a) => m[a] | m[a + 1] << 8;
+  const swap = (n) => {
+    const a = w(0xFF5F + 2 * n), b = w(0xFF71 + 2 * n), len = w(0xFF83 + 2 * n);
+    for (let i = 0; i < len; i++) { const t = m[a + i]; m[a + i] = m[b + i]; m[b + i] = t; }
+  };
+  for (let st = 1; st <= s; st++) {
+    swap(m[0x1610 + st]);
+    if (m[0x1613 + st]) swap(m[0x1613 + st]);
+    if (m[0x1616 + st]) swap(m[0x1616 + st]);
+  }
+  if (s === 3) for (let i = 0; i < 16; i++) m[0x7A90 + i] = m[0x3BA6 + i];
+  return m;
+}
+function gbColumn(m, col) {
+  const p = 0xC000 + ((col >> 2) & 0xFFFE), out = [];
+  for (const half of [1, 0]) {
+    const t = 0xA000 + m[p + half] * 64;
+    for (let r = 7; r >= 0; r--) out.push([m[t + r * 8 + (col & 7)], m[t + 0x1000 + r * 8 + (col & 7)]]);
+  }
+  return out;
+}
+function gbMines(m, s) {
+  const out = [];
+  for (let e = m[0x3AD4 + s]; e < m[0x3AD8 + s]; e++)
+    out.push([m[0x3ADC + e] << 8 | m[0x3B20 + e], m[0x3B6E + s] + (e & 1)]);
+  return out;
+}
+// end of gb-stage
 </script>
