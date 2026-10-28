@@ -34,6 +34,12 @@ call a trace shows running (--trace, Bocfel's, kit/zmachine/bocfel.py): a routin
 through a variable or a property is found that way, and the scan is run again until nothing
 changes.
 
+A file can run on past the story's end: the header of a story of version 3 on gives its
+length, and a story of version 1 or 2, whose header has none, ends where the part's coverage
+excludes the rest of the file (["$1F000", "$1FFFF", "past the story's end: ..."]). The script
+lays out the story up to there and leaves what follows to the run, which can type it and say
+what it is; the ledger does not count it.
+
 Usage:
   map.py <part dir> <story> [--trace <file> ...]   write the part's symbols.json
   map.py <part dir> <story> --dry-run [--trace ...] say what it would write, and what in
@@ -154,11 +160,12 @@ def string_end(s, a, end):
     return None
 
 
-def scan(s, routines=(), strings=()):
-    """[(kind, start, end, extra)] for high memory, in order: ("routine", header, end, (first,
-    instructions)), ("string", start, end, text) and ("pad", start, end, None) for the zeros
-    that align the next one, and ("left", start, end, None) where neither reads."""
-    end, u = len(s.mem), unit(s.version)
+def scan(s, routines=(), strings=(), end=None):
+    """[(kind, start, end, extra)] for high memory up to the story's end, in order: ("routine",
+    header, end, (first, instructions)), ("string", start, end, text) and ("pad", start, end,
+    None) for the zeros that align the next one, and ("left", start, end, None) where neither
+    reads."""
+    end, u = end or len(s.mem), unit(s.version)
     a, out = s.header["high"], []
     while a < end:
         past = any(k == "string" for k, *_ in out)       # the strings follow every routine
@@ -208,11 +215,11 @@ def trace_routines(s, paths):
     return out
 
 
-def high_memory(s, traced=()):
+def high_memory(s, traced=(), end=None):
     """scan() again until what the routines found call and print agrees with it."""
     routines, strings = set(traced), set()
     for _ in range(8):
-        items = scan(s, routines, strings)
+        items = scan(s, routines, strings, end)
         seen_r = {a for k, a, _, _ in items if k == "routine"}
         seen_s = {a for k, a, _, _ in items if k == "string"}
         want_r, want_s = set(routines), set(strings)
@@ -251,10 +258,11 @@ def groups(M, start, count, size, text):
         M.comment(start + k * size, text(k, min(k + per, count) - 1))
 
 
-def build(s, traced=()):
-    """The Map of a story, and the stretches of dynamic and static memory it leaves out."""
+def build(s, traced=(), end=None):
+    """The Map of a story up to its end (the file's, unless given), and the stretches of dynamic
+    and static memory it leaves out."""
     M, v, h = Map(), s.version, s.header
-    end = len(s.mem)
+    end = end or len(s.mem)
     taken = set()
 
     # the header: one table, each field named beside its bytes
@@ -395,7 +403,7 @@ def build(s, traced=()):
         f"{d.entry_length - wlen} of data that the story's own parser reads."))
 
     # high memory
-    items, want_r, want_s = high_memory(s, trace_routines(s, traced))
+    items, want_r, want_s = high_memory(s, trace_routines(s, traced), end)
     for k, a, e, x in items:
         if k == "routine":
             M.block(a, e - 1, "Code")
@@ -451,6 +459,13 @@ def merge(old, M):
             sorted(comments, key=lambda c: (c["address"], c["type"])))
 
 
+def story_end(s, exclude):
+    """Where the story's own bytes end: the header's length, or the start of an exclusion in the
+    part's coverage that runs to the end of the file, whichever comes first."""
+    tails = [lo for lo, hi, _ in exclude if hi >= len(s.mem) - 1 and s.header["high"] < lo]
+    return min([s.length(), len(s.mem)] + tails)
+
+
 def main(argv):
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
         print(__doc__); return 0
@@ -464,7 +479,7 @@ def main(argv):
                  "(kit/skills/core/15-parts)")
     import snapshot
     s = Story(snapshot.read(path))
-    M, items, left = build(s, traces)
+    M, items, left = build(s, traces, story_end(s, regions(game)["exclude"]))
     spath = os.path.join(gdir, "symbols.json")
     old = json.load(open(spath)) if os.path.isfile(spath) else {}
     blocks, symbols, comments = merge(old, M)

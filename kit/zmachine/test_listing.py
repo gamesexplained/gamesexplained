@@ -10,6 +10,8 @@ story part of a game folder in a scratch directory, and checks:
     each routine's header as .routine, and every string as text, decoded as story.py decodes it;
   - the listing rebuilds from its own bytes (listing.py --rebuild), and check_listing.py passes;
   - a label, a comment and a block the run wrote survive map.py's next pass;
+  - a file that runs on past the story's end, as a version 1 or 2 story's can, is laid out only
+    up to the exclusion in the part's coverage that says where the story ends;
   - below high memory, the ledger finds bare only the global variables, which are the run's to
     describe: every table map.py describes is explained to its last byte, the dictionary too
     when the run has named its head.
@@ -43,8 +45,8 @@ class Listing(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def folder(self, v, asm):
-        """A game folder whose one part is the story."""
+    def folder(self, v, asm, tail=b"", exclude=()):
+        """A game folder whose one part is the story, with tail after it in the file."""
         g = os.path.join(self.tmp.name, f"v{v}")
         part = os.path.join(g, "parts", "story")
         os.makedirs(os.path.join(part, "work"))
@@ -52,10 +54,11 @@ class Listing(unittest.TestCase):
             json.dump({"platform": "apple2", "slug": "fixture", "title": "Fixture", "build": "disk"}, f)
         with open(os.path.join(part, "part.json"), "w") as f:
             json.dump({"title": "The story", "order": 1, "kind": "virtual", "machine": "zmachine",
-                       "size": len(asm.story)}, f)
+                       "size": len(asm.story) + len(tail),
+                       "coverage": {"exclude": [list(e) for e in exclude]}}, f)
         path = os.path.join(part, "work", f"story.z{v}")
         with open(path, "wb") as f:
-            f.write(asm.story)
+            f.write(asm.story + tail)
         return part, path
 
     def mapped(self, part, path):
@@ -124,6 +127,20 @@ class Listing(unittest.TestCase):
         L = self.listed(part, path)
         call = [r for r in L["records"] if r.get("t") == "code" and "add_three" in (r.get("o") or "")]
         self.assertTrue(call, "no call shows the run's name for the routine")
+
+    def test_a_story_ends_where_its_part_says(self):
+        for v in (1, 2):
+            with self.subTest(version=v):
+                asm = test_bocfel.build(v)
+                n = len(asm.story)
+                high = Story(asm.story).header["high"]
+                tail = bytes(12) + asm.story[high:]        # padding, then text that reads as strings
+                part, path = self.folder(v, asm, tail, [(f"${n:05X}", f"${n + len(tail) - 1:05X}",
+                                                         "past the story's end")])
+                sym = self.mapped(part, path)
+                past = [x for x in sym["symbols"] + sym["blocks"] if x.get("address", x.get("start")) >= n]
+                self.assertEqual(past, [], "map.py's work past the story's end")
+                self.listed(part, path)
 
     def bare(self, sym, story):
         """The bare runs below high memory, as (start, length, owner)."""
