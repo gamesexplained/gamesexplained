@@ -10202,12 +10202,12 @@
   {
    "address": 2655,
    "type": "line",
-   "text": "Extended-colour flag: when it is not zero set_ecm ($1656) turns extended colour mode on, otherwise off. Set to 1 by type_briefing ($0F44) and type_lab_text ($57E5) and cleared by play_setup at $1B4E."
+   "text": "Extended-colour flag: when it is not zero set_ecm ($1656) and set_ecm_bit ($163F) turn extended colour mode on, otherwise off, and the title interrupt at $1557 keeps the sprites off. Set to 1 by title_setup ($0A67, $0AF4), title_wait_fire ($0F2C), type_briefing ($0FD8), type_lab_text ($5866) and mask_setup ($58CD); cleared by title_setup at $0B3C, play_setup at $1B4E and mask_setup at $5A23."
   },
   {
    "address": 2656,
    "type": "line",
-   "text": "Blanks the screen and switches the video chip to bank 3 ($DD00 bits 0-1 cleared), screen at $CC00 and characters at $E000 ($D018=$38), with extended colour mode on ($D011 bit 6), and banks out the ROMs ($01=$35)."
+   "text": "Blanks the screen for a moment ($D011 bit 4 cleared, set again at $0A92) and switches the video chip to bank 3 ($DD00 bits 0-1 cleared), screen at $CC00 and characters at $E000 ($D018=$38), with extended colour mode on ($D011 bit 6), and banks out the ROMs ($01=$35)."
   },
   {
    "address": 2880,
@@ -10257,12 +10257,12 @@
   {
    "address": 3591,
    "type": "line",
-   "text": "Stores A in colour RAM from $D8A0 to $DBE7 (840 bytes: four runs of $D2 bytes, rows 4 to 24). Called by the credits page ($11BE, with A=$0D), the name entry in title_idle ($1273, A=7) and the high-score page ($13D0, A=7)."
+   "text": "Stores A in colour RAM from $D8A0 to $DBE7 (840 bytes: four runs of $D2 bytes, rows 4 to 24). Called by the high-score page ($11BE, with A=$0D), the name entry in title_idle ($1273, A=7) and the credits page ($13D0, A=7)."
   },
   {
    "address": 3611,
    "type": "line",
-   "text": "Stores A in the screen matrix from $CCA0 to $CFE7 (840 bytes: four runs of $D2 bytes, rows 4 to 24), the same rows as fill_colour_rows. Called with A=$3D by the credits page ($11C3), the name entry ($126E) and the high-score page ($13CB)."
+   "text": "Stores A in the screen matrix from $CCA0 to $CFE7 (840 bytes: four runs of $D2 bytes, rows 4 to 24), the same rows as fill_colour_rows. Called with A=$3D by the high-score page ($11C3), the name entry ($126E) and the credits page ($13CB)."
   },
   {
    "address": 3631,
@@ -10272,7 +10272,7 @@
   {
    "address": 3632,
    "type": "line",
-   "text": "Reads the keyboard with CIA 1 into A; returns at once when no line of the port reads low (the test at $0E3F), otherwise scans the rows from $0EA7. $1EF4 keeps the result in $0E2F."
+   "text": "Reads the keyboard with CIA 1 into A. It first reads ports A and B as inputs and returns $FF at once when any of bits 0-4 reads low (a joystick is held, the test at $0E3F); otherwise it scans the lines from $0EA7 and returns the key code from key_table, or $FF when no key is down, again giving $FF if a joystick bit reads low after the key is found ($0E8D). title_irq_bottom ($1623) and $1EF4 keep the result in $0E2F."
   },
   {
    "address": 3751,
@@ -10297,12 +10297,12 @@
   {
    "address": 3818,
    "type": "line",
-   "text": "Which attract page is up: 0 for the credits page, 1 for the high-score table."
+   "text": "Which attract page is up. title_wait_fire flips it and then shows the credits page for 0 and the high-score table for 1; the entry at $0A2C reads it the other way round, showing the high-score table for 0 and the credits for 1. title_setup sets it to 1 ($0AF1) and title_idle to 0 ($1269) after a name has been entered."
   },
   {
    "address": 3820,
    "type": "line",
-   "text": "Title loop step: polls the joystick byte $203B for fire (bit 4) and, every time the countdown in $203A and $2039 runs out, flips $0EEA to swap between the credits and score pages."
+   "text": "Title loop step: polls the joystick byte $203B for fire (bit 4 clear) and, every time the high byte $203A of the countdown $2039/$203A reaches 0, reloads it ($203A=2, $2039=$32) and flips $0EEA to swap between the credits and score pages. Fire starts the briefing ($0F44) and jumps to play_loop ($179E)."
   },
   {
    "address": 3905,
@@ -10387,12 +10387,12 @@
   {
    "address": 4520,
    "type": "line",
-   "text": "The heading of the high-score page, \"TODAYS TOP DARKMEN\", in screen codes ($D7 is the space; show_scores adds $66, which makes it the blank character $3D). show_scores ($11BC) draws the first 19 bytes to $CD22; the twentieth, a space, is not drawn."
+   "text": "The heading of the high-score page, \"TODAYS TOP  DARKMEN\" (two spaces before DARKMEN), in screen codes ($D7 is the space; show_scores adds $66, which makes it the blank character $3D). show_scores ($11BC) draws the first 19 bytes to $CD22; the twentieth, a space, is not drawn."
   },
   {
    "address": 4540,
    "type": "line",
-   "text": "Draws the high-score page. Colours rows 4 to 24 with $0D, blanks them, writes \"TODAYS TOP DARKMEN\" ($11A8) to $CD22 in colour 7, then for each of the five records of the table at $10A3 writes 17 characters to the screen from $CD9B, 80 bytes (two screen rows) apart: the 10 name codes with $67 added (a space gives $3D) and then 7 of the 8 score digits with $8A added. Called by title_wait_fire at $0F11."
+   "text": "Draws the high-score page. Colours rows 4 to 24 with $0D, blanks them, writes \"TODAYS TOP  DARKMEN\" ($11A8) to $CD22 in colour 7, then for each of the five records of the table at $10A3 writes 17 characters to the screen from $CD9B, 80 bytes (two screen rows) apart: the 10 name codes with $67 added (a space gives $3D) and then 7 of the 8 score digits with $8A added. Called by the entry at $0A37 and by title_wait_fire at $0F11."
   },
   {
    "address": 4654,
@@ -10407,7 +10407,7 @@
   {
    "address": 4686,
    "type": "line",
-   "text": "Title-screen step: while the NMI flag is clear and $0A13 holds $58, calls $1110."
+   "text": "Title-screen step: when the NMI flag is clear and $0A13 holds $58 (set by play_setup at $1A37, so only after a game), calls high_score_check ($1110). If that set $110F it runs the name entry: sets $0EEA to 0, blanks rows 4 to 24, prints the high-score messages, takes up to eight letters from the key code $0E2F to $CDEF (RETURN ends, DEL deletes), copies the name with read_name_row ($133D) into the table through insert_score ($114F), sets $0B40 and restarts the title tune ($A164, X=$12)."
   },
   {
    "address": 4925,
@@ -10417,7 +10417,7 @@
   {
    "address": 4951,
    "type": "line",
-   "text": "The name typed for the high-score table, one code per character ($20 for a space). read_name_row ($133D) writes it and insert_score ($114F) copies it to $10FD."
+   "text": "The name typed for the high-score table, one code per character ($20 for a space). title_idle fills it with spaces ($127A) and read_name_row ($133D) writes the typed name; title_idle ($1301), insert_name_unused ($1140) and insert_score ($1151) copy it to $10FD."
   },
   {
    "address": 4959,
@@ -10447,7 +10447,7 @@
   {
    "address": 5065,
    "type": "line",
-   "text": "Draws the credits page. Blanks rows 4 to 24 with colour 7 and writes the first nine lines of credits_text ($1675) to the screen, each with $66 added to its codes (a space gives $3D): at $CCCE in colour $0F, at $CCF6, $CD46, $CD96 and $CDBE in colour 7, at $CE5E, $CE86 and $CED6 in colour 5 and at $CF26 in colour 1. The tenth line, \"PRESS FIRE TO START\", is not drawn by this routine. Called by title_wait_fire at $0F17."
+   "text": "Draws the credits page. Blanks rows 4 to 24 with colour 7 and writes the first nine lines of credits_text ($1675) to the screen, each with $66 added to its codes (a space gives $3D): at $CCCE in colour $0F, at $CCF6, $CD46, $CD96 and $CDBE in colour 7, at $CE5E, $CE86 and $CED6 in colour 5 and at $CF26 in colour 1. The tenth line, \"PRESS FIRE TO START\", is not drawn by this routine. Called by the entry at $0A31 and by title_wait_fire at $0F17."
   },
   {
    "address": 5411,
@@ -10482,7 +10482,7 @@
   {
    "address": 6046,
    "type": "line",
-   "text": "Main loop of play. Each pass runs $1FD5 (a bare RTS), redraws the panel's bar ($4449) and figures ($44FD), runs $1A0C and the pause check. Leaves for $4A8F when $1A1E is set, and for the end of the game ($195C, then $0F38) when $0A11 and $43E3 are both zero; otherwise waits for the NMI flag $2038."
+   "text": "Main loop of play, after play_setup ($1A21). Each pass runs $1FD5 (a bare RTS), redraws the panel's bar ($4449) and figures ($44FD), runs $1A0C and the pause check. Leaves for $4A8F when $1A1E is set, and for the end of the game ($195C, then $0F38) when $0A11 and $43E3 are both zero or when the NMI flag $2038 is set."
   },
   {
    "address": 6093,
@@ -10522,17 +10522,17 @@
   {
    "address": 6278,
    "type": "line",
-   "text": "Lengths of the 56 diagonal lines that wipe_screen ($18C5) clears: they rise from 0 to $12, stay at $12 for 22 steps and fall to 2."
+   "text": "Lengths of the 56 diagonal lines that wipe_screen ($18C5) clears, each one less than the number of cells on the line: they rise from 0 to $12, stay at $12 for 22 steps and fall to 2 ($1886-$18BD). The two bytes after them are not read."
   },
   {
    "address": 6334,
    "type": "line",
-   "text": "The last two bytes of wipe_lengths ($18B0-$18BF), 1 and 0, the final entries of the countdown 15 to 0."
+   "text": "The last two bytes after wipe_lengths ($1886), 1 and 0, which end its falling run but are never read: wipe_screen takes only the 56 entries $1886-$18BD."
   },
   {
    "address": 6336,
    "type": "line",
-   "text": "Number of cells still to clear on the current diagonal of wipe_screen ($18C5)."
+   "text": "Number of further cells to clear on the current diagonal of wipe_screen ($18C5), after the one being cleared."
   },
   {
    "address": 6337,
@@ -10547,7 +10547,7 @@
   {
    "address": 6341,
    "type": "line",
-   "text": "Wipes the play screen with a diagonal sweep and returns. It sets the wipe flag $18C3 and the pause flag $1EF2 to 1. For each of 56 steps X it takes a length from the table $1886, then clears that many screen cells in both screens ($CC00 and $C800), stepping 39 bytes (one cell down and one to the left) from a start cell that moves along row 0 and then down the right edge ($18C1/$18C2), pausing $32 ($2027) after each step. It clears $1EF2 at the end. Called by game_over ($195C) and by mask_setup."
+   "text": "Wipes the play screen with a diagonal sweep and returns. It sets the wipe flag $18C3 and the pause flag $1EF2 to 1. For each of 56 steps X it takes a length from the table $1886, then clears one more than that many screen cells in both screens ($CC00 and $C800), stepping 39 bytes (one cell down and one to the left) from a start cell that moves along row 0 and then down the right edge ($18C1/$18C2), pausing $32 ($2027) after each step. It clears $1EF2 at the end. Called by game_over ($195C) and by mask_setup."
   },
   {
    "address": 6428,
@@ -10587,17 +10587,17 @@
   {
    "address": 6686,
    "type": "line",
-   "text": "Set to 1 to end play: by skip_key_check ($1A0C) and by exit_touch_test ($4586). play_setup clears it and the play loop leaves for end_of_level ($4A8F) when it is set."
+   "text": "Set to 1 to end play: by skip_key_check ($1A0C) and by exit_touch_test ($4586). play_setup and mask_setup ($592D) clear it, and the play loop leaves for end_of_level ($4A8F) when it is set."
   },
   {
    "address": 6687,
    "type": "line",
-   "text": "How far the playfield has scrolled, low byte first. scroll_step ($2066) adds the scroll speed to it; the object list read by objects_step ($3297) and the enemy list read at $3190 are compared with it."
+   "text": "How far the playfield has scrolled, low byte first. scroll_step ($2066) adds the scroll speed to it; the object list read by objects_step ($3297) and the enemy list read at $3190 are compared with it, and so is the list read by the unused scroll_stop_test_unused ($4087)."
   },
   {
    "address": 6689,
    "type": "line",
-   "text": "Start of play, from $0F35: blanks the screen, turns sprites off, clears the end-of-play flag $1A1E, pauses through $2027, banks the ROMs out and selects video bank 3 with $D018=$34, then sets up the play screen and interrupts."
+   "text": "Start of play, called by play_loop at $179E: blacks the screen (extended colour mode on, $D011 bit 6), turns sprites off, clears the end-of-play flag $1A1E, pauses through $2027, banks the ROMs out and selects video bank 3 with $D018=$34, then sets up the play screen and interrupts."
   },
   {
    "address": 7145,
@@ -10647,12 +10647,12 @@
   {
    "address": 7613,
    "type": "line",
-   "text": "A countdown that irq_panel ($1D43) takes 1 from on every second frame (when $1DBE has just become 1) until it reaches 0. mask_setup ($58C8) counts it down in the same way at $5AC4. No traced code sets it above 0."
+   "text": "A countdown that irq_panel ($1D43) takes 1 from on every second frame (when $1DBE has just become 1) until it reaches 0. The mask game's interrupt irq_mask_1 ($5A7A) counts it down in the same way at $5AC4. No traced code sets it above 0."
   },
   {
    "address": 7614,
    "type": "line",
-   "text": "Flipped between 0 and 1 by irq_panel ($1D43) on every frame (and by mask_setup at $5ABF); the countdown $1DBD only moves on when it has just become 1."
+   "text": "Flipped between 0 and 1 by irq_panel ($1D43) on every frame (and by the mask game's interrupt irq_mask_1 at $5ABF); the countdown $1DBD only moves on when it has just become 1."
   },
   {
    "address": 7615,
@@ -10697,7 +10697,7 @@
   {
    "address": 7922,
    "type": "line",
-   "text": "1 while the game is paused ($1777); the interrupts skip the moving parts of the game while it is set."
+   "text": "1 while the game is paused ($1777) and while wipe_screen ($18C5) runs; the interrupts skip the moving parts of the game while it is set."
   },
   {
    "address": 7923,
