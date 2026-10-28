@@ -379,12 +379,27 @@ class Parts(unittest.TestCase):
             self.assertFalse(any(lo <= 0x8010 <= hi for lo, hi, _ in P.load_game(str(g / 'parts' / 'engine'))['elsewhere']))
             for wrong, says in ((dict(bank, over='engine'), 'is a bank, so "over"'),
                                 ({k: v for k, v in bank.items() if k != 'window'}, 'has no "window"'),
-                                (dict(own, bank=0, window=[['$8000', '$9FFF']]), 'which only a bank has'),
-                                (dict(own, kind='overlay'), '"kind" is "load" or "bank"')):
+                                (dict(own, bank=0, window=[['$8000', '$9FFF']]), 'which only a bank or a virtual'),
+                                (dict(own, kind='overlay'), '"kind" is "load", "bank" or "virtual"'),
+                                # a virtual address space, a story the game reads from its disk, lies over no
+                                # part and needs the kit that reads its machine
+                                (dict(own, kind='virtual', machine='zmachine', size=0x14000, over='engine'),
+                                 'is a virtual address space, so "over"'),
+                                (dict(own, kind='virtual', machine='abacus', size=0x14000), 'names no kit'),
+                                (dict(own, kind='virtual', machine='zmachine'), 'has no "size"')):
                 f.write_text(json.dumps(wrong))
                 with self.assertRaises(SystemExit) as e:
                     P.parts(str(g))
                 self.assertIn(says, str(e.exception))
+
+    def test_a_virtual_part_says_its_machine_and_size(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            run(KIT / 'scripts' / 'parts.py', 'add', g, 'story', '--machine', 'zmachine',
+                '--size', '0x14000')
+            game = P.load_game(str(g / 'parts' / 'story'))
+            self.assertEqual((game['part']['machine'], game['part']['size'], game['part']['over']),
+                             ('zmachine', 0x14000, []))
 
     def test_adopt_makes_the_first_load_a_part(self):
         with tempfile.TemporaryDirectory() as d:

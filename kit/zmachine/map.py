@@ -24,10 +24,15 @@ game's own tables are (an Infocom parser's grammar) are the run's to write.
 
 Routines and strings are told apart as they come: a routine is a count of locals up to 15
 followed by instructions that decode, whose branches land on its own instructions, and that
-end where nothing jumps past them; anything else is a string. A call or a print elsewhere in
-the story fixes what its target is, and so does every call a trace shows running (--trace,
-Bocfel's, kit/zmachine/bocfel.py): a routine reached only through a variable or a property is
-found that way, and the scan is run again until nothing changes.
+end where nothing jumps past them; anything else is a string. Infocom's compiler and Inform
+both put every routine before the first string, so past that string a routine is read only
+where something calls it, because a string that opens with an abbreviation can read as a
+short routine too. After a routine that ends without returning (a quit, a restart, a throw),
+instructions that end in a return are what its source said next, kept by the compiler, not a
+string. A call or a print elsewhere in the story fixes what its target is, and so does every
+call a trace shows running (--trace, Bocfel's, kit/zmachine/bocfel.py): a routine reached only
+through a variable or a property is found that way, and the scan is run again until nothing
+changes.
 
 Usage:
   map.py <part dir> <story> [--trace <file> ...]   write the part's symbols.json
@@ -121,8 +126,9 @@ def routine(s, a, end):
 
 
 def tail(s, a, u):
-    """The instructions after a routine's last return that the compiler kept, up to the next
-    aligned address after one that returns; [] when the bytes are not such instructions."""
+    """The instructions after a routine's last return that the compiler kept, up to one that
+    returns, with only zeros from there to the next aligned address; [] when the bytes are not
+    such instructions."""
     out = []
     while len(out) < 4:
         try:
@@ -130,7 +136,7 @@ def tail(s, a, u):
         except (zcode.ZError, IndexError):
             return []
         out.append(i); a = i.end
-        if i.ends_flow() and a % u == 0:
+        if i.ends_flow() and not any(s.mem[a:a + (-a % u)]):
             return out
     return []
 
@@ -151,30 +157,32 @@ def scan(s, routines=(), strings=()):
     end, u = len(s.mem), unit(s.version)
     a, out = s.header["high"], []
     while a < end:
-        r = None if a in strings else routine(s, a, end)
-        if r and a not in strings:
+        past = any(k == "string" for k, *_ in out)       # the strings follow every routine
+        r = None if a in strings or (past and a not in routines) else routine(s, a, end)
+        dead = out and out[-1][0] == "routine" and not r and a not in strings \
+            and out[-1][3][1][-1].name in ("quit", "restart", "throw") and tail(s, a, u)
+        if r:
             out.append(("routine", a, r[1], r[:1] + r[2:]))
             b = r[1]
+        elif dead:          # what the source said after a quit, a restart or a throw
+            k, ra, _, (first, ins) = out[-1]
+            out[-1] = (k, ra, dead[-1].end, (first, ins + dead))
+            b = dead[-1].end
         else:
             b = string_end(s, a, end)
             if b is None or a in routines:
                 out.append(("left", a, end, None)); break
             out.append(("string", a, b, s.string(a)))
         a = b
-        if a % u:           # the next starts aligned: zeros between are padding, anything else the
-            nxt = min(end, a + (u - a % u))     # return a compiler puts after a routine's last word
-            if all(x == 0 for x in s.mem[a:nxt]):
-                out.append(("pad", a, nxt, None))
-            elif out[-1][0] == "routine":
-                k, ra, re_, (first, ins) = out[-1]
-                dead = tail(s, a, u)          # what the source said after a return: "Failed." after a restart
-                if dead:
-                    out[-1] = (k, ra, dead[-1].end, (first, ins + dead))
-                    nxt = dead[-1].end
-                else:
-                    out.append(("left", a, nxt, None))
-            else:
-                out.append(("left", a, nxt, None))
+        while a % u and a < end:    # the next starts aligned: zeros between are padding, anything else the
+            nxt = min(end, a + (-a % u))        # return a compiler puts after a routine's last word
+            dead = out[-1][0] == "routine" and any(s.mem[a:nxt]) and tail(s, a, u)
+            if dead:            # what the source said after a return: "Failed." after a restart
+                k, ra, _, (first, ins) = out[-1]
+                out[-1] = (k, ra, dead[-1].end, (first, ins + dead))
+                a = dead[-1].end
+                continue
+            out.append(("left" if any(s.mem[a:nxt]) else "pad", a, nxt, None))
             a = nxt
         if a < end and not any(s.mem[a:]):         # zeros to the end of the file
             out.append(("pad", a, end, None)); break
@@ -382,6 +390,11 @@ def build(s, traced=()):
         elif k == "string":
             M.block(a, e - 1, "ZText")
             M.label(a, name_of(x, taken), "Address")
+        elif k == "pad" and e - a < unit(v):          # not the zeros to the end of the file
+            M.block(a, e - 1, "Byte")
+            at = "an even address" if unit(v) == 2 else f"a multiple of {unit(v)}"
+            M.comment(a, f"{'Zero' if e - a == 1 else 'Zeros'}, so that {hexa(e)} starts at {at}: a packed "
+                      "address can name no other.")
     M.blocks = M.joined()
     covered = bytearray(end)
     for b in M.blocks:
