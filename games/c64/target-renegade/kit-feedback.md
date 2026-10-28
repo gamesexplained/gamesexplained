@@ -36,3 +36,7 @@ Cold loading exceeded the initial wait, and the all-platform status command met 
 
 None.
 
+### Auditing a listing of 1,622 comments
+
+Splitting the comments before briefing kept the audit affordable: normalise each comment's numbers and addresses, treat any group of four or more with the same shape as a template family, and give each checker either about 77 handwritten comments or the whole family list. The family checker wrote a script that tests every instance's variable parts against the bytes, and read at least eight instances by hand. Nine Opus checkers used about 1.4 million tokens in total and found 56 wrong comments in 1,622. Each report was spot-checked against the listing with one `opcodes.py --refs` or one record dump before it was believed, and all held. `kit/skills/core/60-verify` could name the family split; it is a candidate, not added here.
+

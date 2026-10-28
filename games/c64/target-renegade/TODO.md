@@ -2,9 +2,8 @@
 
 Silver scope: 92,945/92,945 bytes explained across the shared engine, first/second resource loads and ending. Cartridge storage copies and edition loading presentation are excluded with native directory evidence.
 
-Next: audit the complete listing on a proven model, then check the new copy, then curate the article with a human for Gold. Both listing samples were over the mark (19 and five wrong-detail comments out of 60), and correcting their findings does not establish the remaining comments as correct. The 28 October 2026 pass added the history, reception, Gameplay, Controls, Graphics, Music and Solution pages on a model the kit does not count as proven (`claude-sonnet-5-5`); it changed no listing comment or symbol.
+Next: curate the article with a human for Gold. The listing was audited on 28 October 2026 by checkers on a proven model (56 comments corrected, a sample of 60 afterwards all right; see facts.md). The 28 October pass also added the history, reception, Gameplay, Controls, Graphics, Music and Solution pages on a model the kit does not count as proven (`claude-sonnet-5-5`); an independent proven model checked their claims and the corrections are in.
 
-- A full independent audit is recommended before treating the listing as audited.
 - Resolve the explicit visual move/type mapping, reload timing and event-score questions in features.md with targeted native play traces. These do not represent claims that a feature is absent.
 - A human curation pass is required for Gold. Copy remains agent-draft.
 - A full behavioural Play port and lockstep test would be separate Platinum work. No full-game emulator is embedded in these pages.
@@ -20,4 +19,5 @@ The contributor requested a PR on 26 October 2026. Commit/push and PR preparatio
 - The supplied disk image is a cracked release (disk name "ASS PRESENTS:") whose intro did not pass a key press in the simulator, so it could not settle the five-versus-three lives question. Zzap!64 38 says five lives.
 - The loading picture credits M.Lamb, D.Drake, and J.Dunn with G.Biasillo, where the manual credits Collier, Palmer, McDonald, and Biasillo. Biasillo's Retro Games Master interview explains Dunn (the Spectrum buzzer port). Lamb and Drake are still unexplained. Compare the cartridge loader's picture with the disk's.
 - No interview with Collier, no retrospective by the graphics artists, and no count of players who finished the game was found. The T.A.C.G.R. interview with Biasillo (tacgr.emuunlim.com) did not connect and has not been read. The Zzap!64 and Commodore User reviews were read from images the contributor supplied.
-- Check the new pages' claims with an independent proven model before Silver is restored on the copy (`kit/CHECKING.md`).
+
+- Quotes from the Zzap!64 and Commodore User reviews come from images the contributor supplied. The checkers could not see the images, so the quotes match the transcription in work/research.md and not the original scans.

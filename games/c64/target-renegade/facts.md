@@ -50,3 +50,6 @@ Live score fixtures kept five lives at exactly 50,000, awarded a sixth at 50,100
 
 The committed page tests compare nine music cues over 150,497 calls, thirteen effect requests on each of three voices over 78,000 calls, 51,200 native map characters, 300,000 valid score cases, 198 stored-component mirrors and all 256 uniform-byte patterns in both modes. Five native stage snapshots matched the browser's font and colour allocations exactly. The trimmed frame and full native-compared frame share pixel hash `b70d6f5361c41a3c062b47f434ebd3a6de32e7dc364b90f1fd16cf8050f7c111`; the page embeds 2,229 RAM bytes read by that drawing.
 
+## The listing after the audit
+
+On 28 October 2026 independent checkers on `claude-opus-5-5` audited all 1,622 comments in the four parts: each of the 458 handwritten comments was read against the code, and the 1,164 generated comments (33 template families) were checked by script for every instance and by hand for at least eight each. All 88 claims in this file and in features.md were checked too. 15 of those claims rest on the live emulator or on snapshots and could not be checked from the listing. A sample of 60 comments drawn afterwards with seed 2026102801 found all 60 right.

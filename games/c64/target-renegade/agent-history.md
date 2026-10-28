@@ -130,3 +130,9 @@ Findings: the loading picture credits different people from the manual (it was d
 
 New pages: Gameplay, Controls, Graphics (a sheet of all 99 sprite components), Music (the players moved from the overview, with the sound tests pointed at the new page), and Solution. The overview gained the story, the licence history, and the reception.
 
+## 28 October 2026: Opus audit
+
+The two earlier samples were over the mark, so the listing was audited by checkers on `claude-opus-5-5`, as `kit/CHECKING.md` asks. Six checkers took the 458 handwritten comments in chunks of about 77 (34 wrong details, two wrong, three doubtful, one unverifiable), one took the 33 template families (two families wrong, 17 comments), one took facts.md and features.md (88 claims, two wrong), and one read the new pages (about 200 claims, 37 wrong, overstated or unsupported, 27 style breaches). Each checker's report was spot-checked against the code before it was believed; all nine held.
+
+56 comments were rewritten and the listings rebuilt with `listing.py --recomment`. The pages were corrected where they repeated those facts: Space switches the byte at `$0200` between MUSIC and FX (it is not a music on/off switch), the armed type starts with six rounds, a defeat restores two endurance units only when the total stays below 44, and the dismount copies the bike's position and puts the facing on the second component. Quotes the checker could not verify against the scans were kept, because they were read from the contributor's images; they are in work/research.md.
+
