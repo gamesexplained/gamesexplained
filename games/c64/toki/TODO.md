@@ -54,4 +54,5 @@ For Silver:
 - No interview with Al Dukes, Keith Tinman, or any of the three artists was found. Search results connected an Alastair Dukes to Rockstar Leeds, but nothing read says that he is the Ocean programmer, so the pages do not say so.
 - Bottino says the conversion has "only 91 unique 2x2 tiles and a 256-character map". The 91 matches the block table of stage 1; the 256-character map has not been checked.
 - A Solution tab was not written: it needs a run of the game for each stage, and the cartridge image was not available in the session.
+- Maps: the first screen of each stage matches its map (92 to 97 %, see the Maps tab), but nothing else in the maps has been checked against the game. Settle it from the cartridge: unpack the five stage blocks with the kit's simulator (`facts.md`, "Packed entries"), read each stage's section records (rectangles at offsets $0E to $15, pointed to from $0D22) and the row tables, then compare each row's extent with what the sections cover. The committed listing cannot do it: it keeps the high bytes of stage 1's row table but not the low bytes, and only two of its eight section records.
 
