@@ -8173,7 +8173,7 @@
   },
   {
    "address": 20641,
-   "name": "pad_50a1",
+   "name": "match_flags_13",
    "type": "Field",
    "kind": "user"
   },
@@ -12397,7 +12397,7 @@
   {
    "address": 20641,
    "type": "line",
-   "text": "1 zero byte after between data records that no label reaches (after match_flags) ($50A1): padding that no traced code reads."
+   "text": "The thirteenth byte from match_flags ($5095), always 0: mask_setup ($58C8) clears it with the twelve flags (13 bytes), and scan_cursor ($50B1) reads it at $513D as the flag of step 12, when the step with path value 3 ends. scan_wait ($4B83) reads only the first twelve."
   },
   {
    "address": 20642,
@@ -12407,12 +12407,12 @@
   {
    "address": 20654,
    "type": "line",
-   "text": "One byte (0) before scan_started that nothing reads or writes."
+   "text": "One byte (0) before scan_started that mask_setup ($58C8) clears as the thirteenth byte of its loop over slice_types ($50A2); nothing reads it."
   },
   {
    "address": 20655,
    "type": "line",
-   "text": "Set to 1 by scan_cursor ($50B1) at its first step; cleared by mask_setup ($58C8). The byte before it, $50AE, is not used."
+   "text": "Set to 1 by scan_cursor ($50B1) at its first step; cleared by mask_setup ($58C8). The byte before it, $50AE, is only cleared by mask_setup and never read."
   },
   {
    "address": 20656,
@@ -12442,7 +12442,7 @@
   {
    "address": 20944,
    "type": "line",
-   "text": "Plays sound effect $1C with $B0EE and keeps X and Y: it stores them in the operands of the LDY #$00 and LDX #$00 at $51DB and $51DD (the bytes $51DC and $51DE), which it then runs. Called by scan_cursor ($50B1) twice."
+   "text": "Plays sound effect 7 (X = $1C) with $B0EE and keeps X and Y: it stores them in the operands of the LDY #$00 and LDX #$00 at $51DB and $51DD (the bytes $51DC and $51DE), which it then runs. Called by scan_cursor ($50B1) twice."
   },
   {
    "address": 20960,
@@ -12452,7 +12452,7 @@
   {
    "address": 21139,
    "type": "line",
-   "text": "State of each of the five objects: set to 1 by objects_spawn ($533E), to 2 by object_slide_in ($54AB) when its 24 steps are done, to 3 by object_flip ($53D9) at the end of its count and to 0 by object_slide_out ($55CF). objects_run ($53B0) uses it to pick the handler from the table $53CC."
+   "text": "State of each of the five objects: set to 1 by objects_spawn ($533E), to 2 by object_slide_in ($54AB) when its 24 steps are done, to 3 by object_flip ($53D9) at the end of its count and to 0 by object_slide_out ($55CF); mask_setup ($58C8) sets all five to 0. objects_run ($53B0) uses it to pick the handler from the table $53CC."
   },
   {
    "address": 21144,
@@ -12612,7 +12612,7 @@
   {
    "address": 22064,
    "type": "line",
-   "text": "Draws screen A. Copies 18 rows of 28 bytes from the map $6297 to the screen matrix from $CC2E (rows $28 apart; the source and destination pointers are the operands at $5649/$564A and $564C/$564D), then colours the three screen pages: each byte of $CC00-$CEFF is looked up in the table $5CC3 and the result stored in colour RAM $D800-$DAFF. Called by the end-of-level code at $5A0D."
+   "text": "Draws screen A. Copies 18 rows of 28 bytes from the map $6297 to the screen matrix from $CC2E (rows $28 apart; the source and destination pointers are the operands at $5649/$564A and $564C/$564D), then colours the three screen pages: each byte of $CC00-$CEFF is looked up in the table $5CC3 and the result stored in colour RAM $D800-$DAFF. Called by mask_setup ($58C8) at $5A0D."
   },
   {
    "address": 22089,
@@ -12652,7 +12652,7 @@
   {
    "address": 22278,
    "type": "line",
-   "text": "A text screen with a title and a wait for fire. Sets bit 6 of $D011, waits twice $FF, fills the screen matrix with $50 and colour RAM with 9, calls swap_font_b ($4DC4) and draw_subject_chars ($4CD7), sets $D023 to $0C and then $0B, writes the 8 characters at $57C6 (adding $66 to each code) at $CC60 in colour 7 and the 23 at $57CE (a space becomes $50, any other code gets $66 added) at $CF51 in colour 5. It clears bit 6 of $D011, waits for fire (bit 4 of $DC00) to be released and then pressed, sets bit 6 again, clears $C800-$CBFF through $2003, points sprite 0 at $74 ($CFF8), moves all eight sprites to Y $FF, waits, calls $4DC4 again and clears 72 bytes at each of $6683, $66CB, $6713, $675B and $67A3. Called by the end-of-level code at $59F5."
+   "text": "A text screen with a title and a wait for fire. Sets bit 6 of $D011, waits twice $FF, fills both screen matrices ($C800-$CFFF) with $50 and colour RAM with 9, calls swap_font_b ($4DC4) and draw_subject_chars ($4CD7), sets $D023 to $0C and then $0B, writes the 8 characters at $57C6 (adding $66 to each code) at $CC60 in colour 7 and the 23 at $57CE (a space becomes $50, any other code gets $66 added) at $CF51 in colour 5. It clears bit 6 of $D011, waits for fire (bit 4 of $DC00) to be released and then pressed, sets bit 6 again, clears $C800-$CBFF through $2003, points sprite 0 at $74 ($CFF8), moves all eight sprites to Y $FF, waits, calls $4DC4 again and clears 72 bytes at each of $6683, $66CB, $6713, $675B and $67A3. Called by mask_setup ($58C8) at $59F5."
   },
   {
    "address": 22470,
@@ -12667,7 +12667,7 @@
   {
    "address": 22501,
    "type": "line",
-   "text": "Types the text at $586F on the screen from $CCCE (a space code gives 0, any other code gets $66 added), with the method of type_briefing ($0F44): delays of $3C and $14 first, then one character every $32 delay units and a step of $50 (two rows) for each line. Fire (bit 4 of $DC00) stops the typing once $1E characters have been typed ($0F42 counts down); at the end of the text it waits for fire. It then sets $0A5F to 1 and waits $FA. It uses the index $0F43. Called by the end-of-level code at $59F2."
+   "text": "Types the text at $586F on the screen from $CCCE (a space code gives 0, any other code gets $66 added), with the method of type_briefing ($0F44): delays of $3C and $14 first, then one character every $32 delay units and a step of $50 (two rows) for each line. Fire (bit 4 of $DC00) stops the typing once $1E characters have been typed ($0F42 counts down); at the end of the text it waits for fire. It then sets $0A5F to 1 and waits $FA. It uses the index $0F43. Called by mask_setup ($58C8) at $59F2."
   },
   {
    "address": 22559,
@@ -12767,7 +12767,7 @@
   {
    "address": 24807,
    "type": "line",
-   "text": "Pattern data for the mask game's pieces: 432 bytes in three rows of $90 bytes ($60E7, $6177 and $6207), each row six groups of 24 bytes. object_flip ($53D9) and object_slide_in ($54AB) copy 24 columns of three bytes (one from each row, $90 apart) into the character data of an object ($52A7/$52AC): the sources are $60E7 and $6117 for the two flip pictures and $60FF for the target object, and the bases of the three moving objects are $612F, $6147 and $615F. The bytes are pixel patterns of set bit pairs (for example $02, $08, $20, $80 and $AA)."
+   "text": "Pattern data for the mask game's pieces: 432 bytes in three rows of $90 bytes ($60E7, $6177 and $6207), each row six groups of 24 bytes. object_flip ($53D9) copies 24 columns of three bytes (one from each row, $90 apart) into the character data of an object ($52A7/$52AC), from $60E7 and $6117 for the two flip pictures and $60FF for the target object. object_slide_in ($54AB) copies three bytes 8 apart from one row per step, moving to the next row every eight steps, from the bases $612F, $6147 and $615F of the three moving objects (or $60FF for the target). The first row is sparse (bytes such as $02, $08, $20, $80 and $AA); the second and third are dense, with many $FF."
   },
   {
    "address": 25239,
@@ -12782,7 +12782,7 @@
   {
    "address": 26191,
    "type": "line",
-   "text": "52 bytes between the end of screen_b_map ($648F) and subject_shapes ($6683): 51 bytes of $50 (the screen code subject_screen ($5706) fills the screen with) and a final $FC. No code reads them."
+   "text": "52 bytes between the end of screen_b_map ($648F) and subject_shapes ($6683), all $50 (the screen code subject_screen ($5706) fills the screen with). No code reads them."
   },
   {
    "address": 26243,
@@ -12807,7 +12807,7 @@
   {
    "address": 27507,
    "type": "line",
-   "text": "Exchanges four blocks of $CE bytes: $6683 with $C000, $6751 with $C0CE, $681F with $C19C and $68ED with $C26A (it reads both, writes each to the other). Called by the end-of-level code at $59B1."
+   "text": "Exchanges four blocks of $CE bytes: $6683 with $C000, $6751 with $C0CE, $681F with $C19C and $68ED with $C26A (it reads both, writes each to the other). Called by mask_setup ($58C8) at $59B1."
   },
   {
    "address": 27571,
