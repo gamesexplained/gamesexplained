@@ -17,8 +17,12 @@ to every call of one build.
   TEXT_TYPES        "ZText", the story's own strings; text_items reads them a string at a time
   TEXT_EACH_RUN     the text types read one run of blocks at a time, not over their whole extent
   POINTER_TYPES     word-sized data that points: a byte address, a word address (half the byte
-                    address), a packed routine or a packed string (Standard 1.2)
-  pointer(kind, ram, a) -> the address the word at a points to
+                    address), a packed routine or a packed string (Standard 1.2); and a table
+                    word, which is a routine's or a string's packed address, a dictionary word's
+                    address or a labelled table's, where it names one the map holds, and a
+                    number where it names none, for the tables of strings, objects, routines and
+                    numbers mixed that Infocom's games are full of
+  pointer(kind, ram, a) -> the address the word at a points to, or None for a number
   WIDTH             5: story addresses are written with five hex digits, as the Standard's are
 """
 import os, sys
@@ -30,8 +34,9 @@ from story import Story  # noqa: E402
 WIDTH = 5
 TEXT_TYPES = ("ZText",)
 TEXT_EACH_RUN = ("ZText",)
-POINTER_TYPES = ("Byte Address", "Word Address", "Packed Routine", "Packed String")
+POINTER_TYPES = ("Byte Address", "Word Address", "Packed Routine", "Packed String", "Table Word")
 HEADERS = set()               # the routines' headers, from prepare()
+STRINGS, TABLES = set(), set()  # where the map's strings and labelled tables start, for a table word
 
 # the operands that are objects, by instruction (Standard 14): an object constant there is
 # shown by the label on its entry in the object table
@@ -69,6 +74,14 @@ class Header:
 def prepare(sym):
     HEADERS.clear()
     HEADERS.update(x["address"] for x in sym.get("symbols", []) if x["type"] == "Subroutine")
+    kinds = {}
+    for b in sym.get("blocks", []):
+        for a in range(b["start"], b["end"] + 1):
+            kinds[a] = b["type"]
+    labels = {x["address"] for x in sym.get("symbols", [])}
+    STRINGS.clear(); TABLES.clear()
+    STRINGS.update(a for a in labels if kinds.get(a) == "ZText")
+    TABLES.update(a for a in labels if kinds.get(a) not in (None, "Code", "ZText"))
 
 
 def decode(ram, a):
@@ -179,6 +192,13 @@ def text_items(kind, ram, start, end):
     return texts, starts
 
 
+def words(s):
+    """The addresses of the dictionary's entries."""
+    if not hasattr(s, "_entries"):
+        s._entries = {e[0] for e in s.dictionary().entries}
+    return s._entries
+
+
 def pointer(kind, ram, a):
     """The address the word at a points to, as the kind of pointer it is."""
     s = story(ram)
@@ -189,6 +209,14 @@ def pointer(kind, ram, a):
         return s.unpack(w, "string")
     if kind == "Word Address":
         return 2 * w
+    if kind == "Table Word":
+        if w and s.unpack(w, "routine") in HEADERS:
+            return s.unpack(w, "routine")
+        if w and s.unpack(w, "string") in STRINGS:
+            return s.unpack(w, "string")
+        if w in words(s) or (w in TABLES and w >= s.header["globals"]):
+            return w
+        return None
     return w
 
 

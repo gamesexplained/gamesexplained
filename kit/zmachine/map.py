@@ -349,11 +349,17 @@ def build(s, traced=()):
         M.block(p, q, "Byte")
         M.comment(cut, (lead if cut == p else rest) + ", ".join(said) + ". A 0 ends the list.")
 
-    # the global variables: the table runs to the next table the header names, at most 240
+    # the global variables: the table runs to the next table the header names, at most 240, and
+    # stops short of a table a global points to, which compilers put straight after the globals
     g = h["globals"]
     nexts = [x for x in (h["dictionary"], h["objects"], h["static"], h.get("abbreviations", 0),
                          min(o.props for o in objs) if objs else 0) if x > g]
     count = min([240] + [(x - g) // 2 for x in nexts])
+    for i in range(240):
+        if i >= count:
+            break
+        if g < s.word(g + 2 * i) < g + 2 * count:
+            count = (s.word(g + 2 * i) - g) // 2
     M.block(g, g + 2 * count - 1, "Hi/Lo Word")
     M.label(g, "globals")
 
@@ -455,6 +461,20 @@ def main(argv):
     spath = os.path.join(gdir, "symbols.json")
     old = json.load(open(spath)) if os.path.isfile(spath) else {}
     blocks, symbols, comments = merge(old, M)
+    covered = bytearray(len(s.mem))
+    for b in blocks:            # what the run has typed itself is described too
+        covered[b["start"]:b["end"] + 1] = b"\x01" * (b["end"] - b["start"] + 1)
+    runs = []
+    for lo, hi in left:
+        a = lo
+        while a <= hi:
+            if covered[a]:
+                a += 1; continue
+            b = a
+            while b + 1 <= hi and not covered[b + 1]:
+                b += 1
+            runs.append((a, b)); a = b + 1
+    left = runs
     kinds = {}
     for k, *_ in items:
         kinds[k] = kinds.get(k, 0) + 1

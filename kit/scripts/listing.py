@@ -863,10 +863,12 @@ def main():
                 rec.update({"t": "byte", "b": bs})
         elif t in POINTERS:         # the machine's own: the word's meaning is cpu.pointer's
             e = min(pair_end(2), a + 2); bs = list(ram[a:e])
-            if len(bs) == 2:
-                ta = cpu.pointer(t, ram, a)
+            ta = cpu.pointer(t, ram, a) if len(bs) == 2 else None
+            if ta is not None:
                 rec.update({"t": "addr", "b": bs, "oa": ta, "o": names_for(a).get(ta) or address(cpu, ta)})
                 xref(ta, a)
+            elif len(bs) == 2:      # a word of a table that points nowhere the map knows: a number
+                rec.update({"t": "word", "b": bs, "d": [(bs[0] << 8) | bs[1]]})
             else:
                 rec.update({"t": "byte", "b": bs})
         elif t in ("Lo/Hi Address", "Hi/Lo Address"):
