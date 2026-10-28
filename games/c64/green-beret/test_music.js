@@ -11,21 +11,25 @@
 // voice is done, which is when wait_tune ($37AF) lets the game go on. The one button the game never
 // plays, the hi-score table's tune from Martin Galway's source (GB_HISCORE), runs here on the game's
 // own code the same way: its bytes put where the page keeps them, tune_start with tune 0's Y, and
-// the three voices' pattern pointers ($E6-$EB) set to its patterns.
+// the three voices' pattern pointers ($E6-$EB) set to its patterns. createDriver is made here from
+// its source text alone, in a context of its own, as the player's AudioWorklet makes it, so a driver
+// that leans on anything else of the page fails here as it fails there.
 // It exits 1 on any difference.
 //   node games/c64/green-beret/test_music.js [page.html]
-const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const path = require('path'), vm = require('vm'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] || 'index.html';
-const { createDriver, GB_TUNES, GB_EFFECTS, GB_DRIVER_RANGES, GB_HISCORE } =
-  g.run(page, 'gb-music', 'createDriver', 'GB_TUNES', 'GB_EFFECTS', 'GB_DRIVER_RANGES', 'GB_HISCORE');
+const B = g.run(page, 'gb-music', 'createDriver', 'GB_TUNES', 'GB_EFFECTS', 'GB_DRIVER_RANGES', 'GB_HISCORE');
+const { GB_TUNES, GB_EFFECTS, GB_DRIVER_RANGES, GB_HISCORE } = B;
+const createDriver = vm.runInNewContext('(' + B.createDriver.toString() + ')', {});
 const L = g.listing();
 const FRAMES = 3000;
 let bad = 0, frames = 0;
 const ends = [];
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
-const mem = GB_DRIVER_RANGES.map(([a, b]) => [a, L.ram.slice(a, b + 1)]);
+// the data the page's sound() gives the players
+const mem = GB_DRIVER_RANGES.map(([a, b]) => [a, L.ram.slice(a, b + 1)]).concat([[GB_HISCORE.addr, GB_HISCORE.bytes]]);
 for (const [list, set] of [[GB_TUNES, 'music'], [GB_EFFECTS, 'effects']]) list.forEach((c, t) => {
   const m = L.ram.slice(), frame = { w: [] };
   if (c.voices) m.set(GB_HISCORE.bytes, GB_HISCORE.addr);

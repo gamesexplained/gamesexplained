@@ -103,8 +103,11 @@ routine to its return. What the test then checks is what the driver
 adds: its entry points, its registers and its chips. Hand `createDriver`
 the module, `require('<repo>/kit/cpu/cpu6502.js')`, and compare every
 write of every tune, frame by frame, with the same calls made on the
-simulator as the game makes them. Say in the caption that the page runs
-the game's own player.
+simulator as the game makes them. Make the test's `createDriver` from its
+source text alone, `vm.runInNewContext('(' + createDriver + ')', {})`, as
+the worklet makes it: one taken from the page's scope passes a driver
+that uses the page's other names, and on the page that driver is silent.
+Say in the caption that the page runs the game's own player.
 
 The filter is off unless the page passes `filter: '6581'` (or `'8580'`)
 to `mount`, which also shows a switch to compare it with no filter; pass

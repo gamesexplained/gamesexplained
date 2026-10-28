@@ -233,8 +233,10 @@ const GB_DRIVER_RANGES = [[0x00E6, 0x00FC], [0x3E00, 0x3FEF], [0xE000, 0xFEB9]];
 // greenberet.asm (github.com/MartinGalway/C64_music, commit a458a36, GPL-3.0, lines 2516-2578, HIGH0,
 // HIGH1 and HIGH2), assembled for the game's layout: its instruments are the game's LD00 at $F494
 // (shared_tone1), HD00 at $F689 (shared_effect1), TIME at $F05B (tempo_5) and AD20 at $F3E3
-// (shared_sound1). $4400 is only where the player keeps it. Its button starts as tune 0 does,
-// then points the three voices' patterns ($E6-$EB) at it.
+// (shared_sound1). $4400 is only where the player keeps it, with the driver's ranges in the data
+// sound() gives createDriver: the player runs createDriver from its source text alone, where
+// nothing else of this block is defined. Its button starts as tune 0 does, then points the three
+// voices' patterns ($E6-$EB) at it.
 const GB_HISCORE = { addr: 0x4400, voices: [0x4400, 0x444D, 0x449A], bytes: [208,28,14,148,244,212,137,246,53,2,58,8,53,2,62,3,60,1,58,2,55,14,60,2,60,4,58,2,57,3,58,1,57,2,55,2,53,2,50,8,50,2,51,2,52,2,53,2,58,8,53,2,62,3,60,1,58,2,55,14,60,2,60,4,58,2,57,2,53,4,60,2,58,16,196,8,68,208,28,14,148,244,212,137,246,50,2,53,8,50,2,58,3,57,1,55,2,51,14,57,2,57,4,55,2,53,3,55,1,53,2,51,2,50,2,46,8,46,2,48,2,49,2,50,2,53,8,50,2,58,3,57,1,55,2,51,14,57,2,57,4,55,2,53,2,48,4,51,2,50,16,196,85,68,208,68,15,91,240,208,28,28,227,243,204,2,34,2,38,2,29,2,38,2,206,39,2,46,2,34,2,46,2,39,2,36,2,34,2,31,2,41,2,48,2,29,2,48,2,41,2,48,2,36,2,48,2,204,4,34,2,38,2,29,2,38,2,206,39,2,46,2,34,2,46,2,39,2,36,2,34,2,31,2,41,2,48,2,29,2,48,2,41,2,48,2,36,2,48,2,34,2,38,2,29,2,38,2,34,2,29,2,31,2,33,2,196,164,68] };
 const GB_TUNES = [
   { name: 'Title', y: 0x35 }, { name: 'Rescue the captives', y: 0x05 }, { name: 'Play starts', y: 0x0B },
@@ -253,7 +255,6 @@ const GB_EFFECTS = [
 function createDriver(D, C64Cpu) {
   const base = new Uint8Array(0x10000);
   for (const [ad, bytes] of D.mem) base.set(bytes, ad);
-  base.set(GB_HISCORE.bytes, GB_HISCORE.addr);
   const sid = new Uint8Array(25);
   let m, cpu, c, writes = [], over = false;
   const io = {                                                  // the chips at $D000-$DFFF
@@ -390,7 +391,7 @@ C64.load('listing.json').then((L) => {
 
 // ---- 02 and 10: the music and the effects, on the game's own driver (gb-music).
 function sound(ram) {
-  const mem = GB_DRIVER_RANGES.map(([a, b]) => [a, ram.slice(a, b + 1)]);
+  const mem = GB_DRIVER_RANGES.map(([a, b]) => [a, ram.slice(a, b + 1)]).concat([[GB_HISCORE.addr, GB_HISCORE.bytes]]);
   const signed = (v) => v > 127 ? v - 256 : v;
   const rows = [
     { k: 'Pattern', f: (v) => v.at === undefined ? '' : hex(v.at) },
