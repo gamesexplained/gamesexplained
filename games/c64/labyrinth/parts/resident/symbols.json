@@ -17662,7 +17662,7 @@
   {
    "address": 20391,
    "type": "line",
-   "text": "Use the camera subcolumn, map row and block classes to fill two marker strips at $CF47 and $CF5A. Traverse mapped blocks in both directions, encoding each class as a pair of font codes based at $D2. Negative map flags can suppress a run; type-one blocks reset suppression and use their special marker pair. The strips supplement the rendered scene window rather than changing the block map."
+   "text": "Use the camera subcolumn, map row and block classes to fill two marker strips at $CF47 and $CF5A. Traverse mapped blocks in both directions, encoding each class as a pair of font codes based at $D2. A negative map byte other than $FF suppresses the markers that follow it; a type-one block sets $507A to $82, which suppresses every later block in that direction, and in the backward strip at $CF47 it is drawn with the special pair for class $0C. The strips supplement the rendered scene window rather than changing the block map."
   },
   {
    "address": 20595,
@@ -17742,7 +17742,7 @@
   {
    "address": 20611,
    "type": "line",
-   "text": "Four cached picture-resource name bytes used by $553E/$5560."
+   "text": "Four saved display-object active flags: $5534 copies $0248-$024B here at $553E while it hides the objects, and copies them back at $5560."
   },
   {
    "address": 20615,
@@ -17822,7 +17822,7 @@
   {
    "address": 20630,
    "type": "line",
-   "text": "ASCII prefix U used by the saved-scene overlay resource-name path. Its following suffix is selected or cached separately before the disk load."
+   "text": "Byte $55 (ASCII U). Nothing builds a file name from it: $5840 loads it as the starting high byte of the saved-state checksum."
   },
   {
    "address": 20631,
@@ -17837,12 +17837,12 @@
   {
    "address": 20714,
    "type": "line",
-   "text": "For request $0530 zero and positive current scene $0531=3, jump to $53CE to place objects and rebuild the view while retaining that scene. Nonzero requests take $5103; negative/zero current scenes take $50F9, whose effects are outside this check. Live door traversal reached request0/entry12 and retained current scene3."
+   "text": "For request $0530 zero and any positive current scene $0531, jump to $53CE to place objects and rebuild the view while retaining that scene. Nonzero requests take $5103; negative/zero current scenes take $50F9, whose effects are outside this check. Live door traversal reached request0/entry12 and retained current scene3."
   },
   {
    "address": 21454,
    "type": "line",
-   "text": "Call placement $543A, activate player slot $0248 and clear drawing-disable state $0310 before continuing the resident redraw/camera path at $53DB. The observed request0/entry12 positions the player at X800/depth6 in scene3; remaining camera/redraw logic is not described here."
+   "text": "Call placement $543A, activate player slot $0248 and set drawing-disable flag $0310 to $FF before continuing the resident redraw/camera path at $53DB. The observed request0/entry12 positions the player at X800/depth6 in scene3; remaining camera/redraw logic is not described here."
   },
   {
    "address": 21562,
@@ -17867,7 +17867,7 @@
   {
    "address": 21783,
    "type": "line",
-   "text": "Four resource-name selector bytes used by $54F1."
+   "text": "Four direction bit masks $01,$04,$02,$08. $54F1 tests them against the node byte read from $C700 and stores the first that matches as the object's direction in $039A,X."
   },
   {
    "address": 21787,
@@ -17877,7 +17877,7 @@
   {
    "address": 21812,
    "type": "line",
-   "text": "Hide four display objects while preserving their active states at $5083, request/wait for the buffer swap, disable drawing through $0310, and invoke $6A0B to present the outgoing view state. Restore the object states, invalidate resource-cache keys with dash, and mark $0533 negative so the outgoing preparation is not repeated on the same request."
+   "text": "Clear $6995, hide four display objects while preserving their active states at $5083, request/wait for the buffer swap, disable drawing through $0310, and invoke $6A0B, which loads and runs the text-adventure overlay. Restore the object states, invalidate resource-cache keys with dash, and mark $0533 negative so the outgoing preparation is not repeated on the same request."
   },
   {
    "address": 21882,
@@ -17932,7 +17932,7 @@
   {
    "address": 22411,
    "type": "line",
-   "text": "Switch wheel display through $620F, clear serialization offset $04FF, prepare mutable game state through $5840, and store random seed $9D/$9E into $05FC/$05FD. Continue with the disk/slot write path at $57A0: a nonzero side selector first calls $5698; save name and sector details come from the current slot."
+   "text": "Switch wheel display through $620F, clear serialization offset $04FF, compute the saved-state checksum through $5840 and store it from $9D/$9E into $05FC/$05FD. Continue with the disk/slot write path at $57A0: a nonzero side selector first calls $5698; save name and sector details come from the current slot."
   },
   {
    "address": 22440,
@@ -17942,7 +17942,7 @@
   {
    "address": 22481,
    "type": "line",
-   "text": "Read the active slot's two track-18 sectors into $0400 and $0500 using the sector tables at $5807/$580B, then refresh the change-log index and player-name display through $5871 and $622D."
+   "text": "Read the active slot's two track-18 sectors into $0400 and $0500 using the sector tables at $5807/$580B, then check and repair the loaded state through $5871 and restore the live inventory and clock through $622D."
   },
   {
    "address": 22535,
@@ -17972,7 +17972,7 @@
   {
    "address": 22641,
    "type": "line",
-   "text": "Apply recorded map changes through $585C. Supply a pending scene from the saved active scene if needed, set the active scene sentinel to zero, and derive a default entry from player coordinates when absent. Normalize the default costume filename to AV when its prefix is not A, marking $04FF for correction. Sum the forty name/state bytes at $0504 with carry left by that loop into seed byte $0500. This routine prepares the loaded state before scene loading; it does not read a disk itself."
+   "text": "Validate the checksum through $585C, which starts a new state when it mismatches. Supply a pending scene from the saved active scene if needed, set the active scene sentinel to zero, and derive a default entry from player coordinates when absent. Normalize the default costume filename to AV when its prefix is not A, marking $04FF for correction. Sum the forty name/state bytes at $0504 with carry left by that loop into seed byte $0500. This routine prepares the loaded state before scene loading; it does not read a disk itself."
   },
   {
    "address": 22728,
@@ -17997,7 +17997,7 @@
   {
    "address": 22826,
    "type": "line",
-   "text": "Thirty-six ASCII suffix bytes used by $51BF with scene index $0531. A changed suffix triggers $557A to load the corresponding picture resource; paired filename construction supplies its prefix."
+   "text": "Thirty-six ASCII suffix bytes used by $51BF with scene index $0531. The suffix names the scene's map file (prefix M at $5087): a changed suffix is cached in $5088 and triggers $557A, which loads that map to $0600; the picture, overlay and character-set suffixes then come from the map's metadata."
   },
   {
    "address": 22862,
@@ -18027,12 +18027,12 @@
   {
    "address": 22945,
    "type": "line",
-   "text": "Seven masks $FF,$7F,$3F,$1F,$0F,$07,$03 used at $565C to keep the lower map bits in the serialized map-change operation."
+   "text": "Seven masks $FF,$7F,$3F,$1F,$0F,$07,$03. $565C selects one by map-width code $0705 and stores it in $5E (and a copy shifted right twice in $60); the map-index code ANDs cell indices with $5E before reading $0600."
   },
   {
    "address": 22952,
    "type": "line",
-   "text": "Seven masks $00,$80,$C0,$E0,$F0,$F8,$FC, complementary to the low-mask entries at $59A1; $5665 combines the selected higher bits in the save/map operation."
+   "text": "Seven masks $00,$80,$C0,$E0,$F0,$F8,$FC, complementary to the low-mask entries at $59A1. $5665 selects one by map-width code $0705 and stores it in $5F, which the map-index code uses to keep the row bits of a cell index."
   },
   {
    "address": 22959,
@@ -18087,12 +18087,12 @@
   {
    "address": 23359,
    "type": "line",
-   "text": "Eight colour-band selectors 4,5,6,7,0,1,2,3. $5B85 remaps X when mode Y>=2; $5BAB applies the same remap on the second pass when the saved mode has bit zero set."
+   "text": "Eight colour-band selectors 4,5,6,7,0,1,2,3. $5B85 remaps X when the camera cell Y passed in Y is 2 or more; $5BAB applies the same remap on the second pass when bit zero of that saved cell Y ($5B5D) is set."
   },
   {
    "address": 23367,
    "type": "line",
-   "text": "Eight first-row offsets 0,4,8,12 repeated. $5BE3 supplies the chosen offset in Y to the first $10-cell colour-RAM fill at $5C2F."
+   "text": "Eight first-row offsets 0,12,8,12, repeated. $5BE3 supplies the chosen offset in Y to the first $10-cell colour-RAM fill at $5C2F."
   },
   {
    "address": 23375,
@@ -18132,17 +18132,17 @@
   {
    "address": 23390,
    "type": "line",
-   "text": "Eight offsets $00,$10,...,$70. The per-column loop at $5BD7 adds one to the selected colour-RAM destination base."
+   "text": "Eight offsets $00,$10,...,$70. $5BD7 adds the one selected by pass counter $5B58 to the band's source base, giving source pointer $99/$9A for $5C2F."
   },
   {
    "address": 23398,
    "type": "line",
-   "text": "Eight low destination bytes $00,$00,$80,$00,$00,$00,$80,$00, paired with $5B6E. $5BD3 adds the column offset and propagates carry into the high byte."
+   "text": "Eight low source bytes $00,$00,$80,$00,$00,$00,$80,$00, paired with $5B6E. $5BD3 adds the column offset and propagates carry into the high byte, forming source pointer $99/$9A."
   },
   {
    "address": 23406,
    "type": "line",
-   "text": "Eight high destination bytes $C0,$C0,$C0,$C1,$C1,$C2,$C2,$C3, paired with $5B66. The fill routine redirects its store through the visible colour-RAM mapping; these are source band coordinates."
+   "text": "Eight high source bytes $C0,$C0,$C0,$C1,$C2,$C2,$C2,$C3, paired with $5B66 to form source pointer $99/$9A. The fill routine writes through the patched colour-RAM STA operands; these are source band coordinates."
   },
   {
    "address": 23414,
@@ -18207,12 +18207,12 @@
   {
    "address": 23862,
    "type": "line",
-   "text": "Update the transient-message timer, handle finished-game state through $624B, and call the load-dependent room hook $8C8F. If queued keyboard input exists, dequeue it and dispatch Return, Delete, cursor movement, Space/wheel change, printable input, or the restart control. The hidden-window/early-scene gate restricts which controls are accepted. Finally detect changes in room text mode $0343 and enter $6B63 when that mode changes."
+   "text": "Update the transient-message timer, handle finished-game state through $624B, and call the load-dependent room hook $8C8F. If queued keyboard input exists, dequeue it and dispatch Return, Delete, cursor movement, Space/wheel change, printable input, or the restart control; each handler is entered by JMP and ends the routine. The hidden-window/early-scene gate restricts which controls are accepted. When no key was dispatched, detect changes in room text mode $0343 and enter $6B63 when that mode changes."
   },
   {
    "address": 23990,
    "type": "line",
-   "text": "For the final scene, invoke its load-dependent exit hook, then hide display objects, clear the view, request side one, run the slot-menu/load helpers, reset input state, disable interrupts, and jump to $0EF5. The hook meaning depends on the loaded overlay, not on the bytes at that address in another scene's snapshot."
+   "text": "For the final scene, invoke its load-dependent exit hook, then hide display objects, clear the view, disable drawing, request side one, initialize a new save state through $5725, write it to the current slot through $57A8, set every resource-cache key and avatar cache $5090 to dash ($62C8), disable interrupts, and jump to $0EF5. The hook meaning depends on the loaded overlay, not on the bytes at that address in another scene's snapshot."
   },
   {
    "address": 24037,
@@ -18237,7 +18237,7 @@
   {
    "address": 24178,
    "type": "line",
-   "text": "X is the signed step. Unless a submit/redraw is pending, retain the old slot, scan in that direction within the wheel's lower/upper bounds, skip unavailable negative flags at $66FB, and accept the new slot or restore the old one at the boundary. Clear the typed prefix and redraw the selected wheel. Changes on the verb wheel can also replace the object/inventory companion wheel according to $66DC."
+   "text": "X is the signed step. Unless a submit/redraw is pending, retain the old slot, scan in that direction (slot zero and the wheel's upper bound $6679 are the limits), skip unavailable negative flags at $66FB, and accept the new slot. On an accepted move clear the typed prefix and redraw the selected wheel, and on the verb wheel replace the object/inventory companion wheel according to $66DC. At a limit restore the old slot and clear the prefix without redrawing."
   },
   {
    "address": 24301,
@@ -18442,7 +18442,7 @@
   {
    "address": 25574,
    "type": "line",
-   "text": "One zero byte between the RTS at $63E5 and the save-name routine at $63E7. No instruction falls through the preceding RTS; this is a bounded separator, not a BRK continuation of the slot helper."
+   "text": "Flag byte, zero in the captured opening. $6293 clears it after the slot choice in $627D, and $112A reads it: when it is not negative, $112F clears $5095 and requests disk side one."
   },
   {
    "address": 25575,
@@ -18462,7 +18462,7 @@
   {
    "address": 25643,
    "type": "line",
-   "text": "Three per-slot disk/side selector bytes; $6409 records the selected disk value and $63D1 reads it when choosing a slot."
+   "text": "Three per-slot disk/side selector bytes. $6409 records the selected disk value; $6307 reads them at $631A, $6324 and $6356 to decide which sides to save, and $63D1 reads one when a game is loaded. The slot-menu overlay also writes them at $BD1C."
   },
   {
    "address": 25646,
@@ -19187,7 +19187,7 @@
   {
    "address": 30816,
    "type": "line",
-   "text": "Sixteen AND masks read by $2DE6 for four pixel positions and four colour choices. In each group, the mask either retains all bits or clears the selected two-bit pixel before its OR contribution is applied."
+   "text": "Sixteen AND masks read by $2DE6, four per pixel position, one for each colour choice. For colours zero and three the mask is $FF; for colours one and two it clears the one bit of the two-bit pixel that the matching OR value at $7870 leaves at zero."
   },
   {
    "address": 30832,
@@ -19202,22 +19202,22 @@
   {
    "address": 30848,
    "type": "line",
-   "text": "Ten eight-byte rows of zero. Initial component pointer entries zero, eight and sixteen point here. Each byte decodes as next phase zero and frame zero in $3FC7, providing the empty component animation stream before a real costume component is selected."
+   "text": "Nine eight-byte rows of zero ($7880-$78C7), then a tenth row $78C8-$78CF holding 01 0A 13 1B 04 04 04 04, whose use is not established. Initial component pointer entries zero, eight and sixteen point at $7880. Each zero byte decodes as next phase zero and frame zero in $3FC7, providing the empty component animation stream before a real costume component is selected."
   },
   {
    "address": 30928,
    "type": "line",
-   "text": "24 low bytes paired with $78E8 for three eight-slot object component groups. Each group has an empty component at its first slot and a zero high-pointer sentinel at its last. Scene loading rewrites the six middle component pointers for the selected costume; the opening snapshot retains pointers whose targets can be replaced by its text overlay."
+   "text": "24 low bytes paired with $78E8 for three eight-slot object component groups. Each group has an empty component at its first slot and a zero high-pointer sentinel at its last. Scene loading ($527F-$529B) rewrites the six middle component pointers of the first group only, for the selected player costume; the opening snapshot retains pointers whose targets can be replaced by its text overlay."
   },
   {
    "address": 30929,
    "type": "line",
-   "text": "Slice $78D1-$78D1 (offset 1 onward) of costume_animation_pointer_low at $78D0. 24 low bytes paired with $78E8 for three eight-slot object component groups. Each group has an empty component at its first slot and a zero high-pointer sentinel at its last. Scene loading rewrites the six middle component pointers for the selected costume; the opening snapshot retains pointers whose targets can be replaced by its text overlay."
+   "text": "Slice $78D1-$78D1 (offset 1 onward) of costume_animation_pointer_low at $78D0. 24 low bytes paired with $78E8 for three eight-slot object component groups. Each group has an empty component at its first slot and a zero high-pointer sentinel at its last. Scene loading ($527F-$529B) rewrites the six middle component pointers of the first group only, for the selected player costume; the opening snapshot retains pointers whose targets can be replaced by its text overlay."
   },
   {
    "address": 30930,
    "type": "line",
-   "text": "Slice $78D2-$78E7 (offset 2 onward) of costume_animation_pointer_low at $78D0. 24 low bytes paired with $78E8 for three eight-slot object component groups. Each group has an empty component at its first slot and a zero high-pointer sentinel at its last. Scene loading rewrites the six middle component pointers for the selected costume; the opening snapshot retains pointers whose targets can be replaced by its text overlay."
+   "text": "Slice $78D2-$78E7 (offset 2 onward) of costume_animation_pointer_low at $78D0. 24 low bytes paired with $78E8 for three eight-slot object component groups. Each group has an empty component at its first slot and a zero high-pointer sentinel at its last. Scene loading ($527F-$529B) rewrites the six middle component pointers of the first group only, for the selected player costume; the opening snapshot retains pointers whose targets can be replaced by its text overlay."
   },
   {
    "address": 30952,
@@ -19872,7 +19872,7 @@
   {
    "address": 56534,
    "type": "line",
-   "text": "Sixty-four keyboard matrix translations used by $18C6 with no shift-bank offset. Printable letters are lowercase ASCII; control values such as $FF for Return and $FD/$FC for cursor movement are interpreted by the word-wheel handler."
+   "text": "Sixty-four keyboard matrix translations used by $18C6 with no shift-bank offset. Printable letters are lowercase ASCII; control values such as $FF for Return and $FD for cursor movement are interpreted by the word-wheel handler ($FC, the other cursor direction, is in the shifted table)."
   },
   {
    "address": 56598,
