@@ -46,3 +46,12 @@ For Silver:
 - Explain the data the ledger does not see ($D000-$DFFF RAM and seven
   stretches `listing.py` names).
 - 60-verify, 70-minisite (the full page), 80-retro.
+
+## Open from the 28 October 2026 pass
+
+- The Lemon64 page for the C64 game (credits, review table, readers' comments) was refused to automated fetches (HTTP 403), as was UVList. Save the page from a browser to add the Commodore Format review (issue 14, November 1991, 86%, by Steve Jarratt, which two search summaries gave and which has not been read) and the readers' views on difficulty.
+- No scan of the C64 manual, the Commodore Format review, or a Computer and Video Games review was available. The story and controls on the pages come from the Zzap!64, Commodore Force, and Commodore Power scans and from the code.
+- No interview with Al Dukes, Keith Tinman, or any of the three artists was found. Search results connected an Alastair Dukes to Rockstar Leeds, but nothing read says that he is the Ocean programmer, so the pages do not say so.
+- Bottino says the conversion has "only 91 unique 2x2 tiles and a 256-character map". The 91 matches the block table of stage 1; the 256-character map has not been checked.
+- A Solution tab was not written: it needs a run of the game for each stage, and the cartridge image was not available in the session.
+
