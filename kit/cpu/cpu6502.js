@@ -47,6 +47,10 @@
 //   serves its chips and whatever else is there (a ROM, the RAM beneath), with ramSize or without.
 //   A C16 machine passes the pages of TED and of its ROMs (kit/c16/machine.js). Without the port,
 //   $00 and $01 are RAM.
+// - new CPU(mem, { io, ioPages, romPages }): romPages, a list of page numbers, are read and fetched
+//   from mem and their writes go to io.write: a cartridge's ROM, with a mapper's registers on it.
+//   The NES passes its RAM's mirrors and its chips as ioPages and $80-$FF as romPages
+//   (kit/nes/machine.js).
 // - io: the chips at $D000-$DFFF while they are banked in, colour RAM included:
 //   { read(address, cpu), write(address, value, cpu) }. Mirrors are the caller's to fold. A read or
 //   a write with no function for it stops the run and names the chip.
@@ -257,7 +261,7 @@
 
   const hex2 = v => '$' + v.toString(16).toUpperCase().padStart(2, '0');
   const hex4 = v => '$' + v.toString(16).toUpperCase().padStart(4, '0');
-  const chip = a => a < 0xD400 ? 'the VIC-II' : a < 0xD800 ? 'the SID' : a < 0xDC00 ? 'colour RAM' :
+  const chip = a => a < 0xD000 || a >= 0xE000 ? 'a chip' : a < 0xD400 ? 'the VIC-II' : a < 0xD800 ? 'the SID' : a < 0xDC00 ? 'colour RAM' :
     a < 0xDD00 ? 'CIA 1' : a < 0xDE00 ? 'CIA 2' : 'the expansion port';
 
   // --- the processor ----------------------------------------------------------------------------
@@ -279,10 +283,12 @@
       this.wk = new Uint8Array(256);                   // per page: where a write goes
       this.c64 = opts.port !== undefined;
       this.ioPages = opts.ioPages ? Array.from(opts.ioPages, p => p & 0xFF) : null;
-      if (!this.c64 && (opts.rom || (opts.io && !this.ioPages))) {
+      this.romPages = opts.romPages ? Array.from(opts.romPages, p => p & 0xFF) : null;
+      if (!this.c64 && (opts.rom || (opts.io && !this.ioPages && !this.romPages))) {
         throw new Error('io and rom need the C64 map: give port too ({ dir, data }, as readSnapshot returns it), or ioPages for io on another machine');
       }
-      if (this.c64 && this.ioPages) throw new Error('ioPages is for a machine without the C64 map: give port or ioPages, not both');
+      if (this.c64 && (this.ioPages || this.romPages)) throw new Error('ioPages and romPages are for a machine without the C64 map: give port or them, not both');
+      if (this.romPages && !opts.io) throw new Error('romPages needs io, which takes the writes to those pages');
       if (opts.ramSize !== undefined) {               // RAM that repeats through the map (the C16's 16 KB)
         const n = opts.ramSize;
         if (this.c64 || !(n >= 0x400 && n <= 0x8000 && (n & (n - 1)) === 0)) {
@@ -337,6 +343,7 @@
       r.fill(RAM); w.fill(RAM);
       if (this.ramMask !== undefined) { r.fill(MIRROR, (this.ramMask + 1) >>> 8, 0xFD); w.fill(MIRROR, (this.ramMask + 1) >>> 8, 0xFD); }
       if (this.ioPages) for (const p of this.ioPages) r[p] = w[p] = IO;
+      if (this.romPages) for (const p of this.romPages) w[p] = IO;
     }
     portRead(a) {
       return a === 0 ? this.pdir : ((this.pdata & this.pdir) | (~this.pdir & (0x17 | (this.pout & 0xC8)))) & 0xFF;

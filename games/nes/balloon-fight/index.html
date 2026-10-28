@@ -1,0 +1,427 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balloon Fight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+table.bf-t{border-collapse:collapse;font-size:15px;margin:10px 0;width:100%}
+table.bf-t th,table.bf-t td{border-bottom:1px solid var(--line-soft);padding:5px 10px;text-align:left;vertical-align:top}
+table.bf-t th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+table.bf-t td.n{font-family:var(--fm);font-size:14px}
+.bf-shots{display:flex;flex-wrap:wrap;gap:18px}
+.bf-shots img{width:256px;height:240px;image-rendering:pixelated;border-radius:6px;background:#000}
+.bf-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.bf-row label{font-size:14px;color:var(--ink-soft)}
+.bf-row button,.bf-row select{font:inherit;font-size:14px;padding:5px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+.bf-row button.on{background:var(--chip);color:var(--chip-ink)}
+#bf-flight{width:100%;height:auto;display:block;background:#1b1d22;border-radius:6px}
+#bf-frame{width:512px;max-width:100%;height:auto;image-rendering:pixelated;display:block;background:#000;border-radius:6px}
+#bf-music button,#bf-sfx button{font:inherit;font-size:14px;padding:5px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+#bf-music button.nes-apu-playing,#bf-sfx button.nes-apu-playing{background:var(--chip);color:var(--chip-ink)}
+.bf-note{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Nintendo</p>
+  <h1>Balloon Fight</h1>
+  <p class="sub">The game's program is 16 KB. This page runs its flap, read from the code, and shows the birds' three speeds, the clock behind the storm, and a sound routine that keeps its counters inside Balloon Trip's table of high scores.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The game</p>
+  <h2 class="t">A balloonist against the birds</h2>
+  <p class="lede">You fly by flapping. The birds fly the same way, and whoever is higher when two meet wins.</p>
+  <p>The player hangs under two balloons and flaps to rise. Each press of the A button gives one flap, and holding B flaps again and again. Birds sit on the ledges pumping up balloons of their own, then take off and give chase. Coming down on a bird from above pops its balloon, and the bird drops on a parachute. A second hit on the way down sends it into the water, and a bubble rises from the spot for the player to pop. A bird that reaches land instead pumps up a new balloon and comes back in a faster colour. The player's two balloons work the same way: a bird coming down from above takes one, and with none left the player falls. A fish lives in the water. A phase (the game's word for a level) that goes on too long brings a storm: a cloud flashes and throws a spark that bounces around the screen.</p>
+  <p>Clearing every bird clears the phase. Every three phases there is a bonus round, where balloons rise from chimneys. A third mode, Balloon Trip, scrolls the sky past a lone balloonist, who collects balloons and dodges sparks to earn a place in a table of fifty scores.</p>
+  <div class="plate">
+    <div class="bf-shots">
+      <img src="reference/title.png" alt="The title screen: BALLOON FIGHT and three options">
+      <img src="reference/play-phase1.png" alt="Phase 1: the balloonist at the bottom left, three birds on the middle ledge">
+      <img src="reference/lightning.png" alt="Phase 1 after half a minute: a spark thrown by the cloud">
+    </div>
+    <p class="cap">The title screen, phase 1 as play begins, and phase 1 half a minute later with a spark loose. The pictures come from an emulator, a program that behaves like the console.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 · The music</p>
+  <h2 class="t">Music: every tune on the cartridge, played by the game's own sound code</h2>
+  <p class="lede">The phases have no music. Eleven short tunes play everywhere else, and one of them loops.</p>
+  <div class="plate">
+    <div id="bf-music"></div>
+    <p class="cap">The game's sound driver plays its music and its effects. It is a routine, a piece of the program that other parts call on, and it sits at addresses <code>$F500</code> to <code>$FBC9</code>. An address is a numbered place in the console's memory, written in hexadecimal (base 16) after a $ sign, and each place holds one byte, a number from 0 to 255. The eleven tunes sit at <code>$FBCA</code> to <code>$FFF6</code>. Both run on this page, on the kit's model of the console's 6502 processor. The page calls the driver once a frame, about 60 times a second, as the game's NMI handler calls <code>$F758</code>. The NMI is the signal the console raises each time it finishes drawing a picture, and the NMI handler is the routine that answers it. Each tune starts from the same request bit the game sets for it: a bit, one on-or-off switch of a byte in memory, that the driver reads as "play this". Every byte the driver writes to the APU, the console's sound chip, goes to the page's model of that chip. The page was checked against the emulator. Started from the same paused game, the page's driver and the console's made the same writes, in the same order, frame for frame, for all eleven tunes and the fourteen effects below. The chip has four channels, four voices that sound at once: two pulse channels, which make a buzzy square wave, a triangle channel, which makes a softer tone, and a noise channel for hiss and drums. The roll shows the pulse channels in blue and orange and the triangle channel in red, with the noise channel along the foot. The triangle's bass goes down to 55 Hz, which a laptop or phone speaker barely plays.</p>
+  </div>
+  <p>A tune starts with a header of five entries (<code>$FBCA</code>): a tempo, then the address of a list of bytes for each of the four channels. The driver reads each list a byte at a time, and the value of the byte says what it does. A byte from <code>$80</code> to <code>$BF</code> sets the length of the next note: its low nibble (its last hexadecimal digit) is added to the tempo, and the sum picks a number of frames from a table (<code>$F660</code>). A byte from <code>$C0</code> to <code>$FE</code> opens a repeat, and <code>$FF</code> jumps back while repeats remain. A 0 ends the channel. Any other byte is a note: an even number that picks an entry in the table of periods at <code>$F600</code>. The period sets the channel's pitch, and note 2 holds a period of 0, which makes it the rest. Once a frame the driver counts each channel's note down, and reads the next byte when the count reaches 0 (<code>$F504</code>). Only the bonus round's tune loops. When its lists run out, the driver sets a flag, a byte it uses as a yes-or-no marker (<code>$07E8</code>), and starts the tune again.</p>
+  <p>The driver runs on the title screen too, but with the APU switched off. A game that starts switches the APU on (<code>$F1E9</code>), and the demonstration switches it off again. So a game started after a demonstration plays sound, and the demonstration itself is silent.</p>
+</section>
+
+<section>
+  <p class="fig">03 · The flap</p>
+  <h2 class="t">At most one flap every nine frames, and the controller read every third frame</h2>
+  <p class="lede">The balloonist's flight comes from four numbers in a table and a short list of states the balloonist moves between. The chart below runs the game's own arithmetic.</p>
+  <div class="plate">
+    <div class="bf-row">
+      <label>Who: <select id="bf-flight-type"><option value="3">player, two balloons</option><option value="7">player, one balloon</option><option value="0">pink bird</option><option value="1">green bird</option><option value="2">white bird</option></select></label>
+      <label>Input: <select id="bf-flight-input"><option value="hold">B held</option><option value="tap12">A tapped every 12 frames</option><option value="tap6">A tapped every 6 frames</option><option value="burst">A tapped 5 times, then nothing</option><option value="none">nothing: a fall</option></select></label>
+      <button id="bf-flight-run" type="button">Run 240 frames</button>
+    </div>
+    <canvas id="bf-flight" width="960" height="300"></canvas>
+    <p class="cap">Height against time over four seconds, starting in flight at mid-screen. The dots along the foot mark the frames on which a flap was taken. The page runs the game's routines <code>$EA18</code>, <code>$EC49</code> and <code>$EA58</code>, written again in JavaScript, the language of web pages, in the order the game runs them. They were checked against the game's own code on the 6502 model in the kit, the site's set of tools, over 35,358 frames of random taps and holds, with 1,641 flaps, and never differed in height, velocity, action or frame.</p>
+    <p class="bf-note" id="bf-flight-note"></p>
+  </div>
+  <p>Every actor, the players and the birds, has a vertical velocity: how fast it is moving up or down. The game keeps the velocity in 8.8 fixed point, a whole number of pixels in one byte and 256ths of a pixel in another. Each frame <code>$EA58</code> adds gravity to the velocity, holds it between a top speed down and a top speed up, and moves the actor by it. A flap takes a fixed amount off the velocity (<code>$EC9B</code>). All four numbers come from tables with one entry for each type of actor (<code>$E601</code> on). An actor's type is also its colour.</p>
+  <table class="bf-t"><thead><tr><th>Actor</th><th>Gravity a frame</th><th>Flap</th><th>Fastest down</th><th>Fastest up</th><th>Fastest sideways</th></tr></thead><tbody id="bf-physics"></tbody></table>
+  <p>The game does not read the controller every frame. Each actor has a timer that is reloaded with 3 (<code>$E6B8</code>). Only on the frame the timer runs out do the actor's animation, steering and controls run, while the physics runs every frame. So a press of A shorter than three frames can fall between two readings and be missed. After a flap, the actor is set idle with its animation frame, the picture it shows, at 1. A new flap is not accepted until the animation frame has counted round to 0 and the action is back to flapping, which takes three more readings: nine frames (<code>$EC75</code>). Holding B therefore gives a flap every nine frames, which is 14 flaps in two seconds. A gives one flap for each press, and taps faster than the limit are dropped.</p>
+</section>
+
+<section>
+  <p class="fig">04 · One frame, rebuilt</p>
+  <h2 class="t">The screen, drawn again from the picture chip's memory</h2>
+  <p class="lede">A reconstruction, not a screenshot: the page draws the screen from the picture chip's memory, as a saved moment of the game holds it.</p>
+  <div class="plate">
+    <div class="bf-row"><button type="button" class="on" id="bf-frame-bg">background</button><button type="button" class="on" id="bf-frame-sp">sprites</button><button type="button" id="bf-frame-boxes">the actors' boxes</button></div>
+    <canvas id="bf-frame" width="256" height="240"></canvas>
+    <p class="cap">Phase 1 at frame 365, from the snapshot the listing was built from. A snapshot is a saved copy of the whole console at one moment, and the listing is the game's program with notes on every line, on the Source code tab. The page draws the picture from four parts of the memory of the PPU, the console's picture chip. The first is nametable 0, the grid of 960 tiles of 8 by 8 pixels that makes the background. The second is the 64 sprites, the small pictures that move over the background. The game keeps them in a table at <code>$0200</code>, and the NMI copies that table to the chip with DMA, a fast copy the console makes by itself. The third is the palette, 32 colour entries, and the fourth is the two pattern tables, which hold the pixels of every tile. The site's NES renderer draws them. Compared pixel by pixel with the emulator's own picture of the same frame, <b>0 of 61,440 pixels differ</b>. The collision code decides when two things touch. The boxes are the 16 by 24 pixel rectangles it uses (<code>$EE25</code>): the player's and each bird's.</p>
+  </div>
+  <p>Everything the game draws goes through one queue. A routine that wants tiles on the screen adds a block to the queue at <code>$0300</code>: the address in the PPU's memory, a count, and the tiles (<code>$C131</code>). While the picture is being drawn, the PPU's memory cannot be written safely. The safe time is the vertical blank, the pause after each picture while a television's beam goes back from the bottom of the screen to the top. In the next vertical blank, the NMI handler sends every block in the queue (<code>$C188</code>) and then sets the scroll back to 0, 0. The status bar is written the same way when it is asked for (<code>$D798</code>), and one star twinkles each frame (<code>$D60D</code>). The sprites are a page of RAM, 256 bytes of the console's working memory, which the handler copies with the sprite DMA. Balloon Trip's scrolling is the one exception. After the handler's work, the game waits for the vertical blank to end. Then it spins in a loop for about 35 scanlines, the lines the beam draws one below the other, and sets the scroll for the rest of the picture (<code>$C0D1</code>). That way the status bar stays still while the sky drifts. The game does not use a timer for this. It also does not use the sprite-zero hit, a flag the picture chip raises when a solid pixel of sprite 0, the first sprite in its table, lands on a solid pixel of the background. The split comes from a delay loop.</p>
+</section>
+
+<section>
+  <p class="fig">05 · The birds</p>
+  <h2 class="t">Pink, green and white: the same bird with faster numbers</h2>
+  <p class="lede">A bird's colour is its type, and its type indexes every table that makes it move and think.</p>
+  <p>A bird decides what to do when its timer runs out (<code>$E712</code>). It then reloads the timer with a random number of frames, from a range that depends on its colour: 32 to 63 for pink, 16 to 31 for green, and 8 to 15 for white (<code>$E762</code>). So a white bird decides about four times as often as a pink one. Each decision looks at one player, the two players taking turns. If that player is alive and has not just arrived, the bird flaps when the player is higher than it, and steers toward the player's X, the position across the screen. With no player to chase, the bird only flaps (<code>$E731</code>). Y is the position down the screen, counted from the top, and below Y <code>$A0</code>, near the water, a bird always flaps. The colours' physics are in the table above: a white bird falls faster, flaps harder and flies faster than a pink one.</p>
+  <p>A bird that loses its balloon drops on a parachute, which sways like a weight on a spring (<code>$E7B1</code>). Each frame, the sway's distance from the middle gains a sixteenth of the sideways speed, and the speed loses a sixteenth of the distance. Nothing in that sum slows the sway, so it never dies away. On the ground, the bird pumps up a new balloon in steps, and the length of a step comes from a table by phase (<code>$F3BA</code>). A bird that had been hit before takes off one colour faster (<code>$ECAE</code>), and a white bird stays white. Hits score as the game's manual says. A bird's balloon is worth 500, 750 or 1,000, by colour. Tearing its parachute in the air is worth 1,000, 1,500 or 2,000, and kicking it while it is on the ground 750, 1,000 or 1,500 (<code>$F06A</code>, <code>$F076</code>).</p>
+  <table class="bf-t"><thead><tr><th>Hit</th><th>Pink</th><th>Green</th><th>White</th><th>The other player</th></tr></thead><tbody>
+    <tr><td>Its balloon popped</td><td class="n">500</td><td class="n">750</td><td class="n">1,000</td><td class="n">1,000</td></tr>
+    <tr><td>Its parachute torn in the air</td><td class="n">1,000</td><td class="n">1,500</td><td class="n">2,000</td><td class="n"></td></tr>
+    <tr><td>Kicked on the ground</td><td class="n">750</td><td class="n">1,000</td><td class="n">1,500</td><td class="n">1,000</td></tr>
+  </tbody></table>
+  <p>Who hits whom is decided by height. When two actors' 16 by 24 pixel boxes overlap, the one underneath loses a balloon if the other is more than 4 pixels higher (<code>$EF72</code>). Two birds never hurt each other. After a hit, the victim cannot be hit again for 20 frames (<code>$EF7F</code>).</p>
+</section>
+
+<section>
+  <p class="fig">06 · The phases</p>
+  <h2 class="t">Twelve layouts, then phases 4 to 12 for ever</h2>
+  <p class="lede">Each phase is built from a record, a fixed list of its clouds, propellers, birds and platforms. The <a href="levels.html">Maps / levels tab</a> draws every one.</p>
+  <p>Sixteen records are listed at <code>$DB2A</code>. Each record first names the lists of blocks that paint its ledges. Then come its clouds, as positions on the screen's grid; its propellers, with the angle each starts at; its birds, with a position and a colour each; and four tables of platform edges that the collision code reads. Every fourth record is a bonus round's. Its list of birds is empty, and that empty list is what makes the phase a bonus round (<code>$D394</code>). After the sixteenth record, the count goes back to 4 (<code>$F358</code>). So the layouts of phases 4 to 12 and their bonus rounds repeat, while the phase number keeps counting up and the difficulty tables keep climbing.</p>
+  <table class="bf-t"><thead><tr><th>Phase number ÷ 4</th><th>Frames a step of pumping takes (<code>$F3BA</code>)</th><th>Steps before take-off (<code>$F3C3</code>)</th></tr></thead><tbody id="bf-difficulty"></tbody></table>
+  <p>In the first two phases the steps are set to 3 instead. The sparks have a schedule of their own. In phase 1 the first lightning comes after 15 counts of 128 frames, which is 32 seconds, and the count falls to 5 by phase 25 (<code>$C761</code>). Each spark thrown is faster than the last (<code>$C89F</code>). The platforms' colours change every four phases (<code>$D45A</code>). A fanfare plays on phase 1 and on the first phase after each bonus round: 4, 7 and 10.</p>
+</section>
+
+<section>
+  <p class="fig">07 · The storm and the fish</p>
+  <h2 class="t">A spark every so often, from a random cloud</h2>
+  <p class="lede">The storm is a counter that ticks every 128 frames. The fish bites only what is exactly above it.</p>
+  <p>Once every 128 frames, about two seconds, the storm's counter goes down by one (<code>$C790</code>). At 0, a cloud is chosen at random. The cloud flashes for half a second: the game rewrites the cloud's attributes, the settings that pick which palette colours each patch of the background uses, four times (<code>$C831</code>). Then the cloud throws a spark. The spark sets off in one of four directions, picked at random, at a speed from the spark table plus a random 0 to 31, and the next spark's speed level is one higher. Two sparks can be in the air at once, and while both are, the counter waits at 2. A spark bounces off the top and the sides of the screen and off every platform edge it meets (<code>$CA67</code>). It keeps its speed, and is lost off the bottom. A spark hits a player within 8 pixels sideways and 12 down (<code>$CB1C</code>). Both balloons go at once, and the stunned player tumbles into the water.</p>
+  <p>The fish swims right under the water, a pixel a frame, and wraps round from X <code>$B1</code> to <code>$40</code> (<code>$C64B</code>). Every frame it looks for an actor at exactly its own X whose Y is <code>$B4</code> or more, which means low on the screen, just above the surface (<code>$C614</code>). Finding one, the fish rises a pixel a frame for 24 frames. It bites if the victim's bottom edge is still at or below it (<code>$C658</code>), and the victim becomes a falling type carried in the fish's mouth. A victim that moves away makes the fish sink back. The fish takes birds as readily as players.</p>
+</section>
+
+<section>
+  <p class="fig">08 · Balloon Trip</p>
+  <h2 class="t">Balloon Trip: a fixed opening, then random stretches, and 10,000 points for twenty in a row</h2>
+  <p class="lede">The third mode is the same game with the birds taken out and a scrolling sky put in.</p>
+  <p>The scene moves on odd frames only, one pixel at a time (<code>$C216</code>). Every eight pixels a generator, a routine that makes new things, runs and puts balloons and sparks at the left edge. The first generator reads a 122-byte list (<code>$C4AD</code>), so every game opens the same way, and it runs through the list twice. After that, a step counter that goes up every 32 runs of the generator picks from a table of generators (<code>$C3BF</code>). There are five steps of random sparks, which now and then add a bubble at the water line. Then there is one step whose generator is a bare RTS, the instruction that ends a routine and goes back to the code that called it, so it makes nothing; a step of sparks alone; and a step of balloons with sparks. A balloon is worth 300 points. Popping twenty without letting one drift off the right edge pays 10,000 points with the perfect-bonus jingle, and raises a balloon's value to 500, then 700 (<code>$C348</code>). A balloon that gets away starts the count of twenty again. Popping a bubble stops the scrolling for two seconds (<code>$ECBA</code>).</p>
+  <p>The rank in the status bar is the score's place in a table of 50 five-digit scores at <code>$0700</code>. At power-on, the table is filled with 25,000 down to 500, in steps of 500 (<code>$C043</code>). The rank is worked out again after every change to the score (<code>$C539</code>), and at the end the score is written into the table at its rank (<code>$C579</code>). The sound driver uses the table's last entries too, which is a <a href="discoveries.html">discovery</a> of its own.</p>
+</section>
+
+<section>
+  <p class="fig">09 · The bonus round</p>
+  <h2 class="t">Twenty balloons from four chimneys</h2>
+  <p class="lede">The bonus round reuses Balloon Trip's balloons, and their value goes up from one bonus round to the next.</p>
+  <p>Every fourth layout is the bonus round. Twenty balloons rise one at a time from the four chimneys (<code>$CEAE</code>), 40 to 103 frames apart. They sway on the same spring as a parachute, and rise at a speed set by the round (<code>$D112</code>). A balloon within 24 pixels up or down and 16 pixels sideways of a player is popped and counted for that player (<code>$CECE</code>). When the last balloon has gone, the results screen shows each player's count times the round's value, 300, 500 or 700 points, and adds it to the score 100 points at a time (<code>$D213</code>). When the players pop all twenty between them, the screen shows PERFECT!!! and pays a super bonus of 10,000, 15,000, 20,000, 25,000 and then 30,000 points (<code>$D117</code>). A player cannot die here. One who falls bounces back up at Y <code>$C8</code> with both balloons back (<code>$EB62</code>).</p>
+</section>
+
+<section>
+  <p class="fig">10 · The sound effects</p>
+  <h2 class="t">Sound: fourteen effects, most of them one write of four bytes</h2>
+  <p class="lede">The game asks for an effect by setting a request bit, one bit of a byte in memory, and the driver plays the effect on the next frame.</p>
+  <div class="plate">
+    <div id="bf-sfx"></div>
+    <p class="cap">Each effect is started by its request bit (<code>$F0</code> to <code>$F3</code>) and played by the game's driver on the page, like the tunes above. Most effects are a block of four bytes written to one channel's registers, the chip's settings, and then left to the chip, whose own envelope, sweep and length counter shape the volume, the pitch and the length (<code>$F683</code>). The lightning steps the noise channel's period up every three frames (<code>$F87D</code>); a longer period sounds lower. The spark's bounce and the fish's rise pick random pitches (<code>$F8A6</code>, <code>$F993</code>). The flap is the first block of four bytes, <code>$94 $AB $FD $58</code>: a quiet pulse wave at a fixed volume, whose pitch the sweep slides up from 440 Hz to about 660 Hz before the length counter ends it, 90 ms later. That was measured from the page's model of the chip.</p>
+  </div>
+  <p>Thunder is the one effect without a sound. The cloud's flash sets bit 3 of the second request byte (<code>$C852</code>). The driver's dispatch, the code that picks which effect to play, shifts that bit out without testing it (<code>$FA59</code>). Bit 4, which the dispatch does answer at that point, is a bird's flap.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/nes.js"></script>
+<script src="../../lib/apu.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script type="application/json" id="bf-data">{"chr_bg":"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/v58OAAYwMpbAxgAABg8Lnw8GAAcPj8/v78+HBw+f39/fTocAAAAAQEDAwEAAAABAQMDAwAA4PD4+Pj4AADg8Pj46MgAAAAAAAAGDwAAAAAAAAcPAh8CGAhA+EABGDw8LDwYgPBgAAAAAAAA8OAAAAAAAAAfHx8fDwcAABMXHx8PBwAAgMDAgIAAAADAwMCAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHz9/f///AAAAAAAAAAAA/////////wAAAGAwGAgIAMDwmMzk9vYAAAAAAAAAAP//////////AAAAAAAAAADDgYEAAIGBwwAAAAAAAAAA/v7+/v7+/v4AAAAAAAAAAP///39/Px8HAAAAAAAAAAD+/v78/PjwwAAAAAwEBgICADx+cvv5/f0AAAAAAAAAAB8/Pz8/Pz8fAAAYDAQEAAAA/Oby+vr+/AAAAAAAAAAA//////9+fjwAAAAwGAwEBADg+Mzm8vv7AAAAAAQAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAHt7EhISEgAAAAAAAAAAAABg4KCgoKAAAAAAAAAAAAAAAAAAAAAAAP/DgYEAAAAAAAAAAAAAAAAAAAAAgYHD/zxCmaGhmUI8AAAAAAAAAAAAAAAAAAAAAP/DgYAAAAAAAAAAAAAAAAD/////fz8fD/zGxvzYzMYA/MbG/NjMxgA4bMbG/sbGADhsxsb+xsYAxub2/t7OxgDG5vb+3s7GAMbM2PDYzMYAxszY8NjMxgAAAH5+AAAAAAAAfn4AAAAAAAAAAAAAAAAAAAAAAAAAAP//////////AAAAAAAAAAAAAAAAAAAAAP///////////////////////////////w==","chr_sp":"Hj9/f///f38AAAIBAQAAAD8eBAIAAAAOAAAEAgcPDwsfHwcDAQEAABoeBwAABAcDeHy+vt/fvr4AgEhEJCBAQHx4IEAAhAwMgAAgQMDk7OwGIMCQ8PDgAP7YsGCAAACAfHggQACAAACAACBAwODg4AAmx5Tw8OAA4N6/ZIAAAIAAAOCAwOD8DuDAgHC4GByOAB4/f3///38AAAACAQEAAH8/HgQAAAAOAAAABAcPDwt4/H6+v9/evgAAiEREICBAvHggQACEDAxAACBAwOTs7AB4vL7e37++AABASCQkQEB+/HggAIQMDIAAACDA5OzsAwcPDx8fDw8AAAAAAAAAAAcDAQEAAAAOAAABAQcPDwvA4PDw+Pjw8AAAQCAgAAAA4MAAAACEDAwAAAAAwOTs7AABAwcHDw8HAAAAAAAAAAAHAwEBAAAADgAAAAEHDw8LAODw+Pj8/PgAAAAgEBAAAPjw4AAAhAwMAAAAAMDk7OwfDwcBAAAADgAAAAEHDw8L4MCAAACEDAwAAAAAwOTs7ODAAAAAgAAAAAAAAMDg4OAHDx8fPz8fHwAAAAAAAAAADwUAAgA8fHwAAB8/Pytrex5uXB8/HwMAHmFjhMBgIAGA2Ozu9vfv7gAgkFhMDBAQ3rx4ECBAAAAgQACQoMCAAGBgQAAAgAAA4OBAAABAwIA8GBx8fT8GADwGI0dOAHAODwcCAAIAPHwAAAIfPz8ra3webWEDHw0Aex5ifjwAABzevHgQIEAAACBAABCgwICAAAAAAICAgAAAAICAQGAgAB4/f3///39/AAACAQEAAAA/HgEAAQAePgABAQ8fHxU1Pg82Lx8fDwg9DzEwRGBwMABgsLjY3Ly4AIBAYDAwQEB48OAgAAAAAIAAAKDAwMDAAAAAAIDgQACAAMDgYOBAAB8HDhwYHAgAHgcBAwcfCwDAgDAQiBg4MACAsPDg4MBAAQAAAgA8fHwAAB8/Pytre/78eBAgQAAAAAAAkKDAgAABAAAAAgA8fAAAAB8/Pytr/vx4ECBAAAAAAAAQoMCAgD8eAQABAB4+AAABDx8fFTUAAICAwMCAgAAAAAAAAAAAAAAAAAAAAAAAAACAwMDAwD8eBAAAAA8fAAAEBw8PChofBwMHHx8OAB4HDBgaEAAcfHhAAIAAAACAAEDA4ODg4ACAAICA4OAAwIDAYODAAHA/HgQAAAAPHwAABAcPDwoafvx4IIAAAACAAADg4ODg4H8/HgAAAA8fAAAABw8PChq8eEAAgAAAAEAAQMDg4ODgBwMBAAAADx8AAAAHDw8KGvjw4ACAAAAAAAAAwODg4OAfDwcAAAAPHwAAAAcPDwoa4MCAAIAAAAAAAADA4ODg4AcDAQAAAA8fAAABBw8PChrgwAAAgAAAAAAAAMDg4ODgz08HDwcHAwD1dx8DHBgMBObkwODAwIAAXtzwgHAwYEAPDwfvJwcDAAU3f+M8GAwE4ODA7sjAgABA2PyOeDBgQA8HAwcfNwMABw8fHBg4DATgwIDA8NiAAMDg8HAwOGBAAAAAAAAAAA8AAAAABw8PBQAAAAAAQADgAAAAAMDg4EAAAAAAAAAPDwAAAAcPDwUHAAAAAEAA4OAAAADAoOBAwAva4G0pA1vFAAAAAAAAAAAAePz+/v///gAAAAgEBAAAAwcPDx8fDw8DBw8PHx8PDwcDAAAHDw83BwMBAQAADgz/HwcAAAQHAwEfBwMBAQAAwOCw0Nj48PDA4PDw+Pjw8ODAAACAhCzs4MAAICBgwADe2LBgAAAAgNj48PDw8OAAAQMHBw8PBwcBAwcHDw8HBwMBAAAHDw83AwEAAQAADgzg8Njo7Pz4+ODw+Pj8/Pj48OAAAICELOzw4IAgIGDAAMDev2QAAACAwPj48PDw4AAABw8fHz8/HwAHDx8fPz8fHw8HAAcPDzcfDwcBAAAODACAwGCgsPDgAIDA4ODw8ODgwIAAgIQs7ODAgCAgYMAAwMCAYDIeHIjAwODw+PjwAODAAACAgCDg4MAAICBgwAACDgsAAQcPDwEBAAABAAAOO39fRgAAAAAGAR8HAQAAAMCgQIAAgIAgAECAgAAgYNhggGDg2NzMYJz+/v7m4AAAAAAoVNS6u30AABAoKEREAgEAAAEBBw8PAAAAAQEAAA5QsIAAAICAIKCAgAAAIGDYBh07e3f39+MBAgQECAgAAIFBIREJBw8PAEEhEQkAAA7AcLi83N7ejgCAQEAgIAAAAgQIEACAgCAABAgQICBg2AwGQ2Nn5/fjAoEgEBAYAAAYMDFzdub/jwAEgoSIGAAAEBgPBzMjY2EAAAABAQIbGUEAAAAAAAAAPx8fDw8HAAAA4PB4+ODw+AAAwMDCGs7g4ABg8Dg4EADgwODwsAAAAOQMPvhgAAAA4MD4+OAAAAAAAAAAAAMPAQAAAAAAAAABAAB4+PJ2/PwAAgIG7Mgc/GAYODBw4MYcfj4/P38fyOAAAAAAAw8BAAAAAAAAAAEAAHj48nb88GwCAgbsyBz+fvzYQEBAwsYMH38/Px/MwOAAAAAADB4eDAAAAAAMHh4NAAAcOjo+PhwAABw+Pj4+HTx2evv/fn48PH5+//9+fj0AAAg4UHLj5wAABgYuDBwYCx4/f378/P0MDQAAAQMrE4DAgBAgQIAAADBw8Pj48OAADz0/dnb8/AAAAgA5OTsD/Pz8/v9/fz8DAwMJCAQECACQACAAQACEYHDg4MDAgIQQQAAY/KysrB5+/OAAUFBQAAcdPm5+/vwAAAIxeXl5M/z4+PD4/P9/AwcGDhcTIAB5cSETcwcHAQYOHvz8+HhwACAAIABAAEDA4MDgwMCAwAAAAqgAAPj8AAACr//+AAD89tbb6+vr6gAIKCQUFBQUAAAAAAMPHz8AAAAAAAAAAD9/f/////7+AQEBAAIEBQkAAAAA4PD4/AAAAAAAAADA/L66/oAAAFXg4OTAfv//1QAgIBAQHx8PeHz8/HhgIAAPBwcHDAwMHwAAAAADAwMAAAAAAADA8PgAAAAAAAAAYPz8/v5/vz8/EBAICIDAwMAAAAAAAAgQEAAAAHz+/nw4EDg4eHx8fn8AAAAQEAgAAAMHBgQMCAAAAwcGBAwIAAAAAAAAAAAAAAMHBgQMCAAAAwcGDgwcGDgDBwYODBwYODwOAwIAAAAAPA4DAgAAAAAAAAAAAAAAAAMHBg4MHBg4AAAAAAAAAAA8DgMCAAAAAAMHBg4MHBg4AwcGDgwcGDg8DwMGBgwMGDwPAwYGDAwYGDAwIGBAwIAYMDAgYEDAgAAAAAAAAAAAAwcGDgwcGDgAAAAAAAAAADwPAwYGDAwYAAAAAAAAAAAYMDAgYEDAgAAAEBw4CAAAAAAYPDwYAAAAAAAAAAAAAAAQGD58GAgAUhGYP/wZiEpSGbx//j2YSgAAAAAAAAAAAEIsOBw0QgCBZn48PH5mgYFmfjw8fmaBAAAAD89PBw8HDw8F9XcfAwBAAODm5MDgwODgQF7c8IAAAAAAAAcNDQAAAAAABw8PFjMSCQYBCwQXMxIJBgELBAAAAAAAwGBgAAAAAADA4ODQmJAgwACgQNCYkCDAAKBAAwcPDx8fHx8AAAAAAAAAAMDgsJDY2Pj4AABAYCAgAAD//348EAgEBAAAAAAQCAQE//9+PBAQCAgAAAAAEBAICAQGMjoYAmNJAAAAAAAAAAAYEQRMHBgKAgAAAAAAAAAABGZKGBBIQAAEbn48PHxu7wAAAABmyJKEAAAAAGbu//8QEAgIAAAAAH58PDwsLCwsAAMHBAACAAAAAwcHBwMBAAwakJCmTUhFDB6enL7///8gICAAAAAAAP74cHAwIAAAAAAAABggIAAAAAAAGDw6EAAAQICAQAAAAAB49OBgAACBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBAAAAAAAAAA4AAAAABw8PC/78eCAAhAwMAAAAIMDk7OweP39///9/fwAAAAAAAAAAPx4EBw8PDx8AAAAAAAAAAB8HDx8fHw4cAAAAAAAAAAB4/P7+///+/gAAAAAAAAAA/HhAwODg4OAAAAAAAAAAAMCAwODg4OBwAAAAAAAAAAADBw8PHx8PDwAAAAAAAAAABwMBBw8PDx8AAAAAAAAAAMDg8PD4+PDwAAAAAAAAAADgwADA4ODg4AAAAAAAAAAAgUIkGBgkQoGBQiQYGCRCgYFCJBgYJEKBgUIkGBgkQoEAAAABAAAAAAMMECEgQEBIAAAAwOBwMDDAMAjEJBISEhAQCAgGAQAASEhEJiEQDAMAAAAAAIAAAAICAgTECDDAAGAAAAAAAAAEJnIQAMBgAAD/i7mIuov//wAAAAAAAAAA/ExUVFRM/P4CAgICAgICAP6IpISkiP7/AQEBAQEBAQAQEBAQEBAQGAgICAgICAg/YEBAQGA/AD9/YGBgfz8A/AYCAgIG/AD8/gYGBv78AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIFAQIBAQUCAAAAAAAAAAAHBAQGAQEFAgAAAAAAAAAABwUBAQICAgIAAAAAAAAAABI1FRUVFRU6AAAAAAAAAAAXNBQWEREVOgAAAAAAAAAAIlVVFSVFRXIAAAAAAAAAAHJFRWUVFVUiAAAAAAAAAAAiVVVVVVVVIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////////AAAAAAAAAAAAAAAAAAAAAP///////////////////////////////w==","nametable0":"JCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJI4AAAAAAAAkJIyNAAEAAAAAJCQkJCQkJCQkJCQkJCQkJCQkJCoqJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCTuJO8kJCQkJO8kJCTvJCTtJCQk7yQk7yTuJO8kJCTtJCQkJCQkJCTtJCQkJHyAhIgkJCQkJCQk7yQkJCTtJCQkJCQk7SQk7SQkJCTvfYGFiSQk7SQkJO0kJCQkJCQkJCQkJCQkJCQkJCQkJCR+goaKJCQkJCTuJCTtJCQkJCQkJCQkJCQkJCQk7yQkJH+Dh4skJO4kJCQkJCTvJCQkJCQkJCTtJO8kJCTuJO8kJCQkJO0kJCQkJCQkJCQkJCQk7yQkJCQk7iQkJCTtJCQkJCQkJCQk7yQk7yQk7SQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk7yQkJCTvJCQkJCQkJCQkJO8kJCQkJCQkJO8kJCQkJCQk7SQkJCTtJCQkJCQkJCQkJCQkJCQkJCQkJCTuJCQkJCQkJCQkJCQkJCQkJCQkJO0kJCQkJCQkJCQkJCTvJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJO8kJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk7SQkJCQkJCQkJO0kJCQkJCQkJCQkJCQkJCQkJCQkMDEyMTIxMjEyMTIxMjMkJCQkJCQkJCQkJCQkJCQkJO0kJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCTuJCQkJCQkJO0kJCQkJCQkJO8kJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJO0kJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCTvJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDk4OTg5ODkzJCQkJCQkJCQkJCQkJCQkJDA4OTg5ODk4PDs8Ozw7PD1YWVpbWFlaW1hZWltYWVpbOjs8Ozw7PDtgYWJjYGFiY1xdXl9cXV5fXF1eX1xdXl9gYWJjYGFiY1xdXl9cXV5fXF1eX1xdXl9cXV5fXF1eX1xdXl9cXV5fQFBQUFCQoKAAAAAA/wAAAAAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgoKCgAAAKCgoKCgoKCg==","palette":[15,42,9,7,15,48,39,21,15,48,2,33,15,48,0,16,15,22,18,55,15,18,22,55,15,23,17,53,15,23,17,43],"oam":"8P////D////w////8P////D////w////8P////D///+yAAAgugEAIMICACCyAwAougQAKMIFACjw////8P////D////w////8P////D///94TgKUgE8ClIhQApR4UQKcgF4CnIhdApxhTgJoaU8CaHFQAmhhUQJwaV4CcHFYAnB4TgJUgE8CVIhQAlR4UQJcgF4CXIhdAlzwTgJU8E8CVPBQAlTwUQJc8F4CXPBdAlzwTgJo8E8CaPBQAmjwUQJw8F4CcPBYAnDwTgKU8E8ClPBQApTwUQKc8F4CnPBdApzw////8P////D////w////8P////D////w////8P///w==","regs":{"ctrl":144,"mask":30,"scrollX":0,"scrollY":0},"driver":"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","driver_base":62720,"stores":[[62862,"x",16386,"a"],[62870,"x",16387,"a"],[62895,"y",16384,"a"],[62937,"a",16392,"a"],[62954,"a",16396,"a"],[62960,"a",16398,"a"],[62966,"a",16399,"a"],[63135,"i",249,"a"],[63252,"a",16385,"a"],[63255,"a",16389,"a"],[63322,"a",16407,"a"],[63399,"a",16396,"a"],[63402,"a",16384,"a"],[63405,"a",16388,"a"],[63421,"a",16392,"a"],[63424,"a",16401,"a"],[63433,"a",16388,"a"],[63436,"a",16396,"a"],[63640,"a",16396,"a"],[63650,"a",16398,"a"],[63692,"a",16384,"a"],[63695,"a",16388,"a"],[63731,"a",16386,"a"],[63747,"a",16390,"a"],[63936,"a",16390,"a"],[63942,"a",16386,"a"],[64024,"a",16389,"a"],[64029,"a",16388,"a"],[64123,"a",16390,"a"],[64236,"a",16392,"a"],[64246,"a",16388,"a"],[64249,"a",16396,"a"],[64402,"a",16385,"a"],[64407,"a",16389,"a"],[64444,"a",16385,"a"]],"game_rom":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEhBTAAAAAEAAAAAAQAAAAUCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoSQkJKKeqyQkJKwkoyStqKSfrqmlJK+qJCSwJKagsSSnJCQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfDwcgEAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgIDAQICAwECAgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBgcICQoAAAAAAAQFBgcICQoLCAkKCwAAAAAyS2RkS2SWZAAAAAAyS2RkZJbIZAAAAAABAgMDAgMEAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAINAAAAAAAAAAAAAAWFBYUFBAODAoBAQDAwICAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgbAgZEQocDiUAACBsCCQkJCQkJCQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQlX09Iio6CHIECQkJBAKFg4kJBgfDhskJCQj2gSqqqqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////////////////////////////////////////////////////8gj/dgqQCqhf3wEIpKquiKyQTw76X9GGkEhf2KCqq14IX+teGF/7Xh8OGKSqrW0NDdtOj26LH+8Meoyf/wCSnAycDwD0xh9bXY8BPW2LXslejQC5gpP5XY1ti16JXsTDH1mBAXKQ8YZd+ouWD2ldSoiskC8E+06Pbosf6oiskD8GBIqskB8DKm/bkB9vALnQJAuQD2CQidA0CoaKqY0AugAIrJAvAGoBDQArTcmKT9mQBAtdSV0EwO9aX1KQLwyGiqTLL1mKzwB/AEqf/QCxhp/goKyTyQAqk8jQhAhd5MdfWl9MkC8BK5APeNDEC5AfeNDkC5AveND0BMsvUW/xDFB/AAAADUAMgAvQCyAKgAnwCWAI0AhQB+AHYAcAGrAZMBfAFnAVIBPwEtARwBDAD9AO4A4QNXAycC+QLPAqYCgAJcAjoCGgH8Ad8BxAP4AGkAYwBeAFgAUwBPAEoARgBCAwYMGDASJAkIBAcBBAgQIEAYMAwBBgwYMGAkSBIQCA4CAwSpAPAKqQjQBqkM0AKpBIX5qUCF+ob7hPygALH7kfnImMkE0PZgqiCY94b2rfUH8AvJAtAHhfCpAI31B7nK+6iiALnK+5XfyOiKyQnQ9KkBhdCF0YXShdOpAIXohemF6oXrYJSr/VgAfwQYP38AAAZ/CsAIfwXAwYkCD////xAAGBABGAABiAICQAMFQAQHQKl/jQFAjQVAhtyE3WCi5aD20CCl80qwDKX3SrAapfApENDqYKX3CQGF96kAjeQHovyg9SCD9mDu5Aet5AfJWNAoqQCF92CpwI0XQCAl+yAK+SA4+iCs+iAk+KXxjekHqQCF8IXxhfKF82Cl9CkG0Pml9CnwhfSi6aD2THn4pfbJINAK7ugHKQ/JD9AHiqX0KSDQIqkQjQxAjQBAjQRAqQCF9IX1hfaN+geF940IQI0RQI3wB2CpEI0EQI0MQKkA8OGpAI36B2Ci9aD2THn47vsHrfsHyRDw78kg8OVgqQCN+wep8I36B6LxoPZMefil9CnwCQKF9KkAjfcHovGg9kx5+O73B633B8kQ0D1Mm/hMpfel8Eqw+KX2yd/wDMl/8AjJIPAEpfbQIK36B8kP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","trip_layout":[0,0,9,0,8,140,0,7,24,0,24,0,25,0,26,0,132,148,26,0,26,0,26,0,11,18,0,12,19,0,13,20,0,20,0,0,144,0,7,0,7,140,150,0,8,0,9,0,0,24,0,23,0,22,0,0,0,0,0,0,138,144,0,0,0,8,0,9,152,0,10,0,0,0,134,138,21,0,20,0,142,19,0,0,3,13,0,13,14,0,12,13,0,13,25,0,134,146,0,0,152,0,0,10,18,0,9,19,0,8,20,0,7,21,0,7,22,0,7,0,0,0],"physics":{"gravity":[4,4,5,6,3,3,3,6,10,10,10,10],"flap":[40,50,70,120,0,0,0,100,0,0,0,0],"run_accel":[10,30,50,112,0,0,0,112,0,0,0,0],"air_accel":[20,60,100,160,0,0,0,160,0,0,0,0],"max_vx_lo":[112,176,224,64,128,128,128,64,0,0,0,0],"max_vx_hi":[0,0,0,1,0,0,0,1,0,0,0,0],"max_vx_left_lo":[144,80,32,192,128,128,128,192,0,0,0,0],"max_vx_left_hi":[255,255,255,254,255,255,255,254,0,0,0,0],"max_vy_lo":[80,144,192,64,64,64,64,64,0,0,0,0],"max_vy_hi":[0,0,0,1,0,0,0,1,2,2,2,2],"max_vy_up_lo":[176,112,64,192,192,192,192,192,192,192,192,192],"max_vy_up_hi":[255,255,255,254,255,255,255,254,254,1,254,254]}}</script>
+<script>
+/* nes-music */
+// Balloon Fight's sound driver, run as the game runs it: the driver's own code and tables
+// ($F500 to $FFF6, embedded as data) on the kit's 6502 (C64Cpu, site lib cpu6502.js), called
+// once a frame at sound_frame ($F758) as the NMI handler calls it. A hook at every store to
+// $4000-$4017 in the driver logs the write with its cycle in the frame, so the page's APU model
+// plays exactly the bytes the game sends the chip. A tune or an effect is started the way the
+// game starts it: a bit set in one of the four request bytes ($F0 to $F3).
+//   createDriver(data, C64Cpu) -> { init(request), play(frame), playing(), stop() }
+//     data.driver (base64), data.driver_base, data.stores ([[address, mode, operand, register]])
+//     request: [requestAddress, bit]
+function createDriver(data, C64Cpu) {
+  'use strict';
+  const bytes = atob(data.driver);
+  const mem = new Uint8Array(65536);
+  for (let i = 0; i < bytes.length; i++) mem[data.driver_base + i] = bytes.charCodeAt(i);
+  mem[0xFFFA] = 0x94; mem[0xFFFB] = 0xC0; mem[0xFFFC] = 0x00; mem[0xFFFD] = 0xC0; mem[0xFFFE] = 0xF7; mem[0xFFFF] = 0xC0;
+  const cpu = new C64Cpu.CPU(mem);
+  let writes = [], frameStart = 0;
+  const hooks = {};
+  for (const [addr, mode, operand, reg] of data.stores) {
+    hooks[addr] = (c) => {
+      let target = operand;
+      if (mode === 'x') target += c.x; else if (mode === 'y') target += c.y;
+      else if (mode === 'i') target = ((mem[operand] | (mem[operand + 1] << 8)) + c.y) & 0xffff;
+      if (target >= 0x4000 && target <= 0x4017) writes.push([target, c[reg], c.cycles - frameStart]);
+    };
+  }
+  let held = null;
+  return {
+    // request: [address, bit]; hold: set the bit again every frame, as the game does for a sound
+    // that lasts while its cause does (a bird pumping its balloon)
+    init(request, hold) {
+      mem.fill(0, 0, 0x800);                     // the driver's variables as a new game leaves them
+      mem[0x4015] = 0x0f;
+      mem[request[0]] |= request[1];
+      held = hold ? request : null;
+    },
+    play() {
+      writes = [];
+      if (held) mem[held[0]] |= held[1];
+      frameStart = cpu.cycles;
+      cpu.call(0xF758, {}, { hooks, maxSteps: 20000 });
+      return writes;
+    },
+    playing() { return mem[0xF6] !== 0 || (mem[0xF4] | mem[0xF5] | mem[0xF7]) !== 0; },
+    stop() { mem[0xF0] = 1; },
+    mem,
+  };
+}
+// The tunes and effects the game stores, each with the request that starts it (facts.md,
+// "Sound"): the byte and the bit the game sets.
+const TUNES = [
+  { name: 'Bonus round and Balloon Trip', req: [0xF2, 0x20], frames: 1500, kind: 'tune' },
+  { name: 'Phase fanfare', req: [0xF2, 0x08], frames: 320, kind: 'tune' },
+  { name: 'Phase cleared', req: [0xF2, 0x02], frames: 150, kind: 'tune' },
+  { name: 'Perfect bonus', req: [0xF2, 0x10], frames: 120, kind: 'tune' },
+  { name: 'Game over', req: [0xF2, 0x01], frames: 480, kind: 'tune' },
+  { name: 'A life lost', req: [0xF2, 0x80], frames: 120, kind: 'tune' },
+  { name: 'The fish', req: [0xF2, 0x40], frames: 150, kind: 'tune' },
+  { name: 'A parachute torn', req: [0xF1, 0x80], frames: 90, kind: 'tune' },
+  { name: 'A bird pumps its balloon', req: [0xF1, 0x20], frames: 90, kind: 'tune', hold: true },
+  { name: 'A bubble bursts', req: [0xF1, 0x04], frames: 80, kind: 'tune' },
+  { name: 'Pause', req: [0xF2, 0x04], frames: 70, kind: 'tune' },
+  { name: 'Flap', req: [0xF0, 0x10], frames: 40, kind: 'sfx' },
+  { name: 'A bird flaps', req: [0xF1, 0x10], frames: 40, kind: 'sfx' },
+  { name: 'A hit', req: [0xF0, 0x02], frames: 40, kind: 'sfx' },
+  { name: 'A balloon pops', req: [0xF0, 0x20], frames: 60, kind: 'sfx' },
+  { name: 'A fall into the water', req: [0xF0, 0x40], frames: 60, kind: 'sfx' },
+  { name: 'Hit by a spark', req: [0xF0, 0x80], frames: 90, kind: 'sfx' },
+  { name: 'Lightning', req: [0xF0, 0x04], frames: 70, kind: 'sfx' },
+  { name: 'A footstep', req: [0xF0, 0x08], frames: 30, kind: 'sfx' },
+  { name: 'A bounce', req: [0xF1, 0x02], frames: 30, kind: 'sfx' },
+  { name: 'The bonus count tick', req: [0xF1, 0x01], frames: 30, kind: 'sfx' },
+  { name: 'A bird lands', req: [0xF1, 0x40], frames: 40, kind: 'sfx' },
+  { name: 'A bird falls in', req: [0xF3, 0x01], frames: 40, kind: 'sfx' },
+  { name: 'The fish rises', req: [0xF3, 0x40], frames: 60, kind: 'sfx' },
+  { name: 'A spark bounces', req: [0xF3, 0x80], frames: 40, kind: 'sfx' },
+];
+// A log for the APU model from one request: the driver from a clean state, played for the
+// frames given (longer when the tune is still going), the channels enabled first as main does.
+function tuneLog(data, C64Cpu, tune) {
+  const d = createDriver(data, C64Cpu);
+  d.init(tune.req, tune.hold);
+  const log = NESApu.record(d, tune.frames, { tail: 30 });
+  if (tune.hold) { d.init(tune.req, false); }
+  log.writes.unshift([0, 0x4015, 0x0f]);
+  return log;
+}
+// end of nes-music
+</script>
+<script>
+/* nes-flight */
+// A balloonist's vertical flight, as the game computes it for a player in the air. Each frame:
+// the actor's frame timer counts down and every third frame runs the animation step
+// (actor_animate, $EA18) and the controls (actor_controls, $EC38); then actor_physics ($EA58)
+// adds gravity_by_type ($E601) to the vertical velocity, holds it between max_vy and max_vy_up
+// ($E661, $E679) and moves the actor. A flap (actor_controls, $EC61) takes flap_strength ($E60D)
+// off the velocity: B flaps on every control pass, A once per press through the latch, and in
+// either case only while flapping (action 1) or, when idle after a flap (action 0), once the
+// animation frame has come back round to 0: three passes, nine frames, after the last flap.
+// Velocities and positions are 8.8 fixed point, kept as the game keeps them: a whole byte and a
+// fraction byte. tables: data.physics as pagedata gives it (12 bytes each, by actor type).
+function flightTables(physics) {
+  return {
+    gravity: physics.gravity, flap: physics.flap,
+    maxDown: physics.max_vy_lo.map((lo, i) => (physics.max_vy_hi[i] << 8) | lo),
+    maxUp: physics.max_vy_up_lo.map((lo, i) => (physics.max_vy_up_hi[i] << 8) | lo),
+  };
+}
+function flightStart(y) {
+  return { y, yf: 0, vyLo: 0, vyHi: 0, timer: 1, latch: 0, action: 1, frame: 1, counter: 0, flapped: false };
+}
+// One frame. s: the state from flightStart; input: { a, b } held this frame; type the actor
+// type (3 a player with two balloons, 7 with one). Sets s.flapped when a flap was taken.
+function flightFrame(s, input, type, T) {
+  s.flapped = false;
+  if (--s.timer === 0) {
+    s.timer = 3;
+    // actor_animate for a player: every 8 frames while flapping or standing, else every pass
+    if (!((s.action === 1 || s.action === 3) && (s.counter & 7))) s.frame = (s.frame + 1) & 3;
+    if (s.frame === 0 && s.action === 0) s.action = 1;
+    // actor_controls: B every pass, A once per press
+    let flap = !!input.b;
+    if (!flap) { if (input.a) flap = !s.latch; else s.latch = 0; }
+    if (flap) {
+      let ok = true;
+      if (s.action >= 2) { s.y = (s.y - 2) & 0xff; s.vyLo = 0; s.vyHi = 0; }
+      else if (s.action === 0 && s.frame !== 0) ok = false;
+      if (ok) {
+        s.action = 0; s.frame = 1; s.latch = 1; s.flapped = true;
+        const v = s.vyLo - T.flap[type];
+        s.vyLo = v & 0xff;
+        if (v < 0) s.vyHi = (s.vyHi - 1) & 0xff;
+      }
+    }
+  }
+  // actor_physics: gravity, then the limits, then the move
+  const g = s.vyLo + T.gravity[type];
+  s.vyLo = g & 0xff;
+  if (g > 0xff) s.vyHi = (s.vyHi + 1) & 0xff;
+  const signed = s.vyHi & 0x80 ? s.vyHi - 256 : s.vyHi;
+  const vel = (signed << 8) | s.vyLo;
+  const down = T.maxDown[type], up = T.maxUp[type] & 0x8000 ? T.maxUp[type] - 0x10000 : T.maxUp[type];
+  if (vel > down) { s.vyLo = down & 0xff; s.vyHi = (down >> 8) & 0xff; }
+  else if (vel < up) { s.vyLo = up & 0xff; s.vyHi = (up >> 8) & 0xff; }
+  const f = s.yf + s.vyLo;
+  s.yf = f & 0xff;
+  s.y = (s.y + s.vyHi + (f > 0xff ? 1 : 0)) & 0xff;
+  s.counter = (s.counter + 1) & 0xff;             // frame_counter, counted up by the NMI after the frame's logic
+}
+// end of nes-flight
+</script>
+<script>
+(function () {
+  'use strict';
+  const D = JSON.parse(document.getElementById('bf-data').textContent);
+  const b64 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const missing = (el, what) => { el.textContent = 'The site\'s ' + what + ' is missing: this widget runs in the built site.'; };
+
+  // --- the music and the effects
+  const musicEl = document.getElementById('bf-music'), sfxEl = document.getElementById('bf-sfx');
+  if (!window.NESApu || !window.C64Cpu) { missing(musicEl, 'sound library (lib/apu.js, lib/cpu6502.js)'); missing(sfxEl, 'sound library'); }
+  else {
+    const tunes = TUNES.filter(t => t.kind === 'tune').map(t => ({ name: t.name, make: () => tuneLog(D, C64Cpu, t) }));
+    NESApu.mount(musicEl, { tunes });
+    const sfx = TUNES.filter(t => t.kind === 'sfx').map(t => ({ name: t.name, make: () => tuneLog(D, C64Cpu, t) }));
+    NESApu.mount(sfxEl, { tunes: sfx });
+  }
+
+  // --- the flap
+  const T = flightTables(D.physics);
+  const cvF = document.getElementById('bf-flight'), ctxF = cvF.getContext('2d');
+  const NAMES = { 3: 'the player with two balloons', 7: 'the player with one balloon', 0: 'a pink bird', 1: 'a green bird', 2: 'a white bird' };
+  function inputAt(kind, f) {
+    if (kind === 'hold') return { a: false, b: true };
+    if (kind === 'tap12') return { a: f % 12 < 2, b: false };
+    if (kind === 'tap6') return { a: f % 6 < 2, b: false };
+    if (kind === 'burst') return { a: f < 60 && f % 12 < 2, b: false };
+    return { a: false, b: false };
+  }
+  function runFlight() {
+    const type = +document.getElementById('bf-flight-type').value, kind = document.getElementById('bf-flight-input').value;
+    const s = flightStart(0x78), ys = [], flaps = [];
+    for (let f = 0; f < 240; f++) { flightFrame(s, inputAt(kind, f), type, T); ys.push(s.y); if (s.flapped) flaps.push(f); if (s.y >= 0xE8 && s.y < 0xF8) break; }
+    const W = cvF.width, H = cvF.height;
+    ctxF.fillStyle = '#1b1d22'; ctxF.fillRect(0, 0, W, H);
+    ctxF.strokeStyle = '#2c2f36'; ctxF.beginPath();
+    for (let sec = 1; sec <= 4; sec++) { ctxF.moveTo(40 + (W - 50) * sec / 4, 10); ctxF.lineTo(40 + (W - 50) * sec / 4, H - 30); }
+    ctxF.stroke();
+    ctxF.fillStyle = '#1f5fa8'; ctxF.fillRect(40, H - 30 - (240 - 0xD0) * (H - 50) / 240, W - 50, (0xD0 - 0xD0 + 24) * (H - 50) / 240 * 0.6);
+    ctxF.fillStyle = '#80838a'; ctxF.font = '11px ui-monospace, Menlo, monospace';
+    ctxF.fillText('top', 4, 18); ctxF.fillText('water', 4, H - 30 - (240 - 0xD0) * (H - 50) / 240 + 12);
+    for (let sec = 0; sec <= 4; sec++) ctxF.fillText(sec + ' s', 36 + (W - 50) * sec / 4, H - 14);
+    ctxF.strokeStyle = '#ffb74d'; ctxF.lineWidth = 2; ctxF.beginPath();
+    ys.forEach((y, f) => { const x = 40 + (W - 50) * f / 240, yy = 10 + (y / 240) * (H - 50); if (f === 0) ctxF.moveTo(x, yy); else ctxF.lineTo(x, yy); });
+    ctxF.stroke();
+    ctxF.fillStyle = '#ffffff';
+    for (const f of flaps) ctxF.fillRect(40 + (W - 50) * f / 240 - 1, H - 28, 3, 5);
+    const fell = ys.length < 240;
+    document.getElementById('bf-flight-note').textContent = NAMES[type] + ': ' + flaps.length + ' flaps in ' + ys.length + ' frames' + (fell ? ', then the water' : '') +
+      '; gravity ' + T.gravity[type] + '/256 a frame, a flap ' + T.flap[type] + '/256, fastest down ' + (T.maxDown[type] / 256).toFixed(2) + ' and up ' + ((0x10000 - T.maxUp[type]) / 256).toFixed(2) + ' pixels a frame.';
+  }
+  document.getElementById('bf-flight-run').addEventListener('click', runFlight);
+  document.getElementById('bf-flight-type').addEventListener('change', runFlight);
+  document.getElementById('bf-flight-input').addEventListener('change', runFlight);
+  runFlight();
+  // the physics table
+  const P = D.physics, tb = document.getElementById('bf-physics');
+  const frac = (lo, hi) => { const v = (hi << 8) | lo; return ((v & 0x8000 ? v - 0x10000 : v) / 256).toFixed(2); };
+  [[0, 'pink bird'], [1, 'green bird'], [2, 'white bird'], [3, 'player, two balloons'], [7, 'player, one balloon'], [4, 'pink bird on its parachute'], [5, 'green bird on its parachute'], [6, 'white bird on its parachute'], [8, 'anything falling with nothing']].forEach(([t, name]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + name + '</td><td class="n">' + P.gravity[t] + '/256</td><td class="n">' + (P.flap[t] ? P.flap[t] + '/256' : '') + '</td><td class="n">' + frac(P.max_vy_lo[t], P.max_vy_hi[t]) + '</td><td class="n">' + frac(P.max_vy_up_lo[t], P.max_vy_up_hi[t]) + '</td><td class="n">' + frac(P.max_vx_lo[t], P.max_vx_hi[t]) + '</td>';
+    tb.appendChild(tr);
+  });
+
+  // --- the rebuilt frame
+  const fr = document.getElementById('bf-frame');
+  if (!window.NES) missing(fr.parentNode, 'NES renderer (lib/nes.js)');
+  else {
+    const ppu = new Uint8Array(0x4000);
+    ppu.set(b64(D.chr_sp), 0); ppu.set(b64(D.chr_bg), 0x1000); const nt = b64(D.nametable0); ppu.set(nt, 0x2000); ppu.set(nt, 0x2400); ppu.set(D.palette, 0x3F00);
+    const oam = b64(D.oam);
+    const flags = { bg: true, sp: true, boxes: false };
+    const drawFrame = () => {
+      const mask = (flags.bg ? 0x0A : 0) | (flags.sp ? 0x14 : 0);
+      const px = NES.frame(ppu, oam, { ctrl: D.regs.ctrl, mask });
+      const ctx = fr.getContext('2d');
+      NES.draw(ctx, px, 256, 240, 1);
+      if (flags.boxes) {
+        ctx.strokeStyle = '#fff0c2'; ctx.lineWidth = 1;
+        for (const [x, y] of [[0x2B, 0xBC], [0x58, 0x7F], [0x78, 0x7F], [0x98, 0x7F]]) ctx.strokeRect(x + 0.5, y + 0.5, 16, 24);
+      }
+    };
+    for (const [id, key] of [['bf-frame-bg', 'bg'], ['bf-frame-sp', 'sp'], ['bf-frame-boxes', 'boxes']]) {
+      const b = document.getElementById(id);
+      b.addEventListener('click', () => { flags[key] = !flags[key]; b.classList.toggle('on', flags[key]); drawFrame(); });
+    }
+    drawFrame();
+  }
+
+  // --- the difficulty table
+  const rates = [0x58, 0x50, 0x58, 0x50, 0x50, 0x40, 0x38, 0x30, 0x28], steps = [4, 4, 3, 3, 2, 2, 2, 2, 2];
+  const dt = document.getElementById('bf-difficulty');
+  rates.forEach((r, i) => { const tr = document.createElement('tr'); tr.innerHTML = '<td class="n">' + i + (i === 8 ? ' and after' : '') + '</td><td class="n">' + r + '</td><td class="n">' + steps[i] + '</td>'; dt.appendChild(tr); });
+})();
+</script>
