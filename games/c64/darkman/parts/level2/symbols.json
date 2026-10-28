@@ -8838,12 +8838,12 @@
   {
    "address": 2694,
    "type": "line",
-   "text": "Hurt timer of each slot, 14 bytes: set to 10 by $10B2, counted down by $1787 and $19C2 before the enemy acts again."
+   "text": "Hurt timer of each slot, 14 bytes: set to 10 by $10B2, counted down by $1787 and $19C2 before the enemy walks or starts a shot again. Their close-attack test runs before the timer is tested, so a hurt enemy can still attack."
   },
   {
    "address": 2708,
    "type": "line",
-   "text": "State of each of the 11 slots (14 bytes): 0 free, 1 and 2 walking, 3 to 13 the other behaviours, 14 and 15 attacking, 16 knocked down; picks the routine in the table at $128B."
+   "text": "State of each of the 11 slots (14 bytes): 0 free, 1 and 2 walking, 3 to 13 the other behaviours (7 the second half of an enemy, handled through $1D3E), 14 and 15 attacking, 16 knocked down, 17 an enemy's shot; picks the routine in the table at $128B."
   },
   {
    "address": 2722,
@@ -8893,12 +8893,12 @@
   {
    "address": 2981,
    "type": "line",
-   "text": "Energy of each object (hits it can take), counted down by $61AC; for pickups it is set to 1 when taken. Copied from $92C0."
+   "text": "Energy of each object: each hit by the player takes 2 off it ($61AC, which never goes below 0), and a hit that finds it at 0 knocks the enemy down; $6273 sets it to 3 when the enemy gets up. For pickups it is set to 1 when taken. Copied from $92C0."
   },
   {
    "address": 3064,
    "type": "line",
-   "text": "Variant flag of each object, 0 or 1 (a second set of frames, attack steps and colours); copied from $9313."
+   "text": "Variant flag of each object, 0 or 1 (a second set of frames and attack steps; the colour code tests it too, but stores the same colour 0 for both in this level); copied from $9313."
   },
   {
    "address": 3147,
@@ -8908,7 +8908,7 @@
   {
    "address": 3230,
    "type": "line",
-   "text": "Left limit of the object's walk, low byte, for each of the 84 objects; copied from $93B9."
+   "text": "Left limit of the object's walk, low byte, for each of the 84 objects; copied from $93B9. For a shot (type $11) it is the direction instead: 0 right, otherwise left ($12D5)."
   },
   {
    "address": 3232,
@@ -8938,7 +8938,7 @@
   {
    "address": 3561,
    "type": "line",
-   "text": "The table at $0DEA read one entry back: the world X, low byte, of the object before the one in Y; $138B and $1572 restore a falling or shooting object to it."
+   "text": "The table at $0DEA read one entry back: the world X, low byte, of the object before the one in Y; $138B and $1572 restore a falling or shooting object to it, and $1C98 places its object $16 pixels to the left of it."
   },
   {
    "address": 3562,
@@ -8948,7 +8948,7 @@
   {
    "address": 3563,
    "type": "line",
-   "text": "The table at $0DEA read one entry on; the walking behaviours store the new X here as well as in $0DEA."
+   "text": "The table at $0DEA read one entry on; the walking behaviours and the hit test $10B2 store the new X here as well as in $0DEA."
   },
   {
    "address": 3564,
@@ -8973,7 +8973,7 @@
   {
    "address": 3646,
    "type": "line",
-   "text": "The table at $0E3D read one entry on; the walking behaviours store the new high byte here too."
+   "text": "The table at $0E3D read one entry on; the walking behaviours and the hit test $10B2 store the new high byte here too."
   },
   {
    "address": 3647,
@@ -9008,7 +9008,7 @@
   {
    "address": 3894,
    "type": "line",
-   "text": "The object each of the slots holds (14 bytes), set by $0FA5."
+   "text": "The object each of the slots holds (14 bytes), set by $0FA5 and cleared by the setup $52B6."
   },
   {
    "address": 3907,
@@ -9018,7 +9018,7 @@
   {
    "address": 3908,
    "type": "line",
-   "text": "The slot each object holds, for the 84 objects; set by $0FA5."
+   "text": "The slot each object holds, for the 84 objects; set by $0FA5 and cleared by the setup $52B6."
   },
   {
    "address": 3998,
@@ -9043,12 +9043,12 @@
   {
    "address": 4002,
    "type": "line",
-   "text": "Target of the beq at $0FAA in scan_objects: a short hop on to the per-object check at $1033, because a branch cannot reach it."
+   "text": "Target of the beq at $0FAA in scan_objects: a short hop on to the release code at $1033, because a branch cannot reach it."
   },
   {
    "address": 4005,
    "type": "line",
-   "text": "Scans the 84 objects, last to first (X from $53), against the camera ($FB/$FC across, $FD/$FE down). An object with type $0AA2 of 0, or outside the window (from 26 pixels left of the camera to $015A right of it, and $14 to $C2 below the camera's height) is released: its slot in $0A94 is cleared, its height set to $FE and its flag $1056 cleared. One inside the window that has no slot yet takes the first free slot of the 11 ($0A94 zero), receives its position and type, and $0F36/$0F44 link slot and object."
+   "text": "Scans the 84 objects, last to first (X from $53), against the camera ($FB/$FC across, $FD/$FE down). An object with type $0AA2 of 0, or outside the window (from 26 pixels left of the camera to $0159 right of it, and $14 to $C2 below the camera's height) is released: its slot in $0A94 is cleared, the high byte of the slot's Y ($CD) set to $FE and its flag $1056 cleared. One inside the window that has no slot yet takes the first free slot of the 11 ($0A94 zero), receives its position and type, and $0F36/$0F44 link slot and object; when no slot is free the scan stops there until the next call."
   },
   {
    "address": 4169,
@@ -9058,7 +9058,7 @@
   {
    "address": 4182,
    "type": "line",
-   "text": "1 for each object that holds a slot, 84 bytes; set and cleared by $0FA5."
+   "text": "1 for each object that holds a slot, 84 bytes; set and cleared by $0FA5, and cleared for every object by the setup $52B6."
   },
   {
    "address": 4272,
@@ -9073,7 +9073,7 @@
   {
    "address": 4274,
    "type": "line",
-   "text": "For slot X (object Y), when no hit has been scored yet this frame ($10B0, $10B1), the player is striking ($5BBA or $5B2C set) and the slot is in state 1, 2, 14 or 15: compares the slot's height ($A3,X) with the player's ($747C) (10 lines above or $18 below) and its distance across with $747B, on the side the player faces ($59B9). On a hit it pushes the object 9 pixels away along the map unless it is past its limit ($0C9E-$0D97), sets the slot to state 1 (player facing right) or 2 (facing left), starts the hurt timer $0A86 with 10, sets $10B0 and $10B1 and calls $61AC."
+   "text": "For slot X (object Y), when no hit has been scored since the player last walked or fell ($10B0, $10B1, cleared by $5BC7 and $5D91), the player is striking ($5BBA or $5B2C set) and the slot is in state 1, 2, 14 or 15: compares the slot's height ($A3,X) with the player's ($747C) (up to 9 lines below it or $17 above) and its distance across with $747B, on the side the player faces ($59B9). On a hit it pushes the object 9 pixels away along the map unless it is past its limit ($0C9E-$0D97), sets the slot to state 1 (player facing right) or 2 (facing left), starts the hurt timer $0A86 with 10, sets $10B0 and $10B1 and calls $61AC."
   },
   {
    "address": 4613,
@@ -9133,7 +9133,7 @@
   {
    "address": 4784,
    "type": "line",
-   "text": "Behaviour for state 17, the last word of the behaviour table at $128B, probably a shot that flies sideways, since its frames $73 and $74 are the two short dashes of dash_shapes. Sets the sprite colour $0A40 to $0B (dark grey) and the frame $0A32 to 0. While the counter $0AFF of the object is not 0 it takes 1 off the counter, tests the slot against the player ($5507) and, on contact, hurts the player ($5579), sets the counter to 0 and returns. Without contact it moves the slot 5 pixels a call, to the right with the frame $73 when the byte $0C9E of the object (obj_left_lo) is 0 and to the left with the frame $74 otherwise, and copies the new X to the object ($0DEA and $0E3D). The counter is set to 0 when the slot's screen position $BF is negative, when it moves right with $BF at 1 or more and $87 at $28 or more, or when it moves left with $BF at 0 and $87 below $14. With the counter at 0 it puts the slot and the object at the position of the object two places before it in the tables ($0DE8 and $0E3B). No traced code stores the state 17 in $0A94, so no traced code runs these bytes, and nothing in this routine starts the counter."
+   "text": "Behaviour for state 17, the last word of the behaviour table at $128B: the shot a walking enemy fires, with frames $73 and $74, the two short dashes of dash_shapes. Five objects of the level table ($91BD) have type $11, each two places after a walking enemy, and $0FA5 copies that type into $0A94. Sets the sprite colour $0A40 to $0B (dark grey) and the frame $0A32 to 0. While the counter $0AFF of the object is not 0 it takes 1 off the counter, tests the slot against the player ($5507) and, on contact, hurts the player ($5579), sets the counter to 0 and returns. Without contact it moves the slot 5 pixels a call, to the right with the frame $73 when the byte $0C9E of the object (obj_left_lo) is 0 and to the left with the frame $74 otherwise, and copies the new X to the object ($0DEA and $0E3D). The counter is set to 0 when the slot's screen position $BF is negative, when it moves right with $BF at 1 or more and $87 at $28 or more, or when it moves left with $BF at 0 and $87 below $14. With the counter at 0 it puts the slot and the object at the X of the object two places before it, the enemy ($0DE8 and $0E3B). The enemy's attack starts the shot: $1659 and $1895 set its counter to $32, its direction byte $0C9E (1 left, 0 right) and its X."
   },
   {
    "address": 4926,
@@ -9143,7 +9143,7 @@
   {
    "address": 4932,
    "type": "line",
-   "text": "Behaviour for state 13: moves 3 pixels left a frame while the height follows the table at $13AC (16-bit steps) over $64 frames, then puts the object back at the position of the previous object. Probably a falling object."
+   "text": "Behaviour for state 13: moves 3 pixels left a frame while the height follows the table at $13AC (16-bit steps) over $64 frames, then puts the object back at the position of the previous object. The steps fall faster and faster and then turn upward, four times, so it is probably a bouncing object. No object of level 2's table ($91BD) starts in state 13."
   },
   {
    "address": 5036,
@@ -9218,7 +9218,7 @@
   {
    "address": 5364,
    "type": "line",
-   "text": "Behaviour for state 11: hurts the player on contact, otherwise every $1E frames ($0AFF) restarts a shot that moves along the eight steps of the table at $14D0 (4 bytes each: across and down, 16 bits) and plays sound effect $1C."
+   "text": "Behaviour for state 11: a shot fired from the object before it (in level 2 a shuttle of state 10). It hurts the player on contact; otherwise, while the counter $0AFF is not 0, it takes 1 off and moves by one step of the table at $14D0 (4 bytes each: across and down, 16 bits), the step chosen by $0A5C, so each shot flies straight. When the counter is 0, or after a contact, it restarts the shot: counter $1E, $0A5C on to the next of the eight directions, the slot back at the position of the object before it, and sound effect 7 (X = $1C). A shot lasts $1F calls."
   },
   {
    "address": 5438,
@@ -9243,7 +9243,7 @@
   {
    "address": 5618,
    "type": "line",
-   "text": "Behaviour for state 9: an animated hazard that hurts the player on contact. Steps the counter $0A5C down from $5A and shows the frame from the table at $1596."
+   "text": "Behaviour for state 9: an animated hazard that hurts the player on contact while it is shown. Steps the counter $0A5C down from $5A and shows the frame from the table at $1596; when that frame is 0 (hidden) it makes no contact test."
   },
   {
    "address": 5653,
@@ -9253,7 +9253,7 @@
   {
    "address": 5670,
    "type": "line",
-   "text": "Returns 1 in A when slot X is off the screen to the right or its screen X is at or beyond the player's ($747B), and 0 when it is on the left; the walking behaviours use it to decide when to turn."
+   "text": "Returns 1 in A when the high byte $BF of slot X's screen X is not 0 (X past 255, or negative) or its screen X $87 is at or beyond the player's ($747B), and 0 otherwise; the walking behaviours use it to decide when to turn."
   },
   {
    "address": 5687,
@@ -9263,12 +9263,12 @@
   {
    "address": 5720,
    "type": "line",
-   "text": "Hit recoil counter, set by $5579 and the enemy attacks and counted down by $6315; while it runs the stored joystick byte is not refreshed."
+   "text": "Hit recoil counter, set to 3 by $5579 and to 4 by the enemy attacks and counted down by $6315; while it runs and the hurt guard $5577 is 0 the stored joystick byte is not refreshed. In practice that is after an enemy attack: $5579 sets $5577 to 3 as well, so the joystick is still read after it."
   },
   {
    "address": 5721,
    "type": "line",
-   "text": "Behaviour for state 15: the attack of an enemy that was walking left, started by $1787. Counts $0AFF down from $19 and returns to state 1 at zero; at 4 it shows the first attack frame and steps 8 pixels, at $0E the second and steps 6 back, and then, when the player is within $1C in front of it, writes joystick left into $2064, sets the recoil $1658 to 4 and calls $5586. Frames and offsets differ by the variant flag $0BF8 (operands patched at the start)."
+   "text": "Behaviour for state 15: the attack of an enemy that was walking left, started by $1787. Counts $0AFF down from $19 and returns to state 1 at zero. At $18 it shows a frame, at $12 it steps 2 pixels left, at $0E it shows the attack frame and steps 6 left and then, when the player is within $1C in front of it, writes joystick left into $2064, sets the recoil $1658 to 4 and calls $5586, and launches its shot when $0B52 is set; at 4 it shows the walk frame and steps 8 back. Frames and offsets differ by the variant flag $0BF8 (operands patched at the start)."
   },
   {
    "address": 5811,
@@ -9313,7 +9313,7 @@
   {
    "address": 6023,
    "type": "line",
-   "text": "Behaviour for state 1: probably an enemy walking left. Waits out the hurt timer $0A86, walks one pixel left in runs of random length ($0A78 from $65AE) until it reaches its left limit ($0C9E/$0CF1) and then turns (state 2); when the player is near on its left it switches to state 15 (attack). Sprite frames come from $1747 or $1767 by the variant flag $0BF8."
+   "text": "Behaviour for state 1: probably an enemy walking left. Waits out the hurt timer $0A86, walks one pixel left in runs of random length ($0A78 from $65AE) and turns (state 2) when it reaches its left limit ($0C9E/$0CF1) or when a new run starts while it is left of the player ($1626); when the player is near on its left it switches to state 15 (attack), even while hurt, and when the object two after it is a shot (type $11) it may start that attack at random to fire it. Sprite frames come from $1747 or $1767 by the variant flag $0BF8."
   },
   {
    "address": 6293,
