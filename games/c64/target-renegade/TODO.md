@@ -18,6 +18,6 @@ The contributor requested a PR on 26 October 2026. Commit/push and PR preparatio
 - Readers say the baseball bat appears only in stage 1. The stage spawn tables decide it.
 - The manual says moves score 200 to 2,000 points. The hit table at `$A0AD` holds 100 to 900 per hit. The rest is not found.
 - The supplied disk image is a cracked release (disk name "ASS PRESENTS:") whose intro did not pass a key press in the simulator, so it could not settle the five-versus-three lives question. Zzap!64 38 says five lives.
-- The loading picture credits M.Lamb, D.Drake, and J.Dunn with G.Biasillo, where the manual credits Collier, Palmer, McDonald, and Biasillo. Compare the cartridge loader's picture with the disk's, and look for an account of who did what.
-- No developer interview, retrospective, or count of players who finished the game was found. The Zzap!64 and Commodore User reviews were read from images the contributor supplied.
+- The loading picture credits M.Lamb, D.Drake, and J.Dunn with G.Biasillo, where the manual credits Collier, Palmer, McDonald, and Biasillo. Biasillo's Retro Games Master interview explains Dunn (the Spectrum buzzer port). Lamb and Drake are still unexplained. Compare the cartridge loader's picture with the disk's.
+- No interview with Collier, no retrospective by the graphics artists, and no count of players who finished the game was found. The T.A.C.G.R. interview with Biasillo (tacgr.emuunlim.com) did not connect and has not been read. The Zzap!64 and Commodore User reviews were read from images the contributor supplied.
 - Check the new pages' claims with an independent proven model before Silver is restored on the copy (`kit/CHECKING.md`).
