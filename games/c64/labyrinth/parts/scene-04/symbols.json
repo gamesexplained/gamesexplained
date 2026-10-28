@@ -539,7 +539,7 @@
   },
   {
    "address": 30976,
-   "name": "af_costume_unused_header",
+   "name": "af_costume_size",
    "type": "Field",
    "kind": "user"
   },
@@ -3212,7 +3212,7 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "M4 map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Every cell is zero except column 1 ($01), column 3 ($01), column 6 ($80). Cell 1 translates to type 2, the closed door that OPEN and CLOSE change through the replacement tables at $071E and $072E."
+   "text": "M4 map strip: 64 cells, one per world column, read indexed from $0600 by the resident at $3518, $355F, $3B54 (in $3B51), $418A (in $4173), $4C36, $4C5F, $4CA7, $4CB2, $4F77, $4F93, $4FD8 and $502E, and compared and rewritten at $581F/$5824 and $58D0 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Every cell is zero except column 1 ($01), column 3 ($01), column 6 ($80). Cell 1 translates to type 2, the closed door that OPEN and CLOSE change through the replacement tables at $071E and $072E."
   },
   {
    "address": 1600,
@@ -3227,7 +3227,7 @@
   {
    "address": 1796,
    "type": "line",
-   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines, $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and $0706 (0) is halved into $02C8 and $02C7 at $566A."
+   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines ($287C, $3447, $4409, $48C6), $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and from $566A $0706 (0) is shifted right twice into $02C8, its low two bits going to bits 7-6 of $02C7."
   },
   {
    "address": 1799,
@@ -3242,12 +3242,12 @@
   {
    "address": 1808,
    "type": "line",
-   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds $0710 is read by the object grid and placement routines ($37B4, $383F, $5487), $0711 at $548A, $0718 at $5397 and $0719 at $53B9. All zero in this room."
+   "text": "Ten depth thresholds ($0710-$0719), all zero in this room. The table is read indexed from $0710 by the object grid and placement routines at $28CA, $37B9 (in $37B4), $383F, $3863 and $5487; $0711 is read at $548A, $0718 at $5397 and $0719 at $53B9."
   },
   {
    "address": 1818,
    "type": "line",
-   "text": "Costume selector ($03), the index into the initial-animation table at $5985 read at $51EA and $5985. The three bytes after it ($071B-$071D = FF 00 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
+   "text": "Costume selector ($03), read at $51EA and copied to $02C5 (replaced by 4 when $0385 is non-negative and $0565 is negative); the initial-animation table at $5985 is read with it at $520D. The three bytes after it ($071B-$071D = FF 00 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
   },
   {
    "address": 1822,
@@ -3262,7 +3262,7 @@
   {
    "address": 1854,
    "type": "line",
-   "text": "Sixteen low-nibble-to-type values used by $4171/$4173 and $3B51. Bytes: 00 02 07 07 07 01 01 01 01 01 01 01 01 01 01 01. Nibble 0 is type 0, nibble 1 is type 2 (the closed door), nibbles 2 to 4 are type 7, and nibbles 5 to 15 are type 1. The map strip uses only cells 0, 1 and $80 (low nibble 0)."
+   "text": "Sixteen low-nibble-to-type values read indexed by the resident at $351E, $3565, $3B5A (in $3B51), $4192 (in $4173), $4A8E, $4B27, $4F7D, $4F99, $4FE8 and $503E. Bytes: 00 02 07 07 07 01 01 01 01 01 01 01 01 01 01 01. Nibble 0 is type 0, nibble 1 is type 2 (the closed door), nibbles 2 to 4 are type 7, and nibbles 5 to 15 are type 1. The map strip uses only cells 0, 1 and $80 (low nibble 0)."
   },
   {
    "address": 1870,
@@ -3272,7 +3272,7 @@
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C reads at most index 14 ($075C), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y (at $3901/$3915), and $381C increments $075E,X, with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
   },
   {
    "address": 1902,
@@ -3322,7 +3322,7 @@
   {
    "address": 30976,
    "type": "line",
-   "text": "Two bytes ($DD $11) before the stream-offset tables. The component routine $2A0F reads the tables from $7902 and $7981 and never touches these."
+   "text": "Two bytes ($CC $11): the costume size $11CC, one past the last stream's $FF terminator at $8ACB (the costume is $11CC bytes from its base). The component routine $2A0F reads the offset tables from $7902 and $7981 and never touches these."
   },
   {
    "address": 30978,
@@ -3377,32 +3377,32 @@
   {
    "address": 31488,
    "type": "line",
-   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
+   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of the first object group only; the second and third groups point at the AL costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
   },
   {
    "address": 31568,
    "type": "line",
-   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
+   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of the first object group only; the second and third groups point at the AL costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
   },
   {
    "address": 31648,
    "type": "line",
-   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
+   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of the first object group only; the second and third groups point at the AL costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
   },
   {
    "address": 31728,
    "type": "line",
-   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of the first object group only; the second and third groups point at the AL costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31808,
    "type": "line",
-   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of the first object group only; the second and third groups point at the AL costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31888,
    "type": "line",
-   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
+   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of the first object group only; the second and third groups point at the AL costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into af_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
   },
   {
    "address": 31968,
@@ -3937,17 +3937,17 @@
   {
    "address": 35974,
    "type": "line",
-   "text": "Overlay hook stub 1 of 5 (the five three-byte jumps at $8C86-$8C94): jumps to the bare rts at $8E6F, so this hook does nothing in the Alph and Ralph room. The engine event that calls it is not identified."
+   "text": "Overlay hook stub 1 of 5 (the five three-byte jumps at $8C86-$8C94): jumps to the bare rts at $8E6F, so this hook does nothing in the Alph and Ralph room. The resident reaches it from $41AC (JSR) and $6BEB (JMP) (the text hooks); what those events mean is not traced here."
   },
   {
    "address": 35977,
    "type": "line",
-   "text": "Overlay hook stub 2 of 5 (the five three-byte jumps at $8C86-$8C94): jumps to the bare rts at $8E6F, so this hook does nothing in the Alph and Ralph room. The engine event that calls it is not identified."
+   "text": "Overlay hook stub 2 of 5 (the five three-byte jumps at $8C86-$8C94): jumps to the bare rts at $8E6F, so this hook does nothing in the Alph and Ralph room. The resident reaches it from $41B6 (JSR) and $6BF5 (JMP) (the text hooks); what those events mean is not traced here."
   },
   {
    "address": 35980,
    "type": "line",
-   "text": "Overlay hook stub 3 of 5 (the five three-byte jumps at $8C86-$8C94): jumps to the bare rts at $8E6F, so this hook does nothing in the Alph and Ralph room. The engine event that calls it is not identified."
+   "text": "Overlay hook stub 3 of 5 (the five three-byte jumps at $8C86-$8C94): jumps to the bare rts at $8E6F, so this hook does nothing in the Alph and Ralph room. The resident reaches it from $41BC (JSR) and $6BFB (JMP) (the text hooks); what those events mean is not traced here."
   },
   {
    "address": 35983,
@@ -3997,12 +3997,12 @@
   {
    "address": 36096,
    "type": "line",
-   "text": "If $8F01 is nonzero, decrements it; when it becomes zero calls resident $0836 (clear message area). Then if $053E is nonzero stores $04 in $034F and continues at $8D17; if $053E is zero goes to $8D29."
+   "text": "If $8F01 is zero, goes straight to $8D17. Otherwise decrements it; when it becomes zero calls resident $0836 (clear message area). Then if $053E is nonzero stores $04 in $034F and continues at $8D17; if $053E is zero goes to $8D29."
   },
   {
    "address": 36119,
    "type": "line",
-   "text": "If $8F02 is nonzero, decrements it; when it becomes zero calls resident $0836 (clear message area). Then if $053E is zero goes to $8D43, else continues at $8D29."
+   "text": "If $8F02 is zero, goes straight to $8D48. Otherwise decrements it; when it becomes zero calls resident $0836 (clear message area). Then if $053E is zero goes to $8D43, else continues at $8D29."
   },
   {
    "address": 36137,
@@ -4062,7 +4062,7 @@
   {
    "address": 36367,
    "type": "line",
-   "text": "Entry dispatch by phase $056A. Phase 2 loads Y=$B4, X=$9B (reply pointer $9BB4) and phase 3 loads Y=$69, X=$9C ($9C69), then both jump to guard_entry_reaction_speaker at $8E43. Phase 4 goes on to $8E25. Any other phase leaves Y and X unchanged and jumps to $8E43. Entered from the fall-through after $8E0C stores the speaker in $8F05."
+   "text": "Entry dispatch by phase $056A. Phase 2 loads Y=$B4, X=$9B (reply pointer $9BB4); phase 3 loads Y=$69, X=$9C ($9C69) and jumps straight to guard_entry_reaction_speaker at $8E43. Every other phase, phase 2 included, goes on to $8E25, which for phases other than 4 leaves Y and X as they are and jumps to $8E43. Entered from the fall-through after $8E0C stores the speaker in $8F05."
   },
   {
    "address": 36389,
@@ -4122,12 +4122,12 @@
   {
    "address": 36609,
    "type": "line",
-   "text": "Frame countdown, initially zero. The frame callback at $8D00 decrements it each frame while nonzero and calls resident $0836 (clear message area) when it reaches zero. It is not set in this range, so it is loaded from elsewhere."
+   "text": "Frame countdown, initially zero. Set to 12 by the speaker helper at $93EA (STA at $9402) when Alph starts speaking. The frame callback at $8D00 decrements it each frame while nonzero and calls resident $0836 (clear message area) when it reaches zero."
   },
   {
    "address": 36610,
    "type": "line",
-   "text": "Second frame countdown, initially zero. Handled at $8D17 exactly like $8F01: decremented each frame and calls resident $0836 when it reaches zero. Not set in this range."
+   "text": "Second frame countdown, initially zero. Set to 12 by the speaker helper at $9407 (STA at $9414) when Ralph starts speaking. Handled at $8D17 like $8F01: decremented each frame while nonzero and calls resident $0836 when it reaches zero."
   },
   {
    "address": 36611,
@@ -4167,12 +4167,12 @@
   {
    "address": 36618,
    "type": "line",
-   "text": "One byte written at $911A with the accepted phase4 congratulated speaker after its asked flag is nonzero and conversation flag is nonnegative. At $8E05 negative takes the generic entry reaction. Nonnegative selection XOR1 chooses the other speaker; phase4 compares the original selection with $8F07 for lying/truth wording. Live controlled Alph selection0 trials check both second-bit values; ordinary phase4 arrival and live Ralph departure remain open."
+   "text": "One byte written at $911A with the accepted phase4 congratulated speaker after its asked flag is nonzero and conversation flag is nonnegative, and at $903F and $906C, where the phase-two and phase-three replies copy the current speaker $8F05 into it once the shared index reaches 2. At $8E05 negative takes the generic entry reaction. Nonnegative selection XOR1 chooses the other speaker; phase4 compares the original selection with $8F07 for lying/truth wording. Live controlled Alph selection0 trials check both second-bit values; ordinary phase4 arrival and live Ralph departure remain open."
   },
   {
    "address": 36619,
    "type": "line",
-   "text": "One-byte entry-reaction gate read at $8DF8. Negative permits a reply once depth reaches $8F0E; successful queue clears it to0 at $8E56. The callback below depth40 writes $FF at $8DD7. The page checks the full byte domain at the reaction gate; complete revisit behavior remains open."
+   "text": "One-byte entry-reaction gate read at $8DF8. Negative permits a reply once depth reaches $8F0E; successful queue clears it to0 at $8E56. The callback below depth40 writes $FF at $8DD9. The page checks the full byte domain at the reaction gate; complete revisit behavior remains open."
   },
   {
    "address": 36620,
@@ -4412,12 +4412,12 @@
   {
    "address": 37220,
    "type": "line",
-   "text": "Decrements the countdown at $9155. While it stays non-negative it branches to $9175. When it goes negative it decrements $03A8 and shows the message at $99B5 through $0827 with A=4. No command pair or jsr reaches this entry in the brief; it is presumably a per-frame callback."
+   "text": "Decrements the countdown at $9155. While it stays non-negative it branches to $9175. When it goes negative it decrements $03A8 and shows the message at $99B5 through $0827 with A=4. Called each frame by the frame callback (JSR at $8CE4) while $9155 is non-negative."
   },
   {
    "address": 37237,
    "type": "line",
-   "text": "Compares A (the value on entry to $9164, not the countdown) with $10. If equal it queues sound $1F through $081E and ends; otherwise it returns at $917E."
+   "text": "Compares A, the countdown $9155 as the frame callback loaded it at $8CDF before this frame's decrement, with $10. If equal it queues sound $1F through $081E and ends; otherwise it returns at $917E."
   },
   {
    "address": 37246,
@@ -4597,7 +4597,7 @@
   {
    "address": 37638,
    "type": "line",
-   "text": "Calls $0818 (classify player map cell). If X comes back negative it calls $0815 with A=0 to add the selected map object to the inventory; otherwise it shows the message at $94D3 with A=5 via $0827. No command pair in the reached-by list targets this entry; it is presumably reached through a table."
+   "text": "Calls $0818 (classify player map cell). If X comes back negative it calls $0815 with A=0 to add the selected map object to the inventory; otherwise it shows the message at $94D3 with A=5 via $0827. Nothing in the overlay or the resident names this address (no handler word, table or instruction), so how it is reached, if at all, is not traced."
   },
   {
    "address": 37653,
@@ -4627,7 +4627,7 @@
   {
    "address": 37691,
    "type": "line",
-   "text": "If $02BB is negative, picks sound $18 when $0298 equals 3, else 0, and queues it through $081E unless it is 0. Returns immediately if $02BB is non-negative. No caller or command pair is listed; presumably a callback."
+   "text": "If $02BB is negative, picks sound $18 when $0298 equals 3, else 0, and queues it through $081E unless it is 0. Returns immediately if $02BB is non-negative. Called every frame by the frame callback (JSR at $8CD4)."
   },
   {
    "address": 37697,
@@ -4662,7 +4662,7 @@
   {
    "address": 37733,
    "type": "line",
-   "text": "Decrements the counter at $9357 and jumps to $084B (handle consumed inventory item). No caller is listed; presumably a callback."
+   "text": "Decrements the counter at $9357 and jumps to $084B (handle consumed inventory item). Called each frame by the frame callback (JSR at $8CDC) while $9357 is non-negative."
   },
   {
    "address": 37739,
@@ -4682,7 +4682,7 @@
   {
    "address": 37748,
    "type": "line",
-   "text": "Stores A into $8F14 and compares it with 1. If equal it calls $93EA (start left speaker) and selects the message at $9EEE; otherwise it calls $9407 (start other speaker) and selects the message at $9F08. Continues at $938C. No caller is listed in the brief."
+   "text": "Stores A ($AF, 1 or 3, from the frame callback) into $8F14 and compares it with 1. If equal it calls $93EA (start left speaker) and selects the message at $9EEE; otherwise it calls $9407 (start other speaker) and selects the message at $9F08. Continues at $938C. Called only from the frame callback at $8CFD, while $8F14 is negative."
   },
   {
    "address": 37765,
@@ -4762,12 +4762,12 @@
   {
    "address": 38099,
    "type": "line",
-   "text": "Headered text $94D3-$94ED. Layout byte $09, colour byte $02; zero terminates its body. Content without framing glyph controls: \"There is nothing to take.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the Alph and Ralph overlay."
+   "text": "Headered text $94D3-$94ED. Layout byte $09, colour byte $02; zero terminates its body. Content without framing glyph controls: \"There is nothing to take.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler word at $8C54 (pair 74, TAKE with any object) holds $14D3, so the resident dispatcher shows it as that reply, and the overlay prints it at $9315."
   },
   {
    "address": 38126,
    "type": "line",
-   "text": "Headered text $94EE-$94FF. Layout byte $14, colour byte $02; zero terminates its body. Content without framing glyph controls: \"He's not here.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the Alph and Ralph overlay."
+   "text": "Headered text $94EE-$94FF. Layout byte $14, colour byte $02; zero terminates its body. Content without framing glyph controls: \"He's not here.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words of pairs 8, 28, 43, 44, 46 and 47 ($8BD0, $8BF8, $8C16, $8C18, $8C1C, $8C1E) hold $14EE, so the resident dispatcher shows it as their reply, and the overlay prints it at $91D5 and $93D8."
   },
   {
    "address": 38144,
@@ -4837,7 +4837,7 @@
   {
    "address": 38521,
    "type": "line",
-   "text": "Headered text $9679-$968C. Layout byte $12, colour byte $01; zero terminates its body. Content without framing glyph controls: \"Nothing happens.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the Alph and Ralph overlay."
+   "text": "Headered text $9679-$968C. Layout byte $12, colour byte $01; zero terminates its body. Content without framing glyph controls: \"Nothing happens.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words of fifteen pairs (0, 3, 5, 13, 15, 22, 23, 25, 30, 32, 34, 60, 72, 80 and 81) hold $1679, so the resident dispatcher shows it as their reply, and the overlay prints it at $91E1, $9223 and $92AA."
   },
   {
    "address": 38541,
@@ -4992,12 +4992,12 @@
   {
    "address": 39795,
    "type": "line",
-   "text": "Headered text $9B73-$9B91. Layout byte $04, colour byte $00; zero terminates its body. Content without framing glyph controls: \"This door leads to the castle.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the Alph and Ralph overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9B73-$9B91. Layout byte $04, colour byte $00; zero terminates its body. Content without framing glyph controls: \"This door leads to the castle.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The split pointer tables name it: entry 2 of $9052/$9056 and entry 3 of $907F/$9083 (phase-two and phase-three replies) and entry 4 of $90B9/$90BE (later ASK, chosen at $90A6 when $8F07 equals $8F06). Each queues it through $9419."
   },
   {
    "address": 39826,
    "type": "line",
-   "text": "Headered text $9B92-$9BB3. Layout byte $01, colour byte $00; zero terminates its body. Content without framing glyph controls: \"This door leads to CERTAIN DEATH!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the Alph and Ralph overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9B92-$9BB3. Layout byte $01, colour byte $00; zero terminates its body. Content without framing glyph controls: \"This door leads to CERTAIN DEATH!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The split pointer tables name it: entry 3 of $9052/$9056, entry 2 of $907F/$9083 and entry 3 of $90B9/$90BE (later ASK, chosen at $90A6 when $8F07 differs from $8F06). Each queues it through $9419."
   },
   {
    "address": 39860,
@@ -5007,7 +5007,7 @@
   {
    "address": 39908,
    "type": "line",
-   "text": "Headered text $9BE4-$9C27. Layout byte $02, colour byte $00; zero terminates its body. Content without framing glyph controls: \"\\n This time you'll never get it. \\nEverything we say will be a lie.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the Alph and Ralph overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BE4-$9C27. Layout byte $02, colour byte $00; zero terminates its body. Content without framing glyph controls: \"\\n This time you'll never get it. \\nEverything we say will be a lie.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The split pointer table $907F/$9083 names it as entry 1, the phase-three reply read at $9075 when the shared index $8F04 is 1. Each queues it through $9419."
   },
   {
    "address": 39976,
@@ -5022,7 +5022,7 @@
   {
    "address": 40090,
    "type": "line",
-   "text": "Headered response selected by the phase1 entry-message path. Original parser expands How did she figure it out? in the published female-avatar state. Ordinary up input through the opened left door from the controlled count15 room displayed this before phase advancement and the scene5 load. Gender rewriting and other entry-message branches remain outside this check."
+   "text": "Headered response selected at $8E3F whenever the remembered selection $8F0A is negative, in any phase (the phase dispatch at $8E0F is skipped). Original parser expands How did she figure it out? in the published female-avatar state. Ordinary up input through the opened left door from the controlled count15 room displayed this before phase advancement and the scene5 load. Gender rewriting and other entry-message branches remain outside this check."
   },
   {
    "address": 40118,
@@ -5032,7 +5032,7 @@
   {
    "address": 40163,
    "type": "line",
-   "text": "Headered text $9CE3-$9D2B. Layout byte $01, colour byte $00; zero terminates its body. Content without framing glyph controls: \"\\nOne of us will always lie and the\\nother will always tell the truth.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the Alph and Ralph overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9CE3-$9D2B. Layout byte $01, colour byte $00; zero terminates its body. Content without framing glyph controls: \"\\nOne of us will always lie and the\\nother will always tell the truth.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The split pointer table $90B9/$90BE names it as entry 2, the later-ASK reply read at $90AF when the shared index $8F04 is 2. Each queues it through $9419."
   },
   {
    "address": 40236,
@@ -5107,12 +5107,12 @@
   {
    "address": 40738,
    "type": "line",
-   "text": "Headered text $9F22-$9F33. Layout byte $10, colour byte $00; zero terminates its body. Content without framing glyph controls: \"Hello again, ANON.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the Alph and Ralph overlay."
+   "text": "Headered text $9F22-$9F33 as loaded. Layout byte $10, colour byte $00; zero terminates its body. Content without framing glyph controls: \"Hello again, ANON.\". The setup at $8F7D copies the name at $0504 (up to 20 characters) over \"ANON\" at $9F2E, appends \".\" and a zero, and stores $22 minus the name width at $8F9F into the layout byte, so the greeting names the player. The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The overlay selects it at $9393 when $056A is 2 or more and queues it through $9419."
   },
   {
    "address": 40756,
    "type": "line",
-   "text": "Headered text $9F34-$9F43. Layout byte $20, colour byte $20; zero terminates its body. Content without framing glyph controls: \"             \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the Alph and Ralph overlay names this address directly, so what prints it is not traced."
+   "text": "Fifteen spaces and a zero ($9F34-$9F43): spare room for the name the setup at $8F7D copies into the greeting at $9F22. The copy writes up to 20 name bytes from $9F2E, then \".\" and a zero, which reaches as far as $9F43. Nothing reads this as a text of its own."
   },
   {
    "address": 40772,
