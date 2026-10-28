@@ -129,10 +129,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate">
     <div class="pick"><a class="step" id="zk-oprev" aria-label="Previous object">‹</a><select id="zk-obj" aria-label="Object"></select><a class="step" id="zk-onext" aria-label="Next object">›</a></div>
     <div id="zk-card" class="zk-card"></div>
-    <p class="cap">Read from the object table in the listing (story <code>$0148</code>, memory <code>$2D48</code>) as the interpreter reads it (<code>$16BB</code>, <code>$167D</code>); the names are decoded by a port of the interpreter's string printer (<code>$18D2</code>), held to <code>$0DDD</code> for every object. Click a parent, a child or a room to go to it. The properties' meanings come from the story's code, named beside each; the rest are shown as bytes.</p>
+    <p class="cap">Read from the object table in the listing (story <code data-part="story">$0148</code>, memory <code data-part="">$2D48</code>) as the interpreter reads it (<code>$16BB</code>, <code>$167D</code>); the names are decoded by a port of the interpreter's string printer (<code>$18D2</code>), held to <code>$0DDD</code> for every object. Click a parent, a child or a room to go to it. The properties' meanings come from the story's code, named beside each; the rest are shown as bytes.</p>
   </div>
   <p>An object is nine bytes: 32 attribute flags, then the numbers of its parent, its next sibling, and its first child, then the address of its property table (<code>$16BB</code>). Moving the lamp into the player's hands is moving one entry from one list of children to another. The property table holds the object's short name and its properties, numbered 1 to 31 and kept in descending order (<code>$167D</code>). A property the object lacks is read from a table of 31 defaults.</p>
-  <p>Exits are properties too. Each direction has a property number, from 31 for north down to 19 for <code>land</code>, and the story's walking routine (story <code>$6808</code>) decides what an exit does from its length alone:</p>
+  <p>Exits are properties too. Each direction has a property number, from 31 for north down to 19 for <code>land</code>, and the story's walking routine (story <code data-part="story">$6808</code>) decides what an exit does from its length alone:</p>
   <div class="plate"><table class="zk-table">
     <tr><th>Length</th><th>What it holds</th><th>What happens</th></tr>
     <tr><td>1</td><td>a room</td><td>the player goes there</td></tr>
@@ -141,7 +141,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>4</td><td>a room, a variable and a message</td><td>the player goes there if the variable is not 0, or else sees the message, or <code>You can't go that way.</code></td></tr>
     <tr><td>5</td><td>a room, a door and a message</td><td>the player goes there if the door is open (attribute 13), or else sees the message, or <code>The ... is closed.</code> with the door's name</td></tr>
   </table></div>
-  <p>Where a room has no exit at all in the direction asked, the routine checks global 118 first. In a dark place it rolls <code>random 100</code>, and on 74 rolls in 100 it prints <code>Oh, no! You have walked into the slavering fangs of a lurking grue!</code> and the player dies (story <code>$68B9</code>). The first try, live, in the cellar without the lamp, was one of the 74.</p>
+  <p>Where a room has no exit at all in the direction asked, the routine checks global 118 first. In a dark place it rolls <code>random 100</code>, and on 74 rolls in 100 it prints <code>Oh, no! You have walked into the slavering fangs of a lurking grue!</code> and the player dies (story <code data-part="story">$68B9</code>). The first try, live, in the cellar without the lamp, was one of the 74.</p>
 </section>
 
 <section id="disk">
@@ -172,7 +172,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="zk-legend"><span><i style="background:#9aa0a8"></i>kept in memory</span><span><i style="background:#2a8a4a"></i>in a buffer, used last</span><span><i style="background:#b8dcc4"></i>in a buffer, used longest ago</span><span><i style="background:#ffffff;border:1px solid #d5d3cc"></i>on the disk only</span></div>
     <p class="cap">The 320 pages of the story, 32 to a row. Which page each buffer held, and their order of use, are read from the interpreter's tables at <code>$2200-$23FF</code> in two snapshots: the game waiting at its first prompt, and in the cellar after eleven moves.</p>
   </div>
-  <p>The story divides itself in two. The first part holds everything that changes as the game is played (the objects, the variables, and the buffers the parser writes) and the tables the story reads, the dictionary among them. The story's header says where the first part ends: high memory starts at story <code>$476C</code>. Above that are the routines and most of the strings, which are only ever run or printed. The interpreter loads pages 0 to <code>$47</code> into <code>$2C00-$73FF</code> once, at the start, and never reads them from the disk again. The Source tab's listing is memory at that moment, so it holds the interpreter and these 72 pages, and none of the other 248.</p>
+  <p>The story divides itself in two. The first part holds everything that changes as the game is played (the objects, the variables, and the buffers the parser writes) and the tables the story reads, the dictionary among them. The story's header says where the first part ends: high memory starts at story <code data-part="story">$476C</code>. Above that are the routines and most of the strings, which are only ever run or printed. The interpreter loads pages 0 to <code>$47</code> into <code>$2C00-$73FF</code> once, at the start, and never reads them from the disk again. The Source tab has two listings: the interpreter, as memory holds it at that moment, and <a href="source-story.html">the story</a>, all of it, at the story's own addresses.</p>
   <p>Every other page goes into one of the buffers from <code>$7400</code> up to the top of memory, 76 of them on a 48K machine and 12 with 32K (<code>$08C8</code>). The interpreter finds a page by looking for it among the buffers' page numbers (<code>$18B5</code>), keeps the buffers in a chain from the one used last to the one used longest ago (<code>$1880</code>), and when the page is in none of them it reads the page from the disk into the buffer at the old end of the chain (<code>$1752</code>, <code>$1801</code>). At the first prompt fourteen buffers are in use, and eleven moves later 56. Once all 76 are full, every page the story has not used for a while costs a turn of the disk.</p>
   <p>The interpreter tests for memory from <code>$BF00</code> down, so a 64K or 128K Apple II gets the same 76 buffers as a 48K one; the language card's extra 16K is never used.</p>
 </section>
@@ -183,10 +183,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The points are written into the objects. A treasure carries two numbers, one paid the first time it is taken and one paid while it lies in the trophy case, and four rooms pay the first time the player walks in.</p>
   <div class="plate">
     <div id="zk-points"></div>
-    <p class="cap">Properties 13 and 12 of every object, from the listing. Click a row to see the object above. The story's code: story <code>$61EA</code> pays property 13 and sets it to 0; the living room's routine (story <code>$8814</code>) adds up property 12 of the trophy case's contents (story <code>$898C</code>); story <code>$CC4C</code> pays the Drafty Room's 13 points from global 35.</p>
+    <p class="cap">Properties 13 and 12 of every object, from the listing. Click a row to see the object above. The story's code: story <code data-part="story">$61EA</code> pays property 13 and sets it to 0; the living room's routine (story <code data-part="story">$8814</code>) adds up property 12 of the trophy case's contents (story <code data-part="story">$898C</code>); story <code data-part="story">$CC4C</code> pays the Drafty Room's 13 points from global 35.</p>
   </div>
-  <p>Property 13 is paid once: the routine that adds it to the score sets it to 0 (story <code>$61EA</code>). Property 12 is different. After every <code>take</code> in the living room and every <code>put</code> into the case, the story works the score out again from the start: the points scored elsewhere, kept in global 129, plus property 12 of every object in the case (story <code>$8814</code>). Taking a treasure back out of the case takes its points away.</p>
-  <p>The table comes to 337. The last 13 are not in any object: they are global 35, paid once by the Drafty Room's routine to a player who reaches it with a light (story <code>$CC4C</code>). Dying costs 10 (story <code>$6467</code>).</p>
+  <p>Property 13 is paid once: the routine that adds it to the score sets it to 0 (story <code data-part="story">$61EA</code>). Property 12 is different. After every <code>take</code> in the living room and every <code>put</code> into the case, the story works the score out again from the start: the points scored elsewhere, kept in global 129, plus property 12 of every object in the case (story <code data-part="story">$8814</code>). Taking a treasure back out of the case takes its points away.</p>
+  <p>The table comes to 337. The last 13 are not in any object: they are global 35, paid once by the Drafty Room's routine to a player who reaches it with a light (story <code data-part="story">$CC4C</code>). Dying costs 10 (story <code data-part="story">$6467</code>).</p>
 </section>
 
 <section id="screen">
@@ -389,7 +389,17 @@ const Zork = (function () {
     return words;
   }
 
-  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split };
+  // The machine at the Z-machine's start, from the two listings: the interpreter's, and the story's
+  // first pages laid over it as the start-up reads them ($088D-$08C5): page 0 to $2C00, header byte
+  // 5 made $FF ($0895), then the rest of the resident pages, header byte 4 plus 1 of them, $48.
+  function machine(I, S) {
+    const n = (S.ram[4] + 1) * 0x100;
+    I.ram.set(S.ram.subarray(0, n), BASE); I.has.fill(1, BASE, BASE + n);
+    I.ram[BASE + 5] = 0xFF;
+    return I;
+  }
+
+  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split, machine };
 })();
 // end of zork.js
 </script>
@@ -437,8 +447,8 @@ function exits(o) {
 function exitText(objects, e, link) {
   const room = n => link(n, objects.byN(n).label);
   if (e.len === 1) return room(e.room);
-  if (e.len === 2) return `blocked: a message at story <code>${hex(e.message)}</code>`;
-  if (e.len === 3) return `the routine at story <code>${hex(e.routine)}</code> decides`;
+  if (e.len === 2) return `blocked: a message at story <code data-part="story">${hex(e.message)}</code>`;
+  if (e.len === 3) return `the routine at story <code data-part="story">${hex(e.routine)}</code> decides`;
   const g = e.variable >= 16 ? `global ${e.variable - 16}` : `local ${e.variable}`;
   if (e.len === 4) return `${room(e.room)}, once ${g} is not 0`;
   return `${room(e.room)}, through the ${link(e.door, objects.byN(e.door).label)} when it is open`;
@@ -472,17 +482,17 @@ function objectHTML(ram, objects, o, page) {
   const kids = Zork.children(ram, o.n);
   h += `<dt>Holds</dt><dd>${kids.length ? kids.map(n => link(n)).join(', ') : '<span class="zk-mute">nothing</span>'}</dd>`;
   h += `<dt>Attributes</dt><dd>${o.attrs.length ? o.attrs.join(', ') : '<span class="zk-mute">none set</span>'}</dd>`;
-  h += `<dt>Entry</dt><dd>story <code>${hex(o.a)}</code>, properties at story <code>${hex(o.propsAt)}</code></dd></dl>`;
+  h += `<dt>Entry</dt><dd>story <code data-part="story">${hex(o.a)}</code>, properties at story <code data-part="story">${hex(o.propsAt)}</code></dd></dl>`;
   h += '<table class="zk-table"><tr><th>Property</th><th>Bytes</th><th>What the story does with it</th></tr>';
   for (const p of o.props) {
     let what = '';
     if (p.num >= 19) what = `exit ${EXITS[p.num]}: ${exitText(objects, exits({ props: [p] })[0], link)}`;
-    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code>$5DFC</code>)';
-    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code>$5E19</code>)';
-    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code>${hex(2 * propValue(o, 17))}</code>` : 'no routine';
-    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code>$61EA</code>)`;
-    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code>$898C</code>)`;
-    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code>$E20C</code>)`;
+    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code data-part="story">$5DFC</code>)';
+    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code data-part="story">$5E19</code>)';
+    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code data-part="story">${hex(2 * propValue(o, 17))}</code>` : 'no routine';
+    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code data-part="story">$61EA</code>)`;
+    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code data-part="story">$898C</code>)`;
+    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code data-part="story">$E20C</code>)`;
     h += `<tr><td>${p.num}</td><td class="zk-mono">${p.data.map(b => h2(b)).join(' ')}</td><td>${what}</td></tr>`;
   }
   h += '</table>';
@@ -501,7 +511,7 @@ let ram0 = null;
   const fail = msg => document.querySelectorAll('.plate [id^="zk-"]').forEach(el => { if (el.tagName === 'DIV' && !el.textContent) el.textContent = msg; });
   if (!globalThis.Apple2) { fail('These widgets need the site\'s Apple II library: open the page from the built site.'); return; }
   let L;
-  try { L = await Apple2.load('listing.json'); } catch (e) { fail('The listing did not load: ' + e.message); return; }
+  try { L = Zork.machine(await Apple2.load('parts/interpreter/listing.json'), await Apple2.load('parts/story/listing.json')); } catch (e) { fail('The listing did not load: ' + e.message); return; }
   const ram = L.ram;
   ram0 = ram;
   const objects = Objects(ram);
@@ -532,7 +542,7 @@ function wordWidget(ram) {
     let h = '<table class="zk-table zk-click"><tr><th>#</th><th>Word</th><th>Starts at</th><th>Letters</th><th>Dictionary entry</th><th>Kinds</th></tr>';
     words.forEach((w, i) => {
       const e = w.at ? entryOf(dict, w.at) : null;
-      h += `<tr data-i="${i}" class="${i === chosen ? 'now' : ''}"><td>${i + 1}</td><td><b>${esc(w.text)}</b>${w.len > 6 ? `<span class="zk-mute">${esc(lineText(m, T, w))}</span>` : ''}</td><td>${w.pos}</td><td>${w.len}</td><td>${w.at ? 'story <code>' + hex(w.at) + '</code>' : '<span class="zk-warn">0, unknown</span>'}</td><td>${e ? kindsOf(e).map(k => k.name).join(', ') : ''}</td></tr>`;
+      h += `<tr data-i="${i}" class="${i === chosen ? 'now' : ''}"><td>${i + 1}</td><td><b>${esc(w.text)}</b>${w.len > 6 ? `<span class="zk-mute">${esc(lineText(m, T, w))}</span>` : ''}</td><td>${w.pos}</td><td>${w.len}</td><td>${w.at ? 'story <code data-part="story">' + hex(w.at) + '</code>' : '<span class="zk-warn">0, unknown</span>'}</td><td>${e ? kindsOf(e).map(k => k.name).join(', ') : ''}</td></tr>`;
     });
     list.innerHTML = h + '</table>' + (count < input.value.length + 1 ? `<p class="zk-note">The text buffer holds ${m[T]} characters with the RETURN, so the line was cut after ${count}.</p>` : '');
     list.querySelectorAll('tr[data-i]').forEach(tr => tr.onclick = () => show(+tr.dataset.i));
@@ -593,7 +603,7 @@ function entryHTML(dict, at) {
   if (!at) return '<p class="zk-note">The search found nothing, and the parse buffer gets 0 for this word: the story answers <code>I don\'t know the word</code>.</p>';
   const e = entryOf(dict, at);
   const kinds = kindsOf(e);
-  let h = `<p class="zk-note">Entry at story <code>${hex(at)}</code>, memory <code>${hex(at + Zork.BASE)}</code>: the word bytes, then <code>${e.data.map(b => hex(b, 2).slice(1)).join(' ')}</code>. `;
+  let h = `<p class="zk-note">Entry at story <code data-part="story">${hex(at)}</code>, memory <code>${hex(at + Zork.BASE)}</code>: the word bytes, then <code>${e.data.map(b => hex(b, 2).slice(1)).join(' ')}</code>. `;
   h += kinds.map(k => {
     if (k.name === 'noun') return 'A <b>noun</b>; the story finds its object by the words each object lists';
     const same = dict.entries.filter(x => x !== e && kindsOf(x).some(y => y.name === k.name && y.value === k.value)).map(x => x.word);

@@ -13185,7 +13185,7 @@
   {
    "address": 202,
    "type": "line",
-   "text": "The abbreviation table: 32 words, each the packed address (half the byte address) of an abbreviation's text, the first $0020 for $00040 (`the `) and the last $0063 for $000C6 (`his `). The interpreter keeps its address in the interpreter's $E2-the interpreter's $E3."
+   "text": "The abbreviation table: 32 words, each the packed address (half the byte address) of an abbreviation's text, the first $0020 for $00040 (`the `) and the last $0063 for $000C6 (`his `). The interpreter keeps its address in the interpreter's $E2-$E3."
   },
   {
    "address": 266,
@@ -16255,7 +16255,7 @@
   {
    "address": 8414,
    "type": "line",
-   "text": "The story's 138 global variables, Z-machine variables 16 to 153, each a word, high byte first; the interpreter keeps their address in the interpreter's $98-the interpreter's $99. Global 0, HERE, is the room the player is in, global 1 the score and global 2 the count of moves: the status line prints those three (the interpreter's $1CD7), and all three start at 0. Global 37 (P-INBUF) holds the text buffer's address and global 54 (P-LEXV) the parse buffer's, which each sread names; globals 134 to 137 hold the addresses of the parser's tables in static memory. HOUSE-AROUND's table follows them at $021F2."
+   "text": "The story's 138 global variables, Z-machine variables 16 to 153, each a word, high byte first; the interpreter keeps their address in the interpreter's $98-$99. Global 0, HERE, is the room the player is in, global 1 the score and global 2 the count of moves: the status line prints those three (the interpreter's $1CD7), and all three start at 0. Global 37 (P-INBUF) holds the text buffer's address and global 54 (P-LEXV) the parse buffer's, which each sread names; globals 134 to 137 hold the addresses of the parser's tables in static memory. HOUSE-AROUND's table follows them at $021F2."
   },
   {
    "address": 8416,
@@ -16425,7 +16425,7 @@
   {
    "address": 8482,
    "type": "line",
-   "text": "The table of the shore rooms and the river rooms the boat is launched into from them, for GO-NEXT."
+   "text": "The address of the table of shores and the water the boat is launched onto from each, $02842, for GO-NEXT: the Frigid River from five of them, the Reservoir from two and the Stream from one."
   },
   {
    "address": 8484,
@@ -16645,7 +16645,7 @@
   {
    "address": 8570,
    "type": "line",
-   "text": "The table of eight messages, \"up to your ankles.\" to \"over your head.\", that I-MAINT-ROOM reads by half of WATER-LEVEL."
+   "text": "The table of nine messages, \"up to your ankles.\" to \"high in your lungs.\", that I-MAINT-ROOM reads by half of WATER-LEVEL."
   },
   {
    "address": 8572,
@@ -16675,7 +16675,7 @@
   {
    "address": 8582,
    "type": "line",
-   "text": "Set when the thief is given a treasure: for a turn he is left alone and fights at a strength of 2 at most."
+   "text": "Set when the thief is given or thrown a treasure (ROBBER-FUNCTION). I-FIGHT clears it at the end of the same turn, leaving the thief alone that turn when he is in the room. VILLAIN-STRENGTH would hold his strength to 2 while it is set, and clears it too, but no blow comes between the gift and I-FIGHT's pass, so the cap never applies."
   },
   {
    "address": 8584,
@@ -16960,7 +16960,7 @@
   {
    "address": 8726,
    "type": "line",
-   "text": "ABOVE-GROUND's table: a count, 11, then the rooms above ground, the four round the house, the three Forests, the Forest Path, the two Clearings and Canyon View, among which RANDOMIZE-OBJECTS scatters a dead player's belongings."
+   "text": "ABOVE-GROUND's table: a count, 11, then the rooms above ground, the four round the house, the three Forests, the Forest Path, the two Clearings and Canyon View, among which RANDOMIZE-OBJECTS scatters those of a dead player's belongings that are not treasures, the lamp and the coffin."
   },
   {
    "address": 8750,
@@ -17065,7 +17065,7 @@
   {
    "address": 10170,
    "type": "line",
-   "text": "Eight packed addresses of the messages I-MAINT-ROOM prints as the Maintenance Room floods."
+   "text": "Nine packed addresses of the messages I-MAINT-ROOM prints as the Maintenance Room floods, \"up to your ankles.\" to \"high in your lungs.\"; it reaches only the first seven."
   },
   {
    "address": 10188,
@@ -22144,7 +22144,7 @@
   {
    "address": 19786,
    "type": "line",
-   "text": "Reads one noun clause for PARSER, its arguments the position in P-LEXV of the word that starts it and the preposition's number and word (0 when there is none). Puts the preposition and the clause's first and last words into P-ITBL, in the first or second clause's place as P-NCN says, and returns the position PARSER carries on from, or -1 at the end of the line. The clause takes in objects, adjectives, buzz words, `and`, commas, and `all` or `one` (skipping an `of` after them). It ends at `then`, `.` or a preposition, or after an object that is not followed by `and`, a comma, `but` or `except`; a word that is both an adjective and an object is read as an adjective when an object follows it. After `and` or a comma, a verb or a direction ends the command there: the `and` or comma becomes `then`. A word not in the dictionary goes to UNKNOWN-WORD, and any other word gets \"I can't use the word '...' here.\"."
+   "text": "Reads one noun clause for PARSER, its arguments the position in P-LEXV of the word that starts it and the preposition's number and word (0 when there is none). Puts the preposition and the clause's first and last words into P-ITBL, in the first or second clause's place as P-NCN says, and returns the position PARSER carries on from, -1 at the end of the line, or false when it could not read the clause. The clause takes in objects, adjectives, buzz words, `and`, commas, and `all` or `one` (skipping an `of` after them). It ends at `then`, `.` or a preposition, or after an object that is not followed by `and`, a comma, `but` or `except`, unless the object itself came right after `and` or a comma: such an object never ends the clause, which goes on to the next word; a word that is both an adjective and an object is read as an adjective when an object follows it. After `and` or a comma, a verb or a direction ends the command there: the `and` or comma becomes `then`. A word not in the dictionary goes to UNKNOWN-WORD, and any other word gets \"I can't use the word '...' here.\"; either way the routine returns false, and PARSER stops."
   },
   {
    "address": 20196,
@@ -22198,7 +22198,7 @@
   {
    "address": 20568,
    "type": "line",
-   "text": "Finds the sentence pattern for the command. With no verb it says \"You must supply a verb!\". It goes through the verb's patterns in the table VERBS points at (entry 255 minus the verb's number), and the first whose prepositions are the command's is taken, through SYNTAX-FOUND. A pattern that takes objects the command lacks, with a matching first preposition, is kept as a fallback; it does not test whether the command has more objects than the pattern takes. With no fallback it says \"I don't understand that sentence.\". With one, GWIM looks for the one object that fits; when there is none, ORPHAN keeps the command, and the parser asks \"What do you want to\" with the verb, the first object when there is one, and the preposition, and sets P-OFLAG so that the next command is taken as the answer."
+   "text": "Finds the sentence pattern for the command. With no verb it says \"You must supply a verb!\". It goes through the verb's patterns in the table VERBS points at (entry 255 minus the verb's number), and the first whose prepositions are the command's is taken, through SYNTAX-FOUND. It does not test whether the command has more objects than the pattern takes. Patterns that take objects the command lacks are kept as fallbacks of two kinds, each one found replacing the one before: for a command with no objects, a pattern that takes one or two, whose first preposition must be the command's when the command has one, and may be anything when it has none, so that `listen` alone asks \"What do you want to listen to?\"; and for a command with one object, a pattern that takes two, whose first preposition is the command's. With no fallback it says \"I don't understand that sentence.\". With one, GWIM looks for the one object that fits the missing place, the first object for the first kind and the second for the other; when there is none, ORPHAN keeps the command, and the parser asks \"What do you want to\" with the verb, the first object when there is one, and the preposition, and sets P-OFLAG so that the next command is taken as the answer."
   },
   {
    "address": 20949,
@@ -22385,7 +22385,7 @@
   {
    "address": 23064,
    "type": "line",
-   "text": "Runs the villains every turn, one entry of VILLAINS at a time. A villain out of the room is woken (AWAKEN), and stops fighting and being staggered (attributes 27 and 26), its action routine told with 1 when it was fighting. In the room, the thief busy with his loot is left alone for a turn (THIEF-ENGROSSED); an unconscious villain, its property 15 below 0, wakes (AWAKEN) when a roll of 1 to 100 comes under its chance in the entry's word 3, which otherwise grows by 25; a villain with attribute 27, or whose action routine says yes to 5, fights. When one fights, DO-FIGHT runs the round. Does nothing once the player is dead."
+   "text": "Runs the villains every turn, one entry of VILLAINS at a time; the loop stops when its count reaches the table's, 3, so it runs the troll and the thief, and never reads the cyclops's entry. A villain out of the room is woken (AWAKEN), and stops fighting and being staggered (attributes 27 and 26), its action routine told with 1 when it was fighting. In the room, the thief busy with his loot is left alone for a turn (THIEF-ENGROSSED); an unconscious villain, its property 15 below 0, wakes (AWAKEN) when a roll of 1 to 100 comes under its chance in the entry's word 3, which otherwise grows by 25; a villain with attribute 27, or whose action routine says yes to 5, fights. When one fights, DO-FIGHT runs the round. Does nothing once the player is dead."
   },
   {
    "address": 23242,
@@ -24047,7 +24047,7 @@
   {
    "address": 42134,
    "type": "line",
-   "text": "The Maintenance Room floods, every turn once the blue button is pushed. A player in the room is told \"The water level here is now \" and the entry of DROWNINGS for half of WATER-LEVEL, from \"up to your ankles.\" to \"up to your neck.\": the table's last entry, \"over your head.\", is never reached. WATER-LEVEL goes up by one, and at 14 the room is ruined (MUNG-ROOM, \"The room is full of water and cannot be entered.\"), the event stops and a player still in it drowns (JIGS-UP)."
+   "text": "The Maintenance Room floods, every turn once the blue button is pushed. A player in the room is told \"The water level here is now \" and the entry of DROWNINGS for half of WATER-LEVEL, from \"up to your ankles.\" to \"up to your neck.\": the table's last two entries, \"over your head.\" and \"high in your lungs.\", are never reached. WATER-LEVEL goes up by one, and at 14 the room is ruined (MUNG-ROOM, \"The room is full of water and cannot be entered.\"), the event stops and a player still in it drowns (JIGS-UP)."
   },
   {
    "address": 42217,
@@ -24291,7 +24291,7 @@
   {
    "address": 49978,
    "type": "line",
-   "text": "The matchbook. Lighting a match takes one from MATCH-COUNT, which starts at 6, so five can be lit, and below 1 says \"I'm afraid that you have run out of matches.\"; in the Drafty Room and the Timber Room the match is used and \"goes out instantly\". Otherwise it burns (attributes 4, 6 and 3) and I-MATCH puts it out in 2 turns: \"One of the matches starts to burn.\". The room is not looked at again, so a match lit in the dark shows nothing until the next look. Putting it out: \"The match is out.\". `examine`: \"The match is burning.\" or \"The match is not burning.\"."
+   "text": "The matchbook. Lighting a match takes one from MATCH-COUNT, which starts at 6, so five can be lit, and below 1 says \"I'm afraid that you have run out of matches.\"; in the Drafty Room and the Timber Room the match is used and \"goes out instantly\". Otherwise it burns (attributes 4, 6 and 3) and I-MATCH puts it out in 2 turns: \"One of the matches starts to burn.\". Nothing works LIT out again, so a match lit in the dark leaves the room dark, to `look` as well (\"It is pitch black.\"), until something works it out again, such as a move to another room (GOTO) or a lamp switched on or off. Putting it out: \"The match is out.\". `examine`: \"The match is burning.\" or \"The match is not burning.\"."
   },
   {
    "address": 50189,
@@ -24644,7 +24644,7 @@
   {
    "address": 55764,
    "type": "line",
-   "text": "The forest: `walk around` goes on round the forest (GO-NEXT with FOREST-AROUND), from the house too; `disembark`, \"You will have to specify a direction.\"; `find`, \"I cannot see the forest for the trees.\"; `listen`, \"The pines and the hemlocks seem to be murmuring.\"."
+   "text": "The forest: `walk around` goes on round the forest (GO-NEXT with FOREST-AROUND) from the three Forests, the Forest Path and the Clearing; the forest is in scope only there and Up a Tree (their property 6), and Up a Tree, which FOREST-AROUND leaves out, gets the stock reply; `disembark`, \"You will have to specify a direction.\"; `find`, \"I cannot see the forest for the trees.\"; `listen`, \"The pines and the hemlocks seem to be murmuring.\"."
   },
   {
    "address": 55863,
@@ -24800,7 +24800,7 @@
   {
    "address": 57710,
    "type": "line",
-   "text": "Runs a round of the villains' blows, for I-FIGHT, its argument the length of VILLAINS: each villain that is fighting (attribute 27) and not busy (its routine with 1 says no) strikes the player (VILLAIN-BLOW). A blow that kills the player (VILLAIN-BLOW answers false) ends the round. When a blow knocks the player out (result 2), a count of one to three more rounds is set, every blow in them landing on a sitting duck; but the count is lowered with an indirect `dec` ($E1CE), which lowers the local whose number the count holds, not the count, so the rounds go on until a blow kills: in this release a knockout always ends in death. It always returns true."
+   "text": "Runs a round of the villains' blows, for I-FIGHT, its argument the length of VILLAINS: each villain that is fighting, the troll or the thief (the loop stops before the last entry, as I-FIGHT's does), (attribute 27) and not busy (its routine with 1 says no) strikes the player (VILLAIN-BLOW). A blow that kills the player (VILLAIN-BLOW answers false) ends the round. When a blow knocks the player out (result 2), a count of one to three more rounds is set, every blow in them landing on a sitting duck; but the count is lowered with an indirect `dec` ($E1CE), which lowers the local whose number the count holds, not the count, so the rounds go on until a blow kills: in this release a knockout always ends in death. It always returns true."
   },
   {
    "address": 57813,
@@ -24833,7 +24833,7 @@
   {
    "address": 57904,
    "type": "line",
-   "text": "A villain's strength, its argument the villain's entry in VILLAINS: its property 15, when that is not negative, at most 2 for a thief absorbed in a treasure (THIEF-ENGROSSED, then cleared), and lowered by the entry's third word, but not below 1, when the player fights with the weapon the entry names as its bane."
+   "text": "A villain's strength, its argument the villain's entry in VILLAINS: its property 15, when that is not negative, at most 2 for a thief absorbed in a treasure (THIEF-ENGROSSED, then cleared; I-FIGHT has always cleared it first), and lowered by the entry's third word, but not below 1, when the player fights with the weapon the entry names as its bane."
   },
   {
    "address": 57977,
@@ -24871,7 +24871,7 @@
   {
    "address": 58894,
    "type": "line",
-   "text": "Applies a blow to the player, its arguments the strength left, the result and the strength before: the player's property 15 becomes the difference, or -10000 when nothing is left; a wound starts I-CURE in 30 turns. When FIGHT-STRENGTH is then no longer above 0, the wounds are set so that the player's strength is 1 and the player dies: \"It appears that that last blow was too much for you...\" (JIGS-UP), and false is returned. Otherwise the result."
+   "text": "Applies a blow to the player, its arguments the strength left, the result and the player's strength unwounded (FIGHT-STRENGTH with 0, from the score): the player's property 15 becomes the difference, the whole of the player's wounds, or -10000 when nothing is left. Whenever that leaves the player wounded, after any blow, a miss too, I-CURE is queued again for 30 turns. When FIGHT-STRENGTH is then no longer above 0, the wounds are set so that the player's strength is 1 and the player dies: \"It appears that that last blow was too much for you...\" (JIGS-UP), and false is returned. Otherwise the result."
   },
   {
    "address": 58979,
@@ -24914,7 +24914,7 @@
   {
    "address": 59686,
    "type": "line",
-   "text": "22 strings of objects' texts, from \"Lying in one corner of...\" to \"The deceased adventurer's useless lantern...\": first descriptions (property 14), which a room's description shows until the thing has been touched (attribute 28), for the crystal skull, the black book, the sceptre, the brown sack, the crystal trident, the glass bottle, the nasty knife and the burned-out lantern; descriptions (property 11), which DESCRIBE-OBJECT shows for a thing in the room when there is no first description to show, for the basket, the lunch, the bell, the red hot brass bell, the sceptre, the chalice, the crystal trident, the glass bottle, the gold coffin, the huge diamond, the jade figurine and the nasty knife; texts (property 8) that `read` and `examine` print: the black book's \"Commandment #12592 Oh ye...\"."
+   "text": "22 strings of objects' texts, from \"Lying in one corner of...\" to \"The deceased adventurer's useless lantern...\": first descriptions (property 14), which a room's description shows until the thing has been touched (attribute 28), for the crystal skull, the black book, the sceptre, the brown sack, the crystal trident, the glass bottle, the nasty knife and the burned-out lantern; descriptions (property 11), which DESCRIBE-OBJECT shows for a thing in the room when there is no first description to show, for the two baskets, one at each end of the chain, the lunch, the bell, the red hot brass bell, the sceptre, the chalice, the crystal trident, the glass bottle, the gold coffin, the huge diamond, the jade figurine and the nasty knife; texts (property 8) that `read` and `examine` print: the black book's \"Commandment #12592 Oh ye...\"."
   },
   {
    "address": 60686,

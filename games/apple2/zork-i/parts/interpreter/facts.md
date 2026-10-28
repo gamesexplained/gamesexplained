@@ -60,32 +60,8 @@ write-enable a language card if run, but nothing runs or refers to them.
 
 ### The story
 
-| Story address | What | Read by |
-|---|---|---|
-| $0000-$003F | header | $08C8 and the story |
-| $0040-$00C9 | the 32 abbreviation strings' text | $195F |
-| $00CA-$0109 | abbreviation table, 32 packed addresses | $195F |
-| $010A-$0147 | property defaults, 31 words | $100D |
-| $0148-$0A3E | 255 objects, 9 bytes each: 4 bytes of attributes, parent, sibling, child, property table address | $16BB |
-| $0A3F-$20DD | property tables: short name, then properties in descending order | $167D |
-| $20DE-$222D | 168 globals | $0B12 |
-| $222E-$22E1 | the table of timed events, six bytes an entry (global 116) | story $47C0, $47FE |
-| $2396-$2485 | parse buffer, 240 bytes (global 54) | sread $12EB |
-| $2486-$254D | text buffer, 200 bytes (global 37) | sread $12EB |
-| $2CDC-$2DB1 | start of static memory: the verb table, 107 words (global 137) | story $5058 |
-| $2DB2-$347F | sentence patterns, a list for each verb, 8 bytes a pattern | the story's parser |
-| $3480-$355F | action routines, 112 packed addresses (global 135) | the story's parser |
-| $3560-$363F | pre-action routines, 112 words, 13 of them non-zero (global 136) | the story's parser |
-| $3640-$3685 | the 17 prepositions, numbers 239-255 (global 134) | the story's parser |
-| $3686-$476B | dictionary: separators `,` `.` `"`, then 617 entries of 7 bytes | $1432 |
-| $476C-$E925 | high memory: 359 routines, and one string, `Failed.` | $1752 |
-| $E926-$13FF3 | 491 strings, printed with print_paddr | $18D2 |
-
-Everything from story $4800 on lives on the disk and is read into a
-buffer when the Z-machine reaches it. That is 63,476 bytes of code and
-text, and the 76 buffers hold 19,456 bytes of it at a time, so the
-listing cannot show them. Its comments cover the story's resident part only; the counts above
-come from a decoder of the story file, written for this run.
+The story's own layout, table by table, is in `parts/story/facts.md`, and
+its listing is the story part's (`parts/story`).
 
 ## Paging
 
@@ -216,92 +192,15 @@ None. The interpreter never touches the speaker at $C030.
   the Monitor. It is called for a story with bit 0 of header byte 1 set,
   an illegal opcode, `je` with one operand, a property too long for
   `get_prop` or `put_prop`, and a Z-machine stack that overflows or
-  underflows.
+  underflows. Zork I's story reaches the overflow: NO-OBJS calls itself
+  without end for a container carried into the Timber Room
+  (`parts/story/facts.md`, Bugs; traced on the Apple II).
 - The text `ZORK INTERNAL ERROR!` is at $21D3, but nothing refers to it.
 
 ### The story
 
-Read from the story file with the decoder; the line names the routine.
-
-- **The player is called `cretin`.** Object 252, which global 38 holds
-  in play, has the short name `cretin`; the one noun in its property 18
-  is `advent`, for adventurer. The words `cretin`, `me`, `myself` and
-  `self` are object 75's nouns, `you`, one of the objects inside object
-  23, which has attribute 20 like the player. Live: `kill cretin` asks
-  `WHAT DO YOU WANT TO KILL THE CRETIN WITH?`, and `hello cretin` answers
-  `THE YOU BOWS HIS HEAD TO YOU IN GREETING.`
-- **The score.** Points come from two properties and one global. The
-  routine at story $61EA adds an object's or a room's property 13 to the
-  score, then sets it to 0; it is called when an object is taken (story
-  $6A5C) or put somewhere (story $6B34) and when the player enters a room
-  (story $7112). 23 things carry one: 19 objects and four rooms, the
-  Kitchen (10), the Cellar (25), the East-West Passage (5) and the
-  Treasure Room (25), 208 points in all. Property 12 of the nineteen
-  treasures comes to 129 (below). The last 13 are global 35, which the
-  Drafty Room's routine (story $CC4C) adds once, when the player is in
-  that room and global 118 is not 0, and then sets to 0: 208 + 129 + 13
-  is 350. Dying takes 10 away (story $6467).
-- **Walking into the dark.** When a room has no exit in the direction
-  asked and global 118 is 0, the walking routine rolls `random 100` and
-  on 1-74 prints `Oh, no!  You have walked into the slavering fangs of a
-  lurking grue!` and kills the player (story $68B9); otherwise `You can't
-  go that way.` Global 118 is 0 in the dark: the grue's line needs it,
-  and the Drafty Room's points need it not to be. Live: in the cellar
-  with the lamp left behind, `east`, a direction with no exit, gave the
-  grue's line and `YOU HAVE DIED`, and the score went from 35 to 25.
-- **Exits.** Properties 19-31 of a room are its exits, and the walking
-  routine (story $6808) reads them by length: 1 byte is a room; 2 a
-  message, printed; 3 a routine, called, which gives the room or 0; 4 a
-  room, a variable number and a message, the room taken when the variable
-  is not 0 and the message (or `You can't go that way.`) when it is; 5 a
-  room, a door and a message, the room taken when the door has attribute
-  13, the message (or `The ... is closed.`) when not. The direction words'
-  dictionary entries carry the property numbers: north 31, east 30, west
-  29, south 28, north-east 27, north-west 26, south-east 25, south-west
-  24, up 23, down 22, in 21, out 20, land 19.
-- **Nouns and adjectives.** An object's property 18 lists the dictionary
-  addresses of the nouns that name it, and property 16 the numbers of its
-  adjectives (story $5DEC).
-- **The trophy case.** After any `take` in the living room, and after a
-  `put` into the trophy case (object 183), the living room's routine
-  (story $8814) sets the score to global 129, the points scored so far,
-  plus the property 12 of everything in the case (story $898C). Nineteen objects carry a property
-  12 above 0, besides a broken canary and a broken egg; those nineteen
-  are the treasures. The sword uses property 12 for how brightly it
-  glows.
-- **A treasure inside a container in the case scores nothing.** The
-  routine that adds up the case (story $898C) calls itself for each
-  container it finds, then throws the result away. Run live: the egg put
-  straight into the case raised the score from 15 to 20; the egg put
-  into the brown sack, and the sack into the case, left it at 15.
-- **The last secret.** Every score change goes through story $6192,
-  which adds to global 129 as well as to the score. When the score
-  reaches global 83, 350, and global 30 is still 0, the routine sets
-  global 30, changes two objects' attributes and prints `An almost
-  inaudible voice whispers in your ear, "Look to your treasures for the
-  final secret."` Global 30 is the condition on West of House's
-  south-west exit, to the Stone Barrow (property 24: room 180, variable
-  $2E). Live: with global 30 written as 1 (memory $4D1A-$4D1B) at West of
-  House, `southwest` led to the Stone Barrow, and `west` or `enter` there
-  printed the ending, `PLAY "ZORK: THE GREAT UNDERGROUND EMPIRE, PART
-  II".`, with a score of 0. The barrow's own routine (property 17, story
-  $85D8) gives the ending; its one exit is north-east, back to West of
-  House.
-- **Strength in a fight** is 2 + score ÷ 70 (story $E20C), from 2 at the
-  start to 7 at 350 points. When asked, the routine adds the player's
-  property 15, which wounds lower. The troll's property 15 is 2, the
-  thief's 5 and the cyclops's 10,000.
-- **Saying hello to the sailor.** `hello sailor` names object 22,
-  `sailor`, one of the objects inside object 23, and counts in global 81
-  (story $766E): every twentieth answers `You seem to be repeating
-  yourself.`, every other tenth `I think that phrase is getting a bit worn
-  out.`, and the rest `Nothing happens here.` Live, twenty in a row from
-  West of House: the 10th and the 20th gave those two answers, and the
-  other eighteen `NOTHING HAPPENS HERE.` `hello` alone prints a greeting
-  from a table (global 87), `HELLO.` live. Said to an object with
-  attribute 20 it answers `The ... bows his head to you in greeting.`,
-  and to any other `I think that only schizophrenics say 'Hello' to a
-  ...` (live with `mailbox`).
+What the story does, the score, the exits, the fights and the bugs, is in
+`parts/story/facts.md`.
 
 ## Data tables
 
@@ -342,6 +241,10 @@ not jl), and how the status line is cleared ($1CD7: CLREOL leaves normal
 spaces). All seven were corrected, with the three comments that said the
 same ($0036, $00EE and $0BAA). The checker's rate is a lower bound on the
 true rate.
+
+The second stratum's comments, on the story's resident part, are the story
+part's own since the story was listed as a part (`parts/story`), and its
+sample is in that part's facts.
 
 ## Live tests
 

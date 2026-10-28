@@ -118,36 +118,189 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div id="zk-buf"></div>
     <div class="zk-bar" style="margin-top:14px"><label for="zk-next">Then type</label><input id="zk-next" class="zk-input" style="max-width:340px;margin:0" value="open mailbox" spellcheck="false" autocomplete="off"></div>
     <div id="zk-after" class="zk-big"></div>
-    <p class="cap">The interpreter's own copy and split (<code>$1D69</code>, <code>$130B</code>), ported to the page and held byte for byte to the code in the kit's 6502 simulator for lines of 0 to 110 commas. The buffers are the story's (story <code>$2396</code> and <code>$2486</code>, memory <code>$4F96</code> and <code>$5086</code>), shown as the first line leaves them; the second line is split from that memory, as if the story changed none of it in between. Live, sixty commas and then <code>open mailbox</code> gave <code>I DON'T KNOW THE WORD 'O'.</code></p>
+    <p class="cap">The interpreter's own copy and split (<code>$1D69</code>, <code>$130B</code>), ported to the page and held byte for byte to the code in the kit's 6502 simulator for lines of 0 to 110 commas. The buffers are the story's (story <code data-part="story">$2396</code> and <code data-part="story">$2486</code>, memory <code data-part="">$4F96</code> and <code data-part="">$5086</code>), shown as the first line leaves them; the second line is split from that memory, as if the story changed none of it in between. Live, sixty commas and then <code>open mailbox</code> gave <code>I DON'T KNOW THE WORD 'O'.</code></p>
   </div>
   <p>The story tells the interpreter how many words it may write, in byte 0 of the parse buffer: 120. The buffer is 240 bytes long, though, and each word takes four after a two-byte head, so only 59 fit. The 60th word's length and position go into the two bytes after the buffer, which are the first two of the text buffer: its size, 100, becomes 1, the length of a comma.</p>
   <p>Every later line is copied into the text buffer up to its size, so the game sees one letter. <code>open mailbox</code> arrives as <code>o</code>, and the story answers <code>I DON'T KNOW THE WORD 'O'.</code> Some one-letter words still work: <code>n</code> walks north, and <code>q</code> quits. <code>restart</code>, <code>restore</code>, and <code>save</code> arrive as <code>r</code> and <code>s</code>, and <code>s</code> means south, so the only way back to a working game is to quit and boot the disk again (live).</p>
   <p>At 63 words the interpreter's index into the buffer goes past 255 and wraps to 0 (<code>$12EB</code>). The 64th word's length lands in byte 0, the limit, and its position in byte 1, the count of words, so the count can never equal the limit and the split never stops early again. With 63 commas the count comes out at 64, and the story reads a 64th word made of commas and memory: it prints a screenful of the game's memory as <code>I CAN'T USE THE WORD '...' HERE.</code> (live).</p>
 </section>
 
+<section id="knockout">
+  <p class="fig">02 · Fighting</p>
+  <h2 class="t">Bug: a knockout always ends in death</h2>
+  <p class="lede">A villain who knocks the player out is meant to get one to three free rounds before the player comes round. The count of those rounds never goes down, so the villain goes on swinging, in the same turn, until a blow kills.</p>
+  <div class="plate">
+    <pre class="zk-zcode">routine DO-FIGHT, story $E16E: L03 the last blow's result, L06 the rounds left
+$E1A8  call      VILLAIN-BLOW L05 L06 -> L03   a villain strikes
+$E1AF  jz        L03 ?~$0E1B8                   the player is dead?
+$E1B2  store     [L03] #00                      then the round is over
+$E1B5  jump      $0E1C8
+$E1B8  je        L03 #02 ?~$0E17E               knocked out?
+$E1BD  random    #03 -> sp
+$E1C1  add       #01 sp -> L06                  then 2 to 4: one to three more rounds
+$E1C5  jump      $0E17E                         the next villain
+$E1C8  jz        L03 ?rtrue                     dead: stop
+$E1CB  jz        L06 ?rtrue                     never knocked out: stop
+<b>$E1CE  dec       L06                            lowers local 2, 3 or 4, and never L06</b>
+$E1D0  jz        L06 ?~$0E17B                   rounds left? then fight again
+$E1D4  rtrue</pre>
+    <p class="cap">Story <code data-part="story">$E16E</code>, as the story's listing shows it. Live, an unarmed player waited in the Troll Room in 40 games. The troll knocked the player out 28 times, and each time, in the same turn, he hesitated up to five times and then <code>Conquering his fears, the troll puts you to death.</code></p>
+  </div>
+  <p>The Z-machine's <code>dec</code> takes the number of a variable, and the listing writes <code>[L06]</code> for a variable named directly. Written without the brackets, as here, the operand is read first, and its value is the number of the variable to lower. After a knockout L06 holds 2, 3, or 4, so the instruction lowers L02, L03, or L04, counters that the next round sets afresh. L06 keeps its value, and the round starts again (story <code data-part="story">$E17B</code>).</p>
+  <p>Against a player who is out cold, every blow is a hesitation or a killing blow (VILLAIN-BLOW, story <code data-part="story">$E35D</code>), so the rounds can end only in death. Infocom's later source lowers the count itself, so there a knockout costs the player one to three rounds (<a href="source.html#original-source">what differs from the source</a>).</p>
+</section>
+
+<section id="timber">
+  <p class="fig">03 · The Timber Room</p>
+  <h2 class="t">Bug: carrying the sack into the Timber Room crashes the game</h2>
+  <p class="lede">The Timber Room checks what the player carries before every command, because the passage beyond it is too narrow for anything big. A container stops the check: it calls itself to look inside, starts again from the first thing the player holds, finds the same container, and calls itself again, until the Z-machine's stack is full.</p>
+  <div class="plate">
+    <pre class="zk-zcode">routine NO-OBJS, story $CC4C: L01 why the room was called, L03 the thing looked at
+$CC57  get_child    WINNER -> L03 ?$0CC5B     the first thing the player carries
+$CC5B  store        [EMPTY-HANDED] #01
+$CC5E  jz           L03 ?~$0CC64              nothing more?
+$CC61  jump         $0CC8A
+$CC64  test_attr    L03 #0E ?~$0CC75          a container?
+<b>$CC68  call         NO-OBJS L01 L03 -> sp     then look inside it ... from the first thing again</b>
+$CC6F  jz           EMPTY-HANDED ?~$0CC83
+$CC72  jump         $0CC8A
+$CC75  get_prop     L03 #09 -> sp             its size
+$CC79  jg           sp #05 ?~$0CC83           bigger than 5?
+$CC7D  store        [EMPTY-HANDED] #00        then the passage is shut to the player
+$CC80  jump         $0CC8A
+$CC83  get_sibling  L03 -> L03 ?$0CC87        the next thing carried
+$CC87  jump         $0CC5E</pre>
+    <p class="cap">Story <code data-part="story">$CC4C</code>, the routine of the Timber Room and the Drafty Room, as the story's listing shows it. Live, with the brown sack the first thing carried, <code>look</code> in the Timber Room stopped the game with the call at story <code data-part="story">$CC68</code> 1,025 deep. With the sack left at Ladder Bottom, <code>look</code> worked.</p>
+  </div>
+  <p>The routine passes the container to itself as its second argument and never reads it: every call starts again from the player's first possession (<code>get_child WINNER</code>). The check passes over small things and stops at the first thing bigger than size 5, so the game crashes only when a container comes before anything big. The lamp, size 15, is big enough to stop it, and the sack is size 3. The thing taken last comes first, so walking in with the sack taken after the lamp crashes the game at the first command, and walking in with the lamp taken after the sack does not. The Drafty Room shares the routine, and the bug.</p>
+  <p>On the Apple II each call takes room on the Z-machine's stack, which holds 178 words (<code>$1708</code>), and the push that does not fit is the interpreter's one fatal error: a <code>BRK</code> into the Monitor, with no message (<a href="#fatal">the next section</a>).</p>
+</section>
+
+<section id="fatal">
+  <p class="fig">04 · Errors</p>
+  <h2 class="t">Bug: a fatal error drops into the Monitor without its message</h2>
+  <p class="lede">The interpreter holds the text <code>ZORK INTERNAL ERROR!</code>, but nothing prints it. Every fatal error is a <code>BRK</code>, which stops the 6502 and leaves the player in the Apple II's Monitor.</p>
+  <div class="plate">
+    <div id="zk-err"></div>
+    <p class="cap">From the listing: the text at <code>$21D3</code>, which nothing refers to, and the one fatal error at <code>$21E7</code>, with the places that call it.</p>
+  </div>
+  <p>The interpreter calls <code>$21E7</code> for a story whose header says it needs something this interpreter lacks (bit 0 of header byte 1), an opcode it does not know, a <code>je</code> with one operand, a property too long for <code>get_prop</code> or <code>put_prop</code>, and a Z-machine stack that runs over or under. Zork I's own story reaches one of them: a container carried into the Timber Room overflows the stack (<a href="#timber">the section above</a>). Eight places call the error, and each reaches the same single <code>BRK</code>, while the message that would explain it fills the twenty bytes just before it.</p>
+</section>
+
+<section id="narrow">
+  <p class="fig">05 · The troll</p>
+  <h2 class="t">Bug: disarming the troll breaks every "narrow" in the game</h2>
+  <p class="lede">When the troll has lost his axe and does not pick it up again, the story changes his description to a cowering troll. The instruction it uses writes to a table instead of to the troll, and the address it works out is inside the text of the word "narrow", which the whole game shares.</p>
+  <div class="plate">
+    <pre class="zk-zcode">TROLL-FCN, story $8CDA: the troll without his axe, in the player's room
+<b>$8D3B  storew   #99 #0B s_a_troll_is_here     word 11 of a table at $0099: story $00AF</b>
+$8D41  print    "The troll, disarmed, cowers in terror, pleading for his life in the guttural tongue of the trolls."
+
+abbreviation 26, story $00AC
+before  4C D7 5E 9C 80 A5    "narrow "
+after   4C D7 5E 8E 7F A5    "narroizx'.1 "     $8E7F: the address of "A troll is here.", halved</pre>
+    <p class="cap">Story <code data-part="story">$8D3B</code> and the text of abbreviation 26 (story <code data-part="story">$00AC</code>), as the story's listing shows them; the second row is the text decoded after the store. Live, once the troll had cowered, the cellar was <code>a dark and damp cellar with a narroizx'.1 passageway leading north</code>.</p>
+  </div>
+  <p><code>storew</code> writes a word into a table, given the table's address, an index, and the value. The story gives it the troll's object number, 153 (<code>$99</code>), as the address, so the word lands at 153 + 2 × 11, story <code data-part="story">$00AF</code>. <code>put_prop</code> with the same operands would have set the troll's property 11, his description, as the routine does everywhere else; Infocom's later source has <code>PUTP</code> here.</p>
+  <p>Story <code data-part="story">$00AF</code> is the fourth byte of the text that abbreviation 26 stands for, <code>narrow </code>, and every string in the game that holds the word holds it as that abbreviation. The two bytes change the word's last letters and clear the bit that ends its text, which then runs on into the next abbreviation's bytes. From then on every "narrow" prints as "narroizx'.1", from the path north of the house to the cellar.</p>
+</section>
+
+<section id="shake">
+  <p class="fig">06 · Shaking</p>
+  <h2 class="t">Bug: shaking the open sack freezes the game</h2>
+  <p class="lede">Shaking an open container is meant to tip out what is in it. The loop that empties it puts each thing back into the same container, so there is always a first thing left to move, and the game never answers.</p>
+  <div class="plate">
+    <pre class="zk-zcode">V-SHAKE, story $7D7C: something open with something in it
+$7DDF  test_attr    PRSO #0D ?~rfalse     open?
+$7DE3  get_child    PRSO -> sp ?~rfalse   anything in it?
+$7DE7  get_child    PRSO -> L01 ?~$07DF1  the first thing in it
+<b>$7DEB  insert_obj   L01 PRSO              moved ... into the same container</b>
+$7DEE  jump         $07DE7
+$7DF1  print_ret    "All of the objects spill onto the floor."</pre>
+    <p class="cap">Story <code data-part="story">$7D7C</code>, as the story's listing shows it. Live, from the kitchen: <code>open sack</code>, then <code>shake sack</code>. The game printed nothing more and took no more commands.</p>
+  </div>
+  <p><code>insert_obj</code> moves an object into another and makes it the first thing there, so moving the first thing into its own container leaves it first, and the loop runs on. Infocom's later source empties the container into the room, with a routine of its own, SHAKE-LOOP. A closed sack only rattles: <code>It sounds like there is something inside the brown sack.</code> The same loop catches anything open that can be taken and holds something, unless its own routine answers <code>shake</code> first, as the bottle's does.</p>
+</section>
+
 <section id="trophy">
-  <p class="fig">02 · The trophy case</p>
+  <p class="fig">07 · The trophy case</p>
   <h2 class="t">Bug: a treasure inside a container in the trophy case scores nothing</h2>
   <p class="lede">The routine that adds up the trophy case looks inside every container it finds, adds up what is in it, and throws the sum away. A treasure left inside the brown sack in the case earns no points.</p>
   <div class="plate">
-    <pre class="zk-zcode" id="zk-zcode">routine story $898C, locals L00 = 183 (the trophy case), L01, L02
-$8993  get_child   L00 -> L01         the first thing in the case
-$8997  jz          L01 ?~$899C        nothing more?
-$899A  ret         L02                then the total
-$899C  get_prop    L01 #0C -> sp      its property 12
-$89A0  add         L02 sp -> L02      added to the total
-$89A4  get_child   L01 -> sp ?~$89AE  does it hold anything?
-<b>$89A8  call        $898C L01 -> sp    add up what is inside it ... onto the stack</b>
-$89AE  get_sibling L01 -> L01         the next thing in the case
-$89B2  jump        $8997</pre>
-    <p class="cap">Story <code>$898C</code>, disassembled from the story file with the interpreter's own operand rules (its dispatch tables at <code>$0921</code>); the story's high memory is read from the disk as the game needs it, so the listing does not hold it. Live, from the living room with the case open: the egg put straight into the case raised the score from 15 to 20; the egg put into the brown sack, and the sack into the case, left it at 15.</p>
+    <pre class="zk-zcode" id="zk-zcode">routine OTVAL-FROB, story $898C: L01 = 183 (the trophy case), L02, L03
+$8993  get_child    L01 -> L02 ?$08997    the first thing in the case
+$8997  jz           L02 ?~$0899C          nothing more?
+$899A  ret          L03                   then the total
+$899C  get_prop     L02 #0C -> sp         its property 12
+$89A0  add          L03 sp -> L03         added to the total
+$89A4  get_child    L02 -> sp ?~$089AE    does it hold anything?
+<b>$89A8  call         OTVAL-FROB L02 -> sp  add up what is inside it ... onto the stack</b>
+$89AE  get_sibling  L02 -> L02 ?$089B2    the next thing in the case
+$89B2  jump         $08997</pre>
+    <p class="cap">Story <code data-part="story">$898C</code>, as the story's listing shows it. Live, from the living room with the case open: the egg put straight into the case raised the score from 15 to 20; the egg put into the brown sack, and the sack into the case, left it at 15.</p>
   </div>
-  <p>The case's total is worked out again after every <code>take</code> in the living room and every <code>put</code> into the case: the points scored elsewhere (global 129) plus whatever this routine returns (story <code>$8814</code>). For a container in the case it calls itself, which is right, but the result goes onto the Z-machine's stack and stays there: the next instruction moves on to the container's sibling. The routine keeps its total in L02, and only the treasures lying in the case itself are ever added to it.</p>
+  <p>The case's total is worked out again after every <code>take</code> in the living room and every <code>put</code> into the case: the points scored elsewhere (global 129) plus whatever this routine returns (story <code data-part="story">$8814</code>). For a container in the case it calls itself, which is right, but the result goes onto the Z-machine's stack and stays there: the next instruction moves on to the container's sibling. The routine keeps its total in L03, and only the treasures lying in the case itself are ever added to it.</p>
   <p>The sack has no property 12, and the story's default for it is 0, so a sack full of treasures is worth nothing in the case. Taking the treasures out of the sack and putting them in the case one by one scores them. The points for finding them are paid either way, the first time each is taken (<a href="index.html#score">where the 350 points come from</a>).</p>
 </section>
 
+<section id="bottle">
+  <p class="fig">08 · The bottle</p>
+  <h2 class="t">Bug: throwing the lamp at the bottle breaks the lamp instead</h2>
+  <p class="lede">The bottle's routine runs whenever the bottle is in a sentence, and for <code>throw</code> it takes away the thing thrown without asking what it was. Thrown at the bottle, the lamp is taken away, the game says the bottle shatters, and the bottle stays on the table.</p>
+  <div class="plate">
+    <pre class="zk-zcode">BOTTLE-FUNCTION, story $AB1E
+$AB21  je           PRSA #60 ?~$0AB49     throw?
+<b>$AB25  remove_obj   PRSO                  the thing thrown, whatever it is</b>
+$AB27  store        [L01] #01
+$AB2A  print        "The bottle hits the far wall and shatters."
+$AB45  new_line
+$AB46  jump         $0AB7E
+  ...
+$AB7E  jz           L01 ?rfalse
+$AB81  jin          WATER PRSO ?~rfalse   was there water in it? if not, the throw goes on</pre>
+    <p class="cap">Story <code data-part="story">$AB1E</code>, as the story's listing shows it. Live, in the kitchen with the lamp: <code>throw lamp at bottle</code> gave <code>The bottle hits the far wall and shatters.</code> and <code>The lamp has smashed into the floor, and the light has gone out.</code> The kitchen then held a broken brass lantern, and the bottle, with its water, on the table.</p>
+  </div>
+  <p>When the routine has done its part and found no water to spill, it returns false, so the game goes on to the lamp's own routine, which smashes it. The player has lost the lamp. Thrown at something else, the bottle shatters as it should, and an empty one goes on to <code>You're not carrying the glass bottle.</code> Infocom's later source runs the shattering only when the bottle is the thing thrown.</p>
+</section>
+
+<section id="skeleton">
+  <p class="fig">09 · The skeleton</p>
+  <h2 class="t">Bug: looking at the skeleton brings down the ghost's curse</h2>
+  <p class="lede">Disturbing the dead adventurer in the maze angers his ghost, who sends the player's treasures to the Land of the Living Dead. The skeleton's routine never asks what the player did, so <code>examine skeleton</code> brings the curse too.</p>
+  <div class="plate">
+    <pre class="zk-zcode">SKELETON, story $947A, whole
+$947B  print      "A ghost appears in the room and is appalled at your having desecrated the remains of a fellow adventurer. ..."
+$950E  new_line
+$950F  call       ROB HERE #D6 #64 -> sp   every treasure in the room, to object 214
+$9517  call       ROB #FC #D6 -> sp        and every treasure the player carries
+$951E  rtrue</pre>
+    <p class="cap">Story <code data-part="story">$947A</code>, as the story's listing shows it. Object 214 is the Land of the Living Dead, and 252 (<code>$FC</code>) the player. Live, in the maze room with the skeleton: <code>examine skeleton</code> brought the ghost, and the bag of coins that lay there was gone.</p>
+  </div>
+  <p>An object's routine is asked first about any sentence that names it, and it chooses which verbs to answer. The skeleton's answers them all, <code>examine</code> among them. Infocom's later source lets only nine verbs through: <code>take</code>, <code>rub</code>, <code>move</code>, <code>push</code>, <code>raise</code>, <code>lower</code>, <code>attack</code>, <code>kick</code>, and <code>kiss</code>.</p>
+</section>
+
+<section id="echo">
+  <p class="fig">10 · The Loud Room</p>
+  <h2 class="t">Secret: in the Loud Room, even <code>quit</code> only echoes</h2>
+  <p class="lede">While the Loud Room is loud, it reads the player's lines itself and answers each with its last word, twice. Only a way out, <code>bug</code>, and <code>echo</code> do anything, so the player cannot save, restore, or quit there.</p>
+  <div class="plate">
+    <pre class="zk-zcode">&gt;quit
+quit quit ...
+&gt;save
+save save ...
+&gt;hello there
+there there ...
+&gt;bug
+That's only your opinion.
+&gt;w
+Round Room</pre>
+    <p class="cap">Live, from the Loud Room with the reservoir full, as it is at the start (LOUD-ROOM-FCN, story <code data-part="story">$B248</code>).</p>
+  </div>
+  <p>The room drops the rest of the player's line on arrival and reads lines with a prompt of its own until one leaves. <code>w</code>, <code>e</code>, and <code>u</code> leave, for the Round Room, the Damp Cave, and the Deep Canyon, and the new room is only named, not described. <code>echo</code> is the puzzle's answer: <code>The acoustics of the room change subtly.</code>, and the room is quiet from then on, its platinum bar free to take. Infocom's later source lets <code>save</code>, <code>restore</code>, and <code>quit</code> through as well.</p>
+</section>
+
 <section id="divide">
-  <p class="fig">03 · The interpreter's arithmetic</p>
+  <p class="fig">11 · The interpreter's arithmetic</p>
   <h2 class="t">Bug: the interpreter divides wrongly by a negative number</h2>
   <p class="lede">Before a division the interpreter makes both numbers positive, and when the second is negative it negates the first one instead. 7 divided by -2 comes out as 0.</p>
   <div class="plate">
@@ -157,12 +310,12 @@ $89B2  jump        $8997</pre>
     <p class="cap">This is the interpreter's own code, run on the page in the kit's 6502 simulator on the listing's bytes: the numbers go where the interpreter leaves an instruction's operands (<code>$82-$85</code>), and the run starts at the handler (<code>$111D</code>, <code>$114F</code> or <code>$10E8</code>) and stops where it stores the result (<code>$0B55</code>). Run the same way in the emulator, 17 sums gave the same answers as the page, and a test holds the page to them.</p>
   </div>
   <p>The Z-machine works in 16-bit signed numbers, and its division rounds towards zero. The interpreter divides without signs (<code>$15C1</code>), so it first counts the negative operands and makes them positive (<code>$160F</code>). The mistake is in the second step: for a negative divisor it negates the dividend instead (<code>$1633</code>). 7 ÷ -2 becomes -7 ÷ -2, which is 65,529 ÷ 65,534 without signs, which is 0. With both negative, the dividend is negated twice and the divisor not at all, so -7 ÷ -2 is 0 too.</p>
-  <p>A multiplication comes out right anyway, because a 16-bit product wraps the same way whatever the signs. <code>mod</code> never puts the sign back (<code>$114F</code>), and its remainder loses its top bit in the divide routine, so 7 mod -3 is 32,761, which is <code>$FFF9</code> without bit 15. Dividing by zero gives -1, with no error.</p>
+  <p>A multiplication comes out right anyway, because a 16-bit product wraps the same way whatever the signs. <code>mod</code> never puts the sign back (<code>$114F</code>), and its remainder loses its top bit in the divide routine, so 7 mod -3 is 32,761, which is <code data-part="">$FFF9</code> without bit 15. Dividing by zero gives -1, with no error.</p>
   <p>Zork I never notices. The story's six divisions divide by 2, 4, 5 or 70, and its two <code>mod</code>s take a counter that only goes up.</p>
 </section>
 
 <section id="cretin">
-  <p class="fig">04 · The player</p>
+  <p class="fig">12 · The player</p>
   <h2 class="t">Secret: the player's object is called the cretin</h2>
   <p class="lede">The player is object 252, and its short name is <code>cretin</code>. The word that names it is <code>adventurer</code>; the word <code>cretin</code> belongs to another object, <code>you</code>.</p>
   <div class="plate">
@@ -174,26 +327,15 @@ $89B2  jump        $8997</pre>
 </section>
 
 <section id="hello">
-  <p class="fig">05 · Greetings</p>
+  <p class="fig">13 · Greetings</p>
   <h2 class="t">Secret: every tenth hello to the sailor gets a different answer</h2>
   <p class="lede">Zork counts every <code>hello sailor</code>. Most get <code>Nothing happens here.</code>; the tenth, the twentieth and every tenth after get something else.</p>
   <div class="plate">
     <div class="zk-bar"><button type="button" id="zk-hi">hello sailor</button><button type="button" id="zk-hi10">ten more</button><button type="button" id="zk-hi0">start again</button><span class="zk-mono" id="zk-hic"></span></div>
     <pre class="zk-zcode" id="zk-hiout" style="min-height:8em"></pre>
-    <p class="cap">The story's rule (story <code>$766E</code>): global 81 counts, and its remainders after dividing by 20 and by 10 choose the answer. Live, twenty in a row from West of House: the 10th and the 20th gave the two answers here, and the other eighteen <code>NOTHING HAPPENS HERE.</code></p>
+    <p class="cap">The story's rule (story <code data-part="story">$766E</code>): global 81 counts, and its remainders after dividing by 20 and by 10 choose the answer. Live, twenty in a row from West of House: the 10th and the 20th gave the two answers here, and the other eighteen <code>NOTHING HAPPENS HERE.</code></p>
   </div>
   <p>The sailor is object 22, another of the objects inside object 23 that are with the player everywhere, and the routine for <code>hello</code> gives the sailor a branch of its own. <code>hello</code> on its own gets a greeting from a table (<code>HELLO.</code>, live). An object with attribute 20, as the player and object 75 have, gets <code>The ... bows his head to you in greeting.</code> Anything else gets <code>I think that only schizophrenics say 'Hello' to a ...</code>, the mailbox included (live).</p>
-</section>
-
-<section id="fatal">
-  <p class="fig">06 · Errors</p>
-  <h2 class="t">Bug: a fatal error drops into the Monitor without its message</h2>
-  <p class="lede">The interpreter holds the text <code>ZORK INTERNAL ERROR!</code>, but nothing prints it. Every fatal error is a <code>BRK</code>, which stops the 6502 and leaves the player in the Apple II's Monitor.</p>
-  <div class="plate">
-    <div id="zk-err"></div>
-    <p class="cap">From the listing: the text at <code>$21D3</code>, which nothing refers to, and the one fatal error at <code>$21E7</code>, with the places that call it.</p>
-  </div>
-  <p>The interpreter calls <code>$21E7</code> for a story whose header says it needs something this interpreter lacks (bit 0 of header byte 1), an opcode it does not know, a <code>je</code> with one operand, a property too long for <code>get_prop</code> or <code>put_prop</code>, and a Z-machine stack that runs over or under. None of these happens with Zork I's own story. Eight places call the error, and each reaches the same single <code>BRK</code>, while the message that would explain it fills the twenty bytes just before it.</p>
 </section>
 
 </main>
@@ -383,7 +525,17 @@ const Zork = (function () {
     return words;
   }
 
-  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split };
+  // The machine at the Z-machine's start, from the two listings: the interpreter's, and the story's
+  // first pages laid over it as the start-up reads them ($088D-$08C5): page 0 to $2C00, header byte
+  // 5 made $FF ($0895), then the rest of the resident pages, header byte 4 plus 1 of them, $48.
+  function machine(I, S) {
+    const n = (S.ram[4] + 1) * 0x100;
+    I.ram.set(S.ram.subarray(0, n), BASE); I.has.fill(1, BASE, BASE + n);
+    I.ram[BASE + 5] = 0xFF;
+    return I;
+  }
+
+  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split, machine };
 })();
 // end of zork.js
 
@@ -442,8 +594,8 @@ function exits(o) {
 function exitText(objects, e, link) {
   const room = n => link(n, objects.byN(n).label);
   if (e.len === 1) return room(e.room);
-  if (e.len === 2) return `blocked: a message at story <code>${hex(e.message)}</code>`;
-  if (e.len === 3) return `the routine at story <code>${hex(e.routine)}</code> decides`;
+  if (e.len === 2) return `blocked: a message at story <code data-part="story">${hex(e.message)}</code>`;
+  if (e.len === 3) return `the routine at story <code data-part="story">${hex(e.routine)}</code> decides`;
   const g = e.variable >= 16 ? `global ${e.variable - 16}` : `local ${e.variable}`;
   if (e.len === 4) return `${room(e.room)}, once ${g} is not 0`;
   return `${room(e.room)}, through the ${link(e.door, objects.byN(e.door).label)} when it is open`;
@@ -477,17 +629,17 @@ function objectHTML(ram, objects, o, page) {
   const kids = Zork.children(ram, o.n);
   h += `<dt>Holds</dt><dd>${kids.length ? kids.map(n => link(n)).join(', ') : '<span class="zk-mute">nothing</span>'}</dd>`;
   h += `<dt>Attributes</dt><dd>${o.attrs.length ? o.attrs.join(', ') : '<span class="zk-mute">none set</span>'}</dd>`;
-  h += `<dt>Entry</dt><dd>story <code>${hex(o.a)}</code>, properties at story <code>${hex(o.propsAt)}</code></dd></dl>`;
+  h += `<dt>Entry</dt><dd>story <code data-part="story">${hex(o.a)}</code>, properties at story <code data-part="story">${hex(o.propsAt)}</code></dd></dl>`;
   h += '<table class="zk-table"><tr><th>Property</th><th>Bytes</th><th>What the story does with it</th></tr>';
   for (const p of o.props) {
     let what = '';
     if (p.num >= 19) what = `exit ${EXITS[p.num]}: ${exitText(objects, exits({ props: [p] })[0], link)}`;
-    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code>$5DFC</code>)';
-    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code>$5E19</code>)';
-    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code>${hex(2 * propValue(o, 17))}</code>` : 'no routine';
-    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code>$61EA</code>)`;
-    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code>$898C</code>)`;
-    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code>$E20C</code>)`;
+    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code data-part="story">$5DFC</code>)';
+    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code data-part="story">$5E19</code>)';
+    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code data-part="story">${hex(2 * propValue(o, 17))}</code>` : 'no routine';
+    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code data-part="story">$61EA</code>)`;
+    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code data-part="story">$898C</code>)`;
+    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code data-part="story">$E20C</code>)`;
     h += `<tr><td>${p.num}</td><td class="zk-mono">${p.data.map(b => h2(b)).join(' ')}</td><td>${what}</td></tr>`;
   }
   h += '</table>';
@@ -499,7 +651,7 @@ function objectHTML(ram, objects, o, page) {
   const fail = msg => document.querySelectorAll('.plate div[id^="zk-"]').forEach(el => { if (!el.textContent) el.textContent = msg; });
   if (!globalThis.Apple2) { fail('These widgets need the site\'s Apple II library: open the page from the built site.'); return; }
   let L;
-  try { L = await Apple2.load('listing.json'); } catch (e) { fail('The listing did not load: ' + e.message); return; }
+  try { L = Zork.machine(await Apple2.load('parts/interpreter/listing.json'), await Apple2.load('parts/story/listing.json')); } catch (e) { fail('The listing did not load: ' + e.message); return; }
   const ram = L.ram, objects = Objects(ram);
   commas(ram);
   if (globalThis.C64Cpu) calculator(ram); else $('zk-res').textContent = 'The calculator needs the site\'s 6502 simulator: open the page from the built site.';
