@@ -59,7 +59,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1988 · Thalamus</p>
   <h1>Armalyte</h1>
-  <p class="sub">A horizontal shoot 'em up for two players, or for one player with a drone that flies beside the ship. Every boss fights against a clock: last out its time and it blows itself up, paying the same as if it had been shot.</p>
+  <p class="sub">A horizontal shoot 'em up for two players, or for one player with a drone that flies beside the ship. Every boss fights against a clock: last out its time and it blows itself up, paying the same as if it had been shot. <a href="bosses.html">Bosses</a> runs every fight, and <a href="discoveries.html">Discoveries</a> has what the game hides.</p>
 </header>
 <main class="wrap">
 
@@ -110,69 +110,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">04 · Bosses</p>
-  <h2 class="t">How each boss moves and shoots</h2>
-  <p class="lede">A boss is up to 15 sprites flying in formation. Only its core, and the guards that shield the core, can be hurt. The rest is armour, and the enemies a boss lets loose cannot be shot at all.</p>
-  <div class="plate">
-    <div class="pick" id="ar-bpick"><button class="step" data-d="-1" aria-label="Previous boss">‹</button><select id="ar-bsel" aria-label="Boss"></select><button class="step" data-d="1" aria-label="Next boss">›</button></div>
-    <canvas id="ar-boss" class="ar-cv" width="608" height="400"></canvas>
-    <div class="ar-row"><button id="ar-bplay">Play</button><input id="ar-bpos" class="ar-range" type="range" min="0" max="1000" step="1" value="0" aria-label="Time into the fight"><span id="ar-bread" class="ar-read"></span></div>
-    <div class="ar-row"><label><input type="checkbox" id="ar-bmark" checked> Mark the core and its guards</label></div>
-    <p class="cap"><span id="ar-bcap"></span> The viewer runs the game's routines for paths, firing, and releases, written again in JavaScript. The two ships stay where they start, and shots that reach them burst without harm.</p>
-  </div>
-  <p>A level's boss table places each sprite of the boss and gives it a path: a list of steps, each a speed across and a speed down held for a number of frames. The sprites that keep together run paths with the same steps, so the boss moves as one ship, and a part with steps of its own, such as a guard on levels 4, 6, and 7, flies its own course. Every boss drifts in from the right at a pixel a frame. An end boss arrives with the end of the map, which scrolls in beside it for its first 199 frames. For a mid-level boss the scroll stops first and the boss flies in to meet the ships. Level 8 has one mid-level table, so it meets the same boss twice, at full strength both times.</p>
-  <p>The core never fires. Whenever one of the boss's shots is free, the game looks through the boss's sprites from the last to the first, and the shot goes to the first one on a step of its path marked for firing (<code>enemies_fire</code>, <code>$A664</code>). One or two sprites therefore do nearly all of a boss's shooting. Many of them fire only at a target below them, or only at one above. A shot is aimed at player 1, or on alternate shots at the second ship, and a new shot never starts within 45 lines, up or down, of one already flying.</p>
-  <p>Only the core and its guards can be hurt. Once a frame the game looks for the players' fire in three character squares inside each of their sprites (<code>enemies_hit_by_fire</code>, <code>$A54C</code>), and fire found there counts one hit and is wiped from the screen. That includes a super weapon's fire, which goes on through ordinary enemies but is spent on a boss part like a single shot. While a guard is alive, fire that reaches the core is wiped and not counted (<code>boss_part_hit</code>, <code>$AC07</code>). A part takes at most one hit a frame, so the 480 hits of level 5's boss take nearly ten seconds even if every frame scores.</p>
-  <p>Most bosses also let enemies loose, one or two at a time, into the sprites the boss leaves spare (<code>boss_spawn</code>, <code>$AD89</code>). The core releases them while it is on a step of its path marked for firing, the same mark that lets the other parts shoot. These enemies cannot be shot. In a boss fight the game looks for hits only on the core and its guards, so a released enemy flies through the players' fire untouched and has to be dodged. Released enemies can shoot as well.</p>
-  <div class="ar-scroll" style="margin:22px 0"><table class="ar-tbl">
-    <thead><tr><th>Boss</th><th>Sprites</th><th>Shots in the air at once</th><th>Shot speed, pixels a frame</th><th>Enemies it releases</th></tr></thead>
-    <tbody>
-    <tr><td>Level 1, mid-level</td><td>8</td><td>1</td><td>2</td><td>one at a time</td></tr>
-    <tr><td>Level 1, end</td><td>15</td><td>2</td><td>3</td><td>none</td></tr>
-    <tr><td>Level 2, mid-level</td><td>8</td><td>2</td><td>2</td><td>one at a time</td></tr>
-    <tr><td>Level 2, end</td><td>14</td><td>4</td><td>3</td><td>two at a time</td></tr>
-    <tr><td>Level 3, mid-level</td><td>7</td><td>2</td><td>2</td><td>one at a time</td></tr>
-    <tr><td>Level 3, end</td><td>15</td><td>4</td><td>4</td><td>one at a time</td></tr>
-    <tr><td>Level 4, mid-level</td><td>11</td><td>4</td><td>3</td><td>none</td></tr>
-    <tr><td>Level 4, end</td><td>14</td><td>4</td><td>4</td><td>two at a time</td></tr>
-    <tr><td>Level 5, end</td><td>15</td><td>4</td><td>4, then 5 once the scroll stops</td><td>one at a time</td></tr>
-    <tr><td>Level 6, mid-level</td><td>7</td><td>4</td><td>2</td><td>none</td></tr>
-    <tr><td>Level 6, end</td><td>13</td><td>4</td><td>4</td><td>one at a time</td></tr>
-    <tr><td>Level 7, end</td><td>14</td><td>4</td><td>4</td><td>one at a time</td></tr>
-    <tr><td>Level 8, mid-level</td><td>15</td><td>4</td><td>2 the first time, 3 the second</td><td>one at a time</td></tr>
-    <tr><td>Level 8, end</td><td>11</td><td>4</td><td>3</td><td>one at a time</td></tr>
-    </tbody>
-  </table></div>
-  <p class="cap">From each level's two boss tables and its script. A shot moves at the level's enemy speed along its main direction, and slower across it. Speeds below 3 go up by one for each time the game has been completed, to at most 3.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">05 · Boss timers</p>
-  <h2 class="t">Every boss can be outlasted</h2>
-  <p class="lede">A boss fight stops the scroll for a time the level sets. When the time is up, the boss blows itself up, and the game pays out as if the player had destroyed it.</p>
-  <div class="plate ar-scroll">
-    <table class="ar-tbl">
-      <thead><tr><th>Level</th><th>Mid-level boss, where and for how long</th><th>Hits to destroy it</th><th>End boss, for how long</th><th>Hits to destroy it</th></tr></thead>
-      <tbody>
-      <tr><td>1</td><td>column 214, 2,880 frames (57 s)</td><td>core 90</td><td>12,288 frames (245 s)</td><td>core 160</td></tr>
-      <tr><td>2</td><td>column 175, 3,840 frames (77 s)</td><td>core 100</td><td>7,680 frames (153 s)</td><td>core 120, after 2 guards of 100</td></tr>
-      <tr><td>3</td><td>column 182, 4,320 frames (86 s)</td><td>core 120</td><td>7,680 frames (153 s)</td><td>core 320</td></tr>
-      <tr><td>4</td><td>column 49, 5,760 frames (115 s)</td><td>core 40, after 2 guards of 120</td><td>12,288 frames (245 s)</td><td>core 40, after 3 guards of 100</td></tr>
-      <tr><td>5</td><td>none</td><td></td><td>12,240 frames (244 s)</td><td>core 480</td></tr>
-      <tr><td>6</td><td>column 180, 2,880 frames (57 s)</td><td>core 8, after 3 guards of 60, 40 and 40</td><td>12,240 frames (244 s)</td><td>core 300</td></tr>
-      <tr><td>7</td><td>none</td><td></td><td>12,288 frames (245 s)</td><td>core 260, after 2 guards of 120</td></tr>
-      <tr><td>8</td><td>column 167, 1,440 frames (29 s); column 242, 4,800 frames (96 s)</td><td>core 230</td><td>12,240 frames (244 s)</td><td>core 100, after 2 guards of 200</td></tr>
-      </tbody>
-    </table>
-    <p class="cap">From each level's script (the stop times, <code>$9730</code> in a level, in units of 48 frames) and its two boss tables (<code>$9778</code> for the end boss, <code>$97D8</code> for the mid-level boss). The core takes no hits until its guards are gone. The seconds are at the PAL frame rate, 50.125 a second.</p>
-  </div>
-  <p>The script runs once every eight frames, at the end of each scroll step, and it keeps running while the scroll is stopped (<code>$A93E</code>). A stop counts down in units of six runs, 48 frames, and 0 counts as 256. When the count runs out the script calls <code>level_end</code> (<code>$AC20</code>), the same routine that destroying the boss's core calls, and every object on the screen explodes.</p>
-  <p>What happens next depends on where the scroll is. Away from the map's end, a mid-level fight pays 50,000 points and the scroll moves on. At the end, the end-of-level sequence plays for 148 frames and <code>level_complete</code> (<code>$AE25</code>) pays one million points and an extra life to each player. A player who hides from the end boss for four minutes gets exactly what a player who shot it gets. In level 1, with no input at all, the mid-level boss went at the end of its 2,880 frames with the score going from 0 to 50,000, and the end boss went after 12,288 frames and the level was completed.</p>
-  <p>Levels 5 and 7 have no mid-level boss: no event in their scripts starts one, though level 7 carries a copy of level 4's in its table. Level 8 starts its mid-level boss twice, at columns 167 and 242.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">06 · Munitions pods</p>
+  <p class="fig">04 · Munitions pods</p>
   <h2 class="t">Shooting a pod changes what it gives</h2>
   <p class="lede">A munitions pod changes into the next enhancement each time it has taken enough hits. Flown into, it gives the one it shows, with one exception.</p>
   <div class="plate">
@@ -186,7 +124,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">07 · Weapons</p>
+  <p class="fig">05 · Weapons</p>
   <h2 class="t">Every shot is a character on the screen</h2>
   <p class="lede">The players' shots are not sprites. They are characters written into the screen, so the game finds what they hit by reading the screen back.</p>
   <div class="plate">
@@ -208,11 +146,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   </table>
   <p>Each player has ten shot slots (<code>$EB78</code>). A shot puts back the character it covered, moves one place, and stops at the screen's edge or on a solid character. Pressing fire fires the normal weapons, and so does letting go of it.</p>
   <p>Held for 15 frames, a third of a second, fire tries the super weapon chosen with the Commodore key (<code>$EC87</code>). The super weapon needs enough free slots and the charges, which it takes from the generator's own charge when that is enough, or else from a battery. The manual says super weapon B costs one charge. It costs two (<code>$F486</code>): fired from a full generator, A and B each took 2 and C took 1.</p>
-  <p>An enemy dies when a shot character, anything from <code>$F6</code> up, is in the cells it covers (<code>$A54C</code>). The test does not ask who fired, so the drone's shots kill as surely as the player's.</p>
+  <p>An enemy dies when a shot character, anything from <code>$F6</code> up, is in the cells it covers (<code>$A54C</code>). The test does not ask who fired, so the drone's shots kill as surely as the player's. A super weapon's shot goes on through the enemies it hits, except a boss's parts, where it counts once (<a href="discoveries.html#super-weapon">Discoveries</a>).</p>
 </section>
 
 <section data-part="engine">
-  <p class="fig">08 · Energy</p>
+  <p class="fig">06 · Energy</p>
   <h2 class="t">How the generator fills the batteries</h2>
   <p class="lede">Super weapons run on charges. The generator rebuilds them on a clock, and more generators make the clock faster.</p>
   <table class="ar-tbl">
@@ -238,7 +176,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">09 · The drone</p>
+  <p class="fig">07 · The drone</p>
   <h2 class="t">The drone shoots for real</h2>
   <p class="lede">In a one-player game the second ship is a drone. It cannot be destroyed, soaks up enemy shots, and fires copies of the player's weapons.</p>
   <p>The drone keeps to the side of the ship opposite the way the stick is pushed, stepping one cell at a time towards its place (<code>$9E78</code>); with the stick released the drone keeps the place the last direction gave it. SPACE detaches it, and the detached drone stays still on the screen until SPACE calls it back. The manual says a detached drone "glides along its own trajectory"; in the game it does not move.</p>
@@ -252,79 +190,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">10 · Sprites</p>
+  <p class="fig">08 · Sprites</p>
   <h2 class="t">At most thirty sprites in a frame</h2>
   <p class="lede">The machine has eight sprites. The game shows up to thirty in one frame by using the same ones again further down the screen.</p>
   <p>The two ships always have sprites 0 and 1 (<code>$E4D6</code>). Up to twenty objects (enemies, pods, bosses, and explosions) share sprites 2 to 7: the multiplexer (<code>$A305</code>) places them in order down the screen, each waiting until the sprite it reuses has finished drawing. Below the playfield the eight scoreboard sprites take all eight again. That makes 22 in the playfield and 8 in the border, thirty in all, short of the "more than 30" one review claims.</p>
-  <p>The objects are sorted by height every frame with the stack page as a bucket table (<code>$F4C8</code>). The page is filled with <code>$FF</code>; each object's number is pushed into the first free byte at its height, and reading them back restores the <code>$FF</code>. The game checks that the page still holds <code>$FF</code> at its top, which is how it notices a freezer cartridge has been used (section 14).</p>
+  <p>The objects are sorted by height every frame with the stack page as a bucket table (<code>$F4C8</code>). The page is filled with <code>$FF</code>; each object's number is pushed into the first free byte at its height, and reading them back restores the <code>$FF</code>. The game checks that the page still holds <code>$FF</code> at its top, which is how it notices a freezer cartridge has been used (<a href="discoveries.html#poke">Discoveries</a>).</p>
   <p>The main loop never fell behind: run through all of level 1 in the emulator it made 25,299 passes in 25,298.5 frames, one a frame.</p>
 </section>
 
-<section data-part="engine">
-  <p class="fig">11 · A bug</p>
-  <h2 class="t">Bug: the music cuts the starting shield short</h2>
-  <p class="lede">Each ship starts a level flashing and invulnerable. The code means it to last 255 frames for both ships. Player 1 gets 102 and player 2 gets 204.</p>
-  <div class="plate" style="margin-bottom:22px">
-    <div class="ar-tabs" id="ar-bugstep"></div>
-    <div class="ar-scroll"><table class="ar-tbl" id="ar-bugtbl"></table></div>
-    <p class="cap" id="ar-bugcap"></p>
-  </div>
-  <p>At a level's start <code>level_setup_vars</code> clears the zero page and then decrements the two invulnerability timers, <code>$56</code> and <code>$57</code>, at <code>$A260</code>, turning their 0 into 255. In between it sets up the demo tune, and <code>music_init</code> reads the tune's tracks through the same two bytes (<code>music_track_next</code>, <code>$C43C</code>), leaving <code>$CD67</code> there. The decrement turns <code>$67</code> into 102 for ship 1 and <code>$CD</code> into 204 for ship 2.</p>
-  <p>In the emulator the shields lasted 103 and 205 frames counted from the main loop's first pass, the extra frame being the one before the countdown's first step. Player 2, or the drone, is covered twice as long as player 1 at the start of every level.</p>
-</section>
-
-<section data-part="level-1">
-  <p class="fig">12 · A secret</p>
-  <h2 class="t">Secret: every level file ends in an insult</h2>
-  <p class="lede">The last sixteen bytes of each level, which no code uses, hold a message in screen codes.</p>
-  <table class="ar-tbl">
-    <thead><tr><th>Level</th><th>Message</th></tr></thead>
-    <tbody>
-      <tr><td>1</td><td>DISHONEST JOHN</td></tr>
-      <tr><td>2</td><td>DISHONEST JOHN</td></tr>
-      <tr><td>3</td><td>BASTARD JOHN</td></tr>
-      <tr><td>4</td><td>FVCKHEAD JOHN</td></tr>
-      <tr><td>5</td><td>JOHN H IS A</td></tr>
-      <tr><td>6</td><td>HARRIES FVCKER</td></tr>
-      <tr><td>7</td><td>HAWKEYE'S SHIT</td></tr>
-      <tr><td>8</td><td>BASTARD J.W.H.</td></tr>
-    </tbody>
-  </table>
-  <p class="cap">Each level's <code>$98F0-$98FF</code>, in screen codes (A = 1), padded with <code>$FE</code>. The mover copies them into memory with the rest of the level's last page, and nothing reads them.</p>
-  <p>Levels 5 and 6 read on as one sentence. The game's credits name its producers as Paul Cooper and John Harries (section 13). Hawkeye was another Thalamus game of 1988.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">13 · Another secret</p>
-  <h2 class="t">Secret: the producers' credit is never shown</h2>
-  <p class="lede">The title cycles through two pages of credits. A third pair of lines, "PRODUCED BY:" and "PAUL COOPER AND JOHN HARRIES", is in the game's strings but on no page.</p>
-  <div class="plate" style="margin-bottom:22px">
-    <div class="pick" id="ar-tpick"><button class="step" data-d="-1" aria-label="Previous page">‹</button><select id="ar-tsel" aria-label="Title page"></select><button class="step" data-d="1" aria-label="Next page">›</button></div>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
-      <img id="ar-timg" alt="" style="width:384px;max-width:100%;image-rendering:pixelated;border-radius:4px">
-      <ol id="ar-tlines" start="0" style="font-family:var(--fm);font-size:13px;margin:0;padding-left:2.2em;flex:1;min-width:260px"></ol>
-    </div>
-    <p class="cap" id="ar-tcap">Each page's ten lines, read from <code>$B953</code> and decoded from the strings at <code>$9000</code>, beside a screenshot of that page from the emulator. A line of icons shows as ▪.</p>
-  </div>
-  <p>The title's texts are 41 strings (<code>$9000</code>), and each of the seven title pages lists the strings for its ten lines (<code>$B953</code>). The credit pages show strings 9 to 16: Dan Phillips, programming and game design; John Kemp, system programming and game design; Robin Levy, graphics, level and game design; Martin Walker, music and sound effects. Strings 17 and 18, the producers, appear in no page's list.</p>
-</section>
-
-<section data-part="engine">
-  <p class="fig">14 · Protection</p>
-  <h2 class="t">The infinite-lives poke freezes the game</h2>
-  <p class="lede">The poke the C64-Wiki gives for infinite lives, <code>POKE 59891,173</code>, stops the machine within five frames. The game checks its own code every second frame.</p>
-  <div class="plate" style="margin-bottom:22px">
-    <div class="ar-tabs" id="ar-pokesel"><button data-p="0" class="ar-on">As loaded</button><button data-p="1">After POKE 59891,173</button></div>
-    <div class="ar-scroll"><table class="ar-tbl" id="ar-poketbl"></table></div>
-    <p class="cap" id="ar-pokecap"></p>
-  </div>
-  <p>A life is lost by a <code>DEC $B005</code> at <code>$E9F3</code> for player 1, and another at <code>$EA57</code> for player 2. The poke changes the first into a load, which takes nothing away. Every second frame <code>anti_cheat_check</code> (<code>$F77D</code>) compares both instructions and the branches after them with what they should be. When they differ the check switches the KERNAL ROM in over the game's own code, so its own next instruction is fetched from the ROM, and the machine runs on into a loop with interrupts off.</p>
-  <p>Two more checks guard the game. At each level's start the stack page is filled with <code>$FF</code>, and if any of <code>$0138-$013F</code> holds anything else, as after a freezer cartridge has used the stack, the game wipes <code>$B000-$FFFF</code> and resets (<code>$AFAE</code>). On the title, CIA 1's timer B must show that one PAL frame has passed since the last check, give or take about 60 cycles (<code>$BDC8</code>), so a machine that has been stopped, or an NTSC machine, clears the engine's code from <code>$E000</code> up and halts (<code>$B845</code>).</p>
-  <p>The wiki's other poke, <code>POKE 53792,96</code> for unlimited energy, writes to <code>$D220</code>. With the I/O chips in that address is a copy of the border colour register, and 96 sets the border to black, which it already is; in the emulator a 5 written there turned the border green. The pokes that do work are in the Source tab's cheats.</p>
-</section>
-
 <section data-part="ending">
-  <p class="fig">15 · The ending</p>
+  <p class="fig">09 · The ending</p>
   <h2 class="t">The ending leads into a faster second round</h2>
   <p class="lede">Finishing level 8 loads one more file: five pictures in a frame, each with a message typed out beneath it. Then the game goes back to level 1, keeping the score and lives, with the enemies faster.</p>
   <div class="plate">
@@ -337,15 +212,15 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">16 · Loading</p>
+  <p class="fig">10 · Loading</p>
   <h2 class="t">One file per level, loaded over the engine</h2>
   <p class="lede">The engine stays in memory for the whole game. Each level is a file of its own on side 2, loaded when the level is reached.</p>
-  <p>Side 1 boots to a menu of three entries, and the first loads the engine, which unpacks itself and starts at <code>$A000</code>. The second is the loading picture on its own, and the third is a music demo of Walker's (section 17). From then on the engine loads everything else itself, by a one-letter name (<code>$B3E1</code>): D, E, L, H, U, N, A, and R for the eight levels, and M for the ending. The first load looks for D on side 1, does not find it, and puts up "TURN DISK TO SIDE B PRESS FIRE" (<code>$B5CC</code>), which is how the game asks for the other side.</p>
+  <p>Side 1 boots to a menu of three entries, and the first loads the engine, which unpacks itself and starts at <code>$A000</code>. The second is the loading picture on its own, and the third is a music demo of Walker's (section 11). From then on the engine loads everything else itself, by a one-letter name (<code>$B3E1</code>): D, E, L, H, U, N, A, and R for the eight levels, and M for the ending. The first load looks for D on side 1, does not find it, and puts up "TURN DISK TO SIDE B PRESS FIRE" (<code>$B5CC</code>), which is how the game asks for the other side.</p>
   <p>The fast loader (<code>$B3FC</code>) opens the file through the KERNAL, sends 256 bytes of its own code to the disk drive's memory and starts it there, then takes the file two bits at a time over the serial bus's clock and data lines, keeping off the raster lines where the video chip would stall the processor. Each file is packed. It unpacks itself, and a short routine of the engine's (<code>$9680</code>) moves it into place: <code>$0200-$6FFF</code> for the level's object types, paths, waves, map, tiles, and sprites, <code>$9700-$98FF</code> for its script and boss tables, and the memory under the I/O chips at <code>$D000-$D6FF</code> for its characters.</p>
   <p>Between levels the game keeps only the engine's state block (<code>$B000-$B02F</code>): level number, lives, score, batteries, generators, and settings. A game over goes back to <code>$A000</code>, so level 1 is loaded again before the title whenever another level is in memory.</p>
 </section>
 <section data-part="warbles">
-  <p class="fig">17 · Warbles</p>
+  <p class="fig">11 · Warbles</p>
   <h2 class="t">Music: Walker's Warbles, the third program on the disk</h2>
   <p class="lede">Side 1's menu has three entries, and the third is not part of the game. It is Martin Walker's own music demo disk from 1988, and what loads is his music editor's memory as he left it: sixteen tune slots, 128 pattern slots, and 32 instruments, of which four keys reach four tunes.</p>
   <div class="plate" style="margin-bottom:22px">
@@ -591,552 +466,6 @@ if (HAS) {
   showLevel(1);
 } else missing(view);
 
-// ---- 04 the bosses: the fight, ported from the engine (test_bosses.js runs it beside the engine's
-// own routines), then the viewer that draws it
-// The boss fight, routine by routine, from the engine's own code: boss_start ($AC95) fills the 16
-// enemy objects from a level's boss table; then each frame objects_move ($F64F) and objects_sort
-// ($F4C8) run in the frame's first interrupt, and the main loop runs shots_offscreen ($A7E2),
-// boss_spawn ($AD89), objects_init_new ($E3AA), enemies_space_out ($AA64), objects_timers ($A845),
-// choose_target ($A79E) and enemies_fire ($A664), then enemies_follow_paths ($EE8D) on one frame
-// and objects_animate ($F022) on the next, and objects_window ($E474) while the scroll is stopped.
-// The players' ships stay where the game parks them at a level's start, invulnerable, and fire
-// nothing, so no part is hit; a shot that reaches one bursts there (p1_collect_pod $9A94,
-// p2_collect_pod $9B92). Objects 0-15 are the boss's parts and what it releases, 16-19 the four
-// enemy shots, as in the engine's tables at $FD00-$FFF7. With o.screen (1,000 screen codes) the
-// shots also burst on the scenery (shots_hit_scenery, $A8DB). s.step(true) runs a frame in which
-// the time runs out at the map's end, s.step(false) one in which it runs out anywhere else: the
-// script calls level_end ($AC20) after boss_spawn, and at the map's end the end sequence ($AE62)
-// follows, in which the core breaks up (boss_burst, $AEEC).
-function createBossFight(r, which, o) {
-  o = o || {};
-  const N = 20, T = 0x60;
-  const tab = which === 1 ? 0x9778 : 0x97D8;
-  const z = () => new Uint8Array(N);
-  const s = {
-    x: z(), xhi: z(), y: z(), st: z(), col: z(), frame: z(), ys: z(), xs: z(), yh: z(), xh: z(),
-    dly: z(), type: z(), path: z(), stp: z(), pos: z(), first: z(), last: z(), fdel: z(), fdelr: z(),
-    hp: z(), pp: z(), dir: z(), nw: z(), anim: z(), fire: z(), mode: z(), grp: z(), bar: z(),
-    sorted: z(),
-    f68: o.f68 || 0, t76: o.t76 || 0, screen: o.screen || null, g6B: 0, g86: 0, g97: 0, g98: 0, g10: 0, gADFF: 0, g7A: o.g7A || 0,
-    g6A: o.speed || 1, g6F: 1, g52: o.stopped ? 1 : 0, gAD: 0, t7B: 0, t7C: 0, t7D: 0,
-    hits: new Uint8Array(4), res: new Uint8Array(4), spawn: new Uint8Array(20), frames: 0,
-    ships: o.ships || [{ x: 0x54, y: 0x74 }, { x: 0x54, y: 0x8C }], drone: o.drone !== false, keep6B: o.keep6B || 0,
-  };
-  const t = n => r[tab + n];
-
-  // boss_start ($AC95): the table's 96 bytes into the 16 enemy objects
-  (function start() {
-    for (let i = 15; i >= 0; i--) {
-      s.xhi[i] = 1; s.xs[i] = 1; s.dir[i] = 0; s.xh[i] = 0; s.st[i] = 0; s.ys[i] = 0; s.fire[i] = 0;
-      s.dly[i] = 0x19; s.nw[i] = 0x19; s.stp[i] = 0x57;
-    }
-    s.g86 = t(0); s.g6B = t(2); s.g98 = s.g97 = t(3);
-    for (let i = 3; i >= 0; i--) { s.res[i] = t(4 + i) & 0x7F; s.g10 = t(4 + i) & 0x80; }
-    for (let i = 3; i >= 0; i--) s.hits[i] = t(8 + i);
-    for (let i = 15; i >= 0; i--) s.type[i] = t(0x0C + i);
-    for (let i = 15; i >= 0; i--) s.x[i] = t(0x1C + i);
-    for (let i = 15; i >= 0; i--) s.y[i] = t(0x2C + i);
-    for (let i = 15; i >= 0; i--) s.path[i] = t(0x3C + i) & 0x7F;
-    for (let i = 19; i >= 0; i--) s.spawn[i] = t(0x4C + i);
-  })();
-
-  // objects_move ($F64F): speeds bits 0-6, bit 7 adds; a half-speed flag moves on alternate frames
-  function move() {
-    for (let i = 19; i >= 0; i--) {
-      if (!s.st[i]) continue;
-      if (!s.yh[i] || s.f68) {
-        if (s.ys[i] & 0x80) s.y[i] = (s.y[i] + (s.ys[i] & 0x7F)) & 255;
-        else s.y[i] = (s.y[i] - s.ys[i]) & 255;
-      }
-      if (!s.xh[i] || s.f68) {
-        if (s.xs[i] & 0x80) { const v = s.x[i] + (s.xs[i] & 0x7F); s.x[i] = v & 255; if (v > 255) s.xhi[i] ^= 1; }
-        else { const v = s.x[i] - s.xs[i]; s.x[i] = v & 255; if (v < 0) s.xhi[i] ^= 1; }
-      }
-    }
-  }
-  // objects_sort ($F4C8): buckets by y halved on the stack page, top of the screen last in $EC-$FF
-  function sort() {
-    const page = new Int16Array(256).fill(-1);
-    for (let i = 19; i >= 0; i--) {
-      let p = (s.y[i] >> 1) + 1;
-      while (page[p & 255] >= 0) p++;
-      page[p & 255] = i;
-    }
-    let k = 19;
-    for (let p = 0x19; k >= 0; p++) if (page[p & 255] >= 0) s.sorted[k--] = page[p & 255];
-  }
-  // shots_offscreen ($A7E2): shots past line $35 or $E6 end; the guards' count; boss_parts_flash
-  // changes nothing while no part is hit
-  function offscreen() {
-    for (let q = 3; q >= 0; q--) {
-      const i = 16 + q;
-      if (!(s.st[i] | s.dly[i])) continue;
-      if (s.y[i] < 0x35) { s.y[i] = 0x35; s.st[i] = 0; s.dly[i] = 0; }
-      else if (s.y[i] >= 0xE6) { s.y[i] = 0xE6; s.st[i] = 0; s.dly[i] = 0; }
-    }
-    if (s.g52 && s.g86) {
-      let i = s.g86;
-      for (; i > 0; i--) if (s.st[i] | s.dly[i]) return;
-      s.g86 = 0;
-    }
-  }
-  // boss_spawn ($AD89): while the core is alive with its fire flag set, enemies from the spawn list
-  function spawn() {
-    if (!s.fire[0] || s.st[0] < 3 || s.g98 === 0xFF) return;
-    let y, x;
-    if (s.g98 & 0x80) {
-      s.gADFF = 0xFF; y = s.g98 & 3;
-    } else {
-      s.gADFF = (s.g97 - 1) & 255; y = 0;
-      if (!s.g10) {
-        for (x = 15; x !== 11; x--) if (!(s.st[x] | s.dly[x])) { s.fire[0] = 0; place(x); return; }
-        return;
-      }
-    }
-    const b4 = s.g98 & 0x80 ? s.g98 & 3 : s.g97;
-    for (x = 15; ; x--, y--) { if (s.st[x] | s.dly[x]) return; if (y === 0) break; }
-    place(15, b4);
-  }
-  function place(x, b4) {
-    let y = b4 === undefined ? s.g97 : b4;
-    do {
-      s.x[x] = s.spawn[y]; s.y[x] = s.spawn[4 + y]; s.xhi[x] = s.spawn[8 + y];
-      s.type[x] = s.spawn[12 + y]; s.path[x] = s.spawn[16 + y];
-      s.dly[x] = 5; s.nw[x] = 5; s.stp[x] = 0;
-      x--; y = (y - 1) & 255;
-    } while (y !== s.gADFF);
-    if (s.g98 & 0x80) return;
-    s.g97 = (s.g97 - 1) & 255;
-    if (s.g97 & 0x80) s.g97 = s.g98;
-  }
-  // objects_init_new ($E3AA): a new object's look and behaviour from the level's type tables
-  function initNew() {
-    for (let i = 19; i >= 0; i--) {
-      if (!s.nw[i]) continue;
-      const k = s.type[i], m = r[0x0344 + k];
-      s.col[i] = r[0x03E6 + k]; s.grp[i] = r[0x03E6 + k] & 0xF0;
-      s.frame[i] = s.first[i] = r[0x0200 + k]; s.last[i] = r[0x02A2 + k];
-      s.mode[i] = m; s.fdelr[i] = s.fdel[i] = (m & 0x3C) >> 2; s.pp[i] = m & 0x40;
-      s.hp[i] = r[0x0488 + k]; s.dir[i] = 0; s.nw[i] = 0;
-      if (i < 16) return;
-    }
-  }
-  // shots_hit_scenery ($A8DB): the two screen cells a row below a shot's place, from the row and
-  // column tables sprite_rows_build ($EF67) and sprite_columns_build ($EFBF) make
-  const rowOf = y => y < 50 ? 0 : Math.min(23, (y - 50) >> 3);
-  const colOf = h => h < 12 ? h : h < 0xAC ? ((h - 12) >> 2) + 1 : 0;
-  const solid = c => c >= 0x21 && c < 0xF6;
-  function scenery() {
-    if (!s.screen) return;
-    for (let q = 3; q >= 0; q--) {
-      const i = 16 + q;
-      if (s.st[i] < 3) continue;
-      const a = rowOf(s.y[i]) * 40 + colOf((s.xhi[i] << 7 | s.x[i] >> 1) & 255) + 40;
-      if (!solid(s.screen[a]) && !solid(s.screen[a + 1])) continue;
-      s.st[i] = 2; s.xs[i] = 1; s.xh[i] = 0; s.ys[i] = 0;
-    }
-  }
-  // enemies_space_out ($AA64): a shot with five live objects already ahead of it, and a sixth close
-  // in the direction it flies, is cancelled if it has not appeared and otherwise bursts
-  function spaceOut() {
-    for (let b4 = 19; b4 >= 0; b4--) {
-      const sh = s.sorted[b4];
-      if (sh < 16 || !(s.st[sh] | s.dly[sh])) continue;
-      let b7 = 5, x = b4, other = -1;
-      const down = s.ys[sh] & 0x80;
-      for (;;) {
-        x += down ? -1 : 1;
-        if (x < 0 || x >= 20) break;
-        const k = s.sorted[x];
-        if (!(s.dly[k] | s.st[k])) continue;
-        if (--b7 >= 0) continue;
-        other = k; break;
-      }
-      if (other < 0) continue;
-      const d = (s.y[other] - s.y[sh]) & 255;
-      if (down ? d >= 0x25 : d < 0xD8) continue;
-      if (s.dly[sh]) { s.dly[sh] = 0; s.st[sh] = 0; continue; }
-      s.xs[sh] = ((s.xs[sh] & 0x80) | 1) ^ 0x80; s.ys[sh] = ((s.ys[sh] & 0x80) | 1) ^ 0x80;
-      s.st[sh] = 2; s.xh[sh] = 0; s.yh[sh] = 0;
-    }
-  }
-  // objects_timers ($A845): a delay counts down once a frame and at 1 the object comes to life; in
-  // the boss stage a path's step timer is left as boss_start set it, so the parts glide in first
-  function timers() {
-    for (let i = 19; i >= 0; i--) {
-      if (s.st[i] || !s.dly[i]) continue;
-      if (s.dly[i] !== 1) { s.dly[i]--; continue; }
-      s.st[i] = s.type[i]; s.pos[i] = 0; s.dly[i] = 0;
-      if (i < 16) s.anim[i] = 0;
-    }
-    s.bar[16] = s.bar[17] = s.bar[18] = s.bar[19] = 0;
-  }
-  // choose_target ($A79E): player 1's ship, or the drone on alternate shots
-  function target() {
-    const p = !s.drone || !s.g7A ? 0 : 1, sh = s.ships[p];
-    s.t7B = sh.y; s.t7C = sh.x >> 1; s.t7D = 3 + p;
-  }
-  // enemies_fire ($A664): a part whose path has its fire flag set shoots when a shot of the boss's
-  // allowance is free and no live shot is within 45 lines; object 0, the core, is never looked at
-  function fire() {
-    let q = s.g6B;
-    if (q & 0x80) return;
-    for (; q >= 0; q--) if (!(s.st[16 + q] | s.dly[16 + q] | s.bar[16 + q])) break;
-    if (q < 0) return;
-    let x = 15;
-    for (; x > 0; x--) {
-      if (s.st[x] < 7 || !s.fire[x]) continue;
-      const m = s.mode[x] & 3;
-      if (m === 2) break;
-      if (s.t7B === s.y[x]) continue;
-      const c = s.t7B > s.y[x] ? 0 : 1;
-      if (((m - c) & 255) !== 0) break;
-    }
-    if (x === 0) return;
-    const i = 16 + q;
-    s.y[i] = s.y[x];
-    for (let k = s.g6B; k >= 0; k--) {
-      if (!(s.st[16 + k] | s.dly[16 + k])) continue;
-      let d = s.y[i] - s.y[16 + k];
-      d = d < 0 ? (d & 255) ^ 0xFF : d;
-      if (d < 0x2D) return;
-    }
-    s.x[i] = s.x[x]; s.xhi[i] = s.xhi[x];
-    let b4 = (s.xhi[x] << 7 | s.x[x] >> 1) & 255;
-    s.type[i] = s.t7D; s.dly[i] = 2; s.nw[i] = 2; s.anim[i] = 2; s.xh[i] = 0; s.yh[i] = 0;
-    s.g7A ^= 1;
-    let b5 = s.y[i] - s.t7B;
-    if (b5 >= 0) { s.ys[i] = 0; s.y[i] = (s.y[i] + 1) & 255; }
-    else { b5 = (b5 & 255) ^ 0xFF; s.ys[i] = 0x80; s.y[i] = (s.y[i] - 1) & 255; }
-    b5 >>= 1;
-    let dx = b4 - s.t7C;
-    if (dx >= 0) { b4 = dx; s.xs[i] = 0; } else { b4 = (dx & 255) ^ 0xFF; s.xs[i] = 0x80; }
-    let n = s.g6A, a = b5;
-    for (;;) {
-      a -= b4; if (a < 0) break;
-      if (--n === 0) { if (a >= b4 >> 1) { n = 1; s.xh[i] = 1; } break; }
-    }
-    s.xs[i] |= n;
-    n = s.g6A; a = b4;
-    for (;;) {
-      a -= b5; if (a < 0) break;
-      if (--n === 0) { n = 1; if (a >= b5 >> 1) s.yh[i] = 1; break; }
-    }
-    s.ys[i] |= n;
-  }
-  // enemies_follow_paths ($EE8D): at the end of a step its next three bytes; paths from $42 run 32
-  function paths() {
-    for (let i = 15; i >= 0; i--) {
-      if (!s.st[i]) continue;
-      if (s.stp[i]) { s.stp[i]--; continue; }
-      const a = 0x052C + 0x30 * s.path[i];
-      let p = s.pos[i];
-      const b0 = r[a + p], b1 = r[a + p + 1];
-      s.xs[i] = b0 & 0x87; s.xh[i] = b0 & 8; s.fire[i] = b0 & 0x10; s.anim[i] = b0 & 0x20;
-      s.ys[i] = b1 & 0x87; s.yh[i] = b1 & 8; s.stp[i] = r[a + p + 2];
-      p += 3;
-      if (p === (s.path[i] < 0x42 ? 0x30 : 0x60)) p = 0;
-      s.pos[i] = p;
-    }
-  }
-  // p1_collect_pod and p2_collect_pod, a ship in turn every second frame: an enemy in player 1's box
-  // ends the test for that frame, which an invulnerable ship survives; then a shot within 6 of the
-  // ship's x halved and from 10 lines above it to 16 below bursts, on the drone as on the ship
-  function collide() {
-    s.t76 ^= 1;
-    const k = s.t76 ? 0 : 1, sh = s.ships[k];
-    const b4 = (sh.x >> 1) & 255, b5 = (sh.y - 10) & 255, b6 = (sh.y + 16) & 255;
-    const near = (i, w) => {
-      if (s.y[i] < b5 || s.y[i] >= b6) return false;
-      let d = ((s.xhi[i] << 7 | s.x[i] >> 1) & 255) - b4;
-      if (d < 0) d = (d & 255) ^ 0xFF;
-      return d < w;
-    };
-    if (k === 0) for (let i = 15; i >= 0; i--) if (s.st[i] >= 3 && near(i, 11)) return;
-    for (let q = 3; q >= 0; q--) if (s.st[16 + q] >= 3 && near(16 + q, 6)) s.st[16 + q] = 2;
-  }
-  // objects_animate ($F022) and object_burst_step ($EFE8)
-  function animate() {
-    for (let i = 19; i >= 0; i--) {
-      if (!s.st[i]) continue;
-      if (s.st[i] === 2) {
-        if (i < 16) { if (s.fdel[i]) { s.fdel[i]--; continue; } s.fdel[i]++; }
-        const f = s.frame[i];
-        if (f < 0x2E || f > 0x37) s.frame[i] = 0x2E;
-        else if (f === 0x37) { s.st[i] = 0; s.fire[i] = 0; }
-        else s.frame[i]++;
-        continue;
-      }
-      if (!s.anim[i]) continue;
-      if (s.fdel[i]) { s.fdel[i]--; continue; }
-      s.fdel[i] = s.fdelr[i];
-      if (!s.dir[i]) {
-        if (s.frame[i] < s.last[i]) s.frame[i]++;
-        else if (!s.pp[i]) s.frame[i] = s.first[i];
-        else s.dir[i] = s.pp[i];
-      } else if (s.frame[i] === s.first[i]) s.dir[i] = 0;
-      else s.frame[i]--;
-    }
-  }
-  // objects_window ($E474): outside x $008-$14F an enemy waits unseen in state 1, a shot or burst ends
-  function windowed() {
-    for (let i = 19; i >= 0; i--) {
-      const inside = s.xhi[i] ? s.x[i] < 0x50 : s.x[i] >= 8;
-      if (inside) { if (s.st[i] === 1) s.st[i] = s.type[i]; continue; }
-      const st = s.st[i];
-      if (s.xhi[i]) {
-        if (!st) continue;
-        if (st !== 1 && st < 5) { s.st[i] = 0; s.fire[i] = 0; continue; }
-        if (s.x[i] >= 0xF0 && s.x[i] < 0xF9) { s.st[i] = 0; s.fire[i] = 0; } else s.st[i] = 1;
-      } else {
-        if (st < 2) continue;
-        if (st < 5) { s.st[i] = 0; s.fire[i] = 0; } else s.st[i] = 1;
-      }
-    }
-  }
-  // level_end ($AC20): every live object bursts, each one burst step behind the one before; the
-  // shot allowance goes back to the level's; at the map's end the end sequence starts, and
-  // anywhere else the main loop sets the scroll going again at once ($69, scroll_stop_toggle)
-  function levelEnd(atEnd) {
-    for (let i = 19, k = 0; i >= 0; i--) if (s.st[i]) { s.st[i] = 2; s.fdel[i] = k++; }
-    s.g6B = s.keep6B;
-    if (atEnd) { s.gAD = 0x94; s.fdel[0] = 0x1E; } else s.g52 = 0;
-  }
-  // level_end_sequence ($AE62) counts $AD down to 1, where the level is complete; at $62 the core
-  // breaks into four bursts that fly apart (boss_burst, $AEEC) and stops where it is
-  function endSequence() {
-    if (!s.gAD || s.gAD === 1) return;
-    if (s.gAD === 0x62) {
-      for (let i = 19; i >= 16; i--) {
-        s.frame[i] = 0xBF; s.type[i] = 2; s.dly[i] = 2; s.xh[i] = 0; s.yh[i] = 0; s.nw[i] = 0; s.st[i] = 0;
-        s.x[i] = s.x[0]; s.y[i] = s.y[0]; s.xhi[i] = s.xhi[0]; s.col[i] = 0x0A;
-      }
-      s.xs[0] = 0; s.ys[0] = 0;
-      s.xs[16] = 3; s.ys[16] = 3; s.xs[17] = 0x83; s.ys[17] = 0x83;
-      s.xs[18] = 0x83; s.ys[18] = 3; s.xs[19] = 3; s.ys[19] = 0x83;
-      s.stp[0] = 0x83;
-    }
-    s.gAD--;
-  }
-  // One frame, from just after the first interrupt's work to the same point a frame on: the rest of
-  // the main loop, then the next frame's two interrupts.
-  function step(timeUp) {
-    endSequence(); offscreen(); spawn();
-    if (timeUp !== undefined) levelEnd(timeUp);
-    initNew(); scenery();
-    if (!s.gAD) spaceOut();
-    timers(); target(); fire();
-    if (!s.f68) paths(); else { animate(); collide(); }
-    if (s.g52) windowed();
-    s.f68 ^= 1;
-    move(); sort();
-    s.frames++;
-  }
-  s.step = step;
-  s.begin = function () { move(); sort(); };
-  return s;
-}
-// end of createBossFight
-// What each boss does, under the viewer
-const BOSS_NOTES = {
-  "1mid": "Eight sprites in a block, with the core showing at its left side. The boss waits on the right and every 12 seconds swoops left in a loop and back. Its one shot at a time comes from the sprite above the core, which fires only downwards, or the one below it, which fires only upwards. The core releases enemies one at a time, two kinds in turn.",
-  "1end": "Fifteen sprites in a crescent that opens to the left, with the core in the hollow. The boss waits in front of the last of the map and every 10 seconds lunges left in a loop and back. Its shots come from sprites on its two arms, and it releases nothing.",
-  "2mid": "The same layout as level 1's mid-level boss, on a wider loop: every 6.5 seconds it sweeps left almost to the ships and back. The sprite above the core fires only upwards and the one below it only downwards, so a ship level with the core is never aimed at. The core releases enemies of one kind, one at a time.",
-  "2end": "Once the scroll stops, this boss never moves. Its two guards sit above and below it on the right, and both must go before the core can be hurt. The sprites at its top and bottom fire inwards, and from about half a minute in the core releases enemies two at a time, which fire as well.",
-  "3mid": "Seven sprites in a short ship, with the core at its nose. The boss never rests: it flies a loop round the middle of the screen every 5 seconds. Its two rear corners fire, the top one only upwards and the bottom one only downwards. The core releases enemies one at a time, two kinds in turn.",
-  "3end": "A long ship of 15 sprites with the core at its nose. Every 12 seconds it charges to the left edge of the screen, waits there, and backs away. Nearly all its shots come from a sprite low down at its tail, which fires only upwards. The core releases enemies one at a time, three kinds in turn.",
-  "4mid": "The core and four sprites weave a small loop every 4 seconds between two pods of three sprites, one above and one below, which take turns to slip off the right edge and come back. Only the front sprite of each pod, its guard, can be hurt, and both guards must go before the core. The guards fire at the ship wherever it is, and so do four sprites around the core. This boss releases nothing.",
-  "4end": "A hull of ten sprites that rocks in place, with the core at its front and two guards at its back. Above it a pod of four sprites sways on its own and carries the third guard. All three guards must go before the core can be hurt, and then the core takes only 40 hits. Most shots come from the pod, and the core releases enemies two at a time all through the fight.",
-  "5end": "Fifteen sprites set into the rock. Like the end bosses of levels 2 and 8, it never moves once the scroll stops. Two sprites take turns to fire: one at its top left, which fires only downwards, and one just below the core, which fires at the ship wherever it is. The core takes 480 hits, more than any other boss, and releases enemies one at a time, three kinds in turn.",
-  "6mid": "A small ship of four sprites with three guards. The ship and the guard level with it sway past each other every 2 seconds, while the other two guards swing up and down across the whole height of the screen. Nearly every shot comes from one of the swinging guards. Once the guards are gone the core takes only 8 hits, and this boss releases nothing.",
-  "6end": "Thirteen sprites in a crescent that bulges towards the ships, with the core at the front. The boss waits and every 7 seconds dips left in a loop and back. The four sprites at the ends of its arms fire only outwards, at a ship above or below the boss, so a ship level with the core is fired at only by one sprite just behind the core. The core releases enemies one at a time, three kinds in turn.",
-  "7end": "A ship of twelve sprites with the core at its front, and two guards, above and below, that each swing in towards the ships and back on paths of their own. The ship lunges left every 10 seconds. Nearly all its shots come from one sprite at the back of its lower edge, which fires at the ship wherever it is. The core releases enemies one at a time, two kinds in turn.",
-  "8mid": "Fifteen sprites in a crescent that opens to the left, with the core in the hollow. Every 16 seconds it charges straight across to the left edge of the screen, waits, and goes back. The tips of its arms fire, each only inwards, and the core releases enemies one at a time, two kinds in turn. Level 8 meets this boss twice, at full strength both times; the second time its shots are faster and it stays more than three times as long.",
-  "8end": "Eleven sprites set into the pipework, with one guard above the core and one below. Neither the guards nor the core ever move. Three of its sprites take turns to fire at the ship wherever it is, among them the upper guard, and from 15 seconds in the core releases enemies one at a time, three kinds in turn, which fire too.",
-};
-
-const BOSSES = [[1, 2, 8], [1, 1, 9], [2, 2, 5], [2, 1, 9], [3, 2, 5], [3, 1, 9], [4, 2, 1], [4, 1, 9],
-                [5, 1, 9], [6, 2, 7], [6, 1, 9], [7, 1, 9], [8, 2, 5], [8, 2, 7], [8, 1, 9]];
-const bv = { B: null, p: null, f: 0, snaps: [], playing: false, last: 0, acc: 0, sprites: new Map() };   // each level's sprites, drawn once in each colour
-const bcv = $('ar-boss');
-const bctx = bcv.getContext('2d');
-const scr = document.createElement('canvas'); scr.width = 304; scr.height = 200;
-const sctx = scr.getContext('2d');
-const AFTER = { 1: 147, 2: 80 };   // frames shown once the time is up: the end sequence, or the bursts
-
-// One boss: its level, its table, where the scroll stops for it and for how long, and the strip of
-// map around the stop, drawn in the colours in force there
-async function bossOf(k) {
-  const [n, which, e] = BOSSES[k];
-  const L = await level(n), r = (await part('level-' + n)).ram;
-  const start = L.ev[e];
-  if (start.boss !== which) throw new Error('event ' + e + ' of level ' + n + ' starts no such boss');
-  const stopEv = start.stop ? start : L.ev.find(v => v.e > e && v.stop);
-  let cols = L.ev[0].cols;
-  for (const v of L.ev) if (v.e <= stopEv.e && (v.fl & 1)) cols = v.cols;
-  // the script runs the stop's event the frame before the boss's first, and the time runs out
-  // in the frame its count ends, 48 frames a unit after that event
-  const glide = stopEv.x - start.x ? stopEv.x - start.x - 1 : 0;   // frames of scroll before the stop
-  const left = stopEv.x - 328;                    // the map pixel in screen column 0 at the stop
-  const X0 = left - 208, W = 304 + 208 + 128;
-  const strip = document.createElement('canvas'); strip.width = W; strip.height = 200;
-  const sx = strip.getContext('2d'), img = sx.createImageData(W, 200), d = img.data;
-  const cs = [cols[0], cols[1], cols[2], 0].map(i => RGB[i & 15]);
-  const charAt = (mc, row) => {
-    const t = r[0x3934 + (row / 5 | 0) * 256 + ((mc / 5 | 0) & 255)], ta = r[0x3E34 + t] | r[0x3EFC + t] << 8;
-    return r[ta + (row % 5) * 5 + mc % 5];
-  };
-  for (let x = 0; x < W; x++) {
-    const mx = X0 + x, mc = mx >> 3;
-    for (let row = 0; row < 25; row++) {
-      const ch = charAt(mc, row);
-      for (let y = 0; y < 8; y++) {
-        const b = ch <= 0x20 ? 0xFF : r[0xD000 + (ch - 0x20) * 8 + y];
-        const k = cs[(b >> (6 - 2 * ((mx & 7) >> 1))) & 3], o = ((row * 8 + y) * W + x) * 4;
-        d[o] = k[0]; d[o + 1] = k[1]; d[o + 2] = k[2]; d[o + 3] = 255;
-      }
-    }
-  }
-  sx.putImageData(img, 0, 0);
-  // the screen's characters for the shots to run into, by the map character in screen column 0
-  const screens = new Map();
-  const screenAt = lc => {
-    if (!screens.has(lc)) {
-      const s = new Uint8Array(1000);
-      for (let row = 0; row < 25; row++) for (let c = 0; c < 40; c++) { const ch = charAt(lc + c, row); s[row * 40 + c] = ch < 0x20 ? 0x20 : ch; }
-      screens.set(lc, s);
-    }
-    return screens.get(lc);
-  };
-  const t = which === 1 ? 0x9778 : 0x97D8;
-  const hits = [0, 1, 2, 3].map(i => r[t + 8 + i] + 256 * (r[t + 4 + i] & 0x7F));
-  return { k, n, which, start, stopEv, glide, left, X0, strip, screenAt, r, hits, guards: r[t],
-           end: stopEv.x - start.x - 1 + stopEv.stop * 48, last: stopEv.x - start.x - 1 + stopEv.stop * 48 + AFTER[which] };
-}
-
-function bossNew(B) {
-  const p = createBossFight(B.r, B.which, { speed: B.start.speed, stopped: !B.glide, keep6B: B.start.shots - 1 });
-  p.begin();
-  return p;
-}
-// The frame f's state, from the nearest kept state before it
-function bossSeek(f) {
-  const B = bv.B;
-  if (f < bv.f) {
-    let i = Math.min(bv.snaps.length - 1, f >> 10);
-    while (i > 0 && !bv.snaps[i]) i--;
-    if (i > 0) { const s = bv.snaps[i]; for (const k in s) if (ArrayBuffer.isView(s[k])) bv.p[k].set(s[k]); else bv.p[k] = s[k]; bv.f = i << 10; }
-    else { bv.p = bossNew(B); bv.f = 0; }
-  }
-  while (bv.f < f) bossStep();
-}
-function bossStep() {
-  const B = bv.B, p = bv.p, f = bv.f;
-  if (!(f & 1023) && !bv.snaps[f >> 10]) {
-    const s = {};
-    for (const k in p) if (ArrayBuffer.isView(p[k]) && k !== 'screen') s[k] = p[k].slice(); else if (typeof p[k] === 'number') s[k] = p[k];
-    bv.snaps[f >> 10] = s;
-  }
-  if (f === B.glide) { p.g52 = 1; p.g6A = B.stopEv.speed; }
-  p.screen = B.screenAt((B.left >> 3) - Math.max(0, (B.glide - f + 7) >> 3));
-  p.step(f === B.end ? B.which === 1 : undefined);
-  bv.f++;
-}
-
-// Each sprite drawn once, in its colour, for the screen to copy
-function spriteImg(r, frame, colour) {
-  if (!bv.sprites.has(r)) bv.sprites.set(r, new Map());
-  const got = bv.sprites.get(r), key = frame * 16 + colour;
-  if (!got.has(key)) {
-    const c = document.createElement('canvas'); c.width = 24; c.height = 21;
-    C64.drawSpriteMC(c.getContext('2d'), r.subarray(0x4000 + 64 * frame, 0x4000 + 64 * frame + 63), 0, 0, 1, C64.PAL[colour], C64.PAL[1], C64.PAL[11]);
-    got.set(key, c);
-  }
-  return got.get(key);
-}
-// The screen as the video chip shows it, in 38-column mode: the map, the objects on hardware
-// sprites 2-7 handed out down the screen (a lower sprite is drawn in front), then the two ships on
-// sprites 0 and 1 in front of everything. A sprite at x, y is at x - 31, y - 51 here.
-function drawBoss() {
-  const B = bv.B, p = bv.p; if (!B || !p) return;
-  const f = bv.f;
-  const shift = f < B.glide ? B.glide - f : f > B.end && B.which === 2 ? -(f - B.end) : 0;
-  sctx.drawImage(B.strip, B.left - shift - B.X0, 0, 304, 200, 0, 0, 304, 200);
-  // The multiplexer ($A305) hands the objects, top first, to sprites 2-7 in turn, and each sprite
-  // waits until the beam is 23 lines below the object it showed last; an object whose line the
-  // beam has passed by then is not shown. The 40 lines and the line and a half for each object
-  // stand for the routine's own time, matched to the emulator's screens.
-  const order = [], hwY = [0, 0, 0, 0, 0, 0];
-  for (let k = 19, slot = 0, t = 40; k >= 0; k--) {
-    const i = p.sorted[k]; if (p.st[i] < 2) continue;
-    if (hwY[slot] + 23 > 255) break;
-    t = Math.max(t + 1.5, hwY[slot] + 23);
-    hwY[slot] = p.y[i];
-    if (p.y[i] >= Math.floor(t)) order.push([2 + slot, i]);
-    slot = (slot + 1) % 6;
-  }
-  order.sort((a, b) => b[0] - a[0]);
-  for (const [, i] of order) sctx.drawImage(spriteImg(B.r, p.frame[i], p.col[i] & 15), p.xhi[i] * 256 + p.x[i] - 31, p.y[i] - 51);
-  sctx.drawImage(spriteImg(B.r, 0x0E + ((f >> 2) & 7), 5), 0x54 - 31, 0x8C - 51);
-  sctx.drawImage(spriteImg(B.r, 3, 14), 0x54 - 31, 0x74 - 51);
-  bctx.imageSmoothingEnabled = false;
-  bctx.drawImage(scr, 0, 0, 608, 400);
-  if ($('ar-bmark').checked) {
-    bctx.font = '12px IBM Plex Mono, monospace'; bctx.lineWidth = 2; bctx.textAlign = 'left';
-    for (let i = 0; i <= B.guards; i++) {
-      if (p.st[i] < 3) continue;
-      const x = (p.xhi[i] * 256 + p.x[i] - 31) * 2, y = (p.y[i] - 51) * 2;
-      bctx.strokeStyle = i ? '#edf171' : '#ff7a6b'; bctx.strokeRect(x - 1, y - 1, 50, 44);
-      const s = (i ? 'guard: ' : 'core: ') + B.hits[i] + ' hits', w = bctx.measureText(s).width + 8;
-      const lx = Math.max(0, Math.min(x - 1, 608 - w)), ly = Math.max(0, y - 18);
-      bctx.fillStyle = 'rgba(0,0,0,.7)'; bctx.fillRect(lx, ly, w, 16);
-      bctx.fillStyle = i ? '#edf171' : '#ff7a6b'; bctx.fillText(s, lx + 4, ly + 12);
-    }
-  }
-  let s = fmtTime(f);
-  if (f < B.glide) s += ' · the scroll stops in ' + (B.glide - f) + ' frames';
-  else if (f < B.end) s += ' · it blows itself up in ' + fmtTime(B.end - f);
-  else s += ' · time up';
-  let shots = 0; for (let i = 16; i < 20; i++) shots += p.st[i] >= 3;
-  $('ar-bread').textContent = s + ' · shots ' + shots + '/' + (p.g6B + 1);
-  $('ar-bpos').value = f;
-}
-function bossStop() { bv.playing = false; $('ar-bplay').textContent = 'Play'; }
-function bossTick(t) {
-  if (!bv.playing) return;
-  bv.acc += Math.min(0.25, (t - bv.last) / 1000) * PAL_HZ; bv.last = t;
-  while (bv.acc >= 1 && bv.f < bv.B.last) { bossStep(); bv.acc--; }
-  if (bv.f >= bv.B.last) bossStop();
-  drawBoss();
-  if (bv.playing) requestAnimationFrame(bossTick);
-}
-async function showBoss(k) {
-  bossStop();
-  $('ar-bsel').value = k;
-  try {
-    const B = await bossOf(k);
-    bv.B = B; bv.snaps = []; bv.p = bossNew(B); bv.f = 0;
-    $('ar-bpos').max = B.last;
-    bossSeek(B.glide + 240);
-    $('ar-bcap').innerHTML = BOSS_NOTES[B.n + (B.which === 1 ? 'end' : 'mid')] || '';
-    drawBoss();
-  } catch (e) { $('ar-bread').textContent = 'The level\'s listing did not load (' + e.message + ').'; }
-}
-if (HAS) {
-  const sel = $('ar-bsel');
-  BOSSES.forEach(([n, w, e], k) => sel.insertAdjacentHTML('beforeend', '<option value="' + k + '">Level ' + n + ' · ' + (w === 1 ? 'end boss' : 'mid-level boss' + (n === 8 ? (e === 5 ? ', first time' : ', second time') : '')) + '</option>'));
-  sel.onchange = () => showBoss(+sel.value);
-  document.querySelectorAll('#ar-bpick .step').forEach(b => b.onclick = () => showBoss(Math.min(BOSSES.length - 1, Math.max(0, +sel.value + +b.dataset.d))));
-  $('ar-bplay').onclick = () => {
-    if (bv.playing) { bossStop(); return; }
-    if (bv.f >= bv.B.last) bossSeek(0);
-    bv.playing = true; $('ar-bplay').textContent = 'Pause'; bv.last = performance.now(); bv.acc = 0; requestAnimationFrame(bossTick);
-  };
-  $('ar-bpos').oninput = e => { bossStop(); bossSeek(+e.target.value); drawBoss(); };
-  $('ar-bmark').onchange = drawBoss;
-  showBoss(0);
-} else missing(bcv);
-
 // ---- 04 pods, 05 super weapons
 let ENG = null, L1 = null;
 const engine = () => ENG || (ENG = part('engine'));
@@ -1201,7 +530,7 @@ if (HAS) {
   });
 } else missing($('ar-sw'));
 
-// ---- 13 the ending
+// ---- 09 the ending
 let END = null;
 async function drawEnding(pic) {
   const m = await (END || (END = part('ending'))), r = m.ram;
@@ -1349,86 +678,6 @@ if (HAS) {
     });
   }).catch(() => {});
 } else missing($('ar-drone'));
-
-// ---- 09 the starting shield
-const BUG = [
-  ['Zero page cleared', '<code>$A1DE</code>', 0x00, 0x00, 'level_setup_vars clears $02-$FF, the two timers among them.'],
-  ['Demo tune set up', '<code>$C43C</code>', 0x67, 0xCD, 'music_init reads each voice\'s track through the pointer $56/$57, and the last track\'s address, $CD67, stays there.'],
-  ['Timers decremented', '<code>$A260</code>', 0x66, 0xCC, 'DEC $56 and DEC $57 were written to turn 0 into 255. From $67 and $CD they give 102 and 204.'],
-];
-function bugShow(i) {
-  const [what, where, a, b, note] = BUG[i];
-  $('ar-bugtbl').innerHTML = '<thead><tr><th>Step</th><th>At</th><th>$56, ship 1</th><th>$57, ship 2</th></tr></thead><tbody><tr><td>' + what + '</td><td>' + where +
-    '</td><td class="ar-n">' + hex(a) + ' = ' + a + '</td><td class="ar-n">' + hex(b) + ' = ' + b + '</td></tr></tbody>';
-  $('ar-bugcap').textContent = note + (i === 2 ? ' Each counts down once a frame while its ship flashes (ship1_invulnerable, $EA77).' : '');
-}
-{
-  const st = $('ar-bugstep');
-  BUG.forEach((s, i) => st.insertAdjacentHTML('beforeend', '<button data-i="' + i + '"' + (i ? '' : ' class="ar-on"') + '>' + (i + 1) + '. ' + s[0] + '</button>'));
-  st.querySelectorAll('button').forEach(b => b.onclick = () => {
-    st.querySelectorAll('button').forEach(x => x.classList.toggle('ar-on', x === b)); bugShow(+b.dataset.i);
-  });
-  bugShow(0);
-}
-
-// ---- 11 the title's pages
-const TIMG = ['title-credits-phillips-levy', 'title-credits-kemp-walker', 'title-ship-enhancements-2', 'title-ship-enhancements-1', 'title-high-scores', 'title-keyboard-controls', null];
-function tDecode(E, a) {
-  let s = '';
-  for (let n = 0; E[a] !== 0xFF && n < 64; a++, n++) {
-    const b = E[a];
-    s += b >= 0x40 && b <= 0x59 ? String.fromCharCode(b + 1) : b >= 0x36 && b <= 0x3F ? String(b - 0x36) : b === 0xFE ? ' ' :
-      ({ 0x29: "'", 0x2A: 'C=', 0x2B: '/', 0x2C: '.', 0x2D: ',', 0x2E: ':', 0x2F: ';', 0x30: '?', 0x31: '!', 0x32: '-', 0x33: '(', 0x34: ')', 0x35: '©' })[b] || '▪';
-  }
-  return s.replace(/▪+/g, '▪').trim();
-}
-if (HAS) {
-  const sel = $('ar-tsel');
-  for (let p = 1; p <= 7; p++) sel.insertAdjacentHTML('beforeend', '<option value="' + p + '">Page ' + p + '</option>');
-  engine().then(e => {
-    const E = e.ram, str = i => E[0x9484 + i] | E[0x94AD + i] << 8;
-    const used = new Set();
-    for (let p = 0; p < 7; p++) for (let l = 0; l < 10; l++) used.add(E[0xB953 + 13 * p + l]);
-    const never = []; for (let i = 1; i < 41; i++) if (!used.has(i)) never.push(i);
-    const show = p => {
-      sel.value = p;
-      const lines = [];
-      for (let l = 0; l < 10; l++) {
-        const n = E[0xB953 + 13 * (p - 1) + l];
-        lines.push('<li>' + (n ? 'string ' + n + ': ' + tDecode(E, str(n)) : '<span style="color:var(--ink-mute)">blank</span>') + '</li>');
-      }
-      $('ar-tlines').innerHTML = lines.join('');
-      const img = $('ar-timg');
-      if (TIMG[p - 1]) { img.src = 'reference/' + TIMG[p - 1] + '.png'; img.style.display = ''; } else img.style.display = 'none';
-    };
-    $('ar-tcap').insertAdjacentHTML('beforeend', ' Strings on no page: ' + never.map(n => n + ', "' + tDecode(E, str(n)) + '"').join('; ') + '.');
-    sel.onchange = () => show(+sel.value);
-    document.querySelectorAll('#ar-tpick .step').forEach(b => b.onclick = () => show(Math.min(7, Math.max(1, +sel.value + +b.dataset.d))));
-    show(1);
-  }).catch(() => {});
-}
-
-// ---- 12 the poke
-function pokeShow(E, poked) {
-  const rows = [[0xE9F3, 'DEC $B005, player 1 loses a life', [0xCE, 0x05, 0xB0]], [0xE9F6, 'the BMI after it', [0x30]],
-                [0xEA57, 'DEC $B006, player 2 loses a life', [0xCE, 0x06, 0xB0]], [0xEA5A, 'the BMI after it', [0x30]]];
-  let bad = 0;
-  const html = rows.map(([a, what, want]) => {
-    const got = want.map((_, i) => (poked && a + i === 0xE9F3) ? 0xAD : E[a + i]);
-    const ok = got.every((v, i) => v === want[i]); if (!ok) bad++;
-    return '<tr><td class="ar-n"><code>' + hex(a, 4) + '</code></td><td>' + what + '</td><td class="ar-n">' + got.map(v => hex(v).slice(1)).join(' ') +
-      '</td><td class="ar-n">' + want.map(v => hex(v).slice(1)).join(' ') + '</td><td>' + (ok ? 'same' : '<b style="color:var(--coral)">differs</b>') + '</td></tr>';
-  });
-  $('ar-poketbl').innerHTML = '<thead><tr><th>At</th><th>Instruction</th><th>Bytes</th><th>anti_cheat_check wants</th><th></th></tr></thead><tbody>' + html.join('') + '</tbody>';
-  $('ar-pokecap').textContent = bad ? 'POKE 59891,173 turns DEC (CE) into LDA (AD). anti_cheat_check ($F77D) sees the difference and switches the KERNAL ROM in ($01 = $37): the machine froze within five frames in the emulator.'
-    : 'The bytes as the engine is loaded, and what anti_cheat_check ($F77D) compares them with every second frame. The BMI is checked by its opcode alone: the two branches\' opcodes are ORed and compared with $30.';
-}
-if (HAS) engine().then(e => {
-  pokeShow(e.ram, false);
-  document.querySelectorAll('#ar-pokesel button').forEach(b => b.onclick = () => {
-    document.querySelectorAll('#ar-pokesel button').forEach(x => x.classList.toggle('ar-on', x === b)); pokeShow(e.ram, b.dataset.p === '1');
-  });
-}).catch(() => {});
 
 })();
 </script>
@@ -1741,7 +990,7 @@ C64.load('parts/engine/listing.json').then((E) => {
   });
 }).catch((e) => { root.innerHTML = '<p class="ar-miss">The engine\'s listing did not load (' + e.message + ').</p>'; });
 
-// ---- 16 Walker's Warbles: the demo's own driver, ported above, through the same SID model
+// ---- 11 Walker's Warbles: the demo's own driver, ported above, through the same SID model
 let warblesDriver; {
 // <warbles-driver>
 /* Walker's Warbles' music driver, ported from the demo's own code for the site's shared SID

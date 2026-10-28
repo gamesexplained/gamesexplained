@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The boss viewer's fight (createBossFight, index.html) against the engine's own boss routines on
+// The boss viewer's fight (createBossFight, bosses.html) against the engine's own boss routines on
 // the committed listings in the kit's 6502. For each of the fourteen bosses, boss_start ($AC95)
 // fills the objects on both sides from the level's table; then each frame the simulator runs the
 // main loop's share in its order, shots_offscreen ($A7E2), boss_spawn ($AD89), objects_init_new
@@ -22,7 +22,7 @@ const { game } = require(path.resolve(__dirname, '../../../kit/scripts/port_chec
 const g = game(__dirname);
 g.lib('cpu6502');
 const { CPU } = C64Cpu;
-const { createBossFight } = g.run('index.html', 'createBossFight');
+const { createBossFight } = g.run('bosses.html', 'createBossFight');
 const E = g.listing('parts/engine/listing.json').ram;
 const FRAMES = +process.argv[2] || 3000;
 const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n || 2, '0');
