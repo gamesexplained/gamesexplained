@@ -9348,7 +9348,7 @@
   {
    "address": 6525,
    "type": "line",
-   "text": "Immediate operand of the LDA at $197C, set by $18B5 and $18D6 to the value for the enemy variant given by the flag $0BF8 (the attack frame, step size or offset)."
+   "text": "Immediate operand of the LDA at $197C, set by $18B5 and $18D6 to the sprite frame for the enemy variant given by the flag $0BF8 ($12 for variant 1, $02 for variant 0); the STA at $197E puts it in $0A32 when the count reaches $18."
   },
   {
    "address": 6530,
@@ -9368,12 +9368,12 @@
   {
    "address": 6863,
    "type": "line",
-   "text": "The 12 sprite pointer values of the pickup of behaviour $1ADD ($62 seven times, $63 seven times), indexed by $0A5C."
+   "text": "The sprite pointer values of the pickup of behaviour $1ADD, indexed by $0A5C (0 to 11): 14 bytes, $62 seven times and $63 seven times, of which the 12 read are $62 seven times and $63 five times."
   },
   {
    "address": 6877,
    "type": "line",
-   "text": "Behaviour for state 3, probably an energy pickup. Bobs along the path in $1B66 with frames from $1ACF, and when the player touches it ($5507) sets its done flag $0BA5, adds 10 to the energy $5578 (up to $21) and plays sound effect $10 through $B0EE."
+   "text": "Behaviour for state 3, probably an energy pickup. Bobs along the path in $1B66 with frames from $1ACF, and when the player touches it ($5507) sets its done flag $0BA5, adds 10 to the energy $5578 (a result of $18 or more becomes $21, the full bar) and plays sound effect 4 (X = $10) through $B0EE."
   },
   {
    "address": 6928,
@@ -9393,7 +9393,7 @@
   {
    "address": 7014,
    "type": "line",
-   "text": "Height steps of the pickup of behaviour $1ADD, 16 bits each, 24 entries, indexed by twice $0AFF."
+   "text": "Height steps of the pickup of behaviour $1ADD, 16 bits each, 24 entries, indexed by $0AFF, which steps by 2 from 0 to $2E."
   },
   {
    "address": 7015,
@@ -9408,7 +9408,7 @@
   {
    "address": 7087,
    "type": "line",
-   "text": "Behaviour for state 4, probably a bonus pickup. Cycles through the frames at $1B96 and, when touched, sets $0BA5, adds 5 to the score digit 4 ($585D) and plays sound effect $0C."
+   "text": "Behaviour for state 4, probably a bonus pickup. Cycles through the frames at $1B96 and, when touched, sets $0BA5, adds 5 to the score digit 4 ($585D) and plays sound effect 3 (X = $0C)."
   },
   {
    "address": 7133,
@@ -9428,12 +9428,12 @@
   {
    "address": 7169,
    "type": "line",
-   "text": "Behaviour for state 5: shows sprite $6B while the counter $0AFF counts down and sprite $6A otherwise; it does nothing else."
+   "text": "Behaviour for state 5: sets the sprite colour $0A40 to 0, then shows sprite $6B while the counter $0AFF counts down by one a call and sprite $6A once it is 0; it does nothing else."
   },
   {
    "address": 7196,
    "type": "line",
-   "text": "Behaviour for state 6, probably a thrown or falling hazard. On contact with the player ($5507) it hurts him ($5579) and restarts. Otherwise it counts $0AFF up to $6A, moves 4 pixels left between counts 4 and $33, and moves in height by the table at $1CD1 (a value of $5A or more is used as the sprite frame instead). When the run ends it puts itself back near its start and plays sound effect $14."
+   "text": "Behaviour for state 6, probably a thrown or falling hazard. On contact with the player ($5507) it hurts him ($5579) and restarts. Otherwise it counts $0AFF up to $6A, moves 4 pixels left between counts 4 and $33, and moves in height by the table at $1CD1 (a value of $5A or more is used as the sprite frame instead). When the run ends it puts itself $16 pixels left of and 1 above the object before it, sets that object's counter $0AFE to 7, and plays sound effect 5 (X = $14)."
   },
   {
    "address": 7373,
@@ -9468,7 +9468,7 @@
   {
    "address": 7486,
    "type": "line",
-   "text": "Behaviour for a slot in state 7, run after the other slots by $1214. Sets the slot's position from its object and picks its sprite pointer from the tables at $6219/$6255, $1DDA or $1DBA by the phase $0A6A and the sprite frame of the slot belonging to the previous object ($0F43), so probably the lower sprite of a two-sprite enemy that follows the upper one."
+   "text": "Behaviour for a slot in state 7, run after the other slots by $1214. Sets the slot's X from its object and picks its sprite pointer by the sprite frame and phase $0A6A of the slot belonging to the previous object ($0F43): from $6219/$6255 when that slot is in state $10 (knocked down), otherwise from $1DDA or $1DBA, so probably the lower sprite of a two-sprite enemy that follows the upper one."
   },
   {
    "address": 7610,
@@ -9498,7 +9498,7 @@
   {
    "address": 7810,
    "type": "line",
-   "text": "Steps across of the hazard of behaviour $1E06, 16 bits each, 80 entries, indexed by twice $0AFF."
+   "text": "Steps across of the hazard of behaviour $1E06, 16 bits each, 80 entries, indexed by $0AFF, which steps by 2 from 0 to $9E."
   },
   {
    "address": 7811,
@@ -9568,7 +9568,7 @@
   {
    "address": 8292,
    "type": "line",
-   "text": "Joystick port 2 ($DC00) as last read by $6315; bit 0 up, 1 down, 2 left, 3 right, 4 fire, clear when pressed."
+   "text": "Joystick port 2 ($DC00) as read by $6315; bit 0 up, 1 down, 2 left, 3 right, 4 fire, clear when pressed. The enemy attacks at $16FC and $1937 overwrite it with a push to one side, which stays while $6315 skips its read during the recoil ($1658, $5577), and the setup at $537C sets it to $FF."
   },
   {
    "address": 8293,
@@ -9608,7 +9608,7 @@
   {
    "address": 8300,
    "type": "line",
-   "text": "Called by $63E8 each frame unless the game is paused ($6443), when it only reads the keyboard ($2127). Saves the camera ($FB-$FE) and the player position, then, from the player's screen position in $747B,$747C, picks one of ten scroll directions: right at X $DC or more, left below $64, up above Y $41, down at $87 or more (corners combine them). It stores the direction in $212E, starts $212F at $0B steps, and runs the routine for the direction from the table at $2135 through a call whose operand is rewritten at $2124/$2125. While $212F runs it steps $2130 through 0-3 and repeats the direction."
+   "text": "Called by $63E8 each frame unless the banner flag $56D1 is set. When the game is paused ($6443) it only reads the keyboard ($2127). Otherwise it saves the camera ($FB-$FE) and the player position, then, from the player's screen position in $747B,$747C, picks one of eight scroll directions: right at X $DC or more, left below $64, up above Y $41, down at $87 or more (corners combine them); with none of these it only reads the keyboard. It stores the direction in $212E, starts $212F at $0B steps, and runs the routine for the direction from the table at $2135 through a call whose operand is rewritten at $2124/$2125. While $212F runs it steps $2130 through 0-3 and repeats the direction."
   },
   {
    "address": 8483,
@@ -9688,7 +9688,7 @@
   {
    "address": 8648,
    "type": "line",
-   "text": "Phase 3 of a scroll to the right: fills the colours for the top rows ($7060) and the lower rows ($6809), then flips the buffer flag $2067."
+   "text": "Phase 3 of a scroll to the right: fills the colours for the top rows ($7060), copies the first part of the lower rows' colours to colour RAM and leaves the rest to $69E3 ($6809), then flips the buffer flag $2067."
   },
   {
    "address": 8663,
@@ -9723,7 +9723,7 @@
   {
    "address": 8963,
    "type": "line",
-   "text": "Draws the new right-hand column of the screen from the tile map: reads 19 map tiles down from the map pointer $A1 plus 20 columns, each as two characters, through the tables at $9651 and $96EF (the half-tile flags $AF and $BD pick the characters), into the matrix at $CC00 or $C800 by $2067."
+   "text": "Draws the new right-hand column (column $26) of the screen from the tile map: reads 10 map tiles down from the map pointer $A1 plus 20 columns, each giving a top and a bottom character through the tables at $9651 and $96EF, 19 characters in all (the half-tile flags $AF and $BD pick the characters), into the matrix at $CC00 or $C800 by $2067. Then, unless $2F84 is set, it steps $AF and moves $A1 on a tile when $AF wraps."
   },
   {
    "address": 9883,
@@ -9743,7 +9743,7 @@
   {
    "address": 9958,
    "type": "line",
-   "text": "Scroll direction 1, view downwards. Moves the camera Y ($FD/$FE) on 2 and the player's screen Y back 2, takes the fine vertical scroll from $26B8, and runs the phase's work: shift the upper rows up ($2751), the lower rows and the new bottom row ($2736), the colours ($271C), then the colours into colour RAM and the buffer flip ($2727)."
+   "text": "Scroll direction 1, view downwards. Moves the camera Y ($FD/$FE) on 2 and the player's screen Y back 2, takes the fine vertical scroll from $26B8, and runs the phase's work: phase 0 shifts columns $10 to 0 of the screen up a row and draws the new bottom row ($2751), 1 shifts columns $26 to $11 ($2736), 2 builds the colours ($271C), 3 puts the colours into colour RAM ($7060, and $6809 with $69E3) and flips the buffers ($2727)."
   },
   {
    "address": 10012,
@@ -9753,7 +9753,7 @@
   {
    "address": 10023,
    "type": "line",
-   "text": "Phase 3 of a scroll downwards: fills the colours ($7060, $6809) and flips the buffer flag $2067."
+   "text": "Phase 3 of a scroll downwards: fills the colours of the top rows ($7060) and starts the copy of the lower rows' colours ($6809, finished by $69E3), then flips the buffer flag $2067."
   },
   {
    "address": 10038,
@@ -9768,7 +9768,7 @@
   {
    "address": 10098,
    "type": "line",
-   "text": "Copies the screen matrix at $CC00 up one row into $C800 for the columns from Y down to 0, 19 rows at a time; the limit in $27E0 is patched by the caller."
+   "text": "Copies the screen matrix at $CC00 up one row into $C800, 18 rows (rows 1 to 18 into rows 0 to 17), for the columns from Y down to the one after the limit in $27E0, which the caller patches ($FF for down to 0, $10 for down to $11)."
   },
   {
    "address": 10208,
@@ -9778,7 +9778,7 @@
   {
    "address": 10212,
    "type": "line",
-   "text": "Copies the screen matrix at $C800 up one row into $CC00 for the columns from Y down, 19 rows at a time; the limit in $2852 is patched by the caller."
+   "text": "Copies the screen matrix at $C800 up one row into $CC00, 18 rows (rows 1 to 18 into rows 0 to 17), for the columns from Y down to the one after the limit in $2852, which the caller patches."
   },
   {
    "address": 10322,
@@ -9788,57 +9788,57 @@
   {
    "address": 10326,
    "type": "line",
-   "text": "Draws a new bottom row of tiles from the map (the pointer $A1 plus $0280) into the matrix at $CC00, two characters for each tile through the tables at $9651 and $96EF."
+   "text": "Draws the new bottom row of the screen (row 18, $CED0 on) into the matrix at $CC00 from one row of the map (the pointer $A1 plus $0280, adjusted by the half-tile flags $AF and $BD): each tile gives two characters side by side, all from the table $9651 (top halves) or $96EF (bottom halves) as the half-row flag picks. Unless $2F84 is set it then steps $BD and moves $A1 on a row when $BD wraps."
   },
   {
    "address": 10445,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $28CC, rewritten by $28A0 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $28CC, rewritten by $28A0 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10446,
    "type": "line",
-   "text": "High byte of the address in the LDA at $28CC, rewritten by $28A9 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $28CC, rewritten by $28A9 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10452,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $28D3, rewritten by $28A3 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $28D3, rewritten by $28A3 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10453,
    "type": "line",
-   "text": "High byte of the address in the LDA at $28D3, rewritten by $28AC to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $28D3, rewritten by $28AC to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10501,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $2904, rewritten by $28A6 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $2904, rewritten by $28A6 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10502,
    "type": "line",
-   "text": "High byte of the address in the LDA at $2904, rewritten by $28AF to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $2904, rewritten by $28AF to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10517,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $2914, rewritten by $28B2 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $2914, rewritten by $28B2 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10518,
    "type": "line",
-   "text": "High byte of the address in the LDA at $2914, rewritten by $28B8 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $2914, rewritten by $28B8 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10524,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $291B, rewritten by $28B5 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $291B, rewritten by $28B5 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10525,
    "type": "line",
-   "text": "High byte of the address in the LDA at $291B, rewritten by $28BB to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $291B, rewritten by $28BB to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10565,
@@ -9848,52 +9848,52 @@
   {
    "address": 10684,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $29BB, rewritten by $298F to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $29BB, rewritten by $298F to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10685,
    "type": "line",
-   "text": "High byte of the address in the LDA at $29BB, rewritten by $2998 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $29BB, rewritten by $2998 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10691,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $29C2, rewritten by $2992 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $29C2, rewritten by $2992 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10692,
    "type": "line",
-   "text": "High byte of the address in the LDA at $29C2, rewritten by $299B to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $29C2, rewritten by $299B to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10740,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $29F3, rewritten by $2995 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $29F3, rewritten by $2995 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10741,
    "type": "line",
-   "text": "High byte of the address in the LDA at $29F3, rewritten by $299E to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $29F3, rewritten by $299E to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10756,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $2A03, rewritten by $29A1 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $2A03, rewritten by $29A1 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10757,
    "type": "line",
-   "text": "High byte of the address in the LDA at $2A03, rewritten by $29A7 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $2A03, rewritten by $29A7 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10763,
    "type": "line",
-   "text": "Low byte of the address in the LDA at $2A0A, rewritten by $29A4 to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "Low byte of the address in the LDA at $2A0A, rewritten by $29A4 to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10764,
    "type": "line",
-   "text": "High byte of the address in the LDA at $2A0A, rewritten by $29AA to point at the tile table $9651 or $96EF, chosen by the half-tile flags."
+   "text": "High byte of the address in the LDA at $2A0A, rewritten by $29AA to point at the tile table $9651 or $96EF, chosen by the half-row flag $BD (through $2BEF)."
   },
   {
    "address": 10804,
