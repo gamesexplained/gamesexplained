@@ -4067,7 +4067,7 @@
   {
    "address": 41066,
    "type": "line",
-   "text": "Repeat count of each voice's current pattern (3 bytes), set by track command $F1 and counted down by $A3FA; the pattern is read again until it reaches zero."
+   "text": "Repeat count of each voice's current pattern (3 bytes), set by track command $F1, cleared by $A164 and counted down by $A3FA; the pattern is read again until it reaches zero."
   },
   {
    "address": 41069,
@@ -4092,37 +4092,37 @@
   {
    "address": 41077,
    "type": "line",
-   "text": "Non-zero for a voice (3 bytes) whose pitch slide $A74A is running. Stream command $83 sets it and command $84 clears it; $A126 clears it."
+   "text": "Non-zero for a voice (3 bytes) whose pitch slide $A74A is running. Stream command $83 sets it and commands $84 and $8D clear it; $A126 and $A164 clear it."
   },
   {
    "address": 41080,
    "type": "line",
-   "text": "3 bytes that $A126 clears and nothing reads."
+   "text": "3 bytes that $A126 and $A164 clear and nothing reads."
   },
   {
    "address": 41083,
    "type": "line",
-   "text": "Non-zero for a voice (3 bytes) whose arpeggio $A7C3 is running; it holds the stream index just after the $84 command. Stream command $83 clears it and $A126 clears it."
+   "text": "Non-zero for a voice (3 bytes) whose arpeggio $A7C3 is running; it holds the stream index just after the $84 (or $8D) command. Stream command $83 clears it, and $A126 and $A164 clear it."
   },
   {
    "address": 41086,
    "type": "line",
-   "text": "Non-zero for a voice (3 bytes) that has the filter on: stream command $85 clears all three and stores the filter control value $D417 in the one for its own voice, and $A0EE clears the first when it starts a sound on another voice. A new note of such a voice restarts the sweep."
+   "text": "Non-zero for a voice (3 bytes) that has the filter on: stream command $85 clears all three and stores the filter control value $D417 in the one for its own voice. Nothing else in this driver writes it (the effect driver's $B0EE clears its own copy $B07E, but $A0EE has no such code). A new note of such a voice restarts the sweep."
   },
   {
    "address": 41089,
    "type": "line",
-   "text": "Non-zero while a voice (3 bytes) is playing a drum list: $A666 stores the record's sustain/release value here, and a new note clears it. $A242 leaves such a voice's frequency alone and $A8A6 steps it."
+   "text": "Non-zero while a voice (3 bytes) is playing a drum list: $A666 stores the record's sustain/release value here, and a new note, $A126 and $A164 clear it. $A242 leaves such a voice's frequency alone and $A8A6 steps it."
   },
   {
    "address": 41092,
    "type": "line",
-   "text": "Non-zero for a voice (3 bytes) whose frequency must be looked up again: a new note sets it to 1 ($A328) and wave-program command 5 sets it to its third parameter ($A583); $A242 does the lookup and clears it."
+   "text": "Non-zero for a voice (3 bytes) whose frequency must be looked up again: a new note sets it to 1 ($A328) and wave-program command 5 sets it to its third parameter ($A583); $A126 and $A164 clear it. $A242 does the lookup and clears it when the voice has no arpeggio running."
   },
   {
    "address": 41095,
    "type": "line",
-   "text": "Non-zero for a voice (3 bytes) in fixed-length mode: stream command $87 sets it and $88 clears it. $A3CC then takes the note length from $A007."
+   "text": "Non-zero for a voice (3 bytes) in fixed-length mode: stream command $87 sets it and $88, $A126 and $A164 clear it. $A3CC then takes the note length from $A007."
   },
   {
    "address": 41098,
@@ -4132,7 +4132,7 @@
   {
    "address": 41101,
    "type": "line",
-   "text": "Transposition of each voice (3 bytes), added to the note number: set by track command $F3, cleared when a track step starts with no repeats left, and cleared by $A126."
+   "text": "Transposition of each voice (3 bytes), added to the note number: set by track command $F3, cleared when a track step starts with no repeats left, and cleared by $A126 and $A164."
   },
   {
    "address": 41104,
@@ -4182,7 +4182,7 @@
   {
    "address": 41131,
    "type": "line",
-   "text": "Frames until each voice's next arpeggio step (3 bytes), counted down by $A7C3 and reloaded from $A0AE; stream command $84 and a new note set it."
+   "text": "Frames until each voice's next arpeggio step (3 bytes), counted down by $A7C3 and reloaded from $A0AE; a new note sets it to 1."
   },
   {
    "address": 41134,
@@ -4232,12 +4232,12 @@
   {
    "address": 41153,
    "type": "line",
-   "text": "The value written to the volume register $D418: the volume in the low nibble. $A0C8 sets it to $1F, the fade routines count it down or up, and $A242 ends the sound with $A8F2 when the low nibble reaches 0."
+   "text": "The value written to the volume register $D418: the volume in the low nibble. $A0C8 and $A164 set it to $1F and track command $F5 to $10, the fade routines count it down or up, and $A242 ends the sound with $A8F2 when the low nibble reaches 0 during a fade-out."
   },
   {
    "address": 41154,
    "type": "line",
-   "text": "Non-zero while a fade-in is running, set by track command $F5. $A2E3 clears it when the volume reaches the target $A0C3; $A0C8, $A8F2 and $A91A clear it too."
+   "text": "Non-zero while a fade-in is running, set by track command $F5. $A2E3 clears it when the volume reaches the target $A0C3; $A0C8, $A164, $A8F2 and $A91A clear it too."
   },
   {
    "address": 41155,
@@ -4247,7 +4247,7 @@
   {
    "address": 41156,
    "type": "line",
-   "text": "Per voice (3 bytes), bits that stop a new note from restarting a part of the voice: 1 the pitch slide, 2 the pulse sweep, 4 the wave program, 8 the filter sweep, $10 the arpeggio. $A126 clears them and $A8F2 sets all of them to $FF."
+   "text": "Per voice (3 bytes), bits that stop a new note from restarting a part of the voice: 1 the pitch slide, 2 the pulse sweep, 4 the wave program, 8 the filter sweep, $10 the arpeggio. $A126 and $A164 clear them and $A8F2 sets all of them to $FF."
   },
   {
    "address": 41159,
@@ -4262,7 +4262,7 @@
   {
    "address": 41198,
    "type": "line",
-   "text": "Copy of the sound starter at $B0EE, in the tune driver. Returns at once while $A000 is zero. Otherwise it takes up to three bytes from the table at $B2E2 and, for each that has bit 7 clear, a stream address from the table at $B2E6; those two addresses are inside the code of the sound driver, so they are not tables of this driver. It uses $A126 to restart each voice. No call to it was found in the level 1 snapshot."
+   "text": "Sound starter of the tune driver, like $B0EE but without its clearing of the filter when a sound starts on voice 1 or 2. Returns at once while $A000 is zero. Otherwise it takes up to three bytes from the table at $B2E2 and, for each that has bit 7 clear, a stream address from the table at $B2E6. In the tune driver's own image, which level 1 copies to $A000-$B2FF ($1C11), these are its last bytes: $B2E2 holds 00 80 80 00 and $B2E6 the stream address $B2E8. In the snapshot the listing was built from, the sound-effect driver's code lies there instead. It uses $A126 to restart each voice. No call to it was found in any level."
   },
   {
    "address": 41254,
@@ -4272,7 +4272,7 @@
   {
    "address": 41316,
    "type": "line",
-   "text": "Starts tune number X/6. Level 1's title code calls it from $0ACA, $0F70 and $1320, loading X with 6 at $0AC1 when the high-score flag $110F is not zero, with $12 at $0AC8 (which replaces the 6 when it is zero) and at $131E, and with 0 at $0F6E. It raises the hold flag $A001, clears $A000 and $F7-$F9, and copies the six bytes at $AA8D+X to the track list addresses $A01A-$A01F. For each voice, 2 down to 0, it clears the voice's track index, transpose, repeat count, fixed-length flag, keep flags, slide, arpeggio, drum and new-note flags, gets the first pattern through $A3FA, points the wave program at $A981 and stores the pattern as the stream pointer. Then it zeroes the SID registers $D400-$D417 (writing 8 first), clears the fade-out flag $A0BE, sets the three voices active with their countdowns at 1, 2 and 3, writes $1F to $A0C1 and $D418 unless a fade-in is running, and lowers the hold flag."
+   "text": "Starts tune number X/6. Level 1's title code calls it from $0ACA, $0F70 and $1320, loading X with 6 at $0AC1 when the high-score flag $110F is not zero, with $12 at $0AC8 (which replaces the 6 when it is zero) and at $131E, and with 0 at $0F6E. It raises the hold flag $A001, clears $A000 and $F7-$F9, copies the six bytes at $AA8D+X to the track list addresses $A01A-$A01F and clears the fade-in flag $A0C2. For each voice, 2 down to 0, it clears the voice's track index, transpose, repeat count, fixed-length flag, keep flags, slide, arpeggio, drum and new-note flags, gets the first pattern through $A3FA, points the wave program at $A981, clears $A02F,X and $A047,X and stores the pattern as the stream pointer. Then it zeroes the SID registers $D400-$D417 (writing 8 first), clears the fade-out flag $A0BE, sets the three voices active with their countdowns at 1, 2 and 3, writes $1F to $A0C1 and $D418 unless a track command $F5 read with the first patterns has started a fade-in, and lowers the hold flag."
   },
   {
    "address": 41538,
@@ -4292,7 +4292,7 @@
   {
    "address": 41768,
    "type": "line",
-   "text": "Reads the next entry of the current voice's stream through ($F0),Y with Y from $A0A8,X. A byte with bit 7 set is a command and goes to $A3E2. A byte of $60 is a rest: only the length byte is read. Any other byte is a note: it is stored in $A067, the new-note flag $A084 becomes 1 and the drum flag $A081 is cleared. Each part the voice's keep flags $A0C4 do not hold is restarted: the wave program (mask 4, from $A023/$A029), the pulse sweep (mask 2, from $A02F, $A093 and $A099), the pitch slide (mask 1, from $A038), the arpeggio (mask $10) and the filter sweep (mask 8). The length byte then goes to $A004,X, or $A007,X in fixed-length mode, and the stream position to $A0A8,X. Called by $A307. Same code as the routine at $B25C of the sound driver."
+   "text": "Reads the next entry of the current voice's stream through ($F0),Y with Y from $A0A8,X. A byte with bit 7 set is a command and goes to $A3E2. A byte of $60 is a rest: only the length is taken. Any other byte is a note: it is stored in $A067, the new-note flag $A084 becomes 1 and the drum flag $A081 is cleared. Each part the voice's keep flags $A0C4 do not hold is restarted: the wave program (mask 4, from $A023/$A029), the pulse sweep (mask 2, from $A02F, $A093 and $A099), and, only while that part is on, the pitch slide (mask 1, from $A038, when $A075 is set), the arpeggio (mask $10, when $A07B is set) and the filter sweep (mask 8, when $A07E is set). The length byte then goes to $A004,X, or $A007,X in fixed-length mode, and the stream position to $A0A8,X. Called by $A307. Same code as the routine at $B25C of the sound driver."
   },
   {
    "address": 41954,
@@ -4402,7 +4402,7 @@
   {
    "address": 42371,
    "type": "line",
-   "text": "Wave-program command 5: writes the next byte to the voice's $D404, stores the one after it as the frames to wait in $A00A,X and the third in $A084,X and $A08A,X, which asks for the frequency to be looked up again with that offset. The sound driver's copy at $B4B7 also handles a third byte of 0."
+   "text": "Wave-program command 5: stores the second byte as the frames to wait in $A00A,X; when the third byte is non-zero it stores it in $A084,X and $A08A,X, which asks for the frequency to be looked up again with that offset, and writes the first byte to the voice's $D404. When the third byte is 0 it writes neither and ends the step. The sound driver's copy at $B4B7 instead sets the frequency to $FFFF and the offset to 1 for a third byte of 0, and writes the control register either way."
   },
   {
    "address": 42407,
