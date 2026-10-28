@@ -11287,7 +11287,7 @@
   {
    "address": 12443,
    "type": "line",
-   "text": "The row address that tile_at_probe ($309D) last took from the table, stored there (also in $8D/$8E). No traced code reads it."
+   "text": "The row address that tile_at_probe ($309D) last took from the table, stored there (also in $8D/$8E). enemy_shoot_part_2 reads it at $4118 and $4120 for the shot's row pointer."
   },
   {
    "address": 12445,
@@ -11302,12 +11302,12 @@
   {
    "address": 12589,
    "type": "line",
-   "text": "Counts the passes of player_control ($276B) in which Darkman is stunned ($29F3 not zero): on the second pass his facing is flipped once more and the step is tested again. Cleared at the start of every pass."
+   "text": "Counts how often player_control ($276B) reaches the stun test at $28B7 in one pass while Darkman is stunned ($29F3 not zero): at 1 his facing is flipped and the step is tested again from $2862; at 2 the facing is flipped back and the pass goes on. Cleared at the start of every pass."
   },
   {
    "address": 12590,
    "type": "line",
-   "text": "The enemies of the level: 14 records of 7 bytes, each a scroll position (low byte, high byte) and then the side (0 left, 1 right), the state, the slot (0 or 1), the kind and twice the energy. Read through the pointer $87/$88 by check_record_3190 ($3190), which starts the enemy when the scroll position $1A1F/$1A20 reaches the position."
+   "text": "The enemies of the level: 14 records of 7 bytes, each a scroll position (low byte, high byte) and then the side (0 left, 1 right), the state, the slot (0 or 1), the kind and twice the energy. Read through the pointer $87/$88 by enemy_spawn_check ($3190), which starts the enemy when the scroll position $1A1F/$1A20 reaches the position."
   },
   {
    "address": 12688,
@@ -11332,7 +11332,7 @@
   {
    "address": 12898,
    "type": "line",
-   "text": "Starts the objects named by the two bytes $3260 and $3261, in slot 0 and slot 1 when the slot is free ($33EA or $33EB is zero). For each it stores the type as the slot's state, plays sound effect $1C through $B0EE when the type is not zero, and calls object_init ($3383). Called by objects_step at $32DC."
+   "text": "Starts the objects named by the two bytes $3260 and $3261, in slot 0 and slot 1 when the slot is free ($33EA or $33EB is zero). For each it stores the type as the slot's state, plays sound effect 7 (X = $1C) through $B0EE when the type is not zero, and calls object_init ($3383). Called by objects_step at $32DC."
   },
   {
    "address": 12951,
@@ -11452,7 +11452,7 @@
   {
    "address": 13637,
    "type": "line",
-   "text": "Countdown of exit_marker_step ($354A) when it shows sprite 7 at the edge; reloaded with $FF, and at that moment it plays sound effect 12."
+   "text": "Countdown of exit_marker_step ($354A) when it shows sprite 7 at the edge; reloaded with $FF at 0, and at that moment it plays sound effect 3 (X = $0C) unless the game is paused."
   },
   {
    "address": 13638,
@@ -11472,7 +11472,7 @@
   {
    "address": 13642,
    "type": "line",
-   "text": "Per-frame step of sprite 7 (position $D00E/$D00F, pointer $CFFF and $CBFF). A countdown from $3549 delays it; then, unless the game is paused, it steps the index $3517 through the table at $3518 (ended by $80, then back to 0) and keeps the entry in $3516. When an enemy slot is in use ($3742 or $3743 is not zero) it sets sprite 7's Y to 1 and $4079 to 1 (which stops the scroll). Otherwise, when the end flag $2061 is set, it shows the sprite at $3546/$3547/$3548 with the pointer $6F, adding 1 to its Y up to $8A and keeping its X between $1E and $28. When neither holds, it puts the sprite at X $11E and Y $3C with the pointer $3516 and colour 6, counts $3545 down (at 0, reloaded with $FF, it plays sound effect 12 unless paused), clears $4079 and sets $3638 to 1. Called by irq_top at $1E6B."
+   "text": "Per-frame step of sprite 7 (position $D00E/$D00F, pointer $CFFF and $CBFF). A countdown from $3549 delays it; then, unless the game is paused, it steps the index $3517 through the table at $3518 (ended by $80, then back to 0) and keeps the entry in $3516. When an enemy slot is in use ($3742 or $3743 is not zero) it sets sprite 7's Y to 1 and $4079 to 1 (which stops the scroll). Otherwise, when the end flag $2061 is set, it shows the sprite at $3546/$3547/$3548 with the pointer $6F, adding 1 to its Y up to $8A and keeping its X at $01E or more while the ninth bit $3547 is clear and at $128 or less while it is set. When neither holds, it puts the sprite at X $11E and Y $3C with the pointer $3516 and colour 6, counts $3545 down (at 0, reloaded with $FF, it plays sound effect 3, X = $0C, unless paused), clears $4079 and sets $3638 to 1. Called by irq_top at $1E6B."
   },
   {
    "address": 13850,
@@ -11487,12 +11487,12 @@
   {
    "address": 13853,
    "type": "line",
-   "text": "The end of exit_marker_step ($354A), reached by the jumps at $3601 and, after the sound call, by falling through. Puts sprite 7's Y at $3C, clears the scroll stop $4079 and sets advance_flag ($3638) to 1. The code at $362D, reached from $357C when an enemy slot is in use, puts sprite 7's Y at 1 and sets $4079 to 1."
+   "text": "The end of exit_marker_step ($354A), reached by the jump at $3601, by the branch at $360C when the game is paused, and, after the sound call, by falling through. Puts sprite 7's Y at $3C, clears the scroll stop $4079 and sets advance_flag ($3638) to 1. The code at $362D, reached from $357C when an enemy slot is in use, puts sprite 7's Y at 1 and sets $4079 to 1."
   },
   {
    "address": 13880,
    "type": "line",
-   "text": "Set to 1 by exit_marker_step ($354A) when no enemy is in play and sprite 7 shows at the edge, 0 otherwise. player_move ($265E) reads it: when it is set, Darkman reaching X $D5 makes the playfield scroll and his limit ($265C/$265D) is $00D2, otherwise it is $012D."
+   "text": "Set to 1 by exit_marker_step ($354A) when no enemy is in play and sprite 7 shows at the edge, 0 otherwise; it keeps its value while the delay $3549 counts down. player_move ($265E) reads it: when it is set, Darkman reaching X $D5 makes the playfield scroll and his limit ($265C/$265D) is $00D2, otherwise it is $012D. player_control ($276B) reads it at $2850: when it is set and Darkman is held at his limit, it still marks a step right ($276A)."
   },
   {
    "address": 13881,
@@ -11537,7 +11537,7 @@
   {
    "address": 14156,
    "type": "line",
-   "text": "The sprite pointer of the upper sprite of enemy slot 0 ($374C) and slot 1 ($374D). place_enemies ($3639) writes them to $CFFB/$CBFB and $CFFD/$CBFD (sprites 3 and 5). enemy_wind_up_frame ($3F46), enemy_attack_frame ($3F76) and the frame tables set them."
+   "text": "The sprite pointer of the upper sprite of enemy slot 0 ($374C) and slot 1 ($374D). place_enemies ($3639) writes them to $CFFB/$CBFB and $CFFD/$CBFD (sprites 3 and 5). enemy_wind_up_frame ($3F46), enemy_attack_frame ($3F76), the walks and enemy_leap from their frame tables, enemy_dying ($3CAC), enemy_throw ($3D4D) and enemy_leap_hurt ($3B3D) set them."
   },
   {
    "address": 14158,
@@ -11547,32 +11547,32 @@
   {
    "address": 14160,
    "type": "line",
-   "text": "Counter of enemy slots 0 and 1: enemy_punch ($3BEC) counts it up, enemy_damage ($43BF) clears it."
+   "text": "Counter of enemy slots 0 and 1, the frame count of the slot's state: enemy_leap, enemy_punch ($3BEC), enemy_punch_left, enemy_dying and enemy_throw count it up, enemy_wait and the walks count it down, and enemy_decide ($3FD2), enemy_spawn_check ($3190), the walks and enemy_damage ($43BF) set it."
   },
   {
    "address": 14162,
    "type": "line",
-   "text": "Pixels that enemy slot 0 ($3752) and slot 1 ($3753) shift their upper sprite on each frame, as a signed byte ($F8 or $08 in an attack); set by enemy_punch ($3BEC) and enemy_attack_frame ($3F76) and added by place_enemies ($3639) to the X of the upper sprite only."
+   "text": "Pixels that enemy slot 0 ($3752) and slot 1 ($3753) shift their upper sprite on each frame, as a signed byte ($F8 or $08 in an attack, a throw or a leap blow, otherwise 0); set by every enemy state routine (enemy_leap, enemy_punch ($3BEC), enemy_punch_left, enemy_dying, enemy_throw, enemy_wait, the walks) and by enemy_attack_frame ($3F76), and added by place_enemies ($3639) to the X of the upper sprite only."
   },
   {
    "address": 14164,
    "type": "line",
-   "text": "Type of enemy slots 0 and 1; 0 or not 0 picks the frames in enemy_wind_up_frame ($3F46) and enemy_attack_frame ($3F76)."
+   "text": "Type of enemy slots 0 and 1; 0 or not 0 picks the frames in enemy_wind_up_frame ($3F46), enemy_attack_frame ($3F76), the walks ($3E3A, $3F19) and enemy_dying ($3CB1), and enemy_decide ($3FD2) lets only a kind other than 0 throw."
   },
   {
    "address": 14166,
    "type": "line",
-   "text": "The step in the walk tables of enemy slot 0 ($3756) and slot 1 ($3757), 0 to 19. enemy_walk_left ($3EA5) and enemy_walk_right ($3DC4) add 1 on each frame (back to 0 at 20) and read the sprite pointers and step at that index."
+   "text": "The step in the walk tables of enemy slot 0 ($3756) and slot 1 ($3757), 0 to 19. enemy_walk_left ($3EA5) and enemy_walk_right ($3DC4) add 1 on each frame that the enemy moves (back to 0 at 20) and read the sprite pointers and step at that index."
   },
   {
    "address": 14168,
    "type": "line",
-   "text": "Energy of enemy slots 0 and 1; enemy_damage ($43BF) takes 1 from it and the slot dies when it is 0."
+   "text": "Energy of enemy slots 0 and 1. enemy_damage ($43BF) takes 1 from it and starts the dying state 5 when it is already 0. For a leaping enemy (state 8) enemy_hit_check ($421F) takes the 1 itself and sets enemy_hurt, and enemy_leap_hurt ($3B3D) ends the slot when the energy is 0."
   },
   {
    "address": 14170,
    "type": "line",
-   "text": "Set to $0A for enemy slots 0 and 1 by enemy_hit_check ($421F) when a blow lands."
+   "text": "Set to $0A for enemy slots 0 and 1 by enemy_hit_check ($421F) when a blow lands on a leaping enemy (state 8) whose energy is not 0; enemy_leap_hurt ($3B3D) counts it down."
   },
   {
    "address": 14172,
@@ -11682,7 +11682,7 @@
   {
    "address": 14869,
    "type": "line",
-   "text": "Enemy handler for state 8 (a leap), run through enemy_frame ($384E). It clears the step $3752,X, adds 1 to the count $3750,X and reads the height change at that index from leap_dy ($39B1): $14 means no movement; $80 ends the leap, when a random number below $32 holds the last step and otherwise the enemy turns to face Darkman (enemy_face_player, $4050) and starts again at 0. Any other change is added to the enemy's Y and the X moves 1 pixel in the direction $374A,X (to the saved X if it would pass $0A on the left). The upper pointer comes from leap_frames_right ($394E) for direction 1 and leap_frames_left ($38EB) for direction 0, the lower is that plus 4. Pointer $60 calls enemy_leap_hit_right ($3B87) and sets the step to 8, pointer $68 calls enemy_leap_hit_left ($3BB9) and sets it to $F8."
+   "text": "Enemy handler for state 8 (a leap), run through enemy_frame ($384E). It clears the step $3752,X, adds 1 to the count $3750,X and reads the height change at that index from leap_dy ($39B1): $14 means no movement; $80 ends the leap, when a random number below $32 makes the enemy turn to face Darkman (enemy_face_player, $4050) and start again at 0, and otherwise holds the last step. Any other change is added to the enemy's Y and the X moves 1 pixel in the direction $374A,X (to the saved X if it would pass $0A on the left). The upper pointer comes from leap_frames_right ($394E) for direction 1 and leap_frames_left ($38EB) for direction 0, the lower is that plus 4. Pointer $60 calls enemy_leap_hit_right ($3B87) and sets the step to 8, pointer $68 calls enemy_leap_hit_left ($3BB9) and sets it to $F8."
   },
   {
    "address": 15102,
@@ -11727,7 +11727,7 @@
   {
    "address": 15532,
    "type": "line",
-   "text": "Enemy handler for state 5 (dying), run through enemy_frame ($384E). Clears the step and adds 1 to the count $3750,X. The upper and lower pointers go through a falling sequence: $56 and $57 (kind 0) or $5A and $57 (other kinds) below count $0F, then $C5 with $58 or $5B below $1E, then $C5 with $59 or $5C up to $59. At count $5A it plays sound effect $24 through $B0EE; after that the enemy blinks, with both pointers $C5 on every second frame, until count $A0, when the state goes to 0."
+   "text": "Enemy handler for state 5 (dying), run through enemy_frame ($384E). Clears the step and adds 1 to the count $3750,X. The upper and lower pointers go through a falling sequence: $56 and $57 (kind 0) or $5A and $57 (other kinds) below count $0F, then $C5 with $58 or $5B below $1E, then $C5 with $59 or $5C up to $59. At count $5A it plays sound effect 9 (X = $24) through $B0EE; after that the enemy blinks, with both pointers $C5 on every second frame, until count $A0, when the state goes to 0."
   },
   {
    "address": 15691,
@@ -11777,7 +11777,7 @@
   {
    "address": 16338,
    "type": "line",
-   "text": "Chooses the next state of enemy slot X. At the left edge (X below $1E) it walks right (state 3) and at the right edge (X from $128) left (state 2), each with a random count of 0 to 31. Otherwise a random number picks: below $40 wait (state 1, count 0 to 15); $E6 or more, throw (state 4, after facing Darkman) when no shot is on the screen and the kind is not 0, otherwise wait; in between, a walk toward Darkman or in a random direction. Called by the enemy routines when a count runs out."
+   "text": "Chooses the next state of enemy slot X. At the left edge (X below $1E) it walks right (state 3) and at the right edge (X from $128) left (state 2), each with a random count of 0 to 31. Otherwise a random number picks: below $40 wait (state 1, count 0 to 15); $E6 or more, throw (state 4, after facing Darkman) when no shot is on the screen and the kind is not 0, otherwise wait; in between, a walk toward Darkman or in a random direction. Called by the enemy routines when a count runs out, and by the walks when a move meets a wall or the edge ($3E1F, $3EFE)."
   },
   {
    "address": 16464,
@@ -11787,12 +11787,12 @@
   {
    "address": 16505,
    "type": "line",
-   "text": "While it is not zero scroll_step ($2066) does nothing. exit_marker_step ($354A) sets it to 1 when an enemy is in play and clears it when none is; play_setup clears it."
+   "text": "While it is not zero scroll_step ($2066) does nothing. exit_marker_step ($354A) sets it to 1 when an enemy is in play and clears it when none is and the end flag $2061 is clear; play_setup clears it."
   },
   {
    "address": 16506,
    "type": "line",
-   "text": "Compares the 16-bit value that the pointer $85/$86 points at with the scroll position scroll_pos ($1A1F/$1A20): when its high byte equals $1A20 and its low byte is below $1A1F it sets scroll_stop ($4079) to 1. Nothing calls it or jumps to it; scroll_step ($2066) and exit_marker_step ($354A) are the only code that set $4079."
+   "text": "Compares the 16-bit value that the pointer $85/$86 points at with the scroll position scroll_pos ($1A1F/$1A20): when its high byte equals $1A20 and its low byte is below $1A1F it sets scroll_stop ($4079) to 1. Nothing calls it or jumps to it; play_setup ($1AB5) and exit_marker_step ($354A) are the only other code that sets $4079, and scroll_step ($2066) reads it."
   },
   {
    "address": 16530,
