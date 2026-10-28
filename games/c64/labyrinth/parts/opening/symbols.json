@@ -527,13 +527,13 @@
   },
   {
    "address": 30982,
-   "name": "opening_setup_service_low",
+   "name": "opening_speech_pointer_low",
    "type": "Field",
    "kind": "user"
   },
   {
    "address": 30987,
-   "name": "opening_setup_service_high",
+   "name": "opening_speech_pointer_high",
    "type": "Field",
    "kind": "user"
   },
@@ -1943,7 +1943,7 @@
   },
   {
    "address": 38074,
-   "name": "opening_give_completion_count",
+   "name": "opening_popcorn_offer_count",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -4602,12 +4602,12 @@
   {
    "address": 30982,
    "type": "line",
-   "text": "Five low bytes paired with $790B for the setup service list read at $8CBD. Setup rewrites entry zero before invoking the service through its patched address."
+   "text": "Five low bytes of the conversation speech pointers, paired with high bytes at $790B. $8C8F reads entry $8C81 at $8CBD and prints that stream through $8CE3: $7910 (boy's introduction), $7AC9, $7B88, $7C5D and $7D02. Female setup at $8E93-$8E9A rewrites entry zero to $79DB, the girl's introduction."
   },
   {
    "address": 30987,
    "type": "line",
-   "text": "Five high bytes paired with $7906; $8CC2 supplies the high half of the setup call target. The record list belongs to TX setup before the first text stream at $7910."
+   "text": "Five high bytes paired with $7906 for the conversation speech pointers; $8CC2 loads the high half into $11 before $8CE3 prints the stream. Female setup writes $79 to entry zero at $8E9A. The table ends just before the first text stream at $7910."
   },
   {
    "address": 30992,
@@ -4857,7 +4857,7 @@
   {
    "address": 33602,
    "type": "line",
-   "text": "64-byte resident field at $8342, holding 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 in the captured opening. Direct code references: $8CF0 sta $8342,x; $8CFE sta $8342,x; $8D09 sta $8342,x. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Command-echo buffer $8342-$8366 (37 bytes before the next record), holding spaces in the captured opening. $8CE9 writes it at $8CF0, $8CFE and $8D09: the verb from screen row $CF98 up to and including a space, then the object up to a space, then a zero; it is printed after the \"> \" prefix at $8340. It belongs to the TX overlay, not resident code."
   },
   {
    "address": 33639,
@@ -5062,12 +5062,12 @@
   {
    "address": 36757,
    "type": "line",
-   "text": "Load Y=three and branch to $8F9B, which draws the cursor marker with the alternate high-byte displacement selected by the caller."
+   "text": "Load Y=three and branch to $8F9B, which writes that value as a colour into colour RAM at the current input column ($99/$9A plus $0C00). $8EDB calls this before each dequeue, alternating with $8F99's value one to flash the cursor cell."
   },
   {
    "address": 36761,
    "type": "line",
-   "text": "Use Y=one as the cursor glyph, save the output pointer's high byte, add twelve to address its colour/screen plane, and store the marker at current input column $6997. Restore the high byte before returning."
+   "text": "Use Y=one as a colour value: save the output pointer's high byte, add $0C to it so ($99) addresses colour RAM ($CC00 screen + $0C00 = $D800), and store the value at current input column $6997. Restore the high byte before returning. $8F95 enters the same code with value three, so the cursor cell's colour alternates while input is polled."
   },
   {
    "address": 36781,
@@ -5202,7 +5202,7 @@
   {
    "address": 37500,
    "type": "line",
-   "text": "Read the local pickup slot from $AAAC,Y by location. Zero prints the nothing-to-take reply. A real slot is removed from local availability, and secondary descriptions are cleared or changed for the beggar, ticket-related cup, nickel and quarter cases. Nickel/quarter pickups update the popcorn-counter flags and change count; ordinary pickup increments the selected inventory entry at $6729,X. Choose the pickup reply through $AABB/$AAD3 and print it. The coin branch can transfer several available quarters together rather than incrementing by one."
+   "text": "Read the local pickup slot from $AAAC,Y by location. Zero prints the nothing-to-take reply $9EF9. A real slot is removed from local availability and its location's secondary description is cleared. Slot five (the beggar's cup, at street two) also rewrites the street-two GO SOUTH reply to $9B14 and clears $0570; slot three (camcorder, offered at home and TV locations five and ten to twelve) clears those locations' secondary descriptions and pickups; slot twelve (nickel) sets $968A and $0575 to one; slot seventeen (quarter) before the nickel is taken adds all $968D counter quarters to $673A at once and exposes the nickel. Other pickups increment the picked-up slot's entry at $6729,X. Choose the reply through $AABB/$AAD3 and print it."
   },
   {
    "address": 37671,
@@ -5227,12 +5227,12 @@
   {
    "address": 38073,
    "type": "line",
-   "text": "Signed popcorn/conversation gate initialized to $FF. The dollar purchase stores a nonnegative value at $941C; setup, conversation and food branches read it to select their replies."
+   "text": "Signed popcorn/conversation gate initialized to $FF. The dollar purchase stores one at $941C. The conversation callback ($8CA5/$8CB2), the theater arrival text ($9087/$90A0), the food reply ($925D) and the theater complaint ($963C) read its sign."
   },
   {
    "address": 38074,
    "type": "line",
-   "text": "GIVE completion counter incremented at $9482 and read by the opening callback at $8D93. It begins $FF in the captured image; this description does not assign a failed-input meaning to it."
+   "text": "Popcorn-offer counter, $FF in the captured image. $9482 increments it when popcorn (slot sixteen) is given at theater nine with $8C81 nonnegative; the movie transition at $8D93 adds 10 to $0568 when it is nonnegative, and to $0582 otherwise."
   },
   {
    "address": 38075,
@@ -5292,7 +5292,7 @@
   {
    "address": 38535,
    "type": "line",
-   "text": "Dinner availability flag cleared by EAT FOOD at home through $9257 and read by the later food response at $957F."
+   "text": "Dinner flag, $FF until EAT DINNER or EAT FOOD at home stores zero at $9257. COMPLAIN at home or the TV location reads it at $957F: negative selects $A438 (no time to cook), otherwise $A460."
   },
   {
    "address": 38536,
@@ -5317,7 +5317,7 @@
   {
    "address": 38540,
    "type": "line",
-   "text": "Popcorn-counter complaint phase read at $95BB. Initially zero: no-purchase abuse reply. The dollar purchase writes one at $9419. Complaint with phase one prints $A614 and increments to two; phase two prints $A64D, increments to three, and adds a quarter through $968D. Values at least three select $A69F without another increment. Ordinary-input VICE sequences and test_change.js verify complaint timing before and after coin collection."
+   "text": "Popcorn-counter complaint phase, read by COMPLAIN at $95BB and by the movie transition at $8DA9 (a phase other than three adds one to $0583). Initially zero: no-purchase abuse reply. The dollar purchase writes one at $9419. Complaint with phase one prints $A614 and increments to two; phase two prints $A64D, increments to three, and adds a quarter through $968D. Values at least three select $A69F without another increment. Ordinary-input VICE sequences and test_change.js verify complaint timing before and after coin collection."
   },
   {
    "address": 38541,
@@ -5807,7 +5807,7 @@
   {
    "address": 43526,
    "type": "line",
-   "text": "12-byte resident field at $AA06, holding 98 00 98 9B 9A 00 9B 9B 9B 00 00 00 in the captured opening. Direct code references: $929F sta $AA06; $9567 sta $AA06. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "GO SOUTH high bytes for locations two to thirteen, inside the $AA04 table (98 00 98 9B 9A 00 9B 9B 9B 00 00 00 captured). $929F (TAKE cup) and $9567 (COMPLAIN to the beggar) write $9B only to $AA06, location two's entry, making its reply the direction refusal $9B14."
   },
   {
    "address": 43538,
@@ -5817,7 +5817,7 @@
   {
    "address": 43540,
    "type": "line",
-   "text": "12-byte resident field at $AA14, holding F1 04 16 14 38 0D 14 14 14 05 05 09 in the captured opening. Direct code references: $929A sta $AA14; $9562 sta $AA14. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "GO SOUTH low bytes for locations two to thirteen, inside the $AA12 table (F1 04 16 14 38 0D 14 14 14 05 05 09 captured). $929A and $9562 write $14 only to $AA14, location two's entry, completing the $9B14 refusal pointer."
   },
   {
    "address": 43552,
@@ -5872,17 +5872,17 @@
   {
    "address": 43666,
    "type": "line",
-   "text": "Slice $AA92-$AA96 (offset 2 onward) of opening_secondary_description_high at $AA90. Fourteen high bytes paired with $AA9E. Zero suppresses a secondary location description. Pickups, purchases and complaints change these live pointers, including the popcorn-counter entry at $AA97."
+   "text": "Slice $AA92-$AA94 (offset 2 onward) of opening_secondary_description_high at $AA90. Fourteen high bytes paired with $AA9E. Zero suppresses a secondary location description. $AA92 is street two's beggar description; GIVE ($9379) and COMPLAIN ($9559) test it for the beggar's presence and COMPLAIN clears it at $956C."
   },
   {
    "address": 43669,
    "type": "line",
-   "text": "2-byte resident field at $AA95, holding 9F 9B in the captured opening. Direct code references: $92B2 sta $AA95. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Secondary-description high bytes for locations five and six (9F 9B captured), inside the $AA90 table. TAKE camcorder at $92B2 clears $AA95, home location five's entry; $AA96 is not written there."
   },
   {
    "address": 43671,
    "type": "line",
-   "text": "Slice $AA97-$AA9D (offset 7 onward) of opening_secondary_description_high at $AA90. Fourteen high bytes paired with $AA9E. Zero suppresses a secondary location description. Pickups, purchases and complaints change these live pointers, including the popcorn-counter entry at $AA97."
+   "text": "Slice $AA97-$AA99 (offset 7 onward) of opening_secondary_description_high at $AA90. Fourteen high bytes paired with $AA9E. Zero suppresses a secondary location description. $AA97 is the popcorn-counter entry, rewritten by TAKE ($92E8, $9308), the purchase ($9414) and complaints ($95F4, $9610, $961D)."
   },
   {
    "address": 43674,
@@ -5897,7 +5897,7 @@
   {
    "address": 43676,
    "type": "line",
-   "text": "2-byte resident field at $AA9C, holding 00 A7 in the captured opening. Direct code references: $92BB sta $AA9C. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Secondary-description high bytes for locations twelve and thirteen (00 A7 captured), inside the $AA90 table. TAKE camcorder at $92BB clears $AA9C (location twelve); $AA9D, the lobby's $A7F1 entry, is not written there."
   },
   {
    "address": 43678,
@@ -5922,12 +5922,12 @@
   {
    "address": 43697,
    "type": "line",
-   "text": "2-byte resident field at $AAB1, holding 03 00 in the captured opening. Direct code references: $92BE sta $AAB1. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Pickup slots for locations five and six (03 00 captured), inside the $AAAC table: home five offers slot three, the camcorder. TAKE camcorder clears $AAB1 at $92BE."
   },
   {
    "address": 43699,
    "type": "line",
-   "text": "Slice $AAB3-$AABA (offset 7 onward) of opening_local_pickup_slots at $AAAC. Fifteen local-availability bytes indexed by location in TAKE; normal location tables have indices zero through thirteen and the extra byte is zero. Nonzero values choose a slot in $6729 and the pickup reply tables; taking an object clears or replaces that local slot."
+   "text": "Slice $AAB3-$AAB5 (offset 7 onward) of opening_local_pickup_slots at $AAAC. Fifteen local-availability bytes indexed by location in TAKE; normal location tables have indices zero through thirteen and the extra byte is zero. $AAB3 is the popcorn counter's pickup, set to quarter $11 by the purchase ($93FD) and complaint ($95EA), to nickel $0C at $92ED and to zero at $930D."
   },
   {
    "address": 43702,
@@ -5942,7 +5942,7 @@
   {
    "address": 43704,
    "type": "line",
-   "text": "3-byte resident field at $AAB8, holding 03 00 00 in the captured opening. Direct code references: $92C7 sta $AAB8. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Pickup slots for locations twelve to fourteen (03 00 00 captured), inside the $AAAC table: location twelve offers the camcorder, thirteen nothing, and fourteen is the extra zero byte. TAKE camcorder clears $AAB8 at $92C7."
   },
   {
    "address": 43707,
@@ -6002,12 +6002,12 @@
   {
    "address": 48128,
    "type": "line",
-   "text": "Enable interrupts, choose default message colour, populate cached names/states for all three slots, wait for a slot-selection key through $BC53, and store its index at $6297. Stop sound, clear the view, load the selected saved state through $57D1, clear pacing counter $0353, and return with interrupts enabled."
+   "text": "Enable interrupts, set $6993 to $FF so the next message window takes its colour from the message header, populate cached names/states for all three slots, wait for a slot-selection key through $BC53, and store its index at $6297. Stop sound, clear the view, load the selected saved state through $57D1, clear pacing counter $0353, and return with interrupts enabled."
   },
   {
    "address": 48159,
    "type": "line",
-   "text": "For slot indices zero, one and two, load their save-state headers and copy names/status through $BCB6/$BCCF/$BCE8. Patch the inventory-message pointer for menu request $3D to the headered stream $BD20, then select that message window. This is the DS overlay's menu-construction entry."
+   "text": "For slot indices zero, one and two, load their save-state headers and copy names/status through $BCB6/$BCCF/$BCE8. Patch the custom-description pointer $6C3E/$6C7B (the final object-description entry) to the headered stream $BD20, set message request $3D in $6994, then select that message window. This is the DS overlay's menu-construction entry."
   },
   {
    "address": 48211,
@@ -6027,7 +6027,7 @@
   {
    "address": 48360,
    "type": "line",
-   "text": "Select slot two and patch shared destinations to $BD90 and $6421. The common loop at $BCFE copies a zero-terminated name up to ten bytes into both locations and stores slot state one or two at $642B according to saved field $054C."
+   "text": "Select slot two and patch shared destinations to $BD90 and $6421. The common loop at $BCFE copies a zero-terminated name up to ten bytes into both locations and stores slot state one or two at $642D ($642B,X with X=2) according to saved field $054C."
   },
   {
    "address": 48390,
