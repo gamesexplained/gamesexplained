@@ -7,35 +7,47 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `60-verify`: "Before saying that nothing reads or writes an address, search with every opcode and every index that can reach it": every comment that said nothing reads its bytes was checked against `opcodes.py --refs` and against the addresses the music decoder walked, which found 53 bytes of the title tune's sounds in a block called unread.
+- `60-verify`: "Force the rare state.": rather than dying in the fights again and again, the stack pointer was lowered by two bytes for each death and the game run on, which put the crash at 23 deaths where the reading of the code had said 12.
+- `tool-regen2000`: "Undocumented opcodes come out as data.": `opcodes.py` found the `LAX`, `ASR` and `SAX` of the copy-protection check at `$0100`, which the disassembler showed as bytes.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/cpu/m6502.py`: `UNDOCUMENTED` decodes `LAX` absolute (`$AF`), `ASR` immediate (`$4B`) and `SAX` absolute (`$8F`), with a case in `kit/scripts/test_listing_undocumented.py`. The copy-protection check that the start-up copies to `$0100` is made of them, and the code map records it running, so `check_listing.py` failed it typed as bytes.
+- `kit/skills/c64/tool-regen2000`: "Undocumented opcodes come out as data" now says to keep a spot typed code when `m6502.py` lists its opcode, and to add the opcode there, with a test, when the code map records it running, since `check_listing.py` fails a `byte` there. It said only to type such a spot `byte`, which the check then failed.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+A claim that a block is unread, made after searching every instruction's
+operands, missed data a music driver reads through pointers held in its
+own patterns: 53 of the 77 bytes at `$3FA3`, called "nothing reads", are
+the title tune's sounds. It was caught by checking each such comment
+against the set of addresses a decoder of the tunes had walked. The skill
+would say, in `60-verify`'s "Negative results": data an interpreter reads
+(a music driver, a script engine) is reached through pointers in other
+data, which a references search cannot see; walk the interpreter's data
+before calling any of it unread. The 50-coverage rule "A gap can hold a
+different record type" is close, but speaks of gaps, not of a claim made
+after the gap is described.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+An ask already filed covers this run's: #552 asks for a script that
+carries comments to a relocated copy of code. This run's case, the music
+driver's three copies of each routine, one per voice, is added to it as a
+comment.
+
+- #552: Add a script that carries comments to a relocated copy of a part's code (this run's case added as a comment)
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+The music driver: one note reader and one effects routine written out
+three times, once per voice, so its 7,866 bytes needed every comment three
+times over; a script that finds a routine's copies by their instructions
+and carries one copy's comments to the others would have saved the most.
+
+## Operating system and tools
+
+Linux x86_64 (Ubuntu 24.04) in a cloud container; VICE 3.13.2
+(`v3.13.2-linux-x86_64-gui.zip`) under the kit's launcher, all 57 of
+`check-emulator`'s checks passed; regenerator2000 0.9.20.

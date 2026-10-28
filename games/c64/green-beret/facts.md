@@ -160,6 +160,16 @@ interrupts off (`block_swap`, `text_draw`, `anim_chars_restore`).
   stack. *Live*: the stack pointer at `main_loop` was `$FC` before a
   death in the Missile Base fight and `$FA` after it, and stayed `$FA`
   after later deaths. Nothing in the code resets the stack (no `TXS`).
+  *Live*: on the Missile Base with the hero standing, the stack went down
+  to `$01EB` in 1,500 frames, 17 bytes below the main loop's. With the
+  stack pointer at `main_loop` moved down by 2 × N, where N such deaths
+  would leave it, and the hero walking and stabbing, the game played on
+  at N = 8, 12 and 16 (1,500 frames) and 18, 20, 21 and 22 (3,000
+  frames), and stopped at N = 23
+  (within 1,200 frames, with the processor in the character set at
+  `$7AD0`) and at every N tried from 24 to 90 (within 650 frames). From
+  N = 20 the stack runs into the virtual sprites' tables at
+  `$0180`-`$01D3`, which the game writes as it plays.
 - `cia2_serial_check` (`$0100`), run every frame of play, stops the
   machine with a `JAM` when CIA 2's serial flag is not set: the
   start-up keeps CIA 2's serial port shifting at timer A's rate.
@@ -204,6 +214,23 @@ interrupts off (`block_swap`, `text_draw`, `anim_chars_restore`).
 - Voice 3 sets the tune's tempo: its command `$D0` with index `$44` writes
   past the voice's own settings into `durations` (`$ECA6`), the table of
   note lengths every voice reads.
+- Martin Galway's source of the sound, `greenberet.asm`
+  (github.com/MartinGalway/C64_music, commit `a458a36`, published April
+  2026, headed 5 April 1986), compared with the game by assembling its
+  data section (`DS` to `DE`) and searching `$E000`-`$FFFF` for each
+  labelled block, with the bytes that hold addresses left open: the 11
+  effect blocks of its `DS` list are the game's `$EE4C`-`$EF82` byte for
+  byte, in the same order (`DOG0`, `FLAME1`, `FLAME2`, `EXPL0`-`EXPL2`,
+  `JET0`, `JET1`, `KILL0`, `GUN0`, `GUN1`); the game's six after them
+  (`pickup_fx1`-`3`, `bazooka_fx1`-`3`) are not in the source. Its
+  `TUNETAB` has 14 tunes; the game's `tune_table` has the same ones in the
+  same order with `HIGH0`-`HIGH2` ("HIGH-SCORE TABLE MUSIC") left out and
+  `AUTO0` (the helicopters, the source's last) in their place, entry 7.
+  None of `HIGH0L`, `HIGH1L` or `HIGH2L`'s note runs is in the game's
+  memory; the blocks the tune loads are (`LD00` at `$F494`, `HD00` at
+  `$F689`, `TIME` at `$F05B`, `AD20` at `$F3E3`). Some tunes' note data
+  differ from the source's (`STRT`, `OVER`, `COL1`-`COL3`, `TITL`), so the
+  game's are a later revision.
 
 ## The listing's error rate
 

@@ -8,15 +8,18 @@
 // end of irq_player ($0796-$079C), as the main loop and the raster interrupt run them. Both must
 // write the same values to the same registers in the same order, frame by frame, for 3,000 frames
 // a button, and the page's button must stop on the frame tune_playing ($3E32) first says every
-// voice is done, which is when wait_tune ($37AF) lets the game go on.
+// voice is done, which is when wait_tune ($37AF) lets the game go on. The one button the game never
+// plays, the hi-score table's tune from Martin Galway's source (GB_HISCORE), runs here on the game's
+// own code the same way: its bytes put where the page keeps them, tune_start with tune 0's Y, and
+// the three voices' pattern pointers ($E6-$EB) set to its patterns.
 // It exits 1 on any difference.
 //   node games/c64/green-beret/test_music.js [page.html]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const kit = require(path.join(ROOT, 'kit/cpu/cpu6502.js')), { CPU } = kit;
 const g = game(__dirname), page = process.argv[2] || 'index.html';
-const { createDriver, GB_TUNES, GB_EFFECTS, GB_DRIVER_RANGES } =
-  g.run(page, 'gb-music', 'createDriver', 'GB_TUNES', 'GB_EFFECTS', 'GB_DRIVER_RANGES');
+const { createDriver, GB_TUNES, GB_EFFECTS, GB_DRIVER_RANGES, GB_HISCORE } =
+  g.run(page, 'gb-music', 'createDriver', 'GB_TUNES', 'GB_EFFECTS', 'GB_DRIVER_RANGES', 'GB_HISCORE');
 const L = g.listing();
 const FRAMES = 3000;
 let bad = 0, frames = 0;
@@ -25,6 +28,7 @@ const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };
 const mem = GB_DRIVER_RANGES.map(([a, b]) => [a, L.ram.slice(a, b + 1)]);
 for (const [list, set] of [[GB_TUNES, 'music'], [GB_EFFECTS, 'effects']]) list.forEach((c, t) => {
   const m = L.ram.slice(), frame = { w: [] };
+  if (c.voices) m.set(GB_HISCORE.bytes, GB_HISCORE.addr);
   const io = {
     read(a) { throw new Error('read $' + a.toString(16)); },
     write(a, v) { if (a >= 0xD400 && a <= 0xD418) frame.w.push(a - 0xD400, v); else throw new Error('write $' + a.toString(16)); },
@@ -34,6 +38,7 @@ for (const [list, set] of [[GB_TUNES, 'music'], [GB_EFFECTS, 'effects']]) list.f
   cpu.sp = 0xF0; cpu.pc = 0x370A; cpu.run({ until: 0x3712, maxSteps: 10000 });   // new_game: sound_off, volume
   if (c.y !== undefined) cpu.call(0x3E00, { y: c.y });
   else cpu.call(c.run, {});
+  if (c.voices) c.voices.forEach((a, v) => { m[0xE6 + 2 * v] = a & 255; m[0xE7 + 2 * v] = a >> 8; });
   drv.init(t);
   if (frame.w.join() !== drv.writes.join()) fail(set, c.name, 'start', frame.w.join(), '|', drv.writes.join());
   let done = -1;
