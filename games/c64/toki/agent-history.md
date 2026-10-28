@@ -8,3 +8,8 @@
 
 The pass ran on `claude-sonnet-5-5`, which the kit does not list as proven, so it wrote copy only and changed no listing comment or symbol. Four sections were added at the end of the overview, after the steward's own sections: the makers, the arcade original, afterwards, and difficulty. Sources read in full: Wikipedia's wikitext, Games That Weren't's entry (which says there was never an earlier C64 version), two articles on the fan remaster, an interview with two of the 2018 remake's makers, and a review of that remake. The 2018 remake's reception and the remaster's credits come from those pages. A checker on `claude-opus-5-5` read the four sections against the saved pages; its findings and the corrections are in the commit.
 
+
+
+## Maps redrawn from the cartridge (Sonnet 5.5)
+
+The cartridge image was unpacked (bank 0 `unpack`, stage block at $0C01) and each stage's row tables read. The earlier pictures put every row at column 0. Rows actually start at their own first column: row address plus column gives the data, and a row ends where the next begins. Stage 3 was drawn 87 wide and shifted; stage 4 showed wrapped bytes in its top rows; stage 2 row 0 and stage 5 had a few cells of block-table bytes. Checked: first row starts at the end of the block table, last row ends at the end of the row data, every byte used once. Placement choices between two closing layouts were made by eye on the pictures.
