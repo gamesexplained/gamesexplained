@@ -5102,7 +5102,7 @@
   {
    "address": 45227,
    "type": "line",
-   "text": "Frames until each voice's next arpeggio step (3 bytes), counted down by $B711 and reloaded from $B0AE; stream command $84 and a new note set it."
+   "text": "Frames until each voice's next arpeggio step (3 bytes), counted down by $B711 and reloaded from $B0AE; a new note sets it to 1 when the arpeggio is on and the keep flags do not hold bit $10."
   },
   {
    "address": 45230,
@@ -5177,7 +5177,7 @@
   {
    "address": 45256,
    "type": "line",
-   "text": "Silences the sound chip: clears the resonance and filter routing at $D417, sets volume 15 at $D418, and zeroes all 21 voice registers $D400-$D414 together with the driver's shadow table at $B02F. Level 1 puts the driver here at run time from its own file (a copy of the bytes at $7543); the level loads after it leave $9A00-$BEFF alone, and level 2 calls it at $5491."
+   "text": "Sets up the effect driver and silences the sound chip: clears the fade flags $B0C2 and $B0BE and the resonance and filter routing at $D417, writes $1F (volume 15, with bit 4 also set) to $D418, to $B0C1 and to the driver flag $B000, and zeroes all 21 voice registers $D400-$D414 together with the 21 driver bytes $B02F-$B043. Level 1 puts the driver here at run time from its own file (a copy of the bytes at $7543, copied by $1BE9 from $747B, which then calls it at $1C0D); the later level loads leave $9E00-$BEFF alone, and every level calls it (level 2 at $5491)."
   },
   {
    "address": 45294,
@@ -5192,7 +5192,7 @@
   {
    "address": 45430,
    "type": "line",
-   "text": "Plays the music and sound effects, once a frame from the interrupt at $1EF4 in level 1; level 2 calls it from $6526. Returns at once while $B001 is set; otherwise works through the three voices, X from 2 down to 0, through zero page $F7-$F9."
+   "text": "Plays the music and sound effects. Level 1 calls it once a frame from the interrupt at $1EF4 (at $1F21) and, in the mask game, from the interrupt at $5ADE (at $5B2A); level 2 calls it from $6526, level 3 from $0E00 and $5227, level 4 from $6502, level 5 from $1EFA and $3A2F, level 6 from $6541. Returns at once while $B001 is set; otherwise works through the three voices, X from 2 down to 0, through zero page $F7-$F9."
   },
   {
    "address": 45591,
@@ -5207,7 +5207,7 @@
   {
    "address": 45660,
    "type": "line",
-   "text": "Reads the next entry of the current voice's stream through ($F0),Y with Y from $B0A8,X. A byte with bit 7 set is a command and goes to $B316. A byte of $60 is a rest: only the length byte is read. Any other byte is a note: it is stored in $B067, the new-note flag $B084 becomes 1 and the drum flag $B081 is cleared. Each part the voice's keep flags $B0C4 do not hold is restarted: the wave program (mask 4, from $B023/$B029), the pulse sweep (mask 2, from $B02F, $B093 and $B099), the pitch slide (mask 1, from $B038), the arpeggio (mask $10) and the filter sweep (mask 8). The length byte then goes to $B004,X, or $B007,X in fixed-length mode, and the stream position to $B0A8,X. Called by $B23B."
+   "text": "Reads the next entry of the current voice's stream through ($F0),Y with Y from $B0A8,X. A byte with bit 7 set is a command and goes to $B316. A byte of $60 is a rest: only the length byte is read (none in fixed-length mode). Any other byte is a note: it is stored in $B067, the new-note flag $B084 becomes 1 and the drum flag $B081 is cleared. Each part the voice's keep flags $B0C4 do not hold is restarted: the wave program (mask 4, from $B023/$B029), the pulse sweep (mask 2, from $B02F, $B093 and $B099), the pitch slide (mask 1, from $B038) when the slide flag $B075 is set, the arpeggio (mask $10) when the arpeggio flag $B07B is set, and the filter sweep (mask 8) when the voice's filter flag $B07E is set. The note length $B004,X then comes from the length byte, or from $B007,X in fixed-length mode, and the stream position goes to $B0A8,X. Called by $B23B."
   },
   {
    "address": 45846,
@@ -5382,7 +5382,7 @@
   {
    "address": 46942,
    "type": "line",
-   "text": "Filter sweep, once per call. Counts $B013 down; at zero it reads a step from the table $BA62 at $B048: a frame count (to $B013), a low and a high step (to $B049 and $B04A); a count of 0 means the next byte is a new index. It adds the step to the 16-bit filter value $B04D/$B04E and writes its low three bits to $D415 and a byte made from its upper bits to $D416. Called by $B176 after the voices."
+   "text": "Filter sweep, once per call. Counts $B013 down; at zero it reads a step from the table $BA62 at $B048: a frame count (to $B013), a low and a high step (to $B049 and $B04A); a count of 0 means the next byte is a new index. It adds the step to the 16-bit filter value (low byte $B04E, high byte $B04D) and writes the low three bits of its low byte to $D415 and bits 3 to 10 of the value to $D416. Called by $B176 after the voices."
   },
   {
    "address": 47030,
@@ -5417,7 +5417,7 @@
   {
    "address": 47144,
    "type": "line",
-   "text": "Stops all sound: clears the voice flags $F7-$F9, the fade flags $B0BE and $B0C2 and the volume register $D418, sets the keep flags $B0C4-$B0C6 to $FF and writes 8 to the control registers $D404, $D40B and $D412. $B176 calls it when a fade-out has run down, and the levels call it when a level ends or the game is over."
+   "text": "Stops all sound: clears the voice flags $F7-$F9, the fade flags $B0BE and $B0C2 and the volume register $D418, sets the keep flags $B0C4-$B0C6 to $FF and writes 8 to the control registers $D404, $D40B and $D412. $B176 jumps to it when a fade-out has run down, and the levels call it when a level is set up (level 2 at $5363, level 5 at $1C5B), when a level ends or the game is over, and in the setup, fire handling and finish of the mask games."
   },
   {
    "address": 47184,
@@ -5472,7 +5472,7 @@
   {
    "address": 47287,
    "type": "line",
-   "text": "11 bytes, 00 FF 01 B7 B8 FF 00 00 4C BC B8. The first five are the idle wave program that $B138 gives every voice: command 0 with a wait of $FF frames, then command 1 jumping to its own start at $B8B7. The six after it, FF 00 00 4C BC B8, end in a JMP to $B8BC and are not read by the driver."
+   "text": "11 bytes, 00 FF 01 B7 B8 FF 00 00 4C BC B8. The first five are the idle wave program that $B138 gives every voice: command 0 with a wait of $FF frames, then command 1 jumping to its own start at $B8B7. The six after it, FF 00 00 4C BC B8, end in a JMP to $B8BC; the wave driver does not read them, but $B0EE reads some of them as voice offsets ($B8BC for sound row $08, $B8C1 for row $0C), because it indexes $B8B4 with the table position."
   },
   {
    "address": 47298,
@@ -5497,7 +5497,7 @@
   {
    "address": 47588,
    "type": "line",
-   "text": "Pulse-width sweep steps, 35 bytes, read by $B64E with the index in $B02C and started by stream command $82. A step is three bytes: a frame count, then the low and high bytes of the amount added to the pulse width each frame. A count of 0 is followed by the index to go back to instead. Programs start at offsets $00, $05, $10 and $1B."
+   "text": "Pulse-width sweep steps, 35 bytes, read by $B64E with the index in $B02C and started by stream command $82; $B32E also reads it, as the pattern address of a track entry. A step is three bytes: a frame count, then the low and high bytes of the amount added to the pulse width each frame. A count of 0 is followed by the index to go back to instead. Programs start at offsets $00, $05, $10 and $1B."
   },
   {
    "address": 47623,
@@ -5537,7 +5537,7 @@
   {
    "address": 48024,
    "type": "line",
-   "text": "The 18 sound streams, 161 bytes, started from the addresses in the table at $BB74. A stream is a series of entries read by $B25C: a note number below $60 followed by its length in frames, $60 and a length for a rest, or a command $80-$8D with its parameters (for instance $81 and a wave program number, $86 and a drum number, $8A to end the voice). Streams 4 and 5 share their data."
+   "text": "The 18 sound streams, 161 bytes, started from the addresses in the table at $BB74. A stream is a series of entries read by $B25C: a note number below $60 followed by its length in frames, $60 and a length for a rest, or a command $80-$8D with its parameters (for instance $81 and a wave program number, $86 with a drum record offset and a length, $8A to end the voice). Streams 4 and 5 share their data, and streams 8 and 12 run on into the data of streams 9 and 13."
   }
  ]
 }
