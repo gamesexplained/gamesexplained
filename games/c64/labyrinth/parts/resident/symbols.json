@@ -10440,7 +10440,7 @@
   },
   {
    "address": 20335,
-   "name": "scan_scene_top_edge_forward",
+   "name": "scan_marker_blockers_forward",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -10458,7 +10458,7 @@
   },
   {
    "address": 20363,
-   "name": "scan_scene_top_edge_blocks",
+   "name": "scan_marker_blockers_backward",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -15592,7 +15592,7 @@
   {
    "address": 2599,
    "type": "line",
-   "text": "For up to X groups of sixty decrements of $030E, watch keyboard-queue growth and joystick state $030C. A new keyboard byte is removed when it aborts the wait. Before returning, wait for joystick fire to be released, set the fire latch, and clear the wheel-prefix length."
+   "text": "For up to X groups of sixty decrements of $030E, watch keyboard-queue growth and joystick state $030C. A new keyboard byte is removed when it aborts the wait. Before returning, wait for joystick fire to be released, set the fire latch, and clear the wheel-prefix length; when $0927 is negative, also write zero to pending scene request $0530."
   },
   {
    "address": 2657,
@@ -15672,22 +15672,22 @@
   {
    "address": 2919,
    "type": "line",
-   "text": "Headered clock message: first bytes $00/$F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
+   "text": "Headered clock message: two-byte header $00/$04, then control byte $F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
   },
   {
    "address": 2920,
    "type": "line",
-   "text": "Offset 1 in clock_message_template ($0B67-$0B8D). Headered clock message: first bytes $00/$F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
+   "text": "Offset 1 in clock_message_template ($0B67-$0B8D). Headered clock message: two-byte header $00/$04, then control byte $F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
   },
   {
    "address": 2938,
    "type": "line",
-   "text": "Offset 19 in clock_message_template ($0B67-$0B8D). Headered clock message: first bytes $00/$F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
+   "text": "Offset 19 in clock_message_template ($0B67-$0B8D). Headered clock message: two-byte header $00/$04, then control byte $F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
   },
   {
    "address": 2950,
    "type": "line",
-   "text": "Offset 31 in clock_message_template ($0B67-$0B8D). Headered clock message: first bytes $00/$F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
+   "text": "Offset 31 in clock_message_template ($0B67-$0B8D). Headered clock message: two-byte header $00/$04, then control byte $F7, then \"You have XX hours, XX minutes left.\" and zero. $0B8E patches the two decimal fields and plural suffixes before $09DF displays it; the stored placeholder bytes are mutable output within this bounded template."
   },
   {
    "address": 2958,
@@ -15707,7 +15707,7 @@
   {
    "address": 3103,
    "type": "line",
-   "text": "Selected item codes seventeen and fourteen queue sounds $2D and $10. Item zero presents the peach/sleep response and, depending on room text mode, either restores a saved return scene or uses $0C61's one-hour penalty. Clear the related player action $03A6 afterward. Other item codes return without these effects."
+   "text": "Selected item codes seventeen and fourteen queue sounds $2D and $10. Item zero presents the peach/sleep response and, depending on room text mode, either takes an hour through $0C63 with request $B9 and then restores a saved return scene, or uses $0C61's one-hour penalty. Clear the related player action $03A6 afterward. Other item codes return without these effects."
   },
   {
    "address": 3169,
@@ -15717,7 +15717,7 @@
   {
    "address": 3171,
    "type": "line",
-   "text": "Send sound request A through $0928, decrement remaining hour/penalty byte $0376, and clear running flag $0580 when the result becomes negative. $0C61 selects sound $39 before entering this shared body."
+   "text": "Send description request A through $0928, decrement remaining hour/penalty byte $0376, and clear running flag $0580 when the result becomes negative. $0C61 selects request $39 before entering this shared body."
   },
   {
    "address": 3185,
@@ -15942,12 +15942,12 @@
   {
    "address": 5064,
    "type": "line",
-   "text": "Preserve Y and install six sprite pointers at $CFF8-$CFFD from strip-start fields $81/$82/$83, using successive pointers in groups of 2. Continue through the shared tail: select port $25, schedule raster $63 and handler $1430, acknowledge VIC/CIA IRQ state, restore bank $61 and Y, and RTI. This is the 2-sprite-per-object variant for this vertical band; the paired entry selects the other grouping."
+   "text": "Preserve Y and install six sprite pointers at $CFF8-$CFFD from strip-start fields $81/$82/$83, using successive pointers in groups of 2. Continue through the shared tail: select port $25, copy $02DD to background colour 0 when $71 is nonnegative, schedule raster $63 and handler $1430, acknowledge VIC/CIA IRQ state, restore bank $61 and Y, and RTI. This is the 2-sprite-per-object variant for this vertical band; the paired entry selects the other grouping."
   },
   {
    "address": 5096,
    "type": "line",
-   "text": "Preserve Y and install six sprite pointers at $CFF8-$CFFD from strip-start fields $81/$83, using successive pointers in groups of 3. Continue through the shared tail: select port $25, schedule raster $63 and handler $1430, acknowledge VIC/CIA IRQ state, restore bank $61 and Y, and RTI. This is the 3-sprite-per-object variant for this vertical band; the paired entry selects the other grouping."
+   "text": "Preserve Y and install six sprite pointers at $CFF8-$CFFD from strip-start fields $81/$83, using successive pointers in groups of 3. Continue through the shared tail: select port $25, copy $02DD to background colour 0 when $71 is nonnegative, schedule raster $63 and handler $1430, acknowledge VIC/CIA IRQ state, restore bank $61 and Y, and RTI. This is the 3-sprite-per-object variant for this vertical band; the paired entry selects the other grouping."
   },
   {
    "address": 5168,
@@ -16042,7 +16042,7 @@
   {
    "address": 6121,
    "type": "line",
-   "text": "Preserve Y and expose I/O. Select blank sprite pointer $FE for sprites zero/one, set their Y to $DA, disable X expansion, and when the player display is active copy marker X/high-X bits from $02FF/$0300/$0303. Otherwise hide those markers. Set their colours from $02FB/$02FC, schedule line $E1 and the frame-service handler $113A, acknowledge IRQ state, restore bank/Y, and RTI."
+   "text": "Preserve Y and expose I/O. Select sprite pointer $FE (the marker sprite at $FF80 that $1096 builds) for sprites zero/one, set their Y to $DA, disable X expansion, and when the player display is active copy marker X/high-X bits from $02FF/$0300/$0303. Otherwise hide those markers. Set their colours from $02FB/$02FC, schedule line $E1 and the frame-service handler $113A, acknowledge IRQ state, restore bank/Y, and RTI."
   },
   {
    "address": 6232,
@@ -16102,7 +16102,7 @@
   {
    "address": 6463,
    "type": "line",
-   "text": "Shift A left through carry for eight iterations. X counts zero bits, and $185D retains the row index of a one bit. The keyboard scanner combines two such scans to select a translated key."
+   "text": "Shift A left through carry for eight iterations. X starts at $FF and is incremented for each zero bit, so it ends one less than the number of zero bits, and $185D retains the bit number of the lowest zero bit (keyboard lines are active low). The keyboard scanner combines two such scans to select a translated key."
   },
   {
    "address": 6478,
@@ -16217,7 +16217,7 @@
   {
    "address": 7049,
    "type": "line",
-   "text": "Nested delay with X=$C0 and Y starting at zero, decrementing Y through a complete byte cycle for each X iteration. Load cached serial status $1B99 into A and return. The following bytes $1B96 onward are serial state fields."
+   "text": "Nested delay with X=$C0 and Y starting at zero, decrementing Y through a complete byte cycle for each X iteration. Load cached serial status $1B99 into A and return. $1B96 holds the RTS; the serial state fields follow it from $1B97, with $1B99 the named one. No code in any part calls this routine."
   },
   {
    "address": 7065,
@@ -16302,12 +16302,12 @@
   {
    "address": 7089,
    "type": "line",
-   "text": "3-byte resident field at $1BB1, holding FF FF FF in the captured opening. Direct code references: $1C1F sta $1BB1,x; $1C29 sta $1BB1,x; $1C2F lda $1BB1,x; $1CA2 sta $1BB1,x. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Seven-entry pending sound-request array $1BB1-$1BB7, one byte per sound slot 0-6 ($FF means nothing pending); the captured opening holds FF FF FF at $1BB1-$1BB3. Direct code references: $1C1F sta $1BB1,x; $1C29 sta $1BB1,x; $1C2F lda $1BB1,x; $1CA2 sta $1BB1,x. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
   },
   {
    "address": 7092,
    "type": "line",
-   "text": "4-byte resident field at $1BB4, holding FF FF FF FF in the captured opening. Direct code references: $1C15 sta $1BB4. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
+   "text": "Entries 3-6 of the seven-entry pending sound-request array at $1BB1, holding FF FF FF FF in the captured opening. $1C0C stores 0 at $1BB4 on every request, so slot 3 restarts directory stream 0. Direct code references: $1C15 sta $1BB4. These are the direct instruction accesses in the decoded image; indexed access bounds and indirect callers require their enclosing routine. The listed bytes describe the captured value."
   },
   {
    "address": 7096,
@@ -16402,7 +16402,7 @@
   {
    "address": 7180,
    "type": "line",
-   "text": "If $0357 is nonnegative, return without queuing. Otherwise use A as an index into $1FA9: its first byte's complement selects a sound slot and the following byte can select a second slot. Store the request index in $1BB1 for those slots. The periodic sound service consumes these queued indices."
+   "text": "If $0357 is nonnegative, return without queuing. Otherwise use A as an index into $1FA9: its first byte's complement selects a sound slot and the following byte can select a second slot. Store the request index in $1BB1 for the first slot and the index plus one for the second. Every request also first stores 0 in $1BB4, so slot 3 restarts directory stream 0. The periodic sound service consumes these queued indices."
   },
   {
    "address": 7213,
@@ -16447,7 +16447,7 @@
   {
    "address": 7571,
    "type": "line",
-   "text": "Read a flag byte from the selected slot's stream pointer. In voice mode its low bit controls gate; bit one ends the active stream and can chain to a new directory entry. Bit two loads a two-byte cached value, and unless bit six is set also reads its duration and increment; otherwise clear the slide. Bit three loads voice envelope bytes with a gate-off write before restoring the event gate. Bit four introduces subflags for direct frequency writes, filter/volume/cutoff fields, and a new delay. Bit five replaces the control byte's high nibble. Bit seven implements counted backward stream loops; other events advance past their consumed bytes. Hardware writes are restricted by the selected slot's voice/control mode. The parser maintains its variable record offset in Y and the active mask in $1C0A."
+   "text": "Read a flag byte from the selected slot's stream pointer. In voice mode its low bit controls gate; bit one ends the active stream and can chain to a new directory entry. Bit two loads a two-byte cached value, and unless bit six is set also reads its duration and increment; otherwise clear the slide. Bit three loads voice envelope bytes with a gate-off write before restoring the event gate. Bit four introduces subflags for direct pulse-width writes, filter/volume/cutoff fields, and a new delay. Bit five replaces the control byte's high nibble. Bit seven implements counted backward stream loops; other events advance past their consumed bytes. Hardware writes are restricted by the selected slot's voice/control mode. The parser maintains its variable record offset in Y and the active mask in $1C0A."
   },
   {
    "address": 7922,
@@ -16462,12 +16462,12 @@
   {
    "address": 7970,
    "type": "line",
-   "text": "Register offsets used by $1EF2/$1F13. Entries start $00,$07,$0E for the three SID voices; the following control slot uses $15. The overlapping $1F26 view supplies the direct-frequency offsets used by optional event subrecords."
+   "text": "Register offsets used by $1EF2/$1F13. Entries start $00,$07,$0E for the three SID voices; the following control slot uses $15. The overlapping $1F26 view supplies the pulse-width offsets ($D402/$D409/$D410) used by optional event subrecords, and $1EF2 reads the same bytes for slots 4-6, so those slots write the voices' pulse width."
   },
   {
    "address": 7974,
    "type": "line",
-   "text": "Byte-offset lookup for direct frequency fields in $1D93, starting $02,$09,$10. These accesses are $D400 plus the selected offset; this table is distinct from the cached-value offsets at $1F22."
+   "text": "Byte-offset lookup for direct pulse-width fields in $1D93, starting $02,$09,$10. These accesses are $D400 plus the selected offset; the same bytes are entries 4-6 of $1F22, which $1EF2 and $1F13 read for slots 4-6."
   },
   {
    "address": 7977,
@@ -16482,7 +16482,7 @@
   {
    "address": 7979,
    "type": "line",
-   "text": "Five bytes of note-player cached state read by $25BD before voice-event processing."
+   "text": "Entries 2-6 ($04,$08,$10,$20,$40) of the slot-mask table at $1F29. $25BD loads entry 2, slot 2's bit, to test active mask $1C0A."
   },
   {
    "address": 7984,
@@ -16832,7 +16832,7 @@
   {
    "address": 9789,
    "type": "line",
-   "text": "Ten note/instrument pairs for the short resident tune, ending with the zero/zero group terminator. Nonzero instruments use the default directory at $1F33/$1F6E; its first two note bytes are $35/$36 with instrument $36."
+   "text": "Ten note/instrument pairs for the short resident tune, ending with the zero/zero group terminator. Nonzero instruments use the default directory at $1F33/$1F6E; its first pair is note $35 with instrument $36, and its second note $36 with instrument $35."
   },
   {
    "address": 9809,
@@ -16877,7 +16877,7 @@
   {
    "address": 9866,
    "type": "line",
-   "text": "Four per-voice note-player counters/pointers updated at $269F and inspected at $268E/$26C8."
+   "text": "Four per-display-object bytes, X 0-3: $269F stores $0544,X+$0218,X+$0220,X; $268E first saves the previous value in $2689, and $26C8 compares the two to decide whether the costume needs rebuilding."
   },
   {
    "address": 9870,
@@ -16977,7 +16977,7 @@
   {
    "address": 11005,
    "type": "line",
-   "text": "Use $12, object depth $0544/$0548,X, and mode flags to select scale bytes $13/$14. Rebuild a scale table only when its cached factor differs. $CB00/$CB40 hold 64 little-endian multiples of horizontal factor+1; $CB80/$CBC0 hold the corresponding vertical multiples. Store the negated horizontal step in $2AF9/$2AFA and set the scale-changed flag $2686. These tables supply fixed-point increments for the costume interpreter."
+   "text": "Use $12, object depth $0544/$0548,X, and mode flags to select scale bytes $13/$14. Rebuild a scale table only when its cached factor differs. $CB00/$CB40 hold 64 little-endian multiples of horizontal factor+1; $CB80/$CBC0 hold the corresponding vertical multiples. Store the negated horizontal step in $2AF9/$2AFA and store zero in $2686 (its only writer, so it always holds zero; $2720 copies it to $023C,X). These tables supply fixed-point increments for the costume interpreter."
   },
   {
    "address": 11203,
@@ -17102,7 +17102,7 @@
   {
    "address": 14194,
    "type": "line",
-   "text": "At the far depth bound, combine scene/mode and coordinate tests with $B3 to decide whether $4115 should correct the player's position. Retain idle or moving animation in Y from the horizontal request. For local block type four and the specified subcolumn interval, clear $3420. Returns to the player motion continuation rather than loading a new scene itself."
+   "text": "At the far depth bound, combine scene/mode and coordinate tests with $B3 to decide whether to request a scene change through $4115. Retain idle or moving animation in Y from the horizontal request. For local block type four and the specified subcolumn interval, clear $3420. Returns to the player motion continuation; $4115 only sets the pending scene request."
   },
   {
    "address": 14230,
@@ -17132,7 +17132,7 @@
   {
    "address": 14590,
    "type": "line",
-   "text": "Y is a special-cell index and X is the object. Update $075E,Y, marking $02BB,X zero on the exhausted-state path and decrementing a positive count for object zero. Outside scene eight return after that state update. In scene eight, clear pending scene $0530 and map the count through $39C7 to produce replacement character codes. Six explicit cell-index cases rewrite bounded patches of the $C000-$C1FF scene-art pages; other indices return. The selected code bytes are cached at $39CB/$39CC."
+   "text": "Y is a special-cell index and X is the object. Update $075E,Y, marking $02BB,X zero on the exhausted-state path and decrementing a positive count for object zero. Outside scene eight return after that state update. In scene eight, clear pending scene $0530 and map the count through $39C7 to produce replacement character codes. Six explicit cell-index cases rewrite bounded patches of the $C000-$C1FF scene-art pages; other indices return. The replacement code is cached at $39CB and the cell index at $39CC. On the exhausted path the count is reloaded to three."
   },
   {
    "address": 14791,
@@ -17152,7 +17152,7 @@
   {
    "address": 14797,
    "type": "line",
-   "text": "Four per-object movement cache bytes, read at $37F4 and updated at $3823."
+   "text": "Four per-object special-cell latches: $3823 sets one to $FF when its object enters a special cell and to zero otherwise, and $37F4 skips $38FE while it is negative."
   },
   {
    "address": 14801,
@@ -17227,7 +17227,7 @@
   {
    "address": 15387,
    "type": "line",
-   "text": "Subtract projected coordinate $0228/$022C of object zero from that of object X, use the high subtraction's carry to arithmetic-shift the low result, and store the signed half-distance in $0347,X. Used by relation classification in negative $26 mode."
+   "text": "Subtract projected coordinate $0228/$022C of object zero from that of object X, rotate bit 0 of the high difference into the top of the low result, and store the signed half-distance (bits 1-8 of the 16-bit difference) in $0347,X. Used by relation classification in negative $26 mode."
   },
   {
    "address": 15412,
@@ -17417,7 +17417,7 @@
   {
    "address": 16661,
    "type": "line",
-   "text": "Derive a coarse horizontal map column from $AF, find its boundary interval through $074E, and enter $4128 with that exit index in X. This chooses a transition request rather than directly loading it."
+   "text": "When $0343 is nonnegative, branch to $4163 and request the saved return scene. Otherwise derive a coarse horizontal map column from $AF, find its boundary interval through $074E, and enter $4128 with that exit index in X. This chooses a transition request rather than directly loading it."
   },
   {
    "address": 16680,
@@ -17442,7 +17442,7 @@
   {
    "address": 16755,
    "type": "line",
-   "text": "In negative map mode, combine object Y world coordinates, mask by map width, read the $0600 cell, and map its low nibble through $073E to terrain type $B0 and dispatch pointer $B2/$B3. Negative mapped types use pointer slot zero. In nonnegative mode call the overlay hook selected by $0343, use its $0344 response index, and set signed horizontal-side byte $341A from the selected object coordinate: below $46 gives -1, $46-$A1 gives zero, and positive high coordinate or low >=$A2 gives +1. Graphical overlays provide those hooks; they are not valid callbacks in the TX text load."
+   "text": "In negative map mode, combine object Y world coordinates, mask by map width, read the $0600 cell, and map its low nibble through $073E to terrain type $B0, then load depth cap $B2 from $41F0 and limit flag $B3 from $4200. Negative mapped types use entry zero. In nonnegative mode call the overlay hook selected by $0343, use its $0344 response index, and set signed horizontal-side byte $341A from the projected coordinate ($34/$38) of the object in display slot $024C: below $46 gives -1, $46-$A1 gives zero, and positive high coordinate or low >=$A2 gives +1. Graphical overlays provide those hooks; they are not valid callbacks in the TX text load."
   },
   {
    "address": 16880,
@@ -17507,7 +17507,7 @@
   {
    "address": 17526,
    "type": "line",
-   "text": "Process four display objects using flags $71-$74 and output-slot selectors $75-$78. For the first three, optionally integrate the three-byte motion vectors, subtract costume alignment and camera coordinates, and store relative positions at $34/$38/$3C. Hidden objects instead mark their target slot negative. Convert the first objects to two- or three-sprite horizontal strips according to mode $26, filling $02CC-$02D1 and the high-X-bit accumulator $02D4; hidden strips use $D0 coordinates. The fourth object builds the paired coordinates $D2/$D3, vertical positions $D4/$D5, and image bytes $DA/$DB, with scene-dependent adjustments and helper calls at $4822/$485A. $E2 retains the pair's high-X bits for the raster display service. This routine projects display coordinates; it does not resolve player collisions."
+   "text": "Process four display objects using flags $71-$74 and output-slot selectors $75-$78. For the first three, optionally integrate the three-byte motion vectors, subtract costume alignment and camera coordinates, and store relative positions at $34/$38/$3C. Hidden objects instead mark their target slot negative. Convert the first objects to two- or three-sprite horizontal strips according to mode $26, filling $02CC-$02D1 and the high-X-bit accumulator $02D4; hidden strips use $D0 coordinates. The fourth object builds the paired coordinates $D2/$D3, vertical positions $D4/$D5, sprite pointers $D8/$D9 and colours $DA/$DB, with scene-dependent adjustments and helper calls at $4822/$485A. $E2 retains the pair's high-X bits for the raster display service. This routine projects display coordinates; it does not resolve player collisions."
   },
   {
    "address": 18466,
@@ -17552,12 +17552,12 @@
   {
    "address": 18820,
    "type": "line",
-   "text": "Preserve caller X at $31, look up the object's current buffer allocation, and cache it at $79,Y. For an active allocation, read its first sprite number from $49D0 and write seven successive strip starts twelve sprite slots apart into zero-page arrays $7D/$81/$85/$89/$8D/$91/$95 at object-order index Y. A negative allocation fills all seven starts with $FC, the blank sprite pointer. Restore X and return."
+   "text": "Preserve caller X at $31, look up the object's current buffer allocation, and cache it at $79,X. For an active allocation, read its first sprite number from $49D0 and write seven successive strip starts twelve sprite slots apart into zero-page arrays $7D/$81/$85/$89/$8D/$91/$95 at object-order index Y. A negative allocation fills all seven starts with $FC, the blank sprite pointer. Restore X and return."
   },
   {
    "address": 18896,
    "type": "line",
-   "text": "Ten sprite pointer bytes $A8,$AA,$AC,$AE,$B0,$B2,$03,$0C,$30,$C0. $498E indexes these by assigned costume-buffer slot and builds seven vertical strip pointers by adding twelve for each band. Negative slot indices instead select blank pointer $FC."
+   "text": "Six sprite pointer bytes $A8,$AA,$AC,$AE,$B0,$B2, followed by $03,$0C,$30,$C0, which $498E never reaches because allocations from $5AB4 are 0-5. $498E indexes the six by assigned costume-buffer slot and builds seven vertical strip pointers by adding twelve for each band. Negative slot indices instead select blank pointer $FC."
   },
   {
    "address": 18906,
@@ -17567,7 +17567,7 @@
   {
    "address": 18922,
    "type": "line",
-   "text": "Inspect pending horizontal edge count $037B first: positive shifts the 16-row screen left and decrements the count; negative shifts it right and increments the count. With no horizontal shift, use vertical count $037C to select an upward or downward row move. With neither, enter $4E5D. The actual row/column copies are at $4A19/$4AA0/$4B39/$4B9D."
+   "text": "Inspect pending horizontal edge count $037B first: negative shifts the 16-row screen left ($4A19) and increments the count; positive shifts it right ($4AA0) and decrements the count. With no horizontal shift, use vertical count $037C to select a row move: negative scrolls down ($4B9D) and increments, positive scrolls up ($4B39) and decrements. With neither, enter $4E5D. The actual row/column copies are at $4A19/$4AA0/$4B39/$4B9D."
   },
   {
    "address": 18969,
@@ -17587,7 +17587,7 @@
   {
    "address": 19357,
    "type": "line",
-   "text": "Move the upper 15 rows of the 40-by-16 scene window into the following row, with the source rows ordered to preserve overlap. Y $0F selects the exposed bottom row for $4C01."
+   "text": "Move the upper 15 rows of the 40-by-16 scene window into the following row, with the source rows ordered to preserve overlap. Y $0F selects the exposed top row ($CCA0 in the $4DDE/$4DEE tables) for $4C01."
   },
   {
    "address": 19457,
@@ -17657,7 +17657,7 @@
   {
    "address": 20363,
    "type": "line",
-   "text": "Continue the edge scan using map index $5076 and count $5077. Where flag $5075 is negative, a type-one block jumps back to $4F63 to redraw its top strip. Decrement the map index and count until the scan finishes. This is the tail of the scene-edge update, with its prefix at $4E5D."
+   "text": "Continue the edge scan using map index $5076 and count $5077. Where flag $5075 is negative, a type-one block jumps to $4F63, which clears the object's marker coordinates. Decrement the map index and count until the scan finishes. This is the backward counterpart of $4F6F; $4EEE calls it at $4F5F."
   },
   {
    "address": 20391,
