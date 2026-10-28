@@ -2058,6 +2058,14 @@ def tier_stamps(gs):
                     for t in TIER_ORDER if counts.get(t))
 
 
+def a_or_an(name):
+    """'a' or 'an' before a system's name, by its sound: an Apple II, an NES, an MSX, a BBC Micro.
+    A name that opens on capitals is read letter by letter, and F, H, L, M, N, R, S and X open on a vowel."""
+    w = name.split()[0] if name.split() else ""
+    initials = len(w) > 1 and w.isupper() and w.isalpha()
+    return "an" if w[:1].lower() in "aeiou" or (initials and w[0] in "FHLMNRSX") else "a"
+
+
 def rough(n):
     """A library size to two significant figures, since that is all the sources support: 23,000, 1,400, 460."""
     step = 10 ** max(len(str(int(n))) - 2, 0)
@@ -2111,12 +2119,12 @@ def status_page(games):
                     f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in gs) + '</p>') if gs else ""
                 works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), runs_on(cs, k) + made, [], False,
                                   c.get("prompt") or f'Clone {raw_repo} and follow kit/START.md. I am on {h["name"]}, {h["arch"]}, '
-                                  f'and I want to explain a {name(k)} game.'))
+                                  f'and I want to explain {a_or_an(name(k))} {name(k)} game.'))
             else:
                 start = [blob(f"kit/{k}/INSTALL.md", f"kit/{k}/INSTALL.md"),
                          blob("kit/INSTALL.md#the-footprint-principle", "the footprint principle")]
                 prompt = c.get("prompt") or (
-                    f'Clone {raw_repo} and follow kit/START.md to explain a {name(k)} game on {h["name"]}, {h["arch"]}. '
+                    f'Clone {raw_repo} and follow kit/START.md to explain {a_or_an(name(k))} {name(k)} game on {h["name"]}, {h["arch"]}. '
                     'Nobody has run the kit here: follow "If you are the first on an operating system" in kit/INSTALL.md, '
                     f'run check-emulator, and record what works in kit/{k}/INSTALL.md and site/status.json.')
                 research.append((not c.get("wanted"), card(title, stamp(c["state"], HOST_STATES[c["state"]]), c.get("note", ""),
