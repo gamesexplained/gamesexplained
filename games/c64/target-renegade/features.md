@@ -3,7 +3,7 @@
 ## Sources
 
 - [Target Renegade — C64-Wiki](https://www.c64-wiki.de/wiki/Target_Renegade), read 25 October 2026. Its animated reference is saved as `reference/wiki-stages.gif`. Claims about other conversions have not been imported.
-- The supplied EasyFlash edition, observed in VICE v3.13.2 on 25 October 2026. The title names Commodore as pause and Space as music on/off.
+- The supplied EasyFlash edition, observed in VICE v3.13.2 on 25 October 2026. The title names Commodore as pause and Space as the switch between MUSIC ON and FX ON.
 - [Target Renegade manual](https://www.lemon64.com/doc/target-renegade/594) could not be read: the web reader and a direct fetch returned HTTP 403. The Spanish manual below supplies the controls as well.
 
 - [Total compilation manual](https://spa2.speccy.org/Instructions/t/Total.pdf), Commodore section on printed pages 4–5, read 25 October 2026. It specifies joystick port 1, directional attacks, pause, scoring, and two loads: stages 1–3, then stages 4–5. These claims remain open unless tested below.
@@ -30,7 +30,7 @@
 | Extra life at 50,000 then 100,000 intervals | differs/traced/live | $FC00 requires strictly greater. Equal, greater and nine-life native cases agree; threshold advances by 100,000. |
 | Attack scores from 200 to 2,000 in manual | partly traced, full schedule open | $A0AD stores per-type awards and $A0F9 applies pending BCD score. Documented event-by-event schedule remains open. |
 | Commodore pause/resume | live | Two key presses toggled $0689 from 0 to 1 to 0. |
-| Space music switch | phase-specific live | Title selection changed on release. Normal-play passes tested did not change $0200; no whole-game absence claim is made. |
+| Space switches MUSIC and FX | phase-specific live | Title selection changed on release. $0200 chooses the music tick ($07BF) when zero and the effects tick ($21F5) otherwise (main loop $811E). Normal-play passes tested did not change $0200; no whole-game absence claim is made. |
 | Music and effects | traced/verified | All nine cues and thirteen requests have page players and native ordered-write comparisons. |
 
 ## Open questions

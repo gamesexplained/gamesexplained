@@ -15,7 +15,7 @@ Title entry $2600 copies source $3546–$3645 to $020D–$030C. The source belon
 | Title fire reads joystick port 1 | $26CC reads $DC01 bit 4; live port-1/port-2 comparison. |
 | The supplied edition starts with five lives | $8000 stores $35 AND $0F at $020C; live HUD agrees. The manual says three; Zzap!64 38 (June 1988) says "his complement of five", so the manual disagrees with the game and the review. Why is unexplained. |
 | Extra life requires passing the threshold | $FC00 compares packed BCD score with $020A/$020B. Equality does not award; above does. Initial displayed threshold is 50,000; each award advances it by 100,000. Lives are capped at nine. Four native cases passed. |
-| Stored score units are hundreds of displayed points | $FC43 formats four BCD digits and the template supplies two trailing zero digits. All 256 formatter inputs passed; pending-score addition is $FC5A. |
+| Stored score units are hundreds of displayed points | $FC35 formats four BCD digits by calling $FC43 once per byte, two digits each, and the template supplies two trailing zero digits. All 256 formatter inputs passed; pending-score addition is $FC5A. |
 | The HUD template copy is 160 cells | $A803 uses X=$A0 down through $01, copying characters $2BF0–$2C8F to $3720–$37BF and colours $2B50–$2BEF to $DB20–$DBBF. |
 | One horizontal colour-scroll direction omits row zero | $A6A9 shifts 39 cells in each of rows 1–19. Independent simulation recorded 741 writes; row zero remained unchanged. |
 | Background maps are 80 columns by 20 metatiles | $2A6C reads column-major indices at $2DC0. Each selects sixteen row-major character codes at $B000. Native draws matched 48 column/row cases across both loads. |
