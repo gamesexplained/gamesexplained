@@ -286,6 +286,10 @@ a warble that jumps between a low tone and a high one at every step of
 the bar, both creeping up (`refill_energy`), and the death sequence turns on the
 noise and raises the pitch while the room's colours step round
 (`death`). `voice1_on_unused` and `voice1_off_unused` are never called.
+Taking a vitamin makes no sound: `collect_vitamin` writes no sound
+register except at the 25th, when it starts the tune. *(live: walking
+into room 22's vitamin, the only sound writes were `$FF11` = `$0F`,
+both voices off)*
 
 ## Register census
 
