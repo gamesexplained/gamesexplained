@@ -28,8 +28,14 @@
 //   CIA 2's the NMI through the vector at $FFFA when the mask ($DC0D/$DD0D written with bit 7)
 //   lets them, and CIA 2's port A ($DD00, the video bank) and its direction ($DD02) read back what
 //   was written, the unset inputs high. An underflow is taken on its cycle: the run stops there.
+//   The serial port as output (control register A's bit 6): a write to the data register
+//   ($DC0C/$DD0C) shifts a byte out over 16 of timer A's underflows (8 bits, two underflows a
+//   bit), a second write while one shifts follows it, and the end of each byte sets bit 3 of the
+//   interrupt data, which interrupts as the timers' bits do (a copy-protection check reads it: the
+//   LAX at $0100 in games/c64/green-beret).
 //   Not modelled: counting CNT or timer A's underflows with timer B, the time of day clocks, the
-//   serial port, the one-cycle delays of the real chip. Without cia the CIA timers and CIA 2 read 0.
+//   serial port as input, the one-cycle delays of the real chip. Without cia the CIA timers and
+//   CIA 2 read 0. Underflows that raise no interrupt are worked out when the chip is next read.
 // - With dma: true, the cycles the video chip takes from the processor (kit/skills/c64/c64-reference,
 //   "The video chip, cycle by cycle"): on a bad line, a line from 48 to 247 whose low three bits
 //   are $D011's vertical scroll in a frame whose line 48 saw $D011's display bit set, cycles 12-54;
@@ -258,7 +264,8 @@ class Machine {
       const t = (r - 4) >> 1;
       c.lat[t] = r & 1 ? (c.lat[t] & 255) | (v << 8) : (c.lat[t] & 0xFF00) | v;
       if ((r & 1) && !(c.cr[t] & 1)) c.cnt[t] = c.lat[t];       // a stopped timer loads on the high byte
-    } else if (r === 13) { if (v & 0x80) c.mask |= v & 0x1F; else c.mask &= ~v & 0x1F; }
+    } else if (r === 12) { if (c.cr[0] & 0x40) { if (c.sp) c.spNext = true; else c.sp = 16; } }
+    else if (r === 13) { if (v & 0x80) c.mask |= v & 0x1F; else c.mask &= ~v & 0x1F; }
     else if (r === 14 || r === 15) { const t = r - 14; if (v & 0x10) c.cnt[t] = c.lat[t]; c.cr[t] = v & 0xEF; }
   }
   // Moves the timers on to the processor's cycle count, raising what their underflows raise.
@@ -274,15 +281,25 @@ class Machine {
           if (c.cnt[t] >= left) { c.cnt[t] -= left; break; }
           left -= c.cnt[t] + 1; c.cnt[t] = c.lat[t]; c.icr |= 1 << t;
           if (n === 1 && (c.mask & (1 << t))) this.nmiDue = true;
+          if (t === 0 && c.sp && (c.cr[0] & 0x40) && --c.sp === 0) {   // a byte shifted out
+            c.icr |= 8;
+            if (n === 1 && (c.mask & 8)) this.nmiDue = true;
+            if (c.spNext) { c.spNext = false; c.sp = 16; }
+          }
           if (c.cr[t] & 8) { c.cr[t] &= ~1; break; }
         }
       }
     }
   }
-  // Cycles until the next timer underflow, or Infinity.
+  // Cycles until the next timer underflow that raises an interrupt, or Infinity: the others are
+  // worked out when the chip is read (ciaCatchUp), so a fast timer nobody listens to (a serial
+  // port's clock) does not cut the run into steps of a few cycles.
   ciaNext() {
     let best = Infinity;
-    if (this.cia) for (const c of this.cia) for (let t = 0; t < 2; t++) if (c.cr[t] & 1) best = Math.min(best, c.cnt[t] + 1);
+    if (this.cia) for (const c of this.cia) {
+      for (let t = 0; t < 2; t++) if ((c.cr[t] & 1) && (c.mask & (1 << t))) best = Math.min(best, c.cnt[t] + 1);
+      if ((c.cr[0] & 0x41) === 0x41 && c.sp && (c.mask & 8)) best = Math.min(best, c.cnt[0] + 1 + (c.sp - 1) * (c.lat[0] + 1));
+    }
     return best;
   }
   ioWrite(a, v) {

@@ -55,7 +55,7 @@ Found in the code, not in the manual.
 |---|---|---|
 | The second time round, every enemy that shoots fires twice as often; a third rise was planned but never happens | confirmed | `fire_frame_b`, `fire_frame_c`, `loop_count` |
 | The difficulty creeps up every 256 frames, faster on later stages, and drops to 0 at each death | confirmed | `irq_status`, `difficulty_rates`, `difficulty_caps` |
-| A death during an end-of-stage fight leaves two bytes on the stack, for the rest of the session | live | `player_killed` |
+| A death during an end-of-stage fight, or winning the Bridge, leaves two bytes on the stack, for the rest of the session | live | `player_killed`, `helis_launch` |
 | A copy-protection check runs every frame: CIA 2's serial port must keep shifting, or the machine stops | confirmed | `startup`, `cia2_serial_check` |
 | The hi score on a fresh load is 3,560, left in the saved image | live | `hi_score` |
 | Twelve sprite shapes nobody uses: kneeling and leaping soldiers | confirmed | `shapes_unused` |

@@ -11912,7 +11912,7 @@
   {
    "address": 4912,
    "type": "line",
-   "text": "The helicopters, three in all (boss_count 3, 2, 1). At the start (boss_count still 3) it waits until no enemy or projectile is left, clears the dying and hit flags, plays tune $2F and sets boss_phase. While fewer than two helicopters are out and heli_launch_timer has run out ($20 frames after a launch or a kill), it launches one into the first free group of slots (heli_launch). With boss_count at 0 and none out, the stage is complete."
+   "text": "The helicopters, three in all (boss_count 3, 2, 1). At the start (boss_count still 3) it waits until no enemy or projectile is left, clears the dying and hit flags, plays tune $2F and sets boss_phase. While fewer than two helicopters are out and heli_launch_timer has run out ($20 frames after a launch or a kill), it launches one into the first free group of slots (heli_launch). With boss_count at 0 and none out, the stage is complete: it jumps to stage_complete from inside bridge_fight's call, so that call's return address is never taken off the stack, and each Bridge won leaves two bytes there for good, as a death in an end-of-stage fight does (player_killed)."
   },
   {
    "address": 4992,
@@ -13012,7 +13012,7 @@
   {
    "address": 13219,
    "type": "line",
-   "text": "Removes every live enemy but a paratrooper that has gone off either edge: X under $12, or $150 and over."
+   "text": "Removes a live enemy, other than a paratrooper, that has gone off either edge. Off the left (X under $12) it removes each one and goes on; off the right ($150 and over) it removes the first it finds and ends the pass there (the BNE to enemy_remove, whose RTS returns for it), leaving any others for the next frame."
   },
   {
    "address": 13268,
@@ -13062,7 +13062,7 @@
   {
    "address": 13874,
    "type": "line",
-   "text": "Writes the status line, \"LIVES 1   SCORE   HI  SCORE  STAGE 1\" (status_text), to the top row of the screen at $C400, which the interrupt shows above the playfield, in white; clears the row below up to column 27 in white and colours its last 12 columns black ($20 & 15; the BIT at $364B skips LDA #$01), colours the score's ten columns brown ($09), and puts the stage's number (stage plus 1) at $C425."
+   "text": "Writes the status line, \"LIVES 1   SCORE   HI  SCORE  STAGE 1\" (status_text), to the top row of the screen at $C400, which the interrupt shows above the playfield, in white; clears the row below up to column 27 in white and colours its last 12 columns black ($20 & 15; the BIT at $364B skips LDA #$01), colours that row's columns 1 to 10 brown ($09), where the weapon's rounds go (draw_ammo), and puts the stage's number (stage plus 1) at $C425."
   },
   {
    "address": 13934,
@@ -13112,7 +13112,7 @@
   {
    "address": 14334,
    "type": "line",
-   "text": "Makes lanes 1 and 4 ready with type 3 (blue soldier) and brings their soldiers in with their tops at $C5 (spawn_on_floor's later part), one per free slot."
+   "text": "Makes lanes 2 and 5 ready (lane_ready + 2 and + 5) with type 3 (blue soldier) and brings their soldiers in with their tops at $C5 (spawn_on_floor's later part), one per free slot."
   },
   {
    "address": 14367,
@@ -13122,7 +13122,7 @@
   {
    "address": 14388,
    "type": "line",
-   "text": "The intermission's hero walking along the map: he walks right one X unit a frame to $89; at $8A he climbs (3 lines a frame) up the fence, behind the background (sprite priority set) once above Y $70 and in front again below it, with his pose as he goes (player_anim_step); at Y $C0 and over he stays put."
+   "text": "The intermission's hero walking along the map: he walks right one X unit a frame to $89. There he climbs the fence 3 lines a frame, in front of the background, until his feet (hero_bot_y) are above line $70; then he steps on to $8A behind the background (sprite priority set) and goes down the other side, one unit right and 3 lines down a frame, until his top reaches Y $C0, where he comes in front again and stays put. It sets the pose the intermission's loop gives player_anim_step (y_save): $0F as he climbs, 9 from the top on."
   },
   {
    "address": 14485,

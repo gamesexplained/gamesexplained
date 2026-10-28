@@ -56,22 +56,23 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <header class="hero">
   <p class="eyebrow">1986 · Imagine Software (Ocean)</p>
   <h1>Green Beret</h1>
-  <p class="sub">Every death in an end-of-stage fight leaves two bytes behind on the processor's stack, and after 23 of them the game crashes. Holding 1 stops the hero in mid-air.</p>
+  <p class="sub">Every death in an end-of-stage fight, and every Bridge won, leaves two bytes behind on the processor's stack, and after 23 of them the game crashes. Holding 1 stops the hero in mid-air.</p>
 </header>
 <main class="wrap">
 
 <section>
   <p class="fig">01 · The stack</p>
-  <h2 class="t">Bug: die in the fights 23 times and the game crashes</h2>
-  <p class="lede">A death in an end-of-stage fight leaves two bytes on the stack, and nothing ever takes them off, not even a new game.</p>
+  <h2 class="t">Bug: die in the fights or win the Bridge 23 times and the game crashes</h2>
+  <p class="lede">A death in an end-of-stage fight leaves two bytes on the stack, and so does winning the Bridge. Nothing ever takes them off, not even a new game.</p>
   <div class="plate">
-    <div class="gb-bar"><span>Deaths in the fights</span><input type="range" class="gb-range" id="gb-leak" min="0" max="40" value="0" aria-label="Deaths in the end-of-stage fights"><span id="gb-leak-n">0</span></div>
+    <div class="gb-bar"><span>Deaths in the fights and Bridges won</span><input type="range" class="gb-range" id="gb-leak" min="0" max="40" value="0" aria-label="Deaths in the end-of-stage fights and Bridges won"><span id="gb-leak-n">0</span></div>
     <canvas id="gb-page1" class="gb-cv"></canvas>
     <div class="gb-out" id="gb-leak-out"></div>
-    <p class="cap">Page 1 of memory, <code>$0100</code>-<code>$01FF</code>, one cell a byte, from <code>$0100</code> at the top left. Red: <code>cia2_serial_check</code>. Blue: the tables of the 21 virtual sprites (X, X high bit, colour, shape). Orange: the bytes the deaths have left. Yellow: the stack the game uses below them, down to 17 bytes under the main loop's, as measured in the emulator, and purple where it runs into the sprites' tables. The verdicts are from the emulator, with the stack pointer moved where that many deaths would leave it and the hero walking and stabbing on the Missile Base.</p>
+    <p class="cap">Page 1 of memory, <code>$0100</code>-<code>$01FF</code>, one cell a byte, from <code>$0100</code> at the top left. Red: <code>cia2_serial_check</code>. Blue: the tables of the 21 virtual sprites (X, X high bit, colour, shape). Orange: the bytes the deaths and the Bridges have left. Yellow: the stack the game uses below them, down to 17 bytes under the main loop's, as measured in the emulator, and purple where it runs into the sprites' tables. The verdicts are from the emulator, with the stack pointer moved where that many would leave it and the hero walking and stabbing on the Missile Base.</p>
   </div>
   <p>The routine that kills the hero, <code>player_killed</code>, throws away its caller's return address and jumps to <code>lose_life</code>, which restarts the stage. It expects to have been called from a routine the main loop called, so that the address it throws away is the main loop's own call. In play that is right. During an end-of-stage fight the contact tests are one call further down, and two bytes of return address stay on the stack. In the emulator the stack pointer at the top of the main loop went from <code>$FC</code> to <code>$FA</code> after a death in the Missile Base's fight, and stayed there.</p>
-  <p>Nothing in the game ever sets the stack pointer, so the bytes pile up for as long as the machine is on, through game over and every new game. The stack grows down through page 1, where the game also keeps its virtual sprites' tables, at <code>$0180</code>-<code>$01D3</code>. After 12 deaths in the fights the stack can reach them, and then the game's writes to the tables can land on return addresses. With the stack as 22 deaths leave it, the game played on for a minute; at 23 it crashed within half a minute, and at every count tried from 24 to 90 it crashed within 13 seconds.</p>
+  <p>Winning the Bridge does the same without a death. Its fight, <code>bridge_fight</code>, calls <code>helis_launch</code> every frame, and when the last helicopter is down <code>helis_launch</code> jumps straight to <code>stage_complete</code> instead of returning, so that call's return address stays behind. The other three fights end the stage from the main loop's own level and leave nothing. In the emulator the stack pointer at the top of the main loop was two bytes lower after the Bridge was won than before. A player who never dies in a fight still loses two bytes each time round the four stages, so 23 times round leave the stack as 23 deaths in the fights do.</p>
+  <p>Nothing in the game ever sets the stack pointer, so the bytes pile up for as long as the machine is on, through game over and every new game. The stack grows down through page 1, where the game also keeps its virtual sprites' tables, at <code>$0180</code>-<code>$01D3</code>. With 12 of these pairs of bytes left behind, the stack can reach the tables, and then the game's writes to the tables can land on return addresses. With 22 pairs left behind, the game played on for a minute; at 23 it crashed within half a minute, and at every count tried from 24 to 90 it crashed within 13 seconds.</p>
 </section>
 
 <section>
@@ -131,8 +132,9 @@ const $ = (id) => document.getElementById(id);
 const P = C64.PAL, hex = C64.hex;
 const press = (b, on) => b.setAttribute('aria-pressed', on ? 'true' : 'false');
 
-// ---- 01: page 1 with the stack as n deaths in the fights leave it. SP at main_loop is $FC
-// with none (live) and 2 lower for each; the stack goes 17 bytes further (live, standing).
+// ---- 01: page 1 with the stack as n deaths in the fights and Bridges won leave it. SP at
+// main_loop is $FC with none (live) and 2 lower for each; the stack goes 17 bytes further (live,
+// standing).
 // Verdicts: the counts tried in the emulator.
 const TRIED = { 0: 'played on', 8: 'played on', 12: 'played on', 16: 'played on', 18: 'played on', 20: 'played on',
   21: 'played on', 22: 'played on', 23: 'crashed', 24: 'crashed', 28: 'crashed', 32: 'crashed', 36: 'crashed', 40: 'crashed' };

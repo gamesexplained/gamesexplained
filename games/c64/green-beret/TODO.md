@@ -5,14 +5,17 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver. Coverage and verify ran on a proven model; the sample check found
+Platinum. Coverage and verify ran on a proven model; the sample check found
 14 of 80 comments wrong (17.5 %), all corrected with 14 more that shared
 their mistakes. An audit of the whole listing (`kit/CHECKING.md`) is
-recommended before anyone relies on it line by line.
+recommended before anyone relies on it line by line. The Play tab is the
+whole game ported to JavaScript, routine by routine, held in lockstep with
+the game's code (`port/test/lockstep.js`, every saved moment), and
+`test_play.js` holds the published page beside the game's code from the
+start-up and from moments through all four stages.
 
-Next: Platinum, a Play tab that is the whole game ported to JavaScript and
-held in lockstep with the game's code (`kit/skills/core/70-minisite/play.md`).
-Gold needs a human's pass over each section.
+Next: Gold needs a human's pass over each section; with it the game is
+Diamond.
 
 ## Traced, not yet shown on a page
 

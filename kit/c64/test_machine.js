@@ -136,6 +136,29 @@ if (require.main === module) {
     check('two machines restored from one save keep their own timers', JSON.stringify(two.save().cia), JSON.stringify(alone.save().cia));
   }
 
+  // CIA 2's serial port as output: timer A with a latch of 2 underflows every 3 cycles, and a byte
+  // written to $DD0C shifts out over 16 of them, 48 cycles, after which $DD0D has bit 3 set until it
+  // is read. $1000: $DD04/5 = 2, $DD0D = $7F, $DD0E = $C1, $DD0C = 0; $1014: LDA $DD0D; STA $2000;
+  // then 20 NOPs (40 cycles) and LDA $DD0D; STA $2001; 40 NOPs; LDA $DD0D; STA $2002; JMP *
+  {
+    const r3 = new Uint8Array(65536);
+    const prog = [0xA9, 0x02, 0x8D, 0x04, 0xDD, 0xA9, 0x00, 0x8D, 0x05, 0xDD, 0xA9, 0x7F, 0x8D, 0x0D, 0xDD,
+      0xA9, 0xC1, 0x8D, 0x0E, 0xDD, 0xA9, 0x00, 0x8D, 0x0C, 0xDD,
+      0xAD, 0x0D, 0xDD, 0x8D, 0x00, 0x20];
+    for (let i = 0; i < 20; i++) prog.push(0xEA);
+    prog.push(0xAD, 0x0D, 0xDD, 0x8D, 0x01, 0x20);
+    for (let i = 0; i < 40; i++) prog.push(0xEA);
+    prog.push(0xAD, 0x0D, 0xDD, 0x8D, 0x02, 0x20);
+    const here = 0x1000 + prog.length;
+    prog.push(0x4C, here & 255, here >> 8);
+    r3.set(prog, 0x1000);
+    const s = new Machine({ ram: r3, pc: 0x1000, cia: true });
+    s.runCycles(400);
+    check('serial port: no byte out yet just after the write', r3[0x2000] & 8, 0);
+    check('serial port: a byte out after 48 cycles sets bit 3 of $DD0D', r3[0x2001] & 8, 8);
+    check('serial port: the read cleared it, and no byte followed', r3[0x2002] & 8, 0);
+  }
+
   // Machine.fromSnapshot: a game's raster interrupt goes on from a snapshot of play. A snapshot laid
   // out as x64sc writes one (test_cpu6502.js has the other modules), with a VIC-IISC module 1.4:
   // the chip's model, its 64 registers, three words, a byte, the interrupt latch, then the rest.

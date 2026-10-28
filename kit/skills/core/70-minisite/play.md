@@ -100,7 +100,10 @@ demonstration.
   gives, for each stretch between checkpoints, the cycles the game took
   (its interrupts excluded) and how often the port called each routine.
   Add the pixels drawn and rows filled from the port's own counters, and
-  fit each routine's own cycles by non-negative least squares. Check the
+  fit each routine's own cycles by non-negative least squares. Leave a
+  polling loop's cycles out of what is fitted: the page's clock runs its
+  turns for itself, a line at a time, so a cost that holds the wait pays
+  it twice and the page runs late. Check the
   fit on sessions it was not fitted on, and on every kind of play the
   page offers: a scene the fit never saw can run fast by a routine it
   never costed. Then check the pace itself: passes in the same frames from

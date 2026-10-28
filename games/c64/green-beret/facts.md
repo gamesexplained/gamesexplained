@@ -168,8 +168,18 @@ interrupts off (`block_swap`, `text_draw`, `anim_chars_restore`).
   frames), and stopped at N = 23
   (within 1,200 frames, with the processor in the character set at
   `$7AD0`) and at every N tried from 24 to 90 (within 650 frames). From
-  N = 20 the stack runs into the virtual sprites' tables at
-  `$0180`-`$01D3`, which the game writes as it plays.
+  N = 12 the stack, 17 bytes below `$01FC` - 2 × N, can reach the
+  virtual sprites' tables at `$0180`-`$01D3`, which the game writes as
+  it plays.
+- `bridge_fight` calls `helis_launch` each frame, and when the last
+  helicopter is down `helis_launch` jumps to `stage_complete` instead of
+  returning, so each Bridge won leaves two bytes on the stack as well;
+  the other fights jump to `stage_complete` from the main loop's level.
+  *Live*: on the kit's C64, the hero kept alive, the stack pointer at
+  `main_loop` was `$FF` before the Bridge's fight and `$FD` after it was
+  won. Through every stage over 37,500 frames, the port's count of
+  these bytes (deaths in the fights and Bridges won) matched the C64's
+  stack pointer at 15 moments (`test_play.js`).
 - `cia2_serial_check` (`$0100`), run every frame of play, stops the
   machine with a `JAM` when CIA 2's serial flag is not set: the
   start-up keeps CIA 2's serial port shifting at timer A's rate.

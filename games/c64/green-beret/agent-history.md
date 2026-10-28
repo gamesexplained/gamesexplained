@@ -73,3 +73,36 @@ layout, on the game's own driver.
 
 **Coverage** reached 100 % of 63,575 bytes, with the zero page, the
 variables and the playfield's screen excluded as run-time state.
+
+**The Play tab.** Every routine of the game but Martin Galway's sound
+driver was written again in JavaScript, and the driver runs on the site's
+6502. The port and the game ran side by side on the kit's C64 from 78
+saved moments through all four stages and their fights, compared at each
+of 300 passes of the main loop; from the start-up too. Two things the port
+needed of the machine were missing from `kit/c64/machine.js`: CIA 2's
+serial port, which the copy-protection check at `$0100` reads every frame,
+and timer underflows that raise no interrupt worked out when the chip is
+read, so a timer clocking the serial port every 3 cycles did not cut each
+run into 3-cycle steps.
+
+**Pacing.** Each instruction's cycles on the kit's C64 were put down to the
+port's routine it belongs to (`port/scripts/time-routines.js`), with the
+interrupt handlers traced instruction by instruction (`nest`); without it
+their cycles fell on whatever routine they interrupted. A routine whose
+cost follows its work was fitted by the port's counts of that work: the
+multiplexer by the sprites it places as well as its turns, picture drawing
+by its commands. The first page ran 8 frames late by the end of the intro:
+the stretch that ends in `frame_wait` had been costed with the turns of
+its polling loop, which the page's clock runs for itself. With them left
+out the page reaches the main loop on the C64's frame.
+
+**The listing.** Porting every routine corrected five comments the sample
+had not drawn: `enemies_offscreen` stops at the first enemy off the right
+edge, `guards_send` readies lanes 2 and 5, `status_draw`'s brown columns
+are the rounds' places, `hero_walk_map` climbs in front and comes down
+behind, and `helis_launch` jumps to `stage_complete` from inside
+`bridge_fight`'s call. The last is a second stack leak, two bytes for each
+Bridge won; on the kit's C64 the stack pointer at `main_loop` went from
+`$FF` to `$FD` as the Bridge was won, and the Discoveries page and the Play
+tab's crash count include it.
+
