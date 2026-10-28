@@ -19,6 +19,8 @@ platform. The story is a binary, the game whole: it stays in the game's
 | `kit/zmachine/zcode.py` | the instructions of every version: the opcode table, decoding, the text of an instruction |
 | `kit/zmachine/bocfel.py` | Bocfel, the interpreter: installs it into `tools/` with the kit's trace and runs a story |
 | `kit/zmachine/ztrace.py` | reads Bocfel's trace: shows it, checks the decoder against it, sums it up turn by turn |
+| `kit/zmachine/map.py` | a story part's symbol map from the story's own structure: its tables, routines and strings, with comments from templates |
+| `kit/zmachine/cpu.py`, `snapshot.py` | what `listing.py` reads a story part through: the instructions at five-digit addresses, and the file as the image |
 | `kit/zmachine/zasm.py` | a small assembler, for the kit's test stories |
 | [reference.md](reference.md) | what changes from version to version, with the Standard's sections |
 
@@ -81,10 +83,38 @@ them. When a version 1 or 2 word is reported unknown, check with `python3
 kit/zmachine/story.py work/story.z2 word <word>` before believing the
 game lacks it: it may be the interpreter.
 
+## Listing the story
+
+The story is a part of the game of its own, of kind virtual
+(`kit/skills/core/15-parts`, step 7), beside the interpreter's part:
+
+```
+python3 kit/scripts/parts.py add <game dir> story --title "The story" --machine zmachine --size <file's bytes>
+python3 kit/zmachine/map.py <game dir>/parts/story work/story.z<N> --trace work/walk.trace
+python3 kit/scripts/listing.py <game dir>/parts/story work/story.z<N>
+```
+
+`map.py` lays the story out from its header and describes every table
+it knows the shape of; what each routine does, what each global holds,
+what each string is printed for, and the game's own tables are the
+run's to write, in `symbols.json`, as for any listing. Run it again
+after a trace shows a routine it missed: what the run wrote stays.
+
+A version 1 or 2 story's header gives no length, and its file can run
+on past the story, with padding or a stale buffer written out again.
+Find where the story's own bytes end (the last string the story names,
+and what follows it compared with the story's earlier pages), and give
+the part's coverage an exclusion from there to the file's end; `map.py`
+stops there.
+
+Infocom's source survives for many of its games, mostly of later
+releases than those sold on disk. A name from it goes only where the
+release's code does the same job in the same steps; the rest are the
+run's own, in lower case, so that they can be told apart.
+`original-source.md` says which release the listing is read from and
+which the names come from.
+
 ## Where the kit stops
 
-The decoder reads one instruction at a time and `ztrace.py` what ran;
-there is no listing of the story yet, so its bytes are a
-`coverage.virtual` row (`kit/skills/core/15-parts`, step 7). Version 6's
-screen model needs Bocfel's Glk build, which the kit does not make: the
-decoder reads version 6, and nothing runs it.
+Version 6's screen model needs Bocfel's Glk build, which the kit does
+not make: the decoder reads version 6, and nothing runs it.
