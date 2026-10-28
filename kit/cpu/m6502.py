@@ -55,7 +55,8 @@ assert len(OPS) == 151, len(OPS)
 
 # Explicitly code-typed NMOS instruction verified in a game. Keep it
 # separate from the documented table used by other tooling.
-UNDOCUMENTED = {0xBF: ("lax", "aby")}
+UNDOCUMENTED = {0xBF: ("lax", "aby"),
+                0xAF: ("lax", "abs"), 0x4B: ("asr", "imm"), 0x8F: ("sax", "abs")}
 
 
 def decode(ram, a):
