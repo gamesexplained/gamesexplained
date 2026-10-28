@@ -26,7 +26,7 @@
 | Armed enemy and reload interval | partly traced, interval open | Type-1 handler $9232, projectile creation $99DD and shared action state $0635. Exact documented reload pacing has not been verified live. |
 | Dogs and Mr. Big | documented/traced, mapping open | Type-4 special-hit path and type-8 death/end path are traced. Exact visual type mapping remains an explicit question. |
 | Endurance, lives, score, stage and timer panel | live/traced | HUD copy, live game view and state fixtures. Timer decrement interval is 51 normal-loop calls. |
-| Supplied edition starts with five lives | differs/live | $8000, $020C and native HUD. Manual says three; reason for the edition difference is open. |
+| Supplied edition starts with five lives | differs/live | $8000, $020C and native HUD. Manual says three; Zzap!64 38 says five, as the cartridge does. Why the manual differs is open. |
 | Extra life at 50,000 then 100,000 intervals | differs/traced/live | $FC00 requires strictly greater. Equal, greater and nine-life native cases agree; threshold advances by 100,000. |
 | Attack scores from 200 to 2,000 in manual | partly traced, full schedule open | $A0AD stores per-type awards and $A0F9 applies pending BCD score. Documented event-by-event schedule remains open. |
 | Commodore pause/resume | live | Two key presses toggled $0689 from 0 to 1 to 0. |
