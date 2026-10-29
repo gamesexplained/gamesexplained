@@ -6,7 +6,7 @@ The engine is the code and data that stay in memory while the text adventure and
 
 - `$0000-$05FF`: the processor's work area and the game's saved state (names, map changes, inventory, clock). The ledger leaves these out as runtime state.
 - `$0800-$78FF`: the engine's code and tables.
-- `$D000-$DFFF`: the text font, the dictionary, the note-frequency table and one window routine, in RAM beneath the I/O area.
+- `$D000-$DFFF`: the text font, the dictionary, the keyboard translation tables, the note-frequency table and one window routine, in RAM beneath the I/O area.
 
 Every load lies over this part (`over`) and owns `$0600-$07FF` (its map header), `$7900-$CFFF` and `$E000-$FFFF`.
 

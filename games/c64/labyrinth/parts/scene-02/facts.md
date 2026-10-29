@@ -12,7 +12,7 @@ Movement tail `$36EF` compares approach depth against the classified bound. At `
 
 ## Destination choice
 
-With negative `$0343`, `$4115` finds the first inclusive threshold at `$074E` at least as large as the classified column. It uses fallback index 15 after fifteen comparisons. `$076E` selects a bank source; the first eight regions use selector 3, calling `$4210`. That PRNG replaces the 16-bit state `$0502/$0503` with `(37*state+17) mod 65536` and returns its high byte. Bits $60 choose one of four banks.
+With negative `$0343`, `$4115` finds the first inclusive threshold at `$074E` at least as large as the classified column. It uses fallback index 15 after fifteen comparisons. `$076E` selects a bank source; the first eight regions use selector 3, calling `$4210`. That PRNG replaces the 16-bit state `$0502/$0503` with `(37*state+17) mod 65536` and returns its high byte. Bits $60 choose one of four banks. The thresholds are 8,15,24,30,35,40,50 and then $FF, so columns 8, 15, 24, 30 and 35 select regions 0 to 4, columns 41 and 50 both select region 6, and column 58 selects region 7; region 5 (columns 36 to 40) holds no exit column in the captured strip.
 
 Scene tables start at `$077E`, `$079E`, `$07BE`, `$07DE`; entry tables at `$078E`, `$07AE`, `$07CE`, `$07EE`. All eight opening columns choose scene 3 (The Brick Hallway) in every bank. Entry IDs identify positions inside that scene. Entry rows for the first eight regions are:
 
