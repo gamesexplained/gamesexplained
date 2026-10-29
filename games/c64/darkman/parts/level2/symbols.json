@@ -10468,7 +10468,7 @@
   {
    "address": 21921,
    "type": "line",
-   "text": "Called by $6480 while the banner flag $56D1 is set. Turns on all eight sprites, sets their colours and multicolours, and then busy-waits on the raster until line $96, setting up eight sprites in a row at height $3C and then $66 (pointers from $CB and $D3 through $5678) and, from line $92, six sprites at height $9B with pointer $C5 and other X positions through $5699, probably to draw a large picture across the screen."
+   "text": "Called by $6480 while the banner flag $56D1 is set. Turns on all eight sprites, sets their colours and multicolours, and then busy-waits on the raster until line $96. Above line $63 it places the sprites as a block four across and two down (sprites 0-3 at height $3C, sprites 4-7 at $3C plus $15, pointers from $CB, through $5678), then above line $92 the same block at height $66 with pointers from $D3; from line $92 it puts six sprites at height $9B, with pointers from $C5 (through $5699), new X positions, colour 2 and multicolours 1 and 6, probably to draw a large picture across the screen. It sets the border to black before returning."
   },
   {
    "address": 22136,
@@ -10498,7 +10498,7 @@
   {
    "address": 22228,
    "type": "line",
-   "text": "Called by the main loop. Once only ($56D3 clear): when the player's world X is $0222 or more, the camera's height is below $00E3 and the banner flag $56D1 is clear, it sets $56D1 and the countdown $56D2 to $C8 and blacks the colour RAM of the screen. While $56D1 is set it counts $56D2 down and at 1 puts the colours back from the screen matrix ($2067 picks it) through the table at $BF00, clears $56D1 and sets $56D3."
+   "text": "Called by the main loop. Once only ($56D3 clear): when the high byte of the player's world X ($1FC3) is 2 or more and its low byte ($1FC2) is $22 or more, the camera's height is below $00E3 and the banner flag $56D1 is clear, it sets $56D1 and the countdown $56D2 to $C8 and blacks the first $2F8 bytes of colour RAM (rows 0 to 18, the play area). While $56D1 is set it counts $56D2 down and at 1 puts those colours back from the screen matrix ($2067 picks it) through the table at $BF00, clears $56D1 and sets $56D3."
   },
   {
    "address": 22416,
@@ -10538,7 +10538,7 @@
   {
    "address": 22426,
    "type": "line",
-   "text": "The rest of the energy bar shapes at $5794: bytes 6 to 8 of the first character and the other seven characters."
+   "text": "The rest of the energy bar shapes at $5794: bytes 6 and 7 of the first character and the other seven characters."
   },
   {
    "address": 22484,
@@ -10548,7 +10548,7 @@
   {
    "address": 22485,
    "type": "line",
-   "text": "Builds the energy bar: fills 8 characters of the panel ($CF59 on, colour 5 at $DB59) with the code $1D, writes a striped pattern into the eight character shapes at $5795, masks off 2 pixels for each step by which the energy $5578 is below $21 (mask table at $5790) and copies the 64 bytes at $5794 to the character set at $FAC8."
+   "text": "Builds the energy bar: fills 8 cells of the panel's screen matrix ($CF59 on) with the colours $1D and their colour RAM ($DB59) with 5, writes a striped pattern into bytes 1 to 6 of the eight 8-byte cells at $5794, masks off one multicolour pixel (two bits) for each step by which the energy $5578 is below $21, from the right-hand end (mask table at $5790), and copies the 64 bytes at $5794 to the panel bitmap at $FAC8."
   },
   {
    "address": 22621,
@@ -10563,7 +10563,7 @@
   {
    "address": 22665,
    "type": "line",
-   "text": "Draws the seven digits from $0A00 on into the panel's character shapes at $FA58 (8 bytes each from the digit shapes at $58C2) through $589C."
+   "text": "Draws the seven digits from $0A00 on into the panel bitmap's cells at $FA58 (8 bytes each from the digit shapes at $58C2) through $589C."
   },
   {
    "address": 22684,
@@ -10583,7 +10583,7 @@
   {
    "address": 22802,
    "type": "line",
-   "text": "The player's state: 1 standing or walking, 2 falling, 3 jumping, 4 climbing, 5 punching, 6 crouching, 7 a strike or hop with a short arc. Chosen by the routine for the current state and read by $5925."
+   "text": "The player's state: 1 standing or walking, 2 falling, 3 jumping, 4 climbing, 5 punching, 6 crouching, 7 a strike or hop with a short arc. Chosen by the routine for the current state and read by $5925, by $6111 and by the strike and jump routines ($5AEC, $5F5B)."
   },
   {
    "address": 22803,
@@ -10598,17 +10598,17 @@
   {
    "address": 22819,
    "type": "line",
-   "text": "The player's X ($747B) before this frame's move; put back when the move would end inside a solid tile."
+   "text": "The player's X ($747B) before this frame's move; put back when the move would end inside a solid tile. The scroll code $206C also saves the X here ($208B) and its scroll routines put it back ($2181, $34D7) when they undo a scroll step."
   },
   {
    "address": 22820,
    "type": "line",
-   "text": "The player's Y ($747C) before this frame's move."
+   "text": "The player's Y ($747C) before this frame's move, saved by $5925. The scroll code $206C also saves the Y here ($2091), and its scroll routines put it back ($26DF, $2A78) when they undo a scroll step."
   },
   {
    "address": 22821,
    "type": "line",
-   "text": "Called from $6480 each frame. Unless the game is paused ($6443) it saves the player position in $5923/$5924 and runs the routine for the player's state $5912 (table at $5913, through a call whose operand is rewritten at $5948/$5949); it then draws the player's frames with $6111."
+   "text": "Called from $6480 each frame, unless the banner flag $56D1 or the wipe flag $74BA is set. Unless the game is paused ($6443) it saves the player position in $5923/$5924 and runs the routine for the player's state $5912 (table at $5913, through a call whose operand is rewritten at $5948/$5949); it then draws the player's frames with $6111, paused or not."
   },
   {
    "address": 22855,
@@ -10658,7 +10658,7 @@
   {
    "address": 22902,
    "type": "line",
-   "text": "Toggled by $5977 and $5998 so that the walk frame index advances every second call."
+   "text": "Toggled by $5977 and $5998, and by the climb routines $5FC9 and $5FEA, so that the walk or climb frame index advances every second call."
   },
   {
    "address": 22903,
@@ -10703,17 +10703,17 @@
   {
    "address": 23102,
    "type": "line",
-   "text": "Player state 7: adds the 13 signed steps of the table at $5A24 (-6 up to +6) to his height in turn, steers left and right, sets the strike frames through $59FF while the timer $5B2C runs and returns to state 1 when the steps are used up."
+   "text": "Player state 7: adds the 13 signed steps of the table at $5A24 (-6 up to +6) to his height in turn and moves him 2 pixels a frame the way he faces ($59B9), without reading the joystick. It sets the strike frames through $59FF while the timer $5B2C runs and returns to state 1 when the steps are used up or, from the eighth step on, when he lands on a solid tile."
   },
   {
    "address": 23339,
    "type": "line",
-   "text": "Set to 10 by $5A3E when a strike ends and counted down there while the timer $5B2C is zero."
+   "text": "Set to 10 by $5A3E and by $5E9E when the strike timer $5B2C counts down to zero, and counted down by both while that timer is zero; nothing else reads it. State 7 ends after at most 13 frames and zeroes the timer itself, so the setting to 10 seems never to happen."
   },
   {
    "address": 23340,
    "type": "line",
-   "text": "Frames left of the strike (set to $0E by the crouch strike); the hit test $10B2 and the draw routine $6111 read it."
+   "text": "Frames left of the strike, set to $0E when a strike starts ($5B44 from the crouch, $5D10 from $5BBC) and counted down by $5A3E and $5E9E; the hit test $10B2, the draw routine $6111 and $6444 read it."
   },
   {
    "address": 23341,
@@ -10723,7 +10723,7 @@
   {
    "address": 23342,
    "type": "line",
-   "text": "Delay before the player can crouch again, set to 10 after a state change and counted down by $5CF1."
+   "text": "Delay before the player can crouch or strike again: set to 10 when a strike or a crouch ends, to 4 when a climb ends and to 0 when a jump ends, and counted down by $5CF1."
   },
   {
    "address": 23343,
@@ -10758,17 +10758,17 @@
   {
    "address": 23482,
    "type": "line",
-   "text": "Frames left of the punch, set to 9 when it starts; the hit test $10B2 reads it."
+   "text": "Frames left of the punch, set to 9 when it starts and counted down by $59E0; the hit test $10B2, the draw routine $6111 and $6444 read it."
   },
   {
    "address": 23483,
    "type": "line",
-   "text": "Read at $5CD7 to stop a climb or crouch from starting; nothing writes it in this file."
+   "text": "Read at $5CD7 to stop a climb down from starting; nothing writes it in this file."
   },
   {
    "address": 23484,
    "type": "line",
-   "text": "Player state 1, standing and walking. Counts down the jump delay $5B30, clears the hit flags and $5B2C, then moves 2 pixels left or right from the stored joystick $2064 (bits 2 and 3), unless $796D or $79D6 blocks it or he is at the map's end (world X below $2A or from $396), and keeps him out of solid tiles through the map pointer from $7401. The tile under his feet decides what comes next: an empty tile, $12 or one above $12 starts a fall (state 2); up on a $12 or $13 tile starts a climb (4), up otherwise a jump (3); fire starts a punch (5) or, with down, the strike (7); down alone crouches (6)."
+   "text": "Player state 1, standing and walking. Counts down the jump delay $5B30, clears the hit flags and $5B2C, then moves 2 pixels left or right from the stored joystick $2064 (bits 2 and 3), unless $796D or $79D6 blocks it or he is at the map's end (world X below $2A or from $396), and keeps him out of solid tiles through the map pointer from $7401. The tile under his feet decides what comes next: an empty tile, $12 or one above $12 starts a fall (state 2); up on a $12 or $13 tile starts a climb (4), up otherwise a jump (3) once $5B30 is zero; down on a $10 or $11 tile starts a climb down (4); otherwise, once the delay $5B2E is zero, down with fire starts the strike (7) and down alone crouches (6); fire starts a punch (5) once $5B2F is zero."
   },
   {
    "address": 23842,
@@ -10813,7 +10813,7 @@
   {
    "address": 24220,
    "type": "line",
-   "text": "Index into the jump or strike height tables ($5E4F, $5A24), two bytes a step."
+   "text": "Index into the jump or strike height tables ($5E4E, $5A24), two bytes a step."
   },
   {
    "address": 24221,
@@ -10823,7 +10823,7 @@
   {
    "address": 24222,
    "type": "line",
-   "text": "Player state 3, a jump. Adds the 39 signed steps of the table at $5E4F (rising and then falling, two bytes each) to the height $747C, steers left and right from the joystick, shows the jump frames and returns to state 1 when the table ends or the player lands."
+   "text": "Player state 3, a jump. Adds the 39 signed steps of the table at $5E4E (rising and then falling, two bytes each) to the height $747C, steers left and right from the joystick, shows the jump frames and returns to state 1 when the table ends or the player lands."
   },
   {
    "address": 24477,
@@ -10878,7 +10878,7 @@
   {
    "address": 24846,
    "type": "line",
-   "text": "Sprite pointer value for the player's second sprite when the punch, strike or crouch frames are in use, set by $59BB, $59FF and $5B95."
+   "text": "Sprite pointer value for the player's sprite 2 (the third, pointers $CFFA/$CBFA) when the punch, strike or crouch frames are in use, set by $59BB, $59FF and $5B95."
   },
   {
    "address": 24847,
@@ -10888,7 +10888,7 @@
   {
    "address": 24848,
    "type": "line",
-   "text": "Sprite pointer value for the player's third sprite when the punch, strike or crouch frames are in use."
+   "text": "Sprite pointer value for the player's sprite 1 (the second, pointers $CFF9/$CBF9) when the punch, strike or crouch frames are in use."
   },
   {
    "address": 24849,
@@ -10943,7 +10943,7 @@
   {
    "address": 25365,
    "type": "line",
-   "text": "Raster interrupt 2 of 3, on line $C5 (set by $6480). Moves sprites 3-7 to line $0A and clears their pointers, turns sprites off, sets $D018 and $D011 for the panel with extended colour mode, counts down $5577 and $1658, reads joystick port 2 ($DC00,$DC01) into $2064 and $2065 unless the recoil counter $1658 is running, sets the character set bits of $D018 to 8, runs the countdown $759B and the list clear $6088, and toggles $63E7. It sets line $CD and the vector $63E8 for the next interrupt."
+   "text": "Raster interrupt 2 of 3, on line $C5 (set by $6480). Moves sprites 3-7 to line $0A and clears all eight sprite pointers in both screens, turns sprites off, sets $D018 and $D011 for the panel with extended colour mode, counts down $5577 and $1658, reads $DC00 (joystick port 2) into $2064 and $DC01 (port 1 and the keyboard) into $2065 unless the recoil counter $1658 is running while $5577 is zero, sets the character set bits of $D018 to 8, runs the countdown $759B and the list clear $6088, toggles $63E7 and counts $63E6 down every second frame. It sets line $CD and the vector $63E8 for the next interrupt."
   },
   {
    "address": 25568,
@@ -11003,7 +11003,7 @@
   {
    "address": 25728,
    "type": "line",
-   "text": "Raster interrupt 1 of 3, on line 0 (the line is written by $63E8). Saves A, X and Y in the operands at $6553-$6558 (restored by the LDA, LDX and LDY there), takes the fine scrolls $2061 into $D016 and $2062 into $D011, selects the screen buffer through $62FF, and sets the sprite multicolours. With $56D1 set it runs the banner $55A1; otherwise it sorts the sprites ($60B7), places sprites 0-2 at the player ($747B,$747C), sets the sprite colours and multiplexes sprites 3-7 ($6604), runs the player ($5925), the music ($6526), the colour copy ($69E3) and the object update ($1214). It then sets line $C5 and the vector $6315 in $FFFE/$FFFF."
+   "text": "Raster interrupt 1 of 3, on line 0 (the line is written by $63E8). Saves A, X and Y in the operands at $6553-$6558 (restored by the LDA, LDX and LDY there), takes the fine scrolls $2061 into $D016 and $2062 into $D011, selects the screen buffer through $62FF, and sets the sprite multicolours. With $56D1 set it runs only the banner $55A1 and then sets the next interrupt; otherwise it sorts the sprites ($60B7) and, unless the wipe flag $74BA is set, multiplexes sprites 3-7 ($6604), runs the player ($5925), places sprites 0-2 at the player ($747B,$747C) and sets their colours. It then runs the sound-effect driver's play $B176 (at $6526), the multiplexer again, the colour copy ($69E3) and the object update ($1214), and sets line $C5 and the vector $6315 in $FFFE/$FFFF."
   },
   {
    "address": 25940,
