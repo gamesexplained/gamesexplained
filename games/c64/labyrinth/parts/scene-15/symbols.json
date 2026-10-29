@@ -2430,7 +2430,7 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "MF map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $3F here, from $59A1 indexed by header byte $0705 = 2). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 34 hold 06 00 00 02 00 01 00 03 00 01 00 04 00 01 00 05 00 06 00 02 00 01 00 04 00 01 00 03 01 00 00 05 00 01 06; the rest of the strip is zero."
+   "text": "MF map strip: 64 cells, one per world column, read indexed from $0600 by the resident at $099D, $3518, $355F, $3B54 (in $3B51), $418A (in $4173), $4C36, $4C5F, $4CA7, $4CB2, $4F77, $4F93, $4FD8 and $502E (the position mask $5E is $3F here, from $59A1 indexed by header byte $0705 = 2). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 34 hold 06 00 00 02 00 01 00 03 00 01 00 04 00 01 00 05 00 06 00 02 00 01 00 04 00 01 00 03 01 00 00 05 00 01 06; the rest of the strip is zero."
   },
   {
    "address": 1600,
@@ -2445,7 +2445,7 @@
   {
    "address": 1796,
    "type": "line",
-   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines, $0705 (2) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and $0706 (64) is halved into $02C8 and $02C7 at $566A."
+   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines ($287C, $3447, $4409, $48C6); the resident also stores to it at $6B9E. $0705 (2) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60 ($3F and $C0 here), and from $566A $0706 (64) is shifted right twice into $02C8 (16), its low two bits going to bits 7-6 of $02C7."
   },
   {
    "address": 1799,
@@ -2460,12 +2460,12 @@
   {
    "address": 1808,
    "type": "line",
-   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds. $0710 is read by the object grid and placement routines ($37B4, $383F, $5487), $0711 at $548A, $0718 at $5397 and $0719 at $53B9."
+   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds. The table is read indexed from $0710 by the object grid and placement routines at $28CA, $37B9 (in $37B4), $383F, $3863 and $5487; $0711 is read at $548A, $0718 at $5397 and $0719 at $53B9."
   },
   {
    "address": 1818,
    "type": "line",
-   "text": "Costume selector ($08), the index into the initial-animation table at $5985 read at $51EA and $5985. The three bytes after it ($071B-$071D = FF 03 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
+   "text": "Costume selector ($08), read at $51EA and copied to $02C5 (replaced by 4 when $0385 is non-negative and $0565 is negative); it indexes the initial-animation table at $5985, read at $520D. The three bytes after it ($071B-$071D = FF 03 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
   },
   {
    "address": 1822,
@@ -2480,17 +2480,17 @@
   {
    "address": 1854,
    "type": "line",
-   "text": "Sixteen low-nibble-to-type values read by $4171/$4173 and $3B51 (bytes: 00 07 00 00 00 00 01 00 00 00 00 00 00 00 00 00). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
+   "text": "Sixteen low-nibble-to-type values read indexed by the resident at $351E, $3565, $3B5A (in $3B51), $4192 (in $4173), $4A8E, $4B27, $4F7D, $4F99, $4FE8 and $503E (bytes: 00 07 00 00 00 00 01 00 00 00 00 00 00 00 00 00). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
   },
   {
    "address": 1870,
    "type": "line",
-   "text": "Sixteen inclusive upper column bounds read by $4115 (bytes: 05 09 0D 15 19 1C 21 FF FF FF FF FF FF FF FF FF). Resident $411C takes the first entry whose bound is at least the coarse column, so each region is the span of columns up to its bound."
+   "text": "Sixteen inclusive upper column bounds at $074E (bytes: 05 09 0D 15 19 1C 21 FF FF FF FF FF FF FF FF FF), read by $4115. Resident $411C takes the first of entries 0 to 14 whose bound is at least the coarse column, and entry 15 when none is; the last byte ($075D) is never read. So region 0 is columns up to 5, region 1 is 6-9, region 2 $0A-$0D, region 3 $0E-$15, region 4 $16-$19, region 5 $1A-$1C, region 6 $1D-$21, and region 7 (bound $FF) every column above $21."
   },
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C reads at most index 14 ($075C), so it reads none of them. The resident uses $075E,X/Y as per-cell state for special map cells: $381C increments the counter of the cell just entered, and $38FE (update_grid_special_cell) reads and writes it at $3901 and $3915, with Y the low nibble of a special map cell."
   },
   {
    "address": 1902,
@@ -2595,32 +2595,32 @@
   {
    "address": 31488,
    "type": "line",
-   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
+   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
   },
   {
    "address": 31568,
    "type": "line",
-   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
+   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
   },
   {
    "address": 31648,
    "type": "line",
-   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
+   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
   },
   {
    "address": 31728,
    "type": "line",
-   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31808,
    "type": "line",
-   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31888,
    "type": "line",
-   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
+   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
   },
   {
    "address": 31968,
@@ -3010,12 +3010,12 @@
   {
    "address": 35503,
    "type": "line",
-   "text": "AV costume stream 78 ($8AAF-$8AD6, 40 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
+   "text": "AV costume stream 78 ($8AAF-$8ADC, 46 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
   },
   {
    "address": 35543,
    "type": "line",
-   "text": "41 bytes ($8AD7-$8AFF) after the last stream's $FF terminator. No stream offset points here and the bytes do not follow the stream pattern; they look like leftover data from the disk load."
+   "text": "The first six bytes ($8AD7-$8ADC = 31 80 34 81 32 FF) are the end of AV stream 78, whose $FF terminator is at $8ADC. The 35 bytes after it ($8ADD-$8AFF) follow the costume's last stream (the size word at $7900 is $11DD, ending at $8ADD); no stream offset points there and they do not follow the stream pattern, so they look like leftover data from the disk load."
   },
   {
    "address": 35584,
@@ -3110,12 +3110,12 @@
   {
    "address": 35989,
    "type": "line",
-   "text": "Reached by fall-through from the fifth hook entry. Clears carry, adds $20 to zero-page $2A and throws that sum away, adds the carry to $2B, ANDs the result with zero-page $5E and stores it in $053E, then returns. What $2A, $2B, $5E and $053E hold is not identified here."
+   "text": "Reached by the jmp at the fifth hook entry ($8C92) and called directly by the resident with JSR at $5DBD. Clears carry, adds $20 to zero-page $2A and throws that sum away, adds the carry to $2B, ANDs the result with zero-page $5E and stores it in $053E, then returns. What $2A, $2B, $5E and $053E hold is not identified here."
   },
   {
    "address": 36004,
    "type": "line",
-   "text": "Per-frame routine reached through the hook at $8C8F. Calls stone_setup_once, stone_queue_sound_if_0298_is_3, then stone_peach_update while $9098 is not negative and stone_camcorder_update while $8F12 is not negative. Then stores |$0349| in $8D6B and runs the warning, countdown and hint logic below, ending by setting $036A from the table at $8D5A."
+   "text": "Per-frame routine reached through the hook at $8C8F. Calls stone_setup_once, stone_queue_sound_if_0298_is_3, then stone_peach_update while $9098 is not negative and stone_camcorder_update while $8F12 is not negative. Then stores |$0349| in $8D6B and runs the warning, countdown and hint logic below. It ends by setting $036A: to 1 directly when $8D6B is $1C or more, otherwise from the table at $8D5A."
   },
   {
    "address": 36026,
@@ -3160,7 +3160,7 @@
   {
    "address": 36196,
    "type": "line",
-   "text": "Counter, snapshot value 0. Set from the delay tables when a warning or hint is shown, to 8 by GIVE (any object) and to $10 or the intro delay by the wall hint lines. While nonzero stone_update flips $036B each frame and decrements it; at zero the message area is cleared by stone_countdown_expired."
+   "text": "Counter, snapshot value 0. Set from the delay tables when a warning or hint is shown ($8FB3, $8FFE), to 8 by GIVE (any object) ($8DC9), to $10 by the closing hint line ($8D2D) and to the intro delay $1C or $0E by the wall hint lines ($8FE8); set to 0 when |$0349| reaches $1C ($8CE4) and to 1 by stone_countdown_expired while $8D65 is not negative ($8D11). While nonzero stone_update flips $036B each frame and decrements it; at zero the message area is cleared by stone_countdown_expired."
   },
   {
    "address": 36197,
@@ -3405,7 +3405,7 @@
   {
    "address": 36679,
    "type": "line",
-   "text": "Pops two return addresses (the helper's and its caller's) and jumps to stone_show_text_indent5 to show the text in Y/X, so the calling handler ends here."
+   "text": "Pops one return address (two bytes: the helper's return into the calling handler) and jumps to stone_show_text_indent5 to show the text in Y/X, so the calling handler ends here and the text routine returns to the handler's caller."
   },
   {
    "address": 36684,
@@ -3815,17 +3815,17 @@
   {
    "address": 38756,
    "type": "line",
-   "text": "Headered text $9764-$9783. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"I'd turn back if I were you!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9764-$9783. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"I'd turn back if I were you!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 0 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 0, with delay $0E from $902E."
   },
   {
    "address": 38788,
    "type": "line",
-   "text": "Headered text $9784-$9791. Layout byte $18, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Turn back!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9784-$9791. Layout byte $18, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Turn back!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 1 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 1, with delay $04 from $902E."
   },
   {
    "address": 38802,
    "type": "line",
-   "text": "Headered text $9792-$97A1. Layout byte $16, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't go on!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9792-$97A1. Layout byte $16, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't go on!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 2 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 2, with delay $06 from $902E."
   },
   {
    "address": 38818,
@@ -3835,47 +3835,47 @@
   {
    "address": 38865,
    "type": "line",
-   "text": "Headered text $97D1-$97EB. Layout byte $0B, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Certain death is ahead!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $97D1-$97EB. Layout byte $0B, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Certain death is ahead!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 4 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 4, with delay $0C from $902E."
   },
   {
    "address": 38892,
    "type": "line",
-   "text": "Headered text $97EC-$9803. Layout byte $0E, colour byte $06; zero terminates its body. Content without framing glyph controls: \"This is not the way!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $97EC-$9803. Layout byte $0E, colour byte $06; zero terminates its body. Content without framing glyph controls: \"This is not the way!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 5 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 5, with delay $0A from $902E."
   },
   {
    "address": 38916,
    "type": "line",
-   "text": "Headered text $9804-$9820. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Take heed and go no further!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9804-$9820. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Take heed and go no further!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 6 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 6, with delay $0E from $902E."
   },
   {
    "address": 38945,
    "type": "line",
-   "text": "Headered text $9821-$9833. Layout byte $13, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Beware! Beware!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9821-$9833. Layout byte $13, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Beware! Beware!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 7 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 7, with delay $08 from $902E."
   },
   {
    "address": 38964,
    "type": "line",
-   "text": "Headered text $9834-$9850. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"It will soon be too late!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9834-$9850. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"It will soon be too late!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 8 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 8, with delay $0C from $902E."
   },
   {
    "address": 38993,
    "type": "line",
-   "text": "Headered text $9851-$9870. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Go back while you still can!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9851-$9870. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Go back while you still can!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 9 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 9, with delay $0C from $902E."
   },
   {
    "address": 39025,
    "type": "line",
-   "text": "Headered text $9871-$98C6. Layout byte $07, colour byte $06; zero terminates its body. Content without framing glyph controls: \"  Oh, beware! For the path \\nyou will take will lead you\\n  to certain destruction!  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9871-$98C6. Layout byte $07, colour byte $06; zero terminates its body. Content without framing glyph controls: \"  Oh, beware! For the path \\nyou will take will lead you\\n  to certain destruction!  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 10 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 10, with delay $24 from $902E."
   },
   {
    "address": 39111,
    "type": "line",
-   "text": "Headered text $98C7-$98DF. Layout byte $0D, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't go any further!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $98C7-$98DF. Layout byte $0D, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't go any further!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 11 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 11, with delay $0C from $902E."
   },
   {
    "address": 39136,
    "type": "line",
-   "text": "Headered text $98E0-$9912. Layout byte $0C, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nLasciate ogni speranza\\n    voi ch'entrate!   \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $98E0-$9912. Layout byte $0C, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nLasciate ogni speranza\\n    voi ch'entrate!   \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 12 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 12, with delay $18 from $902E."
   },
   {
    "address": 39187,
@@ -3885,102 +3885,102 @@
   {
    "address": 39217,
    "type": "line",
-   "text": "Headered text $9931-$9950. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't say I didn't warn you!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9931-$9950. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't say I didn't warn you!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 14 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 14, with delay $0E from $902E."
   },
   {
    "address": 39249,
    "type": "line",
-   "text": "Headered text $9951-$9971. Layout byte $05, colour byte $06; zero terminates its body. Content without framing glyph controls: \"You are making a big mistake!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9951-$9971. Layout byte $05, colour byte $06; zero terminates its body. Content without framing glyph controls: \"You are making a big mistake!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Warning 15 of stone_show_warning: the split pointer tables at $900E (high byte) and $901E (low byte) name it at entry 15, with delay $10 from $902E."
   },
   {
    "address": 39282,
    "type": "line",
-   "text": "Headered text $9972-$99A0. Layout byte $04, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nDefeeting a Firey will\\n make you sure-footed.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9972-$99A0. Layout byte $04, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nDefeeting a Firey will\\n make you sure-footed.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 0 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 0, indexed by $8DBD, with delay $20 from $9062."
   },
   {
    "address": 39329,
    "type": "line",
-   "text": "Headered text $99A1-$99D7. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n You'll need to arm your-\\nself to enter the castle.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99A1-$99D7. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n You'll need to arm your-\\nself to enter the castle.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 1 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 1, indexed by $8DBD, with delay $18 from $9062."
   },
   {
    "address": 39384,
    "type": "line",
-   "text": "Headered text $99D8-$9A0F. Layout byte $08, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n To enter the castle, you \\nmust first disarm a Firey.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99D8-$9A0F. Layout byte $08, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n To enter the castle, you \\nmust first disarm a Firey.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 2 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 2, indexed by $8DBD, with delay $1A from $9062."
   },
   {
    "address": 39440,
    "type": "line",
-   "text": "Headered text $9A10-$9A2F. Layout byte $04, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Two heads are better than one.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A10-$9A2F. Layout byte $04, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Two heads are better than one.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 3 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 3, indexed by $8DBD, with delay $0E from $9062."
   },
   {
    "address": 39472,
    "type": "line",
-   "text": "Headered text $9A30-$9A64. Layout byte $0A, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n To see the castle you  \\nwill need to get a head.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A30-$9A64. Layout byte $0A, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n To see the castle you  \\nwill need to get a head.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 4 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 4, indexed by $8DBD, with delay $18 from $9062."
   },
   {
    "address": 39525,
    "type": "line",
-   "text": "Headered text $9A65-$9A8D. Layout byte $11, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nIt helps if great\\nthings are afoot.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A65-$9A8D. Layout byte $11, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nIt helps if great\\nthings are afoot.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 5 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 5, indexed by $8DBD, with delay $10 from $9062."
   },
   {
    "address": 39566,
    "type": "line",
-   "text": "Headered text $9A8E-$9AC6. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nWithin every lump of wood\\n   lies beautiful music. \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A8E-$9AC6. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nWithin every lump of wood\\n   lies beautiful music. \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 6 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 6, indexed by $8DBD, with delay $1A from $9062."
   },
   {
    "address": 39623,
    "type": "line",
-   "text": "Headered text $9AC7-$9AE5. Layout byte $07, colour byte $06; zero terminates its body. Content without framing glyph controls: \"There's music in the trees.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9AC7-$9AE5. Layout byte $07, colour byte $06; zero terminates its body. Content without framing glyph controls: \"There's music in the trees.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 7 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 7, indexed by $8DBD, with delay $0C from $9062."
   },
   {
    "address": 39654,
    "type": "line",
-   "text": "Headered text $9AE6-$9B14. Layout byte $0E, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nIf you don't C sharp\\n   you'll B flat.   \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9AE6-$9B14. Layout byte $0E, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nIf you don't C sharp\\n   you'll B flat.   \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 8 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 8, indexed by $8DBD, with delay $10 from $9062."
   },
   {
    "address": 39701,
    "type": "line",
-   "text": "Headered text $9B15-$9B3C. Layout byte $10, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nHeavy rock lovers \\nmake great videos.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9B15-$9B3C. Layout byte $10, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nHeavy rock lovers \\nmake great videos.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 9 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 9, indexed by $8DBD, with delay $14 from $9062."
   },
   {
    "address": 39741,
    "type": "line",
-   "text": "Headered text $9B3D-$9B73. Layout byte $0A, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n  A sweet smell can do  \\nmuch for unwelcome ones.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9B3D-$9B73. Layout byte $0A, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n  A sweet smell can do  \\nmuch for unwelcome ones.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 10 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 10, indexed by $8DBD, with delay $16 from $9062."
   },
   {
    "address": 39796,
    "type": "line",
-   "text": "Headered text $9B74-$9BB2. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nThe unencumbered tight rope \\nwalker has the best balance.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9B74-$9BB2. Layout byte $06, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nThe unencumbered tight rope \\nwalker has the best balance.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 11 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 11, indexed by $8DBD, with delay $1C from $9062."
   },
   {
    "address": 39859,
    "type": "line",
-   "text": "Headered text $9BB3-$9BCE. Layout byte $0A, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't knock the jewelry.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BB3-$9BCE. Layout byte $0A, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Don't knock the jewelry.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 12 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 12, indexed by $8DBD, with delay $0C from $9062."
   },
   {
    "address": 39887,
    "type": "line",
-   "text": "Headered text $9BCF-$9BE8. Layout byte $08, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Goblins are short sighted.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BCF-$9BE8. Layout byte $08, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Goblins are short sighted.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 13 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 13, indexed by $8DBD, with delay $0C from $9062."
   },
   {
    "address": 39913,
    "type": "line",
-   "text": "Headered text $9BE9-$9C05. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Disguises sometimes work.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BE9-$9C05. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Disguises sometimes work.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 14 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 14, indexed by $8DBD, with delay $0C from $9062."
   },
   {
    "address": 39942,
    "type": "line",
-   "text": "Headered text $9C06-$9C33. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nJareth can't take his own\\n medicine thrown at him. \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9C06-$9C33. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\nJareth can't take his own\\n medicine thrown at him. \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 15 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 15, indexed by $8DBD, with delay $18 from $9062."
   },
   {
    "address": 39988,
    "type": "line",
-   "text": "Headered text $9C34-$9C60. Layout byte $0C, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n   Open the log to    \\nreveal the hidden key.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9C34-$9C60. Layout byte $0C, colour byte $06; zero terminates its body. Content without framing glyph controls: \"\\n   Open the log to    \\nreveal the hidden key.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 16 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 16, indexed by $8DBD, with delay $16 from $9062."
   },
   {
    "address": 40033,
    "type": "line",
-   "text": "Headered text $9C61-$9C7C. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Make a logjam for safety.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the stone overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9C61-$9C7C. Layout byte $09, colour byte $06; zero terminates its body. Content without framing glyph controls: \"Make a logjam for safety.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Hint 17 of stone_show_hint: the split pointer tables at $903E (high byte) and $9050 (low byte) name it at entry 17, indexed by $8DBD, with delay $18 from $9062."
   },
   {
    "address": 40061,
@@ -4000,7 +4000,7 @@
   {
    "address": 40202,
    "type": "line",
-   "text": "Sixteen bytes $05 $12 $14 $19 $1E $1D $1F $23 $28 $2A $2C $1A $21 $26 $27, then $00. stone_setup_once passes this address to resident $0833, which marks each listed command-wheel entry unavailable until the zero terminator; its pointer is stored in the operand at $0AE5/$0AE6. Words: the resident table at $6693 turns each entry into a dictionary word, so the list blocks $05 complain, $12 speak, $14 throw, $19 Alph, $1E Firey, $1D goblin, $1F hat, $23 knocker, $28 Ralph, $2A Sir Didymus, $2C Wise Man, $1A avocado, $21 jaggies, $26 owl, $27 plastics."
+   "text": "Sixteen bytes $05 $12 $14 $19 $1E $1D $1F $23 $28 $2A $2C $1A $21 $26 $27, then $00. stone_setup_once passes this address to resident $0833, which marks each listed command-wheel entry unavailable until the zero terminator; its pointer is stored in the operand at $0AE6/$0AE7 (the lda at $0AE5). Words: the resident table at $6693 turns each entry into a dictionary word, so the list blocks $05 complain, $12 speak, $14 throw, $19 Alph, $1E Firey, $1D goblin, $1F hat, $23 knocker, $28 Ralph, $2A Sir Didymus, $2C Wise Man, $1A avocado, $21 jaggies, $26 owl, $27 plastics."
   },
   {
    "address": 40960,
