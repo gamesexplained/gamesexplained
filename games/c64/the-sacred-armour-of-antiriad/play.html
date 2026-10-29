@@ -55,10 +55,6 @@ section table{margin:6px 0 18px}
 .pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
 .pl-keys li{margin:0}
 .pl-keys b{color:var(--ink)}
-.pl-pad{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:6px;margin-top:14px}
-.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);touch-action:none}
-.pl-pad button.on{background:var(--ink);color:#fff}
-@media (pointer:coarse){.pl-pad{display:grid}}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
 </style>
 <!-- tabs -->
@@ -80,6 +76,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="quit" title="Q on the C64's keyboard: the game in play ends and the title comes back">Q: new game</button>
       <button type="button" data-act="solution" aria-pressed="false" title="The route on the Maps tab, from the title to the ending, in about six minutes">▶ Watch the solution</button>
       <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-fullscreen aria-pressed="false" title="The game over the whole screen, with a bigger joystick on a touch screen; ✕, Escape or Back returns to the page">⛶ Full screen</button>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
       <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
@@ -90,13 +87,9 @@ section table{margin:6px 0 18px}
       <li><b>In the armour</b>: it floats any way the stick points, and once the Pulsar Beam is fitted fire shoots. Landed, left or right takes the armour off.</li>
       <li><kbd>Q</kbd> ends the game in play and brings back the title, as on a C64.</li>
       <li><b>Watch the solution</b> plays the route on the Maps tab, from the title to the ending. An arrow, <kbd>Space</kbd> or the pad takes over from wherever it has got to.</li>
+      <li><b>On a touch screen</b> the joystick is the pad under the picture: slide your thumb round it without lifting. <b>Full screen</b> makes the picture and the pad as big as the screen allows; ✕, <kbd>Esc</kbd> or Back returns to the page.</li>
     </ul>
-    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
-      <button type="button" data-pad="5" aria-label="Up and left">↖</button><button type="button" data-pad="1" aria-label="Up">↑</button><button type="button" data-pad="9" aria-label="Up and right">↗</button>
-      <button type="button" data-pad="4" aria-label="Left">←</button><button type="button" data-pad="16" aria-label="Fire">●</button><button type="button" data-pad="8" aria-label="Right">→</button>
-      <button type="button" data-pad="6" aria-label="Down and left">↙</button><button type="button" data-pad="2" aria-label="Down">↓</button><button type="button" data-pad="10" aria-label="Down and right">↘</button>
-    </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. The game reads one joystick, in control port 2: the arrows and Space are that joystick here, and on a touch screen the pad is.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it, at the C64's own pace. The game reads one joystick, in control port 2: the arrows and Space are that joystick here, and on a touch screen the pad under the picture is.</p>
   </div>
 </section>
 <section id="differences">
@@ -120,6 +113,7 @@ section table{margin:6px 0 18px}
 <script src="../../lib/crt.js"></script>
 <script src="../../lib/sound.js"></script>
 <script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/play-controls.js"></script>
 <script>
 /* port/src/core.js */
 // The Sacred Armour of Antiriad's port: P, the game's routines on the game's memory. Each group of
@@ -4040,14 +4034,13 @@ function tick(now) {
 const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, Space: 16 };
 const held = new Map(), since = new Map(), letGo = new Set();
 const HOLD = 2;
-let padBits = 0;
 function release() {
   for (const c of letGo) if (!rt || rt.shown - (since.get(c) || 0) >= HOLD) { letGo.delete(c); held.delete(c); since.delete(c); }
   input();
 }
 function input() {
   if (!rt) return;
-  let bits = padBits;
+  let bits = 0;
   const keys = new Set();
   for (const k of held.values()) if (typeof k === 'number') bits |= k; else keys.add(k);
   rt.input.joy = 0x1F & ~bits;
@@ -4066,11 +4059,19 @@ screen.addEventListener('focus', () => { active = true; screen.classList.add('pl
 screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); since.clear(); letGo.clear(); input(); });
 document.addEventListener('keydown', e => { if (active) onKey(e, true); });
 document.addEventListener('keyup', e => { if (active) onKey(e, false); });
-document.querySelectorAll('#pl-pad button').forEach(b => {
-  const bits = +b.dataset.pad;
-  const on = ev => { ev.preventDefault(); press('pad-' + bits, bits); b.classList.add('on'); screen.focus(); };
-  const off = () => { if (!held.has('pad-' + bits)) return; letGo.add('pad-' + bits); b.classList.remove('on'); release(); };
-  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+// the touch pad docked under the screen, and full screen (site/lib/play-controls.js): each of its
+// bits is held as a key is, so a tap is never lost either; fire starts the game, as a tap does
+PlayControls.attach({
+  screen, canvas: cv, bar: $('pl-bar'), button: document.querySelector('[data-fullscreen]'),
+  onPad(bits) {
+    if (!running) { if ((bits & 16) && data) start(); return; }
+    for (const b of [1, 2, 4, 8, 16]) {
+      const code = 'pad-' + b;
+      if (bits & b) { if (!held.has(code) || letGo.has(code)) press(code, b); }
+      else if (held.has(code)) letGo.add(code);
+    }
+    release();
+  },
 });
 
 // --- controls
