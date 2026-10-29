@@ -54,3 +54,18 @@ draws the maps from the files and was compared with the emulator's first screen
 of each level; the rebuilt frame was compared with the emulator's picture
 (2,467 of 104,448 pixels differ, all explained). The cheat BABY AXE MAN was
 found in `cheat_check` and typed live.
+
+The maintainer's check (unorig, on Opus 5.5): fresh checkers audited the
+3,698 comments in 34 chunks, one at a time, part by part from the resident
+part to level 6, each briefed with `checker.md` and the facts established so
+far; the brief grew as chunks found shared beliefs (the twin sound drivers, the
+mask game's 13-byte clears, the enemies' shot type $11, the half-row flag that
+picks the tile table, the bitmap panel). One chunk (level 1's copies of the
+sound drivers) had a pasted sentence wrong in 105 of 107 comments. A level-4
+chunk showed the brief's own colour-copy figure was level 2's, not the
+engine's, and the brief was corrected before level 6. The snapshots were not
+on the machine, so fixes went into `symbols.json` and `listing.py --recomment`
+rebuilt the listings. A container restart lost one chunk's checker, which was
+run again. Then a checker tested `facts.md` (11 of 88 claims corrected), the
+pages were corrected where they repeated those claims, and a second sample
+(seed 5813) measured the result.

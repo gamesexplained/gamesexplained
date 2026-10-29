@@ -21,6 +21,14 @@ None.
 - A comment belief repeated across levels (a toggle that moves an index on every other call, said to move the frame too) was in ten comments; `60-verify`, "A wrong comment is usually one belief written down more than once", found them when searched for by their wording.
 - `listing.py --recomment` is the way to put corrected comments into a listing built long before from a snapshot; building it again showed 4,023 bytes of uncounted data for level 2 that the earlier build had not listed.
 
+## 29 October 2026, maintainer's check
+
+- `kit/CHECKING.md` and `60-verify`'s `checker.md` ran the audit as written: 34 checkers, one at a time, each with the brief and the facts established so far.
+- `60-verify`, "A wrong comment is usually one belief written down more than once": each checker's report named the kinds of error it found, and the next checkers' brief gained the facts behind them (twin drivers that differ, the bitmap panel, the shot type $11). Later chunks found those beliefs in their own ranges without being told which comments held them.
+- With no snapshot on the machine, `listing.py --recomment` put each chunk's corrections into the listing. The checker's `fixes.json` went into `symbols.json` with a dozen lines of Python, since `kit/c64/r2000.py --apply` needs the disassembler and its project.
+
+What cost the most time in the check: a brief that states a fact of one level as the engine's misleads the checkers of the others: level 2's colour-copy count was written as shared and was level 4's own. Facts given to a checker name the level they were checked in.
+
 ## Candidates
 
 - The disassembler's `r2000_search_disassembly` returned exactly 50
