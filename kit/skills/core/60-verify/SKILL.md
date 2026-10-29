@@ -197,7 +197,8 @@ was checked against the game's code or the game running and showed
 comments wrong, `{"step": "port", "fixed": 15, "models": [...], "note":
 "the stage maps"}`, its note naming what was checked. A sample or audit a maintainer makes for a
 run on an unproven model adds their GitHub login as `"by"`
-(`kit/CHECKING.md`), and games checked before 12 October 2026 keep that
+(`kit/CHECKING.md`), and so does an audit on proven models on the run of
+a contributor listed in `kit/contributors.json`, and games checked before 12 October 2026 keep that
 older check as a `check` row. Any row may carry a short `note` about
 its own step: each row says what its step did without the others, and
 the table's order says what came before it. `check_docs.py` fails a
