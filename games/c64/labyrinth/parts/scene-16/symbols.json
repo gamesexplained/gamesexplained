@@ -2877,7 +2877,7 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "M8 map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 3 hold 00 01 02 03; the rest of the strip is zero."
+   "text": "M8 map strip: 64 cells, one per world column, read indexed from $0600 by the resident at $099D, $3518, $355F, $3B54 (in $3B51), $418A (in $4173), $4C36, $4C5F, $4CA7, $4CB2, $4F77, $4F93, $4FD8 and $502E (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 3 hold 00 01 02 03; the rest of the strip is zero."
   },
   {
    "address": 1600,
@@ -2892,7 +2892,7 @@
   {
    "address": 1796,
    "type": "line",
-   "text": "Three numeric header bytes: $0704 (1) is the loop limit the loader compares at $568F and is read by the camera and motion routines, $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and $0706 (0) is halved into $02C8 and $02C7 at $566A."
+   "text": "Three numeric header bytes: $0704 (1) is the loop limit the loader compares at $568F and is read by the camera and motion routines ($287C, $3447, $4409, $48C6); the resident also stores to it at $6B9E. $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60 ($FF and $00 here), and from $566A $0706 (0) is shifted right twice into $02C8 (0), its low two bits going to bits 7-6 of $02C7."
   },
   {
    "address": 1799,
@@ -2907,12 +2907,12 @@
   {
    "address": 1808,
    "type": "line",
-   "text": "Ten bytes ($0710-$0719 = 00 12 2C 4A 58 68 76 00 00 00): depth thresholds. $0710 is read by the object grid and placement routines ($37B4, $383F, $5487), $0711 at $548A, $0718 at $5397 and $0719 at $53B9."
+   "text": "Ten bytes ($0710-$0719 = 00 12 2C 4A 58 68 76 00 00 00): depth thresholds. The table is read indexed from $0710 by the object grid and placement routines at $28CA, $37B9 (in $37B4), $383F, $3863 and $5487; $0711 is read at $548A, $0718 at $5397 and $0719 at $53B9."
   },
   {
    "address": 1818,
    "type": "line",
-   "text": "Costume selector ($02), the index into the initial-animation table at $5985 read at $51EA and $5985. The three bytes after it ($071B-$071D = 34 29 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
+   "text": "Costume selector ($02), read at $51EA and copied to $02C5 (replaced by 4 when $0385 is non-negative and $0565 is negative); it indexes the initial-animation table at $5985, read at $520D. The three bytes after it ($071B-$071D = 34 29 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
   },
   {
    "address": 1822,
@@ -2927,7 +2927,7 @@
   {
    "address": 1854,
    "type": "line",
-   "text": "Sixteen low-nibble-to-type values read by $4171/$4173 and $3B51 (bytes: 0F 0F 0F 0F 01 01 01 01 01 01 01 01 01 01 01 01). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
+   "text": "Sixteen low-nibble-to-type values read indexed by the resident at $351E, $3565, $3B5A (in $3B51), $4192 (in $4173), $4A8E, $4B27, $4F7D, $4F99, $4FE8 and $503E (bytes: 0F 0F 0F 0F 01 01 01 01 01 01 01 01 01 01 01 01). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
   },
   {
    "address": 1870,
@@ -2937,7 +2937,7 @@
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen bytes ($075E-$076D = 03 03 03 03 03 03 00 00 00 00 00 00 00 00 00 00), which are not all zero, between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it does not read them; whatever else reads them is not identified."
+   "text": "Sixteen bytes ($075E-$076D = 03 03 03 03 03 03 00 00 00 00 00 00 00 00 00 00) between the column thresholds and the selectors. The scan at $411C reads at most index 14 ($075C), so it reads none of them. The resident uses $075E,X/Y as per-cell state for special map cells: $381C increments the counter of the cell just entered, and $38FE (update_grid_special_cell) reads and writes it at $3901 and $3915, with Y the low nibble of a special map cell."
   },
   {
    "address": 1902,
@@ -3042,32 +3042,32 @@
   {
    "address": 31488,
    "type": "line",
-   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
+   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
   },
   {
    "address": 31568,
    "type": "line",
-   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
+   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
   },
   {
    "address": 31648,
    "type": "line",
-   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
+   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
   },
   {
    "address": 31728,
    "type": "line",
-   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31808,
    "type": "line",
-   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31888,
    "type": "line",
-   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
+   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
   },
   {
    "address": 31968,
@@ -3457,12 +3457,12 @@
   {
    "address": 35503,
    "type": "line",
-   "text": "AV costume stream 78 ($8AAF-$8AD6, 40 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
+   "text": "AV costume stream 78 ($8AAF-$8ADC, 46 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
   },
   {
    "address": 35543,
    "type": "line",
-   "text": "41 bytes ($8AD7-$8AFF) after the last stream's $FF terminator. No stream offset points here and the bytes do not follow the stream pattern; they look like leftover data from the disk load."
+   "text": "The first six bytes ($8AD7-$8ADC = 31 80 34 81 32 FF) are the end of AV stream 78, whose $FF terminator is at $8ADC. The 35 bytes after it ($8ADD-$8AFF) follow the costume's last stream (the size word at $7900 is $11DD, ending at $8ADD); no stream offset points there and they do not follow the stream pattern, so they look like leftover data from the disk load."
   },
   {
    "address": 35584,
@@ -3537,32 +3537,32 @@
   {
    "address": 35974,
    "type": "line",
-   "text": "Overlay hook stub: jmp $9B38. Same target as the stubs at $8C89 and $8C8C. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub: jmp $9B38. Same target as the stubs at $8C89 and $8C8C. The resident calls it by JSR from $41AC (in the chain at $41AA-$41BC) and by JMP from $6BEB (in the chain at $6BE9-$6BFB); what the selector value means is not identified."
   },
   {
    "address": 35977,
    "type": "line",
-   "text": "Second of the three overlay hook stubs at $8C86/$8C89/$8C8C: jmp $9B38, the same target as the others. Which engine event calls it is not identified."
+   "text": "Second of the three overlay hook stubs at $8C86/$8C89/$8C8C: jmp $9B38, the same target as the others. The resident calls it by JSR from $41B6 (in the chain at $41AA-$41BC) and by JMP from $6BF5 (in the chain at $6BE9-$6BFB); what the selector value means is not identified."
   },
   {
    "address": 35980,
    "type": "line",
-   "text": "Third of the three overlay hook stubs at $8C86/$8C89/$8C8C: jmp $9B38, the same target as the others. Which engine event calls it is not identified."
+   "text": "Third of the three overlay hook stubs at $8C86/$8C89/$8C8C: jmp $9B38, the same target as the others. The resident calls it by JSR from $41BC (in the chain at $41AA-$41BC) and by JMP from $6BFB (in the chain at $6BE9-$6BFB); what the selector value means is not identified."
   },
   {
    "address": 35983,
    "type": "line",
-   "text": "Overlay hook stub: jmp $8C96, the scene update routine. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub: jmp $8C96, the scene update routine. The resident calls it by JSR from $5D51 and $6A39."
   },
   {
    "address": 35986,
    "type": "line",
-   "text": "Overlay hook stub: jmp $8C95, a bare rts, so this hook does nothing. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub: jmp $8C95, a bare rts, so this hook does nothing. The resident calls it by JSR from $342B, $39EE and $550F."
   },
   {
    "address": 35989,
    "type": "line",
-   "text": "Bare rts. Target of the hook stub at $8C92."
+   "text": "Bare rts. Target of the hook stub at $8C92; the resident also calls it directly by JSR at $5DBD (when A is $1A)."
   },
   {
    "address": 35990,
@@ -3732,7 +3732,7 @@
   {
    "address": 36648,
    "type": "line",
-   "text": "Two pulls (drops the caller's return address, so the command ends), then loads A=4 and jumps to resident $0827 with the text pointer already in Y/X. Entered by jmp from the failed checks of $8F1D."
+   "text": "Two pulls (drops the caller's return address, so the command ends), then loads A=4 and jumps to resident $0827 with the text pointer already in Y/X. Reached from the two failed checks of $8F1D: by fall-through after $8F24/$8F26 load $9690, and by jmp from $8F38 after loading $9717."
   },
   {
    "address": 36672,
@@ -3772,7 +3772,7 @@
   {
    "address": 36794,
    "type": "line",
-   "text": "Shows $938E 'Nothing happens.' through $0827 with A=6. Reached by branches from the MANICURE Ludo, USE shears and HIT Ludo paths."
+   "text": "Shows $938E 'Nothing happens.' through $0827 with A=6. Reached by branches from the USE shears path ($8F84) and the HIT Ludo path ($8FD2)."
   },
   {
    "address": 36803,
@@ -3807,7 +3807,7 @@
   {
    "address": 36880,
    "type": "line",
-   "text": "Loads A from $0342 and jumps to resident $0827 with the text pointer in Y/X. $0342 is the value $909D last stored before calling $0803; its meaning as an indent is not confirmed."
+   "text": "Loads A from $0342 and jumps to resident $0827 with the text pointer in Y/X. Reached by jmp from $8FCF, $8FDB and $8FF7. $0342 is written in this overlay at $90CD (in $909D, before its jmp to $0803) and by the resident at $09E3, $5FA7, $67AA, $6968, $696E, $697B, $6983, $698F, $69FA and $6A48; its meaning as an indent is not confirmed."
   },
   {
    "address": 36886,
@@ -4007,7 +4007,7 @@
   {
    "address": 37794,
    "type": "line",
-   "text": "Headered text $93A2-$93EA. Layout byte $00, colour byte $04; zero terminates its body. Content without framing glyph controls: \"\\nYou must be getting desperate to \\nbe trying such primitive tactics.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the Scene 8 overlay."
+   "text": "Headered text $93A2-$93EA. Layout byte $00, colour byte $04; zero terminates its body. Content without framing glyph controls: \"\\nYou must be getting desperate to \\nbe trying such primitive tactics.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. It is the message of dispatcher handler word 45 ($13A2 at $8C1A)."
   },
   {
    "address": 37867,
@@ -4347,7 +4347,7 @@
   {
    "address": 39736,
    "type": "line",
-   "text": "Target of the hook stubs at $8C86, $8C89 and $8C8C. Reads ludo_hook_setup_flag: negative goes to ludo_hook_first_call, otherwise jumps to ludo_hook_main. The engine event that calls the hooks is not identified."
+   "text": "Target of the hook stubs at $8C86, $8C89 and $8C8C. Reads ludo_hook_setup_flag: negative goes to ludo_hook_first_call, otherwise jumps to ludo_hook_main. The resident reaches the stubs by JSR from $41AC, $41B6 and $41BC and by JMP from $6BEB, $6BF5 and $6BFB."
   },
   {
    "address": 39744,
@@ -4997,7 +4997,7 @@
   {
    "address": 51968,
    "type": "line",
-   "text": "Tile-art page 16 of 16 (256 bytes, $BC00 + $100 x 15): sixteen rows of sixteen character codes in the room font at $E000. It uses 86 distinct codes; the commonest are $04 (8 cells), $18 (8 cells), $14 (6 cells). 256 cells differ from the previous page. Scene 2 documents how the scene fill routines read a page through the sixteen page selectors $BC-$CB at $4E0E; the same resident routines serve this scene."
+   "text": "Tile-art page 16 of 16 (256 bytes, $BC00 + $100 x 15): sixteen rows of sixteen character codes in the room font at $E000. It uses 34 distinct codes; the commonest are $00 (66 cells), $80 (64 cells), $01 and $02 (4 cells each). 249 cells differ from the previous page. Scene 2 documents how the scene fill routines read a page through the sixteen page selectors $BC-$CB at $4E0E; the same resident routines serve this scene."
   },
   {
    "address": 57344,
