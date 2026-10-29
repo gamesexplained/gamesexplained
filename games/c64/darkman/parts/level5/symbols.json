@@ -4380,7 +4380,7 @@
   {
    "address": 5999,
    "type": "line",
-   "text": "Moves wall slot X one step (slot arrays: type $1758, phase $1754, address $174C/$1750, repeat count $1748). Called by $175C. It sets $D3/$D4 to the colour RAM address of the object's top-left cell (the screen address with $0C added to the high byte) and $185A to the colour of its type from the table $176B; a free slot (type 0) returns. For types 1 and 2 (falling) it blanks the three cells above the object with $F6, steps the phase $1754 on (0 to 3), rewrites the operand of the JSR at $17DF with the routine for that phase from the table $1852 (the operand $2B67 in the file is the value of an earlier run) and calls it. For type 3 (rising) it blanks three cells five rows below with $F6, steps the phase back, and uses the table $184A with the JSR at $1839. It repeats the step $1748+X times ($176A counts them down), keeping X in the operands at $17E3 and $183D."
+   "text": "Moves wall slot X one step (slot arrays: type $1758, phase $1754, address $174C/$1750, repeat count $1748). Called by $175C. It sets $D3/$D4 to the colour RAM address of the object's top-left cell (the screen address with $0C added to the high byte) and $185A to the colour of its type from the table $176B; a free slot (type 0) returns. For types 1 and 2 (falling) it blanks the three cells above the object with $F6, steps the phase $1754 on (0 to 3), rewrites the operand of the JSR at $17DF with the routine for that phase from the table $1852 (the file holds $185F, wall_draw_0) and calls it. For type 3 (rising) it blanks three cells five rows below with $F6, steps the phase back, and uses the table $184A with the JSR at $1839 (the file holds $195C). It runs the step $1748+X plus one times ($176A counts the repeats down to 0), keeping X in the operands at $17E3 and $183D."
   },
   {
    "address": 6218,
@@ -4400,12 +4400,12 @@
   {
    "address": 6235,
    "type": "line",
-   "text": "The first character code of the 3 by 5 block of each wall type in phase 0 (indexed by the type 0 to 3): 0, $09, $45 and $AE; wall_draw_0 ($185F) reads it. The other phases have their own tables, $1902, $1911 and $1920, 15 codes on for the types 1 and 2 and 15 codes back for type 3."
+   "text": "The first character code of the 3 by 5 block of each wall type in the first drawing step (indexed by the type 0 to 3): 0, $09, $45 and $AE; wall_draw_0 ($185F) reads it, in phase 0 of a falling wall and phase 3 of a rising one. The other steps have their own tables, $1902, $1911 and $1920, 15 codes on for the types 1 and 2 and 15 codes back for type 3."
   },
   {
    "address": 6239,
    "type": "line",
-   "text": "Draws a wall object, the first of the five drawing routines that the tables $1852 (falling) and $184A (rising) point at. X is the wall slot; the first character code comes from the table $185B by the wall type $1758,X, and it falls into $1867 to write the cells. It is the first phase of a falling wall and the last of a rising one. The caller keeps X in the operand of its LDX ($17E2 or $183C)."
+   "text": "Draws a wall object, the first of the five drawing routines that the tables $1852 (falling) and $184A (rising) point at. X is the wall slot; the first character code comes from the table $185B by the wall type $1758,X, and it falls into $1867 to write the cells. It is phase 0 of a falling wall and phase 3 of a rising one (the last entry of $184A, since that phase counts down); for both it is the first step after a move. The caller keeps X in the operand of its LDX ($17E2 or $183C)."
   },
   {
    "address": 6247,
@@ -4420,7 +4420,7 @@
   {
    "address": 6406,
    "type": "line",
-   "text": "Second drawing step of a falling wall, third of a rising one (entries of $1852 and $184A). Takes the first character code from the table $1902 by the wall type $1758,X and jumps to $1867 to draw the 3 by 5 block."
+   "text": "Second drawing step of both a falling and a rising wall (the second entry of $1852, phase 1, and the third of $184A, phase 2, since a rising wall's phase counts down). Takes the first character code from the table $1902 by the wall type $1758,X and jumps to $1867 to draw the 3 by 5 block."
   },
   {
    "address": 6417,
@@ -4430,7 +4430,7 @@
   {
    "address": 6421,
    "type": "line",
-   "text": "Third drawing step of a falling wall, second of a rising one (entries of $1852 and $184A). Takes the first character code from the table $1911 by the wall type $1758,X and jumps to $1867 to draw the 3 by 5 block."
+   "text": "Third drawing step of both a falling and a rising wall (the third entry of $1852, phase 2, and the second of $184A, phase 1, since a rising wall's phase counts down). Takes the first character code from the table $1911 by the wall type $1758,X and jumps to $1867 to draw the 3 by 5 block."
   },
   {
    "address": 6432,
@@ -4445,12 +4445,12 @@
   {
    "address": 6492,
    "type": "line",
-   "text": "First drawing step of a rising wall (the first entry of $184A). Moves the wall one row up: takes $28 off its screen address $174C/$1750,X. When the high byte is $CB and the low byte is below $60 it frees the slot ($1758,X = 0) and adds 5 to score digit 5 with $0C6A (50 points, X kept), then returns. Otherwise it takes the first character code from the table $1920 by the type and jumps to $1867 to draw the block."
+   "text": "Last drawing step of a rising wall (phase 0, the first entry of $184A, reached after phases 3, 2 and 1). Moves the wall one row up: takes $28 off its screen address $174C/$1750,X. When the high byte is $CB and the low byte is below $60 it frees the slot ($1758,X = 0) and adds 5 to score digit 5 with $0C6A (50 points, X kept), then returns. Otherwise it takes the first character code from the table $1920 by the type and jumps to $1867 to draw the block."
   },
   {
    "address": 6546,
    "type": "line",
-   "text": "Frames until $1993 starts the next wall object: $17 after the setup, then the delay from the script entry."
+   "text": "Countdown before $1993 starts the next wall object: $17 after the setup, then the delay from the script entry. A value of N starts the next wall N+1 calls of $1993 (frames) later; it stays 0 while no slot is free."
   },
   {
    "address": 6547,
@@ -4470,7 +4470,7 @@
   {
    "address": 7006,
    "type": "line",
-   "text": "The scroll speed now: the number of times $1B93 rotates the backdrop shapes, taken from scroll_ramp."
+   "text": "The scroll speed now: the number of times $1B93 rotates the backdrop shapes, taken from scroll_ramp, or 3 once the time bar has run out ($0B09)."
   },
   {
    "address": 7007,
@@ -4505,7 +4505,7 @@
   {
    "address": 7213,
    "type": "line",
-   "text": "Level setup, called first by the main loop at $0A23. Switches interrupts off, banks the ROMs out ($01=$35), selects video bank 3 and the screen at $CC00 ($D018=$30) with multicolour text, silences the sound ($B828), sets the stick image $218E to $FF and the wall delay $1992 to $17, clears the flags $22E6, $271F, $2721, $1589, $0A7A, $1B92, $1411, $0B09, $1FB4, $218B and $1758-$175B and the sprite registers, ORs $08 into the 256 colours at $2761 and clears $002A-$0100. It swaps the shapes ($23A1), types the story ($23DC), swaps them back, fills the screen with $F6 and colour RAM with $0D, draws the panel ($218F), the backdrop ($1A2F) and its colours ($1A03), and sets the time bar to $FF, the energy to $21, the script pointers ($D7/$D8 to $1598, $CF/$D0 to $1608, $D5/$D6 to $1638), the chopper to X $146, Y $32 and sprites 0 and 1 to their first positions. It starts the music ($B0C8), points the NMI at $2183 and the IRQ at $1DC9, sets the raster compare to line $82 and enables interrupts."
+   "text": "Level setup, called first by the main loop at $0A23. Switches interrupts off, banks the ROMs out ($01=$35), selects video bank 3 and the screen at $CC00 ($D018=$30) with multicolour text, silences the sound ($B828), sets the stick image $218E to $FF and the wall delay $1992 to $17, clears the flags $22E6, $271F, $2721, $1589, $0A7A, $1B92, $1411, $0B09, $1FB4, $218B and $1758-$175B and the sprite registers, ORs $08 into the 256 colours at $2761 and clears $002A-$0100. It swaps the shapes ($23A1), types the story ($23DC), swaps them back, fills the screen with $F6 and colour RAM with $0D, draws the panel ($218F), the backdrop ($1A2F) and its colours ($1A03), and sets the time bar to $FF, the energy to $21, the script pointers ($D7/$D8 to $1598, $CF/$D0 to $1608, $D5/$D6 to $1638), the chopper to X $146, Y $32 and sprites 0 and 1 to their first positions. It initialises the sound-effect driver ($B0C8), points the NMI at $2183 and the IRQ at $1DC9, sets the raster compare to line $82 and enables interrupts."
   },
   {
    "address": 7624,
@@ -4515,17 +4515,17 @@
   {
    "address": 7625,
    "type": "line",
-   "text": "Raster interrupt of the panel strip (line $82 the first time, then $C6 from $1F61). Saves A, X and Y in the operands at $1E47, $1E49 and $1E4B, sets the high nibble of $D018 to 3 and ORs $4F into $D011 after 5 NOPs, writes $A0 into the sprite pointers $CFFC-$CFFF, sets $D020, $D025 and $D026 to 0 and acknowledges. It reads the joystick $DC00 into $218E (or $7F when the time bar has run out, which ignores the stick), sets line $CD with the vector $1E4F and the low nibble of $D018 to 8, toggles $1E4E and on every second frame counts $1E4D down to 0."
+   "text": "Raster interrupt of the panel strip (line $82 the first time, then $C6 from $1F61, or from $1F02 while the picture flag is set). Saves A, X and Y in the operands at $1E47, $1E49 and $1E4B, sets the high nibble of $D018 to 3 and ORs $4F into $D011, writing both after 5 NOPs, writes $A0 into the sprite pointers $CFFC-$CFFF, sets $D020, $D025 and $D026 to 0 and acknowledges. It reads the joystick $DC00 into $218E (or $7F when the time bar has run out, which ignores the stick), sets line $CD with the vector $1E4F and the low nibble of $D018 to 8, toggles $1E4E and on every second frame counts $1E4D down to 0."
   },
   {
    "address": 7757,
    "type": "line",
-   "text": "Counted down to 0 by irq_mid ($1DC9) once every second frame; no code in the file reads it."
+   "text": "Counted down to 0 once every second frame by irq_mid ($1DC9) and by the same code in the mask game's interrupt ($39C9); no other code reads or sets it, and it holds 0 in the file, so the count never moves."
   },
   {
    "address": 7758,
    "type": "line",
-   "text": "Toggled by irq_mid ($1DC9) every frame; the count $1E4D moves only when it becomes 0."
+   "text": "Toggled every frame by irq_mid ($1DC9) and by the mask game's interrupt ($39BF); the count $1E4D moves only when it becomes 1."
   },
   {
    "address": 7759,
@@ -4540,7 +4540,7 @@
   {
    "address": 7852,
    "type": "line",
-   "text": "Raster interrupt on line 6 (set by $1E4F). Saves A, X and Y in the operands at $1F4A, $1F4C and $1F4E, acknowledges, puts $D016 and $D011 back for the playfield, writes $D018=$30, the multicolours $D022/$D023 (15, 11) and the sprite multicolours $D025/$D026 (0, 8), turns all sprites on as multicolour (all off while $1FB4 is set) and plays the sound ($B176). With the picture flag $271F set it sets line $C6 with the vector $1DC9 and draws the sprite picture ($25F3). Otherwise it sets line $AA with the vector $1F50 and runs the game: walls $175C, chopper $1417, player $126D and shot $10B7 and, unless paused ($1EAB), wall spawn $1993, collision $0EE2 and panel colours $0D5B; then the time bar $0B0A and the keyboard $22E7, whose result goes to $22E6."
+   "text": "Raster interrupt on line 6 (set by $1E4F). Saves A, X and Y in the operands at $1F4A, $1F4C and $1F4E, acknowledges, puts $D016 and $D011 back for the playfield, writes $D018=$30, the multicolours $D022/$D023 (15, 11) and the sprite multicolours $D025/$D026 (0, 8), turns all sprites on as multicolour (all off while $1FB4 is set) and plays the sound ($B176). With the picture flag $271F set it sets line $C6 with the vector $1DC9 and draws the sprite picture ($25F3). Otherwise it sets line $AA with the vector $1F50 and runs the game: walls $175C, chopper $1417, player $126D and shot $10B7 and, unless paused ($1EAB), wall spawn $1993, collision $0EE2 and the panel refresh $0D5B (colour RAM and the panel screen bytes, which are bitmap colours); then the time bar $0B0A and the keyboard $22E7, whose result goes to $22E6."
   },
   {
    "address": 8016,
@@ -4550,7 +4550,7 @@
   {
    "address": 8055,
    "type": "line",
-   "text": "Lengths of the 56 diagonal lines of the wipe $1FB6: 0 up to 17, then 18 twenty-two times, then 17 down to 2 (the table goes on for two more entries, see wipe_lengths_tail)."
+   "text": "Lengths of the 56 diagonal lines of the wipe $1FB6, each one less than the cells the line gets: 0 up to 17, then 18 twenty-two times, then 17 down to 2 (lines of 1 to 19 cells; the table goes on for two more entries, see wipe_lengths_tail)."
   },
   {
    "address": 8111,
@@ -4560,7 +4560,7 @@
   {
    "address": 8113,
    "type": "line",
-   "text": "Characters still to write on the diagonal line $1FB6 is drawing: loaded from $1F77 and counted down until it is zero."
+   "text": "Cells still to write on the diagonal line $1FB6 is drawing after the current one: loaded from $1F77 and counted down; the line ends after the cell written when it is zero."
   },
   {
    "address": 8114,
@@ -4585,7 +4585,7 @@
   {
    "address": 8118,
    "type": "line",
-   "text": "Wipes the screen: sets the wipe flag $1FB4 (the interrupt then keeps the sprites off) and the pause flag $1EAB, then fills both screen matrices ($CC00 and $C800) with $BE along 56 diagonal lines, each stepping 39 characters from its start with the lengths from the table $1F77, with a delay through $217A after each. The first 39 lines start along the top row, the rest down the right edge. After a last delay it clears the pause flag. Called by the game over screen $207B."
+   "text": "Wipes the screen: sets the wipe flag $1FB4 (the interrupt then keeps the sprites off) and the pause flag $1EAB, then fills both screen matrices ($CC00 and $C800) with $BE along 56 diagonal lines, each stepping 39 characters from its start, with one cell more than its entry in the table $1F77, with a delay through $217A after each. The first 40 lines start along the top row, the other 16 down the right edge. After a last delay it clears the pause flag. Called by the game over screen $207B."
   },
   {
    "address": 8276,
@@ -4615,27 +4615,27 @@
   {
    "address": 8518,
    "type": "line",
-   "text": "A bare RTS, called by the main loop at $0A26 and by the end loop at $2AD8. Code follows at $2147 (it tests bit 2 of $DD00 and jumps to $0810) but no code in the file jumps to it."
+   "text": "A bare RTS, called by the main loop at $0A26, by the end loop at $2AD8 and by mask_finish at $2CA2. Code follows at $2147 (it tests bit 2 of $DD00 and jumps to $0810) but no code in the file jumps to it."
   },
   {
    "address": 8519,
    "type": "line",
-   "text": "Code that follows the RTS at $2146; nothing calls it or jumps to it. It reads $DD00 and returns when bit 2 is set; when bit 2 is clear it takes three return addresses off the stack, sets the interrupt flag and jumps to $0810 (resident code)."
+   "text": "Code that follows the RTS at $2146; nothing calls it or jumps to it. It reads $DD00 and returns when bit 2 is set; when bit 2 is clear it pulls three bytes off the stack, sets the interrupt flag and jumps to $0810 (resident code)."
   },
   {
    "address": 8534,
    "type": "line",
-   "text": "Fills the 1 KB screen matrix at $CC00-$CFFF with A. Called by the setup, the game over screen, the continue screen, the story screen and $29F1."
+   "text": "Fills the 1 KB screen matrix at $CC00-$CFFF with A. Called by the setup, the game over screen, the continue screen, the story screen, $29F1 and the mask game setup $37C9."
   },
   {
    "address": 8552,
    "type": "line",
-   "text": "Fills colour RAM $D800-$DBFF with A. Called by the setup, the game over screen, the continue screen, the story screen and $29F1."
+   "text": "Fills colour RAM $D800-$DBFF with A. Called by the setup, the game over screen, the continue screen, the story screen, $29F1 and the mask game setup $37C9."
   },
   {
    "address": 8570,
    "type": "line",
-   "text": "Busy-wait: the outer count is A and the inner count is A as well (X and Y both start from A), so the callers' values from $14 to $FF give delays from a few milliseconds to about a third of a second. Used by the wipe, the story, game over and continue screens and the text printers."
+   "text": "Busy-wait: the outer count is A and the inner count is A as well (X and Y both start from A), so the callers' values from $0A to $FF give delays from about half a millisecond to about a third of a second. Used by the wipe, the story, game over and continue screens, the text printers and the mask game's screens and waits."
   },
   {
    "address": 8579,
@@ -4645,7 +4645,7 @@
   {
    "address": 8587,
    "type": "line",
-   "text": "Set to 1 by the NMI handler at $2183 and by $2722; cleared by the setup. The main loop at $0A66 shows the game over screen when it is set."
+   "text": "Set to 1 by the NMI handler at $2183 and by $2722; cleared by the level setup and by the mask game setup ($3884). The main loop at $0A66 shows the game over screen when it is set."
   },
   {
    "address": 8588,
@@ -4655,12 +4655,12 @@
   {
    "address": 8590,
    "type": "line",
-   "text": "Joystick port 2 ($DC00) as last read by irq_mid ($1E14): bit 0 up, 1 down, 2 left, 3 right, 4 fire, clear when pressed; $7F once the time bar has run out. $FF at the start."
+   "text": "Joystick port 2 ($DC00) as last read by irq_mid ($1E14), or in the mask game by its interrupt ($39AD): bit 0 up, 1 down, 2 left, 3 right, 4 fire, clear when pressed; $7F once the time bar has run out. $FF at the start."
   },
   {
    "address": 8591,
    "type": "line",
-   "text": "Redraws the status panel under the playfield: copies the 200 panel colours from $2861 to colour RAM $DAF7 and the 200 panel characters from $2929 to $CEF7, clears the 40 cells at $CFC0 and $DBC0, then calls $4334 and the energy bar $0BE2. Called by the setup, the game over screen and the continue screen."
+   "text": "Redraws the status panel under the playfield: copies the 200 panel colours from $2861 to colour RAM $DAF7 and the 200 panel characters from $2929 to $CEF7, clears the 40 cells at $CFC0 and $DBC0, then calls $4334 and the energy bar $0BE2. Called by the setup, the game over screen, the continue screen, mask_finish ($2C5C) and the mask game setup ($37C9)."
   },
   {
    "address": 8631,
@@ -4675,7 +4675,7 @@
   {
    "address": 8707,
    "type": "line",
-   "text": "Set to 1 by $23DC when the story has been shown; no code in the file reads it."
+   "text": "Set to 1 by $23DC when the story has been shown, and by type_lab_text ($37C0); the mask game setup sets it to 1 at $37CB and clears it at $3921. No code in the file reads it."
   },
   {
    "address": 8708,
@@ -4700,12 +4700,12 @@
   {
    "address": 8916,
    "type": "line",
-   "text": "Fills the 1 KB second screen matrix at $C800-$CBFF with A. Called by $29F1 with A=0."
+   "text": "Fills the 1 KB second screen matrix at $C800-$CBFF with A. Called with A=0 by $29F1 and by the mask game setup $37C9 (at $3910)."
   },
   {
    "address": 8934,
    "type": "line",
-   "text": "Key code read by $22E7 and stored by $1F46; $50 pauses ($2054), $20 can end the level (main loop at $0A42)."
+   "text": "Key code read by $22E7 and stored by $1F46, cleared by the setup, the game over screen and the continue screen; $50 pauses ($2054), $20 can end the level (main loop at $0A42)."
   },
   {
    "address": 8935,
@@ -4730,7 +4730,7 @@
   {
    "address": 9056,
    "type": "line",
-   "text": "The column bits read from $DC01 for the row being scanned by $22E7."
+   "text": "The column bits read from $DC01 for the row being scanned by $22E7, as far as it has rotated them: it keeps the byte here when it finds a pressed key and reloads it to test the rest when that key has no code."
   },
   {
    "address": 9057,
@@ -4740,27 +4740,27 @@
   {
    "address": 9121,
    "type": "line",
-   "text": "Exchanges three blocks: 136 bytes at $3CC1 and 136 at $3D49 with $C3B0 and $C438, and the 80 bytes of digit shapes at $0CCF with $C4C0. Called to put the text screens' shapes in and to restore the play shapes, by the setup, the game over screen, the continue screen and $29F1."
+   "text": "Exchanges three blocks: 136 bytes at $3CC1 and 136 at $3D49 with $C3B0 and $C438, and the 80 bytes of digit shapes at $0CCF with $C4C0. Called to put the text screens' shapes in and to restore the play shapes, by the setup, the game over screen, the continue screen, mask_finish ($2C5C) and the mask game setup ($37C9)."
   },
   {
    "address": 9178,
    "type": "line",
-   "text": "Characters of the story still to type before fire can end it: $1E at the start, counted down by $23DC."
+   "text": "Passes of the typing loop still to run before fire can end the text: $1E at the start, counted down by $23DC on each character and each line end; type_lab_text ($373F) uses it the same way."
   },
   {
    "address": 9179,
    "type": "line",
-   "text": "The index into the story text $24F4 of the next character $23DC types."
+   "text": "The index into the story text $24F4 of the next character $23DC types; type_lab_text ($373F) uses it the same way for the lab text $41F1."
   },
   {
    "address": 9180,
    "type": "line",
-   "text": "Types the story text, called by the setup. Fills the screen with $E6 and colour RAM with 7, then writes the text from $24F4 into the screen from $CC56 one character at a time with a delay of $32 ($217A) for each, adding $75 to each code and turning $20 into $E6. A code $FF ends a line and moves the pointer $D5/$D6 on 80 bytes (two rows); a second $FF ends the text. After the first 30 characters ($23DA) pressing fire (bit 4 of $DC00) ends it early; at the end of the text it waits for fire. It then sets $2203 to 1 and waits through two long delays."
+   "text": "Types the story text, called by the setup. Fills the screen with $E6 and colour RAM with 7, then writes the text from $24F4 into the screen from $CC56 one character at a time with a delay of $32 ($217A) for each, adding $75 to each code and turning $20 into $E6. A code $FF ends a line and moves the pointer $D5/$D6 on 80 bytes (two rows); a second $FF ends the text. After the first 30 passes of its loop ($23DA; each character or line end is one) pressing fire (bit 4 of $DC00) ends it early; at the end of the text it waits for fire. It then sets $2203 to 1 and waits through two long delays."
   },
   {
    "address": 9328,
    "type": "line",
-   "text": "A text in screen codes (A is 1, a space is $20, ':' is $1B), 132 bytes: \" DARKMAN MUST\", \" PERFECT A FINAL\", \" DISGUISE TO GET\", \" CLOSE ENOUGH TO\", \" STRACK TO FREE\", \" JULIE HIS TRUE\", \" LOVE:::\" and \" END OF LINE:::\", the lines separated by two zero bytes and the end marked by two $FF. It is the same sentence as the lab text at $41F1, but no code reads this copy; the story text typed by show_briefing ($23DC) starts at $24F4."
+   "text": "A text in screen codes (A is 1, a space is $20, ':' is $1B), 132 bytes: \" DARKMAN MUST\", \" PERFECT A FINAL\", \" DISGUISE TO GET\", \" CLOSE ENOUGH TO\", \" STRACK TO FREE\", \" JULIE HIS TRUE\", \" LOVE:::\" and \" END OF LINE:::\", the lines separated by two zero bytes (four after \" LOVE:::\") and the end marked by two $FF. It is the same sentence as the lab text at $41F1, but no code reads this copy; the story text typed by show_briefing ($23DC) starts at $24F4."
   },
   {
    "address": 9460,
