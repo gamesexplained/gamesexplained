@@ -2620,7 +2620,7 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "MB map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 5 hold 00 03 00 07 00 09; the rest of the strip is zero."
+   "text": "MB map strip: 64 cells, one per world column, read indexed from $0600 by the resident at $099D, $3518, $355F, $3B54 (in $3B51), $418A (in $4173), $4C36, $4C5F, $4CA7, $4CB2, $4F77, $4F93, $4FD8 and $502E (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 5 hold 00 03 00 07 00 09; the cells from $0606 to $06FE are zero and the last, $06FF, is $09."
   },
   {
    "address": 1600,
@@ -2635,7 +2635,7 @@
   {
    "address": 1796,
    "type": "line",
-   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines, $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and $0706 (0) is halved into $02C8 and $02C7 at $566A."
+   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines ($287C, $3447, $4409, $48C6); the resident also stores to it at $6B9E. $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and from $566A $0706 (0) is shifted right twice into $02C8, its low two bits going to bits 7-6 of $02C7."
   },
   {
    "address": 1799,
@@ -2650,12 +2650,12 @@
   {
    "address": 1808,
    "type": "line",
-   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds. $0710 is read by the object grid and placement routines ($37B4, $383F, $5487), $0711 at $548A, $0718 at $5397 and $0719 at $53B9."
+   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds. The table is read indexed from $0710 by the object grid and placement routines at $28CA, $37B9 (in $37B4), $383F, $3863 and $5487; $0711 is read at $548A, $0718 at $5397 and $0719 at $53B9."
   },
   {
    "address": 1818,
    "type": "line",
-   "text": "Costume selector ($06), the index into the initial-animation table at $5985 read at $51EA and $5985. The three bytes after it ($071B-$071D = FF 12 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
+   "text": "Costume selector ($06), read at $51EA and copied to $02C5 (replaced by 4 when $0385 is non-negative and $0565 is negative); it indexes the initial-animation table at $5985, read at $520D. The three bytes after it ($071B-$071D = FF 12 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
   },
   {
    "address": 1822,
@@ -2670,17 +2670,17 @@
   {
    "address": 1854,
    "type": "line",
-   "text": "Sixteen low-nibble-to-type values read by $4171/$4173 and $3B51 (bytes: 00 02 03 02 03 02 03 02 03 01 00 00 00 00 00 00). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
+   "text": "Sixteen low-nibble-to-type values read indexed by the resident at $351E, $3565, $3B5A (in $3B51), $4192 (in $4173), $4A8E, $4B27, $4F7D, $4F99, $4FE8 and $503E (bytes: 00 02 03 02 03 02 03 02 03 01 00 00 00 00 00 00). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
   },
   {
    "address": 1870,
    "type": "line",
-   "text": "Sixteen inclusive upper column bounds read by $4115 (bytes: 01 03 FF FF FF FF FF FF FF FF FF FF FF FF FF FF). Resident $411C takes the first entry whose bound is at least the coarse column, so each region is the span of columns up to its bound."
+   "text": "Sixteen inclusive upper column bounds at $074E (bytes: 01 03 FF FF FF FF FF FF FF FF FF FF FF FF FF FF), read by $4115. Resident $411C takes the first of entries 0 to 14 whose bound is at least the coarse column, and entry 15 when none is; the last byte ($075D) is never read. So region 0 is columns up to 1, region 1 is 2-3 and region 2 is everything above."
   },
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C reads at most index 14 ($075C), so it reads none of them. The resident uses $075E,X/Y as per-cell state for special map cells: $381C increments the counter of the cell just entered, and $38FE (update_grid_special_cell) reads and writes it at $3901 and $3915, with Y the low nibble of a special map cell."
   },
   {
    "address": 1902,
@@ -2785,32 +2785,32 @@
   {
    "address": 31488,
    "type": "line",
-   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
+   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of the first object group only; the second and third groups point at the extra costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
   },
   {
    "address": 31568,
    "type": "line",
-   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
+   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of the first object group only; the second and third groups point at the extra costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
   },
   {
    "address": 31648,
    "type": "line",
-   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
+   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of the first object group only; the second and third groups point at the extra costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
   },
   {
    "address": 31728,
    "type": "line",
-   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of the first object group only; the second and third groups point at the extra costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31808,
    "type": "line",
-   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of the first object group only; the second and third groups point at the extra costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31888,
    "type": "line",
-   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
+   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of the first object group only; the second and third groups point at the extra costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
   },
   {
    "address": 31968,
@@ -3200,12 +3200,12 @@
   {
    "address": 35503,
    "type": "line",
-   "text": "AV costume stream 78 ($8AAF-$8AD6, 40 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
+   "text": "AV costume stream 78 ($8AAF-$8ADC, 46 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
   },
   {
    "address": 35543,
    "type": "line",
-   "text": "41 bytes ($8AD7-$8AFF) after the last stream's $FF terminator. No stream offset points here and the bytes do not follow the stream pattern; they look like leftover data from the disk load."
+   "text": "The first six bytes ($8AD7-$8ADC = 31 80 34 81 32 FF) are the end of AV stream 78, whose $FF terminator is at $8ADC. The 35 bytes after it ($8ADD-$8AFF) follow the costume's last stream (the size word at $7900 is $11DD, ending at $8ADD); no stream offset points there and they do not follow the stream pattern, so they look like leftover data from the disk load."
   },
   {
    "address": 35584,
@@ -3280,32 +3280,32 @@
   {
    "address": 35974,
    "type": "line",
-   "text": "Overlay hook stub: jmp $8D6F, a bare rts, so this hook does nothing in this scene. $8C89 and $8C8C have the same target. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub (first of three at $8C86/$8C89/$8C8C): jmp $8D6F, a bare rts, so this hook does nothing here. The resident calls it with JSR at $41AC (map mode $0343 = 0, in the ground classifier at $41A7) and jumps to it at $6BEB when a run-length text stream ends."
   },
   {
    "address": 35977,
    "type": "line",
-   "text": "Second overlay hook stub: jmp $8D6F (bare rts), the same target as $8C86 and $8C8C. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub (second of three at $8C86/$8C89/$8C8C): jmp $8D6F, a bare rts, so this hook does nothing here. The resident calls it with JSR at $41B6 (map mode $0343 = 1, in the ground classifier at $41A7) and jumps to it at $6BF5 when a run-length text stream ends."
   },
   {
    "address": 35980,
    "type": "line",
-   "text": "Third overlay hook stub: jmp $8D6F (bare rts), the same target as $8C86 and $8C89. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub (third of three at $8C86/$8C89/$8C8C): jmp $8D6F, a bare rts, so this hook does nothing here. The resident calls it with JSR at $41BC (other non-negative map modes, in the ground classifier at $41A7) and jumps to it at $6BFB when a run-length text stream ends."
   },
   {
    "address": 35983,
    "type": "line",
-   "text": "Overlay hook stub: jmp $8CDC, the per-update routine of this scene. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub for the per-frame scene logic: jmp $8CDC (knock_update). The resident calls it with JSR at $5D51 (in service_command_wheels_and_room, $5D36) and at $6A39 (the wait loop that calls $5D36 and then this stub)."
   },
   {
    "address": 35986,
    "type": "line",
-   "text": "Overlay hook stub: jmp $8C95, the routine that selects the position and animation values of an object from state $0379. The engine event that calls it is not identified in this range."
+   "text": "Overlay hook stub called by the resident movement and object updates (JSR at $342B, $39EE and $550F): jmp $8C95, the routine that selects the position and animation values of an object from state $0379."
   },
   {
    "address": 35989,
    "type": "line",
-   "text": "Reached by the hook at $8C92. If $0379 differs from $037A, copies it to $037A and stores $FF in zero-page $73 (meaning not identified). Then by $0379: 0 gives X=$60, Y=$18, $034F=0, A=4; 1 gives X=$5C, Y=$30, $034F=$0350, A=0; any other value gives X=$DD, Y=$38, $034F=$0351, A=0. Stores X in $053A, Y in $0546 and A in $053E. What those three bytes hold is not identified."
+   "text": "Reached by the hook at $8C92 and called directly by the resident with JSR at $5DBD. If $0379 differs from $037A, copies it to $037A and stores $FF in zero-page $73 (meaning not identified). Then by $0379: 0 gives X=$60, Y=$18, $034F=0, A=4; 1 gives X=$5C, Y=$30, $034F=$0350, A=0; any other value gives X=$DD, Y=$38, $034F=$0351, A=0. Stores X in $053A, Y in $0546 and A in $053E. What those three bytes hold is not identified."
   },
   {
    "address": 36060,
@@ -3365,7 +3365,7 @@
   {
    "address": 36215,
    "type": "line",
-   "text": "Countdown, one step per update at $8D42. When it reaches zero the update picks a random reply at $8D4C. Also written at $8F52 and $9148 (outside this range); its meaning beyond the countdown is not identified."
+   "text": "Countdown, one step per update at $8D42. When it reaches zero the update picks a random reply at $8D4C. Also written at $8F52, $9148 and $929F (where $928A stores the line length), and tested at $9136 by INSERT bracelet (outside this range); its meaning beyond the countdown is not identified."
   },
   {
    "address": 36216,
@@ -3425,7 +3425,7 @@
   {
    "address": 36227,
    "type": "line",
-   "text": "Delay in updates. When it is nonzero and both countdowns are zero, the update counts it down and clears the message area through resident $0836 at zero. Cleared at $8D51; also written at $9151 and $9280."
+   "text": "Delay in updates. When it is nonzero and both countdowns are zero, the update counts it down and clears the message area through resident $0836 at zero. Cleared at $8D51; also written at $9151, $9280 and $92A2."
   },
   {
    "address": 36228,
@@ -3510,7 +3510,7 @@
   {
    "address": 36538,
    "type": "line",
-   "text": "Reached by OPEN door. Calls resident $082A, keeps A in X and $8D72, reads the replacement from $071E+A; if equal, goes to $8EFA. If Y is 3 and $0578 is negative, shows 'You can't open the door, the knocker ring is gone.' ($9D5A). Else uses Y=$AF for $081B, queues sound 1, calls $91E1: nonzero stores 0 in $8D80 and $0379; zero stores A in $8D7F and $0379."
+   "text": "Reached by OPEN door. Calls resident $082A, keeps A in X and $8D72, reads the replacement from $071E+A; if equal, goes to $8EFA. If Y is 3 and $0578 is negative, shows 'You can't open the door, the knocker ring is gone.' ($9D5A). Else loads Y from zero-page $AF for $081B, queues sound 1, calls $91E1: nonzero stores 0 in $8D80 and $0379; zero stores A (0) in $8D7F and $0379."
   },
   {
    "address": 36602,
@@ -3610,7 +3610,7 @@
   {
    "address": 36884,
    "type": "line",
-   "text": "Called by the update routine when the step counter $8D7A is nonzero and both countdowns are zero; Y holds the old counter value. Decrements the counter and acts by Y: 5 'Knock knock.' (speaker B), 4 'Who's there?' (A), 3 joke name (B), 2 name + ' who?' (A), 1 punch line. Text pointers come from the tables at $9085-$90D3 indexed by $8D79."
+   "text": "Called by the update routine when the step counter $8D7A is nonzero and both countdowns are zero; Y holds the old counter value. Decrements the counter and acts by Y: 5 'Knock knock.' (speaker B), 4 'Who's there?' (A), 3 joke name (B), 2 name + ' who?' (A), 1 punch line. Text pointers come from the tables at $9085-$90C3 indexed by $8D79."
   },
   {
    "address": 36997,
@@ -3860,7 +3860,7 @@
   {
    "address": 37829,
    "type": "line",
-   "text": "Headered text $93C5-$93D6. Layout byte $14, colour byte $02; zero terminates its body. Content without framing glyph controls: \"He's not here.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay."
+   "text": "Headered text $93C5-$93D6. Layout byte $14, colour byte $02; zero terminates its body. Content without framing glyph controls: \"He's not here.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words at $8BCA (pair 5), $8BEC (pair 22), $8C0A (pair 37), $8C0C (pair 38), $8C12 (pair 41), $8C14 (pair 42) hold $13C5, this address less $8000, so the resident dispatcher shows this text as the reply to those commands; the overlay also prints it from $8FD0 (MANICURE with any other object)."
   },
   {
    "address": 37847,
@@ -3935,7 +3935,7 @@
   {
    "address": 38247,
    "type": "line",
-   "text": "Headered text $9567-$957A. Layout byte $12, colour byte $01; zero terminates its body. Content without framing glyph controls: \"Nothing happens.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay."
+   "text": "Headered text $9567-$957A. Layout byte $12, colour byte $01; zero terminates its body. Content without framing glyph controls: \"Nothing happens.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words at $8BC6 (pair 3), $8BD4 (pair 10), $8BD6 (pair 11), $8BE2 (pair 17), $8BE4 (pair 18), $8BE8 (pair 20), $8BF2 (pair 25), $8BF4 (pair 26), $8BF8 (pair 28), $8C2C (pair 54), $8C42 (pair 65), $8C44 (pair 66), $8C48 (pair 68), $8C4A (pair 69), $8C4C (pair 70), $8C4E (pair 71), $8C50 (pair 72), $8C62 (pair 81), $8C64 (pair 82) hold $1567, this address less $8000, so the resident dispatcher shows this text as the reply to those commands; the overlay also prints it from $8E24 (ASK door) and $8EB3."
   },
   {
    "address": 38267,
@@ -3990,7 +3990,7 @@
   {
    "address": 38658,
    "type": "line",
-   "text": "Headered text $9702-$972B. Layout byte $0F, colour byte $01; zero terminates its body. Content without framing glyph controls: \"\\nThe wall is crushed\\n  by your remark.  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay."
+   "text": "Headered text $9702-$972B. Layout byte $0F, colour byte $01; zero terminates its body. Content without framing glyph controls: \"\\nThe wall is crushed\\n  by your remark.  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler word at $8C2E (pair 55) holds $1702, this address less $8000, so the resident dispatcher shows this text as the reply to that command; no overlay code names it."
   },
   {
    "address": 38700,
@@ -4010,7 +4010,7 @@
   {
    "address": 38835,
    "type": "line",
-   "text": "Headered text $97B3-$97CF. Layout byte $04, colour byte $02; zero terminates its body. Content without framing glyph controls: \"There's no place to insert it.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay."
+   "text": "Headered text $97B3-$97CF. Layout byte $04, colour byte $02; zero terminates its body. Content without framing glyph controls: \"There's no place to insert it.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words at $8C22 (pair 49) hold $17B3, this address less $8000, so the resident dispatcher shows this text as the reply to those commands; the overlay also prints it from $9174 and $919C (INSERT bracelet, ring and key when there is no place)."
   },
   {
    "address": 38864,
@@ -4040,22 +4040,22 @@
   {
    "address": 39049,
    "type": "line",
-   "text": "Headered text $9889-$9891. Layout byte $1D, colour byte $07; zero terminates its body. Content without framing glyph controls: \"What?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9889-$9891. Layout byte $1D, colour byte $07; zero terminates its body. Content without framing glyph controls: \"What?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 0 of the unheard-reply word tables at $92AE (high bytes) and $92B2 (low bytes) names this text; $91FE prints it through $922E."
   },
   {
    "address": 39058,
    "type": "line",
-   "text": "Headered text $9892-$98A6. Layout byte $11, colour byte $07; zero terminates its body. Content without framing glyph controls: \"I can't hear you.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9892-$98A6. Layout byte $11, colour byte $07; zero terminates its body. Content without framing glyph controls: \"I can't hear you.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 1 of the unheard-reply word tables at $92AE (high bytes) and $92B2 (low bytes) names this text; $91FE prints it through $922E."
   },
   {
    "address": 39079,
    "type": "line",
-   "text": "Headered text $98A7-$98B7. Layout byte $15, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Again please?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $98A7-$98B7. Layout byte $15, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Again please?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 2 of the unheard-reply word tables at $92AE (high bytes) and $92B2 (low bytes) names this text; $91FE prints it through $922E."
   },
   {
    "address": 39096,
    "type": "line",
-   "text": "Headered text $98B8-$98C0. Layout byte $19, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Speak up.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $98B8-$98C0. Layout byte $19, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Speak up.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 3 of the unheard-reply word tables at $92AE (high bytes) and $92B2 (low bytes) names this text; $91FE prints it through $922E."
   },
   {
    "address": 39105,
@@ -4090,122 +4090,122 @@
   {
    "address": 39241,
    "type": "line",
-   "text": "Headered text $9949-$9955. Layout byte $19, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Lil' Abby\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9949-$9955. Layout byte $19, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Lil' Abby\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 0 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39254,
    "type": "line",
-   "text": "Headered text $9956-$9967. Layout byte $14, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Lil' Abby who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9956-$9967. Layout byte $14, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Lil' Abby who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 0 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39272,
    "type": "line",
-   "text": "Headered text $9968-$9983. Layout byte $0A, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Lil' Abby Rinth! Get it?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9968-$9983. Layout byte $0A, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Lil' Abby Rinth! Get it?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 0 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39300,
    "type": "line",
-   "text": "Headered text $9984-$9989. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Hoggle\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9984-$9989. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Hoggle\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 1 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39306,
    "type": "line",
-   "text": "Headered text $998A-$9993. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Hoggle who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $998A-$9993. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Hoggle who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 1 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39316,
    "type": "line",
-   "text": "Headered text $9994-$99A9. Layout byte $0B, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Hoggle make good bacon.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9994-$99A9. Layout byte $0B, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Hoggle make good bacon.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 1 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39338,
    "type": "line",
-   "text": "Headered text $99AA-$99AF. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Sir Didymus\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99AA-$99AF. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Sir Didymus\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 2 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39344,
    "type": "line",
-   "text": "Headered text $99B0-$99B9. Layout byte $12, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Sir Didymus who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99B0-$99B9. Layout byte $12, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Sir Didymus who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 2 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39354,
    "type": "line",
-   "text": "Headered text $99BA-$99D5. Layout byte $0A, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Sir, Didymus up my hair?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99BA-$99D5. Layout byte $0A, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Sir, Didymus up my hair?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 2 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39382,
    "type": "line",
-   "text": "Headered text $99D6-$99DB. Layout byte $1E, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Ludo\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99D6-$99DB. Layout byte $1E, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Ludo\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 3 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39388,
    "type": "line",
-   "text": "Headered text $99DC-$99E5. Layout byte $19, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Ludo who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99DC-$99E5. Layout byte $19, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Ludo who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 3 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39398,
    "type": "line",
-   "text": "Headered text $99E6-$99FD. Layout byte $0B, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Ludo how much I yuv lu?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99E6-$99FD. Layout byte $0B, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Ludo how much I yuv lu?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 3 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39422,
    "type": "line",
-   "text": "Headered text $99FE-$9A03. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Goblin\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $99FE-$9A03. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Goblin\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 4 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39428,
    "type": "line",
-   "text": "Headered text $9A04-$9A0D. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Goblin who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A04-$9A0D. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Goblin who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 4 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39438,
    "type": "line",
-   "text": "Headered text $9A0E-$9A31. Layout byte $10, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nGoblin all my food\\nup, I'm so hungry!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A0E-$9A31. Layout byte $10, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nGoblin all my food\\nup, I'm so hungry!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 4 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39474,
    "type": "line",
-   "text": "Headered text $9A32-$9A3B. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"A maze\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A32-$9A3B. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"A maze\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 5 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39484,
    "type": "line",
-   "text": "Headered text $9A3C-$9A4A. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"A maze who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A3C-$9A4A. Layout byte $17, colour byte $07; zero terminates its body. Content without framing glyph controls: \"A maze who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 5 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39499,
    "type": "line",
-   "text": "Headered text $9A4B-$9A75. Layout byte $12, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nAmazing how stupid\\n these jokes are! \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A4B-$9A75. Layout byte $12, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nAmazing how stupid\\n these jokes are! \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 5 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39542,
    "type": "line",
-   "text": "Headered text $9A76-$9A7E. Layout byte $1D, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Romeo\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A76-$9A7E. Layout byte $1D, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Romeo\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 6 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39551,
    "type": "line",
-   "text": "Headered text $9A7F-$9A8C. Layout byte $18, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Romeo who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A7F-$9A8C. Layout byte $18, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Romeo who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 6 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39565,
    "type": "line",
-   "text": "Headered text $9A8D-$9AA4. Layout byte $0E, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Romeo and Oubliette!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9A8D-$9AA4. Layout byte $0E, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Romeo and Oubliette!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 6 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39589,
    "type": "line",
-   "text": "Headered text $9AA5-$9AAA. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Jareth\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9AA5-$9AAA. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Jareth\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 7 of the joke-name word tables at $9085 (high bytes) and $908D (low bytes) names this text; $9014 prints it at step 3 of a knock-knock joke through $9245."
   },
   {
    "address": 39595,
    "type": "line",
-   "text": "Headered text $9AAB-$9AB4. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Jareth who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9AAB-$9AB4. Layout byte $1C, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Jareth who?\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 7 of the ' who?' reply word tables at $909D (high bytes) and $90A5 (low bytes) names this text; $9014 prints it at step 2 of a joke through $922E."
   },
   {
    "address": 39605,
    "type": "line",
-   "text": "Headered text $9AB5-$9AE9. Layout byte $09, colour byte $04; zero terminates its body. Content without framing glyph controls: \"\\nWhat do you mean, \\\"Jareth\\nwho\\\"!  It's MY Labyrinth!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9AB5-$9AE9. Layout byte $09, colour byte $04; zero terminates its body. Content without framing glyph controls: \"\\nWhat do you mean, \\\"Jareth\\nwho\\\"!  It's MY Labyrinth!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 7 of the punch-line word tables at $90AD (high bytes) and $90B5 (low bytes) names this text; $9014 prints it at step 1 of a joke, through $9245 (joke 7 through resident $0827 directly)."
   },
   {
    "address": 39658,
@@ -4245,42 +4245,42 @@
   {
    "address": 39846,
    "type": "line",
-   "text": "Headered text $9BA6-$9BD4. Layout byte $0E, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\n Two bits will buy  \\nyou almost anything.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BA6-$9BD4. Layout byte $0E, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\n Two bits will buy  \\nyou almost anything.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 0 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 39893,
    "type": "line",
-   "text": "Headered text $9BD5-$9BEE. Layout byte $07, colour byte $07; zero terminates its body. Content without framing glyph controls: \"A door isn't always a door.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BD5-$9BEE. Layout byte $07, colour byte $07; zero terminates its body. Content without framing glyph controls: \"A door isn't always a door.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 1 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 39919,
    "type": "line",
-   "text": "Headered text $9BEF-$9C29. Layout byte $08, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nReach for the heights even\\n  if you can't see them.  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9BEF-$9C29. Layout byte $08, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nReach for the heights even\\n  if you can't see them.  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 2 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 39978,
    "type": "line",
-   "text": "Headered text $9C2A-$9C58. Layout byte $0B, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nWall to wall footprints\\n    may do the trick.  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9C2A-$9C58. Layout byte $0B, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nWall to wall footprints\\n    may do the trick.  \". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 3 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 40025,
    "type": "line",
-   "text": "Headered text $9C59-$9C73. Layout byte $0A, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Cross any color but red!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9C59-$9C73. Layout byte $0A, colour byte $07; zero terminates its body. Content without framing glyph controls: \"Cross any color but red!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 4 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 40052,
    "type": "line",
-   "text": "Headered text $9C74-$9CA0. Layout byte $0F, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nFood can be helpful\\nwhen you are stuck.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9C74-$9CA0. Layout byte $0F, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nFood can be helpful\\nwhen you are stuck.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 5 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 40097,
    "type": "line",
-   "text": "Headered text $9CA1-$9CDF. Layout byte $06, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nThey say that big animals do\\nmuch damage in small spaces.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9CA1-$9CDF. Layout byte $06, colour byte $07; zero terminates its body. Content without framing glyph controls: \"\\nThey say that big animals do\\nmuch damage in small spaces.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 6 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 40160,
    "type": "line",
-   "text": "Headered text $9CE0-$9D35. Layout byte $08, colour byte $07; zero terminates its body. Content without framing glyph controls: \" Only one thing could be  \\nmore boring than spending \\nyour life in an oubliette!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the door knocker overlay names this address directly, so what prints it is not traced."
+   "text": "Headered text $9CE0-$9D35. Layout byte $08, colour byte $07; zero terminates its body. Content without framing glyph controls: \" Only one thing could be  \\nmore boring than spending \\nyour life in an oubliette!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. Entry 7 of the hint word tables at $90C4 (high bytes) and $90CC (low bytes) names this text; $8D4C prints it through $9245 when countdown $8D77 runs out."
   },
   {
    "address": 40246,
@@ -4290,12 +4290,12 @@
   {
    "address": 40282,
    "type": "line",
-   "text": "Headered text $9D5A-$9D83. Layout byte $09, colour byte $01; zero terminates its body. Content without framing glyph controls: \"\\n You can't open the door,\\nthe knocker ring is gone.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay. The record runs into the costume loaded at $A000, which overwrote its end, so the stored text stops mid-word."
+   "text": "Headered text $9D5A-$9D84. Layout byte $09, colour byte $01; zero terminates its body. Content without framing glyph controls: \"\\n You can't open the door,\\nthe knocker ring is gone.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay. OPEN door prints it from $8ED2 when the knocker ring is gone."
   },
   {
    "address": 40324,
    "type": "line",
-   "text": "One zero byte between str_headered_9D5A (ends $9D83) and the list at $9D85. No code reads it: resident $0833 is given the pointer $9D85. Its purpose is not identified."
+   "text": "The zero that terminates str_headered_9D5A; the resident text parser reads it as the end of that text. The list at $9D85 follows."
   },
   {
    "address": 40325,
@@ -4305,7 +4305,7 @@
   {
    "address": 40341,
    "type": "line",
-   "text": "Text fragment $9D95-$9D95. No layout and colour header: the code that prints it supplies them; zero terminates it. Content without framing glyph controls: \"\". The resident parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the door knocker overlay."
+   "text": "The zero that terminates the entry list at $9D85, read by resident $0833 as the end of the list. Not a text: nothing prints it."
   },
   {
    "address": 40960,
