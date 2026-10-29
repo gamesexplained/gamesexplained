@@ -22,10 +22,6 @@ The steward, unorig, has claimed the curation pass.
 
 ## Open
 
-- Which speech phrase says what. Phrase 1 is "Ghostbusters!"; the words
-  of phrases 2 and 3 are inferred from when the game plays them; phrase 4
-  is unknown. Listening to each on the Play tab or the How it works page
-  would settle it.
 - After F1 restarts from the end pages, the Play tab's lockstep differs
   for one pass in the sprite X registers `$D000`-`$D00C`: it replays the
   interrupt after `init_game_vars`, where the game ran it before. The

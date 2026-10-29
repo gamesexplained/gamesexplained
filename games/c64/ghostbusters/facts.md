@@ -569,11 +569,10 @@ sum share every account.
   speech as raw 4-bit samples. The game plays phrase 1 (start-up,
   title SPACE, a catch), 2 (a man slimed), 3 (start-up, a man caught at
   Zuul, the foreclosure) and 4 (the portal); phrase 0 is never asked for.
-  Which words each phrase says is not settled from the code: phrase 1 is
-  "Ghostbusters!" (the title speaks it on SPACE, as the manual says); 2
-  as "He slimed me!" and 3 as the laugh are inferred from where the game
-  plays them and their sound pattern (nine voiced syllables in 3); 4 is
-  unknown. A pitch record's period count is 32 - (bit 0 of byte 0 x 16 +
+  The words were confirmed by ear on 29 October 2026, from the
+  phrases played through the page's port of the player: 0 is a shorter
+  "Ghostbusters", 1 "Ghostbusters!", 2 "He slimed me!", 3 a laugh (nine
+  voiced syllables) and 4 a scream. A pitch record's period count is 32 - (bit 0 of byte 0 x 16 +
   byte 1's high nibble) (`$F33B`-`$F344`). The player
   refuses to start with the KERNAL ROM banked in (`$F45F`).
 
