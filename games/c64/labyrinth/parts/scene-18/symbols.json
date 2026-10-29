@@ -2765,7 +2765,7 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "MI map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 3 hold 00 01 02 03; the rest of the strip is zero."
+   "text": "MI map strip: 64 cells, one per world column, read indexed from $0600 by the resident at $099D, $3518, $355F, $3B54 (in $3B51), $418A (in $4173), $4C36, $4C5F, $4CA7, $4CB2, $4F77, $4F93, $4FD8 and $502E (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 3 hold 00 01 02 03; the rest of the strip is zero."
   },
   {
    "address": 1600,
@@ -2780,7 +2780,7 @@
   {
    "address": 1796,
    "type": "line",
-   "text": "Three numeric header bytes: $0704 (1) is the loop limit the loader compares at $568F and is read by the camera and motion routines, $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and $0706 (0) is halved into $02C8 and $02C7 at $566A."
+   "text": "Three numeric header bytes: $0704 (1) is the loop limit the loader compares at $568F and is read by the camera and motion routines ($287C, $3447, $4409, $48C6); the resident also stores to it at $6B9E. $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60 ($FF and $00 here), and from $566A $0706 (0) is shifted right twice into $02C8 (0), its low two bits going to bits 7-6 of $02C7."
   },
   {
    "address": 1799,
@@ -2795,12 +2795,12 @@
   {
    "address": 1808,
    "type": "line",
-   "text": "Ten bytes ($0710-$0719 = 00 10 30 46 56 68 72 80 00 00): depth thresholds. $0710 is read by the object grid and placement routines ($37B4, $383F, $5487), $0711 at $548A, $0718 at $5397 and $0719 at $53B9."
+   "text": "Ten bytes ($0710-$0719 = 00 10 30 46 56 68 72 80 00 00): depth thresholds. The table is read indexed from $0710 by the object grid and placement routines at $28CA, $37B9 (in $37B4), $383F, $3863 and $5487; $0711 is read at $548A, $0718 at $5397 and $0719 at $53B9."
   },
   {
    "address": 1818,
    "type": "line",
-   "text": "Costume selector ($02), the index into the initial-animation table at $5985 read at $51EA and $5985. The three bytes after it ($071B-$071D = 56 2C FF) are read at $5201, $5207 and $51E4 when entry placement starts."
+   "text": "Costume selector ($02), read at $51EA and copied to $02C5 (replaced by 4 when $0385 is non-negative and $0565 is negative); it indexes the initial-animation table at $5985, read at $520D. The three bytes after it ($071B-$071D = 56 2C FF) are read at $5201, $5207 and $51E4 when entry placement starts."
   },
   {
    "address": 1822,
@@ -2815,7 +2815,7 @@
   {
    "address": 1854,
    "type": "line",
-   "text": "Sixteen low-nibble-to-type values read by $4171/$4173 and $3B51 (bytes: 0F 0F 0F 0F 01 01 01 01 01 01 01 01 01 01 01 01). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
+   "text": "Sixteen low-nibble-to-type values read indexed by the resident at $351E, $3565, $3B5A (in $3B51), $4192 (in $4173), $4A8E, $4B27, $4F7D, $4F99, $4FE8 and $503E (bytes: 0F 0F 0F 0F 01 01 01 01 01 01 01 01 01 01 01 01). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
   },
   {
    "address": 1870,
@@ -2825,7 +2825,7 @@
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C reads at most index 14 ($075C), so it reads none of them. The resident uses $075E,X/Y as per-cell state for special map cells: $381C increments the counter of the cell just entered, and $38FE (update_grid_special_cell) reads and writes it at $3901 and $3915, with Y the low nibble of a special map cell."
   },
   {
    "address": 1902,
@@ -2930,32 +2930,32 @@
   {
    "address": 31488,
    "type": "line",
-   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
+   "text": "Animation-phase table of component 1, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 1 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_1 in its high five bits. Bytes: 69 72 7B 80 80 80 80 80 69 7B 7B 80 80 80 80 80 09 12 1B 20 20 20 20 20 41 4A 53 58 58 58 58 58 39 4A 4B 54 55 5E 47 41 81 3A 3B 54 75 75 70 70 80 39 3A 3B 3C 3D 3E 3F 60 00 00 00 00 00 00 00 00 00 00 00 00 1C 2D 36 01 02 1B 1B 04 1D 2E 37."
   },
   {
    "address": 31568,
    "type": "line",
-   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
+   "text": "Animation-phase table of component 2, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 2 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_2 in its high five bits. Bytes: 61 6A 63 58 58 58 58 58 61 6B 63 58 58 58 58 58 09 12 1B 20 20 20 20 20 39 42 4B 50 50 50 50 50 39 3A 43 44 4D 4E 57 39 61 42 33 34 5D 5D 58 58 60 41 32 33 34 35 36 37 F8 00 00 00 00 00 00 00 00 00 00 00 00 0C 2D FE 01 02 0B 0B 04 0D 2E FF."
   },
   {
    "address": 31648,
    "type": "line",
-   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
+   "text": "Animation-phase table of component 3, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 3 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_3 in its high five bits. Bytes: F9 FA FB F8 F8 F8 F8 F8 F9 FB FB F8 F8 F8 F8 F8 01 02 03 00 00 00 00 00 09 12 1B 10 10 10 10 10 21 2A 2B 24 25 2E 37 31 F9 12 0B 0C FD FD F8 F8 F8 11 1A 13 0C 0D 0E 0F F8 00 00 00 00 00 00 00 00 00 00 00 00 04 05 FE 01 02 03 03 04 05 06 FF."
   },
   {
    "address": 31728,
    "type": "line",
-   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 4, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 4 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_4 in its high five bits. Bytes: 61 62 63 60 60 60 60 60 69 6B 6B 68 68 68 68 68 01 0A 13 08 08 08 08 08 31 2A 23 28 28 28 28 28 49 4A 43 3C 3D 46 47 49 61 52 5B 24 65 65 60 60 60 29 32 2B 24 25 26 27 60 00 00 00 00 00 00 00 00 00 00 00 00 0C 15 FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31808,
    "type": "line",
-   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
+   "text": "Animation-phase table of component 5, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 5 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_5 in its high five bits. Bytes: 31 32 33 30 30 30 30 30 31 33 33 30 30 30 30 30 11 0A 03 08 08 08 08 08 29 2A 2B 28 28 28 28 28 29 2A 2B 2C 2D 2E 2F 29 31 2A 2B 2C 35 35 30 30 30 29 2A 2B 2C 2D 2E 2F 30 00 00 00 00 00 00 00 00 00 00 00 00 14 0D FE 01 02 03 1B 04 15 16 FF."
   },
   {
    "address": 31888,
    "type": "line",
-   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of each object) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
+   "text": "Animation-phase table of component 6, 80 bytes: ten animation requests of eight phases each. $3FC7 reads it through the pointers at $78D0/$78E8 (slot 6 of the first object group only; the second and third groups point at the forest costume's tables at $A200 on) at index (request-1) x 8 + current phase. The byte read gives the next phase in its low three bits and the frame index into av_costume_frame_directory_6 in its high five bits. Bytes: 51 4A 53 58 58 58 58 58 51 4B 53 58 58 58 58 58 01 02 03 00 00 00 00 00 31 32 33 30 30 30 30 30 31 32 33 34 35 36 37 31 61 32 33 34 45 45 40 40 58 31 32 33 34 35 36 37 68 00 00 00 00 00 00 00 00 00 00 00 00 24 05 FE 01 0A 1B 1B 04 1D 16 FF."
   },
   {
    "address": 31968,
@@ -3345,12 +3345,12 @@
   {
    "address": 35503,
    "type": "line",
-   "text": "AV costume stream 78 ($8AAF-$8AD6, 40 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
+   "text": "AV costume stream 78 ($8AAF-$8ADC, 46 bytes), used by component 1 frame 12. Header: origin offsets -4, 3 (added to the component's fixed-point origin), attachment offsets 0, -2 (zero for both restores the saved attachment origin); the drawing bytes from offset 4 end at $FF and are read by $2C03."
   },
   {
    "address": 35543,
    "type": "line",
-   "text": "41 bytes ($8AD7-$8AFF) after the last stream's $FF terminator. No stream offset points here and the bytes do not follow the stream pattern; they look like leftover data from the disk load."
+   "text": "The first six bytes ($8AD7-$8ADC = 31 80 34 81 32 FF) are the end of AV stream 78, whose $FF terminator is at $8ADC. The 35 bytes after it ($8ADD-$8AFF) follow the costume's last stream (the size word at $7900 is $11DD, ending at $8ADD); no stream offset points there and they do not follow the stream pattern, so they look like leftover data from the disk load."
   },
   {
    "address": 35584,
@@ -3450,7 +3450,7 @@
   {
    "address": 35989,
    "type": "line",
-   "text": "Bare rts, target of the fifth hook entry at $8C92."
+   "text": "Bare rts. Target of the fifth hook entry at $8C92; the resident also calls it directly by JSR at $5DBD."
   },
   {
    "address": 35990,
@@ -3460,7 +3460,7 @@
   {
    "address": 36038,
    "type": "line",
-   "text": "Zero byte not referenced by code in $8C86-$8F0A; role unknown."
+   "text": "Distance limit of s18_find_goblin_near: $9048 stores the A it is called with ($0F or $1E) here, and $9061 and $9070 compare the absolute values of $0347,Y and $034B,Y with it. Starts as 0."
   },
   {
    "address": 36039,
@@ -3470,7 +3470,7 @@
   {
    "address": 36040,
    "type": "line",
-   "text": "Starts as 1. s18_call_goblin ($8D76) stores the index Y of the goblin slot it just reset here."
+   "text": "Goblin slot index (1 or 2), starts as 1. s18_call_goblin ($8D84) and s18_find_goblin_near ($9075) store the slot Y they pick here, and s18_show_goblin_text reads it at $9008 to place the goblin's reply."
   },
   {
    "address": 36041,
@@ -3515,7 +3515,7 @@
   {
    "address": 36214,
    "type": "line",
-   "text": "Handler for CALL goblin. Loops Y from 2 down to 1 over table $0248; for each negative entry it clears $97D1,Y and records Y in $8CC8. If one was found it prints the text at $9791 ('I'll get you yet!') via $9004; otherwise it prints the text at $9186 ('There's no one nearby.') via $903A."
+   "text": "Handler for CALL goblin. Loops Y from 2 down to 1 over table $0248; for each non-negative entry it clears $97D1,Y and records Y in $8CC8. If one was found it prints the text at $9791 ('I'll get you yet!') via $9004; otherwise it prints the text at $9186 ('There's no one nearby.') via $903A."
   },
   {
    "address": 36252,
@@ -3590,7 +3590,7 @@
   {
    "address": 36594,
    "type": "line",
-   "text": "Handler for TAKE (any object). Classifies the player's map cell with $0818; if X is non-negative it calls $0815 with A=0 to add the map object to the inventory, otherwise it prints the text at $9159 ('There is nothing to take.') via $903A."
+   "text": "Handler for TAKE (any object). Classifies the player's map cell with $0818; if X is negative it calls $0815 with A=0 to add the map object to the inventory, otherwise it prints the text at $9159 ('There is nothing to take.') via $903A."
   },
   {
    "address": 36613,
@@ -3770,7 +3770,7 @@
   {
    "address": 37236,
    "type": "line",
-   "text": "Headered text $9174-$9185. Layout byte $14, colour byte $02; zero terminates its body. Content without framing glyph controls: \"He's not here.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the scene 18 overlay."
+   "text": "Headered text $9174-$9185. Layout byte $14, colour byte $02; zero terminates its body. Content without framing glyph controls: \"He's not here.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words for pairs 9, 21, 30, 44, 46, 53 and 60 hold $1174, this address less $8000, so the resident dispatcher shows it as the reply to those commands; the overlay also prints it from $8F85 (s18_require_not_map_mode)."
   },
   {
    "address": 37254,
@@ -3840,7 +3840,7 @@
   {
    "address": 37650,
    "type": "line",
-   "text": "Headered text $9312-$9325. Layout byte $12, colour byte $01; zero terminates its body. Content without framing glyph controls: \"Nothing happens.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. This text is printed by the scene 18 overlay."
+   "text": "Headered text $9312-$9325. Layout byte $12, colour byte $01; zero terminates its body. Content without framing glyph controls: \"Nothing happens.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. The handler words for pairs 3, 5, 13, 14, 22, 23, 25, 31, 33, 54, 65, 71, 79 and 80 hold $1312, this address less $8000, so the resident dispatcher shows it as the reply to those commands; the overlay also prints it from $8D6F, $8E47, $8E75, $8EC2, $8EDB, $8F6D and $8F77."
   },
   {
    "address": 37670,
@@ -4030,7 +4030,7 @@
   {
    "address": 38865,
    "type": "line",
-   "text": "Two-byte per-goblin-slot variable (Y=0,1), cleared by s18_init_goblins ($97F4). Read and decremented in s18_goblin_step ($986A) when the slot's countdown at $97D3 is negative: 0 calls s18_goblin_pick_move ($98F3), $FF means idle, other values count down to 0 and then clear the move at $033A,Y. Handlers at $8E5E, $8E7C, $8E9F set it."
+   "text": "Two-byte per-goblin-slot mode (Y=0,1), cleared by s18_init_goblins ($97F4). s18_goblin_step ($986A) reads it when the slot's counters $97D5 and $97D3 and sequence index $97D7 are all negative: 0 calls s18_goblin_pick_move ($98F3), $FF means idle, and any other value is decremented and clears the move at $033A,Y on each step while it counts down. Set by CALL goblin ($8D81, 0), CONGRATULATE goblin ($8E65, $78), HIT goblin ($8E8D, 0), INSULT goblin ($8EAB, 6) and s18_goblin_caught ($9985, $FF)."
   },
   {
    "address": 38867,
@@ -4040,7 +4040,7 @@
   {
    "address": 38869,
    "type": "line",
-   "text": "Two-byte per-slot countdown (initial $FF,$FF). s18_goblin_step ($986A) decrements it each update while non-negative; when it passes zero it sets $97EA,Y and $02B8,Y to $FF. Set by handlers $8E5E, $8E7C."
+   "text": "Two-byte per-slot countdown (initial $FF,$FF). s18_goblin_step ($986A) decrements it each update while non-negative; when it passes zero it sets $97EA,Y and $02B8,Y to $FF. Set to $1E by HIT goblin ($8E88)."
   },
   {
    "address": 38871,
@@ -4055,17 +4055,17 @@
   {
    "address": 38882,
    "type": "line",
-   "text": "Eight bytes $02,$06,$02,$06,$04,$08,$04,$08, indexed by $97D7,Y in s18_goblin_step ($986A); each value is stored to $033A,Y."
+   "text": "Eight bytes $02,$06,$02,$06,$04,$08,$04,$08, indexed by $97D7,Y in s18_goblin_step ($986A); each value read is stored to $033A,Y. The index is set only to 3 (HIT and INSULT goblin) and counts down to 0, so only the first four bytes are read; $97E6-$97E9 are not reached."
   },
   {
    "address": 38890,
    "type": "line",
-   "text": "Two-byte per-slot flag (initial $FF,$FF): set to $FF when counter $97D5 runs out and cleared to 0 on the next step (together with $02B8,Y and $033A,Y), in s18_goblin_step ($986A)."
+   "text": "Two-byte per-slot flag (initial $FF,$FF): s18_goblin_step ($986A) sets it to $FF when counter $97D5 runs out, and clears it to 0 (together with $02B8,Y and $033A,Y) on the first step of the next countdown, after HIT goblin has reloaded $97D5."
   },
   {
    "address": 38892,
    "type": "line",
-   "text": "Two-byte per-slot flag (initial 0,0) used by s18_goblin_pick_move ($98F3): $FF when a fresh random move was just chosen, 0 after a rotation step."
+   "text": "Two-byte per-slot flag (initial 0,0) used by s18_goblin_pick_move ($98F3): set to $FF ($9914) when a move is taken from $033E,Y (or a random one when $97F2 is non-negative), and cleared to 0 after a rotation step ($994F)."
   },
   {
    "address": 38894,
@@ -4085,7 +4085,7 @@
   {
    "address": 38899,
    "type": "line",
-   "text": "Countdown used in s18_goblin_mode_update ($9834) when $057A is non-zero and $0343 is negative; when it passes zero it is reloaded from a random value ($3F-$7F) and the text at $97A6 is shown through s18_show_goblin_text ($9004)."
+   "text": "Countdown used in s18_goblin_mode_update ($9834) when $057A is non-zero and $0343 is negative; when it passes zero it is reloaded from a random value ($3F or $7F: and #$7F, ora #$3F) and the text at $97A6 is shown through s18_show_goblin_text ($9004)."
   },
   {
    "address": 38900,
@@ -4100,7 +4100,7 @@
   {
    "address": 39018,
    "type": "line",
-   "text": "Per-slot goblin update, called twice per scene update ($8C96) with Y=0 and Y=1. Returns if $0343 is non-negative. Otherwise runs the countdown at $97D5, then the sequence through $97D7/$97E2, then $97D1 mode handling via s18_goblin_pick_move ($98F3), always finishing at the rts at $98DA."
+   "text": "Per-slot goblin update, called twice per scene update ($8C96) with Y=0 and Y=1. Returns if $0343 is non-negative. Otherwise runs the countdown at $97D5, then the sequence through $97D7/$97E2, then $97D1 mode handling via s18_goblin_pick_move ($98F3), finishing at the rts at $98DA except when s18_goblin_caught pops the return and leaves from $9997."
   },
   {
    "address": 39131,
@@ -4110,7 +4110,7 @@
   {
    "address": 39155,
    "type": "line",
-   "text": "Called from s18_goblin_step ($986A). If $0294,Y matches $034F and $033E,Y is zero it jumps to $997E; otherwise it chooses a new move code for $033A,Y (random 1-8 via $0821 when $97F2 is non-negative, else rotating $97F0,Y within 1-8). Neutral name: exact game meaning unconfirmed."
+   "text": "Called from s18_goblin_step ($986A). If $0294,Y matches $034F: $033E,Y zero jumps to $997E; when $97EE,Y and $97EC,Y are both non-negative it sets both to $FF and stores $033E,Y (random 1-8 via $0821 when $97F2 is non-negative) in $033A,Y; otherwise it steps $97F0,Y round 1-8 (up for slot 1, down for slot 0) into $033A,Y and $97F0,Y. If they do not match and $97EC,Y is negative it stores $033E,Y (or random) in $033A,Y and $97F0,Y; otherwise it clears $97EE,Y. Neutral name: exact game meaning unconfirmed."
   },
   {
    "address": 39294,
@@ -4170,7 +4170,7 @@
   {
    "address": 39748,
    "type": "line",
-   "text": "Called from $9B00. Returns normally only when $0343 is negative, $0544 is at least $16 and the zero-page byte $34,X (X=$024C) is in $5B-$61; otherwise pops its return and returns to the hook's caller."
+   "text": "Called from $9B00. Returns normally only when $0343 is non-negative, $0544 is at least $16 and the zero-page byte $34,X (X=$024C) is in $5B-$61; otherwise pops its return and returns to the hook's caller."
   },
   {
    "address": 39777,
@@ -4195,7 +4195,7 @@
   {
    "address": 39873,
    "type": "line",
-   "text": "Headered text $9BC1-$9BD8. Layout byte $4C, colour byte $27; zero terminates its body. Content without framing glyph controls: \"\\b\\u0010\\u0004I won't help you!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the scene 18 overlay names this address directly, so what prints it is not traced."
+   "text": "Bytes $9BC1-$9BC3 (4C 27 08) are the JMP $0827 that ends s18_speak_show_text ($9BBF), executed code, not text. Headered text $9BC4-$9BD8 follows: layout byte $10, colour byte $04; zero terminates its body. Content without framing glyph controls: \"I won't help you!\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. s18_speak_refuse ($9B7E, ldy #$C4 / ldx #$9B) prints it, reached from $9B69 and $9B97."
   },
   {
    "address": 39897,
