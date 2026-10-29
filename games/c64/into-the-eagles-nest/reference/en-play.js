@@ -32,9 +32,11 @@
 // on by the cycles a yield names ({ cycles } or { cp, cycles }, a delay loop's turn) and, at each
 // checkpoint, by what the game took between it and the one before beyond the cycles the port named
 // on the way (@yield, the average over test_play.js's runs: a delay's turn names its own cycles,
-// and the work before its first turn is the game's measured remainder), and
-// each interrupt by a base for the state it began in (@irq, keyed by irqKey) and a cost for each
-// call of one of P's routines it made (@fn, by name; countCalls). The two are fitted together,
+// and the work before its first turn is the game's measured remainder; a stretch no run measured
+// costs nothing beyond the cycles its yield names, and a line when it names none, so that a wait
+// along it moves the clock on, where at no cost it would stand still), and each interrupt by a base
+// for the state it began in (@irq, keyed by irqKey) and a cost for each call of one of P's routines
+// it made (@fn, by name; countCalls). The two are fitted together,
 // non-negative, to the cycles the game's handlers took in test_play.js's runs: what a handler does
 // in one state depends on the play (the figures it steps, the shots it follows), and a cost per
 // state alone runs the page at the pace of the play it was measured on. The
@@ -58,7 +60,7 @@ globalThis.EaglePlay = (function () {
   'use strict';
   const LINE = 63, LINES = 312, FRAME = LINE * LINES, SLICES = 12;
   const GENERATOR = Object.getPrototypeOf(function* () {}).constructor;
-  const COST = {"@yield":{"1017>10af":110361,"10af>10af":0,"10af>10bd":0,"10af>1566":12,"10bd>1262":49907,"1262>1262":0,"1262>1566":41,"1566>15d7":7534,"15d7>15d7":0,"15d7>1d99":14449,"1c6c>1c8a":1018,"1c6c>4092":568090,"1c8a>1c6c":10531,"1c8a>1c8a":0,"1d99>1da7":0,"1d99>1f05":22235,"1da7>1d99":0,"1da7>1dd9":497,"1dd9>1da7":0,"1dd9>1dd9":0,"1f05>1f05":0,"1f05>1f14":0,"1f14>4092":568203,"4092>4095":70,"4095>4095":9,"4095>4241":40231,"4241>4241":9,"4241>4871":1701,"4871>4871":38,"4871>48dd":28,"4871>48f8":421,"4871>49f5":39,"48dd>6a42":14989,"48f8>48f8":12,"48f8>5fdc":16,"49f5>5fdc":66,"5fdc>5fdc":0,"5fdc>5feb":0,"5feb>1017":1625,"5feb>5fdc":12,"5feb>6a42":15035,"6a42>6a42":0,"6a42>6a4a":0,"6a4a>1c6c":38794,"6a4a>1f05":22456,"6a4a>5fdc":11353,"6a4a>6a42":14496},"@irq":{"4c22":131,"e6a":231,"f95":147,"play:sprites":316,"play:sprites:paused":251,"play:work:1":14892,"play:work:2":4554,"play:work:3":3851,"play:work:paused":311,"play:work:room":14877},"@fn":{"byte_to_digits":67,"continue_sound_effect":68,"face_player":4,"figure_drawing":798,"footstep":67,"found_door_key":1556,"irq_sprites_and_message":28,"kernal_irq":24,"map_address":463,"mission_done_check":1,"mission_state":1,"move_shot_1":1,"open_wooden_door":180,"paint_four_bands":5350,"player_move_down":99,"player_move_left":103,"player_move_right":114,"player_move_up":80,"prisoner_turn":1,"read_tile_grid":380,"scroll_message_in":804,"scroll_room_left":63,"scroll_room_right":73,"scroll_room_up":66,"set_plaque_bitmap":127,"shot_hit_figure":3879,"shot_hit_tile":524,"sound_tick":15,"start_sound_effect":119,"took_ammo":1579,"wipe_band_closed":54}};
+  const COST = {"@yield":{"1017>10af":110361,"10af>10af":0,"10af>10bd":0,"10af>1566":12,"10bd>1262":49907,"1262>1262":0,"1262>13e5":34439,"1262>1566":41,"13e5>13e5":0,"13e5>154f":29804,"154f>1017":48,"154f>154f":0,"154f>1566":41,"1566>15d7":7534,"15d7>15d7":0,"15d7>1d99":14449,"1c6c>1c6c":0,"1c6c>1c8a":909,"1c6c>4092":568286,"1c8a>1c6c":6718,"1c8a>1c8a":0,"1d99>1da7":0,"1d99>1f05":22399,"1da7>1d99":0,"1da7>1dd9":498,"1dd9>1da7":0,"1dd9>1dd9":0,"1f05>1f05":0,"1f05>1f14":0,"1f14>4092":568198,"1feb>1feb":0,"1feb>1ffa":0,"1ffa>1017":1614,"1ffa>cdc":58359,"4092>4095":70,"4095>4095":9,"4095>4241":39808,"4241>4241":9,"4241>4871":1699,"4871>4871":38,"4871>489e":42,"4871>48dd":28,"4871>48f8":421,"4871>49f5":39,"4871>4a77":176,"489e>489e":6,"489e>48a2":5,"48a2>48a2":27,"48a2>48c8":15,"48c8>4871":14,"48c8>48c8":6,"48dd>48dd":11,"48dd>6a42":14989,"48f8>48f8":12,"48f8>5fdc":16,"49f5>49f5":11,"49f5>5fdc":66,"4a77>4a77":11,"4a77>5fdc":16,"5fdc>5fdc":0,"5fdc>5feb":0,"5feb>1017":1625,"5feb>5fdc":12,"5feb>6a42":15045,"5feb>cdc":58311,"6a42>6a42":0,"6a42>6a4a":0,"6a4a>1c6c":38794,"6a4a>1f05":22456,"6a4a>1feb":21969,"6a4a>5fdc":11353,"6a4a>6a42":14496,"cdc>cdc":9,"cdc>d36":1619,"d36>d3e":8,"d3e>d3e":0,"d3e>d4d":0,"d4d>1017":629},"@irq":{"4c22":131,"85a":117,"e6a":198,"f95":147,"play:sprites":333,"play:sprites:paused":290,"play:work:1":14881,"play:work:2":3545,"play:work:3":3872,"play:work:paused":303,"play:work:room":14874},"@fn":{"band_picture":869,"band_strip_scroll":1,"band_text":35,"byte_to_digits":68,"continue_sound_effect":66,"face_player":1100,"figure_drawing":599,"figure_turn_to_player":75,"figures_turn":2,"fire_second_shot":752,"footstep":65,"found_door_key":3406,"kernal_irq":27,"map_address":383,"mission_done_check":18,"mission_state":7,"move_shot_1":15,"music_driver":31,"name_entry_fire":39,"paint_four_bands":5345,"player_and_rooms":15,"player_move_down":87,"player_move_left":106,"player_move_right":116,"player_move_up":76,"player_turn":441,"prisoner_turn":15,"scroll_message_in":840,"scroll_room_down":77,"scroll_room_right":77,"scroll_room_up":60,"set_plaque_bitmap":96,"shot_hit_figure":3496,"shot_hit_tile":639,"start_sound_effect":109,"step_onto_lift":513,"tiles_round_player":22,"wipe_band_closed":50}};
 
   // the interrupt's state as its cost is measured: the handler (by $0314) and, for the play
   // interrupt, the band it will serve and what that band will do
@@ -262,7 +264,10 @@ globalThis.EaglePlay = (function () {
       if (r.done) throw new Error('the program ended');
       const y = r.value;
       if (y && y.cycles !== undefined) owed += y.cycles;
-      if (y && y.cp !== undefined && last >= 0) owed += YIELD[stretch(last, y.cp)] || 0;
+      if (y && y.cp !== undefined && last >= 0) {
+        const c = YIELD[stretch(last, y.cp)];
+        owed += c !== undefined ? c : y.cycles === undefined ? LINE : 0;
+      }
       else if (y === undefined) owed += LINE;                   // a turn of a raster wait: a line
       if (o.onYield) o.onYield(y, S.clock + owed);
       if (y && y.cp !== undefined) { last = y.cp; if (y.cp === 0x4871) S.passes++; }

@@ -5,23 +5,19 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## For the next tier
 
-Silver is met except for the one thing an unattended run on an unproven
-model cannot give itself: **a maintainer's check**. The listing was first
-written on `claude-opus-5`, which `kit/models.json` has not declared
-proven, so `tier` stays `bronze` until a maintainer samples it on a
-proven model (`kit/CHECKING.md`). Everything else Silver asks for is in
-place: 100 % coverage, `facts.md`, samples checked and recorded, every
-feature settled or explicitly open, `symbols.json` and `listing.json`, and
-the minisite with a player for the tune.
+The game is Platinum. Its listing was first written on `claude-opus-5`,
+which `kit/models.json` has not declared proven, and it counts as checked
+through the contributor's own two audits of every comment on
+`claude-opus-5-5`, each sampled again afterwards: the contributor is
+listed in `kit/contributors.json` (`kit/CHECKING.md`, "A known
+contributor's audit"). The Play tab is the whole game.
 
-The listing has been audited, every comment and every claim in
-`facts.md`, on `claude-opus-5-5`, and sampled again afterwards (`facts.md`,
-"The listing's error rate"). Neither carries a maintainer's login: the
-contributor is not a maintainer. It was audited twice. The sample after the
-first audit found 5 of 60 wrong and the sample after the second 4 of 60,
-both over the mark of 2, so a maintainer's own sample that also comes out
-over the mark needs a full audit under their login before the game can be
-Silver.
+The next tier is Diamond, which needs Gold: a person's pass over every
+section of the copy, with `steward` set to their login when it starts.
+
+The samples after the two audits found 5 and 4 of 60 wrong, over the
+mark of 2, so a further audit on a proven model would still be worth a
+run (`facts.md`, "The listing's error rate").
 
 Left open by the audit:
 
@@ -36,12 +32,13 @@ Left open by the audit:
 - What filter routing `$63B7`'s write of 2 to `$D417` sets, which the C64
   reference does not cover.
 
-## Platinum
+## The Play tab
 
 The Play tab is the whole game, ported routine by routine (`reference/en-g*.js`), with no
-stand-ins left, and `test_play.js` holds the published page in lockstep with the game's own code
-and against its pace; `test_screen.js` holds the scrolling message line. Platinum needs Silver
-first, so it waits on the same maintainer's check. Open in the port:
+stand-ins left. `test_play.js` holds the published page in lockstep with the game's own code,
+with SPACE's pause and each of the four ends of a mission, and against its pace; it then runs the
+page alone with SPACE, RESTORE and every end, which must never stop. `test_screen.js` holds the
+scrolling message line. Open in the port:
 
 - `figure_turn_to_player` (`$630B`) throws where the game would go round two branches for good
   inside its interrupt: a guard level with the player on both axes. The guard and the player both
@@ -51,9 +48,10 @@ first, so it waits on the same maintainer's check. Open in the port:
   YOU ARE DEAD screen are reached only through the test's forced ends of a mission and the attract
   loop's own input. A recorded route through a mission (`kit/skills/core/65-inputs`) would hold
   them with input a player gives.
-- In the pace check the page's main loop goes round 1.5 % fewer times a frame in play than the
-  game's. It only waits there for the interrupt, which moves everything once a frame, so play keeps
-  the C64's time; the rest of the fit's error is in the interrupts' costs.
+- RESTORE runs only on the page: the lockstep has no way to give it to both.
+- In the pace check the page's main loop goes round up to 2 % fewer times a frame in play than
+  the game's. It only waits there for the interrupt, which moves everything once a frame, so play
+  keeps the C64's time; the rest of the fit's error is in the interrupts' costs.
 
 ## Questions only a player can answer
 
