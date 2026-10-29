@@ -6632,7 +6632,7 @@
   {
    "address": 14439,
    "type": "line",
-   "text": "Builds the colour buffer $70B7-$721D from the matrix at $CC00: for rows 10 to 18, columns 0 to 38 of each (351 characters, from $CD90 to $CEF6), it looks the character up in the colour table $BF00 and stores the colour in the buffer, 40 bytes to a row. Entered by a jump when the buffer flag $1EC8 is 1, from the phase 2 routines of the scrolls ($201E and the others) and from $6FE9."
+   "text": "Builds the colour buffer $70B7-$721D from the matrix at $CC00: for rows 10 to 18, columns 0 to 38 of each (351 characters, from $CD90 to $CEF6), it looks the character up in the colour table $BF00 and stores the colour in the buffer, 40 bytes to a row. Entered by a jump when the buffer flag $1EC8 is 1, from the phase 2 routines of the scrolls ($201E and the others); the uncalled $6FE9 holds the same jump but never runs."
   },
   {
    "address": 15141,
@@ -6657,7 +6657,7 @@
   {
    "address": 17599,
    "type": "line",
-   "text": "Builds the colour buffer $70B7-$721D from the matrix at $C800: for rows 10 to 18, columns 0 to 38 of each (351 characters, from $C990 to $CAF6), it looks the character up in the colour table $BF00 and stores the colour in the buffer, 40 bytes to a row. Entered by a jump when the buffer flag $1EC8 is 0, from the phase 2 routines of the scrolls ($201E and the others) and from $6FE9."
+   "text": "Builds the colour buffer $70B7-$721D from the matrix at $C800: for rows 10 to 18, columns 0 to 38 of each (351 characters, from $C990 to $CAF6), it looks the character up in the colour table $BF00 and stores the colour in the buffer, 40 bytes to a row. Entered by a jump when the buffer flag $1EC8 is 0, from the phase 2 routines of the scrolls ($201E and the others); the uncalled $6FE9 holds the same jump but never runs."
   },
   {
    "address": 18301,
@@ -6682,12 +6682,12 @@
   {
    "address": 20759,
    "type": "line",
-   "text": "Cleared by the setup $5118. While it is non-zero $7441 counts the countdown $1D82-$1D84 down and $1E85 ends the game when it reaches zero; with it zero the digits are held at zero. The traced code does not set it."
+   "text": "Cleared by the setup $5118 and set to 1 by the countdown-start behaviour $122C when the player touches its object. While it is non-zero $7441 counts the countdown $1D82-$1D84 down, the countdown light $1262 flashes and $1E85 ends the game when it reaches zero; with it zero the digits are held at zero and $122C runs its contact test."
   },
   {
    "address": 20760,
    "type": "line",
-   "text": "Level setup, called first by the main loop at $1E15. Switches interrupts off, banks the ROMs out ($01=$35), selects video bank 3 and the screen at $CC00 ($D018=$30) with extended colour and multicolour on, starts the timer digits $9449-$944B (5 in $944B only when $0A10 is set), sets the energy $5366 to $21, clears the flags ($1EC1, $771A-$771C, $93A9, $679C, $5117, $0A2B), the sprite registers and $002A-$00FF, ORs $08 into the 256 bytes at $BF00, clears the sound chip and fills $0010-$0077 with $FF, and sets the player's screen position $1D80/$1D81 to $A4,$6B, the camera to X $032C and Y $00F4 and the map pointer $A1/$A2 to $7E58. It then types the briefing ($9B76, with the shape swap $9B3B), draws the panel ($52C4), loads the objects ($73C2) and the first screen ($7337), starts the music ($B0C8), points the NMI at $0A23 and the IRQ at $62BF, sets the raster compare to line $82 and enables the raster interrupt with CLI."
+   "text": "Level setup, called first by the main loop at $1E15. Switches interrupts off, banks the ROMs out ($01=$35), selects video bank 3 and the screen at $CC00 ($D018=$30) with extended colour and multicolour on, starts the timer digits $9449-$944B (5 in $944B only when $0A10 is set), sets the energy $5366 to $21, clears the flags ($1EC1, $771A-$771C, $93A9, $679C, $5117, $0A2B), sets up the sprite registers, clears $002A-$0100, ORs $08 into the 256 bytes at $BF00, clears the sound chip and fills $0010-$0077 with $FF, and sets the player's screen position $1D80/$1D81 to $A4,$6B. It then types the briefing ($9B76, with the shape swap $9B3B) and draws the panel ($52C4), sets the camera to X $032C and Y $00F4 and the map pointer $A1/$A2 to $7E58, loads the objects ($73C2) and the first screen ($7337), clears $0002-$000C, initialises the sound-effect driver ($B0C8), points the NMI at $0A23 and the IRQ at $62BF, sets the raster compare to line $82 and enables the raster interrupt with CLI."
   },
   {
    "address": 21188,
@@ -6697,12 +6697,12 @@
   {
    "address": 21236,
    "type": "line",
-   "text": "Scratch of $52F5, $751B and $7584: the height that the player's screen Y $1D81 is compared with (the player's Y plus $0E, or the slot's height $A3,X minus $15)."
+   "text": "Scratch of $52F5, $751B and $7584: the height compared in their height tests. $52F5 stores the player's Y $1D81 plus $0E and compares the slot's height $A3,X with it; $751B and $7584 store the slot's height $A3,X minus $15 and compare the player's Y $1D81 with it."
   },
   {
    "address": 21237,
    "type": "line",
-   "text": "Contact test of slot X (a slot's sprite against the player). Heights: when the player is crouching ($5ABF non-zero) the slot's screen height $A3,X must be within 9 of the player's Y plus $0E, otherwise within $17 below or $0B above the player's $1D81. Across: the slot's high X byte $BF,X must be 0 and its screen X $87,X within $13 of the player's $1D80. Returns A=0 for no contact and a non-zero A (the distance across, or the slot's X when level with the player) for contact. Called by the behaviours ($1231, $12AF and others), which then call $5367."
+   "text": "Contact test of slot X (a slot's sprite against the player). Heights: when the player is crouching ($5ABF non-zero) the slot's screen height $A3,X must be within 9 of the player's Y plus $0E, otherwise within $17 below or $0B above the player's $1D81. Across: the slot's high X byte $BF,X must be 0 and its screen X $87,X within $13 of the player's $1D80. Returns A=0 for no contact and a non-zero A (the distance across, or the slot's X when level with the player) for contact. Called by the behaviours ($1231, $12AF and others). Most of them call $5367 on contact; the countdown start $122C (at $1231) starts the countdown instead, and the pickups at $1A63 and $1AD8 give energy or score."
   },
   {
    "address": 21349,
@@ -6712,7 +6712,7 @@
   {
    "address": 21350,
    "type": "line",
-   "text": "The player's energy, $21 at the start of the level; the bar at $7803 shows it and $1E85 clears it when the countdown runs out. The main loop at $1E42 goes to the game over screen when it is zero."
+   "text": "The player's energy, $21 at the start of the level; the bar at $7803 shows it and $1E85 clears it when the countdown runs out. The main loop at $1E42 goes to the game over screen when it is zero and the cheat flag $0A11 is clear."
   },
   {
    "address": 21351,
@@ -6722,7 +6722,7 @@
   {
    "address": 21364,
    "type": "line",
-   "text": "Takes 1 from the energy $5366 unless it is already zero, and plays sound effect 4 through $B0EE, keeping X and Y in the operands at $538D and $538B. Entered from $5367 and called by the behaviours at $160E and $1858, which set their own recoil."
+   "text": "Takes 1 from the energy $5366 unless it is already zero, and plays sound effect 1 (X = $04) through $B0EE, keeping X and Y in the operands at $538D and $538B. Entered from $5367 and called by the behaviours at $160E and $1858, which set their own recoil."
   },
   {
    "address": 21387,
@@ -6777,7 +6777,7 @@
   {
    "address": 21818,
    "type": "line",
-   "text": "Behaviour for state 21 (entry 21 of the table at $11F5), reached for the five objects of type $15. Colour 9, multicolour. The contact test $52F5 hurts the player ($5367) and restarts it. The object's energy $0B7D is a timer: when it is zero (or after a hit) $5556 sets it from the object's flag $0B34, puts the slot and the object at the position $0C58/$0CA1 and plays sound effect $1C; otherwise it counts it down and takes the pointer from $54FC (variant 0) or $54C3 by it; while it is $19 or more the slot also moves 4 pixels right (variant 0) or left each frame."
+   "text": "Behaviour for state 21 (entry 21 of the table at $11F5), reached for the five objects of type $15. Colour 9, multicolour. The contact test $52F5 hurts the player ($5367) and restarts it. The object's energy $0B7D is a timer: when it is zero (or after a hit) $5556 sets it from the object's flag $0B34, puts the slot and the object at the position $0C58/$0CA1 and plays sound effect 7 (X = $1C); otherwise it counts it down and takes the pointer from $54FC (variant 0) or $54C3 by it; while it is $19 or more the slot also moves 4 pixels right (variant 0) or left each frame."
   },
   {
    "address": 21880,
@@ -6792,7 +6792,7 @@
   {
    "address": 21974,
    "type": "line",
-   "text": "The path of behaviour $5672: 16-bit signed changes of the slot's Y, two bytes each, read with the object's counter $0AEB in steps of 2. Three arcs, each a rise that turns into a fall: -4 up to 7, -5 up to 8 and -5 up to 7, then -93 ($FFA3) at $566E; the low byte $5A at $5670 ends the path. $56CE overwrites the byte after it ($5671)."
+   "text": "The path of behaviour $5672: 16-bit signed changes of the slot's Y, two bytes each, read with the object's counter $0AEB in steps of 2. The counter is stepped before the read, so the first word ($55D6) is never read and the path starts at $55D8. Three arcs, each a rise that turns into a fall: -4 up to 7 (the -4 read once), -5 up to 8 and -5 up to 7, which add up to +93, then -93 ($FFA3) at $566E to cancel them; the low byte $5A at $5670 ends the path. $56CE overwrites the byte after it ($5671)."
   },
   {
    "address": 22130,
@@ -6817,7 +6817,7 @@
   {
    "address": 22331,
    "type": "line",
-   "text": "Behaviour for state 23 (entry 23 of the table at $11F5), reached for the four objects of type $17. The contact test $52F5 hurts the player ($5367). Pointer $DC, colour 5, single-colour. The object's counter $0AEB counts up to its flag $0B34: below $18 the pointer comes from $5723 by the counter; from $18 on the slot falls 3 lines a frame (written to $0E0E/$0E57). When the counter reaches the flag, slot and object become state $18 with the counter at 0 and sound effect $1C plays."
+   "text": "Behaviour for state 23 (entry 23 of the table at $11F5), reached for the four objects of type $17. The contact test $52F5 hurts the player ($5367). Pointer $DC, colour 5, single-colour. The object's counter $0AEB counts up to its flag $0B34: below $18 the pointer comes from $5723 by the counter; from $18 on the slot falls 3 lines a frame (written to $0E0E/$0E57). When the counter reaches the flag, slot and object become state $18 with the counter at 0 and sound effect 7 (X = $1C) plays."
   },
   {
    "address": 22390,
@@ -6832,7 +6832,7 @@
   {
    "address": 22438,
    "type": "line",
-   "text": "Behaviour for state 24 (entry 24 of the table at $11F5), which $573B switches to when its fall ends. The contact test $52F5 hurts the player ($5367). Multicolour, colour 2. The object's counter $0AEB counts up to $35 while the pointer comes from $1C0E by the counter (the burst frames at the end of the table $1BDA). Then it clears the counter and the pointer, puts the slot and the object back at the height $0C58/$0CA1, makes both state $17 again and plays sound effect $20."
+   "text": "Behaviour for state 24 (entry 24 of the table at $11F5), which $573B switches to when its fall ends. The contact test $52F5 hurts the player ($5367). Multicolour, colour 2. The object's counter $0AEB counts up to $35 while the pointer comes from $1C0E by the counter (the burst frames at the end of the table $1BDA). Then it clears the counter and the pointer, puts the slot and the object back at the height $0C58/$0CA1, makes both state $17 again and plays sound effect 8 (X = $20)."
   },
   {
    "address": 22523,
@@ -6857,7 +6857,7 @@
   {
    "address": 22692,
    "type": "line",
-   "text": "The player's state: 1 standing or walking, 2 falling, 3 jumping, 4 climbing, 5 punching, 6 crouching, 7 a strike. Read by $58B7 and $60C0."
+   "text": "The player's state: 1 standing or walking, 2 falling, 3 jumping, 4 climbing, 5 punching, 6 crouching, 7 a strike. Read by $58B7 and $60C0, and by the strike $59D0 and the jump $5E30, which test it for state 1 after landing."
   },
   {
    "address": 22693,
@@ -6877,12 +6877,12 @@
   {
    "address": 22711,
    "type": "line",
-   "text": "Called from the top interrupt at $64B9 each frame. Unless the game is paused ($63EA) it saves the player's screen position in $58B5/$58B6 and runs the routine for the player's state $58A4 (table at $58A5, through a call whose operand is rewritten at $58DA/$58DB); it then draws the player's frames with $60C0, also while paused."
+   "text": "Called from the top interrupt at $64B9 each frame, except while the banner flag $771A is set (the interrupt then jumps from $646B to $6516 past the call). Unless the game is paused ($63EA) it saves the player's screen position in $58B5/$58B6 and runs the routine for the player's state $58A4 (table at $58A5, through a call whose operand is rewritten at $58DA/$58DB); it then draws the player's frames with $60C0, also while paused."
   },
   {
    "address": 22746,
    "type": "line",
-   "text": "Low byte of the address in the JSR at $58D9 (high byte at $58DB), rewritten by $58D0 and $58D6 with the routine for the player's state from the table at $58A5; the $2B67 the file holds is only a placeholder."
+   "text": "Low byte of the address in the JSR at $58D9 (high byte at $58DB), rewritten by $58D0 and $58D6 with the routine for the player's state from the table at $58A5; the $5B4E (player_walk) the listing shows is what the last rewrite left."
   },
   {
    "address": 22752,
@@ -6962,7 +6962,7 @@
   {
    "address": 22992,
    "type": "line",
-   "text": "Player state 7, a strike or hop (entry 7 of the table at $58A5). Adds the next step of the table at $59B6 (indexed by $5E2E, two bytes a step) to the player's height $1D81; when the table is used up, or from index $0F on when the tile below is solid, it returns to state 1 (strike timer $5ABE and crouch flag $5ABF cleared, crouch delay $5AC0 set to 10). It moves 2 pixels in the direction he faces ($594B; left through $751B, right through $7584, stopped by the map ends and solid tiles), puts frame $9B or $A1 in $60BC and counts the strike timer $5ABE down with the strike frames ($5991), setting the strike delay $5ABD to 10 when it runs out."
+   "text": "Player state 7, a strike or hop (entry 7 of the table at $58A5). Adds the next step of the table at $59B6 (indexed by $5E2E, two bytes a step) to the player's height $1D81; when the table is used up, or from index $0F on when the tile below is solid, it returns to state 1 (strike timer $5ABE and crouch flag $5ABF cleared, crouch delay $5AC0 set to 10). It moves 2 pixels in the direction he faces ($594B; left through $751B, right through $7584): facing left, a blocker or the map's left end (map X below $0039) sends him 2 pixels right instead, while facing right a blocker or the map's right end stops him, and a solid tile puts his X back from $58B5; puts frame $9B or $A1 in $60BC and counts the strike timer $5ABE down with the strike frames ($5991), setting the strike delay $5ABD to 10 when it runs out."
   },
   {
    "address": 23229,
@@ -6972,12 +6972,12 @@
   {
    "address": 23230,
    "type": "line",
-   "text": "Frames left of the strike; the hit test $101C, $60C0 and $63EB read it."
+   "text": "Frames left of the strike: set to $0E when a strike starts ($5AC3, $5B4E) and counted down by the strike $59D0 and the jump $5E30; the hit test $101C, $60C0 and $63EB read it."
   },
   {
    "address": 23231,
    "type": "line",
-   "text": "Non-zero while the player is crouching; $60C0 reads it."
+   "text": "Non-zero while the player is crouching, and through a strike begun from a crouch ($5AC3 does not clear it; the strike's end does). $60C0 and the contact test $52F5 read it."
   },
   {
    "address": 23232,
@@ -6997,7 +6997,7 @@
   {
    "address": 23235,
    "type": "line",
-   "text": "Player state 6, crouching (entry 6 of the table at $58A5). Fire ($1EC5 bit 4) starts a strike: state 7, index $5E2E cleared, strike timer $5ABE set to $0E, strike frames ($5991) and sound effect 0 through $B0EE. With down released it returns to state 1 with the crouch delay $5AC0 set to 10 and the crouch flag $5ABF cleared. While down is held, and the recoil $155D is not running, left and right turn him ($594B) and the crouch frames ($5B27) are set."
+   "text": "Player state 6, crouching (entry 6 of the table at $58A5). Fire ($1EC5 bit 4) starts a strike: state 7, index $5E2E cleared, strike timer $5ABE set to $0E, strike frames ($5991) and sound effect 0 through $B0EE. With down released it returns to state 1 with the crouch delay $5AC0 set to 10 and the crouch flag $5ABF cleared. While down is held, left and right turn him ($594B) unless the recoil $155D is running, and the crouch frames ($5B27) are set either way."
   },
   {
    "address": 23272,
@@ -7017,7 +7017,7 @@
   {
    "address": 23372,
    "type": "line",
-   "text": "Frames left of the punch; the hit test $101C, $60C0 and $63EB read it."
+   "text": "Frames left of the punch: set to 9 by $5B4E when a punch starts and counted down by $5972; the hit test $101C, $60C0 and $63EB read it."
   },
   {
    "address": 23373,
@@ -7027,7 +7027,7 @@
   {
    "address": 23374,
    "type": "line",
-   "text": "Player state 1, standing and walking (entry 1 of the table at $58A5). Counts down the jump delay $5AC2, clears the hit flags $101A/$101B and the strike timer $5ABE, then moves 2 pixels left or right from the joystick $1EC5 (bits 2 and 3): it sets the facing $594B, steps the walk animation ($5909, $592A) unless the recoil $155D runs, and is stopped by a blocker ($751B, $7584), by the ends of the map (map X $1D04/$1D05 below $0039 or from $03A5 on) and by a solid tile (the player's X is put back from $58B5). It then goes to state 2 when the tile below is not solid, and otherwise starts a climb (up held on a ladder tile $0F/$10, or down held with $0D/$0E below, state 4), a jump (up held, state 3, when $5AC2 is zero), a strike (down and fire, state 7), a crouch (down, state 6), a punch (fire, state 5, when $5AC1 is zero), or with the stick centred shows the standing frame ($5D0E)."
+   "text": "Player state 1, standing and walking (entry 1 of the table at $58A5). Counts down the jump delay $5AC2, clears the hit flags $101A/$101B and the strike timer $5ABE, then moves 2 pixels left or right from the joystick $1EC5 (bits 2 and 3): it sets the facing $594B, steps the walk animation ($5909, $592A) unless the recoil $155D runs, and is stopped by a blocker ($751B, $7584), by the ends of the map (map X $1D04/$1D05 below $0039 or from $03A5 on) and by a solid tile (the player's X is put back from $58B5). It then goes to state 2 when the tile below is not solid, and otherwise starts a climb (up held on a ladder tile $0F/$10, or down held with $0D/$0E below, state 4), a jump (up held, state 3, when $5AC2 is zero), a strike (down and fire, state 7) or a crouch (down, state 6) when the crouch delay $5AC0 is zero (otherwise it counts that down), a punch (fire, state 5, when $5AC1 is zero), or with the stick centred shows the standing frame ($5D0E)."
   },
   {
    "address": 23732,
