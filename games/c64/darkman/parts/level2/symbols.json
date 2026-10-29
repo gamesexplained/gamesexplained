@@ -11098,7 +11098,7 @@
   {
    "address": 26116,
    "type": "line",
-   "text": "Sprite multiplexer for sprites 3 to 7, called from $6480 twice a frame. Takes the next slot from the list at $0010 (from the index in $6602), and, while the raster line is below the limit in $6603, gives it the next of the five sprites whose previous slot has finished (its height more than $15 lines above the raster): height into $D007, $D009, $D00B, $D00D or $D00F, X with its ninth bit in $D010, the pointer into both screens' tables ($CFFB-$CFFF and $CBFB-$CBFF), the colour from $0A40 and the multicolour bit from $0A4E."
+   "text": "Sprite multiplexer for sprites 3 to 7, called from $6480 up to twice a frame: at $64E7, which is skipped while the wipe flag $74BA is set, and at $6533; neither call runs while the banner flag $56D1 is set. Takes the next slot from the list at $0010 (from the index in $6602), and, while the raster line is below the limit in $6603, gives it the next of the five sprites whose previous slot has finished (its height $15 lines or more above the raster): height into $D007, $D009, $D00B, $D00D or $D00F, X with its ninth bit in $D010, the pointer into both screens' tables ($CFFB-$CFFF and $CBFB-$CBFF), the colour from $0A40 and the multicolour bit from $0A4E."
   },
   {
    "address": 26620,
@@ -11108,17 +11108,17 @@
   {
    "address": 26632,
    "type": "line",
-   "text": "Set by $6809 when part of the colour RAM is still to be copied from $7173; read and cleared by $69E3."
+   "text": "Set by $6809 when part of the colour RAM is still to be copied from $7173; read and cleared by $69E3, and cleared by the level setup at $539C."
   },
   {
    "address": 26633,
    "type": "line",
-   "text": "Sets the flag $6808 and copies the colours from the buffer at $7123-$7172 to colour RAM $D990-$D9DF, the first half of the update that $69E3 finishes in the next interrupt."
+   "text": "Sets the flag $6808 and copies the colours from the buffer at $7123-$7171 to colour RAM $D990-$D9DE, leaving out column 39 of both rows ($714A and $7172), the first half of the update that $69E3 finishes in the next interrupt."
   },
   {
    "address": 27107,
    "type": "line",
-   "text": "When the flag $6808 is set, clears it and copies the colours from the buffer at $7173-$7289 to colour RAM $D9E0-$DAF6, leaving out the last column of some rows. The second half of the colour update that $6809 starts."
+   "text": "When the flag $6808 is set, clears it and copies the colours from the buffer at $7173-$7289 to colour RAM $D9E0-$DAF6, leaving out column 39 of every row (the buffer ends at row 18, column 38). The second half of the colour update that $6809 starts."
   },
   {
    "address": 28129,
@@ -11133,7 +11133,7 @@
   {
    "address": 28757,
    "type": "line",
-   "text": "Picks the colour builder for the screen matrix in use: $3A06 when $2067 is 0, else $465E. Nothing in the level calls it; $334A and the other scroll phases make the same choice themselves."
+   "text": "Picks the colour builder for the screen matrix in use: $465E when $2067 is 0, else $3A06. Nothing in the level calls it; $334A and the other scroll phases make the same choice themselves."
   },
   {
    "address": 28768,
@@ -11153,7 +11153,7 @@
   {
    "address": 29443,
    "type": "line",
-   "text": "Table of 16-bit pointers to the map rows, two entries for each row starting at $7A40 with 64 bytes to the row; indexed by the height divided by 4 and made even."
+   "text": "Table of 16-bit pointers to the map rows, one two-byte entry for each row starting at $7A40 with 64 bytes to the row (the first row has two entries, so entry n points at row n-1); indexed at $7470 by the height ($FD/$FE less $AE plus $747C) divided by 8 and made even."
   },
   {
    "address": 29444,
@@ -11163,7 +11163,7 @@
   {
    "address": 29507,
    "type": "line",
-   "text": "Entries 32 to 76, the last 45, of the map row pointers at $7303: the addresses $7A40 + 64 x 31 = $8200 to $8D00 in steps of $40, one entry for each of the map's rows 31 to 75 (the first two entries both point at $7A40). Each entry is two bytes, low byte first, at $7303 + 2 x its number."
+   "text": "Entries 32 to 76, the last 45, of the map row pointers at $7303: the addresses $7A40 + 64 x 31 = $8200 to $8D00 in steps of $40. Entries 32 to 72 point at the map's rows 31 to 71; entries 73 to 76 ($8C40 to $8D00) point past the map's end at $8C3F, into the code after it (the first two entries of the table both point at $7A40). Each entry is two bytes, low byte first, at $7303 + 2 x its number."
   },
   {
    "address": 29597,
@@ -11173,7 +11173,7 @@
   {
    "address": 29603,
    "type": "line",
-   "text": "Draws the opening view: 9 rows of 19 tiles from the map at $89BB (64 bytes to a row) into the screen at $CC00 through $7939, then sets the colour RAM at $D800-$DAFF from the colour table at $BF00 indexed by each character."
+   "text": "Draws the opening view: 9 rows of 19 tiles from the map at $89BB (64 bytes to a row) into the screen at $CC00, starting at $CC01 (column 1), through $7939, then sets the colour RAM at $D800-$DAFF from the colour table at $BF00 indexed by each character."
   },
   {
    "address": 29697,
@@ -11213,7 +11213,7 @@
   {
    "address": 29882,
    "type": "line",
-   "text": "Set to 1 by $74BC; while it is set $6480 skips placing the sprites and running the player and multiplexer."
+   "text": "Set to 1 by $74BC and cleared by the level setup at $5381; while it is set $6480 skips placing the player's sprites, running the player and the first of its two multiplexer calls ($64E7); the second ($6533) still runs."
   },
   {
    "address": 29884,
@@ -11273,17 +11273,17 @@
   {
    "address": 30222,
    "type": "line",
-   "text": "Set to 1 by $759B when the timer reaches zero; $75FD then steps it to 2 and changes the panel graphics."
+   "text": "Set to 1 by $759B on every call while the three timer digits are zero; $75FD then steps it to 2 and changes the panel graphics, so it redraws them after each such call. Cleared by the level setup at $5387 and $53B5."
   },
   {
    "address": 30223,
    "type": "line",
-   "text": "Copies a picture of 6 by 5 characters into the panel: the shapes (48 bytes each to $F8C0, $FA00, $FB40, $FC80 and $FDC0), the screen codes (6 bytes each to $CF18-$CFB8) and the colours (to $DB18-$DBB8). Drawn by $54D6 while $0A10 is set, probably the picture of Darkman while the timer runs."
+   "text": "Copies a picture of 6 by 5 cells into the panel, a multicolour bitmap: the bitmap bytes (48 bytes each to $F8C0, $FA00, $FB40, $FC80 and $FDC0), the screen-matrix colours (6 bytes each to $CF18-$CFB8) and the colour RAM (to $DB18-$DBB8). Drawn by $54D6 while $0A10 is set, probably the picture of Darkman while the timer runs."
   },
   {
    "address": 30328,
    "type": "line",
-   "text": "The same copy as $760F from the other set of data ($76E1-$7807): drawn by $54D6 when $0A10 is clear and by $75FD when the timer runs out, probably the picture shown when the timer is off."
+   "text": "The same copy as $760F from the other set of data ($76E1-$7807): drawn by $75FD when the timer runs out, which is at once when $0A10 is clear and the timer starts at 0. $54D6 only reads its first byte (an LDA at $54FC where a JSR would call it), so it does not draw it. Probably the picture shown when the timer is off."
   },
   {
    "address": 30433,
@@ -11453,7 +11453,7 @@
   {
    "address": 31085,
    "type": "line",
-   "text": "Returns 1 in A when a slot in state 7 (which never moves) is close in front of the player on the left: not more than $14 across and within the height window from $A3,X-$15. Returns 0 when $0A10 is set or none is near."
+   "text": "Returns 1 in A when a slot in state 7 (the second half of an enemy, placed by $1D3E) is close in front of the player on the left: less than $14 across and within the height window from $A3,X-$15. A slot whose previous object's slot ($0F43) is in state $10 is passed over. Returns 0 when $0A10 is set or none is near."
   },
   {
    "address": 31149,
@@ -11488,7 +11488,7 @@
   {
    "address": 32320,
    "type": "line",
-   "text": "Rows 16 to 31 of the level map (64 tiles to a row), the continuation of the table at $7A40."
+   "text": "Rows 16 to 22 of the level map (64 tiles to a row), the continuation of the table at $7A40; rows 23 to 31 follow at $8000."
   },
   {
    "address": 32768,
@@ -11518,7 +11518,7 @@
   {
    "address": 35979,
    "type": "line",
-   "text": "The countdown shown on the continue screen, from 9; read by $8C40."
+   "text": "The countdown shown on the continue screen, set to 9 and counted down by $8CBC; read by $8C40 and by $8CBC at $8D42."
   },
   {
    "address": 35980,
@@ -11548,7 +11548,7 @@
   {
    "address": 36204,
    "type": "line",
-   "text": "The game over screen: runs the wipe $74BC, silences the sound ($B828), sets the text screen, swaps the character shapes ($8FFF), clears the screen and fills colour RAM with 9, writes \"GAME OVER\" from $8E02 at $CD50, waits through six long delays and puts the shapes back ($8FFF, $54D6)."
+   "text": "The game over screen: runs the wipe $74BC, silences the sound ($B828), sets the text screen, swaps the character shapes ($8FFF), clears the screen and fills colour RAM with 9, writes \"GAME OVER\" from $8E02 at $CD50, waits through six long delays, puts the shapes back ($8FFF), clears the screen and redraws the panel ($54D6)."
   },
   {
    "address": 36354,
