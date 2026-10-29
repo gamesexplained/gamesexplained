@@ -121,15 +121,15 @@ passed, by date and system, are the table at the top of that file.
    every tick). Leave `stop` false unless you mean to stop.
 7. `vice_vicii_get_state`, `vice_sid_get_state`, `vice_cia_get_state`,
    `vice_sprite_get`, `vice_sprite_inspect` for chip state and a rendered
-   look at sprite data. In v3.13.2, `vice_vicii_get_state` reads its
-   registers and its raster line wherever the processor reads `$D000`,
-   so where the processor sees RAM there it answers with the RAM, and
-   nothing says so: with an Ultimax cartridge attached (the RAM's
-   power-on pattern, line 256) and when the game has banked the I/O out
-   with `$01` (`$34`: zeros and line 0). Read the chip's
-   registers as `read_mem(rpc, 0xD000, 47, "io")`, as `frame.py` and
-   `screen.py` do, and take the line from `$D012` and bit 7 of `$D011`.
-   Reported upstream as barryw/vice-mcp#33 (17 October 2026).
+   look at sprite data. Before v3.13.4 these calls read the chips
+   wherever the processor reads `$D000`, so where the processor sees RAM
+   there they answered with the RAM, and nothing said so: with an Ultimax
+   cartridge attached (the RAM's power-on pattern, line 256) and when the
+   game has banked the I/O out with `$01` (`$34`: zeros and line 0).
+   v3.13.4 reads the chips themselves (barryw/vice-mcp#35). Read the
+   chip's registers as `read_mem(rpc, 0xD000, 47, "io")`, as `frame.py`
+   and `screen.py` do, which is right on every build, and take the line
+   from `$D012` and bit 7 of `$D011`.
 8. `vice_run_until` an address or a cycle count; `vice_cycles_stopwatch`
    for timing.
 
@@ -172,10 +172,15 @@ in-game input hook below does the same job.
   before the call returns, seen by the next instruction, and stays until
   you release it. `joy()` in `vice.py`. Most C64 games read port 2; the
   early Commodore titles read port 1.
-- **The paddles.** The server has no tool for them (one was asked for
-  upstream as barryw/vice-mcp#34 on 17 October 2026; `tools_list` shows
-  whether a newer build has it), and with nothing in the control ports
-  `$D419` and `$D41A` read `$FF`. `paddle()` in
+- **The paddles.** From v3.14.0, `vice_paddle_set` with `port` (1 or 2),
+  `x` and `y` (0 to 255) turns a control port's paddles, and the game
+  runs at its own speed. The game reads them in `$D419` and `$D41A` while
+  bits 6 and 7 of `$DC00` select that port, through VICE's own sampling,
+  which adds a few units of noise, more the larger the value, as a real
+  paddle does. A setting lasts until the emulator exits; 255 is a port
+  with nothing in it. Older builds have no paddle tool, and with nothing
+  in the control ports both registers read `$FF`. Where the game must
+  read an exact value, or one worked out at each read, `paddle()` in
   `vice.py` stops the machine at each read and gives the game a value of
   your own instead: `with paddle(rpc, x=100) as pad: pad.frames(50)`,
   where `x` is what `$D419` reads and `y` what `$D41A` reads, each a
@@ -371,8 +376,9 @@ addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
 - **Give a checkpoint its ignore count or condition with `arm()`** in
   `vice.py`. Set in a second call on a running machine, the checkpoint
   can fire in between, and on a slow host it usually does. A condition
-  on A, X, Y or SP crashes the v3.13.2 emulator at the checkpoint's
-  first hit (`PC` conditions work), so `arm()` refuses one.
+  on A, X, Y or SP crashes builds before v3.13.3 at the checkpoint's
+  first hit (`PC` conditions work; barryw/vice-mcp#32 fixed it), and the
+  server does not say which build it is, so `arm()` refuses one.
 - **When a key "does nothing", try the other tool** before concluding
   anything about the game: `vice_keyboard_matrix`, `vice_keyboard_key_press`
   by host name, and `vice_keyboard_type` through the KERNAL buffer reach the

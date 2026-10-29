@@ -43,6 +43,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64 | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2, from source (`get-vice build`) | Linux x86_64 | 9 October 2026 | 57 of 57, Ubuntu 26.04.1 under WSL2 |
+| v3.14.0 release, `v3.14.0-linux-x86_64-gui.zip` | Linux x86_64 | 29 October 2026 | 57 of 57, five runs |
 
 One row per build on each kind of computer, the kinds being the hosts of
 `site/status.json`: Linux x86_64 is one kind, on a desktop, a server or in
@@ -590,8 +591,11 @@ libieee1284-3t64, libmicrohttpd12t64, libpcap0.8t64 and libportaudio2
 those nine unpacked there, the v3.13.2 zip passed `check-emulator` 57 of 57
 and nothing was installed on the system.
 
-When `apt-get download` cannot reach the archive (on 26 October 2026, in
-such a container, it downloaded nothing), fetch each
+A container can start with stale package lists, and then `apt-get
+download` answers "Unable to locate package" and downloads nothing; run
+`apt-get update` first, which writes only apt's own lists (as root, in
+the container). When `apt-get download` cannot reach the archive (on 26
+October 2026, in such a container, it downloaded nothing), fetch each
 `.deb` over HTTPS from the archive's pool instead, with `curl -fLO
 https://archive.ubuntu.com/ubuntu/pool/<component>/<p>/<package>/<file>.deb`
 (the path is on the package's page at packages.ubuntu.com), into the same
