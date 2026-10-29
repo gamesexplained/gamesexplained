@@ -1743,7 +1743,7 @@
   },
   {
    "address": 3785,
-   "name": "counter_hundreds",
+   "name": "counter_digit_ones",
    "type": "Field",
    "kind": "user"
   },
@@ -1755,7 +1755,7 @@
   },
   {
    "address": 3787,
-   "name": "counter_ones",
+   "name": "counter_digit_hundreds",
    "type": "Field",
    "kind": "user"
   },
@@ -3676,7 +3676,7 @@
   {
    "address": 3272,
    "type": "line",
-   "text": "Toggled between 0 and 1 every frame by the raster interrupts $0C44 and $5177; $0CC7 is counted down when it becomes 0."
+   "text": "Toggled between 0 and 1 every frame by the raster interrupts $0C44 and $5177; $0CC7 is counted down when it becomes 1."
   },
   {
    "address": 3273,
@@ -3691,7 +3691,7 @@
   {
    "address": 3527,
    "type": "line",
-   "text": "1 while the game is paused, else 0: set and cleared by $2378. Tested by $0FB7, $1347, $1635, $1C45, $23D6 and the raster interrupt at $0DC9."
+   "text": "1 while the game is paused, else 0: set and cleared by $2378 and cleared by $0A84. Tested by $0FB7, $1347, $1635, $1C45, $23D6 and the raster interrupt at $0DC9."
   },
   {
    "address": 3528,
@@ -3706,7 +3706,7 @@
   {
    "address": 3628,
    "type": "line",
-   "text": "Returns a pseudo-random byte in A. Stores the low three bits of CIA 1 timer A ($DC04) into $0E3D, the offset byte of the branch at $0E3C, adds the timer high byte $DC05 and the seed $0E4B, and takes that branch (carry is set), which skips 0 to 7 of the nine ROL A at $0E3E-$0E46. The result is stored back in the seed $0E4B and returned. Called by $1C45."
+   "text": "Returns a pseudo-random byte in A. Stores the low three bits of CIA 1 timer A ($DC04) into $0E3D, the offset byte of the branch at $0E3C, adds the timer high byte $DC05 and the seed $0E4B, and takes that branch (carry is set), which skips 0 to 7 of the nine ROL A at $0E3E-$0E46. The result is stored back in the seed $0E4B and returned. Called by $1C45, $448C, $4B17, $4B29 and $4B47."
   },
   {
    "address": 3659,
@@ -3716,7 +3716,7 @@
   {
    "address": 3660,
    "type": "line",
-   "text": "A bare RTS; it does nothing. Called by the main loop at $0A26 once per pass."
+   "text": "A bare RTS; it does nothing. Called by the main loop at $0A26 once per pass, and by $4286 (at $4289) and $4410 (at $444C)."
   },
   {
    "address": 3661,
@@ -3726,22 +3726,22 @@
   {
    "address": 3676,
    "type": "line",
-   "text": "Fills the 1,024 bytes $CC00-$CFFF with the value in A. Called by $0A84 with $97 and with 0."
+   "text": "Fills the 1,024 bytes $CC00-$CFFF with the value in A. Called by $0A84 with $97 and with 0, and by $263D, $41A7, $4F9C, $5A34 and $5AC4."
   },
   {
    "address": 3694,
    "type": "line",
-   "text": "Fills the 1,024 bytes $C800-$CBFF with the value in A. No caller in the dumped code."
+   "text": "Fills the 1,024 bytes $C800-$CBFF with the value in A. Called by $41A7 (at $4226) and by $4F9C (at $5106)."
   },
   {
    "address": 3712,
    "type": "line",
-   "text": "Fills colour RAM $D800-$DBFF with the value in A. Called by $0A84 with 7 and with $0E."
+   "text": "Fills colour RAM $D800-$DBFF with the value in A. Called by $0A84 with 7 and with $0E, and by $263D, $41A7, $4F9C, $5A34 and $5AC4."
   },
   {
    "address": 3730,
    "type": "line",
-   "text": "Delay loop: A is the outer count and the inner loop runs 256 times for each. Called twice by $0A84 with $FF."
+   "text": "Delay loop: A is both counts. The outer loop runs A times and reloads X from A on each pass, so the inner loop runs A times for each, A x A passes in all. Called twice by $0A84 with $FF, and by $263D, $279D, $3234, $41A7, $42F1, $4337, $4359, $437D, $4410, $448C, $4F11, $5A34 and $5AC4."
   },
   {
    "address": 3739,
@@ -3761,17 +3761,17 @@
   {
    "address": 3750,
    "type": "line",
-   "text": "$0A84 stores $FF here and the raster interrupt at $0C44 stores $DC00 each frame. No other reader in the dumped code."
+   "text": "Joystick port 2 bits (0 when pushed). $0A84 and $4F9C store $FF here, and the raster interrupts at $0C44 and $5177 store $DC00 each frame. Read by the player routines $16FA, $17D4 and $18B4 and by the mask game's $46C5 and $49E9."
   },
   {
    "address": 3751,
    "type": "line",
-   "text": "Copies 200 bytes from $5D64 to $CEF7 (screen matrix) and 200 bytes from $5E2C to $DAF7 (colour RAM), then clears 40 bytes at $CFC0 and at $DBC0. Called by $0A84 at $0BC0."
+   "text": "Copies 200 bytes from $5D64 to $CEF7 (screen matrix) and 200 bytes from $5E2C to $DAF7 (colour RAM), then clears 40 bytes at $CFC0 and at $DBC0. Called by $0A84 at $0BC0, and by $263D, $4410, $4F9C and $5A34."
   },
   {
    "address": 3785,
    "type": "line",
-   "text": "First of the three counter digits drawn by $0ECC (at $F9F0)."
+   "text": "Ones digit of the three counter digits: drawn rightmost by $0ECC (at $F9F0) and counted down first by $535D and $0F5B, which borrow from $0ECA."
   },
   {
    "address": 3786,
@@ -3781,7 +3781,7 @@
   {
    "address": 3787,
    "type": "line",
-   "text": "Third counter digit, drawn at $F9D8; $0A84 sets it to 5."
+   "text": "Hundreds digit of the three counter digits, drawn leftmost at $F9D8; $0A84 sets it to 5 and $4F9C to 3."
   },
   {
    "address": 3788,
@@ -3796,7 +3796,7 @@
   {
    "address": 3849,
    "type": "line",
-   "text": "Ten glyphs of 8 bytes, one per digit 0 to 9, copied by $0EF4 into character memory."
+   "text": "Ten glyphs of 8 bytes, one per digit 0 to 9. $0EF4, the score digits $255C and the mask timer $5348 copy them into the status panel bitmap, $316B into sprite shapes, and $4589 swaps them with the 80 bytes at $C4C0 in the character set."
   },
   {
    "address": 3929,
@@ -3821,7 +3821,7 @@
   {
    "address": 4016,
    "type": "line",
-   "text": "Pixels scrolled per frame; the snapshot holds 2. Cleared to 0 by $1635 each frame and by $0FB7 at the end of the level; subtracted by $0FB7, $1347 and $13F5."
+   "text": "Pixels scrolled per frame; the snapshot holds 0. Cleared each frame by $1635 (unless paused) and by $0FB7 at the end of the level; the player routines $16FA, $17D4, $18B4 and $19B7 set it to 3 when the player pushes at the right edge and back to 0 when a wall blocks him. $0FB7 and $13F5 subtract it, $1347 adds it."
   },
   {
    "address": 4017,
@@ -3831,7 +3831,7 @@
   {
    "address": 4018,
    "type": "line",
-   "text": "Cleared by $0FB7 each call and set to 1 by $1056 when the screen has just been moved one character."
+   "text": "Cleared by $0FB7 on each call that scrolls (not while paused or once the level has ended) and set to 1 by $1056 when the screen has just been moved one character. No code reads it."
   },
   {
    "address": 4019,
@@ -3841,7 +3841,7 @@
   {
    "address": 4020,
    "type": "line",
-   "text": "16-bit total, low byte then high byte: $0FB7 adds $0FB0 to it each call. No other reader in the dumped code."
+   "text": "16-bit total, low byte then high byte: $0FB7 adds $0FB0 to it on each call that scrolls (not while paused or once the level has ended). No other reader in the dumped code."
   },
   {
    "address": 4022,
@@ -3851,7 +3851,7 @@
   {
    "address": 4023,
    "type": "line",
-   "text": "Main scroll step, called by the raster interrupt at $0CC9 (at $0D15); returns at once while paused ($0DC7). When the map position $0FAE/$0FAF reaches $1F47 in the first run ($0FB6=0), it sets $0FB6 to 1 and resets the position to $1E48; in the second run it sets $0FB1 to 1 and $0FB0 to 0 at $1F21. Otherwise it takes the speed $0FB0 off the object X $1BF8/$1BF9 (stops the object when below $0F), takes it off the fine scroll $0DC8 (wrapping 0 to 7 and calling $1056 on a wrap, which sets $0FB2) and adds it to the 16-bit $0FB4/$0FB5."
+   "text": "Main scroll step, called by the raster interrupt at $0CC9 (at $0D15); returns at once while paused ($0DC7). When the map position $0FAE/$0FAF reaches $1F47 in the first run ($0FB6=0), it sets $0FB6 to 1 and resets the position to $1E48; in the second run it sets $0FB1 to 1 and $0FB0 to 0 at $1F21 and returns. Unless it returned, it takes the speed $0FB0 off the object X $1BF8/$1BF9 (stops the object when below $0F), takes it off the fine scroll $0DC8 (wrapping 0 to 7 and calling $1056 on a wrap, which sets $0FB2) and adds it to the 16-bit $0FB4/$0FB5."
   },
   {
    "address": 4180,
@@ -4026,7 +4026,7 @@
   {
    "address": 5838,
    "type": "line",
-   "text": "Direction the player faces: 1 after the joystick was pushed left, 0 after right (set by $16FA, $17D4 and $18B4). Read by $1B9F, which looks 8 pixels further on when it is 0, by the state routines to choose the standing frame ($A0 left, $9A right) and the jump frame ($F9 left, $F8 right), and by $19B7, which moves the player 2 pixels away from the way he faces."
+   "text": "Direction the player faces: 1 after the joystick was pushed left, 0 after right (set by $16FA, $17D4 and $18B4). Read by $1B9F, which looks 8 pixels further on when it is 0, by the state routines to choose the standing frame ($A0 left, $9A right) and the jump frame ($F9 left, $F8 right), by $19B7, which moves the player 2 pixels away from the way he faces, and by the uncalled $16D4."
   },
   {
    "address": 5839,
@@ -4086,12 +4086,12 @@
   {
    "address": 6583,
    "type": "line",
-   "text": "Player state 4, thrown back after a hit: the routine for $1626 = 4, which $1DA1 sets (clearing $18B3) when the falling object hurts the player outside state 3. Clears the scroll speed, adds the step at $197B plus the index $18B3 to the player Y and moves the index on by 2. At $3C it sets the state to 1. From index $20, once Y is $46 or more and the character ahead in the row below the feet row has a code from 2 to $22, it lands: state 1, Y put back from $1632. The joystick is not read. X moves 2 pixels away from the way the player faces ($16CE; to the left while it is 0, with the limits $78 and $E6, and scroll speed 3 at the right edge). The frame $1ADB is changed only on landing, to the standing frame $9A or $A0; player_sprites builds the three sprites for states 3 and 4 from $1ADB, $1ADB+2 and $1ADB+4. It blocks the move into a wall as $16FA does."
+   "text": "Player state 4, thrown back after a hit: the routine for $1626 = 4, which $1DA1 sets (clearing $18B3) when the falling object hurts the player outside state 3. Clears the scroll speed, adds the step at $197B plus the index $18B3 to the player Y and moves the index on by 2. At $3C it sets the state to 1. From index $20, once Y is $46 or more and the character ahead in the row below the feet row has a code from 2 to $22, it lands: state 1, Y put back from $1632. The joystick is not read. X moves 2 pixels away from the way the player faces ($16CE; to the left while it is 0, with the limits $78 and $E6, and scroll speed 3 at the right edge). The frame $1ADB is set to $F8 (facing right) or $F9 (left) on each call, and to the standing frame $9A or $A0 when the state is back to 1; player_sprites builds the three sprites for states 3 and 4 from $1ADB, $1ADB+2 and $1ADB+4. While Y is $46 or more, a character ahead (in the row below the feet row, or the feet row once the state is 1) with a code from 2 to $22 blocks the move: X is put back from $1631 and the scroll speed cleared."
   },
   {
    "address": 6784,
    "type": "line",
-   "text": "A zero byte at $1A80, then two tables of 12 sprite pointers that $1A99 and $1ABA read: $1A81 holds $94, $94, $94, $95, $95, $95, $96, $96, $96, $95, $95, $95 and $1A8D the same pointers in the reverse order. They are the climbing frames, whose shapes are at $E500 (climb_shapes); no traced level 3 code calls the two routines."
+   "text": "A zero byte at $1A80, then two tables of 12 sprite pointers that $1A99 and $1ABA read: $1A81 holds $94, $94, $94, $95, $95, $95, $96, $96, $96, $95, $95, $95 and $1A8D holds $96, $96, $96, $95, $95, $95, $94, $94, $94, $95, $95, $95 (the same cycle run the other way). They are the climbing frames, whose shapes are at $E500 (climb_shapes); no traced level 3 code calls the two routines."
   },
   {
    "address": 6809,
@@ -4101,7 +4101,7 @@
   {
    "address": 6842,
    "type": "line",
-   "text": "The same as $1A99 with the table $1A8D (the pointers in the reverse order). No traced code calls it."
+   "text": "The same as $1A99 with the table $1A8D ($96, $95, $94, $95, three of each: the climb cycle run the other way). No traced code calls it."
   },
   {
    "address": 6875,
@@ -4116,17 +4116,17 @@
   {
    "address": 6930,
    "type": "line",
-   "text": "Low byte of the X position for the lookup $1B4C; set by $1BD8."
+   "text": "Low byte of the X position for the lookup $1B4C; set by $1B7C, $1B9F and $1BD8."
   },
   {
    "address": 6931,
    "type": "line",
-   "text": "Y position for the lookup $1B4C; set by $1BD8."
+   "text": "Y position for the lookup $1B4C; set by $1B7C, $1B9F and $1BD8."
   },
   {
    "address": 6932,
    "type": "line",
-   "text": "High byte of the X position for the lookup $1B4C; set by $1BD8."
+   "text": "High byte of the X position for the lookup $1B4C; set by $1B7C, $1B9F and $1BD8."
   },
   {
    "address": 6933,
@@ -4146,7 +4146,7 @@
   {
    "address": 6988,
    "type": "line",
-   "text": "Returns in A the character in the screen matrix at the position given by $1B12 (X low), $1B14 (X high) and $1B13 (Y). The row is (Y-$24)/8, whose address comes from the pointer table $1B1C (copied to $DD/$DE and $1B4A/$1B4B); the column is X/8, plus $20 if $1B14 is non-zero, minus 3. Y is left set to that column. Called by $1BD8."
+   "text": "Returns in A the character in the screen matrix at the position given by $1B12 (X low), $1B14 (X high) and $1B13 (Y). The row is (Y-$24)/8, whose address comes from the pointer table $1B1C (copied to $DD/$DE and $1B4A/$1B4B); the column is X/8, plus $20 if $1B14 is non-zero, minus 3. Y is left set to that column. Called by $1B7C, $1B9F and $1BD8."
   },
   {
    "address": 7036,
@@ -4161,12 +4161,12 @@
   {
    "address": 7128,
    "type": "line",
-   "text": "Sets the lookup position from the object: $1B12=$1BF8+8, $1B14=$1BF9 and $1B13=$1BFA+6, then calls $1B4C. Called by $1C45 at $1CEC."
+   "text": "Sets the lookup position from the object: $1B12=$1BF8+8, $1B14=$1BF9 plus the carry and $1B13=$1BFA+6, then calls $1B4C. Called by $1C45 at $1CEC."
   },
   {
    "address": 7158,
    "type": "line",
-   "text": "State of the falling object: 0 idle, 1 falling, 2 exploding; run by $1C45, tested by $0FB7, $1DA1 and $239F."
+   "text": "State of the falling object: 0 idle, 1 falling, 2 exploding; run by $1C45 and tested by $1DA1 and $239F. $0FB7 sets it to 0 when the object scrolls off the left; $0A84 clears it."
   },
   {
    "address": 7159,
@@ -4191,7 +4191,7 @@
   {
    "address": 7165,
    "type": "line",
-   "text": "Index into the table $1C1D, set to 0 when the object starts and increased each frame by $1C45."
+   "text": "Index into the table $1C1D, set to 0 when the object starts and increased each frame by $1C45 up to 39, the last step (8): the next byte, $A9 at $1C45, has bit 7 set and sends it back."
   },
   {
    "address": 7166,
@@ -4201,7 +4201,7 @@
   {
    "address": 7167,
    "type": "line",
-   "text": "Sprite pointers for the explosion frames; $1C45 reads indexes up to $1A and $239F writes the entry to $CFFB-$CFFF."
+   "text": "Sprite pointers for the explosion frames, 30 bytes; $1C45 reads indexes 1 to $1B and writes the entry to $CFFB, and $239F writes the entry to $CFFB-$CFFF."
   },
   {
    "address": 7197,
