@@ -49,3 +49,15 @@ into your own skills once, as above:
 ```
 ln -s "$PWD/admin/fix-issues" ~/.claude/skills/fix-issues
 ```
+
+## Find first-time discoveries
+
+To have Claude search the web for an earlier record of each Discoveries
+section, run `/first-discoveries` in a session in this repo, naming games
+or none for all. The steps are `first-discoveries/SKILL.md`; what has been
+looked up, and what turned up nothing, is `first-discoveries/ledger.md`.
+Link it into your own skills once, as above:
+
+```
+ln -s "$PWD/admin/first-discoveries" ~/.claude/skills/first-discoveries
+```
