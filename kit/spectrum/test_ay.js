@@ -13,6 +13,16 @@ let fails = 0;
 const check = (ok, what) => { if (!ok) { fails++; console.log('FAIL ' + what); } else console.log('ok   ' + what); };
 const log = (calls, n) => ({ clock: A.CLOCK, hz: A.HZ, calls: calls.concat(Array(n - calls.length).fill([])) });
 
+// track(): each tone channel's pitch and loudness at each call, for the bouncing ball
+{
+  const tr = A.track(log([[0, 0xFE, 1, 0, 7, 0x3E, 8, 15], [8, 7], [7, 0x3F]], 4));
+  const a = tr.voices[0];
+  check(tr.rate === A.HZ && tr.voices.length === 3 && a.hz.length === 4, 'track(): a call a tick, three voices');
+  check(Math.abs(a.hz[0] - A.hz(0xFE)) < 1e-3 && a.level[0] === 1 && Math.abs(a.level[1] - A.VOLUME[7] / A.VOLUME[15]) < 1e-6,
+    'track(): a tone\'s pitch, and its loudness against full volume');
+  check(Number.isNaN(a.hz[2]) && Number.isNaN(tr.voices[1].hz[0]), 'track(): no pitch where the tone is off');
+}
+
 // decode
 const st = A.decode(log([[0, 0x34, 1, 0x12, 2, 0xFF, 3, 0x0F, 4, 0, 5, 0, 6, 0x25, 7, 0x38, 8, 15, 9, 0x13, 10, 0, 16, 1]], 1))[0];
 check(st.tone.join() === [0x234, 0xFFF, 1].join(), 'periods from R0-R5: the coarse byte\'s low four bits, 0 as 1');

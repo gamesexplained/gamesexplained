@@ -38,11 +38,17 @@
 //                        of one period at one volume, with the tone on and the volume above 0
 //   hz(tp, clock)        a period's frequency
 //   render(log, rate)    Float32Array: the output at `rate` samples a second
-//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button
-//                        and a piano roll of the three tones (rows by pitch; the noise and the
-//                        beeper along the foot), its playhead moving as the tune plays.
-//                        opts.onTime(t, tune) is called each animation frame while a tune plays,
-//                        and with t = null when it stops. Returns { play(i), stop(), draw(i) }.
+//   track(log)           what each tone channel did at each call, for the bouncing ball:
+//                        { rate, voices: [{ hz, level }] }, hz its tone's pitch (NaN where the tone
+//                        is off) and level its loudness against full volume, 0 to 1
+//   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log }), a stop button,
+//                        a bouncing ball a channel (../../lib/bounce.js, loaded from beside this
+//                        script) and a switch to a piano roll of the three tones (rows by pitch;
+//                        the noise and the beeper along the foot), its playhead moving as the tune
+//                        plays; opts.bounce false for the piano roll alone, which also shows until
+//                        the ball has loaded and where it cannot. opts.onTime(t, tune) is called
+//                        each animation frame while a tune plays, and with t = null when it stops.
+//                        Returns { play(i), stop(), draw(i) }.
 //
 // The sound of a game as it plays (a Play tab), on the same model as render():
 //   live(rate)           { push(frames, most), render(out, n), queued }: frames of writes as the
@@ -192,6 +198,35 @@ function spectrumAYModel() {
     return out.sort((a, b) => a.t - b.t || a.ch - b.ch);
   }
 
+  function track(log) {
+    log = unpack(log);
+    const st = decode(log), n = st.length;
+    const voices = [0, 1, 2].map(() => ({ hz: new Float32Array(n), level: new Float32Array(n) }));
+    st.forEach((e, k) => {
+      for (let ch = 0; ch < 3; ch++) {
+        voices[ch].hz[k] = e.mixer >> ch & 1 ? NaN : hz(e.tone[ch], log.clock);
+        voices[ch].level[k] = VOLUME[e.vol[ch]] / VOLUME[15];
+      }
+    });
+    return { rate: log.hz, voices };
+  }
+
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (globalThis.NoteBounce) return Promise.resolve(globalThis.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => globalThis.NoteBounce ? ok(globalThis.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
+
   // The recording on the model, a step at a time, averaged down to the output's rate.
   function render(log, rate) {
     log = unpack(log);
@@ -268,7 +303,10 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
       st.textContent = `.spay-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.4rem 0}
 .spay-bar button{font:inherit;padding:.25rem .7rem;border:1px solid #555;background:#1c1c1c;color:#eee;border-radius:3px;cursor:pointer}
 .spay-bar button.on{background:#2e7d32;border-color:#4caf50}
+.spay-view{display:inline-flex;align-items:center;gap:.4rem;margin-left:.4rem;color:#aaa}
+.spay-view[hidden]{display:none}
 .spay-clock{margin-left:auto;font-variant-numeric:tabular-nums;opacity:.8}
+.spay-roll[hidden]{display:none}
 .spay-roll{display:block;width:100%;height:220px;border-radius:3px}
 .spay-legend{display:flex;flex-wrap:wrap;gap:1rem;font-size:.85em;opacity:.85;margin-top:.3rem}
 .spay-legend i{display:inline-block;width:.8em;height:.8em;margin-right:.35em;vertical-align:-.05em;border-radius:2px}`;
@@ -288,6 +326,14 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
     stopB.textContent = '■ Stop';
     stopB.onclick = () => stop();
     bar.appendChild(stopB);
+    // the bouncing ball, in place of the piano roll once it has loaded, and the switch between them
+    const BOUNCE = opts.bounce !== false;
+    const views = document.createElement('span');
+    views.className = 'spay-view'; views.hidden = true;
+    views.innerHTML = 'View <button type="button" data-view="ball" class="on">Ball</button><button type="button" data-view="roll">Piano roll</button>';
+    bar.appendChild(views);
+    const box = document.createElement('div');
+    box.hidden = true;
     const clock = document.createElement('span');
     clock.className = 'spay-clock';
     bar.appendChild(clock);
@@ -296,12 +342,14 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
     const legend = document.createElement('div');
     legend.className = 'spay-legend';
     legend.innerHTML = NAMES.map((n, i) => `<span><i style="background:${COLOURS[i]}"></i>${i < 3 ? 'channel ' + n : n}</span>`).join('');
-    el.append(bar, canvas, legend);
+    el.append(bar, box, canvas, legend);
 
     let ctx = null, src = null, started = 0, playing = -1, shown = 0, raf = 0;
-    const cache = new Map();
+    let ball = null, view = 'roll';
+    const cache = new Map(), scores = new Map();
     function draw(i, t) {
       shown = i;
+      if (view === 'ball') { time(i, t); return; }
       const tune = tunes[i], ns = notes(tune.log), st = decode(tune.log), len = st.length / tune.log.hz;
       const W = canvas.clientWidth || 640, H = 220, dpr = globalThis.devicePixelRatio || 1;
       canvas.width = W * dpr; canvas.height = H * dpr;
@@ -327,7 +375,19 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
       g.globalAlpha = 1; g.fillStyle = COLOURS[4];
       for (let k = 1; k < st.length; k++) if (st[k].beeper !== st[k - 1].beeper) g.fillRect(X(st[k].t), H - 8, 2, 6);
       if (t != null) { g.fillStyle = '#fff'; g.fillRect(X(t), 0, 2, H); }
+      time(i, t);
+    }
+    function time(i, t) {
+      const log = tunes[i].log, len = log.calls.length / log.hz;
       clock.textContent = (t != null ? t.toFixed(2) + ' / ' : '') + len.toFixed(2) + ' s';
+    }
+    // the ball's score for a tune: each tone channel's notes, pitch and loudness at every call
+    function scoreOf(i) {
+      if (!scores.has(i)) {
+        const tr = track(tunes[i].log);
+        scores.set(i, { rate: tr.rate, voices: tr.voices.map(globalThis.NoteBounce.voice) });
+      }
+      return scores.get(i);
     }
     function stop() {
       if (src) { try { src.stop(); } catch (e) { /* already stopped */ } src = null; }
@@ -349,10 +409,12 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
       started = ctx.currentTime + 0.05; src.start(started);
       playing = i; buttons[i].classList.add('on');
       src.onended = () => { if (playing === i) stop(); };
+      if (ball) ball.score(scoreOf(i));
       const tick = () => {
         if (playing !== i) return;
         const t = Math.max(0, ctx.currentTime - started);
         draw(i, t);
+        if (ball && view === 'ball') ball.draw((ctx.currentTime - (ctx.outputLatency || 0) - started) * tunes[i].log.hz);
         if (opts.onTime) opts.onTime(t, i);
         raf = requestAnimationFrame(tick);
       };
@@ -360,8 +422,22 @@ registerProcessor('spectrum-ay', SpectrumAYProcessor);`;
     }
     draw(0, null);
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (playing < 0) draw(shown, null); }).observe(canvas);
+    views.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-view]');
+      if (!b) return;
+      view = b.dataset.view;
+      views.querySelectorAll('[data-view]').forEach(v => v.classList.toggle('on', v === b));
+      box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
+      if (view === 'roll' && playing < 0) draw(shown, null);
+    });
+    if (BOUNCE) noteBounce().then((NB) => {                  // where it cannot load, the piano roll stays
+      ball = NB.stage(box, { colors: COLOURS.slice(0, 3), font: getComputedStyle(el).getPropertyValue('--fb').trim() || undefined });
+      if (playing >= 0) ball.score(scoreOf(playing));
+      view = 'ball';
+      box.hidden = false; canvas.hidden = true; views.hidden = false;
+    }, () => {});
     return { play, stop, draw: i => draw(i, null) };
   }
 
-  return { CLOCK, HZ, FRAME_T: MODEL.FRAME_T, VOLUME, BEEPER, NAMES, pack, unpack, decode, notes, hz, render, mount, live, host, worklet };
+  return { CLOCK, HZ, FRAME_T: MODEL.FRAME_T, VOLUME, BEEPER, NAMES, pack, unpack, decode, notes, hz, render, track, mount, live, host, worklet };
 })();

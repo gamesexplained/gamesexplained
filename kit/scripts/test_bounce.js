@@ -15,7 +15,10 @@
 // - it never jumps: sampled every tenth of a tick, no step in place, height or time is large;
 // - its glow follows the voice's loudness: rising as a voice fades in, held through a short
 //   gap, gone in a long rest, and full for a voice with no levels;
-// - voices with no notes get no lane.
+// - voices with no notes get no lane;
+// - a step in pitch is a note when held for the same time at any rate the voice is read at;
+// - NoteBounce.voice, for a chip with no gate, starts a note where the voice comes on, gets
+//   louder or is restarted.
 //   node kit/scripts/test_bounce.js
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -136,6 +139,40 @@ check(g62 > 0.5 && g62 < 0.8 && g140 < 0.01 && view.ballAt(2, 120).loud === 1,
 
 view.score(null);
 check(view.ballAt(1, 20) === null, 'score(null) clears the view');
+
+// The same line read 50 and 100 times a second gives the same notes: a step to a pitch held for
+// 0.2 s is a note, one held for 0.04 s is not (at 100 a second, four ticks).
+function stepsAt(rate) {
+  const n = Math.round(1.2 * rate), line = new Float32Array(n).fill(NaN);
+  const at = (s) => Math.round(s * rate);
+  for (let k = at(0.1); k < n; k++) line[k] = 40;
+  for (let k = at(0.4); k < at(0.6); k++) line[k] = 45;
+  for (let k = at(0.8); k < at(0.84); k++) line[k] = 47;
+  const v = NoteBounce.create(stub());
+  v.score({ rate, voices: [{ notes: [{ t: at(0.1), n: 40 }], line }] });
+  return v.notesOf(0).map((e) => `${(e.t / rate).toFixed(2)}:${e.n}`).join(' ');
+}
+const s50 = stepsAt(50), s100 = stepsAt(100);
+check(s50 === s100 && s50 === '0.10:40 0.40:45 0.60:40 0.84:40',
+  `a pitch held long enough to be a note is held for the same time at any rate (50 a second: ${s50}; 100: ${s100})`);
+
+// NoteBounce.voice, for a chip with no gate: a note where the voice comes on, gets louder by a
+// fifth of full or more, or the chip restarts it; none for a smaller rise or a noise, which has
+// no pitch and no line.
+{
+  const N = 24, hz = new Float32Array(N), lv = new Float32Array(N), start = new Uint8Array(N);
+  for (let k = 2; k < N; k++) { hz[k] = 440; lv[k] = 1; }
+  lv[5] = 0.5; lv[6] = 0.6; lv[7] = 0.6;              // a fall, and a rise of a tenth: no note
+  lv[8] = 1;                                          // a rise of 0.4: a note
+  start[12] = 1;                                      // restarted at the same loudness: a note
+  hz[15] = hz[16] = NaN;                              // a noise, loud but with no pitch
+  hz[18] = 880;                                       // a step in pitch, left to score()
+  const v = NoteBounce.voice({ hz, level: lv, start });
+  check(v.notes.map((e) => e.t).join() === '2,8,12,17' && Math.abs(v.notes[0].n - 57) < 1e-4,
+    `voice(): notes where the voice comes on, gets louder, restarts and comes back after a noise (${v.notes.map((e) => e.t).join()}); 440 Hz is note 57`);
+  check(Number.isNaN(v.line[1]) && Number.isNaN(v.line[15]) && Math.abs(v.line[18] - 69) < 1e-4 && v.level[5] === 0.5,
+    'voice(): no line where it is silent or a noise, the line in notes, the level as given');
+}
 
 if (fails) { console.log(`${fails} failed`); process.exit(1); }
 console.log('all passed');

@@ -27,8 +27,14 @@
 //   notes(log)           the three tone channels' notes: [{ ch, t, dur, hz, vol }] (ch 0, 1 the
 //                        pulses, 2 the triangle), a note being a stretch of one period at one
 //                        volume that lasts 5 ms or more; the noise's bursts with ch 3 and its
-//                        period as hz
+//                        period as hz. notes(log, trace) takes decode(log) where the page has it
 //   render(log, rate)    Float32Array: the chip's output at `rate` samples a second
+//   track(log, trace)    what the pulses and the triangle did in each frame, for the bouncing
+//                        ball: { rate, voices: [{ hz, level, start }] }, hz a channel's pitch (NaN
+//                        where it is silent), level its volume against 15 (the triangle, which has
+//                        none, 1 while it sounds) and start true in a frame where the game wrote
+//                        the channel's length register ($4003, $4007, $400B), which restarts it.
+//                        trace, optional: decode(log), where the page has it already
 //   record(driver, frames, opts)  a log from a driver run once a frame: driver.play(frame)
 //                        returns the frame's writes as [[address, value, cycle], ...], the cycle
 //                        counted from the frame's start; opts.framesCycles (29780.5) spaces the
@@ -37,11 +43,15 @@
 //   live(rate, opts)     the chip fed a frame of writes at a time, for a Play tab (host, below)
 //   host(opts)           the live chip in an AudioWorklet, from this file's own text at opts.url
 //   mount(el, opts)      a player: a button for each of opts.tunes ({ name, log, or make: a
-//                        function that returns the log when first needed }), a stop button and a
-//                        piano roll (rows by pitch, the noise along the foot), its playhead moving
-//                        as the tune plays. opts.onTime(t, tune) is called each animation frame
-//                        while a tune plays, and with t = null when it stops. Returns { play(i),
-//                        stop(), draw(i) }.
+//                        function that returns the log when first needed }), a stop button, a
+//                        bouncing ball a channel (../../lib/bounce.js, loaded from beside this
+//                        script) and a switch to a piano roll (rows by pitch, the noise along the
+//                        foot), its playhead moving as the tune plays; opts.bounce false for the
+//                        piano roll alone, which also shows until the ball has loaded and where it
+//                        cannot. The page styles the buttons: .nes-apu-playing is the tune
+//                        playing, [aria-pressed="true"] the view shown. opts.onTime(t, tune) is
+//                        called each animation frame while a tune plays, and with t = null when it
+//                        stops. Returns { play(i), stop(), draw(i) }.
 globalThis.NESApu = (function () {
   'use strict';
   const CLOCK = 1789773;
@@ -208,7 +218,10 @@ globalThis.NESApu = (function () {
     rate = rate || 44100;
     const out = [];
     run(log, CLOCK / rate, (s) => out.push(s), 0, null);
-    // the output's mean removed, as the console's coupling does over a longer time
+    return coupled(out);
+  }
+  // the output's mean removed, as the console's coupling does over a longer time
+  function coupled(out) {
     const f = new Float32Array(out.length);
     let dc = 0;
     for (let i = 0; i < out.length; i++) { dc += (out[i] - dc) * 0.0005; f[i] = (out[i] - dc) * 1.5; }
@@ -219,10 +232,49 @@ globalThis.NESApu = (function () {
     run(log, 1e9, () => {}, CLOCK / 1000, (t, s) => trace.push(Object.assign({ t }, s)));
     return trace;
   }
+  // the chip's state in each frame, from the trace's millisecond nearest the frame's middle
+  function track(log, trace) {
+    log = unpack(log);
+    trace = trace || decode(log);
+    const n = Math.max(1, Math.ceil((log.end - log.start) / FRAME_CYCLES)), rate = CLOCK / FRAME_CYCLES;
+    const voices = [0, 1, 2].map(() => ({ hz: new Float32Array(n).fill(NaN), level: new Float32Array(n), start: new Uint8Array(n) }));
+    let j = 0;
+    for (let k = 0; k < n && trace.length; k++) {
+      const at = (k + 0.5) / rate;
+      while (j + 1 < trace.length && Math.abs(trace[j + 1].t - at) <= Math.abs(trace[j].t - at)) j++;
+      const s = trace[j];
+      [s.p1, s.p2].forEach(([period, vol], ch) => {
+        if (vol) { voices[ch].hz[k] = hzOfPulse(period); voices[ch].level[k] = vol / 15; }
+      });
+      if (s.tri[1]) { voices[2].hz[k] = hzOfTri(s.tri[0]); voices[2].level[k] = 1; }
+    }
+    for (const [c, a] of log.writes) {
+      const ch = a === 0x4003 ? 0 : a === 0x4007 ? 1 : a === 0x400B ? 2 : -1, k = Math.floor((c - log.start) / FRAME_CYCLES);
+      if (ch >= 0 && k >= 0 && k < n) voices[ch].start[k] = 1;
+    }
+    return { rate, voices };
+  }
+
+  // where this script was loaded from, to load the bouncing ball (bounce.js) from beside it
+  const HERE = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  let bounceLoad = null;
+  function noteBounce() {
+    if (globalThis.NoteBounce) return Promise.resolve(globalThis.NoteBounce);
+    if (!bounceLoad) bounceLoad = new Promise((ok, fail) => {
+      if (!HERE) { fail(new Error('no bounce.js')); return; }
+      const sc = document.createElement('script');
+      sc.src = new URL('bounce.js', HERE).href;
+      sc.onload = () => globalThis.NoteBounce ? ok(globalThis.NoteBounce) : fail(new Error('no NoteBounce'));
+      sc.onerror = fail;
+      document.head.appendChild(sc);
+    });
+    return bounceLoad;
+  }
   const hzOfPulse = (period) => CLOCK / (16 * (period + 1));
   const hzOfTri = (period) => CLOCK / (32 * (period + 1));
-  function notes(log) {
-    const trace = decode(log), out = [];
+  function notes(log, trace) {
+    trace = trace || decode(log);
+    const out = [];
     const open = [null, null, null, null];
     const key = (s, ch) => ch === 0 ? s.p1 : ch === 1 ? s.p2 : ch === 2 ? [s.tri[0], s.tri[1] ? 15 : 0] : s.noise;
     for (const s of trace) {
@@ -265,19 +317,40 @@ globalThis.NESApu = (function () {
     const canvas = document.createElement('canvas');
     canvas.width = Math.min(root.clientWidth || 800, 900); canvas.height = 180;
     canvas.style.cssText = 'width:100%;height:auto;background:#1b1d22;border-radius:6px;display:block';
-    root.appendChild(bar); root.appendChild(canvas);
+    // the bouncing ball, in place of the piano roll once it has loaded, and the switch between them
+    const BOUNCE = opts.bounce !== false;
+    const box = document.createElement('div');
+    box.hidden = true;
+    const views = document.createElement('span');
+    views.style.cssText = 'display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:14px';
+    views.hidden = true;
+    views.innerHTML = 'View <button type="button" data-view="ball" aria-pressed="true">Ball</button>' +
+      '<button type="button" data-view="roll" aria-pressed="false">Piano roll</button>';
+    root.appendChild(bar); root.appendChild(box); root.appendChild(canvas);
     const ctx = canvas.getContext('2d');
     const cache = [];
-    let audio = null, source = null, playing = -1, startedAt = 0, raf = 0;
+    let audio = null, source = null, playing = -1, startedAt = 0, raf = 0, ball = null, view = 'roll', shown = 0;
     const logOf = (i) => { const t = tunes[i]; if (!t.log) t.log = t.make(); return unpack(t.log); };
+    // the sound and the chip's state every millisecond, from one run of the chip
     const prepared = (i) => {
       if (!cache[i]) {
-        const log = logOf(i);
-        cache[i] = { samples: render(log, rate), notes: notes(log), length: Math.max(0.5, (log.end - log.start) / log.clock + 0.1) };
+        const log = logOf(i), out = [], trace = [];
+        run(log, CLOCK / rate, (s) => out.push(s), CLOCK / 1000, (t, s) => trace.push(Object.assign({ t }, s)));
+        cache[i] = { samples: coupled(out), notes: notes(log, trace), trace, length: Math.max(0.5, (log.end - log.start) / log.clock + 0.1) };
       }
       return cache[i];
     };
+    // the ball's score for a tune: each channel's notes, pitch and loudness in every frame
+    const scoreOf = (i) => {
+      const c = prepared(i);
+      if (!c.score) {
+        const tr = track(logOf(i), c.trace);
+        c.score = { rate: tr.rate, voices: tr.voices.map(globalThis.NoteBounce.voice) };
+      }
+      return c.score;
+    };
     function draw(i, t) {
+      if (view !== 'roll') return;
       const W = canvas.width, H = canvas.height;
       ctx.fillStyle = '#1b1d22'; ctx.fillRect(0, 0, W, H);
       if (i < 0) return;
@@ -321,12 +394,14 @@ globalThis.NESApu = (function () {
       buf.copyToChannel(c.samples, 0);
       source = audio.createBufferSource(); source.buffer = buf; source.connect(audio.destination);
       source.onended = () => { if (playing === i) stop(); };
-      playing = i; startedAt = audio.currentTime; source.start();
+      playing = shown = i; startedAt = audio.currentTime; source.start();
       bar.querySelectorAll('button')[i].classList.add('nes-apu-playing');
+      if (ball) ball.score(scoreOf(i));
       const tick = () => {
         if (playing !== i) return;
         const t = audio.currentTime - startedAt;
         draw(i, t);
+        if (ball && view === 'ball') ball.draw((audio.currentTime - (audio.outputLatency || 0) - startedAt) * CLOCK / FRAME_CYCLES);
         if (opts.onTime) opts.onTime(t, tunes[i]);
         raf = requestAnimationFrame(tick);
       };
@@ -341,8 +416,24 @@ globalThis.NESApu = (function () {
     const s = document.createElement('button');
     s.type = 'button'; s.textContent = '■ stop'; s.addEventListener('click', stop);
     bar.appendChild(s);
-    if (tunes.length) draw(0, null);
-    return { play, stop, draw: (i) => draw(i, null) };
+    bar.appendChild(views);
+    const show = (i) => { shown = i; draw(i, null); };
+    if (tunes.length) show(0);
+    views.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-view]');
+      if (!b) return;
+      view = b.dataset.view;
+      views.querySelectorAll('[data-view]').forEach((v) => v.setAttribute('aria-pressed', String(v === b)));
+      box.hidden = view !== 'ball'; canvas.style.display = view === 'roll' ? 'block' : 'none';
+      if (view === 'roll' && playing < 0 && tunes.length) draw(shown, null);
+    });
+    if (BOUNCE) noteBounce().then((NB) => {                  // where it cannot load, the piano roll stays
+      ball = NB.stage(box, { colors: COLOURS.slice(0, 3), font: getComputedStyle(root).getPropertyValue('--fb').trim() || undefined });
+      if (playing >= 0) ball.score(scoreOf(playing));
+      view = 'ball';
+      box.hidden = false; canvas.style.display = 'none'; views.hidden = false;
+    }, () => {});
+    return { play, stop, draw: show };
   }
 
   // ------------------------------------------------------------------ a live chip for a Play tab
@@ -428,5 +519,5 @@ registerProcessor('nes-apu', NesApuProcessor);
     return { ctx, mode: local ? 'script-processor' : 'worklet', send: (c) => { if (local) local.command(c); else node.port.postMessage(c); } };
   }
 
-  return { CLOCK, FRAME_CYCLES, LENGTH, NOISE_PERIOD, NAMES, COLOURS, Chip, pack, unpack, decode, notes, render, record, mount, hzOfPulse, hzOfTri, LIVE_FRAMES, live, host };
+  return { CLOCK, FRAME_CYCLES, LENGTH, NOISE_PERIOD, NAMES, COLOURS, Chip, pack, unpack, decode, notes, render, track, record, mount, hzOfPulse, hzOfTri, LIVE_FRAMES, live, host };
 })();

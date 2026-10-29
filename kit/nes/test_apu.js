@@ -3,7 +3,8 @@
 // Checks site/lib/apu.js, the site's model of the NES's APU: a pulse at a known period sounds at
 // the frequency the wiki's formula gives, the triangle at half of it, a length counter stops a
 // note when it runs out, the sweep moves a pitch, the frame counter's mode is restarted by every
-// write, the noise channel makes something, pack() and unpack() round-trip a log, and record()
+// write, the noise channel makes something, pack() and unpack() round-trip a log, track() gives
+// each channel's pitch, volume and restarts a frame for the bouncing ball, and record()
 // stops a driver's log where the driver ends, and live() keeps half a second of frames waiting and
 // makes an older frame's writes when more come rather than losing them. Run as a script; exits
 // non-zero on failure.
@@ -80,6 +81,23 @@ check('pack() and unpack() round-trip a log', () => {
   const p = A.pack(l), u = A.unpack(p);
   assert.deepStrictEqual(u.writes, l.writes);
   assert.strictEqual(p.w.length, 9);
+});
+check('track() gives each channel\'s pitch and volume a frame, and the frames the game restarts it in', () => {
+  const F = A.FRAME_CYCLES;
+  // pulse 1 at period 253 and volume 15 from frame 0, its volume 6 from frame 2, restarted in frame 3;
+  // the triangle on from frame 1
+  const l = log([[0, 0x4015, 0x0f], [0, 0x4000, 0xbf], [0, 0x4002, 253], [0, 0x4003, 0x08],
+    [Math.round(F) + 50, 0x4008, 0xff], [Math.round(F) + 50, 0x400a, 100], [Math.round(F) + 60, 0x400b, 0x08],
+    [Math.round(2 * F) + 50, 0x4000, 0xb6], [Math.round(3 * F) + 50, 0x4003, 0x08]], 6 * F / A.CLOCK);
+  const tr = A.track(l), p = tr.voices[0], t = tr.voices[2];
+  assert.strictEqual(tr.voices.length, 3);
+  assert.strictEqual(p.hz.length, 6);
+  assert.ok(Math.abs(tr.rate - A.CLOCK / F) < 1e-9);
+  assert.ok(Math.abs(p.hz[0] - A.hzOfPulse(253)) < 1e-3 && p.level[0] === 1 && Math.abs(p.level[2] - 6 / 15) < 1e-6);
+  assert.deepStrictEqual(Array.from(p.start), [1, 0, 0, 1, 0, 0]);
+  assert.ok(Number.isNaN(t.hz[0]) && Math.abs(t.hz[1] - A.hzOfTri(100)) < 1e-3 && t.level[1] === 1);
+  assert.deepStrictEqual(Array.from(t.start), [0, 1, 0, 0, 0, 0]);
+  assert.ok(tr.voices[1].hz.every(Number.isNaN), 'pulse 2 never sounds');
 });
 check('record() stops a driver that has ended, after the tail', () => {
   let frames = 0;

@@ -46,8 +46,8 @@ from RAM.
 ## The sound
 
 `site/lib/ay.js` is the site's model of the 128's AY-3-8912 and of the
-beeper, measured against ZEsarUX's own output, with a player and a piano
-roll. It plays a recording of what the game's sound driver wrote to the
+beeper, measured against ZEsarUX's own output, with a player that shows
+each channel as a bouncing ball or on a piano roll. It plays a recording of what the game's sound driver wrote to the
 chip, one call of the driver at a time (the format is in its header).
 Make the recording by running the game's own driver on the kit's Z80 from
 the listing, one call for each time the game makes one, and keep a test

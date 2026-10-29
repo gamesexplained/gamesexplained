@@ -595,14 +595,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-seek input:disabled{opacity:.45}
 .sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
-.sid-roll[hidden],.sid-stagebox[hidden],.sid-filt[hidden]{display:none}
-.sid-stagebox{position:relative}
-.sid-stage{display:block;width:100%;height:min(480px,56vw,80vh);border-radius:8px;background:#060607}
-@media (orientation:portrait){.sid-stage{height:auto;aspect-ratio:10/13;max-height:72vh}}
-.sid-stagebox:fullscreen{background:#060607}
-.sid-stagebox:fullscreen .sid-stage{height:100vh;max-height:none;border-radius:0}
-.sid-player .sid-full{position:absolute;right:10px;top:10px;padding:3px 9px;font-size:11.5px;background:rgba(30,30,32,.7);color:#e9e7e1;border-color:rgba(255,255,255,.18)}
-.sid-player .sid-full[hidden]{display:none}
+.sid-roll[hidden],.sid-filt[hidden]{display:none}
 .sid-voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:12px}
 .sid-v{border:1px solid var(--line,#d5d3cc);border-radius:8px;padding:9px 12px 10px;background:var(--surface,#fff);min-width:0}
 .sid-vh{display:flex;align-items:center;gap:8px;font-weight:700}
@@ -653,10 +646,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           ball in its place, with a switch between the two and a full-screen button: a ball
   //           a voice hops from note to note as the reader hears them, and rides the voice's
   //           pitch as it bends or wavers between (NoteBounce, ../../lib/bounce.js, loaded from
-  //           beside this script unless the page has loaded it; where it cannot load, the piano
-  //           roll). The player runs the driver ahead when a tune starts, as for its length, and
-  //           takes a note where mark says one starts, and where the pitch steps to a new note
-  //           and holds
+  //           beside this script unless the page has loaded it; until it has loaded, and where it
+  //           cannot, the piano roll). The player runs the driver ahead when a tune starts, as for
+  //           its length, and takes a note where mark says one starts, and where the pitch steps
+  //           to a new note and holds
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -685,7 +678,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         '<span class="sid-fsw"><span class="sid-k">Filter</span>' +
         FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
         '</span><span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
-      (BOUNCE ? '<span class="sid-filt" data-views role="group" aria-label="What the player shows"><span class="sid-k">View</span>' +
+      (BOUNCE ? '<span class="sid-filt" data-views role="group" aria-label="What the player shows" hidden><span class="sid-k">View</span>' +
         '<button type="button" data-view="ball" aria-pressed="true">Ball</button>' +
         '<button type="button" data-view="roll" aria-pressed="false">Piano roll</button></span>' : '') +
       '<span class="sid-stat">' +
@@ -693,11 +686,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
       '<div class="sid-seek"><input type="range" min="0" max="1" step="1" value="0" disabled ' +
       'aria-label="Position in the tune"><span data-g="time">0:00.0</span></div>' +
-      (BOUNCE ? '<div class="sid-stagebox"><canvas class="sid-stage" role="img" aria-label="A ball for each voice ' +
-        'hopping from note to note as they play"></canvas><button type="button" class="sid-full" data-full hidden>' +
-        'Full screen</button></div>' : '') +
-      '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"' +
-      (BOUNCE ? ' hidden' : '') + '></canvas>' +
+      (BOUNCE ? '<div class="sid-stagebox" hidden></div>' : '') +
+      '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"></canvas>' +
       '<div class="sid-voices">' + [0, 1, 2].map((x) => `<div class="sid-v" data-voice="${x}">
         <div class="sid-vh"><i class="sid-sw" style="background:${COLORS[x]}"></i>Voice ${x + 1}
           <button type="button" data-mute="${x}" aria-pressed="false">Mute</button></div>
@@ -722,9 +712,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     let ctx = null, send = () => {}, starting = null, raf = 0, playing = -1, quietSince = 0, runs = 0;
     let queue = [], hist = [], tune = -1, dragging = false;
     // The bouncing ball: drawn every animation frame from the last frame heard, moved on by the
-    // time since, so that it flies smoothly between the player's frames.
-    const box = BOUNCE ? $('.sid-stagebox') : null, full = BOUNCE ? $('[data-full]') : null;
-    let ball = null, view = BOUNCE ? 'ball' : 'roll', heard = null, heardAt = 0;
+    // time since, so that it flies smoothly between the player's frames. The piano roll shows
+    // until it has loaded.
+    const box = BOUNCE ? $('.sid-stagebox') : null;
+    let ball = null, view = 'roll', heard = null, heardAt = 0;
     // Each tune's length in frames, or null where it runs on past LONG: measured once, by running
     // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
     // gets a bar LONG long, which grows if the tune is played past it. The same run notes whether
@@ -869,17 +860,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         box.hidden = view !== 'ball'; canvas.hidden = view !== 'roll';
         draw(); drawBall();
       }
-      else if (b.hasAttribute('data-full')) {
-        if (document.fullscreenElement) document.exitFullscreen();
-        else if (box.requestFullscreen) box.requestFullscreen().catch(() => {});
-      }
     });
-    if (full) {
-      full.hidden = !document.fullscreenEnabled;
-      document.addEventListener('fullscreenchange', () => {
-        full.textContent = document.fullscreenElement === box ? 'Exit full screen' : 'Full screen';
-      });
-    }
 
     function loop() {
       raf = requestAnimationFrame(loop);
@@ -970,18 +951,14 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 
     draw();
     window.addEventListener('resize', draw);
-    if (BOUNCE) noteBounce().then((NB) => {
-      ball = NB.create($('.sid-stage'), { colors: COLORS, font: FONT_B });
+    if (BOUNCE) noteBounce().then((NB) => {                  // where it cannot load, the piano roll stays
+      ball = NB.stage(box, { colors: COLORS, font: FONT_B });
       if (tune >= 0) ball.score(scores[tune]);
-      if (globalThis.ResizeObserver) new ResizeObserver(drawBall).observe(box);   // drawn again whenever
-      else window.addEventListener('resize', drawBall);                          // the stage changes size
+      view = 'ball';
+      box.hidden = false; canvas.hidden = true;
+      $('[data-views]').hidden = false;
       drawBall();
-    }, () => {                                               // no ball: the piano roll alone
-      view = 'roll';
-      box.hidden = true; canvas.hidden = false;
-      $('[data-views]').hidden = true;
-      draw();
-    });
+    }, () => {});
   }
 
   return { engine, host, mount, worklet, live: LIVE, hex, bytes, noteName, waveLevel };

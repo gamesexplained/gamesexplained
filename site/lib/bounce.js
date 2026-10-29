@@ -22,6 +22,7 @@
 //             the view
 //   view.draw(t, { muted })        draws the tune at tick t (fractional), with muted[x] true for
 //             a voice to draw dimmed; with no score, draws the empty sheet and the message
+//   view.redraw()                  draws again what was drawn last, as after a change of size
 //   view.message                   the text drawn on an empty sheet
 //   view.ballAt(x, t)              voice x's ball at tick t, { i, lat, y, at, loud }: the note it last
 //             landed on (-1 before the first), its place across the lane (-0.5 to 0.5), its
@@ -31,6 +32,15 @@
 //             the line, [{ t, n }], for tests
 // Everything drawn is a function of t alone, so a page can seek, pause or loop without telling
 // the view anything but the tick.
+// For a music player, which loads this file from beside its own when it first needs it:
+//   const view = NoteBounce.stage(box, { colors, font })
+//             the view in box, an element of the player's: the canvas sized for the screen and a
+//             Full screen button, drawn again when the box changes size; view.box is box
+//   NoteBounce.voice({ hz, level, start })   one voice of a score, from what a chip with no gate
+//             of its own did at each tick: hz its pitch (0 or NaN where it has none, a noise),
+//             level its loudness, 0 to 1, and start, optional, true at a tick where the chip
+//             restarts the voice. Gives { notes, line, level }, a note where the voice comes on,
+//             gets louder by a fifth of its full loudness or more in a tick, or restarts
 // Camera sliders, for choosing new angles for CAMS below, are in site/lib/bounce-tune.js. They are
 // off: a page whose address ends in ?camera loads them from beside this file, over every view.
 (function (root) {
@@ -47,6 +57,10 @@
   const HEARD = 1 / 255;                           // a level below this is silence: an envelope at 0
   const STEP = 0.5, HELD = 0.25;                   // semitones: a step to a new note, and the most a held
                                                    // note moves in a tick
+  const BEFORE = 0.035, AFTER = 0.055;             // seconds: a step in the line is a note when the pitch
+                                                   // held for BEFORE and holds for AFTER from the step:
+                                                   // two ticks and three at 50 or 60 a second, in time so
+                                                   // that a chip read faster or slower gets the same notes
   const GROOVE = 0.011, LIT = 0.013, LIT_GLOW = 0.045;   // half-widths of the line, world units
   const TRAIL = 0.3;                               // seconds of the ball's path drawn behind it
   const GLOW_FALL = 0.25;                          // seconds: how fast a glow fades after its voice goes quiet
@@ -104,7 +118,7 @@
     let grain = null;
     let W = 0, H = 0, dpr = 1, portrait = false;
     let lanes = [], rate = 50, speed = 2, cam = null, last = [0, null];   // last: the tick and options drawn
-    const view = { message: 'Choose a tune to start.', score, draw, ballAt, notesOf };
+    const view = { message: 'Choose a tune to start.', score, draw, redraw: () => view.draw(last[0], last[1]), ballAt, notesOf };
     const cams = { tall: Object.assign({}, CAMS.tall), wide: Object.assign({}, CAMS.wide) };
 
     // ------------------------------------------------------------------ the tune
@@ -154,10 +168,12 @@
             lp[k] = Math.abs(p) <= 0.6 ? p : NaN;
             lv[k] = level ? clamp(level[k], 0, 1) : 1;
           }
+          const ha = ticksAfter();
           for (let k = 0; k + 1 < line.length; k++) {
             if (!(lp[k] === lp[k]) || !(lp[k + 1] === lp[k + 1])) continue;
-            const d = Math.abs(line[k + 1] - line[k]);
-            join[k] = d >= STEP && heard(k + 2) && Math.abs(line[k + 2] - line[k + 1]) < HELD ? 0 : 1;
+            let holds = Math.abs(line[k + 1] - line[k]) >= STEP;
+            for (let i = k + 2; holds && i < k + ha; i++) holds = heard(i) && Math.abs(line[i] - line[k + 1]) < HELD;
+            join[k] = holds ? 0 : 1;
           }
         }
         // the loudness the glow shows: the level, falling away over a quarter of a second once
@@ -190,20 +206,29 @@
     }
 
     // The notes, and a note wherever the line steps from one held pitch to another that holds
-    // for three ticks: an instrument that plays a melody of its own on one note of the track (an
+    // for AFTER: an instrument that plays a melody of its own on one note of the track (an
     // arpeggio, a pitch program). A chord played a tick or two a note at a time is not one, so
     // as not to crowd the sheet, nor is a slide or a bend.
     function withSteps(notes, line, heard) {
-      const out = notes.slice(), near = new Set();
-      for (const e of notes) for (let d = -2; d <= 2; d++) near.add(Math.round(e.t) + d);
-      for (let k = 2; k + 2 < line.length; k++) {
-        if (near.has(k) || !heard(k - 2) || !heard(k - 1) || !heard(k) || !heard(k + 1) || !heard(k + 2)) continue;
-        const a = line[k - 2], b = line[k - 1], c = line[k];
-        if (Math.abs(c - b) >= STEP && Math.abs(b - a) < HELD && Math.abs(line[k + 1] - c) < HELD &&
-          Math.abs(line[k + 2] - c) < HELD) out.push({ t: k, n: c });
+      const out = notes.slice(), hb = ticksBefore(), ha = ticksAfter();
+      const given = notes.map((e) => Math.round(e.t)).sort((p, q) => p - q);
+      let j = 0;                                     // the first given note at or after k - hb
+      for (let k = hb; k + ha <= line.length; k++) {
+        const b = line[k - 1], c = line[k];
+        if (!(Math.abs(c - b) >= STEP)) continue;
+        while (j < given.length && given[j] < k - hb) j++;
+        if (j < given.length && given[j] <= k + hb) continue;   // a given note is there already
+        let ok = true;
+        for (let i = k - hb; ok && i < k + ha; i++) ok = heard(i);
+        for (let i = k - hb; ok && i + 1 < k; i++) ok = Math.abs(line[i + 1] - line[i]) < HELD;
+        for (let i = k + 1; ok && i < k + ha; i++) ok = Math.abs(line[i] - c) < HELD;
+        if (ok) out.push({ t: k, n: c });
       }
       return out.sort((p, q) => p.t - q.t);
     }
+    // BEFORE and AFTER in ticks at the score's rate
+    function ticksBefore() { return Math.max(1, Math.round(BEFORE * rate)); }
+    function ticksAfter() { return Math.max(2, Math.round(AFTER * rate)); }
 
     function notesOf(x) {
       const l = lanes.find((q) => q.x === x);
@@ -733,5 +758,68 @@
     return view;
   }
 
-  root.NoteBounce = { create };
+  // ------------------------------------------------------------------ for a player
+  // A voice of a score from what a chip did at each tick, for a chip with no gate to say where a
+  // note starts. A note starts where the voice comes on, where it gets louder by LOUDER or more
+  // from one tick to the next (a driver starting a note with an envelope of its own), and where
+  // the chip restarts it; score() adds the steps in its pitch that hold.
+  const C0 = 440 * Math.pow(2, -57 / 12);         // note 0, as the SID player numbers them
+  const LOUDER = 0.2;
+  function voice(v) {
+    const n = v.hz.length, line = new Float32Array(n), level = new Float32Array(n), notes = [];
+    let was = 0;
+    for (let k = 0; k < n; k++) {
+      const hz = v.hz[k], lv = clamp(v.level[k] || 0, 0, 1), on = hz > 0 && lv >= HEARD;
+      line[k] = on ? 12 * Math.log2(hz / C0) : NaN;
+      level[k] = lv;
+      if (on && (was < HEARD || lv - was >= LOUDER || (v.start && v.start[k]))) notes.push({ t: k, n: line[k] });
+      was = on ? lv : 0;
+    }
+    return { notes, line, level };
+  }
+
+  // The view as a music player shows it, in a box of the page's: the canvas, sized for the screen
+  // (a little taller than wide on a phone held upright, wide on a computer), and a Full screen
+  // button in its corner where the browser has full screen. It is drawn again whenever the box
+  // changes size. The button's look is set firmly, so that a page's own rule for the buttons in
+  // its player does not reach it.
+  const STYLE = `
+.nb-stage{position:relative}
+.nb-stage[hidden]{display:none}
+.nb-stage>canvas{display:block;width:100%;height:min(480px,56vw,80vh);border-radius:8px;background:#060607}
+@media (orientation:portrait){.nb-stage>canvas{height:auto;aspect-ratio:10/13;max-height:72vh}}
+.nb-stage:fullscreen{background:#060607}
+.nb-stage:fullscreen>canvas{height:100vh;max-height:none;border-radius:0}
+.nb-stage>.nb-full{position:absolute!important;right:10px!important;top:10px!important;margin:0!important;padding:3px 9px!important;
+  font:11.5px/1.3 var(--fm,'IBM Plex Mono',ui-monospace,Menlo,monospace)!important;background:rgba(30,30,32,.7)!important;
+  color:#e9e7e1!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:7px!important;cursor:pointer}
+.nb-stage>.nb-full:hover{border-color:rgba(255,255,255,.5)!important}
+.nb-stage>.nb-full[hidden]{display:none!important}`;
+  function stage(box, o) {
+    if (!document.querySelector('style.nb-style')) {
+      const st = document.createElement('style');
+      st.className = 'nb-style';
+      st.textContent = STYLE;
+      document.head.appendChild(st);
+    }
+    box.classList.add('nb-stage');
+    box.innerHTML = '<canvas role="img" aria-label="A ball for each voice hopping from note to note as they play"></canvas>' +
+      '<button type="button" class="nb-full" data-full hidden>Full screen</button>';
+    const view = root.NoteBounce.create(box.querySelector('canvas'), o);   // as a page sees it, wrapped or not
+    const full = box.querySelector('[data-full]');
+    full.hidden = !document.fullscreenEnabled;
+    full.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (box.requestFullscreen) box.requestFullscreen().catch(() => {});
+    });
+    document.addEventListener('fullscreenchange', () => {
+      full.textContent = document.fullscreenElement === box ? 'Exit full screen' : 'Full screen';
+    });
+    if (root.ResizeObserver) new ResizeObserver(view.redraw).observe(box);
+    else root.addEventListener('resize', view.redraw);
+    view.box = box;
+    return view;
+  }
+
+  root.NoteBounce = { create, stage, voice };
 })(typeof window !== 'undefined' ? window : globalThis);
