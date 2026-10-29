@@ -5305,7 +5305,7 @@
   {
    "address": 13540,
    "type": "line",
-   "text": "Handler for object state 1. Counts the delay $32D1,x down; at 0 it copies one byte of the picture strip chosen by the step $32EA,x (offset from the table $3311, two bytes per step) into three rows of the object's character data, then calls $35CE for nine cells to shift them left by a byte. It adds 1 to the step; at $18 it sets state 2, the delay $3C and the step 0."
+   "text": "Handler for object state 1. Counts the delay $32D1,x down; at 0 it copies three bytes of the picture strip, at +0, +8 and +$10 of the object's base ($32D6/$32DB,x) plus the offset for the step $32EA,x (from the table $3311, two bytes per step), into byte 7 of the object's cells 6, 7 and 8 (+$37, +$3F and +$47 of its character data), then calls $35CE for its nine cells to shift them left by a byte. It adds 1 to the step; at $18 it sets state 2, the delay $3C and the step 0."
   },
   {
    "address": 13688,
@@ -5340,12 +5340,12 @@
   {
    "address": 14143,
    "type": "line",
-   "text": "Types the text at $41F1 on the screen from $CCCE (a space code gives 0 here, any other code gets $75 added), with the method of show_briefing ($23DC): delays of $3C and $14 first, then one character every $32 delay units and a step of $50 (two rows) for each line. Fire stops the typing once 30 characters have been typed ($23DA counts down from $1E); at the end of the text it waits for fire. It then sets $2203 to 1 and waits $FA. It uses the index $23DB. Called by the setup $37C9 at $38F8."
+   "text": "Types the text at $41F1 on the screen from $CCCE (a space code gives 0 here, any other code gets $75 added), with the method of show_briefing ($23DC): delays of $3C and $14 first, then one character every $32 delay units and a step of $50 (two rows) for each line. Fire stops the typing once 30 passes of the loop have run ($23DA counts down from $1E, and each line end takes a pass, so 29 characters and the first line end); at the end of the text it waits for fire. It then sets $2203 to 1 and waits $FA. It uses the index $23DB. Called by the setup $37C9 at $38F8."
   },
   {
    "address": 14281,
    "type": "line",
-   "text": "Setup of the mask game, called by the end sequence $2AD5. Sets $2203=1, interrupts off, $01=$35, VIC bank 3, $D018=$30, the cursor X $30AE=$B1 and Y $30AD=$71, the pointer $0E/$0F=$CD53 and the timer digits $2AD0-$2AD2 to 9, 9 and 3; fills $FE00-$FEFF with $AA; clears the tables $30CE and $30DB (13 bytes each), many flags and the object states $32CC-$32D0; stops the sound; sets bit 3 of every byte of the colour table $3BC1 and 9 in its first $2D; clears $45F5-$475C, swaps with $41B1, clears $002A-$0100, fills the screen and colour RAM; types the lab text $373F, shows $29F1, draws screen A $3669, the panel $218F and picture B $4334; places sprites 0 and 1, starts the music ($B0C8), sets the NMI vector $2183 and the IRQ vector $397C on line $CD, and enables the raster interrupt."
+   "text": "Setup of the mask game, called by the end sequence $2AD5. Sets $2203=1, interrupts off, $01=$35, VIC bank 3, $D018=$30, the cursor X $30AE=$B1 and Y $30AD=$71, the pointer $0E/$0F=$CD53 and the timer digits $2AD0-$2AD2 to 9, 9 and 3; fills $FE00-$FEFF with $AA; clears the tables $30CE and $30DB (13 bytes each), many flags and the object states $32CC-$32D0; stops the sound; sets bit 3 of every byte of the colour table $3BC1 and 9 in its first $2D; clears $45F5-$475C, swaps with $41B1, clears $002A-$0100, fills the screen and colour RAM; types the lab text $373F, shows $29F1, draws screen A $3669, the panel $218F and picture B $4334; places sprites 0 and 1, initialises the sound-effect driver ($B0C8), sets the NMI vector $2183 and the IRQ vector $397C on line $CD, and enables the raster interrupt."
   },
   {
    "address": 14715,
@@ -5425,7 +5425,7 @@
   {
    "address": 16384,
    "type": "line",
-   "text": "Picture bytes of the mask game's objects ($4000-$41B0, 433 bytes). object_slide_in ($34E4) reads three bytes from here at each step: the address is the object's base ($4019, $4049, $4061 or $4079, set by $3377) plus the offset from mask_strip_offsets, and the bytes at +0, +8 and +$10 go to three rows of the object's character data; object_flip ($3412) copies from the blocks at $4001, $4019 and $4031 (and $90 and $120 after them). No traced code reads the first byte, $4000."
+   "text": "Picture bytes of the mask game's objects ($4000-$41B0, 433 bytes). object_slide_in ($34E4) reads three bytes from here at each step: the address is the object's base ($4019, $4049, $4061 or $4079, set by $3377) plus the offset from mask_strip_offsets, and the bytes at +0, +8 and +$10 go to byte 7 of the object's cells 6, 7 and 8 (+$37, +$3F and +$47 of its character data); object_flip ($3412) copies from the blocks at $4001, $4019 and $4031 (and $90 and $120 after them). No traced code reads the first byte, $4000."
   },
   {
    "address": 16817,
@@ -5450,12 +5450,12 @@
   {
    "address": 17099,
    "type": "line",
-   "text": "Draws picture A, 6 characters wide and 5 high. Copies five rows of 48 bytes from $44C9, $44F9, $4529, $4559 and $4589 to the character data $F8C0, $FA00, $FB40, $FC80 and $FDC0, then for six cells in each of five screen rows copies colours from $45B9, $45BF, $45C5, $45CB, $45D1 to colour RAM $DB18, $DB40, $DB68, $DB90, $DBB8 and character codes from $45D7, $45DD, $45E3, $45E9, $45EF to the screen $CF18, $CF40, $CF68, $CF90, $CFB8. Called by $4272 (twice)."
+   "text": "Draws picture A, 6 characters wide and 5 high. Copies five rows of 48 bytes from $44C9, $44F9, $4529, $4559 and $4589 to the bitmap rows $F8C0, $FA00, $FB40, $FC80 and $FDC0, then for six cells in each of five screen rows copies colours from $45B9, $45BF, $45C5, $45CB, $45D1 to colour RAM $DB18, $DB40, $DB68, $DB90, $DBB8 and screen colour bytes (two bitmap colours each) from $45D7, $45DD, $45E3, $45E9, $45EF to the screen $CF18, $CF40, $CF68, $CF90, $CFB8. Called by $4272 (twice)."
   },
   {
    "address": 17204,
    "type": "line",
-   "text": "Draws picture B in the same layout as $42CB: five rows of 48 bytes from $439D, $43CD, $43FD, $442D and $445D to $F8C0, $FA00, $FB40, $FC80 and $FDC0, colours from $448D, $4493, $4499, $449F, $44A5 to $DB18 ... $DBB8 and character codes from $44AB, $44B1, $44B7, $44BD, $44C3 to $CF18 ... $CFB8 (six cells per row). Called by draw_panel ($218F, at $21B0) and by the setup $37C9 at $3919."
+   "text": "Draws picture B in the same layout as $42CB: five rows of 48 bytes from $439D, $43CD, $43FD, $442D and $445D to $F8C0, $FA00, $FB40, $FC80 and $FDC0, colours from $448D, $4493, $4499, $449F, $44A5 to $DB18 ... $DBB8 and screen colour bytes (two bitmap colours each) from $44AB, $44B1, $44B7, $44BD, $44C3 to $CF18 ... $CFB8 (six cells per row). Called by draw_panel ($218F, at $21B0) and by the setup $37C9 at $3919."
   },
   {
    "address": 17309,
@@ -5470,7 +5470,7 @@
   {
    "address": 17579,
    "type": "line",
-   "text": "Picture B character codes: five rows of 6 bytes ($44AB, $44B1, $44B7, $44BD, $44C3), copied to the screen $CF18 ... by $4334."
+   "text": "Picture B screen colour bytes (two bitmap colours each, for the multicolour panel): five rows of 6 bytes ($44AB, $44B1, $44B7, $44BD, $44C3), copied to the screen $CF18 ... by $4334."
   },
   {
    "address": 17609,
@@ -5485,7 +5485,7 @@
   {
    "address": 17879,
    "type": "line",
-   "text": "Picture A character codes: five rows of 6 bytes ($45D7, $45DD, $45E3, $45E9, $45EF), copied to the screen $CF18 ... by $42CB."
+   "text": "Picture A screen colour bytes (two bitmap colours each, for the multicolour panel): five rows of 6 bytes ($45D7, $45DD, $45E3, $45E9, $45EF), copied to the screen $CF18 ... by $42CB."
   },
   {
    "address": 17909,
@@ -5505,12 +5505,12 @@
   {
    "address": 19957,
    "type": "line",
-   "text": "Screen A: 18 rows of 28 character codes, drawn to $CC2E ... by $3669. A tile map; not decoded."
+   "text": "Screen A: 18 rows of 28 character codes, drawn to $CC2E ... by $3669, which copies them as they are, one code to a cell."
   },
   {
    "address": 20461,
    "type": "line",
-   "text": "Screen B: 16 rows of 28 character codes, drawn to $CC2E ... by $36D4. A tile map; not decoded."
+   "text": "Screen B: 16 rows of 28 character codes, drawn to $CC2E ... by $36D4, which copies them as they are, one code to a cell."
   },
   {
    "address": 20909,
@@ -5565,7 +5565,7 @@
   {
    "address": 51200,
    "type": "line",
-   "text": "Second screen matrix (the first 1,000 of these 1,016 bytes), filled with 0 by $22D4 and with $BE by the wipe $1FB6. The video chip never shows it in this level ($D018 is always $30, which selects $CC00). In the mask game the area from $C800 holds the captured glyphs (72 bytes a slice, $3095) and swap_font_c ($2E06) exchanges it with the character set."
+   "text": "Second screen matrix (the first 1,000 of these 1,016 bytes), filled with 0 by $22D4 and with $BE by the wipe $1FB6. The video chip never shows it in this level (the high nibble of $D018 is always 3, which selects $CC00). In the mask game the area from $C800 holds the captured glyphs (72 bytes a slice, $3095) and swap_font_c ($2E06) exchanges it with the character set."
   },
   {
    "address": 52216,
@@ -5575,12 +5575,12 @@
   {
    "address": 52224,
    "type": "line",
-   "text": "The screen matrix that the video chip shows ($D018=$30): 25 rows of 40 characters. The playfield, the panel texts, the story, the game over text and the mask game's screens are written into it."
+   "text": "The screen matrix that the video chip shows ($D018=$30): 25 rows of 40 characters. The playfield, the panel's bitmap colour bytes (rows 19 to 24), the story, the continue and game over texts and the mask game's screens are written into it."
   },
   {
    "address": 53240,
    "type": "line",
-   "text": "The eight sprite pointers of the displayed screen: sprites 0 to 2 are the chopper (or the time bar), 3 the player, 4 the shot, 5 and 6 the obstacle; in the mask game sprite 0 is the cursor and sprites 1 to 4 the result sprites."
+   "text": "The eight sprite pointers of the displayed screen: sprites 0 to 2 are the chopper (or the time bar), 3 the player, 4 the shot, 5 and 6 the obstacle; while show_picture ($25F3) runs, all eight show the sprite picture (banner_pointers, $26E7); in the mask game sprite 0 is the cursor and sprites 1 to 4 the result sprites."
   },
   {
    "address": 57344,
