@@ -4865,17 +4865,17 @@
   {
    "address": 10988,
    "type": "line",
-   "text": "Set to 1 by $2BC9 when a matched slice has the type 2 in $30DB; cleared by $37C9 and $2BC9."
+   "text": "Set to 1 by $2BC9 when a matched slice has the type 2 in $30DB; cleared by $2BC9 (at $2C01) before it goes through the flags."
   },
   {
    "address": 10989,
    "type": "line",
-   "text": "Set to 1 by $2BC9 when a matched slice has the type 1 in $30DB; cleared by $37C9 and $2BC9."
+   "text": "Set to 1 by $2BC9 when a matched slice has the type 1 in $30DB; cleared by $2BC9 (at $2C04) before it goes through the flags."
   },
   {
    "address": 10990,
    "type": "line",
-   "text": "Set to 1 by $2BC9 when a matched slice has a type other than 1 and 2 in $30DB; cleared by $37C9 and $2BC9."
+   "text": "Set to 1 by $2BC9 when a matched slice has a type other than 1 and 2 in $30DB; cleared by $2BC9 (at $2C07) before it goes through the flags."
   },
   {
    "address": 10991,
@@ -4885,7 +4885,7 @@
   {
    "address": 10992,
    "type": "line",
-   "text": "Frames until $2B02 prints the next character of \"scanning\": reloaded with $46 and counted down."
+   "text": "Calls of $2B02 left before it prints the next character of \"scanning\": reloaded with $46 when it prints and counted down on each other call, so a character is printed every $47 calls (one call per pass of the wait loop $2BC9)."
   },
   {
    "address": 10993,
@@ -4910,12 +4910,12 @@
   {
    "address": 11103,
    "type": "line",
-   "text": "Two texts in the letter codes of the closing screens (lower-case ASCII, '.' is $7B, a space is $82, $FF ends a text; the printers add $15 to get the screen code): \"insufficient data\" at $2B5F-$2B70, printed by $2B83, and \"to generate mask.\" at $2B71-$2B82, printed by $2BA5. The address $2B67, inside the first text, is the starting operand of the self-modified JSRs at $17DF, $1839 and $33FC."
+   "text": "Two texts in the letter codes of the closing screens (lower-case ASCII, '.' is $7B, a space is $82, $FF ends a text; the printers add $15 to get the screen code): \"insufficient data\" at $2B5F-$2B70, printed by $2B83, and \"to generate mask.\" at $2B71-$2B82, printed by $2BA5. The address $2B67, inside the first text, is the starting operand of the self-modified JSR at $33FC (the ones at $17DF and $1839 hold $185F and $195C)."
   },
   {
    "address": 11139,
    "type": "line",
-   "text": "Prints \"insufficient data\" from $2B5F at $CD24 plus the index $2AEF with colour $0F at $D924 plus the index, one character at a time after a delay of $32 ($217A), adding $15 to each code, until the code $FF; it repeats by jumping back to its start. The entry is at the LDA #$32, whose operand $2B84 the file also lists as a routine. Called by $2CAB at $2CDB."
+   "text": "Prints \"insufficient data\" from $2B5F at $CD24 plus the index $2AEF with colour $0F at $D924 plus the index, one character at a time after a delay of $32 ($217A), adding $15 to each code, until the code $FF; it repeats by jumping back to its start. Called by $2CAB at $2CDB."
   },
   {
    "address": 11173,
@@ -4930,12 +4930,12 @@
   {
    "address": 11208,
    "type": "line",
-   "text": "Countdown of $2BC9: reloaded with $D2 each time it reaches 0, so the toggle $2BC7 changes every $D3 calls."
+   "text": "Countdown of $2BC9: reloaded with $D2 each time it reaches 0, so the toggle $2BC7 changes every $D3 passes of the wait loop of $2BC9."
   },
   {
    "address": 11209,
    "type": "line",
-   "text": "Waits for the scan to finish and rates it. Every $D3 calls it toggles $2BC7 and swaps the colours $0D and $0A in the colour RAM bytes $DA9F and $DA9E; each call runs $2B02 and waits $0A ($217A), and it repeats until $30CD is not zero. It then goes through the twelve match flags $30CE-$30D9: for each flag that is set it tests the slice type in $30DB (same index) and sets $2AEC (type 2), $2AED (type 1) or $2AEE (any other). It stores in $0A10: 0 if $2AEC is clear; otherwise 1 when exactly one of $2AED and $2AEE is set, 2 when both are, and 0 when neither is. Called by $2C5C at $2C8A."
+   "text": "Waits for the scan to finish and rates it. It loops by branching back to its own start: every $D3 passes it toggles $2BC7 and swaps the colours $0D and $0A in the colour RAM bytes $DA9F and $DA9E; each pass runs $2B02 and waits $0A ($217A), and it repeats until $30CD is not zero. It then goes through the twelve match flags $30CE-$30D9: for each flag that is set it tests the slice type in $30DB (same index) and sets $2AEC (type 2), $2AED (type 1) or $2AEE (any other). It stores in $0A10: 0 if $2AEC is clear; otherwise 1 when exactly one of $2AED and $2AEE is set, 2 when both are, and 0 when neither is. Called by $2C5C at $2C8A."
   },
   {
    "address": 11356,
@@ -4995,7 +4995,7 @@
   {
    "address": 12005,
    "type": "line",
-   "text": "Frames left of the capture flash: set to 4 by $2EEA, counted down by the raster interrupt $3A4A which uses the colours 1 and 1 for $D022/$D023 while it is not zero; cleared by $2EEA after the twelfth capture and by the setup."
+   "text": "Frames left of the capture flash: set to 4 by $2EEA, counted down by the raster interrupt $3A4A which uses the colours 1 and 1 for $D022/$D023 while it is not zero; cleared by $2EEA after the twelfth capture; the setup does not clear it."
   },
   {
    "address": 12006,
@@ -5015,17 +5015,17 @@
   {
    "address": 12009,
    "type": "line",
-   "text": "Countdown set to $0D by $2EEA after a capture; when it is 1 the sound is stopped ($B828) and started again ($B0C8)."
+   "text": "Countdown set to $0D by $2EEA after a capture; when it is 1 the sound is silenced ($B828) and the sound-effect driver is reset with its init $B0C8."
   },
   {
    "address": 12010,
    "type": "line",
-   "text": "Handles the fire button for the mask game, called by the raster interrupt $3A4A (at $3AA9) while $2AD4 is zero. It counts $2EE9 down (at 1 it calls $B828 and $B0C8) and waits for fire to be released while $2EE4 is set. On a new press ($218E bit 4) it plays sound $18 with $B0EE, sets $2EE9=$0D, $2EE4=1, $2EE5=4 and $2EE7=$11, takes the destination pointer from $3095 by twice the slice number $2EE6 and copies with $3047 the glyphs of the 3 by 3 characters at ($0E) into it. It then runs $2F84 and adds 1 to $2EE6; at 12 it sets $2AD4 to 1, clears $2EE5 and runs $30B0."
+   "text": "Handles the fire button for the mask game, called by the raster interrupt $3A4A (at $3AA9) while $2AD4 is zero. It counts $2EE9 down (at 1 it calls $B828 and $B0C8) and waits for fire to be released while $2EE4 is set. On a new press ($218E bit 4) it plays sound effect 6 (X = $18) with $B0EE, sets $2EE9=$0D, $2EE4=1, $2EE5=4 and $2EE7=$11, takes the destination pointer from $3095 by twice the slice number $2EE6 and copies with $3047 the glyphs of the 3 by 3 characters at ($0E) into it. It then runs $2F84 and adds 1 to $2EE6; at 12 it sets $2AD4 to 1, clears $2EE5 and runs $30B0."
   },
   {
    "address": 12163,
    "type": "line",
-   "text": "The type that $2F84 stores in $30DB for a slice: $3377 and the object code ($34D4 and $3622) set it to 2, and $3412 sets it to the value it toggles in $340E (0 or 1)."
+   "text": "The type that $2F84 stores in $30DB for a slice: $3377 and the object code ($34D4 in $3412, and $3621 in $3608 for the target object only) set it to 2, and $3412 sets it to the value it toggles in $340E (0 or 1)."
   },
   {
    "address": 12164,
@@ -5160,22 +5160,22 @@
   {
    "address": 12809,
    "type": "line",
-   "text": "Plays sound effect $1C with $B0EE and keeps X and Y: it stores them in the operands of the LDY #$00 and LDX #$00 at $3214 and $3216, which it then runs. Called by $30EA twice."
+   "text": "Plays sound effect 7 (X = $1C) with $B0EE and keeps X and Y: it stores them in the operands of the LDY #$00 and LDX #$00 at $3214 and $3216, which it then runs. Called by $30EA twice."
   },
   {
    "address": 12825,
    "type": "line",
-   "text": "Moves the cursor with the joystick copy $218E, called by the raster interrupt $39E3 (at $3A37) while $2AD4 is zero. It toggles $3208 and acts only when that gives 0. Up (bit 0) takes 8 off the Y $30AD down to $3C and $28 off the pointer $0E/$0F; down (bit 1) adds 8 up to $B4 and $28; left (bit 2) takes 8 off the X $30AE down to $46 and 1 off the pointer; right (bit 3) adds 8 up to $F6 and 1. It then writes X and Y to $D000/$D001 (with $D010=0), sets the pointer $CFF8=$BA and the colour $D027=1."
+   "text": "Moves the cursor with the joystick copy $218E, called by the raster interrupt $39E3 (at $3A37) while $2AD4 is zero. It toggles $3208 and acts only when that gives 0. Up (bit 0) takes 8 off the Y $30AD unless the result would be below $3C, and $28 off the pointer $0E/$0F; down (bit 1) adds 8 unless the result would be $B4 or more, and $28; left (bit 2) takes 8 off the X $30AE unless the result would be below $46, and 1 off the pointer; right (bit 3) adds 8 unless the result would be $F6 or more, and 1. From the start ($B1, $71) the cursor stays at X $49 to $F1 and Y $41 to $B1. It then writes X and Y to $D000/$D001 (with $D010=0), sets the pointer $CFF8=$BA and the colour $D027=1."
   },
   {
    "address": 13004,
    "type": "line",
-   "text": "State of each of the five objects: set to 1 by $3377, to 2 by $34E4, to 3 by $3412 (at $34DB) and to 0 by $3608. $33E9 uses it to pick the handler from the table $3405."
+   "text": "State of each of the five objects: set to 1 by $3377, to 2 by $34E4, to 3 by $3412 (at $34DB) and to 0 by $3608 and by the setup $37C9. $3377 starts a new set when all five are 0. $33E9 uses it to pick the handler from the table $3405."
   },
   {
    "address": 13009,
    "type": "line",
-   "text": "Delay of each object: a random value 0 to 31 set by $3377; the handlers at $3412 and $34E4 count it down."
+   "text": "Delay of each object: a random value 0 to 31 set by $3377, and set to $3C by $34E4 when the slide-in ends (state 2); the handlers at $3412 and $34E4 count it down."
   },
   {
    "address": 13014,
@@ -5200,7 +5200,7 @@
   {
    "address": 13034,
    "type": "line",
-   "text": "Per-object step counter cleared by $3377 and counted up by $34E4 (to $18) and $3608 (to $15); the match tests $2FB8 and the others need the counter of the target object below 5."
+   "text": "Per-object step counter cleared by $3377, counted up by $34E4 (0 to $17; it is cleared again when the count reaches $18 and the object goes to state 2) and by $3608 (up to $14; at $15 the object goes to state 0); the match tests $2FB8 and the others need the counter of the target object below 5."
   },
   {
    "address": 13039,
@@ -5220,7 +5220,7 @@
   {
    "address": 13073,
    "type": "line",
-   "text": "24 offsets of two bytes (low, high), one for each step of an object's slide-in: 0 to 7, then $90 to $97, then $120 to $127. $34E4 reads the pair for the step in $32EA,x (at $34F5 and $34FB) and adds it to the object's base address $32D6/$32DB,x, so the three groups of eight steps read the picture bytes $4019-$4090, $40A9-$4120 and $4139-$41B0 (for the chosen object; the other bases give the same offsets from $4049, $4061 and $4079)."
+   "text": "24 offsets of two bytes (low, high), one for each step of an object's slide-in: 0 to 7, then $90 to $97, then $120 to $127. $34E4 reads the pair for the step in $32EA,x (at $34F5 and $34FB) and adds it to the object's base address $32D6/$32DB,x, so the three groups of eight steps read the picture bytes $4019-$4030, $40A9-$40C0 and $4139-$4150 (three bytes a step, at +0, +8 and +$10) (for the chosen object; the other bases give the same offsets from $4049, $4061 and $4079)."
   },
   {
    "address": 13121,
