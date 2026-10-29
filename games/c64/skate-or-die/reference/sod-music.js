@@ -17,6 +17,51 @@ const SODMUSIC = {
     jam: { init: 0xE000, queue: 0xE03E, update: 0xE075, vars: 0x123E },
     joust: { init: 0x22C8, queue: 0x2306, update: 0x233D, vars: 0x11 },
   },
+  // The title tune ($4576 music_init, $457C music_play once a frame), with its sampled channel: the
+  // NMI sample_nmi ($5106) from CIA 2's timer A writes four bits at a time into the SID's volume, so
+  // the player calls play() once every M.period cycles (sid.js's period) and the driver counts the
+  // timer down itself, runs the NMI at each underflow, and runs music_play every 19,656 cycles. The
+  // timer follows the writes the game makes: $DD04/$DD05 the latch (the high byte loads a stopped
+  // timer), $DD0E bit 0 start and bit 4 force load, $DD0D the mask (bit 7 sets the bits given).
+  createTitleDriver: function (M, C64Cpu) {
+    const P = M.period, FRAME = 312 * 63, mem = new Uint8Array(0x10000), sid = new Uint8Array(25);
+    let writes = [], pending = [], on = false, toFrame = 0;
+    const cia = { latch: 0xFFFF, count: 0xFFFF, run: false, nmi: false };
+    const cpu = new C64Cpu.CPU(mem, { port: 0x35, io: {
+      read: (a) => (a >= 0xD000 && a < 0xD400) || a >= 0xDC00 ? 0 : mem[a],
+      write(a, v) {
+        if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); return; }
+        if (a === 0xDD04) cia.latch = (cia.latch & 0xFF00) | v;
+        else if (a === 0xDD05) { cia.latch = (cia.latch & 0xFF) | v << 8; if (!cia.run) cia.count = cia.latch; }
+        else if (a === 0xDD0D) { if (v & 1) cia.nmi = !!(v & 0x80); }
+        else if (a === 0xDD0E) { cia.run = !!(v & 1); if (v & 0x10) cia.count = cia.latch; }
+        else if (a < 0xDC00) mem[a] = v;
+      },
+    } });
+    return {
+      sid, get writes() { return writes; }, mem, cia,
+      init() {
+        mem.set(M.bytes, M.base); sid.fill(0); writes = []; toFrame = 0;
+        Object.assign(cia, { latch: 0xFFFF, count: 0xFFFF, run: false, nmi: false });
+        cpu.call(0x4576, { d: 0 }, { maxSteps: 1e6 });
+        pending = writes; writes = []; on = true;
+      },
+      stop() { cpu.call(0x4579, { d: 0 }, { maxSteps: 1e6 }); on = false; writes = []; pending = []; },
+      play() {
+        writes = pending; pending = [];
+        if (!on) return;
+        if (toFrame < P) { toFrame += FRAME; cpu.call(0x457C, { d: 0 }, { maxSteps: 1e6 }); }   // a frame starts in this call
+        toFrame -= P;
+        let budget = P;
+        while (cia.run && cia.count < budget) {
+          budget -= cia.count + 1; cia.count = cia.latch;
+          if (cia.nmi) cpu.nmi(0x5106, { maxSteps: 1e5 });
+        }
+        if (cia.run) cia.count -= budget;
+      },
+      playing: () => on,
+    };
+  },
   createDriver: function (M, C64Cpu) {
     const at = M.at || { init: 0x22B7, queue: 0x22F5, update: 0x232C, vars: 0, phrase: 0x35A9 }, v = at.vars;
     const mem = new Uint8Array(0x10000);

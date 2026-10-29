@@ -19,7 +19,12 @@
   <p>The guitars are a fourth channel the SID does not have. The SID has no way to play recorded sound, but it does have a master volume, and changing the volume quickly enough makes a wave of its own. The title loads seven short recordings, four bits a sample (<code>$49F1</code> holds where each starts and loops), and a timer interrupt writes them to the volume register one value at a time (<code>$5106</code>), between 2,200 and 6,700 times a second. The music sets the timer's speed for each note, so the same recording plays at different pitches.</p>
   <div class="plate">
     <div id="samples" class="row"></div>
-    <p class="cap"><b>The seven recordings, from the title's own bytes.</b> Each plays once from its start to its end mark at one fixed rate, a timer of 256 cycles, about 3,850 samples a second; the tune plays them at many rates and loops them while the note lasts. The tune's SID voices are not played here: the page's player cannot model sound made through the volume register, so it would play the tune without its guitars.</p>
+    <p class="cap"><b>The seven recordings, from the title's own bytes.</b> Each plays once from its start to its end mark at one fixed rate, a timer of 256 cycles, about 3,850 samples a second; the tune plays them at many rates and loops them while the note lasts.</p>
+  </div>
+  <p>The whole tune, guitars and all, plays below. The page runs the title's own code: <code>$457C</code> once a frame for the three voices, and, in between, the timer counted down cycle by cycle, with <code>$5106</code> run at each underflow to write the next four bits to the volume. The chip model gives every voice the small steady level a 6581 adds to its output, which is what a change of volume moves, so the volume writes are heard as the recording.</p>
+  <div class="plate">
+    <div id="sid-title"></div>
+    <p class="cap"><b>The title tune, played by the title's own driver and sample interrupt.</b> Checked against the kit's simulated C64 over 3,000 frames from the same memory: the voices' 38,059 register writes are the same, in order. The volume writes are the same for the first 6,643; after that they drift by a sample or so wherever the music stops a recording, because there the count depends on where the timer's interrupts fall against the frame, which neither model times exactly as the machine does.</p>
   </div>
 </section>
 <section id="music">
@@ -100,6 +105,19 @@
       for (let k = 0; k < n; k++) d[k] = (v[Math.floor(k * step)] - 7.5) / 9;
       const src = ac.createBufferSource(); src.buffer = buf; src.connect(ac.destination); src.start();
     };
+  });
+})();
+</script>
+<script>
+(async function () {
+  const root = document.getElementById('sid-title');
+  if (!window.C64Sid || !window.C64Cpu) { root.textContent = 'This player needs the site’s shared scripts, lib/sid.js and lib/cpu6502.js.'; return; }
+  let T; try { T = await SOD.load('title'); } catch (e) { root.textContent = e.message; return; }
+  C64Sid.mount(root, {
+    driver: SODMUSIC.createTitleDriver,
+    data: { base: 0, bytes: Array.from(T.ram), period: 32 },
+    tunes: ['The title tune'],
+    filter: '6581', period: 32, digi: 2,
   });
 })();
 </script>

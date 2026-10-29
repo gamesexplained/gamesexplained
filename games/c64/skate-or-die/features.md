@@ -12,7 +12,7 @@ screenshots are C64-Wiki examples, not captures from the supplied disks.
 - [C64-Wiki](https://www.c64-wiki.com/wiki/Skate_or_Die!), C64-specific modes, controls and screenshots, read 4 October 2026. Its port-2 icon needs comparison with this image: port 1 fire advanced the tested title and port 2 fire did not.
 - C64-Wiki images saved as `reference/wiki-*.png` on 4 October 2026. Source GIFs remain in ignored `work/`.
 - Contributor-supplied research notes, received 4 October 2026; credits and historical claims are leads pending direct source checks.
-- PAL VICE v3.13.2 captures from the contributor's disks: `reference/title-screen.png`, `skate-shop.png`, `town-square.png`, `highjump-play.png`, `race-play.png`, `jam-play.png`, `joust-select.png`, `side1-prompt.png`, 4 October 2026.
+- PAL VICE v3.13.2 captures from the contributor's disks: `reference/title-screen.png`, `skate-shop.png`, `town-square.png`, `highjump-play.png`, `race-play.png`, `jam-play.png`, `joust-select.png`, `side1-prompt.png`, 4 October 2026. `reference/joust-play.png`, one skater riding across the pool while the other holds the pole on the deck, PAL VICE v3.13.2 (`v3.13.2-linux-x86_64-gui.zip`), 29 October 2026.
 
 ## Hub and modes
 
