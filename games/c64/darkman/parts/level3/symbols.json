@@ -4841,32 +4841,32 @@
   {
    "address": 18905,
    "type": "line",
-   "text": "Plays sound effect $1C with $B0EE and keeps X and Y: it stores them in the operands of the LDY #$00 and LDX #$00 at $49E4 and $49E6, which it then runs. Called by $48BA twice."
+   "text": "Plays sound effect 7 (X = $1C) with $B0EE and keeps X and Y: it stores them in the operands of the LDY #$00 and LDX #$00 at $49E4 and $49E6, which it then runs. Called by $48BA twice."
   },
   {
    "address": 18921,
    "type": "line",
-   "text": "Moves the cursor with the joystick copy $0EA6, called by the raster interrupt $51DB while $0F5A is zero. It toggles $49D8 and acts only when that gives 0. Up (bit 0) takes 8 off the Y $487D down to $3C and $28 off the pointer $0E/$0F; down (bit 1) adds 8 up to $B4 and $28; left (bit 2) takes 8 off the X $487E down to $46 and 1 off the pointer; right (bit 3) adds 8 up to $F6 and 1. It then writes X and Y to $D000/$D001 (with $D010=0), sets the pointer $CFF8=$DA and the colour $D027=1."
+   "text": "Moves the cursor with the joystick copy $0EA6, called by the raster interrupt $51DB while $0F5A is zero. It toggles $49D8 and acts only when that gives 0. Up (bit 0) takes 8 off the Y $487D while the result is $3C or more and $28 off the pointer $0E/$0F; down (bit 1) adds 8 while the result stays below $B4, and $28; left (bit 2) takes 8 off the X $487E while the result is $46 or more and 1 off the pointer; right (bit 3) adds 8 while the result stays below $F6, and 1. It then writes X and Y to $D000/$D001 (with $D010=0), sets the pointer $CFF8=$DA and the colour $D027=1."
   },
   {
    "address": 19100,
    "type": "line",
-   "text": "State of each of the five objects: set to 1 by $4B47, 3 by the handler at $4CAB. $4BB9 uses it to pick the handler from the table $4BD5."
+   "text": "State of each of the five objects: set to 1 by $4B47, 2 by object_slide_in ($4D36), 3 by object_flip at $4CAB and back to 0 by object_slide_out ($4E31); $4F9C clears all five. $4BB9 uses it to pick the handler from the table $4BD5."
   },
   {
    "address": 19105,
    "type": "line",
-   "text": "Delay of each object: a random value 0 to 31 set by $4B47; the handlers at $4BE2 and $4CB4 count it down."
+   "text": "Delay of each object: a random value 0 to 31 set by $4B47 before the slide-in, and $3C set by $4CB4 when the object reaches state 2; the handlers at $4CB4 and $4BE2 count it down."
   },
   {
    "address": 19110,
    "type": "line",
-   "text": "Per-object byte set by $4B47 from the table $4B11 ($40, $58 or $70 by $4B17), and $10 for the chosen object. No reader in the dumped routines."
+   "text": "Per-object low byte of the picture source address, set by $4B47 from the table $4B11 ($40, $58 or $70 by $4B17), and $10 for the chosen object. Read by object_slide_in at $4CD2."
   },
   {
    "address": 19115,
    "type": "line",
-   "text": "Per-object byte set by $4B47 from the table $4B14 ($58), and $58 for the chosen object. No reader in the dumped routines."
+   "text": "Per-object high byte of the picture source address, set by $4B47 from the table $4B14 ($58), and $58 for the chosen object. Read by object_slide_in at $4CDA."
   },
   {
    "address": 19120,
@@ -4931,7 +4931,7 @@
   {
    "address": 19384,
    "type": "line",
-   "text": "Index 0 to 4 of the chosen object, set by $4B47 and used by $475F and the match tests."
+   "text": "Index 0 to 4 of the chosen object, set by $4B47 and read by $475F for the match tests, by object_flip ($4BE2) and by object_slide_out ($4DD8)."
   },
   {
    "address": 19385,
@@ -4966,22 +4966,22 @@
   {
    "address": 19425,
    "type": "line",
-   "text": "A bare RTS that object_flip ($4BE2) branches to when the object is not the one the cursor $4BB8 points at."
+   "text": "A bare RTS that object_flip ($4BE2) branches to when the object is not the chosen one, target_object ($4BB8)."
   },
   {
    "address": 19426,
    "type": "line",
-   "text": "Handler for object state 2. Counts the delay $4AA1,x down; at 0 it sets state 3 ($4CAB). While counting, only the object that the cursor $4BB8 points at acts: at count $32 it toggles $4BDE (copied to $475E), takes the source $57F8 or $5828 and, at count $14, the source $5810 with $475E=2. It then copies 24 rows of three bytes (rows $90 apart in the source, $18 apart at the object's screen position $4AB0/$4AB5,x) to the screen."
+   "text": "Handler for object state 2. Counts the delay $4AA1,x down; at 0 it sets state 3 ($4CAB). While counting, only the chosen object $4BB8 acts: at count $32 it toggles $4BDE (copied to $475E), takes the source $57F8 or $5828 and, at count $14, the source $5810 with $475E=2. It then copies three rows of 24 bytes (three characters each; rows $90 apart in the source, $18 apart in the object's character data at $4AB0/$4AB5,x)."
   },
   {
    "address": 19634,
    "type": "line",
-   "text": "Two bytes written by $4CB4 from the table at $4AE1: the offset of the picture strip for this step. Read back at $4CD5 and $4CDA and added to the object's base address $4AA6/$4AAB,x."
+   "text": "Two bytes written by $4CB4 from the table at $4AE1: the offset of the picture strip for this step. Read back at $4CD5 and $4CDD and added to the object's base address $4AA6/$4AAB,x."
   },
   {
    "address": 19636,
    "type": "line",
-   "text": "Handler for object state 1. Counts the delay $4AA1,x down; at 0 it copies one byte of the picture strip chosen by the step $4ABA,x (offset from the table $4AE1, two bytes per step) into three rows of the object's screen position, then calls $4D9E for nine cells to shift them left by a byte. It adds 1 to the step; at $18 it sets state 2, the delay $3C and the step 0."
+   "text": "Handler for object state 1. Counts the delay $4AA1,x down; at 0, on each call it copies three bytes of the picture (source +0, +8 and +$10, the source being the base $4AA6/$4AAB,x plus the offset for the step $4ABA,x from the table $4AE1) into byte 7 of the object's last three characters (pointer + $37, + $3F and + $47), then calls $4D9E for the nine characters, which moves each character's bytes up one place. It adds 1 to the step; at $18 it sets state 2, the delay $3C and the step 0."
   },
   {
    "address": 19784,
@@ -5001,7 +5001,7 @@
   {
    "address": 19928,
    "type": "line",
-   "text": "Handler for object state 3. Calls $4D48 for nine cells starting at the object's screen position plus $40 and going down by 8, then clears three bytes at the position. For the object that the cursor $4BB8 points at it sets $475E to 2. It adds 1 to the step $4ABA,x; at $15 it sets the state back to 0."
+   "text": "Handler for object state 3. Calls $4D48 for nine characters starting at the object's character-data pointer plus $40 and going down by 8, then clears byte 0 of its first three characters (pointer +0, +8 and +$10). For the chosen object $4BB8 it sets $475E to 2. It adds 1 to the step $4ABA,x; at $15 it sets the state back to 0."
   },
   {
    "address": 20025,
@@ -5016,27 +5016,27 @@
   {
    "address": 20239,
    "type": "line",
-   "text": "Text index of the typing routines $279D and $4F11; cleared at their start."
+   "text": "Text index of the typing routines $279D, $4F11 and $5AC4; cleared at their start."
   },
   {
    "address": 20240,
    "type": "line",
-   "text": "Counts down from $1E in $279D and $4F11; at 0 the fire button can stop the typing."
+   "text": "Counts down from $1E in $279D, $4F11 and $5AC4; at 0 the fire button can stop the typing."
   },
   {
    "address": 20241,
    "type": "line",
-   "text": "Types the text at $31C3 (a space code gives 0 here) on the screen from $CCCE, with the same method as $279D: delays of $3C and $14 first, then one character every $32 delay units and 2 rows per line, fire stops it after 30 characters, and at the end it waits for fire. It sets $4F9B to 1 and waits $FA. It uses the index $4F0F and the count $4F10. Called by $4F9C at $50EE."
+   "text": "Types the text at $31C3 (a space code gives 0 here, other codes get $75 added) on the screen from $CCCE, in the way $279D does, after first waiting $3C and $14: one character every $32 delay units and 2 rows per line; fire stops it once 30 passes (characters and line ends) have gone by, and at the end it waits for fire. It sets $4F9B to 1 and waits $FA. It uses the index $4F0F and the count $4F10. Called by $4F9C at $50EE."
   },
   {
    "address": 20379,
    "type": "line",
-   "text": "Set to 1 by $279D, $4F11 and $4F9C, cleared by $4F9C near its end. No reader in the dumped code."
+   "text": "Set to 1 by $279D, $4F11, $5AC4 and $4F9C, cleared by $4F9C near its end. No reader in the dumped code."
   },
   {
    "address": 20380,
    "type": "line",
-   "text": "Setup of the mask game, called by $4286. Sets $4F9B=1, interrupts off, $01=$35, VIC bank 3, $D018=$30, the cursor X $487E=$B1 and Y $487D=$71, the pointer $0E/$0F=$CD53, adds 3 to score digit 2 with $251D and draws the score, sets the timer digits $0EC9=9, $0ECA=9, $0ECB=3, fills $FE00-$FEFF with $AA, clears the state tables $489E and $48AB (13 bytes each) and many flags, stops the sound, sets bit 3 of every byte of the colour table $53B8 and 9 in its first $2D bytes, clears $35B7-$36FE, swaps with $3183, clears $002A-$0100 and the SID registers, then shows the texts $4F11 and $41A7, draws screen A ($4E39), the picture $32F6 and the energy bar, sets sprites 0 and 1, the NMI vector to $0E9B and the IRQ vector to $5177 on line $CD, and enables the raster interrupt."
+   "text": "Setup of the mask game, called by $4286. Sets $4F9B=1, interrupts off, $01=$35, VIC bank 3, $D018=$30, the cursor X $487E=$B1 and Y $487D=$71, the pointer $0E/$0F=$CD53, adds 3 to score digit 2 with $251D and draws the score, sets the timer digits $0EC9=9, $0ECA=9, $0ECB=3, fills $FE00-$FEFF with $AA, clears the state tables $489E and $48AB (13 bytes each) and many flags, stops the sound, sets bit 3 of every byte of the colour table $53B8 and 9 in its first $2D bytes, clears $35B7-$371E, swaps with $3183, clears $002A-$0100 and the SID registers, then shows the texts $4F11 and $41A7, draws screen A ($4E39), the picture $32F6 and the energy bar, sets sprites 0 and 1, the NMI vector to $0E9B and the IRQ vector to $5177 on line $CD, and enables the raster interrupt."
   },
   {
    "address": 20854,
@@ -5101,7 +5101,7 @@
   {
    "address": 22472,
    "type": "line",
-   "text": "Picture bytes of the mask game's objects. object_slide_in ($4CB4) reads three bytes from here at each step: the address is the object's base ($5810, $5840, $5858 or $5870, set by $4B47 from the tables $4B11 and $4B14) plus the offset from mask_strip_offsets, and the bytes at +0, +8 and +$10 go to three rows of the object's character data. In use are $5810 to $5887, $58A0 to $5917 and $5930 to $59A7 (eight steps of 24 bytes each, in each of the three groups). No traced code reads $57C8 to $580F, $5888 to $589F or $5918 to $592F."
+   "text": "Picture bytes of the mask game's objects. object_slide_in ($4CB4) reads three bytes from here at each step: the address is the object's base ($5810, $5840, $5858 or $5870, set by $4B47 from the tables $4B11 and $4B14) plus the offset from mask_strip_offsets, and the bytes at +0, +8 and +$10 go to byte 7 of the object's last three characters. It reads $5810 to $5887, $58A0 to $5917 and $5930 to $59A7. object_flip ($4BE2) copies three rows of 24 bytes, $90 apart, from $57F8, $5810 or $5828, so it also reads $57F8 to $580F, $5888 to $589F and $5918 to $592F. No traced code reads $57C8 to $57F7."
   },
   {
    "address": 22952,
@@ -5131,7 +5131,7 @@
   {
    "address": 23091,
    "type": "line",
-   "text": "Read by the main loop at $0A67 after the call of $5A34; when non-zero the main loop restarts at $0A23. $5A34 itself is not annotated here."
+   "text": "Set by $5A34: cleared at its start and set to 1 when fire is pressed. Read by the main loop at $0A67 after the call of $5A34; when non-zero the main loop restarts at $0A23."
   },
   {
    "address": 23092,
@@ -5141,7 +5141,7 @@
   {
    "address": 23236,
    "type": "line",
-   "text": "Types the story text at $5B58 on the screen, one character at a time. Sets the screen pointer $14/$15 to $CC56 and the index $4F0F to 0, waits, fills the screen $CC00 with 0 and colour RAM with 7, and sets the counter $4F10 to $1E. Each character takes a delay of $32 ($0E92): a $20 code gives 0 and any other code gets $66 added. While $4F10 is above 0 the fire button ($DC00 bit 4) is ignored; after $1E characters a press of fire jumps to the end. A $FF ends a line (the pointer moves down $50 bytes, two screen rows) and a second $FF ends the text; the routine then waits for a fire press, sets $4F9B to 1 and waits twice $FF. Called only by $59A8, which nothing calls."
+   "text": "Types the story text at $5B58 on the screen, one character at a time. Sets the screen pointer $14/$15 to $CC56 and the index $4F0F to 0, waits, fills the screen $CC00 with 0 and colour RAM with 7, and sets the counter $4F10 to $1E. Each character takes a delay of $32 ($0E92): a $20 code gives 0 and any other code gets $66 added. While $4F10 is above 0 the fire button ($DC00 bit 4) is ignored; once $1E passes (characters and line ends) have gone by, a press of fire jumps to the end. A $FF ends a line (the pointer moves down $50 bytes, two screen rows) and a second $FF ends the text; the routine then waits for a fire press, sets $4F9B to 1 and waits twice $FF. Called only by $59A8, which nothing calls."
   },
   {
    "address": 23384,
@@ -5226,7 +5226,7 @@
   {
    "address": 63104,
    "type": "line",
-   "text": "Sprite shape for pointer $DA (64 bytes): a rectangular outline. $422B, $49B9 and $4A91, in the mask game, write $DA to sprite 0's pointer $CFF8; $49B9 also sets that sprite's colour to 1."
+   "text": "Sprite shape for pointer $DA (64 bytes): a rectangular outline. $422B, $49B9 and $4A91, in the mask game, write $DA to sprite 0's pointer $CFF8; $49B9 and $4A91 also set that sprite's colour to 1."
   },
   {
    "address": 63168,
@@ -5251,7 +5251,7 @@
   {
    "address": 63960,
    "type": "line",
-   "text": "Glyph of the counter's left digit ($0ECB), written by $5348."
+   "text": "Glyph of the counter's left digit ($0ECB), written by $5348 in the mask game and by draw_digit ($0EF4) during play."
   },
   {
    "address": 63968,
@@ -5261,12 +5261,12 @@
   {
    "address": 63976,
    "type": "line",
-   "text": "Glyph of the counter's middle digit ($0ECA), written by $5348."
+   "text": "Glyph of the counter's middle digit ($0ECA), written by $5348 in the mask game and by draw_digit ($0EF4) during play."
   },
   {
    "address": 63984,
    "type": "line",
-   "text": "Glyph of the counter's right digit ($0EC9), written by $5348."
+   "text": "Glyph of the counter's right digit ($0EC9), written by $5348 in the mask game and by draw_digit ($0EF4) during play."
   },
   {
    "address": 63992,
@@ -5336,7 +5336,7 @@
   {
    "address": 65280,
    "type": "line",
-   "text": "Sprite shapes for pointers $FC and $FD (128 bytes, 64 each), after the 256 bytes of dissolve_buffer, whose start is the shape for $F8. player_sprites ($1AE0) uses $F8, $FA and $FC for the jumping or thrown-back player facing right and $F9, $FB and $FD facing left (F, F+2 and F+4 from the frame number $1ADB); the result sprites of mask_sprites ($52BB) use $F8 to $FC."
+   "text": "Sprite shapes for pointers $FC and $FD (128 bytes, 64 each), after the 256 bytes of dissolve_buffer, whose start is the shape for $F8. player_sprites ($1AE0) uses $F8, $FA and $FC for the jumping or thrown-back player facing right and $F9, $FB and $FD facing left (F, F+2 and F+4 from the frame number $1ADB); the result sprites of mask_sprites ($52BB) use $F8 to $FB."
   },
   {
    "address": 65408,
