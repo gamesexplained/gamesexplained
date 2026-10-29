@@ -47,7 +47,7 @@
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const fs = require('fs');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { Machine, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.js'));
+const { Machine } = require(path.join(ROOT, 'kit/c64/machine.js'));
 const { Lockstep, describe } = require(path.join(ROOT, 'kit/c64/lockstep.js'));
 const g = game(__dirname);
 g.run('reference/mom-music.js', 'mom-music', 'MoMMusic');
@@ -70,11 +70,10 @@ class MoMMachine extends Machine {
   setup() {
     const self = this;
     const io = { colourWrite: (i, v) => { self.colour[i & 0x3FF] = v & 15; }, ciaWrite: (r, v) => self.ioWrite(0xDC00 + r, v), ciaRead: (r) => self.ioRead(0xDC00 + r) };
-    const out = (c) => { c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; };
     this.hooks[0xE544] = (c) => { ROM.clearScreen(c.m, io); c.cycles += 2000; c.rts(); };
     this.hooks[0xE3BF] = (c) => { ROM.basicInit(c.m); c.cycles += 300; c.rts(); };
     this.hooks[0xFFD2] = (c) => { ROM.chrout(c.m, io, c.a); c.cycles += 60; c.rts(); };
-    this.hooks[0xEA31] = (c) => { const held = ROM.irq(c.m, io); c.cycles += held ? 1400 : 400; out(c); };
+    this.hooks[0xEA31] = (c) => { const held = ROM.irq(c.m, io); c.cycles += held ? 1400 : 400; self.leave(22); };
     // the three ROM reads of random_byte ($2BAA-$2BB3), from the values the page carries
     this.hooks[0x2BAA] = (c) => {
       const i = c.x, j = c.y, k = (j + 3 * i) & 0xFF;
@@ -88,24 +87,6 @@ class MoMMachine extends Machine {
     const t = this.cia[0]; t.lat[0] = 0x4025; t.cnt[0] = 0x4025; t.cr[0] = 0x01; t.mask = 0x01;
     Object.assign(this.vic, { 0x11: 0x1B, 0x16: 0xC8, 0x18: 0x15, 0x20: 0x0E, 0x21: 0x06 });
     this.pra2 = 0x97; this.ddra2 = 0x3F;
-  }
-  tick() {
-    for (let n = 0; ; n++) {
-      if (this.dma) this.dmaCatchUp();
-      this.collide.to(this.cpu.cycles);
-      const ln = Math.floor(this.cpu.cycles / LINE);
-      while (this.lastLine < ln) {
-        this.lastLine++;
-        const l = this.lastLine % LINES;
-        if (l === 0) this.frames++;
-        if (l === this.cmp) this.latch |= 1;
-      }
-      this.ciaCatchUp();
-      const c = this.cia[0];
-      if (this.cpu.i || !((c.icr & c.mask) || (this.latch & this.enable & 1))) return;
-      if (n > 100000) throw new Error('the interrupt was taken 100,000 times without a return to the main program');
-      this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
-    }
   }
 }
 const m = new MoMMachine({ ram: MoMPort.memory(g.listing().ram, IMG), pc: 0x07F9, passAt: 0x08CC, dma: !costFile });
@@ -276,14 +257,9 @@ function measured(t) {
   tallies = {};
 }
 if (costFile) {
-  const irq = m.cpu.irq;
-  m.cpu.irq = function (h, o) {
-    const k = MoMPlay.bandOf(R, m.latch & 1, m.keys.size > 0), c0 = this.cycles;
-    const r = irq.call(this, h, o);
-    const b = bands[k] = bands[k] || [0, 0];
-    b[0] += this.cycles - c0; b[1]++;
-    return r;
-  };
+  const band = [];
+  m.onInterrupt = () => { band.push(MoMPlay.bandOf(R, m.latch & 1, m.keys.size > 0)); };
+  m.onReturn = (mm, v, n) => { const k = band.pop(), b = bands[k] = bands[k] || [0, 0]; b[0] += n; b[1]++; };
 }
 const ls = new Lockstep({
   machine: m, port: P, program: (p) => p.program(), checkpoints: MoMPort.CHECKPOINTS,

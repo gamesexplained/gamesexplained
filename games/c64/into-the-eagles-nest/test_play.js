@@ -57,17 +57,12 @@ const groups = onDisk.map(load);
 const EaglePlay = load('reference/en-play.js');
 const RAM = loadListing(path.join(__dirname, 'listing.json'));
 
-// ---- the game: the kit's C64 with the KERNAL's interrupt as the game depends on it
-const kernalExit = (read) => (c) => { read(0xDC0D); c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 62; };
+// ---- the game: the kit's C64 with the KERNAL's interrupt as the game depends on it: the machine
+// takes it through the KERNAL's entry while the KERNAL is banked in, and the exits at $EA31 and $EA34
+// read $DC0D, which acknowledges CIA 1, and cost 62 cycles with their RTI
 class EagleMachine extends Machine {
   constructor(o) { super(o); this.setup(); }
-  setup() { this.hooks[0xEA31] = this.hooks[0xEA34] = kernalExit((a) => this.ioRead(a)); }
-  kernalIn() { return ((this.cpu.pdata | ~this.cpu.pdir) & 2) !== 0; }
-  take(v) {
-    const c = this.cpu;
-    if (v === 0xFFFE && this.kernalIn()) return c.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
-    return super.take(v);
-  }
+  setup() { this.hooks[0xEA31] = this.hooks[0xEA34] = () => { this.ioRead(0xDC0D); this.leave(62); return false; }; }
   static restore(s, o) { const m = Machine.restore(s, o); Object.setPrototypeOf(m, EagleMachine.prototype); m.setup(); return m; }
 }
 function machine() {

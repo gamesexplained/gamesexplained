@@ -65,7 +65,8 @@ if (require.main === module) {
   const check = (what, got, want) => { if (got !== want) { fails++; console.log('FAIL', what, 'got', got, 'want', want); } else console.log('ok  ', what); };
   const m = new Machine({ ram, pc: 0x1000, passAt: MAIN });
   m.runFrames(10);
-  check('ten frames, ten interrupts at line 0', ram[0x2001], 10);
+  // the tenth comes as the tenth frame ends: taken, its handler not yet begun
+  check('ten frames: nine interrupts at line 0 counted, the tenth just taken', [ram[0x2001], m.cpu.pc.toString(16)].join(), '9,1100');
   check('one at line 16 after each but the last', ram[0x2005], 9);
   check('frames counted', m.frames, 10);
   check('passes counted at passAt', m.passes & 255, ram[0x2000]);
@@ -122,7 +123,7 @@ if (require.main === module) {
     c.joy1 = 0x1F & ~0x08;
     c.runCycles(102 * 100 + 60);
     check('CIA 2 timer B: an NMI every 102 cycles', Math.abs(r2[0x2010] - 100) <= 1, true);
-    check('the machine counted them', c.nmis, r2[0x2010]);
+    check('the machine counted them, one just taken not yet by its handler', c.nmis - r2[0x2010], c.cpu.pc === 0x1200 || c.cpu.pc === 0x1201 ? 1 : 0);
     check('CIA 1 timer A one-shot: one IRQ', r2[0x2011], 1);
     check('joystick port 1 right: $DC01 bit 3 low', r2[0x2012] & 0x0F, 0x07);
     check('$DD00 reads back its outputs, the inputs high', r2[0x2013], 0xFE);

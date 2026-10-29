@@ -1,8 +1,9 @@
 'use strict';
 // A self-test of kit/c64/lockstep.js on a machine that takes interrupts inside a handler
-// (kit/c64/machine.js, nest: true): a program whose raster handler clears I and works for some
+// (kit/c64/machine.js, its default): a program whose raster handler clears I and works for some
 // forty lines while CIA 1's timer interrupts it, beside a port of it written here.
-// - The port, and one with a fault, against the machine with nest and without it.
+// - The port, and one with a fault, against the machine and against it with legacyInterrupts
+//   ("without nest" below), which runs each handler whole.
 // - A byte both handlers write, the raster's handler before the timer's comes in and the timer's
 //   after: the game keeps the timer's, which ends first and so is run first in the port, and the
 //   port keeps it too.
@@ -10,8 +11,9 @@
 // - What replay alone cannot give, with nest: a register of the video chip the raster's handler
 //   sets before the timer's comes in and the timer's after; one the timer's reads that the raster's
 //   set before it came; one the main program sets after the timer's in the same stretch; a byte
-//   the raster's reads after the timer's changed it (irqBytes, in a handler); and a byte the
-//   raster's saves and puts back while the timer's changes it between.
+//   the raster's reads after the timer's changed it (irqBytes, in a handler); a byte the
+//   raster's saves and puts back while the timer's changes it between; and a colour the timer's
+//   writes with its top four bits set, which colour RAM does not keep.
 // - A raster's handler that, every eighth time, resets the stack and jumps to a restart in the main
 //   program, never returning: the port's handler tells its program, which follows.
 // Exits 1 on any failure. node kit/c64/test_lockstep_nest.js
@@ -67,6 +69,7 @@ const CODE = {
     0xAD, 0x20, 0x20, 0x8D, 0x21, 0xD0, 0x8D, 0x27, 0xD0,   // lda $2020 : sta $D021 : sta $D027
     0xAD, 0x20, 0xD0, 0x8D, 0x4A, 0x20,   // lda $D020 : sta $204A
     0xEE, 0x48, 0x20,                  // inc $2048
+    0xAD, 0x20, 0x20, 0x09, 0xF0, 0x8D, 0x00, 0xD8,   // lda $2020 : ora #$F0 : sta $D800    colour RAM keeps the low four bits
     0x60],                             // rts
   0x11B0: [0xAD, 0x20, 0x20, 0x8D, 0x43, 0x20,   // after: lda $2020 : sta $2043    the count the timer moved on in the wait
     0xAD, 0x42, 0x20, 0x8D, 0x44, 0x20,   // lda $2042 : sta $2044    $AA, or the timer's if it came
@@ -105,6 +108,7 @@ function port(fault, listed) {
       P.io.vicWrite(0x21, M[0x2020]); P.io.vicWrite(0x27, M[0x2020]);
       M[0x204A] = P.io.vicRead(0x20);
       M[0x2048] = (M[0x2048] + 1) & 255;
+      P.io.colourWrite(0, M[0x2020] | 0xF0);
       M[0x2042] = M[0x2046] = fault ? (M[0x2020] + 1) & 255 : M[0x2020];
       return;
     }
@@ -131,7 +135,7 @@ function port(fault, listed) {
 
 // The game from its start, run on for a few passes; a lockstep beside it from there.
 function machine(nest, restart) {
-  const m = new Machine({ ram: program(restart), pc: 0x1000, passAt: 0x1040, cia: true, nest });
+  const m = new Machine({ ram: program(restart), pc: 0x1000, passAt: 0x1040, cia: true, legacyInterrupts: !nest });
   m.runUntilPass(q => q.passes >= 3);
   return m;
 }

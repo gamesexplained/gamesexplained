@@ -31,7 +31,7 @@ const START = { 0x32: 0x08, 0x69: 0x8C, 0x7C: 0xC9, 0x7D: 0x3A, 0x87: 0x38, 0x8C
 function boot() {
   const ram = loadListing(path.join(__dirname, 'listing.json'));
   for (const a in START) ram[a] = START[a];
-  return new Machine({ ram, pc: 0x8009, cia: true, dma: true, collide: true, nest: true });
+  return new Machine({ ram, pc: 0x8009, cia: true, dma: true, collide: true });
 }
 
 // the route's joystick, a byte a frame (bits 0-4 up, down, left, right, fire), played from the start

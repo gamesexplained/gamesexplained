@@ -49,18 +49,15 @@ function session(name, after, seed) {
   P.speech_running = () => m.cpu.pc >= 0x8E06 && m.cpu.pc < 0x8E2F;
   const ls = new Lockstep({
     machine: m, port: P, program: P => P.power_on(), passAt: 0x6FF0,
-    checkpoints: [0x6FF0, 0x6329, 0x8DED], irqs: { 0x8E76: 'raster_irq' },
+    // the speech's NMIs are the port's whole phrase (speech_running, above)
+    checkpoints: [0x6FF0, 0x6329, 0x8DED], irqs: { 0x8E76: 'raster_irq', nmi: null },
     chips: ['colour', 'vic', 'sid'], maxFrames: 3000,
   });
   const M = m.ram;
   // the race's sign: the raster interrupt taken in the middle of a pass, not in the frame wait
   const late = new Set();
   let pass = 0;
-  const irq = m.cpu.irq;
-  m.cpu.irq = function (h, o) {
-    if (pass && !(this.pc >= 0x6FEC && this.pc < 0x6FF0)) late.add(pass);
-    return irq.call(this, h, o);
-  };
+  m.onInterrupt = (mm, v) => { if (v === 0xFFFE && pass && !(m.cpu.pc >= 0x6FEC && m.cpu.pc < 0x6FF0)) late.add(pass); };
   // the start, played as the page's "Start at" plays it (GBWarp): keys a frame at a time
   let pokes = null, onMap = 0;
   const open = () => M[0x4D] === 0 && M[0x50] !== 0;

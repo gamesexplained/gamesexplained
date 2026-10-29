@@ -346,7 +346,9 @@ const input = (n, m) => {
   P.io.irqByte = a => { reads++; return irqByte(a); };
   const r = ls.run({ passes: 100, onPass: input });
   check('stand-ins that wait: 100 passes identical', r.ok && r.passes === 100, true);
-  check('the poll read $2001 through irqByte twice a pass, then from memory', reads, 200);
+  // and the line-0 interrupt's stand-in once a pass, as its INC reads it: a handler being run reads
+  // the irqBytes as its game's handler read them (lockstep.js, irqBytes)
+  check('the poll read $2001 through irqByte twice a pass, the interrupt once, then from memory', reads, 300);
   const Q = port();
   Q.poll = standIn(Q, ADDR.POLL, { maxSteps: 20000 });
   let msg = '';

@@ -41,9 +41,9 @@ const UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8, FIRE = 16;
 // frame begins, the page's from the frame it shows (its memory is ahead of it)
 // (the tune's bit 7, a new tune the driver has yet to start, left out: it lasts less than a frame)
 const key = M => M[0x5435] + ',' + (M[0x1600] & 0x7F) + ',' + M[0x543E];
-function beside(frames, input) {
+function beside(frames, input, opts = {}) {
   const rt = SFPage.create({ data, cost });
-  const m = lib.boot({ dma: rec.dma });
+  const m = lib.boot(Object.assign({ dma: rec.dma }, opts));
   const A = [], B = [], cursor = [], odd = [];
   let la = '', lb = '', irqs = 0, read = null;
   const irq = rt.P.irq;
@@ -81,7 +81,9 @@ function sameEvents(what, A, B, slack) {
   sameEvents('the demonstration', r.A, r.B, 5);
 }
 {
-  const r = beside(3000, f => ({ keys: f >= rec.f3[0] && f < rec.f3[1] ? ['F3'] : [], joy: rec.joy[f] }));
+  // the Solution tab's recording replays a byte a frame, on the timing it was made on: the machine's
+  // before it took interrupts as the processor does (test_solution.js)
+  const r = beside(3000, f => ({ keys: f >= rec.f3[0] && f < rec.f3[1] ? ['F3'] : [], joy: rec.joy[f] }), { legacyInterrupts: true });
   // a choice a frame or two sooner than the C64's can catch the cursor's frame a turn of the icon
   // loop sooner, about ten frames
   sameEvents('the Solution tab\'s first 3,000 frames', r.A, r.B, 12);

@@ -264,3 +264,32 @@ page's controls the C64's value read by read, and the polls theirs by
 the clock. From power-on the page then plays the whole route: its 17
 stages in their rooms, at most 19 frames from the route's, and every one
 of the 1,954 reads used.
+
+## Follow-up: the kit's machine takes interrupts as the processor does (29 October 2026)
+
+The kit's C64 now takes interrupts inside a handler by default, takes a
+held line again straight after the RTI, and lets a waiting interrupt in
+one instruction after a `CLI` (#525, #556). The route's joystick, a byte
+a frame, then parted from `route.json` at frame 4,832 and ended with a
+life lost, since a few cycles here and there moved some reads of the
+stick into the next frame.
+
+The route was carried to the new machine a read at a time: the game ran
+with each read of `foot_control` and `suit_control` given the value
+`port/solution.json` kept for it, and the frame's byte became the value
+of the read made in it. Played a frame at a time again, the new joystick
+gives the same 1,954 reads, the same 17 stages in the same rooms and
+places, each within four frames of the old, the same three lives lost,
+and the last message at frame 17,685. Since the reads are the same, the
+check in VICE a read at a time stands for it as it did for the old.
+`route.json`, the Maps page's copy and `port/solution.json` were written
+again from it.
+
+Logging Tal's room, place and both energies at every read on the old
+machine and the new showed two stretches apart. From the 1,465th read
+to the 1,484th Tal has 4 points less energy on the new machine, the
+scenery's touch in room `$14` that VICE took and the old machine lost:
+the collision's interrupt now comes at `$8A25`, outside `scenery_hits`.
+From the 1,187th to the 1,267th, in room `$09`, the suit has 2 points
+less: a collision at the top of the play area that the old machine
+never raised. What VICE did there was not checked.

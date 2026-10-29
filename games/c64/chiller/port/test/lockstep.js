@@ -51,23 +51,21 @@ function run(o) {
   const rec = [], first = new Map();
   {
     const r = ChillerMachine.restore(s), r0 = r.ioRead;
-    let depth = 0, arrivals = 0;
-    const irq0 = r.cpu.irq;
-    r.cpu.irq = function (h, oo) { depth++; try { return irq0.call(this, h, oo); } finally { depth--; } };
+    let arrivals = 0;
     // the bytes the interrupt keeps that the main program reads: for each stretch between two
     // checkpoints, the values its reads there found, in turn
     for (const a of [...CHECKPOINTS, ...WAITS]) {
       const prev = r.hooks[a];
-      r.hooks[a] = c => { if (!depth) arrivals++; return prev ? prev(c) : false; };
+      r.hooks[a] = c => { if (!r.depth) arrivals++; return prev ? prev(c) : false; };
     }
     const reads = new Proxy({}, { set(t, k) {
       const a = +k;
-      if (!depth && IRQ_BYTES.has(a)) { const key = arrivals + ':' + a; if (!first.has(key)) first.set(key, []); first.get(key).push(r.ram[a]); }
+      if (!r.depth && IRQ_BYTES.has(a)) { const key = arrivals + ':' + a; if (!first.has(key)) first.set(key, []); first.get(key).push(r.ram[a]); }
       return true;
     } });
     const run0 = r.cpu.run;
     r.cpu.run = function (oo) { return run0.call(this, Object.assign({}, oo, { reads })); };
-    r.ioRead = function (a) { const v = r0.call(this, a); if (!depth && (a === 0xD01E || a === 0xD01F)) rec.push([a & 0x3F, v]); return v; };
+    r.ioRead = function (a) { const v = r0.call(this, a); if (!r.depth && (a === 0xD01E || a === 0xD01F)) rec.push([a & 0x3F, v]); return v; };
     let k = 0;
     r.joy = joyAt(0);
     // the input changes only at a pass, so a game over with fire let go waits for ever: the

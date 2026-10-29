@@ -56,7 +56,10 @@
 //   only when its main program has read the raster ($D011, $D012 or $D019) since its last stop, so
 //   an exit that also heads the loop of work after the wait (a copy, ten times round) is reached
 //   once a wait.
-// - irqs: { handler address: a function, or the name of one of P's }. The interrupts the game took
+// - irqs: { handler address: a function, or the name of one of P's, or null }, and nmi: the same for
+//   every NMI whose handler has no entry of its own. Null is a handler the port plays its own way (a
+//   sample player's NMIs, whose phrase the port plays whole): followed, so what it reads and writes
+//   is not the code's it came inside, and nothing run for it. The others
 //   run in the port in order, at the port's next yield of any kind: a replay can keep the order
 //   but not the place inside a stretch. So each runs on the memory the game's handler saw: the
 //   bytes it read, its instructions' operands among them, are set to the values it read (the stack
@@ -78,8 +81,9 @@
 //   program writes after an interrupt has written it in the same stretch (a title's SEI and its
 //   new screen modes) needs a checkpoint before that write: replayed at the port's next yield, the
 //   interrupt's value would land after the main program's.
-// - A machine made with nest (kit/c64/machine.js) takes an interrupt inside a handler that has
-//   cleared I, as the processor does. Each is followed from its take to the RTI that leaves it,
+// - The machine (kit/c64/machine.js) takes an interrupt inside a handler that has cleared I, as
+//   the processor does: machine.nest, which these notes call "with nest". With legacyInterrupts it
+//   runs each handler whole, and none of this arises. Each is followed from its take to the RTI that leaves it,
 //   the stack as the take left it, and what is read and written meanwhile is the innermost one's.
 //   They run in the port in the order they ended, so one that came inside another runs first, and
 //   a byte both wrote gets the value of the one that wrote it last in the game: the port's handlers
@@ -576,8 +580,9 @@ class Lockstep {
       const take = m.take;
       m.take = function (v) {
         take.call(this, v);
-        const q = newIrq(this.cpu.pc, this.cpu.cycles - 7);
-        q.sp = this.cpu.sp; q.up = ls.irq; ls.irq = q;
+        const q = newIrq(this.cpu.pc, this.cpu.cycles - 7), u = this.under;
+        // the stack as the interrupt's own push left it, below what the KERNAL's entry pushes
+        q.sp = u.length ? u[u.length - 1].sp : this.cpu.sp; q.up = ls.irq; ls.irq = q; q.nmi = v === 0xFFFA;
       };
     }
     // the main program's reads of irqBytes, as it makes them, and with nest the interrupts' reads,
@@ -614,6 +619,11 @@ class Lockstep {
         ls.irq = q.up;
         if (!rti) ls.tookOver = true;
       };
+      // a hook that leaves by the KERNAL's exit (Machine's leave) ends the innermost as its RTI would
+      if (m.nest && m.leave) {
+        const leave = m.leave;
+        m.leave = function (n = 22) { if (own.length) ownValues(); if (ls.irq !== null) end(ls.irq, n); return leave.call(this, n); };
+      }
       const executed = new Proxy({}, { set(t, k) {
         const a = +k;
         if (own.length) ownValues();
@@ -636,8 +646,10 @@ class Lockstep {
     if (m.nest) {
       const ioWrite = m.ioWrite;
       m.ioWrite = function (a, v) {
-        if (ls.irq !== null) { const k = chipKey(a); if (k >= 0) { ls.irq.cseq.set(k, ++ls.wseq); ls.irq.cval.set(k, v & 0xFF); } }
-        return ioWrite.call(this, a, v);
+        const r = ioWrite.call(this, a, v), q = ls.irq;
+        // the value as the register keeps it, which lastWriters compares: colour RAM keeps four bits
+        if (q !== null) { const k = chipKey(a); if (k >= 0) { q.cseq.set(k, ++ls.wseq); q.cval.set(k, asWritten(this, k)); } }
+        return r;
       };
     }
     const ioRead = m.ioRead;
@@ -712,7 +724,9 @@ class Lockstep {
       this.counting = false;
       try {
         for (const q of list) {
-          let f = this.irqs[q.at];
+          const I = this.irqs;
+          let f = q.at in I ? I[q.at] : q.nmi && 'nmi' in I ? I.nmi : undefined;
+          if (f === null) continue;                    // the port plays it its own way (irqs)
           if (typeof f === 'string') f = P[f];
           if (typeof f !== 'function') throw new Error('Lockstep: no port handler for the interrupt at ' + hex(q.at) + ' (irqs)');
           // a byte the handler read and left as it read it, saved and put back (a handler that

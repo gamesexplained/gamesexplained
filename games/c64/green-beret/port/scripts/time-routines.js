@@ -48,7 +48,7 @@ const samples = new Map();
 const CP = new Set(P.CHECKPOINTS);
 
 const PLAYS = +(process.argv[3] || 6000), ALIVE = +(process.argv[4] || 34000);
-const m = lib.boot({ nest: true });
+const m = lib.boot();
 const own = new Map(), times = new Map(), seg = new Map();
 const add = (map, k, v) => map.set(k, (map.get(k) || 0) + v);
 const per = new Map();        // each routine's own cycles a time, for the spread

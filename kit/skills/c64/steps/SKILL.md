@@ -45,12 +45,16 @@ instructions the cases reached.
 
 `kit/c64/machine.js` is the simulator with a raster interrupt, the
 keyboard, the joystick and colour RAM around it (with `collide: true`
-the sprite collisions and their interrupts, and with `nest: true`
-interrupts taken inside a handler that clears I: a game whose handler
-runs `cli` needs it, or the collisions it latches there are lost),
-started from the listing's memory or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
-interrupt set as the game left it, counting passes where the main loop
-begins. `kit/c64/lockstep.js` runs a port beside it.
+the sprite collisions and their interrupts), started from the listing's
+memory or, with `Machine.fromSnapshot`, from a snapshot of play with its
+raster interrupt set as the game left it, counting passes where the main
+loop begins. It takes interrupts as the processor does, a handler that
+runs `cli` interrupted in turn and through the KERNAL's entry while the
+KERNAL is banked in. A test leaves the taking to it, with `onInterrupt`
+and `onReturn` to watch and a hook at the KERNAL's exit that ends with
+`leave()` where the game needs one: a `tick` or `take` of the test's own
+runs each handler whole, and the collisions a handler latches after its
+`cli` are lost. `kit/c64/lockstep.js` runs a port beside it.
 
 A game that keeps the KERNAL and reads whole lines through `CHRIN` needs
 neither: `kit/c64/kernal_lines.js` runs it a typed line at a time on the

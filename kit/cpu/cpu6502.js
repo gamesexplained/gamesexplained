@@ -95,6 +95,11 @@
 // run. A frame of play: cpu.run({ cycles: 19656 }); if (!cpu.i) cpu.irq();
 // cpu.onRti, when set, is called with the CPU after each RTI it runs: a machine that takes its
 // interrupts itself between runs (kit/c16/machine.js) counts their ends with it.
+// cpu.onCli, when set, is called after each CLI, and each PLP that clears I.
+// cpu.cut, set above 0 while a run of cycles goes on, ends it after that many more instructions: a
+// machine whose chip was just changed so that an interrupt may come sooner than the run's end (an
+// interrupt flag cleared, a timer started) sets it to 1 to look at its chips again, and after a CLI
+// to 2, since the processor takes an interrupt waiting on it only after the next instruction.
 // irq(handler, opts) and nmi(handler, opts) take an interrupt now, whatever I says: push the program
 // counter and the flags (B clear), set I, jump to handler (default: the vector at $FFFE or $FFFA as
 // the port maps it), and run until the return to the interrupted code. With opts.kernal they stand in
@@ -273,6 +278,8 @@
       this.steps = 0; this.cycles = 0;
       this.opc = 0;                                    // the address of the instruction running
       this.onRti = null;                               // called after each RTI the processor runs
+      this.onCli = null;                               // called after each CLI, and each PLP that clears I
+      this.cut = 0;                                    // a run of cycles ends after this many more instructions
       this.writes = null; this.reads = null; this.executed = null;
       this.ane = opts.ane === undefined ? 0xEF : opts.ane;
       this.lxa = opts.lxa === undefined ? 0xEE : opts.lxa;
@@ -602,7 +609,7 @@
         case 0x48: this.push(this.a); this.pc++; break;
         case 0x68: this.a = this.nz(this.pull()); this.pc++; break;
         case 0x08: this.push(this.p | 0x10); this.pc++; break;
-        case 0x28: this.p = this.pull(); this.pc++; break;
+        case 0x28: { const i = this.i; this.p = this.pull(); this.pc++; if (i && !this.i && this.onCli !== null) this.onCli(this); break; }
         // arithmetic
         case 0x69: this.adc(this.imm()); break;
         case 0x65: this.adc(this.rdz(this.zp())); break;
@@ -699,7 +706,7 @@
         // flags
         case 0x18: this.c = 0; this.pc++; break;
         case 0x38: this.c = 1; this.pc++; break;
-        case 0x58: this.i = 0; this.pc++; break;
+        case 0x58: this.i = 0; this.pc++; if (this.onCli !== null) this.onCli(this); break;
         case 0x78: this.i = 1; this.pc++; break;
         case 0xB8: this.v = 0; this.pc++; break;
         case 0xD8: this.d = 0; this.pc++; break;
@@ -841,6 +848,7 @@
         }
         this.step();
         if (++n > max) this.limit(max);
+        if (this.cut !== 0 && cyclesTo !== Infinity && --this.cut === 0) break;
       }
       return this.steps - start;
     }

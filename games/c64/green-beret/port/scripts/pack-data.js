@@ -55,7 +55,7 @@ function pack() {
   }
   s.ram = Buffer.from(ram).toString('base64');
   // what the page needs of the machine, and nothing of the emulator's own bookkeeping
-  for (const k of ['passAt', 'frames', 'passes', 'skipOnce', 'keys', 'nmiDue', 'nest', 'joy', 'joy1', 'collide']) delete s[k];
+  for (const k of ['passAt', 'frames', 'passes', 'skipOnce', 'keys', 'nmiDue', 'legacyInterrupts', 'under', 'joy', 'joy1', 'collide']) delete s[k];
   return { state: s, kept: [n, 0x10000 - n, state] };
 }
 

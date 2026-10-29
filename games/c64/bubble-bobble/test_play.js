@@ -44,15 +44,13 @@ const ls = new Lockstep({
 const BUBBLE_LOOP = new Set([0x0A48, 0x0A4B, 0x0A4E, 0x0A51].map(a => a + 2));
 const races = new Set();
 let pass = 0;
-const irq = m.cpu.irq;
-m.cpu.irq = function (h, o) {
+m.onInterrupt = (mm, v) => {
   const R = m.ram;
-  if ((R[0xFFFE] | R[0xFFFF] << 8) === 0x072E && R[0x077C] !== 0x4C) {
-    for (let s = this.sp + 1; s < 0xFF; s++) {
+  if (v === 0xFFFE && (R[0xFFFE] | R[0xFFFF] << 8) === 0x072E && R[0x077C] !== 0x4C) {
+    for (let s = m.cpu.sp + 1; s < 0xFF; s++) {
       if (BUBBLE_LOOP.has(R[0x100 + s] | R[0x101 + s] << 8)) { races.add(pass); break; }
     }
   }
-  return irq.call(this, h, o);
 };
 
 // the input

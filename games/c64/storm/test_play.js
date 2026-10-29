@@ -19,7 +19,7 @@
 // (below, "the pacing"), checked pass by pass on the odd passes.
 const fs = require('fs'), path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { Machine, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.js'));
+const { Machine } = require(path.join(ROOT, 'kit/c64/machine.js'));
 const { Lockstep, describe } = require(path.join(ROOT, 'kit/c64/lockstep.js'));
 const g = game(__dirname);
 g.lib('cpu6502');                   // the 6502 the port's title music runs on, as play.html loads it
@@ -30,24 +30,12 @@ const args = process.argv.slice(2);
 const costAt = args.indexOf('--cost'), costFile = costAt >= 0 ? (args.splice(costAt, 1), path.join(__dirname, 'reference/storm-play.js')) : null;
 const PASSES = +args[0] || 40000;
 
-// The game's interrupt goes through the KERNAL (cpu6502.js's kernal option): $FF48 saves the
-// registers and jumps through $0314, and the handler leaves by its own PLA TAY PLA TAX PLA RTI.
-class StormMachine extends Machine {
-  tick() {
-    if (this.dma) this.dmaCatchUp();
-    const ln = Math.floor(this.cpu.cycles / LINE);
-    while (this.lastLine < ln) {
-      this.lastLine++;
-      const l = this.lastLine % LINES;
-      if (l === 0) this.frames++;
-      if (l === this.cmp) this.latch |= 1;
-    }
-    if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
-  }
-}
+// The game's interrupt goes through the KERNAL, as the machine takes it with the KERNAL banked in:
+// $FF48 saves the registers and jumps through $0314, and the handler leaves by its own PLA TAY PLA
+// TAX PLA RTI.
 const char = new Uint8Array(4096);
 char.set(StormPort.FONT);
-const m = new StormMachine({ ram: g.listing().ram, pc: 0x75AC, passAt: 0x78D7, port: { dir: 0x2F, data: 0x37 }, rom: { char } });
+const m = new Machine({ ram: g.listing().ram, pc: 0x75AC, passAt: 0x78D7, port: { dir: 0x2F, data: 0x37 }, rom: { char } });
 m.hooks[0xFFD2] = (c) => { c.cycles += 40; c.rts(); };            // CHROUT $08: nothing kept of it
 const P = StormPort.create(new Uint8Array(65536), {});
 
@@ -225,17 +213,14 @@ function close(cpu, sp, at) {
   }
 }
 if (costFile) {
-  const irq = m.cpu.irq;
-  m.cpu.irq = function (h, o) {
-    const c0 = this.cycles, step = R[0x8136];
-    irqDepth++; irqChild = 0; stacks[1] = [];
-    let r;
-    try { r = irq.call(this, h, o); } finally { irqDepth--; }
-    const n = this.cycles - c0, k = StormPlay.bandOf(R, R[0x7DAB] | R[0x7DAC] << 8, R[0x8136] !== step);
+  let step = 0;
+  m.onInterrupt = () => { step = R[0x8136]; irqDepth++; irqChild = 0; stacks[1] = []; };
+  m.onReturn = (mm, v, n) => {
+    irqDepth--;
+    const k = StormPlay.bandOf(R, R[0x7DAB] | R[0x7DAC] << 8, R[0x8136] !== step);
     const b = bands[k] = bands[k] || [0, 0];
     b[0] += n - irqChild; b[1]++;
     irqTotal += n;
-    return r;
   };
   // where each of the port's routines begins: the address its line names, else its label
   const src = fs.readFileSync(path.join(__dirname, 'reference/storm-port.js'), 'utf8');

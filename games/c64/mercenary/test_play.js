@@ -59,13 +59,9 @@ const ls = new Lockstep({
 const inFill = pc => (pc >= 0xAFD5 && pc < 0xB1C0) || (pc >= 0xBD00 && pc < 0xBEA0);
 const races = new Set();
 let pass = 0;
-const irq = m.cpu.irq;
-m.cpu.irq = function (h, o) {
-  const pc = this.pc, fill = m.ram[0x06];
-  const r = irq.call(this, h, o);
-  if (inFill(pc) && m.ram[0x06] !== fill) races.add(pass);
-  return r;
-};
+const taken = [];                                  // where each interrupt came in, and $06 then
+m.onInterrupt = () => { taken.push([m.cpu.pc, m.ram[0x06]]); };
+m.onReturn = () => { const [pc, fill] = taken.pop(); if (inFill(pc) && m.ram[0x06] !== fill) races.add(pass); };
 
 let seed = 0x2545F491, joy = 0x1F, handed = 0;
 const rnd = n => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return seed % n; };
