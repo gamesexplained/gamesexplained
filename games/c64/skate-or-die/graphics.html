@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
   <h1>Skate or Die!</h1>
-  <p class="sub">How the half-pipe that High Jump and the Freestyle ramp share is drawn: its picture, its crowd, and its skater, from the bytes the events load. The other levels' pictures are on the <a href="levels.html">Levels</a> page.</p>
+  <p class="sub">How each screen of the game is drawn, from the bytes the events load: the half-pipe that High Jump and the Freestyle ramp share, the shop and the town, the two downhill courses, and the pool. What happens on each is on the <a href="levels.html">Levels</a> page.</p>
 </header>
 <main class="wrap" data-part="highjump">
 <section id="picture">
@@ -56,6 +56,66 @@
   <p>A sprite is 24 pixels by 21, 63 bytes, but most parts of a skater are smaller. The 477 shapes are stored with only the rows they use, three bytes to a row, and a copy routine fills the rest of the sprite with zeros as it builds it (<code>$13FD</code>). Packed that way, the shapes fill 16,428 bytes (<code>$8284</code>-<code>$C2AF</code>), where 477 full 64-byte sprite blocks would take 30,528.</p>
   <p>The poses are stored facing one way. When the skater is on the left half of the ramp, the copy routines mirror each shape as they build the sprite: a single-colour row through a table that reverses the eight bits of a byte, and a multicolour row through a table that reverses the four pairs, so that the colours stay with their pixels (<code>$138D</code>, <code>$13C5</code>, tables at <code>$2E7B</code> and <code>$2F7B</code>, built when the event starts by <code>$1340</code>). The x offsets of the five parts change sign at the same time (<code>$0C6F</code>). The game builds the next frame's five sprites in one buffer while the VIC shows the other, and swaps them each frame (<code>$14DE</code>).</p>
   <p>Sprite 4 is the board, and its colour comes from the skater, not the colour set: the event copies a byte the <a href="levels.html#town-loading">event manager</a> keeps for each skater into both sets (<code>$09EE</code>). Sprite 7 is the board's shape again, in black, kept at the height of the coping while the skater is in the air (<code>$0C29</code>): it reads as the board's shadow. Sprites 5 and 6 are the black marks of the ruler at the top right, stretched to double height and copied into place when the event starts (<code>$0A01</code>). The yellow pole behind them is drawn into the bitmap, ten cells high, by <code>$1AFA</code>.</p>
+</section>
+<section id="shop" data-part="shop">
+  <p class="fig">The shop and the town</p>
+  <h2 class="t">Two bitmaps in two VIC banks</h2>
+  <p class="lede">Rodney's <a href="levels.html#town-rodney">shop</a> and the <a href="levels.html#town-square">town square</a> are both multicolour bitmaps, kept in memory side by side. The shop's program switches between them by changing which 16 KB bank the VIC reads.</p>
+  <div class="plate">
+    <div class="row" id="shopbtns">
+      <button class="b" data-pic="0" aria-pressed="true">The shop</button>
+      <button class="b" data-pic="1" aria-pressed="false">The town square</button>
+    </div>
+    <canvas id="shoppic" class="scr" style="max-width:640px"></canvas>
+    <p class="cap" id="shopcap">Drawn in the page from the shop's memory. The shop: the bitmap at <code>$A000</code>, the screen matrix at <code>$8000</code>, and the colour RAM image at <code>$9C00</code>. The town: the bitmap at <code>$4000</code>, the screen matrix at <code>$6000</code>, and the colour RAM image at <code>$E000</code>. Both on black. The pointer, the words in Rodney's balloon, and the town skater are sprites and are not part of the pictures.</p>
+  </div>
+  <p>The shop picture sits in VIC bank 2, with its bitmap at <code>$A000</code> and its screen matrix at <code>$8000</code> (<code>$12AB</code>). The town sits in bank 1, with its bitmap at <code>$4000</code> and its screen matrix at <code>$6000</code> (<code>$12EC</code>). In both, the screen byte gives two of each cell's colours and colour RAM the third. The town's pictures arrive packed in file <span data-part=""><code>$04</code></span> and the shop's bitmap in file <span data-part=""><code>$09</code></span>, both with the same run-length code as the half-pipe (<code>$0FEA</code>). The shop's screen matrix, file <span data-part=""><code>$0A</code></span>, is loaded as it is.</p>
+  <p>The program has one raster interrupt with two bands, at lines <span data-part=""><code>$FA</code></span> and <span data-part=""><code>$2F</code></span> (<code>$209A</code>). A mode byte at <code>$26A4</code> says which screen is up, and the two bands set the VIC from it (<code>$11EA</code>, <code>$12EC</code>). The sign-in, records, and board-colour screens are not bitmaps: they are text, built in a buffer at <span data-part=""><code>$7000</code></span> from templates, in a font at <code>$7800</code>.</p>
+  <p>In the shop, the pointer is a sprite holding the words SKATE, OR, and DIE! in a tiny font, copied from <code>$2641</code> to <span data-part=""><code>$8400</code></span>. The balloon is part of the bitmap, and Rodney's words are drawn into six more sprites placed over it (<code>$0EA9</code>). In the town, the skater seen from above is five sprites, 0 to 4 (<code>$13C0</code>). The legs and board turn with the heading, and the body is picked a few steps ahead of them, so it leads into a turn.</p>
+</section>
+<section id="race" data-part="downhill">
+  <p class="fig">The Downhill Race</p>
+  <h2 class="t">A course of characters, scrolled a line at a time</h2>
+  <p class="lede">The <a href="levels.html#race">Downhill Race</a> is drawn in multicolour text mode. The course is 255 rows of characters, of which the screen shows 22, and the course scrolls up a pixel line at a time as the skater rolls down it.</p>
+  <div class="plate">
+    <div class="row"><button class="b" id="racego" aria-pressed="true">Scrolling</button><span class="note" id="racerow"></span></div>
+    <canvas id="racewin" class="scr" style="max-width:640px"></canvas>
+    <p class="cap">The 22 course rows of the screen, drawn in the page from the race's memory: characters from the map at <code>$A600</code>, colours from the low four bits of the map at <code>$7E00</code>, shapes from the character set at <code>$4800</code>, background grey and multicolours <span data-part=""><code>$0F</code></span> and <span data-part=""><code>$0B</code></span> (<code>$1FC4</code>). The window moves a pixel line each frame, a pace chosen for the page; in the game the course moves with the skater's speed. The three status rows above the course, the skater, and the overlays are left out.</p>
+  </div>
+  <p>The screen is at <span data-part=""><code>$5000</code></span> in VIC bank 1. Its top three rows are the status line, in a single-colour font at <code>$4000</code>; the 22 rows below are the course, in the course's own 256 characters at <code>$4800</code>. A cell whose colour has bit 3 set is multicolour, and the others are single-colour.</p>
+  <p>A raster interrupt in four bands splits the screen (<code>$1F47</code>). Band 0, in the bottom border at line <span data-part=""><code>$F6</code></span>, sets up the status rows on blue (<code>$1F84</code>). Band 1, at line <span data-part=""><code>$45</code></span>, sets the scroll and turns on multicolour and extended colour together (<code>$1FF2</code>). The VIC cannot show that mix, so it draws black, which hides the lines where the scroll changes. Band 2, at line <span data-part=""><code>$4D</code></span>, waits a time that depends on the fine scroll and then sets the course's colours and character set (<code>$1FC4</code>). Band 3, at line <span data-part=""><code>$5A</code></span>, redraws the course when needed (<code>$2019</code>).</p>
+  <p>The scroll position is a count of pixel lines. Divided by eight it gives the course row at the top of the screen, and the rest sets the VIC's fine scroll (<code>$22E3</code>). When the row changes, <code>redraw_course</code> copies 22 rows of characters to the screen and 22 rows of colours to colour RAM (<code>$20A5</code>). There is one screen, so the copy is done in one go, two rows at a time, by an unrolled loop. The flags, the skull, and the things in the lake move by rewriting their characters in the character set, so every copy of them on the course changes at once (<code>$115C</code>).</p>
+  <p>The riding skater is five sprites, each picked by the direction faced, one of 16, from banks at <code>$393F</code>: arms, head and torso, legs, board, and a wedge of shadow. The head and torso are multicolour. Falls and the other scripted actions are drawn from shapes kept under the I/O area and copied into four sprites at <span data-part=""><code>$7400</code></span> (<code>$27D9</code>). Eleven more sprites show parts of the course: the ends of the pipe, the flags, the hurdle bars, the arch, and the building.</p>
+</section>
+<section id="jam" data-part="jam">
+  <p class="fig">The Downhill Jam</p>
+  <h2 class="t">The same course drawing, with two screens</h2>
+  <p class="lede">The <a href="levels.html#jam">Downhill Jam</a> draws its course the way the race does, from a character map and a colour map, but it keeps two screens and draws the next one while the VIC shows the other.</p>
+  <div class="plate">
+    <div class="row"><button class="b" id="jamgo" aria-pressed="true">Scrolling</button><span class="note" id="jamrow"></span></div>
+    <canvas id="jamwin" class="scr" style="max-width:640px"></canvas>
+    <p class="cap">The 22 course rows of the screen, drawn in the page from the Jam's memory: characters from the map at <code>$8200</code>, colours from the low four bits of the map at <code>$5A00</code>, shapes from the character set at <code>$4800</code>, background <span data-part=""><code>$0B</code></span> and multicolours <span data-part=""><code>$0C</code></span> and <span data-part=""><code>$00</code></span> (<code>$23A9</code>). Every eight frames the animated characters swap, as <code>$0BA6</code> swaps them. The window moves a pixel line each frame, a pace chosen for the page.</p>
+  </div>
+  <p>The two screens are at <span data-part=""><code>$4400</code></span> and <span data-part=""><code>$5000</code></span> in VIC bank 1, and a byte at <code>$3D0C</code> says which is shown. The raster bands are those of the race, at lines <span data-part=""><code>$F6</code></span>, <span data-part=""><code>$45</code></span>, <span data-part=""><code>$4D</code></span>, and <span data-part=""><code>$64</code></span> (<code>$3563</code>), with the same black lines from the impossible mode in band 1 (<code>$233D</code>). The playfield colours differ: dark grey behind, mid grey and black as the shared colours (<code>$23A9</code>).</p>
+  <p>The camera's row is its height divided by eight, and the rest is the fine scroll (<code>$2891</code>). While the fine scroll is below 4, <code>copy_map_chars</code> fills the hidden screen with the rows below (<code>$25FF</code>). When the camera reaches a new row, <code>copy_map_colours</code> writes the colours into colour RAM and flips the screens (<code>$2742</code>). Colour RAM has only one copy, so the colours change at the same moment as the screen.</p>
+  <p>Every eight frames, characters <span data-part=""><code>$40</code></span>-<span data-part=""><code>$42</code></span> swap with <span data-part=""><code>$80</code></span>-<span data-part=""><code>$82</code></span> and <span data-part=""><code>$60</code></span>-<span data-part=""><code>$62</code></span> with <span data-part=""><code>$A0</code></span>-<span data-part=""><code>$A2</code></span> (<code>$0BA6</code>). The police car's lights flash in colour RAM instead, at <code>$DA9D</code> and <code>$DAED</code>, while the camera is at the bottom (<code>$29AC</code>).</p>
+  <p>Each skater is three sprites: body, legs, and board. Player 0 takes sprites 5 to 7 and player 1 sprites 2 to 4, swapped each frame so the skater further down is drawn in front (<code>$1004</code>). The shapes are trimmed multicolour sprites under the I/O area, copied each frame into blocks at <span data-part=""><code>$5400</code></span> (<code>$135C</code>). Sprites 0 and 1 are shadows (<code>$2BE9</code>). Other sprites are the clothesline's shadow, a solid block that hides a skater on the secret path, the sparkle over a smashed can or bottle, and the tumbling bins.</p>
+</section>
+<section id="joust" data-part="joust">
+  <p class="fig">The Pool Joust</p>
+  <h2 class="t">A bitmap pool, and a second picture under the chips</h2>
+  <p class="lede">The <a href="levels.html#joust">Pool Joust</a> goes back to the half-pipe's way of drawing: a multicolour bitmap with a hires status row on top, and the skaters as sprites.</p>
+  <div class="plate">
+    <div class="row" id="joustbtns">
+      <button class="b" data-pic="0" aria-pressed="true">The pool</button>
+      <button class="b" data-pic="1" aria-pressed="false">The opponent choice</button>
+    </div>
+    <canvas id="joustpic" class="scr" style="max-width:640px"></canvas>
+    <p class="cap">Drawn in the page from the joust's memory. The pool: the bitmap at <code>$4000</code>, the screen matrix at <code>$6400</code>, and the colours at <code>$6000</code>. The choice: the bitmap at <code>$C000</code>, the screen matrix at <code>$E400</code>, and the colours at <code>$E000</code>. Both on black. The pool's top row is drawn here in multicolour, as the bitmap holds it; the game shows that row hires, where its bytes read as black, until the names and scores are written into it.</p>
+  </div>
+  <p>Both pictures arrive packed with the half-pipe's run-length code (<code>$2169</code>). Each unpacks to 10,001 bytes at <code>$8000</code>: the bitmap, the colour-RAM nibbles, the screen matrix, and one spare byte. The pool is then copied to bank 1, with its bitmap at <code>$4000</code> and its screen matrix at <code>$6400</code>. The choice picture is copied under the I/O chips, to <code>$C000</code>, with the chips switched out while the copy runs (<code>$08CB</code>). The processor cannot read RAM there while the chips are in, but the VIC always sees RAM, so the picture is shown from bank 3 (<code>$0AD9</code>). The colours go into colour RAM each time a picture is shown (<code>$0AA0</code>).</p>
+  <p>Two raster bands split the pool screen. Band 0, at line <span data-part=""><code>$FB</code></span>, turns multicolour off so row 0 is drawn hires (<code>$0BB6</code>). Band 1, at line <span data-part=""><code>$38</code></span>, waits for line <span data-part=""><code>$3A</code></span> and turns it back on (<code>$0D8B</code>). The names, PRESS YOUR BUTTON, VS, and the scores are drawn by copying font glyphs into the bitmap cells of that row (<code>$1427</code>).</p>
+  <p>Each pose of a skater is four sprites: the pole, two for the body, and the board (<code>$0D10</code>). The pole, body, and board shapes come from 198 trimmed shapes, copied into buffers at <code>$6C00</code> as stored for a skater facing right, or mirrored for one facing left (<code>$15C9</code>). The boards are 22 ready-made sprites, pre-mirrored, and are not copied. All sprites are multicolour, with light red and black as the shared colours (<code>$0975</code>). The pole's colour cycles through yellow, orange, and white while it swings, and the skater nearer the front gets the lower sprite numbers so it is drawn over the other (<code>$0BDA</code>).</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
@@ -111,5 +171,54 @@
       abtns.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); drawAnim(); }; abtns.appendChild(b); });
   drawAnim(); setInterval(() => { step++; drawAnim(); }, 250);
   fill();
+})();
+</script>
+<script>
+(async function () {
+  // the shop and the town (parts/shop/facts.md, "Pictures and screens")
+  try {
+    const S = await SOD.load('shop'), cv = document.getElementById('shoppic');
+    const P = [{ bitmap: 0xA000, screen: 0x8000, colour: 0x9C00 }, { bitmap: 0x4000, screen: 0x6000, colour: 0xE000 }];
+    const draw = k => SOD.mcBitmap(cv, S.ram, Object.assign({ bg: 0, s: 2 }, P[k]));
+    document.querySelectorAll('#shopbtns button').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#shopbtns button').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(+b.dataset.pic); });
+    draw(0);
+  } catch (e) { SOD.fail(e); }
+  // the pool and the choice picture (parts/joust/facts.md, "Loads")
+  try {
+    const J = await SOD.load('joust'), cv = document.getElementById('joustpic');
+    const P = [{ bitmap: 0x4000, screen: 0x6400, colour: 0x6000 }, { bitmap: 0xC000, screen: 0xE400, colour: 0xE000 }];
+    const draw = k => SOD.mcBitmap(cv, J.ram, Object.assign({ bg: 0, s: 2 }, P[k]));
+    document.querySelectorAll('#joustbtns button').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#joustbtns button').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(+b.dataset.pic); });
+    draw(0);
+  } catch (e) { SOD.fail(e); }
+  // A course window: the whole course drawn once off screen (one copy per character-set frame), then 22 rows
+  // of it shown at a scroll position that moves a pixel line per frame.
+  async function course(part, id, o, frames) {
+    const G = await SOD.load(part), M = G.ram, cv = document.getElementById(id + 'win'), s = 2;
+    const pages = frames(M).map(cs => { const c = document.createElement('canvas'); c.width = 320; c.height = 255 * 8;
+      SOD.charMap(c.getContext('2d'), M, Object.assign({ from: 0, rows: 255, s: 1, cs }, o)); return c; });
+    const ctx = C64.canvas(cv, 320 * s, 176 * s); ctx.imageSmoothingEnabled = false;
+    let y = 0, t = 0, run = true; const max = 255 * 8 - 176, note = document.getElementById(id + 'row');
+    const btn = document.getElementById(id + 'go'); btn.onclick = () => { run = !run; btn.setAttribute('aria-pressed', run); };
+    (function tick() {
+      ctx.drawImage(pages[Math.floor(t / 8) % pages.length], 0, y, 320, 176, 0, 0, 320 * s, 176 * s);
+      note.textContent = 'Top row ' + (y >> 3) + ', fine scroll ' + (7 - (y & 7));
+      if (run) { y = y >= max ? 0 : y + 1; t++; }
+      requestAnimationFrame(tick);
+    })();
+  }
+  try {
+    await course('downhill', 'race', { map: 0xA600, attr: 0x7E00, charset: 0x4800, bg: 0x0C, mc1: 0x0F, mc2: 0x0B }, M => [M.slice(0x4800, 0x5000)]);
+  } catch (e) { SOD.fail(e); }
+  try {
+    // animate_charset ($0BA6): every 8 frames $40-$42 swap with $80-$82 and $60-$62 with $A0-$A2
+    await course('jam', 'jam', { map: 0x8200, attr: 0x5A00, charset: 0x4800, bg: 0x0B, mc1: 0x0C, mc2: 0x00 }, M => {
+      const a = M.slice(0x4800, 0x5000), b = a.slice();
+      for (const [p, q] of [[0x40, 0x80], [0x60, 0xA0]]) for (let i = 0; i < 24; i++) { b[p * 8 + i] = a[q * 8 + i]; b[q * 8 + i] = a[p * 8 + i]; }
+      return [a, b];
+    });
+  } catch (e) { SOD.fail(e); }
 })();
 </script>

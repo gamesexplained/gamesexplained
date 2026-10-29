@@ -89,6 +89,20 @@ const SOD = (function () {
     }
     return ctx;
   }
+  // A course of character cells as the VIC shows it in multicolour text mode: o.map the character map and
+  // o.attr the colour map (both row * 40 + column), o.charset 256 characters of 8 bytes. A colour with bit 3
+  // set makes the cell multicolour (pairs 00 background, 01 o.mc1, 10 o.mc2, 11 the colour AND 7); otherwise
+  // a set bit is the colour, a clear one the background. Rows o.from to o.from + o.rows - 1 into ctx at (0, o.y).
+  // o.cs, when given, replaces the charset bytes (for animated characters).
+  function charMap(ctx, M, o) {
+    const s = o.s || 1, cs = o.cs || M.slice(o.charset, o.charset + 2048), y0 = o.y || 0;
+    for (let r = 0; r < o.rows; r++) for (let c = 0; c < 40; c++) {
+      const i = (o.from + r) * 40 + c, ch = M[o.map + i], col = M[o.attr + i] & 15, mc = col & 8, k = [o.bg, o.mc1, o.mc2, col & 7];
+      for (let l = 0; l < 8; l++) { const b = cs[ch * 8 + l], y = y0 + (r * 8 + l) * s;
+        if (mc) for (let q = 0; q < 4; q++) { ctx.fillStyle = PAL()[k[(b >> (6 - 2 * q)) & 3]]; ctx.fillRect((c * 8 + 2 * q) * s, y, 2 * s, s); }
+        else for (let q = 0; q < 8; q++) { ctx.fillStyle = PAL()[(b >> (7 - q)) & 1 ? col : o.bg]; ctx.fillRect((c * 8 + q) * s, y, s, s); } }
+    }
+  }
   function fail(e) { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">' + e.message + '</p>')); }
-  return { load, mcBitmap, picture, cellRects, parts, bounds, pose, fail };
+  return { load, mcBitmap, charMap, picture, cellRects, parts, bounds, pose, fail };
 })();
