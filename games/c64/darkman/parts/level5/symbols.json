@@ -3935,17 +3935,17 @@
   {
    "address": 2682,
    "type": "line",
-   "text": "Set to 1 by $0A7B when its row fill has reached row 9; cleared by the setup. It makes $1417 play the explosion frames of sprites 0 to 2, stops the scroll $1B93 and is tested by $0A7B."
+   "text": "Set to 1 by $0A7B when its row fill has done row 8 and would move on to row 9; cleared by the setup. It makes $1417 play the explosion frames of sprites 0 to 2, stops the scroll $1B93 and is tested by $0A7B."
   },
   {
    "address": 2683,
    "type": "line",
-   "text": "Per-frame step of the ending that follows the first collision after the time bar ran out (the finale flag $1B92, set by $0F15). Called by irq_bottom ($1EA1). It returns at once while the game is paused ($1EAB) or $1B92 is zero, and first counts the wait $0A77 down. Then, on each call, it fills screen row $0A78 (40 cells, address from the table $0FA9) with the character $C0 and the row above it with $C1. $0A79 toggles on each call and the row $0A78 moves one on every second call. When the next row would be 9 and $0A7A is zero it plays sound effect 4 through $B0EE (keeping X and Y in the operands at $0AEA and $0AEC) and sets the explosion flag $0A7A to 1, which makes $1417 show the explosion of sprites 0 to 2."
+   "text": "Per-frame step of the ending that follows the first collision after the time bar ran out (the finale flag $1B92, set by $0F15). Called by irq_bottom ($1EA1). It returns at once while the game is paused ($1EAB) or $1B92 is zero, and first counts the wait $0A77 down. Then, on each call, it fills screen row $0A78 (40 cells, address from the table $0FA9) with the character $C0 and the row above it with $C1. $0A79 toggles on each call and the row $0A78 moves one on every second call. When the next row would be 9 and $0A7A is zero it plays sound effect 1 (X = $04) through $B0EE (keeping X and Y in the operands at $0AEA and $0AEC) and sets the explosion flag $0A7A to 1, which makes $1417 show the explosion of sprites 0 to 2."
   },
   {
    "address": 2807,
    "type": "line",
-   "text": "The seven bytes of the time bar, 56 pixels, all $FF after the setup ($1D06-$1D1B). $0B0A removes one bit every 50 frames and $0B41 copies them into the sprites at $E859."
+   "text": "The seven bytes of the time bar, 56 pixels, all $FF after the setup ($1D06-$1D1C). $0B0A removes one bit every 51 frames and $0B41 copies them into the sprites at $E859."
   },
   {
    "address": 2814,
@@ -3975,7 +3975,7 @@
   {
    "address": 2826,
    "type": "line",
-   "text": "Runs the time bar down, called every frame by irq_top ($1F40), also while the game is paused. While $0B00 is not zero it counts it down and returns; otherwise it reloads $0B00 with $32 (50 frames) and ANDs the byte $0AF7+$0AFE with the mask $0B01+$0AFF, which removes one more bit, starting from the lowest bit of the last byte $0AFD. $0AFF then counts from 7 down to 0 and $0AFE from 6 down to 0. When all 56 bits are gone it sets the time-up flag $0B09 to 1."
+   "text": "Runs the time bar down, called every frame by irq_top ($1F40), also while the game is paused but not while the end picture flag $271F is set. While $0B00 is not zero it counts it down and returns; otherwise it reloads $0B00 with $32 (so a bit goes every 51 frames) and ANDs the byte $0AF7+$0AFE with the mask $0B01+$0AFF, which removes one more bit, starting from the lowest bit of the last byte $0AFD. $0AFF then counts from 7 down to 0 and $0AFE from 6 down to 0. When all 56 bits are gone it sets the time-up flag $0B09 to 1."
   },
   {
    "address": 2881,
@@ -3990,7 +3990,7 @@
   {
    "address": 2925,
    "type": "line",
-   "text": "The player's energy, $21 after the setup; $0B70 takes 7 from it for each hit and the bar $0BE2 shows it. The main loop at $0A49 goes to the game over screen when it is zero."
+   "text": "The player's energy, $21 after the setup; $0B70 takes 7 from it for each hit and the bar $0BE2 shows it. The main loop at $0A49 goes to the game over screen when it is zero and the cheat flag $0A11 is zero."
   },
   {
    "address": 2926,
@@ -4025,12 +4025,12 @@
   {
    "address": 3042,
    "type": "line",
-   "text": "Builds the energy bar in the panel. Fills the 8 cells at $CF59 with the character $1D and their colours at $DB59 with 5, writes the pattern $FF, $FF, $AA, $AA, $55, $55 into bytes 1 to 6 of each of the eight 8-byte cells of the buffer $0BA1-$0BE0, and masks off 2 bits (one pixel) from the right end for each step by which the energy $0B6D is below $21 (counter $0BE1 counts up to $21; the masks are at $0B9D, four to a cell, the last cell first). Then copies the 64 bytes of the buffer to the bitmap at $FAC8 (row 21, columns 17 to 24). Called by the main loop at $0A29 and by the panel redraw $218F."
+   "text": "Builds the energy bar in the panel. Fills the 8 screen bytes at $CF59 with $1D (the colours 1 and $D of those bitmap cells) and their colour RAM at $DB59 with 5, writes the pattern $FF, $FF, $AA, $AA, $55, $55 into bytes 1 to 6 of each of the eight 8-byte cells of the buffer $0BA1-$0BE0, and masks off 2 bits (one pixel) from the right end for each step by which the energy $0B6D is below $21 (counter $0BE1 counts up to $21; the masks are at $0B9D, four to a cell, the last cell first). Then copies the 64 bytes of the buffer to the bitmap at $FAC8 (row 21, columns 17 to 24). Called by the main loop at $0A29 and by the panel redraw $218F."
   },
   {
    "address": 3178,
    "type": "line",
-   "text": "Adds A to the decimal digit $0A00+X and carries towards the more significant digits (X counting down to 0): a digit that reaches 10 loses 10 and passes 1 on. Keeps Y; $0C95 holds the amount and then the carry. The score is the seven digits $0A00-$0A06 with the units in digit 6, so X=5 adds tens: $0E99 adds 7 there (70 points) when an obstacle has gone past, and $194B and $1981 add 5 (50 points) when a wall object has gone."
+   "text": "Adds A to the decimal digit $0A00+X and carries towards the more significant digits (X counting down to 0): a digit that reaches 10 loses 10 and passes 1 on. Keeps Y; $0C95 holds the amount and then the carry. The score is the seven digits $0A00-$0A06 with the units in digit 6, so X=5 adds tens: $0E9B adds 7 there (70 points) when an obstacle has gone past, and $194B and $1981 add 5 (50 points) when a wall object has gone; the mask game at $2CC5 adds 1 to digit 3 (1000 points)."
   },
   {
    "address": 3221,
@@ -4060,12 +4060,12 @@
   {
    "address": 3419,
    "type": "line",
-   "text": "Copies the panel colours again every frame, called by irq_top ($1F3D) unless the game is paused. For Y from $0A to $12 and from $17 to $1F it copies five rows of the panel colours ($2861, $2889, $28B1, $28D9 and $2901 plus Y) to colour RAM ($DAF7, $DB1F, $DB47, $DB6F and $DB97 plus Y) and the matching panel characters ($2929, $2951, $2979, $29A1 and $29C9 plus Y) to $CEF7, $CF1F, $CF47, $CF6F and $CF97 plus Y, and clears the sixth row ($DBBF and $CFBF plus Y). That is columns 9 to 17 and 22 to 30 of the panel rows 19 to 24."
+   "text": "Copies the panel colours again every frame, called by irq_top ($1F3D) unless the game is paused. For Y from $0A to $12 and from $17 to $1F it copies five rows of the panel colours ($2861, $2889, $28B1, $28D9 and $2901 plus Y) to colour RAM ($DAF7, $DB1F, $DB47, $DB6F and $DB97 plus Y) and the matching panel screen bytes, which are bitmap colours ($2929, $2951, $2979, $29A1 and $29C9 plus Y), to $CEF7, $CF1F, $CF47, $CF6F and $CF97 plus Y, and clears the sixth row ($DBBF and $CFBF plus Y). That is columns 9 to 17 and 22 to 30 of the panel rows 19 to 24."
   },
   {
    "address": 3574,
    "type": "line",
-   "text": "Nothing in the file calls or jumps to it, and no table points at it. It is a copy of the first half of draw_panel ($218F): copies the 200 panel colours from $2861 to colour RAM $DAF7 and the 200 panel characters from $2929 to $CEF7, clears the 40 cells at $CFC0 and $DBC0 and returns."
+   "text": "Nothing in the file calls or jumps to it, and no table points at it. It is a copy of the first half of draw_panel ($218F): copies the 200 panel colours from $2861 to colour RAM $DAF7 and the 200 panel screen bytes (bitmap colours) from $2929 to $CEF7, clears the 40 cells at $CFC0 and $DBC0 and returns."
   },
   {
    "address": 3608,
@@ -4140,7 +4140,7 @@
   {
    "address": 4105,
    "type": "line",
-   "text": "Sprite pointers of the shot, indexed by its step $10B1 (read by $10B7 into $CFFC): $9F in all 18 entries; the step can run on to 55, when the index reads on into explosion_frames and shot_path."
+   "text": "Sprite pointers of the shot, indexed by its step $10B1 (read by $10B7 into $CFFC): $9F in all 18 entries; the step can run on to 56, when the index reads on into explosion_frames and shot_path."
   },
   {
    "address": 4123,
@@ -4190,7 +4190,7 @@
   {
    "address": 4279,
    "type": "line",
-   "text": "Moves the shot the chopper throws, sprite 4. Called by irq_top ($1F2F). It returns at once when the time bar has run out ($0B09); while paused it only places the sprite. With no shot active ($10B0 zero) and the shoot flag $140E set, it starts one with a chance of $32 in 256 (random $2126): plays sound effect 8 ($B0EE), sets the step $10B1 to 0, takes X from the chopper's X plus $0C and Y from its Y, and sets the direction $10B3 to 1 when the player's swing position $1265 is right of the middle $13, to 0 when it is left, and by a random bit when it is in the middle. An active shot steps through the path table $103F: each step adds the Y change and the X change (subtracted when $10B3 is 0), and the byte $80 ends the shot. It places sprite 4 at X $10B4/$10B5, Y $10B6, with the pointer $1009+step in $CFFC and colour 7."
+   "text": "Moves the shot the chopper throws, sprite 4. Called by irq_top ($1F2F). It returns at once when the time bar has run out ($0B09); while paused it only places the sprite. With no shot active ($10B0 zero) and the shoot flag $140E set, it starts one with a chance of $32 in 256 (random $2126): plays sound effect 2 (X = $08) through $B0EE, sets the step $10B1 to 0, takes X from the chopper's X plus $0C and Y from its Y, and sets the direction $10B3 to 1 when the player's swing position $1265 is right of the middle $13, to 0 when it is left, and by a random bit when it is in the middle. An active shot steps through the path table $103F: each step adds the Y change and the X change (subtracted when $10B3 is 0), and the byte $80 ends the shot. It places sprite 4 at X $10B4/$10B5, Y $10B6, with the pointer $1009+step in $CFFC and colour 7."
   },
   {
    "address": 4598,
@@ -4205,7 +4205,7 @@
   {
    "address": 4709,
    "type": "line",
-   "text": "The player's swing position, 0 to $24, $13 in the middle (the value after the setup); moved by $126D with the stick and the chopper's motion, index into player_frames and swing_offsets."
+   "text": "The player's swing position, 0 to $24, $13 in the middle (the setup does not reset it); moved by $126D with the stick and the chopper's motion, index into player_frames and swing_offsets."
   },
   {
    "address": 4710,
@@ -4235,17 +4235,17 @@
   {
    "address": 4715,
    "type": "line",
-   "text": "Set to 1 by $126D when the momentum $126C reaches $28; cleared when the momentum is 0. While it is set the position swings back instead of following the stick."
+   "text": "Set to 1 by $126D when adding 2 to the momentum $126C would bring it to $28; cleared when the momentum is 0. While it is set the position swings back instead of following the stick."
   },
   {
    "address": 4716,
    "type": "line",
-   "text": "Momentum of the swing: rises by 2 (to $28) while the stick is held, falls by 1 otherwise."
+   "text": "Momentum of the swing: it falls by 1 every frame while it is not zero, and a held stick adds 2 (a net rise of 1) as long as the result stays below $28."
   },
   {
    "address": 4717,
    "type": "line",
-   "text": "Moves the player (sprite 3), who swings under the chopper. Called by irq_top ($1F2C); while paused it only places the sprite. It counts the hit timer $0B6E down. The swing position $1265 (0 to $24, $13 in the middle) goes up when the stick is held right and down when it is held left (bits 3 and 2 of the stick image $218E, clear when pressed), at a speed that depends on the chopper's direction $1416 and the toggle $126A. A momentum $126C rises by 2 to $28 while the stick is held and falls by 1 otherwise; at $28 the flag $126B is set and the position swings back. With no stick it moves toward the middle, or against the chopper's direction. X ($1266/$1268) is the chopper's X plus the signed second byte of the pair at $121B+2*position, minus 6, and Y ($1267) the chopper's Y plus the first byte; they go to $D006, $D007 and bit 3 of $D010. The pointer $11F6+position goes to $CFFB; while the hit timer runs the colour $D02A flashes between 1 and 9. $1209 toggles between $86 and $87 every fifth frame ($140D)."
+   "text": "Moves the player (sprite 3), who swings under the chopper. Called by irq_top ($1F2C); while paused it skips the movement and only places the sprite, sets its pointer and colour and runs the animation. It counts the hit timer $0B6E down. The swing position $1265 (0 to $24, $13 in the middle) goes up when the stick is held right and down when it is held left (bits 3 and 2 of the stick image $218E, clear when pressed), at a speed that depends on the chopper's direction $1416 and the toggle $126A. A momentum $126C falls by 1 every frame and a held stick adds 2 while that stays below $28; when it would reach $28 the flag $126B is set and the position swings back. With no stick it moves toward the middle, or against the chopper's direction. X ($1266/$1268) is the chopper's X plus the signed second byte of the pair at $121B+2*position, minus 6, and Y ($1267) the chopper's Y plus the first byte; they go to $D006, $D007 and bit 3 of $D010. The pointer $11F6+position goes to $CFFB; while the hit timer runs the colour $D02A flashes between 1 and 9. $1209 toggles between $86 and $87 every fifth frame ($140D)."
   },
   {
    "address": 5133,
@@ -4300,12 +4300,12 @@
   {
    "address": 5143,
    "type": "line",
-   "text": "Moves the chopper, sprites 0 to 2, along the script at $1638, called by irq_top ($1F29); while paused it only places the sprites. Each script entry has 4 bytes: X step (signed) to $140F, Y step to $1410, number of frames to $1411 and the shoot flag to $140E. When $1411 has run out it moves the pointer $D5/$D6 on 4 and reads the next entry; a frame count of $FF ends the script: the pointer goes back 4 and both steps are zero. It adds the steps to X $1412/$1414 and Y $1413 and sets $1416 to 1 for a step right, 2 for a step left and 0 for none. Sprite 0 is placed at X and Y, sprite 1 at X+$18 and Y, sprite 2 at X+$10 and Y+$15, all white. Every third frame ($1596) it steps the animation $1597 through 0 to 2, whose pointers (4 bytes a frame at $158A) go to $CFF8-$CFFA. With the explosion flag $0A7A set the pointers come from $101B plus the step $1589 instead, with colour 7; when the step reaches $24 it sets $271F to 1 and $2720 to $C8."
+   "text": "Moves the chopper, sprites 0 to 2, along the script at $1638, called by irq_top ($1F29); while paused it skips the movement and the animation but still places the sprites and sets their pointers. Each script entry has 4 bytes: X step (signed) to $140F, Y step to $1410, number of frames to $1411 and the shoot flag to $140E. When $1411 has run out it moves the pointer $D5/$D6 on 4 and reads the next entry; a frame count of $FF ends the script: the pointer goes back 4 and both steps are zero. It adds the steps to X $1412/$1414 and Y $1413 and sets $1416 to 1 for a step right, 2 for a step left and 0 for none. Sprite 0 is placed at X and Y, sprite 1 at X+$18 and Y, sprite 2 at X+$10 and Y+$15, all white. Every third frame ($1596) it steps the animation $1597 through 0 to 2, whose pointers (4 bytes a frame at $158A) go to $CFF8-$CFFA. With the explosion flag $0A7A set the pointers come from $101B plus the step $1589 instead, with colour 7; when the step would move on to $24 it sets $271F to 1 and $2720 to $C8."
   },
   {
    "address": 5513,
    "type": "line",
-   "text": "Step of the explosion of sprites 0 to 2 (0 to $24), index into explosion_frames; moved on by $1417 while the explosion flag $0A7A is set."
+   "text": "Step of the explosion of sprites 0 to 2 (0 to $23), index into explosion_frames; moved on by $1417 while the explosion flag $0A7A is set."
   },
   {
    "address": 5514,
@@ -4315,7 +4315,7 @@
   {
    "address": 5526,
    "type": "line",
-   "text": "Frames until the chopper's animation moves on; $1417 counts it down from 3."
+   "text": "Frames until the chopper's animation moves on; $1417 reloads it with 3 and counts it down at once, so it holds 2, 1 and 0."
   },
   {
    "address": 5527,
