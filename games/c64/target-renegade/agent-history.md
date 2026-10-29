@@ -117,3 +117,22 @@ Native input tests covered 36 neutral cases and complete held front-attack/diago
 The final sixty-comment draw was checked by two independent agents after the first hit its usage limit at forty. Five sound-detail errors were corrected in all matching comments. Following the same active/sequence condition corrected the page effects player's end test as well. Both samples remain over the mark; a full audit is recommended. The contributor then asked to finish the active part and prepare a PR.
 
 The authored pages were committed before the final reading-age rewrite. The rewrite defines video registers, sprites, buffers and the temporary reflection cache at first use, makes the direction-number link explicit, and preserves the address/count evidence. The diff was read against the draft; the tested JavaScript blocks were unchanged.
+
+## 28 October 2026: history, reception and new tabs
+
+A contributor asked for the page to be modelled on Doctor Who and Fist II, with the game's history, reviews, and loading picture. The session ran on `claude-sonnet-5-5`, which the kit does not list as proven, so the pass wrote only copy, images, and page code, and changed no listing comment or symbol. The tier stays Silver; a proven model should check the new copy.
+
+The fork's `main` was 313 commits behind upstream, so the Target Renegade work was missing until the contributor synced the fork. Research notes stayed in the gitignored `work/research.md`, because the kit allows only its own notes in a game folder.
+
+Sources read: Wikipedia's two Renegade articles (raw wikitext through curl, since the fetch tool was blocked), a saved Lemon64 page, the Imagine manual (pages 14 and 15, as a scanned PDF), and images of the Zzap!64 and Commodore User reviews. A saved GamesNostalgia page was rejected: it described subway stations and knives that the manual and the game do not have.
+
+Findings: the loading picture credits different people from the manual (it was drawn by running `TARGET REN. SPIC` from the disk in the kit's simulator, with a blank character ROM so the loader could pass its font copy). Zzap!64 says five lives, which matches the cartridge and not the manual. Several magazine claims match the code: two enemy slots, a hold that needs a partner, and an ammunition byte for the gunman.
+
+New pages: Gameplay, Controls, Graphics (a sheet of all 99 sprite components), Music (the players moved from the overview, with the sound tests pointed at the new page), and Solution. The overview gained the story, the licence history, and the reception.
+
+## 28 October 2026: Opus audit
+
+The two earlier samples were over the mark, so the listing was audited by checkers on `claude-opus-5-5`, as `kit/CHECKING.md` asks. Six checkers took the 458 handwritten comments in chunks of about 77 (34 wrong details, two wrong, three doubtful, one unverifiable), one took the 33 template families (two families wrong, 17 comments), one took facts.md and features.md (88 claims, two wrong), and one read the new pages (about 200 claims, 37 wrong, overstated or unsupported, 27 style breaches). Each checker's report was spot-checked against the code before it was believed; all nine held.
+
+56 comments were rewritten and the listings rebuilt with `listing.py --recomment`. The pages were corrected where they repeated those facts: Space switches the byte at `$0200` between MUSIC and FX (it is not a music on/off switch), the armed type starts with six rounds, a defeat restores two endurance units only when the total stays below 44, and the dismount copies the bike's position and puts the facing on the second component. Quotes the checker could not verify against the scans were kept, because they were read from the contributor's images; they are in work/research.md.
+

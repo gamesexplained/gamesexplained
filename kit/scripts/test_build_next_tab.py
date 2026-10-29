@@ -51,6 +51,13 @@ class NextTab(unittest.TestCase):
                          ["index.html", "mechanics.html", "play.html", "discoveries.html", "levels.html", "music.html",
                           "solution.html", "source.html", "about.html"])
 
+    def test_a_games_own_tabs_cannot_leave_out_source_code_or_about(self):
+        game = {"tabs": [["index.html", "How it works"], ["discoveries.html", "Discoveries"], ["levels.html", "Maps"]]}
+        present = {"index.html", "discoveries.html", "levels.html", "source.html", "about.html"}
+        self.assertEqual(build.tab_order(game, present),
+                         [("index.html", "How it works"), ("discoveries.html", "Discoveries"), ("levels.html", "Maps"),
+                          ("source.html", "Source code"), ("about.html", "About")])
+
     def test_built_above_the_edit_footer_and_not_on_the_last_tab(self):
         self.shot, build.shot_html = build.shot_html, lambda *a, **k: ""   # the fixture has no title screen
         try:

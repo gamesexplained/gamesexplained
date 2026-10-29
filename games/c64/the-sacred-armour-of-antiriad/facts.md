@@ -434,11 +434,11 @@ except in rooms `$00`-`$09`.
   that `latch_bg_hits` keeps between the read and the store is cleared
   without being looked at, so that touch costs nothing. Whether it happens
   depends on where the main loop, which runs with no wait, is in its pass
-  when the collision's interrupt comes. *Live*: on the kit's machine, on
-  the Maps page's route in room `$14`, the interrupt for sprite 0's touch
-  on line 133 came at `$A4AC` and the touch was cleared; in VICE the same
-  touch, latched on the same line, was found at `$A44C` on line 136 and
-  cost 4 points.
+  when the collision's interrupt comes. *Live*: on the Maps page's route
+  in room `$14`, VICE found sprite 0's touch at `$A44C` on line 136, and
+  it cost 4 points; on the kit's machine as it took interrupts before
+  #525 and #556, the interrupt for the same touch came at `$A4AC` and the
+  touch was cleared. The kit's machine since then takes it as VICE does.
 - Instruments 0 and 3, paths `$8F`, `$97`, `$A0` and `$A5`, and character
   list 3 are never used.
 - Nothing clears `zp_throw` (`$7C`) when a game starts. `foot_fire`
@@ -555,10 +555,15 @@ given the stick the kit's machine read there.
   at 0 for 528 reads.
 - The route as the Maps page draws it, found on the kit's machine with
   interrupts taken inside handlers: of its 1,954 reads, all but 20 were
-  the same in VICE. The 20 come in a row from the 1,465th, in rooms `$14`
-  and `$15`, where VICE's Tal had 4 points less energy, from the touch of
-  the scenery the kit's machine lost (Quirks). His energy ran out on the
-  same read in both, and every read after it was the same. With the stick
+  the same in VICE as on that machine. The 20 come in a row from the
+  1,465th, in rooms `$14` and `$15`, where VICE's Tal had 4 points less
+  energy, from the touch of the scenery that machine lost (Quirks). His
+  energy ran out on the same read in both, and every read after it was
+  the same. The kit's machine since #525 and #556, given the same reads,
+  has Tal's energy as VICE had it at those 20; from the 1,187th read to
+  the 1,267th, in room `$09`, it has the suit's energy 2 points lower
+  than the machine before, from a touch of the scenery that machine did
+  not raise, and whether VICE raised it is not known. With the stick
   held as the route holds it after the last read, the mine had gone off
   (`zp_victory` `$80`) five frames later, and the last message (`$95`)
   had come 615 frames after the read, with the score at 1,080 and the

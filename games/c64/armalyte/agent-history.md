@@ -218,3 +218,34 @@ button, it was worked through to 100 % coverage and a player of its own
   Aaron Bell. He decided that the run stays recorded as
   `claude-opus-5-5[1m]`, since that model did the work, and `game.json`
   is unchanged.
+
+## 28 October 2026: the bosses
+
+- Aaron Bell asked for a section on the bosses. The page had only their
+  timers, hits and payouts (section 5), so section 4 was added: a viewer
+  that runs any of the fifteen fights, with what each boss does.
+- The fight is the engine's boss routines written again in JavaScript.
+  `test_bosses.js` runs them beside the engine's own code in the kit's
+  6502 simulator, four runs a boss, and compares every object table each
+  frame. Then the viewer's whole run was compared with fifteen fights
+  recorded in VICE, object by object, and its pictures with the
+  emulator's screens (99 % of pixels, 98.9 % at worst; the rest is
+  mostly the stars, which the viewer does not draw).
+- Writing the port corrected three notes. `enemies_space_out` (`$AA64`)
+  tests only the enemies' shots; the note said any enemy moving up or
+  down. `enemies_fire` (`$A664`) takes the highest-numbered object that
+  may fire and never object 0, and modes 0 and 1 fire at a target above
+  and below, not level with it. `boss_spawn` (`$AD89`) releases only on
+  the core's marked path steps. The listing comments and `facts.md` were
+  corrected in place.
+- One recording meant for the level 8 end boss was the second
+  mid-level fight, at tile column 242, which the jump to column 241 had
+  landed just before, and its scenery was stale. Poking the tile column
+  leaves the screen's ring buffer (42 character columns, about eight
+  tile columns) holding the old map, so a fight that starts within about
+  nine tile columns of the jump shows the wrong scenery. Jumping to ten
+  columns before each fight fixed both.
+- Three things were tried live by writing fire characters on the screen
+  in a fight: a released enemy ignores them, a super weapon's character
+  counts one hit on a boss part and is wiped, and the core ignores hits
+  while a guard lives.

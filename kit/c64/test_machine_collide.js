@@ -99,8 +99,9 @@ for (const c of F.cases.filter((c) => !c.name.startsWith('timing'))) {
 // The collision interrupts, held against kit/c64/fixtures/vic-collide-irq.json, which frame.py irq
 // recorded in VICE: each scene's program and handlers, run the same way. A handler that never reads
 // the register is interrupted once, and one that reads it at once as often as in VICE. With the
-// read pad NOPs later the count is one VICE gave for pads pad - 5 to pad, a read up to ten cycles
-// earlier: the machine does not keep to the cycle where the handler's read falls in its line.
+// read pad NOPs later the count is one VICE gave within two pads of it, earlier or later, past
+// VICE's last pad any count no higher than its last: the machine looks at the latch every eight
+// cycles, not on the cycle the beam raises it.
 const I = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'vic-collide-irq.json'), 'utf8'));
 for (const s of I.scenes) {
   const ram = new Uint8Array(65536);
@@ -118,8 +119,8 @@ for (const s of I.scenes) {
     got.push((ram[I.count] - a) & 255);
   }
   check(got[0] === s.counts[0], `${s.name}: read at once, ${got[0]} interrupts in ${I.frames} frames, VICE ${s.counts[0]}`);
-  const off = got.map((g, p) => [g, s.counts.slice(Math.max(0, p - 5), p + 1)])
-    .map(([g, w], p) => (g >= Math.min(...w) && g <= Math.max(...w) ? '' : `pad ${p}: ${g}, VICE ${w.join(' ')}`)).filter(Boolean);
+  const off = got.map((g, p) => [g, s.counts.slice(Math.max(0, p - 2), p + 3), p + 2 >= s.counts.length])
+    .map(([g, w, end], p) => (g >= (end ? 0 : Math.min(...w)) && g <= Math.max(...w) ? '' : `pad ${p}: ${g}, VICE ${w.join(' ')}`)).filter(Boolean);
   check(!off.length, `${s.name}: ${off.slice(0, 3).join('; ')}${off.length > 3 ? ` and ${off.length - 3} pads more` : ''}`);
   ram.set(bytes(s.never_read), I.handler);
   const z = ram[I.count];

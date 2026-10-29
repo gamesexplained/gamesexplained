@@ -278,6 +278,17 @@ plays the wrong waveform.
 v3.13.2, measured 16 October 2026), and the emulator's server has no
 way to set them; `tool-vice-mcp`, "The paddles", says what does.
 
+`$D41B` reads voice 3's oscillator, and with voice 3 on noise it is the
+usual source of a game's random numbers. The noise generator steps once
+every 2^20 / frequency cycles, about every 16 at frequency `$FFFF`, so
+reads closer together than that are not independent: a table filled by a
+tight loop has neighbours equal or one shift apart, and a game that takes
+two neighbouring bytes for one decision does not get even odds. Work odds
+out from a table read with the chip running, never from the code alone.
+In VICE with sound off, `$D41B` and `$D41C` read the low byte of the
+cycle counter, and such a table is a ramp
+(`kit/lessons/2026-10-26-into-the-eagles-nest.md`).
+
 ## CIA timers and the tick
 
 CIA1 `$DC00`–`$DC0F`: port A `$DC00`, port B `$DC01`, timer A latch

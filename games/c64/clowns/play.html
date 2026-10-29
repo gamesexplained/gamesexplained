@@ -158,13 +158,13 @@ if (!window.C64 || !window.ClownsPort) {
   // ---- sound: each tick's SID writes, streamed to the site's SID model
   let host = null, soundOn = false;
   let pending = [];
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, sidRegs[r]); return all; };
   async function sound(on) {
     soundOn = on;
     if (on && !host) {
       try {
         host = await C64Sid.host({ live: true, gain: 0.5, period: 10001 });
-        const all = []; for (let r = 0; r < 25; r++) all.push(r, sidRegs[r]);
-        host.push([all]);
+        host.push([registers()]);
       } catch (e) { soundOn = false; $('cp-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
@@ -175,31 +175,44 @@ if (!window.C64 || !window.ClownsPort) {
   // ---- the clock: each tick moves it on by what the game's tick of that loop costs
   let paused = false, last = 0;
   $('cp-pause').onclick = () => { paused = !paused; $('cp-pause').setAttribute('aria-pressed', paused); };
-  $('cp-reset').onclick = () => { boot(); };
+  // Reset: a new machine from the listing's bytes, the sound chip's registers as it starts, the
+  // page's pause let go and the clock started again, whatever the old machine was doing, a stop
+  // included
+  let running = false;
+  const go = () => { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } };
+  $('cp-reset').onclick = () => {
+    boot();
+    if (paused) $('cp-pause').click();
+    pending = [];
+    if (host) host.push([registers()]);
+    go();
+  };
   document.addEventListener('visibilitychange', () => { last = 0; });
   function frame(t) {
-    if (!paused) {
-      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
-      clock += dt * CLOCK;
-      let n = 0;
-      while (clock > 0 && n++ < 40) {
-        gen.next();
-        ticks++;
-        if (held && !--held) button = false;
-        const c = CL_COST[P.site] ? CL_COST[P.site].median : 10001;
-        clock -= c;
-        if (soundOn && host) { pending.push(sidQueue); }
-        sidQueue = [];
+    try {
+      if (!paused) {
+        const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+        clock += dt * CLOCK;
+        let n = 0;
+        while (clock > 0 && n++ < 40) {
+          gen.next();
+          ticks++;
+          if (held && !--held) button = false;
+          const c = CL_COST[P.site] ? CL_COST[P.site].median : 10001;
+          clock -= c;
+          if (soundOn && host) { pending.push(sidQueue); }
+          sidQueue = [];
+        }
+        if (soundOn && host && pending.length) { host.push(pending); }
+        pending = [];
       }
-      if (soundOn && host && pending.length) { host.push(pending); }
-      pending = [];
-    }
-    last = t;
-    draw();
-    $('cp-out').textContent = paused ? 'paused' : ticks + ' ticks';
+      last = t;
+      draw();
+      $('cp-out').textContent = paused ? 'paused' : ticks + ' ticks';
+    } catch (e) { console.error(e); running = false; $('cp-out').textContent = 'The port stopped: ' + e.message + '. Reset starts it again.'; return; }
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  go();
   $('cp-cost').textContent = 'Cycles per tick: ' + Object.entries(CL_COST).map(([k, v]) => k + ' ' + v.median).join(', ') + '.';
 }).catch((e) => { console.error(e); $('cp-out').textContent = 'The game could not start: ' + e.message; });
 </script>

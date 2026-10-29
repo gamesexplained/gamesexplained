@@ -173,9 +173,14 @@ contributor's call: ask first. With their yes, point
 and drive it over CDP as above; `stop browser` stops it. The profile and
 its state go under `tools/chromium/`, but Google Chrome can start
 Google's own updater, which runs and writes outside the folder: the
-Bubble Bobble run on a Mac without Firefox saw it start (#331). The Mac
-paths were written from that run's report and tested on Linux only, on
-16 October 2026.
+Bubble Bobble run on a Mac without Firefox saw it start (#331). The
+launcher's Mac paths were written from that run's report and tested on
+Linux only, on 16 October 2026. The Mac's own Chrome has done a whole page
+check: on 19 October 2026, on macOS 27.0.1 on Apple silicon, the Balloon
+Fight run started it with `--headless=new` and a profile of its own under
+`tools/`, took pictures with `--screenshot=<file.png> <url>`, drove it
+over CDP for keys and the console, and saw every widget draw. Whether that
+Chrome wrote outside `tools/` was not checked.
 
 On Windows 11 with the kit under WSL2, where WSL had no browser, the
 Microsoft Edge that Windows ships did the page check on 12 October 2026

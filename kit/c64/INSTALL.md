@@ -665,7 +665,15 @@ things to know:
   at `LOADING`; a restart cured it each time. With sound off, through
   `tools/vice-home/config/vice/vicerc` holding `[C64SC]` and `Sound=0`, it
   ran at full speed for the rest of the run (several hours), and warp ran
-  at 7× instead of about 4.5×. The kit needs no sound from the emulator.
+  at 7× instead of about 4.5×. Sound off changes what the game reads,
+  though: `$D41B` and `$D41C` then read the low byte of the cycle counter
+  (`virtual_display` in `kit/c64/tools.py`), so a game that takes its
+  random numbers from voice 3's noise gets a smooth ramp instead, and its
+  random events come out wrong. A snapshot saved with sound off does not
+  start the SID when loaded with sound on (VICE v3.13.2 logs "Cannot
+  initialize SID engine"), so a run on such a game keeps sound on, with
+  `SoundDeviceName="fs"` and `SoundDeviceArg="/dev/null"` in `vicerc`,
+  from its first snapshot.
 
 **No display.** A server or container has no X display, and the GUI build
 will not start without one. The launcher sees that (neither `DISPLAY` nor

@@ -12882,7 +12882,7 @@
   {
    "address": 42596,
    "type": "line",
-   "text": "Lets an enemy fire when one of the shots allowed this stage ($6B + 1 of the four) is free: picks an enemy in state 7+ whose fire flag ($FF80) is set and whose firing mode ($FF94 bits 0-1) allows it now (mode 2 fires at once; the others when level with the target), checks that no live shot is within 45 lines of the new one, and starts a shot (state 2 into $FDB0) at the enemy's place aimed at the target chosen by $A79E: it sets the shot's x and y directions ($FD88/$FD9C) and, with the speed $6A, works out how many steps on the long axis to one on the short ($FD74/$FF68)."
+   "text": "Lets an enemy fire when one of the shots allowed this stage ($6B + 1 of the four) is free: takes the first of objects 15 down to 1 (never object 0, a boss's core) in state 7+ whose fire flag ($FF80) is set and whose firing mode ($FF94 bits 0-1) allows it now (mode 2 fires at any target, mode 0 only at one above it, mode 1 only at one below it, and neither at one level with it), checks that no live shot is within 45 lines of the new one, and starts a shot (a delay of 2 into $FDB0) at the enemy's place aimed at the target chosen by $A79E: it sets the shot's x and y speeds and directions ($FD9C/$FD88), the speed $6A on the longer axis and less on the shorter by the ratio of the distances, with a half-speed flag ($FF68/$FD74) to round it."
   },
   {
    "address": 42910,
@@ -12967,7 +12967,7 @@
   {
    "address": 43620,
    "type": "line",
-   "text": "Keeps the attack waves apart: walks the y-sorted object list and for each enemy moving vertically ($FD78 sign) looks for another live object close above or below it in its path (within $28 or $25 lines, after skipping $B7 = 5 entries); one that has not yet appeared is removed, and otherwise the enemy reverses both directions ($FD8C, $FD78), dies into its burst state 2 and plays sound $1F."
+   "text": "Keeps the enemies' shots clear of what is ahead of them: walks the y-sorted object list and, for each enemy shot (objects 16-19) that is live or about to appear, counts five live objects in the direction it moves up or down ($FD78 sign) and looks at the sixth. If that one is within $25 lines below a falling shot or $28 lines above a rising one, the shot is removed when it has not yet appeared, and otherwise reverses both directions ($FD8C, $FD78), dies into its burst state 2 and plays sound $1F. Enemies other than shots are never touched."
   },
   {
    "address": 43791,
@@ -13032,7 +13032,7 @@
   {
    "address": 44425,
    "type": "line",
-   "text": "Lets the boss release enemies: when its core object is alive, with spawning on ($98 not $FF) and every spawn slot free, it puts a set of enemies from the boss table's spawn list ($99-$AC: x, y, x high bit, state, movement) into objects 15 down, one at a time or ($98 negative) all at once, with a delay of 5 before each appears; $97 counts down the sets."
+   "text": "Lets the boss release enemies: in the boss stage, while the core (object 0) is alive (state 3+) with its path's fire flag ($FF80) set, and spawning is on ($98 not $FF), it copies enemies from the boss table's spawn list ($99-$AC: x, y, x high bit, type, path) into objects 15 down, each with a delay of 5 before it appears. With $98 negative it places ($98 AND 3) + 1 at once when objects 15 down are all free. Otherwise it places one, entry $97: into object 15 when it is free if $10 is set, or else into the first free object of 15 to 12, clearing the core's fire flag so that the next release waits for the core's next marked step; $97 counts down through the entries and starts again from $98."
   },
   {
    "address": 44543,

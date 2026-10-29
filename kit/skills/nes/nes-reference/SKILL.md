@@ -37,7 +37,23 @@ yes to looking the game up online (`kit/START.md`):
 - **The Cutting Room Floor**, `https://tcrf.net/`: unused content and the
   differences between releases, which is where a page's discoveries often
   start.
+- **StrategyWiki**, `https://strategywiki.org/`: the controls, the rules,
+  the scoring and the enemies, for many games.
 - The game's manual, for the names of the things on screen.
+
+What a script's fetch got on 29 October 2026:
+
+| Site | Answer |
+|---|---|
+| StrategyWiki's API, `https://strategywiki.org/w/api.php?action=parse&page=<Page>&format=json&prop=wikitext` | answered with the page's wiki text; the wiki's own pages gave a browser check (403) |
+| Wikipedia's API, the same query on `https://en.wikipedia.org/w/api.php` | answered |
+| NesCartDB, Data Crystal, The Cutting Room Floor, the NESdev wiki | a browser check (403), and the wikis' APIs gave one too |
+
+A site behind a browser check is read by hand, not got round: ask the
+contributor to open the page and paste what it says, or leave it out and
+say so under Sources in `features.md`. For NesCartDB, give them the
+CRC32 the server's `cartridge` command reports, so they can find the
+release's row.
 
 A game with a published disassembly can be used as a check on the run,
 or imported (`kit/skills/core/40-sweep`); say which in `game.json`.

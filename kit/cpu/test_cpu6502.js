@@ -65,6 +65,7 @@ function machine(org, src, opts, mem) {
   return cpu;
 }
 
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 // --- single instructions -------------------------------------------------------------------------
 
 // ADC and SBC, binary: the overflow table from the 6502.org tutorial on V.
@@ -710,6 +711,20 @@ patch:  lda #$00
   c.call(0x1000);
   expect('ioPages sends those pages to io and folds the rest', { seen: seen.join(' '), a: c.a, ram: c.m[0x1020] }, { seen: 'rff1e wff0b=30 rfd30', a: 0x30, ram: 0x30 });
   throws('io without the C64 map needs ioPages', () => new CPU(new Uint8Array(65536), { io }), /ioPages/);
+}
+{
+  // romPages: reads and fetches from memory, writes through io (a cartridge's ROM), beside ioPages
+  const m = new Uint8Array(65536), log = [];
+  const c = new CPU(m, { io: { read: a => { log.push('r' + a.toString(16)); return 0x42; }, write: (a, v) => log.push('w' + a.toString(16) + '=' + v.toString(16)) },
+    ioPages: [...range(0x20, 0x3F), 0x40], romPages: range(0x80, 0xFF) });
+  // LDA $2002; STA $4014; STA $8000; LDA $8000; STA $10; INC $3FFF; RTS
+  m.set([0xAD, 0x02, 0x20, 0x8D, 0x14, 0x40, 0x8D, 0x00, 0x80, 0xAD, 0x00, 0x80, 0x85, 0x10, 0xEE, 0xFF, 0x3F, 0x60], 0x0300);
+  m[0x8000] = 0x77;
+  c.call(0x0300);
+  expect('romPages read memory and write through io, ioPages read and write through io',
+    { log: log.join(' '), a: c.a, ram: m[0x10], rom: m[0x8000] }, { log: 'r2002 w4014=42 w8000=42 r3fff w3fff=42 w3fff=43', a: 0x77, ram: 0x77, rom: 0x77 });
+  throws('romPages with no io', () => new CPU(m, { romPages: [0x80] }), /romPages needs io/);
+  throws('romPages with a port', () => new CPU(m, { port: 0x37, io: {}, romPages: [0x80] }), /not both/);
 }
 
 console.log(bad ? `FAILED ${bad} of ${runs}` : `all ${runs} simulator checks pass`);

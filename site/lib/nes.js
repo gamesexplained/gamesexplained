@@ -11,6 +11,7 @@
 //   NES.tile(chr, n)            tile n of a pattern table as 64 colour indices, 0 to 3
 //   NES.frame(ppu, oam, opts)   one picture, 256 by 240 colour numbers (0 to 63)
 //   NES.draw(ctx, pixels, w, h, scale)   paint colour numbers onto a canvas
+//   NES.ppu(opts)               the PPU's registers and memory as the CPU reaches them (below)
 //
 // frame() follows the rules in kit/skills/nes/nes-reference, "The PPU": the background through
 // the scroll and the four nametables, each attribute quarter's palette, the backdrop, sprites of
@@ -111,7 +112,85 @@ globalThis.NES = (function () {
     ctx.putImageData(img, 0, 0);
   }
 
-  return { PALETTE, RGB, tile, frame, draw };
+  // --- the PPU's registers and memory ----------------------------------------------------------
+  // A model of what the CPU reaches through $2000-$2007 and $4014 (kit/skills/nes/nes-reference,
+  // "The registers"): the control and mask registers, the status flags, the sprite table and its
+  // address, the shared address and scroll registers with their write toggle, the read buffer,
+  // and the PPU's memory with the cartridge's mirroring. A page's port writes to it as the game
+  // writes to the chip, and draws from image() and scroll(); kit/nes/machine.js runs the game's
+  // own code on one, and kit/nes/lockstep.js compares the two.
+  //   const p = NES.ppu({ chr, mirroring: 'horizontal' | 'vertical' | 'four' | 'single0' | 'single1' })
+  //   p.write(r, v)       a store to $2000 + r (r 0 to 7, the mirrors folded by the caller)
+  //   p.read(r)           a load from it: $2002 clears the vertical blank flag and the toggle, and
+  //                       $2007 reads a byte late below the palettes
+  //   p.dma(bytes)        $4014: 256 bytes into the sprite table from its address
+  //   p.vblank            the vertical blank flag, which the machine sets and clears with the beam
+  //   p.nmi()             the NMI line: the flag and PPUCTRL's bit 7
+  //   p.image()           the 16 KB as the PPU sees it, for NES.frame
+  //   p.scroll()          { ctrl, mask, scrollX, scrollY } as the game last set them with $2000 and
+  //                       $2005 (a write to $2006 changes them too, as it does the chip's), for
+  //                       NES.frame; nametable the picture's top left comes from ctrl's bits 0-1
+  //   p.log               with { log: true }: every write to $2000, $2001, $2005 and $2006 as
+  //                       [cycle, scroll()] (cycle is write's third argument), for a page that
+  //                       draws a split in bands; the page clears it each frame
+  //   p.save(), p.load(s) the whole state as plain data
+  // The write to $2000 and the second write to $2005 change the scroll the next picture starts
+  // from; $2006 sets the address the next $2007 reaches and the scroll with it.
+  const NT_MAP = { horizontal: [0, 0, 1, 1], vertical: [0, 1, 0, 1], four: [0, 1, 2, 3], single0: [0, 0, 0, 0], single1: [1, 1, 1, 1] };
+  function ppu(opts = {}) {
+    const chr = opts.chr || new Uint8Array(0x2000);
+    const nt = NT_MAP[opts.mirroring || 'horizontal'];
+    if (!nt) throw new Error('NES.ppu: mirroring is horizontal, vertical, four, single0 or single1');
+    const p = {
+      chr, mirroring: opts.mirroring || 'horizontal', nt: new Uint8Array(0x1000), pal: new Uint8Array(0x20), oam: new Uint8Array(256),
+      ctrl: 0, mask: 0, oamAddr: 0, t: 0, v: 0, x: 0, w: 0, buffer: 0, vblank: 0, hit: 0, overflow: 0, log: opts.log ? [] : null,
+    };
+    // where an address lands: the pattern tables (read only), a physical nametable, or the palette
+    const fold = a => { a &= 0x3FFF; if (a >= 0x3F00) { a &= 0x1F; return 0x10000 | ((a & 0x13) === 0x10 ? a & 0x0F : a); }
+      if (a >= 0x3000) a -= 0x1000; return a < 0x2000 ? a : 0x2000 | (nt[(a >> 10) & 3] << 10) | (a & 0x3FF); };
+    const peek = a => { const f = fold(a); return f & 0x10000 ? p.pal[f & 0x1F] : f < 0x2000 ? chr[f] : p.nt[f & 0xFFF]; };
+    const poke = (a, v) => { const f = fold(a); if (f & 0x10000) p.pal[f & 0x1F] = v & 0x3F; else if (f >= 0x2000) p.nt[f & 0xFFF] = v; };
+    p.peek = peek; p.poke = poke;
+    const scroll = () => ({ ctrl: (p.ctrl & 0xFC) | ((p.t >> 10) & 3), mask: p.mask, scrollX: ((p.t & 0x1F) << 3) | p.x, scrollY: (((p.t >> 5) & 0x1F) << 3) | ((p.t >> 12) & 7) });
+    p.scroll = scroll;
+    p.nmi = () => (p.vblank && (p.ctrl & 0x80)) ? 1 : 0;
+    p.write = (r, v, cycle) => {
+      v &= 0xFF;
+      switch (r & 7) {
+        case 0: p.ctrl = v; p.t = (p.t & 0x73FF) | ((v & 3) << 10); break;
+        case 1: p.mask = v; break;
+        case 3: p.oamAddr = v; break;
+        case 4: p.oam[p.oamAddr] = v; p.oamAddr = (p.oamAddr + 1) & 0xFF; break;
+        case 5: if (!p.w) { p.x = v & 7; p.t = (p.t & 0x7FE0) | (v >> 3); p.w = 1; } else { p.t = (p.t & 0x0C1F) | ((v & 7) << 12) | ((v & 0xF8) << 2); p.w = 0; } break;
+        case 6: if (!p.w) { p.t = (p.t & 0x00FF) | ((v & 0x3F) << 8); p.w = 1; } else { p.t = (p.t & 0x7F00) | v; p.v = p.t; p.w = 0; } break;
+        case 7: poke(p.v, v); p.v = (p.v + (p.ctrl & 4 ? 32 : 1)) & 0x7FFF; break;
+        default: return;
+      }
+      if (p.log && ((r & 7) === 0 || (r & 7) === 1 || (r & 7) === 5 || (r & 7) === 6)) p.log.push([cycle === undefined ? 0 : cycle, scroll()]);
+    };
+    p.read = r => {
+      switch (r & 7) {
+        case 2: { const v = (p.vblank << 7) | (p.hit << 6) | (p.overflow << 5); p.vblank = 0; p.w = 0; return v; }
+        case 4: return p.oam[p.oamAddr];
+        case 7: {
+          const a = p.v & 0x3FFF;
+          let out;
+          if (a >= 0x3F00) { out = peek(a); p.buffer = peek(a - 0x1000); } else { out = p.buffer; p.buffer = peek(a); }
+          p.v = (p.v + (p.ctrl & 4 ? 32 : 1)) & 0x7FFF;
+          return out;
+        }
+        default: return 0;
+      }
+    };
+    p.dma = bytes => { for (let i = 0; i < 256; i++) p.oam[(p.oamAddr + i) & 0xFF] = bytes[i]; };
+    p.image = () => { const out = new Uint8Array(0x4000); out.set(chr, 0); for (let a = 0x2000; a < 0x4000; a++) out[a] = peek(a); return out; };
+    p.save = () => ({ nt: Array.from(p.nt), pal: Array.from(p.pal), oam: Array.from(p.oam), ctrl: p.ctrl, mask: p.mask, oamAddr: p.oamAddr,
+      t: p.t, v: p.v, x: p.x, w: p.w, buffer: p.buffer, vblank: p.vblank, hit: p.hit, overflow: p.overflow });
+    p.load = s => { p.nt.set(s.nt); p.pal.set(s.pal); p.oam.set(s.oam); for (const k of ['ctrl', 'mask', 'oamAddr', 't', 'v', 'x', 'w', 'buffer', 'vblank', 'hit', 'overflow']) p[k] = s[k]; return p; };
+    return p;
+  }
+
+  return { PALETTE, RGB, tile, frame, draw, ppu };
 })();
 
 if (globalThis.makeMemMap) {

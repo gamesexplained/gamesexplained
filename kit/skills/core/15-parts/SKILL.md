@@ -31,7 +31,8 @@ page (`70-minisite`).
 | part | `parts/<id>/` | one of the things the same addresses hold at different times, with its own `part.json`, symbol map and listing |
 | load | a part's `"kind"`, the default | a part the game's loader copies to fixed addresses; listed at those addresses, from a snapshot |
 | bank | `"kind": "bank"` | a part the machine switches into a window of the CPU's addresses, read there and never copied; listed at the window's addresses, from the cartridge image or the snapshot's copy of the bank |
-| virtual address space | `coverage.virtual` in `game.json` | code or text the program reads on demand into whichever buffer is free, and reaches at its own addresses; not a part, and the kit cannot list it |
+| virtual | `"kind": "virtual"`, `"machine"`, `"size"` | a program for a virtual machine, which the game's interpreter reads on demand into whichever buffer is free and reaches at the program's own addresses; listed at those addresses, from its file, by the kit for that machine (`kit/<machine>/`) |
+| virtual address space | `coverage.virtual` in `game.json` | code or text read on demand the same way, for a machine the kit has no tools for; not a part, and the kit cannot list it |
 | `over` | a load's `part.json` | the part beneath: the one whose addresses this load writes over |
 | `ranges` | a load's `part.json` | the addresses its load writes, which it takes from the part beneath |
 | `bank` | a bank's `part.json` | the bank's number, or its name where the machine names its banks |
@@ -46,8 +47,8 @@ one image has no `part.json`: its `game.json` holds the ledger settings
 
 To see each kind in a finished game: loads over a resident part, one of
 them over another load, in `games/c64/lemmings/parts/`; a bank in
-`games/spectrum/where-time-stood-still/parts/bank-01/`; a virtual
-address space in `games/apple2/zork-i/game.json`, under `coverage`.
+`games/spectrum/where-time-stood-still/parts/bank-01/`; a virtual part,
+a Z-machine story, in `games/apple2/zork-i/parts/story/`.
 
 ## Steps
 
@@ -109,10 +110,15 @@ address space in `games/apple2/zork-i/game.json`, under `coverage`.
    a cartridge, "snapshot" for a machine's RAM banks).
 7. **Code the game reads from the disk during play**, a page at a time
    into whichever buffer is free, as an interpreter reads its story, is
-   a virtual address space. Give `game.json` a row for it under
-   `coverage.virtual`, `[bytes, what it is and where it comes from]`, and
-   the About and Source tabs show it beside the figure, so that 100 %
-   says what it is 100 % of.
+   a program at addresses of its own. When the kit has a folder for its
+   machine (`kit/zmachine/` for Infocom's), make it a virtual part,
+   `parts.py add <game dir> <id> --machine <kit> --size <bytes>`, and list
+   it from its file as that kit's skill says; the interpreter is a part
+   of its own, and a page that reads the story's pages in the
+   interpreter's memory lays them over the interpreter's listing. When it
+   has none, give `game.json` a row under `coverage.virtual`, `[bytes,
+   what it is and where it comes from]`, and the About and Source tabs
+   show it beside the figure, so that 100 % says what it is 100 % of.
 
 From here on, every script that takes a game's folder takes a part's in
 its place.
@@ -121,5 +127,6 @@ its place.
 
 A folder under `parts/` for each part, with its `part.json`; the
 snapshots of each in its own `work/`; the route to each in
-`orientation.md`; and a `coverage.virtual` row in `game.json` for code
-read from the disk during play.
+`orientation.md`; and, for code read from the disk during play, a
+virtual part, or a `coverage.virtual` row in `game.json` when the kit
+cannot list it.

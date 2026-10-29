@@ -293,12 +293,24 @@ def platform_of(game):
     return plat
 
 
+def machine_of(game):
+    """What reads the image's bytes: the platform's own kit, or for a virtual address space the
+    kit its part.json names (a story's, kit/zmachine), whose cpu.py and snapshot.py take the
+    platform's place in listing.py and whose image has no platform's regions."""
+    return (game.get("part") or {}).get("machine") or platform_of(game)
+
+
+def size_of(game):
+    """The bytes the image holds: 64 KB for a machine's memory, a virtual address space's own size."""
+    return (game.get("part") or {}).get("size") or 0x10000
+
+
 def hexint(s):
     return int(s[1:], 16) if isinstance(s, str) and s.startswith("$") else int(s)
 
 
 def regions(game):
-    plat = platform_of(game)
+    plat = machine_of(game)
     d = PLATFORM_DEFAULTS.get(plat, {"exclude": [], "extra": []})
     exclude = [[hexint(a), hexint(b), n] for a, b, n in d["exclude"]]
     extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
@@ -326,6 +338,8 @@ def regions(game):
             if hi > b: carved.append([b + 1, hi, n])
         exclude = carved
     out = {"exclude": exclude, "extra": extra, "edges": [hexint(e) for e in d.get("edges", [])]}
+    if size_of(game) != 0x10000:
+        out["size"] = size_of(game)
     # a part of a game that is several loads: the addresses another part owns are not this
     # one's to count, whatever "include" says (kit/scripts/parts.py, load_game)
     if game.get("elsewhere"):

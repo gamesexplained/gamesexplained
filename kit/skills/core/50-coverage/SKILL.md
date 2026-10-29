@@ -186,6 +186,13 @@ format, how to check the result against it, and how to read it back
   their length), and whether their values match a constant nearby code
   writes where they would have been read. A table whose reader was taken
   out keeps the reader's shape, and says what the game was meant to do.
+- **Bytes no instruction reads may still be read.** The video chip fetches
+  its screen, character set, bitmap and sprites from wherever its
+  pointers say, and a references search sees none of it. Before calling a
+  range unused, check every value that reaches the video chip's pointers
+  and bank, including any the loader writes, which a checkpoint on stores
+  to those registers during the load shows: a loader can load them from
+  the tape like any other byte, and then no instruction names them.
 - **Reading a region may disassemble it as a side effect** in some
   disassemblers. Log an explicit disassemble entry for every new code
   region you explore, or a replay under-restores.

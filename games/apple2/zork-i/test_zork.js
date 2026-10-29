@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Hold the pages' reading of the story against the interpreter. zork.js, the block every page of
 // this game carries, ports five routines of the interpreter; each is run here on the committed
-// listing's bytes in the kit's 6502 simulator beside the port, and the two must agree:
+// listings' bytes (the interpreter's, with the story's resident pages laid over it as zork.js's
+// machine() lays them) in the kit's 6502 simulator beside the port, and the two must agree:
 //   text     $18D2, the string decoder: every object's short name through $0DDD, every
 //            abbreviation and every dictionary word, as the output line at $0200 holds them
 //   encode   $1A25 and $1B3C, the word encoder: the four bytes at $DA-$DD, for every dictionary
@@ -19,7 +20,7 @@ const g = game(__dirname);
 g.lib('cpu6502');                                    // C64Cpu, the 6502 the pages run (site/lib/cpu6502.js)
 const { CPU } = C64Cpu;
 const { Zork } = g.run('index.html', 'zork.js', 'Zork');
-const L = g.listing();
+const L = Zork.machine(g.listing('parts/interpreter/listing.json'), g.listing('parts/story/listing.json'));
 
 let bad = 0, cases = 0;
 const fail = (...what) => { if (bad++ < 25) console.log('ZORK', ...what); };

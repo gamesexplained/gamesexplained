@@ -81,7 +81,9 @@ Usage:
                          moved under a listing that was never rebuilt, and CI
                          fails it (check_listing.py). With --write, the rebuild
                          replaces the file, as the snapshot would have built it;
-                         refused when symbols.json has changed since. A byte the
+                         after a change to symbols.json, only when the listing holds
+                         every byte the new map counts (a range taken out of the
+                         count, labels moved to another part). A byte the
                          ledger counts that the listing does not hold, which only
                          the snapshot has, becomes a gap with a note (LOST) until a
                          build from the snapshot fills it
@@ -150,6 +152,26 @@ def platform_modules(platform):
         mods.append(mod)
     _PLATFORM[platform] = tuple(mods)
     return _PLATFORM[platform]
+
+
+def machine(game):
+    """(cpu, snapshot, size): the modules that read the image's bytes, the platform's or a virtual
+    address space's (symbols_export.machine_of), and how many bytes the image holds."""
+    from symbols_export import machine_of, size_of
+    return platform_modules(machine_of(game)) + (size_of(game),)
+
+
+def ready(cpu, sym):
+    """Tell a machine whose code is more than its bytes what the symbol map says: a story's
+    routines each start with a header, which kit/zmachine/cpu.py reads where a routine's label is."""
+    if hasattr(cpu, "prepare"):
+        cpu.prepare(sym)
+    return sym
+
+
+def address(cpu, a):
+    """An address as the listing writes it: four hex digits, or the machine's own width."""
+    return f"${a:0{getattr(cpu, 'WIDTH', 4)}X}"
 
 
 def symbol_names(sym):
@@ -222,8 +244,8 @@ def register_names(platform):
 def io_meaning(game):
     """chips(target, at): whether the instruction at `at` sees a chip's register at
     `target` rather than the RAM beneath it. The rule is in this file's help."""
-    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
-    plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
+    from symbols_export import PLATFORM_DEFAULTS, hexint, machine_of
+    plat = PLATFORM_DEFAULTS.get(machine_of(game), {})
     hidden = [(hexint(r[0]), hexint(r[1])) for r in plat.get("hidden", [])]
     only = [(hexint(r[0]), hexint(r[1])) for r in plat.get("io_only", [])]     # no RAM beneath
     rows = []
@@ -254,12 +276,12 @@ def copies(ram, entry, look, least=32):
     of `least` bytes found exactly, then as far as the two agree, less the $00 and $FF at its
     ends; runs a few bytes apart at the same distance from their source are one copy that the
     game has since changed a byte of."""
-    img, out, a = bytes(entry), [], 0
-    while a < 0x10000:
+    img, out, a, size = bytes(entry), [], 0, len(ram)
+    while a < size:
         if not look[a]:
             a += 1; continue
         b = a
-        while b < 0x10000 and look[b]:
+        while b < size and look[b]:
             b += 1
         i = a
         while i + least <= b:
@@ -270,7 +292,7 @@ def copies(ram, entry, look, least=32):
             if src < 0:
                 i += 1; continue
             n = least
-            while i + n < b and src + n < 0x10000 and ram[i + n] == entry[src + n]:
+            while i + n < b and src + n < size and ram[i + n] == entry[src + n]:
                 n += 1
             s, e = i, i + n - 1                # unwritten RAM ($00, $FF) on either side agrees too
             while ram[s] in (0, 0xFF):
@@ -293,9 +315,10 @@ def uncounted(game, reg, L, ram, entry=None):
 
     $00 and $FF are not counted as data anywhere here: the emulator fills unwritten RAM
     with them, and a stretch of that pattern is not the game's."""
-    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
-    plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
+    from symbols_export import PLATFORM_DEFAULTS, hexint, machine_of
+    plat = PLATFORM_DEFAULTS.get(machine_of(game), {})
     cov = game.get("coverage", {})
+    size = len(ram)
 
     def ranges(rows):
         return [(hexint(r[0]), hexint(r[1])) for r in rows]
@@ -322,14 +345,14 @@ def uncounted(game, reg, L, ram, entry=None):
     if entry is not None:
         state, owner = L["state"], L["owner"]
         left_out = ranges(cov.get("exclude", [])) + ranges(plat.get("system", [])) + [(s, e) for s, e, *_ in hidden] + away
-        free = [not state[a] and not inside(a, left_out) for a in range(0x10000)]
-        loaded = [free[a] and ram[a] == entry[a] and ram[a] not in (0, 0xFF) for a in range(0x10000)]
+        free = [not state[a] and not inside(a, left_out) for a in range(size)]
+        loaded = [free[a] and ram[a] == entry[a] and ram[a] not in (0, 0xFF) for a in range(size)]
         a = 0
-        while a < 0x10000:                      # stretches of loaded data, split at 64 bytes of anything else
+        while a < size:                         # stretches of loaded data, split at 64 bytes of anything else
             if not loaded[a]:
                 a += 1; continue
             s = e = a; n = gap = 0
-            while a < 0x10000 and free[a] and gap < 64:
+            while a < size and free[a] and gap < 64:
                 if loaded[a]:
                     e, n, gap = a, n + 1, 0
                 else:
@@ -343,9 +366,9 @@ def uncounted(game, reg, L, ram, entry=None):
                 f"after {before[0]} (${before[1]:04X})" if before else "untracked"
             found.append([s, e, n, f"{'in the bank' if (game.get('part') or {}).get('bank') is not None else 'loaded with the game'}, {where}"])
         # data copied after the hand-over differs there at its own address: look for it at another
-        for s, e, src in copies(ram, entry, [free[a] and not loaded[a] for a in range(0x10000)]):
+        for s, e, src in copies(ram, entry, [free[a] and not loaded[a] for a in range(size)]):
             found.append([s, e, e - s + 1, f"copied here after the hand-over, which holds it at ${src:04X}-${src + e - s:04X}"])
-        under = [False] * 0x10000
+        under = [False] * size
         for p, e, *_ in hidden:
             for a in range(p, e + 1):
                 under[a] = not inside(a, said)
@@ -439,18 +462,19 @@ def relabel(gdir, write=True):
     Returns how many read differently; write=False only counts them (check_listing.py)."""
     from parts import load_game
     game = load_game(gdir)
-    cpu = platform_modules(game.get("platform"))[0]
+    cpu, _, size = machine(game)
     spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
     out = json.load(open(lpath))
     if out.get("symbols_sha256") != hashlib.sha256(open(spath, "rb").read()).hexdigest():
         sys.exit(f"{lpath} was built from a different symbols.json: rebuild it from the snapshot")
-    names = all_names(gdir, game, json.load(open(spath)))
+    ram = image_from_records(gdir, size)      # an instruction is read where it stands, in its story
+    names = all_names(gdir, game, ready(cpu, json.load(open(spath))))
     names_for, bank_of = bank_view(gdir, game, names)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     xrefs, changed = {}, 0
     for r in out["records"]:
         if r["t"] == "addr":               # a pointer, and a split table's targets: named as they were built
-            o, pt = names_for(r["a"]).get(r["oa"]) or f"${r['oa']:04X}", bank_of(r["a"], r["oa"])
+            o, pt = names_for(r["a"]).get(r["oa"]) or address(cpu, r["oa"]), bank_of(r["a"], r["oa"])
             changed += (r.get("o"), r.get("pt")) != (o, pt); r["o"] = o
             r.pop("pt", None)
             if pt:
@@ -466,7 +490,7 @@ def relabel(gdir, write=True):
                     xrefs.setdefault(x, []).append(lo + i)
         if r["t"] != "code":
             continue
-        m, mode = cpu.decode(r["b"], 0)[:2]
+        m, mode = cpu.decode(ram, r["a"])[:2]
         o, ta = cpu.operand(r["a"], m, mode, r["b"], names_for(r["a"]), regs, chips)
         pt = bank_of(r["a"], ta) if ta is not None else None
         changed += (r.get("o"), r.get("oa"), r.get("pt")) != (o, ta, pt)
@@ -506,10 +530,11 @@ def recomment(gdir):
     from symbols_export import regions
     from parts import load_game
     game = load_game(gdir)
-    cpu = platform_modules(game.get("platform"))[0]
+    cpu, _, size = machine(game)
     spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
     out = json.load(open(lpath))
     sha = hashlib.sha256(open(spath, "rb").read()).hexdigest()
+    ram = image_from_records(gdir, size)
     if out.get("symbols_sha256") == sha:
         print(f"{lpath} was built from this symbols.json: nothing to do"); return
     old, new = built_from(gdir, out.get("symbols_sha256")), json.load(open(spath))
@@ -530,7 +555,7 @@ def recomment(gdir):
         sys.exit(f"symbols.json has changed more than comments and names ({', '.join(moved)}): "
                  "rebuild it from the snapshot")
 
-    names, before = all_names(gdir, game, new), all_names(gdir, game, old)
+    names, before = all_names(gdir, game, ready(cpu, new)), all_names(gdir, game, old)
     names_for = bank_view(gdir, game, names)[0]
     own = symbol_names(new)                          # a row's label is the part's own, never one from beneath
     at = {}                                          # an old name's address, for split tables
@@ -546,7 +571,7 @@ def recomment(gdir):
             if k in r:
                 r[k] = m[r["a"]]
         if r["t"] == "code":
-            m, mode = cpu.decode(r["b"], 0)[:2]
+            m, mode = cpu.decode(ram, r["a"])[:2]
             o, ta = cpu.operand(r["a"], m, mode, r["b"], names_for(r["a"]), regs, chips)
             if ta != r.get("oa"):
                 sys.exit(f"${r['a']:04X}: the operand now points elsewhere: rebuild it from the snapshot")
@@ -554,7 +579,7 @@ def recomment(gdir):
             if o is not None:
                 r["o"] = o
         elif r["t"] == "addr":
-            r["o"] = names_for(r["a"]).get(r["oa"]) or f"${r['oa']:04X}"
+            r["o"] = names_for(r["a"]).get(r["oa"]) or address(cpu, r["oa"])
         elif "note" in r and r["note"].startswith("split table"):
             d = []
             for v in r["d"]:
@@ -577,19 +602,20 @@ def recomment(gdir):
 LOST = "the game uses, missing from this listing"
 
 
-def held_by_records(gdir):
+def held_by_records(gdir, size=0x10000):
     """1 at each address gdir's listing.json holds a byte for, else 0."""
-    have = bytearray(0x10000)
+    have = bytearray(size)
     for r in json.load(open(os.path.join(gdir, "listing.json")))["records"]:
         have[r["a"]:r["a"] + len(r.get("b") or [])] = b"\x01" * len(r.get("b") or [])
     return have
 
 
-def image_from_records(gdir):
+def image_from_records(gdir, size=0x10000):
     """The memory image gdir's listing.json describes, rebuilt from the bytes its own
     records carry. State 0 (a gap) is read for its state, never its bytes, so only the
-    addresses the listing lists need a byte; every other address stays $00."""
-    ram = bytearray(0x10000)
+    addresses the listing lists need a byte; every other address stays $00. size is the
+    image's, 64 KB but for a virtual address space (machine())."""
+    ram = bytearray(size)
     for r in json.load(open(os.path.join(gdir, "listing.json")))["records"]:
         b = r.get("b")
         if b:
@@ -605,10 +631,10 @@ def decode_problems(gdir):
     Needs no snapshot, and none of the ledger or the symbols walk."""
     from parts import load_game
     game = load_game(gdir)
-    cpu = platform_modules(game.get("platform"))[0]
+    cpu, _, size = machine(game)
     recs = json.load(open(os.path.join(gdir, "listing.json")))["records"]
-    ram = image_from_records(gdir)
-    names = all_names(gdir, game, json.load(open(os.path.join(gdir, "symbols.json"))))
+    ram = image_from_records(gdir, size)
+    names = all_names(gdir, game, ready(cpu, json.load(open(os.path.join(gdir, "symbols.json")))))
     names_for, bank_of = bank_view(gdir, game, names)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     bad = []
@@ -677,16 +703,23 @@ def main():
                  "from that part's own snapshot")
     game = load_game(gdir)
     platform = game.get("platform")
-    cpu, snap = platform_modules(platform)
+    cpu, snap, SIZE = machine(game)
     spath = os.path.join(gdir, "symbols.json")
-    sym = json.load(open(spath))
+    sym = ready(cpu, json.load(open(spath)))
     entry = None
     bank = (game.get("part") or {}).get("bank")
-    have = bytearray(b"\x01" * 0x10000)   # a snapshot gives every byte; a rebuild only the listing's
+    virtual = (game.get("part") or {}).get("machine")
+    have = bytearray(b"\x01" * SIZE)      # a snapshot gives every byte; a rebuild only the listing's
     if rebuild:
-        ram, have = image_from_records(gdir), held_by_records(gdir)
+        ram, have = image_from_records(gdir, SIZE), held_by_records(gdir, SIZE)
     elif bank is not None:      # a bank of a cartridge: its bytes are all loaded with the game, as at a hand-over
         ram = snap.read(vsf, bank=bank)
+        entry = ram
+    elif virtual:               # a story: the file the interpreter reads, whole, every byte the game's
+        ram = snap.read(vsf)
+        if len(ram) != SIZE:
+            sys.exit(f"{vsf} holds {len(ram)} bytes, and part.json's \"size\" says {SIZE}: give the size of "
+                     "the file the program reads")
         entry = ram
     else:
         ram = snap.read(vsf)
@@ -712,10 +745,11 @@ def main():
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     line = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "line"}
     side = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "side"}
-    btype = bytearray(0x10000)
+    btype = bytearray(SIZE)
     TEXT_TYPES = list(cpu.TEXT_TYPES)
+    POINTERS = list(getattr(cpu, "POINTER_TYPES", ()))     # the machine's own pointers (a story's packed addresses)
     TYPES = ["Undefined", "Code", "Byte", "Word", "Address"] + TEXT_TYPES + \
-            ["Lo/Hi Address", "Hi/Lo Address", "Lo/Hi Word", "Hi/Lo Word", "External File"]
+            ["Lo/Hi Address", "Hi/Lo Address", "Lo/Hi Word", "Hi/Lo Word", "External File"] + POINTERS
     for b in sym["blocks"]:
         t = TYPES.index(b["type"]) if b["type"] in TYPES else 0
         for a in range(b["start"], b["end"] + 1):
@@ -725,12 +759,26 @@ def main():
     # variable, a row of an array) is walked once over its whole extent, from the start of
     # its first block, so a block that begins mid-way, or an item a label cuts in two, reads
     # as its item does: each byte's share of the text, and where each item starts
+    # A machine's TEXT_EACH_RUN types are walked one run of adjacent blocks at a time instead: a
+    # story's strings lie between its routines, and a walk across those would read code as text.
     walked = {}
     for t in TEXT_TYPES if hasattr(cpu, "text_items") else ():
-        bl = [b for b in sym["blocks"] if b["type"] == t]
-        got = bl and cpu.text_items(t, ram, min(b["start"] for b in bl), max(b["end"] for b in bl))
-        if got:
-            walked[t] = got + (sorted(got[1]),)
+        bl = sorted((b for b in sym["blocks"] if b["type"] == t), key=lambda b: b["start"])
+        if not bl:
+            continue
+        runs = [[bl[0]["start"], bl[0]["end"]]]
+        for b in bl[1:]:
+            if t in getattr(cpu, "TEXT_EACH_RUN", ()) and b["start"] > runs[-1][1] + 1:
+                runs.append([b["start"], b["end"]])
+            else:
+                runs[-1][1] = max(runs[-1][1], b["end"])
+        texts, starts = {}, {}
+        for lo, hi in runs:
+            got = cpu.text_items(t, ram, lo, hi)
+            if got:
+                texts.update(got[0]); starts.update(got[1])
+        if starts:
+            walked[t] = (texts, starts, sorted(starts))
 
     xrefs = {}
     def xref(target, src):
@@ -738,16 +786,16 @@ def main():
 
     records = []
     a = 0
-    while a < 0x10000:
+    while a < SIZE:
         if state[a] == 0:
             g = a
-            while a < 0x10000 and state[a] == 0:
+            while a < SIZE and state[a] == 0:
                 a += 1
             records.append({"a": g, "t": "gap", "n": a - g})
             continue
         if not have[a]:
             g = a
-            while a < 0x10000 and state[a] and not have[a]:
+            while a < SIZE and state[a] and not have[a]:
                 a += 1
             records.append({"a": g, "t": "gap", "n": a - g, "note": LOST})
             continue
@@ -783,7 +831,7 @@ def main():
         # data: an item never crosses a labelled address, a comment, a block edge or a state edge
         def run_end(limit):
             e = a + 1
-            while e < 0x10000 and e < a + limit and state[e] and have[e] and btype[e] == btype[a] \
+            while e < SIZE and e < a + limit and state[e] and have[e] and btype[e] == btype[a] \
                     and e not in names and e not in line and e not in side:
                 e += 1
             return e
@@ -793,7 +841,7 @@ def main():
         def pair_end(limit):
             blk = next(b for b in sym["blocks"] if b["start"] <= a <= b["end"])
             e = a + 1
-            while e < 0x10000 and e < a + limit and state[e] and have[e] and btype[e] == btype[a] \
+            while e < SIZE and e < a + limit and state[e] and have[e] and btype[e] == btype[a] \
                     and ((e - blk["start"]) % 2 == 1 or (e not in names and e not in line and e not in side)):
                 e += 1
             return e
@@ -806,11 +854,21 @@ def main():
             e = min(pair_end(2), a + 2); bs = list(ram[a:e])
             if len(bs) == 2:
                 ta = bs[0] | (bs[1] << 8)
-                rec.update({"t": "addr", "b": bs, "oa": ta, "o": names_for(a).get(ta) or f"${ta:04X}"})
+                rec.update({"t": "addr", "b": bs, "oa": ta, "o": names_for(a).get(ta) or address(cpu, ta)})
                 if bank_of(a, ta):
                     rec["pt"] = bank_of(a, ta)
                 else:
                     xref(ta, a)
+            else:
+                rec.update({"t": "byte", "b": bs})
+        elif t in POINTERS:         # the machine's own: the word's meaning is cpu.pointer's
+            e = min(pair_end(2), a + 2); bs = list(ram[a:e])
+            ta = cpu.pointer(t, ram, a) if len(bs) == 2 else None
+            if ta is not None:
+                rec.update({"t": "addr", "b": bs, "oa": ta, "o": names_for(a).get(ta) or address(cpu, ta)})
+                xref(ta, a)
+            elif len(bs) == 2:      # a word of a table that points nowhere the map knows: a number
+                rec.update({"t": "word", "b": bs, "d": [(bs[0] << 8) | bs[1]]})
             else:
                 rec.update({"t": "byte", "b": bs})
         elif t in ("Lo/Hi Address", "Hi/Lo Address"):
@@ -834,7 +892,7 @@ def main():
         elif t in walked:
             texts, starts, order = walked[t]
             i = bisect.bisect_right(order, a)
-            e = run_end((order[i] if i < len(order) else 0x10000) - a)
+            e = run_end((order[i] if i < len(order) else SIZE) - a)
             rec.update({"t": "text", "b": list(ram[a:e]), "d": "".join(texts.get(x, "") for x in range(a, e)),
                         "enc": t.lower()})
         elif t in TEXT_TYPES:
@@ -879,7 +937,7 @@ def main():
         if names.get(ad) != s["name"] or state[ad] == 0:
             continue
         span = 1
-        while ad + span < 0x10000 and owner.get(ad + span, (None, None))[1] == ad:
+        while ad + span < SIZE and owner.get(ad + span, (None, None))[1] == ad:
             span += 1
         if code[ad]:
             kind = "routine" if s["type"] in ("Subroutine", "UserDefined") or ad in line else "branch"
@@ -898,6 +956,8 @@ def main():
     out = {"schema": 1, "platform": game.get("platform"), "game": game.get("slug")}
     if game.get("part"):
         out["part"] = game["part"]["id"]
+    if virtual:                 # the Source tab reads the machine's addresses at its width
+        out.update({"machine": virtual, "size": SIZE, "width": getattr(cpu, "WIDTH", 4)})
     out.update({
         "title": game.get("title"), "build": game.get("build"),
         "symbols_sha256": hashlib.sha256(open(spath, "rb").read()).hexdigest(),
@@ -928,8 +988,14 @@ def main():
         old = json.load(open(path))
         if old == out:
             print(f"OK - {path} already rebuilds from its own bytes"); return
-        if old.get("symbols_sha256") != out["symbols_sha256"]:
-            sys.exit(f"{path} was built from a different symbols.json: rebuild it from the snapshot")
+        lost = [r for r in records if r.get("note") == LOST]
+        if old.get("symbols_sha256") != out["symbols_sha256"] and lost:
+            sys.exit(f"{path} was built from a different symbols.json, which counts {sum(r['n'] for r in lost)} "
+                     f"byte(s) the listing does not hold (the first at {address(cpu, lost[0]['a'])}): rebuild it from "
+                     "the snapshot")
+        if old.get("symbols_sha256") != out["symbols_sha256"]:     # every byte it counts is in the listing
+            print(f"note: built from a symbols.json changed since the last build, from the bytes the listing holds; "
+                  "the data the ledger does not count is as the snapshot's last build found it")
         said = io.StringIO()
         with contextlib.redirect_stdout(said):
             compare(old, out)

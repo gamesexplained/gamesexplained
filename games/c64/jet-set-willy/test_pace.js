@@ -18,7 +18,7 @@
 //   node games/c64/jet-set-willy/test_pace.js [frames]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { Machine, KEY, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.js'));
+const { Machine, KEY } = require(path.join(ROOT, 'kit/c64/machine.js'));
 const g = game(__dirname);
 const { JSWPort } = g.run('reference/jsw-port.js', 'jsw-port', 'JSWPort');
 const { JSWPlay } = g.run('reference/jsw-play.js', 'jsw-play', 'JSWPlay');
@@ -28,20 +28,7 @@ const FRAMES = +process.argv[2] || 20000;
 class JSWMachine extends Machine {
   constructor(o) {
     super(Object.assign({ collide: true }, o));
-    this.hooks[0xFEBC] = (c) => { c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; };
     this.hooks[0xFFD2] = (c) => { c.cycles += 40; c.rts(); };
-  }
-  tick() {
-    if (this.dma) this.dmaCatchUp();
-    this.collide.to(this.cpu.cycles);
-    const ln = Math.floor(this.cpu.cycles / LINE);
-    while (this.lastLine < ln) {
-      this.lastLine++;
-      const l = this.lastLine % LINES;
-      if (l === 0) this.frames++;
-      if (l === this.cmp) this.latch |= 1;
-    }
-    if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
   }
 }
 

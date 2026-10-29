@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """check_listing.py fails a listing the kit has moved under, and listing.py --rebuild --write
 replaces it with what its snapshot would build now, from the listing's own bytes. A byte the
-ledger counts that the listing does not hold becomes a gap that says so (#210)."""
+ledger counts that the listing does not hold becomes a gap that says so (#210). After a change
+to symbols.json, the listing's own bytes rebuild it only when they hold every byte the new
+symbols count."""
 import json
 from pathlib import Path
 import subprocess
@@ -85,14 +87,27 @@ class Rebuild(unittest.TestCase):
         run(self.p, self.p / 'work' / 'play.vsf')                                    # the snapshot fills them
         self.assertEqual(json.loads((self.p / 'listing.json').read_text()), json.loads(self.built))
 
-    def test_a_listing_from_other_symbols_is_refused(self):
+    def test_a_listing_from_symbols_that_count_more_is_refused(self):
+        s = json.loads((self.p / 'symbols.json').read_text())
+        s['blocks'][1]['end'] = 0xC005          # two bytes the listing never held
+        (self.p / 'symbols.json').write_text(json.dumps(s))
+        out = run(self.p, '--rebuild', '--write')
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn('built from a different symbols.json, which counts 2 byte(s) the listing does not hold',
+                      out.stderr)
+        self.assertEqual((self.p / 'listing.json').read_text(), self.built)
+
+    def test_a_listing_from_symbols_that_count_less_is_rebuilt(self):
+        # every byte the new symbols count is in the listing, so its own bytes build what the snapshot would
         s = json.loads((self.p / 'symbols.json').read_text())
         s['blocks'][1]['end'] = 0xC001
         (self.p / 'symbols.json').write_text(json.dumps(s))
         out = run(self.p, '--rebuild', '--write')
-        self.assertNotEqual(out.returncode, 0)
-        self.assertIn('built from a different symbols.json', out.stderr)
-        self.assertEqual((self.p / 'listing.json').read_text(), self.built)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('built from a symbols.json changed since the last build', out.stdout)
+        rebuilt = json.loads((self.p / 'listing.json').read_text())
+        run(self.p, self.p / 'work' / 'play.vsf')
+        self.assertEqual(rebuilt['records'], json.loads((self.p / 'listing.json').read_text())['records'])
 
 
 if __name__ == '__main__':

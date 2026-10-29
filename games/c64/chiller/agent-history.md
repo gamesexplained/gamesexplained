@@ -150,3 +150,135 @@ from the earlier listing into `work/play-idle.vsf`, so the rebuilt
 listing keeps every byte it had and takes only the 17 new ones from
 that copy; the unpatched snapshot is `work/play-antisoft-archive.vsf`.
 
+
+## 28 October 2026: forest parallax concept
+
+Added an optional Parallax view alongside Flat, Layers and Torchlight. New
+procedural woodland planes, a dithered moon, stepped mist and edge shrubs
+sit around the original forest picture on both journeys. Camera movement
+follows the boy; reduced-motion preferences stop the movement. Other rooms
+use the original picture. No game memory or collision rules are changed.
+
+The renderer supplies a background mask so black character and sprite pixels
+stay opaque. A regression check covers those cases and an unchanged flat
+frame. The gameplay comparison passed 30,000 main-loop passes across all
+ten levels. Browser inspection covered both forest records.
+
+### Concept artwork in the player
+
+The steward asked for the approved concept's artwork rather than a
+procedural approximation, with full RGB colours and individual pixels freed
+from the C64's multicolour restrictions. The Parallax view now loads
+`reference/parallax-forest-art.png`, an imagegen background plate derived
+from that concept with the static gameplay objects removed. The image is
+sampled onto the game's logical pixel grid before compositing. The painted
+woodland, an added fog veil and isolated edge ferns move at different rates.
+The original gameplay art and live sprites remain in front of the new scene.
+
+### A complete foreground frame
+
+The steward spotted dark fragments on the lower trees. They came from
+colour-keying the painted background and clipping the resulting fern pixels
+into two narrow strips. Replaced that extraction with a dedicated transparent
+foreground artwork: coherent overhanging branches and corner ferns, drawn
+in front of the game and moving more strongly than the distant woodland.
+Only the playfield boundary clips this plane; the HUD remains clear.
+
+### Painted playable scenery
+
+Added a separate Painted scenery toggle under Parallax. A generated terrain
+plate supplies full-colour leaves, bark, roots and ropes at the game's logical
+pixel size. This is a concept rendition, with the collision map unchanged;
+its painted silhouettes are not a measured replacement for the original
+character tiles. The renderer now optionally reports visible sprite pixels,
+so the reskin preserves the live characters and enemies, including black
+sprite pixels. Cross locations are read from the screen record, and mushrooms,
+toadstools and bonuses remain the game's live tiles. The original artwork
+returns for the game-over text. Turning the toggle off restores the original
+scenery over the same Parallax background without restarting play.
+
+### Pickup contrast and live bridge erosion
+
+The steward reported that the painted scenery hid the small food and poison
+tiles and left the bridge intact after it eroded. The Parallax view now draws
+outlined pixel icons from live tile codes: amber food, red-and-white poison,
+a gold bonus and cyan crosses. Items render above the foreground ferns but
+exclude visible sprite pixels. A consumed tile immediately loses its icon.
+
+The painted bridge regions are cleared from the static terrain plate. Their
+railings and fourteen ledge cells use the live character pixels, recoloured
+in ivory, including every erosion stage and the final empty tile. The ledge
+cells were read from a fresh forest on the original code; test_play.js checks
+that list and checks item removal and sprite priority.
+
+### Separate visual and gameplay tweaks
+
+Grouped the player controls into Visual tweaks (views, painted scenery, CRT
+and overlays) and Gameplay tweaks (jump presets, cheats and level starts).
+Moved the existing jump presets out of the byte editor and added Original
+jump, which restores only the 24 jump timing bytes. Preset selection is
+computed from the live timing table, so a rewind or manual edit cannot leave
+a misleading selection. The byte editor and its full Undo my edits remain
+available below the grouped controls.
+
+### Tweak tabs
+
+Replaced the stacked Visual tweaks and Gameplay tweaks sections with a shared
+tab bar and one visible panel. The panels retain their control state when
+hidden. The tab bar supports arrow keys, Home and End, with labelled panels
+and a single tab stop. A minimum panel height reduces movement below the
+controls when switching between the two.
+
+### Anchored items, sparkling crosses, coins and a clearer deck
+
+The steward found that the painted branches did not meet the live item
+positions. Food and poison now have small bark ledges at their real tile
+baselines wherever the original map provides support. Collectible positions
+and hit tests are unchanged. Crosses pulse white and have a small travelling
+sparkle, and the game's 100-point bonus tile is a rotating gold coin. Both
+animations follow game time, freeze on pause and stay still with reduced
+motion enabled. The live bridge deck gains a dark underside, a gold edge and
+an ivory top, drawn only from the remaining pixels of its erosion glyph.
+Regression checks cover animation, reduced motion and an erased deck.
+
+Removed the static cup-like decorations from a revised terrain plate,
+`reference/parallax-terrain-clean.png`, so they cannot be mistaken for live
+bonus items. Only the game's real bonus tiles receive rotating coins.
+
+### VCR playback buttons
+
+Replaced the rewind slider and Play from here button with Rewind, Pause,
+Play and Fast forward, alongside a position/recorded-length display. The seek
+buttons move five seconds through the saved recording and pause there; they
+stop at its ends. Play resumes from the selected moment using the existing
+branching replay behaviour, so it replaces the old future. Button availability
+and pressed states follow the shared pause and recording state.
+
+### Collapsible jump duration slider
+
+Added Fine-tune jump beneath the jump presets in Gameplay tweaks. Its
+50–200% duration slider scales the original 24 timing bytes using the same
+rounding and limits as the Snappy and Floaty presets, with 100% restoring the
+original. It changes the live game and is recorded for rewind. Presets,
+rewinds and manual edits update the slider's displayed state; the slider is
+disabled when reviewing the old future until Play resumes. The general byte
+editor remains available in a collapsed Advanced memory editor section.
+
+### Reworked collectible animation after the recording review
+
+The steward's short recording showed that the four-frame coin read as
+uneven stripes and the cross's orbiting sparkle looked detached. Replaced
+the coin with sixteen shaded turn frames on a centred 10-pixel grid, with
+a fixed top and bottom and a consistent light source. The cross now has a
+bevelled shape, a blue aura and a diagonal specular sweep across its own
+surface, replacing the external sparkle and whole-icon flash. Both still
+use game time, preserve sprite priority and honour reduced motion. Added
+a check that every coin frame keeps its centre, top and bottom fixed.
+
+### Playback controls beside Start again
+
+Moved the VCR controls and time display into the toolbar directly beneath
+the game, beside Start again and Sound. Removed the duplicate Pause button
+and its old state updates. The transport's own buttons now provide the
+single pause/play state, and starting a game refreshes them immediately.
+The lower lab retains the paused routine list and advanced memory editor.

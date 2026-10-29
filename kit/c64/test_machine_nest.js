@@ -4,15 +4,15 @@
 // clears I and waits about 80 lines, CIA 1's timer A every 1,500 cycles, and sprite 0 over solid
 // characters with the sprite-to-scenery interrupt on; every timer and collision interrupt writes
 // what it was and its line to a table.
-// - machine.js with nest: true, the same program: each timer interrupt on VICE's line or the next
+// - machine.js, the same program: each timer interrupt on VICE's line or the next
 //   or last (the program starts the timer from a loop that waits for a line, which leaves it a few
 //   cycles from where VICE's started); between two timer interrupts, the same collision
 //   interrupts within two, each inside the raster handler's wait, on the sprite's lines, with what
 //   $D01F read. Where a collision interrupt falls after the last depends on the cycle of the
-//   handler's read in its line, which the machine keeps to within ten cycles
+//   handler's read in its line, which the machine keeps to within four cycles
 //   (kit/c64/test_machine_collide.js), so its lines are not held to VICE's one by one.
-// - Without nest the machine runs the raster handler whole: the interrupts that fall due in its
-//   wait are taken after it, and the collisions it has cleared are lost, so the table differs.
+// - With legacyInterrupts the machine runs the raster handler whole: the interrupts that fall due
+//   in its wait are taken after it, and the collisions it has cleared are lost, so the table differs.
 // Exits 1 on any failure. node kit/c64/test_machine_nest.js
 const fs = require('fs');
 const path = require('path');
@@ -29,7 +29,7 @@ function run(nest) {
   for (const [a, h, n] of F.mem) ram.set(n === undefined ? bytes(h) : new Uint8Array(n).fill(parseInt(h, 16)), a);
   ram.set(bytes(F.program), F.org);
   ram.set(bytes(F.code), F.handler);
-  const m = new Machine({ ram, pc: F.org, cia: true, dma: true, collide: true, nest });
+  const m = new Machine({ ram, pc: F.org, cia: true, dma: true, collide: true, legacyInterrupts: !nest });
   m.runFrames(F.frames);
   const n = ram[F.table];
   return { what: Array.from(ram.subarray(F.table + 0x40, F.table + 0x40 + n)), lines: Array.from(ram.subarray(F.table + 0x80, F.table + 0x80 + n)) };
@@ -58,6 +58,6 @@ function offs(t) {
 const got = run(true), off = offs(got);
 check(!off.length, `nest: ${off.slice(0, 4).join('; ')}\n  nest: ${show(got.what, got.lines)}\n  VICE: ${show(F.what, F.lines)}`);
 const whole = run(false);
-check(offs(whole).length > 0, `without nest the table passes as VICE's, so the program does not tell the two apart: ${show(whole.what, whole.lines)}`);
+check(offs(whole).length > 0, `with legacyInterrupts the table passes as VICE's, so the program does not tell the two apart: ${show(whole.what, whole.lines)}`);
 console.log(`${checked - fails} of ${checked} checks pass (${F.what.length} interrupts, ${F.recorded}, ${F.emulator})`);
 process.exit(fails ? 1 : 0);

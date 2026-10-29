@@ -29,7 +29,7 @@ Addresses are the engine's (`parts/engine`) unless a part is named.
 
 | Feature | Status | Where |
 |---|---|---|
-| Disk menu on side 1: 1 Armalyte, 2 Loading picture, 3 Walker's Warbles | live | menu at boot (`reference/disk-menu.png`); the first loads the engine, the third a music demo (`parts/warbles`, section 16), and the second was not followed |
+| Disk menu on side 1: 1 Armalyte, 2 Loading picture, 3 Walker's Warbles | live | menu at boot (`reference/disk-menu.png`); the first loads the engine, the third a music demo (`parts/warbles`, section 11), and the second was not followed |
 | The third menu entry is a music demo of Martin Walker's, dated 1988, with eight tunes in it and four on keys | live | `parts/warbles/facts.md`; its screen is `reference/warbles.png`, and the page plays all eight through a port of its driver that `tests/warbles.js` checks against it |
 | "Turn disk to side B & press fire" after the first load | live | `wrong_disk` (`$B5CC`): the engine asks for level 1's file, does not find it on side 1 and shows the prompt (`reference/turn-disk-side-b.png`) |
 | Title screen cycles credits, high scores, ship enhancements and keyboard controls | live | seven pages, `title_pages` (`$B953`) (`reference/title-*.png`) |
@@ -84,6 +84,12 @@ Found in the code, not in the manual.
   up by itself and pays as if it had been shot (`level_end`, `$AC20`;
   *live* in level 1). The limits run from 29 seconds (level 8's first
   mid-level fight) to 245 (`facts.md`, "Timing").
+- The enemies a boss releases cannot be shot: in a boss fight the game
+  tests the players' fire only on the core and its guards
+  (`enemies_hit_by_fire`, `$A54C`; *live* in level 1's mid-level fight).
+- Against a boss part a super weapon's shot is spent on its first hit,
+  where it goes on through ordinary enemies (`$A5DE`; *live* in level 1's
+  mid-level fight).
 - After the ending the game carries on from level 1 with the score and
   lives kept, and every event's enemy speed below 3 is raised by the
   number of completed games, to at most 3 (`level_script`, `$A970`; ending `$0923`).
