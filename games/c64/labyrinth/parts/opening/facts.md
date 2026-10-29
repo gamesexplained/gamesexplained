@@ -27,7 +27,7 @@ The rendered RAM glyphs at `$D000-$D7FF` are in `reference/opening-font.png` in 
 | `$41-$5A` | Uppercase A–Z |
 | `$61-$7A` | Lowercase a–z |
 
-Some other slots are blank or graphical. They must not be decoded by assuming the complete ASCII punctuation set. Literal stored text uses ASCII bytes, interspersed with bytes above `$7F`. These high bytes break words as well as sentences; they are not a second proven alphabet. The expansion table is split into high bytes at $D800 and low bytes at $D900. At $68D4-$691C, token $FB emits the selected word, $FC uppercases it, $FD appends a space, and $FE uppercases it and appends a space. Each token is followed by an index. The dictionary string ends at zero. The routine temporarily banks I/O out with port value $24 while reading these RAM tables. Exact text capitalization is obtained by subtracting $20 from the first emitted character when the high flag is set. The flag is then reduced to its space bit, so subsequent letters retain their stored case.
+Some other slots are blank or graphical. They must not be decoded by assuming the complete ASCII punctuation set. Literal stored text uses ASCII bytes, interspersed with bytes above `$7F`. These high bytes break words as well as sentences; they are not a second proven alphabet. The expansion table is split into high bytes at $D800 and low bytes at $D900. The parser at $67CA-$67FB sets a case/space flag for each token and jumps to the word reader at $68D4-$691C: token $FB emits the selected word, $FC uppercases it, $FD appends a space, and $FE uppercases it and appends a space. Each token is followed by an index. The dictionary string ends at zero. The routine temporarily banks I/O out with port value $24 while reading these RAM tables. Exact text capitalization is obtained by subtracting $20 from the first emitted character when the high flag is set. The flag is then reduced to its space bit, so subsequent letters retain their stored case.
 
 ## Scope of the sweeps
 
@@ -225,12 +225,12 @@ Purchase writes complaint phase `$968C=1`, counter quarters `$968D=2` and pickup
 
 | Command/state | Result |
 |---|---|
-| TAKE quarter, before nickel pickup | `$92F0` adds all `$968D` quarters to `$673A` modulo 256 and clears the counter count. Makes slot twelve (nickel) available and selects `$A21F`. |
-| TAKE nickel | Adds one to `$6735`, marks `$968A=1` and `$0575=1`, clears the local pickup and selects `$A23A`. |
+| TAKE quarter, before nickel pickup | `$92F0` adds all `$968D` quarters to `$673A` modulo 256 and clears the counter count. Makes slot twelve (nickel) available, sets the location description to `$A21F` (a nickel on the floor) and replies `$97F2`. |
+| TAKE nickel | Adds one to `$6735`, marks `$968A=1` and `$0575=1`, clears the local pickup, sets the location description to `$A23A` and replies `$9798`. |
 | COMPLAIN, phase one | Reply `$A614` (chilled-popcorn excuse), phase becomes two. |
 | COMPLAIN, phase two | Reply `$A64D` (other quarter), phase becomes three and counter count increases by one. If the count was zero, restores quarter pickup and `$A68C` description. Before nickel pickup, selects the quarter-plus-nickel description from the new count. |
 | COMPLAIN, phase at least three | Reply `$A69F`; no further refund. |
-| TAKE extra quarter, after nickel pickup | Ordinary single-unit inventory increment, clears the pickup and selects `$A23A`. `$968D` can remain one: the count alone does not establish an available pickup. |
+| TAKE extra quarter, after nickel pickup | Ordinary single-unit inventory increment, clears the pickup, sets the location description to `$A23A` and replies `$97F2`. `$968D` can remain one: the count alone does not establish an available pickup. |
 | GIVE NICKEL, after pickup and before first return | Reply `$81B3`, sets return flag `$9689=1`, stores `$0575=$FF`, and removes one nickel through `$087F`. An attempted earlier or repeated return gets `$A1F0`. |
 
 The normal-input route was initial sidewalk → GO NORTH → GO WEST → GO THEATER → GIVE DOLLAR → GO THEATER → GO NORTH. Both collect-first and complain-first sequences were replayed from the reached counter snapshot, without memory pokes, on 18 October 2026. Both produce three carried quarters after two complaints and collection. The first sequence also picks up and returns the nickel. `change-observations.json` records the selected scalar observations and route; raw screen/memory state remains ignored. The emulator’s previous snapshot and running state were restored afterward.
