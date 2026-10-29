@@ -6067,7 +6067,7 @@
   {
    "address": 8041,
    "type": "line",
-   "text": "Set to 1 by $1F6A when it has fired, so that it runs only once; cleared by the setup $51F7."
+   "text": "Set to 1 by $1F6A when it has fired, so that it runs only once; cleared by the setup $51F7. The player code at $5D64 also reads it: down on a map byte $0D sets player state 4 only while it is 0."
   },
   {
    "address": 8042,
@@ -6092,7 +6092,7 @@
   {
    "address": 8100,
    "type": "line",
-   "text": "Joystick port 2 ($DC00) as last read by $6313; bit 0 up, 1 down, 2 left, 3 right, 4 fire, clear when pressed. $FF at the start; $93AF overwrites it with $F7 or $FF during the finale."
+   "text": "Joystick port 2 ($DC00) as last read by $6313; bit 0 up, 1 down, 2 left, 3 right, 4 fire, clear when pressed. $FF at the start; $93AF overwrites it with $F7 or $FF during the finale, and the enemy attacks at $17D1 (left pressed) and $1A16 (right pressed) overwrite it when they hit the player, starting the recoil $1725 that stops $6313 reading the port."
   },
   {
    "address": 8101,
@@ -6202,7 +6202,7 @@
   {
    "address": 8456,
    "type": "line",
-   "text": "Phase 3 of a scroll to the right: $7131 fills colour RAM for screen rows 0 to 9 from the matrix just made, $68DA copies the buffer's rows 10 to 12 to colour RAM from $D990 and sets $68D9 so that the interrupt copies rows 13 to 18 ($6AB4), then the buffer flag $1FA7 is flipped so that the new matrix is shown. Called from $20F9."
+   "text": "Phase 3 of a scroll to the right: $7131 fills colour RAM for screen rows 0 to 9 from the matrix just made, $68DA copies the buffer's rows 10 and 11 to colour RAM from $D990 and sets $68D9 so that the interrupt copies rows 12 to 18 ($6AB4), then the buffer flag $1FA7 is flipped so that the new matrix is shown. Called from $20F9."
   },
   {
    "address": 8471,
@@ -6267,7 +6267,7 @@
   {
    "address": 9831,
    "type": "line",
-   "text": "Phase 3 of a scroll downwards: fills colour RAM rows 0 to 9 ($7131), copies rows 10 to 12 of the colour buffer and asks the interrupt for rows 13 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108). Called from $2658."
+   "text": "Phase 3 of a scroll downwards: fills colour RAM rows 0 to 9 ($7131), copies rows 10 and 11 of the colour buffer and asks the interrupt for rows 12 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108). Called from $2658."
   },
   {
    "address": 9846,
@@ -6282,7 +6282,7 @@
   {
    "address": 9906,
    "type": "line",
-   "text": "Copies the matrix at $CC00 up one row into $C800, 19 rows, for the columns from Y down to the limit in the operand at $2720: row 0 of the column comes from row 1, and so on to row 17 from row 18. Called from $2682 and $269D."
+   "text": "Copies the matrix at $CC00 up one row into $C800, 18 rows, for the columns from Y down to the limit in the operand at $2720: row 0 of the column comes from row 1, and so on to row 17 from row 18. Called from $2682 and $269D."
   },
   {
    "address": 10016,
@@ -6292,7 +6292,7 @@
   {
    "address": 10020,
    "type": "line",
-   "text": "Copies the matrix at $C800 up one row into $CC00, 19 rows, for the columns from Y down to the limit in the operand at $2792. Called from $268D and $26AB."
+   "text": "Copies the matrix at $C800 up one row into $CC00, 18 rows, for the columns from Y down to the limit in the operand at $2792. Called from $268D and $26AB."
   },
   {
    "address": 10130,
@@ -6387,7 +6387,7 @@
   {
    "address": 10752,
    "type": "line",
-   "text": "Phase 3 of a scroll upwards: fills colour RAM rows 0 to 9 ($7131), copies rows 10 to 12 of the colour buffer and asks the interrupt for rows 13 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108). Called from $29F1."
+   "text": "Phase 3 of a scroll upwards: fills colour RAM rows 0 to 9 ($7131), copies rows 10 and 11 of the colour buffer and asks the interrupt for rows 12 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108). Called from $29F1."
   },
   {
    "address": 10767,
@@ -6402,7 +6402,7 @@
   {
    "address": 10827,
    "type": "line",
-   "text": "Copies the matrix at $CC00 down one row into $C800, 19 rows, for the columns from Y down to the limit in the operand at $2AB9: row 18 of the column comes from row 17, and so on to row 1 from row 0. Called from $2A1B and $2A36."
+   "text": "Copies the matrix at $CC00 down one row into $C800, 18 rows, for the columns from Y down to the limit in the operand at $2AB9: row 18 of the column comes from row 17, and so on to row 1 from row 0. Called from $2A1B and $2A36."
   },
   {
    "address": 10937,
@@ -6412,7 +6412,7 @@
   {
    "address": 10941,
    "type": "line",
-   "text": "Copies the matrix at $C800 down one row into $CC00, 19 rows, for the columns from Y down to the limit in the operand at $2B2B. Called from $2A26 and $2A44."
+   "text": "Copies the matrix at $C800 down one row into $CC00, 18 rows, for the columns from Y down to the limit in the operand at $2B2B. Called from $2A26 and $2A44."
   },
   {
    "address": 11051,
@@ -6432,12 +6432,12 @@
   {
    "address": 11057,
    "type": "line",
-   "text": "Draws the new top row (row 0) of tiles from the level map into the matrix at $CC00. The map position is the pointer $A1/$A2, plus 1 when the half-column flag $AF plus 1 reaches 2, stored in $93/$94; $2B30 gets that half-column state and $2B2F the half-row state $BD minus 1 (1, with the position moved 64 tiles back, when that is negative). $2B2F picks the character table $97F4 (0) or $9892, whose address is stored in the operands of the five loads below ($2BA3, $2BAA, $2BD9, $2BE9, $2BF0 and the byte after each). It writes 40 characters from $CC00, or 39 when $2B30 is 1. Unless $2EC4 is set it then steps $BD back, subtracting $40 from the map pointer when it goes below 0. Called from $2A47, $2DD9 and $2F8A."
+   "text": "Draws the new top row (row 0) of tiles from the level map into the matrix at $CC00. The map position is the pointer $A1/$A2, plus 1 when the half-column flag $AF plus 1 reaches 2, stored in $93/$94; $2B30 gets that half-column state and $2B2F the half-row state $BD minus 1 (1, with the position moved 64 tiles back, when that is negative). $2B2F picks the character table $97F4 (0) or $9892, whose address is stored in the operands of the five loads below ($2BA3, $2BAA, $2BD9, $2BE9, $2BF0 and the byte after each). It writes 40 characters from $CC00, or 39 when $2B30 is 1. Unless $2EC4 is set it then steps $BD back, subtracting $40 from the map pointer when it goes below 0. Called from $2A47, $2DD9 and $2F8A, and by $3086 in the dead copy at $3075."
   },
   {
    "address": 11111,
    "type": "line",
-   "text": "Not a routine entry: the operand of the calls at $1222, $2063 and $5958 as the file stores it ($2B67), which each of them overwrites from a table (at $124F, $2075 and $5924) before the call is made. The bytes the file holds here ($2F 2B A2 92) are the operand of the STX at $2B66 and the LDX #$92 at $2B69 inside draw_top_row_a, not an instruction of their own; started here they would decode as a stray RLA and JAM."
+   "text": "Not a routine entry: the operand of the call at $2063 as the file stores it ($2B67), which $1FAC overwrites from the table at $2075 before the call is made (the similar calls at $1222 and $5958 hold $128B and $5C49 in the file). The bytes the file holds here ($2F 2B A2 92) are the operand of the STX at $2B66 and the LDX #$92 at $2B69 inside draw_top_row_a, not an instruction of their own; started here they would decode as a stray RLA and JAM."
   },
   {
    "address": 11171,
@@ -6512,7 +6512,7 @@
   {
    "address": 11629,
    "type": "line",
-   "text": "Phase 3 of the right-and-up scroll: fills colour RAM rows 0 to 9 ($7131), copies rows 10 to 12 of the colour buffer and asks the interrupt for rows 13 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108). Called from $2D5E."
+   "text": "Phase 3 of the right-and-up scroll: fills colour RAM rows 0 to 9 ($7131), copies rows 10 and 11 of the colour buffer and asks the interrupt for rows 12 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108). Called from $2D5E."
   },
   {
    "address": 11644,
@@ -6527,7 +6527,7 @@
   {
    "address": 11744,
    "type": "line",
-   "text": "Copies the matrix at $CC00 into $C800 shifted one row down and one column left, 19 rows, for the columns from Y up to the limit in the operand at $2E4E: row r+1 of column Y comes from row r of column Y+1. Called from $2D88 and $2DA3."
+   "text": "Copies the matrix at $CC00 into $C800 shifted one row down and one column left, 18 rows, for the columns from Y up to the limit in the operand at $2E4E: row r+1 of column Y comes from row r of column Y+1. Called from $2D88 and $2DA3."
   },
   {
    "address": 11854,
@@ -6537,7 +6537,7 @@
   {
    "address": 11858,
    "type": "line",
-   "text": "Copies the matrix at $C800 into $CC00 shifted one row down and one column left, 19 rows, for the columns from Y up to the limit in the operand at $2EC0. Called from $2D93 and $2DC5."
+   "text": "Copies the matrix at $C800 into $CC00 shifted one row down and one column left, 18 rows, for the columns from Y up to the limit in the operand at $2EC0. Called from $2D93 and $2DC5."
   },
   {
    "address": 11968,
@@ -6547,7 +6547,7 @@
   {
    "address": 11972,
    "type": "line",
-   "text": "Cleared by $1FAC when a new scroll starts and set to 1 by the second phase of the diagonal scrolls (for example $2D97). While it is non-zero the routines $2243, $2796, $2885, $2B31 and $2C17 do not step the map pointer $A1/$A2 and the flags $AF and $BD, and the diagonal scroll steps them itself."
+   "text": "Cleared by $1FAC when a new scroll starts and set to 1 by the second phase of the diagonal scrolls (for example $2D97). While it is non-zero the routines $2243, $3599, $2796, $2885, $2B31 and $2C17 do not step the map pointer $A1/$A2 and the flags $AF and $BD, and the diagonal scroll steps them itself."
   },
   {
    "address": 11973,
@@ -6562,7 +6562,7 @@
   {
    "address": 12062,
    "type": "line",
-   "text": "Phase 3 of the left-and-up scroll: fills colour RAM rows 0 to 9 ($7131), copies rows 10 to 12 of the colour buffer and asks the interrupt for rows 13 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108)."
+   "text": "Phase 3 of the left-and-up scroll: fills colour RAM rows 0 to 9 ($7131), copies rows 10 and 11 of the colour buffer and asks the interrupt for rows 12 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108)."
   },
   {
    "address": 12077,
@@ -6577,7 +6577,7 @@
   {
    "address": 12177,
    "type": "line",
-   "text": "Copies the matrix at $CC00 into $C800 shifted one row down and one column right, 19 rows, for the columns from Y down to the limit in the operand at $2FFF: row r+1 of column Y+1 comes from row r of column Y."
+   "text": "Copies the matrix at $CC00 into $C800 shifted one row down and one column right, 18 rows, for the columns from Y down to the limit in the operand at $2FFF: row r+1 of column Y+1 comes from row r of column Y."
   },
   {
    "address": 12287,
@@ -6587,7 +6587,7 @@
   {
    "address": 12291,
    "type": "line",
-   "text": "Copies the matrix at $C800 into $CC00 shifted one row down and one column right, 19 rows, for the columns from Y down to the limit in the operand at $3071."
+   "text": "Copies the matrix at $C800 into $CC00 shifted one row down and one column right, 18 rows, for the columns from Y down to the limit in the operand at $3071."
   },
   {
    "address": 12401,
@@ -6612,7 +6612,7 @@
   {
    "address": 12517,
    "type": "line",
-   "text": "Phase 3 of the left-and-down scroll: fills colour RAM rows 0 to 9 ($7131), copies rows 10 to 12 of the colour buffer and asks the interrupt for rows 13 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108)."
+   "text": "Phase 3 of the left-and-down scroll: fills colour RAM rows 0 to 9 ($7131), copies rows 10 and 11 of the colour buffer and asks the interrupt for rows 12 to 18 ($68DA), then flips the buffer flag $1FA7 (the same as $2108)."
   },
   {
    "address": 12532,
