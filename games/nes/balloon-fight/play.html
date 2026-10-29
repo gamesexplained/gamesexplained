@@ -358,26 +358,37 @@ table.bf-t td.n{font-family:var(--fm);font-size:14px}
   // ---- the clock: real time in the console's cycles, the port run to it
   let paused = false, last = 0;
   $('pl-pause').onclick = () => { paused = !paused; $('pl-pause').setAttribute('aria-pressed', paused); };
-  $('pl-reset').onclick = () => { g.boot(); g.apuFrames(); if (host) host.send({ cmd: 'reset' }); status(); };
+  // Reset: a new console, the sound chip reset, the page's pause let go and the clock started again,
+  // whatever the old console was doing, a stop included
+  let running = false, stopped = '';
+  const go = () => { if (!running) { running = true; stopped = ''; last = 0; requestAnimationFrame(frame); } };
+  $('pl-reset').onclick = () => {
+    g.boot(); g.apuFrames();
+    if (host) host.send({ cmd: 'reset' });
+    if (paused) $('pl-pause').click();
+    go(); status();
+  };
   document.addEventListener('visibilitychange', () => { last = 0; });
-  const status = () => { $('pl-out').textContent = (paused ? 'held · ' : '') + g.frames + ' frames'; };
+  const status = () => { $('pl-out').textContent = stopped || (paused ? 'held · ' : '') + g.frames + ' frames'; };
   function frame(t) {
-    if (rewinding) {
-      if ((rewindTick++ & 3) === 0 && mods.rewind()) draw();
-    } else if (!paused) {
-      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
-      if (tapFor) { if (!--tapFor) tap = 0; }
-      g.pads(p1 | tap, p2);
-      const n = g.run(dt * CLOCK * pace);
-      const af = g.apuFrames();
-      if (n) { draw(); if (soundOn && host && af.length) host.send({ cmd: 'frames', frames: af }); }
-    }
+    try {
+      if (rewinding) {
+        if ((rewindTick++ & 3) === 0 && mods.rewind()) draw();
+      } else if (!paused) {
+        const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+        if (tapFor) { if (!--tapFor) tap = 0; }
+        g.pads(p1 | tap, p2);
+        const n = g.run(dt * CLOCK * pace);
+        const af = g.apuFrames();
+        if (n) { draw(); if (soundOn && host && af.length) host.send({ cmd: 'frames', frames: af }); }
+      }
+    } catch (e) { console.error(e); running = false; stopped = 'The port stopped: ' + e.message + '. Reset starts it again.'; status(); return; }
     last = t;
     status();
     requestAnimationFrame(frame);
   }
   draw();
-  requestAnimationFrame(frame);
+  go();
   const c = D.costs, keys = Object.keys(c).filter((k) => k !== 'nmi');
   $('pl-cost').textContent = keys.length + ' stretches costed from the lockstep; the NMI handler ' + c.nmi.median + ' cycles; a frame 29,780.5.';
 })();
