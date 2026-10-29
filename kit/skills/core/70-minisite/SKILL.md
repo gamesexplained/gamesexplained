@@ -32,6 +32,10 @@ When merging or renaming a page, keep its old URL in `game.json`'s
 `"redirects"`, for example `{"old.html": "levels.html#area-name"}`. The target
 must be a published tab. The build creates a small forwarding page outside
 the tab bar; it carries the visitor's query and fragment to the target.
+A section moved to another tab keeps its old link the same way,
+`{"index.html#quirks": "discoveries.html#quirks"}`, because links to a
+section are passed around: the page it left sends the link on, and the
+build fails if the section is still there or the target is not.
 Check an old bookmark as well as the new tab links in the browser.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the

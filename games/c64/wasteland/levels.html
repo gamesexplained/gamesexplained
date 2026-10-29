@@ -230,17 +230,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The record starts with 22 address words: the text, the monster names, the monster records, the 16 class lists, the map's own routines, the characters, and one word for which no reader was found. Eleven bytes of settings follow, then 37 message numbers for the phrases the fights print, two of them with no reader found.</p>
 </section>
 
-<section id="wl-bug" data-part="game">
-  <p class="fig">08 · A square without a record</p>
-  <h2 class="t">Bug: the check square that reads the processor port</h2>
-  <p class="lede">On map 11, the square at column 24, row 13 refuses every step onto it, and says "Ah! Fresh air and open spaces once again."</p>
-  <div class="plate"><p style="margin:0"><button type="button" class="wl-go" id="wl-bug-go">Show the square on map 11 &rarr;</button></p><p class="cap">Every step onto the square was run in the 6502 simulator with the game's own code (<code>$AD5B</code>): each is refused, and message 53 is shown.</p></div>
-  <p>The square is class 2, a check, with number 2. Map 11's list of check records holds <span data-part=""><code>$0000</code></span> for number 2, so the game reads the record from address 0. The C64's first two addresses are the processor's port, not memory. Address 0 reads <code>$2F</code>, the port's direction, and the game takes it for the check's flags. Its bit 7 is clear, so the check runs as the party steps in, and its bit 6 is clear, so there is no test to pass and the step is refused (<code>$8DEC</code>, <code>$8E33</code>). Address 1 reads <code>$35</code>, the port's setting in play, and the game takes it for the message to show: message 53. This square is the only one of the 42 maps whose record is not in the map.</p>
-  <p>The game does the same in the emulator. With the party at column 23, row 13, three presses of L each printed message 53 and left the party, the square, and the clock as they were, and the processor's port read <code>$2F</code> <code>$35</code> throughout.</p>
-</section>
-
 <section id="wl-argued" data-part="">
-  <p class="fig">09 · Fan lore</p>
+  <p class="fig">08 · Fan lore</p>
   <h2 class="t">The squares the fans argued over</h2>
   <p class="lede">For years players compared notes on the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html">Wasteland Ranger HQ-Grid's Underground</a> about what a few squares wanted from a party. Each of those squares is a record in its map, and the record settles what the C64 version asks.</p>
   <div class="plate">
@@ -2140,7 +2131,6 @@ globalThis.WLPictures = (function () {
   var portraits = mountPortraits(document.getElementById('wl-portraits'), titles);
   var B = WLMaps.mountBrowser(root, { base: '', titles: titles, onShow: function (M) { if (portraits) portraits.show(M); } });
   function go(n, at) { return function () { B.show(n, at); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; }
-  document.getElementById('wl-bug-go').addEventListener('click', go(11, [24, 13]));
   document.getElementById('wl-door-go').addEventListener('click', go(0, [55, 62]));
 
   // A monster's name as print_monster_name prints one of them (game $9E76): the first of each

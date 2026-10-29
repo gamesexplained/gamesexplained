@@ -8,7 +8,7 @@ traced or live, the copy `agent-draft`.
 
 ## For Gold
 
-- A human pass over How it works and the level maps, section by section:
+- A human pass over How it works, Discoveries and the level maps, section by section:
   the headings, the standfirst, what to cut and what to expand (`kit/style.md`).
 - Set `tier` to `silver-claimed` and `steward` when that pass begins.
 

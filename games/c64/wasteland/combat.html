@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Every check and every shot comes down to two dice that are thrown again on a double, and Wasteland’s dice come up doubles one throw in five.</p>
+  <p class="sub">Every check and every shot comes down to two dice that are thrown again on a double, and Wasteland’s dice <a href="discoveries.html#wl-doubles">come up doubles one throw in five</a>.</p>
 </header>
 <main class="wrap">
 <section id="wl-dice" data-part="">
@@ -73,7 +73,7 @@
 
 <p data-part="game">A burst that hits lands 1 to 3 hits (<code>$A0B3</code>), and automatic fire one d4 of hits for every 4 rounds (<code>$A98C</code>). A burst spends 3 rounds and automatic fire all of them, hit or miss (<code>$A02B</code>, <code>$A220</code>).</p>
 
-<p data-part="game">Each hit rolls the weapon's dice, adds the attacker's luck bonus, and takes off the monster's armour roll, stopping at 0 (<code>$A7DE</code>, <code>$A9AD</code>). Anti-tank weapons roll 2 × their dice − the armour when the armour is no more than their dice, and the armour roll is not taken off (<code>$A818</code>, <code>$A677</code>). An explosive rolls its damage once, without luck, and every monster in the group takes it less its own armour roll (<code>$A054</code>, <code>$AA90</code>). The luck bonus has no floor: a hit it takes below 0 kills, as the throwing knife's section below shows.</p>
+<p data-part="game">Each hit rolls the weapon's dice, adds the attacker's luck bonus, and takes off the monster's armour roll, stopping at 0 (<code>$A7DE</code>, <code>$A9AD</code>). Anti-tank weapons roll 2 × their dice − the armour when the armour is no more than their dice, and the armour roll is not taken off (<code>$A818</code>, <code>$A677</code>). An explosive rolls its damage once, without luck, and every monster in the group takes it less its own armour roll (<code>$A054</code>, <code>$AA90</code>). The luck bonus has no floor: a hit it takes below 0 kills, as <a href="discoveries.html#wl-unlucky">the throwing knife</a> shows on Discoveries.</p>
 
 <div class="plate" id="wl-dice-attacks" data-part="game">
   <div class="wl-dice-grid">
@@ -127,34 +127,8 @@
 <p data-part="engine">The chances above are given twice. The first is exact for fair dice. The second comes from the pairs the engine's own code threw on the simulator (<code>$24E3</code>), taking each repeat to fall the way a first pair does. They differ because the game's dice are not fair, as the next section shows.</p>
 </section>
 
-<section id="wl-doubles" data-part="engine">
-  <p class="fig">02 · Random numbers</p>
-  <h2 class="t">Bug: the dice come up doubles one throw in five</h2>
-  <p class="lede">Two fair dice match one throw in six. Wasteland's match one throw in five, and a pair of ones comes up twice as often as it should. A double means the dice are thrown again, so the bias reaches every check and every shot in the game.</p>
-  <div class="plate" id="wl-dbl">
-    <div class="wl-dbl-seg" role="group" aria-label="Which dice">
-      <button type="button" class="wl-dbl-b" data-wl-dbl="live" aria-pressed="true">In the emulator</button>
-      <button type="button" class="wl-dbl-b" data-wl-dbl="sim" aria-pressed="false">On the simulator</button>
-      <button type="button" class="wl-dbl-b" data-wl-dbl="fair" aria-pressed="false">Fair dice</button>
-    </div>
-    <div class="wl-dbl-wrap">
-      <table class="wl-dbl-t" id="wl-dbl-t" aria-label="The first pair of a throw: first die down, second die across, the share of throws in each cell"></table>
-      <div>
-        <div class="wl-dbl-big"><span id="wl-dbl-p">&ndash;</span> <span class="wl-dbl-unit">doubles</span></div>
-        <p class="wl-dbl-line" id="wl-dbl-sum"></p>
-        <p class="wl-dbl-line" id="wl-dbl-cell" role="status"></p>
-        <div class="wl-dbl-key"><span>fewer than fair</span><span class="wl-dbl-ramp"></span><span>more than fair</span></div>
-      </div>
-    </div>
-    <p class="cap">The first pair of the open throw, first die down and second across. <b>In the emulator</b>, a stub in play threw 4,096 pairs with the game's own routines and the same instructions between the two dice as the throw itself (<code>$084A-$0850</code>), each pair after the seed had been stirred 1 to 256 times, as waiting for a key stirs it. <b>On the simulator</b>, the engine's code threw 2,000,000 pairs on the kit's 6502 simulator from random moments: a random raster line, cycle, timer value, and seed for each.</p>
-  </div>
-  <p>The game has no table of random numbers. Each random byte is the sum of three numbers (<code>$24E3</code>): the raster line the video chip is drawing, the low byte of a timer that counts down once a cycle, and the last random byte plus one. A die (<code>$24D6</code>) keeps the byte's lowest three bits, 0 to 7, throws again at once on a 6 or a 7, and adds 1. The raster line and the timer move with the clock, so a byte made a few cycles after another depends on it. After a draw of 7, the die thrown again at once comes out 2 or 3 two times in five, where a fair die would give 2 or 3 one time in three.</p>
-  <p>Every skill or attribute check fails at once on a throw below 5 (<code>$0C73</code>, <code>$0D29</code>). That takes a first pair of 1 and 2 or 1 and 3, one throw in nine with fair dice. The game's dice do it 13.1% of the time on the simulator and 12.9% in the emulator. The checks and shots above give the chances both ways.</p>
-  <p>A single die is uneven too. In 5,000 dice from the Ranger Center's attribute rolls, watched in the emulator, ones came up 1,043 times, fours 727, and sixes 826, where fair dice give 833 of each.</p>
-</section>
-
 <section id="wl-melee" data-part="game">
-  <p class="fig">03 · Experience</p>
+  <p class="fig">02 · Experience</p>
   <h2 class="t">A kill in melee earns double experience</h2>
   <p class="lede">A monster killed with fists or a hand weapon (a knife, a club, an ax, a chainsaw, or a proton ax) gives its killer twice the experience a shot gives for the same kill. The melee round adds the kill's worth twice, one call after the other. Guns, rockets, and explosives add it once.</p>
   <p>The <a href="https://archive.org/details/c64man_wasteland">manual</a> never spells this out. Its section on hand-to-hand combat (page 16) says the Rangers <q>have an advantage over the citizens in hand-to-hand combat</q>, and nothing about experience. Its section on promotion (page 11) says <q>You're awarded experience points each time you accomplish a difficult task or win a difficult battle</q>, and nothing about how a kill is made.</p>
@@ -179,7 +153,7 @@
 </section>
 
 <section id="wl-learn" data-part="game">
-  <p class="fig">04 · Learning</p>
+  <p class="fig">03 · Learning</p>
   <h2 class="t">No fight can teach a weapon skill past level 7</h2>
   <p class="lede">A fight teaches as it goes: after an attack, the attacker may learn a level of the weapon's skill. How far a fight can teach depends on the target's armour, and no monster in the 42 maps has the armour to teach beyond level 7.</p>
   <p>The lesson needs no check to pass (<code>$AA35</code>). It is the roll a passed check makes, at a difficulty of half the target's armour dice, rounded down, plus 1 (<code>$9ED7</code>, <span data-part="engine"><code>$0CA2</code></span>). The level must be at least 1, below the attacker's rank, and below that difficulty, and then a d10 decides, as it does after a check. A blow in melee that misses teaches nothing (<code>$8103-$810C</code>), and neither does an empty gun.</p>
@@ -201,71 +175,6 @@
   <p>Players found the ceiling by grinding against it. L. Stegner told the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#brawling">HQ-Grid's Underground</a> (7 November 1999) that Brother Goliath, in the Guardian Citadel, <q>can raise your guys up to level 7 in most fighting skills</q>. His record has 13 armour dice, the most any monster has, so his lessons stop at 7 (<span data-part="map-35"><code>$428E</code></span>). Zoster (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#weaponskilltips">1 July 1999</a>) took weapon skills <q>up to 7</q> by firing on the Scorpitron in Las Vegas. On the C64 the Scorpitron has 10 armour dice, so its lessons stop at 6 (<span data-part="map-12"><code>$531E</code></span>).</p>
 </section>
 
-<section id="wl-unlucky" data-part="game">
-  <p class="fig">05 · Damage</p>
-  <h2 class="t">Bug: an unlucky Ranger's throwing knife can kill anything</h2>
-  <p class="lede">A shot's damage is the weapon's dice plus the attacker's luck bonus, and below an LK of 9 the bonus is negative. When it takes the sum below 0, the number wraps round to 65,535, and whatever was hit dies. One weapon can get there: a Throwing knife, thrown by a Ranger with an LK of 3 or 4, when both of its dice show 1.</p>
-  <div class="plate">
-    <div class="wl-un-grid">
-      <figure><img class="wl-un-shot" src="reference/unlucky-throw.png" width="384" height="272" alt="The fight in map 1's graveyard: Hell Razor attacks and hits 1 Shambler Ghoul for 65532 points of damage spinning it into a dance of death. Thrasher misses."><figcaption>In the emulator, Hell Razor with an LK of 3 and a Throwing knife, against the Shambler Ghouls in map 1's graveyard. The knife's roll, 10, was changed to 2, a 1 and a 1, as the dice handed it back (at <code>$A7E7</code>). The sum came out as 65,535, and the ghoul's armour took 3 off it.</figcaption></figure>
-      <div>
-        <ol class="wl-xp-code" data-part="game"><li><span><code>$A7DE</code></span><span class="wl-xp-b">20 F4 A7</span><span class="wl-xp-i">JSR weapon_damage_roll</span></li><li><span><code>$A7E1</code></span><span class="wl-xp-b">8D EC A7</span><span class="wl-xp-i">STA damage_roll_lo_op</span></li><li><span><code>$A7E4</code></span><span class="wl-xp-b">8E F0 A7</span><span class="wl-xp-i">STX damage_roll_hi_op</span></li><li><span><code>$A7E7</code></span><span class="wl-xp-b">20 B8 A7</span><span class="wl-xp-i">JSR luck_bonus</span></li><li><span><code>$A7EA</code></span><span class="wl-xp-b">18</span><span class="wl-xp-i">CLC</span></li><li><span><code>$A7EB</code></span><span class="wl-xp-b">69 00</span><span class="wl-xp-i">ADC #$00</span></li><li><span><code>$A7ED</code></span><span class="wl-xp-b">48</span><span class="wl-xp-i">PHA</span></li><li><span><code>$A7EE</code></span><span class="wl-xp-b">8A</span><span class="wl-xp-i">TXA</span></li><li><span><code>$A7EF</code></span><span class="wl-xp-b">69 00</span><span class="wl-xp-i">ADC #$00</span></li><li><span><code>$A7F1</code></span><span class="wl-xp-b">AA</span><span class="wl-xp-i">TAX</span></li><li><span><code>$A7F2</code></span><span class="wl-xp-b">68</span><span class="wl-xp-i">PLA</span></li><li><span><code>$A7F3</code></span><span class="wl-xp-b">60</span><span class="wl-xp-i">RTS</span></li></ol>
-        <p class="cap">The routine that works out a shot's damage. The two stores write the roll into the operands of the two <code>ADC</code> instructions, and the luck bonus comes back from <code>$A7B8</code> in X and A. Nothing after the second <code>ADC</code> looks at the carry.</p>
-      </div>
-    </div>
-    <div class="wl-un-tw"><table class="wl-un-t">
-      <thead><tr><th>LK</th><th>Luck bonus</th><th>A sum below 0 needs a roll of</th></tr></thead>
-      <tbody>
-        <tr class="wl-un-hit"><td>3 or 4</td><td>−3</td><td>2 or less: the Throwing knife's two dice both showing 1</td></tr>
-        <tr><td>5 or 6</td><td>−2</td><td>1: no thrown or fired weapon rolls fewer than two dice</td></tr>
-        <tr><td>7 or 8</td><td>−1</td><td>0: never</td></tr>
-        <tr><td>9 and up</td><td>0 or more</td><td>never</td></tr>
-      </tbody>
-    </table></div>
-    <p class="cap">The bonus is (LK − 9) / 2 rounded down below 9, 0 from 9 to 12, and (LK − 12) / 2 from 13 (<code>$A7C3</code>). The lowest attribute a Ranger can be rolled is 3.</p>
-  </div>
-  <p>A shot's damage is worked out by one routine (<code>$A7DE</code>). It rolls the weapon's dice (<code>$A7F4</code>), then adds the attacker's luck bonus with two plain additions, the low byte and then the high byte. A negative bonus is held as a 16-bit number whose high byte is $FF, so a roll smaller than the penalty comes out as a number near 65,535. The monster's armour roll takes a few points off that. The rest is more than any monster has: the most is about 40,000, for the Night Terror in Finster's mind maze (map 23), and the subtraction from the monster's hit points leaves it dead (<code>$A6CC-$A6DF</code>). A blow in melee adds the same bonus through the engine's own addition (<span data-part="engine"><code>$07C6</code></span>), which stops at 0, so a punch can do no damage but never wraps.</p>
-  <p>Only one weapon has dice few enough. An LK of 3 or 4 takes 3 off, so the roll has to be 2: two dice showing 1. Every gun and rocket rolls three dice or more, and explosives leave the luck out, which leaves the Throwing knife's 2d6. With fair dice the knife shows a 1 and a 1 once in 36 throws, and a Throwing knife is used up when it is thrown (<code>$A53A</code>). No loot square in the 42 maps holds one. Christina, who can join the party in downtown Needles, carries one (<span data-part="map-32"><code>$40AE</code></span>).</p>
-  <p>A new Ranger&#8217;s <a href="party.html#wl-ranger-roll">attribute roll</a> makes the low LK easier to come by. Of the 7,776 ways its five dice can fall, 261 give an LK of 3 or 4, where the best three of five would give 6.</p>
-</section>
-
-<section id="wl-ryder" data-part="game">
-  <p class="fig">06 · The Red Ryder</p>
-  <h2 class="t">Secret: the Red Ryder rifle rolls 200 dice, and the game never hands it out</h2>
-  <p class="lede">Item 20 in the item table is the Red Ryder, a rifle that takes 7.62mm clips and rolls 200 dice for every hit. The Meson cannon, the gun with the next most, rolls 19. No shop, loot bag, or character in the C64 version holds a Red Ryder, so nobody can fire one without editing the game.</p>
-  <p>The record is in every copy of the item table (<code>$31A8</code>): a price of 12,345, the Rifle skill, the 7.62mm clip, and a clip of 63 rounds, the most a slot's count can hold. With fair dice, 200 of them come to between 600 and 800 in all but one hit in 30,000. The shot widget above lists it, so it can be fired there.</p>
-  <p>The way in is closed at every door. Its stock is 0 in all four item tables on the disks, so no shop offers it (<span data-part="module-1"><code>$CC5D-$CC95</code></span>). No loot bag in the 42 maps names it, and none names its class, 4, from which a bag would draw a random rifle (<code>$919C-$921A</code>). No character a party can meet carries one, and no map's own code calls the routines that put an item in a member's slots.</p>
-  <p>On the PC, players found one. M. Zier's notes on the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#superlootbags">HQ-Grid's Underground</a> describe a bug in the IBM version's loot bags that hands out items freely, and <q>The best two others are Red Ryders, which are 7.62 rifles with 63 shots, and a range from 600-800 damage</q>, numbers the C64's record matches exactly. Black Raven answered there (16 January 1997) that the bug was the IBM version's alone: <q>it looks like us 64/Apple II users are out of luck. I really wanted those Red Ryders too!</q></p>
-  <p>The name is Highpool's too. Two of its messages tell of a child who lies dead <q>near his Red Ryder hat</q>, and of Red Ryder himself, who <q>raises his Red Ryder Range Model Air Rifle (with compass in the stock) and fires!</q> (<a href="levels.html#map-10">map 10</a>, messages 27 and 31). His is an air rifle; the item table's takes 7.62mm clips.</p>
-</section>
-
-<section id="wl-radiation" data-part="game">
-  <p class="fig">07 · Radiation</p>
-  <h2 class="t">Bug: armour stops radiation only where the message number is even</h2>
-  <p class="lede">A radiation square burns every member of the party who is not wearing a rad suit. The code means armour to be no help against it, and on most squares armour is a help after all: the square's message number decides.</p>
-  <div class="plate">
-    <div class="wl-rad-tw"><table class="wl-rad-t">
-      <thead><tr><th>Map</th><th>Squares</th><th>Damage</th><th>Message</th><th>Armour</th></tr></thead>
-      <tbody id="wl-rad-rows"><tr class="wl-rad-odd"><td><a href="levels.html#map-0">Map 0</a>, The world map</td><td class="wl-rad-n">22</td><td class="wl-rad-n">3d6</td><td><q>The ground seems to glow here.</q> <span class="wl-rad-none">(23)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-0">Map 0</a>, The world map</td><td class="wl-rad-n">14</td><td class="wl-rad-n">5d6</td><td><q>The ground seems to glow here.</q> <span class="wl-rad-none">(23)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-19">Map 19</a>, Base Cochise, robot assembly</td><td class="wl-rad-n">18</td><td class="wl-rad-n">4d6</td><td><q>A wave of heat washes over you and the ground shimmers.</q> <span class="wl-rad-none">(28)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-19">Map 19</a>, Base Cochise, robot assembly</td><td class="wl-rad-n">20</td><td class="wl-rad-n">6d6</td><td><q>Your eyes tear and a ringing fills your ears.</q> <span class="wl-rad-none">(29)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-19">Map 19</a>, Base Cochise, robot assembly</td><td class="wl-rad-n">22</td><td class="wl-rad-n">10d6</td><td><q>Your whole body feels ready to combust, and your skin itches mightily.</q> <span class="wl-rad-none">(30)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-20">Map 20</a>, Base Cochise, the reactor</td><td class="wl-rad-n">22</td><td class="wl-rad-n">2d6</td><td><q>On the floor is an open container of U235.</q> <span class="wl-rad-none">(69)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-20">Map 20</a>, Base Cochise, the reactor</td><td class="wl-rad-n">16</td><td class="wl-rad-n">3d6</td><td><q>The floor is covered with Plutonium dust.</q> <span class="wl-rad-none">(70)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-20">Map 20</a>, Base Cochise, the reactor</td><td class="wl-rad-n">6</td><td class="wl-rad-n">4d6</td><td><q>A pile of Wastelandium glows brightly here.</q> <span class="wl-rad-none">(71)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-26">Map 26</a>, Needles</td><td class="wl-rad-n">42</td><td class="wl-rad-n">2d6</td><td><span class="wl-rad-none">none (0)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr><td><a href="levels.html#map-26">Map 26</a>, Needles</td><td class="wl-rad-n">12</td><td class="wl-rad-n">4d6</td><td><span class="wl-rad-none">none (0)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr><td><a href="levels.html#map-31">Map 31</a>, Needles, waste pit and ammo bunker</td><td class="wl-rad-n">1</td><td class="wl-rad-n">6d6</td><td><q>A broken radioactive waste container is lying here buried in the trash.</q> <span class="wl-rad-none">(12)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr><td><a href="levels.html#map-38">Map 38</a>, Las Vegas, the Mushroom Cloud temple</td><td class="wl-rad-n">16</td><td class="wl-rad-n">4d6</td><td><span class="wl-rad-none">none (0)</span></td><td><span class="wl-rad-yes">counts</span></td></tr></tbody>
-    </table></div>
-    <p class="cap" data-part="">Every record of a radiation square in the 42 maps, read from the maps' listings: its message (byte 0), its dice (byte 1), and the squares that use it. The messages are decoded by the port in <a href="pictures.html#wl-text">Five bits a letter</a>. A message of 0 shows nothing. Each map opens on the Maps tab.</p>
-    <div class="wl-rad-try">
-      <img class="wl-rad-shot" id="wl-rad-shot" src="reference/radiation-message-23.png" width="384" height="272" alt="The world map at night, the party on a radiation square: The ground seems to glow here.">
-      <div>
-        <div class="wl-rad-bar" role="group" aria-label="The square's message">
-          <button type="button" class="wl-rad-b" data-wl-rad="23" aria-pressed="true">Message 23, as it is</button>
-          <button type="button" class="wl-rad-b" data-wl-rad="22" aria-pressed="false">Changed to 22</button>
-        </div>
-        <p class="wl-rad-out" id="wl-rad-out" role="status"></p>
-      </div>
-    </div>
-  </div>
-  <p>The handler for radiation squares (<code>$82E0</code>) shows the square's message, then rolls the square's dice of damage for each member in turn. A member wearing the rad suit, item 41, is passed over. Before the first member the handler sets the flag at <span data-part="engine"><code>$A0</code></span> that tells the damage routine to skip the armour roll (<code>$82E7</code>).</p>
-  <p>The damage is taken off through a routine shared with the squares that test the party (<code>$9082</code>). For CON, that routine sets the same flag again, from bit 0 of byte 0 of the square's record (<code>$90AF-$90B4</code>). On a square that tests the party, byte 0 holds flags, and bit 0 set means armour is no help. On a radiation square, byte 0 is the number of the message it shows. So the armour roll, one die for each point of the member's armour class (<code>$A8BB-$A8C5</code>), is skipped where the message number is odd, as the handler meant, and made where it is even.</p>
-  <p>Seven of the twelve records have an even number, among them the 10d6 squares of the robot assembly at Base Cochise. The world map's two records both show message 23, so armour is no help there.</p>
-  <p>In the emulator, the party stepped onto the world map's 5d6 square with every member's armour class set to 30. With message 23 the four members lost 22, 23, 16, and 14 CON. With the record's byte changed to 22, the armour roll was made four times and nobody lost any.</p>
-</section>
-</main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="reference/wasteland-dice.js"></script>
@@ -281,62 +190,6 @@
   // ---- the dice: the checks, the shots and the doubles ----
   if (window.WLDice) WLDice.mount(document, { base: '' });
   else document.querySelectorAll('.wl-dice-note').forEach(p => { p.textContent = 'The dice are run by a script that did not load here. Open this page on the built site.'; });
-
-  // ---- Doubles: the first pair of a throw, measured, simulated and fair ----
-  (function doubles() {
-    const t = $('wl-dbl-t');
-    if (!t) return;
-    if (!window.WLDice || !WLDice.GAME_PAIRS) { note($('wl-dbl-sum'), 'This table needs the dice widget’s script, which did not load here.'); return; }
-    // The emulator: 4,096 pairs thrown by a stub in play with the game's own routines (first die down).
-    const LIVE = [[239, 185, 102, 81, 75, 59], [137, 197, 140, 86, 77, 96], [106, 107, 108, 158, 138, 94],
-      [70, 88, 88, 121, 135, 148], [119, 69, 101, 104, 123, 122], [79, 111, 155, 97, 100, 81]];
-    const FAIR = Array.from({ length: 6 }, () => Array(6).fill(1));
-    const SETS = {
-      live: { m: LIVE, what: 'in the emulator, 4,096 throws' },
-      sim: { m: WLDice.GAME_PAIRS, what: 'on the simulator, 2,000,000 throws' },
-      fair: { m: FAIR, what: 'with fair dice' }
-    };
-    const sum = m => m.reduce((a, r) => a + r.reduce((x, y) => x + y, 0), 0);
-    const pct = x => (100 * x).toFixed(1) + '%';
-    // the colour of a cell: blue below the fair 1/36, red above, white at it (ratio 0.5 to 2 on a log scale)
-    function colour(r) {
-      const v = Math.max(-1, Math.min(1, Math.log2(r)));
-      const mix = (a, b, f) => a.map((x, i) => Math.round(x + (b[i] - x) * f));
-      const W = [241, 239, 234], B = [58, 111, 196], R = [208, 74, 58];
-      const c = v < 0 ? mix(W, B, -v) : mix(W, R, v);
-      return 'rgb(' + c.join(',') + ')';
-    }
-    let cur = 'live';
-    const btns = [...document.querySelectorAll('[data-wl-dbl]')];
-    function cellSay(set, a, b) {
-      const S = SETS[set], n = sum(S.m), p = S.m[a][b] / n;
-      $('wl-dbl-cell').innerHTML = '<b>' + (a + 1) + ' then ' + (b + 1) + '</b>: ' + pct(p) + ' of the first pairs ' + S.what +
-        (set === 'fair' ? '.' : ', against ' + pct(1 / 36) + ' with fair dice' + (set === 'live' ? ' (' + S.m[a][b].toLocaleString('en-GB') + ' throws)' : '') + '.');
-    }
-    function render() {
-      const S = SETS[cur], n = sum(S.m);
-      let h = '<tr><th class="wl-dbl-corner">first<br>second</th>' + [1, 2, 3, 4, 5, 6].map(d => '<th scope="col">' + d + '</th>').join('') + '</tr>';
-      for (let a = 0; a < 6; a++) {
-        h += '<tr><th scope="row">' + (a + 1) + '</th>';
-        for (let b = 0; b < 6; b++) {
-          const p = S.m[a][b] / n;
-          h += '<td tabindex="0" data-a="' + a + '" data-b="' + b + '" class="' + (a === b ? 'wl-dbl-d' : '') + '" style="background:' + colour(p * 36) + '">' + (100 * p).toFixed(1) + '</td>';
-        }
-        h += '</tr>';
-      }
-      t.innerHTML = h;
-      const dbl = S.m.reduce((x, r, i) => x + r[i], 0) / n;
-      const under5 = (S.m[0][1] + S.m[1][0] + S.m[0][2] + S.m[2][0]) / n;
-      $('wl-dbl-p').textContent = pct(dbl);
-      $('wl-dbl-sum').innerHTML = 'Doubles ' + S.what + ', where fair dice give 16.7%. A first pair below 5, which fails any check: <b>' + pct(under5) + '</b>' + (cur === 'fair' ? '.' : ', where fair dice give 11.1%.');
-      $('wl-dbl-cell').textContent = 'Each cell is the share of first pairs, in percent. Point at one, or move to it with Tab.';
-      press(btns, btns.find(x => x.dataset.wlDbl === cur));
-    }
-    t.addEventListener('mouseover', e => { const c = e.target.closest('td'); if (c) cellSay(cur, +c.dataset.a, +c.dataset.b); });
-    t.addEventListener('focusin', e => { const c = e.target.closest('td'); if (c) cellSay(cur, +c.dataset.a, +c.dataset.b); });
-    btns.forEach(b => b.addEventListener('click', () => { cur = b.dataset.wlDbl; render(); }));
-    render();
-  })();
 
   // ---- Experience: the two places the game pays for a kill, a line at a time ----
   (function experience() {
@@ -368,24 +221,5 @@
     render();
   })();
 
-  // ---- Radiation: the live test, message 23 against 22 ----
-  (function radiation() {
-    const out = $('wl-rad-out'), img = $('wl-rad-shot');
-    if (!out) return;
-    const CASES = {
-      23: { src: 'reference/radiation-message-23.png', alt: 'The world map at night, the party on a radiation square: The ground seems to glow here.',
-        say: '<q>The ground seems to glow here.</q> Message 23 is odd, so the damage routine skips the armour roll. With armour class 30 each, the four members lost <b>22, 23, 16 and 14</b> CON.' },
-      22: { src: 'reference/radiation-message-22.png', alt: 'The same square with the record’s message changed to 22: It’s VERY hot!',
-        say: '<q>It’s VERY hot!</q> The same square with its record’s byte 0 changed to 22, another of the map’s messages. 22 is even, so the armour roll is made for each member, and with armour class 30 nobody lost any CON: <b>0, 0, 0 and 0</b>.' }
-    };
-    const btns = [...document.querySelectorAll('[data-wl-rad]')];
-    function show(k) {
-      const c = CASES[k];
-      img.src = c.src; img.alt = c.alt; out.innerHTML = c.say;
-      press(btns, btns.find(b => b.dataset.wlRad === String(k)));
-    }
-    btns.forEach(b => b.addEventListener('click', () => show(b.dataset.wlRad)));
-    show(23);
-  })();
 })();
 </script>

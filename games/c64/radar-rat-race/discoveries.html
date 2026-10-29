@@ -1,0 +1,260 @@
+<title>Radar Rat Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+/* screen render */
+.screenwrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#screenCv{image-rendering:pixelated;width:100%;max-width:620px;height:auto;aspect-ratio:8/5;
+ border-radius:6px;border:1px solid var(--line);flex:1 1 400px;display:block;background:#000}
+.stats{flex:0 0 168px;display:flex;flex-direction:column;gap:9px;font-family:var(--fm)}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.stat .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute)}
+.stat .v{font-size:18px;color:var(--amber);font-variant-numeric:tabular-nums;margin-top:1px}
+
+/* cast */
+.castgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px}
+.castcard{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center}
+.castcard canvas{image-rendering:pixelated;width:96px;height:96px;background:#000;border-radius:6px;display:block;margin:0 auto 12px}
+.castcard h3{font-size:13.5px;margin-bottom:5px}
+.castcard p{font-size:12.5px;color:var(--ink-soft);margin:0}
+.castcard .codes{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:8px}
+
+/* rat player */
+.ratbox{display:flex;gap:26px;flex-wrap:wrap;align-items:center;justify-content:center}
+#ratCv{image-rendering:pixelated;width:180px;height:180px;background:#000;border-radius:10px;border:1px solid var(--line)}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:6px}
+.dpad button{font-family:var(--fm);font-size:16px;background:var(--surface-2);color:var(--ink-soft);
+ border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:.15s}
+.dpad button:hover{border-color:var(--violet);color:var(--violet)}
+.dpad button[aria-pressed="true"]{background:var(--violet);color:#14122b;border-color:var(--violet)}
+.dpad button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.dpad .sp{visibility:hidden}
+.ratmeta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);text-align:center;min-width:150px}
+.ratmeta b{display:block;color:var(--amber);font-size:15px;margin-bottom:4px}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:13px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left;color:var(--ink-mute)}
+th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em}
+tr.bonus td{color:var(--amber)}
+.tw{overflow-x:auto}
+.bar{display:inline-block;height:9px;border-radius:2px;background:var(--violet);vertical-align:middle;margin-right:7px}
+.bar.h{background:var(--coral)}
+
+/* charset */
+#charGrid{display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+#charGrid canvas{width:100%;image-rendering:pixelated;background:#000;border-radius:2px;cursor:pointer;border:1px solid transparent}
+#charGrid canvas:hover,#charGrid canvas.sel{border-color:var(--cyan)}
+#charInfo{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-top:12px;min-height:20px}
+
+/* sound */
+.playerow{display:flex;gap:10px;flex-wrap:wrap}
+button.play{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:9px;padding:11px 16px;cursor:pointer;transition:.15s;text-align:left}
+button.play:hover{border-color:var(--cyan);color:var(--cyan)}
+button.play:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+button.play small{display:block;color:var(--ink-mute);font-size:10.5px;margin-top:3px}
+.notes{display:flex;gap:3px;margin-top:14px;flex-wrap:wrap}
+.note{font-family:var(--fm);font-size:10px;color:var(--ink-mute);background:var(--surface-2);
+ border:1px solid var(--line-soft);border-radius:4px;padding:3px 6px}
+.note.on{background:var(--cyan);color:#0b2b30;border-color:var(--cyan)}
+
+/* maze */
+.mazewrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#mazeCv{image-rendering:pixelated;width:100%;max-width:420px;height:auto;aspect-ratio:32/56;
+ border-radius:6px;border:1px solid var(--line);background:#000;flex:1 1 280px;display:block}
+.mazemeta{flex:1 1 220px;font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);line-height:1.75}
+.mazemeta b{color:var(--amber)}
+.mazekey{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.mazekey span{display:inline-flex;align-items:center;gap:6px}
+.mazekey i{width:11px;height:11px;border-radius:2px;display:inline-block}
+
+/* placement */
+.placewrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#placeCv{image-rendering:pixelated;width:100%;max-width:420px;height:auto;aspect-ratio:32/56;
+ border-radius:6px;border:1px solid var(--line);flex:1 1 240px;display:block;background:#fff}
+.placectl{flex:1 1 260px;display:flex;flex-direction:column;gap:16px;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.placectl label{display:flex;flex-direction:column;gap:7px}
+.placectl label.inline{flex-direction:row;align-items:center;gap:9px}
+.placectl select{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.placectl input[type=range]{accent-color:var(--violet);width:100%}
+.placectl input[type=checkbox]{accent-color:var(--violet)}
+.placectl output{color:var(--amber)}
+.placestats{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px 13px;line-height:1.7}
+.placestats b{color:var(--amber);font-weight:500}
+.placekey{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+.placekey span{display:inline-flex;align-items:center;gap:8px}
+.placekey i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--line)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:22px}
+.rule{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:16px 17px}
+.rule h3{font-size:14px;margin-bottom:6px}
+.rule p{font-size:13.5px;color:var(--ink-soft);margin:0}
+
+/* secrets */
+.secrets{list-style:none;counter-reset:s;padding:0;margin:0;display:flex;flex-direction:column;gap:26px}
+.secrets li{counter-increment:s;padding-left:46px;position:relative}
+.secrets li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;
+ font-family:var(--fm);font-size:12px;color:var(--amber);border:1px solid var(--line);
+ border-radius:6px;padding:3px 7px;background:var(--surface-2)}
+.secrets h3{font-size:15px;margin-bottom:7px;color:var(--ink)}
+.secrets p{margin:0 0 9px;color:var(--ink-soft);font-size:14.5px;max-width:62ch}
+.secrets code{display:inline-block;font-family:var(--fm);font-size:11.5px;color:var(--cyan);
+ background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;padding:3px 8px}
+footer{padding:48px 0 0;color:var(--ink-mute);font-size:13.5px}
+footer ul{padding-left:1.1em}
+footer li{margin-bottom:9px}
+@media (prefers-reduced-motion:no-preference){.plate{animation:r .45s ease both}}
+@keyframes r{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="hero">
+  <p class="eyebrow">Commodore 64 &middot; 1982 &middot; Commodore</p>
+  <h1>Radar Rat Race</h1>
+  <p class="sub">What the code does that the instructions never mention: cats that kill, a bonus rat
+  that pays out once, and a whole game decided before you press F1.</p>
+</div>
+
+<div class="wrap">
+
+<section id="secrets">
+  <p class="fig">01 &middot; Secrets</p>
+  <h2 class="t">Things the manual never told you</h2>
+  <p class="lede">None of these are in the instructions, and several contradict what has been
+  published about the game. Every one came out of the code; the ones marked as confirmed were
+  then tested in an emulator. Each ends with where to look.</p>
+  <div class="plate">
+    <ol class="secrets">
+      <li>
+        <h3>The black cats are lethal</h3>
+        <p>Published descriptions say the cats only slow you down. In this build they kill the rat
+        exactly like a red rat does: one routine checks the rat's position against both, and
+        both set the same "caught" flag. Only the red rats are slowed by cats.
+        Cats never show on the radar, so you only see one when it scrolls into view.</p>
+        <code>player_collision_check at $F344 &middot; confirmed by putting the rat on a cat</code>
+      </li>
+      <li>
+        <h3>There is exactly one bonus rat</h3>
+        <p>The title screen says BONUS RAT FOR 20000 PTS, and published descriptions turn that into
+        an extra life every 20,000 points. The code gives one per game. It checks whether the
+        middle two digits of the score are exactly "20", and a flag stops it paying out again. That
+        flag is only cleared when the game ends. Every instruction that could write to it has been
+        checked, including the indexed writes that could reach it indirectly: nothing else does.</p>
+        <code>add_score at $F02A &middot; the flag at $99 is reset only by game_over_reset</code>
+      </li>
+      <li>
+        <h3>Your whole game is decided on the title screen</h3>
+        <p>The first round's cats and cheese are placed before the title screen appears, so the
+        first game after loading always gets the same round 1. After that the random number
+        generator is only moved on once per tick while the title screen waits for F1, never during
+        play. How long you wait before pressing F1 decides the layout of every later round in the
+        game, and nothing you do in the maze changes it. Try it in <a href="index.html#placement">Placement</a>, on How it works.</p>
+        <code>prng_next at $EE2E is called from placement and the title loop only &middot; round 1 confirmed across two loads</code>
+      </li>
+      <li>
+        <h3>Round 16 is round 1 again</h3>
+        <p>The ROUND counter on screen keeps going up, but the table index behind it wraps after
+        15. Round 16 has round 1's red rats, cats, speed and maze. Once you have survived 15 rounds the
+        game never gets any harder.</p>
+        <code>next_round at $F2BF resets the index when it reaches 15</code>
+      </li>
+      <li>
+        <h3>The 2&times; cheese doubles everything after it, until you die</h3>
+        <p>One cheese has a small red "2x" in its corner. It doesn't just double the next slice:
+        from that one on, every slice scores double and X2 flashes on the panel, until you lose a
+        life. Losing a life also resets the slice value to 100. Slices are worth 100, 200,
+        300&hellip; the tenth is worth 1,000, and each unit of TIME left at the end of a round is
+        worth 60 more.</p>
+        <code>check_meal_eaten at $F0CA &middot; score_doubler at $C0, cleared when a life starts</code>
+      </li>
+      <li>
+        <h3>In a SPEED RUN the red rats wait for the clock</h3>
+        <p>In rounds 3, 7, 11 and 15 the red rats sit frozen on their spawn points and only start
+        chasing when TIME runs out. There's a catch in the other direction too: if you're caught
+        during a SPEED RUN, it's over. You lose the life and go straight on to the next round.</p>
+        <code>red_rat_move_countdown = $FF &middot; timeout_handler at $EAC0 &middot; confirmed in the emulator</code>
+      </li>
+      <li>
+        <h3>Running out of time never kills you</h3>
+        <p>When the TIME bar empties nothing dramatic happens. You can't drop stars any more, and
+        every two-thirds of a second the rat gets a little slower, until it moves at a third of its
+        normal speed. The rat never stops, either: with no input it keeps going, and at a wall it
+        turns right by itself, or left if right is blocked.</p>
+        <code>timeout_handler at $EAC0 &middot; move_player at $E78C</code>
+      </li>
+      <li>
+        <h3>The red rats don't know where the walls are</h3>
+        <p>No red rat ever plans a route. At each cell it compares its position with yours along one
+        axis and steps toward you if that cell is open; once it is level with you it switches axis.
+        If the way toward you is a wall, it carries straight on, or turns right, or turns left,
+        and only tries again at the next cell. It has no idea that the way round is the other way.</p>
+        <code>red_rat_chase_direction at $E23C &middot; move_all_red_rats at $E088</code>
+      </li>
+      <li>
+        <h3>The red rats and the rat read different maps</h3>
+        <p>The red rats test their next step against the 224-byte maze bitmap. The rat's own movement
+        never touches it: it reads back the characters already painted on screen. The same wall is
+        stored twice, in two formats, and each reader uses the one it can check more cheaply.</p>
+        <code>red_rat_can_step reads the bitmap &middot; read_screen_in_direction reads screen RAM</code>
+      </li>
+      <li>
+        <h3>The game notices a new high score, then forgets</h3>
+        <p>When your score passes the high score, the game sets a flag saying so. Nothing ever
+        reads that flag. Whatever it was meant to trigger never made it into this build.</p>
+        <code>new_hiscore_flag at $0217 &middot; set at $F090, cleared at game over, never read</code>
+      </li>
+      <li>
+        <h3>The music is stored backwards</h3>
+        <p>Three Blind Mice runs continuously under the whole game, and the melody table is read
+        from the last entry to the first. Every tune in the game is stored that way except the
+        round-complete jingle. Counting an index down until it goes negative is a common 6502
+        idiom: the end test is a single branch on the sign flag.</p>
+        <code>music_tick at $EA2B &middot; index counts 15 down to 0, reloads, repeats</code>
+      </li>
+      <li>
+        <h3>The build signs its own name</h3>
+        <p>Tucked in the string table is <b>COMMODORE V.02</b>. The game keeps its text in two
+        alphabets: ordinary labels use standard screen codes, while the banners (GAME OVER,
+        SPEED RUN) use a private set of bright glyphs where S is <code>$1B</code> instead of
+        <code>$13</code>. Four of them, P, L, semicolon and full stop, double as the key diagram on
+        the title screen.</p>
+        <code>str_speed_run at $FD33 &middot; str_version at $FD7C</code>
+      </li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" aria-label="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://discord.gg/3V9GWyRDWV" aria-label="Discord" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-left:8px;border:1px solid #e0ded8;border-radius:7px;background:#ffffff;color:#80838a;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
