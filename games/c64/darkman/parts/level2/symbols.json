@@ -8358,7 +8358,7 @@
   },
   {
    "address": 38766,
-   "name": "panel_chars",
+   "name": "panel_screen_colours",
    "type": "Field",
    "kind": "user"
   },
@@ -8478,7 +8478,7 @@
   },
   {
    "address": 52984,
-   "name": "panel_colours",
+   "name": "screen_b_panel",
    "type": "Field",
    "kind": "user"
   },
@@ -8664,7 +8664,7 @@
   },
   {
    "address": 61568,
-   "name": "shapes_unreferenced",
+   "name": "climb_shapes_c",
    "type": "Field",
    "kind": "user"
   },
@@ -11573,12 +11573,12 @@
   {
    "address": 36564,
    "type": "line",
-   "text": "The last nine of the 17 character shapes of text_shapes_b ($8E94), 8 bytes each: the characters $80 to $88. $80 is the letter Z (screen code 26 with $66 added) and $81 a full stop, the stop code $1B that the texts at $8E02 and $90CE use. The others are punctuation that those two texts do not use: $82 looks like a colon, $83 like a short opening bracket, $84 an equals sign, $85 a question mark, $86 a bar and $87 an exclamation mark, and $88 is blank. $8FFF swaps them into the character set at $C400."
+   "text": "The last nine of the 17 character shapes of text_shapes_b ($8E94), 8 bytes each: the characters $80 to $88. $80 is the letter Z (screen code 26 with $66 added) and $81 a full stop, the stop code $1B that the briefing at $90CE uses (the game over text at $8E02 has none). The others are punctuation that those two texts do not use: $82 looks like a colon, $83 like a short opening bracket, $84 an equals sign, $85 a question mark, $86 a bar and $87 an exclamation mark, and $88 is blank. $8FFF swaps them into the character set at $C400."
   },
   {
    "address": 36676,
    "type": "line",
-   "text": "Key code read by $8F45 and stored by $2127; $50 pauses, $20 can end the level."
+   "text": "Key code read by $8F45 and stored by $2127; cleared to 0 by the continue screen ($8CEE) and the game over screen ($8D96). $50 pauses, $20 can end the level."
   },
   {
    "address": 36677,
@@ -11598,7 +11598,7 @@
   {
    "address": 36798,
    "type": "line",
-   "text": "The column bits read from $DC01 for the row being scanned by $8F45."
+   "text": "The column bits from $DC01 still to be tested for the row being scanned by $8F45, saved shifted by $8F87 when a key is found and reloaded at $8FB0 to go on testing when that key has no code."
   },
   {
    "address": 36799,
@@ -11613,7 +11613,7 @@
   {
    "address": 36920,
    "type": "line",
-   "text": "Counter of $903A: the characters still to be typed before a press of fire is accepted, from $1E."
+   "text": "Counter of $903A: the passes of the typing loop still to run before a press of fire is accepted, from $1E; a line end takes a pass as a character does, so fire is first tested after 29 characters of the briefing."
   },
   {
    "address": 36921,
@@ -11623,7 +11623,7 @@
   {
    "address": 36922,
    "type": "line",
-   "text": "Types the level briefing at $90CE on the screen one character at a time (screen pointer from $CC56, lines 80 apart, a delay of $32 before each character), after clearing the screen and colour RAM (colour 7). Fire is ignored for the first 30 characters and ends the typing after that; when the text is done it waits for fire. Sets $8C8C to 1 and waits through two long delays."
+   "text": "Types the level briefing at $90CE on the screen one character at a time (screen pointer from $CC56, lines 80 apart, a delay of $32 before each character), after a delay of $14 and clearing the screen and colour RAM (colour 7). Fire is ignored for the first 30 passes of the loop (29 characters and the first line end) and ends the typing after that; when the text is done it waits for fire. Sets $8C8C to 1 and waits through two long delays."
   },
   {
    "address": 36985,
@@ -11633,7 +11633,7 @@
   {
    "address": 37070,
    "type": "line",
-   "text": "The level two briefing in screen codes, lines ended by $FF: \"LEVEL TWO\", \"DARKMAN IS DISCOVERED BEFORE HIS PLAN IS HALF GROWN\", \"HIS FIANCE JULIE HAS BEEN SEIZED BY STRACK AND DARKMAN IS CORNERED IN HIS LAIR\", \"FIRED BY GRIEF DARKMAN FIGHTS WITH INHUMAN FEROCITY TO ESCAPE\", \"END OF LINE\". Read by $903A. This block ends at the end of the second screen line ($90F7); briefing_text_b ($90F8) holds the rest."
+   "text": "The level two briefing in screen codes, each screen line ended by $FF and a full stop stored as $1B; it reads \"LEVEL TWO. DARKMAN IS DISCOVERED BEFORE HIS PLAN IS HALF GROWN. HIS FIANCE JULIE HAS BEEN SEIZED BY STRACK AND DARKMAN IS CORNERED IN HIS LAIR. FIRED BY GRIEF DARKMAN FIGHTS WITH INHUMAN FEROCITY TO ESCAPE.. END OF LINE...\". Read by $903A. This block ends at the end of the second screen line ($90F7); briefing_text_b ($90F8) holds the rest."
   },
   {
    "address": 37112,
@@ -11643,7 +11643,7 @@
   {
    "address": 37309,
    "type": "line",
-   "text": "The starting types of the 84 objects, copied to $0AA2 by $52B6 (the 14 tables from $91BD to $9650 are 83 bytes apart)."
+   "text": "The starting types of the 84 objects, copied to $0AA2 by $52B6. Of the 14 tables from $91BD on, this one is 93 bytes long ($91BD-$9219, the last ten zero) and the other thirteen start 83 bytes apart, so the 84th entry of each of those is the first byte of the next table, and the last one read is $9651."
   },
   {
    "address": 37402,
@@ -11743,7 +11743,7 @@
   {
    "address": 38766,
    "type": "line",
-   "text": "The 200 screen codes of the status panel (5 rows of 40), copied to $CEF7 by $54D6."
+   "text": "The 200 screen-matrix bytes of the status panel, which in its multicolour bitmap mode are each cell's two colours (high and low nibble), copied to $CEF7 by $54D6. $CEF7 is row 18 column 39, so the first byte (0) lands in the playfield and panel rows 19 to 23 take bytes 1 to 199; the last cell of row 23 ($CFBF) is not written."
   },
   {
    "address": 38966,
@@ -11798,42 +11798,42 @@
   {
    "address": 52216,
    "type": "line",
-   "text": "Sprite 0's pointer in screen A's table ($CBF8 + 0): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_0."
+   "text": "Sprite 0's pointer in screen A's table ($CBF8 + 0): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_0."
   },
   {
    "address": 52217,
    "type": "line",
-   "text": "Sprite 1's pointer in screen A's table ($CBF8 + 1): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_1."
+   "text": "Sprite 1's pointer in screen A's table ($CBF8 + 1): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_1."
   },
   {
    "address": 52218,
    "type": "line",
-   "text": "Sprite 2's pointer in screen A's table ($CBF8 + 2): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_2."
+   "text": "Sprite 2's pointer in screen A's table ($CBF8 + 2): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_2."
   },
   {
    "address": 52219,
    "type": "line",
-   "text": "Sprite 3's pointer in screen A's table ($CBF8 + 3): multiplexed sprite 3 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_3."
+   "text": "Sprite 3's pointer in screen A's table ($CBF8 + 3): multiplexed sprite 3 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_3."
   },
   {
    "address": 52220,
    "type": "line",
-   "text": "Sprite 4's pointer in screen A's table ($CBF8 + 4): multiplexed sprite 4 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_4."
+   "text": "Sprite 4's pointer in screen A's table ($CBF8 + 4): multiplexed sprite 4 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_4."
   },
   {
    "address": 52221,
    "type": "line",
-   "text": "Sprite 5's pointer in screen A's table ($CBF8 + 5): multiplexed sprite 5 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_5."
+   "text": "Sprite 5's pointer in screen A's table ($CBF8 + 5): multiplexed sprite 5 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_5."
   },
   {
    "address": 52222,
    "type": "line",
-   "text": "Sprite 6's pointer in screen A's table ($CBF8 + 6): multiplexed sprite 6 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_6."
+   "text": "Sprite 6's pointer in screen A's table ($CBF8 + 6): multiplexed sprite 6 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_6."
   },
   {
    "address": 52223,
    "type": "line",
-   "text": "Sprite 7's pointer in screen A's table ($CBF8 + 7): multiplexed sprite 7 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_b_7."
+   "text": "Sprite 7's pointer in screen A's table ($CBF8 + 7): multiplexed sprite 7 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. Always written together with sprite_pointer_b_7."
   },
   {
    "address": 52224,
@@ -11843,47 +11843,47 @@
   {
    "address": 52984,
    "type": "line",
-   "text": "The colours of the status panel, 256 bytes from row 19: 200 cells (rows 19 to 23) copied from $976E by draw_panel at $54D6 and row 24 cleared at $CFC0, so that the bitmap's last row shows black. In the panel's bitmap mode each byte gives a cell's two colours. The picture's cells ($CF18, $CF40, $CF68, $CF90 and $CFB8, six each) and the energy bar ($CF59, eight cells) are written afterwards. The last 16 bytes lie past the 25th row."
+   "text": "The colours of the status panel in screen B, 256 bytes from row 19: draw_panel at $54D6 copies the 200 bytes of $976E to $CEF7, one cell early, so rows 19 to 23 get bytes 1 to 199 and the last cell of row 23 ($CFBF) is not written; it clears row 24 at $CFC0, so that the bitmap's last row shows black. In the panel's bitmap mode each byte gives a cell's two colours. The picture's cells ($CF18, $CF40, $CF68, $CF90 and $CFB8, six each) and the energy bar ($CF59, eight cells) are written afterwards. On the text screens fill_screen ($65DE) and the continue screen ($CF8C, $CF94) write here too. The last 16 bytes lie past the 25th row."
   },
   {
    "address": 53240,
    "type": "line",
-   "text": "Sprite 0's pointer in screen B's table ($CFF8 + 0): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_0."
+   "text": "Sprite 0's pointer in screen B's table ($CFF8 + 0): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_0; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53241,
    "type": "line",
-   "text": "Sprite 1's pointer in screen B's table ($CFF8 + 1): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_1."
+   "text": "Sprite 1's pointer in screen B's table ($CFF8 + 1): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_1; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53242,
    "type": "line",
-   "text": "Sprite 2's pointer in screen B's table ($CFF8 + 2): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_2."
+   "text": "Sprite 2's pointer in screen B's table ($CFF8 + 2): the player's sprites 0 to 2 (written by player_draw at $6111), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_2; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53243,
    "type": "line",
-   "text": "Sprite 3's pointer in screen B's table ($CFF8 + 3): multiplexed sprite 3 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_3."
+   "text": "Sprite 3's pointer in screen B's table ($CFF8 + 3): multiplexed sprite 3 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_3; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53244,
    "type": "line",
-   "text": "Sprite 4's pointer in screen B's table ($CFF8 + 4): multiplexed sprite 4 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_4."
+   "text": "Sprite 4's pointer in screen B's table ($CFF8 + 4): multiplexed sprite 4 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_4; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53245,
    "type": "line",
-   "text": "Sprite 5's pointer in screen B's table ($CFF8 + 5): multiplexed sprite 5 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_5."
+   "text": "Sprite 5's pointer in screen B's table ($CFF8 + 5): multiplexed sprite 5 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_5; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53246,
    "type": "line",
-   "text": "Sprite 6's pointer in screen B's table ($CFF8 + 6): multiplexed sprite 6 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_6."
+   "text": "Sprite 6's pointer in screen B's table ($CFF8 + 6): multiplexed sprite 6 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_6; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53247,
    "type": "line",
-   "text": "Sprite 7's pointer in screen B's table ($CFF8 + 7): multiplexed sprite 7 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699). Always written together with sprite_pointer_a_7."
+   "text": "Sprite 7's pointer in screen B's table ($CFF8 + 7): multiplexed sprite 7 (written by multiplex_sprites at $6604), or the banner (banner_pointers at $5699); irq_mid ($6315) sets it to 0 every frame at line $C5. These three also write sprite_pointer_a_7; fill_screen ($65DE) clears it alone when it fills screen B for the text screens."
   },
   {
    "address": 53248,
@@ -11893,12 +11893,12 @@
   {
    "address": 54272,
    "type": "line",
-   "text": "Characters 128 to 239 of the play character set (896 bytes), the same form as play_charset_a. The screen holds codes up to $E1 in play. Only the VIC sees these bytes: with the I/O area switched in, the CPU reads the chips' registers at the same addresses."
+   "text": "Characters 128 to 239 of the play character set (896 bytes), the same form as play_charset_a. The map's tiles put codes up to $ED on the screen ($EE and $EF only in tile $3B, which the map does not use). Only the VIC sees these bytes: with the I/O area switched in, the CPU reads the chips' registers at the same addresses."
   },
   {
    "address": 55168,
    "type": "line",
-   "text": "Characters 240 to 255 (128 bytes), all zero: the blank characters. The tile tables use $F0 to $F6, $F8 and $FF for empty cells. Sprite pointers $5E and $5F would read the same bytes, and pointers $5A to $5D read characters 208 to 225 as sprite data, so $5A to $5F are not shapes."
+   "text": "Characters 240 to 255 (128 bytes), all zero: the blank characters. The tile tables hold $F0 to $F6 and $F8 (top rows) and $F9 to $FF (bottom rows) only for tiles $3C to $3F, which the map does not use. Sprite pointers $5E and $5F would read the same bytes, and pointers $5A to $5D read characters 208 to 239 as sprite data, so $5A to $5F are not shapes."
   },
   {
    "address": 55296,
@@ -11918,7 +11918,7 @@
   {
    "address": 55744,
    "type": "line",
-   "text": "Sprite shape for pointer $67 (64 bytes): a small round spark, the shot of behave_shooter ($14F4) and the first frame of the hazard of behaviour $1C1C ($1C2E)."
+   "text": "Sprite shape for pointer $67 (64 bytes): a small round spark, the shot of behave_shooter ($14F4), and the frame the hazard of behaviour $1C1C shows while it flies: $1C2E sets it on every call, and only the steps of hazard_arc_steps that hold a frame ($5A or more) replace it."
   },
   {
    "address": 55808,
@@ -11948,7 +11948,7 @@
   {
    "address": 56448,
    "type": "line",
-   "text": "Sprite shapes for pointers $72 to $74 (192 bytes): a few dots and two short horizontal dashes. $72 is a frame of the hazard of behaviour $1C1C (hazard_arc_steps at $1CD1); $73 and $74 are the frames of behave_shot ($12B0), which no traced code runs."
+   "text": "Sprite shapes for pointers $72 to $74 (192 bytes): a few dots and two short horizontal dashes. $72 is a frame of the hazard of behaviour $1C1C (hazard_arc_steps at $1CD1); $73 and $74 are the frames of behave_shot ($12B0), the enemies' shot of state 17, moving right and left."
   },
   {
    "address": 56640,
@@ -11963,7 +11963,7 @@
   {
    "address": 57344,
    "type": "line",
-   "text": "Sprite shapes for pointers $80 to $8F (1,024 bytes). $80 to $85 are the third sprite of the player standing or walking right and $86 to $8B of the player standing or walking left: player_draw ($6111) writes F - $17 to $CFFA, with F from walk_frames_right, walk_frames_left or stand_frame. frame_b ($610E) takes $8C and $8D from strike_frames. Pointers $8E and $8F are in no table or constant traced so far.  The bytes of $8E and $8F are the same in the level 1, 2 and 3 snapshots and draw no figure when read as a sprite, so they look like unused filler."
+   "text": "Sprite shapes for pointers $80 to $8F (1,024 bytes). $80 to $85 are the third sprite of the player standing or walking right and $86 to $8B of the player standing or walking left: player_draw ($6111) writes F - $17 to $CFFA, with F from walk_frames_right, walk_frames_left or stand_frame. frame_b ($610E) takes $8C and $8D from strike_frames. Pointers $8E and $8F are in no table or constant traced so far; their bytes are the same in the level 1, 2, 3, 4 and 6 listings."
   },
   {
    "address": 58368,
@@ -11988,17 +11988,17 @@
   {
    "address": 59584,
    "type": "line",
-   "text": "Sprite shapes for pointers $A3 to $B2 (1,024 bytes). $A4 to $AF are the second sprite of the player standing or walking (F + $0D, with $A4 to $A9 facing right and $AA to $AF facing left). frame_c ($610F) takes $B4 and $B5 (punch_frames), $A3 and $B1 (strike_frames), $B6 and $B7 (crouch_frames); frame_d ($6110) takes $BE and $BF (punch), $B0 and $BB (strike), $C0 and $C1 (crouch). Pointers $B2 and $B3 are in no table or constant traced so far.  The bytes of $B2 are the same in the level 1, 2 and 3 snapshots and draw no figure when read as a sprite, so they look like unused filler."
+   "text": "Sprite shapes for pointers $A3 to $B2 (1,024 bytes). $A4 to $AF are the second sprite of the player standing or walking (F + $0D, with $A4 to $A9 facing right and $AA to $AF facing left). frame_c ($610F) takes $B4 and $B5 (punch_frames), $A3 and $B1 (strike_frames), $B6 and $B7 (crouch_frames); frame_d ($6110) takes $BE and $BF (punch), $B0 and $BB (strike), $C0 and $C1 (crouch). Pointers $B2 and $B3 are in no table or constant traced so far. The bytes of $B2 are the same in the level 1, 2, 3, 4 and 6 listings, and its top rows are those of $FA, a jump shape, one row lower, so it looks like an unused variant of it."
   },
   {
    "address": 60608,
    "type": "line",
-   "text": "Sprite shapes for pointers $B3 to $C1 (960 bytes), the rest of attack_shapes: $B4 to $B7, $BB and $BE to $C1 are named there, and $B8 to $BA are the second sprite of the player climbing (F + $24, see climb_shapes). Pointers $B3, $BC and $BD are in no table or constant traced so far.  The bytes of $B3, $BC and $BD are the same in the level 1, 2 and 3 snapshots and draw no figure when read as a sprite, so they look like unused filler."
+   "text": "Sprite shapes for pointers $B3 to $C1 (960 bytes), the rest of attack_shapes: $B4 to $B7, $BB and $BE to $C1 are named there, and $B8 to $BA are the shapes of sprite 0 ($CFF8) of the player climbing (F + $24, see climb_shapes). Pointers $B3, $BC and $BD are in no table or constant traced so far; their bytes are the same in the level 1, 2, 3, 4 and 6 listings, and the top rows of $B3 are those of the jump shape $FB one row lower."
   },
   {
    "address": 61568,
    "type": "line",
-   "text": "Sprite shapes for pointers $C2 to $C4 (192 bytes): the third sprite of the player climbing (F + $2E, see climb_shapes)."
+   "text": "Sprite shapes for pointers $C2 to $C4 (192 bytes): the shapes of sprite 1 ($CFF9) of the player climbing (F + $2E, see climb_shapes)."
   },
   {
    "address": 61760,
@@ -12013,7 +12013,7 @@
   {
    "address": 63168,
    "type": "line",
-   "text": "Sprite pointers $DB to $DE (256 bytes): all zero.  Level 3 uses pointer $DB as an invisible shape: its raster handler at $0C65 sets sprite 0's pointer to $DB; the four shapes are all zero in the level 1, 2 and 3 snapshots."
+   "text": "Sprite pointers $DB to $DE (256 bytes): all zero. Level 3 uses pointer $DB as an invisible shape: its raster handler at $0C65 sets all eight sprite pointers ($CFF8-$CFFF) to $DB; the four shapes are all zero in the level 2 and 3 listings."
   },
   {
    "address": 63424,
@@ -12093,12 +12093,12 @@
   {
    "address": 65008,
    "type": "line",
-   "text": "Row 23, columns 38 and 39, and all of row 24 (336 bytes): panel bitmap that no traced routine writes. Row 24 shows black, because draw_panel clears its colours."
+   "text": "Row 23, columns 38 and 39, and all of row 24 (336 bytes): panel bitmap that no traced routine writes. Row 24 shows black, because draw_panel clears its colours, and its bytes ($FE00-$FF3F) are sprite shapes $F8 to $FC: the player jumping, which jump_frame ($5F9D) sets to $F8 or $F9 and player_draw shows as F, F + 2 and F + 4."
   },
   {
    "address": 65344,
    "type": "line",
-   "text": "176 bytes loaded after the panel bitmap: the first 64 are non-zero data that no traced routine reads (the shape for pointer $FD), the rest are zero."
+   "text": "176 bytes loaded after the panel bitmap: the first 64 are the shape for pointer $FD, sprite 1 ($CFF9) of the player jumping facing left (jump_frame $5F9D sets $F9 and player_draw adds 4); the rest are zero."
   }
  ]
 }
