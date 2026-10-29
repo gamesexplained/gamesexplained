@@ -112,6 +112,15 @@ demonstration.
   paid, not when the port yields it: the yield comes before the clock
   moves, so a long stretch (a room drawn) counts the pass early by its
   own length, and the check passes a page that is slow.
+  Give the lockstep every key the game reads (a pause key, a key a
+  prompt waits for) and every way out of play, forcing each in turn
+  where play seldom reaches it, then drive the page's runtime alone the
+  same way and fail on a stretch it meets with no cost: a stretch no
+  session measured costs the page nothing, and a loop along it that
+  waits on the interrupt, such as a pause waiting for its key, stands
+  the page's clock still for good. Give a yield that names no cycles of
+  its own a line when its stretch has no cost, so that a path no session
+  reached runs slow instead of stopping.
   Where one pass's cost follows mostly from the game's state (a state
   byte the main loop dispatches on), measure instead of fitting: hook the
   machine where each pass begins and ends, leave out the interrupt

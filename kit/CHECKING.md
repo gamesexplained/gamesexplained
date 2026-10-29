@@ -34,6 +34,17 @@ model: fresh agents that wrote none of the listing. The run's own model
 may check when it is proven, and the strongest model the maintainer has
 finds the most (`kit/skills/core/60-verify`).
 
+## A known contributor's audit
+
+A contributor the maintainers know is listed in `kit/contributors.json`.
+When their run audits every comment on proven models after the listing's
+last annotation, and samples it again on a proven model after the audit,
+that audit stands in for this check, and the game can be Silver without a
+maintainer's sample: the maintainers trust the contributor to have run it
+as this file says. Record the audit with the contributor's GitHub login as
+`by`. A maintainer adds a contributor to the list when they know their
+work. A game passed this way proves no model.
+
 ## What to do
 
 1. **Sample the listing.** Draw 60 comments with a seed you choose, not
@@ -69,7 +80,9 @@ and set `tier` to `silver`. `check_docs.py` (through `models.py check`)
 fails a game at Silver or above that ran on an unproven model unless its
 last sample carries `by` and names proven models, no annotation comes
 after it, and it is within the mark or follows a full audit that also
-carries `by`.
+carries `by`; or unless, after the last annotation, a full audit on
+proven models carries the `by` of a contributor in `kit/contributors.json`
+and a sample on proven models follows it.
 
 A game passed this way proves no model, however its samples came out:
 the maintainers made the measure, and an audit may have made the

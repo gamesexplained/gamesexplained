@@ -175,13 +175,13 @@ function start(D) {
 
   // ---- the sound: the SID writes of each twelfth of a frame, one call of the model's driver each
   let host = null, soundOn = false;
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]); return all; };
   async function sound(on) {
     soundOn = on;
     if (on && !host) {
       try {
         host = await C64Sid.host({ live: true, gain: 0.5, period: JSWPlay.FRAME / JSWPlay.SLICES });
-        const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]);
-        host.push([all]);
+        host.push([registers()]);
       } catch (e) { soundOn = false; $('jw-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn && !paused) host.ctx.resume(); else host.ctx.suspend(); }
@@ -205,24 +205,36 @@ function start(D) {
     if (host && soundOn) { if (paused) host.ctx.suspend(); else host.ctx.resume(); }
   };
   for (const b of document.querySelectorAll('#play .jw-b')) b.addEventListener('click', () => b.blur());
-  $('jw-reset').onclick = () => boot();
+  // Reset: a new machine from the listing's bytes, the sound chip's registers as it starts, the
+  // page's pause let go and the clock started again, whatever the old machine was doing, a stop
+  // included
+  let running = false;
+  const go = () => { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } };
+  $('jw-reset').onclick = () => {
+    boot();
+    if (paused) $('jw-pause').click();
+    if (host) host.push([registers()]);
+    go();
+  };
   document.addEventListener('visibilitychange', () => { last = 0; });
   function frame(t) {
-    if (!paused) {
-      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
-      input();
-      target += dt * CLOCK;
-      play.run(target);
-      const slices = [];
-      for (const f of play.sound.splice(0)) for (const s of f) slices.push(s);
-      if (soundOn && host && slices.length) host.push(slices);
-      draw();
-      $('jw-out').textContent = say();
-    } else $('jw-out').textContent = 'paused';
+    try {
+      if (!paused) {
+        const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+        input();
+        target += dt * CLOCK;
+        play.run(target);
+        const slices = [];
+        for (const f of play.sound.splice(0)) for (const s of f) slices.push(s);
+        if (soundOn && host && slices.length) host.push(slices);
+        draw();
+        $('jw-out').textContent = say();
+      } else $('jw-out').textContent = 'paused';
+    } catch (e) { console.error(e); running = false; $('jw-out').textContent = 'The port stopped: ' + e.message + '. Reset starts it again.'; return; }
     last = paused ? 0 : t;
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  go();
 }
 
 if (!window.C64 || !window.JSWPort || !window.JSWPlay || !window.C64Collide) {
