@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Labyrinth</title>
+<style>
+*{box-sizing:border-box}html{background:#23262d}body{max-width:1080px;margin:0 auto;padding-bottom:48px;background:#e9e7e1;color:#2f3136;font:17px/1.6 system-ui,sans-serif}.hero,main,footer{padding-left:clamp(20px,6vw,68px);padding-right:clamp(20px,6vw,68px)}.hero{padding-top:44px}.eyebrow{font:12px/1.6 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:#55585f}h1{font-size:46px;line-height:1.15;margin:12px 0}h2{font-size:26px;line-height:1.3;margin:0 0 14px}.sub{color:#55585f;max-width:720px}section{padding:36px 0 8px}a{color:#1f5fa8}.pictures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}figure{margin:0;padding:16px;background:white;border:1px solid #d5d3cc;border-radius:10px}figure img{display:block;width:100%;height:auto;image-rendering:pixelated;background:black}figcaption{font-size:14px;line-height:1.5;color:#55585f;margin-top:12px}select{font:inherit;padding:6px}@media(max-width:650px){.pictures{grid-template-columns:1fr}h1{font-size:36px}}
+.lx-plate{background:#fff;border:1px solid #d5d3cc;border-radius:10px;padding:18px;margin:18px 0}
+.lx-row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 12px}
+.lx-row label{font-size:14px;color:#55585f;display:flex;gap:8px;align-items:center}
+.lx-screen{background:#2e2c9b;color:#fff;font:15px/1.5 ui-monospace,monospace;padding:12px 16px;border-radius:6px;white-space:pre-wrap;margin:8px 0}
+.lx-how{font-size:14px;color:#55585f;margin-top:10px}
+.lx-steps{font:14px/1.6 ui-monospace,monospace;background:#f1efea;border-radius:6px;padding:10px 14px;white-space:pre}
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">Commodore 64 · 1986 · Lucasfilm Games</p><h1>Labyrinth</h1><p class="sub">Secrets, quirks and bugs in the code. Each was read in the game's own routines; where it says so, it was also seen in the emulator.</p></header>
+<main>
+
+<section id="nickel" data-part="">
+<p class="fig">01 · The opening and the maze</p><h2>Secret: the nickel you pocket follows you into the maze</h2>
+<p>At the popcorn stand in the city, the woman takes your two dollars and drops a nickel by your feet. You can pick it up "without the woman noticing you", or hand it back, and she thanks you: "You can't imagine what the boss would do to me if my money came up short." Picking it up stores 1 in the saved-state byte <a href="source-opening.html#0575"><code>$0575</code></a>, and handing it back stores <code>$FF</code>. Nothing clears that byte until a new game starts, and two later scenes read it.</p>
+<p>In the theater, when you offer your popcorn to the teenager, the code at <a href="source-opening.html#9485"><code>$9485</code></a> tests it. If you kept the nickel he "grabs the entire box of popcorn and finishes it off in a few big bites". Otherwise he "takes a handful of popcorn and then thanks you."</p>
+<p>Deep in the maze, the Wise Man's hat asks for payment before he gives advice. If you kept the nickel, a gift when you owe nothing is taken anyway with "Thanks, you get what you give." (<a href="source-scene-09.html#9023"><code>$9023</code></a>). Pay with a dollar and he gives four quarters in change, less what you owe, and one fewer again if you kept the nickel (<a href="source-scene-09.html#906E"><code>$906E</code></a>).</p>
+<div class="lx-plate">
+<div class="lx-row"><label>At the popcorn stand <select id="nk-choice"><option value="255">Hand the nickel back</option><option value="1" selected>Pick up the nickel</option><option value="0">Leave it on the floor</option></select></label>
+<label>Owed to the Wise Man <select id="nk-debt"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></label></div>
+<div id="nk-out"></div>
+<p class="lx-how">The three outcomes are ports of <code>$9485</code>, <code>$9023</code> and <code>$906E</code>; <code>test_nickel.js</code> runs the game's own code at <code>$9023</code> and <code>$906E</code> for every value of <code>$0575</code> and every debt from 0 to 3, and <code>test_workflow.js</code> runs <code>$9485</code>. The pick-up and the hand-back were played in the emulator; the theater offer and the Wise Man were checked in the code only.</p>
+</div>
+</section>
+
+<section id="popcorn" data-part="opening">
+<p class="fig">02 · The popcorn stand</p><h2>Secret: the popcorn costs $1.25 only if you complain twice</h2>
+<p>The menu at <code>$A03D</code> asks $1.25. The woman takes two dollars and leaves two quarters on the counter, so the box costs $1.50. The first complaint gets "I'm sorry, we only had Chilled Popcorn left." The second gets "I'm sorry, here's your other quarter.", and only then is the price the one on the menu. A third complaint gets "You sure complain a lot." and nothing else. The complaint counter is <code>$968C</code>, and the quarters waiting on the counter are <code>$968D</code>. Both orders, collecting the change first or complaining first, were played in the emulator and end with three quarters.</p>
+<figure style="max-width:520px"><img src="reference/popcorn.png" width="384" height="272" alt="The popcorn stand described in text"><figcaption>The popcorn stand. From the supplied disk.</figcaption></figure>
+</section>
+
+<section id="guards" data-part="scene-04">
+<p class="fig">03 · Alph and Ralph</p><h2>Secret: one of the guards' doors is a pit, and the game picks which</h2>
+<p>When the guards' room loads, its setup code stores a random bit at <code>$8F06</code>. With the bit at 1 the left doorway leads on to the Wall of Hands and the right one drops you down a shaft, with "Ok, we lied. It wasn't endless." and the end of the game. Both doorways were walked through in the emulator with the bit at 1. With the bit at 0 the code takes the other branch of the same test; that case has not been walked through.</p>
+<div class="pictures">
+<figure><img src="reference/guard-right-lied.png" width="384" height="272" alt="The guards' room with the text Ok, we lied. It wasn't endless."><figcaption>Through the wrong door. From the supplied disk.</figcaption></figure>
+<figure><img src="reference/guard-right-loss.png" width="384" height="272" alt="The panel that ends the game"><figcaption>The end of the game a moment later. From the supplied disk.</figcaption></figure>
+</div>
+<p>The <a href="levels.html#alph-and-ralph">Areas</a> tab steps through the whole exchange with the guards.</p>
+</section>
+
+<section id="monologue" data-part="scene-21">
+<p class="fig">04 · The castle</p><h2>Bug: the nerd says his first line twice when he starts over</h2>
+<p>In the castle a nerd talks at you in 22 lines, from "You know it's really amazing how" to "I'll start over from the beginning!". The routine at <a href="source-scene-21.html#9902"><code>$9902</code></a> keeps the number of the next line in <code>$98C4</code>. Each turn it takes that number, adds one to the stored count and shows the line. When the number it took is already past the last line, it shows line 0 and sets the count to 0 instead. After line 21 the count is 22, so the next turn shows line 0 and leaves the count at 0, and the turn after takes 0 again and shows line 0 a second time.</p>
+<div class="lx-plate"><button type="button" id="mo-next">Next line</button> <button type="button" id="mo-reset">From the top</button>
+<div class="lx-screen" id="mo-out"></div>
+<div class="lx-steps" id="mo-state"></div>
+<p class="lx-how">The stepper follows the instructions at <code>$990C</code>-<code>$9922</code>. The lines are decoded from the scene's tables at <code>$9955</code> and <code>$996B</code>.</p></div>
+</section>
+
+<section id="wise" data-part="scene-09">
+<p class="fig">05 · The Wise Man's Garden</p><h2>Bug: a walk round the ring that starts at cell 7 loses its first step</h2>
+<p>Ask the Wise Man for advice and he chooses one of eight puzzles at random, gives you a hint, and puts you in his debt. One of them, "Thoroughness is a virtue, but order is paramount.", asks you to walk round the nine cells of the garden in one direction. The code at <a href="source-scene-09.html#919D"><code>$919D</code></a> decides the direction from your first two cells. It tests "new cell plus one is the old cell" and "new cell minus one is the old cell", wrapping 8 to 0 and 0 to 8. For a new cell of 8 the second test goes wrong: the plus one has already wrapped 8 to 0, the minus two takes that to <code>$FE</code>, and the wrap then puts 8 back, so the code compares the old cell with 8 instead of 7. A walk upward from 7 to 8 matches neither test, and the puzzle starts again from cell 8. The walk still works; it just takes one cell more.</p>
+<div class="lx-steps">new cell 8:  8 + 1 = 9, wraps to 0   0 ≠ 7
+             0 - 2 = $FE, wraps to 8   8 ≠ 7   → start again at 8</div>
+</section>
+
+<section id="open" data-part="">
+<p class="fig">06 · Still open</p><h2>Questions the code leaves open</h2>
+<ul>
+<li>How fast the thirteen-hour clock runs on its own while you play.</li>
+<li>Whether you can ever hold ten of one item. A count is stored as one less than the number held, and the display at <a href="source-resident.html#6031"><code>$6031</code></a> adds <code>$31</code>, the character 1, to it. Ten would show as "(:)".</li>
+<li>Whether opening the guarded door in the Stone Corridor is remembered. Its code sets the scene number to 4 before it changes the map, and the routine that records map changes, <a href="source-resident.html#58C8"><code>$58C8</code></a>, skips scene 4. Opening that door has not been seen in play.</li>
+</ul>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* labyrinth-dictionary */
+const labyrinthWords = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "    INVENTORY LIST    ", " ", "boy", "girl", "he", "she", "camcorder", "hello", "adumbrate", "complain", "inventory", "load game", "save game", "speak", "take", "time", "ask", "call", "close", "congratulate", "hit", "insult", "manicure", "open", "drop", "eat", "give", "insert", "throw", "use", "Alph", "door", "elephant", "hat", "Hoggle", "Jareth", "knocker", "Ludo", "nerd", "Ralph", "wall", "Wise Man", "goblin", "arm", "crystal ball", "cup", "dollar bill", "head", "key", "nickel", "peach", "perfume", "plank", "popcorn", "quarter", "ring", "rock", "rule book", "shears", "spray bottle", "ticket", "look", "go", "beggar", "dinner", "east", "food", "home", "north", "outside", "south", "store", "TV", "theater", "west", "black", "white", "red", "aqua", "purple", "green", "blue", "yellow", "orange", "leg", "helmet", "bracelet", "log", "rocks", "plastics", "owl", "jaggies", "avocado", "Sir Didymus", "Firey", "Do you have", "Throw some", "You have no", "elephants over me", "towels over me", "power over me", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+function expandLabyrinthWord(index, token) {
+ let word=labyrinthWords[index];
+ if ((token===0xfc || token===0xfe) && word.length) {
+  word=String.fromCharCode((word.charCodeAt(0)-0x20)&255)+word.slice(1);
+ }
+ return word+((token===0xfd || token===0xfe)?' ':'');
+}
+const labyrinthPassages = [{"title": "The sidewalk", "address": 39015, "bytes": [89, 111, 117, 32, 97, 114, 101, 32, 115, 116, 97, 110, 100, 105, 110, 103, 32, 111, 110, 32, 116, 104, 101, 32, 115, 105, 100, 101, 119, 97, 108, 107, 32, 111, 110, 255, 116, 104, 101, 32, 253, 79, 115, 105, 100, 101, 32, 111, 102, 32, 97, 32, 99, 105, 116, 121, 32, 98, 108, 111, 99, 107, 46, 0]}, {"title": "The rain and owl", "address": 39079, "bytes": [73, 116, 32, 105, 115, 32, 100, 97, 114, 107, 32, 97, 110, 100, 32, 114, 97, 105, 110, 105, 110, 103, 46, 255, 84, 104, 101, 114, 101, 32, 105, 115, 32, 97, 32, 99, 105, 103, 97, 114, 32, 253, 85, 104, 101, 114, 101, 46, 255, 65, 32, 253, 90, 253, 104, 105, 115, 32, 102, 108, 97, 112, 112, 105, 110, 103, 32, 97, 98, 111, 117, 116, 46, 0]}];
+function splitLabyrinthPassage(bytes) {
+ const pieces=[];
+ for(let i=0;i<bytes.length;) {
+  const offset=i, byte=bytes[i++];
+  if(byte===0) {pieces.push({offset,bytes:[0],text:'',kind:'end'});break;}
+  if(byte===0xff) {pieces.push({offset,bytes:[byte],text:'\n',kind:'line'});continue;}
+  if(byte>=0xfb && byte<=0xfe) {
+   if(i===bytes.length) throw new Error('Missing dictionary index');
+   const index=bytes[i++];
+   pieces.push({offset,bytes:[byte,index],text:expandLabyrinthWord(index,byte),kind:'word'});
+   continue;
+  }
+  if(byte<0x20 || byte>=0x7f || byte===0x40) throw new Error('Unsupported passage control');
+  while(i<bytes.length && bytes[i]>=0x20 && bytes[i]<0x7f && bytes[i]!==0x40) i++;
+  const literal=bytes.slice(offset,i);
+  pieces.push({offset,bytes:literal,text:String.fromCharCode(...literal),kind:'letters'});
+ }
+ return pieces;
+}
+// end of labyrinth-dictionary
+</script>
+<script>
+/* lab-nickel */
+// $0575 is 1 once the dropped nickel is picked up, $FF once it is handed back, and 0 before either.
+// The theater offer ($9485) takes the whole box when it is exactly 1.
+function labTheaterOffer(nickel) { return nickel === 1 ? 'whole box' : 'handful'; }
+// The Wise Man's GIVE with nothing owed ($9023): the item is taken when $0575 is exactly 1.
+function labWiseGiftTaken(nickel) { return nickel === 1; }
+// The Wise Man's GIVE dollar ($906E): change in quarters is 4 minus the debt, minus 1 more when
+// $0575 is exactly 1 (computed with SBC, so a debt above 4 would wrap).
+function labWiseChange(nickel, debt) { return (4 - debt - (nickel === 1 ? 1 : 0)) & 0xFF; }
+// end of lab-nickel
+const $ = id => document.getElementById(id);
+function nkUpdate() {
+ const n = +$('nk-choice').value, d = +$('nk-debt').value, q = labWiseChange(n, d);
+ const lines = [
+  ['In the theater, offering popcorn', labTheaterOffer(n) === 'whole box' ? 'The teenager grabs the entire box of popcorn and finishes it off in a few big bites.' : 'The teenager takes a handful of popcorn and then thanks you.'],
+  ['Wise Man, a gift when nothing is owed', labWiseGiftTaken(n) ? 'Thanks, you get what you give.  (the item is taken)' : "No thanks, you don't owe him anything yet.  (you keep it)"],
+  ['Wise Man, paying ' + d + ' owed with a dollar', "He's not worth it, here's some change.  (" + q + ' quarter' + (q === 1 ? '' : 's') + ' back)'],
+ ];
+ $('nk-out').innerHTML = lines.map(([k, v]) => '<div class="lx-how" style="margin:10px 0 0">' + k + '</div><div class="lx-screen">' + v.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>').join('');
+}
+$('nk-choice').addEventListener('change', nkUpdate); $('nk-debt').addEventListener('change', nkUpdate); nkUpdate();
+
+// The monologue: the decoded lines and the index logic of $990C-$9922.
+let moLines = null, moIndex = 0, moLog = [];
+function moStep() {
+ let y = moIndex; moIndex++;
+ if (y >= 0x16) { y = 0; moIndex = 0; }
+ moLog.push(y); if (moLog.length > 4) moLog.shift();
+ $('mo-out').textContent = moLines ? moLines[y] : '';
+ $('mo-state').textContent = 'showed line ' + y + '   $98C4 now ' + moIndex + '\nlast lines shown: ' + moLog.join(', ');
+}
+$('mo-next').addEventListener('click', moStep);
+$('mo-reset').addEventListener('click', () => { moIndex = 20; moLog = []; moStep(); });
+C64.load('parts/scene-21/listing.json').then(L => {
+ moLines = [];
+ for (let i = 0; i < 0x16; i++) {
+  const a = L.ram[0x9955 + i] << 8 | L.ram[0x996B + i]; let s = '';
+  for (let p = a + 2; L.ram[p]; p++) { const b = L.ram[p]; if (b >= 0xFB && b <= 0xFE) s += expandLabyrinthWord(L.ram[++p], b); else if (b >= 0x20 && b < 0x7F && b !== 0x40) s += String.fromCharCode(b); else if (b === 0xFF) s += ' '; }
+  moLines.push(s.trim());
+ }
+ moIndex = 20; moStep();
+}).catch(e => { $('mo-out').textContent = 'The scene could not be loaded: ' + e.message; });
+</script>
+</html>

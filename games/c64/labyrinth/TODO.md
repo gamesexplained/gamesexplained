@@ -2,6 +2,8 @@
 
 Silver. Coverage is 100 % in all 23 parts. A maintainer sample on 28 October 2026 (seed 28102026) found 8 of 60 comments wrong. A full audit of all 9,360 comments and every claim in facts.md followed, correcting 772 comments, and a new sample (seed 73019) found 2 of 60 wrong, both corrected. Every check ran on claude-opus-5-5 (`game.json`, `accuracy`).
 
+Next for the page: draw each room in colour. The How it works tab draws a room's characters from the game's own lookup, in grey, because the per-cell colours come from a second routine (`$5B76`, from colour data near `$C000`) that needs checking against the emulator's picture of the same frame before it is drawn.
+
 Next (Gold): a human curates the minisite section by section (`AGENTS.md`, Definition of done). The open items below are verification work that would strengthen it: most need live play on expendable disk copies.
 
 

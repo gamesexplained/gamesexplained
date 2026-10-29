@@ -1,41 +1,313 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Labyrinth</title>
 <style>
-*{box-sizing:border-box}html{background:#23262d}body{max-width:1080px;margin:0 auto;padding-bottom:48px;background:#e9e7e1;color:#2f3136;font:17px/1.6 system-ui,sans-serif}.hero,main,footer{padding-left:clamp(20px,6vw,68px);padding-right:clamp(20px,6vw,68px)}.hero{padding-top:44px}.eyebrow{font:12px/1.6 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:#55585f}h1{font-size:46px;line-height:1.15;margin:12px 0}h2{font-size:26px;line-height:1.3;margin:0 0 14px}.sub{color:#55585f;max-width:720px}section{padding:36px 0 8px}a,summary{color:#1f5fa8}.pictures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}figure{margin:0;padding:16px;background:white;border:1px solid #d5d3cc;border-radius:10px}figure img{display:block;width:100%;height:auto;image-rendering:pixelated;background:black}figcaption{font-size:14px;line-height:1.5;color:#55585f;margin-top:12px}.status{font-size:15px;border-left:3px solid #c25a00;padding:10px 16px;background:#fff8e8}li{margin:8px 0}details{margin-top:24px}select{font:inherit;max-width:100%;padding:8px;margin:8px 0 16px}.gallery{max-width:640px;margin:0 auto}.gallery label{display:block;font-weight:600}summary{cursor:pointer}.font{max-width:768px;margin:18px auto 0}.sources{font-size:14px;color:#55585f}footer{margin-top:40px;padding-top:20px;border-top:1px solid #d5d3cc;font-size:12px;color:#55585f}@media(max-width:650px){.pictures{grid-template-columns:1fr}h1{font-size:36px}}
+*{box-sizing:border-box}html{background:#23262d}body{max-width:1080px;margin:0 auto;padding-bottom:48px;background:#e9e7e1;color:#2f3136;font:17px/1.6 system-ui,sans-serif}.hero,main,footer{padding-left:clamp(20px,6vw,68px);padding-right:clamp(20px,6vw,68px)}.hero{padding-top:44px}.eyebrow{font:12px/1.6 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:#55585f}h1{font-size:46px;line-height:1.15;margin:12px 0}h2{font-size:26px;line-height:1.3;margin:0 0 14px}.sub{color:#55585f;max-width:720px}section{padding:36px 0 8px}a,summary{color:#1f5fa8}.pictures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}figure{margin:0;padding:16px;background:white;border:1px solid #d5d3cc;border-radius:10px}figure img{display:block;width:100%;height:auto;image-rendering:pixelated;background:black}figcaption{font-size:14px;line-height:1.5;color:#55585f;margin-top:12px}li{margin:8px 0}select{font:inherit;max-width:100%;padding:6px}footer{margin-top:40px;padding-top:20px;border-top:1px solid #d5d3cc;font-size:12px;color:#55585f}@media(max-width:650px){.pictures{grid-template-columns:1fr}h1{font-size:36px}}
+.lx-plate{background:#fff;border:1px solid #d5d3cc;border-radius:10px;padding:18px;margin:18px 0}
+.lx-row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 12px}
+.lx-row label{font-size:14px;color:#55585f;display:flex;gap:8px;align-items:center}
+.lx-screen{background:#2e2c9b;color:#fff;font:15px/1.5 ui-monospace,monospace;padding:14px 16px;border-radius:6px;white-space:pre-wrap;min-height:3.2em}
+.lx-screen .q{color:#edf171}
+.lx-how{font-size:14px;color:#55585f;margin-top:10px}
+.lx-tablewrap{max-height:320px;overflow:auto;margin-top:14px;border:1px solid #e0ded8;border-radius:6px}
+.lx-table{border-collapse:collapse;width:100%;font-size:13px}
+.lx-table th,.lx-table td{padding:3px 8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+.lx-table th{position:sticky;top:0;background:#f1efea}
+.lx-table tr.hit td{background:#fff0c2}
+.lx-table tr.skip td{color:#9a9ca1}
+.lx-strip{width:100%;overflow-x:auto;background:#000;border-radius:6px}
+.lx-strip canvas{display:block;image-rendering:pixelated;height:256px}
+.lx-bytes{font:13px/1.7 ui-monospace,monospace;word-break:break-all}
+.lx-bytes span{padding:1px 2px;border-radius:3px}
+.lx-bytes .w{background:#dfe9f7}.lx-bytes .c{background:#f6dfd8}.lx-bytes .h{background:#e7e5df}
+.lx-dice{font:15px/1.6 ui-monospace,monospace}
+table.lx-plain{border-collapse:collapse;font-size:14px;margin:12px 0}
+table.lx-plain th,table.lx-plain td{border-bottom:1px solid #e0ded8;padding:4px 10px;text-align:left}
 </style>
-<link rel="stylesheet" href="reference/lab-page.css">
 <!-- tabs -->
-<header class="hero"><p class="eyebrow">Commodore 64 · 1986 · Lucasfilm Games</p><h1>Labyrinth</h1><p class="sub">A film tie-in that starts as a typed adventure on a city street and ends up in a maze you walk with a joystick. The popcorn costs two dollars when the menu says $1.25, and the guards in the maze answer differently depending on how many doors you have opened.</p></header>
+<header class="hero"><p class="eyebrow">Commodore 64 · 1986 · Lucasfilm Games</p><h1>Labyrinth</h1><p class="sub">A film tie-in that starts as a typed adventure on a city street and turns into a maze you walk with a joystick. Every scene of the maze answers your commands from one small table, and you can try them all below.</p></header>
 <main>
+
 <section id="game">
-<p class="fig">01 · The adventure</p><h2>Thirteen hours to reach Jareth</h2>
-<p>The game opens on a city block outside a movie theater. You name your character, answer the setup questions, and explore the streets in text, with two <a href="controls.html#word-wheels">word wheels</a> that hold the verbs and the objects.<sup class="lab-fn"><a href="about.html#src-2" title="C64-Wiki: the text opening" aria-label="Source 2: C64-Wiki: the text opening">2</a></sup> The ticket counter will not let you in without a ticket, which costs five dollars <span class="lab-source-cite">(<a href="source-opening.html#90F4" title="opening: source at $90F4"><code>$90F4</code></a>, <a href="source-opening.html#9327" title="opening: source at $9327"><code>$9327</code></a>)</span>. The popcorn stand has a trick of its own: the menu asks $1.25, but the woman takes two dollars and leaves two quarters in change <span class="lab-source-cite">(<a href="source-opening.html#93E1" title="opening: source at $93E1"><code>$93E1</code></a>)</span>. Walking into the cinema is the way into the maze, and <a href="levels.html#text-adventure">the text adventure</a> follows each step.</p>
-<figure class="gallery"><img src="reference/opening-anonymous.png" width="384" height="272" alt="The rainy city street described in text above the action and object wheels"><figcaption>The city opening: the street described in text, with the action and object wheels below. Captured from the supplied disk.</figcaption></figure>
-<p>Inside the maze the story is a race. The Player’s Guide sets the goal: reach Jareth before thirteen hours expire.<sup class="lab-fn"><a href="about.html#src-1" title="Disk Player’s Guide, pages 2–3" aria-label="Source 1: Disk Player’s Guide, pages 2–3">1</a></sup> The clock counts in whole hours, and some actions spend them: at the Wall of Hands, the eighth manicure takes one hour, and a game with no hours left ends <span class="lab-source-cite">(<a href="source-scene-05.html#0C61" title="scene-05: source at $0C61"><code>$0C61</code></a>)</span>. You steer the character with joystick port 1 along the walls of each room, and the same wheels give the commands. <a href="controls.html">Controls</a> covers both.</p>
-<p>The maze begins at the <a href="levels.html#entrance-gate">entrance gate</a>, which leads to the <a href="levels.html#first-corridor">first corridor</a>. Its exits open into the <a href="levels.html#brick-hallway">Brick Hallway</a>, a row of doors where your position decides which you can open. Beyond it, <a href="levels.html#alph-and-ralph">two guards</a> claim that one of them always lies and the other tells the truth, and they will not say more until you have opened every door in the hallway. A random bit set when their room loads changes what the two doorways do; in the recorded route, the right doorway ends in a fall. The <a href="levels.html#wall-of-hands">Wall of Hands</a> follows, where the manicure command needs shears, and then the <a href="levels.html#stone-corridor">Stone Corridor</a> with its door, arch, and ladder.</p>
-<figure class="gallery"><img src="reference/brick-natural-entry.png" width="384" height="272" alt="The player standing among the doors of the graphical Brick Hallway"><figcaption>The Brick Hallway, reached through the entrance gate and first corridor. Movement and commands share the scene.</figcaption></figure>
+<p class="fig">01 · The game</p><h2>Thirteen hours to reach Jareth</h2>
+<p>Labyrinth opens on a city block outside a movie theater. You give your character a name and answer a few setup questions, then walk the streets in text. Commands are built from two word wheels at the bottom of the screen, one of verbs and one of objects. A ticket gets you into the cinema, and the film pulls you into the Goblin King's maze.</p>
+<p>Inside the maze the game becomes graphical. You steer your character along the walls of each room with the joystick and keep using the word wheels to talk, open doors, give things away and fight. The goal, from the Player's Guide, is to reach Jareth before thirteen hours run out.<sup class="lab-fn"><a href="about.html#src-1" title="Disk Player’s Guide, pages 2–3">1</a></sup> The maze is 21 separate loads from disk: the entrance gate, corridors and hallways, the Wall of Hands, the Bog of Eternal Stench, the Goblin Village, the castle and the final duel.</p>
+<div class="pictures">
+<figure><img src="reference/opening-anonymous.png" width="384" height="272" alt="The rainy city street described in text above the verb and object wheels"><figcaption>The city: the street described in text, with the verb and object wheels below. From the supplied disk.</figcaption></figure>
+<figure><img src="reference/room-08.png" width="384" height="272" alt="The player in a green hedge maze with Ludo hanging from a tree, the word wheels below"><figcaption>Inside the maze: Ludo held up in the hedge maze, and the same wheels, here offering <i>ask</i> and three people. From the supplied disk.</figcaption></figure>
+</div>
 </section>
-<section id="release">
-<p class="fig">02 · The release</p><h2>Lucasfilm Games’ adventure</h2>
-<p>Lucasfilm Games made <i>Labyrinth</i>, based on Jim Henson’s film and published by Activision in 1986. The disk’s credits name David Fox as production manager and programmer, Charlie Kellner as technical director and lead programmer, and Gary Winnick for character animation and background art. David M. Martin Jr. is credited with the music and Commodore sound.<sup class="lab-fn"><a href="about.html#src-1" title="Disk Player’s Guide: credits" aria-label="Source 1: Disk Player’s Guide: credits">1</a></sup></p>
-<figure class="gallery"><img src="reference/loading.png" width="384" height="272" alt="The Lucasfilm Games logo on a brown screen"><figcaption>The loading screen: the Lucasfilm Games logo. Captured from the supplied disk.</figcaption></figure>
-<p>This explanation follows the two-sided English Commodore 64 disk edition, which keeps three game slots. The <a href="about.html">About page</a> names the copy studied and the sources.</p>
+
+<section id="commands" data-part="">
+<p class="fig">02 · Commands</p><h2>Every reply in the maze comes from one table per scene</h2>
+<p>Each of the 21 scenes loads its own table of commands at <code>$8B00</code>. A row is two dictionary numbers, a verb and an object, and a zero in either place means "anything". When you press fire, the engine walks down the rows from the top and stops at the first one that fits. The scene's second table, at <code>$8BC0</code>, holds one 16-bit word for each row. A word of <code>$8000</code> or more is a routine to run. A smaller word is a message: the engine adds <code>$8000</code> and prints the text it finds there.</p>
+<div class="lx-plate">
+<div class="lx-row">
+<label>Scene <select id="lx-scene"></select></label>
+<label>Verb <select id="lx-verb"></select></label>
+<label>Object <select id="lx-obj"></select></label>
+</div>
+<div class="lx-screen" id="lx-out">Loading the scene…</div>
+<p class="lx-how" id="lx-how"></p>
+<div class="lx-tablewrap"><table class="lx-table"><thead><tr><th>Row</th><th>Verb</th><th>Object</th><th>Word</th><th>Does</th></tr></thead><tbody id="lx-rows"></tbody></table></div>
+<p class="lx-how">The rows are read from each scene's listing. The lookup is a port of the engine's loop at <a href="source-resident.html#5F63"><code>$5F63</code></a>, and <code>test_dispatch.js</code> checks it against that loop running on the kit's 6502 for every scene, every verb and every object the scene names, plus objects it does not. The replies are decoded by a port of the engine's printer, and the same test compares every one with the letters the printer at <a href="source-resident.html#67B5"><code>$67B5</code></a> sends to the screen.</p>
+</div>
+<p>The order of the rows is the design: a scene lists its specific cases first and its catch-alls after them. The Wall of Hands has five rows for <i>manicure</i>. <i>Manicure door</i> answers "There's no door here." and <i>manicure Jareth</i> "No thank you.", both stored text. <i>Manicure rocks</i> runs code that ruins your shears, <i>manicure wall</i> runs the routine that counts your manicures, and <i>manicure</i> with anything else runs a check for shears before it says "He's not here." In 19 of the 20 scenes that take commands, a row for <i>hit</i> with anything sits low in the table, so every combination the wheels can make gets an answer.</p>
+<p>Most rows are plain text: the scene's code only runs when something has to change, such as a door opening, an item changing hands or the clock moving on. Across the 21 scenes, 721 rows are messages, and the entrance gate has no rows at all: it plays as a script.</p>
 </section>
-<section id="explore">
-<p class="fig">03 · Inside the game</p><h2>Explore how Labyrinth works</h2>
-<p>The opening and the first rooms of the maze are taken apart here. Most of the maze is not yet explained: seven of its 22 areas have played guides, and the other fifteen are read from the code and a single picture each.</p>
-<ul>
-<li><a href="controls.html"><b>Controls</b></a>: how typing picks a word from the wheels, how the joystick moves the character, and the key reference.</li>
-<li><a href="levels.html"><b>Areas</b></a>: the city and its popcorn counter, the gate, the first corridor, the Brick Hallway doors, Alph and Ralph, the Wall of Hands, and the Stone Corridor, plus code-read guides to the other fifteen.</li>
-<li><a href="source.html"><b>Source code</b></a>: the annotated code and data of each analysed part, with every byte of the opening described.</li>
-<li><a href="about.html"><b>About</b></a>: the sources, how far each claim was checked, and how much of the game is covered.</li>
-</ul>
+
+<section id="text" data-part="">
+<p class="fig">03 · Text</p><h2>Replies are stored half as letters, half as dictionary words</h2>
+<p>A reply starts with two header bytes: the indent and the colour of the speech box. The text follows. Bytes below <code>$7F</code> are letters. <code>$FB</code> to <code>$FE</code> each take the next byte as the number of a word in the shared dictionary, and print it as stored, capitalised, followed by a space, or both. <code>$F7</code> to <code>$FA</code> draw the edges of a speech balloon, <code>$FF</code> starts a new line and <code>$00</code> ends the reply. The names of people and things are stored once, in the dictionary that also feeds the word wheels.</p>
+<div class="lx-plate">
+<p class="lx-how" style="margin-top:0">The bytes of the reply chosen above. <span class="lx-bytes"><span class="h">header</span> <span class="w">dictionary word</span> <span class="c">control</span></span></p>
+<div class="lx-bytes" id="lx-bytes"></div>
+</div>
+</section>
+
+<section id="room" data-part="">
+<p class="fig">04 · Rooms</p><h2>A room is a strip of blocks, each sixteen characters square</h2>
+<p>The maze rooms scroll sideways. Each is built from a short map at <code>$0600</code>, one byte per block, and the low four bits of the byte pick one of sixteen pages of character codes at <code>$BC00</code>-<code>$CBFF</code>. Each page is a 16 by 16 block of characters. The header byte <code>$0705</code> sets the map's shape: 256 blocks in one row when it is 0, and half as many in twice as many rows for each step up. When the room scrolls, the routine at <a href="source-resident.html#4C01"><code>$4C01</code></a> fills a newly exposed row of 40 characters, and <a href="source-resident.html#4C7A"><code>$4C7A</code></a> a column of 16.</p>
+<div class="lx-plate">
+<div class="lx-row"><label>Scene <select id="lx-room-scene"></select></label><label>Map row <select id="lx-room-row"></select></label><span class="lx-how" id="lx-room-info" style="margin:0"></span></div>
+<div class="lx-strip"><canvas id="lx-room" width="320" height="128"></canvas></div>
+<p class="lx-how">The whole strip, drawn with the scene's own character set from <code>$E000</code>, in shades of grey. Scroll it sideways. The game colours these characters per cell through a second routine at <a href="source-resident.html#5B76"><code>$5B76</code></a>, which is not reproduced here, so the shades stand for the four pixel values of each multicolour character, not for the colours on screen. The block lookup is a port of <code>$4C01</code>, and <code>test_room.js</code> checks it against the routine itself on the kit's 6502: 574,720 screen cells across every scene, all equal.</p>
+</div>
+<p>Building rooms from sixteen reusable blocks keeps each scene small. A hedge or a brick wall is drawn once, on one page, and a room 64 blocks long is a 64-byte map. The same scheme lets the game change a room in place: opening a door in the Brick Hallway rewrites one byte of the map so the next redraw picks the open-door page (<a href="levels.html#brick-hallway">Brick Hallway</a>).</p>
+</section>
+
+<section id="guards" data-part="">
+<p class="fig">05 · A puzzle in code</p><h2>Alph and Ralph decide at random which door is the lie</h2>
+<p>Two guards stand at two doors. One always lies and the other tells the truth, they say, and they will not help until you have opened all fifteen doors of the Brick Hallway behind you. The game counts those doors: the room's map starts with three open, and each door you open adds one to a counter. Alph's reply changes when the counter reaches fifteen.</p>
+<p>When the guards' room loads, its setup code stores two random bits. The first, at <code>$8F06</code>, decides which doorway leads on to the Wall of Hands and which drops you into a pit with "Ok, we lied. It wasn't endless" and the end of the game. The second, at <code>$8F07</code>, is compared with the first when a guard is asked again later: when they match the later answer points you to the castle, and otherwise to your death. So the safe door is not the same in every game, and only the guards' answers tell you which it is.</p>
+<p>The Areas page steps through every part of this exchange with ports of the guards' own code: the door count, the replies, the random bits and what each door does (<a href="levels.html#alph-and-ralph">Alph and Ralph</a>).</p>
+</section>
+
+<section id="exits" data-part="">
+<p class="fig">06 · Exits</p><h2>The first corridor picks your destination with a random number</h2>
+<p>The first corridor has eight openings. Each one leads to a slot in one of four banks of destinations, and the bank is chosen by the game's random-number generator when you walk through. The generator at <a href="source-resident.html#4210"><code>$4210</code></a> multiplies its 16-bit state at <code>$0502</code> by 37 and adds 17, and bits 5 and 6 of the new high byte pick the bank. The engine's main loop calls it on every pass, so the state keeps moving while you stand still, and the bank you get depends on the moment you step through. Every stored opening in the copy studied leads to the Brick Hallway; the bank only changes where in the hallway you arrive.</p>
+<div class="lx-plate">
+<div class="lx-row"><label>State <input id="lx-seed" type="number" min="0" max="65535" value="17243" style="width:8em;font:inherit;padding:4px"></label><button id="lx-roll" type="button">Next number</button></div>
+<div class="lx-dice" id="lx-dice"></div>
+<p class="lx-how">The step is <i>state × 37 + 17</i>, kept to 16 bits; <code>test_dispatch.js</code> checks the port against <code>$4210</code> for all 65,536 states. The first line starts from <code>$435B</code>, the state recorded at the moment an ordinary walk through the corridor's opening at column 8 reached the exit; its next number, <code>$BC38</code>, gave bank 1 and entry 35 of the Brick Hallway in the emulator. The Areas page has the corridor's banks and checks them against the game (<a href="levels.html#first-corridor">The first corridor</a>).</p>
+</div>
+</section>
+
+<section id="clock" data-part="">
+<p class="fig">07 · Time</p><h2>The thirteen hours</h2>
+<p>The clock is kept in hours and minutes in the saved state. Some actions spend hours outright. At the Wall of Hands, the eighth manicure in a row calls the engine's hour routine at <a href="source-resident.html#0C61"><code>$0C61</code></a>, which takes one hour off and shows the "One hour later" panel. When the hours run out the same panel ends the game with Jareth's verdict: "Your time is up. You have failed to defeat me." How fast the clock runs on its own while you play is not established.</p>
+<figure style="max-width:520px"><img src="reference/wall-manicure-hour.png" width="384" height="272" alt="The One hour later panel over the Wall of Hands"><figcaption>The eighth manicure at the Wall of Hands costs an hour. From the supplied disk.</figcaption></figure>
+</section>
+
+<section id="sound" data-part="">
+<p class="fig">08 · Music</p><h2>Music: five tunes and 44 sound effects</h2>
+<p>The game stores five tunes: a short jingle in the engine, the menu tune of the opening, the gate's tune, the duel's music and the win ending. Each is a header, three note sequences and a set of instruments, played by the engine's own sound code. The <a href="music.html">Music</a> tab plays every tune and every sound effect through a model of the SID chip, driven by the game's own data.</p>
+</section>
+
+<section id="release" data-part="">
+<p class="fig">09 · The release</p><h2>Lucasfilm Games' adventure</h2>
+<p>Lucasfilm Games made <i>Labyrinth</i> from Jim Henson's film, and Activision published it in 1986. The disk's credits name David Fox as production manager and programmer, Charlie Kellner as technical director and lead programmer, and Gary Winnick for character animation and background art. David M. Martin Jr. is credited with the music and Commodore sound.<sup class="lab-fn"><a href="about.html#src-1" title="Disk Player’s Guide: credits">1</a></sup> This page follows the two-sided English Commodore 64 disk edition.</p>
+<figure style="max-width:520px"><img src="reference/loading.png" width="384" height="272" alt="The Lucasfilm Games logo on a brown screen"><figcaption>The loading screen. From the supplied disk.</figcaption></figure>
+<p>Every byte of the game is described in the <a href="source.html">Source code</a> tab, one listing for each of its 23 parts. The <a href="levels.html">Areas</a> tab goes through every scene, the <a href="controls.html">Controls</a> tab covers the wheels and the joystick, and <a href="discoveries.html">Discoveries</a> collects the quirks and bugs the code shows.</p>
 </section>
 </main>
+<script src="../../lib/c64.js"></script>
 <script>
+/* labyrinth-dictionary */
+const labyrinthWords = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "    INVENTORY LIST    ", " ", "boy", "girl", "he", "she", "camcorder", "hello", "adumbrate", "complain", "inventory", "load game", "save game", "speak", "take", "time", "ask", "call", "close", "congratulate", "hit", "insult", "manicure", "open", "drop", "eat", "give", "insert", "throw", "use", "Alph", "door", "elephant", "hat", "Hoggle", "Jareth", "knocker", "Ludo", "nerd", "Ralph", "wall", "Wise Man", "goblin", "arm", "crystal ball", "cup", "dollar bill", "head", "key", "nickel", "peach", "perfume", "plank", "popcorn", "quarter", "ring", "rock", "rule book", "shears", "spray bottle", "ticket", "look", "go", "beggar", "dinner", "east", "food", "home", "north", "outside", "south", "store", "TV", "theater", "west", "black", "white", "red", "aqua", "purple", "green", "blue", "yellow", "orange", "leg", "helmet", "bracelet", "log", "rocks", "plastics", "owl", "jaggies", "avocado", "Sir Didymus", "Firey", "Do you have", "Throw some", "You have no", "elephants over me", "towels over me", "power over me", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
+function expandLabyrinthWord(index, token) {
+ let word=labyrinthWords[index];
+ if ((token===0xfc || token===0xfe) && word.length) {
+  word=String.fromCharCode((word.charCodeAt(0)-0x20)&255)+word.slice(1);
+ }
+ return word+((token===0xfd || token===0xfe)?' ':'');
+}
+const labyrinthPassages = [{"title": "The sidewalk", "address": 39015, "bytes": [89, 111, 117, 32, 97, 114, 101, 32, 115, 116, 97, 110, 100, 105, 110, 103, 32, 111, 110, 32, 116, 104, 101, 32, 115, 105, 100, 101, 119, 97, 108, 107, 32, 111, 110, 255, 116, 104, 101, 32, 253, 79, 115, 105, 100, 101, 32, 111, 102, 32, 97, 32, 99, 105, 116, 121, 32, 98, 108, 111, 99, 107, 46, 0]}, {"title": "The rain and owl", "address": 39079, "bytes": [73, 116, 32, 105, 115, 32, 100, 97, 114, 107, 32, 97, 110, 100, 32, 114, 97, 105, 110, 105, 110, 103, 46, 255, 84, 104, 101, 114, 101, 32, 105, 115, 32, 97, 32, 99, 105, 103, 97, 114, 32, 253, 85, 104, 101, 114, 101, 46, 255, 65, 32, 253, 90, 253, 104, 105, 115, 32, 102, 108, 97, 112, 112, 105, 110, 103, 32, 97, 98, 111, 117, 116, 46, 0]}];
+function splitLabyrinthPassage(bytes) {
+ const pieces=[];
+ for(let i=0;i<bytes.length;) {
+  const offset=i, byte=bytes[i++];
+  if(byte===0) {pieces.push({offset,bytes:[0],text:'',kind:'end'});break;}
+  if(byte===0xff) {pieces.push({offset,bytes:[byte],text:'\n',kind:'line'});continue;}
+  if(byte>=0xfb && byte<=0xfe) {
+   if(i===bytes.length) throw new Error('Missing dictionary index');
+   const index=bytes[i++];
+   pieces.push({offset,bytes:[byte,index],text:expandLabyrinthWord(index,byte),kind:'word'});
+   continue;
+  }
+  if(byte<0x20 || byte>=0x7f || byte===0x40) throw new Error('Unsupported passage control');
+  while(i<bytes.length && bytes[i]>=0x20 && bytes[i]<0x7f && bytes[i]!==0x40) i++;
+  const literal=bytes.slice(offset,i);
+  pieces.push({offset,bytes:literal,text:String.fromCharCode(...literal),kind:'letters'});
+ }
+ return pieces;
+}
+// end of labyrinth-dictionary
+</script>
+<script>
+/* lab-dispatch */
+// The engine's command lookup ($5F63): scan [verb, object] rows at $8B00, two bytes each, up to
+// offset $BE; a zero in either field matches anything and a negative verb ends the table. The
+// word for row n is at $8BC0 + 2n: $8000 and above is code, below is text at word + $8000.
+function labDispatch(ram, verb, obj) {
+ for (let y = 0; y < 0xC0; y += 2) {
+  const v = ram[0x8B00 + y];
+  if (v & 0x80) return null;
+  if (v && v !== verb) continue;
+  const o = ram[0x8B01 + y];
+  if (o && o !== obj) continue;
+  const word = ram[0x8BC0 + y] | ram[0x8BC1 + y] << 8;
+  return { row: y >> 1, word, code: word >= 0x8000 ? word : null, text: word < 0x8000 ? word | 0x8000 : null };
+ }
+ return null;
+}
+// The rows of a scene's table, up to its end marker.
+function labRows(ram) {
+ const rows = [];
+ for (let y = 0; y < 0xC0; y += 2) {
+  if (ram[0x8B00 + y] & 0x80) break;
+  rows.push({ row: y >> 1, verb: ram[0x8B00 + y], obj: ram[0x8B01 + y], word: ram[0x8BC0 + y] | ram[0x8BC1 + y] << 8 });
+ }
+ return rows;
+}
+// A headered reply at address: two header bytes, then the stream the printer at $67B5 reads.
+// Returns the text and the pieces, each { bytes, kind } for the byte view.
+function labReply(ram, address) {
+ const pieces = [{ bytes: [ram[address], ram[address + 1]], kind: 'h' }];
+ let text = '';
+ for (let a = address + 2; ; ) {
+  const b = ram[a];
+  if (b === 0) { pieces.push({ bytes: [0], kind: 'c' }); break; }
+  if (b === 0xFF) { text += '\n'; pieces.push({ bytes: [b], kind: 'c' }); a++; continue; }
+  if (b >= 0xFB && b <= 0xFE) { text += expandLabyrinthWord(ram[a + 1], b); pieces.push({ bytes: [b, ram[a + 1]], kind: 'w' }); a += 2; continue; }
+  if (b >= 0xF7 && b <= 0xFA) { pieces.push({ bytes: [b], kind: 'c' }); a++; continue; }
+  const start = a;
+  while (ram[a] >= 0x20 && ram[a] < 0x7F) a++;
+  if (a === start) { pieces.push({ bytes: [b], kind: 'c' }); a++; continue; }
+  const run = Array.from(ram.subarray(start, a));
+  text += String.fromCharCode(...run.filter(c => c !== 0x40));
+  pieces.push({ bytes: run, kind: 'l' });
+ }
+ return { text, pieces };
+}
+// end of lab-dispatch
+/* lab-room */
+// The character at cell (cx, cy) of block (bx, by), as $4C01 finds it: the map byte at $0600
+// (index masked by $59A1/$59A8 for the width code at $0705) picks a page from $4E0E, and screen
+// row cy of a block is page offset 16 * cy.
+function labRoomCell(ram, bx, by, cx, cy) {
+ const code = ram[0x0705], lo = ram[0x59A1 + code];
+ const index = (bx & lo) | ((by << (8 - code)) & 0xFF);
+ const page = ram[0x4E0E + (ram[0x0600 + index] & 15)];
+ return ram[page * 256 + 16 * cy + cx];
+}
+// end of lab-room
+/* lab-random */
+// The engine's generator at $0A35: state * 37 + 17, kept to 16 bits.
+function labNextRandom(state) { return (state * 37 + 17) & 0xFFFF; }
+// end of lab-random
+
+const LX_SCENES = [['scene-01','The entrance gate'],['scene-02','The first corridor'],['scene-03','The Brick Hallway'],['scene-04','Alph and Ralph'],['scene-05','The Wall of Hands'],['scene-06','The Stone Corridor'],['scene-07','The Hedge Maze: the goblin'],['scene-08','The Persecution of Ludo'],['scene-09','The Wise Man’s Garden'],['scene-10','The Hedge Maze: Ludo and the rocks'],['scene-11','The Door Knockers'],['scene-12','The Forest: Firey'],['scene-14','The Forest: the second strip'],['scene-15','The Stone Faces'],['scene-16','The Bog of Eternal Stench'],['scene-18','The Goblin Village'],['scene-20','The Underground'],['scene-21','The Castle of the Goblin King'],['scene-24','The Secret Corridor'],['scene-25','The Upside-Down Room'],['scene-26','The Final Confrontation']];
+const lxHex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+const lxWord = i => i ? (labyrinthWords[i] || '#' + i).trim() : 'anything';
+// A scene's memory: the engine beneath, the scene's own bytes over it, as the machine has them.
+const lxCache = new Map();
+function lxScene(id) {
+ if (!lxCache.has(id)) lxCache.set(id, Promise.all([C64.load('parts/resident/listing.json'), C64.load('parts/' + id + '/listing.json')]).then(([R, S]) => {
+  const ram = R.ram.slice();
+  for (let a = 0; a < 0x10000; a++) if (S.has[a]) ram[a] = S.ram[a];
+  return { ram, names: S.names, listing: S.listing };
+ }));
+ return lxCache.get(id);
+}
+const $ = id => document.getElementById(id);
+for (const [id, name] of LX_SCENES) { $('lx-scene').add(new Option(name, id)); $('lx-room-scene').add(new Option(name, id)); }
+$('lx-scene').value = 'scene-05';
+let lxCurrent = null;
+async function lxLoadScene() {
+ const id = $('lx-scene').value, scene = await lxScene(id);
+ lxCurrent = { id, scene, rows: labRows(scene.ram) };
+ const verbs = [...new Set(lxCurrent.rows.map(r => r.verb).filter(Boolean))].sort((a, b) => lxWord(a).localeCompare(lxWord(b)));
+ const objs = [...new Set(lxCurrent.rows.map(r => r.obj).filter(Boolean))].sort((a, b) => lxWord(a).localeCompare(lxWord(b)));
+ $('lx-verb').innerHTML = ''; $('lx-obj').innerHTML = '';
+ for (const v of verbs) $('lx-verb').add(new Option(lxWord(v), v));
+ for (const o of objs) $('lx-obj').add(new Option(lxWord(o), o));
+ $('lx-obj').add(new Option('(another object)', 0xFF));
+ const manicure = verbs.find(v => lxWord(v) === 'manicure');
+ if (manicure) { $('lx-verb').value = manicure; const wall = objs.find(o => lxWord(o) === 'wall'); if (wall) $('lx-obj').value = wall; }
+ lxUpdate();
+}
+function lxUpdate() {
+ if (!lxCurrent) return;
+ const { scene, rows, id } = lxCurrent, verb = +$('lx-verb').value, obj = +$('lx-obj').value;
+ if (!rows.length) { $('lx-rows').innerHTML = ''; $('lx-out').textContent = '(This scene has no command rows: its table starts with the end marker, so every command does nothing.)'; $('lx-how').textContent = 'The gate plays its introduction as a script and takes no commands.'; $('lx-bytes').textContent = ''; return; }
+ const hit = labDispatch(scene.ram, verb, obj);
+ const body = $('lx-rows'); body.innerHTML = '';
+ for (const r of rows) {
+  const tr = body.insertRow();
+  tr.className = hit && r.row === hit.row ? 'hit' : (hit && r.row < hit.row ? 'skip' : '');
+  const does = r.word >= 0x8000 ? 'code ' + lxHex(r.word, 4) : 'text ' + lxHex(r.word | 0x8000, 4);
+  for (const t of [r.row, lxWord(r.verb), lxWord(r.obj), lxHex(r.word, 4), does]) tr.insertCell().textContent = t;
+ }
+ const target = body.querySelector('.hit'); if (target) target.scrollIntoView({ block: 'nearest' });
+ if (!hit) { $('lx-out').textContent = '(No row fits: the command does nothing.)'; $('lx-how').textContent = ''; $('lx-bytes').textContent = ''; return; }
+ const src = 'source-' + id + '.html#';
+ if (hit.text !== null) {
+  const reply = labReply(scene.ram, hit.text);
+  $('lx-out').textContent = reply.text;
+  $('lx-how').innerHTML = 'Row ' + hit.row + ' fits. Its word is <code>' + lxHex(hit.word, 4) + '</code>, below <code>$8000</code>, so the engine prints the reply at <a href="' + src + hit.text.toString(16).toUpperCase() + '"><code>' + lxHex(hit.text, 4) + '</code></a>.';
+  $('lx-bytes').innerHTML = reply.pieces.map(p => '<span class="' + p.kind + '">' + p.bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') + '</span>').join(' ');
+ } else {
+  $('lx-out').textContent = '(The scene runs its own code for this command.)';
+  $('lx-how').innerHTML = 'Row ' + hit.row + ' fits. Its word is <a href="' + src + hit.code.toString(16).toUpperCase() + '"><code>' + lxHex(hit.code, 4) + '</code></a>, a routine in the scene' + (scene.names.get(hit.code) ? ' named <i>' + scene.names.get(hit.code) + '</i>' : '') + '. The Source tab explains what it does.';
+  $('lx-bytes').textContent = 'This row runs code, so there is no stored reply to show. Choose a command that prints text.';
+ }
+}
+$('lx-scene').addEventListener('change', lxLoadScene);
+$('lx-verb').addEventListener('change', lxUpdate);
+$('lx-obj').addEventListener('change', lxUpdate);
+lxLoadScene().catch(e => { $('lx-out').textContent = 'The scene could not be loaded: ' + e.message; });
+
+// Rooms
+$('lx-room-scene').value = 'scene-08';
+const LX_GREY = ['#000000', '#5a5a5a', '#9a9a9a', '#e6e6e6'];
+async function lxDrawRoom(keepRow) {
+ const id = $('lx-room-scene').value, { ram } = await lxScene(id);
+ const code = ram[0x0705], rows = 1 << code, width = 256 >> code;
+ if (!keepRow) { $('lx-room-row').innerHTML = ''; for (let r = 0; r < rows; r++) $('lx-room-row').add(new Option(String(r), r)); }
+ const by = +$('lx-room-row').value || 0;
+ // Show the map up to its last block that differs from the one after it repeating to the end.
+ let used = width; const idx = bx => ram[0x0600 + ((bx & ram[0x59A1 + code]) | ((by << (8 - code)) & 0xFF))];
+ while (used > 3 && idx(used - 1) === idx(used - 2)) used--;
+ used = Math.min(width, used + 1);
+ const cv = $('lx-room'), ctx = cv.getContext('2d');
+ cv.width = used * 128; cv.height = 128; cv.style.width = (used * 128 * 2) + 'px';
+ const img = ctx.createImageData(cv.width, 128), px = img.data;
+ const rgb = LX_GREY.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+ for (let bx = 0; bx < used; bx++) for (let cy = 0; cy < 16; cy++) for (let cx = 0; cx < 16; cx++) {
+  const ch = labRoomCell(ram, bx, by, cx, cy);
+  for (let y = 0; y < 8; y++) { const b = ram[0xE000 + ch * 8 + y];
+   for (let x = 0; x < 8; x++) { const v = (b >> (6 - (x & 6))) & 3, o = ((cy * 8 + y) * cv.width + (bx * 16 + cx) * 8 + x) * 4;
+    px[o] = rgb[v][0]; px[o + 1] = rgb[v][1]; px[o + 2] = rgb[v][2]; px[o + 3] = 255; } }
+ }
+ ctx.putImageData(img, 0, 0);
+ $('lx-room-info').textContent = 'Width code ' + code + ': ' + rows + ' row' + (rows > 1 ? 's' : '') + ' of ' + width + ' blocks; ' + used + ' shown.';
+}
+$('lx-room-scene').addEventListener('change', () => lxDrawRoom(false));
+$('lx-room-row').addEventListener('change', () => lxDrawRoom(true));
+lxDrawRoom(false).catch(e => { $('lx-room-info').textContent = 'The scene could not be loaded: ' + e.message; });
+
+// Random numbers
+function lxDice() {
+ let s = Math.max(0, Math.min(65535, +$('lx-seed').value | 0)); const out = [];
+ for (let i = 0; i < 6; i++) { const n = labNextRandom(s); out.push(lxHex(s, 4) + ' × 37 + 17 = ' + lxHex(n, 4) + '   bank ' + ((n >> 13) & 3)); s = n; }
+ $('lx-dice').textContent = out.join('\n'); $('lx-dice').style.whiteSpace = 'pre';
+}
+$('lx-roll').addEventListener('click', () => { $('lx-seed').value = labNextRandom(+$('lx-seed').value | 0); lxDice(); });
+$('lx-seed').addEventListener('change', lxDice); lxDice();
+
 // Keep earlier front-page bookmarks connected to their detailed explanations.
 function routeLabyrinthBookmark(){
- const id=location.hash.slice(1),routes={'word-wheels':'controls.html#word-wheels','position-matters':'levels.html#brick-door-rule','room-transitions':'levels.html#first-corridor','reading-reference':'#explore'};
+ const id=location.hash.slice(1),routes={'word-wheels':'controls.html#word-wheels','position-matters':'levels.html#brick-door-rule','room-transitions':'levels.html#first-corridor','reading-reference':'#release','explore':'#release'};
  if(routes[id])location.replace(routes[id]);
  else if(id&&!document.getElementById(id))location.replace('levels.html'+location.hash);
 }
