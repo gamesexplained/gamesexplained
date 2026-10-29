@@ -226,13 +226,13 @@ function start(D) {
 
   // ---- sound: each frame's SID writes, streamed to the site's model of the SID
   let host = null, soundOn = false;
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]); return all; };
   async function sound(on) {
     soundOn = on;
     if (on && !host) {
       try {
         host = await C64Sid.host({ live: true, gain: 0.5 });
-        const all = []; for (let r = 0; r < 25; r++) all.push(r, play.sid[r]);
-        host.push([all]);
+        host.push([registers()]);
       } catch (e) { soundOn = false; $('sp-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn && !paused) host.ctx.resume(); else host.ctx.suspend(); }
@@ -334,32 +334,44 @@ function start(D) {
     if (host && soundOn) { if (paused) host.ctx.suspend(); else host.ctx.resume(); }
   };
   for (const b of document.querySelectorAll('#play .st-btn')) b.addEventListener('click', () => b.blur());
-  $('sp-reset').onclick = () => { boot(); og.clearRect(0, 0, over.width, over.height); $('sp-guide-out').textContent = ''; };
+  // Reset: a new machine from the listing's bytes, the sound chip's registers as it starts, the
+  // page's pause let go and the clock started again, whatever the old machine was doing, a stop
+  // included
+  let running = false;
+  const go = () => { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } };
+  $('sp-reset').onclick = () => {
+    boot(); og.clearRect(0, 0, over.width, over.height); $('sp-guide-out').textContent = '';
+    if (paused) $('sp-pause').click();
+    if (host) host.push([registers()]);
+    go();
+  };
   document.addEventListener('visibilitychange', () => { last = 0; });
   function frame(t) {
-    if (!paused) {
-      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
-      sticks();
-      target += dt * CLOCK;
-      play.run(target);
-      const frames = play.sound.splice(0);
-      if (soundOn && host && frames.length) host.push(frames);
-      draw();
-      const M = play.M, now = !M[0x8106];
-      if (now && !inPlay) thumbs = [];                                      // a new game: the lair as new
-      inPlay = now;
-      if (M[0x8118] !== room) { room = M[0x8118]; since = 0; planAge = 0; } else since++;
-      if (inPlay && since > 40) thumb(room);
-      if (guideOn && inPlay && --planAge <= 0) plan();
-      if (guideOn && inPlay) drawPath(); else if (guideOn) og.clearRect(0, 0, over.width, over.height);
-      if (++n % 6 === 0) drawMap();
-      $('sp-out').textContent = inPlay ? `room ${M[0x8118]}` : '';
-    } else $('sp-out').textContent = 'paused';
+    try {
+      if (!paused) {
+        const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+        sticks();
+        target += dt * CLOCK;
+        play.run(target);
+        const frames = play.sound.splice(0);
+        if (soundOn && host && frames.length) host.push(frames);
+        draw();
+        const M = play.M, now = !M[0x8106];
+        if (now && !inPlay) thumbs = [];                                      // a new game: the lair as new
+        inPlay = now;
+        if (M[0x8118] !== room) { room = M[0x8118]; since = 0; planAge = 0; } else since++;
+        if (inPlay && since > 40) thumb(room);
+        if (guideOn && inPlay && --planAge <= 0) plan();
+        if (guideOn && inPlay) drawPath(); else if (guideOn) og.clearRect(0, 0, over.width, over.height);
+        if (++n % 6 === 0) drawMap();
+        $('sp-out').textContent = inPlay ? `room ${M[0x8118]}` : '';
+      } else $('sp-out').textContent = 'paused';
+    } catch (e) { console.error(e); running = false; $('sp-out').textContent = 'The port stopped: ' + e.message + '. Reset starts it again.'; return; }
     last = paused ? 0 : t;
     requestAnimationFrame(frame);
   }
   drawMap();
-  requestAnimationFrame(frame);
+  go();
 }
 
 if (!window.C64 || !window.C64Cpu || !window.StormPort || !window.StormPlay) {

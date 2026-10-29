@@ -1,0 +1,276 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "green-beret",
+  "title": "Green Beret",
+  "year": 1986,
+  "publisher": "Imagine Software (Ocean)",
+  "developer": "David Collier",
+  "title_image": "reference/title.png",
+  "build": "Ocean disk, 1986 (C64 Preservation Project G64, green_beret[ocean_1986](!).zip, SHA-1 eb688ed6cb3f23072c6e09671c82dd3e92da5558)",
+  "tier": "platinum",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "David Collier",
+      "role": "programming (the title page's \"D C\"; C64-Wiki)"
+    },
+    {
+      "by": "Martin Galway",
+      "role": "sound (the title page's \"M G\"; C64-Wiki)"
+    },
+    {
+      "by": "Steve Wahid",
+      "role": "graphics (the title page's \"S W\"; C64-Wiki)"
+    },
+    {
+      "by": "Konami",
+      "role": "the 1985 arcade game, licensed"
+    }
+  ],
+  "tools": {
+    "emulator": "release v3.13.2, v3.13.2-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20",
+    "host": "Linux x86_64 (Ubuntu 24.04, cloud container)",
+    "node": "22.22.0 (the port, its lockstep tests and test_play.js), Chromium headless through Playwright for the page"
+  },
+  "model": "claude-opus-5-5[1m]",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5[1m]"
+    ],
+    "20-features": [
+      "claude-opus-5-5[1m]"
+    ],
+    "30-text": [
+      "claude-opus-5-5[1m]"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5[1m]"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5[1m]"
+    ],
+    "60-verify": [
+      "claude-opus-5-5[1m]"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5[1m]"
+    ]
+  },
+  "accuracy": [
+    {
+      "step": "research",
+      "web": true,
+      "models": [
+        "claude-opus-5-5[1m]"
+      ]
+    },
+    {
+      "step": "annotate",
+      "models": [
+        "claude-opus-5-5[1m]"
+      ]
+    },
+    {
+      "step": "sample",
+      "size": 80,
+      "wrong": 14,
+      "fixed": 14,
+      "seed": 20261028,
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "60 of the 732 hand-written comments and 20 of the 118 a decoder wrote, checked by a fresh agent against the code; 14 others that shared the wrong ones' beliefs were corrected with them"
+    },
+    {
+      "step": "port",
+      "fixed": 4,
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "the jump arc, the Prison Camp's and the Harbour's fights, corrected while the How it works and Maps pages were checked against the game"
+    },
+    {
+      "step": "play",
+      "fixed": 5,
+      "models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "note": "the whole game ported routine by routine and run in lockstep with the game's code; the corrected comments are enemies_offscreen, guards_send, status_draw, helis_launch and hero_walk_map"
+    }
+  ],
+  "kit_version": "0.0.256",
+  "created": "2026-10-28",
+  "video": {
+    "screen": "$4000",
+    "charset": "$7800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0000",
+        "$00FF",
+        "runtime: zero page, the game's pointers, the multiplexer's lists and the music driver's voice state (named in the listing)"
+      ],
+      [
+        "$0200",
+        "$03BC",
+        "runtime: the game's variables (named in the listing); only the hi score after them, $03BD-$03BF, is read before the game writes it"
+      ],
+      [
+        "$403C",
+        "$43FF",
+        "the playfield's screen: it loads holding a leftover screen of the game (rows of $20 and $21, a floor of $FB), which the blank picture (picture_draw 3) clears before anything is shown; the multiplexer writes the sprite pointers at $43F8"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$0100",
+        "$010B",
+        "code: cia2_serial_check, which the start-up copies here from $4030"
+      ],
+      [
+        "$4000",
+        "$403B",
+        "code: the start-up and the copy source of cia2_serial_check, in what becomes the playfield's screen"
+      ],
+      [
+        "$D000",
+        "$DFFF",
+        "authored: the RAM under the I/O area, which holds swapped graphics, the texts of stages 2 and 3 and spare animated characters; block_swap, text_draw and anim_chars_restore read and write it with the I/O switched out"
+      ]
+    ]
+  },
+  "io": [
+    [
+      "$3C9C",
+      "$3CAF",
+      "ram",
+      "banked out from $3C9A to $3CB3"
+    ]
+  ],
+  "regions": [
+    [
+      "$0100",
+      "$010B",
+      "code",
+      "the copy-protection check, copied here from $4030"
+    ],
+    [
+      "$0180",
+      "$03BF",
+      "variables",
+      "the virtual sprites, the game's variables and the hi score"
+    ],
+    [
+      "$03C0",
+      "$06DF",
+      "graphics",
+      "the title's logo, the intermission's map and a blank screen, packed"
+    ],
+    [
+      "$06E0",
+      "$3FA2",
+      "code",
+      "play, the four end-of-stage fights, the title and the opening scene"
+    ],
+    [
+      "$3FA3",
+      "$3FFF",
+      "sound",
+      "the title tune's sounds"
+    ],
+    [
+      "$4000",
+      "$43FF",
+      "runtime",
+      "the playfield's screen"
+    ],
+    [
+      "$4400",
+      "$77FF",
+      "graphics",
+      "sprite shapes"
+    ],
+    [
+      "$7800",
+      "$7FFF",
+      "graphics",
+      "the playfield's character set and the texts"
+    ],
+    [
+      "$8000",
+      "$9FFF",
+      "levels",
+      "the Bridge's and the Prison Camp's tiles and their colours"
+    ],
+    [
+      "$A000",
+      "$BFFF",
+      "levels",
+      "the tiles in use and their colours"
+    ],
+    [
+      "$C000",
+      "$C256",
+      "levels",
+      "the map of all four stages"
+    ],
+    [
+      "$C257",
+      "$C57F",
+      "code",
+      "the status line, the captives' picture, the multiplexer and text drawing"
+    ],
+    [
+      "$C580",
+      "$C7FF",
+      "graphics",
+      "the dogs' shapes for the Harbour's fight"
+    ],
+    [
+      "$C800",
+      "$CE87",
+      "graphics",
+      "the title's character set, shown in the status band"
+    ],
+    [
+      "$CE88",
+      "$CFFF",
+      "code",
+      "the interrupt and picture drawing"
+    ],
+    [
+      "$D000",
+      "$DFFF",
+      "graphics",
+      "the Harbour's, the Prison Camp's and the Bridge's characters, under the I/O area"
+    ],
+    [
+      "$E000",
+      "$FEB9",
+      "sound",
+      "Martin Galway's music driver, 13 tunes and 17 effects"
+    ],
+    [
+      "$FEBA",
+      "$FFFF",
+      "code",
+      "score and status routines and block_swap"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "Green Beret – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/Green_Beret"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    }
+  }
+}

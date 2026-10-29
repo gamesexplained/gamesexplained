@@ -6,7 +6,10 @@
 (function (root) {
 'use strict';
 const W = 384, H = 272;
-function draw(M, vic, colour, px) {
+function draw(M, vic, colour, px, backdrop, spritesVisible) {
+  // Optional compositing mask: only colour-zero character pixels, never sprite pixels.
+  if (backdrop) backdrop.fill(0);
+  if (spritesVisible) spritesVisible.fill(0);
   const bc = vic[0x20] & 15, d11 = vic[0x11], d16 = vic[0x16], d18 = vic[0x18];
   px.fill(bc);
   const fg = new Uint8Array(W * H);                    // 1 where the characters' foreground is
@@ -28,10 +31,12 @@ function draw(M, vic, colour, px) {
           const p = (g >> (6 - (tx & 6))) & 3;
           px[o] = p === 0 ? b0 : p === 1 ? b1 : p === 2 ? b2 : cc & 7;
           fg[o] = p >> 1;
+          if (backdrop) backdrop[o] = +(p === 0);
         } else {
           const b = (g >> (7 - (tx & 7))) & 1;
           px[o] = b ? cc : b0;
           fg[o] = b;
+          if (backdrop) backdrop[o] = +!b;
         }
       }
     }
@@ -67,7 +72,11 @@ function draw(M, vic, colour, px) {
     }
     for (let o = 0; o < W * H; o++) {
       const n = sp[o];
-      if (n && !((vic[0x1B] >> (n - 1) & 1) && fg[o])) px[o] = spc[o];
+      if (n && !((vic[0x1B] >> (n - 1) & 1) && fg[o])) {
+        px[o] = spc[o];
+        if (backdrop) backdrop[o] = 0;
+        if (spritesVisible) spritesVisible[o] = 1;
+      }
     }
   }
   return px;

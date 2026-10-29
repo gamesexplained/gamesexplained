@@ -2,7 +2,7 @@
 """Code a game keeps in a virtual address space, read from the disk during play, which no listing
 holds, is named beside the coverage figure (#428): Zork I's interpreter reads 62 KB of its story
 from the disk a page at a time, and its pages said 100 % with nothing to say the story's routines
-were not in the listing."""
+were not in the listing, until the story became a part listed on its own."""
 from pathlib import Path
 import sys
 import unittest
@@ -29,10 +29,15 @@ class Virtual(unittest.TestCase):
             with self.assertRaises(SystemExit, msg=repr(bad)):
                 build.virtual({"platform": "apple2", "slug": "fixture", "coverage": {"virtual": [bad]}})
 
-    def test_zork_declares_its_story(self):
+    def test_zork_lists_its_story(self):
+        # its story is a part of its own now, listed whole, so nothing is left unheld
         import json
-        game = json.loads((Path(build.ROOT) / "games" / "apple2" / "zork-i" / "game.json").read_text())
-        self.assertEqual(sum(n for n, _ in build.virtual(game)), 248 * 256)
+        gdir = Path(build.ROOT) / "games" / "apple2" / "zork-i"
+        game = json.loads((gdir / "game.json").read_text())
+        story = gdir / "parts" / "story"
+        self.assertEqual(json.loads((story / "part.json").read_text())["kind"], "virtual")
+        self.assertTrue((story / "listing.json").is_file())
+        self.assertEqual(build.virtual(game, build.parts(str(gdir))), [])
 
 
 if __name__ == "__main__":

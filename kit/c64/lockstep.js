@@ -56,7 +56,10 @@
 //   only when its main program has read the raster ($D011, $D012 or $D019) since its last stop, so
 //   an exit that also heads the loop of work after the wait (a copy, ten times round) is reached
 //   once a wait.
-// - irqs: { handler address: a function, or the name of one of P's }. The interrupts the game took
+// - irqs: { handler address: a function, or the name of one of P's, or null }, and nmi: the same for
+//   every NMI whose handler has no entry of its own. Null is a handler the port plays its own way (a
+//   sample player's NMIs, whose phrase the port plays whole): followed, so what it reads and writes
+//   is not the code's it came inside, and nothing run for it. The others
 //   run in the port in order, at the port's next yield of any kind: a replay can keep the order
 //   but not the place inside a stretch. So each runs on the memory the game's handler saw: the
 //   bytes it read, its instructions' operands among them, are set to the values it read (the stack
@@ -66,7 +69,8 @@
 //   goes back to the port's. Its reads of the raster ($D012, and $D011's bit 7) get the values the
 //   game's did, in turn (a read past those, the line the game's handler ended on), and the raster's
 //   interrupt bit is latched. So do its reads of the interrupt flags, $D019, $DC0D and $DD0D, and
-//   of the sprite collisions, $D01E and $D01F, the port's chips' own after those: one handler for
+//   of the sprite collisions, $D01E and $D01F, and of the SID (a write-only register reads the data
+//   bus as it fades, so the value depends on when the read comes), the port's chips' own after those: one handler for
 //   the raster and a CIA's timer, as many games have, takes the branch the game's took, and one
 //   that gathers the collisions gathers the game's. At the next checkpoint or wait's exit, where the two stand at the same
 //   place, a byte an interrupt wrote and the game's main program wrote again afterwards gets back
@@ -77,8 +81,9 @@
 //   program writes after an interrupt has written it in the same stretch (a title's SEI and its
 //   new screen modes) needs a checkpoint before that write: replayed at the port's next yield, the
 //   interrupt's value would land after the main program's.
-// - A machine made with nest (kit/c64/machine.js) takes an interrupt inside a handler that has
-//   cleared I, as the processor does. Each is followed from its take to the RTI that leaves it,
+// - The machine (kit/c64/machine.js) takes an interrupt inside a handler that has cleared I, as
+//   the processor does: machine.nest, which these notes call "with nest". With legacyInterrupts it
+//   runs each handler whole, and none of this arises. Each is followed from its take to the RTI that leaves it,
 //   the stack as the take left it, and what is read and written meanwhile is the innermost one's.
 //   They run in the port in the order they ended, so one that came inside another runs first, and
 //   a byte both wrote gets the value of the one that wrote it last in the game: the port's handlers
@@ -130,6 +135,11 @@
 //   a handler being run reads them so too, from what its game's handler read (irqs above). On the
 //   page, outside the lockstep, the port's io gives irqByte: a => M[a]. With nest the lockstep's
 //   io gives the list too, as irqBytes, a Set.
+// - P.cpuPort: a port whose game changes its banking as it goes ($01: the chips at $D000 in play,
+//   RAM under them while a level is built) keeps the processor port's data there, as the game last
+//   wrote it. The game's own code standing in for a routine (standIn, standInGen) then runs on that
+//   banking, and what it writes to $01 comes back in P.cpuPort. Without it a stand-in keeps the
+//   banking it was made with (opts.port, default $35).
 // - hooks: the machine's own stand-ins, by address, as Machine's hooks take them (a KERNAL routine
 //   the game calls and the simulator holds no ROM for): put on the machine for the run and on the
 //   copies irqBytes runs on ahead, which a hook set on the machine alone never reaches. A hook acts
@@ -570,8 +580,9 @@ class Lockstep {
       const take = m.take;
       m.take = function (v) {
         take.call(this, v);
-        const q = newIrq(this.cpu.pc, this.cpu.cycles - 7);
-        q.sp = this.cpu.sp; q.up = ls.irq; ls.irq = q;
+        const q = newIrq(this.cpu.pc, this.cpu.cycles - 7), u = this.under;
+        // the stack as the interrupt's own push left it, below what the KERNAL's entry pushes
+        q.sp = u.length ? u[u.length - 1].sp : this.cpu.sp; q.up = ls.irq; ls.irq = q; q.nmi = v === 0xFFFA;
       };
     }
     // the main program's reads of irqBytes, as it makes them, and with nest the interrupts' reads,
@@ -608,6 +619,11 @@ class Lockstep {
         ls.irq = q.up;
         if (!rti) ls.tookOver = true;
       };
+      // a hook that leaves by the KERNAL's exit (Machine's leave) ends the innermost as its RTI would
+      if (m.nest && m.leave) {
+        const leave = m.leave;
+        m.leave = function (n = 22) { if (own.length) ownValues(); if (ls.irq !== null) end(ls.irq, n); return leave.call(this, n); };
+      }
       const executed = new Proxy({}, { set(t, k) {
         const a = +k;
         if (own.length) ownValues();
@@ -630,8 +646,10 @@ class Lockstep {
     if (m.nest) {
       const ioWrite = m.ioWrite;
       m.ioWrite = function (a, v) {
-        if (ls.irq !== null) { const k = chipKey(a); if (k >= 0) { ls.irq.cseq.set(k, ++ls.wseq); ls.irq.cval.set(k, v & 0xFF); } }
-        return ioWrite.call(this, a, v);
+        const r = ioWrite.call(this, a, v), q = ls.irq;
+        // the value as the register keeps it, which lastWriters compares: colour RAM keeps four bits
+        if (q !== null) { const k = chipKey(a); if (k >= 0) { q.cseq.set(k, ++ls.wseq); q.cval.set(k, asWritten(this, k)); } }
+        return r;
       };
     }
     const ioRead = m.ioRead;
@@ -644,7 +662,10 @@ class Lockstep {
       }
       const f = q !== null ? flagRegister(a) : -1;
       if (f >= 0) { if (!q.flags.has(f)) q.flags.set(f, { v: [], i: 0 }); q.flags.get(f).v.push(v); }
-      else if (q !== null && m.nest) {
+      // with nest every chip register, and without it the SID's: a read of one of its write-only
+      // registers gives the data bus as it fades (machine.js), which depends on when the read comes,
+      // and a replay comes later
+      else if (q !== null && (m.nest || (a >= 0xD400 && a < 0xD800))) {
         const k = chipRead(a);
         if (k >= 0) { if (!q.chip.has(k)) q.chip.set(k, { v: [], i: 0 }); q.chip.get(k).v.push(v); }
       }
@@ -703,7 +724,9 @@ class Lockstep {
       this.counting = false;
       try {
         for (const q of list) {
-          let f = this.irqs[q.at];
+          const I = this.irqs;
+          let f = q.at in I ? I[q.at] : q.nmi && 'nmi' in I ? I.nmi : undefined;
+          if (f === null) continue;                    // the port plays it its own way (irqs)
           if (typeof f === 'string') f = P[f];
           if (typeof f !== 'function') throw new Error('Lockstep: no port handler for the interrupt at ' + hex(q.at) + ' (irqs)');
           // a byte the handler read and left as it read it, saved and put back (a handler that
@@ -957,6 +980,9 @@ function simulator(P, opts) {
   }
   return s;
 }
+// the processor port a stand-in runs on: the port's own, when it keeps one (P.cpuPort)
+const portIn = (P, cpu) => { if (typeof P.cpuPort === 'number' && cpu.pdata !== (P.cpuPort & 0xFF)) cpu.portWrite(1, P.cpuPort & 0xFF); };
+const portOut = (P, cpu) => { if (typeof P.cpuPort === 'number') P.cpuPort = cpu.pdata; };
 function regsIn(r) {
   const regs = { d: 0 };
   for (const k of ['a', 'x', 'y', 'n', 'v', 'd', 'i', 'z', 'c']) if (r && r[k] !== undefined) regs[k] = r[k];
@@ -964,16 +990,22 @@ function regsIn(r) {
 }
 const regsOut = cpu => ({ a: cpu.a, x: cpu.x, y: cpu.y, n: cpu.n, v: cpu.v, z: cpu.z, c: cpu.c });
 
+// opts: irq, the routine is an interrupt handler; kernal, with irq, one the KERNAL's entry at $FF48
+// reaches through $0314, which leaves by $EA31 or $EA81 (cpu6502.js's irq); hooks, the simulator's
+// own stand-ins by address, for what the game calls that it holds no code for; port and maxSteps.
 function standIn(P, address, opts = {}) {
   return function (r) {
     const s = simulator(P, opts), cpu = s.cpu;
+    portIn(P, cpu);
     cpu.setRegs(regsIn(r));
-    if (opts.irq) {
-      cpu.sp = s.top;
-      cpu.handler = P.io && P.io.irqBytes && P.io.irqBytes.size ? P.io.irqBytes : null;
-      try { cpu.irq(address, { maxSteps: opts.maxSteps }); } finally { cpu.handler = null; }
-    }
-    else cpu.call(address, { sp: s.top }, { maxSteps: opts.maxSteps });
+    try {
+      if (opts.irq) {
+        cpu.sp = s.top;
+        cpu.handler = P.io && P.io.irqBytes && P.io.irqBytes.size ? P.io.irqBytes : null;
+        try { cpu.irq(address, { maxSteps: opts.maxSteps, kernal: opts.kernal, hooks: opts.hooks }); } finally { cpu.handler = null; }
+      }
+      else cpu.call(address, { sp: s.top }, { maxSteps: opts.maxSteps, hooks: opts.hooks });
+    } finally { portOut(P, cpu); }
     return regsOut(cpu);
   };
 }
@@ -998,12 +1030,16 @@ function pollTable(polls) {
 }
 
 // The game's routine at address, standing in for one of the port's that waits (see the header).
+// opts.until: addresses where the game's code is stopped as though it had returned, for a stretch
+// of a program that goes on by JMP rather than returning (an attract loop that jumps into the game);
+// the result's at is the address it stopped at, or $FFFF for a return.
 function standInGen(P, address, opts = {}) {
   const polls = pollTable(opts.polls);
   return function* (r) { return yield* waiting(P, address & 0xFFFF, opts, polls, r); };
 }
 function* waiting(P, address, opts, polls, r) {
   const s = simulator(P, opts), cpu = s.cpu, M = cpu.m, top = s.top, max = opts.maxSteps || 1e6;
+  const until = new Set(opts.until || []);
   // since the last yield: the addresses of the instructions that read a poll address, the RAM
   // bytes of polls they read, and the routine's own cycles (the first time, from the JSR); and the
   // bytes it has polled, which it reads from P.M from then on
@@ -1015,15 +1051,17 @@ function* waiting(P, address, opts, polls, r) {
     const saved = { a: cpu.a, x: cpu.x, y: cpu.y, sp: cpu.sp, p: cpu.p, pc: cpu.pc };
     own = 0; turned.clear(); read.clear();
     s.top = cpu.sp;
-    try { yield y; } finally { s.top = top; cpu.setRegs(saved); }
+    portOut(P, cpu);
+    try { yield y; } finally { s.top = top; cpu.setRegs(saved); portIn(P, cpu); }
   }
   // the game run on to the start of the line the routine has reached, keeping back spare cycles
   const catchUp = spare => (own - spare >= LINE ? pause({ cycles: own - spare - LINE + 1 }) : []);
+  portIn(P, cpu);
   cpu.setRegs(regsIn(r));
   cpu.sp = top;
   cpu.push(0xFF); cpu.push(0xFE);                    // its RTS lands on $FFFF
   cpu.pc = address;
-  while (cpu.pc !== 0xFFFF) {
+  while (cpu.pc !== 0xFFFF && !(until.size && until.has(cpu.pc))) {
     let op = cpu.fb(cpu.pc, true), e = DATA[op] ? target(cpu, OPCODES[op][1]) : -1;
     if (e >= 0 && polls[e]) {
       if (turned.has(cpu.pc)) {                      // a turn of a polling loop: a bare yield
@@ -1046,7 +1084,8 @@ function* waiting(P, address, opts, polls, r) {
     if (++steps > max) throw new Error('standInGen: the routine at ' + hex(address) + ' ran ' + max + ' instructions without returning (at ' + hex(cpu.pc) + ')');
   }
   yield* catchUp(0);
-  return regsOut(cpu);
+  portOut(P, cpu);
+  return Object.assign(regsOut(cpu), { at: cpu.pc });
 }
 
 // A port's routine that waits, checked against the game's at address, frame by frame (see the

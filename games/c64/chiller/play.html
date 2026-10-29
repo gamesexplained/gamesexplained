@@ -73,6 +73,9 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-bar button,.pl-over button,.pl-mod button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
 .pl-bar button[aria-pressed="true"],.pl-mod button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .pl-bar button[disabled]{opacity:.45;cursor:not-allowed}
+.pl-bar button{min-height:42px}
+#pl-bar #pl-transport{display:contents}
+#pl-bar #pl-scrub-t{font:13px var(--fm);font-variant-numeric:tabular-nums;color:var(--ink-soft);white-space:nowrap}
 .pl-bar button:hover,.pl-mod button:hover{border-color:var(--ink-mute)}
 .pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
 .pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
@@ -86,16 +89,43 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-cheats{display:contents}
 .pl-fig{margin:6px 0 18px;max-width:420px}
 .pl-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.pl-painted{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.pl-painted input{accent-color:var(--ink);width:16px;height:16px}
+.pl-levels[hidden]{display:none}
 .pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
 .pl-levels button:hover{border-color:var(--ink-mute)}
 .pl-levels button[aria-current="true"],.pl-levels button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-tweak-tabs{display:flex;gap:4px;margin-top:18px;border-bottom:1px solid var(--line-soft)}
+.pl-tweak-tabs button{font:700 15px var(--fb);padding:10px 14px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--ink-soft);cursor:pointer}
+.pl-tweak-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.pl-tweak-tabs button:focus-visible{outline:2px solid var(--link);outline-offset:-2px}
+.pl-tweak-panels{min-height:250px}
+.pl-tweaks[hidden]{display:none}
+.pl-tweaks{margin-top:0;padding:16px;border:1px solid var(--line-soft);border-radius:10px;background:var(--surface)}
+.pl-tweaks h3{font-size:19px;margin:0 0 4px}
+.pl-tweak-intro{font-size:14px;line-height:1.5;color:var(--ink-soft);margin:0}
+.pl-jump-note{margin-top:8px}
+.pl-jump-tuning,.pl-advanced{margin-top:14px;padding-top:10px;border-top:1px solid var(--line-soft)}
+.pl-jump-tuning summary,.pl-advanced summary{cursor:pointer;font-size:14px;font-weight:700;margin-bottom:8px}
+.pl-jump-tuning label{display:flex;justify-content:space-between;gap:12px;font-size:14px;margin:12px 0 6px;max-width:480px}
+.pl-jump-tuning input[type=range]{display:block;width:100%;max-width:480px;accent-color:var(--ink);margin:10px 0}
+.pl-jump-tuning output{font-family:var(--fm);font-size:12px;color:var(--ink-soft)}
+.pl-jump-scale{position:relative;height:18px;max-width:480px;font-size:12px;color:var(--ink-soft);margin-bottom:10px}
+.pl-jump-scale span{position:absolute;left:0}
+.pl-jump-scale span:nth-child(2){left:33.333%;transform:translateX(-50%)}
+.pl-jump-scale span:last-child{left:auto;right:0}
+.pl-tweaks .pl-levels{margin-top:12px}
 .pl-lab{margin-top:18px;border-top:1px solid var(--line-soft);padding-top:14px}
 .pl-lab h3{margin:0 0 6px;font-size:17px}
 .pl-lab .cap{margin:4px 0 10px}
 .pl-scrub{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.pl-scrub input[type=range]{flex:1 1 260px;min-width:160px}
+.pl-vcr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pl-vcr button{display:flex;align-items:center;gap:7px;min-height:42px}
+.pl-vcr button span{font-size:18px;line-height:1}
+.pl-vcr button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-vcr output{font-variant-numeric:tabular-nums;margin-left:4px}
 .pl-scrub output,.pl-poke output{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
 .pl-poke{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .pl-poke input[type=text]{font-family:var(--fm);font-size:14px;width:5.5em;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
@@ -152,27 +182,46 @@ section table{margin:6px 0 18px}
       <p class="cap">Each bar is a voice's loudness, worked out from the attack, decay, sustain, and release the game sets; the mark is its sustain level. The note is the voice's frequency register on a PAL machine. The tune plays on voices 1 and 2; the game's sound effects use voice 3.</p>
     </div>
     <div class="pl-bar" id="pl-bar">
-      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <div class="pl-scrub pl-vcr" id="pl-transport" role="group" aria-label="Playback controls">
+        <button type="button" data-transport="rewind" title="Move back five seconds in recorded play" disabled><span aria-hidden="true">⏪</span> Rewind</button>
+        <button type="button" data-transport="pause" aria-pressed="false" disabled><span aria-hidden="true">⏸</span> Pause</button>
+        <button type="button" data-transport="play" aria-pressed="false"><span aria-hidden="true">▶</span> Play</button>
+        <button type="button" data-transport="forward" title="Move forward five seconds in recorded play" disabled><span aria-hidden="true">⏩</span> Fast forward</button>
+      </div>
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-sound aria-pressed="true">🔊 Sound</button>
-      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+        <output id="pl-scrub-t" aria-label="Playback position">0.0 s of 0.0 s</output>
       <span class="pl-status" id="pl-status" aria-live="polite"></span>
     </div>
+    <p class="cap pl-transport-note">Rewind and Fast forward move five seconds through recorded play. Play continues from that moment, replacing the old future.</p>
+    <div class="pl-levels" id="pl-tune" aria-label="The tune during play">
+      <span>Tune</span>
+      <button type="button" data-tune="1" aria-pressed="true" title="This copy's tune: David Dunn's arrangement of Thriller">Thriller, 1984</button>
+      <button type="button" data-tune="2" aria-pressed="false" title="The re-release's tune and its driver byte, put into the game's memory">The re-release's tune</button>
+    </div>
+    <div class="pl-tweak-tabs" id="pl-tweak-tabs" role="tablist" aria-label="Player tweaks">
+      <button type="button" role="tab" id="pl-visual-title" aria-controls="pl-visual-panel" aria-selected="true" tabindex="0">Visual tweaks</button>
+      <button type="button" role="tab" id="pl-gameplay-title" aria-controls="pl-gameplay-panel" aria-selected="false" tabindex="-1">Gameplay tweaks</button>
+    </div>
+    <div class="pl-tweak-panels">
+    <div class="pl-tweaks" role="tabpanel" id="pl-visual-panel" aria-labelledby="pl-visual-title">
+      <p class="pl-tweak-intro">Change the picture and add overlays while you play.</p>
     <div class="pl-levels" id="pl-view" aria-label="How to see the game">
       <span>View</span>
       <button type="button" data-view="flat" aria-pressed="true" title="The C64's own picture">Flat</button>
       <button type="button" data-view="layers" aria-pressed="false" title="The video chip's layers pulled apart: border and background, the sprites behind the scenery, the characters, the sprites in front">Layers</button>
+      <button type="button" data-view="parallax" aria-pressed="false" title="A forest remix with distant trees, moonlight, mist and foreground branches">Parallax</button>
       <button type="button" data-view="torch" aria-pressed="false" title="Darkness, but for the light the boy carries; enemies beyond it are two eyes">Torchlight</button>
     </div>
-    <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
-      <span>Start on</span>
+    <div class="pl-levels" id="pl-art-options" hidden aria-label="Parallax artwork">
+      <span>Artwork</span>
+      <label class="pl-painted"><input type="checkbox" id="pl-painted"> Painted scenery</label>
+      <span>Forest concept · original game rules</span>
     </div>
-    <div class="pl-levels" id="pl-cheats" aria-label="Cheats">
-      <span>Cheats</span>
-      <button type="button" data-cheat="energy" aria-pressed="false" title="The energy bar never goes down, so the game never ends">Endless energy</button>
-      <button type="button" data-cheat="ghosts" aria-pressed="false" title="A ghost's touch costs no energy; toadstools still do">Ghosts don't hurt</button>
-      <button type="button" data-cheat="skip" title="End this level as taking its last cross does">Skip this level</button>
+    <div class="pl-levels" aria-label="Screen effect">
+      <span>Screen</span>
+      <button type="button" data-crt aria-pressed="true" title="Draw the picture as a CRT monitor did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
     </div>
     <div class="pl-levels" id="pl-show" aria-label="Show over the game">
       <span>Show</span>
@@ -181,33 +230,52 @@ section table{margin:6px 0 18px}
       <button type="button" data-show="memory" aria-pressed="false" title="The game's 64 KB, one dot per byte, lit where the code writes">Memory</button>
       <button type="button" data-show="voices" aria-pressed="false" title="The sound chip's three voices: the note each plays and how loud">Sound voices</button>
     </div>
-    <div class="pl-levels" id="pl-tune" aria-label="The tune during play">
-      <span>Tune</span>
-      <button type="button" data-tune="1" aria-pressed="true" title="This copy's tune: David Dunn's arrangement of Thriller">Thriller, 1984</button>
-      <button type="button" data-tune="2" aria-pressed="false" title="The re-release's tune and its driver byte, put into the game's memory">The re-release's tune</button>
-    </div>
     <p class="pl-show-note" id="pl-show-note" aria-live="polite"></p>
-    <div class="pl-lab" id="pl-lab">
-      <h3>Rewind and see what is running</h3>
-      <div class="pl-scrub">
-        <input type="range" id="pl-scrub" min="0" max="0" value="0" step="1" aria-label="Rewind: how far back into this game, in seconds of play">
-        <output id="pl-scrub-t" for="pl-scrub">0.0 s</output>
-        <button type="button" id="pl-resume" disabled>Play from here</button>
+    </div>
+    <div class="pl-tweaks" role="tabpanel" id="pl-gameplay-panel" aria-labelledby="pl-gameplay-title" hidden>
+      <p class="pl-tweak-intro">Try different jump timings, use cheats or start on another screen.</p>
+      <div class="pl-levels" id="pl-jump" aria-label="Jump timing">
+        <span>Jump</span>
+        <button type="button" data-preset="original" aria-pressed="true">Original jump</button>
+        <button type="button" data-preset="snappy" aria-pressed="false">Snappy jump</button>
+        <button type="button" data-preset="floaty" aria-pressed="false">Floaty jump</button>
       </div>
-      <p class="cap">Drag back to rewind to any moment of this game: the game is replayed from the start with the keys you pressed, from the nearest of the moments it saves every two and a half seconds. Then <b>Play from here</b> to take a different path. While paused, the routines the game ran in the last frame are listed below, each linked to its place in the source.</p>
+      <p class="pl-tweak-intro pl-jump-note">Snappy jump speeds up the rise and fall. Floaty jump slows it down. Original jump restores the game’s timing.</p>
+      <details class="pl-jump-tuning" id="pl-jump-tuning">
+        <summary>Fine-tune jump</summary>
+        <label for="pl-jump-duration">Jump duration <output id="pl-jump-duration-value" for="pl-jump-duration">100% · Original</output></label>
+        <input type="range" id="pl-jump-duration" min="50" max="200" step="5" value="100" disabled aria-valuetext="100 percent, original timing">
+        <div class="pl-jump-scale"><span>50% · Snappy</span><span>100% · Original</span><span>200% · Floaty</span></div>
+        <p class="pl-tweak-intro">Lower values make the rise and fall quicker. 100% restores the original timing. Changes apply while you play.</p>
+      </details>
+    <div class="pl-levels" id="pl-cheats" aria-label="Cheats">
+      <span>Cheats</span>
+      <button type="button" data-cheat="energy" aria-pressed="false" title="The energy bar never goes down, so the game never ends">Endless energy</button>
+      <button type="button" data-cheat="ghosts" aria-pressed="false" title="A ghost's touch costs no energy; toadstools still do">Ghosts don't hurt</button>
+      <button type="button" data-cheat="skip" title="End this level as taking its last cross does">Skip this level</button>
+    </div>
+    <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
+      <span>Start on</span>
+    </div>
+    </div>
+    </div>
+    <div class="pl-lab" id="pl-lab">
+      <h3>See what is running</h3>
+      <p class="cap">Pause to see the routines the game ran in the last frame, each linked to its place in the source.</p>
       <ul class="pl-calls" id="pl-calls" aria-label="Routines the game ran in the last frame"></ul>
-      <h3>Change a byte and watch</h3>
+      <details class="pl-advanced">
+      <summary>Advanced memory editor</summary>
+      <p class="cap">Change any byte of game memory. For jump timing, use Fine-tune jump in Gameplay tweaks above.</p>
       <div class="pl-poke">
         <label>Address <code>$</code><input type="text" id="pl-addr" value="544A" size="5" maxlength="4" aria-label="Address in hex"></label>
         <label>Value <code>$</code><input type="text" id="pl-val" value="02" size="3" maxlength="2" aria-label="Value in hex"></label>
         <button type="button" id="pl-set">Set the byte</button>
-        <button type="button" data-preset="floaty">Floaty jump</button>
-        <button type="button" data-preset="snappy">Snappy jump</button>
         <button type="button" id="pl-undo">Undo my edits</button>
         <output id="pl-now"></output>
       </div>
-      <p class="cap">The jump's 24 steps wait for the number of frames in <a href="source.html#544A"><code>jump_speeds</code> <code>$544A</code></a>: <b>Floaty jump</b> doubles each wait and <b>Snappy jump</b> halves it. Any other byte works too, and rewinding replays your edits with the keys.</p>
+      <p class="cap">The jump has 24 steps. Each waits for the number of frames in <a href="source.html#544A"><code>jump_speeds</code> <code>$544A</code></a>: <b>Floaty jump</b> doubles each wait and <b>Snappy jump</b> halves it. Any other byte works too, and rewinding replays your edits with the keys.</p>
       <ul class="pl-edits" id="pl-edits" aria-label="Your edits"></ul>
+      </details>
     </div>
     <ul class="pl-keys">
       <li><kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>C</kbd> walk</li>
@@ -220,7 +288,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, a sprite whose priority bit is set sliding back behind the scenery's pane; drag to turn the stack, and the sliders spread it and bring it nearer), and the screen dark but for the boy's light.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does. Under <b>Show</b>, the <b>ghost</b> is your best run of the screen so far, played back beside you from the moment the screen starts; <b>Enemy paths</b> steps each enemy's script on from where it is and draws the way ahead as a fading trail of dots, with a square where it will leave the screen; <b>Memory</b> and <b>Sound voices</b> open panels below. <b>Tune</b> swaps in the re-release's music, as the <a href="music.html">Music</a> tab plays it. <b>View</b> draws the same game other ways, each from the port's memory and the video chip's registers as they stand that frame: the video chip's layers pulled apart (all ten always shown, a sprite whose priority bit is set sliding back behind the scenery's pane; drag to turn the stack, and the sliders spread it and bring it nearer), and the screen dark but for the boy's light. <b>Parallax</b> uses full-colour concept artwork at the game’s pixel size, adding imagined scenery to the forest on the outward and homeward journeys: distant trees, a moon, mist and foreground branches move gently as you walk. The game’s platforms, sprites and rules stay the same. With Parallax selected, <b>Painted scenery</b> adds a full-colour concept skin for the playable trees and ropes. It is an imagined rendition of the level; collisions still use the original map, and characters and collectibles remain live. Poison has a red cap with white spots, food is amber, 100-point bonuses are rotating gold coins and crosses have a blue halo and a moving silver highlight, each with a dark outline. Item ledges align with their live pickup positions. The bridge follows the game’s live erosion tiles, opening holes as its ledges crumble. Other locations keep their original picture.</p>
   </div>
 </section>
 <section id="port">
@@ -2793,7 +2861,10 @@ root.ChillerPort = { makePort, Goto, GEN };
 (function (root) {
 'use strict';
 const W = 384, H = 272;
-function draw(M, vic, colour, px) {
+function draw(M, vic, colour, px, backdrop, spritesVisible) {
+  // Optional compositing mask: only colour-zero character pixels, never sprite pixels.
+  if (backdrop) backdrop.fill(0);
+  if (spritesVisible) spritesVisible.fill(0);
   const bc = vic[0x20] & 15, d11 = vic[0x11], d16 = vic[0x16], d18 = vic[0x18];
   px.fill(bc);
   const fg = new Uint8Array(W * H);                    // 1 where the characters' foreground is
@@ -2815,10 +2886,12 @@ function draw(M, vic, colour, px) {
           const p = (g >> (6 - (tx & 6))) & 3;
           px[o] = p === 0 ? b0 : p === 1 ? b1 : p === 2 ? b2 : cc & 7;
           fg[o] = p >> 1;
+          if (backdrop) backdrop[o] = +(p === 0);
         } else {
           const b = (g >> (7 - (tx & 7))) & 1;
           px[o] = b ? cc : b0;
           fg[o] = b;
+          if (backdrop) backdrop[o] = +!b;
         }
       }
     }
@@ -2854,12 +2927,242 @@ function draw(M, vic, colour, px) {
     }
     for (let o = 0; o < W * H; o++) {
       const n = sp[o];
-      if (n && !((vic[0x1B] >> (n - 1) & 1) && fg[o])) px[o] = spc[o];
+      if (n && !((vic[0x1B] >> (n - 1) & 1) && fg[o])) {
+        px[o] = spc[o];
+        if (backdrop) backdrop[o] = 0;
+        if (spritesVisible) spritesVisible[o] = 1;
+      }
     }
   }
   return px;
 }
 root.ChillerScreen = { draw, W, H };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/parallax.js */
+// An optional forest remix. Added artwork never enters the game's memory.
+// The renderer's backdrop mask preserves black artwork and every visible sprite pixel.
+(function (root) {
+'use strict';
+// The forest's initial ledge cells, read from a fresh game on its original code.
+// The same cells are retained in the stored forest on the way home, even once empty.
+const BRIDGE_CELLS = [250,251,252,253,254,255,256,268,269,270,271,272,273,274];
+function bridgeCell(cell, code) {
+  return BRIDGE_CELLS.includes(cell) || (Math.floor(cell / 40) === 5 && code >= 0x1C && code <= 0x1E);
+}
+const ICONS = {
+  0x54: ['..aaaa..','.aabbaaa','aabaaaab','aaaaaaaa','...cc...','...cc...','..cccc..','........'],
+  0x55: ['..aaaa..','.abaaaab','aaaabaaa','aaaaaaaa','...cc...','...cc...','..cccc..','........'],
+  0x56: ['...aa...','..abba..','.abbbba.','abbbbbba','.abbbba.','..abba..','...aa...','........'],
+  0x57: ['...aa...','...aa...','.aaaaaa.','.aaaaaa.','...aa...','...aa...','...aa...','........']
+};
+const INKS = {
+  0x54: {a:[255,194,67], b:[255,245,196], c:[255,239,184]},
+  0x55: {a:[255,65,99], b:[255,249,238], c:[255,249,238]},
+  0x56: {a:[255,204,50], b:[255,250,162]},
+  0x57: {a:[115,243,255]}
+};
+// Sixteen centred turn frames. The coin keeps the same height and centre as its
+// face narrows; a fixed light source shades the rim rather than flipping a stripe.
+const COIN_INKS = {a:[124,64,12],b:[203,123,18],c:[255,191,39],d:[255,228,112],e:[255,253,211]};
+const COINS = Array.from({length:16}, (_, phase) => {
+  const angle = phase * Math.PI * 2 / 16, width = 0.7 + 3.6 * Math.abs(Math.cos(angle));
+  return Array.from({length:10}, (_, y) => Array.from({length:10}, (_, x) => {
+    const nx = (x - 4.5) / width, ny = (y - 4.5) / 3.9, q = nx * nx + ny * ny;
+    const rowWidth = Math.max(0.55, width * Math.sqrt(Math.max(0, 1 - ny * ny)));
+    if (Math.abs(ny) > 1 || Math.abs(x - 4.5) > rowWidth) return '.';
+    if (q > 0.64) return ny < -0.25 && nx < 0.4 ? 'e' : nx > 0.2 || ny > 0.4 ? 'a' : 'b';
+    if (Math.abs(nx + 0.18 * Math.sin(angle)) < 0.2 && Math.abs(ny) < 0.55) return nx < 0 ? 'b' : 'e';
+    return nx + ny < -0.45 ? 'd' : 'c';
+  }).join(''));
+});
+const CROSS = Array.from({length:12}, (_, y) => Array.from({length:10}, (_, x) => {
+  if (!((x >= 3 && x <= 6) || (y >= 3 && y <= 6))) return '.';
+  if (((y === 0 || y === 11) && (x === 3 || x === 6)) || ((y === 3 || y === 6) && (x === 0 || x === 9))) return '.';
+  if (x === 3 || y === 3 || y === 0) return 'c';
+  if (x === 6 || y === 6 || y === 11) return 'a';
+  return x === 4 ? 'd' : 'b';
+}).join(''));
+const CROSS_INKS = {a:[24,95,169],b:[52,180,228],c:[136,240,255],d:[214,253,255]};
+// Give the deck a dark underside and a thicker lit edge, using each live glyph's
+// remaining pixels. Nothing is painted for an erased cell, including on the return trip.
+function paintBridge(ctx, M, v, colour) {
+  const scr = (v[0x18] >> 4) << 10, chars = ((v[0x18] >> 1) & 7) << 11;
+  for (const cell of BRIDGE_CELLS) {
+    const code = M[scr + cell]; if (code < 0x4D || code > 0x53) continue;
+    const x = 32 + (v[0x16] & 7) + cell % 40 * 8;
+    const y = 32 + (v[0x11] & 7) + Math.floor(cell / 40) * 8;
+    for (let dy = 0; dy < 8; dy++) for (let dx = 0; dx < 8; dx++) {
+      const bits = M[chars + code * 8 + dy];
+      const on = (v[0x16] & 0x10) && (colour[cell] & 8) ? (bits >> (6 - (dx & 6))) & 3 : (bits >> (7 - dx)) & 1;
+      if (!on) continue;
+      ctx.fillStyle = '#251126'; ctx.fillRect(x + dx, y + dy + 1, 1, Math.min(4, 8 - dy));
+      ctx.fillStyle = '#c78c43'; ctx.fillRect(x + dx, y + dy, 1, Math.min(3, 8 - dy));
+      ctx.fillStyle = '#fff4cc'; ctx.fillRect(x + dx, y + dy, 1, 1);
+    }
+  }
+}
+// Draw on the logical pixel grid, above the framing ferns. Sprite pixels are excluded
+// so the boy and enemies keep their priority when they overlap an item.
+function paintItems(ctx, M, v, spritesVisible, frameNumber = 0, animate = true, supports = false) {
+  const scr = (v[0x18] >> 4) << 10, frame = ctx.getImageData(0, 0, 384, 272), d = frame.data;
+  for (let cell = 80; cell < 1000; cell++) {
+    const code = M[scr + cell]; if (!ICONS[code]) continue;
+    const clock = animate ? frameNumber : 0;
+    const icon = code === 0x56 ? COINS[animate ? (Math.floor(clock / 5) + cell % 5 * 2) % 16 : 0] : code === 0x57 ? CROSS : ICONS[code];
+    const inks = code === 0x56 ? COIN_INKS : code === 0x57 ? CROSS_INKS : INKS[code];
+    const ox = code === 0x56 || code === 0x57 ? -1 : 0, oy = code === 0x57 ? -2 : code === 0x56 ? -1 : 0;
+    const x0 = 32 + (v[0x16] & 7) + cell % 40 * 8;
+    const y0 = 32 + (v[0x11] & 7) + Math.floor(cell / 40) * 8;
+    // Anchor food to a small bark ledge at the actual tile baseline. This corrects
+    // the painting's local support height without moving the collectible's hit position.
+    if (supports && (code === 0x54 || code === 0x55)) {
+      const below = M[scr + cell + 40];
+      if ((below >= 0x2A && below <= 0x53) || (below >= 0x58 && below <= 0x7F)) {
+        for (let dx = -2; dx <= 9; dx++) for (let dy = 0; dy < 3; dy++) {
+          const x = x0 + dx, y = y0 + 7 + dy;
+          if (x < 32 || x >= 352 || y >= 235 || spritesVisible[y * 384 + x]) continue;
+          const o = (y * 384 + x) * 4, rgb = dy === 0 ? [218,161,79] : dy === 1 ? [115,66,42] : [40,24,32];
+          d[o] = rgb[0]; d[o+1] = rgb[1]; d[o+2] = rgb[2]; d[o+3] = 255;
+        }
+      }
+    }
+    const sweep = animate ? ((clock + cell * 11) % 120) / 120 * 32 - 10 : -20;
+    const breathe = animate ? 0.85 + 0.15 * Math.sin((clock + cell * 7) * Math.PI / 60) : 0.85;
+    for (let dy = -7; dy <= 14; dy++) for (let dx = -7; dx <= 14; dx++) {
+      const x = x0 + dx, y = y0 + dy;
+      if (x < 32 || x >= 352 || y < 51 || y >= 235 || spritesVisible[y * 384 + x]) continue;
+      const tx = dx - ox, ty = dy - oy, key = icon[ty] && icon[ty][tx], ink = inks[key];
+      const o = (y * 384 + x) * 4;
+      // A coherent blue aura behind the cross, sampled on the same pixel grid.
+      if (code === 0x57) {
+        const r2 = (dx - 3.5) ** 2 + (dy - 3.5) ** 2;
+        const alpha = 0.28 * Math.exp(-r2 / 26) * breathe;
+        const blue = [38,170,255];
+        for (let channel = 0; channel < 3; channel++) d[o + channel] = Math.round(d[o + channel] * (1 - alpha) + blue[channel] * alpha);
+        d[o + 3] = 255;
+      }
+      let near = !!ink;
+      if (!near) for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) {
+        if (icon[ty + yy] && inks[icon[ty + yy][tx + xx]]) near = true;
+      }
+      if (!near) continue;
+      let rgb = ink || (code === 0x57 ? [8,37,68] : [12,8,28]);
+      if (ink && code === 0x57) {
+        const shine = Math.max(0, 1 - Math.abs(tx + ty * 0.7 - sweep) / 1.8) * 0.85;
+        rgb = rgb.map((v, i) => Math.round(v + ([245,255,255][i] - v) * shine));
+      }
+      d[o] = rgb[0]; d[o + 1] = rgb[1]; d[o + 2] = rgb[2]; d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(frame, 0, 0);
+}
+function create() {
+  const W = 384, H = 272;
+  const canvas = () => { const v = document.createElement('canvas'); v.width = W; v.height = H; return v; };
+  const scene = canvas(), s = scene.getContext('2d'), cut = canvas(), k = cut.getContext('2d');
+  const mask = new Uint8Array(W * H), px = new Uint8Array(W * H), spritesVisible = new Uint8Array(W * H);
+  const palette = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  const art = new Image();
+  // Keep the artwork at the game's logical pixel size. No C64 palette conversion or
+  // double-width multicolour pixels: each logical pixel can carry its own full RGB colour.
+  const woodland = canvas(), wood = woodland.getContext('2d');
+  const foreground = canvas(), front = foreground.getContext('2d');
+  let ready = false;
+  art.onload = () => {
+    wood.imageSmoothingEnabled = false;
+    wood.drawImage(art, 0, 0, art.naturalWidth, art.naturalHeight, 24, 47, 336, 192);
+    ready = true;
+  };
+  art.src = 'reference/parallax-forest-art.png';
+  const branches = new Image();
+  branches.onload = () => {
+    front.imageSmoothingEnabled = false;
+    // Overscan keeps the roots offscreen while the whole layer moves. Keep each
+    // silhouette intact instead of cutting a colour-keyed fragment into edge strips.
+    front.drawImage(branches, 20, 49, 344, 190);
+  };
+  branches.src = 'reference/parallax-foreground.png';
+  const terrain = canvas(), terrainContext = terrain.getContext('2d'), terrainArt = new Image();
+  let terrainReady = false, painted = false;
+  terrainArt.onload = () => {
+    terrainContext.imageSmoothingEnabled = false;
+    terrainContext.drawImage(terrainArt, 32, 51, 320, 184);
+    const plate = terrainContext.getImageData(0, 0, W, H);
+    // The supplied painting has a navy backing. Open that space to the moving woodland.
+    for (let i = 0; i < plate.data.length; i += 4) {
+      if (plate.data[i] < 18 && plate.data[i + 1] < 32 && plate.data[i + 2] < 65) plate.data[i + 3] = 0;
+    }
+    terrainContext.putImageData(plate, 0, 0);
+    // Remove the painted bridge and its railings. Their replacements below use live
+    // character pixels, so every erosion stage and every hole comes from the game.
+    terrainContext.clearRect(112, 69, 72, 22);
+    terrainContext.clearRect(240, 69, 80, 22);
+    terrainReady = true;
+  };
+  terrainArt.src = 'reference/parallax-terrain-clean.png';
+  let camera = 0, lastFrame = null, record = null;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function draw(c, rt, original) {
+    const M = rt.M, v = rt.chips.vic, rec = M[0x11] | M[0x12] << 8;
+    // These are the first and last records of the existing ten-screen table.
+    const forest = rec === 0x7000 || rec === 0x7500;
+    if (!ready || !forest || rt.busy || !(v[0x11] & 0x10) || (v[0x18] & 0x0E) !== 0x0C) {
+      c.drawImage(original, 0, 0, c.canvas.width, c.canvas.height);
+      record = null; return;
+    }
+    const x = v[0] | (v[0x10] & 1) << 8;
+    const target = reduced.matches ? 0 : Math.max(-1, Math.min(1, (x - 168) / 144));
+    if (record !== rec || lastFrame === null || rt.frame < lastFrame) camera = target;
+    else if (rt.frame !== lastFrame) camera += (target - camera) * 0.08;
+    record = rec; lastFrame = rt.frame;
+    const shift = amount => Math.round(camera * amount);
+    s.imageSmoothingEnabled = false;
+    s.fillStyle = '#0c1029'; s.fillRect(0, 0, W, H);
+    s.drawImage(woodland, -shift(5), 0);
+    // A separate, gently moving veil adds depth to the painted fog. It is rendered at
+    // 384 x 272, so even its soft colour transitions keep the same visible pixel grid.
+    const drift = reduced.matches ? 0 : Math.round(Math.sin(rt.frame / 170) * 7);
+    const fog = s.createLinearGradient(0, 190, 0, 230);
+    fog.addColorStop(0, 'rgba(132,147,226,0)');
+    fog.addColorStop(0.45, 'rgba(151,164,242,0.18)');
+    fog.addColorStop(1, 'rgba(91,113,204,0)');
+    s.fillStyle = fog; s.fillRect(24 + drift - shift(9), 190, 336, 40);
+    const reskin = painted && terrainReady && !(rt.over & 1);
+    if (reskin) { s.drawImage(terrain, 0, 0); paintBridge(s, M, v, rt.chips.colour); }
+    ChillerScreen.draw(M, v, rt.chips.colour, px, mask, spritesVisible);
+    const screenAddress = (v[0x18] >> 4) << 10;
+    // Start with the actual displayed frame so ghost and path overlays are preserved too.
+    k.clearRect(0, 0, W, H); k.drawImage(original, 0, 0);
+    const pixels = k.getImageData(0, 0, W, H);
+    for (let y = 51; y < 235; y++) for (let x = 32; x < 352; x++) {
+      const i = y * W + x;
+      const rgb = palette[px[i]], o = i * 4;
+      const same = pixels.data[o] === rgb[0] && pixels.data[o + 1] === rgb[1] && pixels.data[o + 2] === rgb[2];
+      if (!same) continue; // replay ghost and path overlays
+      if (!reskin) { if (mask[i]) pixels.data[o + 3] = 0; continue; }
+      if (spritesVisible[i]) continue;
+      const tx = x - 32 - (v[0x16] & 7), ly = y + 16 - 0x30 - (v[0x11] & 7);
+      const cell = (ly >> 3) * 40 + (tx >> 3), code = M[screenAddress + cell];
+      const pickup = code >= 0x54 && code <= 0x57;
+      if (bridgeCell(cell, code)) {
+        if (mask[i]) pixels.data[o + 3] = 0;
+        else { pixels.data[o] = 255; pixels.data[o + 1] = y % 2 ? 213 : 243; pixels.data[o + 2] = y % 2 ? 151 : 211; }
+      } else if (!pickup || mask[i]) pixels.data[o + 3] = 0;
+    }
+    k.putImageData(pixels, 0, 0); s.drawImage(cut, 0, 0);
+    // The complete foreground sits in front of the game, clipped only at the
+    // playfield boundary. The HUD and border remain clear.
+    s.save(); s.beginPath(); s.rect(32, 51, 320, 184); s.clip();
+    s.drawImage(foreground, -shift(12), 0); s.restore();
+    if (!(rt.over & 1)) paintItems(s, M, v, spritesVisible, rt.frame, !reduced.matches, reskin);
+    c.imageSmoothingEnabled = false;
+    c.drawImage(scene, 0, 0, c.canvas.width, c.canvas.height);
+  }
+  return { draw, setPainted(value) { painted = !!value; } };
+}
+root.ChillerParallax = { create, bridgeCell, paintBridge, paintItems, BRIDGE_CELLS, coinFrames: COINS };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
 <script>
@@ -3132,6 +3435,31 @@ window.CHILLER_COST = {
 (function () {
 'use strict';
 const $ = id => document.getElementById(id);
+// A shared tab bar keeps visual and gameplay controls in the same place.
+(function () {
+  const tabs = Array.from($('pl-tweak-tabs').querySelectorAll('[role="tab"]'));
+  function select(tab) {
+    for (const t of tabs) {
+      const active = t === tab;
+      t.setAttribute('aria-selected', String(active));
+      t.tabIndex = active ? 0 : -1;
+      $(t.getAttribute('aria-controls')).hidden = !active;
+    }
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', e => {
+      let n;
+      if (e.key === 'ArrowRight') n = (i + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') n = (i + tabs.length - 1) % tabs.length;
+      else if (e.key === 'Home') n = 0;
+      else if (e.key === 'End') n = tabs.length - 1;
+      else return;
+      e.preventDefault(); select(tabs[n]); tabs[n].focus();
+    });
+  });
+})();
+
 const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
 const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272), px = new Uint8Array(384 * 272);
 const crt = CRT.attach(cv, { button: document.querySelector('[data-crt]') });   // the CRT screen switch (site/lib/crt.js)
@@ -3203,7 +3531,14 @@ const fx = (function () {
     g.addColorStop(0, 'rgba(255,255,255,' + a + ')'); g.addColorStop(0.25, rgba(n, a * 0.9)); g.addColorStop(1, rgba(n, 0));
     c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
   };
+  const parallax = ChillerParallax.create();
+  $('pl-painted').addEventListener('change', () => {
+    parallax.setPainted($('pl-painted').checked);
+    if (rt) draw();
+    screen.focus();
+  });
   const MODES = {
+    parallax() { parallax.draw(c, rt, cv); },
     // Torchlight: the whole screen dark but for a pool of light round the boy that flickers like a
     // flame; enemies outside it show only as two faint eyes
     torch() {
@@ -3313,6 +3648,7 @@ const fx = (function () {
   }
   function set(m) {
     mode = m === 'flat' ? null : m;
+    $('pl-art-options').hidden = mode !== 'parallax';
     cvx.hidden = !mode || mode === 'layers'; lay.hidden = mode !== 'layers';
     if (rt) frame();
   }
@@ -3566,7 +3902,7 @@ $('pl-tune').addEventListener('click', e => {
   const b = e.target.closest('button[data-tune]'); if (!b) return;
   if (!V2) { say('The re-release\'s tune has not loaded.'); return; }
   const v = +b.dataset.tune;
-  if (rt && !rt.busy && played < maxPlayed) { say('Press Play from here first: a change made in the past would drop what came after it.'); return; }
+  if (rt && !rt.busy && played < maxPlayed) { say('Press Play first: a change made in the past would drop what came after it.'); return; }
   tune = v;
   document.querySelectorAll('#pl-tune button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.tune === v)));
   if (rt && !rt.busy) { setTune(rt, v); rec({ t: 'tune', v }); }
@@ -3728,7 +4064,7 @@ function start(n) {
   over.hidden = true;
   boot(n);
   running = true; paused = false; last = 0; acc = 0;
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  lab();
   screen.focus();
 }
 const levels = $('pl-levels');
@@ -3755,8 +4091,7 @@ $('pl-cheats').addEventListener('click', e => {
 $('pl-bar').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const act = b.dataset.act;
-  if (act === 'pause' && running) { if (paused) unpause(); else { paused = true; b.setAttribute('aria-pressed', 'true'); } lab(); }
-  else if (act === 'restart' && image) start(level || 0);
+  if (act === 'restart' && image) start(level || 0);
   screen.focus();
 });
 screen.addEventListener('click', () => { if (!running && image) start(0); });
@@ -3767,9 +4102,23 @@ function showStart(t) {
   over.appendChild(bt);
 }
 // --- the lab: rewind by replaying the log, the routines of the last frame, byte edits ----------------
-const scrub = $('pl-scrub'), scrubT = $('pl-scrub-t'), resume = $('pl-resume'), calls = $('pl-calls'), editsEl = $('pl-edits'), now = $('pl-now');
+const transport = $('pl-transport'), scrubT = $('pl-scrub-t'), calls = $('pl-calls'), editsEl = $('pl-edits'), now = $('pl-now');
 const hex = (v, n) => v.toString(16).toUpperCase().padStart(n, '0');
 const secs = f => (f * FRAME / 985248).toFixed(1) + ' s';
+const jumpSlider = $('pl-jump-duration'), jumpOutput = $('pl-jump-duration-value');
+const JUMP_PRESETS = { original:100, snappy:50, floaty:200 };
+function jumpValue(value, percent) { return Math.max(1, Math.min(255, Math.floor(value * percent / 100))); }
+function jumpMatches(percent) {
+  return image && Array.from({length:24}, (_, i) => i).every(i =>
+    (rt ? rt.M[0x544A + i] : image[0x544A + i]) === jumpValue(image[0x544A + i], percent));
+}
+function setJump(percent, label) {
+  if (!running || !rt || rt.busy) { say('Start the game first.'); return; }
+  if (played < maxPlayed) { say('Press Play first: an edit made in the past would drop what came after it.'); return; }
+  for (let i = 0; i < 24; i++) poke(0x544A + i, jumpValue(image[0x544A + i], percent));
+  edits.push(label + ': jump_speeds $544A-$5461 at ' + secs(played)); lab();
+}
+
 function applyEv(r, e) {
   if (e.t === 'in') { r.chips.joy = e.joy; r.chips.keys = new Set(e.keys); }
   else if (e.t === 'cheat') r.cheats[e.c] = e.v;
@@ -3810,9 +4159,9 @@ function seek(T) {
   replaying = true;
   try { rt = replayTo(T); } finally { replaying = false; }
   played = T; paused = true; ghost.trim(T); memory.reset();
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'true');
+
   sound.attach(); draw(); lab();
-  say('Rewound to ' + secs(T) + ' (' + Math.round(performance.now() - t0) + ' ms to replay)');
+  say('Moved to ' + secs(T) + ' (' + Math.round(performance.now() - t0) + ' ms to replay)');
 }
 function unpause() {
   if (!paused) return;
@@ -3820,12 +4169,19 @@ function unpause() {
     log.ev = log.ev.filter(e => e.f <= played); keys = keys.filter(k => k.f < played); maxPlayed = played;
   }
   paused = false; last = 0; acc = 0;
-  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+
   input(); lab();
 }
 function lab() {
-  scrub.max = maxPlayed; scrub.value = played; scrubT.textContent = secs(played) + ' of ' + secs(maxPlayed);
-  resume.disabled = !(paused && played < maxPlayed);
+  scrubT.textContent = secs(played) + ' of ' + secs(maxPlayed);
+  const available = running && rt && !rt.busy;
+  transport.querySelector('[data-transport="rewind"]').disabled = !available || played <= 0;
+  transport.querySelector('[data-transport="forward"]').disabled = !available || played >= maxPlayed;
+  const pauseButton = transport.querySelector('[data-transport="pause"]'), playButton = transport.querySelector('[data-transport="play"]');
+  pauseButton.disabled = !available || paused;
+  pauseButton.setAttribute('aria-pressed', String(!!available && paused));
+  playButton.disabled = !image || !!(rt && rt.busy) || (!!available && !paused);
+  playButton.setAttribute('aria-pressed', String(!!available && !paused));
   calls.innerHTML = '';
   if (paused && rt) for (const n of rt.seen) {
     const li = document.createElement('li'), a = names.get(n);
@@ -3835,35 +4191,56 @@ function lab() {
   }
   const a = parseInt($('pl-addr').value, 16);
   now.textContent = rt && a >= 0 && a < 0x10000 ? '$' + hex(a, 4) + ' holds $' + hex(rt.M[a], 2) + ' now' : '';
+  document.querySelectorAll('#pl-jump [data-preset]').forEach(b => {
+    b.setAttribute('aria-pressed', String(!!jumpMatches(JUMP_PRESETS[b.dataset.preset])));
+  });
+  jumpSlider.disabled = !available || played < maxPlayed;
+  let percent = null;
+  for (let p = 50; p <= 200; p += 5) if (jumpMatches(p)) { percent = p; break; }
+  if (percent !== null) {
+    jumpSlider.value = percent;
+    const name = percent === 100 ? 'Original' : percent === 50 ? 'Snappy' : percent === 200 ? 'Floaty' : 'Custom';
+    jumpOutput.textContent = percent + '% · ' + name;
+    jumpSlider.setAttribute('aria-valuetext', percent + ' percent, ' + name.toLowerCase() + ' timing');
+  } else {
+    jumpOutput.textContent = 'Custom memory edit';
+    jumpSlider.setAttribute('aria-valuetext', 'Custom memory edit; adjust to set jump duration');
+  }
   editsEl.innerHTML = '';
   for (const t of edits) { const li = document.createElement('li'); li.textContent = t; editsEl.appendChild(li); }
 }
-let seekTimer = 0;
-scrub.addEventListener('input', () => {
-  if (!running || rt.busy) return;
-  scrubT.textContent = secs(+scrub.value) + ' of ' + secs(maxPlayed);
-  clearTimeout(seekTimer); seekTimer = setTimeout(() => seek(+scrub.value), 120);
+transport.addEventListener('click', e => {
+  const button = e.target.closest('button[data-transport]'); if (!button) return;
+  const action = button.dataset.transport;
+  if (action === 'play') {
+    if (!running && image) start(0); else unpause();
+    screen.focus(); return;
+  }
+  if (!running || !rt || rt.busy) return;
+  if (action === 'pause') {
+    paused = true;
+
+    lab(); return;
+  }
+  const step = Math.round(5000 / FRAME_MS);
+  seek(played + (action === 'rewind' ? -step : step));
 });
-resume.addEventListener('click', () => { unpause(); screen.focus(); });
 function poke(a, v) { if (!rt) return; rt.M[a] = v; rec({ t: 'poke', a, v }); }
 function setByte() {
   const a = parseInt($('pl-addr').value, 16), v = parseInt($('pl-val').value, 16);
   if (!running || !rt || rt.busy) { say('Start the game first.'); return; }
   if (!(a >= 0 && a < 0xD000) && !(a >= 0xE000 && a < 0x10000) || !(v >= 0 && v < 256)) { say('Give an address in RAM ($0000-$CFFF, $E000-$FFFF) and a value $00-$FF.'); return; }
-  if (played < maxPlayed) { say('Press Play from here first: an edit made in the past would drop what came after it.'); return; }
+  if (played < maxPlayed) { say('Press Play first: an edit made in the past would drop what came after it.'); return; }
   poke(a, v); edits.push('$' + hex(a, 4) + ' = $' + hex(v, 2) + ' at ' + secs(played)); lab();
 }
 $('pl-set').addEventListener('click', () => { setByte(); });
 $('pl-addr').addEventListener('input', lab);
 document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
-  if (!running || !rt || rt.busy) { say('Start the game first.'); return; }
-  if (played < maxPlayed) { say('Press Play from here first: an edit made in the past would drop what came after it.'); return; }
-  const f = b.dataset.preset === 'floaty' ? v => Math.min(255, v * 2) : v => Math.max(1, v >> 1);
-  for (let i = 0; i < 24; i++) poke(0x544A + i, f(image[0x544A + i]));
-  edits.push(b.textContent + ': jump_speeds $544A-$5461 at ' + secs(played)); lab();
+  setJump(JUMP_PRESETS[b.dataset.preset], b.textContent);
 }));
+jumpSlider.addEventListener('input', () => setJump(+jumpSlider.value, 'Jump duration ' + jumpSlider.value + '%'));
 $('pl-undo').addEventListener('click', () => {
-  if (!rt || rt.busy || played < maxPlayed) { say('Press Play from here first.'); return; }
+  if (!rt || rt.busy || played < maxPlayed) { say('Press Play first.'); return; }
   const done = new Set();
   for (const e of log.ev) if (e.t === 'poke' && !done.has(e.a)) { done.add(e.a); }
   for (const a of done) poke(a, image[a]);

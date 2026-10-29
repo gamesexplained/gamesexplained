@@ -193,9 +193,14 @@ inside its batch and apply the rest.
   documented instruction set: `LAX`, `DCP`, `LXA` and the multi-byte `NOP`s
   show as `.byte` lines inside a code block, the bytes after them are
   sometimes decoded as instructions they are not (`STX $DF` inside
-  `DCP $FF86,X`), and the cross-references miss what they touch. Type such
-  a spot `byte` and write the real instructions in its comment
-  (`c64-reference`, Undocumented opcodes). A search of the decoded code for
+  `DCP $FF86,X`), and the cross-references miss what they touch. When
+  `kit/cpu/m6502.py` lists the opcode in `UNDOCUMENTED`, keep the spot
+  typed code, and the listing decodes it. Otherwise type it `byte` and
+  write the real instructions in its comment (`c64-reference`,
+  Undocumented opcodes); but where `codemap.json` records it running,
+  `check_listing.py` fails a `byte` there, so add the opcode to
+  `UNDOCUMENTED` with a case in `kit/scripts/test_listing_undocumented.py`
+  instead. A search of the decoded code for
   readers of an address is incomplete until these gaps have been read.
   `python3 kit/cpu/opcodes.py games/c64/<slug> [<snapshot.vsf>] [--live]`
   lists every undocumented opcode inside a code block, with what the

@@ -198,8 +198,14 @@ def inline(s, addr=True, parts=None, urls=False):
     return re.sub(r"\x00(\d+)\x00", lambda m: spans[int(m.group(1))], s)
 
 
+# The Source pages whose addresses run past four hex digits: a virtual address space's, a story's
+# (part_pages fills it). An address written for one of them may have five.
+WIDE = set()
+
+
 def addr_link(s, page="source.html"):
-    return re.sub(r"\$([0-9A-Fa-f]{4})\b", lambda m: f'<a href="{page}#{m.group(1).upper()}">${m.group(1).upper()}</a>', s)
+    digits = r"[0-9A-Fa-f]{4,5}" if page in WIDE else r"[0-9A-Fa-f]{4}"
+    return re.sub(rf"\$({digits})\b", lambda m: f'<a href="{page}#{m.group(1).upper()}">${m.group(1).upper()}</a>', s)
 
 
 def markdown(text, drop_h1=True, addr=True, shift=0, parts=None, urls=False):
@@ -279,8 +285,9 @@ def footprint(gdir, game):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS, platform_of
     L = json.load(open(os.path.join(gdir, "listing.json")))   # build_game says what to do when there is none
-    cat = ["unused"] * 0x10000
-    why = [""] * 0x10000
+    size = L.get("size", 0x10000)      # a story's own, past 64 KB
+    cat = ["unused"] * size
+    why = [""] * size
     # listing records: what the bytes are
     for r in L["records"]:
         if not r.get("b"):
@@ -299,7 +306,7 @@ def footprint(gdir, game):
                 hint = kk
         k = hint or k
         if k:
-            for a in range(e["a"], min(e["a"] + e["len"], 0x10000)):
+            for a in range(e["a"], min(e["a"] + e["len"], size)):
                 if cat[a] not in ("unused", "code"):
                     cat[a] = k; why[a] = e["n"]
     # coverage regions from game.json: runtime and ROM
@@ -325,7 +332,7 @@ def footprint(gdir, game):
     for lo, hi, name in cov_regions(game).get("elsewhere", []):
         for a in range(lo, hi + 1):
             cat[a] = "other"; why[a] = name
-    lo, hi = PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000))
+    lo, hi = PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000)) if size == 0x10000 else (0, size)
     if lo:   # the ROM is off this map, so RAM that a game.json names after the ROM is working memory
         cat[lo:hi] = ["runtime" if k == "rom" else k for k in cat[lo:hi]]
     runs, totals = [], {k: 0 for k in CATS}
@@ -370,8 +377,13 @@ def tab_place(f, n):
 
 
 def tab_order(game, present):
-    """The game's tabs as the bar shows them, in order: (file, label) for each one it has."""
-    return sorted(((f, n) for f, n in game.get("tabs", TABS) if f in present), key=lambda t: tab_place(*t))
+    """The game's tabs as the bar shows them, in order: (file, label) for each one it has. The bar
+    closes with Source code and About whatever a game's own list says, so a list that leaves either
+    out cannot hide the listing or the record of how it was checked."""
+    tabs = list(game.get("tabs", TABS))
+    named = {f for f, _ in tabs}
+    tabs += [(f, n) for f, n in TABS if f in ASSEMBLED and f not in named]
+    return sorted(((f, n) for f, n in tabs if f in present), key=lambda t: tab_place(*t))
 
 
 def tab_href(f):
@@ -1148,6 +1160,7 @@ def part_page(p):
 def part_pages(P):
     """{part id: its Source page} for the parts that have one, the names the facts of a game of
     several parts write before an address. {} for a game of one."""
+    WIDE.update(part_page(p) for p in (P or []) if p.get("machine") and listed(p))
     return {p["id"]: part_page(p) for p in (P or []) if listed(p)}
 
 
@@ -1162,8 +1175,16 @@ def bank_parts(P):
 
 def made_of(P):
     """How a game of several parts opens its account of itself: a cartridge's banks are
-    counted apart from the parts the machine runs in RAM."""
+    counted apart from the parts the machine runs in RAM, and a story apart from the program
+    that reads it."""
     b = bank_parts(P)
+    v = [p for p in P if p.get("machine")]
+    if v and not b:
+        n = len(P) - len(v)
+        return (f"This game is {'a program' if n == 1 else f'{n} parts'} in memory and "
+                + " and ".join(html.escape(p["title"]) for p in v)
+                + f", which {'it reads' if n == 1 else 'they read'} from the disk a page at a time as "
+                "it is needed, at addresses of its own")
     if not b:
         return f"This game is in {len(P)} parts"
     n = len(P) - len(b)
@@ -1247,8 +1268,9 @@ def part_sources(gdir, game, P, out, nav, ban, common, present):
         else:       # say how many, where the row of parts is too long to show which
             each = (f"{len(shown)} of them {'has' if len(shown) == 1 else 'have'} a listing"
                     + ("." if pills or len(shown) < 2 else ", chosen from the list beside it."))
-        lead = (f'<p class="mute">{made_of(P)}, and the same addresses hold something else in each. '
-                + each + "</p>")
+        lead = (f'<p class="mute">{made_of(P)}'
+                + (", and the same addresses hold something else in each. " if not any(q.get("machine") for q in P)
+                   else ". ") + each + "</p>")
         # pages: where an operand that reads a bank, or the RAM beneath one, links to (source.html)
         info = dict(part_card(p), under=[part_card(q) for q in beneath], pages=pages)
         src = tpl.replace("<!-- parts -->", lead + pills + note + uncounted_note(os.path.join(p["dir"], "listing.json")))
@@ -1503,7 +1525,24 @@ def lib_versions(out_root):
 
 def version_lib(out_root):
     """Append ?v=<content hash> to every reference to a lib file, so a redeploy is never
-    paired with a stylesheet or script the browser cached from the previous one."""
+    paired with a stylesheet or script the browser cached from the previous one. A lib script
+    that loads another from beside itself (new URL('bounce.js', its own address)) names it with
+    its hash too, the one it loads first, so that a change to bounce.js changes sid.js's hash."""
+    lib = os.path.join(out_root, "lib")
+    for _ in range(8):                          # a chain of such loads is a file or two deep
+        ver = lib_versions(out_root)
+        if not ver:
+            break
+        url = re.compile(r"""(new URL\(\s*['"])(""" + "|".join(re.escape(f) for f in ver) + r""")(?:\?v=[0-9a-f]+)?(['"])""")
+        changed = False
+        for f in ver:
+            if f.endswith(".js"):
+                p = os.path.join(lib, f); src = open(p, encoding="utf-8").read()
+                new = url.sub(lambda m: f"{m.group(1)}{m.group(2)}?v={ver[m.group(2)]}{m.group(3)}", src)
+                if new != src:
+                    open(p, "w", encoding="utf-8").write(new); changed = True
+        if not changed:
+            break
     ver = lib_versions(out_root)
     pat = re.compile(r'(lib/(' + "|".join(re.escape(f) for f in ver) + r'))(["\'])')
     n = 0
@@ -2041,6 +2080,14 @@ def tier_stamps(gs):
                     for t in TIER_ORDER if counts.get(t))
 
 
+def a_or_an(name):
+    """'a' or 'an' before a system's name, by its sound: an Apple II, an NES, an MSX, a BBC Micro.
+    A name that opens on capitals is read letter by letter, and F, H, L, M, N, R, S and X open on a vowel."""
+    w = name.split()[0] if name.split() else ""
+    initials = len(w) > 1 and w.isupper() and w.isalpha()
+    return "an" if w[:1].lower() in "aeiou" or (initials and w[0] in "FHLMNRSX") else "a"
+
+
 def rough(n):
     """A library size to two significant figures, since that is all the sources support: 23,000, 1,400, 460."""
     step = 10 ** max(len(str(int(n))) - 2, 0)
@@ -2094,12 +2141,12 @@ def status_page(games):
                     f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in gs) + '</p>') if gs else ""
                 works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), runs_on(cs, k) + made, [], False,
                                   c.get("prompt") or f'Clone {raw_repo} and follow kit/START.md. I am on {h["name"]}, {h["arch"]}, '
-                                  f'and I want to explain a {name(k)} game.'))
+                                  f'and I want to explain {a_or_an(name(k))} {name(k)} game.'))
             else:
                 start = [blob(f"kit/{k}/INSTALL.md", f"kit/{k}/INSTALL.md"),
                          blob("kit/INSTALL.md#the-footprint-principle", "the footprint principle")]
                 prompt = c.get("prompt") or (
-                    f'Clone {raw_repo} and follow kit/START.md to explain a {name(k)} game on {h["name"]}, {h["arch"]}. '
+                    f'Clone {raw_repo} and follow kit/START.md to explain {a_or_an(name(k))} {name(k)} game on {h["name"]}, {h["arch"]}. '
                     'Nobody has run the kit here: follow "If you are the first on an operating system" in kit/INSTALL.md, '
                     f'run check-emulator, and record what works in kit/{k}/INSTALL.md and site/status.json.')
                 research.append((not c.get("wanted"), card(title, stamp(c["state"], HOST_STATES[c["state"]]), c.get("note", ""),
@@ -2205,7 +2252,7 @@ class AddressLinks(html.parser.HTMLParser):
             self.nolink = self.nolink or "data-nolink" in a   # the tab bar of a game with no listing
         if self.code:
             self.code["bare"] = False   # site.js leaves a <code> with an element inside it
-        m = tag == "a" and re.fullmatch(r"(source(?:-[\w.-]+)?\.html)#([0-9A-Fa-f]{4})", a.get("href") or "")
+        m = tag == "a" and re.fullmatch(r"(source(?:-[\w.-]+)?\.html)#([0-9A-Fa-f]{4,5})", a.get("href") or "")
         if m and not hidden:
             self.links.append((m.group(1), int(m.group(2), 16)))
         if tag in VOID_TAGS:
@@ -2225,8 +2272,8 @@ class AddressLinks(html.parser.HTMLParser):
         while self.open:   # an element left open (a <p>, an <li>) closes with the one around it
             if self.code and len(self.open) == self.code["depth"]:
                 c, self.code = self.code, None
-                m = re.fullmatch(r"\s*\$([0-9A-Fa-f]{4})\s*", c["text"])
                 part = next((p for _, p, _ in reversed(self.open) if p is not None), None)
+                m = re.fullmatch(r"\s*\$([0-9A-Fa-f]{4,5})\s*" if part else r"\s*\$([0-9A-Fa-f]{4})\s*", c["text"])
                 if m and c["bare"] and not self.nolink and part != "":
                     self.links.append((f"source-{part}.html" if part else "source.html", int(m.group(1), 16)))
             if self.open.pop()[0] == tag:
@@ -2245,10 +2292,12 @@ def recorded(listings):
     bits = inside = 0
     for f in listings:
         if f not in _recorded:
-            got, mid = bytearray(0x10000), bytearray(0x10000)
-            for r in json.load(open(f))["records"]:
+            L = json.load(open(f))
+            size = L.get("size", 0x10000)     # a story's listing is its own size
+            got, mid = bytearray(size), bytearray(size)
+            for r in L["records"]:
                 if r["t"] != "gap":
-                    end = min(0x10000, r["a"] + max(1, len(r.get("b") or [])))
+                    end = min(size, r["a"] + max(1, len(r.get("b") or [])))
                     got[r["a"]:end] = b"\1" * (end - r["a"])
                     if r.get("enc") in ITEMS and end - r["a"] > 2:   # its last byte ends a range
                         mid[r["a"] + 1:end - 1] = b"\1" * (end - r["a"] - 2)

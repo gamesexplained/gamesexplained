@@ -97,12 +97,10 @@ function player(m) {
   // run until the processor is at a outside an interrupt, and stop there
   S.stopAt = (a, maxFrames = 3000) => {
     const prev = m.hooks[a];
-    let hit = false, depth = 0;
-    const irq = m.cpu.irq;
-    m.cpu.irq = function (h, o) { depth++; try { return irq.call(this, h, o); } finally { depth--; } };
-    m.hooks[a] = c => { if (depth) return prev ? prev(c) : false; hit = true; m.stopFlag = true; return true; };
+    let hit = false;
+    m.hooks[a] = c => { if (m.depth) return prev ? prev(c) : false; hit = true; m.stopFlag = true; return true; };
     try { for (let f = 0; f < maxFrames && !hit; f++) m.runCycles(FRAME); }
-    finally { if (prev) m.hooks[a] = prev; else delete m.hooks[a]; delete m.cpu.irq; }
+    finally { if (prev) m.hooks[a] = prev; else delete m.hooks[a]; }
     if (!hit) throw new Error('stopAt: $' + a.toString(16) + ' not reached in ' + maxFrames + ' frames');
   };
   // a routine of the game's run where the processor stands (a pass's start), on the stack below

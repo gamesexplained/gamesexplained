@@ -20,6 +20,7 @@ def compute(blocks, syms, comments, regions):
     fixed "edge" of the memory map)."""
     exclude = regions.get("exclude", [])
     extra = regions.get("extra", [])
+    size = regions.get("size", 0x10000)     # 64 KB, or a virtual address space's own (a story's)
 
     def excluded(a):
         return any(lo <= a <= hi for lo, hi, _ in exclude)
@@ -36,7 +37,7 @@ def compute(blocks, syms, comments, regions):
             commented.add(c["address"])
 
     # typed: data blocks given a shape (bytes, words, text, pointers), not left undefined
-    code, typed, program = bytearray(0x10000), bytearray(0x10000), bytearray(0x10000)
+    code, typed, program = bytearray(size), bytearray(size), bytearray(size)
     for b in blocks:
         if b["type"] == "Undefined":
             continue
@@ -59,18 +60,18 @@ def compute(blocks, syms, comments, regions):
     def wall_after(a):
         edges = walls[bool(code[a] or program[a])]
         i = bisect.bisect_right(edges, a)
-        return edges[i] if i < len(edges) else 0x10000
+        return edges[i] if i < len(edges) else size
 
     syms = sorted(syms, key=lambda s: s["address"])
     bounds = [s for s in syms if s["type"] in BOUNDARY_TYPES or s["address"] in commented]
     baddrs = [s["address"] for s in bounds]
-    state = bytearray(0x10000)
+    state = bytearray(size)
     owner, stops = {}, {}
     for i, s in enumerate(bounds):
         a = s["address"]
-        if excluded(a) or a >= 0x10000:
+        if excluded(a) or a >= size:
             continue
-        nxt = baddrs[i + 1] if i + 1 < len(bounds) else 0x10000   # the last symbol spans to its cap, not one byte
+        nxt = baddrs[i + 1] if i + 1 < len(bounds) else size   # the last symbol spans to its cap, not one byte
         # the long reach: code, a label made afresh, or a symbol the tracer minted that the
         # agent has renamed inside a typed data block. Renaming keeps the tracer's type, and a
         # renamed variable in undefined memory would otherwise take in the bytes after it.
@@ -90,12 +91,12 @@ def compute(blocks, syms, comments, regions):
     # up to the next boundary, with a label's reach. Without this, a run's comment on a stray
     # instruction or a table's tail is shown with none of the bytes it explains (#442).
     labelled = {s["address"] for s in syms}
-    loose = sorted(a for a in commented if a < 0x10000 and a not in labelled and a not in owner
+    loose = sorted(a for a in commented if a < size and a not in labelled and a not in owner
                    and not excluded(a))
     starts = sorted(set(baddrs) | set(loose))
     for a in loose:
         i = bisect.bisect_right(starts, a)
-        nxt = starts[i] if i < len(starts) else 0x10000
+        nxt = starts[i] if i < len(starts) else size
         reach = 0x400 if code[a] or typed[a] else MAX_SPAN
         wall = wall_after(a)
         end = min(nxt, a + reach, wall)
@@ -109,7 +110,7 @@ def compute(blocks, syms, comments, regions):
     # Code, a program, typed data and declared extras are the game's whether or not a span
     # reaches them: typed data no label reaches is bare, so coverage asks for its description
     # and the listing holds its bytes (#442).
-    for a in range(0x10000):
+    for a in range(size):
         if excluded(a):
             state[a] = 0
         elif state[a] == 0 and (code[a] or typed[a] or any(lo <= a <= hi for lo, hi, _ in extra)):

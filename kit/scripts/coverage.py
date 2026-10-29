@@ -89,7 +89,7 @@ def reasons(L, syms):
         return f"{name}'s comment repeats ${repeats[a]:04X}'s" if a in repeats else f"no comment on {name}"
 
     out, lead = {}, None
-    for a in range(0x10000):
+    for a in range(len(state)):
         if state[a] != 1:
             lead = None
         elif a in owner:
@@ -132,8 +132,8 @@ def tracked_count(gdir):
     blocks, syms, comments, reg = load(gdir, False)
     from ledger import compute
     state = compute(blocks, syms, comments, reg)["state"]
-    tracked = sum(1 for a in range(0x10000) if state[a])
-    return tracked, sum(1 for a in range(0x10000) if state[a] == 2)
+    tracked = sum(1 for a in range(len(state)) if state[a])
+    return tracked, sum(1 for a in range(len(state)) if state[a] == 2)
 
 
 def main():
@@ -165,7 +165,7 @@ def main():
     from ledger import compute
     L = compute(blocks, syms, comments, reg)
     state, code, dups = L["state"], L["code"], L["dups"]
-    lo, hi = 0, 0xFFFF
+    lo, hi = 0, len(state) - 1
     if "--range" in argv:
         i = argv.index("--range")
         lo, hi = (int(x.lstrip("$"), 16) for x in argv[i + 1:i + 3])

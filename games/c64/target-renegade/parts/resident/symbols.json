@@ -12443,7 +12443,7 @@
   {
    "address": 2067,
    "type": "line",
-   "text": "Advance voice 1, stream pointer $84/$85. A duration countdown delays fetching the next item. Values below $80 select pitch indices, with $5E skipping the new pitch; values $80\u2013$97 dispatch through the split command table. Fixed duration consumes one note byte; explicit duration consumes note and duration. Note flags reset vibrato, pulse or filter phase and control the gate. Common frequency output follows through $0947; voice 3 also rewrites its saved release value at note fetch."
+   "text": "Advance voice 1, stream pointer $84/$85. A duration countdown delays fetching the next item; when a second countdown $2046 expires it can write $2073 to $D404 (flag bit 0). Values below $80 select pitch indices, with $5E skipping the new pitch; values $80\u2013$97 dispatch through the split command table. Fixed duration consumes one note byte; explicit duration consumes note and duration. Note flags in $20B2 gate the pulse (bit 1) and filter (bit 2) resets and the gate write (bit 0); vibrato is reset whenever vibrato is enabled. Common frequency output follows through $0947; voice 3 also writes its saved sustain/release bytes to $D414 at each fetch."
   },
   {
    "address": 2373,
@@ -12543,7 +12543,7 @@
   {
    "address": 2913,
    "type": "line",
-   "text": "Advance voice 2, stream pointer $86/$87. A duration countdown delays fetching the next item. Values below $80 select pitch indices, with $5E skipping the new pitch; values $80\u2013$97 dispatch through the split command table. Fixed duration consumes one note byte; explicit duration consumes note and duration. Note flags reset vibrato, pulse or filter phase and control the gate. Common frequency output follows through $0947; voice 3 also rewrites its saved release value at note fetch."
+   "text": "Advance voice 2, stream pointer $86/$87. A duration countdown delays fetching the next item; when a second countdown $2047 expires it can write $2074 to $D40B (flag bit 0). Values below $80 select pitch indices, with $5E skipping the new pitch; values $80\u2013$97 dispatch through the split command table. Fixed duration consumes one note byte; explicit duration consumes note and duration. Note flags in $20B3 gate the pulse (bit 1) and filter (bit 2) resets; vibrato is reset whenever vibrato is enabled. With flag bit 0 set a note writes $2029 to $D40B; with it clear, and on a $5E item, voice 2 writes $2074 there instead. Common frequency output follows through $0947."
   },
   {
    "address": 3225,
@@ -12578,7 +12578,7 @@
   {
    "address": 3327,
    "type": "line",
-   "text": "Advance voice 3, stream pointer $88/$89. A duration countdown delays fetching the next item. Values below $80 select pitch indices, with $5E skipping the new pitch; values $80\u2013$97 dispatch through the split command table. Fixed duration consumes one note byte; explicit duration consumes note and duration. Note flags reset vibrato, pulse or filter phase and control the gate. Common frequency output follows through $0947; voice 3 also rewrites its saved release value at note fetch."
+   "text": "Advance voice 3, stream pointer $88/$89. A duration countdown delays fetching the next item; when a second countdown $2048 expires it can write $2075 to $D412 (flag bit 0). Each fetch pass first writes the saved bytes $20B7 then $20B6 to SID $D414. Values below $80 select pitch indices, with $5E skipping the new pitch; values $80\u2013$97 dispatch through the split command table. Fixed duration consumes one note byte; explicit duration consumes note and duration. Note flags in $20B4 gate the pulse (bit 1) and filter (bit 2) resets and the gate write (bit 0); vibrato is reset whenever vibrato is enabled. Common frequency output follows through $0947."
   },
   {
    "address": 3645,
@@ -12903,7 +12903,7 @@
   {
    "address": 5321,
    "type": "line",
-   "text": "Three ten-level software stacks: return-address low bytes at $14C9/$14D3/$14DD, high bytes at $14E7/$14F1/$14FB and repeat counts at $1505/$150F/$1519. Commands $81\u2013$84 overwrite these runtime cells; the cold values are retained working state."
+   "text": "Three ten-level software stacks: return-address low bytes at $14C9/$14D3/$14DD, high bytes at $14E7/$14F1/$14FB and repeat counts at $1505/$150F/$1519. Commands $81 (call, also entered by $91 transpose-call), $83 (repeat begin) and $84 (repeat end, which decrements the count) write these runtime cells; $82 (return) reads them. The cold values lie outside the tracked image."
   },
   {
    "address": 5411,
@@ -13923,67 +13923,67 @@
   {
    "address": 9326,
    "type": "line",
-   "text": "Effect 0 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 0 pitch record, which $215D does not read: $2207 starts a voice through $215D only when the request number in $23BA,X is nonzero, so request 0 ($9068) starts no pitch record. Layout as for the other records, eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9334,
    "type": "line",
-   "text": "Effect 1 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 1 pitch record read by $215D when request 1 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9342,
    "type": "line",
-   "text": "Effect 2 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 2 pitch record, indexed by $215D at $246E + 8*2. Request 2 has sequence selector 1 at $2524, so $20C2 starts sequence descriptor 1 instead and $215D reads this record only if $2351 or $2330 clears the sequence flag $2416 while $23BA still holds 2. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9350,
    "type": "line",
-   "text": "Effect 3 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 3 pitch record, indexed by $215D at $246E + 8*3. Request 3 has sequence selector 2 at $2524, so $20C2 starts sequence descriptor 2 instead and $215D reads this record only if $2351 or $2330 clears the sequence flag $2416 while $23BA still holds 3. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9358,
    "type": "line",
-   "text": "Effect 4 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 4 pitch record, indexed by $215D at $246E + 8*4. Request 4 has sequence selector 3 at $2524, so $20C2 starts sequence descriptor 3 instead and $215D reads this record only if $2351 or $2330 clears the sequence flag $2416 while $23BA still holds 4. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9366,
    "type": "line",
-   "text": "Effect 5 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 5 pitch record, indexed by $215D at $246E + 8*5. Request 5 has sequence selector 4 at $2524, so $20C2 starts sequence descriptor 4 instead and $215D reads this record only if $2351 or $2330 clears the sequence flag $2416 while $23BA still holds 5. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9374,
    "type": "line",
-   "text": "Effect 6 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 6 pitch record read by $215D when request 6 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9382,
    "type": "line",
-   "text": "Effect 7 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 7 pitch record read by $215D when request 7 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9390,
    "type": "line",
-   "text": "Effect 8 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 8 pitch record read by $215D when request 8 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9398,
    "type": "line",
-   "text": "Effect 9 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 9 pitch record read by $215D when request 9 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9406,
    "type": "line",
-   "text": "Effect 10 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 10 pitch record, indexed by $215D at $246E + 8*10. Request 10 has sequence selector 5 at $2524, so $20C2 starts sequence descriptor 5 instead and $215D reads this record only if $2351 or $2330 clears the sequence flag $2416 while $23BA still holds 10. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9414,
    "type": "line",
-   "text": "Effect 11 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 11 pitch record read by $215D when request 11 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9422,
    "type": "line",
-   "text": "Effect 12 pitch record read by $215D: initial frequency low/high, pitch step low/high, movement mode, delay, SID control byte and repeat count. Modes 1 and 2 add/subtract the step; mode 0 or 8 keeps the pitch, while other modes alternate pitches. Repeat $FF sets the sustained flag."
+   "text": "Effect 12 pitch record read by $215D when request 12 starts a voice. Eight bytes: initial frequency low/high; bytes 2-3, which modes 1 and 2 add to or subtract from the frequency each tick and which modes other than 0, 1, 2 and 8 use as a second frequency to alternate with at the cadence from $2517; movement mode (0 or 8 holds the pitch); length in ticks ($23C9) before the sound restarts for a repeat or ends; SID control byte; repeat count. Repeat $FF sets the sustained flag $23F8, which skips the length count so the sound continues."
   },
   {
    "address": 9430,
@@ -14043,7 +14043,7 @@
   {
    "address": 9639,
    "type": "line",
-   "text": "Retained workspace after the alternate sound fragment. It is zero-filled except the voice offsets 0,7,14 at $25DD. The active driver uses its separate workspace at $23BA\u2013$2425; the alternate fragment references this allocation and bytes continuing into the title entry."
+   "text": "Retained workspace after the alternate sound fragment. $25A7 holds $60, the RTS that ends the fragment at $2554; $25A8-$25FF is zero-filled except $25DE=$07 and $25DF=$0E, so the voice offsets 0,7,14 read by LDY $25DD,X sit at $25DD-$25DF. The active driver uses its separate workspace at $23BA-$2425; the alternate fragment references this allocation and bytes continuing into the title entry."
   },
   {
    "address": 9728,
@@ -14188,7 +14188,7 @@
   {
    "address": 10533,
    "type": "line",
-   "text": "Disable interrupts, select the title/panel screen/font and clear it. Mute sound and select an encoded loading message by stage. In this cold edition image CMP #5 at $293B is patched to #6 before title entry; the $294D/$294E key-wait branch is replaced by NOPs. Draw through $295C and return to the native loader caller."
+   "text": "Disable interrupts, select the title/panel screen/font and clear it. Mute sound and pick a loading message by stage index $0206: 5 draws LOADING END SEQUENCE, 3 draws LOADING PART TWO; any other value draws a blank line, tests the space key (the result is discarded: $294D/$294E are NOPs in this edition), clears the screen and draws LOADING PART ONE. Text is drawn through $295C; return to the native loader caller."
   },
   {
    "address": 10588,
@@ -14853,22 +14853,22 @@
   {
    "address": 32829,
    "type": "line",
-   "text": "Animate the scripted entrance while $0676 is nonzero. Enable all eight sprites, update the player motion/pose and sprite ordering/caches, and tick sound effects. After the entrance finishes, clear the message, set progression state $0682 to 25, restore the music selection and run $85DF before normal play."
+   "text": "Animate the scripted entrance while $0676 is nonzero. Enable all eight sprites, update the player motion/pose and sprite ordering/caches, and tick sound effects. After the entrance finishes, draw status message 0 (' GOOD LUCK') through $848E, set progression state $0682 to 25, restore the music selection and run $85DF before normal play."
   },
   {
    "address": 32928,
    "type": "line",
-   "text": "One normal-play update after $A74F pacing. Clear camera correction, complete pending screen scroll and spawn checks, then edge-detect joystick-port bit 5 for pause. While unpaused, read controls, move actors, advance combat/animations, depth ordering and mirrored sprites, refresh endurance/progression and handle the end flag. Music selection $0200 chooses effects tick $21F5 or music tick $07BF. Continue through stage/scroll completion checks when $0682 is nonzero."
+   "text": "One normal-play update after $A74F pacing. Clear camera correction, complete pending screen scroll and spawn checks, then edge-detect bit 5 of $DC01 for pause; with keyboard row 7 selected ($DC00=$7F, left by $2833) that is the Commodore key. While unpaused, read controls, move actors, advance combat/animations, depth ordering and mirrored sprites, refresh endurance/progression and handle the end flag. Music selection $0200 chooses effects tick $21F5 (nonzero) or music tick $07BF (zero). Continue through stage/scroll completion checks when $0682 is nonzero."
   },
   {
    "address": 33076,
    "type": "line",
-   "text": "With progression state $0682 nonzero, stage 1 before its last camera section uses the internal transition at $8200. Other sections wait for the three actor-state bytes $0644\u2013$0646 to clear, compare a coordinate derived from camera and player X against stage exit tables, require a low screen Y and no forced action, then start cue 6 and the exit animation. Stage 5 instead enters the final opponent setup at $8406. $0683 waits for the cue to finish before advancing the stage."
+   "text": "With progression state $0682 nonzero, stage 1 before its last camera section uses the internal transition at $8200. Otherwise a cue in progress ($0683) is paced to its end and the stage advances; at $0682=$0B, except at stage index 4, $8469 is called. Wait for actor-state bytes $0644-$0646 to clear; stage index 4 enters the final opponent setup at $8406. Draw status message $0682, compare a coordinate derived from camera and player X against the stage exit tables and require player Y below $75; the direct-table path (not stage indices 0 and 3) also requires $0647 clear. Then select music, start cue 6 and the exit animation and show 'YOU MADE IT'."
   },
   {
    "address": 33251,
    "type": "line",
-   "text": "For stage index 0 or 3, use $81F1,X as the last index into $81F6 and compare the derived horizontal coordinate against each listed entry down to zero. An exact match joins the common Y/action exit checks at $81B2."
+   "text": "For stage index 0 or 3, use $81F1,X as the last index into $81F6 and compare the derived horizontal coordinate against each listed entry down to zero. An exact match joins the exit at $81B2, which tests only player Y below $75; the $0647 action test at $81AD is skipped on this path."
   },
   {
    "address": 33265,
@@ -14888,7 +14888,7 @@
   {
    "address": 33280,
    "type": "line",
-   "text": "During the first stage's internal camera sections, wait for $0644\u2013$0646 to clear, clear the message, and compare the camera/player horizontal coordinate with $83FD indexed by $067A. Section 3 or above advances the stage; lower sections require player Y below $75 and no forced action, then use the vertical transition at $82EB."
+   "text": "During the first stage's internal camera sections, wait for $0644-$0646 to clear, draw status message 'GO TO LIFT' (X=$19), and compare the camera/player horizontal coordinate with $83FD indexed by $067A. Section 3 or above draws 'GET THE PHONE' (X=$0B) and advances the stage; lower sections require player Y below $75 and $0647 clear, then use the vertical transition at $82EB."
   },
   {
    "address": 33359,
@@ -14908,7 +14908,7 @@
   {
    "address": 33500,
    "type": "line",
-   "text": "Fifteen bytes between the second-load trampoline and camera-transition code. Their values are retained alongside the movement/scroll machinery; a consumer for this short allocation is not established. They are counted as authored retained data rather than silently excluded."
+   "text": "Fifteen bytes between the second-load trampoline and camera-transition code. $82E1-$82E5 and $82E6-$82EA are per-stage low and high camera-column limits: $A496 CMP $82E1,X and $A49E CMP $82E6,X (X = stage index $0206) set $0682=$0B when the camera reaches the limit. No reader of the first five bytes $82DC-$82E0 was found."
   },
   {
    "address": 33515,
@@ -14928,7 +14928,7 @@
   {
    "address": 33798,
    "type": "line",
-   "text": "Disable the play IRQ, program CIA2 NMI control and initialize the final opponent's actor state and coordinates. Set action/attribute bytes, swap resource slot 2, reinstall the display/interrupt setup, enable interrupts and resume the main loop. This is selected by the stage-5 exit path once the ordinary actor-state bytes clear."
+   "text": "Blank the display through $A75F and write $01 to CIA2 ICR $DD0D, clearing the timer-A NMI enable. Initialize the final opponent's actor state and coordinates and set action/attribute bytes. Disable interrupts, swap resource slot 2, reinstall the display/interrupt setup, enable interrupts and resume the main loop. This is selected by the stage-5 exit path once the ordinary actor-state bytes clear."
   },
   {
    "address": 33897,
@@ -15238,7 +15238,7 @@
   {
    "address": 35317,
    "type": "line",
-   "text": "For a slot with $0654,X set, move raw X one unit toward the player while half-X lies within the approach bounds. This motion is separate from ordinary AI direction bits."
+   "text": "For a slot with $0654,X set (set by hit reaction and hold release), move raw X one unit away from the player: when player half-X is at or right of the slot, decrement raw X while half-X >= $16; otherwise increment it while half-X < $A0. This motion is separate from ordinary AI direction bits."
   },
   {
    "address": 35380,
@@ -15258,17 +15258,17 @@
   {
    "address": 35520,
    "type": "line",
-   "text": "Dispatch state $062F: zero returns, negative moves a projectile, and low bits select attached or ground forms. An enemy-owned object uses its animation to index frame and signed X/Y offsets at $9C95/$9CD0/$9D0B. Reflect X by facing and set the mirror flag. Newly entered collision frames $A1/$D6 join the player-hit test. Player/ground forms continue at $8C1E."
+   "text": "Dispatch state $062F: zero returns, negative moves a projectile, and low bits select attached or ground forms. An enemy-owned object uses its animation to index frame and signed X/Y offsets at $9C95/$9CD0/$9D0B. Reflect X by facing; the mirror flag $0619 is written on the nonnegative-offset paths and left unchanged for a negative offset ($8BFA). Newly entered collision frames $A1/$D6 join the player-hit test. Player/ground forms continue at $8C1E."
   },
   {
    "address": 35668,
    "type": "line",
-   "text": "Skip while player hit lock $0681 is set. Derive object half-X; require player floor Y in (objectY-4,objectY+4] and object half-X in (playerHalfX-8,playerHalfX+8]. A match joins $8B88. These are unsigned-byte comparisons with the processor's wrap arithmetic."
+   "text": "Skip while player hit lock $0681 is set. Derive object half-X; require the player's jump-adjusted sprite Y $0629 in (objectY-4,objectY+4] and object half-X in (playerHalfX-8,playerHalfX+8]. A match joins $8B88. These are unsigned-byte comparisons with the processor's wrap arithmetic."
   },
   {
    "address": 35720,
    "type": "line",
-   "text": "Subtract three endurance units and clamp a negative result to zero. Request effect 6 and set hurt-animation/hit-lock state. Drop a held object or remove an enemy-owned one as selected by $062F. Finally subtract one more endurance unit when the result is nonnegative. Ordinary endurance values therefore lose four units down to zero."
+   "text": "Subtract three endurance units and clamp a negative result to zero. Request effect 6 and set hurt-animation/hit-lock state. Remove an object in state 8 or above (exposed by an enemy pose), and turn a player-held object (state 2) into a ground object (state 3) at the player's position; attached states 4/5 are left. Finally subtract one more endurance unit when the result is nonnegative. Ordinary endurance values therefore lose four units down to zero."
   },
   {
    "address": 35834,
@@ -15278,7 +15278,7 @@
   {
    "address": 35870,
    "type": "line",
-   "text": "For a dropped object, publish stored Y, remove it outside half-X [6,$C0), select frame $A1 and apply signed camera correction to raw X. A zero low-state selector instead enters player-held rendering at $8C82."
+   "text": "For a dropped object (low state bits 3), publish stored Y, remove it outside half-X [6,$C0), select frame $A1 and apply signed camera correction to raw X. Low state bits equal to 2 (Z from the CMP #$02 before the jump at $8ADF) instead enter player-held rendering at $8C82."
   },
   {
    "address": 35970,
@@ -15363,7 +15363,7 @@
   {
    "address": 36907,
    "type": "line",
-   "text": "Activate slot 0 and forced approach, initialize rider health/pose and the special dismount sequence, and copy bike position/facing to the rider. Request effect 0 on voice 0 and effect 5 on voice 1. Handler $8F8E completes the transfer."
+   "text": "Activate slot 0 and forced approach, initialize rider health/pose and the special dismount sequence, and copy bike position to the rider (X low becomes $28 when bike half-X is below $14). Copy facing $0617 to $0618 for the second component placed by $8F8E. Request effect 0 on voice 0 and effect 5 on voice 1. Handler $8F8E completes the transfer."
   },
   {
    "address": 36978,
@@ -15668,12 +15668,12 @@
   {
    "address": 39013,
    "type": "line",
-   "text": "Entries 0\u201331 of the allocation based at $9865. Signed pose offsets copied to $060B; $9910 adds or subtracts their magnitude according to facing."
+   "text": "Entries 0\u201331 of the allocation based at $9865. Signed pose offsets copied to $060B; $9910 adds the signed offset to raw X when facing zero and subtracts it when facing one (a negative byte is applied as its magnitude in the opposite direction), with 16-bit carry/borrow, for the extra component's X."
   },
   {
    "address": 39045,
    "type": "line",
-   "text": "Entries 32\u201356 of the allocation based at $9865. Signed pose offsets copied to $060B; $9910 adds or subtracts their magnitude according to facing."
+   "text": "Entries 32\u201356 of the allocation based at $9865. Signed pose offsets copied to $060B; $9910 adds the signed offset to raw X when facing zero and subtracts it when facing one (a negative byte is applied as its magnitude in the opposite direction), with 16-bit carry/borrow, for the extra component's X."
   },
   {
    "address": 39070,
@@ -15718,7 +15718,7 @@
   {
    "address": 39375,
    "type": "line",
-   "text": "Pace slot X using grab/action, delay and direction state. Select paired frames from $9D4B/$9E2B; following action flags at $9F0A can expose an object, test an attack, launch a projectile or enable forced approach. At a sequence terminator clear action/grab reactions, restore the restart pose or settle a hurt/death frame. A settled zero-health type-8 actor sets the positive ending flag; other deaths free the slot and may retry a deferred spawn."
+   "text": "Pace slot X using grab/action, delay and direction state. Select paired frames from $9D4B/$9E2B; following action flags at $9F0A can expose an object, test an attack, launch a projectile or enable forced approach. At a sequence terminator clear action/grab reactions, restore the restart pose or settle a hurt/death frame. A settled zero-health actor frees its slot and may retry a deferred spawn; a type-8 actor also sets the positive ending flag $0687 first."
   },
   {
    "address": 39389,
@@ -15748,12 +15748,12 @@
   {
    "address": 40085,
    "type": "line",
-   "text": "Entries 0\u201331 of the allocation based at $9C95. Object sprite pointers indexed by owning enemy animation at $8AE8. The first byte also lies in the type-8 settlement-frame lookup from $9C8D."
+   "text": "Entries 0\u201331 of the allocation based at $9C95. Object sprite pointers indexed by the owning enemy's animation index ($066A,X) and read at $8B3B. The first byte also lies in the type-8 settlement-frame lookup from $9C8D."
   },
   {
    "address": 40117,
    "type": "line",
-   "text": "Entries 32\u201358 of the allocation based at $9C95. Object sprite pointers indexed by owning enemy animation at $8AE8. The first byte also lies in the type-8 settlement-frame lookup from $9C8D."
+   "text": "Entries 32\u201358 of the allocation based at $9C95. Object sprite pointers indexed by the owning enemy's animation index ($066A,X) and read at $8B3B. The first byte of the allocation also lies in the type-8 settlement-frame lookup from $9C8D."
   },
   {
    "address": 40144,
@@ -15768,7 +15768,7 @@
   {
    "address": 40178,
    "type": "line",
-   "text": "Biased base named by the rider dismount's LDA $9CF2,X. Its dismount indices 84\u201388 reach the five attribute bytes at $9D46\u2013$9D4A. This address also falls within the enemy-object X-offset allocation based at $9CD0; the two readers use different index ranges."
+   "text": "Biased base named by the rider dismount's LDA $9CF2,X. The dismount starts at index $55 (85) and reads attributes at indices 85\u201387 ($9D47\u2013$9D49); index 88 has a zero frame and ends the sequence before its attribute is read. This address also falls within the enemy-object X-offset allocation based at $9CD0; the two readers use different index ranges."
   },
   {
    "address": 40203,
@@ -15783,7 +15783,7 @@
   {
    "address": 40262,
    "type": "line",
-   "text": "Five sprite attributes 0,7,8,9,0. The rider animation reads through the biased base $9CF2 plus its frame index; indices 84\u201388 reach these bytes. Dismount starts at frame index $55 (85)."
+   "text": "Five bytes 0,7,8,9,0. The rider dismount reads sprite attributes through the biased base $9CF2 plus its frame index, starting at $55 (85); indices 85\u201387 read the 7,8,9 at $9D47\u2013$9D49. Index 88's frame is zero and ends the sequence first, so the bytes at $9D46 and $9D4A are not read by the dismount."
   },
   {
    "address": 40267,
@@ -15963,7 +15963,7 @@
   {
    "address": 41380,
    "type": "line",
-   "text": "Compare horizontal direction with facing. The matching direction starts pose $16 with a five-count delay if not held; the other path enters $A21C. During a hold, matching-direction escape/strike is limited by the owning enemy type and its hold counter."
+   "text": "Compare horizontal direction with facing. The matching direction requests effect 10 and starts pose $16 (restart $14) with a five-count delay, unless a hold is active ($0648 nonzero), when it returns without acting. The opposite direction enters $A21C, which handles holds by enemy type and hold counter."
   },
   {
    "address": 41428,
@@ -16023,12 +16023,12 @@
   {
    "address": 41872,
    "type": "line",
-   "text": "Compute the low byte of the player's 16-bit X position divided by two in $062C. Active $0613 or $0647 state redirects through the forced-horizontal path. Fire-held input goes to the directional attack dispatcher. Without fire, clear the remembered attack direction; $0648 also forces horizontal processing. Up moves floor Y toward the upper lane boundary ($74 unless $0676 is nonzero), down stops at $A4, and the floor value becomes draw Y. Left/right update facing and $067C ($12/$10). Depending on camera phase, screen-X bounds, stage limits and $067E, move the player's 16-bit X by one or request camera motion in $0652 while advancing fine-scroll $17. Wrapping fine scroll sets the coarse-scroll request $0600. The coordinate and camera branches share the return at $A4D6."
+   "text": "Compute the low byte of the player's 16-bit X position divided by two in $062C. Active $0613 or $0647 state redirects through the forced-horizontal path. Fire-held input goes to the directional attack dispatcher. Without fire, set the remembered attack direction to $FF; $0648 also forces horizontal processing. Up decrements floor Y while it is at least $74, so it stops at $73 (no limit when $0676 is nonzero); down stops at $A4, and the floor value becomes draw Y. Left/right update facing and $067C ($12/$10). Depending on camera phase, screen-X bounds, stage limits and $067E, move the player's 16-bit X by one or request camera motion in $0652 while stepping fine-scroll $17. Wrapping fine scroll sets the coarse-scroll request $0600. The coordinate and camera branches share the return at $A4D6."
   },
   {
    "address": 42199,
    "type": "line",
-   "text": "Input X selects an enemy's horizontal position at $064C,X/$064E,X and direction bits at $0664,X. Unless $0635 is nonzero, bits 0/1 move the shared Y byte $064B toward $74/$AD; bit 2 decrements the selected X position after a divided-position lower-bound check, and bit 3 increments it. Apply signed camera motion $0652 to the selected X afterward, including carry/borrow into its high byte. The Y loads and stores here are deliberately recorded as unindexed, as the bytes implement them."
+   "text": "Input X selects an enemy's horizontal position at $064C,X/$064E,X and direction bits at $0664,X. Unless $0635 is nonzero, bit 0 decrements the shared Y byte $064B while it is at least $74 (stopping at $73) and bit 1 increments it below $AD. Bit 2 decrements the selected X position after a divided-position lower-bound check ($0E), except that when bit 1 is set and $064B is already $AD the code branches past the bit-2 step; bit 3 increments it. Apply signed camera motion $0652 to the selected X afterward, including carry/borrow into its high byte. The Y loads and stores here are deliberately recorded as unindexed, as the bytes implement them."
   },
   {
    "address": 42300,
@@ -16058,7 +16058,7 @@
   {
    "address": 42831,
    "type": "line",
-   "text": "If coarse-scroll flag $0600 is set use $A742; otherwise wait for a nonzero IRQ frame token $0608, decrement it and update score/lives. The main loop and ending call this pacing entry."
+   "text": "If coarse-scroll flag $0600 is set use $A742; otherwise wait for a nonzero IRQ frame token $0608, decrement it and update score/lives through $FC00. Called by the main loop ($80A0), new-game start ($803A), stage exit checks ($8148), game over ($2A12, $828A), the vertical camera transition ($82FD, $835F) and the ending ($3445)."
   },
   {
    "address": 42847,
@@ -16173,7 +16173,7 @@
   {
    "address": 43760,
    "type": "line",
-   "text": "Save A/Y/X to $07/$05/$06 and clear decimal mode. Acknowledge VIC interrupt flags with $FF. Use $09 as the phase index; increment it and reset it when the next byte in $AB15 is zero. Push the indexed high and low bytes from $AB2F, then RTS into that stored address plus one. The handler finishes through $ABE6."
+   "text": "Save A/Y/X to $07/$05/$06 and clear decimal mode. Acknowledge VIC interrupt flags with $FF. Use $09 as the phase index; increment it and reset it when the next byte in $AB15 is zero. Push the indexed high and low bytes from $AB2F, then RTS into that stored address plus one. Handlers $AB6B, $AB98, $ABBA and $ABF9 finish through the shared restore at $ABE6; the actor and component handlers from $AC21 to $AECF restore $07/$05/$06 and RTI themselves."
   },
   {
    "address": 43797,
@@ -16193,7 +16193,7 @@
   {
    "address": 43883,
    "type": "line",
-   "text": "Wait past the selected raster line ($CF in the cold image), write $D011=$5F, switch to bank-zero panel screen/font and fixed panel colours. Schedule the next split ($D5 initially), then restore registers and RTI. The wait/next operands are patched during camera transitions."
+   "text": "Wait past the selected raster line ($CF in the cold image), write $D011=$5F, switch to bank-zero panel screen/font and fixed panel colours. Schedule the next split at line $D5 (an immediate no code patches), then restore registers and RTI through $ABE6. Camera transition code patches this handler's wait operand $AB6C ($CE, restored to $CF) and the panel-bottom handler's wait operand $AB99 ($D6, restored to $D5)."
   },
   {
    "address": 43884,
@@ -16308,7 +16308,7 @@
   {
    "address": 44815,
    "type": "line",
-   "text": "Install the hardware IRQ vector $FFFE/$FFFF as $AAF0 and the NMI vector $FFFA/$FFFB as $A973. Enable VIC raster IRQ, disable and read CIA1 timer-A interrupt, clear phase $09, schedule raster line $F9, and enable CIA2 timer-A interrupt. Returns without executing CLI; the caller does so at $801D."
+   "text": "Install the hardware IRQ vector $FFFE/$FFFF as $AAF0 and the NMI vector $FFFA/$FFFB as $A973. Enable VIC raster IRQ, disable and read CIA1 timer-A interrupt, clear phase $09, schedule raster line $F9, and enable CIA2 timer-A interrupt. Returns without executing CLI; its three callers $8017, $8462 and $A7B1 do so at $801D, $8465 and $A7CA."
   },
   {
    "address": 44861,
@@ -16323,7 +16323,7 @@
   {
    "address": 64512,
    "type": "line",
-   "text": "Compare the packed-BCD score at $0202/$0201 with threshold $020A/$020B. Award only when the score is strictly greater, not equal. In decimal mode advance the threshold's high byte by $10 (100,000 displayed points), add one life, and store it only if the result is below $10, capping the displayed lives at nine. Draw lives at $37BC, then format the two score bytes through $FC43. The last two displayed score digits are supplied by the status template."
+   "text": "Compare the packed-BCD score at $0202/$0201 with threshold $020A/$020B. Award only when the score is strictly greater, not equal. In decimal mode advance the threshold's high byte by $10 (100,000 displayed points), add one life, and store it only if the result is below $10, capping the displayed lives at nine; the award path then redraws lives at $37BC. Both paths format the two score bytes through $FC43. The last two displayed score digits are supplied by the status template."
   },
   {
    "address": 64579,
@@ -16443,7 +16443,7 @@
   {
    "address": 64960,
    "type": "line",
-   "text": "When pointer $6D differs from cached $0623, reflect one 63-byte sprite from $4000+64*pointer into $7EC0. Lookup $0500 reverses two-bit pixel pairs and each row reverses its three bytes. This entry is the non-expanded alternative selected by the following flag dispatcher."
+   "text": "When pointer $6D differs from cached $0623, reflect one 63-byte sprite from $4000+64*pointer into $7EC0. Lookup $0500 reverses two-bit pixel pairs and each row reverses its three bytes. The following dispatcher $FDFA takes this entry when mirror flag $061B is zero."
   },
   {
    "address": 64988,
@@ -16543,7 +16543,7 @@
   {
    "address": 65125,
    "type": "line",
-   "text": "When pointer $6F differs from cached $0625, reflect one 63-byte sprite from $4000+64*pointer into $7F40. Lookup $0500 reverses two-bit pixel pairs and each row reverses its three bytes. This entry is the non-expanded alternative selected by the following flag dispatcher."
+   "text": "When pointer $6F differs from cached $0625, reflect one 63-byte sprite from $4000+64*pointer into $7F40. Lookup $0500 reverses two-bit pixel pairs and each row reverses its three bytes. The following dispatcher $FE9F takes this entry when mirror flag $061D is zero."
   },
   {
    "address": 65153,
@@ -16643,7 +16643,7 @@
   {
    "address": 65290,
    "type": "line",
-   "text": "When pointer $71 differs from cached $0627, reflect one 63-byte sprite from $4000+64*pointer into $7FC0. Lookup $0500 reverses two-bit pixel pairs and each row reverses its three bytes. This entry is the non-expanded alternative selected by the following flag dispatcher."
+   "text": "When pointer $71 differs from cached $0627, reflect one 63-byte sprite from $4000+64*pointer into $7FC0. Lookup $0500 reverses two-bit pixel pairs and each row reverses its three bytes. The following dispatcher $FF44 takes this entry when mirror flag $061F is zero."
   },
   {
    "address": 65318,
@@ -16748,7 +16748,7 @@
   {
    "address": 65528,
    "type": "line",
-   "text": "Two retained bytes $FF,$00 immediately before the hardware vector area. Shared interrupt setup writes the following six vector bytes at runtime."
+   "text": "Two retained bytes $FF,$00 immediately before the hardware vector area. Interrupt setup $AF0F writes four vector bytes at runtime: NMI $FFFA/$FFFB and IRQ $FFFE/$FFFF. The references search finds no writer of the reset vector $FFFC/$FFFD in any part."
   }
  ]
 }

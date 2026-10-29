@@ -5,7 +5,8 @@
 // what a game that has banked the KERNAL out usually touches:
 // - a PAL raster, 312 lines of 63 cycles, with the raster-compare interrupt ($D012 and bit 7 of
 //   $D011, the latch $D019 and the enable $D01A) taken through the vector at $FFFE when the
-//   processor allows it, and $D011/$D012 reading the current line;
+//   processor allows it, and $D011/$D012 reading the current line. The IRQ line is a level, held
+//   while a source has not been acknowledged (the interrupts, below);
 // - CIA 1's keyboard matrix and joystick port 2 ($DC00-$DC03): keys are held as the KERNAL numbers
 //   them (row x 8 + column, KEY below), the stick as the port's five bits, active low. Port A starts
 //   as the KERNAL leaves it, not as at power-on: $DC02 $FF (all outputs) and $DC00 $7F (row 7 low),
@@ -28,8 +29,14 @@
 //   CIA 2's the NMI through the vector at $FFFA when the mask ($DC0D/$DD0D written with bit 7)
 //   lets them, and CIA 2's port A ($DD00, the video bank) and its direction ($DD02) read back what
 //   was written, the unset inputs high. An underflow is taken on its cycle: the run stops there.
+//   The serial port as output (control register A's bit 6): a write to the data register
+//   ($DC0C/$DD0C) shifts a byte out over 16 of timer A's underflows (8 bits, two underflows a
+//   bit), a second write while one shifts follows it, and the end of each byte sets bit 3 of the
+//   interrupt data, which interrupts as the timers' bits do (a copy-protection check reads it: the
+//   LAX at $0100 in games/c64/green-beret).
 //   Not modelled: counting CNT or timer A's underflows with timer B, the time of day clocks, the
-//   serial port, the one-cycle delays of the real chip. Without cia the CIA timers and CIA 2 read 0.
+//   serial port as input, the one-cycle delays of the real chip. Without cia the CIA timers and
+//   CIA 2 read 0. Underflows that raise no interrupt are worked out when the chip is next read.
 // - With dma: true, the cycles the video chip takes from the processor (kit/skills/c64/c64-reference,
 //   "The video chip, cycle by cycle"): on a bad line, a line from 48 to 247 whose low three bits
 //   are $D011's vertical scroll in a frame whose line 48 saw $D011's display bit set, cycles 12-54;
@@ -38,9 +45,9 @@
 //   processor stands still from where it is when one of those starts to the end of it: every
 //   cycle is taken as a read, so a store whose write falls on a bad line's cycle 12, which the
 //   machine lets go ahead, is held a cycle more here than there. The chip's registers are read
-//   at cycle 12 and cycle 55 of each line. An interrupt handler runs whole (cpu6502.js), so the
-//   cycles taken while it ran are added when it returns, from the registers as it left them;
-//   with nest (below) they are taken as it runs.
+//   at cycle 12 and cycle 55 of each line. They are taken as the program runs, an interrupt's
+//   handler with the rest; with legacyInterrupts (below), where a handler runs whole, those taken
+//   while it ran are added when it returns, from the registers as it left them.
 //   Checked against the emulator by kit/c64/test_machine_dma.js (kit/c64/fixtures/vic-dma.json).
 //   Without dma the processor has every cycle, and a pass runs faster here than on the machine.
 // - With collide: true, the sprite collisions: $D01E and $D01F as the video chip sets them while
@@ -54,14 +61,26 @@
 //   $D01F), which interrupts when $D01A enables it; one while the register holds a bit raises
 //   nothing, so a program that never reads the register is interrupted once (collide.js's
 //   C.irq). The latch is looked at every eight cycles, and a handler is interrupted as often as in
-//   VICE with its read up to ten cycles earlier (kit/c64/fixtures/vic-collide-irq.json). Without
-//   collide the two registers read what was last written to them and raise no interrupt.
-// - With nest: true, an interrupt is taken as the processor takes it: its seven cycles, the program
-//   counter and flags pushed, I set and the vector followed, and its handler runs on with the rest
-//   of the program, so one that clears I (CLI) is interrupted in turn by the next interrupt due, as
-//   on the machine. Without nest a handler runs whole (cpu6502.js's irq and nmi), and an interrupt
-//   that falls due while one runs is taken after its RTI; a collision it raises meanwhile may be
-//   cleared by the handler's own read of $D01E or $D01F first, and so never be latched.
+//   VICE with its read within four cycles of where it falls (kit/c64/fixtures/vic-collide-irq.json).
+//   Without collide the two registers read what was last written to them and raise no interrupt.
+// - Interrupts are taken as the processor takes them: between two instructions, while I is clear
+//   and a source holds the line, with its seven cycles, the program counter and flags pushed, I set
+//   and the vector followed. The handler runs on with the rest of the program, so one that clears I
+//   (CLI) is interrupted in turn by the next interrupt due, and one that returns with the line still
+//   held is interrupted again straight after its RTI. A CLI, or a PLP that clears I, lets a waiting
+//   interrupt in after the next instruction; a read of $D01E or $D01F and a write to $D01A or to a
+//   CIA's timer end the run there, so that what they raise comes on its cycle. Checked against VICE
+//   by kit/c64/test_machine_nest.js (kit/c64/fixtures/vic-nest.json) and test_machine_held_irq.js.
+//   While the KERNAL is banked in (and no rom.kernal given) an interrupt comes through the KERNAL's
+//   entry, as cpu6502.js's kernal option has it: $FF48 pushes A, X and Y and jumps through $0314,
+//   $FE43 through $0318; and its exits at $EA31, $EA81 and $FEBC pull them back and return
+//   (leave(cycles), 22 by default), unless the game's own hooks stand there. onInterrupt(machine,
+//   vector) runs as each is taken, onReturn(machine, vector, cycles) as each returns, and depth
+//   counts those under way.
+// - With legacyInterrupts: true, the kit's model before #525 and #556, kept for a recording made
+//   on its timing: a handler runs whole (cpu6502.js's irq and nmi), and an interrupt that falls due
+//   while one runs is taken after its RTI; a collision it raises meanwhile may be cleared by the
+//   handler's own read of $D01E or $D01F first, and so never be latched.
 // Not modelled: the VIC-II's timing beyond that and whole lines, the disk and the ROMs (the
 // simulator stops on a ROM read; a hook can stand in, or rom: { char } gives the character ROM,
 // read from the emulator's own file at run time and never committed). Reads of other VIC
@@ -87,7 +106,7 @@
 //   passes counts one and onPass(machine) runs, the place to set the next pass's input; onPass
 //   returning true stops the run with the program counter there, before the pass (runUntilPass).
 // - collide: true, the sprite collisions in $D01E and $D01F (above).
-// - nest: true, interrupts taken between the handler's instructions too (above).
+// - legacyInterrupts: true, the interrupts as the kit took them before (above).
 // - sid: '6581' or '8580', the chip whose bus fade the SID's reads follow. The default is the
 //   8580, the chip the kit's emulator starts with (v3.13.2; its SidModel resource).
 // - runCycles(n), runFrames(n), runPasses(n), runUntilPass(f): run with the interrupts. frames
@@ -145,7 +164,7 @@ class Machine {
     this.joy1 = 0x1F;                   // port 1, the same bits, on $DC01
     this.cia = opts.cia ? [0, 1].map(() => ({ lat: [0xFFFF, 0xFFFF], cnt: [0xFFFF, 0xFFFF], cr: [0, 0], mask: 0, icr: 0 })) : null;
     this.pra2 = 0x3F; this.ddra2 = 0x3F; this.nmis = 0;
-    this.nest = !!opts.nest;
+    this.nest = !opts.legacyInterrupts;
     // the video chip's fetches (dma): the cycle of the next look at its registers (-1 until the
     // first), the stretches it holds the processor that have not yet come, as [first, last]
     // cycles, whether this frame's line 48 saw the display on, and each sprite's lines to fetch
@@ -165,6 +184,9 @@ class Machine {
     this.passes = 0;
     this.onPass = null;
     this.frames = 0;
+    this.depth = 0;                     // the interrupts under way (onInterrupt and onReturn, above)
+    this.under = [];                    // each one's start, and its stack once its take has pushed
+    this.onInterrupt = null; this.onReturn = null;
     const self = this;
     this.cpu = new CPU(this.ram, {
       port: opts.port || { dir: 0x2F, data: 0x37 },
@@ -172,6 +194,10 @@ class Machine {
       rom: opts.rom,
     });
     this.lastCycles = 0;
+    if (this.nest) {
+      this.cpu.onRti = () => { self.returned(); self.tick(); };   // a source still held interrupts the RTI's next instruction
+      this.cpu.onCli = c => { if (c.cut !== 1) c.cut = 2; };   // one waiting comes in after the next one
+    }
     this.cpu.pc = opts.pc === undefined ? 0 : opts.pc;
     this.cpu.i = 1;
     if (this.collide) this.collide.at(this.cpu.cycles);
@@ -213,7 +239,7 @@ class Machine {
     if (a >= 0xD000 && a < 0xD400) {
       const r = a & 0x3F, ln = this.line;
       // a read is made in the instruction's last cycle, the one before the count it leaves
-      if (this.collide && (r === 0x1E || r === 0x1F)) return this.collide.read(r, this.cpu.cycles - 1);
+      if (this.collide && (r === 0x1E || r === 0x1F)) { this.soon(); return this.collide.read(r, this.cpu.cycles - 1); }
       if (r === 0x12) return ln & 255;
       if (r === 0x11) return (this.vic[0x11] & 0x7F) | ((ln >> 8) << 7);
       if (r === 0x19) return this.latch | 0x70 | ((this.latch & this.enable) ? 0x80 : 0);
@@ -253,12 +279,14 @@ class Machine {
   }
   ciaTimerWrite(n, r, v) {
     this.ciaCatchUp();
+    this.soon();
     const c = this.cia[n];
     if (r >= 4 && r <= 7) {
       const t = (r - 4) >> 1;
       c.lat[t] = r & 1 ? (c.lat[t] & 255) | (v << 8) : (c.lat[t] & 0xFF00) | v;
       if ((r & 1) && !(c.cr[t] & 1)) c.cnt[t] = c.lat[t];       // a stopped timer loads on the high byte
-    } else if (r === 13) { if (v & 0x80) c.mask |= v & 0x1F; else c.mask &= ~v & 0x1F; }
+    } else if (r === 12) { if (c.cr[0] & 0x40) { if (c.sp) c.spNext = true; else c.sp = 16; } }
+    else if (r === 13) { if (v & 0x80) c.mask |= v & 0x1F; else c.mask &= ~v & 0x1F; }
     else if (r === 14 || r === 15) { const t = r - 14; if (v & 0x10) c.cnt[t] = c.lat[t]; c.cr[t] = v & 0xEF; }
   }
   // Moves the timers on to the processor's cycle count, raising what their underflows raise.
@@ -274,15 +302,25 @@ class Machine {
           if (c.cnt[t] >= left) { c.cnt[t] -= left; break; }
           left -= c.cnt[t] + 1; c.cnt[t] = c.lat[t]; c.icr |= 1 << t;
           if (n === 1 && (c.mask & (1 << t))) this.nmiDue = true;
+          if (t === 0 && c.sp && (c.cr[0] & 0x40) && --c.sp === 0) {   // a byte shifted out
+            c.icr |= 8;
+            if (n === 1 && (c.mask & 8)) this.nmiDue = true;
+            if (c.spNext) { c.spNext = false; c.sp = 16; }
+          }
           if (c.cr[t] & 8) { c.cr[t] &= ~1; break; }
         }
       }
     }
   }
-  // Cycles until the next timer underflow, or Infinity.
+  // Cycles until the next timer underflow that raises an interrupt, or Infinity: the others are
+  // worked out when the chip is read (ciaCatchUp), so a fast timer nobody listens to (a serial
+  // port's clock) does not cut the run into steps of a few cycles.
   ciaNext() {
     let best = Infinity;
-    if (this.cia) for (const c of this.cia) for (let t = 0; t < 2; t++) if (c.cr[t] & 1) best = Math.min(best, c.cnt[t] + 1);
+    if (this.cia) for (const c of this.cia) {
+      for (let t = 0; t < 2; t++) if ((c.cr[t] & 1) && (c.mask & (1 << t))) best = Math.min(best, c.cnt[t] + 1);
+      if ((c.cr[0] & 0x41) === 0x41 && c.sp && (c.mask & 8)) best = Math.min(best, c.cnt[0] + 1 + (c.sp - 1) * (c.lat[0] + 1));
+    }
     return best;
   }
   ioWrite(a, v) {
@@ -295,7 +333,7 @@ class Machine {
         if (this.dma && (v & 0x10) && this.line === 48) this.dma.bad = true;   // any cycle of line 48
       }
       else if (r === 0x19) this.latch &= ~v & 0x0F;
-      else if (r === 0x1A) this.enable = v & 0x0F;
+      else if (r === 0x1A) { this.enable = v & 0x0F; this.soon(); }
       else this.vic[r] = v;
       return;
     }
@@ -358,6 +396,7 @@ class Machine {
   // Run for n cycles, the raster interrupts included. False when onPass stopped the run.
   runCycles(n) {
     const cpu = this.cpu, end = cpu.cycles + n;
+    if (this.nest) this.tick();         // one held as the run begins (a restored machine, I cleared from outside) comes first
     while (cpu.cycles < end) {
       if (this.dma && this.dmaNext() <= cpu.cycles) { this.tick(); continue; }   // an interrupt ran past a hold
       let step = LINE - (cpu.cycles % LINE);
@@ -371,6 +410,10 @@ class Machine {
     }
     return true;
   }
+  // The chips brought up to the processor's cycle, and an interrupt they hold taken. The IRQ line is
+  // a level: a handler that returns while CIA 1 or the video chip still holds it (a source it has
+  // not acknowledged) is interrupted again at once, as the processor does straight after the RTI,
+  // so the main program runs no instruction in between (the CPU's onRti comes back here).
   tick() {
     if (this.dma) this.dmaCatchUp();
     if (this.collide) this.latch |= this.collide.irq(this.cpu.cycles - 1);
@@ -389,13 +432,57 @@ class Machine {
     }
     if ((this.latch & this.enable & 0x0F) && !this.cpu.i) this.take(0xFFFE);
   }
-  // An interrupt through the vector at v: run whole, or with nest only begun
+  // A chip changed so that an interrupt may come before the run's end: the run stops after this
+  // instruction and the chips are looked at again (the CPU's cut).
+  soon() { if (this.nest) this.cpu.cut = 1; }
+  // An interrupt through the vector at v: begun, its handler run on with the program (with
+  // legacyInterrupts, run whole)
   take(v) {
-    const c = this.cpu;
-    if (!this.nest) return v === 0xFFFA ? c.nmi(null, { hooks: this.hooks }) : c.irq(null, { hooks: this.hooks });
+    const c = this.cpu, c0 = c.cycles;
+    this.returned();
+    if (this.onInterrupt) this.onInterrupt(this, v);
+    this.depth++;
+    if (!this.nest) {
+      try { return v === 0xFFFA ? c.nmi(null, { hooks: this.hooks }) : c.irq(null, { hooks: this.hooks }); }
+      finally { this.depth--; if (this.onReturn) this.onReturn(this, v, c.cycles - c0); }
+    }
     c.push(c.pc >> 8); c.push(c.pc & 0xFF); c.push(c.p & ~0x10);
     c.i = 1; c.cycles += 7;
-    c.pc = c.vector(v, v === 0xFFFA ? 'NMI' : 'IRQ');
+    const sp = c.sp;
+    if (this.throughKernal()) {
+      // the KERNAL's entry, as cpu6502's irq and nmi with kernal stand in for it: $FF48 (PHA TXA
+      // PHA TYA PHA TSX LDA $0104,X AND #$10 BEQ; JMP ($0314)) or $FE43 (SEI; JMP ($0318)); and its
+      // exits as hooks, where a game has none of its own (which stands in for what the ROM does
+      // there first, then calls leave)
+      for (const a of [0xEA31, 0xEA81, 0xFEBC]) if (!(a in this.hooks)) this.hooks[a] = () => { if (this.throughKernal()) this.leave(); return false; };
+      if (v === 0xFFFE) {
+        c.push(c.a); c.push(c.x); c.push(c.y);
+        c.x = c.sp; c.a = 0; c.n = 0; c.z = 1; c.cycles += c.sp >= 0xFC ? 30 : 29;
+        c.pc = c.word(0x0314);
+      } else { c.cycles += 7; c.pc = c.word(0x0318); }
+    } else c.pc = c.vector(v, v === 0xFFFA ? 'NMI' : 'IRQ');
+    this.under.push({ v, sp, at: c0 });
+  }
+  // The KERNAL banked in at $E000-$FFFF, its ROM not given: an interrupt comes in through the
+  // KERNAL's entry, and leaves by its exit (leave)
+  throughKernal() { const c = this.cpu; return c.rk[0xFF] !== c.rk[0x02] && c.rom.kernal === undefined; }
+  // The KERNAL's exit from an interrupt, $EA81 and $FEBC (PLA TAY PLA TAX PLA RTI), for a hook at it
+  // or at $EA31, whose keyboard scan and clock a game's hook stands in for first: its cycles, the
+  // RTI's among them, and what any RTI starts (onRti)
+  leave(cycles = 22) {
+    const c = this.cpu;
+    c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += cycles;
+    if (this.nest) { this.returned(); this.tick(); }
+  }
+  // The interrupts the stack has left: returned from (the RTI that pulled their frame), or left by
+  // a handler that reset the stack above its frame and went on elsewhere
+  returned() {
+    const c = this.cpu, u = this.under;
+    while (u.length && u[u.length - 1].sp < c.sp) {
+      const q = u.pop();
+      this.depth--;
+      if (this.onReturn) this.onReturn(this, q.v, c.cycles - q.at);
+    }
   }
   runFrames(n) { return this.runCycles(n * FRAME); }
   // Run until f(machine) is true at a main-loop pass: stops with the program counter at passAt,
@@ -422,13 +509,14 @@ class Machine {
       cmp: this.cmp, latch: this.latch, enable: this.enable, lastLine: this.lastLine, frames: this.frames, passes: this.passes,
       pra: this.pra, ddra: this.ddra, ddrb: this.ddrb, skipOnce: this.skipOnce, joy: this.joy, keys: Array.from(this.keys), passAt: this.passAt,
       joy1: this.joy1, cia: this.cia ? JSON.parse(JSON.stringify(this.cia)) : null, pra2: this.pra2, ddra2: this.ddra2, lastCycles: this.lastCycles, nmiDue: !!this.nmiDue,
-      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null, collide: this.collide ? this.collide.save() : null, nest: this.nest };
+      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null, collide: this.collide ? this.collide.save() : null, legacyInterrupts: !this.nest,
+      under: this.under.map(q => Object.assign({}, q)) };
   }
   // opts.dma turns the video chip's fetches on or off for the restored machine (default: as saved).
   static restore(s, opts = {}) {
     const dma = opts.dma !== undefined ? !!opts.dma : !!s.dma;
     const m = new Machine({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), passAt: opts.passAt !== undefined ? opts.passAt : s.passAt,
-      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma, collide: !!s.collide, nest: !!s.nest });
+      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma, collide: !!s.collide, legacyInterrupts: !!s.legacyInterrupts });
     if (dma && s.dma) m.dma = JSON.parse(JSON.stringify(s.dma));
     const c = m.cpu;
     Object.assign(c, { a: s.cpu.a, x: s.cpu.x, y: s.cpu.y, sp: s.cpu.sp, pc: s.cpu.pc, cycles: s.cpu.cycles });
@@ -440,6 +528,7 @@ class Machine {
     if (s.cia) Object.assign(m, { cia: JSON.parse(JSON.stringify(s.cia)), pra2: s.pra2, ddra2: s.ddra2, lastCycles: s.lastCycles, nmiDue: s.nmiDue });
     else m.lastCycles = c.cycles;
     if (s.collide) { m.pra2 = s.pra2; m.ddra2 = s.ddra2; m.collide.load(s.collide); }
+    if (s.under && m.nest) { m.under = s.under.map(q => Object.assign({}, q)); m.depth = m.under.length; }
     return m;
   }
 }

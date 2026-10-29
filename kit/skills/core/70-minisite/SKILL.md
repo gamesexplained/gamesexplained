@@ -147,7 +147,10 @@ its music or its maps can put that first instead.
 - One self-contained `index.html`. Inline CSS and JavaScript; no
   build step; external resources only for fonts. It must open from disk,
   all but the widgets built on the site's shared scripts, which say so
-  when the script is missing.
+  when the script is missing. Test for a script with
+  `typeof Name === 'undefined'`, never `window.Name`: a script's
+  top-level `const`, `let` or `class` is no property of `window`, so the
+  widget says its script is missing when it is loaded.
 - Any page may use the site's shared scripts. Each machine has a library
   that draws its glyphs and screens and rebuilds the game image from
   `listing.json`, so a page draws from the bytes the Source tab shows,
@@ -507,6 +510,14 @@ come unevenly and the audio device can take 100 ms at once, and a
 shorter queue runs dry and overflows by turns, which is heard as the
 music skipping. `kit/scripts/test_live_sound.js` fails a Play page with
 a queue of its own.
+
+Every Play tab's Reset works whatever the page is doing, a stop
+included: it builds a new machine, lets go of the page's own pause, sets
+the sound chip's registers as the new machine has them, and starts the
+page's loop again. The loop catches whatever a frame throws, says the
+port stopped and that Reset starts it again, and goes no further, since
+a page that only rebuilds the machine leaves a reader whose port stopped
+with a button that does nothing.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in

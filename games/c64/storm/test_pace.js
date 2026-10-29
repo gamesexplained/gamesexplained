@@ -17,28 +17,13 @@
 //   node games/c64/storm/test_pace.js [frames a session]
 const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
-const { Machine, LINE, LINES } = require(path.join(ROOT, 'kit/c64/machine.js'));
+const { Machine } = require(path.join(ROOT, 'kit/c64/machine.js'));
 const g = game(__dirname);
 g.lib('cpu6502');                   // the 6502 the port's title music runs on, as play.html loads it
 const { StormPort } = g.run('reference/storm-port.js', 'storm-port', 'StormPort');
 const { StormPlay } = g.run('reference/storm-play.js', 'storm-play', 'StormPlay');
 const { StormGuide } = g.run('reference/storm-guide.js', 'storm-guide', 'StormGuide');
 const FRAMES = +process.argv[2] || 8000;
-
-// the game's raster interrupt comes in through the KERNAL (as test_play.js's machine)
-class StormMachine extends Machine {
-  tick() {
-    if (this.dma) this.dmaCatchUp();
-    const ln = Math.floor(this.cpu.cycles / LINE);
-    while (this.lastLine < ln) {
-      this.lastLine++;
-      const l = this.lastLine % LINES;
-      if (l === 0) this.frames++;
-      if (l === this.cmp) this.latch |= 1;
-    }
-    if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
-  }
-}
 
 // The stick. On the title and its questions, by frame, in turn: fire, left (one player) or right
 // (two), and down (no instructions). In play, once a pass: the guide's way (reference/storm-guide.js)
@@ -72,7 +57,7 @@ function pilot(who) {
 const char = new Uint8Array(4096);
 char.set(StormPort.FONT);
 function session(two) {
-  const m = new StormMachine({ ram: g.listing().ram, pc: 0x75AC, passAt: 0x78D7, port: { dir: 0x2F, data: 0x37 }, rom: { char }, dma: true });
+  const m = new Machine({ ram: g.listing().ram, pc: 0x75AC, passAt: 0x78D7, port: { dir: 0x2F, data: 0x37 }, rom: { char }, dma: true });
   m.hooks[0xFFD2] = (c) => { c.cycles += 40; c.rts(); };          // CHROUT: nothing kept of it
   const ran = [], page = [], onGame = [pilot(0), pilot(1)], onPage = [pilot(0), pilot(1)];
   m.onPass = (mm) => { ran.push(mm.frames); mm.joy1 = 0x1F & ~onGame[0](mm.ram); mm.joy = 0x1F & ~onGame[1](mm.ram); };

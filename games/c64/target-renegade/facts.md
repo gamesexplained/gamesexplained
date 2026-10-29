@@ -13,9 +13,9 @@ Title entry $2600 copies source $3546–$3645 to $020D–$030C. The source belon
 | Finding | Evidence |
 |---|---|
 | Title fire reads joystick port 1 | $26CC reads $DC01 bit 4; live port-1/port-2 comparison. |
-| The supplied edition starts with five lives | $8000 stores $35 AND $0F at $020C; live HUD agrees. The manual says three; the edition difference remains unexplained. |
+| The supplied edition starts with five lives | $8000 stores $35 AND $0F at $020C; live HUD agrees. The manual says three; Zzap!64 38 (June 1988) says "his complement of five", so the manual disagrees with the game and the review. Why is unexplained. |
 | Extra life requires passing the threshold | $FC00 compares packed BCD score with $020A/$020B. Equality does not award; above does. Initial displayed threshold is 50,000; each award advances it by 100,000. Lives are capped at nine. Four native cases passed. |
-| Stored score units are hundreds of displayed points | $FC43 formats four BCD digits and the template supplies two trailing zero digits. All 256 formatter inputs passed; pending-score addition is $FC5A. |
+| Stored score units are hundreds of displayed points | $FC35 formats four BCD digits by calling $FC43 once per byte, two digits each, and the template supplies two trailing zero digits. All 256 formatter inputs passed; pending-score addition is $FC5A. |
 | The HUD template copy is 160 cells | $A803 uses X=$A0 down through $01, copying characters $2BF0–$2C8F to $3720–$37BF and colours $2B50–$2BEF to $DB20–$DBBF. |
 | One horizontal colour-scroll direction omits row zero | $A6A9 shifts 39 cells in each of rows 1–19. Independent simulation recorded 741 writes; row zero remained unchanged. |
 | Background maps are 80 columns by 20 metatiles | $2A6C reads column-major indices at $2DC0. Each selects sixteen row-major character codes at $B000. Native draws matched 48 column/row cases across both loads. |
@@ -50,3 +50,6 @@ Live score fixtures kept five lives at exactly 50,000, awarded a sixth at 50,100
 
 The committed page tests compare nine music cues over 150,497 calls, thirteen effect requests on each of three voices over 78,000 calls, 51,200 native map characters, 300,000 valid score cases, 198 stored-component mirrors and all 256 uniform-byte patterns in both modes. Five native stage snapshots matched the browser's font and colour allocations exactly. The trimmed frame and full native-compared frame share pixel hash `b70d6f5361c41a3c062b47f434ebd3a6de32e7dc364b90f1fd16cf8050f7c111`; the page embeds 2,229 RAM bytes read by that drawing.
 
+## The listing after the audit
+
+On 28 October 2026 independent checkers on `claude-opus-5-5` audited all 1,622 comments in the four parts: each of the 458 handwritten comments was read against the code, and the 1,164 generated comments (33 template families) were checked by script for every instance and by hand for at least eight each. All 88 claims in this file and in features.md were checked too. 15 of those claims rest on the live emulator or on snapshots and could not be checked from the listing. A sample of 60 comments drawn afterwards with seed 2026102801 found all 60 right.

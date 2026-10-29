@@ -106,7 +106,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="pick"><a class="step" id="zk-rprev" aria-label="Previous room">‹</a><select id="zk-room" aria-label="Room"></select><a class="step" id="zk-rnext" aria-label="Next room">›</a></div>
     <canvas id="zk-rose" class="zk-rose" width="760" height="470"></canvas>
     <div id="zk-roomcard"></div>
-    <p class="cap">Read from the listing: the rooms are the children of object 117, and each exit is decoded by its length, as the story's walking routine reads it (story <code>$6808</code>, <a href="index.html#objects">every room and every thing is one of 255 objects</a>). What the game starts with in each room is the room's children in the story as it lies on the disk. A message or a routine lives in the story's high memory, read from the disk as the game needs it, so its address is shown in place of its text.</p>
+    <p class="cap">Read from the listing: the rooms are the children of object 117, and each exit is decoded by its length, as the story's walking routine reads it (story <code data-part="story">$6808</code>, <a href="index.html#objects">every room and every thing is one of 255 objects</a>). What the game starts with in each room is the room's children in the story as it lies on the disk. A message or a routine lives in the story's high memory, read from the disk as the game needs it, so its address is shown in place of its text.</p>
   </div>
   <p>Zork's map is not a grid. An exit need not lead back the way it came: west from West of House is a forest, and east from that forest is the Forest Path, not the house (live). The maze's rooms share their names and lead into one another in ways only a map drawn by hand makes sense of. Some exits are conditions. The trap door in the living room is a routine, the kitchen window is a door object that must be open, and the way south-west from West of House to the Stone Barrow is closed until global 30 is set, which happens when the score reaches 350.</p>
 </section>
@@ -308,7 +308,17 @@ const Zork = (function () {
     return words;
   }
 
-  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split };
+  // The machine at the Z-machine's start, from the two listings: the interpreter's, and the story's
+  // first pages laid over it as the start-up reads them ($088D-$08C5): page 0 to $2C00, header byte
+  // 5 made $FF ($0895), then the rest of the resident pages, header byte 4 plus 1 of them, $48.
+  function machine(I, S) {
+    const n = (S.ram[4] + 1) * 0x100;
+    I.ram.set(S.ram.subarray(0, n), BASE); I.has.fill(1, BASE, BASE + n);
+    I.ram[BASE + 5] = 0xFF;
+    return I;
+  }
+
+  return { BASE, EXITS, header, text, encode, lookup, dictionary, object, children, type, split, machine };
 })();
 // end of zork.js
 </script>
@@ -356,8 +366,8 @@ function exits(o) {
 function exitText(objects, e, link) {
   const room = n => link(n, objects.byN(n).label);
   if (e.len === 1) return room(e.room);
-  if (e.len === 2) return `blocked: a message at story <code>${hex(e.message)}</code>`;
-  if (e.len === 3) return `the routine at story <code>${hex(e.routine)}</code> decides`;
+  if (e.len === 2) return `blocked: a message at story <code data-part="story">${hex(e.message)}</code>`;
+  if (e.len === 3) return `the routine at story <code data-part="story">${hex(e.routine)}</code> decides`;
   const g = e.variable >= 16 ? `global ${e.variable - 16}` : `local ${e.variable}`;
   if (e.len === 4) return `${room(e.room)}, once ${g} is not 0`;
   return `${room(e.room)}, through the ${link(e.door, objects.byN(e.door).label)} when it is open`;
@@ -391,17 +401,17 @@ function objectHTML(ram, objects, o, page) {
   const kids = Zork.children(ram, o.n);
   h += `<dt>Holds</dt><dd>${kids.length ? kids.map(n => link(n)).join(', ') : '<span class="zk-mute">nothing</span>'}</dd>`;
   h += `<dt>Attributes</dt><dd>${o.attrs.length ? o.attrs.join(', ') : '<span class="zk-mute">none set</span>'}</dd>`;
-  h += `<dt>Entry</dt><dd>story <code>${hex(o.a)}</code>, properties at story <code>${hex(o.propsAt)}</code></dd></dl>`;
+  h += `<dt>Entry</dt><dd>story <code data-part="story">${hex(o.a)}</code>, properties at story <code data-part="story">${hex(o.propsAt)}</code></dd></dl>`;
   h += '<table class="zk-table"><tr><th>Property</th><th>Bytes</th><th>What the story does with it</th></tr>';
   for (const p of o.props) {
     let what = '';
     if (p.num >= 19) what = `exit ${EXITS[p.num]}: ${exitText(objects, exits({ props: [p] })[0], link)}`;
-    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code>$5DFC</code>)';
-    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code>$5E19</code>)';
-    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code>${hex(2 * propValue(o, 17))}</code>` : 'no routine';
-    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code>$61EA</code>)`;
-    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code>$898C</code>)`;
-    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code>$E20C</code>)`;
+    else if (p.num === 18) what = 'the nouns that name it: ' + p.data.filter((_, i) => i % 2 === 0).map((b, i) => esc(byA.get(b << 8 | p.data[2 * i + 1]) || '?')).join(', ') + ' (story <code data-part="story">$5DFC</code>)';
+    else if (p.num === 16) what = 'its adjectives: ' + p.data.map(v => esc((adjectives.get(v) || ['?']).join(' or '))).join(', ') + ' (story <code data-part="story">$5E19</code>)';
+    else if (p.num === 17) what = propValue(o, 17) ? `its routine, story <code data-part="story">${hex(2 * propValue(o, 17))}</code>` : 'no routine';
+    else if (p.num === 13) what = `points the first time it is ${o.parent === objects.ROOMS ? 'entered' : 'taken'}: ${propValue(o, 13)} (story <code data-part="story">$61EA</code>)`;
+    else if (p.num === 12) what = `points while it is in the trophy case: ${propValue(o, 12)} (story <code data-part="story">$898C</code>)`;
+    else if (p.num === 15) what = `strength in a fight: ${propValue(o, 15)} (story <code data-part="story">$E20C</code>)`;
     h += `<tr><td>${p.num}</td><td class="zk-mono">${p.data.map(b => h2(b)).join(' ')}</td><td>${what}</td></tr>`;
   }
   h += '</table>';
@@ -413,7 +423,7 @@ function objectHTML(ram, objects, o, page) {
   const fail = msg => document.querySelectorAll('.plate div[id^="zk-"]').forEach(el => { if (!el.textContent) el.textContent = msg; });
   if (!globalThis.Apple2) { fail('These widgets need the site\'s Apple II library: open the page from the built site.'); return; }
   let L;
-  try { L = await Apple2.load('listing.json'); } catch (e) { fail('The listing did not load: ' + e.message); return; }
+  try { L = Zork.machine(await Apple2.load('parts/interpreter/listing.json'), await Apple2.load('parts/story/listing.json')); } catch (e) { fail('The listing did not load: ' + e.message); return; }
   const ram = L.ram, objects = Objects(ram);
   const rooms = Zork.children(ram, objects.ROOMS).map(n => objects.byN(n)).sort((a, b) => a.label.localeCompare(b.label) || a.n - b.n);
   browser(ram, objects, rooms);

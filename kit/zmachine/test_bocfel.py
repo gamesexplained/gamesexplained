@@ -11,7 +11,8 @@ with three typed lines, and checks:
   - what the story printed is what the Z-machine Standard says it prints, worked out
     here by hand, and every word typed was found at the dictionary address story.py's
     lookup gives, or not found where it gives none;
-  - the opcode table has, for each version, the opcodes Bocfel's own table has, by name.
+  - the opcode table has, for each version, the opcodes Bocfel's own table has, by name;
+  - a run with --seed repeats: the same seed gives the same random numbers.
 
 Version 6 is left out: its screen model needs Bocfel's Glk build. The test needs the build
 `python3 kit/scripts/tools.py get-bocfel` makes; without it, it skips, and with
@@ -373,6 +374,19 @@ extras: .routine 0
 '''
 
 
+# eight random numbers, from whatever seed the interpreter starts with
+DICE = r'''
+main:   .routine 0
+        store [G10] #8
+roll:   random #1000 -> sp
+        print_num sp
+        print_char #32
+        dec_chk [G10] #1 ?~roll
+        new_line
+        quit
+'''
+
+
 def for_version(source, v):
     out = []
     for line in source.splitlines():
@@ -510,6 +524,16 @@ class Bocfel(unittest.TestCase):
             with self.subTest(version=v):
                 story = self.run_version(v, locks=True)
                 self.assertNotEqual(story.mem, build(v).story, "the locks changed nothing")
+
+    def test_seed(self):
+        """--seed repeats a run: the same seed gives the same random numbers, another seed others."""
+        path = os.path.join(self.work, "dice.z3")
+        with open(path, "wb") as f:
+            f.write(zasm.assemble(3, DICE).story)
+        runs = [bocfel.run(path, seed=n) for n in (7, 7, 8)]
+        self.assertRegex(runs[0], r"^(\d+ ){8}")
+        self.assertEqual(runs[0], runs[1], "the same seed gave different numbers")
+        self.assertNotEqual(runs[0], runs[2], "another seed gave the same numbers")
 
     def test_opcode_table(self):
         theirs = bocfel_table(os.path.join(bocfel.SRC, "process.cpp"))

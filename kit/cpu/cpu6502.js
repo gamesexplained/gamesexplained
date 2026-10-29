@@ -47,6 +47,10 @@
 //   serves its chips and whatever else is there (a ROM, the RAM beneath), with ramSize or without.
 //   A C16 machine passes the pages of TED and of its ROMs (kit/c16/machine.js). Without the port,
 //   $00 and $01 are RAM.
+// - new CPU(mem, { io, ioPages, romPages }): romPages, a list of page numbers, are read and fetched
+//   from mem and their writes go to io.write: a cartridge's ROM, with a mapper's registers on it.
+//   The NES passes its RAM's mirrors and its chips as ioPages and $80-$FF as romPages
+//   (kit/nes/machine.js).
 // - io: the chips at $D000-$DFFF while they are banked in, colour RAM included:
 //   { read(address, cpu), write(address, value, cpu) }. Mirrors are the caller's to fold. A read or
 //   a write with no function for it stops the run and names the chip.
@@ -91,6 +95,11 @@
 // run. A frame of play: cpu.run({ cycles: 19656 }); if (!cpu.i) cpu.irq();
 // cpu.onRti, when set, is called with the CPU after each RTI it runs: a machine that takes its
 // interrupts itself between runs (kit/c16/machine.js) counts their ends with it.
+// cpu.onCli, when set, is called after each CLI, and each PLP that clears I.
+// cpu.cut, set above 0 while a run of cycles goes on, ends it after that many more instructions: a
+// machine whose chip was just changed so that an interrupt may come sooner than the run's end (an
+// interrupt flag cleared, a timer started) sets it to 1 to look at its chips again, and after a CLI
+// to 2, since the processor takes an interrupt waiting on it only after the next instruction.
 // irq(handler, opts) and nmi(handler, opts) take an interrupt now, whatever I says: push the program
 // counter and the flags (B clear), set I, jump to handler (default: the vector at $FFFE or $FFFA as
 // the port maps it), and run until the return to the interrupted code. With opts.kernal they stand in
@@ -257,7 +266,7 @@
 
   const hex2 = v => '$' + v.toString(16).toUpperCase().padStart(2, '0');
   const hex4 = v => '$' + v.toString(16).toUpperCase().padStart(4, '0');
-  const chip = a => a < 0xD400 ? 'the VIC-II' : a < 0xD800 ? 'the SID' : a < 0xDC00 ? 'colour RAM' :
+  const chip = a => a < 0xD000 || a >= 0xE000 ? 'a chip' : a < 0xD400 ? 'the VIC-II' : a < 0xD800 ? 'the SID' : a < 0xDC00 ? 'colour RAM' :
     a < 0xDD00 ? 'CIA 1' : a < 0xDE00 ? 'CIA 2' : 'the expansion port';
 
   // --- the processor ----------------------------------------------------------------------------
@@ -269,6 +278,8 @@
       this.steps = 0; this.cycles = 0;
       this.opc = 0;                                    // the address of the instruction running
       this.onRti = null;                               // called after each RTI the processor runs
+      this.onCli = null;                               // called after each CLI, and each PLP that clears I
+      this.cut = 0;                                    // a run of cycles ends after this many more instructions
       this.writes = null; this.reads = null; this.executed = null;
       this.ane = opts.ane === undefined ? 0xEF : opts.ane;
       this.lxa = opts.lxa === undefined ? 0xEE : opts.lxa;
@@ -279,10 +290,12 @@
       this.wk = new Uint8Array(256);                   // per page: where a write goes
       this.c64 = opts.port !== undefined;
       this.ioPages = opts.ioPages ? Array.from(opts.ioPages, p => p & 0xFF) : null;
-      if (!this.c64 && (opts.rom || (opts.io && !this.ioPages))) {
+      this.romPages = opts.romPages ? Array.from(opts.romPages, p => p & 0xFF) : null;
+      if (!this.c64 && (opts.rom || (opts.io && !this.ioPages && !this.romPages))) {
         throw new Error('io and rom need the C64 map: give port too ({ dir, data }, as readSnapshot returns it), or ioPages for io on another machine');
       }
-      if (this.c64 && this.ioPages) throw new Error('ioPages is for a machine without the C64 map: give port or ioPages, not both');
+      if (this.c64 && (this.ioPages || this.romPages)) throw new Error('ioPages and romPages are for a machine without the C64 map: give port or them, not both');
+      if (this.romPages && !opts.io) throw new Error('romPages needs io, which takes the writes to those pages');
       if (opts.ramSize !== undefined) {               // RAM that repeats through the map (the C16's 16 KB)
         const n = opts.ramSize;
         if (this.c64 || !(n >= 0x400 && n <= 0x8000 && (n & (n - 1)) === 0)) {
@@ -337,6 +350,7 @@
       r.fill(RAM); w.fill(RAM);
       if (this.ramMask !== undefined) { r.fill(MIRROR, (this.ramMask + 1) >>> 8, 0xFD); w.fill(MIRROR, (this.ramMask + 1) >>> 8, 0xFD); }
       if (this.ioPages) for (const p of this.ioPages) r[p] = w[p] = IO;
+      if (this.romPages) for (const p of this.romPages) w[p] = IO;
     }
     portRead(a) {
       return a === 0 ? this.pdir : ((this.pdata & this.pdir) | (~this.pdir & (0x17 | (this.pout & 0xC8)))) & 0xFF;
@@ -595,7 +609,7 @@
         case 0x48: this.push(this.a); this.pc++; break;
         case 0x68: this.a = this.nz(this.pull()); this.pc++; break;
         case 0x08: this.push(this.p | 0x10); this.pc++; break;
-        case 0x28: this.p = this.pull(); this.pc++; break;
+        case 0x28: { const i = this.i; this.p = this.pull(); this.pc++; if (i && !this.i && this.onCli !== null) this.onCli(this); break; }
         // arithmetic
         case 0x69: this.adc(this.imm()); break;
         case 0x65: this.adc(this.rdz(this.zp())); break;
@@ -692,7 +706,7 @@
         // flags
         case 0x18: this.c = 0; this.pc++; break;
         case 0x38: this.c = 1; this.pc++; break;
-        case 0x58: this.i = 0; this.pc++; break;
+        case 0x58: this.i = 0; this.pc++; if (this.onCli !== null) this.onCli(this); break;
         case 0x78: this.i = 1; this.pc++; break;
         case 0xB8: this.v = 0; this.pc++; break;
         case 0xD8: this.d = 0; this.pc++; break;
@@ -834,6 +848,7 @@
         }
         this.step();
         if (++n > max) this.limit(max);
+        if (this.cut !== 0 && cyclesTo !== Infinity && --this.cut === 0) break;
       }
       return this.steps - start;
     }

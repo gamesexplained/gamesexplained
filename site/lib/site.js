@@ -308,9 +308,10 @@
   if(document.body.dataset.nolink||document.querySelector('.gametabs[data-nolink]')) return;   /* a game with no listing has no Source page */
   document.querySelectorAll('code').forEach(function(c){
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
-    var t=c.textContent, m=/^\$([0-9A-Fa-f]{4})$/.exec(t.trim());
+    var t=c.textContent, m=/^\$([0-9A-Fa-f]{4,5})$/.exec(t.trim());
     if(!m) return;
     var d=c.closest('[data-part]'), page=d?(d.dataset.part?'source-'+d.dataset.part+'.html':''):'source.html';
+    if(m[1].length>4&&!(d&&d.dataset.part)) return;   /* five digits: a story's address, in its part's element */
     if(!page) return;
     var a=document.createElement('a'); a.href=page+'#'+m[1].toUpperCase(); a.textContent=t;
     a.dataset.auto='';   /* not in the source: the page editor leaves it out of what it saves */

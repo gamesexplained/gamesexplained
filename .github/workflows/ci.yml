@@ -15,6 +15,14 @@ jobs:
     permissions:
       contents: read
       issues: read   # the build reads which issues are closed, for the activity page
+    # A new push to a pull request cancels the older run of it: PR runs
+    # share a group (refs/pull/N/merge), so only the newest runs. Any
+    # other run gets a group of its own, so pushes to main, scheduled
+    # runs and manual runs neither cancel nor queue behind each other,
+    # and deploy and announce are untouched.
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
         with:

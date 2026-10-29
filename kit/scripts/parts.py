@@ -70,13 +70,16 @@ Usage:
                                        listing.json, facts.md and ledger settings this
                                        part's, for a game that turned out to have more
                                        loads after its first was analysed
+                                       --machine <kit> --size <bytes> makes it a virtual
+                                       address space read by kit/<kit>/ (below)
 """
 import glob, json, os, re, shutil, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ID = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 LEDGER_KEYS = ("video", "coverage", "io", "regions")   # one image's ledger settings: a part's are in part.json
-KINDS = {"load": ("over", "ranges"), "bank": ("bank", "seen_by", "window")}   # the fields each kind may have
+KINDS = {"load": ("over", "ranges"), "bank": ("bank", "seen_by", "window"),
+         "virtual": ("machine", "size")}   # the fields each kind may have
 EMPTY = {"video": {"screen": "", "charset": ""}, "coverage": {"exclude": [], "extra": [], "include": []},
          "io": [], "regions": []}
 
@@ -101,34 +104,47 @@ def parts(gdir):
     for f in glob.glob(os.path.join(gdir, "parts", "*", "part.json")):
         own, d = json.load(open(f)), os.path.dirname(f)
         pid = os.path.basename(d)
-        bank = kind(pid, own) == "bank"
+        k = kind(pid, own)
+        bank = k == "bank"
         out.append({"id": pid, "title": own.get("title") or pid, "order": own.get("order", 0),
                     "over": own.get("seen_by" if bank else "over") or None,
-                    "bank": own["bank"] if bank else None, "dir": d})
+                    "bank": own["bank"] if bank else None,
+                    "machine": own["machine"] if k == "virtual" else None, "dir": d})
     return sorted(out, key=lambda p: (p["order"], p["id"]))
 
 
 def kind(pid, own):
-    """The kind of part a part.json describes, "load" or "bank", once its fields are those of
-    that kind and no other's; stops on a mix, which would leave "over" and "ranges" meaning one
-    thing to the writer and another to the scripts."""
+    """The kind of part a part.json describes, "load", "bank" or "virtual", once its fields are
+    those of that kind and no other's; stops on a mix, which would leave "over" and "ranges"
+    meaning one thing to the writer and another to the scripts."""
     k = own.get("kind", "load")
     if k not in KINDS:
-        sys.exit(f'part {pid}: "kind" is "load" or "bank", not {k!r}')
+        sys.exit(f'part {pid}: "kind" is "load", "bank" or "virtual", not {k!r}')
     alien = [f for other, fields in KINDS.items() if other != k for f in fields if f in own]
     if alien:
         say = ", ".join(f'"{f}"' for f in alien)
         if k == "bank":
             sys.exit(f"part {pid} is a bank, so {say} do not belong in its part.json: name the part whose "
                      'code reads it as "seen_by", and where it shows as "window" (kit/skills/core/15-parts)')
-        sys.exit(f'part {pid} has {say}, which only a bank has: a bank says "kind": "bank", and a load '
-                 "has none of them (kit/skills/core/15-parts)")
+        if k == "virtual":
+            sys.exit(f"part {pid} is a virtual address space, so {say} do not belong in its part.json: it "
+                     'lies over no part, and shows in no window (kit/skills/core/15-parts)')
+        sys.exit(f'part {pid} has {say}, which only a bank or a virtual address space has: a bank says '
+                 '"kind": "bank", a virtual address space "kind": "virtual", and a load has none of them '
+                 "(kit/skills/core/15-parts)")
     if k == "bank":
         missing = [f for f in KINDS["bank"] if own.get(f) in (None, "", [])]
         if missing:
             sys.exit(f"part {pid} is a bank, and its part.json has no " + ", ".join(f'"{f}"' for f in missing)
                      + ': "bank" is its number, "seen_by" the part whose code reads it, and "window" where '
                      'it shows, as [["$C000", "$FFFF"]]')
+    if k == "virtual":
+        if not own.get("machine") or not os.path.isfile(os.path.join(os.path.dirname(HERE), str(own["machine"]), "cpu.py")):
+            sys.exit(f'part {pid} is a virtual address space, and its part.json\'s "machine" names no kit '
+                     f'that reads one: {own.get("machine")!r}, where kit/<machine>/cpu.py should be, as kit/zmachine/ is')
+        if not isinstance(own.get("size"), int) or own["size"] <= 0:
+            sys.exit(f'part {pid} is a virtual address space, and its part.json has no "size": the bytes '
+                     "the space holds, as a number (a story's, the length of its file)")
     return k
 
 
@@ -270,6 +286,8 @@ def load_game(gdir):
     out["part"] = {"id": pid, "title": me["title"], "over": [q["id"] for q in under(P, me)]}
     if me.get("bank") is not None:
         out["part"]["bank"] = me["bank"]
+    if me.get("machine"):
+        out["part"]["machine"], out["part"]["size"] = me["machine"], own["size"]
     if own.get("banks"):
         out["banks"] = own["banks"]
     out["elsewhere"] = elsewhere(P, me)
@@ -412,7 +430,7 @@ def table(gdir):
     return lines, (T, E, n, len(P))
 
 
-def add(gdir, pid, title=None, over=None, adopt=False):
+def add(gdir, pid, title=None, over=None, adopt=False, machine=None, size=None):
     gj = os.path.join(gdir, "game.json")
     if not os.path.isfile(gj):
         sys.exit(f"{gdir} has no game.json: give the game's folder")
@@ -424,6 +442,8 @@ def add(gdir, pid, title=None, over=None, adopt=False):
         sys.exit(f"{pid} is already one of this game's parts")
     if over and over not in [p["id"] for p in P]:
         sys.exit(f"--over {over}: no such part; add the part beneath first")
+    if (machine is None) != (size is None) or (machine and (over or adopt)):
+        sys.exit("a virtual address space takes --machine and --size together, and neither --over nor --adopt")
     d = os.path.join(gdir, "parts", pid)
     if os.path.exists(d):
         sys.exit(f"{d} already exists")
@@ -442,6 +462,9 @@ def add(gdir, pid, title=None, over=None, adopt=False):
     part = {"title": name, "order": max([p["order"] for p in P] + [0]) + 1}
     if over:
         part.update({"over": over, "ranges": []})
+    if machine:
+        part.update({"kind": "virtual", "machine": machine, "size": int(size, 0)})
+        kind(pid, part)
     part.update(json.loads(json.dumps(EMPTY)))
     stale = [k for k in LEDGER_KEYS if game.get(k) not in (None, EMPTY[k])]   # game.json's own, read by nothing now
     if adopt:
@@ -491,7 +514,7 @@ def main():
     if argv[0] == "add":
         rest, opt, i = [], {}, 1
         while i < len(argv):
-            if argv[i] in ("--title", "--over"):
+            if argv[i] in ("--title", "--over", "--machine", "--size"):
                 if i + 1 >= len(argv):
                     sys.exit(f"{argv[i]} needs a value")
                 opt[argv[i][2:]] = argv[i + 1]; i += 2
@@ -500,7 +523,8 @@ def main():
             else:
                 rest.append(argv[i]); i += 1
         if len(rest) != 2:
-            sys.exit('usage: parts.py add <game dir> <id> [--title "..."] [--over <id>] [--adopt]')
+            sys.exit('usage: parts.py add <game dir> <id> [--title "..."] [--over <id>] [--adopt] '
+                     '[--machine <kit> --size <bytes>]')
         add(rest[0], rest[1], **opt); return
     if not parts(argv[0]):
         print(f"{argv[0]}: one load, no parts"); return

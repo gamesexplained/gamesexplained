@@ -179,7 +179,8 @@ copy drifts."
   produces results that read as right and are wrong, and that the game
   cannot be Silver until a maintainer has sampled its listing on a proven
   model, and audited it if the sample finds too many wrong
-  (`kit/CHECKING.md`). Then work to the tier they chose, and record `tier`
+  (`kit/CHECKING.md`), or, for a contributor the maintainers know
+  (`kit/contributors.json`), until their run has audited it on one. Then work to the tier they chose, and record `tier`
   as `bronze` until the check is done. The failures are silent: address
   arithmetic goes wrong in ways that read as confident, and the same model
   checking its own work finds fewer of them, which is why the check is
@@ -309,7 +310,7 @@ there.
 | Tier | Requires |
 |---|---|
 | Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; coverage below 100 %; `symbols.json` and `listing.json` committed for what there is |
-| Silver | 100 % coverage; `facts.md`; a sample of the listing's comments checked, and every step behind the listing recorded in `accuracy`; the Source tab says what the sample found, and the run recommends an audit for later (`kit/skills/core/60-verify`); every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built, with a player for every tune when the game has music; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or the listing sampled, and audited when the sample is over the mark, by a maintainer on a proven model (`kit/CHECKING.md`) |
+| Silver | 100 % coverage; `facts.md`; a sample of the listing's comments checked, and every step behind the listing recorded in `accuracy`; the Source tab says what the sample found, and the run recommends an audit for later (`kit/skills/core/60-verify`); every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built, with a player for every tune when the game has music; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or the listing sampled, and audited when the sample is over the mark, by a maintainer on a proven model, or audited and sampled again on proven models on a known contributor's run (`kit/CHECKING.md`) |
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass. A Platinum game being curated keeps `platinum` and sets `steward` the same way, and its page reads platinum (claimed) |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | a Silver whose Play tab is the whole game: every routine ported to JavaScript and run in lockstep with the game's own code (`kit/skills/core/70-minisite/play.md`), `test_play.js` beside the page holding the published page in CI, and no known bug in the port. It needs no human and says nothing about the copy, so it neither needs Gold nor follows it |

@@ -151,9 +151,22 @@ objects `$86` down to 0 can be hit (`enemies_hit_by_fire`, `$A54C`):
 object 0 is the core, objects 1 to `$86` its guards, and the rest are
 scenery of the boss that cannot be hurt. The core takes no hits while a
 guard is alive (`shots_offscreen`, `$A7E2`, clears `$86` when they are
-gone). A part takes `h` hits, plus 256 for each unit of its reserve
-(`boss_part_hit`, `$AC07`). A boss can release enemies from a spawn list
-(`boss_spawn`, `$AD89`). The core's end calls `level_end` (above). The
+gone; *live*: on level 2's end boss, fire on the core was wiped and its
+120 stayed, and fire on guard 1 took its 100 to 99). A part takes `h` hits, plus 256 for each unit of its reserve
+(`boss_part_hit`, `$AC07`). In the boss stage every hit wipes the fire
+character, a super weapon's too, so a super weapon's shot counts one hit
+on a boss part (*live*: a `$FB` character written on level 1's
+mid-level core took one hit off its 90 and was wiped).
+
+A boss can release enemies from a spawn list (`boss_spawn`, `$AD89`),
+only while the core is on a path step marked for firing: one at a time,
+into the first free object of 15 to 12, or with bit 7 of the setting
+(`$98`) set, `($98 AND 3) + 1` at once. A released enemy cannot be hit,
+since only objects `$86` down to 0 are tested (*live*: an `$F6`
+character written on a released enemy, object 15, during level 1's
+mid-level fight stayed on the screen and the enemy was untouched).
+Released enemies fire like any other; the core itself never does.
+The core's end calls `level_end` (above). The
 end of a level then plays out over 148 frames (`level_end_sequence`,
 `$AE62`: `$AD` from `$94`), four explosions flying apart from the core
 (`boss_burst`, `$AEEC`, which starts the four enemy-shot objects in the
@@ -184,9 +197,15 @@ million, gives each player an extra life, and moves to the next level.
 - Enemies fire when a shot of the stage's allowance is free and no live
   shot is within 45 lines (`enemies_fire`, `$A664`), aimed at player 1,
   or at the second ship on alternate shots (`choose_target`, `$A79E`).
-  An enemy moving vertically that comes close above or below another
-  object in its path removes it if it has not appeared yet, and
-  otherwise turns round and bursts (`enemies_space_out`, `$AA64`).
+  The shot goes to the first of objects 15 down to 1 in state 7 or more
+  on a path step marked for firing whose firing mode allows it: mode 2
+  fires at any target, mode 0 only at one above it, mode 1 only at one
+  below it, and neither at one level with it. Object 0 never fires.
+- An enemy shot with five live objects ahead of it in the direction it
+  moves up or down, and a sixth within 37 lines below a falling shot or
+  40 above a rising one, is removed if it has not appeared yet, and
+  otherwise turns round and bursts (`enemies_space_out`, `$AA64`). Only
+  shots are tested.
 - An enemy dies when a players' shot character (`$F6` or higher) is in
   the screen cells it covers (`enemies_hit_by_fire`): a normal shot is
   used up, a super weapon's (`$FB` and up) goes on. Hits are read from

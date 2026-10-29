@@ -346,7 +346,9 @@ const input = (n, m) => {
   P.io.irqByte = a => { reads++; return irqByte(a); };
   const r = ls.run({ passes: 100, onPass: input });
   check('stand-ins that wait: 100 passes identical', r.ok && r.passes === 100, true);
-  check('the poll read $2001 through irqByte twice a pass, then from memory', reads, 200);
+  // and the line-0 interrupt's stand-in once a pass, as its INC reads it: a handler being run reads
+  // the irqBytes as its game's handler read them (lockstep.js, irqBytes)
+  check('the poll read $2001 through irqByte twice a pass, the interrupt once, then from memory', reads, 300);
   const Q = port();
   Q.poll = standIn(Q, ADDR.POLL, { maxSteps: 20000 });
   let msg = '';
@@ -614,6 +616,69 @@ const TICK = (() => {
     .run({ passes: 6, onFrame: (f, g) => { g.joy = f & 1 ? 0x1F : 0x0E; seen.add(g.ram[0x2010]); } });
   check('yields of no work in a long routine: 6 passes identical', r.ok && r.passes === 6, true);
   check('and the joystick changed', seen.size > 1, true);
+}
+
+// A stand-in on the port's banking (P.cpuPort), and an interrupt handler the KERNAL's entry reaches.
+{
+  const M = new Uint8Array(65536), P = { M, cpuPort: 0x34 };
+  P.io = { read: (a) => (a === 0xD020 ? 0xAB : 0), write: () => {} };
+  M[0xD020] = 0x11;
+  // $C000: LDA $D020; STA $C100; LDA #$35; STA $01; RTS
+  M.set([0xAD, 0x20, 0xD0, 0x8D, 0x00, 0xC1, 0xA9, 0x35, 0x85, 0x01, 0x60], 0xC000);
+  const f = standIn(P, 0xC000);
+  f();
+  check('a stand-in on $01 = $34 reads the RAM under the chips', M[0xC100], 0x11);
+  check('the banking it leaves comes back in P.cpuPort', P.cpuPort, 0x35);
+  f();
+  check('the next stand-in runs on the banking the port keeps', M[0xC100], 0xAB);
+  // $C200: INC $C101; PLA; TAY; PLA; TAX; PLA; RTI, a handler for the KERNAL's entry, and $C210: INC $C102; JMP $EA31
+  M.set([0xEE, 0x01, 0xC1, 0x68, 0xA8, 0x68, 0xAA, 0x68, 0x40], 0xC200);
+  M.set([0xEE, 0x02, 0xC1, 0x4C, 0x31, 0xEA], 0xC210);
+  P.cpuPort = 0x36;
+  const r = standIn(P, 0xC200, { irq: true, kernal: true })({ a: 0x12, x: 0x34, y: 0x56 });
+  check('a handler that pulls what $FF48 pushed returns the registers', [r.a, r.x, r.y].join(), [0x12, 0x34, 0x56].join());
+  let acked = 0;
+  standIn(P, 0xC210, { irq: true, kernal: true, hooks: { 0xEA30: () => {} } })({});
+  standIn(P, 0xC210, { irq: true, kernal: true, hooks: { 0xEA31: (c) => { acked++; c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); } } })({});
+  check('a handler that leaves by $EA31 runs, and a hook can stand in for it', [M[0xC101], M[0xC102], acked].join(), [1, 2, 1].join());
+}
+
+// A stand-in that goes on by JMP, stopped where the port takes over (standInGen's until).
+{
+  const M = new Uint8Array(65536), P = { M };
+  P.io = { read: () => 0, write: () => {} };
+  // $C300: INC $C110; JMP $C310 ... $C310: INC $C111; RTS
+  M.set([0xEE, 0x10, 0xC1, 0x4C, 0x10, 0xC3], 0xC300);
+  M.set([0xEE, 0x11, 0xC1, 0x60], 0xC310);
+  const it = standInGen(P, 0xC300, { until: [0xC310] })({});
+  let r; do r = it.next(); while (!r.done);
+  check('standInGen until: stopped at the JMP\'s target', [r.value.at, M[0xC110], M[0xC111]].join(), [0xC310, 1, 0].join());
+}
+
+// A handler that reads a write-only SID register gets the data bus as the game's read it, faded
+// with the time since the write, not as the port's chips hold it when the replay comes.
+{
+  const { Machine } = require('./machine.js');
+  const ram = new Uint8Array(65536);
+  // $1000: SEI; the vector $FFFE to $1100; a raster interrupt on line $80; CLI; then the loop at $1020: INC $2000; JMP $1020
+  ram.set([0x78, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x80, 0x8D, 0x12, 0xD0,
+    0xA9, 0x1B, 0x8D, 0x11, 0xD0, 0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0x58, 0xEA, 0xEA, 0xEA, 0xEA, 0xEA,
+    0xEE, 0x00, 0x20, 0x4C, 0x20, 0x10], 0x1000);
+  // $1100: LDA #$FF STA $D400 (the bus holds $FF); about 20,000 cycles of counting; LDA $D405 (the
+  // bus, faded); STA $2010; LDA #$01 STA $D019; RTI
+  ram.set([0xA9, 0xFF, 0x8D, 0x00, 0xD4, 0xA2, 0x10, 0xA0, 0x00, 0x88, 0xD0, 0xFD, 0xCA, 0xD0, 0xF8,
+    0xAD, 0x05, 0xD4, 0x8D, 0x10, 0x20, 0xA9, 0x01, 0x8D, 0x19, 0xD0, 0x40], 0x1100);
+  // a 6581, whose bus holds a value $1D00 cycles (site/lib/sid.js), well inside the handler's count
+  const m = new Machine({ ram, pc: 0x1000, port: { dir: 0x2F, data: 0x35 }, sid: '6581' });
+  const P = { M: new Uint8Array(65536) };
+  P.irq = function () { P.io.write(0xD400, 0xFF); P.M[0x2010] = P.io.read(0xD405); P.io.write(0xD019, 1); };
+  P.program = function* () {
+    P.io.write(0xD012, 0x80); P.io.write(0xD011, 0x1B); P.io.write(0xD01A, 1);
+    for (;;) { yield { cp: 0x1020 }; P.M[0x2000] = (P.M[0x2000] + 1) & 255; }
+  };
+  const r = new Lockstep({ machine: m, port: P, program: (p) => p.program(), passAt: 0x1020, irqs: { 0x1100: 'irq' }, compare: [[0x2010, 0x2010]] })
+    .run({ passes: 3000 });
+  check('a handler\'s read of the SID\'s faded bus: the game read $' + m.ram[0x2010].toString(16) + ', and so did the port, 3000 passes identical', r.ok && r.passes === 3000 && m.ram[0x2010] !== 0xFF, true);
 }
 
 process.exit(fails ? 1 : 0);
