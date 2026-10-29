@@ -253,7 +253,7 @@ td.m{font-family:var(--fm);font-size:13px}
 <section>
   <p class="fig">09 · Levels</p>
   <h2 class="t">Each level is a sixteen-byte scene record</h2>
-  <p class="lede">A level is a 16-byte scene record: sprite flags and five colour pairs. The level index counts down, <code>$70</code> for level 1 to <code>$00</code> for level 8, and <code>$80</code> is the warp. Odd levels have a coloured sky, even levels a black one.</p>
+  <p class="lede">A level is a 16-byte scene record: sprite flags and five colour pairs. The level index counts down, <code>$70</code> for level 1 to <code>$00</code> for level 8, and <code>$80</code> is the warp. Levels 2, 4 and 7 have a black sky, the other five a coloured one.</p>
   <div class="plate">
     <table id="sceneTable"><tr><th>Record</th><th>Level</th><th>Sky</th><th>Horizon 1</th><th>Horizon 2</th><th>Horizon 3</th><th>Ground</th><th>$D022</th><th>sprites</th></tr></table>
     <p class="cap">Records at <code>$8010</code>, copied to <code>$AB</code> to <code>$BA</code> by <code>$B920</code>. A split swatch is a colour pair whose two nibbles differ: the band flickers between them.</p>
@@ -708,7 +708,7 @@ function plainPlayer(o){
   const t=document.getElementById('sceneTable');
   for(let r=0;r<9;r++){ const rec=SCENES.subarray(r*16,r*16+16); const lvl=r<8?(8-r):'warp';
     t.insertAdjacentHTML('beforeend','<tr><td class="n">'+r+'</td><td class="n">'+lvl+'</td><td>'+sw(rec[1])+'</td><td>'+sw(rec[7])+'</td><td>'+sw(rec[8])+'</td><td>'+sw(rec[9])+'</td><td>'+sw(rec[2])+'</td><td>'+sw(rec[0])+'</td><td class="m">expand X '+hex(rec[4])+' · Y '+hex(rec[5])+' · enable '+hex(rec[6])+'</td></tr>'); }
-  const st=document.getElementById('skillTable'); const names=['difficulty base $3B','player speed $68','enemy speed','enemy-shot speed $A6','hit tolerance $57','obstacle range $4F','turn rate $25','warp bonus $A9'];
+  const st=document.getElementById('skillTable'); const names=['difficulty base $3B','player speed $68','player-shot speed','enemy-shot speed $A6','hit tolerance $57','obstacle range $4F','turn rate $25','warp bonus $A9'];
   names.forEach((n,i)=>{ st.insertAdjacentHTML('beforeend','<tr><td>'+n+'</td>'+[0,1,2,3].map(k=>'<td class="n">'+hex(SKILL[i*4+k])+'</td>').join('')+'</tr>'); });
   document.getElementById('warpSpeeds').textContent=DATA.warpSpeed.map(v=>hex(v)).join(', ');
 })();

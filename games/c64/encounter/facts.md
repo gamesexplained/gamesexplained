@@ -407,13 +407,14 @@ returns to play with a new enemy count ($A552); no shield loss was found
 on that path, and a sphere hit uses the same death routine as a missile.
 
 **Levels.** Level n selects scene record n ($8010 + $63, 16 bytes to
-$AB-$BA: sprite enable/expand and the five band colours, odd levels a
-coloured sky and even levels black) and a 64-byte scenery record
+$AB-$BA: the $D022 colour pair, the five band colours, the view's
+character colour and sprite enable/expand; levels 2, 4 and 7 have a
+black sky, the others a coloured one) and a 64-byte scenery record
 ($9840 + $63 × 8: sprite Y positions, image pointers, positions). The
 level index counts down: level 1 is $70, level 8 is $00, warp is $80.
 Skill ($62) picks a column of the eight parameter tables at $8F80
-(difficulty base $3B, player speed $68, enemy speed, enemy-shot speed
-$A6, collision threshold $57, $4F, turn rate $25, warp bonus $A9);
+(difficulty base $3B, player speed $68, player-shot speed, enemy-shot
+speed $A6, collision threshold $57, $4F, turn rate $25, warp bonus $A9);
 column 3 is the demo.
 
 ## Data tables
@@ -446,9 +447,9 @@ array is 96 long).
 
 | Table | Holds |
 |---|---|
-| $8010 | nine 16-byte scene records copied to $AB-$BA: sprite expand X, expand Y, enable, then colour pairs for `$D023`, `$D022`, sky, ground and the three horizon lines. Record index = level index ($70 = level 1 ... $00 = level 8) and $80 = warp. Odd levels have a coloured sky; even levels a black one |
+| $8010 | nine 16-byte scene records copied to $AB-$BA: +0 the `$D022` colour pair, +1 sky, +2 ground, +3 the view's character colour (colour RAM), +4 to +6 sprite expand X, expand Y and enable, +7 to +9 the three horizon lines, +10 to +15 unused. Record index = level index ($70 = level 1 ... $00 = level 8) and $80 = warp. Levels 2, 4 and 7 have a black sky; the other five a coloured one |
 | $9840 + index × 8 | 64-byte backdrop record per level: sprite Y positions, image pointers and the heading at which each of four images is chosen, loaded into $8F40-$8F7F by `apply_scene` ($B920) |
-| $8F80 | eight 4-byte skill tables, one column per skill (0 expert, 1 advanced, 2 novice, 3 demo): difficulty base $3B, player speed $68, enemy speed, enemy-shot speed $A6, hit tolerance $57, obstacle range $4F, turn rate $25, warp bonus $A9 |
+| $8F80 | eight 4-byte skill tables, one column per skill (0 expert, 1 advanced, 2 novice, 3 demo): difficulty base $3B, player speed $68, player-shot speed, enemy-shot speed $A6, hit tolerance $57, obstacle range $4F, turn rate $25, warp bonus $A9 |
 | $A7E8 | warp top speed per level, $50..$A0 |
 | $A7E0 | eight warp-sphere shape numbers |
 | $8C00 | enemy fire scripts: start offset per saucer type, then (delay, spread) pairs ended by $FF and a restart offset |
@@ -488,7 +489,7 @@ $6918 the 25 row colours, $6931 the eight level keys, $6939 seven sprite
 colours, $6A08 seven `JMP $6A1D` stubs and the `RTS`, and rows 20-21 the
 three skill names in the wide font that F5 copies to row 22.
 
-**Sprites.** 64-byte frames at $6400 (shot dot), $6700 (gun sight),
+**Sprites.** 64-byte frames at $6400 (radar blip), $6700 (gun sight),
 $6740 (ground strip), $6780 (mound) and $7000-$77FF (32 frames: saucers
 $CA-$CE at three sizes, dome $B0, dot fields $B1-$C9, oval $E6, dotted
 hills $EC-$EF which overlap the font at $7B00, and twelve dense noise

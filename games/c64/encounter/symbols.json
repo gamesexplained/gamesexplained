@@ -76,7 +76,7 @@
    [
     25600,
     25663,
-    "sprite frame: shot dot"
+    "sprite frame: radar blip"
    ],
    [
     26368,
@@ -4082,7 +4082,7 @@
   },
   {
    "address": 25600,
-   "name": "sprite_shot_dot",
+   "name": "sprite_radar_blip",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5738,7 +5738,7 @@
   },
   {
    "address": 36744,
-   "name": "tbl_skill_enemy_speed",
+   "name": "tbl_skill_player_shot_speed",
    "type": "Field",
    "kind": "user"
   },
@@ -8935,7 +8935,7 @@
   {
    "address": 5632,
    "type": "line",
-   "text": "24-bit X velocity per object, high byte (sign). Velocity = obj_speed ($17A0) x sine/cosine of the heading ($84A0 octant, $84C0 fine) through quarter_sine_tbl ($8900), computed by compute_object_velocity ($B5A1-$B60D), negated when heading bit 2 is set. Added to the position by $B679. Objects 0-31; $1606 (player's shot) is also read directly at $AB06 to place sprite 0."
+   "text": "24-bit X velocity per object, high byte (sign). Velocity = obj_speed ($17A0) x sine/cosine of the heading ($84A0 octant, $84C0 fine) through quarter_sine_tbl ($8900), computed by compute_object_velocity ($B5A1-$B60D), negated when heading bit 2 is set. Added to the position by $B679. Objects 0-31; $1606 (object 6, the radar marker) is also read directly at $AB06 to place sprite 0, the radar blip."
   },
   {
    "address": 5638,
@@ -8945,7 +8945,7 @@
   {
    "address": 5664,
    "type": "line",
-   "text": "X velocity middle byte (see obj_vel_x_hi). Written $B5CF, shifted left 3 at $B5DB-$B5E9, added to obj_pos_x_lo at $B66D. $1626 = player's shot, read at $AB03."
+   "text": "X velocity middle byte (see obj_vel_x_hi). Written $B5CF, shifted left 3 at $B5DB-$B5E9, added to obj_pos_x_lo at $B66D. $1626 = object 6, the radar marker, read at $AB03."
   },
   {
    "address": 5670,
@@ -8960,7 +8960,7 @@
   {
    "address": 5728,
    "type": "line",
-   "text": "24-bit Z velocity per object, high byte, from the cosine half of compute_object_velocity ($B610-$B659), negated when (heading+2) bit 2 is set. $1666 = player's shot, read at $AB27."
+   "text": "24-bit Z velocity per object, high byte, from the cosine half of compute_object_velocity ($B610-$B659), negated when (heading+2) bit 2 is set. $1666 = object 6, the radar marker, read at $AB27."
   },
   {
    "address": 5734,
@@ -8970,7 +8970,7 @@
   {
    "address": 5760,
    "type": "line",
-   "text": "Z velocity middle byte (see obj_vel_z_hi). Written $B618, added at $B68F. $1686 = player's shot, read at $AB24."
+   "text": "Z velocity middle byte (see obj_vel_z_hi). Written $B618, added at $B68F. $1686 = object 6, the radar marker, read at $AB24."
   },
   {
    "address": 5766,
@@ -9015,7 +9015,7 @@
   {
    "address": 6048,
    "type": "line",
-   "text": "Per-object speed, the multiplier of compute_object_velocity ($B5C9/$B612). $17A0 = player, from tbl_skill_player_speed ($8F84 at $9EB8), set to $20 while pushing against an obstacle ($B52C) and restored from $68 ($B53B). $17A1/$17A4/$17A5 = enemy slots 1,4,5 from tbl_skill_enemy_speed ($8F88). $17A2 = saucer ($8F00[X] at $A6E9) or homing missile ($8E00[X]+$68 at $A3C5). $17A6 = player's shot ($AAF6, then $20). $17B8-$17BF = objects 24-31, fixed $10 ($9F68). Objects 0-31."
+   "text": "Per-object speed, the multiplier of compute_object_velocity ($B5C9/$B612). $17A0 = player, from tbl_skill_player_speed ($8F84 at $9EB8), set to $20 while pushing against an obstacle ($B52C) and restored from $68 ($B53B). $17A1/$17A4/$17A5 = the player's shots (objects 1, 4, 5) from tbl_skill_player_shot_speed ($8F88). $17A2 = saucer ($8F00[X] at $A6E9) or homing missile ($8E00[X]+$68 at $A3C5). $17A6 = object 6, the radar marker: the enemy's range code at $AAF6 for one velocity computation, then $20. $17B8-$17BF = objects 24-31, fixed $10 ($9F68). Objects 0-31."
   },
   {
    "address": 6049,
@@ -11165,7 +11165,7 @@
   {
    "address": 25592,
    "type": "line",
-   "text": "Sprite pointers for screen buffer A: sprite 0 = $90 (player's shot dot at $6400, set at $9F2C), sprite 1 = $9C (gun sight at $6700), sprites 2-7 = backdrop frames written by position_backdrop_sprites at $B9F2 from backdrop_sprite_ptrs ($8F40)."
+   "text": "Sprite pointers for screen buffer A: sprite 0 = $90 (the radar blip at $6400, set at $9F2C), sprite 1 = $9C (gun sight at $6700), sprites 2-7 = backdrop frames written by position_backdrop_sprites at $B9F2 from backdrop_sprite_ptrs ($8F40)."
   },
   {
    "address": 25594,
@@ -11175,7 +11175,7 @@
   {
    "address": 25600,
    "type": "line",
-   "text": "Sprite frame $90 (64 bytes): the player's shot, a 2x2-pixel dot at the top right (rows 0-1); sprite 0's image (pointer $90 at $63F8/$67F8), positioned from obj_vel_x/z of object 6 at $AB03-$AB21. Lives in the never-displayed rows 0-1 of screen buffer B; authored data (identical in the title snapshot)."
+   "text": "Sprite frame $90 (64 bytes): the radar blip, a 2x2-pixel dot at the top right (rows 0-1); sprite 0's image (pointer $90 at $63F8/$67F8), positioned from obj_vel_x/z of object 6, the radar marker, at $AB03-$AB44. Lives in the never-displayed rows 0-1 of screen buffer B; authored data (identical in the title snapshot)."
   },
   {
    "address": 25664,
@@ -12040,7 +12040,7 @@
   {
    "address": 33376,
    "type": "line",
-   "text": "Object X position, high byte. Objects 0-31 (0 = player, 1/4/5 = enemy slots, 2 = warp-gate reference, 3 = saucer sprite object, 6 = player's shot, 7 = second sprite object, 8-23 = enemy shots, 24-31 = explosion/short-lived objects). Cleared at level start ($9E4D), player set to $10 ($9E8C); advanced by advance_object_position ($B67C); read by object_delta ($B6AF/$B6B2) for every range/bearing computation."
+   "text": "Object X position, high byte. Objects 0-31 (0 = player, 1/4/5 = the player's shots, 2 = the enemy, saucer or homing missile, 3 = the stargate, 6 = the radar marker, 7 = the warp-in flash, 8-23 = enemy shots and warp spheres, 24-31 = explosion fragments). Cleared at level start ($9E4D), player set to $10 ($9E8C); advanced by advance_object_position ($B67C); read by object_delta ($B6AF/$B6B2) for every range/bearing computation."
   },
   {
    "address": 33378,
@@ -12440,17 +12440,17 @@
   {
    "address": 35856,
    "type": "line",
-   "text": "Fire scripts (see enemy_fire_script_start): $8C10 '10 00 x3 FF 0F' three shots delay $10 spread 0 then loop; $8C18 fourteen pairs '03 00' (rapid fire) then '10 00 FF 17'; $8C31 '00 00 00 08 30 78 FF 31'; $8C39 three '00 00 00 08 0E 78' groups FF 39."
+   "text": "Fire scripts (see enemy_fire_script_start): $8C10 '10 00 x3 FF 0F' three shots delay $10 spread 0 then loop; $8C18 eleven pairs '03 00' then '10 00 FF 17', a burst of twelve shots (rapid fire); $8C32 '00 00 00 08 30 78 FF 31'; $8C3A three '00 00 00 08 0E 78' groups FF 39."
   },
   {
    "address": 35918,
    "type": "line",
-   "text": "Fire scripts continued: $8C4E sixteen pairs '00 40 00 48 ... 00 38' (delay 0 throughout: the burst handler of type 5 fires all sixteen in one pass, the default handler of type 10 one a pass; restart $4D); $8C6F '30 00 FF 6F'; $8C73 '00 00 00 08 00 78 00 10 30 70 FF 73'."
+   "text": "Fire scripts continued: $8C4E sixteen pairs '00 40 00 48 ... 00 38' (delay 0 throughout: the burst handler of type 5 fires all sixteen in one pass, the default handler of type 10 one a pass; restart $4D); $8C70 '30 00 FF 6F'; $8C74 '00 00 00 08 00 78 00 10 30 70 FF 73'."
   },
   {
    "address": 35967,
    "type": "line",
-   "text": "Fire scripts continued: $8C7F '03 00 03 08 03 78 03 10 03 70 03 18 20 68 FF 7F'; $8C90 '00 00 00 08 0E 78 00 00 00 10 0E 70 00 00 00 18 0E 68 FF 8F'; $8CA4 sixteen pairs '00 60 00 64 ... 00 1C' (dense sweep) FF A3."
+   "text": "Fire scripts continued: $8C80 '03 00 03 08 03 78 03 10 03 70 03 18 20 68 FF 7F'; $8C90 '00 00 00 08 0E 78 00 00 00 10 0E 70 00 00 00 18 0E 68 FF 8F'; $8CA4 sixteen pairs '00 60 00 64 ... 00 1C' (dense sweep) FF A3."
   },
   {
    "address": 36037,
@@ -12550,7 +12550,7 @@
   {
    "address": 36744,
    "type": "line",
-   "text": "Speed of enemy slots 1, 4, 5 by skill: AF 7F 6F 7F -> $17A1/$17A4/$17A5 at $9EBB-$9EC4."
+   "text": "Speed of the player's shots (objects 1, 4, 5) by skill: AF 7F 6F 7F -> $17A1/$17A4/$17A5 at $9EBB-$9EC4."
   },
   {
    "address": 36748,
