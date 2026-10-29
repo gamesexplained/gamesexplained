@@ -1659,7 +1659,7 @@
   {
    "address": 1536,
    "type": "line",
-   "text": "MQ map strip: 64 cells, one per world column, read as $0600,Y by resident $4173 and $3B51 (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 63 hold 00 01 02 03 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04 04; the rest of the strip is zero."
+   "text": "MQ map strip: 64 cells, one per world column, read indexed from $0600 by the resident at $099D, $3518, $355F, $3B54 (in $3B51), $418A (in $4173), $4C36, $4C5F, $4CA7, $4CB2, $4F77, $4F93, $4FD8 and $502E (the position mask $5E is $FF here, from $59A1 indexed by header byte $0705 = 0; the map is read as far as column 255, so the cells at $0640-$06FF count too). The low nibble of a cell selects its block type through the table at $073E. Columns 0 to 63 hold 00 01 02 03 and then $04 in every cell from column 4; the 192 bytes after the strip ($0640-$06FF) are $04 too."
   },
   {
    "address": 1600,
@@ -1674,7 +1674,7 @@
   {
    "address": 1796,
    "type": "line",
-   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines, $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and $0706 (0) is halved into $02C8 and $02C7 at $566A."
+   "text": "Three numeric header bytes: $0704 (0) is the loop limit the loader compares at $568F and is read by the camera and motion routines ($287C, $3447, $4409, $48C6); the resident also stores to it at $6B9E. $0705 (0) indexes the tables at $59A1 and $59A8 that set $5E, $5F and $60, and from $566A $0706 (0) is shifted right twice into $02C8, its low two bits going to bits 7-6 of $02C7."
   },
   {
    "address": 1799,
@@ -1689,12 +1689,12 @@
   {
    "address": 1808,
    "type": "line",
-   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds. $0710 is read by the object grid and placement routines ($37B4, $383F, $5487), $0711 at $548A, $0718 at $5397 and $0719 at $53B9."
+   "text": "Ten bytes ($0710-$0719 = 00 00 00 00 00 00 00 00 00 00): depth thresholds. The table is read indexed from $0710 by the object grid and placement routines at $28CA, $37B9 (in $37B4), $383F, $3863 and $5487; $0711 is read at $548A, $0718 at $5397 and $0719 at $53B9."
   },
   {
    "address": 1818,
    "type": "line",
-   "text": "Costume selector ($0D), the index into the initial-animation table at $5985 read at $51EA and $5985. The three bytes after it ($071B-$071D = FF 02 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
+   "text": "Costume selector ($0D), read at $51EA and copied to $02C5 (replaced by 4 when $0385 is non-negative and $0565 is negative); it indexes the initial-animation table at $5985, read at $520D. The three bytes after it ($071B-$071D = FF 02 FF) are read at $5201, $5207 and $51E4 when entry placement starts."
   },
   {
    "address": 1822,
@@ -1709,7 +1709,7 @@
   {
    "address": 1854,
    "type": "line",
-   "text": "Sixteen low-nibble-to-type values read by $4171/$4173 and $3B51 (bytes: 00 00 00 00 01 01 01 01 01 01 01 01 01 01 01 01). Types $80 and above are negative; the engine falls back to depth-table index zero for them."
+   "text": "Sixteen low-nibble-to-type values read indexed by the resident at $351E, $3565, $3B5A (in $3B51), $4192 (in $4173), $4A8E, $4B27, $4F7D, $4F99, $4FE8 and $503E (bytes: 00 00 00 00 01 01 01 01 01 01 01 01 01 01 01 01). This overlay does not write it. Types $80 and above are negative; the engine falls back to depth-table index zero for them."
   },
   {
    "address": 1870,
@@ -1719,7 +1719,7 @@
   {
    "address": 1886,
    "type": "line",
-   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C stops at index 15 ($075D), so it reads none of them; the resident routine $38FE (update_grid_special_cell) reads and writes $075E,Y with Y the low nibble of a special map cell, so any scene whose map has such cells uses these bytes as per-cell state."
+   "text": "Sixteen zero bytes ($075E-$076D) between the column thresholds and the selectors. The scan at $411C reads at most index 14 ($075C), so it reads none of them. The resident uses $075E,X/Y as per-cell state for special map cells: $381C increments the counter of the cell just entered, and $38FE (update_grid_special_cell) reads and writes it at $3901 and $3915, with Y the low nibble of a special map cell."
   },
   {
    "address": 1902,
@@ -2004,7 +2004,7 @@
   {
    "address": 35989,
    "type": "line",
-   "text": "Sixth entry in the stub block: jmp $8F24, s26_install_descriptor. It is not a hook in the sense of the first five; $8F24 is also called from the ending code."
+   "text": "Sixth entry in the stub block: jmp $8F24, s26_install_descriptor. The resident calls it by jsr at $5DBD; it is not one of the five hooks. $8F24 is also called directly from the two endings ($8E7C, $8EF2)."
   },
   {
    "address": 35992,
@@ -2054,7 +2054,7 @@
   {
    "address": 36118,
    "type": "line",
-   "text": "Counts below $13: if the move flag $8D97 is non-negative, $0246 and $63 are incremented each frame. If $8D98 is non-negative it toggles between 0/1 and stores 3 or the toggled value into $036F, clearing $034F. If $8D9C is non-negative it toggles, writing 0 or 4 to $036D/$036E and 2 to $036F and clearing $034F. These drive the sprite poses of the towels and throw replies; their roles are not confirmed."
+   "text": "Counts below $13: if the move flag $8D97 is non-negative, $0246 and $63 are incremented each frame. If $8D98 is non-negative it toggles between 0 and 1 and stores 1, or 3 when the toggle is 0, into $036F, clearing $034F. If $8D9C is non-negative it toggles too: at 1 it writes 4 to $036D/$036E and 2 to $036F, at 0 it writes 0 to $036D/$036E; either way it clears $034F. These drive the sprite poses of the towels and throw replies; their roles are not confirmed."
   },
   {
    "address": 36193,
@@ -2074,7 +2074,7 @@
   {
    "address": 36246,
    "type": "line",
-   "text": "Negative means the opening master text is still to be shown (see $8CC9); then incremented to 0. Set to $FF again by s26_ending_alt ($8E8F loop)."
+   "text": "Negative means the opening master text is still to be shown (see $8CC9); then incremented to 0. Set to $FF again by s26_ending_alt (the loop at $8EA0-$8EA8)."
   },
   {
    "address": 36247,
@@ -2104,7 +2104,7 @@
   {
    "address": 36252,
    "type": "line",
-   "text": "Second pose toggle, set to 1 by the DO YOU HAVE towels handler ($8DED) and flipped each frame of the command countdown. $FF = off."
+   "text": "Second pose toggle, set to 1 by the DO YOU HAVE towels handler ($8DED) and flipped on each frame of the command countdown once the old count is below $13. $FF = off; s26_ending_alt sets it to $FF again."
   },
   {
    "address": 36253,
@@ -2114,7 +2114,7 @@
   {
    "address": 36254,
    "type": "line",
-   "text": "Value written to $0246 when the command countdown passes $13. Each handler sets 1 or 5; initial value 7."
+   "text": "Value written to $0246 when the command countdown passes $13. Five handlers set it, to 1 (YOU HAVE NO power, DO YOU HAVE towels, THROW SOME elephants, THROW SOME towels) or 5 (DO YOU HAVE power); the other four leave the previous value. Initial value 7."
   },
   {
    "address": 36255,
@@ -2209,12 +2209,12 @@
   {
    "address": 36570,
    "type": "line",
-   "text": "The fall ending, reached when the fall countdown runs out. Queues sound $12, waits 6 seconds ($0839), sets $0580 to 1, shows the text at $90FD (decoded: 'You fell off the edge and met your doom! And you were SO close to defeating Jareth!') with $0857 (A=$FF) and calls s26_install_descriptor."
+   "text": "The fall ending, reached when the fall countdown runs out. Queues sound $12, waits six intervals of sixty IRQ ticks ($0839 with Y=6), sets $0580 to 1, shows the text at $90FD (decoded: 'You fell off the edge and met your doom! And you were SO close to defeating Jareth!') with $0857 (A=$FF) and calls s26_install_descriptor."
   },
   {
    "address": 36598,
    "type": "line",
-   "text": "Runs every frame while $8D9B is non-negative, called from $8CF3. Decrements it. Below zero: clears $035A-$035F, sets $035F to 2 and queues sound $0E. When the count (in A) is 8: sets $035D, $035E and $035F to 3 and queues sound $0D. These are sprite pose values; the exact characters are not confirmed."
+   "text": "Runs every frame while $8D9B is non-negative, called from $8CF3. Decrements it. Below zero: clears $035A-$035F, sets $035F to 2 and queues sound $0E. When A, the count loaded at $8CEE before the decrement, is 8: sets $035D, $035E and $035F to 3 and queues sound $0D. These are sprite pose values; the exact characters are not confirmed."
   },
   {
    "address": 36644,
@@ -2249,12 +2249,12 @@
   {
    "address": 36905,
    "type": "line",
-   "text": "Loads A=5 and jumps to $0827 (a resident routine whose purpose is not named) to show the text pointed to by Y/X. Called with Y=$2E, X=$90 for the opening master text."
+   "text": "Loads A=5 and jumps to $0827, which goes to resident $09DF: it stores Y/X in $10/$11 as the text pointer and A in $0342 as the indent, then displays the headered text (display_transient_headered_message). Called only from $8CDA, with Y=$2E, X=$90 for the opening master text at $902E."
   },
   {
    "address": 36908,
    "type": "line",
-   "text": "Headered text $902C-$907E. Layout byte $27, colour byte $08; zero terminates its body. Content without framing glyph controls: \"\\t\\u0004 I am still your master  \\nand you must remain with \\nme until the end of time.\". The resident routine $6782 reads the two header bytes, and the parser $67B7 handles literal text, dictionary tokens and line breaks. No instruction or table in the scene 26 overlay names this address directly, so what prints it is not traced."
+   "text": "Bytes $902C-$902D ($27 $08) are the operand of jmp $0827 at $902B. The headered text $902E-$907E follows: layout byte $09, colour byte $04; zero terminates its body. Content without framing glyph controls: \"I am still your master and you must remain with me until the end of time.\" (the last word is dictionary token time). It is named by ldy #$2E / ldx #$90 at $8CD6/$8CD8 and printed once, as the opening text, through s26_show_text ($9029) with indent 5."
   },
   {
    "address": 36991,
@@ -2269,7 +2269,7 @@
   {
    "address": 37197,
    "type": "line",
-   "text": "One zero byte between the last text record (ending with its terminator at $914C) and the tune's instrument directory at $914E. Nothing in the overlay refers to it."
+   "text": "Zero byte that s26_init ($8DAB-$8DAF) passes to $0833 (install_scene_command_availability) as the scene's blocked-command list: the list is empty, so nothing is blocked here. It sits between the last text record (ending at $914C) and the tune's instrument directory at $914E."
   },
   {
    "address": 37198,
