@@ -4211,7 +4211,7 @@
   {
    "address": 7237,
    "type": "line",
-   "text": "Per-frame update of the falling object, called by the raster interrupt at $0D3A (at $0DA8). Sets the sprite pointer $CFFB to $D9; while paused it only updates the sprite registers. State $1BF6 = 0: counts down $1BF7, then picks a new delay from $0E2C, sets the state to 1, copies $1BFB/$1BFC to $1BF8/$1BF9, sets Y $1BFA to $34 and plays sound $20 with $B0EE. State 1: X goes up by 3, Y goes up by the step from $1C1D indexed by $1BFD; at Y $C8 it ends; from Y $64 it looks up the tile with $1BD8 and a character from 2 to $21 sets the state to 2 and plays sound $14. State 2: steps $1BFE and takes the sprite pointer from $1BFF, ending at $1B. Finishes by writing sprite 3 X/Y ($D006/$D007, bit 3 of $D010) from $1BF8-$1BFA."
+   "text": "Per-frame update of the falling object, called by the raster interrupt at $0D3A (at $0DA8). Sets the sprite pointer $CFFB to $D9; while paused it only updates the sprite registers. State $1BF6 = 0: counts $1BF7 down (holding Y $1BFA at 0), then picks a new delay from $0E2C (0 to 7), sets the state to 1, copies $1BFB/$1BFC to $1BF8/$1BF9, sets Y $1BFA to $34, clears the step index $1BFD and plays sound effect 8 (X = $20) with $B0EE, returning at once. State 1: X goes up by 3, Y goes up by the step from $1C1D indexed by $1BFD; at Y $C8 it ends; from Y $64 it looks up the tile with $1BD8 and a character from 2 to $21 sets the state to 2 and plays sound effect 5 (X = $14). State 2: steps $1BFE and takes the sprite pointer from $1BFF, ending at $1B. Except after the launch, it finishes by writing sprite 3 X/Y ($D006/$D007, bit 3 of $D010) from $1BF8-$1BFA and its colour $D02A=2."
   },
   {
    "address": 7468,
@@ -4246,7 +4246,7 @@
   {
    "address": 8264,
    "type": "line",
-   "text": "Row 2 of the level map (see $1E48): 256 cells drawn on screen rows 13 and 14 by $112B. This block ends at $2143; the last four cells of the row, $2144 to $2147, are map_patch_a. Value 11 is the commonest (54 cells) and 83 cells are 0."
+   "text": "Row 2 of the level map (see $1E48): 256 cells drawn on screen rows 13 and 14 by $112B. This block ends at $2143; the last four cells of the row, $2144 to $2147, are map_patch_a. Value 11 is the commonest (54 cells) and 80 cells are 0."
   },
   {
    "address": 8516,
@@ -4256,7 +4256,7 @@
   {
    "address": 8520,
    "type": "line",
-   "text": "Row 3 of the level map (see $1E48): 256 cells drawn on screen rows 15 and 16 by $112B. This block ends at $2240; the last seven cells of the row, $2241 to $2247, are map_patch_b. Value 11 is the commonest (60 cells) and 40 cells are 0."
+   "text": "Row 3 of the level map (see $1E48): 256 cells drawn on screen rows 15 and 16 by $112B. This block ends at $2240; the last seven cells of the row, $2241 to $2247, are map_patch_b. Value 11 is the commonest (62 cells) and 37 cells are 0."
   },
   {
    "address": 8769,
@@ -4266,7 +4266,7 @@
   {
    "address": 8776,
    "type": "line",
-   "text": "Row 4, the bottom row, of the level map (see $1E48): 256 cells drawn on screen rows 17 and 18 by $112B. Value 11 is the commonest (75 cells) and 43 cells are 0; the greatest value in the five rows is $3A, which $112B turns into the index 2 x $3A + 1 in the character tables."
+   "text": "Row 4, the bottom row, of the level map (see $1E48): 256 cells drawn on screen rows 17 and 18 by $112B. Value 11 is the commonest (75 cells) and 43 cells are 0; the greatest value in the five rows is $3A, which $112B turns into the index 2 x $3A or 2 x $3A + 1 (by $10E5) in the character tables."
   },
   {
    "address": 9032,
@@ -4291,7 +4291,7 @@
   {
    "address": 9295,
    "type": "line",
-   "text": "Player energy: $0A84 sets $21; $1DA1 takes 4 off per hit and sets the end flag $0A83 when it is 4 or less."
+   "text": "Player energy: $0A84 sets $21, and the mask setup $4F9C sets it to $21 again (at $5111); $1DA1 takes 4 off per hit and sets the end flag $0A83 when it is 4 or less; $2495 draws it."
   },
   {
    "address": 9296,
@@ -4311,7 +4311,7 @@
   {
    "address": 9365,
    "type": "line",
-   "text": "Draws the energy bar. Writes character $1D into the eight cells $CF59-$CF60 with colour 5 in $DB59-$DB60, fills the 64-byte buffer $2454-$2493 with the byte pairs $FF,$FF,$AA,$AA,$55,$55 at the start of each group of 8, then clears pixel pairs from the last group backwards with the masks at $2450-$2453, once for each point the energy $244F is below $21 (the step counter is $2494). It finally copies the buffer to $FAC8-$FB07. Called by the main loop at $0A2F and by $4428 and $5114."
+   "text": "Draws the energy bar. Writes character $1D into the eight cells $CF59-$CF60 with colour 5 in $DB59-$DB60, fills bytes 1 to 6 of each group of 8 in the 64-byte buffer $2454-$2493 with the byte pairs $FF,$FF,$AA,$AA,$55,$55, then clears pixel pairs from the last group backwards with the masks at $2450-$2453, once for each point the energy $244F is below $21 (the step counter is $2494). It finally copies the buffer to $FAC8-$FB07. Called by the main loop at $0A2F and by $4428 and $5114."
   },
   {
    "address": 9501,
@@ -4336,7 +4336,7 @@
   {
    "address": 9602,
    "type": "line",
-   "text": "Key code from $2583, stored here by the raster interrupt at $0D3A (at $0DAE); $FF means no key. The main loop compares it with $20 at $0A45 and $2378 with $50."
+   "text": "Key code from $2583, stored here by the raster interrupt at $0D3A (at $0DAE); $FF means no key. $263D (at $266F) and $5A34 (at $5A57) also clear it to 0. The main loop compares it with $20 at $0A45 and $2378 with $50."
   },
   {
    "address": 9603,
@@ -4356,7 +4356,7 @@
   {
    "address": 9724,
    "type": "line",
-   "text": "Value read from $DC01 by $2583 when a key was found."
+   "text": "The $DC01 value read by $2583, already shifted right past the low bit it found; stored when a pressed key is found and reloaded at $25EE to go on scanning when the table gives $FF."
   },
   {
    "address": 9725,
@@ -4381,7 +4381,7 @@
   {
    "address": 10141,
    "type": "line",
-   "text": "Types out the story text at $26E5 on the screen from $CCCE (pointer $14/$15), one character every $32 delay units, two screen rows ($50 bytes) for each line ending in $FF; the text ends with a second $FF. A $20 code gives $97 (blank), others get $75 added. After the first 30 characters ($4F10 counts down from $1E) the fire button ($DC00 bit 4) stops it. Otherwise it waits for fire at the end. It sets $4F9B to 1 and waits $FA delay units. $4F0F is the text index. Called by the setup $0A84 at $0B9B."
+   "text": "Types out the story text at $26E5 on the screen from $CCCE (pointer $14/$15), one character every $32 delay units, two screen rows ($50 bytes) for each line ending in $FF; the text ends with a second $FF. A $20 code gives $97 (blank), others get $75 added. $4F10 counts down from $1E once per pass, a line end counting as a pass; once it is 0 the fire button ($DC00 bit 4) stops it. Otherwise it waits for fire at the end. It sets $4F9B to 1 and waits $FA delay units. $4F0F is the text index. Called by the setup $0A84 at $0B9B."
   },
   {
    "address": 10275,
@@ -4516,7 +4516,7 @@
   {
    "address": 16384,
    "type": "line",
-   "text": "The last 111 bytes of screen_b_map ($3FAF-$416E): its rows from $4000 on, drawn by $4EA4 with the rest of the map."
+   "text": "The last 367 bytes of screen_b_map ($3FAF-$416E): its rows from $4000 on, drawn by $4EA4 with the rest of the map."
   },
   {
    "address": 16751,
@@ -4621,7 +4621,7 @@
   {
    "address": 17277,
    "type": "line",
-   "text": "Waits for the scan to finish and rates it. Every $D3 calls it toggles $437B and swaps the colours $0D and $0A in colour RAM bytes $DA9E and $DA9F; each call runs $42B6 and waits $0A, and repeats until $489D is non-zero. It then checks the twelve match flags $489E-$48A9: for each set one the type in $48AB is tested and $42A0 (type 2), $42A1 (type 1) or $42A2 (other) is set to 1. It stores in $0A10: 0 if $42A0 is clear; otherwise 0, 1 or 2 depending on whether $42A1 and $42A2 are clear, set or both set (0 when both clear, 1 when one is set, 2 when both are). Called by $4410."
+   "text": "Waits for the scan to finish and rates it. It loops on itself: every $D3 passes it toggles $437B and swaps the colours $0D and $0A in colour RAM bytes $DA9E and $DA9F; each pass runs $42B6 and waits $0A, and the loop repeats until $489D is non-zero. It then checks the twelve match flags $489E-$48A9: for each set one the type in $48AB is tested and $42A0 (type 2), $42A1 (type 1) or $42A2 (other) is set to 1. It stores in $0A10: 0 if $42A0 is clear; otherwise 0, 1 or 2 depending on whether $42A1 and $42A2 are clear, set or both set (0 when both clear, 1 when one is set, 2 when both are). Called once, by $4410."
   },
   {
    "address": 17424,
@@ -4711,12 +4711,12 @@
   {
    "address": 18117,
    "type": "line",
-   "text": "Handles the fire button for the mask game, called by the raster interrupt $5242 while $0F5A is zero. It counts $46C4 down (at 1 it calls $B828 and $B0C8) and holds $46BF until fire ($0EA6 bit 4) is released. On a new press it plays sound $18 with $B0EE, sets $46C4=$0D, $46BF=1, $46C0=4 and $46C2=$11, picks the destination from the table $4865 by 2 times the slice number $46C1 and copies the glyphs of the 3 by 3 characters at ($0E) with $4817 into it. It then runs $475F and adds 1 to $46C1; at 12 it sets $0F5A to 1, clears $46C0 and runs $4880."
+   "text": "Handles the fire button for the mask game, called by the raster interrupt $5242 while $0F5A is zero. It counts $46C4 down (at 1 it calls $B828 and $B0C8) and holds $46BF until fire ($0EA6 bit 4) is released. On a new press it plays sound effect 6 (X = $18) with $B0EE, sets $46C4=$0D, $46BF=1, $46C0=4 and $46C2=$11, picks the destination from the table $4865 by 2 times the slice number $46C1 and copies the glyphs of the 3 by 3 characters at ($0E) with $4817 into it. It then runs $475F and adds 1 to $46C1; at 12 it sets $0F5A to 1, clears $46C0 and runs $4880."
   },
   {
    "address": 18270,
    "type": "line",
-   "text": "Type stored by $475F into $48AB for the slice: set to 2 by $4B47; the object code at $4BE2 toggles it between 0 and 1 and sets it to 2."
+   "text": "Type stored by $475F into $48AB for the slice: set to 2 by $4B47; the object code at $4BE2 toggles it between 0 and 1 and sets it to 2, and $4DD8 also sets it to 2."
   },
   {
    "address": 18271,
