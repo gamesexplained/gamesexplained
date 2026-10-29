@@ -5332,7 +5332,7 @@
   {
    "address": 2592,
    "type": "line",
-   "text": "Entry of the level 4 file. Jumps to the main loop at $1E15, which runs the setup $5118 and then repeats from $1E18: the object scan $0F0F, the energy bar $7803, the countdown sprite $1D85 and its test $1E85, the banner step $771E, the score $78B7, the timer $944C and $94EC and the pause check $739B. The loop starts again at $1E15 after the continue screen, and ends through the screen wipe $93AB, the sound silence $B828 and a jump to the resident loader at $0407 (level done or the space key) or at $0404 (game over)."
+   "text": "Entry of the level 4 file. Jumps to the main loop at $1E15, which runs the setup $5118 and then repeats from $1E18: the disabled check $655D (a lone RTS), the object scan $0F0F, the energy bar $7803, the countdown sprite $1D85 and its test $1E85, the banner step $771E, the score $78B7, the timer $944C and $94EC and the pause check $739B. The loop starts again at $1E15 after the continue screen, and ends through the screen wipe $93AB, the sound silence $B828 and a jump to the resident loader at $0407 (level done, or the space key while the cheat flag $0A11 is set) or at $0404 (game over)."
   },
   {
    "address": 2603,
@@ -5362,7 +5362,7 @@
   {
    "address": 2652,
    "type": "line",
-   "text": "Animation counter of each slot, 14 bytes; the traced code only clears it ($73C2)."
+   "text": "Animation counter of each slot, 14 bytes; counted and used to pick frames or steps by the behaviours $134D, $13EF, $14F2 and $1A00, and cleared by $73C2."
   },
   {
    "address": 2666,
@@ -5372,22 +5372,22 @@
   {
    "address": 2680,
    "type": "line",
-   "text": "Frames left in the current walk of each slot, 14 bytes; the traced code only clears it ($73C2)."
+   "text": "Frames left in the current walk of each slot, 14 bytes; counted down by the walking behaviours $1691 and $18DB, which reload it with half a random byte when it runs out, and cleared by $73C2."
   },
   {
    "address": 2694,
    "type": "line",
-   "text": "Hurt timer of each slot, 14 bytes: set to 10 by $101C and cleared by $73C2."
+   "text": "Hurt timer of each slot, 14 bytes: set to 10 by $101C, counted down by the walking behaviours $1691 and $18DB (which do nothing else while it runs) and cleared by $73C2."
   },
   {
    "address": 2708,
    "type": "line",
-   "text": "State of each slot (14 bytes, of which the first 11 are used): 0 free, otherwise the type copied from $0AA2 by $0F0F; the state picks the behaviour in the table at $11F5. $101C sets 1 or 2 on a hit and $615B sets $10; 7 is handled by $1C47."
+   "text": "State of each slot (14 bytes, of which the first 11 are used): 0 free, otherwise the type copied from $0AA2 by $0F0F; the state picks the behaviour in the table at $11F5. $101C sets 1 or 2 on a hit and $615B sets $10; the behaviours change it too (the walkers $1691 and $18DB to attack or turn, the attacks back to 1 or 2, $573B to $18, $57A6 to $17, $6222 at $627D), and $73C2 clears it. 7 is handled by $1C47."
   },
   {
    "address": 2722,
    "type": "line",
-   "text": "Type and state of each of the 73 objects; 0 means no object, and the value is copied into the slot state $0A94 when the object takes a slot. Copied from $78F0 by $73C2; $615B sets $10."
+   "text": "Type and state of each of the 73 objects; 0 means no object, and the value is copied into the slot state $0A94 when the object takes a slot. Copied from $78F0 by $73C2; $615B sets $10, and the behaviours that change a slot's state write it here too ($1691, $18DB, $573B, $57A6, $6222)."
   },
   {
    "address": 2795,
@@ -5407,7 +5407,7 @@
   {
    "address": 3014,
    "type": "line",
-   "text": "Variant flag of each object, 0, 1 or 2 (entries $11 and $24 of the table hold 2); copied from $7A14 by $73C2 and read by about 20 behaviour routines, among them $101C, $1563, $1696, $18E0, $1C47, $53A2, $56EB and $6253."
+   "text": "Variant flag of each object, 0, 1 or 2 (entries $11 and $24 of the table hold 2); copied from $7A14 by $73C2 and read at 20 places by the hit test $101C and the behaviours $155E, $1691, $17A9, $18DB, $1C47, $5398, $553A, $5672 and $6222."
   },
   {
    "address": 3087,
@@ -5417,7 +5417,7 @@
   {
    "address": 3160,
    "type": "line",
-   "text": "Left limit of the object's walk, low byte; copied from $7AA6 by $73C2 and read by $101C."
+   "text": "Left limit of the object's walk, low byte; copied from $7AA6 by $73C2 and read by $101C, $1691 and other behaviours. Other objects use it otherwise: $134D takes it as the top of its patrol, and the enemy shot $1295 as its direction, which the attacks $155E and $17A9 set two entries on ($0C5A)."
   },
   {
    "address": 3233,
@@ -5457,7 +5457,7 @@
   {
    "address": 3744,
    "type": "line",
-   "text": "The object each of the slots holds (14 bytes), set by $0F0F and read by $117E and $1C47."
+   "text": "The object each of the slots holds (14 bytes), set by $0F0F, cleared by $73C2 and read by $117E, $1C47 and the blocking tests $751B and $7584."
   },
   {
    "address": 3758,
@@ -5522,7 +5522,7 @@
   {
    "address": 4124,
    "type": "line",
-   "text": "For slot X (object Y), tests whether the player's punch or strike hits it. It returns at once when a hit was already scored this frame ($101A or $101B set), when neither the punch timer $5B4C nor the strike timer $5ABE is running, or when the slot's state $0A94 is not 1, 2, 14 or 15; the slot's screen height $A3,X must be at most $17 lines above or 9 lines below the player's $1D81 and its screen X within 25 pixels in front of the player's $1D80, on the side given by the facing $594B. On a hit it pushes the object 9 pixels along the map in that direction unless it is already at its limit ($0CEA/$0D33 to the right, $0C58/$0CA1 to the left), copies the new X to the slot and to the next object too, sets the slot to state 1 (player facing right) or 2 (facing left) with a frame in $0A32 that depends on the variant $0BC6, starts the hurt timer $0A86 with 10, sets $101A and $101B and calls $615B. Called by $117E for every slot that is not in state 7."
+   "text": "For slot X (object Y), tests whether the player's punch or strike hits it. It returns at once when a hit was already scored and the player state routines have not yet cleared the flags ($101A or $101B set), when neither the punch timer $5B4C nor the strike timer $5ABE is running, or when the slot's state $0A94 is not 1, 2, 14 or 15; the slot's screen height $A3,X must be at most $17 lines above or 9 lines below the player's $1D81 and its screen X within 25 pixels in front of the player's $1D80, on the side given by the facing $594B. On a hit it pushes the object 9 pixels along the map in that direction unless it is already at its limit ($0CEA/$0D33 to the right, $0C58/$0CA1 to the left), copies the new X to the slot and to the next object too, sets the slot to state 1 (player facing right) or 2 (facing left) with a frame in $0A32 that depends on the variant $0BC6, starts the hurt timer $0A86 with 10, sets $101A and $101B and calls $615B. Called by $117E for each slot that is not in state 7, while the raster is above line $B4."
   },
   {
    "address": 4463,
@@ -5537,12 +5537,12 @@
   {
    "address": 4478,
    "type": "line",
-   "text": "Per-frame object update, skipped while the game is paused ($63EA). Goes through the 11 slots: a slot in state 7 is only queued in the list at $1170 (count in $116F); for the others, while the raster is above line $B4, it runs the hit test $101C and then the behaviour for the slot's state, through the table at $11F5 and a call whose operand is rewritten at $11C9/$11CA, with the slot's object in Y and in $11F4. The list is ended with $FF and each queued slot then goes through $1C47. Called by the top interrupt at $6510."
+   "text": "Object update, called by the top interrupt at $6510 on each frame that the banner flag $771A is zero, and skipped while the game is paused ($63EA). Goes through the 11 slots: a slot in state 7 is only queued in the list at $1170 (count in $116F); for the others, while the raster is above line $B4 (the loop stops for the rest of the slots once it is not), it runs the hit test $101C and then the behaviour for the slot's state, through the table at $11F5 and a call whose operand is rewritten at $11C9/$11CA, with the slot's object in Y and in $11F4. The list is ended with $FF and each queued slot then goes through $1C47."
   },
   {
    "address": 4553,
    "type": "line",
-   "text": "Low byte of the address in the JSR at $11C8 (high byte at $11CA), rewritten by $11BC and $11C2 with the behaviour for the slot's state from the table at $11F5; the $2B67 the file holds is only a placeholder."
+   "text": "Low byte of the address in the JSR at $11C8 (high byte at $11CA), rewritten by $11BC and $11C2 with the behaviour for the slot's state from the table at $11F5; the $122B the file holds is only a placeholder."
   },
   {
    "address": 4590,
@@ -5617,7 +5617,7 @@
   {
    "address": 5103,
    "type": "line",
-   "text": "Behaviour for state 11 (entry 11 of the table at $11F5). Makes the slot multicolour with colour $0B and pointer $67 and runs the contact test $52F5: on contact it calls $5367 and restarts at $145E. Otherwise, while the object's counter $0AEB is non-zero, it counts it down and adds one of eight steps to the slot's position (the table $13CB, chosen by the slot's $0A5C, copied to $13EB-$13EE). At $145E it sets the counter to $1E, steps $0A5C on (0 to 7), puts the slot at the position of the object before this one ($0D7B, $0DC4, $0E0D, $0E56) and plays sound effect $1C through $B0EE. So it starts from the object before it every 30 frames and flies 4 pixels a frame in the next of eight directions."
+   "text": "Behaviour for state 11 (entry 11 of the table at $11F5). Makes the slot multicolour with colour $0B and pointer $67 and runs the contact test $52F5: on contact it calls $5367 and restarts at $145E. Otherwise, while the object's counter $0AEB is non-zero, it counts it down and adds one of eight steps to the slot's position (the table $13CB, chosen by the slot's $0A5C, copied to $13EB-$13EE). At $145E it sets the counter to $1E, steps $0A5C on (0 to 7), puts the slot at the position of the object before this one ($0D7B, $0DC4, $0E0D, $0E56) and plays sound effect 7 (X = $1C) through $B0EE. So it starts from the object before it every 31 frames and flies 4 pixels a frame for 30 of them in the next of eight directions."
   },
   {
    "address": 5182,
@@ -5657,7 +5657,7 @@
   {
    "address": 5436,
    "type": "line",
-   "text": "Returns A=0 when slot X is about level with the player and A=1 when it is not: the slot's screen height $A3,X is compared with the player's $1D81, and the answer is 0 when they are equal, when the slot is less than 10 lines above the player and when it is less than $1C lines below him. Called by the behaviours of states 1, 2 and 15 ($15E5, $16C3, $1830, $190D)."
+   "text": "Returns A=0 when slot X is about level with the player and A=1 when it is not: the slot's screen height $A3,X is compared with the player's $1D81, and the answer is 0 when they are equal, when the slot is less than 10 lines above the player and when it is less than $1C lines below him. Called by the behaviours of states 1, 2, 14 and 15 ($15E5, $16C3, $1830, $190D)."
   },
   {
    "address": 5469,
@@ -5772,7 +5772,7 @@
   {
    "address": 6656,
    "type": "line",
-   "text": "Behaviour for state 3 (entry 3 of the table at $11F5): a pickup that gives energy. Makes the slot multicolour with colour 2. When the object's energy $0B7D is non-zero (taken) the pointer is 0 and nothing else happens. Otherwise the pointer comes from $19F2 by the slot's $0A5C (11 down to 0) and the slot bobs: the object's counter $0AEB steps by 2 round the 24 heights of $1A8E, which are added to its Y and written to $0E0E/$0E57. On contact ($52F5) it sets the object's energy to 1, adds $18 to the player's energy $5366 (at most $21) and plays sound effect $10."
+   "text": "Behaviour for state 3 (entry 3 of the table at $11F5): a pickup that gives energy. Makes the slot multicolour with colour 2. When the object's energy $0B7D is non-zero (taken) the pointer is 0 and nothing else happens. Otherwise the pointer comes from $19F2 by the slot's $0A5C (11 down to 0) and the slot bobs: the object's counter $0AEB steps by 2 round the 24 heights of $1A8E, which are added to its Y and written to $0E0E/$0E57. On contact ($52F5) it sets the object's energy to 1, adds $18 to the player's energy $5366 (at most $21) and plays sound effect 4 (X = $10)."
   },
   {
    "address": 6712,
@@ -5797,7 +5797,7 @@
   {
    "address": 6846,
    "type": "line",
-   "text": "Behaviour for state 4 (entry 4 of the table at $11F5): a pickup that gives points. Makes the slot multicolour with colour 3. When the object's energy $0B7D is non-zero (taken) the pointer is 0; otherwise it is $6C and the contact test $52F5 runs: on contact the object's energy becomes 1, 6 is added to score digit 4 through $788B (600 points, going by the digit positions described there) and sound effect $0C plays."
+   "text": "Behaviour for state 4 (entry 4 of the table at $11F5): a pickup that gives points. Makes the slot multicolour with colour 3. When the object's energy $0B7D is non-zero (taken) the pointer is 0; otherwise it is $6C and the contact test $52F5 runs: on contact the object's energy becomes 1, 6 is added to score digit 4 through $788B (600 points, going by the digit positions described there) and sound effect 3 (X = $0C) plays."
   },
   {
    "address": 6895,
@@ -5822,7 +5822,7 @@
   {
    "address": 6944,
    "type": "line",
-   "text": "Behaviour for state 6 (entry 6 of the table at $11F5). Makes the slot multicolour and runs the contact test $52F5: on contact it calls $5367 and restarts at $1B96. Otherwise colour 2 and pointer $67; the object's counter $0AEB, stepped each frame, runs through the table $1BDA: from 4 to $33 the slot moves 4 pixels left, and each table value of $5A or more is a sprite pointer while a smaller one is added to the slot's Y (written to the object too). At $6A, or on contact, $1B96 clears the counter, sets the counter of the object before it ($0AEA) to 7, puts the slot and the object $16 pixels left of and 1 line above that object and plays sound effect $14."
+   "text": "Behaviour for state 6 (entry 6 of the table at $11F5). Makes the slot multicolour and runs the contact test $52F5: on contact it calls $5367 and restarts at $1B96. Otherwise colour 2 and pointer $67; the object's counter $0AEB, stepped each frame, runs through the table $1BDA: from 4 to $33 the slot moves 4 pixels left, and each table value of $5A or more is a sprite pointer while a smaller one is added to the slot's Y (written to the object too). At $6A, or on contact, $1B96 clears the counter, sets the counter of the object before it ($0AEA) to 7, puts the slot and the object $16 pixels left of and 1 line above that object and plays sound effect 5 (X = $14)."
   },
   {
    "address": 7126,
