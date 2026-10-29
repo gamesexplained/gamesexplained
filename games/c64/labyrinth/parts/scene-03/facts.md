@@ -14,7 +14,7 @@ In the captured room, arrival column 35 has cell 0 / type 0. Neighboring column 
 
 `$58C8` masks the new cell to its low nibble and writes the column at `$0600+Y`. For scene 3, it records the mutation in scene/column/value arrays `$0400/$0455/$04AA`: reuse a matching record, otherwise a zero slot, otherwise a random slot belonging to another scene. Each array has 84 slots. This is the record-write behavior, not a full disk-save/reload proof.
 
-The scene-3 wrapper at `$09A5` then writes pending request zero at `$09D0`. The live command refreshes the picture while retaining current scene 3 and the player position. This zero request is not evidence of travel to another room. The request's complete resident handling is annotated in the opening image; other scenes' wrapper special cases remain outside this check.
+The scene-3 wrapper at `$09A5` then writes pending request zero at `$09D0`. The live command refreshes the picture while retaining current scene 3 and the player position. This zero request is not evidence of travel to another room. The request's complete resident handling is annotated in the resident listing; other scenes' wrapper special cases remain outside this check.
 
 ## Ordinary-input evidence
 
@@ -48,7 +48,7 @@ ASK DOOR pair `$8B0C` selects `$8DD1`. The first call is to API `$082A`, whose p
 
 ## Opened-door count
 
-The captured initial map strip's64 columns contain12 type2 closed doors and3 type3 open doors. The new-game initializer at $575A in the opening listing sets $0569 to3. The checked first opening changed3→4. A separate ordinary OPEN DOOR trial restored the opened column36 door at X2348/depth24, count4 and cell6. It displayed “It's already opened.”, retained count4/cell6, recorded one $9053 handler hit and zero $58C8 mutation hits. The emulator state, input and normal speed were restored. `reference/guard-repeat-open.png` records the result. The original handler test already covers its repeated-open branch; `test_guard_progress.js` checks the initial map census and initializer alongside scene4's response threshold. Complete cross-room and disk persistence remain open.
+The captured initial map strip's64 columns contain12 type2 closed doors and3 type3 open doors. The new-game initializer at $575A in the resident listing sets $0569 to3. The checked first opening changed3→4. A separate ordinary OPEN DOOR trial restored the opened column36 door at X2348/depth24, count4 and cell6. It displayed “It's already opened.”, retained count4/cell6, recorded one $9053 handler hit and zero $58C8 mutation hits. The emulator state, input and normal speed were restored. `reference/guard-repeat-open.png` records the result. The original handler test already covers its repeated-open branch; `test_guard_progress.js` checks the initial map census and initializer alongside scene4's response threshold. Complete cross-room and disk persistence remain open.
 
 ## Closing and reopening the neighboring door
 
