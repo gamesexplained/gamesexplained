@@ -9,7 +9,7 @@ from reading the code in the snapshots named in `orientation.md`.
 
 PAL original on two disk sides, no crack or trainer seen. Analysed with
 one snapshot of each level in play (`parts/<id>/work/`), and the level 1
-load for the resident loader and the sound driver.
+load for the resident loader and the sound drivers.
 
 ## Memory layout
 
@@ -60,13 +60,16 @@ set) or when the NMI handler ($2030, the RESTORE key) sets $2038.
 
 Levels 2, 4 and 6 share one engine with three raster interrupts (line 0
 or 1, line 197 and line 205; $6480, $6315 and $63E8 in level 2) and a
-sprite multiplexer for sprites 3 to 7, called twice a frame ($6604 in
-level 2). Levels 3 and 5 have interrupt chains of their own.
+sprite multiplexer for sprites 3 to 7 ($6604 in level 2), called twice a
+frame by the first interrupt, and not at all while the banner flag is
+set; in level 2 the first of the two calls is also skipped while the
+wipe flag is set. Levels 3 and 5 have interrupt chains of their own.
 
 ## Controls
 
-Joystick in port 2, copied to a variable each frame by the third
-interrupt unless a countdown runs (the joystick is not read while the
+Joystick in port 2, copied to a variable each frame by the interrupt on
+line 198 in level 1 (the third) or line 197 in levels 2, 4 and 6 (the
+second), unless a countdown runs (the joystick is not read while the
 stun timer runs). *Live*: left and right walk four pixels every four
 frames; up jumps, rising 26 lines in 32 frames; down crouches. Fire with
 down starts the low strike, fire alone the punch (`start_attack` $2979).
@@ -75,7 +78,7 @@ table $0EAA); key code $50, the P key, pauses (`pause_check` $1777). The
 flag $0A11 is flipped by typing BABY AXE MAN on the title pages
 (`cheat_check` $1385); while it is set, key code $20 (the space bar) ends
 the level ($1A0C in level 1) and running out of energy does not end the
-game.
+game, except in level 3, whose energy test does not look at the flag.
 
 ## Levels
 
@@ -107,14 +110,16 @@ GENERATE MASK.
 inside the camera window one of 11 slots. `update_objects` runs the
 behaviour for each slot's state through a table (`behave_*` in levels 4
 and 6): attack and walk, left and right, vertical patrol, radial shot,
-lobbed shot, flashing hazard, energy pickup, score pickup, map switch.
+lobbed shot, the enemies' shot, flashing hazard, energy pickup, score
+pickup, and in level 6 a map switch, among others.
 Level 6's `area_trigger` ($1F6A) runs once, when the player passes a map
 position, and writes 3 into the high Y byte of objects 41 to 44.
 
 ## Continues
 
 Level 1's title sets the credits $0A12 to 3. In levels 2 to 6, when the
-energy runs out, the continue screen ($8CBC in level 2) restarts the
+energy runs out (in level 3 also when he falls or its countdown ends),
+the continue screen ($8CBC in level 2) restarts the
 level if fire is pressed and takes one credit; with no credits left the
 game is over. Level 1 has no continue screen.
 
@@ -123,7 +128,7 @@ game is over. Level 1 has no continue screen.
 Two drivers. The title tune driver (play $A242, called by the title
 interrupt) plays four tunes from its table at $AA8D; level 1's title code
 starts three of them ($A164 with X = 0, 6 or $12, at $0F70, $0AC1 and
-$0AC8/$1320), and nothing starts the fourth. The sound-effect driver
+$0AC8/$1320), and nothing starts tune 2 (X = $0C). The sound-effect driver
 (play $B176, called once a frame in play: PAL, 50.12 times a second)
 holds eleven effects in its table at $BB48, started through `play_sound`
 ($B0EE) with X = 4 × the effect. The SID writes of both drivers and of
@@ -134,7 +139,8 @@ the player on the page agree register for register (539,221 writes,
 
 Most messages are stored as screen codes (letters 1 to 26) and get an
 offset added when printed ($66 for level 1's briefing). The mask-game
-texts are ASCII lower case with 6 added, and the key codes and the cheat
+texts are ASCII lower case with 6 added (level 1) or $15 added (levels 3
+and 5), and the key codes and the cheat
 sequence are ASCII. Strings: resident $060C "DISC ERROR", $06B1 "INSERT
 DISK SIDE #1, THEN PRESS FIRE", $06DA "PRESS FIRE TO LOAD NEXT LEVEL";
 level 1 $0FE6 briefing, $122E high-score entry, $1675 credits, $1A02
@@ -151,10 +157,17 @@ level 1 $0FE6 briefing, $122E high-score entry, $1675 credits, $1A02
 | $D020-$D02E | border, background and sprite colours |
 | $D400-$D418 | sound |
 | $DC00, $DC01 | joystick and keyboard |
+| $DC02 | port A direction, switched by the keyboard scan |
+| $DC04, $DC05 | timer A, read for random numbers |
+| $DC0D, $DC0E | CIA 1 interrupts turned off and timer A started at setup |
 | $DD00, $DD02 | video bank and the fast loader's serial lines |
 
 ## Twin copies
 
-The two sound drivers share their routines at different addresses: the
-title copy at $A0C8 (from $80B4 in level 1's file) and the effect copy at
-$B0C8 (from $747B). The title copy also has the tune starter $A164.
+The two sound drivers are near twins at different addresses: the title
+copy at $A000 (19 pages from $80B4 in level 1's file, routines from
+$A0C8) and the effect copy at $B000 (13 pages from $747B, routines from
+$B0C8). They differ in places: the title copy's starter $A0EE does not
+clear the filter as $B0EE does, and its init $A0C8 clears $A02F-$A045
+where $B0C8 clears $B02F-$B043. The title copy also has the tune starter
+$A164.
