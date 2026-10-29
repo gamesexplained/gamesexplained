@@ -33,14 +33,17 @@
 //
 // Full screen lays the page's screen, the row above it, its bar and the controller over the whole
 // window. The row stays just above the picture, as wide as it, with ⇄ at its left on a touch
-// screen. Upright, the page's bar is under the picture and the controller at the bottom; on its
-// side, the row and the picture fill the height between two bands, the pad at the foot of the
-// left one, the bar and the fire buttons in the right. The browser's own full screen is asked for
-// too where it has one (a phone's browser hides its bars then), and the window is covered where it
-// has none (an iPhone's Safari). Every way out works and puts the page back as it was: the switch
-// again, Escape, the browser leaving its full screen, and the phone's Back, which full screen adds
-// a step to the page's history for. A page whose switch is not in the row gets a ✕ in its place.
-// While it lasts the screen is kept from dimming (the Screen Wake Lock API, where there is one).
+// screen, so its buttons keep their places against the picture. Upright, the page's bar is under
+// the picture and the controller at the bottom. On its side the picture is between two bands, the
+// pad at the foot of the left one, the bar and the fire buttons in the right; where the row would
+// take height from the picture (a phone on its side), its buttons go to the top of the right band
+// instead, beside the picture's top corner, and ⇄ to the top of the left. The browser's own full
+// screen is asked for too where it has one (a phone's browser hides its bars then), and the window
+// is covered where it has none (an iPhone's Safari). Every way out works and puts the page back as
+// it was: the switch again, Escape, the browser leaving its full screen, and the phone's Back,
+// which full screen adds a step to the page's history for. A page whose switch is not in the row
+// gets a ✕ in its place. While it lasts the screen is kept from dimming (the Screen Wake Lock API,
+// where there is one).
 (function (root) {
   'use strict';
   const KEY = 'gamesexplained.hand';
@@ -49,6 +52,7 @@
   const SECTORS = [RIGHT, RIGHT | DOWN, DOWN, DOWN | LEFT, LEFT, LEFT | UP, UP, UP | RIGHT];
   const DEAD = 0.25;    // the dead centre, as a share of the disc's radius
   const KEEP = 8;       // degrees past a sector's edge that a direction held is kept, so it does not flicker
+  const ROW = 56;       // the height the row of buttons above the picture takes in full screen, px
 
   // The direction a touch at (dx, dy) from the centre of a disc of radius r gives, held is the
   // direction given last: its bits, or 0 in the dead centre.
@@ -101,11 +105,20 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
 .pc-full .pc-pad{color:rgba(233,231,225,.6);background:radial-gradient(circle,rgba(255,255,255,.03) 0 24%,rgba(255,255,255,.08) 25% 100%);border-color:rgba(233,231,225,.32)}
 .pc-full .pc-knob{background:#e9e7e1}
 .pc-wide{display:grid;grid-template-columns:var(--pc-band) minmax(0,1fr) var(--pc-band);grid-template-rows:auto minmax(0,1fr) auto;
-  grid-template-areas:". top bar" ". stage bar" "pad stage fire"}
-.pc-wide.pc-left{grid-template-areas:". top bar" ". stage bar" "fire stage pad"}
-.pc-wide .pc-top{grid-area:top;justify-self:center;padding-top:4px}
+  grid-template-areas:"swap stage above" ". stage bar" "pad stage fire"}
+.pc-wide.pc-left{grid-template-areas:"swap stage above" ". stage bar" "fire stage pad"}
+.pc-wide.pc-roomy{grid-template-areas:". top bar" ". stage bar" "pad stage fire"}
+.pc-wide.pc-roomy.pc-left{grid-template-areas:". top bar" ". stage bar" "fire stage pad"}
 .pc-wide .pc-top .pc-label{display:none}
-.pc-wide .pc-stage{grid-area:stage;padding:0 0 4px}
+.pc-roomy .pc-top{grid-area:top;justify-self:center;padding-top:4px}
+.pc-wide:not(.pc-roomy) .pc-top{display:contents}
+.pc-wide:not(.pc-roomy) .pc-top>.pc-swap{grid-area:swap;justify-self:start;align-self:start;margin:8px}
+.pc-wide:not(.pc-roomy) .pc-top>.pc-above,.pc-wide:not(.pc-roomy) .pc-top>.pc-close{grid-area:above;justify-self:stretch;align-self:start;margin:8px 8px 0}
+.pc-wide:not(.pc-roomy) .pc-top>.pc-above~.pc-close{grid-area:swap;justify-self:end}
+.pc-wide:not(.pc-roomy) .pc-above{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:6px}
+.pc-wide:not(.pc-roomy) .pc-above button{font-size:12px;padding:5px 8px}
+.pc-wide .pc-stage{grid-area:stage;padding:4px 0}
+.pc-roomy .pc-stage{padding:0 0 4px}
 .pc-wide .pc-slot{grid-area:bar;padding:8px;align-items:flex-start;overflow:auto}
 .pc-wide .pc-slot>*{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:6px}
 .pc-wide .pc-slot button{font-size:12px;padding:5px 8px}
@@ -135,7 +148,7 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
     pad.setAttribute('aria-hidden', 'true'); fireBox.setAttribute('aria-hidden', 'true');
     pad.appendChild(knob);
     const fireEls = fires.map(f => { const b = el('div', 'pc-fire'); b.textContent = f.label; fireBox.appendChild(b); return b; });
-    const swap = () => { const b = el('button', 'pc-icon'); b.type = 'button'; b.textContent = '⇄'; b.title = 'Swap the joystick and the fire buttons to the other hands'; b.setAttribute('aria-label', 'Swap hands'); b.onclick = () => api.hand(hand === 'left' ? 'right' : 'left'); return b; };
+    const swap = () => { const b = el('button', 'pc-icon pc-swap'); b.type = 'button'; b.textContent = '⇄'; b.title = 'Swap the joystick and the fire buttons to the other hands'; b.setAttribute('aria-label', 'Swap hands'); b.onclick = () => api.hand(hand === 'left' ? 'right' : 'left'); return b; };
     mid.appendChild(swap());
     pc.append(pad, mid, fireBox);
     if (o.dock) o.dock.appendChild(pc); else screen.insertAdjacentElement('afterend', pc);
@@ -228,15 +241,18 @@ html.pc-lock,html.pc-lock body{overflow:hidden;overscroll-behavior:none}
         const band = Math.round(Math.min(W * 0.3, Math.max(150, (W - H * aspect) / 2)));
         full.style.setProperty('--pc-band', band + 'px');
         size = Math.min(band - 24, H * 0.46, 210);
+        // the row stays above the picture where the picture, as wide as the middle allows, leaves
+        // it the height; otherwise its buttons go beside the picture, in the right band
+        full.classList.toggle('pc-roomy', H - (W - 2 * band) / aspect >= ROW);
       } else size = Math.min(W * 0.42, H * 0.25, 200);
       pc.style.setProperty('--pc-pad', Math.round(size) + 'px');
       pc.style.setProperty('--pc-fire', Math.round(size * (fires.length > 1 ? 0.48 : 0.6)) + 'px');
       // the picture: as big as its shape allows in what the rest leaves
       const pw = wide ? stage.clientWidth : W - 16;
-      const ph = wide ? stage.clientHeight - 4 : H - top.offsetHeight - slot.offsetHeight - (touch ? pc.offsetHeight : 0) - 24;
+      const ph = wide ? stage.clientHeight - 8 : H - top.offsetHeight - slot.offsetHeight - (touch ? pc.offsetHeight : 0) - 24;
       const w = Math.max(64, Math.floor(Math.min(pw, ph * aspect)));
       screen.style.width = w + 'px';
-      top.style.width = w + 'px';   // the row above as wide as the picture, so its buttons keep their places
+      top.style.width = wide && !full.classList.contains('pc-roomy') ? '' : w + 'px';   // the row as wide as the picture
       showKnob();
     }
     function enter() {
