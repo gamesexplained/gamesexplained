@@ -7067,7 +7067,7 @@
   {
    "address": 24032,
    "type": "line",
-   "text": "Table of the 39 height steps of the jump, signed 16-bit values, two bytes each, read by $5E30 through the index $5E2E: from -4 at the start to +4 near the end."
+   "text": "Table of the 39 height steps of the jump, two bytes each, read by $5E30 through the index $5E2E: from -4 at the start to +4 at the end. They are written as signed 16-bit values, but $5E30 adds only the first byte of each pair to the 8-bit height $1D81, so the second bytes are never read."
   },
   {
    "address": 24110,
@@ -7077,7 +7077,7 @@
   {
    "address": 24111,
    "type": "line",
-   "text": "When non-zero, the state $60C0 draws this frame instead of $58A4; cleared by $60C0 after use."
+   "text": "When non-zero, $60C0 draws the player as in this state instead of the state in $58A4; set to 1, 3, 6 or 0 by $5B4E and to 3 by $5E30, and cleared by $60C0 after use."
   },
   {
    "address": 24112,
@@ -7132,12 +7132,12 @@
   {
    "address": 24632,
    "type": "line",
-   "text": "Clears the sorted sprite list at $0010 (puts $FF at the place each of the 11 slots had last frame, kept in $02-$0C), then turns each slot's world position ($79/$B1 across, $95/$CD down) into a screen position by subtracting the camera ($FB-$FE): across into $87,X and $BF,X, down into $A3,X and $DB,X. A slot off the screen (X of $0150 or more, or height outside $23 to $C7) gets place 0; one on the screen goes to the first free place from its height / 2 in the list, and its place is kept in $02,X. Ends the list with $64 in $78. Called by the top interrupt at $6478, before the multiplexer $6593."
+   "text": "Clears the sorted sprite list at $0010 (puts $FF at the place each of the 11 slots had last frame, kept in $02-$0C), then turns each slot's world position ($79/$B1 across, $95/$CD down) into a screen position by subtracting the camera ($FB-$FE): across into $87,X and $BF,X, and, only for a slot whose X is on the screen, down into $A3,X and $DB,X. A slot off the screen (X of $0150 or more, or height outside $23 to $C7) gets place 0; one on the screen goes to the first free place from its height / 2 in the list, and its place is kept in $02,X. Ends the list with $64 in $78. Called by the top interrupt at $6478, before the multiplexer $6593."
   },
   {
    "address": 24764,
    "type": "line",
-   "text": "Sprite pointer value of the player's main frame, used by $60C0 in every case."
+   "text": "Sprite pointer value of the player's main frame, used by $60C0 except while the punch timer $5B4C, the crouch flag $5ABF or the strike timer $5ABE is set outside states 2 to 4, when it takes $60BD-$60BF instead."
   },
   {
    "address": 24765,
@@ -7162,7 +7162,7 @@
   {
    "address": 24923,
    "type": "line",
-   "text": "Called by the hit test $101C with X the slot and Y the object. Takes 2 (when $101B is set) or 1 from the object's energy $0B7D and adds 4 to the score digit 5 ($788B); when the energy is already zero it instead copies the slot's state to the object's counter $0AEB, sets the slot and the object to state $10, sets the next object's counter $0AEC to $FE and adds 8 to the score digit 5."
+   "text": "Called by the hit test $101C with X the slot and Y the object. Takes 2 (when $101B is set) or 1 from the object's energy $0B7D and adds 4 to the score digit 5 ($788B); both calls in $101C set $101B just before, so it always takes 2. When the energy is already zero it instead copies the slot's state to the object's counter $0AEB, sets the slot and the object to state $10, sets the next object's counter $0AEC to $FE and adds 8 to the score digit 5."
   },
   {
    "address": 24968,
@@ -7197,12 +7197,12 @@
   {
    "address": 25122,
    "type": "line",
-   "text": "Behaviour for state $10 (entry 16 of the table at $11F5), which $615B gives an enemy whose energy has run out. Colour 0, multicolour. The phase $0A6A (which the hit test $101C has just cleared) steps with the counter of the next object ($0AEC, which $615B sets to $FE): at $1E or more it counts up to $1D, below that down to 0. The pointer comes from $61E6 (variant 1) or $61AA by the phase: ten frames of one shape, then 0, so the enemy shows for ten frames and disappears."
+   "text": "Behaviour for state $10 (entry 16 of the table at $11F5), which $615B gives an enemy whose energy has run out. Colour 0, multicolour. The phase $0A6A (which the hit test $101C has just cleared) steps with the counter of the next object ($0AEC, which $615B sets to $FE): at $1E or more it counts up to $1D, below that down to 0. The pointer comes from $61E6 (variant 1) or $61AA by the phase, after the step: the phase reaches 1 on the first update, so entries 1 to 9 show the shape and then 0, and the enemy shows for nine updates and disappears."
   },
   {
    "address": 25198,
    "type": "line",
-   "text": "No caller: nothing calls, jumps to or points at it. Sets the object's energy $0B7D to 3 and gives slot and object the state that $615B saved in the counter $0AEB (a 14 or 15 less $0D, so 1 or 2), then the walking pointer for it: 5 ($14 for variant 1) for state 1 and 2 ($10) for state 2. It would turn a knocked-down enemy back into a walking one."
+   "text": "No caller: nothing calls, jumps to or points at it. Sets the object's energy $0B7D to 3 and gives slot and object the state that $615B saved in the counter $0AEB (1 or 2, the state $101C set just before; a value of 3 or more would have $0D taken off), then the walking pointer for it: 5 ($14 for variant 1) for state 1 and 2 ($10) for state 2. It would turn a knocked-down enemy back into a walking one."
   },
   {
    "address": 25257,
@@ -7212,7 +7212,7 @@
   {
    "address": 25279,
    "type": "line",
-   "text": "Raster interrupt 2 of 3 (vector $62BF), on line $C5 (set by $6428). Saves A, X and Y in the operands at $6387, $6389 and $638B, moves sprites 3-7 to line $0A, clears all sprite pointers $CFF8-$CFFF and $CBF8-$CBFF, turns the sprites off, writes $D018 for screen $CC00 and ORs $4F into $D011 for the panel, and acknowledges the interrupt. It counts down $5365 and the recoil $155D, reads joystick port 2 ($DC00, $DC01) into $1EC5 and $1EC6 unless the recoil is running, sets the character set bits of $D018 to 8, runs the timer $948A and toggles $638E (counting $638D down on every second frame). It sets line $CD and the vector $638F for the next interrupt."
+   "text": "Raster interrupt 2 of 3 (vector $62BF), on line $C5 (set by $6428). Saves A, X and Y in the operands at $6387, $6389 and $638B, moves sprites 3-7 to line $0A, clears all sprite pointers $CFF8-$CFFF and $CBF8-$CBFF, turns the sprites off, writes $D018 for screen $CC00 and ORs $4F into $D011 for the panel, and acknowledges the interrupt. It counts down $5365 and the recoil $155D, and reads $DC00 (joystick port 2) into $1EC5 and $DC01 (port 1 and the keyboard) into $1EC6 unless the recoil is still running while $5365 is zero, sets the character set bits of $D018 to 8, runs the timer $948A and toggles $638E (counting $638D down on every second frame). It sets line $CD and the vector $638F for the next interrupt."
   },
   {
    "address": 25479,
@@ -7242,7 +7242,7 @@
   {
    "address": 25487,
    "type": "line",
-   "text": "Raster interrupt 3 of 3 (vector $638F), on line $CD (set by $62BF). Saves A, X and Y in the operands at $63E4, $63E6 and $63E8, ORs $2F into $D011 and $17 into $D016 and writes them back after 18 NOPs, which switches the status panel on (bitmap mode, multicolour), acknowledges the interrupt, sets raster line 1 and the vector $6428, clears bit 6 of $D011 and calls the scroll step $1ECD unless the banner flag $771A is set. It then restores A, X and Y and returns."
+   "text": "Raster interrupt 3 of 3 (vector $638F), on line $CD (set by $62BF). Saves A, X and Y in the operands at $63E4, $63E6 and $63E8, ORs $17 into $D016 and writes it at once, then after 18 NOPs writes $D011 with $2F ORed in and $D016 again, which switches the status panel on (bitmap mode, multicolour), acknowledges the interrupt, sets raster line 1 and the vector $6428, clears bit 6 of $D011 and calls the scroll step $1ECD unless the banner flag $771A is set. It then restores A, X and Y and returns."
   },
   {
    "address": 25578,
@@ -7272,17 +7272,17 @@
   {
    "address": 25917,
    "type": "line",
-   "text": "Returns a pseudo-random byte in A. It stores the low three bits of CIA 1 timer A ($DC04) as the offset of the branch at $654D, adds the timer's high byte ($DC05) to the seed $655C, and rotates the sum left through the carry (set) by a number of places from 2 to 9 that the patched branch picks. The result is the new seed and the return value. Called by the behaviours at $171D, $1751, $1966 and $199A, which compare it with a limit."
+   "text": "Returns a pseudo-random byte in A. It stores the low three bits of CIA 1 timer A ($DC04) as the offset of the branch at $654D, adds the timer's high byte ($DC05) to the seed $655C, and rotates the sum left through the carry (set) by a number of places from 2 to 9 that the patched branch picks. The result is the new seed and the return value. Called by the behaviours at $171D and $1966, which compare it with $14, and at $1751 and $199A, which halve it into the walk length $0A78."
   },
   {
    "address": 25934,
    "type": "line",
-   "text": "The offset of the BCS at $654D, rewritten by $653D (at $6542) with the low three bits of $DC04, so that the branch lands between $654F and $6556 in the chain of ROL instructions up to $6557. The file holds $FE."
+   "text": "The offset of the BCS at $654D, rewritten by $653D (at $6542) with the low three bits of $DC04, so that the branch lands between $654F and $6556 in the chain of ROL instructions up to $6557. The listing holds $01, left by the last call before the snapshot."
   },
   {
    "address": 25948,
    "type": "line",
-   "text": "The seed of $653D: replaced by each result. The file holds $80."
+   "text": "The seed of $653D: replaced by each result. The listing holds $95, left by the last call before the snapshot."
   },
   {
    "address": 25949,
@@ -7317,7 +7317,7 @@
   {
    "address": 26003,
    "type": "line",
-   "text": "Sprite multiplexer for sprites 3 to 7, called twice a frame by the top interrupt $6428 (with the raster limit $29 and then $8C in $6592). Takes the next entry of the sorted sprite list at $0010 (position kept in $6591, $64 ends the list) and, while the raster line is below the limit, gives it the next of the five sprites whose previous slot has finished (its height more than $15 lines above the raster): height into $D007, $D009, $D00B, $D00D or $D00F, X into $D006, $D008, $D00A, $D00C or $D00E with its ninth bit in $D010, the pointer $0A32 into both screens' tables ($CFFB-$CFFF and $CBFB-$CBFF), the colour $0A40 and the multicolour bit $0A4E. On the first pass ($6427 zero) sprite 3 is left out and the order starts with sprite 4."
+   "text": "Sprite multiplexer for sprites 3 to 7, called twice a frame by the top interrupt $6428 (with the raster limit $29 and then $8C in $6592), and not at all while the banner flag $771A is set. Takes the next entry of the sorted sprite list at $0010 (position kept in $6591, $64 ends the list) and, while the raster line is below the limit, gives it the next of the five sprites whose previous slot has finished (its height $15 or more lines above the raster): height into $D007, $D009, $D00B, $D00D or $D00F, X into $D006, $D008, $D00A, $D00C or $D00E with its ninth bit in $D010, the pointer $0A32 into both screens' tables ($CFFB-$CFFF and $CBFB-$CBFF), the colour $0A40 and the multicolour bit $0A4E. On the first pass ($6427 zero) sprite 3 is left out and the order starts with sprite 4."
   },
   {
    "address": 26512,
@@ -7327,7 +7327,7 @@
   {
    "address": 26524,
    "type": "line",
-   "text": "Set when the lower colours are to be copied from the buffer $712F; read and cleared by $6A61 and cleared by the setup. The traced code does not set it."
+   "text": "Set when the lower colours are to be copied from the buffer $712F: set to 1 by $679D, read and cleared by $6A61, and cleared by the setup at $517E."
   },
   {
    "address": 26525,
@@ -7337,7 +7337,7 @@
   {
    "address": 27233,
    "type": "line",
-   "text": "When the flag $679C is set, clears it and copies the colour buffer $712F-$721D to colour RAM $DA08-$DAF6 (screen rows 13 to 18, 39 characters in each, leaving out the last column of each row); otherwise returns at once. Called every frame by the top interrupt at $650D."
+   "text": "When the flag $679C is set, clears it and copies the colour buffer $712F-$721D to colour RAM $DA08-$DAF6 (screen rows 13 to 18, 39 characters in each, leaving out the last column of each row); otherwise returns at once. Called by the top interrupt at $650D on every frame except while the banner flag $771A is set."
   },
   {
    "address": 28180,
@@ -7352,7 +7352,7 @@
   {
    "address": 28660,
    "type": "line",
-   "text": "Fills colour RAM rows 0 to 9 ($D800-$D98F) from the matrix just made: for each column Y from $28 down to 0 and each of the 10 rows it looks up the colour of the character in the colour table $BF00. It reads $C800 when the buffer flag $1EC8 is 0 and $CC00 when it is 1. Called by the finish phase of every scroll ($2029, $2588, $2921 and others)."
+   "text": "Fills colour RAM rows 0 to 9 ($D800-$D98F) from the matrix just made: for each column Y from $28 down to 0 and each of the 10 rows it looks up the colour of the character in the colour table $BF00 (Y = $28 reaches column 0 of the next row, so $D990 is written too). It reads $C800 when the buffer flag $1EC8 is 0 and $CC00 when it is 1. Called by the finish phase of every scroll ($2029, $2588, $2921 and others)."
   },
   {
    "address": 28855,
@@ -7462,7 +7462,7 @@
   {
    "address": 30190,
    "type": "line",
-   "text": "Called by the top interrupt at $646D while the banner flag $771A is set. Turns on all eight sprites as multicolour with colour $0F, sets their X positions ($87, $9F, $B7 and $CF, in two rows of four) and busy-waits on the raster until line $96: below line $62 it sets heights $3C and $51 and the pointers $C5-$CC through $76C7, and from line $62 to $91 it moves sprites 0-3 to height $66, sets the pointers $CD-$D4 and puts sprites 4-7 21 lines below the raster line it read. Probably draws a large picture across the screen."
+   "text": "Called by the top interrupt at $646D while the banner flag $771A is set. Turns on all eight sprites as multicolour with colour $0F (multicolours 1 and $0B, no expansion), sets their X positions ($87, $9F, $B7 and $CF, in two rows of four) and busy-waits on the raster until line $96: below line $62 it sets heights $3C and $51 and the pointers $C5-$CC through $76C7, and from line $62 to $91 it moves sprites 0-3 to height $66, sets the pointers $CD-$D4 and puts sprites 4-7 at height $7B, 21 lines below. It sets the border to black before returning. Probably draws a large picture across the screen."
   },
   {
    "address": 30407,
@@ -7477,12 +7477,12 @@
   {
    "address": 30490,
    "type": "line",
-   "text": "1 while the banner at $75EE is on; the top interrupt $6428 and the scroll step $1ECD read it and $771E clears it at the end. The traced code does not set it."
+   "text": "1 while the banner at $75EE is on; set by the behaviour $122C (at $124A), cleared by the setup and by $771E at the end. The top interrupt $6428, the bottom interrupt $638F (which then skips the scroll step $1ECD) and $771E read it."
   },
   {
    "address": 30491,
    "type": "line",
-   "text": "Frames of the banner left, counted down by $771E; $C8 starts it. The traced code does not set it."
+   "text": "Time left of the banner, counted down by $771E on each pass of the main loop; set to $C8 by the behaviour $122C (at $124F), which starts it, and cleared by the setup."
   },
   {
    "address": 30492,
@@ -7497,7 +7497,7 @@
   {
    "address": 30494,
    "type": "line",
-   "text": "Called by the main loop at $1E27. Returns at once when $771C is set or the banner flag $771A is clear. When the timer $771B holds $C8 it blacks the colour RAM of the playfield ($D800-$DAF7); it counts $771B down and when it reaches 1 puts the colours back from the screen matrix on show ($1EC8 picks $C800 or $CC00) through the table at $BF00, sets $771C and clears $771A. Nothing in the traced code sets $771A."
+   "text": "Called by the main loop at $1E27. Returns at once when $771C is set or the banner flag $771A is clear. When the timer $771B holds $C8 it blacks the colour RAM of the playfield ($D800-$DAF7); it counts $771B down and when it reaches 1 puts the colours back from the screen matrix on show ($1EC8 picks $C800 or $CC00) through the table at $BF00, sets $771C and clears $771A. The behaviour $122C sets $771A and $771B."
   },
   {
    "address": 30654,
@@ -7517,12 +7517,12 @@
   {
    "address": 30723,
    "type": "line",
-   "text": "Builds the energy bar: fills 8 characters of the panel ($CF59 on, colour 5 at $DB59) with the code $1D, writes a striped pattern into the eight character shapes at $77C2, masks off 2 pixels for each step by which the energy $5366 is below $21 (mask table at $77BE) and copies the 64 bytes at $77C2 to the character set at $FAC8. Called by the main loop at $1E1E."
+   "text": "Builds the energy bar: fills 8 cells of the panel's screen matrix ($CF59 on) with the colours $1D and their colour RAM ($DB59) with 5, writes a striped pattern into the eight 8-byte cells at $77C2, masks off one multicolour pixel (two bits) for each step by which the energy $5366 is below $21, from the right-hand end (mask table at $77BE), and copies the 64 bytes at $77C2 to the panel bitmap at $FAC8. Called by the main loop at $1E1E."
   },
   {
    "address": 30859,
    "type": "line",
-   "text": "Adds A to the decimal digit $0A00+X and carries towards the more significant digits (X counting down) until a digit does not overflow; keeps Y. Digit 6 is the units, so the 4 and 8 added to digit 5 by $615B are 40 and 80 points."
+   "text": "Adds A to the decimal digit $0A00+X and carries towards the more significant digits (X counting down), going on down to digit 0 every time and adding a carry of 0 once a digit does not overflow; keeps Y. Digit 6 is the units, so the 4 and 8 added to digit 5 by $615B are 40 and 80 points."
   },
   {
    "address": 30902,
@@ -7532,7 +7532,7 @@
   {
    "address": 30903,
    "type": "line",
-   "text": "Draws the seven digits from $0A00 on into the panel's character shapes at $FA58 (8 bytes each, from the digit shapes at $1DC4) through $78CA. Called by the main loop at $1E2A."
+   "text": "Draws the seven digits from $0A00 on into the panel bitmap's cells at $FA58 (8 bytes each, from the digit shapes at $1DC4) through $78CA. Called by the main loop at $1E2A."
   },
   {
    "address": 30922,
