@@ -10,10 +10,16 @@ disks by extension, size and magic. A JSON file that is not a snapshot passes. T
 is plus4emu's own file, found by its magic under any name; its tapes and cartridges by their
 headers too. The NES's cartridges are found by extension and header, and the kit's NES
 snapshot, gzipped JSON like jsbeeb's, by what it holds.
+
+A page that spells out most of its game's code, as base64, hex or a list of numbers, carries the
+program and is refused; one that carries the data with the code zeroed, or a share of the code
+such as a sound driver, passes, and so do the listing itself and work/.
 """
+import base64
 import gzip
 import json
 import os
+import random
 import sys
 import tempfile
 import unittest
@@ -109,6 +115,50 @@ class NES(Files):
     def test_cartridge(self):
         self.assertIn(".nes", self.why("game.nes", b"\0" * 10))
         self.assertEqual(self.why("game.dat", b"NES\x1a" + bytes(12)), "NES ROM")
+
+
+class Program(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.game = tmp.name
+        rng = random.Random(7)
+        self.code = bytes(rng.randrange(256) for _ in range(3000))
+        self.data = bytes(rng.randrange(256) for _ in range(1000))
+        # records long enough that the listing would be refused if it were read like a page
+        records = [{"a": 0xC000 + i, "t": "code", "b": list(self.code[i:i + 100])} for i in range(0, 3000, 100)]
+        records.append({"a": 0xCBB8, "t": "byte", "b": list(self.data)})
+        self.write("listing.json", json.dumps({"records": records}))
+
+    def write(self, name, text):
+        p = os.path.join(self.game, name)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w") as f:
+            f.write(text)
+
+    def flagged(self):
+        return [os.path.relpath(p, self.game) for p, held, total in check_binaries.programs(self.game)]
+
+    def test_the_whole_image_is_refused_however_it_is_spelt(self):
+        image = self.code + self.data
+        self.write("levels.html", '<script>{"game_rom":"%s"}</script>' % base64.b64encode(image).decode())
+        self.write("reference/rom.js", 'const ROM = "%s";' % image.hex())
+        self.write("play.html", "<script>const rom = [%s];</script>" % ", ".join(map(str, image)))
+        self.assertEqual(sorted(self.flagged()), ["levels.html", "play.html", os.path.join("reference", "rom.js")])
+
+    def test_the_data_with_the_code_zeroed_passes(self):
+        image = bytes(len(self.code)) + self.data
+        self.write("levels.html", '<script>{"game_rom":"%s"}</script>' % base64.b64encode(image).decode())
+        self.assertEqual(self.flagged(), [])
+
+    def test_a_share_of_the_code_passes(self):
+        driver = self.code[:1500] + bytes(1500)
+        self.write("index.html", '<script>const tune = "%s";</script>' % base64.b64encode(driver).decode())
+        self.assertEqual(self.flagged(), [])
+
+    def test_the_listing_and_work_pass(self):
+        self.write("work/image.json", json.dumps({"rom": base64.b64encode(self.code).decode()}))
+        self.assertEqual(self.flagged(), [])
 
 
 if __name__ == "__main__":

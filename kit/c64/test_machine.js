@@ -65,7 +65,8 @@ if (require.main === module) {
   const check = (what, got, want) => { if (got !== want) { fails++; console.log('FAIL', what, 'got', got, 'want', want); } else console.log('ok  ', what); };
   const m = new Machine({ ram, pc: 0x1000, passAt: MAIN });
   m.runFrames(10);
-  check('ten frames, ten interrupts at line 0', ram[0x2001], 10);
+  // the tenth comes as the tenth frame ends: taken, its handler not yet begun
+  check('ten frames: nine interrupts at line 0 counted, the tenth just taken', [ram[0x2001], m.cpu.pc.toString(16)].join(), '9,1100');
   check('one at line 16 after each but the last', ram[0x2005], 9);
   check('frames counted', m.frames, 10);
   check('passes counted at passAt', m.passes & 255, ram[0x2000]);
@@ -122,7 +123,7 @@ if (require.main === module) {
     c.joy1 = 0x1F & ~0x08;
     c.runCycles(102 * 100 + 60);
     check('CIA 2 timer B: an NMI every 102 cycles', Math.abs(r2[0x2010] - 100) <= 1, true);
-    check('the machine counted them', c.nmis, r2[0x2010]);
+    check('the machine counted them, one just taken not yet by its handler', c.nmis - r2[0x2010], c.cpu.pc === 0x1200 || c.cpu.pc === 0x1201 ? 1 : 0);
     check('CIA 1 timer A one-shot: one IRQ', r2[0x2011], 1);
     check('joystick port 1 right: $DC01 bit 3 low', r2[0x2012] & 0x0F, 0x07);
     check('$DD00 reads back its outputs, the inputs high', r2[0x2013], 0xFE);
@@ -134,6 +135,29 @@ if (require.main === module) {
     const s2 = c.save(), one = Machine.restore(s2), two = Machine.restore(s2), alone = Machine.restore(JSON.parse(JSON.stringify(s2)));
     for (const x of [one, two, alone]) x.runCycles(5037);
     check('two machines restored from one save keep their own timers', JSON.stringify(two.save().cia), JSON.stringify(alone.save().cia));
+  }
+
+  // CIA 2's serial port as output: timer A with a latch of 2 underflows every 3 cycles, and a byte
+  // written to $DD0C shifts out over 16 of them, 48 cycles, after which $DD0D has bit 3 set until it
+  // is read. $1000: $DD04/5 = 2, $DD0D = $7F, $DD0E = $C1, $DD0C = 0; $1014: LDA $DD0D; STA $2000;
+  // then 20 NOPs (40 cycles) and LDA $DD0D; STA $2001; 40 NOPs; LDA $DD0D; STA $2002; JMP *
+  {
+    const r3 = new Uint8Array(65536);
+    const prog = [0xA9, 0x02, 0x8D, 0x04, 0xDD, 0xA9, 0x00, 0x8D, 0x05, 0xDD, 0xA9, 0x7F, 0x8D, 0x0D, 0xDD,
+      0xA9, 0xC1, 0x8D, 0x0E, 0xDD, 0xA9, 0x00, 0x8D, 0x0C, 0xDD,
+      0xAD, 0x0D, 0xDD, 0x8D, 0x00, 0x20];
+    for (let i = 0; i < 20; i++) prog.push(0xEA);
+    prog.push(0xAD, 0x0D, 0xDD, 0x8D, 0x01, 0x20);
+    for (let i = 0; i < 40; i++) prog.push(0xEA);
+    prog.push(0xAD, 0x0D, 0xDD, 0x8D, 0x02, 0x20);
+    const here = 0x1000 + prog.length;
+    prog.push(0x4C, here & 255, here >> 8);
+    r3.set(prog, 0x1000);
+    const s = new Machine({ ram: r3, pc: 0x1000, cia: true });
+    s.runCycles(400);
+    check('serial port: no byte out yet just after the write', r3[0x2000] & 8, 0);
+    check('serial port: a byte out after 48 cycles sets bit 3 of $DD0D', r3[0x2001] & 8, 8);
+    check('serial port: the read cleared it, and no byte followed', r3[0x2002] & 8, 0);
   }
 
   // Machine.fromSnapshot: a game's raster interrupt goes on from a snapshot of play. A snapshot laid

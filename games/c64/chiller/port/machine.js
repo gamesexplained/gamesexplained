@@ -31,19 +31,17 @@ class ChillerMachine extends Machine {
     Object.assign(this.hooks, {
       0xFFD2: c => { K.chrout(self.k, c.a); c.cycles += c.a === 0x93 ? COST.clear : COST.chrout; c.c = 0; c.rts(); },
       0xFFF0: c => { if (!c.c) K.plot(self.k, c.x, c.y); c.cycles += COST.plot; c.rts(); },
-      // $EA31 inside an interrupt; the kernal option's own exit follows (PLA TAY PLA TAX PLA RTI)
-      0xEA31: c => { K.irqTail(self.k); c.cycles += COST.irqTail; c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; },
+      // $EA31 inside an interrupt, then the KERNAL's exit (PLA TAY PLA TAX PLA RTI, Machine's leave)
+      0xEA31: c => { K.irqTail(self.k); c.cycles += COST.irqTail; self.leave(22); },
     });
   }
-  get kernalIn() { return this.cpu.rk[0xFF] !== this.cpu.rk[0x02]; }
   tick() {
     const cpu = this.cpu;
     super.tick();
     while (cpu.cycles >= this.timerAt) { this.timerDue = true; this.timerAt += TIMER; }
-    if (this.timerDue && !cpu.i) {
+    if (this.timerDue && !cpu.i) {           // through the KERNAL's entry while it is banked in (Machine's take)
       this.timerDue = false;
-      if (this.kernalIn) cpu.irq(this.ram[0x0314] | (this.ram[0x0315] << 8), { kernal: true, hooks: this.hooks });
-      else cpu.irq(null, { hooks: this.hooks });
+      this.take(0xFFFE);
     }
   }
   save() { return Object.assign(super.save(), { timerAt: this.timerAt, timerDue: this.timerDue }); }

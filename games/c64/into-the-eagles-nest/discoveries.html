@@ -1,0 +1,379 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Into the Eagle's Nest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.en-cv{image-rendering:pixelated;display:block;max-width:100%;height:auto;background:#000;border-radius:6px}
+.en-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.en-key{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);margin-right:4px}
+.en-btn{font-family:var(--fm);font-size:13px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer;color:var(--ink)}
+.en-btn[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.en-quote{font-family:var(--fm);font-size:14px;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:6px;padding:14px;white-space:pre-wrap;line-height:1.5;color:var(--ink)}
+table.en-tab{border-collapse:collapse;width:100%;font-size:14px}
+table.en-tab th,table.en-tab td{border-bottom:1px solid var(--line-soft);padding:6px 10px;text-align:left}
+table.en-tab th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.en-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.en-row > figure{margin:0;flex:1 1 280px}
+.en-row img{width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px;display:block}
+.en-row figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · Pandora</p>
+  <h1>Into the Eagle's Nest</h1>
+  <p class="sub">A cheat hidden in the high score table, a message for whoever took the tape apart, and a mission select that counts the wrong way.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The cheat</p>
+  <h2 class="t">Secret: type %MAGGOTS!&amp; as your name</h2>
+  <p class="lede">Get into the high score table, type those ten characters, and the next game cannot hurt you.</p>
+  <div class="plate">
+    <div class="en-bar" id="en-word-bar"><span class="en-key">Show</span></div>
+    <canvas id="en-word" class="en-cv" width="680" height="120"></canvas>
+    <p class="cap">The ten bytes at <code>$6F31</code>, drawn in the game's own alphabet. Each is a character's ASCII value with the top two bits removed, which is the form the name-entry screen leaves at <code>$081F</code>.</p>
+  </div>
+  <p>When the game builds a floor it calls <code>$6F3B</code>, which compares the ten characters of the name last typed on the high score screen with the ten bytes at <code>$6F31</code>. If every one matches it sets <code>$603F</code>, and while that byte is set three things change:</p>
+  <table class="en-tab">
+    <tr><th>Effect</th><th>Where</th></tr>
+    <tr><td>Hits are never taken</td><td><code>$63A6</code> turns the one routine that adds a hit away</td></tr>
+    <tr><td>A door key is always in hand</td><td><code>$5BD1</code> writes 1 into the key count every frame</td></tr>
+    <tr><td>The ammunition is back to 99 on two frames in three</td><td><code>$5BB4</code></td></tr>
+  </table>
+  <p class="cap">All ten characters are on the name-entry screen's own alphabet strip, so this is a cheat meant to be typed, not poked. Tested in the emulator: with the word in place a mission starts with <code>$603F</code> = 1 and a key in hand, and without it there is no key.</p>
+  <p>The check runs every time a floor is built, so the cheat lasts as long as the name does, and a new name on a later high score turns it off.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The chests</p>
+  <h2 class="t">Secret: opening a chest is safe, and shooting what is inside it is not</h2>
+  <p class="lede">A shot only opens a chest. What it shows is decided by the game's dice, and what happens next is up to you.</p>
+  <div class="plate">
+    <div class="en-row">
+      <figure style="flex:0 0 auto"><canvas id="en-chest" class="en-cv" width="96" height="96" style="width:144px"></canvas></figure>
+      <div style="flex:1 1 300px">
+        <div class="en-bar" id="en-chest-bar"><span class="en-key">You</span></div>
+        <canvas id="en-chest-line" class="en-cv" width="448" height="16" style="width:100%"></canvas>
+        <p class="en-note" id="en-chest-state"></p>
+      </div>
+    </div>
+    <table class="en-tab" style="margin-top:14px">
+      <tr><th>A shot at a closed chest</th><th>Chance in the code</th><th>Chests opened here</th></tr>
+      <tr><td>EMPTY!</td><td>3 in 4</td><td id="en-chest-empty">0</td></tr>
+      <tr><td>Opens on jewels</td><td>about 1 in 7</td><td id="en-chest-jewels">0</td></tr>
+      <tr><td>Opens on explosives</td><td>about 1 in 10</td><td id="en-chest-boom">0</td></tr>
+    </table>
+    <p class="cap">The chest's four tiles and the message line, drawn from the listing; the rules are <code>$5528</code>, <code>$5598</code> and <code>$5CB9</code>, run on the game's own dice in the order the game reads them. Every outcome was also seen in the game, with an open chest put into the map in front of the player.</p>
+  </div>
+  <p>A chest is four tiles, two by two, and it has four states: closed, open and empty, open on jewels and open on explosives. A shot that hits a closed one goes to <code>$5598</code>, which takes the next number from the game's table of random numbers. Three values in four are below <code>$C0</code>: the message line says <code>EMPTY!</code> and the chest is drawn open with nothing in it. On the fourth it takes a second number. From <code>$80</code> up the chest opens on jewels, and below that on explosives. That shot does nothing else.</p>
+  <p>The split is not even. The second number is the byte after the first, and the dice table's neighbours are alike (06, below), so a high first number tends to come with a high second one. Counted over ten tables built with the sound chip running, a shot at a closed chest shows jewels about one time in seven and explosives about one time in ten.</p>
+  <p>Now the chest is open, and the two contents want opposite things. The jewels are taken by walking into them: <code>$5CB9</code> looks at the two tiles ahead of the player one frame in three, in the direction the stick is pushed, and on jewels says <code>YOU HAVE FOUND SOME JEWELS.</code> and queues 4000 points. A second shot at them says <code>YOU HAVE SHOT SOME JEWELS.</code> and they are gone, with nothing scored.</p>
+  <p>The explosives are harmless until they are shot. Walking into them does nothing, because <code>$5CB9</code> looks only for jewels and the explosives' tiles are solid. A shot at them says <code>FOOL!....EXPLOSIVES.</code>, sets <code>$02D3</code> to 1, and the border and background run through seventeen colours five times over before the game ends. So the manual's tip, "Only shoot at a known target", is exactly right: shoot a chest once, look, and then walk.</p>
+</section>
+
+<section>
+  <p class="fig">03 · The loader</p>
+  <h2 class="t">Secret: the tape loader says hello</h2>
+  <p class="lede">The game's own loader carries a message for whoever pulled the tape apart.</p>
+  <div class="plate">
+    <p class="en-quote" id="en-hello">WILD SAVE (C) INTERCEPTOR MICROS 1987   WRITTEN BY ANDREW CHALLIS JANUARY 1987  HELLO HACKER I HOPE YOU HAVE FUN WITH   THIS LOADER</p>
+    <p class="cap">At <code>$033C</code>, in the cassette buffer, in plain ASCII: the first block the turbo loader reads off the tape. It is not drawn on any screen, and the game never reads it.</p>
+  </div>
+  <p>The cassette buffer is where the KERNAL keeps the header of a file it is reading from tape. This loader does its reading elsewhere, at <code>$0100</code> and <code>$02A7</code>, and spends its first block, 192 bytes and under a second of tape, on putting the message here. Wild Save was Interceptor Micros' tape system, and the message says Andrew Challis, who wrote the game, wrote this copy of it in January 1987. How the loader works is on the <a href="index.html">How it works</a> tab.</p>
+  <p>Whoever left it expected the tape to be taken apart, and left a greeting where only that reader would find it.</p>
+</section>
+
+<section>
+  <p class="fig">04 · The mission select</p>
+  <h2 class="t">Bug: MISSION 1 blows up the castle</h2>
+  <p class="lede">The manual says mission four brings the castle down. On the screen it is mission one.</p>
+  <div class="plate">
+    <div class="en-row">
+      <figure><img src="reference/select-mission.png" alt="A black screen reading SELECT MISSION with the number 1 below it."><figcaption>The mission select, stepped down to 1.</figcaption></figure>
+      <figure><img src="reference/briefing-mission-1.png" alt="A black screen reading MISSION 1 and, below it, BLOW UP THE CASTLE."><figcaption>The briefing that follows it.</figcaption></figure>
+    </div>
+    <p class="cap">Taken in the emulator, one after the other: three pushes down and fire.</p>
+  </div>
+  <p>The game keeps the mission number in <code>$0836</code>, and the briefing at <code>$1E3F</code> reads it: 4 orders the castle blown up and anything else orders a prisoner rescued. The digit on the screen is not that number. <code>$1DBE</code> draws five minus it, so the mission the game calls 4 is the one the screen calls 1.</p>
+  <p>The manual was written for the American disk release, where the missions are numbered the way it describes. On this tape the screen counts the other way, and a player following the manual starts with the demolition.</p>
+</section>
+
+<section>
+  <p class="fig">05 · The guards</p>
+  <h2 class="t">Secret: no guard in the game ever fires</h2>
+  <p class="lede">The manual warns that the soldiers shoot and do great damage. They do not shoot at all.</p>
+  <div class="plate">
+    <table class="en-tab">
+      <tr><th>What writes the hit count at <code>$02C6</code></th><th>What it does</th></tr>
+      <tr><td><code>$4058</code>, <code>$4077</code></td><td>clears it, and puts back what the last mission left</td></tr>
+      <tr><td><code>$4F23</code></td><td>cold food: takes <code>$10</code> off it</td></tr>
+      <tr><td><code>$4FA2</code></td><td>first aid: clears it</td></tr>
+      <tr><td><code>$63B2</code></td><td>inside <code>$639F</code>, the one routine that adds a hit</td></tr>
+    </table>
+    <p class="cap">Every instruction in the game that can touch the hit count, found with the references search over every opcode and every index. <code>$639F</code> has four callers, and all four are the branches of the guards' movement where the tile ahead holds the player.</p>
+  </div>
+  <p>A guard hurts the player by walking into him, one hit at a time, and nothing else in the game hurts him at all. Fifty hits end the mission, which is the number the manual gives.</p>
+  <p>Standing still in the first room for two minutes, with a counter on <code>$639F</code>, left the hit count at zero, and the two guards in that room never reached the player. How far a guard ranges is open: this says only that standing still in that room is safe.</p>
+</section>
+
+<section>
+  <p class="fig">06 · The dice</p>
+  <h2 class="t">Secret: the sound chip is the random number generator</h2>
+  <p class="lede">The game rolls its dice once, at start-up, out of the SID's noise.</p>
+  <div class="plate">
+    <canvas id="en-dice" class="en-cv" width="512" height="128"></canvas>
+    <p class="cap">256 bytes built by the game's own loop at <code>$67CA</code>, run in the emulator with the sound chip running, one column a byte. The table does not exist until the game runs, so it is not in the listing, and every game builds a different one.</p>
+  </div>
+  <p><code>$67CA</code> sets voice three to noise at the highest frequency it can hold, reads the voice's own oscillator output at <code>$D41B</code> 256 times, writes what it reads into <code>$8700</code>, and silences the voice again. From then on <code>$67F3</code> steps an index, <code>$02E1</code>, through those 256 bytes, and the chests are the only thing that ever asks it for a number: it is called from <code>$5598</code> and nowhere else. Everything else in the game, the guards included, goes the same way every time.</p>
+  <p>The noise is not quite random from one byte to the next. The loop reads it every 14 cycles, and at the highest frequency the noise generator steps about once every 16, so most bytes are their neighbour shifted by one bit and a few are equal to it. That is why the chests open on jewels more often than on explosives. An emulator with its sound turned off gives something else again: there <code>$D41B</code> reads a cycle counter, the table is a smooth ramp, and a chest never opens on explosives at all.</p>
+  <p>The table is built once a game. <code>$4221</code> skips the building on every mission after the first, but <code>$4058</code> clears the game's variables at the start of every mission, and the index with them. So within one game the dice are read from the beginning again on every mission: the first chest shot on any mission opens the same way, and so does the second. Shoot the chests in the same order and they open the same way every mission. A new game from the mission select reads the noise again. That much is read from the code; it has not been played through to check.</p>
+</section>
+
+<section>
+  <p class="fig">07 · The title picture</p>
+  <h2 class="t">Secret: the tape turns its own title picture on</h2>
+  <p class="lede">The loader has no code for the picture. Five of the tape's blocks are a single byte each, and they land in the video chip.</p>
+  <div class="plate">
+    <div class="en-bar" id="en-title-bar"><span class="en-key">Draw</span></div>
+    <canvas id="en-title" class="en-cv" width="320" height="200" style="width:100%;max-width:640px"></canvas>
+    <p class="cap" id="en-title-cap"></p>
+  </div>
+  <p>Drawn here from the listing: the bitmap at <code>$A000</code> and the thousand bytes at <code>$8C00</code>, with the picture's colour RAM, which the tape writes straight into the chip and so is not in the listing, carried on the page. No instruction in the game reads <code>$8C00</code>, and an earlier reading of this listing took the bytes for spare tiles. They are the picture's screen colours: each byte gives two of the colours of one character cell of the bitmap.</p>
+  <p>The tape loads the bitmap first, then those colours, then five blocks of one byte each: <code>$0B</code> into <code>$D011</code>, which blanks the screen, the colour RAM, <code>$95</code> into CIA 2's port at <code>$DD00</code>, which moves the video chip to the bank at <code>$8000</code>, <code>$38</code> into <code>$D018</code> for this screen and this bitmap, <code>$D8</code> into <code>$D016</code> for multicolour, and <code>$3B</code> into <code>$D011</code>, which turns bitmap mode and the screen on. The loader stores them like any other bytes, and the picture appears 70 seconds into the tape, while the program behind it takes another two and a half minutes. The whole list of blocks is on the <a href="index.html">How it works</a> tab.</p>
+</section>
+
+<section>
+  <p class="fig">08 · The bullet</p>
+  <h2 class="t">Secret: you never see your own bullet</h2>
+  <p class="lede">A shot shows as a flash at the barrel for four frames. After that the bullet is only a position in memory.</p>
+  <div class="plate">
+    <div class="en-bar" id="en-shot-bar"><span class="en-key">Frame</span></div>
+    <canvas id="en-shot" class="en-cv" width="300" height="60" style="width:100%"></canvas>
+    <p class="cap" id="en-shot-cap"></p>
+  </div>
+  <p>Firing points sprite 4 at the flash's shape for the direction and puts it beside the barrel. The interrupt counts it down: orange for three frames, yellow for one, and then it is moved to the corner of the screen, where nothing shows. The shot carries on regardless. Its place is kept in <code>$02DB</code> and <code>$02DC</code>, and every frame <code>$5212</code> looks up the map tile there to see whether it has hit something, but nothing writes the shot to the screen or to a sprite.</p>
+  <p>The frames above are the game's own, recorded in the emulator with the player firing to the right across open floor: the flash for four frames, and the shot moving 8 pixels on two frames of every three until it meets the wall eighty pixels on. A screenshot taken in the eighth frame differs from one taken before the shot only in the ammunition count and the player's pose. A hit is the first thing on the screen to show where a bullet went.</p>
+</section>
+
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* en-dice */
+// The 256 random bytes at $8700, as the game built them from the sound chip's noise: one column a
+// byte, its height the value. They are not in the listing, which is the image before the game ran,
+// so they are embedded here, read out of a snapshot of play with kit/c64/snapshot.py.
+const EN_DICE = [98,200,52,52,86,136,63,194,41,215,132,132,249,70,106,17,167,184,229,229,218,80,95,168,173,98,116,116,151,75,85,181,181,44,110,178,19,223,61,201,201,10,246,5,109,150,162,91,91,103,25,1,62,160,141,82,82,84,139,140,227,224,71,84,84,177,42,234,177,81,220,188,188,72,234,54,197,189,118,74,74,187,151,233,253,198,88,119,119,174,169,119,114,157,31,248,248,171,206,213,245,206,110,115,115,163,191,117,249,154,94,121,121,45,142,52,247,14,95,19,19,43,15,165,145,198,222,193,193,203,226,101,97,180,50,120,120,59,24,153,188,76,204,22,22,198,175,103,195,179,87,105,105,185,2,120,181,12,216,182,182,74,205,55,192,47,246,129,129,251,214,233,89,230,56,101,101,190,48,95,58,29,11,60,60,135,140,87,198,11,71,163,163,161,71,240,145,74,248,161,161,200,244,244,200,254,242,233,233,255,244,121,126,190,57,255,255,62,221,31,126,15,175,151,151,231,223,199,91,99,47,33,33,53,178,156,219,88,75,12,12,165,36,102,150,19,219,43,43,201,1,244,4,236,146,98];
+// The title picture's colour RAM, one colour a cell, which the tape writes straight into the chip at
+// $D800 to $DBE7 and so is not in the listing: read off the tape image by work/tapedecode.py.
+const EN_TITLE_COLOUR = [14,1,1,6,6,1,6,6,6,1,1,1,6,6,6,6,1,1,6,6,6,1,6,6,1,6,6,1,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,3,6,6,6,6,14,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,14,6,6,6,15,6,14,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,8,15,14,6,15,15,6,14,6,6,15,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,15,7,7,7,15,15,6,14,7,7,8,6,14,6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,0,9,5,5,6,6,6,6,6,6,6,6,0,7,7,7,0,0,0,6,7,7,8,6,14,6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,0,0,9,5,5,6,6,6,6,6,6,6,0,0,7,8,0,0,0,6,0,0,0,6,14,6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,0,0,0,9,5,6,6,6,6,6,6,6,0,0,0,0,0,0,0,0,0,0,0,6,14,6,6,6,6,6,6,6,6,6,6,6,6,15,15,15,15,15,15,9,5,6,6,6,6,6,5,11,15,15,7,7,15,15,15,15,15,15,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,15,15,15,15,15,15,15,9,5,6,11,15,15,15,15,15,15,7,7,15,15,15,15,15,5,5,5,9,9,9,5,5,5,6,6,6,6,6,6,6,15,15,15,15,15,15,9,9,5,15,15,15,15,15,15,15,15,7,15,15,15,15,15,15,15,15,15,15,15,15,15,11,5,5,5,6,6,6,6,6,0,0,0,0,5,5,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,5,5,5,5,5,6,6,0,0,9,9,5,9,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,11,0,0,0,0,0,8,5,9,0,0,0,0,0,0,0,0,0,0,0,0,0,12,12,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,0,0,0,5,5,9,14,15,15,15,15,15,15,15,15,15,15,12,11,3,11,15,15,15,6,6,15,6,5,3,6,6,6,6,6,6,6,6,15,15,15,15,15,5,5,15,15,15,15,15,5,5,5,5,5,5,11,1,11,15,15,15,15,15,6,14,6,14,3,6,3,6,3,6,14,14,14,14,5,5,5,15,9,5,5,15,15,15,15,15,15,15,5,5,11,1,11,5,5,5,15,15,15,15,6,14,6,14,6,6,6,6,6,6,6,14,14,14,5,5,5,5,9,5,8,5,5,15,15,15,15,11,11,11,11,11,0,0,0,0,0,0,6,6,14,14,6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,0,5,5,5,5,5,5,0,11,11,11,11,11,0,0,0,0,0,0,0,0,6,14,14,6,6,14,6,14,6,6,14,6,6,6,6,6,6,7,7,7,9,6,5,5,5,5,5,11,11,11,0,0,0,0,0,0,0,0,0,0,6,6,14,6,6,14,6,14,6,6,6,6,6,14,14,6];
+// end of en-dice
+</script>
+<script>
+/* en-disc */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+function pressed(box, b) { box.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }
+
+// The dice, drawn from the bytes themselves.
+(function dice() {
+  const cv = $('en-dice'), ctx = cv.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.fillStyle = C64.PAL ? C64.PAL[13] : '#a9ff9f';
+  EN_DICE.forEach((v, i) => { const h = Math.round(v / 255 * 120); ctx.fillRect(i * 2, 128 - h, 2, h); });
+})();
+
+// ---- 02 the chest, by the rules of $5528, $5598 and $5CB9
+// The chest's tiles are drawn the way the screen draws them: the cell's colour from the table at $8600,
+// multicolour when that colour is 8 or more, hires below it. The rows are as $55BD writes them: the
+// chest's third and fourth tiles on top, its first and second below.
+function chest(m) {
+  const cv = $('en-chest'), ctx = cv.getContext('2d'), line = $('en-chest-line'), lctx = line.getContext('2d');
+  const bar = $('en-chest-bar'), state = $('en-chest-state');
+  const colours = m.ram.subarray(0x8600, 0x8700), set = m.ram.subarray(0x2000, 0x2800), big = m.ram.subarray(0x2800, 0x3000);
+  const MC = [C64.PAL[0], C64.PAL[11], C64.PAL[12]];
+  function tile(code, x, y, s) {
+    const c = colours[code] & 15;
+    ctx.fillStyle = C64.PAL[0]; ctx.fillRect(x, y, 8 * s, 8 * s);
+    if (c >= 8) C64.drawGlyphMC(ctx, set, code, x, y, s, MC.concat([C64.PAL[c & 7]]));
+    else C64.drawGlyph(ctx, set, code, x, y, s, C64.PAL[c]);
+  }
+  // The message line: each character two cells by two from $2800, its cells taken down and then
+  // across ($5962), the top row orange and the bottom yellow, as colour RAM has rows 23 and 24.
+  function say(text) {
+    lctx.fillStyle = C64.PAL[0]; lctx.fillRect(0, 0, line.width, line.height);
+    [...text.slice(0, 28)].forEach((ch, i) => {
+      const n = (ch.charCodeAt(0) & 0x3F) * 4, x = i * 16;
+      C64.drawGlyph(lctx, big, n, x, 0, 1, C64.PAL[8]); C64.drawGlyph(lctx, big, n + 2, x + 8, 0, 1, C64.PAL[8]);
+      C64.drawGlyph(lctx, big, n + 1, x, 8, 1, C64.PAL[7]); C64.drawGlyph(lctx, big, n + 3, x + 8, 8, 1, C64.PAL[7]);
+    });
+  }
+  const BASE = { closed: 0x5E, empty: 0x62, jewels: 0x66, explosives: 0x6A };
+  const NAME = { closed: 'closed', empty: 'open and empty', jewels: 'open on jewels', explosives: 'open on explosives' };
+  const tally = { empty: 0, jewels: 0, boom: 0 };
+  let at = 0, now = 'closed', score = 0, over = false;   // at is $02E1, which every mission starts at 0
+  const roll = () => { at = (at + 1) & 255; return EN_DICE[at]; };
+  function draw() {
+    const b = BASE[now];
+    ctx.fillStyle = C64.PAL[0]; ctx.fillRect(0, 0, cv.width, cv.height);
+    tile(b + 2, 16, 16, 4); tile(b + 3, 48, 16, 4); tile(b, 16, 48, 4); tile(b + 1, 48, 48, 4);
+    state.textContent = (over ? 'The game is over. ' : '') + 'The chest is ' + NAME[now] +
+      '. Points from jewels: ' + score + '. The next number comes from byte ' + ((at + 1) & 255) + ' of the table.';
+    for (const [id, k] of [['en-chest-empty', 'empty'], ['en-chest-jewels', 'jewels'], ['en-chest-boom', 'boom']]) $(id).textContent = String(tally[k]);
+  }
+  function shoot() {
+    if (over) return;
+    if (now === 'closed') {
+      if (roll() < 0xC0) { now = 'empty'; tally.empty++; say('EMPTY!'); }
+      else if (roll() >= 0x80) { now = 'jewels'; tally.jewels++; say(' '); }
+      else { now = 'explosives'; tally.boom++; say(' '); }
+    } else if (now === 'jewels') { now = 'empty'; say('YOU HAVE SHOT SOME JEWELS.'); }
+    else if (now === 'explosives') { now = 'empty'; over = true; say('FOOL!....EXPLOSIVES.'); }
+    draw();
+  }
+  function walk() {
+    if (over) return;
+    if (now === 'jewels') { now = 'empty'; score += 4000; say('YOU HAVE FOUND SOME JEWELS.'); }
+    draw();
+  }
+  function fresh() { now = 'closed'; over = false; say(' '); draw(); }
+  [['Shoot it', shoot], ['Walk into it', walk], ['Find another chest', fresh]].forEach(([label, fn]) => {
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'en-btn'; el.textContent = label;
+    el.setAttribute('aria-pressed', 'false');
+    el.addEventListener('click', fn);
+    bar.appendChild(el);
+  });
+  say(' '); draw();
+}
+
+C64.load('listing.json').then((m) => {
+  // 01 the cheat word, in the game's own big alphabet
+  const cv = $('en-word'), ctx = cv.getContext('2d'), bar = $('en-word-bar');
+  const set = m.ram.subarray(0x2800, 0x3000);
+  const word = Array.from(m.ram.subarray(0x6F31, 0x6F3B));
+  function show(asBytes) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    word.forEach((b, i) => {
+      const x = 14 + i * 66, y = 18;
+      if (asBytes) {
+        ctx.fillStyle = '#edf171'; ctx.font = '22px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(hex(b), x + 32, y + 46);
+      } else {
+        const n = (b & 0x3F) * 4;
+        C64.drawGlyph(ctx, set, n, x, y, 4, C64.PAL[1], '#000');
+        C64.drawGlyph(ctx, set, n + 2, x + 32, y, 4, C64.PAL[1], '#000');
+        C64.drawGlyph(ctx, set, n + 1, x, y + 32, 4, C64.PAL[1], '#000');
+        C64.drawGlyph(ctx, set, n + 3, x + 32, y + 32, 4, C64.PAL[1], '#000');
+      }
+    });
+  }
+  [['The word', false], ['The bytes', true]].forEach(([label, on], i) => {
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'en-btn'; el.textContent = label;
+    el.setAttribute('aria-pressed', String(i === 0));
+    el.addEventListener('click', () => { pressed(bar, el); show(on); });
+    bar.appendChild(el);
+  });
+  show(false);
+
+  chest(m);
+
+  // 07 the title picture: a multicolour bitmap, each cell's %01 and %10 colours from the high and low
+  // halves of its byte at $8C00, %11 from colour RAM, %00 the background ($D021, black)
+  const tv = $('en-title'), tctx = tv.getContext('2d');
+  function title(withScreen, withColourRam) {
+    const img = tctx.createImageData(320, 200), d = img.data;
+    const rgb = C64.PAL.map((h) => [1, 3, 5].map((k) => parseInt(h.substr(k, 2), 16)));
+    for (let cell = 0; cell < 1000; cell++) {
+      const sc = m.ram[0x8C00 + cell], cols = [0, withScreen ? sc >> 4 : 11, withScreen ? sc & 15 : 12, withColourRam ? EN_TITLE_COLOUR[cell] : 15];
+      const cx = (cell % 40) * 8, cy = Math.floor(cell / 40) * 8;
+      for (let y = 0; y < 8; y++) {
+        const b = m.ram[0xA000 + cell * 8 + y];
+        for (let x = 0; x < 4; x++) {
+          const c = rgb[cols[(b >> (6 - 2 * x)) & 3]], o = ((cy + y) * 320 + cx + 2 * x) * 4;
+          for (const k of [0, 4]) { d[o + k] = c[0]; d[o + k + 1] = c[1]; d[o + k + 2] = c[2]; d[o + k + 3] = 255; }
+        }
+      }
+    }
+    tctx.putImageData(img, 0, 0);
+    $('en-title-cap').textContent = withScreen
+      ? (withColourRam ? 'The title picture, as the tape leaves it on the screen.' : 'With the colours at $8C00 and without colour RAM, which is drawn light grey.')
+      : 'The bitmap alone, its colours replaced by greys: dark for the high half of a cell\'s byte, mid for the low, light for colour RAM.';
+  }
+  [['The picture', () => title(true, true)], ['Without colour RAM', () => title(true, false)], ['The bitmap alone', () => title(false, false)]].forEach(([label, fn], i) => {
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'en-btn'; el.textContent = label;
+    el.setAttribute('aria-pressed', String(i === 0));
+    el.addEventListener('click', () => { pressed($('en-title-bar'), el); fn(); });
+    $('en-title-bar').appendChild(el);
+  });
+  title(true, true);
+  // 08 the bullet: the frames of work/t_shot.py, the first shot's x and sprite 4's state in each, with the
+  // player's sprite 0 at (120,158) and the shot's y at 178
+  (function bullet() {
+    const cv = $('en-shot'), ctx = cv.getContext('2d'), cap = $('en-shot-cap');
+    const SHOT = [152, 152, 160, 168, 168, 176, 184, 184, 192, 200, 200, 208, 216, 216, 224];
+    const FLASH = [8, 8, 8, 7];                       // sprite 4's colour in frames 1 to 4, then parked
+    const spr = (q) => m.ram.subarray(q * 64, q * 64 + 63);
+    let frame = 0, showShot = true;
+    function draw() {
+      ctx.fillStyle = C64.PAL[12]; ctx.fillRect(0, 0, cv.width, cv.height);
+      const ox = -112, oy = -150;                     // screen x 112, y 150 at the canvas's corner
+      [[0, 0], [24, 0], [0, 21], [24, 21]].forEach(([dx, dy], j) =>
+        C64.drawSpriteMC(ctx, spr(0xEC + j), 120 + dx + ox, 158 + dy + oy, 1, C64.PAL[7], C64.PAL[0], C64.PAL[5]));
+      if (frame < 4) C64.drawSprite(ctx, spr(0xF6), 160 + ox, 183 + oy, 1, C64.PAL[FLASH[frame]]);
+      if (showShot) {
+        ctx.strokeStyle = '#ff2a6d'; ctx.setLineDash([2, 2]); ctx.lineWidth = 1;
+        ctx.strokeRect(SHOT[frame] + ox - 0.5, 178 + oy - 2.5, 8, 4); ctx.setLineDash([]);
+      }
+      ctx.fillStyle = C64.PAL[3]; ctx.fillRect(232 + ox, 0, 8, cv.height);      // the wall it hits
+      cap.textContent = 'Frame ' + (frame + 1) + ' of the shot: the flash ' + (frame < 4 ? 'shows, ' + (FLASH[frame] === 8 ? 'orange' : 'yellow') : 'is gone')
+        + '; the game has the shot at x ' + SHOT[frame] + (showShot ? ', marked here with a dashed box the screen never draws.' : '.');
+    }
+    const bar = $('en-shot-bar');
+    [['Back', () => { frame = Math.max(0, frame - 1); draw(); }], ['On', () => { frame = Math.min(SHOT.length - 1, frame + 1); draw(); }],
+     ['Mark the shot', () => { showShot = !showShot; draw(); }]].forEach(([label, fn]) => {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'en-btn'; el.textContent = label; el.setAttribute('aria-pressed', 'false');
+      el.addEventListener('click', fn); bar.appendChild(el);
+    });
+    draw();
+  })();
+}).catch((e) => {
+  const el = document.querySelector('#en-word'); if (el) el.replaceWith('The listing could not be loaded: ' + e.message);
+});
+// end of en-disc
+</script>

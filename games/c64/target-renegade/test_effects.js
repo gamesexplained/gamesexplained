@@ -1,7 +1,7 @@
 'use strict';
 const path=require('path'),assert=require('assert'),{game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const g=game(__dirname);g.lib('cpu6502');const C=globalThis.C64Cpu;
-const {createEffects}=g.run('index.html','trEffects','createEffects'),L=g.listing('parts/resident/listing.json');
+const {createEffects}=g.run('music.html','trEffects','createEffects'),L=g.listing('parts/resident/listing.json');
 let calls=0,sounding=0;
 for(let voice=0;voice<3;voice++)for(let effect=0;effect<13;effect++){
  const d=createEffects({bytes:L.ram.slice(0x20c2,0x253e),voice},C);d.init(effect);let events=[],bus=0;

@@ -20,7 +20,10 @@ const TIMES = JSON.parse(m0[1]);
 const L = JSON.parse(fs.readFileSync(path.join(__dirname, 'listing.json'), 'utf8'));
 const ram = new Uint8Array(65536);
 for (const r of L.records) if (r.b) ram.set(r.b, r.a);
-const m = new Machine({ ram, pc: 0x4000, dma: rec.dma });
+// The recording was made on the machine before it took interrupts as the processor does: a byte a
+// frame replays only on the timing it was made on, so it runs on that one (legacyInterrupts). The
+// route it proves is the page's whatever the timing.
+const m = new Machine({ ram, pc: 0x4000, dma: rec.dma, legacyInterrupts: true });
 // The start copies the KERNAL's vectors from $FD30 into page 3. The kit holds no ROM, and only the
 // KERNAL's routines use them, which the game calls only to load or save: the copy is stepped over.
 m.hooks[0x400F] = (c) => { c.pc = 0x4018; return true; };

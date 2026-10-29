@@ -35,28 +35,15 @@ const plainAt = args.indexOf('--plain'), PLAIN = plainAt >= 0 && !!args.splice(p
 const costAt = args.indexOf('--cost'), costFile = costAt >= 0 ? (args.splice(costAt, 1), path.join(__dirname, 'reference/jsw-play.js')) : null;
 const PASSES = +args[0] || 40000;
 
-// The game's interrupts go through the KERNAL (cpu6502.js's kernal option): $FF48 saves the registers
-// and jumps through $0314; the play interrupt leaves by its own PLA TAY PLA TAX PLA RTI, the title's
-// by the KERNAL's at $FEBC. The collisions are the machine's own (collide), worked out as the raster
-// moves and before each write to the video chip, so that a sprite moved in the middle of a frame is
-// found where it was drawn.
+// The game's interrupts go through the KERNAL, as the machine takes them when it is banked in: $FF48
+// saves the registers and jumps through $0314; the play interrupt leaves by its own PLA TAY PLA TAX
+// PLA RTI, the title's by the KERNAL's at $FEBC. The collisions are the machine's own (collide),
+// worked out as the raster moves and before each write to the video chip, so that a sprite moved in
+// the middle of a frame is found where it was drawn.
 class JSWMachine extends Machine {
   constructor(o) { super(Object.assign({ collide: true }, o)); this.setup(); }
   setup() {
-    this.hooks[0xFEBC] = (c) => { c.y = c.pull(); c.x = c.pull(); c.a = c.pull(); c.rti(); c.cycles += 22; };
     this.hooks[0xFFD2] = (c) => { c.cycles += 40; c.rts(); };       // CHROUT $08: nothing kept of it
-  }
-  tick() {
-    if (this.dma) this.dmaCatchUp();
-    this.collide.to(this.cpu.cycles);
-    const ln = Math.floor(this.cpu.cycles / LINE);
-    while (this.lastLine < ln) {
-      this.lastLine++;
-      const l = this.lastLine % LINES;
-      if (l === 0) this.frames++;
-      if (l === this.cmp) this.latch |= 1;
-    }
-    if ((this.latch & this.enable & 1) && !this.cpu.i) this.cpu.irq(this.ram[0x0314] | this.ram[0x0315] << 8, { kernal: true, hooks: this.hooks });
   }
   static restore(s, o) {
     const m = Machine.restore(s, o);
@@ -236,16 +223,13 @@ function close(cpu, sp, at) {
   }
 }
 if (costFile) {
-  const irq = m.cpu.irq;
-  m.cpu.irq = function (h, o) {
-    const c0 = this.cycles, band = JSWPlay.bandOf(R, m.line);
-    irqDepth++; irqChild = 0; stacks[1] = [];
-    let r;
-    try { r = irq.call(this, h, o); } finally { irqDepth--; }
-    const n = this.cycles - c0, b = bands[band] = bands[band] || [0, 0];
+  let band = 0;
+  m.onInterrupt = () => { band = JSWPlay.bandOf(R, m.line); irqDepth++; irqChild = 0; stacks[1] = []; };
+  m.onReturn = (mm, v, n) => {
+    irqDepth--;
+    const b = bands[band] = bands[band] || [0, 0];
     b[0] += n - irqChild; b[1]++;
     irqTotal += n;
-    return r;
   };
   // where each of the port's routines begins: the address its line names, else its label
   const src = fs.readFileSync(path.join(__dirname, 'reference/jsw-port.js'), 'utf8');

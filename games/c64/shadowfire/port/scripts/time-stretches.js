@@ -41,8 +41,8 @@ for (const st of sessions) {
     const catchUp = m.dmaCatchUp;
     m.dmaCatchUp = function () { const c = this.cpu.cycles; catchUp.call(this); taken += this.cpu.cycles - c; };
     // the interrupts' own cycles, and the main program's first read of the raster's registers
-    const irq = m.cpu.irq;
-    m.cpu.irq = function (...a) { const c = this.cycles; depth++; try { return irq.apply(this, a); } finally { depth--; irqOwn += this.cycles - c; } };
+    m.onInterrupt = () => { depth++; };
+    m.onReturn = (mm, v, n) => { if (--depth === 0) irqOwn += n; };
     const ioRead = m.ioRead;
     m.ioRead = function (a) {
       if (!depth && !poll && a >= 0xD000 && a < 0xD400) { const r = a & 0x3F; if (r === 0x11 || r === 0x12 || r === 0x19) poll = now(); }

@@ -200,19 +200,12 @@ def run(story, commands="", trace=None, seed=None, meta=False, timeout=120):
         sys.exit(f"no up-to-date Bocfel: {build_line()}")
     env = environment()
     args = [EXE, "-p", "-C"] + ([] if meta else ["-m"])
-    seedfile = None
-    if seed is not None:
-        fd, seedfile = tempfile.mkstemp(prefix="seed-", dir=HOME)
-        os.write(fd, int(seed).to_bytes(4, "little")); os.close(fd)
-        args += ["-Z", seedfile]
+    if seed is not None:        # -z seeds the PRNG; -Z would read one number from a file, then the clock's
+        args += ["-z", str(int(seed))]
     if trace:
         env["BOCFEL_TRACE"] = os.path.abspath(trace)
-    try:
-        r = subprocess.run(args + [os.path.abspath(story)], input=commands, env=env, cwd=HOME,
-                           capture_output=True, text=True, timeout=timeout)
-    finally:
-        if seedfile:
-            os.remove(seedfile)
+    r = subprocess.run(args + [os.path.abspath(story)], input=commands, env=env, cwd=HOME,
+                       capture_output=True, text=True, timeout=timeout)
     return r.stdout + r.stderr
 
 

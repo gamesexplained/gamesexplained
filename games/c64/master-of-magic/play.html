@@ -279,13 +279,13 @@ function start(D) {
   const mute = () => !musicOn && !(inPlay() && !play.M[0x3D1]);
   function music(on) { musicOn = on; $('mm-music').setAttribute('aria-pressed', String(on)); }
   let host = null, soundOn = false;
+  const registers = () => { const all = []; for (let r = 0; r < 25; r++) all.push(r, r === 0x18 && muted ? play.sid[r] & 0xF0 : play.sid[r]); return all; };
   async function sound(on) {
     soundOn = on;
     if (on && !host) {
       try {
         host = await C64Sid.host({ live: true, gain: 0.5, period: MoMPlay.FRAME / MoMPlay.SLICES });
-        const all = []; for (let r = 0; r < 25; r++) all.push(r, r === 0x18 && muted ? play.sid[r] & 0xF0 : play.sid[r]);
-        host.push([all]);
+        host.push([registers()]);
       } catch (e) { soundOn = false; $('mm-out').textContent = 'No sound: ' + e.message; }
     }
     if (host) { if (soundOn && !paused) host.ctx.resume(); else host.ctx.suspend(); }
@@ -322,7 +322,17 @@ function start(D) {
     paused = !paused; $('mm-pause').setAttribute('aria-pressed', paused);
     if (host && soundOn) { if (paused) host.ctx.suspend(); else host.ctx.resume(); }
   };
-  $('mm-reset').onclick = () => { boot(); timed.length = 0; };
+  // Reset: a new machine from the listing's bytes, the sound chip's registers as it starts, the
+  // page's pause let go and the clock started again, whatever the old machine was doing, a stop
+  // included
+  let running = false;
+  const go = () => { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } };
+  $('mm-reset').onclick = () => {
+    boot(); timed.length = 0;
+    if (paused) $('mm-pause').click();
+    if (host) host.push([registers()]);
+    go();
+  };
   $('mm-record').onclick = () => {
     const M = play.M;
     if ((M[0x314] | M[0x315] << 8) === 0x2653 && M[0x3D3] === 1) hold([0x15], 6);       // F
@@ -333,31 +343,33 @@ function start(D) {
 
   // ---- the clock: a target one frame on for each frame shown, and the port run up to it
   function frame(t) {
-    if (!paused) {
-      const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
-      input();
-      target += dt * CLOCK;
-      try { play.run(target); } catch (e) { paused = true; $('mm-out').textContent = 'The port stopped: ' + e.message; console.error(e); }
-      const slices = [];
-      for (const f of play.sound.splice(0)) for (const s of f) slices.push(s);
-      const m = mute();
-      if (m !== muted || m) {
-        if (!slices.length) slices.push([]);
-        if (m !== muted) slices[0].push(0x18, m ? play.sid[0x18] & 0xF0 : play.sid[0x18]);
-        if (m) for (const sl of slices) for (let i = 0; i + 1 < sl.length; i += 2) if (sl[i] === 0x18) sl[i + 1] &= 0xF0;
-        muted = m;
-      }
-      if (soundOn && host && slices.length) host.push(slices);
-      draw();
-      if (!paused) $('mm-out').textContent = say();
-      const M = play.M, rec = (M[0x314] | M[0x315] << 8) === 0x2653 && M[0x3D3] === 1;
-      $('mm-record').textContent = rec ? 'End the recording' : 'Record a game';
-      if (t - spokenAt > 1000) { const s = announce(); if (s !== spoken) $('mm-live').textContent = spoken = s; spokenAt = t; }
-    } else if ($('mm-out').textContent.indexOf('stopped') < 0) $('mm-out').textContent = 'paused';
+    try {
+      if (!paused) {
+        const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+        input();
+        target += dt * CLOCK;
+        play.run(target);
+        const slices = [];
+        for (const f of play.sound.splice(0)) for (const s of f) slices.push(s);
+        const m = mute();
+        if (m !== muted || m) {
+          if (!slices.length) slices.push([]);
+          if (m !== muted) slices[0].push(0x18, m ? play.sid[0x18] & 0xF0 : play.sid[0x18]);
+          if (m) for (const sl of slices) for (let i = 0; i + 1 < sl.length; i += 2) if (sl[i] === 0x18) sl[i + 1] &= 0xF0;
+          muted = m;
+        }
+        if (soundOn && host && slices.length) host.push(slices);
+        draw();
+        $('mm-out').textContent = say();
+        const M = play.M, rec = (M[0x314] | M[0x315] << 8) === 0x2653 && M[0x3D3] === 1;
+        $('mm-record').textContent = rec ? 'End the recording' : 'Record a game';
+        if (t - spokenAt > 1000) { const s = announce(); if (s !== spoken) $('mm-live').textContent = spoken = s; spokenAt = t; }
+      } else $('mm-out').textContent = 'paused';
+    } catch (e) { console.error(e); running = false; $('mm-out').textContent = 'The port stopped: ' + e.message + '. Reset starts it again.'; return; }
     last = paused ? 0 : t;
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  go();
 }
 
 if (!window.C64 || !window.MoMPort || !window.MoMPlay || !window.C64Collide) {

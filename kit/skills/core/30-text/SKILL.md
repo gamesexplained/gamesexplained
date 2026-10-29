@@ -42,6 +42,11 @@ you have found the other.
 **Inverted fonts.** When letters are stored as holes in a solid cell, the
 space glyph is a solid block and "blank" screen areas are solid colour.
 Set pixels take the foreground colour and holes show the background.
+Render such a set to a picture and look at it, never to a text dump of
+8×8 cells: the dump draws the set pixels, so an inverted letter reads as
+a block of dither and the set looks as though it holds no letters at all.
+When the screen shows text that the set seems not to have, the set is
+inverted until a picture says otherwise.
 
 ## Once you have the table, use it everywhere
 

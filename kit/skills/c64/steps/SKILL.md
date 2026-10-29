@@ -14,7 +14,7 @@ JavaScript file's header is its manual.
 
 | Row | Core step | On the C64 |
 |---|---|---|
-| `snapshot` | `10-orient`, `15-parts`, `50-coverage`: the image everything is read from | a `.vsf`, saved by VICE without ROMs (`tool-vice-mcp`); the hand-over is `work/entry.vsf`, which `listing.py` takes by default |
+| `snapshot` | `10-orient`, `15-parts`, `50-coverage`: the image everything is read from | a `.vsf`, saved by VICE without ROMs (`tool-vice-mcp`); the hand-over is `work/entry.vsf`, which `listing.py` takes as its `--entry` by default. The snapshot to build the listing from is always named: `listing.py <game dir> work/<state>.vsf` |
 | `media` | `10-orient`, step 7; `15-parts`, step 6: the files on the disk | `c1541` from the emulator's build reads a G64 or D64; `python3 kit/c64/disk.py extract <image> <dir>` writes every file, and `disk.py <image>` lists the sectors no file holds. A cartridge is `kit/c64/crt.py` (`c64-reference`, "Bank-switched cartridges") |
 | `disassembler` | `10-orient`, step 6; `50-coverage`, the loop | regenerator2000, live, through `kit/c64/r2000.py` (`tool-regen2000`); `symbols_export.py <game>` reads the running session, and `coverage.py --live` its figure |
 | `census` | `40-sweep`, the register census | `python3 kit/cpu/census.py <game or part dir> [<snapshot.vsf>] [--live]`: the chips at `$D000`-`$DFFF`, the expansion port's pages and the processor port at `$00`-`$01` |
@@ -45,12 +45,16 @@ instructions the cases reached.
 
 `kit/c64/machine.js` is the simulator with a raster interrupt, the
 keyboard, the joystick and colour RAM around it (with `collide: true`
-the sprite collisions and their interrupts, and with `nest: true`
-interrupts taken inside a handler that clears I: a game whose handler
-runs `cli` needs it, or the collisions it latches there are lost),
-started from the listing's memory or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
-interrupt set as the game left it, counting passes where the main loop
-begins. `kit/c64/lockstep.js` runs a port beside it.
+the sprite collisions and their interrupts), started from the listing's
+memory or, with `Machine.fromSnapshot`, from a snapshot of play with its
+raster interrupt set as the game left it, counting passes where the main
+loop begins. It takes interrupts as the processor does, a handler that
+runs `cli` interrupted in turn and through the KERNAL's entry while the
+KERNAL is banked in. A test leaves the taking to it, with `onInterrupt`
+and `onReturn` to watch and a hook at the KERNAL's exit that ends with
+`leave()` where the game needs one: a `tick` or `take` of the test's own
+runs each handler whole, and the collisions a handler latches after its
+`cli` are lost. `kit/c64/lockstep.js` runs a port beside it.
 
 A game that keeps the KERNAL and reads whole lines through `CHRIN` needs
 neither: `kit/c64/kernal_lines.js` runs it a typed line at a time on the
@@ -103,8 +107,11 @@ routine to its return. What the test then checks is what the driver
 adds: its entry points, its registers and its chips. Hand `createDriver`
 the module, `require('<repo>/kit/cpu/cpu6502.js')`, and compare every
 write of every tune, frame by frame, with the same calls made on the
-simulator as the game makes them. Say in the caption that the page runs
-the game's own player.
+simulator as the game makes them. Make the test's `createDriver` from its
+source text alone, `vm.runInNewContext('(' + createDriver + ')', {})`, as
+the worklet makes it: one taken from the page's scope passes a driver
+that uses the page's other names, and on the page that driver is silent.
+Say in the caption that the page runs the game's own player.
 
 The filter is off unless the page passes `filter: '6581'` (or `'8580'`)
 to `mount`, which also shows a switch to compare it with no filter; pass

@@ -30,7 +30,8 @@ Together the rows are a ledger of everything that measured the listing's comment
 them more accurate. `models` names the model ids that did the step, "unknown" where nobody recorded them, and
 any row may carry a short `note`; a sample may carry its `seed`, and an audit leaves out
 `fixed` when the number was not recorded. A sample or an audit a maintainer made for a run on an
-unproven model (kit/CHECKING.md) carries their GitHub login as `by`. 60-verify says when to sample and audit, and a run
+unproven model (kit/CHECKING.md) carries their GitHub login as `by`, and so does an audit on proven
+models made on the run of a contributor kit/contributors.json lists. 60-verify says when to sample and audit, and a run
 writes a row for each step it takes, whatever order they come in.
 
 A game at Silver or above needs a research row and an annotate row, and one created from

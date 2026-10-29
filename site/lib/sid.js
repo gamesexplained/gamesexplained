@@ -496,13 +496,16 @@ class C64SidProcessor extends AudioWorkletProcessor {
   constructor(o) {
     super();
     const q = o.processorOptions;
-    this.p = E.createPlayer(createDriver(q.data, C64Cpu), sampleRate, q.opts);
     this.post = q.frames ? (s) => this.port.postMessage(s) : null;
-    this.port.onmessage = (e) => this.p.command(e.data);
+    this.port.onmessage = (e) => { if (this.p) try { this.p.command(e.data); } catch (err) { this.fail(err); } };
+    try { this.p = E.createPlayer(createDriver(q.data, C64Cpu), sampleRate, q.opts); } catch (err) { this.fail(err); }
   }
+  // a driver that throws here goes silent and says why to the page, which logs it
+  fail(err) { this.p = null; this.port.postMessage({ driverError: String(err) }); }
   process(inputs, outputs) {
+    if (!this.p) return true;
     const ch = outputs[0];
-    this.p.render(ch[0], ch[0].length, currentTime, this.post);
+    try { this.p.render(ch[0], ch[0].length, currentTime, this.post); } catch (err) { this.fail(err); return true; }
     for (let k = 1; k < ch.length; k++) ch[k].set(ch[0]);
     return true;
   }
@@ -518,11 +521,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       'const createDriver = (' + driver.toString() + ');\n' + WORKLET;
   }
 
-  // host({driver, data, gain, filter, ntsc, period, digi, onFrame}): an AudioContext playing the driver through the model.
+  // host({driver, data, gain, filter, ntsc, period, digi, onFrame, onError}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
   // {ctx, mode, send(command), push(frames)}. onFrame(snapshot), if given, receives every driver
   // frame when it is computed, ahead of the sound; show it once snapshot.t has reached
-  // ctx.currentTime.
+  // ctx.currentTime. A driver that throws in the worklet (most often one that uses a name of the
+  // page's, which the worklet's copy of its source text cannot see) goes silent there: the error
+  // is logged on the page's console and passed to onError(text), if given.
   // A Play tab, whose game makes its SID writes as it runs, passes live: true instead of a driver:
   // the driver is then createLive's, and push(frames) queues the writes of each call to come,
   // [[register, value, ...], ...], one call a frame or a period. The first push is usually all 25
@@ -544,7 +549,12 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         await ctx.audioWorklet.addModule(typeof u === 'function' ? u() : u);
         node = new AudioWorkletNode(ctx, 'c64-sid', { numberOfInputs: 0, outputChannelCount: [1],
           processorOptions: { data, opts, frames: !!post } });
-        if (post) node.port.onmessage = (e) => post(e.data);
+        node.port.onmessage = (e) => {
+          if (e.data && e.data.driverError) {
+            console.error('C64Sid: the sound driver stopped in the AudioWorklet, which runs createDriver from its source text alone: ' + e.data.driverError);
+            if (o.onError) o.onError(e.data.driverError);
+          } else if (post) post(e.data);
+        };
         break;
       } catch (e) { node = null; }
     }
@@ -783,7 +793,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
 
     async function audio() {                                 // created on the first click only
-      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, ntsc: o.ntsc, period: o.period, digi: o.digi, onFrame: take });
+      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, ntsc: o.ntsc, period: o.period, digi: o.digi, onFrame: take,
+        onError: (e) => { msg.textContent = 'The sound stopped: ' + e; msg.hidden = false; } });
       ctx = h.ctx; send = h.send;
       root.dataset.sidAudio = h.mode;
       muted.forEach((on, voice) => send({ cmd: 'mute', voice, on }));

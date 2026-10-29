@@ -2,7 +2,7 @@
 const path=require('path'),assert=require('assert');
 const {game}=require(path.resolve(__dirname,'../../../kit/scripts/port_check.js'));
 const g=game(__dirname);g.lib('cpu6502');const C=globalThis.C64Cpu;
-const {createDriver}=g.run('index.html','trMusic','createDriver');
+const {createDriver}=g.run('music.html','trMusic','createDriver');
 const L=g.listing('parts/resident/listing.json'),bytes=L.ram.slice(0x700,0x2023);
 for(let a=0x700;a<0x2023;a++)if(a<0x14c9||a>0x1522)assert(L.has[a],`missing music byte ${a.toString(16)}`);
 let calls=0,writes=0;

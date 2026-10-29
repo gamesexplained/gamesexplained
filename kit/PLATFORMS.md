@@ -93,9 +93,9 @@ A virtual machine that games on several machines share lives beside it,
 in `kit/zmachine/`: Infocom's Z-machine, whose story file is the same on
 every machine a game was sold for. It is no platform, with no `tools.py`
 and no folder under `games/`: the platform's kit explains the machine's
-interpreter, and `kit/zmachine/` reads the story, runs it on an
-interpreter that traces it, and checks one against the other
-(`kit/skills/cpu/zmachine`).
+interpreter, and `kit/zmachine/` reads the story, lists it as a part of
+the game, runs it on an interpreter that traces it, and checks one
+against the other (`kit/skills/cpu/zmachine`).
 
 ## The order of work
 

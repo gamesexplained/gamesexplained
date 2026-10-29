@@ -100,7 +100,10 @@ demonstration.
   gives, for each stretch between checkpoints, the cycles the game took
   (its interrupts excluded) and how often the port called each routine.
   Add the pixels drawn and rows filled from the port's own counters, and
-  fit each routine's own cycles by non-negative least squares. Check the
+  fit each routine's own cycles by non-negative least squares. Leave a
+  polling loop's cycles out of what is fitted: the page's clock runs its
+  turns for itself, a line at a time, so a cost that holds the wait pays
+  it twice and the page runs late. Check the
   fit on sessions it was not fitted on, and on every kind of play the
   page offers: a scene the fit never saw can run fast by a routine it
   never costed. Then check the pace itself: passes in the same frames from
@@ -109,6 +112,15 @@ demonstration.
   paid, not when the port yields it: the yield comes before the clock
   moves, so a long stretch (a room drawn) counts the pass early by its
   own length, and the check passes a page that is slow.
+  Give the lockstep every key the game reads (a pause key, a key a
+  prompt waits for) and every way out of play, forcing each in turn
+  where play seldom reaches it, then drive the page's runtime alone the
+  same way and fail on a stretch it meets with no cost: a stretch no
+  session measured costs the page nothing, and a loop along it that
+  waits on the interrupt, such as a pause waiting for its key, stands
+  the page's clock still for good. Give a yield that names no cycles of
+  its own a line when its stretch has no cost, so that a path no session
+  reached runs slow instead of stopping.
   Where one pass's cost follows mostly from the game's state (a state
   byte the main loop dispatches on), measure instead of fitting: hook the
   machine where each pass begins and ends, leave out the interrupt

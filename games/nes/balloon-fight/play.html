@@ -1,0 +1,395 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balloon Fight: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+table.bf-t{border-collapse:collapse;font-size:15px;margin:10px 0;width:100%}
+table.bf-t th,table.bf-t td{border-bottom:1px solid var(--line-soft);padding:5px 10px;text-align:left;vertical-align:top}
+table.bf-t th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+table.bf-t td.n{font-family:var(--fm);font-size:14px}
+.bf-shots{display:flex;flex-wrap:wrap;gap:18px}
+.bf-shots img{width:256px;height:240px;image-rendering:pixelated;border-radius:6px;background:#000}
+.bf-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.bf-row label{font-size:14px;color:var(--ink-soft)}
+.bf-row button,.bf-row select{font:inherit;font-size:14px;padding:5px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+.bf-row button.on{background:var(--chip);color:var(--chip-ink)}
+#bf-flight{width:100%;height:auto;display:block;background:#1b1d22;border-radius:6px}
+#bf-frame{width:512px;max-width:100%;height:auto;image-rendering:pixelated;display:block;background:#000;border-radius:6px}
+#bf-music button,#bf-sfx button{font:inherit;font-size:14px;padding:5px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);cursor:pointer}
+#bf-music button.nes-apu-playing,#bf-sfx button.nes-apu-playing{background:var(--chip);color:var(--chip-ink)}
+.bf-note{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:8px 0 0}
+
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.pl-btn{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-btn:hover{border-color:var(--ink-mute)}
+.pl-out{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-screen{display:block;width:100%;max-width:512px;height:auto;background:#000;border-radius:6px;image-rendering:pixelated;outline:none}
+.pl-screen:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:14px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-pad{display:none;gap:8px;margin-top:14px;align-items:center;justify-content:space-between}
+.pl-pad button{font-size:18px;font-weight:700;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);width:64px;height:64px;touch-action:none;user-select:none}
+.pl-pad button.on{background:var(--ink);color:#fff}
+.pl-pad .pl-group{display:flex;gap:8px}
+@media (pointer:coarse){.pl-pad{display:flex}}
+.pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
+.pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.pl-levels button:hover{border-color:var(--ink-mute)}
+.pl-miss{font-family:var(--fm);font-size:13px;color:var(--coral)}
+.pl-mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px 18px;margin-top:16px}
+.pl-mods fieldset{border:1px solid var(--line);border-radius:8px;padding:8px 12px 10px;margin:0;min-width:0}
+.pl-mods legend{font-family:var(--fm);font-size:12px;color:var(--ink-mute);padding:0 4px}
+.pl-mods label{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--ink-soft);margin:4px 0}
+.pl-mods select,.pl-mods input[type=range]{font:inherit;font-size:13px;max-width:100%}
+.pl-inside{font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:8px 0 0;min-height:1em}
+.pl-ram{margin-top:12px}
+.pl-ram canvas{display:block;width:100%;max-width:512px;height:auto;image-rendering:pixelated;background:#000;border-radius:6px;cursor:crosshair}
+.pl-ram .pl-row{margin:8px 0 0}
+.pl-ram input{font-family:var(--fm);font-size:13px;width:6em;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink)}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">NES · 1985 · Nintendo</p>
+  <h1>Balloon Fight</h1>
+  <p class="sub">Play the whole game in your browser, from any phase. Below the game: how the port was checked against the cartridge's own code.</p>
+</header>
+<main class="wrap">
+<section id="play" class="pl-first">
+  <p class="fig">01 · Play</p>
+  <h2 class="t">Play Balloon Fight with the keyboard</h2>
+  <p class="lede">Left and right steer. Z or Space flaps once, and holding X flaps again and again. Enter is Start and Shift is Select. On the title screen, Select moves the balloon between one player, two players and Balloon Trip, and Start begins. Start also pauses a game.</p>
+  <div class="plate pl-plate">
+    <div class="pl-row">
+      <button class="pl-btn" id="pl-start">Start</button>
+      <button class="pl-btn" id="pl-select">Select</button>
+      <button class="pl-btn" id="pl-pause" aria-pressed="false">Hold</button>
+      <button class="pl-btn" type="button" id="pl-rewind" aria-pressed="false" title="Hold to go back, up to twenty seconds (or hold R)">⏪ Rewind</button>
+      <button class="pl-btn" type="button" data-sound aria-pressed="true">🔊 Sound</button>
+      <button type="button" class="pl-btn" data-crt aria-pressed="true" title="Draw the picture as a CRT television did: lit lines with a soft glow, on a slightly curved screen">📺 CRT screen</button>
+      <button class="pl-btn" id="pl-reset">Reset</button>
+      <span class="pl-out" id="pl-out"></span>
+    </div>
+    <canvas class="pl-screen" id="pl-screen" width="512" height="480" tabindex="0"></canvas>
+    <div class="pl-pad" id="pl-pad">
+      <div class="pl-group"><button data-bit="64">◀</button><button data-bit="128">▶</button></div>
+      <div class="pl-group"><button data-bit="4">Sel</button><button data-bit="8">Start</button></div>
+      <div class="pl-group"><button data-bit="2">B</button><button data-bit="1">A</button></div>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>←</kbd> <kbd>→</kbd> steer; in the air, lean</li>
+      <li><kbd>Z</kbd> or <kbd>Space</kbd> A: one flap a press</li>
+      <li><kbd>X</kbd> B: held, a flap every nine frames</li>
+      <li><kbd>Enter</kbd> Start; <kbd>Shift</kbd> Select</li>
+      <li>Player 2: <kbd>A</kbd> <kbd>D</kbd> steer, <kbd>G</kbd> A, <kbd>H</kbd> B</li>
+    </ul>
+    <div class="pl-levels" id="pl-levels"><span>Start at</span></div>
+    <div class="pl-mods" id="pl-mods">
+      <fieldset><legend>Cheats</legend>
+        <label><input type="checkbox" data-mod="lives"> Lives that never run out</label>
+        <label><input type="checkbox" data-mod="shield"> Shield: birds and sparks can't take a balloon</label>
+        <label><input type="checkbox" data-mod="calm"> Calm skies: no lightning</label>
+        <label><input type="checkbox" data-mod="noFish"> No fish</label>
+      </fieldset>
+      <fieldset><legend>Flight</legend>
+        <label>Gravity <select id="pl-gravity"><option value="0.5">floaty, half</option><option value="1" selected>the game's</option><option value="1.5">heavy, one and a half</option></select></label>
+        <label>Pace <input type="range" id="pl-pace" min="0.25" max="3" step="0.25" value="1"> <span id="pl-pace-out">1×</span></label>
+      </fieldset>
+      <fieldset><legend>See inside</legend>
+        <label><input type="checkbox" data-see="boxes"> Hit boxes</label>
+        <label><input type="checkbox" data-see="steer"> Where each bird steers</label>
+        <label><input type="checkbox" data-see="fish"> The fish's strike line</label>
+        <label><input type="checkbox" data-see="sparks"> How close a spark must come</label>
+        <label><input type="checkbox" data-see="ram"> Memory</label>
+      </fieldset>
+      <fieldset><legend>Time</legend>
+        <label><input type="checkbox" id="pl-ghost" checked> 👻 Race your longest Balloon Trip</label>
+        <p class="pl-inside" id="pl-ghost-out"></p>
+      </fieldset>
+    </div>
+    <p class="pl-inside" id="pl-inside"></p>
+    <div class="pl-ram" id="pl-ram" hidden>
+      <canvas id="pl-ram-map" width="512" height="256"></canvas>
+      <p class="pl-inside" id="pl-ram-out">Point at a square to see its byte.</p>
+      <div class="pl-row"><label>Address <input id="pl-ram-addr" value="$0041"></label><label>Value <input id="pl-ram-val" value="9"></label><button class="pl-btn" type="button" id="pl-ram-set">Set the byte</button></div>
+    </div>
+    <p class="cap"><b>The game as the port runs it, with pictures drawn for this page.</b> A phase button starts a one-player game at that phase, in the state a game that had cleared the phases before it would be in: the same layout, the same count of phases cleared, which sets how fast the birds pump their balloons, and the same number of bonus rounds passed, which sets what a bonus balloon is worth. The lives and the score are a new game's.</p>
+  </div>
+</section>
+
+<section id="mods">
+  <p class="fig">02 · Mods</p>
+  <h2 class="t">Mods: cheats, lower gravity, rewind, and a look inside</h2>
+  <p class="lede">Each switch under the game changes it while you play, and each one works through the game's own variables and routines.</p>
+  <p>The cheats lean on the game itself. The shield is the protection a new player has at the start of each life: the game's invulnerable flag (<code>$BD</code>), which makes the routines that decide a hit let the player go (<code>$EF37</code> for a bird, <code>$CB1C</code> for a spark). The page sets the flag only while those two routines run. On the screen the same flag makes the player flash, and in Balloon Trip it carries the player along with the scrolling. Lives that never run out keep the lives byte (<code>$41</code>) at 2. Calm skies keep the storm's counter (<code>$B8</code>) from reaching 1, the value at which a cloud starts to flash and then throws a spark. No fish makes the fish's search (<code>$C614</code>) find no one, so the fish stays asleep. The shield does not keep the player out of the water, and with the fish awake it does not stop a bite.</p>
+  <p>Gravity scales the twelve values in the game's own gravity table (<code>$E601</code>), one for each type of actor, so the birds float or sink with the player. Pace runs the game's clock faster or slower than the console's.</p>
+  <p>Hit boxes draws the 16 by 24 pixel box that the collision code gives each actor, dashed for the 20 frames after a hit, when that actor cannot be hit again. Where each bird steers draws the sideways speed the bird is aiming for, which it turns toward a player. The fish's strike line marks the one column of pixels where the fish rises: it takes an actor whose X, the position across the screen, is exactly the fish's, low over the water. How close a spark must come draws, around each spark, the area the player's position must enter for a hit. The player's position is the dot at the top left of the player's box. Memory shows the console's 2 KB of RAM, its working memory, one byte to a square: the larger the number, the brighter the square, and the bytes that changed this frame are red. Point at a square to see which of the game's variables it holds, and set a byte to change the game.</p>
+  <p>Rewind keeps a saved moment every half second for the last twenty seconds, and steps back through them while the button or R is held. A moment can be saved only at the top of the game's main loop in a phase or in Balloon Trip, so rewinding in a bonus round goes back to the end of the phase before it. In Balloon Trip the page also records the player's sprites on every frame. The run that lasts longest becomes a ghost, a see-through player that flies the same path again beside your next run.</p>
+  <p>None of the switches is part of the game. <code>test_play.js</code> holds the port to the game's code with every switch off. <code>test_mods.js</code> checks the switches: a saved moment, restored, runs on exactly as the game it came from for 3,000 frames, and each cheat is played for thousands of frames beside the same game with the cheat off.</p>
+</section>
+
+<section id="port">
+  <p class="fig">03 · The port</p>
+  <h2 class="t">Every frame checked against the cartridge's own code</h2>
+  <p>Nothing on this page emulates the game's program. The game is written out again in JavaScript, one function for each routine in the listing, the annotated program on the Source code tab (<code>reference/bf-port.js</code>). The functions work on a copy of the console's 64 KB of memory, with every variable where the game keeps it. The one piece of the cartridge's code the page runs is the sound driver, the routine that plays the music and effects. It is the bytes at addresses <code>$F500</code> to <code>$FBC9</code> of the console's memory, and it runs on the site's model of the 6502 processor, as on the How it works tab. The site's rules allow a game's music driver to run this way. The rest of the program is not on this page. The page carries the game's data, its tables, its layouts and its tunes, and nothing that could rebuild the program.</p>
+  <p>Every picture on the screen is drawn new for this page. The player is a blue cat, the birds are frogs, and the fish is a sea serpent. The lettering, the clouds, the platforms and the water are new as well. Each new tile, a square of 8 by 8 pixels, sits in the slot the game draws from, in the game's own colours. So the game plays exactly as it does on the console, and none of the cartridge's pattern tables, where its pictures are kept, is on this page. The How it works and Maps / levels tabs show the cartridge's own pictures.</p>
+  <p><code>test_play.js</code> runs the port in lockstep beside the cartridge's own code: the two run side by side, frame by frame, and are compared. The cartridge's code runs on the kit's NES (<code>kit/nes/machine.js</code>), a model of the console that was checked frame for frame against the jsnes emulator. Both start from the reset vector, the place where the console reads the address to start at, and both get the same controller presses. A pilot plays them. It waits on the title, picks one player, two players or Balloon Trip in turn, and lets the demonstration run every fourth time. In play it taps A in bursts, holds the stick, holds B, and pauses now and then. Between games it moves the game to another of the sixteen layouts, as clearing phases would. Every frame, at the point where the game's wait for the next frame ends (<code>$F46D</code>), the two memories are compared. So are the nametables, the palette, the sprite table, and the registers of the picture chip and the sound chip as they were written. The stack page, the processor's scratch area for return addresses, is left out, because a port does not keep one. The NMI handler, the routine the console runs once a frame, writes two bytes that the main loop reads, <code>frame_counter</code> and <code>stars_to_twinkle</code>. The port reads those two through the lockstep, which hands it the values the game's own reads got when the handler ran in the middle of the loop. That matters on a frame the game's loop could not finish in time. There, the loop's <code>INC</code> (add one) of the twinkle count and the handler's <code>DEC</code> (take one away) land in an order no replay can fix, and before the port read them this way, the lockstep showed the difference once in 100,000 frames.</p>
+  <p>The page keeps the console's pace by keeping the console's clock, which ticks 1,789,773 cycles a second; a cycle is one tick of the processor. Each stretch of the game's loop, from one call to the next, costs the cycles it cost the game on the kit's machine, the median over the lockstep's run. The NMI handler costs its own median. The NMI falls every 29,780.5 cycles, as it does on the console. A frame the loop cannot finish in time, such as a frame spent in one of the screen builders, which write the whole background with the picture off, runs late here just as it does there. The site's model of the picture chip draws the screen sixty times a second, from the port's copy of the picture chip's memory. In Balloon Trip it draws two bands. The status bar uses the scroll the handler sets in the vertical blank, the pause between pictures. The play area uses the scroll the handler writes after its timed delay, which on the console lands between lines 31 and 43 of the picture, and here at line 32.</p>
+  <p id="pl-cost" class="pl-out"></p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/nes.js"></script>
+<script src="../../lib/apu.js"></script>
+<script src="../../lib/cpu6502.js"></script>
+<script src="../../lib/crt.js"></script>
+<script src="../../lib/sound.js"></script>
+<script src="reference/bf-port.js"></script>
+<script src="reference/bf-play.js"></script>
+<script src="reference/bf-mods.js"></script>
+<script type="application/json" id="bf-play-data">{"game_rom":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEhBTAAAAAEAAAAAAQAAAAUCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoSQkJKKeqyQkJKwkoyStqKSfrqmlJK+qJCSwJKagsSSnJCQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfDwcgEAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAgIDAQICAwECAgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBgcICQoAAAAAAAQFBgcICQoLCAkKCwAAAAAyS2RkS2SWZAAAAAAyS2RkZJbIZAAAAAABAgMDAgMEAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAINAAAAAAAAAAAAAAWFBYUFBAODAoBAQDAwICAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgbAgZEQocDiUAACBsCCQkJCQkJCQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQlX09Iio6CHIECQkJBAKFg4kJBgfDhskJCQj2gSqqqqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////////////////////////////////////////////////////8gj/dgqQCqhf3wEIpKquiKyQTw76X9GGkEhf2KCqq14IX+teGF/7Xh8OGKSqrW0NDdtOj26LH+8Meoyf/wCSnAycDwD0xh9bXY8BPW2LXslejQC5gpP5XY1ti16JXsTDH1mBAXKQ8YZd+ouWD2ldSoiskC8E+06Pbosf6oiskD8GBIqskB8DKm/bkB9vALnQJAuQD2CQidA0CoaKqY0AugAIrJAvAGoBDQArTcmKT9mQBAtdSV0EwO9aX1KQLwyGiqTLL1mKzwB/AEqf/QCxhp/goKyTyQAqk8jQhAhd5MdfWl9MkC8BK5APeNDEC5AfeNDkC5AveND0BMsvUW/xDFB/AAAADUAMgAvQCyAKgAnwCWAI0AhQB+AHYAcAGrAZMBfAFnAVIBPwEtARwBDAD9AO4A4QNXAycC+QLPAqYCgAJcAjoCGgH8Ad8BxAP4AGkAYwBeAFgAUwBPAEoARgBCAwYMGDASJAkIBAcBBAgQIEAYMAwBBgwYMGAkSBIQCA4CAwSpAPAKqQjQBqkM0AKpBIX5qUCF+ob7hPygALH7kfnImMkE0PZgqiCY94b2rfUH8AvJAtAHhfCpAI31B7nK+6iiALnK+5XfyOiKyQnQ9KkBhdCF0YXShdOpAIXohemF6oXrYJSr/VgAfwQYP38AAAZ/CsAIfwXAwYkCD////xAAGBABGAABiAICQAMFQAQHQKl/jQFAjQVAhtyE3WCi5aD20CCl80qwDKX3SrAapfApENDqYKX3CQGF96kAjeQHovyg9SCD9mDu5Aet5AfJWNAoqQCF92CpwI0XQCAl+yAK+SA4+iCs+iAk+KXxjekHqQCF8IXxhfKF82Cl9CkG0Pml9CnwhfSi6aD2THn4pfbJINAK7ugHKQ/JD9AHiqX0KSDQIqkQjQxAjQBAjQRAqQCF9IX1hfaN+geF940IQI0RQI3wB2CpEI0EQI0MQKkA8OGpAI36B2Ci9aD2THn47vsHrfsHyRDw78kg8OVgqQCN+wep8I36B6LxoPZMefil9CnwCQKF9KkAjfcHovGg9kx5+O73B633B8kQ0D1Mm/hMpfel8Eqw+KX2yd/wDMl/8AjJIPAEpfbQIK36B8kP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","chr_sp":"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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gL9AIBUAAH///38/FQAA/gH9AgQoAAD+///+/CgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOAgYCDgAAAAAAAAAAAAAADggOAg4AAAAAAAAAAAAAAA4CBAQEAAAAAAAAAAAAAABOykpK7gAAAAAAAAAAAAAATshOQu4AAAAAAAAAAAAAAO4q6oruAAAAAAAAAAAAAADuiuoq7gAAAAAAAAAAAAAA7qqqqu4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","chr_bg":"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f388AAAAADA8MAAAAAAAA5kDAAAAAADw/PAAAAAA8Pj++PAAAAAAAAAAAAAAAAAAAAABAQAAAAAgcPDgAAAAAHD4+PgAAAAAAAAAAQAAAAAAAAEDAQEIDBwQgMADAwAIGEDQ4MAAAAAAAAAA8KAAAAAAAAADAwcEAAAAAAcHBwwAAAAAwIAAAAAAAADg4MCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADxAgQYKEiAAADx8+fXt3AP9AgAECBAgAAL9//v379wDwQIAAAgQIAAC4fP78+vYQIECAAQIECO/fv3/+/fv3ECBAgAECBAjv34NDwsH79xAgQIAAAgQI7t6+fv78+vYQIECAAQIECO/fv39+PRsHECBAgAAAAADu3r5+/Pjw4AA8QIABAgQIAAA+f/79+/cQIAAAAQIECA8fPz8+PTsXAPxAgAACBAgAAL5+/vz48BAgQIABAgQI79+/f/58OBAA4ECAAAIECAAAuHz+/Pv3AAAAEAAAAAAAAAAAAAAAAAAAECgQAAAAAAAQKBAAAAAAAAAAAAAAAMCAAAAAAAAAAA4EBAQEAAAAAAAAAAAAAABQcHBQUAAAAAAAAAAAAAAQAECAAQIAAO/Dg0PCwcPDAABAgAECAAjDw4NDwsHD936BvaGhvYF+AAAAAAAAAAAQAECAAAAAAO/AgEDAwMDAECBAgAECBAjv379//n07F3hERHhQSEQAeEREeFBIRAA4RER8REREADhERHxEREQARERkVExERABERGRUTEREAERIUGBQSEQAREhQYFBIRAAAAAA4AAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","costs":{"c045-c04c":{"median":609},"c04c-c045":{"median":4244},"c04c-c069":{"median":4492},"c069-f1d4":{"median":475},"f1d4-dac1":{"median":6},"dac1-dac4":{"median":28},"dac4-d90f":{"median":6},"d90f-d246":{"median":6},"d246-c10d":{"median":11},"c10d-f46d":{"median":18160},"f46d-d249":{"median":25},"d249-d256":{"median":36},"d256-d259":{"median":5634},"d259-d25c":{"median":5634},"d25c-d25f":{"median":28},"d25f-c10d":{"median":15},"f46d-d912":{"median":1317},"d912-c10d":{"median":11},"f46d-d915":{"median":25},"d915-f46d":{"median":28642},"f46d-d918":{"median":11},"d918-d923":{"median":34},"d923-d926":{"median":15957},"d926-c10d":{"median":40},"f46d-dacb":{"median":30},"dacb-f46d":{"median":28042},"f46d-dad2":{"median":16},"dad2-dad5":{"median":213},"dad5-dacb":{"median":274},"dad5-f1e4":{"median":390},"f1e4-f20d":{"median":469},"f20d-f278":{"median":796},"f278-f27e":{"median":75},"f27e-d246":{"median":6},"f46d-f281":{"median":1317},"f281-d293":{"median":6},"d293-c10d":{"median":11},"f46d-d296":{"median":25},"d296-d2ac":{"median":47},"d2ac-d2b1":{"median":7126},"d2b1-d2ba":{"median":34},"d2ba-d2c1":{"median":32},"d2c1-d2c1":{"median":150},"d2c1-d2e1":{"median":159},"d2e1-d2ea":{"median":75},"d2ea-d2f3":{"median":75},"d2f3-d2fc":{"median":75},"d2fc-d305":{"median":70},"d305-d308":{"median":602},"d308-d2b1":{"median":335},"d2b1-d327":{"median":40},"d327-d382":{"median":38},"d382-d387":{"median":30},"d387-d3ba":{"median":340},"d3ba-d3bf":{"median":30},"d3bf-d3c4":{"median":30},"d3c4-d3cc":{"median":35},"d3cc-d3d3":{"median":26},"d3d3-d3da":{"median":26},"d3da-d3e1":{"median":26},"d3e1-d3e4":{"median":9587},"d3e4-d3e7":{"median":1288},"d3e7-c10d":{"median":40},"f46d-f28e":{"median":37},"f28e-f291":{"median":53},"f291-f2a2":{"median":63},"f2a2-f2b9":{"median":2673},"f2b9-f470":{"median":6},"f470-f46d":{"median":18413},"f46d-f477":{"median":16},"f477-f2c2":{"median":279},"f2c2-f2c5":{"median":285},"f2c5-f2c8":{"median":478},"f2c8-f2cb":{"median":8976},"f2cb-f2ce":{"median":195},"f2ce-f2d1":{"median":19},"f2d1-f2d4":{"median":20},"f2d4-f2d7":{"median":44},"f2d7-f2da":{"median":37},"f2da-f2dd":{"median":18},"f2dd-f2b9":{"median":153},"f477-f2c5":{"median":275},"f477-f489":{"median":276},"f489-f46d":{"median":28432},"f46d-f48c":{"median":11},"f48c-f489":{"median":263},"f48c-f2c5":{"median":295},"f2dd-f2f6":{"median":82},"f2f6-f303":{"median":662},"f303-f306":{"median":71},"f306-f2b9":{"median":72},"f2f6-f372":{"median":694},"f372-f40b":{"median":6},"f40b-f46d":{"median":21604},"f46d-f416":{"median":21},"f416-f416":{"median":203},"f416-f434":{"median":630},"f434-f434":{"median":446},"f434-f375":{"median":444},"f375-f46d":{"median":23548},"f46d-f378":{"median":11},"f378-f375":{"median":270},"f378-f1d4":{"median":266},"f20d-f20d":{"median":30},"f278-f278":{"median":76},"f291-cf17":{"median":70},"cf17-cf1a":{"median":68},"cf1a-cf23":{"median":212},"cf23-cf23":{"median":36},"cf23-cf34":{"median":43},"cf34-f470":{"median":6},"f477-cf39":{"median":274},"cf39-cf3c":{"median":37},"cf3c-cf44":{"median":4170},"cf44-cf47":{"median":20},"cf47-cf34":{"median":3538},"f48c-cf39":{"median":295},"cf3c-cf47":{"median":4231},"cf47-cf5d":{"median":2024},"cf5d-d246":{"median":6},"f46d-cf64":{"median":1322},"cf64-f45e":{"median":6},"f45e-f46d":{"median":28690},"f46d-f45e":{"median":16},"f46d-cf6b":{"median":25},"cf6b-cf72":{"median":434},"cf72-cf79":{"median":274},"cf79-cf90":{"median":300},"cf90-cf93":{"median":25},"cf93-cf90":{"median":863},"cf93-cfb5":{"median":858},"cfb5-cfb5":{"median":177},"cfb5-cfbb":{"median":176},"cfbb-f45e":{"median":8},"f46d-cfd7":{"median":53},"cfd7-cfe5":{"median":223},"cfe5-cfe8":{"median":209},"cfe8-f45e":{"median":8},"f46d-d005":{"median":55},"d005-d010":{"median":165},"d010-d01d":{"median":168},"d01d-d01d":{"median":149},"d01d-d029":{"median":155},"d029-f45e":{"median":6},"f46d-d02e":{"median":24},"d02e-d02e":{"median":149},"d02e-d034":{"median":148},"d034-d037":{"median":1577},"d037-f45e":{"median":8},"f46d-d03e":{"median":26},"d03e-d06a":{"median":29},"d06a-f45e":{"median":6},"f46d-d06d":{"median":21},"d06d-d076":{"median":1584},"d076-d079":{"median":514},"d079-d084":{"median":346},"d084-d08b":{"median":518},"d08b-d094":{"median":337},"d094-f45e":{"median":6},"f46d-d076":{"median":36},"f46d-d0aa":{"median":43},"d0aa-f45e":{"median":6},"f46d-d0ad":{"median":21},"d0ad-f355":{"median":65},"f355-f45e":{"median":6},"f46d-f278":{"median":804},"f2dd-f355":{"median":185},"f2f6-f2b9":{"median":721},"d296-d576":{"median":36},"d576-d57d":{"median":667},"d57d-d584":{"median":667},"d584-d58b":{"median":1776},"d58b-d3e1":{"median":1780},"f291-c1c9":{"median":64},"c1c9-c1cc":{"median":102},"c1cc-c1e6":{"median":3677},"c1e6-c1f7":{"median":223},"c1f7-c209":{"median":453},"c209-f470":{"median":6},"f477-c20c":{"median":269},"c20c-c213":{"median":3028},"c213-c2ef":{"median":198},"c2ef-c2ef":{"median":156},"c2ef-c209":{"median":1960},"c213-c29d":{"median":842},"c29d-c2cd":{"median":3977},"c2cd-c2ef":{"median":46},"c2ef-c300":{"median":161},"c300-c314":{"median":82},"c314-c209":{"median":382},"c2cd-c2d7":{"median":326},"c2d7-c2ef":{"median":95},"c314-c300":{"median":169},"c213-c2d7":{"median":189},"c2ef-c2d7":{"median":183},"c2d7-c2ea":{"median":175},"c2ea-c2ef":{"median":3874},"c314-c3a1":{"median":183},"c3a1-c3a8":{"median":3844},"c3a8-f46d":{"median":12556},"f46d-f372":{"median":30},"f46d-dafc":{"median":36},"dafc-f20d":{"median":42},"f46d-f2c5":{"median":29},"f2dd-f31c":{"median":64},"f31c-f2b9":{"median":268},"f2dd-dac1":{"median":69},"d327-d330":{"median":34},"d330-d335":{"median":30},"d335-d354":{"median":71},"d354-d35f":{"median":81},"d35f-d362":{"median":1047},"d362-d369":{"median":191},"d369-d370":{"median":191},"d370-d377":{"median":191},"d377-d327":{"median":186},"cfd7-cfe8":{"median":226},"d005-d01d":{"median":174},"d079-d094":{"median":347},"f306-f355":{"median":172},"nmi":{"median":1283}}}</script>
+<script>
+'use strict';
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const CLOCK = 1789773;
+  if (typeof NES === 'undefined' || typeof NESApu === 'undefined' || typeof C64Cpu === 'undefined' || typeof BalloonFight === 'undefined' || typeof BalloonFightPlay === 'undefined' || typeof BalloonFightMods === 'undefined') {
+    const p = document.createElement('p'); p.className = 'pl-miss';
+    p.textContent = 'The game runs through the site\'s shared scripts; it works in the built site.';
+    $('pl-screen').replaceWith(p);
+    return;
+  }
+  const D = JSON.parse($('bf-play-data').textContent);
+  const g = BalloonFightPlay.create({ data: D, costs: D.costs, CPU: C64Cpu.CPU, NES, NESApu });
+  window.bfPlay = g;                                        // for a check from the console
+
+  // ---- the screen: the port's PPU through the site's model of the chip
+  const cv = $('pl-screen'), ctx = cv.getContext('2d');
+  CRT.attach(cv, { button: document.querySelector('[data-crt]'), pixel: 2 });   // the CRT screen switch (site/lib/crt.js)
+  const mods = BalloonFightMods.create(g);
+  window.bfMods = mods;
+  const V = BalloonFight.V, see = {};
+  const SP = Uint8Array.from(atob(D.chr_sp), (c) => c.charCodeAt(0));   // the sprites' tiles, for the ghost
+  const sprite = (tile, attr, x, y) => {                    // one 8 by 8 sprite as a silhouette, flipped as the attribute says
+    for (let r = 0; r < 8; r++) {
+      const lo = SP[tile * 16 + r], hi = SP[tile * 16 + 8 + r];
+      for (let c = 0; c < 8; c++) {
+        if (!(((lo >> (7 - c)) & 1) | ((hi >> (7 - c)) & 1))) continue;
+        const fx = attr & 0x40 ? 7 - c : c, fy = attr & 0x80 ? 7 - r : r;
+        ctx.fillRect((x + fx) * 2, (y + 1 + fy) * 2, 2, 2);
+      }
+    }
+  };
+  function overlays() {
+    const m = g.M;
+    ctx.save();
+    if ($('pl-ghost').checked) {
+      const sp = mods.ghostSprites();
+      if (sp) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; for (let i = 0; i < 24; i += 4) if (sp[i] < 0xEF) sprite(sp[i + 1], sp[i + 2], sp[i + 3], sp[i]); }
+    }
+    ctx.lineWidth = 2;
+    const alive = (x) => { const b = m[V.actor_balloons + x]; return !(b & 0x80); };
+    if (see.boxes) for (let x = 0; x < 8; x++) {
+      if (!alive(x)) continue;
+      ctx.strokeStyle = x < 2 ? '#4ade80' : '#fb923c';
+      ctx.setLineDash(m[V.actor_hit_cooldown + x] ? [5, 4] : []);
+      ctx.strokeRect(m[V.actor_x + x] * 2 + 1, m[V.actor_y + x] * 2 + 1, 32, 48);
+    }
+    ctx.setLineDash([]);
+    if (see.steer) for (let x = 2; x < 8; x++) {
+      if (!alive(x) || !m[V.actor_balloons + x]) continue;
+      let v = (m[V.actor_vx_target_hi + x] << 8) | m[V.actor_vx_target_lo + x]; if (v & 0x8000) v -= 0x10000;
+      const x0 = (m[V.actor_x + x] + 8) * 2, y0 = (m[V.actor_y + x] + 6) * 2, x1 = x0 + v / 256 * 48;
+      ctx.strokeStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y0);
+      const d = Math.sign(x1 - x0) * 7; if (d) { ctx.moveTo(x1, y0); ctx.lineTo(x1 - d, y0 - 5); ctx.moveTo(x1, y0); ctx.lineTo(x1 - d, y0 + 5); }
+      ctx.stroke();
+    }
+    if (see.fish) {
+      const awake = !(m[V.fish_state] & 0x80), fx = m[V.fish_x] * 2;
+      ctx.strokeStyle = awake ? '#f87171' : '#67e8f9';
+      ctx.beginPath(); ctx.moveTo(fx + 1, 0xB4 * 2); ctx.lineTo(fx + 1, 0xE0 * 2); ctx.stroke();
+    }
+    if (see.sparks) {
+      ctx.strokeStyle = '#fde047'; ctx.setLineDash([3, 3]);
+      for (let i = 0; i < 20; i++) {
+        if (m[V.spark_state + i] & 0x80) continue;
+        const sx = m[V.spark_x + i], sy = m[V.spark_y + i];
+        ctx.strokeRect((sx - 7) * 2, (sy - 19) * 2, 30, 46);            // |sx - x| < 8 and |sy - y - 8| < 12 ($CB1C)
+      }
+      ctx.setLineDash([]); ctx.fillStyle = '#fde047';
+      for (let x = 0; x < 2; x++) if (alive(x)) ctx.fillRect(m[V.actor_x + x] * 2 - 2, m[V.actor_y + x] * 2 - 2, 5, 5);
+    }
+    ctx.restore();
+    const lines = [];
+    if (see.sparks) lines.push('storm: ' + m[V.lightning_timer] + ' more counts of 128 frames');
+    if (see.fish) lines.push('fish: ' + (m[V.fish_state] & 0x80 ? 'asleep' : 'awake') + ' at X $' + m[V.fish_x].toString(16).toUpperCase());
+    $('pl-inside').textContent = lines.join(' · ');
+    const best = mods.best;
+    $('pl-ghost-out').textContent = best ? 'longest run: ' + (best.frames / 60).toFixed(1) + ' s' : 'Fly a Balloon Trip to make one.';
+  }
+  const draw = () => { NES.draw(ctx, g.picture(), 256, 240, 2); overlays(); if (see.ram) ram(); };
+
+  // ---- the controllers: the keyboard, the on-screen pad, the buttons
+  let p1 = 0, p2 = 0, tap = 0, tapFor = 0;
+  const KEYS = { ArrowLeft: [0, 64], ArrowRight: [0, 128], ArrowUp: [0, 16], ArrowDown: [0, 32], KeyZ: [0, 1], Space: [0, 1], KeyX: [0, 2], Enter: [0, 8], ShiftLeft: [0, 4], ShiftRight: [0, 4],
+    KeyA: [1, 64], KeyD: [1, 128], KeyW: [1, 16], KeyS: [1, 32], KeyG: [1, 1], KeyH: [1, 2] };
+  const key = (e, down) => {
+    if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.code === 'KeyR') { if (!e.repeat) rewind(down); e.preventDefault(); return; }
+    const k = KEYS[e.code]; if (!k) return;
+    if (k[0] === 0) p1 = down ? p1 | k[1] : p1 & ~k[1]; else p2 = down ? p2 | k[1] : p2 & ~k[1];
+    e.preventDefault();
+  };
+  addEventListener('keydown', (e) => key(e, true));
+  addEventListener('keyup', (e) => key(e, false));
+  addEventListener('blur', () => { p1 = p2 = 0; });
+  const press = (bit) => { tap |= bit; tapFor = 4; };
+  $('pl-start').onclick = () => press(8);
+  $('pl-select').onclick = () => press(4);
+  for (const b of $('pl-pad').querySelectorAll('button')) {
+    const bit = +b.dataset.bit;
+    const on = (e) => { p1 |= bit; b.classList.add('on'); e.preventDefault(); };
+    const off = () => { p1 &= ~bit; b.classList.remove('on'); };
+    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+  }
+  cv.addEventListener('pointerdown', () => cv.focus());
+
+  // ---- the phase picker: a new game taken to a phase, as a game that cleared the ones before would be
+  const picker = $('pl-levels');
+  const NAMES = [[0, 'Phase 1', 0, 0], [1, 'Phase 2', 1, 0], [2, 'Phase 3', 2, 0], [3, 'Bonus', 3, 0], [4, 'Phase 4', 3, 1], [5, 'Phase 5', 4, 1], [6, 'Phase 6', 5, 1], [7, 'Bonus', 6, 1],
+    [8, 'Phase 7', 6, 2], [9, 'Phase 8', 7, 2], [10, 'Phase 9', 8, 2], [11, 'Bonus', 9, 2], [12, 'Phase 10', 9, 3], [13, 'Phase 11', 10, 3], [14, 'Phase 12', 11, 3], [15, 'Bonus', 12, 3]];
+  const add = (label, where) => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => { g.startAt(where); status(); }; picker.appendChild(b); };
+  for (const [index, label, counter, bonus] of NAMES) add(label, { mode: 0, index, counter, bonus });
+  add('Two players', { mode: 1 }); add('Balloon Trip', { mode: 2 });
+
+  // ---- sound: each frame's writes to the APU, to the site's model of the chip in an AudioWorklet
+  let host = null, soundOn = false;
+  async function sound(on) {
+    soundOn = on;
+    if (on && !host) {
+      try { host = await NESApu.host({ url: '../../lib/apu.js', gain: 0.5 }); }
+      catch (e) { soundOn = false; $('pl-out').textContent = 'No sound: ' + e.message; }
+    }
+    if (host) { if (soundOn) host.ctx.resume(); else host.ctx.suspend(); }
+    return soundOn;
+  }
+  Sound.attach(document.querySelector('[data-sound]'), sound);   // the sound switch (site/lib/sound.js)
+
+  // ---- the mods (reference/bf-mods.js)
+  for (const c of document.querySelectorAll('[data-mod]')) c.onchange = () => mods.set(c.dataset.mod, c.checked);
+  $('pl-gravity').onchange = (e) => mods.set('gravity', +e.target.value);
+  let pace = 1;
+  $('pl-pace').oninput = (e) => { pace = +e.target.value; $('pl-pace-out').textContent = pace + '×'; };
+  for (const c of document.querySelectorAll('[data-see]')) c.onchange = () => { see[c.dataset.see] = c.checked; $('pl-ram').hidden = !see.ram; draw(); };
+  let rewinding = false, rewindTick = 0;
+  function rewind(on) {
+    if (on === rewinding) return;
+    rewinding = on; rewindTick = 0;
+    $('pl-rewind').setAttribute('aria-pressed', on);
+    if (!on) { mods.resume(); g.apuFrames(); if (host) host.send({ cmd: 'reset' }); }
+  }
+  const rb = $('pl-rewind');
+  rb.addEventListener('pointerdown', (e) => { rewind(true); rb.setPointerCapture(e.pointerId); e.preventDefault(); });
+  for (const ev of ['pointerup', 'pointercancel']) rb.addEventListener(ev, () => rewind(false));
+  rb.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); e.stopPropagation(); } });
+
+  // the memory view: 2 KB, a byte to a square, 64 to a row; the names are the listing's
+  const names = [];
+  for (const [k, a] of Object.entries(V)) if (a < 0x800 && !names[a]) names[a] = k;
+  const nameOf = (a) => { for (let b = a; b >= 0 && a - b < 20; b--) if (names[b]) return b === a ? names[b] : names[b] + ' + ' + (a - b); return ''; };
+  const rc = $('pl-ram-map').getContext('2d'), rimg = rc.createImageData(64, 32);
+  let before = new Uint8Array(0x800);
+  const rcv = document.createElement('canvas'); rcv.width = 64; rcv.height = 32;
+  const rcx = rcv.getContext('2d');
+  function ram() {
+    const m = g.M, d = rimg.data;
+    for (let a = 0; a < 0x800; a++) {
+      const v = m[a], o = a * 4, hot = v !== before[a];
+      d[o] = hot ? 248 : 40 + v * 0.8; d[o + 1] = hot ? 113 : 50 + v * 0.75; d[o + 2] = hot ? 113 : 70 + v * 0.7; d[o + 3] = 255;
+    }
+    before = m.slice(0, 0x800);
+    rcx.putImageData(rimg, 0, 0);
+    rc.imageSmoothingEnabled = false; rc.drawImage(rcv, 0, 0, 512, 256);
+  }
+  const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  const at = (e) => { const r = e.target.getBoundingClientRect(); return (Math.floor((e.clientY - r.top) / r.height * 32) << 6) | Math.floor((e.clientX - r.left) / r.width * 64); };
+  $('pl-ram-map').addEventListener('pointermove', (e) => { const a = at(e) & 0x7FF; $('pl-ram-out').textContent = hex(a, 4) + ' ' + (nameOf(a) || '(unnamed)') + ' = ' + hex(g.M[a], 2) + ' (' + g.M[a] + ')'; });
+  $('pl-ram-map').addEventListener('click', (e) => { const a = at(e) & 0x7FF; $('pl-ram-addr').value = hex(a, 4); $('pl-ram-val').value = g.M[a]; });
+  $('pl-ram-set').onclick = () => {
+    const num = (t) => { t = t.trim(); return /^\$/.test(t) ? parseInt(t.slice(1), 16) : /^0x/i.test(t) ? parseInt(t, 16) : parseInt(t, 10); };
+    const a = num($('pl-ram-addr').value), v = num($('pl-ram-val').value);
+    if (!(a >= 0 && a < 0x800) || !(v >= 0 && v < 256)) { $('pl-ram-out').textContent = 'An address from $0000 to $07FF, and a value from 0 to 255.'; return; }
+    g.M[a] = v; $('pl-ram-out').textContent = hex(a, 4) + ' ' + (nameOf(a) || '(unnamed)') + ' set to ' + hex(v, 2) + ' (' + v + ')';
+  };
+
+  // ---- the clock: real time in the console's cycles, the port run to it
+  let paused = false, last = 0;
+  $('pl-pause').onclick = () => { paused = !paused; $('pl-pause').setAttribute('aria-pressed', paused); };
+  // Reset: a new console, the sound chip reset, the page's pause let go and the clock started again,
+  // whatever the old console was doing, a stop included
+  let running = false, stopped = '';
+  const go = () => { if (!running) { running = true; stopped = ''; last = 0; requestAnimationFrame(frame); } };
+  $('pl-reset').onclick = () => {
+    g.boot(); g.apuFrames();
+    if (host) host.send({ cmd: 'reset' });
+    if (paused) $('pl-pause').click();
+    go(); status();
+  };
+  document.addEventListener('visibilitychange', () => { last = 0; });
+  const status = () => { $('pl-out').textContent = stopped || (paused ? 'held · ' : '') + g.frames + ' frames'; };
+  function frame(t) {
+    try {
+      if (rewinding) {
+        if ((rewindTick++ & 3) === 0 && mods.rewind()) draw();
+      } else if (!paused) {
+        const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+        if (tapFor) { if (!--tapFor) tap = 0; }
+        g.pads(p1 | tap, p2);
+        const n = g.run(dt * CLOCK * pace);
+        const af = g.apuFrames();
+        if (n) { draw(); if (soundOn && host && af.length) host.send({ cmd: 'frames', frames: af }); }
+      }
+    } catch (e) { console.error(e); running = false; stopped = 'The port stopped: ' + e.message + '. Reset starts it again.'; status(); return; }
+    last = t;
+    status();
+    requestAnimationFrame(frame);
+  }
+  draw();
+  go();
+  const c = D.costs, keys = Object.keys(c).filter((k) => k !== 'nmi');
+  $('pl-cost').textContent = keys.length + ' stretches costed from the lockstep; the NMI handler ' + c.nmi.median + ' cycles; a frame 29,780.5.';
+})();
+</script>
