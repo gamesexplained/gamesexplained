@@ -5272,7 +5272,7 @@
   },
   {
    "address": 56640,
-   "name": "end_picture_shapes",
+   "name": "banner_sign_shapes",
    "type": "Field",
    "kind": "user"
   },
@@ -5326,7 +5326,7 @@
   },
   {
    "address": 61568,
-   "name": "shapes_unreferenced",
+   "name": "climb_shapes_c",
    "type": "Field",
    "kind": "user"
   },
@@ -7857,27 +7857,27 @@
   {
    "address": 31692,
    "type": "line",
-   "text": "Set to 1 by $7B59 when the timer reaches zero; $7BBB then steps it to 2 and changes the panel graphics."
+   "text": "Set to 1 by $7B59 on every unpaused frame while the timer digits read 000 (from the start of the level when $0A10 is clear, since the timer then starts at 000); $7BBB then steps it to 2 and redraws the panel picture, so this repeats on every main-loop pass. Nothing sets it to 0 (the file holds 2)."
   },
   {
    "address": 31693,
    "type": "line",
-   "text": "Copies the panel's timer picture for a running timer: five rows of 48 bytes from $7DCB, $7DFB, $7E2B, $7E5B and $7E8B to the bitmap at $F8C0, $FA00, $FB40, $FC80 and $FDC0, then five rows of 6 bytes from $7EBB, $7EC1, $7EC7, $7ECD and $7ED3 to colour RAM $DB18, $DB40, $DB68, $DB90 and $DBB8, and five from $7ED9, $7EDF, $7EE5, $7EEB and $7EF1 to the screen characters $CF18, $CF40, $CF68, $CF90 and $CFB8. Called by draw_panel ($53D2) when $0A10 is set."
+   "text": "Copies the panel's timer picture for a running timer: five rows of 48 bytes from $7DCB, $7DFB, $7E2B, $7E5B and $7E8B to the bitmap at $F8C0, $FA00, $FB40, $FC80 and $FDC0, then five rows of 6 bytes from $7EBB, $7EC1, $7EC7, $7ECD and $7ED3 to colour RAM $DB18, $DB40, $DB68, $DB90 and $DBB8, and five from $7ED9, $7EDF, $7EE5, $7EEB and $7EF1 to the screen matrix at $CF18, $CF40, $CF68, $CF90 and $CFB8 (in the multicolour bitmap panel these bytes are colours, not character codes). Called by draw_panel ($53D2) when $0A10 is set."
   },
   {
    "address": 31798,
    "type": "line",
-   "text": "The same copy as timer_graphics_on ($7BCD) with the picture for an expired or absent timer: rows of 48 bytes from $7C9F, $7CCF, $7CFF, $7D2F and $7D5F, five 6-byte colour rows from $7D8F, $7D95, $7D9B, $7DA1 and $7DA7 and five 6-byte screen character rows from $7DAD, $7DB3, $7DB9, $7DBF and $7DC5, to the same panel places. Called by draw_panel ($53CC) when $0A10 is clear and by timer_expired ($7BC8)."
+   "text": "The same copy as timer_graphics_on ($7BCD) with the picture for an expired or absent timer: rows of 48 bytes from $7C9F, $7CCF, $7CFF, $7D2F and $7D5F, five 6-byte colour RAM rows from $7D8F, $7D95, $7D9B, $7DA1 and $7DA7 and five 6-byte screen-matrix rows from $7DAD, $7DB3, $7DB9, $7DBF and $7DC5 (colours in the multicolour bitmap panel), to the same panel places. Called by draw_panel ($53CC) when $0A10 is clear and by timer_expired ($7BC8)."
   },
   {
    "address": 31903,
    "type": "line",
-   "text": "The panel picture for an expired or absent timer: five rows of 48 bitmap bytes, then ten rows of 6 bytes (five colour rows and five screen character rows), copied by $7C36. The extent is what $7C36 reads."
+   "text": "The panel picture for an expired or absent timer: five rows of 48 bitmap bytes, then ten rows of 6 bytes (five colour RAM rows and five screen-matrix rows, which hold colours in the bitmap panel), copied by $7C36. The extent is what $7C36 reads."
   },
   {
    "address": 32203,
    "type": "line",
-   "text": "The panel picture for a running timer, laid out like timer_picture_off ($7C9F): five rows of 48 bitmap bytes, then ten rows of 6 bytes, copied by $7BCD. The extent is what $7BCD reads."
+   "text": "The panel picture for a running timer, laid out like timer_picture_off ($7C9F): five rows of 48 bitmap bytes, then ten rows of 6 bytes (five colour RAM rows and five screen-matrix rows, which hold colours in the bitmap panel), copied by $7BCD. The extent is what $7BCD reads."
   },
   {
    "address": 32503,
@@ -7997,7 +7997,7 @@
   {
    "address": 37762,
    "type": "line",
-   "text": "Called first by the walking and attack behaviours $1726, $185C, $196C and $1AA1, with the slot in X and its object in Y. Does nothing unless the finale flag $621F is set and the object's variant $0C3E is non-zero. Then it adds 3 to the slot's Y ($95/$CD), writes the result to the object's Y ($0E6E/$0EB4), and writes the slot's Y plus $15 to the Y of the next object ($0E6F/$0EB5). So once the finale has begun, a variant 1 enemy sinks 3 lines a frame and drags the object after it down with it."
+   "text": "Called first by the walking and attack behaviours $1726, $185C, $196C and $1AA1, with the slot in X and its object in Y. Does nothing unless the finale flag $621F is set and the object's variant $0C3E is non-zero. Then it adds 3 to the slot's Y ($95/$CD), writes the result to the object's Y ($0E6E/$0EB4), and writes the slot's Y plus $15 to the Y of the next object ($0E6F/$0EB5). So once the finale has begun, a variant 1 enemy sinks 3 lines on each update of its slot (update_objects $11D8 skips updates while paused or late in the frame) and drags the object after it down with it."
   },
   {
    "address": 37807,
@@ -8017,7 +8017,7 @@
   {
    "address": 37988,
    "type": "line",
-   "text": "Set to 1 by $96AB and $74D8 once the text has ended and the fire button is pressed (each waits on bit 4 of $DC00); nothing else in the traced code reads it."
+   "text": "Set to 1 by $96AB and $74D8 when they finish: after the text has ended and fire is pressed (each waits on bit 4 of $DC00), or in $96AB also when fire skips the rest of the typing. Nothing else in the traced code reads it."
   },
   {
    "address": 37989,
@@ -8037,7 +8037,7 @@
   {
    "address": 38036,
    "type": "line",
-   "text": "The continue screen, entered from the main loop at $1F49 when the energy is zero and $0A12 (the credits) is not zero. Sets up the text screen, clears the score digits $0A00-$0A06 and $0A10, swaps the shapes ($9670), draws the texts through $9418 and counts $9463 down from 9 with delays; fire (bit 4 of $DC00) takes one from $0A12 and sets the continue flag $9493 to 1, and when the count runs out the flag stays 0. Then puts the shapes back and redraws the panel ($53A6)."
+   "text": "The continue screen, entered from the main loop at $1F49 when the energy is zero and $0A11 is clear, after the game over screen $587B, if $0A12 (the credits) is not zero. Sets up the text screen, clears the score digits $0A00-$0A06 and $0A10, swaps the shapes ($9670), draws the texts through $9418 and counts $9463 down from 9 with delays; fire (bit 4 of $DC00) takes one from $0A12 and sets the continue flag $9493 to 1, and when the count runs out the flag stays 0. Then puts the shapes back and redraws the panel ($53A6)."
   },
   {
    "address": 38200,
@@ -8072,7 +8072,7 @@
   {
    "address": 38571,
    "type": "line",
-   "text": "Types the level briefing from $973F on the screen one character at a time, from $CC56, with a delay through $6570 after each: adds $66 to each code (a space becomes 0), $FF ends a line (the pointer moves on 2 rows) and a second $FF ends the text, which then waits for fire (bit 4 of $DC00). Fire is ignored for the first $1E characters ($96A9); pressing it later skips to the end, where $9464 is set to 1 and two long delays run. It first waits, clears the screen and fills colour RAM with 7. Called by the setup $51F7; the setup calls $9670 before and after it."
+   "text": "Types the level briefing from $973F on the screen one character at a time, from $CC56, with a delay through $6570 before each: adds $66 to each code (a space becomes 0), $FF ends a line (the pointer moves on 2 rows) and a second $FF ends the text, which then waits for fire (bit 4 of $DC00). Fire is ignored for the first $1E passes of the loop ($96A9), which are 29 characters and the first line end; pressing it later skips to the end, where $9464 is set to 1 and two long delays run. It first waits, clears the screen and fills colour RAM with 7. Called by the setup $51F7; the setup calls $9670 before and after it."
   },
   {
    "address": 38634,
@@ -8092,7 +8092,7 @@
   {
    "address": 38900,
    "type": "line",
-   "text": "For each tile (index times 2) the two screen codes of its top row; the characters count in strips of 40 across the character set. Read by $803F and $807D. The extent is the pattern up to the bytes at $9872."
+   "text": "For each tile (index times 2) the two screen codes of its top row; the characters count in strips of 40 across the character set. Read by $803F and $807D, by the scroll routines draw_right_column ($2243) and draw_left_column ($3599), and by the row routines $2796, $2885, $2B31 and $2C17. The extent is the pattern up to the bytes at $9872."
   },
   {
    "address": 39026,
@@ -8112,27 +8112,27 @@
   {
    "address": 39058,
    "type": "line",
-   "text": "For each tile (index times 2) the two screen codes of its bottom row, read by $803F and $807D. The extent is the pattern up to the panel characters at $9914."
+   "text": "For each tile (index times 2) the two screen codes of its bottom row, read by $803F and $807D, by the scroll routines draw_right_column ($2243) and draw_left_column ($3599), and by the row routines $2796, $2885, $2B31 and $2C17. The extent is the pattern up to the panel characters at $9914."
   },
   {
    "address": 39188,
    "type": "line",
-   "text": "The 200 screen codes of the status panel (5 rows of 40), copied to $CEF7 by $53A6."
+   "text": "The 200 screen-matrix bytes of the status panel, copied to $CEF7 by $53A6. The panel is shown in multicolour bitmap mode, so each byte holds a cell's two colours, not a screen code. $CEF7 is row 18 column 39, so the first byte lands in the playfield and panel rows 19 to 23 take bytes 1 to 199."
   },
   {
    "address": 39388,
    "type": "line",
-   "text": "The 200 colours of the status panel, copied to colour RAM $DAF7 by $53A6."
+   "text": "The 200 colour RAM bytes of the status panel, copied to $DAF7 by $53A6. $DAF7 is row 18 column 39, so the first byte lands in the playfield and panel rows 19 to 23 take bytes 1 to 199."
   },
   {
    "address": 39588,
    "type": "line",
-   "text": "92 bytes left in memory from an earlier program, not used by this level: nothing in the level's code refers to them. They are the second half of a keyboard reader (the instruction that stores the row select in $DC00 and the rest of the scan) and the first five bytes of its key table, byte for byte the same as level 4's $9AA4-$9AFF. This level's own keyboard reader is read_keys ($6619)."
+   "text": "92 bytes left in memory from an earlier program, not used by this level: nothing in the level's code refers to them. They are the second half of a keyboard reader (the instruction that stores the row select in $DC00 and the rest of the scan) and the first five bytes of its key table, the same bytes as level 4's $9AA4-$9AFF except at $9AF7-$9AF9, where level 4 keeps its keyboard variables. This level's own keyboard reader is read_keys ($6619)."
   },
   {
    "address": 48896,
    "type": "line",
-   "text": "Colour for each character code, indexed by the character; $7F97 and $56A5 read it to fill the colour RAM, and the setup $51F7 ORs $08 into every entry."
+   "text": "Colour for each character code, indexed by the character; the colour buffer routines colour_buffer_from_cc ($3946) and colour_buffer_from_c8 ($459E) with their continuation parts, fill_colour_top ($7131), $7F97 and $56A5 read it to fill the colour RAM, and the setup $51F7 ORs $08 into every entry."
   },
   {
    "address": 49152,
@@ -8142,17 +8142,17 @@
   {
    "address": 49216,
    "type": "line",
-   "text": "Sprite shapes for pointers $01 to $0B and the first 56 bytes of $0C (760 bytes). In use: $01 in the frame table $5476 (behaviour $548E); $02 and $03, an enemy walking right of variant 0 (table $1A61); $05 and $06, walking left (table $181C); $04 and $07, the frames at counter $0E of the attacks $196C and $1726 for variant 0; $08 to $0B, the frames of slot_follow below its limit (table $1E7F)."
+   "text": "Sprite shapes for pointers $01 to $0B and the first 56 bytes of $0C (760 bytes). In use: $01 in the frame table $5476 (behaviour $548E); $02 and $03, an enemy walking right of variant 0 (table $1A61); $05 and $06, walking left (table $181C); $04 and $07, the frames at counter $0E of the attacks $196C and $1726 for variant 0; $08 to $0B, the frames of slot_follow below its limit (table $1E7F), and $0C, the first of its frames at or above the limit (follow_frames_high $1E5F)."
   },
   {
    "address": 49976,
    "type": "line",
-   "text": "Character shapes (136 bytes) that $9670 exchanges with the block at $9538."
+   "text": "136 bytes that $9670 swaps with text_shapes_a ($9538). On the text screens they are character shapes of the font; during play they are sprite data, the last 8 bytes of pointer $0C and all of $0D and $0E, which slot_follow shows through follow_frames_high ($1E5F)."
   },
   {
    "address": 50112,
    "type": "line",
-   "text": "Character shapes (136 bytes) that $9670 exchanges with the block at $95C0."
+   "text": "136 bytes that $9670 swaps with text_shapes_b ($95C0). On the text screens they are character shapes of the font; during play they are sprite data: all of pointer $0F (follow_frames_high $1E5F), all of $10 and the first 8 bytes of $11, the frames of an enemy of variant 1 walking right (table $1A81)."
   },
   {
    "address": 50248,
@@ -8182,7 +8182,7 @@
   {
    "address": 52216,
    "type": "line",
-   "text": "The sprite pointers of screen A's table ($CBF8-$CBFF); the player's sprites 0 to 2 are written by $6121, sprites 3 to 7 by the multiplexer $66D5 and the banner by $5669. Always written together with sprite_pointers_b."
+   "text": "The sprite pointers of screen A's table ($CBF8-$CBFF); the player's sprites 0 to 2 are written by $6121, sprites 3 to 7 by the multiplexer $66D5, and the banner's by banner_sprites ($555F) and banner_pointers ($5669, with its entry $5670); the middle interrupt $6313 sets all eight to 0 every frame. Always written together with sprite_pointers_b."
   },
   {
    "address": 52224,
@@ -8197,7 +8197,7 @@
   {
    "address": 53240,
    "type": "line",
-   "text": "The sprite pointers of screen B's table ($CFF8-$CFFF); see sprite_pointers_a ($CBF8)."
+   "text": "The sprite pointers of screen B's table ($CFF8-$CFFF); the player's sprites 0 to 2 are written by $6121, sprites 3 to 7 by the multiplexer $66D5, and the banner's by banner_sprites ($555F) and banner_pointers ($5669, with its entry $5670); the middle interrupt $6313 sets all eight to 0 every frame. These also write sprite_pointers_a; fill_screen ($65F4) clears this table alone when it fills screen B for the text screens."
   },
   {
    "address": 53248,
@@ -8207,7 +8207,7 @@
   {
    "address": 54272,
    "type": "line",
-   "text": "Characters 128 to 245 of the play character set (944 bytes), the same form as play_charset_a. The tile tables reach $F5 (tile_top_chars) and $FF (tile_bottom_chars), and panel_chars ($9914) reaches $FC; the codes from $F6 up are the blank characters of play_charset_blank. Only the VIC sees these bytes: with the I/O area switched in, the CPU reads the chips' registers at the same addresses."
+   "text": "Characters 128 to 245 of the play character set (944 bytes), the same form as play_charset_a. The tiles the map uses put codes up to $F5 (tile_top_chars) and $FB (tile_bottom_chars) on the screen; the codes from $F6 up are the blank characters of play_charset_blank, and the $FC to $FF at the end of tile_bottom_chars belong to entries the map does not use. Only the VIC sees these bytes: with the I/O area switched in, the CPU reads the chips' registers at the same addresses."
   },
   {
    "address": 55216,
@@ -8222,7 +8222,7 @@
   {
    "address": 55424,
    "type": "line",
-   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $62 and $63 (128 bytes): the pickup of the behaviour at $1BBE, named by pickup_frames ($1BB0). A round body in two sizes."
+   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $62 and $63 (128 bytes): the pickup of the behaviour at $1BBE, named by pickup_frames ($1BB0). A heart, the same size in both; $63 has a thicker outline."
   },
   {
    "address": 55552,
@@ -8237,7 +8237,7 @@
   {
    "address": 55808,
    "type": "line",
-   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $68 and $69 (128 bytes): vpatrol_frames ($1515) lists them for the behaviour at $1524, and banner_sprites ($555F) gives $68 to one of the sprites of the end picture. $68 is a hollow rectangle with a dotted inside and $69 a narrow vertical bar."
+   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $68 and $69 (128 bytes): vpatrol_frames ($1515) lists them for the behaviour at $1524, and banner_sprites ($555F) gives $68 to sprite 0 of the sign in the banner's third band, which behave_map_switch ($13AF) turns on. $68 is a frame filled with one colour (the left end of the sign) and $69 a narrow vertical shape."
   },
   {
    "address": 55936,
@@ -8247,7 +8247,7 @@
   {
    "address": 56064,
    "type": "line",
-   "text": "Shape address = $C000 + 64 x pointer. Sprite shape for pointer $6C (64 bytes): the pickup of behave_score_pickup ($1C7C), a round body with a lighter centre."
+   "text": "Shape address = $C000 + 64 x pointer. Sprite shape for pointer $6C (64 bytes): the pickup of behave_score_pickup ($1C7C), a round body with a letter P in its second colour."
   },
   {
    "address": 56128,
@@ -8262,7 +8262,7 @@
   {
    "address": 56384,
    "type": "line",
-   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $71 and $72 (128 bytes): the first and last frames of the burst in lobbed_shot_steps ($1D89), after the three frames of burst_shapes; $72 is mostly empty."
+   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $71 and $72 (128 bytes): the frames around the three of burst_shapes in lobbed_shot_steps ($1D89), which runs $72, $71, $64 to $66 twice, $71 and $72; $72 is mostly empty."
   },
   {
    "address": 56512,
@@ -8272,12 +8272,12 @@
   {
    "address": 56640,
    "type": "line",
-   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $75 to $79 (320 bytes): pieces of the end picture that banner_sprites ($555F) lays out with the pointers $75 to $7B. Each is a hollow frame with dotted columns inside."
+   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $75 to $79 (320 bytes): with $68 to their left, the sign in the third band of the banner that banner_sprites ($555F) draws when behave_map_switch ($13AF) has been touched: a filled frame with the words DARKMAN FINDS A KEY in two lines. banner_sprites gives sprites 1 to 7 the pointers $75 to $7B."
   },
   {
    "address": 56960,
    "type": "line",
-   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $7A to $7F (384 bytes): fall_frame ($5EC8) sets the falling player's pose to $7A or $7B and the drawing routine adds 2 and 4 for the other two sprites. banner_sprites ($555F) also gives $7A and $7B to the last sprites of the end picture, and lobbed_shot_steps ($1D89) lists $7B and $7C."
+   "text": "Shape address = $C000 + 64 x pointer. Sprite shapes for pointers $7A to $7F (384 bytes): fall_frame ($5EC8) sets the falling player's pose to $7A or $7B and the drawing routine adds 2 and 4 for the other two sprites. banner_sprites ($555F) also gives $7A and $7B to sprites 6 and 7 with the banner sign's pointers, but leaves them at the lower band's height, so they do not show there; lobbed_shot_steps ($1D89) lists $7B and $7C."
   },
   {
    "address": 57344,
@@ -8342,7 +8342,7 @@
   {
    "address": 63680,
    "type": "line",
-   "text": "Row 19, columns 32 to 37: the first of five rows of the 6 by 5 cell picture that timer_graphics_on ($7BCD) or timer_graphics_off ($7C36) copies in (48 bytes a row; the others are panel_picture_1 to 4). The same bytes as in levels 1, 3 and 4."
+   "text": "Row 19, columns 32 to 37: the first of five rows of the 6 by 5 cell picture that timer_graphics_on ($7BCD) or timer_graphics_off ($7C36) copies in (48 bytes a row; the others are panel_picture_1 to 4). The same bytes as in levels 1 and 4; level 3's listing differs in 5 of them."
   },
   {
    "address": 63728,
@@ -8352,7 +8352,7 @@
   {
    "address": 63960,
    "type": "line",
-   "text": "Row 20, columns 27 to 31 (40 bytes): draw_timer ($7B1B) draws the three timer digits into the cells at $F9D8, $F9E8 and $F9F0. The same bytes as in levels 1, 3 and 4."
+   "text": "Row 20, columns 27 to 31 (40 bytes): draw_timer ($7B1B) draws the three timer digits into the cells at $F9D8, $F9E8 and $F9F0. The same bytes as in level 4; levels 1 and 3 differ in 21 and 5 of them, the digits shown when their snapshots were taken."
   },
   {
    "address": 64000,
@@ -8367,7 +8367,7 @@
   {
    "address": 64088,
    "type": "line",
-   "text": "The seven character shapes (8 bytes each) of the score digits in the panel, drawn by $5842."
+   "text": "Row 21, columns 3 to 9 of the panel bitmap (56 bytes): the seven cells into which draw_score ($5842) copies the score digits, 8 bytes each from the digit shapes at $1EA2."
   },
   {
    "address": 64144,
@@ -8377,7 +8377,7 @@
   {
    "address": 64200,
    "type": "line",
-   "text": "The eight character shapes (64 bytes) of the energy bar in the panel, copied from bar_shapes ($574D) by $578E."
+   "text": "Row 21, columns 17 to 24 of the panel bitmap (64 bytes): the eight cells of the energy bar, copied from bar_shapes ($574D) by $578E."
   },
   {
    "address": 64264,
@@ -8387,7 +8387,7 @@
   {
    "address": 64320,
    "type": "line",
-   "text": "Row 21, columns 32 to 37: the third row of the panel picture (see panel_picture_0). The same bytes as in levels 1, 3 and 4."
+   "text": "Row 21, columns 32 to 37: the third row of the panel picture (see panel_picture_0). The same bytes as in levels 1 and 4; level 3's listing differs in 7 of them."
   },
   {
    "address": 64368,
@@ -8397,7 +8397,7 @@
   {
    "address": 64640,
    "type": "line",
-   "text": "Row 22, columns 32 to 37: the fourth row of the panel picture (see panel_picture_0). The same bytes as in levels 1, 3 and 4."
+   "text": "Row 22, columns 32 to 37: the fourth row of the panel picture (see panel_picture_0). The same bytes as in levels 1 and 4; level 3's listing differs in 14 of them."
   },
   {
    "address": 64688,
@@ -8427,7 +8427,7 @@
   {
    "address": 65472,
    "type": "line",
-   "text": "48 zero bytes after the shape for pointer $FE, up to the resident vectors at $FFF0 (outside this level's file); no reader."
+   "text": "48 zero bytes after the shape for pointer $FE, up to the end of this level's file at $FFEF; no reader. The interrupt vectors at $FFFA-$FFFF lie past the file, and the level sets them itself."
   }
  ]
 }
