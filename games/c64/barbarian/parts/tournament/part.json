@@ -1,0 +1,164 @@
+{
+  "title": "Fight to the death (side 2)",
+  "order": 2,
+  "video": {
+    "screen": "$4400",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0000",
+        "$00FF",
+        "zero page: the processor port and the game's variables, set at run time"
+      ],
+      [
+        "$0200",
+        "$0800",
+        "the sound driver's variables, the eight sprite slots, the mirror and mask tables (built at the start), the cell stashes (filled at the start) and the compose buffer, all written at run time; at the hand-over the loader is still there"
+      ],
+      [
+        "$0801",
+        "$083F",
+        "the place of fighter block 0: block number 0 means none, so these 63 zero bytes are never read"
+      ],
+      [
+        "$47F8",
+        "$47FF",
+        "the sprite pointers after the screen, written every frame by sprite_registers"
+      ],
+      [
+        "$A6BD",
+        "$BABC",
+        "the arena buffer, the strip's clean copy and the backdrop swap's buffer: zeros in the load, written at run time, with two runs of 32 zero bytes between them that nothing uses"
+      ],
+      [
+        "$CF8C",
+        "$CFFF",
+        "the end of the table file loaded at $CB00: 116 bytes of $FF that nothing reads"
+      ],
+      [
+        "$FC04",
+        "$FC3F",
+        "bytes the file loaded at $E000 carries between the music and the scene shapes: $00 and $FF in turn, the pattern of memory nothing wrote, never read"
+      ],
+      [
+        "$FF80",
+        "$FFFF",
+        "the same pattern at the end of that file, to $FFEF, except $FFD0-$FFEF: 6502 code and then Z80 code, each writing the Commodore 128's MMU registers ($FF00 and $D505) to change processors, which no instruction of the game reaches (likely left in the file by a C128 used to save it); then the hardware vectors, which the game writes at the start"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$4400",
+        "$47F7",
+        "the bitmap's screen colours, loaded with the game: the two colours of each cell of the panel, the pillars and the throne room"
+      ],
+      [
+        "$D000",
+        "$DFFF",
+        "the other backdrop's arena, the hall of arches, stashed in the RAM under the I/O chips and exchanged with the one on screen (drop_arena)"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0840",
+      "$43FF",
+      "graphics",
+      "the fighters: 239 blocks of 63 bytes"
+    ],
+    [
+      "$4400",
+      "$47F7",
+      "graphics",
+      "the bitmap's screen colours"
+    ],
+    [
+      "$4800",
+      "$5FFF",
+      "graphics",
+      "96 sprite shapes: the raised parts, blood, the head, the goblin and fighter 1's body pieces"
+    ],
+    [
+      "$6000",
+      "$7F3F",
+      "graphics",
+      "the bitmap: the panel, the pillars and the throne room"
+    ],
+    [
+      "$7F40",
+      "$7FFF",
+      "tables",
+      "colours, columns and row addresses"
+    ],
+    [
+      "$9F00",
+      "$A299",
+      "tables",
+      "the sound driver's tables: notes, lengths, tempos, filters, sequence pointers"
+    ],
+    [
+      "$A29A",
+      "$A3C8",
+      "sound",
+      "sound sequences $D7 to $F1"
+    ],
+    [
+      "$A3C9",
+      "$A6BC",
+      "sound",
+      "63 instruments"
+    ],
+    [
+      "$BABD",
+      "$BC97",
+      "text",
+      "the messages and the font's character list"
+    ],
+    [
+      "$BC98",
+      "$CF8B",
+      "tables",
+      "snakes, moves, frames, hits, the computer's choices, sprite pictures and motion"
+    ],
+    [
+      "$D000",
+      "$DFFF",
+      "graphics",
+      "the stashed backdrop's arena, the hall of arches"
+    ],
+    [
+      "$E000",
+      "$E7FF",
+      "graphics",
+      "the stashed backdrop's screen colours and colour RAM"
+    ],
+    [
+      "$E800",
+      "$E97F",
+      "graphics",
+      "the font"
+    ],
+    [
+      "$E980",
+      "$ED7F",
+      "graphics",
+      "the snakes' pictures"
+    ],
+    [
+      "$ED80",
+      "$FC03",
+      "sound",
+      "the music and sound sequences $80 to $D6"
+    ],
+    [
+      "$FC40",
+      "$FF7F",
+      "graphics",
+      "the ending's shapes: Mariana, Drax and his star"
+    ]
+  ]
+}

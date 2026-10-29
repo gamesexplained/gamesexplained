@@ -119,6 +119,13 @@ a Z-machine story, in `games/apple2/zork-i/parts/story/`.
    has none, give `game.json` a row under `coverage.virtual`, `[bytes,
    what it is and where it comes from]`, and the About and Source tabs
    show it beside the figure, so that 100 % says what it is 100 % of.
+8. **A part whose code is another part's at other addresses** can take
+   that part's names and comments, carried across by pairing the two.
+   A carried comment still describes the first part, and reads as right
+   where the second loads another value, calls another routine or holds
+   other data under the same name. After carrying them, check each
+   carried comment that names a value, a colour, a count or a routine
+   against the second part's own bytes. <!-- until #552 -->
 
 From here on, every script that takes a game's folder takes a part's in
 its place.
