@@ -76,9 +76,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <input id="sb-type" class="sb-type" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="type here">
     <div class="sb-codes" id="sb-codes"><p class="sb-miss">The codes are read from the game's bytes in the built site.</p></div>
     <p class="sb-out" id="sb-type-out" aria-live="polite"></p>
-    <p class="cap">The two codes are stored at <code>$C1A0</code> and <code>$C1B1</code> as key numbers, eight times the keyboard matrix's row plus its column, each ending with a zero. The page decodes them and matches keys as the title does (<code>title</code>, <code>$C0C4</code>).</p>
+    <p class="cap">The two codes are stored at <code>$C1A0</code> and <code>$C1B1</code> as key numbers, each ending with a zero. The C64 wires its keys in a grid of eight rows and eight columns, and a key's number is eight times its row plus its column. The page decodes them and matches keys as the title does (<code>title</code>, <code>$C0C4</code>).</p>
   </div>
-  <p>The title keeps a place in each code. A key that matches the next letter moves the place on; any other key puts it back to the start, and that key does not count as the code's first letter, so BBRADFORD-ON-AVON does nothing. When the place reaches the end of BRADFORD-ON-AVON, the cheat flag at <code>$0C10</code> flips, with one sound for on and another for off. Typing the code three times in VICE set the flag to 1, 0 and 1.</p>
+  <p>The title keeps a place in each code. A key that matches the next letter moves the place on; any other key puts it back to the start, and that key does not count as the code's first letter, so BBRADFORD-ON-AVON does nothing. When the place reaches the end of BRADFORD-ON-AVON, the cheat's on/off switch in memory, <code>$0C10</code>, flips, with one sound for on and another for off. Typing the code three times in VICE set the flag to 1, 0 and 1.</p>
   <p>The cheat keys. All but the match's + were tested in VICE; that one is read from the code.</p>
   <div class="sb-scroll"><table class="sb-tbl"><thead><tr><th>Where</th><th>Key</th><th>What it does</th></tr></thead><tbody>
     <tr><td>Menus, gym, manager</td><td>+</td><td>Adds 100 to the bank (<code>menu_frame</code>, <code>$6189</code>). Three presses in the gym took it from 1100 to 1400.</td></tr>
@@ -97,7 +97,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="lede">The second word on the title screen shows a picture that appears nowhere else in the game, until fire is pressed.</p>
   <div class="plate">
     <canvas id="sb-martin" class="sb-cv" width="640" height="400"></canvas>
-    <p class="cap">Drawn from the game's bytes: the list at <code>$C4F9</code> names three packed blocks, the screen colours at <code>$C8C5</code>, the bitmap at <code>$C506</code> and colour RAM at <code>$C994</code>. The page unpacks them with the game's own rules (<code>unpack</code>, <code>$498E</code>) and draws a multicolour bitmap on black, as <code>screen_on</code> (<code>$5039</code>) sets the chip.</p>
+    <p class="cap">Drawn from the game's bytes: the list at <code>$C4F9</code> names three packed blocks, the screen colours at <code>$C8C5</code>, the bitmap at <code>$C506</code> and colour RAM at <code>$C994</code>. The page unpacks them with the game's own rules (<code>unpack</code>, <code>$498E</code>) and draws it as the chip shows it, a multicolour bitmap, a picture stored pixel by pixel, on black, as <code>screen_on</code> (<code>$5039</code>) sets the chip.</p>
   </div>
   <p>The picture is a grey photograph of a face on a cyan ground (<code>show_picture</code>, <code>$4FF3</code>, called from <code>$C135</code>). Typing MARTIN in VICE showed it, and fire went back to the title. The game does not say whose face it is.</p>
 </section>
@@ -105,7 +105,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="star">
   <p class="fig">03 · The intro's letters</p>
   <h2 class="t">Secret: the intro's eighth letter is a star parked off the screen</h2>
-  <p class="lede">The intro spells SPEEDBALL with seven sprites. The eighth sprite is a star, switched on and placed past the right edge of the picture.</p>
+  <p class="lede">The intro spells SPEEDBALL with seven sprites, small pictures the video chip draws over the screen. The eighth sprite is a star, switched on and placed past the right edge of the picture.</p>
   <div class="plate">
     <canvas id="sb-starcv" class="sb-cv" width="960" height="120"></canvas>
     <p class="cap">The eight sprites at the X positions in <code data-part="intro">letters_xs</code> (<code data-part="intro">$0F6D</code>, stored halved), drawn from frames <code>$60</code>-<code>$67</code> of the intro (<code data-part="intro">$D800</code>-<code data-part="intro">$D9FF</code>). The blue band is what a monitor shows, the border darker and the paper lighter; the grey beyond it is past the edge.</p>
@@ -121,7 +121,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <pre class="sb-hexd" id="sb-msg">The bytes are read from the game's listing in the built site.</pre>
     <p class="cap">The game's entry, <code>$C000</code>-<code>$C047</code>. Five instructions, then the jump to <code>start_init</code> (<code>$C044</code>) over the text at <code>$C008</code>.</p>
   </div>
-  <p>The loader jumps to <code>$C000</code>. The game turns interrupts off, clears decimal mode, resets the stack and jumps to <code>$C044</code>. In between sits a message in plain ASCII: STOP PERVING AT MY CODE SCUMBAG! WRITE YOUR OWN ****** GAME. It can be read only in memory, or after getting past the disk's protection, which decrypts and unpacks this load twice before it runs.</p>
+  <p>The loader jumps to <code>$C000</code>. The game turns interrupts off, clears decimal mode, resets the stack and jumps to <code>$C044</code>. In between sits a message in ASCII, the standard code for letters: STOP PERVING AT MY CODE SCUMBAG! WRITE YOUR OWN ****** GAME. It can be read only in memory, or after getting past the disk's protection, which decrypts and unpacks this load twice before it runs.</p>
 </section>
 
 <section id="a-key">
@@ -134,7 +134,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="sb-out" id="sb-aout" aria-live="polite">Press a key to see which entries match it.</p>
     <p class="cap">The tables at <code>$1C4D</code> and <code>$1C53</code>, six entries each, and the seventh entry the loop reads from the bytes that follow (<code>read_input</code>, <code>$4A75</code>).</p>
   </div>
-  <p>Each joystick has six keys: four directions, fire and RUN/STOP. The loop goes over seven entries, setting bit 0 for the first and bit 6 for the seventh. Port 2's seventh entry is the first byte of port 1's table, the key number of A, so A sets bit 6 of port 2 as well as up on port 1. Port 1's seventh entry is <code>$C0</code>, which is no key. In VICE, A set bit 6 of <code>$9C</code>. Nothing in the game tests that bit, so the extra press does nothing. The intro's own key tables (<code data-part="intro">$1EFE</code>) are read the same way.</p>
+  <p>The game turns each joystick's position into a byte, with one bit, an on/off signal, for each direction and for fire. Each joystick's table has six keys: four directions, fire and RUN/STOP. The loop goes over seven entries, and each sets its own bit, bit 0 for the first and bit 6 for the seventh. Port 2's seventh entry is the first byte of port 1's table, the key number of A, so A sets bit 6 of port 2 as well as up on port 1. Port 1's seventh entry is <code>$C0</code>, which is no key. In VICE, A set bit 6 of <code>$9C</code>. Nothing in the game tests that bit, so the extra press does nothing. The intro's own key tables (<code data-part="intro">$1EFE</code>) are read the same way.</p>
 </section>
 
 <section id="unused-tune" data-part="intro">

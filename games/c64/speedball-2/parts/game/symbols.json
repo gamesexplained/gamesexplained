@@ -13267,7 +13267,7 @@
   },
   {
    "address": 42427,
-   "name": "panel_sprites",
+   "name": "door_sprites",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -15780,7 +15780,7 @@
   {
    "address": 9815,
    "type": "line",
-   "text": "Sets up a match. Unpacks the match sprites from $A04F to $E000 and turns their $40 frames ($80-$BF) from columns to rows (sprite_rows), $30 more from $A1D0 to $C000 (frames $00-$2F), and ten from $A5BB to $C000 over the first ten of those; with all RAM in, copies 23 frames (sprite_copy, list copy_pairs) and makes 45 left-facing frames as mirror images of right-facing ones (sprite_mirror, list mirror_pairs); unpacks the pitch's block map, the arena's characters and the panel (arena_unpack_list), and makes mirror images of 52 arena characters ($F800 to $F9A0), 47 more ($FC00 to $FD78) and 15 of the panel's ($F110 to $F098) through the pixel-pair table sprite_mirror left at $0920 (map_translate): the arena's right side is its left side mirrored. Then the teams' sides, the players' state (speeds, targets, sprite frames $40, colours, positions from the formation tables), the ball at the centre, the camera on the ball, the colours ($5A-$5F), clears colour RAM, draws the pitch and the panel, sets up the multiplexer, runs the first frame and the players' run-out: they walk to their places, the ball is launched with effects $1C and $1D, and the arena's characters are unpacked again and five more frames mirrored. The clock starts at 50 frames to the first second."
+   "text": "Sets up a match. Unpacks the match sprites from $A04F to $E000 and turns their $40 frames ($80-$BF) from columns to rows (sprite_rows), $30 more from $A1D0 to $C000 (frames $00-$2F), and ten from $A5BB (door_sprites) over the first ten of those, for the run-out; with all RAM in, copies 23 frames (sprite_copy, list copy_pairs) and makes 45 left-facing frames as mirror images of right-facing ones (sprite_mirror, list mirror_pairs); unpacks the pitch's block map, the arena's characters and the panel (arena_unpack_list), and makes mirror images of 52 arena characters ($F800 to $F9A0), 47 more ($FC00 to $FD78) and 15 of the panel's ($F110 to $F098) through the pixel-pair table sprite_mirror left at $0920 (map_translate): the arena's right side is its left side mirrored. Then the teams' sides, the players' state (speeds, targets, sprite frames $40, colours, positions from the formation tables), the ball at the centre, the camera on the ball, the colours ($5A-$5F), clears colour RAM, draws the pitch and the panel, sets up the multiplexer, runs the first frame and the players' run-out: they walk to their places, the ball is launched with effects $1C and $1D, and then the frames from $A1D0 are unpacked again over the door ($29B6) and five more mirrored, the rest of the coin's spin ($1E-$22). The clock starts at 50 frames to the first second."
   },
   {
    "address": 10153,
@@ -15800,7 +15800,7 @@
   {
    "address": 10763,
    "type": "line",
-   "text": "Pairs of sprite frames for sprite_mirror: a frame and the frame to hold its mirror image, a left-facing figure from a right-facing one; 45 pairs used by match_setup ($26D4), then from $2A65 five more after the arena's characters are unpacked again ($29DC). A frame number N is the 64 bytes at $C000 + 64N."
+   "text": "Pairs of sprite frames for sprite_mirror: a frame and the frame to hold its mirror image, a left-facing figure from a right-facing one; 45 pairs used by match_setup ($26D4), then from $2A65 five more, the coin's spin $1E-$22, after the run-out unpacks arena_sprites again ($29DC). A frame number N is the 64 bytes at $C000 + 64N."
   },
   {
    "address": 10863,
@@ -17885,12 +17885,12 @@
   {
    "address": 41039,
    "type": "line",
-   "text": "Packed sprite frames of the match, stored in columns: among them the throws facing down-left to up-left ($80-$87), jumps ($88-$8F), a player down ($98), on the stretcher ($9F), celebrating ($A1) and diving ($B0-$B7), and the dome and electrobounce flashes ($BC-$BE) (unpack), 385 bytes that unpack to 4096 at $E000-$EFFF; frames $80-$BF at $E000, turned into rows by sprite_rows."
+   "text": "Packed sprite frames of the match, stored in columns (unpack, then sprite_rows): 385 bytes that unpack to 4096 at $E000-$EFFF, frames $80-$BF. Only seven of them hold a picture here: $AE, the dives $B0, $B1, $B4 and $B5, and the flashes $BC and $BD. match_setup fills the others by copying frames from $40-$7F into them (sprite_copy: the jumps, a player down, the stretcher, celebrating) and by mirroring right-facing frames (sprite_mirror: the throws, the other dives, $BE)."
   },
   {
    "address": 41424,
    "type": "line",
-   "text": "Packed sprite frames of the match, among them the pickups (frame 6 + type: armour, tokens and the spinning coins $1A-$25) (unpack), 1003 bytes that unpack to 3072 at $C000-$CBFF; frames $00-$2F at $C000, turned into rows; the first ten are replaced at once by panel_sprites."
+   "text": "Packed sprite frames of the match, among them the pickups (frame 6 + type: armour, tokens and the spinning coins $1A-$25) (unpack), 1003 bytes that unpack to 3072 at $C000-$CBFF; frames $00-$2F at $C000, turned into rows. Frames $1E-$22, the middle of the coin's spin, are blank here and made as mirror images (mirror_pairs). match_setup unpacks it twice: before door_sprites covers its first ten frames for the run-out, and again after ($29B6)."
   },
   {
    "address": 42424,
@@ -17900,7 +17900,7 @@
   {
    "address": 42427,
    "type": "line",
-   "text": "Packed sprite frames $00-$09 of the match (unpack), 406 bytes that unpack to 640 at $C000-$C27F; unpacked at $C000 over the first ten of arena_sprites."
+   "text": "Packed sprite frames $00-$09 for the players' run-out (unpack), 406 bytes that unpack to 640 at $C000-$C27F, over the first ten of arena_sprites: ten frames that to the eye open a door, step by step. match_setup unpacks arena_sprites again once the players are out ($29B6)."
   },
   {
    "address": 42833,
@@ -18105,17 +18105,17 @@
   {
    "address": 53568,
    "type": "line",
-   "text": "Sprite frame $45: outside a match, a frame of the menu screens; match_setup keeps it in frame $A8 and, mirroring frame $43, makes this a player standing, facing down and left; play_match puts it back."
+   "text": "Sprite frame $45: between matches, the picture that match_setup copies into frame $A8. In a match, mirroring frame $43, it is a player standing, facing down and left; play_match copies frame $A8 back here."
   },
   {
    "address": 53632,
    "type": "line",
-   "text": "Sprite frame $46: outside a match, a frame of the menu screens; match_setup keeps it in frame $88 and, mirroring frame $42, makes this a player standing, facing left; play_match puts it back."
+   "text": "Sprite frame $46: between matches, the picture that match_setup copies into frame $88 (a jump). In a match, mirroring frame $42, it is a player standing, facing left; play_match copies frame $88 back here."
   },
   {
    "address": 53696,
    "type": "line",
-   "text": "Sprite frame $47: outside a match, a frame of the menu screens; match_setup keeps it in frame $A9 and, mirroring frame $41, makes this a player standing, facing up and left; play_match puts it back."
+   "text": "Sprite frame $47: between matches, the picture that match_setup copies into frame $A9. In a match, mirroring frame $41, it is a player standing, facing up and left; play_match copies frame $A9 back here."
   },
   {
    "address": 53760,
@@ -18145,17 +18145,17 @@
   {
    "address": 54080,
    "type": "line",
-   "text": "Sprite frame $4D: outside a match, a frame of the menu screens; match_setup keeps it in frame $89 and, mirroring frame $4B, makes this a player sliding, facing down and left; play_match puts it back."
+   "text": "Sprite frame $4D: between matches, the picture that match_setup copies into frame $89 (a jump). In a match, mirroring frame $4B, it is a player sliding, facing down and left; play_match copies frame $89 back here."
   },
   {
    "address": 54144,
    "type": "line",
-   "text": "Sprite frame $4E: outside a match, a frame of the menu screens; match_setup keeps it in frame $AB and, mirroring frame $4A, makes this a player sliding, facing left; play_match puts it back."
+   "text": "Sprite frame $4E: between matches, the picture that match_setup copies into frame $AB. In a match, mirroring frame $4A, it is a player sliding, facing left; play_match copies frame $AB back here."
   },
   {
    "address": 54208,
    "type": "line",
-   "text": "Sprite frame $4F: outside a match, a frame of the menu screens; match_setup keeps it in frame $8A and, mirroring frame $49, makes this a player sliding, facing up and left; play_match puts it back."
+   "text": "Sprite frame $4F: between matches, the picture that match_setup copies into frame $8A (a jump). In a match, mirroring frame $49, it is a player sliding, facing up and left; play_match copies frame $8A back here."
   },
   {
    "address": 54272,
@@ -18170,12 +18170,12 @@
   {
    "address": 54400,
    "type": "line",
-   "text": "Sprite frame $52: outside a match, a frame of the menu screens; match_setup keeps it in frame $AD and, mirroring frame $50, makes this a player running up, step 2; play_match puts it back."
+   "text": "Sprite frame $52: between matches, the picture that match_setup copies into frame $AD. In a match, mirroring frame $50, it is a player running up, step 2; play_match copies frame $AD back here."
   },
   {
    "address": 54464,
    "type": "line",
-   "text": "Sprite frame $53: outside a match, a frame of the menu screens; match_setup keeps it in frame $8B and, mirroring frame $51, makes this a player running up, step 3; play_match puts it back."
+   "text": "Sprite frame $53: between matches, the picture that match_setup copies into frame $8B (a jump). In a match, mirroring frame $51, it is a player running up, step 3; play_match copies frame $8B back here."
   },
   {
    "address": 54528,
@@ -18250,62 +18250,62 @@
   {
    "address": 55424,
    "type": "line",
-   "text": "Sprite frame $62: outside a match, a frame of the menu screens; match_setup keeps it in frame $AE and, mirroring frame $60, makes this a player running down, step 2; play_match puts it back."
+   "text": "Sprite frame $62: between matches, the picture that match_setup copies into frame $AE. In a match, mirroring frame $60, it is a player running down, step 2; play_match copies frame $AE back here."
   },
   {
    "address": 55488,
    "type": "line",
-   "text": "Sprite frame $63: outside a match, a frame of the menu screens; match_setup keeps it in frame $8C and, mirroring frame $61, makes this a player running down, step 3; play_match puts it back."
+   "text": "Sprite frame $63: between matches, the picture that match_setup copies into frame $8C (a jump). In a match, mirroring frame $61, it is a player running down, step 3; play_match copies frame $8C back here."
   },
   {
    "address": 55552,
    "type": "line",
-   "text": "Sprite frame $64: outside a match, a frame of the menu screens; match_setup keeps it in frame $98 and, mirroring frame $5E, makes this a player running down and left, step 0; play_match puts it back."
+   "text": "Sprite frame $64: between matches, the picture that match_setup copies into frame $98 (a player down). In a match, mirroring frame $5E, it is a player running down and left, step 0; play_match copies frame $98 back here."
   },
   {
    "address": 55616,
    "type": "line",
-   "text": "Sprite frame $65: outside a match, a frame of the menu screens; match_setup keeps it in frame $99 and, mirroring frame $5F, makes this a player running down and left, step 1; play_match puts it back."
+   "text": "Sprite frame $65: between matches, the picture that match_setup copies into frame $99. In a match, mirroring frame $5F, it is a player running down and left, step 1; play_match copies frame $99 back here."
   },
   {
    "address": 55680,
    "type": "line",
-   "text": "Sprite frame $66: outside a match, a frame of the menu screens; match_setup keeps it in frame $9A and, mirroring frame $5C, makes this a player running down and left, step 2; play_match puts it back."
+   "text": "Sprite frame $66: between matches, the picture that match_setup copies into frame $9A. In a match, mirroring frame $5C, it is a player running down and left, step 2; play_match copies frame $9A back here."
   },
   {
    "address": 55744,
    "type": "line",
-   "text": "Sprite frame $67: outside a match, a frame of the menu screens; match_setup keeps it in frame $9B and, mirroring frame $5D, makes this a player running down and left, step 3; play_match puts it back."
+   "text": "Sprite frame $67: between matches, the picture that match_setup copies into frame $9B. In a match, mirroring frame $5D, it is a player running down and left, step 3; play_match copies frame $9B back here."
   },
   {
    "address": 55808,
    "type": "line",
-   "text": "Sprite frame $68: outside a match, a frame of the menu screens; match_setup keeps it in frame $9C and, mirroring frame $5A, makes this a player running left, step 0; play_match puts it back."
+   "text": "Sprite frame $68: between matches, the picture that match_setup copies into frame $9C. In a match, mirroring frame $5A, it is a player running left, step 0; play_match copies frame $9C back here."
   },
   {
    "address": 55872,
    "type": "line",
-   "text": "Sprite frame $69: outside a match, a frame of the menu screens; match_setup keeps it in frame $9D and, mirroring frame $59, makes this a player running left, step 1; play_match puts it back."
+   "text": "Sprite frame $69: between matches, the picture that match_setup copies into frame $9D. In a match, mirroring frame $59, it is a player running left, step 1; play_match copies frame $9D back here."
   },
   {
    "address": 55936,
    "type": "line",
-   "text": "Sprite frame $6A: outside a match, a frame of the menu screens; match_setup keeps it in frame $9E and, mirroring frame $58, makes this a player running left, step 2; play_match puts it back."
+   "text": "Sprite frame $6A: between matches, the picture that match_setup copies into frame $9E. In a match, mirroring frame $58, it is a player running left, step 2; play_match copies frame $9E back here."
   },
   {
    "address": 56000,
    "type": "line",
-   "text": "Sprite frame $6B: outside a match, a frame of the menu screens; match_setup keeps it in frame $9F and, mirroring frame $5B, makes this a player running left, step 3; play_match puts it back."
+   "text": "Sprite frame $6B: between matches, the picture that match_setup copies into frame $9F (on the stretcher). In a match, mirroring frame $5B, it is a player running left, step 3; play_match copies frame $9F back here."
   },
   {
    "address": 56064,
    "type": "line",
-   "text": "Sprite frame $6C: outside a match, a frame of the menu screens; match_setup keeps it in frame $A0 and, mirroring frame $56, makes this a player running up and left, step 0; play_match puts it back."
+   "text": "Sprite frame $6C: between matches, the picture that match_setup copies into frame $A0. In a match, mirroring frame $56, it is a player running up and left, step 0; play_match copies frame $A0 back here."
   },
   {
    "address": 56128,
    "type": "line",
-   "text": "Sprite frame $6D: outside a match, a frame of the menu screens; match_setup keeps it in frame $A1 and, mirroring frame $57, makes this a player running up and left, step 1; play_match puts it back."
+   "text": "Sprite frame $6D: between matches, the picture that match_setup copies into frame $A1 (celebrating). In a match, mirroring frame $57, it is a player running up and left, step 1; play_match copies frame $A1 back here."
   },
   {
    "address": 56176,
@@ -18315,7 +18315,7 @@
   {
    "address": 56192,
    "type": "line",
-   "text": "Sprite frame $6E: outside a match, a frame of the menu screens; match_setup keeps it in frame $A3 and, mirroring frame $54, makes this a player running up and left, step 2; play_match puts it back."
+   "text": "Sprite frame $6E: between matches, the picture that match_setup copies into frame $A3. In a match, mirroring frame $54, it is a player running up and left, step 2; play_match copies frame $A3 back here."
   },
   {
    "address": 56216,
@@ -18405,7 +18405,7 @@
   {
    "address": 56256,
    "type": "line",
-   "text": "Sprite frame $6F: outside a match, a frame of the menu screens; match_setup keeps it in frame $A5 and, mirroring frame $55, makes this a player running up and left, step 3; play_match puts it back."
+   "text": "Sprite frame $6F: between matches, the picture that match_setup copies into frame $A5. In a match, mirroring frame $55, it is a player running up and left, step 3; play_match copies frame $A5 back here."
   },
   {
    "address": 56320,
@@ -18485,7 +18485,7 @@
   {
    "address": 57280,
    "type": "line",
-   "text": "Sprite frame $7F: outside a match, a frame of the menu screens; match_setup keeps it in frame $A6 and, mirroring frame $79, makes this a player throwing, facing down and left, part 0; play_match puts it back."
+   "text": "Sprite frame $7F: between matches, the picture that match_setup copies into frame $A6. In a match, mirroring frame $79, it is a player throwing, facing down and left, part 0; play_match copies frame $A6 back here."
   }
  ]
 }
