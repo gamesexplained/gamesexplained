@@ -38,8 +38,9 @@ marked *live*, a fact comes from the code in `work/entry.vsf`.
   three frames the speed's high byte drops by one, and at 0 the run ends
   with a time of 99.99 (`crash_step`, `$4305`). The course moves on while
   the speed lasts, so a wreck that slides over the finish records the
-  clock's time instead (*live*: a crash at stretch 166 at speed `$27`
-  recorded " 02.99").
+  clock's time instead (*live*, with the stick alone: a crash at stretch
+  168 recorded 22.20, the same run steered clean 22.10, and a crash at
+  stretch 164 recorded 99.99).
 
 ## The clock
 

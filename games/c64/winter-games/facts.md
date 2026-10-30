@@ -157,6 +157,8 @@ its `work/` folder, with input on joystick 2; the scripts stay in `work/`.
   kept centred, 68.6 metres, 205.9 distance points, 20.0 style points,
   225.9 in all.
 - Bobsled: `$878A` took random values from 1 to 8 during a run; a crash
-  left `$C0C8` at `$8F` until the run's end; a crash forced at stretch
-  166 at speed `$27` slid over the line and recorded " 02.99"; a crash
-  earlier on recorded " 99.99".
+  left `$C0C8` at `$8F` until the run's end. With the stick alone, steered
+  down the middle and then held into the left wall: a crash at stretch 168
+  slid over the line and recorded 22.20, where the same run steered clean
+  to the end recorded 22.10; a crash at stretch 164 came to a halt and
+  recorded 99.99.
