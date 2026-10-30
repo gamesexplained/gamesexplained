@@ -129,6 +129,46 @@
   },
   {
    "start": 2062,
+   "end": 2086,
+   "type": "Code"
+  },
+  {
+   "start": 2087,
+   "end": 2088,
+   "type": "Address"
+  },
+  {
+   "start": 2089,
+   "end": 2101,
+   "type": "Code"
+  },
+  {
+   "start": 2102,
+   "end": 2103,
+   "type": "Address"
+  },
+  {
+   "start": 2104,
+   "end": 2113,
+   "type": "Code"
+  },
+  {
+   "start": 2114,
+   "end": 2115,
+   "type": "Address"
+  },
+  {
+   "start": 2116,
+   "end": 2122,
+   "type": "Code"
+  },
+  {
+   "start": 2123,
+   "end": 2124,
+   "type": "Address"
+  },
+  {
+   "start": 2125,
    "end": 2179,
    "type": "Code"
   },
@@ -139,6 +179,16 @@
   },
   {
    "start": 2243,
+   "end": 2249,
+   "type": "Code"
+  },
+  {
+   "start": 2250,
+   "end": 2251,
+   "type": "Address"
+  },
+  {
+   "start": 2252,
    "end": 2254,
    "type": "Code"
   },
@@ -149,6 +199,16 @@
   },
   {
    "start": 2262,
+   "end": 2268,
+   "type": "Code"
+  },
+  {
+   "start": 2269,
+   "end": 2270,
+   "type": "Address"
+  },
+  {
+   "start": 2271,
    "end": 2341,
    "type": "Code"
   },
@@ -274,6 +334,12 @@
   }
  ],
  "symbols": [
+  {
+   "address": 0,
+   "name": "zpf_00",
+   "type": "ZeroPageField",
+   "kind": "auto"
+  },
   {
    "address": 1,
    "name": "zpa_01",
@@ -917,10 +983,40 @@
    "kind": "user"
   },
   {
+   "address": 2188,
+   "name": "name_part1",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 2196,
+   "name": "name_icons",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 2204,
+   "name": "name_part2",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 2235,
+   "name": "name_tpage",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
    "address": 2243,
    "name": "run_title",
    "type": "Subroutine",
    "kind": "user"
+  },
+  {
+   "address": 2255,
+   "name": "a_08CF",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
   },
   {
    "address": 2262,
@@ -3151,6 +3247,11 @@
  ],
  "comments": [
   {
+   "address": 0,
+   "type": "line",
+   "text": "The processor port's direction register, which the OS never writes. kernal_enter and kernal_leave name it only as the base of LDA $00,X and STA $00,X, with X from 1, to copy zero page from $01 up."
+  },
+  {
    "address": 1,
    "type": "line",
    "text": "The processor port: $15 (written $05) banks the KERNAL and BASIC out and leaves the chips in. The disk code at $0700 writes $36 to bring the KERNAL back for a save or load, and kernal_leave's copy of zero page puts $15 back; io_out writes $14 for RAM everywhere."
@@ -3296,6 +3397,66 @@
    "text": "The hub between the menu and the episodes. On the first run (the boot's second stage leaves $99 = $2C) it installs the OS (install_os). Then it runs the copy protection (run_protection) and the title (run_title), which returns the episode chosen in A: 0 loads XXXPART1 and jumps to $4005; 1 loads XXXMYOS2 and runs it at $8000 (the OS again, with its save area at $D000), loads XXXICONS and XXXPART2 and jumps to $4077; 2 goes to load_episode_three."
   },
   {
+   "address": 2066,
+   "type": "line",
+   "text": "Skips install_os when the loader runs again. The branch's offset is 1, so it lands inside the JSR, on its operand's bytes $E2 $08, which the 6510 takes as a two-byte NOP (an undocumented opcode), and so arrives at $0817 as if it had skipped the call. The first run never takes the branch, and no episode's code holds a jump back to $080E, so the game never runs it."
+  },
+  {
+   "address": 2080,
+   "type": "line",
+   "text": "Episode 0: loads XXXPART1 (OS function $55, load_file, eight characters) and jumps into it at $4005."
+  },
+  {
+   "address": 2087,
+   "type": "line",
+   "text": "load_file's argument: the address of the name XXXPART1, in episode_file_names."
+  },
+  {
+   "address": 2089,
+   "type": "line",
+   "text": "JMP $4005, episode one's entry."
+  },
+  {
+   "address": 2095,
+   "type": "line",
+   "text": "Episode 1: loads XXXMYOS2, the OS again with its save area moved to $D000, and runs its installer at $8000."
+  },
+  {
+   "address": 2102,
+   "type": "line",
+   "text": "load_file's argument: the name XXXMYOS2."
+  },
+  {
+   "address": 2104,
+   "type": "line",
+   "text": "Runs XXXMYOS2's installer, which copies it over the OS at $EC00."
+  },
+  {
+   "address": 2107,
+   "type": "line",
+   "text": "Loads XXXICONS, episode two's icon pictures, to $1000."
+  },
+  {
+   "address": 2114,
+   "type": "line",
+   "text": "load_file's argument: the name XXXICONS."
+  },
+  {
+   "address": 2116,
+   "type": "line",
+   "text": "Loads XXXPART2 and jumps into it at $4077."
+  },
+  {
+   "address": 2123,
+   "type": "line",
+   "text": "load_file's argument: the name XXXPART2."
+  },
+  {
+   "address": 2125,
+   "type": "line",
+   "text": "JMP $4077, episode two's entry."
+  },
+  {
    "address": 2128,
    "type": "line",
    "text": "Episode three runs on the KERNAL: banks the ROMs back in ($01 = $37), resets the stack, and calls the KERNAL's IOINIT, RAMTAS, RESTOR and CINT as a reset would; then loads XXXF0, XXXF1 and XXXF2 by name through the KERNAL (kernal_load) and jumps to $C000."
@@ -3306,9 +3467,49 @@
    "text": "The names the OS's load_file and kernal_load are given, eight characters each and no terminator: XXXMYOS2, XXXPART1, XXXICONS, XXXPART2, XXXPART3 (which nothing loads, and which the disk does not have), then the five-letter XXXF0, XXXF1, XXXF2, and XXXTPAGE."
   },
   {
+   "address": 2188,
+   "type": "line",
+   "text": "XXXPART1, episode one."
+  },
+  {
+   "address": 2196,
+   "type": "line",
+   "text": "XXXICONS, episode two's icon pictures."
+  },
+  {
+   "address": 2204,
+   "type": "line",
+   "text": "XXXPART2, episode two."
+  },
+  {
+   "address": 2212,
+   "type": "line",
+   "text": "XXXPART3, which no code names and the disk does not have."
+  },
+  {
+   "address": 2220,
+   "type": "line",
+   "text": "XXXF0, XXXF1 and XXXF2, five characters each, for kernal_load: episode three's three files."
+  },
+  {
+   "address": 2235,
+   "type": "line",
+   "text": "XXXTPAGE, the title program."
+  },
+  {
    "address": 2243,
    "type": "line",
    "text": "Loads XXXTPAGE with the OS's load_file and jumps to it at $4000; the title program's RTS returns the episode chosen to episode_loader."
+  },
+  {
+   "address": 2250,
+   "type": "line",
+   "text": "load_file's argument: the name XXXTPAGE, the last in episode_file_names."
+  },
+  {
+   "address": 2252,
+   "type": "line",
+   "text": "JMP $4000: the title program returns to episode_loader with the episode chosen in A."
   },
   {
    "address": 2255,
@@ -3319,6 +3520,16 @@
    "address": 2262,
    "type": "line",
    "text": "Loads XXXCOPY with the OS's load_file and jumps to it at $4000; it returns to episode_loader."
+  },
+  {
+   "address": 2269,
+   "type": "line",
+   "text": "load_file's argument: the name XXXCOPY, seven characters."
+  },
+  {
+   "address": 2271,
+   "type": "line",
+   "text": "JMP $4000: the copy protection's check returns to episode_loader."
   },
   {
    "address": 2274,
