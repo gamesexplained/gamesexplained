@@ -40,8 +40,32 @@ the video chip's interrupt registers, the CIAs' or the sound chip
 
 - 249 location records (`location_records`, `$ADFD`), 14 bytes each:
   bytes 0-7 the exits north, east, south, west, enter, leave, up and down
-  (`$FF` none); byte 10 the feature kind; bytes 11 and 12 the two names;
-  byte 13 the presence text (`presence_texts`, 96 of them), `$FF` none.
+  (`$FF` none); byte 8, 0 in every record; byte 9 the directions the
+  feature guards, a bit each (`direction_bits`, tested by
+  `check_feature`); byte 10 the feature kind; bytes 11 and 12 the two
+  names; byte 13 the presence text (`presence_texts`, 96 of them), `$FF`
+  none.
+- `show_location` prints the names in windows 0 and 1 (x 9, y 3 and 10,
+  22 by 4 cells) with `print_string`, 20 characters to a line;
+  `wrap_check` in the OS carries a longer word to the next line.
+  `test_levels.js` runs `print_name_0` and `print_name_1` for all 249
+  places against the Maps tab's drawing.
+- Location 0 and location 20 are blank records whose exits all lead to
+  location 0. Nothing leads to 20; Euston Road's west exits (17-19) lead
+  to 0 through a deadly road, which ends the game (`game_over`) first.
+  Euston Road's location 18 south and 19 north, and the estate's location
+  200 south, lead back to themselves. Four exits are one way: 48 up to
+  174, 122 north to 120, 134 west to 135 and 161 west to 171.
+- The Faslane estate is locations 197-248, every one FASLANE: ANOTHER
+  IDENTICAL STREET, and the only places whose compass exits fit a grid
+  (laid out from location 200, every two-way exit one step). No exit of
+  any other place leads into it, and none of its exits leads out.
+- Examining the tube map (object 2), the piece of paper (11) or the ID
+  card (6) runs `picture_tube_map`, `picture_plan` or `picture_id_card`:
+  `show_tile_picture` opens a window of 14 by 7 cells at x 13, y 10 and
+  fills all of it from `tiles` and a colour map, over the window's frame.
+  The ID card's photo (`pic_photo`) goes over its top left 5 by 4 cells.
+  `test_levels.js` holds the Maps tab's three pictures to it.
 - London, Bristol, Dover and the Faslane estate. The tube's lines
   (`tube_lines`, `$7748`) are the Circle line both ways, the Victoria line
   and the Piccadilly line; a ticket costs £1 at any ticket office

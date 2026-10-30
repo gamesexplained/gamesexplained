@@ -7,35 +7,41 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "A widget that runs a mechanic is a claim too": every widget on the three pages got a test that runs the game's own routine in the kit's 6502, and the Building 17 test is what showed that memo 31, the break-in, never comes.
+- `60-verify`: "A wrong comment is usually one belief written down more than once": the checker's eight wrong comments came from a few beliefs, the time-of-day clock read as binary seconds among them, and searching for each found 32 more, corrected with them.
+- `60-verify`: "Comments a program wrote, a decoder describing every record": the sample drew 20 of its 80 from the 1,345 comments my decoders wrote from templates, and `facts.md` gives the weighted rate beside the plain one.
+- `70-minisite`: "Draw every one of them as a picture from the extracted bytes": the Maps tab draws each of episode two's 249 places as the game's screen shows it, held to `show_location` by a test, rather than listing them in a table.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+- `kit/skills/c64/c64-reference`: the CIA section now says that the time-of-day clock counts in BCD and that bit 7 of `$DC0E` sets its 50 or 60 Hz input; the lesson is `kit/lessons/2026-10-30-the-fourth-protocol.md`.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+A branch straight after a `JSR` that tests the flags the subroutine left.
+Episode one's `judge_security` branches on Z right after `JSR random`, and
+Z there comes from `random`'s own `CMP #$63`, never equal, so the memo
+the branch skips can never come. The listing and `facts.md` described
+the branch by what the number would mean, and nothing caught it until the
+page's test ran the game's routine with `random` seeded to give 0. The
+skill would say, in `60-verify` or `50-coverage`: before describing a
+branch that follows a `JSR`, read the flags the subroutine's last
+flag-setting instruction leaves on every path to its `RTS`. The lesson
+file tells it; no other game folder shows the same mistake yet.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+- #638: Let a part laid over another name what it keeps at the other part's addresses.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+A shared tracer in the kit that takes a map of the calls followed by inline arguments, with the count chosen by the function number in A at the call, and the game's dispatch tables, would have saved writing a tracer of my own for each of the three episodes.
+
+## Tools and system
+
+Linux 6.18 x86_64, Ubuntu 24.04.5 in a Claude cloud container with no
+display (Xvfb). VICE v3.14.0 (vice-mcp release, `check-emulator` 57 of
+57), regenerator2000 0.9.20 built with cargo into `tools/`. Four
+disassembler sessions ran at once on ports 3000-3003, one for each part
+being annotated, with `KIT_R2000_PORT` choosing the session for
+`r2000.py` and `symbols_export.py`.

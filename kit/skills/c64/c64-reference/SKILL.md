@@ -331,6 +331,17 @@ breakpoint on the handler with a hit count of zero during play settles it.
 Timing derived from a counting loop follows the CPU clock, so such a game
 runs about four per cent faster on NTSC than on PAL.
 
+**The time-of-day clock counts in decimal digits.** Each CIA has a clock
+in its registers 8 to 11 (`$DC08`-`$DC0B` on CIA 1): tenths, seconds,
+minutes and hours, each in BCD, two decimal digits to a byte. `$14` in
+the seconds register is 14 seconds, not 20, and a `CMP #$14` against it
+compares digits. Reading the hours holds all four registers until the
+tenths are read. Bit 7 of the control register (`$DC0E`) says what the
+clock's mains input is, set for 50 Hz and clear for 60 Hz; a PAL machine
+feeds it 50 Hz, so a game that leaves the bit clear there counts one of
+the clock's seconds every 1.2 seconds
+(`kit/lessons/2026-10-30-the-fourth-protocol.md`).
+
 ## Keyboard and joystick
 
 CIA1 port A selects keyboard rows (and reads joystick port 2); port B
