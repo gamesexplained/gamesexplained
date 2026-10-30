@@ -103,10 +103,28 @@ from reading the code in the snapshot named in `orientation.md`.
   hits taken (11, `$FF` once destroyed). Start values come from
   `countries_table` at `$A9AD`.
 - **Relationships.** A 16 by 16 table of hostility at `$5C5C`, 0 the
-  friendliest. `relations_init` fills it at the start of a game; every
-  week every byte goes up by one (`relations_all_up`), and a country with
-  no event to start goes up by one towards everyone (`relations_row_up`).
-  Script commands lower it, never below 0 (`hostility_sub`).
+  friendliest. `relations_init` fills it at the start of a game: each
+  country's hostility to each other is its own event 20 level plus or
+  minus a random 0 to 15, as a byte that is free to wrap. Then the week's
+  end that opens every game (`$BAA1`, from `$7CCD`) raises every byte by
+  one, and so does every later week's end (`relations_all_up`, stopping at
+  `$FF`); a country with no event to start goes up by one towards everyone
+  (`relations_row_up`). Script commands lower it, never below 0
+  (`hostility_sub`).
+- **Libya's start.** Libya's event 20 level is 0, so each of its starting
+  hostilities is 0 to 15 or wraps round to 241 to 255, the second by a
+  chance of 15 in 32. After the first week's end, 254 or 255 (a start of
+  253 to 255, 3 in 32 for each country) is within one of Libya's level for
+  the Total Missile Attack, 255, and Libya's ladder has no level between
+  234 and 255, so a hostility from 242 up climbs a step a week to it. In
+  500 games of random numbers run through `relations_init` in the kit's
+  6502, Libya started at 241 or more to 7.0 countries a game. *Live*: the
+  snapshot of a fresh game's first communique, `work/week1-menu.vsf`, has
+  Libya at 255 to Israel. In a game left to start on its own, with every
+  window closed by fire, Libya began at 255 to Israel and to Pakistan and
+  253 to the Central American Alliance, and the first event, 252 frames
+  in, was Libya's Total Missile Attack on Israel
+  (`reference/libya-missile-attack.png`).
 - **Events.** Each tick `country_events` (`$AE77`) picks a random country
   A and looks, from a random country on, for a B such that one of A's 32
   event levels (`event_levels` `$958C`) is within one of A's hostility to
@@ -176,7 +194,10 @@ from reading the code in the snapshot named in `orientation.md`.
   is 100", then a new game.
 - **Satellites.** Six SDI satellites and three Big Birds (`$5D5C`),
   placed from the satellite panel anywhere on the map. A satellite covers
-  a country whose box comes within its reach of 5 (`in_cover`). The eye
+  a country when its x lies from the box's x less 4 (the reach, 5, less
+  one) to the box's x plus its width plus 4, and its y the same way
+  (`in_cover`, worked on bytes with carries; the upper limit does not
+  depend on the reach). The eye
   lists the cover (`cover_report`), and says "No Foot prints!" when no
   Big Bird covers anything, whatever the SDI satellites cover. Every
   fourth tick a Big Bird report is tried (`bigbird_report`): a message

@@ -59,6 +59,7 @@ Found in the code, not in the manual.
 | Finding | Status | Where |
 |---|---|---|
 | Two countries at the friendliest relationship, hostility 0, start a Total Missile Attack on each other | live | `country_events`: the level `$FF` less 0 is -1 as a signed byte |
+| Libya's starting hostility to each country is 0 to 15 or, about half the time, 241 to 255, close to its Total Missile Attack | live | `relations_init`: Libya's event 20 level is 0, and the random amount taken from it wraps |
 | Answering Neutral to an assassination, a mobbed embassy, a car bomb or aid to an opposition ends the game half the time, "recalled to earth immediately. Due to your incompetence." | live | `ev15_18_neutral`, `ev15_18_1` |
 | A war fires more missiles than the countries hold: the last of each type can fly two or three times | live | `launcher_a`, `missile_done`: 108 landings from 101 missiles |
 | A country already destroyed still adds radiation when hit | traced | `war_damage` |

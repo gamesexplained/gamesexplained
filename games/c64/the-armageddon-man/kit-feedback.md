@@ -7,35 +7,48 @@ time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
-<up to five lines, the one that mattered most first, each written as
-- `<skill folder>`: "<words copied exactly from the passage>": what you did, or did not do, because of it
-or the one line "None." (80-retro, step 1). check_docs.py fails while this placeholder is here,
-once game.json has a tier (80-retro, step 7) and on any pull request.>
+- `70-minisite`: "A widget that runs a mechanic is a claim too": every widget that runs the game's arithmetic got a port and a test against the game's routine in the kit's 6502, and the satellite test showed the listing's comment on `in_cover` putting the satellite's reach one pixel too far.
+- `60-verify`: "Comments a program wrote, a decoder describing every record of a format from templates": the sample drew 20 of its 80 from the 446 comments two scripts wrote, as a stratum of its own, and the template that was wrong was corrected in all 44 comments it wrote at once.
+- `60-verify`: "A wrong comment is usually one belief written down more than once": each of the 13 wrong comments was searched for in the rest of the listing, and the comments that said the same were corrected with it.
+- `70-minisite`: "So load it and look at it before calling this step done": the screenshots showed the satellite map's crop carrying the mouse arrow, and the page now draws it with the sprites off.
+- `10-orient`: "an obstacle to get past efficiently, not the subject": the disk's protection was passed by writing its pass page in at one stop, and the loader was left unannotated.
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says. For a change that
-carries a lesson, name its file in `kit/lessons/` and stop there: the
-lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here. Text added to a core skill also names the other
-game folder where it would have mattered, as games/<platform>/<slug>
-(80-retro, step 3).>
+Nothing.
 
 ## Candidates
 
-<a silent failure no other game could be named for (80-retro, step 3),
-one paragraph each: what went wrong unnoticed, how it was caught, and
-what the skill would say. The next run that meets it makes the edit.
-"None." if there were none.>
+**A "never" in a table used as a number.** The event ladders use a level
+of 0 to mean an event a country never starts, and the search skips it.
+`relations_init` takes the same table's event 20 level as the centre of
+each starting hostility and subtracts a random 0 to 15 from it as a byte.
+The listing's comment on it was right, and still nobody had asked what
+the sentinel does there: Libya's level is 0, so its starting hostilities
+wrap round to 241-255 about half the time and most games begin with
+Libya one step from a Total Missile Attack. It came out only while the
+Discoveries tab was being written, by looking at which countries have a
+0 in that column. A skill would say, in `50-coverage` or `60-verify`:
+when a table marks "none" or "never" with a value, find every routine
+that reads the table and check what each does with that value, since
+code that skips it in one place may use it as a number in another.
 
 ## Maintainer asks
 
-<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
-yes, or no way to reach the repository): "- **The ask, in one line.** The
-problem, what it cost, what to change and where", which the repository
-files when the pull request merges. Prose around the bullets is free;
-check_docs.py checks the bullets.>
+None.
 
 ## What cost the most time
 
-<one sentence: the single change to the kit that would have saved the most time>
+No change to the kit would have saved it: the most time went on getting
+past this disk's copy protection, which fails in VICE 3.10 (the drive
+sends back the "fail" page), and the steps past it are in
+`orientation.md` for the next run on this game.
+
+## Operating system and tools
+
+Linux x86_64 in a cloud container, no display; VICE 3.10 from the vice-mcp
+release v3.14.0 (`v3.14.0-linux-x86_64-gui.zip`), regenerator2000 0.9.20,
+Node 22. VICE's autostart gave up when the loader left the ROM for `$0330`
+("Autostart: aborting" in its log) and left the keyboard ignoring every
+key until VICE was restarted; typing `LOAD"*",8,1` by hand avoided it
+(`agent-history.md`).
