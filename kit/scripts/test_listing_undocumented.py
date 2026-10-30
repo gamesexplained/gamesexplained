@@ -53,6 +53,14 @@ class ListingAlignment(unittest.TestCase):
             self.assertEqual([(r['a'], r['m'], len(r['b'])) for r in rows(p, 0x8008)], [
                 (0x8000, 'lax', 3), (0x8003, 'asr', 2), (0x8005, 'sax', 3), (0x8008, 'rts', 1)])
 
+    def test_timer_check_decodes_whole(self):
+        # LAX absolute and ANC #imm, a check that a timer is running, hidden as a CMP $010B,X
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)
+            fixture(p, [0xAF, 0x0F, 0xDD, 0x0B, 0x01, 0xD0, 0x00, 0x60])
+            self.assertEqual([(r['a'], r['m'], len(r['b'])) for r in rows(p, 0x8007)], [
+                (0x8000, 'lax', 3), (0x8003, 'anc', 2), (0x8005, 'bne', 2), (0x8007, 'rts', 1)])
+
     def test_relabel_keeps_the_instruction(self):
         # --relabel decodes every code record again: a table without LAX raised KeyError here
         with tempfile.TemporaryDirectory() as d:
