@@ -1095,9 +1095,12 @@ def no_listing(gdir, P=None):
 
 
 def redirect_pages(game, present):
-    """Build former page URLs without putting them back into the tab bar."""
+    """Build former page URLs without putting them back into the tab bar. A key that names a
+    section ("index.html#quirks") is a section that moved, which section_redirects handles."""
     pages = {}
     for old, target in game.get("redirects", {}).items():
+        if "#" in old:
+            continue
         destination = target.split("#", 1)[0] if isinstance(target, str) else ""
         if not PAGE_NAME.fullmatch(old) or old in present or destination not in present:
             raise ValueError(f"Invalid page redirect: {old!r} -> {target!r}; use an old .html name and a published tab")
@@ -1108,6 +1111,47 @@ def redirect_pages(game, present):
                       'if(location.search)target.search=location.search;'
                       'if(location.hash)target.hash=location.hash;location.replace(target.href);</script>')
     return pages
+
+
+def section_redirects(game, present):
+    """{page: {section id: target}} for the sections game.json's "redirects" moved to another tab,
+    keyed "index.html#quirks" with a target such as "discoveries.html#quirks", so a link to the
+    section where it was still finds it."""
+    moved = {}
+    for old, target in game.get("redirects", {}).items():
+        if "#" not in old:
+            continue
+        page, sid = old.split("#", 1)
+        destination = target.split("#", 1)[0] if isinstance(target, str) else ""
+        if page not in present or not sid or destination not in present or target == old:
+            raise ValueError(f"Invalid section redirect: {old!r} -> {target!r}; use a published tab's "
+                             "section and the published tab it moved to")
+        moved.setdefault(page, {})[sid] = target
+    return moved
+
+
+def send_on(page, f, moved):
+    """The page with a script that sends a link to a section it no longer has to where the section
+    went (section_redirects). A section still on the page would never be reached, so that fails."""
+    if not moved:
+        return page
+    for sid in moved:
+        if re.search(r'\bid="' + re.escape(html.escape(sid)) + '"', page):
+            raise ValueError(f"{f}#{sid} is still on the page, so its redirect would hide it")
+    js = ("<script>(function(m){function go(){var t=m[decodeURIComponent(location.hash.slice(1))];if(!t)return;"
+          "var u=new URL(t,location.href);if(location.search)u.search=location.search;location.replace(u.href)}"
+          "go();addEventListener('hashchange',go)})(" + json.dumps(moved).replace("<", "\\u003c") + ");</script>")
+    m = re.search(r"<meta charset[^>]*>", page)
+    return page[:m.end()] + "\n" + js + page[m.end():] if m else js + "\n" + page
+
+
+def check_moved(out, game, present):
+    """Fail when a moved section's target names a section its page does not have."""
+    for page, moved in section_redirects(game, present).items():
+        for sid, target in moved.items():
+            dest, _, frag = target.partition("#")
+            if frag and not re.search(r'\bid="' + re.escape(html.escape(frag)) + '"', read(os.path.join(out, dest))):
+                raise ValueError(f"{page}#{sid} redirects to {target}, which has no section {frag!r}")
 
 
 def check_tabs(gdir, game):
@@ -1136,8 +1180,10 @@ def authored_page(gdir, game, f, nav, ban, src=None, present=None):
                 year=game.get("year") or "", publisher=html.escape(game.get("publisher") or ""))
     page = drop_platform(fill(read(os.path.join(gdir, f)) if src is None else src, **head), plat)
     page = embed_listings(page, gdir, game, os.path.join(os.path.relpath(gdir, ROOT), f))
-    nxt = next_tab(game, present_tabs(gdir, game) if present is None else present, f)
-    return pagenav(at_end(under_title(inject(page, nav, LIB), ban), nxt + edit_footer(game, f)))
+    present = present_tabs(gdir, game) if present is None else present
+    nxt = next_tab(game, present, f)
+    page = pagenav(at_end(under_title(inject(page, nav, LIB), ban), nxt + edit_footer(game, f)))
+    return send_on(page, f, section_redirects(game, present).get(f))
 
 
 def drop_platform(page, plat):
@@ -1486,6 +1532,7 @@ def build_game(gdir, out_root):
                 shutil.copy(os.path.join(gdir, f), out)
     for name, page in redirects.items():
         open(os.path.join(out, name), "w").write(page)
+    check_moved(out, game, present)
     ref = os.path.join(gdir, "reference")
     if os.path.isdir(ref):
         shutil.copytree(ref, os.path.join(out, "reference"), dirs_exist_ok=True)

@@ -44,18 +44,7 @@
 </section>
 
 <section>
-  <p class="fig">02 · Points</p>
-  <h2 class="t">Bug: two attacks paint half the points they score</h2>
-  <p class="lede">When a fighter goes down, the points of the hit appear in the air above him. For two of the ten attacks the number shown is half the number added to the score.</p>
-  <div class="plate"><div class="ik-scroll"><table class="ik-tbl" id="ik-points"></table></div>
-    <p class="cap">The points each attack scores (<code>$2D33</code>, <code>$2D3D</code>) beside the number painted for it, drawn from the first digit each attack picks (<code>$2D47</code>, <code>$2D51</code>) and the digit bytes (<code>$3C11</code>). Highlighted rows paint a number that differs from the score.</p></div>
-  <p>The painted number comes from a table of its own. While a felled fighter lies on the floor, <code>knock_marks</code> (<code>$3BA3</code>) paints digits into the fallen pose's graphics: “1000”, or one digit followed by “00”. The digit comes from a table that runs alongside the points table, and for attacks 3 and 6 it holds the digit for half the points. The punch on up and forward scores 800 and paints 400; the low kick from a crouch scores 400 and paints 200. Checked in the emulator, the score went up by 800 for every punch that painted 400, and by 400 and 200 for low kicks that painted 200 and 100.</p>
-  <div class="plate" style="margin-top:20px"><img class="ik-scr" src="reference/painted-200-scored-400.png" alt="A fallen fighter with 200 painted above him while the red fighter's score reads 400" width="384" height="272">
-    <p class="cap">In the emulator, half a second after a low kick from a crouch felled the blue fighter: 200 hangs over him, and the red fighter's score has gone from 0 to 400.</p></div>
-</section>
-
-<section>
-  <p class="fig">03 · The computer fighters</p>
+  <p class="fig">02 · The computer fighters</p>
   <h2 class="t">How the computer fighters get harder</h2>
   <p class="lede">The computer's fighters improve at each bonus round. A difficulty step, 0 at the start of a game and up by one at each bonus round to at most 5, sets how often they defend and attack and how long anyone stays down.</p>
   <div class="plate">
@@ -326,21 +315,6 @@ const IK_MC = [10,0];
   thumbsDraw();
   fromHash();
   poutFit();
-
-  // ---------------------------------------------------------------- points scored and painted
-  const moveName = (m) => (m > 8 ? 'fire and ' : '') + DIRS.find((d) => JOY[(m > 8 ? 16 : 0) + d[1]] === m)[2];
-  const tbl = $('ik-points');
-  tbl.innerHTML = '<tr><th>Attack</th><th>Pose</th><th>Joystick (facing right)</th><th>Full point</th><th>Painted</th><th>Half point</th><th>Painted</th></tr>';
-  for (let a = 0; a < 10; a++) {
-    const moves = []; for (let m = 1; m <= 16; m++) if (attacksOf(m).includes(a)) moves.push(moveName(m));
-    const tr = document.createElement('tr');
-    const odd = painted(KNOCK_FULL[a]) !== String(bcd(FULL[a]) * 100) || painted(KNOCK_HALF[a]) !== String(bcd(HALF[a]) * 100);
-    if (odd) tr.className = 'ik-odd';
-    tr.innerHTML = `<td class="n">${a}</td><td>${poseLink(HIT_POSES[a])}</td><td>${moves.join('; ')}</td><td class="n">${pts(FULL[a])}</td><td></td><td class="n">${pts(HALF[a])}</td><td></td>`;
-    tr.children[4].appendChild(digits(KNOCK_FULL[a], 2));
-    tr.children[6].appendChild(digits(KNOCK_HALF[a], 2));
-    tbl.appendChild(tr);
-  }
 
   // ---------------------------------------------------------------- difficulty
   const DOWN = B(0x2F37, 6), GETUP = B(0x1D00, 6), DEF1 = B(0x2B4C, 6), DEF2 = B(0x2B52, 6), ATT = B(0x2B58, 6), SPREAD = B(0x2B5E, 6);

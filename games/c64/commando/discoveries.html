@@ -1,0 +1,659 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commando</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.cm-cv{display:block;max-width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.cm-shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.cm-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px}
+.cm-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.cm-row button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.cm-row button:hover{border-color:var(--ink-mute)}
+.cm-row button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.cm-row label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.cm-range{flex:1;min-width:180px}
+.cm-read{font-family:var(--fm);font-size:13px;color:var(--ink);margin:10px 0 0;min-height:1.6em}
+.cm-map{display:flex;gap:14px;align-items:flex-start}
+.cm-map .cm-main{flex:1;min-width:0}
+.cm-mini{flex:none;width:80px;cursor:pointer;image-rendering:pixelated;border-radius:3px;background:#000;display:block}
+.cm-tbl{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 0}
+.cm-tbl th,.cm-tbl td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.cm-tbl th{font-family:var(--fm);font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.cm-tbl td.cm-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.cm-scroll{overflow-x:auto}
+.cm-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.cm-key{display:inline-block;width:11px;height:11px;border-radius:2px;margin:0 2px 0 0;vertical-align:-1px}
+.cm-strip{display:block;width:100%;height:28px;image-rendering:pixelated;border-radius:3px;background:#000}
+.cm-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cm-pair p{margin:6px 0 0;font-family:var(--fm);font-size:12.5px;color:var(--ink-mute)}
+.cm-slots{display:grid;grid-template-columns:repeat(11,1fr);gap:6px;margin:14px 0 0}
+.cm-slot{border:1px solid var(--line);border-radius:6px;padding:6px 4px;text-align:center;font-family:var(--fm);font-size:12px;line-height:1.35;color:var(--ink-soft);background:var(--surface)}
+.cm-slot b{display:block;font-weight:500;color:var(--ink-mute);font-size:11px}
+.cm-slot span{display:block;color:var(--ink);min-height:1.35em}
+.cm-slot i{display:block;font-style:normal;color:var(--amber);min-height:1.35em}
+.cm-slot.now{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber) inset}
+.cm-slot.gone span{color:var(--coral);text-decoration:line-through}
+.cm-pair img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.cm-hi{font-family:var(--fm);font-size:13px}
+.cm-hi td{padding:4px 8px 4px 0}
+.cm-hi td:last-child{text-align:right;padding-right:0}
+.cm-hi tr.new td{background:var(--hl)}
+.cm-hi tr.bug td{background:#fbe1dc;color:var(--coral)}
+.cm-hi tr.spare td{color:var(--ink-mute)}
+.cm-hi-score{font-family:var(--fm);font-size:14px;color:var(--ink);min-width:5.5em;text-align:right}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}#cm-table .cm-pair{grid-template-columns:1fr 1fr;gap:10px}.cm-hi{font-size:11.5px}.cm-hi td{padding:3px 4px 3px 0}.cm-map{flex-direction:column}.cm-mini{display:none}.cm-pair{grid-template-columns:1fr}.cm-slots{grid-template-columns:repeat(6,1fr)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1985 · Elite Systems</p>
+  <h1>Commando</h1>
+  <p class="sub">Commando's soldiers on one strip of the screen fire away from the player, a grenade box can pay out its extra life twice, and the skipped area 2 is still in the game, drawn in its font.</p>
+</header>
+<main class="wrap">
+
+<section id="the-aim">
+  <p class="fig">01 · The aim</p>
+  <h2 class="t">Bug: soldiers just right of the middle fire away from the player</h2>
+  <p class="lede">A soldier sorts the player's place into one of eight directions with a box around himself (<a href="index.html#enemy-fire">Enemy fire</a>). The soldier below stands at x 232, a little right of the middle of the screen. To him, a player almost anywhere on his left is on his right.</p>
+  <div class="plate" id="cm-aim2"></div>
+  <p>The test adds 30 to the soldier's x and compares the sum with the player's x (<code>$3117</code>, <code>$33D7</code>). Both are one byte, the low eight bits of a nine-bit position, and the carry out of the sum is dropped. For a soldier at x 226 to 255, the sum passes 255 and wraps round to a small number, so any player further right than that number counts as being to the right. A soldier at 232 adds 30 to make 262, keeps 6, and sees a player at 100 on his right. He turns to face right, and fires right.</p>
+  <p>In the emulator, a rifle soldier held at x 232 with the player held level with him at x 100 turned to face right and fired every bullet to the right, two pixels a frame away from the player. Moved to x 200, where the sum does not wrap, the same soldier faced left and fired at him. These x positions count from 24 pixels left of the picture, so on the 320-pixel screen the band runs from 202 to 231, and the soldiers in it are the ones walking down the right of the field.</p>
+  <p>The code that turns a soldier and the code that fires make the same comparison, so the soldier is consistent: he faces the way he shoots. The up-and-down test adds 20 to the soldier's y in the same way, but that sum wraps only for a soldier within 20 pixels of 255, below the playfield, so it never shows.</p>
+</section>
+
+<section id="the-score-line">
+  <p class="fig">02 · The score line</p>
+  <h2 class="t">Bug: ten lives show as 0 and a block</h2>
+  <p class="lede">Press the buttons to change the score line. It is drawn with the game's own font and filled in by a port of its own routines.</p>
+  <div class="plate" id="cm-hud">
+    <canvas class="cm-cv" width="640" height="16" role="img" aria-label="The score line"></canvas>
+    <div class="cm-row">
+      <button type="button" data-a="pts" data-v="3">Shoot a soldier (300)</button>
+      <button type="button" data-a="pts" data-v="20">Win an area (1,400)</button>
+      <button type="button" data-a="loop">Pick up a box</button>
+      <button type="button" data-a="throw">Throw a grenade</button>
+      <button type="button" data-a="life" data-v="-1">Lose a life</button>
+      <button type="button" data-a="life" data-v="1">Add a life</button>
+      <button type="button" data-a="near">Jump to 999,900</button>
+      <button type="button" data-a="reset">Start again</button>
+    </div>
+    <p class="cm-read"></p>
+    <p class="cap">The port was run beside the game's routines in a 6502 simulator on the listing's bytes: every BCD score with each amount the game adds, every grenade count from 0 to 255 with a box and with a throw, a box picked up in each of the eleven enemy slots at 300 scores, and every lives count: 54,067 cases. The score, the counts and the digits on the screen matched every time.</p>
+  </div>
+  <p>The lives (<code>$0500</code>) are an ordinary binary count, but the routine that prints them (<code>$13F1</code>) treats them like the score and the grenades, which are kept as binary-coded decimal. The routine splits the byte into its two halves and adds <code>$21</code>, the font's 0, to each. For nine lives or fewer that is right. Ten lives is <code>$0A</code>, so the second digit is the glyph after 9, a block, and sixteen lives shows as 10. Lives come from the score, one for every 10,000 points (<code>$134F</code>), so a good player gets there. The emulator showed MEN 0 and the block with the count set to eleven and one life then lost.</p>
+  <p>The other two counts on the line wrap round. The score is kept in hundreds as four BCD digits, so 999,900 plus 1,400 for an area makes 001,300, and the carry still brings a life. A box adds three grenades with a decimal add that drops its carry, so 98 grenades and a box make 01 (<code>$2A8E</code>). Both were seen in the emulator.</p>
+</section>
+
+<section id="the-grenade-box">
+  <p class="fig">03 · The grenade box</p>
+  <h2 class="t">Bug: a box that brings an extra life pays out twice</h2>
+  <p class="lede">A box of grenades is worth three grenades and 1,000 points. When those points carry the score past a multiple of 10,000, Super Joe gets six grenades, 2,000 points and the life, and an enemy somewhere else on the screen disappears. Step through one pass of the enemy loop to see why.</p>
+  <div class="plate" id="cm-box">
+    <canvas class="cm-cv" width="640" height="16" role="img" aria-label="The score line"></canvas>
+    <div class="cm-slots" role="list" aria-label="The eleven enemy slots"></div>
+    <div class="cm-row">
+      <button type="button" data-a="step">Next slot</button>
+      <button type="button" data-a="all">Run the pass</button>
+      <button type="button" data-a="reset">Start again</button>
+      <label><input type="checkbox" data-carry checked> Score 9,500, so the box brings a life</label>
+    </div>
+    <p class="cm-read" aria-live="polite"></p>
+    <p class="cap">Super Joe is standing on the box in slot 4, among four rifle soldiers. The loop is a port of the game's (<code>$2495</code>), and the score line uses the same port as the one above. The test runs the game's own loop in the simulator with the box in each of the eleven slots, among rifle soldiers, with and without the carry. The slots it runs and their order, the slot the box frees, and the score and the counts were the port's every time.</p>
+  </div>
+  <p>The box is one of the enemies. It sits in an enemy slot, and the enemy loop (<code>$2495</code>) runs every slot on each pass of the game's logic with the slot's number, 0 to 10, in the X register. When Super Joe stands on the box, its routine adds the grenades and the points, frees the slot whose number is in X (<code>$3570</code>), asks for its sound effect and returns (<code>$2A5A</code>). The routine that takes a sound effect request hands back 0 in X (<code>$5F56</code>), so the loop always carries on from slot 1, and the slots below the box get a second turn in that pass.</p>
+  <p>When the points bring an extra life, the life asks for its own sound effect, inside the points routine, before the box frees its slot. X is 0 by then, so the box frees slot 0 instead of its own. The loop carries on from slot 1, comes to the box again in the same pass, and Super Joe is still standing on it, so it pays a second time; this time there is no carry, and the box frees its own slot. In the emulator, a box in slot 2 at 9,500 points left 11,500 points, eleven grenades from five and six lives from five, and the rifle soldier who had been in slot 0, up the screen, was gone. Whatever stands in slot 0 at that moment disappears, and only a box in slot 0 itself pays once.</p>
+</section>
+
+<section id="the-skipped-area">
+  <p class="fig">04 · The skipped area</p>
+  <h2 class="t">Secret: the skipped area 2 would have been drawn in the game's font</h2>
+  <p class="lede">The areas are numbered 0, 1 and 3. Area 2 has an entry in every per-area table, and the counter steps over it.</p>
+  <div class="plate" id="cm-area2">
+    <div class="cm-pair"><div><canvas class="cm-cv" width="640" height="336" role="img" aria-label="Area 1's map in its own character set"></canvas><p>Area 1, as played</p></div>
+    <div><canvas class="cm-cv" width="640" height="336" role="img" aria-label="The same rows drawn with area 2's character set, the font"></canvas><p>Area 2: the same map in the font's character set</p></div></div>
+    <div class="cm-row"><input class="cm-range" type="range" min="0" max="1432" value="440" aria-label="Map row at the top of the screen"></div>
+    <p class="cap">Both drawn from the listing: area 1's map (<code>$8000</code>) with area 1's character set (<code>$C800</code>) and with area 2's (<code>$D000</code>), in the colours each area has at <code>$40BC</code>.</p>
+  </div>
+  <p>The area counter's low two bits pick everything about an area (<code>$1427</code>), and after each area won the game adds one, then adds one again if the low two bits are 2 (<code>$0939</code>). Area 2's entries are filled in all the same, mostly with other areas' data:</p>
+  <table class="cm-tbl"><thead><tr><th>Table</th><th>Area 2's entry</th><th>Where</th></tr></thead><tbody>
+    <tr><td>map</td><td>area 1's</td><td class="cm-n"><code>$3EB0</code></td></tr>
+    <tr><td>restart rows</td><td>area 1's</td><td class="cm-n"><code>$3ED0</code></td></tr>
+    <tr><td>spawn list</td><td>area 3's</td><td class="cm-n"><code>$1485</code></td></tr>
+    <tr><td>terrain</td><td>area 3's</td><td class="cm-n"><code>$14A5</code></td></tr>
+    <tr><td>the ordinal in its end message</td><td>3RD, as area 3's</td><td class="cm-n"><code>$1306</code></td></tr>
+    <tr><td>character set</td><td>the game's font</td><td class="cm-n"><code>$D000</code></td></tr>
+  </tbody></table>
+  <p>Played, area 2 would be area 1's layout drawn in letters, digits and pieces of scenery, with area 3's enemies arriving in it. The game does put area 2's character set on the screen: the title, the name entry and the messages between areas set the counter to 2 while they run, which is how they get the font (<code>$0F53</code>, <code>$0C9E</code>, <code>$1270</code>). An unused fourth terrain table (<code>$198B</code>) and an unused fourth spawn list (<code>$1D42</code>) sit in memory beside the three that are used.</p>
+  <p>The fourth list holds the game's only doors and its only mortar man. Its 24 enemies are nine doors that each let a soldier out, a box, a motorcycle, a grenade thrower, two walking soldiers, two lorries, four vehicles crossing, a soldier in a trench, the mortar man, the gate opening and a green soldier. Its first two rows, 198 and 196, are below the start of every area. Tick <b>Unused fourth list</b> on the <a href="index.html#the-battlefield">maps</a> on How it works to draw it on any of the three. It fits none of them as they are. Eight of its nine doors stand in open ground on every map, and the ninth, at row 157, falls on the left gate of area 3's first wall. Two things in it do match. On area 3's map, its soldier in a trench and its mortar man, at row 9, stand in the fortress's two windows, a row above the two soldiers that area 3's own list puts there (<code>$1DA7</code>). And its two walking soldiers come in after 80 frames at the height of row 99, as area 1's two do, with its grenade thrower at row 104, as area 1's is (<code>$1CC1</code>).</p>
+</section>
+
+<section id="points">
+  <p class="fig">05 · Points</p>
+  <h2 class="t">Secret: the green soldier's 2000 is worth 1,400</h2>
+  <p class="lede">Shoot the green soldier and a white 2000 rises where he fell. The score goes up by 1,400.</p>
+  <div class="plate"><canvas id="cm-green" class="cm-cv" width="384" height="126" role="img" aria-label="The green soldier and the score sprite reading 2000"></canvas>
+  <p class="cap">The green soldier walking right (blocks <code>$B9</code>, <code>$BA</code>) and the score sprite he leaves (block <code>$BC</code>), drawn from the listing.</p></div>
+  <p>The points for every enemy are one table of BCD hundreds (<code>$254F</code>), which <code>$23E7</code> adds when the enemy is hit:</p>
+  <table class="cm-tbl"><thead><tr><th>Points</th><th>Enemies</th></tr></thead><tbody>
+    <tr><td class="cm-n">200</td><td>a soldier in a foxhole</td></tr>
+    <tr><td class="cm-n">300</td><td>most soldiers</td></tr>
+    <tr><td class="cm-n">500</td><td>a soldier in a trench, a bomb thrower, the sniper</td></tr>
+    <tr><td class="cm-n">1,000</td><td>a guard, either half of the lorry, and a bunker's gun (paid by the grenade's own path, <code>$37B1</code>)</td></tr>
+    <tr><td class="cm-n">1,400</td><td>the green soldier</td></tr>
+  </tbody></table>
+  <p>The green soldier's entry is <code>$14</code>, 1,400. After adding it, <code>$23E7</code> shows block <code>$BC</code>, the sprite that reads 2000. The guard's score sprite, block <code>$BD</code>, reads 1000 and matches his points. The green soldier appears once in each loop, when the screen reaches the top of the first area's map.</p>
+</section>
+
+<section id="the-high-score-table">
+  <p class="fig">06 · The high-score table</p>
+  <h2 class="t">Bug: in the 1985 release, a low score overwrites eighth place</h2>
+  <p class="lede">CSDb credits REMEMBER's crack with a bug fix, and this is it. In the 1985 release, a game that does not beat the seventh score writes its score over the eighth, under the eighth player's name and without asking for a name, even when it is lower. Pick a score.</p>
+  <div class="plate" id="cm-table">
+    <div class="cm-row"><input class="cm-range" type="range" min="0" max="100" step="1" value="25" aria-label="The score at the game's end, in hundreds"><span class="cm-hi-score"></span></div>
+    <div class="cm-pair"><div><p>The 1985 release</p><table class="cm-tbl cm-hi" data-first="6"></table></div><div><p>This copy</p><table class="cm-tbl cm-hi" data-first="7"></table></div></div>
+    <p class="cm-read" aria-live="polite"></p>
+    <p class="cap">Both start from the table the game starts with (<code>$0EEE</code>, <code>$0F36</code>), which is the same in both copies, and both come from one port of the game's walk (<code>$09A4</code>), started at the seventh entry or the eighth. The test runs the game's own walk both ways over every score from 0 to 999,900 against that table, and over 400,000 random scores against 200 random tables. The table and whether a name was asked for were the port's every time.</p>
+  </div>
+  <p>After a game the score walks up the table from the bottom (<code>$09A4</code>). Each entry it beats or equals moves down one place, name and all, and the score goes in below the first entry it does not beat; the name entry follows (<code>$0C88</code>). The table holds eight entries and a spare ninth that is never shown. This copy starts the walk at the eighth entry, so a score that misses the table goes into the spare ninth, and the game goes back to the title without asking for a name (<code>$0A0C</code>).</p>
+  <p>The 1985 release starts the walk at the seventh entry. The bytes at <code>$09A5</code> and <code>$0A0D</code> hold 6 where this copy has 7, and they are the only two bytes of the routine that differ. A score that beats the seventh is handled as in this copy. A score that does not stops the walk where it starts, goes in below the seventh, over the eighth, and the test for a name finds that the walk never moved and goes back to the title. So eighth place always shows the last game that missed seventh, under the name that was there before. In the emulator, a game of 2,500 in the 1985 release left DILK 002500 in eighth place, a game of 0 left DILK 000000, and neither asked for a name. This copy asked for a name at 2,500, sent DILK's 2,000 to the spare ninth entry, and changed nothing at 0.</p>
+</section>
+
+<section id="the-reset-trap">
+  <p class="fig">07 · The reset trap</p>
+  <h2 class="t">Bug: after a reset, the 1985 release shows its title in the dark and never starts</h2>
+  <p class="lede">The 1985 release catches the reset button and starts itself again instead of handing the machine to BASIC. The game that restarts runs its title and attract mode with the screen off, and fire never starts a game.</p>
+  <p>At its start the game copies nine bytes to <code>$8000</code> (<code>$085C</code>): the game's start address, <code>$0850</code>, twice, then the letters CBM80 with their top bits set. Those nine bytes are a cartridge's signature. A reset makes the KERNAL look for the letters at <code>$8004</code> and, when they are there, jump to the address at <code>$8000</code>, so a reset switch restarts Commando. RESTORE, the other key that breaks into a program, does nothing in either copy, because the start points the NMI at an RTI (<code>$0A4D</code>).</p>
+  <p>The KERNAL jumps to a cartridge before it sets up the chips, so the game restarts on chips the reset has cleared. The reset clears the processor port's direction register, and with the register at 0 the game's writes to <code>$01</code> change nothing. The I/O chips stay in view when the start copies the name entry's gunsight into the RAM beneath them (<code>$0A57</code>), so the 64 bytes go into the video chip instead, and the one that lands in <code>$D011</code>, <code>$20</code>, turns the display off. Nothing in the game turns it on again.</p>
+  <p>The joystick is cut off the same way. The title starts a game when the first CIA's port A reads <code>$6F</code> (<code>$0FB2</code>): fire pressed, and bit 7 low. Bit 7 reads low only because the KERNAL makes that line an output and drives it low, and the reset has made every line of the port an input again, so with fire pressed the port reads <code>$EF</code>. In the emulator the restarted game cycled through its title and attract views and ignored fire. With the port set back as the KERNAL leaves it, the first press started a game.</p>
+  <p>Behind the dark screen the restarted game draws area 3 wrongly as well. With the processor port's lines all inputs, they read high, which keeps the BASIC ROM in view at <code>$A000</code>, where area 3's map is, and the map is drawn from the ROM's bytes.</p>
+  <div class="plate">
+    <div class="cm-pair"><div><img src="reference/attract-area3-1985.png" width="320" height="192" alt="The attract mode's view of area 3: the COMMANDO logo over a dirt track between two walls"><p>The attract view of area 3</p></div>
+    <div><img src="reference/attract-area3-after-reset.png" width="320" height="192" alt="The same view after a reset: the logo over a field of scrambled green and grey characters"><p>The same view after a reset, with the display put back on</p></div></div>
+    <p class="cap">The 1985 release in the emulator, at area 3's row 169. For the second picture <code>$D011</code> was set to <code>$1B</code> just after the gunsight copy, which every later write to it keeps.</p>
+  </div>
+  <p>The signature also marks a game that is never reset. <code>$8000</code> is the first row of area 1's map, the top of the screen when the area's gate comes into view, and the copy writes over nine of its characters. Two pixel lines of them show at the top edge of the screen. REMEMBER's file holds the map's own nine characters there, and the crack never copies the signature.</p>
+  <div class="plate">
+    <div class="cm-pair"><div><img src="reference/area1-gate-1985.png" width="480" height="120" alt="The top edge of the screen at area 1's gate in the 1985 release: brown marks above the wall"><p>The 1985 release: the signature in area 1's top row</p></div>
+    <div><img src="reference/area1-gate-remember.png" width="480" height="120" alt="The same place in this copy: a plain grey line above the wall"><p>This copy: the map's own wall</p></div></div>
+    <p class="cap">The top-left corner of the screen when area 1's gate comes into view, from the emulator, five times the size.</p>
+  </div>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8">gamesexplained</a> · Commando for the Commodore 64, explained from its code</footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* commando-hud */
+/* The score line's arithmetic and digits, ported from the game: the score add and its extra life
+   ($134F), the grenade box ($2A8E, and its second payout from the enemy loop) and the throw
+   ($3903), one pass of the enemy loop with a box in it ($2495), and the four prints ($136F,
+   $13A3, $13D7, $13F1). The score is two BCD bytes of hundreds, the grenades one BCD byte, the
+   lives one binary byte, and every print turns each half of a byte into a glyph by adding $21,
+   the font's 0. test_hud.js holds each against the game's own code. */
+function createHud() {
+  'use strict';
+  // The 6502's ADC and SBC in decimal mode, as the NMOS chip does them for any operands
+  // (Bruce Clark's sequence 1): the game adds $0A for 1,000 points, which is not a BCD digit.
+  function adc(a, b, c) {
+    let lo = (a & 15) + (b & 15) + c;
+    if (lo >= 10) lo = ((lo + 6) & 15) + 16;
+    let s = (a & 0xF0) + (b & 0xF0) + lo;
+    if (s >= 0xA0) s += 0x60;
+    return [s & 255, s >= 0x100 ? 1 : 0];
+  }
+  function sbc(a, b, c) {
+    let lo = (a & 15) - (b & 15) + c - 1;
+    if (lo < 0) lo = ((lo - 6) & 15) - 16;
+    let s = (a & 0xF0) - (b & 0xF0) + lo;
+    if (s < 0) s -= 0x60;
+    return s & 255;
+  }
+  const st = { lo: 0, hi: 0, lives: 5, grenades: 5, best: [0x90, 0x00] };
+  return {
+    st,
+    addScore(points) {                                   // $134F: points in hundreds, BCD
+      const [lo, c] = adc(st.lo, points, 0);
+      st.lo = lo;
+      if (!c) return false;
+      st.hi = adc(st.hi, 1, 0)[0];
+      st.lives = (st.lives + 1) & 255;                   // $1363, and effect 12
+      return true;
+    },
+    box() {                                              // $2A8E: three grenades, 1,000 points
+      st.grenades = adc(3, st.grenades, 0)[0];
+      return this.addScore(0x0A);
+    },
+    // The box as the enemy loop ($2495) runs it, from enemy slot n (0-10). Both effect requests
+    // return with X = 0 ($5F56), and the extra life's comes before the box's slot is freed
+    // ($3570): enemy 0 is freed instead, the loop goes on from enemy 1, and a box in any later
+    // slot is picked up again. Returns the number of times it paid.
+    boxInLoop(n) {
+      if (this.box() && n > 0) { this.box(); return 2; }
+      return 1;
+    },
+    // One pass of the enemy loop ($2495) with Super Joe standing on a box: slots holds the eleven
+    // behaviour numbers ($0492: 0 a free slot, 22 the box, any other an enemy) and is changed in
+    // place. Returns the slots in the order the loop runs them, each { x, b }, and the box's with
+    // life and freed. The box's own effect request leaves X = 0 after it frees its slot, so the loop
+    // always goes on from enemy 1; with an extra life, the life's request comes first and the slot
+    // freed ($3570) is enemy 0's.
+    pass(slots) {
+      const run = [];
+      for (let x = 0; x < 11; x++) {
+        const step = { x, b: slots[x] };
+        run.push(step);
+        if (slots[x] !== 22) continue;
+        step.life = this.box();
+        step.freed = step.life ? 0 : x;
+        slots[step.freed] = 0;
+        x = 0;
+      }
+      return run;
+    },
+    throwOne() {                                         // $38B9, $3903: only with one to throw
+      if (!st.grenades) return false;
+      st.grenades = sbc(st.grenades, 1, 1);
+      return true;
+    },
+    // The score line, 40 screen codes: the text at $40C0 with the digits put in.
+    line(text) {
+      const out = Array.from(text), put = (at, v) => { out[at] = 0x21 + (v >> 4); out[at + 1] = 0x21 + (v & 15); };
+      put(6, st.hi); put(8, st.lo);                      // $136F: $E34E-$E351
+      put(17, st.grenades);                              // $13D7: $E359-$E35A
+      put(25, st.lives);                                 // $13F1: $E361-$E362
+      put(34, st.best[0]); put(36, st.best[1]);          // $13A3: $E36A-$E36D, from $0F36
+      return out;
+    },
+  };
+}
+// end of commando-hud
+</script>
+<script>
+/* commando-aim */
+/* Where a soldier sees the player, ported from the game: the same eight-way test turns a rifle
+   soldier or the jeep to face the player ($310A) and decides whether a shot goes ($33C7). Both
+   compare the soldier's x plus 30 and the player's y plus 20 in eight bits, with the carry
+   dropped. e and p are {x, xh, y} in sprite coordinates, xh $FF past x 255. aim() gives the
+   heading 0-14 (0 up, 4 right, 8 down, 12 left) the player is in, or -1 inside the box, where
+   $310A leaves the facing alone and no shot goes. test_aim.js holds it against the game's code. */
+function aim(e, p) {
+  'use strict';
+  const row = (r) => {                                   // the rows of a column: above, level, below
+    const a = (e.y + 20) & 255;
+    if (a < p.y) return r[2];
+    return ((a - 40) & 255) >= p.y ? r[0] : r[1];
+  };
+  const RIGHT = [2, 4, 6], LEFT = [14, 12, 10], MID = [0, -1, 8];
+  if (e.xh !== p.xh) return row(e.xh > p.xh ? LEFT : RIGHT);
+  const a = (e.x + 30) & 255;
+  if (a < p.x) return row(RIGHT);
+  if (((a - 60) & 255) >= p.x) return row(LEFT);
+  return row(MID);
+}
+// A shot from a soldier facing f: only when (timer AND the fire mask) is 0, a slot is free, and
+// the player is in the heading the soldier already faces (the low bit of f ignored).
+function fires(e, p, f) { const h = aim(e, p); return h >= 0 && (f & 0xFE) === h; }
+// end of commando-aim
+</script>
+<script>
+/* commando-table */
+/* The high-score table after a game ($09A4), ported from the game. The table is eight entries,
+   best first, and a spare ninth (names at $0EEE, eight letters each; scores at $0F36, two BCD
+   bytes each, here one number). The walk starts at entry `first` and moves every entry the score
+   beats or equals down one place; the first entry it does not beat stops it, and the score goes
+   in below that one. If no entry moved, the game goes back to the title without asking for a
+   name ($0A0C); otherwise the name is asked for ($0A13), or, past the top, the score is entry 0
+   ($09DE). This copy starts at entry 7 ($09A5 = $07, $0A0D = $07): a score that misses the table
+   goes into the spare ninth entry. The 1985 release starts at entry 6, so a score below the
+   seventh is written into the eighth entry under the name already there.
+   test_table.js holds it against the game's own code, with both bytes. */
+// The table both copies start with, $0EEE-$0F47 of the listing: the names, then the scores.
+// test_table.js checks these bytes against the listing.
+const START_BYTES = '5d626c636d2020206c696c73202020206e625f205e6f5e5f6d5b6c5b622076206863615f66202020655f636e622020205b5e6966602020205e636665202020202020202020202020009000800070006000500040003000200000';
+// The font's codes: $20 a space, $21-$2A the digits, $5B-$74 the letters, $76 the heart.
+function glyph(c) {
+  if (c === 0x76) return '\u2665';
+  if (c >= 0x21 && c <= 0x2A) return String(c - 0x21);
+  if (c >= 0x5B && c <= 0x74) return String.fromCharCode(c - 0x5B + 65);
+  return ' ';
+}
+function startTable() {
+  'use strict';
+  const b = START_BYTES.match(/../g).map((h) => parseInt(h, 16));
+  return Array.from({ length: 9 }, (_, i) => ({
+    name: b.slice(8 * i, 8 * i + 8).map(glyph).join('').trimEnd(),
+    score: b[72 + 2 * i] << 8 | b[73 + 2 * i] }));
+}
+function insertScore(table, score, first) {
+  'use strict';
+  const t = table.map((e) => ({ name: e.name, score: e.score }));
+  let x = first;
+  for (; x >= 0 && score >= t[x].score; x--) t[x + 1] = { name: t[x].name, score: t[x].score };
+  const at = x + 1;
+  t[at].score = score;
+  return { table: t, at, asked: x !== first };
+}
+// end of commando-table
+</script>
+<script>
+'use strict';
+const $ = (s, r) => (r || document).querySelector(s);
+const hx = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 4, '0');
+const NEED = 'This widget is built on the site’s shared scripts, which the built site serves.';
+let LISTING = null;
+const listing = () => LISTING || (LISTING = window.C64 ? C64.load('listing.json') : Promise.reject(new Error(NEED)));
+function miss(root, e) { root.insertAdjacentHTML('beforeend', '<p class="cm-miss">' + (e && e.message === NEED ? NEED : 'Could not load the listing: ' + (e && e.message)) + '</p>'); }
+const PAL = () => C64.PAL;
+function rgb(i) { const h = C64.PAL[i & 15]; return [1, 3, 5].map((k) => parseInt(h.substr(k, 2), 16)); }
+// A step control (.pick): fills the select, steps it with the buttons and calls go(index).
+function pick(root, names, go, start) {
+  const sel = $('select', root), steps = root.querySelectorAll('.step');
+  sel.innerHTML = names.map((n, i) => `<option value="${i}">${n}</option>`).join('');
+  const set = (i) => {
+    i = Math.max(0, Math.min(names.length - 1, i)); sel.value = i;
+    steps[0].classList.toggle('off', i === 0); steps[1].classList.toggle('off', i === names.length - 1);
+    go(i);
+  };
+  sel.onchange = () => set(+sel.value);
+  steps.forEach((b) => b.onclick = () => set(+sel.value + +b.dataset.d));
+  set(start || 0);
+  return set;
+}
+
+// ---- the maps, as the game draws them
+function areaOf(D, a) {
+  const r = D.ram, w = (t) => r[t + 2 * a] | r[t + 2 * a + 1] << 8;
+  const ar = { a, map: r[0x3EB0 + a] << 8, colour: r[0x40BC + a], charset: 0xC000 + 0x800 * a, terrain: w(0x14A5),
+    rows: w(0x148D), types: w(0x149D), checks: w(0x3ED0) };
+  ar.cells = r.slice(ar.map, ar.map + 8000);
+  // Every life's start ($3DE0): the gate drawn shut in areas 0 and 1 ($15BC with A = 0, picture
+  // $1603, 15 x 9 from column 13), and area 1's three bunkers put back ($14B5: stamps 0, 1 and 0 at
+  // $88C0, $859A and $8370, 6 x 9 each, from $14E4 and $151A).
+  const stamp = (src, at, w, h) => {
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const o = at - ar.map + y * 40 + x;
+      if (o >= 0 && o < 8000) ar.cells[o] = r[src + y * w + x];
+    }
+  };
+  if ((a & 3) !== 3) stamp(0x1603, ar.map + 13, 15, 9);
+  for (const [src, at] of [[0x14E4, 0x88C0], [0x151A, 0x859A], [0x14E4, 0x8370]]) stamp(src, at, 6, 9);
+  ar.spawns = [];
+  for (let i = 0; r[ar.rows + i] !== 0xFF && i < 200; i++) ar.spawns.push([r[ar.rows + i], r[ar.types + i]]);
+  ar.restarts = Array.from({ length: 5 }, (_, i) => r[ar.checks + i]);
+  return ar;
+}
+// The whole map as pixels, 320 x 1600, with the colours of $4049: background 9, shared 0 and 12.
+function mapImage(D, ar, charset) {
+  const cs = charset === undefined ? ar.charset : charset;
+  const W = 320, Hh = 1600, img = new ImageData(W, Hh), cols = [9, 0, 12, ar.colour & 7].map(rgb);
+  const multi = ar.colour & 8;
+  for (let cy = 0; cy < 200; cy++) for (let cx = 0; cx < 40; cx++) {
+    const g = cs + ar.cells[cy * 40 + cx] * 8;
+    for (let y = 0; y < 8; y++) {
+      const b = D.ram[g + y];
+      for (let x = 0; x < 8; x++) {
+        const v = multi ? (b >> (6 - (x & 6))) & 3 : (b >> (7 - x)) & 1 ? 3 : 0;
+        const c = cols[v], o = ((cy * 8 + y) * W + cx * 8 + x) * 4;
+        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+      }
+    }
+  }
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = Hh;
+  cv.getContext('2d').putImageData(img, 0, 0);
+  return cv;
+}
+
+// ---- area 1's map in its own set and in area 2's, the font at $D000 (section 04)
+(function area2() {
+  const r9 = $('#cm-area2'), [c1, c2] = r9.querySelectorAll('canvas'), rg = $('input[type=range]', r9);
+  listing().then((D) => {
+    const x1 = C64.canvas(c1, 640, 336), x2 = C64.canvas(c2, 640, 336);
+    const a2 = areaOf(D, 2), img2 = mapImage(D, a2), img1 = mapImage(D, areaOf(D, 1));
+    const draw9 = () => {
+      const top = +rg.value;
+      x1.drawImage(img1, 0, top, 320, 168, 0, 0, 640, 336);
+      x2.drawImage(img2, 0, top, 320, 168, 0, 0, 640, 336);
+    };
+    rg.oninput = draw9; draw9();
+  }).catch((e) => miss(r9, e));
+})();
+
+// ---- where a soldier sees the player (section 01), aim() and fires() from the port above
+const HEAD = { 0: 'up', 2: 'up and right', 4: 'right', 6: 'down and right', 8: 'down', 10: 'down and left', 12: 'left', 14: 'up and left' };
+const PLACE = { 0: 'above him', 2: 'above and to his right', 4: 'to his right', 6: 'below and to his right', 8: 'below him',
+  10: 'below and to his left', 12: 'to his left', 14: 'above and to his left' };
+const HCOL = { 0: [74, 91, 214], 2: [42, 138, 74], 4: [194, 90, 0], 6: [208, 74, 58], 8: [31, 95, 168], 10: [120, 60, 160], 12: [46, 140, 140], 14: [150, 120, 30] };
+function mountAim(root, sx0, fixed) {
+  // The field is the screen in sprite coordinates: x 24-343, y 50-217, drawn 2:1.
+  root.innerHTML = `<canvas class="cm-cv" width="640" height="336" role="img" aria-label="The field: the soldier, the player and the eight directions"></canvas>
+    <div class="cm-row"><label>Soldier x <input class="cm-range" type="range" min="24" max="320" value="${sx0}" ${fixed ? 'disabled' : ''}></label>
+    <label>He faces <select>${Object.keys(HEAD).map((h) => `<option value="${h}">${HEAD[h]}</option>`).join('')}</select></label>
+    <button type="button" data-turn>Turn him to face the player</button></div>
+    <div class="cm-row">${Object.keys(HCOL).map((h) => `<span><span class="cm-key" style="background:rgb(${HCOL[h]})"></span>${HEAD[h]}</span>`).join('')}
+    <span><span class="cm-key" style="background:#e9e7e1;border:1px solid #d5d3cc"></span>inside the box</span></div><p class="cm-read"></p>`;
+  const cv = $('canvas', root), range = $('input', root), sel = $('select', root), read = $('.cm-read', root);
+  const ctx = cv.getContext('2d');
+  const E = { y: 120 }, P = { x: sx0 - 132, y: 120 };
+  const pos = (x) => ({ x: x & 255, xh: x > 255 ? 0xFF : 0 });
+  let shade = null, sprites = null;
+  listing().then((D) => { sprites = D; draw(); }).catch(() => {});
+  function zones() {
+    const img = new ImageData(320, 168), e = Object.assign(pos(+range.value), { y: E.y });
+    for (let y = 0; y < 168; y++) for (let x = 0; x < 320; x++) {
+      const h = aim(e, Object.assign(pos(x + 24), { y: y + 50 })), c = h < 0 ? [233, 231, 225] : HCOL[h], o = (y * 320 + x) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+    const s = document.createElement('canvas'); s.width = 320; s.height = 168; s.getContext('2d').putImageData(img, 0, 0);
+    shade = s;
+  }
+  function draw() {
+    if (!shade) zones();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = .55; ctx.drawImage(shade, 0, 0, 640, 336); ctx.globalAlpha = 1;
+    const sx = +range.value, f = +sel.value;
+    const e = Object.assign(pos(sx), { y: E.y }), p = Object.assign(pos(P.x), { y: P.y });
+    const h = aim(e, p), shot = fires(e, p, f);
+    const at = (x, y) => [(x - 24) * 2, (y - 50) * 2];
+    if (sprites) {
+      const S = (b, x, y, c) => { const [px, py] = at(x, y); C64.drawSpriteMC(ctx, sprites.ram.subarray(0xC000 + b * 64, 0xC000 + b * 64 + 63), px, py, 2, C64.PAL[c], C64.PAL[15], C64.PAL[0]); };
+      S(0xE4, sx, E.y, 11); S(0x98, P.x, P.y, 6);
+    } else {
+      ctx.fillStyle = '#555'; ctx.fillRect(...at(sx, E.y), 48, 42); ctx.fillStyle = '#2e2c9b'; ctx.fillRect(...at(P.x, P.y), 48, 42);
+    }
+    // the soldier's facing, as an arrow from his middle
+    const [cx, cy] = at(sx + 12, E.y + 10), ang = f / 16 * 2 * Math.PI;
+    ctx.strokeStyle = shot ? '#d04a3a' : '#2f3136'; ctx.lineWidth = shot ? 3 : 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    const len = shot ? 900 : 60;
+    ctx.lineTo(cx + Math.sin(ang) * len, cy - Math.cos(ang) * len); ctx.stroke();
+    read.innerHTML = `Super Joe at x ${P.x}, y ${P.y}; the soldier at x ${sx}, y ${E.y}. ` +
+      (h < 0 ? 'He is inside the box: the soldier neither turns nor fires.' :
+        `The soldier's test puts him ${PLACE[h]}. ` + (shot ? 'The soldier faces that way, so a shot goes when his timer allows.' : `The soldier faces ${HEAD[f & 14]}, so no shot.`));
+  }
+  const move = (ev) => {
+    const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * 320 + 24, y = (ev.clientY - r.top) / r.height * 168 + 50;
+    P.x = Math.max(24, Math.min(343, Math.round(x - 12))); P.y = Math.max(50, Math.min(217, Math.round(y - 10)));
+    draw();
+  };
+  cv.addEventListener('pointermove', move); cv.addEventListener('pointerdown', move);
+  range.oninput = () => { shade = null; draw(); };
+  sel.onchange = draw;
+  $('[data-turn]', root).onclick = () => {                 // $310A: the facing becomes the heading
+    const h = aim(Object.assign(pos(+range.value), { y: E.y }), Object.assign(pos(P.x), { y: P.y }));
+    if (h >= 0) sel.value = h;
+    draw();
+  };
+  sel.value = 12; draw();
+}
+mountAim($('#cm-aim2'), 232, true);
+
+// ---- the score line (sections 02 and 03), createHud() from the port above
+function mountHud(root) {
+  const cv = $('canvas', root), read = $('.cm-read', root);
+  listing().then((D) => {
+    const ctx = C64.canvas(cv, 640, 16), TEXT = Array.from(D.ram.subarray(0x40C0, 0x40E8)), FONT = D.ram.subarray(0xD000, 0xD800);
+    let h, note;
+    const reset = () => { h = createHud(); h.st.best = [D.ram[0x0F36], D.ram[0x0F37]]; note = ''; };
+    function draw() {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 16);
+      h.line(TEXT).forEach((c, i) => C64.drawGlyph(ctx, FONT, c, i * 16, 0, 2, C64.PAL[1]));
+      const L = h.st.lives;
+      read.innerHTML = `Lives <code>${hx(L, 2)}</code>, printed as glyphs <code>${hx(0x21 + (L >> 4), 2)}</code> and <code>${hx(0x21 + (L & 15), 2)}</code>` +
+        ((L & 15) > 9 ? ', the second past the 9' : '') + `; grenades <code>${hx(h.st.grenades, 2)}</code>. ${note}`;
+    }
+    root.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => {
+      const a = b.dataset.a, v = +b.dataset.v;
+      note = '';
+      if (a === 'pts' && h.addScore(v)) note = 'The carry gave a life.';
+      if (a === 'box' && h.box()) note = 'The carry gave a life.';
+      if (a === 'loop') note = h.boxInLoop(2) === 2 ? 'Paid twice: the enemy loop came back to the box, and enemy slot 0 was freed.' : 'Paid once.';
+      if (a === 'throw' && !h.throwOne()) note = 'None left: the game does not throw.';
+      if (a === 'life') h.st.lives = Math.max(0, Math.min(255, h.st.lives + v));
+      if (a === 'near') { h.st.hi = 0x99; h.st.lo = 0x99; note = 'Now win an area.'; }
+      if (a === 'set') { h.st.hi = 0x00; h.st.lo = 0x95; }
+      if (a === 'reset') reset();
+      draw();
+    });
+    reset(); draw();
+  }).catch((e) => miss(root, e));
+}
+mountHud($('#cm-hud'));
+
+// ---- the grenade box, one pass of the enemy loop slot by slot (section 03)
+(function box() {
+  const root = $('#cm-box'), cv = $('canvas', root), read = $('.cm-read', root), grid = $('.cm-slots', root);
+  const carry = $('[data-carry]', root), ORD = ['', 'first', 'second', 'third', 'fourth'];
+  const SCENE = [5, 5, 0, 5, 22, 0, 5, 0, 0, 0, 0], BOX = 4;
+  listing().then((D) => {
+    const ctx = C64.canvas(cv, 640, 16), TEXT = Array.from(D.ram.subarray(0x40C0, 0x40E8)), FONT = D.ram.subarray(0xD000, 0xD800);
+    const start = () => { const h = createHud(); h.st.best = [D.ram[0x0F36], D.ram[0x0F37]]; h.st.lo = carry.checked ? 0x95 : 0x55; return h; };
+    let run, at;
+    const reset = () => { run = start().pass(SCENE.slice()); at = -1; draw(); };
+    function state(upto) {                     // the score, the slots and the turns after step upto
+      const h = start(), slots = SCENE.slice(), turns = Array(11).fill(0);
+      for (let i = 0; i <= upto; i++) {
+        const r = run[i];
+        if (r.b === 22) { h.box(); slots[r.freed] = 0; } else if (r.b) turns[r.x]++;
+      }
+      return { h, slots, turns };
+    }
+    function say(i, t) {
+      if (i < 0) return 'Super Joe is standing on the box. Press Next slot.';
+      if (i >= run.length) {
+        const extra = t.turns.map((n, k) => n > 1 ? k : -1).filter((k) => k >= 0);
+        const paid = run.filter((r) => r.b === 22).length;
+        return `The pass is over. The loop ran ${run.length} slots, where a pass runs eleven: the box paid ${paid === 2 ? 'twice' : 'once'}` +
+          (SCENE[0] && !t.slots[0] ? ', the rifle soldier in slot 0 is gone' : '') +
+          (extra.length ? `, and slots ${extra.join(' and ')} moved ${Math.max(...t.turns) > 2 ? 'three times' : 'twice'} in one pass.` : '.');
+      }
+      const r = run[i];
+      if (r.b === 5) return `X = ${r.x}: a rifle soldier takes his ${ORD[t.turns[r.x]]} turn of this pass.`;
+      if (r.b === 0) return `X = ${r.x}: a free slot.`;
+      const again = run.slice(0, i).some((q) => q.b === 22);
+      if (r.life) return `X = ${r.x}: the box. Three grenades and 1,000 points, which carry the score past 10,000 and bring a life. ` +
+        'The life asks for its sound effect, and the request hands back X = 0, so the box frees slot 0' +
+        (SCENE[0] ? ' and the rifle soldier there' : '') + '. The box\u2019s own sound effect leaves X = 0 again: the loop goes on from slot 1.';
+      return `X = ${r.x}: the box${again ? ' again, with Super Joe still on it' : ''}. Three grenades and 1,000 points, no carry, so it frees its own slot. ` +
+        'Its sound effect hands back X = 0: the loop goes on from slot 1.';
+    }
+    function draw() {
+      const t = state(Math.min(at, run.length - 1));
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 16);
+      t.h.line(TEXT).forEach((c, i) => C64.drawGlyph(ctx, FONT, c, i * 16, 0, 2, C64.PAL[1]));
+      const now = at >= 0 && at < run.length ? run[at].x : -1;
+      grid.innerHTML = SCENE.map((b, k) => {
+        const what = b === 22 ? 'box' : b ? 'soldier' : 'free', gone = b && !t.slots[k];
+        return `<div class="cm-slot${k === now ? ' now' : ''}${gone ? ' gone' : ''}" role="listitem"><b>${k}</b><span>${what}</span>` +
+          `<i>${b === 5 && t.turns[k] ? '\u00d7' + t.turns[k] : ''}</i></div>`;
+      }).join('');
+      read.textContent = say(at, t);
+    }
+    root.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => {
+      const a = b.dataset.a;
+      if (a === 'reset') return reset();
+      at = a === 'all' ? run.length : Math.min(at + 1, run.length);
+      draw();
+    });
+    carry.onchange = reset;
+    reset();
+  }).catch((e) => miss(root, e));
+})();
+
+// ---- the green soldier and his score sprite (section 05)
+(function green() {
+  const cv = $('#cm-green');
+  listing().then((D) => {
+    const ctx = C64.canvas(cv, 384, 126), P = C64.PAL, S = (b) => D.ram.subarray(0xC000 + b * 64, 0xC000 + b * 64 + 63);
+    ctx.fillStyle = P[9]; ctx.fillRect(0, 0, 384, 126);
+    C64.drawSpriteMC(ctx, S(0xB9), 24, 21, 3, P[5], P[15], P[0]);
+    C64.drawSpriteMC(ctx, S(0xBA), 120, 21, 3, P[5], P[15], P[0]);
+    C64.drawSpriteMC(ctx, S(0xBC), 240, 21, 3, P[1], P[15], P[0]);
+  }).catch((e) => miss(cv.parentNode, e));
+})();
+
+// ---- the high-score table, both ways (section 06)
+(function hiscores() {
+  const root = $('#cm-table'), range = root.querySelector('input'), shown = root.querySelector('.cm-hi-score');
+  const read = root.querySelector('.cm-read'), START = startTable();
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+  const bcd = (n) => ((n / 1000 | 0) << 12) | ((n / 100 % 10 | 0) << 8) | ((n / 10 % 10 | 0) << 4) | (n % 10);
+  const digits = (v) => v.toString(16).padStart(4, '0') + '00';
+  const points = (v) => Number(digits(v)).toLocaleString('en-GB');
+  function say(first, r, score) {
+    const who = first === 6 ? '1985: ' : 'This copy: ', s = points(score);
+    if (r.asked) return who + s + ' goes in ' + ORD[r.at] + ' place, and a name is asked for.';
+    if (first === 7) return who + s + ' misses the table and goes into the spare ninth entry; no name is asked for.';
+    const old = START[7];
+    return who + s + ' does not beat ' + START[6].name + "'s " + points(START[6].score) + ', so it replaces ' + old.name + "'s " +
+      points(old.score) + ' in eighth place' + (score < old.score ? ', though it is lower' : '') + ', and keeps the name ' + old.name + '. No name is asked for.';
+  }
+  function draw() {
+    const score = bcd(+range.value), lines = [];
+    shown.textContent = points(score);
+    root.querySelectorAll('table').forEach((tb) => {
+      const first = +tb.dataset.first, r = insertScore(START, score, first);
+      tb.innerHTML = '<tbody>' + r.table.map((e, k) => {
+        const cls = k === 8 ? 'spare' : k === r.at ? (r.asked ? 'new' : 'bug') : '';
+        const name = k === r.at && r.asked ? 'your name' : e.name || '\u00a0';
+        return `<tr class="${cls}"><td>${k === 8 ? 'spare' : k + 1}</td><td>${name}</td><td>${digits(e.score)}</td></tr>`;
+      }).join('') + '</tbody>';
+      lines.push(say(first, r, score));
+    });
+    read.innerHTML = lines.join('<br>');
+  }
+  range.oninput = draw;
+  draw();
+})();
+</script>

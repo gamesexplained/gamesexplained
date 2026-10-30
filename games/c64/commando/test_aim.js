@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Hold the page's aim() and fires() against the game's own code. index.html's commando-aim block
+// Hold the page's aim() and fires() against the game's own code. index.html's commando-aim block,
+// the same as discoveries.html's copy,
 // runs beside the facing routine ($310A) and the rifle's shot ($33B2) on the kit's 6502 simulator,
 // over the bytes of the committed listing: for every pair of soldier and player on a grid of the
 // values where the comparisons turn (x 30 and 60 apart, y 20 and 40, the wrap at 256 and both
@@ -11,6 +12,7 @@ const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
 const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/cpu/cpu6502.js'));
 const g = game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+g.sameBlock('commando-aim', page);
 const { aim, fires } = g.run(page, 'commando-aim', 'aim', 'fires');
 const m = g.listing().ram;
 const io = { read(a) { throw new Error('read $' + a.toString(16)); }, write(a) { throw new Error('write $' + a.toString(16)); } };
