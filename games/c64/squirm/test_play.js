@@ -157,7 +157,7 @@ function session(name, seed, opts = {}) {
       if (due(opts.pauseEvery)) { pauses++; g.joy1 = held = 0x1F; g.keys.add(4); pause = { passes: 0, in: false, t: 0, fire: 0, hold: int(100) }; return; }
       if (due(opts.levelEvery)) {
         forced.level++; both(0x2690, 0xFE);
-        if (opts.ten && !forced.ten) { forced.ten++; both(0x0424, 0xB9); }
+        if (opts.ten && !forced.ten) { forced.ten++; both(0x0424, 0xB9); both(0x2682, 2); }   // level 9, maze 2: the next is maze 3
         // and an egg in the space the stick steps into, so that this pass ends the level
         const at = (g.ram[0xFB] | g.ram[0xFC] << 8) + { 0x1E: -40, 0x1D: 40, 0x1B: -1, 0x17: 1 }[held === 0x1F || held === 0x0F ? (held = 0x17) : held];
         g.joy1 = held; span = 3;
@@ -208,7 +208,7 @@ function session(name, seed, opts = {}) {
   const ok = r.ok && m.frames >= (opts.frames || FRAMES);
   const n = (k) => called.get(k) || 0;
   check(`${name}: ${r.passes} passes in ${m.frames} frames, memory and chips the same at every pass; ${n('level_complete')} levels done` +
-    (opts.ten ? ` (the first from level 9)` : '') + `, ${n('collect_treasure')} treasures, ${n('lose_life')} lives lost, ${n('enter_name')} high-score tables, ${n('save_hiscores')} names entered, ` +
+    (opts.ten ? ` (the first from level 9 and maze 2)` : '') + `, ${n('collect_treasure')} treasures, ${n('lose_life')} lives lost, ${n('enter_name')} high-score tables, ${n('save_hiscores')} names entered, ` +
     `${n('pause')} pauses; forced: a level's last egg ${forced.level}, the treasure ahead ${forced.treasure}, creatures' state ${forced.state}, step delay ${forced.delay}, last life ${forced.life}` +
     ` (${((Date.now() - t0) / 1000).toFixed(0)} s)`, ok);
   if (!r.ok) console.log((Array.isArray(describe(r)) ? describe(r) : [describe(r)]).join('\n'));
