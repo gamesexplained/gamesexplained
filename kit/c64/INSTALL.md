@@ -138,7 +138,7 @@ alone, puts nothing in the home folder (500 to 700 MB in `tools/`):
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o tools/rustup-init.sh
 RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home sh tools/rustup-init.sh -y --no-modify-path --profile minimal
-RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000 --version 0.9.20
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
 Done that way on 30 September 2026 on Ubuntu 24.04; the compile took
@@ -307,7 +307,7 @@ the way to one where none exists, and no run of it is recorded on either.
 ## Get the disassembler
 
 ```
-cargo install --root tools/cargo regenerator2000 --version 0.9.20
+cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
 That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
@@ -320,6 +320,11 @@ MCP server answered `r2000_get_blocks` and `r2000_set_data_type` with
 read the project back; the crates.io release, published on 11 July
 2026, answers both. When a later release is out, try it on a test
 snapshot with `symbols_export.py` before moving the version here.
+
+Keep `--locked`: it builds the release with the dependencies it was
+published with. Without it, on 30 October 2026, cargo took
+`regenerator2000-core` 0.9.21 for the 0.9.20 release, and the compile
+stopped with `error[E0308]: mismatched types` at `src/main.rs:838`.
 
 What it is, and say so when you ask: regenerator2000 is an open-source
 6502 disassembler by Ricardo Quesada, source at
