@@ -12,14 +12,17 @@
 //     canvas  the canvas to draw on; its CSS size decides the shape, and the view follows it
 //     colors  optional: one CSS hex colour a voice ('#1f5fa8'), as the page's other displays
 //             colour them
-//   view.score({ rate, voices })   the tune: rate ticks a second, and per voice { notes, line,
-//             level }. notes: each { t, n }, the tick it starts on and its pitch in semitones
+//   view.score({ rate, voices, loop })   the tune: rate ticks a second, and per voice { notes,
+//             line, level }. notes: each { t, n }, the tick it starts on and its pitch in semitones
 //             (any origin; 0 = C0 in the SID player). line, optional: the voice's pitch at each
 //             tick, NaN where it is silent; a step in it to a new pitch that holds is a note
 //             too (an instrument playing an arpeggio of its own on one note of the track).
 //             level, optional: its loudness at each tick, 0 to 1, which the line, the ball's
 //             glow and each lit note's follow. A voice with no notes gets no lane. null clears
-//             the view
+//             the view. loop, optional: { from, period } for a tune that repeats ticks from to
+//             from + period - 1 for as long as it plays (an engine, a hum held): its voices need
+//             reach only to from + period, and the view goes on through the repeats at any tick,
+//             however late
 //   view.draw(t, { muted })        draws the tune at tick t (fractional), with muted[x] true for
 //             a voice to draw dimmed; with no score, draws the empty sheet and the message
 //   view.redraw()                  draws again what was drawn last, as after a change of size
@@ -27,7 +30,7 @@
 //   view.ballAt(x, t)              voice x's ball at tick t, { i, lat, y, at, loud }: the note it last
 //             landed on (-1 before the first), its place across the lane (-0.5 to 0.5), its
 //             height, the tick of the point under it and the loudness its glow shows (0 to 1),
-//             for tests
+//             for tests; in a loop, the note is counted in the repeats the view holds
 //   view.notesOf(x)                voice x's notes as the view takes them, given and found in
 //             the line, [{ t, n }], for tests
 // Everything drawn is a function of t alone, so a page can seek, pause or loop without telling
@@ -65,6 +68,9 @@
   const TRAIL = 0.3;                               // seconds of the ball's path drawn behind it
   const GLOW_FALL = 0.25;                          // seconds: how fast a glow fades after its voice goes quiet
   const GLOW_LEAST = 0.15;                         // the glow of a silent voice, against a voice at full volume
+  const LOOP_BACK = 3, LOOP_AHEAD = 24;            // seconds: more than the picture shows behind the ball and
+                                                   // ahead of it (back and FAR at the slowest speed), which a
+                                                   // loop's repeats cover on either side of the one drawn
   // the camera for each shape of canvas: yaw turns it (0 looks along time), pitch tilts it down,
   // fov is the lens's height in radians, (ax, ay) is where the ball's point sits on the canvas
   // (-1 to 1 from the middle, ay down) and zoom brings it nearer than the distance that fits
@@ -118,6 +124,7 @@
     let grain = null;
     let W = 0, H = 0, dpr = 1, portrait = false;
     let lanes = [], rate = 50, speed = 2, cam = null, last = [0, null];   // last: the tick and options drawn
+    let wrap = (t) => t;                             // a tick of a loop to the same place in the repeats held
     const view = { message: 'Choose a tune to start.', score, draw, redraw: () => view.draw(last[0], last[1]), ballAt, notesOf };
     const cams = { tall: Object.assign({}, CAMS.tall), wide: Object.assign({}, CAMS.wide) };
 
@@ -127,9 +134,17 @@
     // moves, set so that the usual gap between notes is a few discs.
     function score(s) {
       lanes = [];
+      wrap = (t) => t;
       if (!s || !s.voices) return;
       rate = s.rate || 50;
       const gaps = [];
+      const lp = s.loop && s.loop.period >= 1 ? s.loop : null;
+      if (lp) {
+        const from = Math.max(0, Math.round(lp.from)), period = Math.round(lp.period);
+        const w0 = from + Math.ceil(LOOP_BACK * rate), n = w0 + 2 * period + Math.ceil(LOOP_AHEAD * rate);
+        wrap = (t) => t < w0 + period ? t : w0 + (t - w0) % period;
+        s = { voices: s.voices.map((v) => v && repeat(v, from, period, n)) };
+      }
       s.voices.forEach((v, x) => {
         if (!v) return;
         const line = v.line || null, level = v.level || null;
@@ -203,6 +218,24 @@
       speed = clamp(0.3 / Math.max(typical, 0.02), 0.8, 2.6);
       lanes.forEach((l, k) => { l.cx = ((lanes.length - 1) / 2 - k) * (LANE + GAP); });
       cam = null;
+    }
+
+    // A looping voice repeated to n ticks: its notes and its line and level from tick from to
+    // from + period - 1, again and again.
+    function repeat(v, from, period, n) {
+      const at = (a, none) => {
+        if (!a) return a;
+        const out = new Float32Array(n);
+        for (let k = 0; k < n; k++) {
+          const j = k < from ? k : from + (k - from) % period;
+          out[k] = j < a.length ? a[j] : none;
+        }
+        return out;
+      };
+      const notes = (v.notes || []).filter((e) => e.t < from);
+      const once = (v.notes || []).filter((e) => e.t >= from && e.t < from + period);
+      for (let k = 0; from + k * period < n; k++) for (const e of once) if (e.t + k * period < n) notes.push({ t: e.t + k * period, n: e.n });
+      return { notes, line: at(v.line, NaN), level: at(v.level, 0) };
     }
 
     // The notes, and a note wherever the line steps from one held pitch to another that holds
@@ -310,8 +343,8 @@
     function ballAt(x, t) {
       const l = lanes.find((q) => q.x === x);
       if (!l) return null;
-      const b = ball(l, t / rate);
-      return { i: b.i, lat: b.lat, y: b.y, at: b.at * rate, loud: loud(l, t / rate) };
+      const u = wrap(t), b = ball(l, u / rate);
+      return { i: b.i, lat: b.lat, y: b.y, at: b.at * rate + t - u, loud: loud(l, u / rate) };
     }
 
     // ------------------------------------------------------------------ the camera
@@ -439,7 +472,7 @@
       if (!resize()) return;
       const muted = (opts && opts.muted) || [];
       if (!cam) cam = camera();
-      const now = (t || 0) / rate;
+      const now = wrap(t || 0) / rate;
       const key = [W, H, lanes.length, ...lanes.map((l) => muted[l.x] ? 1 : 0)].join();
       if (key !== baseKey) { baseKey = key; g = bctx; sheet(muted); g = main; }
       g.setTransform(1, 0, 0, 1, 0, 0);

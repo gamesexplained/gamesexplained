@@ -55,7 +55,7 @@ level; the manual says eight levels. Each is a claim to check, not a fact.
 | Each level has 10–19 enemies (wiki) | confirmed | $AA8F: a random byte masked to `$10-$1F` into $8BA8 (BCD); E17 in the snapshot, E11 and E15 on other runs |
 | UFO point values 100–1600 (wiki) | traced | table at $8BB0: (type + 1) × 100 for 16 types; a missile scores $8BAC = 500; the award is paid level times ($A1 at $AAC8, $A8B2) |
 | Explosion colour sequence white, yellow, orange, red, brown, black, the same for every enemy (blog) | traced | $A14F indexes the nibble-pair table at $8CF0 by the fragment lifetime; $B467 blends the two nibbles on alternate frames |
-| Sound: two simultaneous voices for enemy indicators; missile whine; engine noise in the transition (blog) | traced | voice 3 saucer hum from range ($A5F2), voices 2 and 3 missile whine ($A811), voice 1 engine loop ($A231/$B415), warp tone ramp ($A4CD) |
+| Sound: two simultaneous voices for enemy indicators; missile whine; engine noise in the transition (blog) | confirmed | voice 3 a saucer's hum, stepped from $80A0 by the interrupt ($B444); voices 2 and 3 the missile whine from its range ($A811) and the stargate's tone ($A4CD); voice 1 the engine, noise from $80C8 while the stick is pushed ($A231, $B415); the warp's noise and chord on voice 3 and 2 ($A19E). Every effect heard in VICE on 30 October 2026; facts.md, Sound |
 | Space pauses and resumes; F1 aborts the game (manual, wiki) | differs (live) | F1 aborts to the title ($A118); SPACE pauses ($A12A → $A13B) but the pause ends on a joystick direction, not on SPACE |
 
 ### Between levels

@@ -18,7 +18,10 @@
 // - voices with no notes get no lane;
 // - a step in pitch is a note when held for the same time at any rate the voice is read at;
 // - NoteBounce.voice, for a chip with no gate, starts a note where the voice comes on, gets
-//   louder or is restarted.
+//   louder or is restarted;
+// - a loop goes on for ever: at any tick, however late, the ball is where it is at the same
+//   place in the first repeat, landing on each note of the repeat, and a voice held on one note
+//   with a line that never settles is ridden all the way.
 //   node kit/scripts/test_bounce.js
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -172,6 +175,36 @@ check(s50 === s100 && s50 === '0.10:40 0.40:45 0.60:40 0.84:40',
     `voice(): notes where the voice comes on, gets louder, restarts and comes back after a noise (${v.notes.map((e) => e.t).join()}); 440 Hz is note 57`);
   check(Number.isNaN(v.line[1]) && Number.isNaN(v.line[15]) && Math.abs(v.line[18] - 69) < 1e-4 && v.level[5] === 0.5,
     'voice(): no line where it is silent or a noise, the line in notes, the level as given');
+}
+
+// A loop: four notes a period of 40 ticks, repeated from tick 20 after an opening note at tick 2,
+// given to tick 60 only; and a voice held on one note from tick 1 whose line jumps between two
+// pitches every tick, as a noise flipping between two frequencies does, its loop two ticks long.
+{
+  const P = 40, F = 20, n = F + P, rl = new Float32Array(n).fill(NaN), rv = new Float32Array(n);
+  const tune = [[2, 40], [20, 44], [30, 47], [40, 51], [50, 47]];
+  tune.forEach(([t, p], i) => { const e = i + 1 < tune.length ? tune[i + 1][0] : n; for (let k = t; k < e; k++) { rl[k] = p; rv[k] = 0.9; } });
+  const zig = new Float32Array(4).fill(NaN), zl = new Float32Array(4);
+  for (let k = 1; k < 4; k++) { zig[k] = k % 2 ? 30 : 75; zl[k] = 0.6; }
+  const lv = NoteBounce.create(stub());
+  lv.score({ rate: RATE, loop: { from: F, period: P }, voices: [
+    { notes: tune.map(([t, p]) => ({ t, n: p })), line: rl, level: rv }] });
+  const zv = NoteBounce.create(stub());
+  zv.score({ rate: RATE, loop: { from: 2, period: 2 }, voices: [{ notes: [{ t: 1, n: 30 }], line: zig, level: zl }] });
+  const same = (a, b) => Math.abs(a.lat - b.lat) < 1e-6 && Math.abs(a.y - b.y) < 1e-6 && Math.abs(a.loud - b.loud) < 1e-6;
+  let ok = true, landed = true;
+  for (const late of [7, 250, 90000]) for (let t = 300; t < 300 + P; t += 0.25) {
+    const a = lv.ballAt(0, t), b = lv.ballAt(0, t + late * P);
+    if (!same(a, b) || Math.abs(b.at - (t + late * P)) > 1e-6) { if (ok) console.log(`  tick ${t}: ${JSON.stringify(a)} ${late} repeats on: ${JSON.stringify(b)}`); ok = false; }
+  }
+  for (const [t] of tune.slice(1)) {
+    const b = lv.ballAt(0, t + 5000 * P);
+    landed = landed && b.y === 0 && Math.abs(b.lat - lv.ballAt(0, t).lat) < 1e-6;
+  }
+  check(ok && landed, 'a loop given one period goes on for ever: 90,000 repeats on, the ball is where it was, and lands on each note');
+  const rides = [100.5, 4000.5, 1e6 + 0.5].map((t) => zv.ballAt(0, t));
+  check(rides.every((b) => b && b.y === 0 && b.i === 0 && Math.abs(b.lat - rides[0].lat) < 1e-6 && b.loud > 0.5),
+    `a note held under a line that jumps every tick is ridden all the way, a million ticks on (${rides.map((b) => b.lat.toFixed(3)).join(', ')} across)`);
 }
 
 if (fails) { console.log(`${fails} failed`); process.exit(1); }

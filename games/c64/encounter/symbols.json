@@ -11980,7 +11980,7 @@
   {
    "address": 32928,
    "type": "line",
-   "text": "Voice 3 pitch sequence for the missile whine: $D40F high bytes stepped once per frame by irq_frame_tick_voice3 ($B44E-$B45C): $49 = position, wraps to $48 when a 0 is met ($48 = 0 turns the effect off). Sequence at +0: 40 30 20 30; a second sequence at +$10: 40 38 30 28 20 28 30 38 (reached with $48 = $10)."
+   "text": "Voice 3 pitch loops for a saucer's hum: $D40F high bytes stepped once per frame by irq_frame_tick_voice3 ($B44E-$B45C): $49 = position, wraps to $48 when a 0 is met ($48 = 0 turns the effect off). A moving saucer's loop from +1 ($48 = 1): 40 30 20 30; a hovering saucer's from +$10 ($48 = $10): 40 38 30 28 20 28 30 38."
   },
   {
    "address": 32960,
@@ -13030,7 +13030,7 @@
   {
    "address": 41374,
    "type": "line",
-   "text": "Warp travel frame: player speed $17A0 = ($A5 * $9C)>>8 + $30 (ramps up with $A5, $9C = per-level warp top speed), then the sound: $A5=$FF (full speed) steady voices 2 and 3 (sawtooth $21, freq $0800 and $1100), else voice 3 noise ($81) with a random frequency ((rnd*rnd)>>8 + 1); voice 2 off. $B508 with A=0 moves the player forward with obelisk collision, then $17A0 is restored to the normal speed $68. Joins the turning code at $A211."
+   "text": "Warp travel frame: player speed $17A0 = ($A5 * $9C)>>8 + $30 (ramps up with $A5, the warp's progress; $9C = per-level warp top speed), then the sound: at $A5 = $FF (full speed) a steady chord on voices 2 and 3 (sawtooth $21, freq $0800 and $1121); below it, voice 2 off and voice 3 noise ($81) at h*h + $100, where h = ($A5*$A5)>>8, so the noise rises as the warp speeds up and falls as it slows. $B508 with A=0 moves the player forward with obelisk collision, then $17A0 is restored to the normal speed $68. Joins the turning code at $A211."
   },
   {
    "address": 41463,
@@ -13040,7 +13040,7 @@
   {
    "address": 41521,
    "type": "line",
-   "text": "Not warping: $93 = $80C0[index] where index = (joystick bits 1 and 3 pattern of $6D, 'and #5') | 2 if $1C is zero: 0 or 1 from the 8-byte table. Used by the sound code at $B440-$B460 area (other range); presumably gates the engine noise."
+   "text": "Not warping: $93 = $80C0[index], where index = ($6D>>1) & $6D & 5, with 2 added when $1C is zero: bit 0 is set while up and down are both released, bit 2 while left and right both are. The table gives 0 only with the stick centred and 1 for any direction, so the engine (irq_frame_tick_voice1, $B415, noise from $80C8) runs while the stick is pushed any way, turning included, and stops when it is let go."
   },
   {
    "address": 41544,
@@ -13440,7 +13440,7 @@
   {
    "address": 46101,
    "type": "line",
-   "text": "Per-frame work inside stage 7, part 1: voice 1 noise sequencer. $1D is a countdown in frames: while non-zero it is decremented and voice 1 is left alone (jump to $B444); on the frame it reaches zero, $94 = $93 and $D405 = 0 (attack/decay). With $1D = 0: if $93 = 0 voice 1 gets $D404 = $01 (gate only, no waveform: silent); otherwise $94 steps through the pitch loop at $80C8 (a 0 byte ends it, restart at index $93), the entry goes to $D401 (voice 1 frequency high) and $D404 = $81 (noise, gate on). So $93 selects a looping noise-pitch pattern in $80C8 (0 = off; 0 in the snapshot). Which game sound uses it: unknown."
+   "text": "Per-frame work inside stage 7, part 1: voice 1, the engine. $1D is a countdown in frames: while non-zero it is decremented and voice 1 is left alone (jump to $B444), so a sound that sets it keeps the voice that long (a shot $0C, a bump $2C, a death $3F); on the frame it reaches zero, $94 = $93 and $D405 = 0 (attack/decay). With $1D = 0: if $93 = 0 voice 1 gets $D404 = $01 (gate only, no waveform: silent); otherwise $94 steps through the pitch loop at $80C8 (a 0 byte ends it, restart at index $93), the entry goes to $D401 (voice 1 frequency high) and $D404 = $81 (noise, gate on). engine_sound_select sets $93 to 1 while the stick is pushed, which gives the engine: noise at $08xx and $FFxx in turn, a frame each."
   },
   {
    "address": 46140,
@@ -13450,7 +13450,7 @@
   {
    "address": 46148,
    "type": "line",
-   "text": "Stage 7 part 2. $5A: generic frame countdown, decremented to 0 (set at $9E28 and $A0E8). Voice 3 pitch warble: if $48 is non-zero, $49 steps through the table at $80A0 (0 byte = end, restart at index $48) and the entry is written to $D40F (voice 3 frequency high). $48 = $10 in the snapshot selects the 8-step loop 40 38 30 28 20 28 30 38 at $80B0, a slow siren-like wobble; live later it was 0 (off). Which enemy indicator sound this is: unknown; voice 3 is also driven directly by the main loop at $A1B8-$A1E7."
+   "text": "Stage 7 part 2. $5A: generic frame countdown, decremented to 0 (set at $9E28 and $A0E8). Voice 3, a saucer's hum: if $48 is non-zero, $49 steps through the table at $80A0 (0 byte = end, restart at index $48) and the entry is written to $D40F (voice 3 frequency high). $48 = 1 (set at $A6B7, a saucer on the move) gives the four-step loop 40 30 20 30; $48 = $10 (set at $A637 and $A688, a saucer hovering) the eight-step loop 40 38 30 28 20 28 30 38 at $80B0; 0 is off. Voice 3 is also driven directly by the main loop, as during the warp at $A1B8-$A1E7."
   },
   {
    "address": 46172,

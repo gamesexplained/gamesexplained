@@ -102,3 +102,26 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   `54`; `orientation.md` is corrected. The play snapshot has 17
   enemies, so the run-time variables differ from the old listing in 48
   bytes; no comment quoted their values.
+
+## 2026-10-30, the sound section rebuilt (Claude Opus 5.5)
+
+- The contributor reported that section 10's "voice 1 loop" did not sound
+  like the game, that it did not use the site's player, and that most of
+  the game's sounds were missing. The old player played the raw bytes of
+  `$80C8` and `$80A0` as square and triangle tones; the engine is noise,
+  and only the bytes from index `$93` are ever read.
+- Every SID write was traced in VICE on 30 October 2026, playing a copy
+  of the 1984 disk (a G64 from the C64 Preservation Project), whose 1158
+  bytes the page's pieces run and read match the listing's byte for byte.
+  The warp was recorded with the death check at `$AADC` patched out, so
+  that the whole warp ran. From those traces each sound's pieces of code
+  and the frames between the main loop's passes were taken; the page runs
+  the pieces on the kit's 6502, and `test_sound.js` holds them to the
+  whole listing.
+- Corrected on the way, in symbols.json and facts.md: the warp's noise
+  is `h*h + $100` from its progress, not random (`$A19E`); `$80A0` is a
+  saucer's hum, a moving and a hovering loop, not the missile whine; the
+  hum is not pitched from the range (`$A5F2`); the engine runs for any
+  stick direction (`$A231`); the warp chord's top note is `$1121`.
+- bounce.js and sid.js gained loops (a tune that repeats from a frame),
+  and sid.js a ball line for noise, for the engine, the hums and the warp.

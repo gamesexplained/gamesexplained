@@ -512,16 +512,38 @@ resolved band colours; $F7/$F8 shape script pointer.
 
 ## Sound
 
-SID voices are driven directly, no music player. Voice 1: engine hum
-($A231 picks a loop from $80C0 into $93; the interrupt steps it through
-$80C8 every frame at $B415), the bump noise ($B549, noise waveform at
-$1414) and the shot and death bursts. Voice 3: the saucer hum, pitched
-from range $31 ($A5F2), and an eight-step warble stepped from $80A0 by
-$B444. Voices 2 and 3 together: the homing-missile whine, rising with
-approach ($A811). The warp has its own tone ramp ($A4CD, $75/$76).
-Volume is $0F with the filter set at $9D9B; $D417 is written once at
-$A040. The title screen plays a single tone on voice 1 ($9CEA) while a
-selection key is held.
+SID voices are driven directly, with no music player: the raster interrupt
+steps two pitch tables once a frame, and the main loop writes the chip
+where things happen. The minisite's player runs each piece below on the
+kit's 6502 from the listing's bytes, and `test_sound.js` holds every write
+to the same code run on the whole listing.
+
+| Sound | Voice | What is written | Where |
+|---|---|---|---|
+| Engine | 1 | noise, freq hi from $80C8 from index $93 = 1: $08, $FF on alternate frames; SR $20. $93 = $80C0[(($6D>>1) & $6D & 5) + 2 if $1C = 0] is 1 for any stick direction, 0 when centred, which leaves $D404 = $01 | $A231, $B415 |
+| Your shot | 1 | noise $1414, AD $08, gate restarted; $1D = $0C holds the voice 12 frames, then the interrupt sets AD 0 and the engine (or $01) back | $ACCF |
+| Shot hits an obelisk | 1 | only when $1D = 0: $1D = $0C, noise $1414, AD $36 | $A09F |
+| Bump into an obelisk | 1 | only when $1C = 0: $1C = $1D = $2C, noise $1414, AD $0A | $B53F |
+| Saucer hum | 3 | triangle $11, AD 0, SR $80; the interrupt writes freq hi from $80A0 from index $48: 1 gives 40 30 20 30 (set at $A6B7, moving), $10 gives 40 38 30 28 20 28 30 38 (set at $A637 and $A688, hovering) | $A616, $B444 |
+| Warm-up to fire | 3 | $48 = 0, pulse $41; $91 from $FF down 4 a pass, freq = (~$91) × 32 + $0800, so up $80 a pass ($FF is the scratch byte); ends when $91 < $92 ($A8 when observed), then $48 = $10; the shot one pass later | $A64D, $A676 |
+| Enemy shot | 2 | noise $1400, AD $08, SR 0, $5A = 7 | $A9BA |
+| Enemy shot hits an obelisk | 2 | only when $5A = 0: noise $1414, AD $36 | $A0E8 |
+| Saucer destroyed | 3 | voices 2 and 3 off, then noise AD $0B, SR 0; each explosion pass freq hi = ((t*2) & 6) \| $10 for t = $83F8 counting down: $16, $14, $12, $10 | $A8B2, $A14F |
+| Homing missile | 2, 3 | triangles, SR $C0; with a = max(range $31, $80), voice 3 = ((~a) \| $80) << 4 and voice 2 = that - ~a: from $0910/$08FF at range $EE to $0F50/$0EDB at $8A | $A3D5, $A811 |
+| Death | 1 | noise AD $0B, $1D = $3F; voices 2 and 3 off | $AB9D |
+| Stargate | 2, 3 | AD 0, SR $F0, triangle $11; freq hi ((~$75)>>3) + $0F and + $10; $A04F moves $75 by 8 a pass, down as the gate opens and up again at its timeout or when it is entered; a missed gate turns voices 2 and 3 off 34 passes after the timeout ($A55A) | $A2DD, $A04F, $A4CD |
+| Warp | 2, 3 | $A722: gates off, AD 0, SR $F0. $A19E with $A5 below $FF: voice 2 off, voice 3 noise at h*h + $100, h = ($A5*$A5)>>8; at $A5 = $FF sawtooth $21 on both, $0800 and $1121 (the low byte is the control value left in A at $A1CA). $A5 climbs one a pass, holds at $FF until $58 >= 4, then falls one a pass to level_complete ($A798) | $A722, $A19E, $A7D5, $A794 |
+| Burst-fire saucer | 3 | first entry: $48 = 0, freq hi $30, SR $F0, AD 0; then $45 counts down from 255 passes and voice 3 gets $11 for one pass whenever $45 & $0F = 0 (16 beeps), $10 otherwise; at 0, $A595 sets $1D = $1F and fires | $A563 |
+| Level key held on the title | 1 | sawtooth $21 at $0606 (SR $F0 from the title's set-up); $00 when let go ($9CFA) | $9CEA |
+
+The title's set-up ($9D8A) clears every register, writes $D418 = $0F and
+voice 1 SR $F0. Each life's set-up ($A00E) sets voice 1 to $1414, SR $20,
+pulse widths $0800, $D417 = $08 (no voice routed through the filter) and
+$D418 = $0F again, with $93 = $48 = $20 and $1D = 1.
+
+Pass timing, as observed in VICE on 30 October 2026: the main loop makes a
+pass every 2 frames on an empty plain and every 3 while an explosion runs;
+a missile's passes and the warp's came 1 to 4 frames apart.
 
 ## Oddities to settle
 

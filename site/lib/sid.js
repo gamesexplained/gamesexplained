@@ -617,7 +617,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   const noteName = (n) => NAMES[n % 12] + Math.floor(n / 12);  // note 0 = C0, 57 = A4
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-  // mount(root, {driver, data, tunes, rows, mark, gain, filter, ntsc, period, digi, colors}) builds the player inside root.
+  // mount(root, {driver, data, tunes, rows, mark, gain, filter, ntsc, period, digi, colors, loops, noise})
+  // builds the player inside root.
   //   ntsc    optional: true for a game whose driver runs once an NTSC frame, heard at the NTSC clock
   //   period  optional: the cycles between the driver's calls, for a game that calls it from a CIA
   //           timer (a latch of n: n + 1 cycles). The seek bar and onFrame then count calls, and
@@ -650,6 +651,13 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           cannot, the piano roll). The player runs the driver ahead when a tune starts, as for
   //           its length, and takes a note where mark says one starts, and where the pitch steps
   //           to a new note and holds
+  //   loops   optional: per tune, null or { from, period } for a tune that repeats itself for as long
+  //           as it plays (an engine, a hum held, whose driver never stops): from the frame from, as
+  //           the seek bar counts them, every period frames. Its bar is from + period long and its
+  //           thumb goes round the last period, its time says it loops, and the ball is scored from
+  //           the driver run a second into the loop and repeats it from there (NoteBounce's loop)
+  //   noise   optional: true to give the ball a line where a voice plays noise, at the pitch its
+  //           frequency gives the noise; by default noise has no line
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -665,7 +673,12 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
     const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
-    const BOUNCE = o.bounce !== false;
+    const BOUNCE = o.bounce !== false, NOISE = !!o.noise;
+    const loopOf = (t) => (o.loops && o.loops[t]) || null;
+    const wrapped = (t, f) => {                              // a frame of tune t as its bar shows it
+      const lp = loopOf(t);
+      return lp && f >= lp.from + lp.period ? lp.from + (f - lp.from) % lp.period : f;
+    };
     const line = (r, i) => r.k
       ? `<div class="sid-l"><span class="sid-k">${esc(r.k)}</span><span class="sid-m" data-row="${i}">-</span></div>`
       : `<div class="sid-l${r.in ? ' sid-in' : ''}${r.mono ? ' sid-m' : ''}" data-row="${i}">-</div>`;
@@ -746,7 +759,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
               pw: (s[r + 2] | s[r + 3] << 8) & 0xFFF, ctrl: s[r + 4], ad: s[r + 5], sr: s[r + 6], env: env[x] });
             const lv = Math.max(env[x], chip.V[x].env) / 255, wave = v.ctrl & 0xF0;
             level[x][k] = lv * waveLevel(v.ctrl, v.pw);
-            if (lv && v.freq && wave && wave !== 0x80) line[x][k] = semis(v.freq);   // noise has no pitch to show
+            if (lv && v.freq && wave && (wave !== 0x80 || NOISE)) line[x][k] = semis(v.freq);   // noise: only if asked
             if (mark(v, prev[x]) && v.freq) notes[x].push({ t: k, n: semis(v.freq) });
             prev[x] = v;
           }
@@ -757,20 +770,24 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           if (w) for (let k = 0; k + 1 < w.length; k += 2) if (w[k] === 23 && w[k + 1] & 7) return true;
           return false;
         };
+        // a loop: run on a second into it, and one period more, for the ball to repeat
+        const lp = loopOf(t), cycle = lp ? lp.from + lp.period * Math.ceil(FPS / lp.period) : 0;
+        const stop = lp ? Math.min(LONG, cycle + lp.period) : LONG;
         try {
           const d = o.driver(o.data, globalThis.C64Cpu);
           d.init(t); f = routes(d);
-          for (; n < LONG; n++) {
+          for (; n < stop; n++) {
             if (chip && d.readback) d.readback(...chip.read3(), chip.peek());
             d.play(); f = f || routes(d);
             if (!d.playing()) break;
             if (collect) collect(d, n + 1);                  // the frame the display numbers it
           }
         } catch (e) { n = LONG; f = true; }
-        lengths[t] = n < LONG ? n : null;
+        lengths[t] = lp ? lp.from + lp.period : n < LONG ? n : null;
         filtered[t] = f;
         if (BOUNCE) scores[t] = { rate: FPS, voices: notes.map((x, i) =>
-          ({ notes: x, line: line[i].slice(0, n + 2), level: level[i].slice(0, n + 2) })) };
+          ({ notes: x, line: line[i].slice(0, n + 2), level: level[i].slice(0, n + 2) })),
+          loop: lp ? { from: cycle, period: lp.period } : undefined };
       }
       return lengths[t];
     }
@@ -780,7 +797,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     };
     function time(f) {
       const n = lengths[tune];
-      setText(timeEl, clock(f) + (tune < 0 ? '' : ' / ' + (n != null ? clock(n) : clock(+seek.max) + '+')));
+      setText(timeEl, clock(f) + (tune < 0 ? '' : loopOf(tune) ? ', looping' : ' / ' + (n != null ? clock(n) : clock(+seek.max) + '+')));
     }
 
     async function audio() {                                 // created on the first click only
@@ -885,8 +902,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
 
     function show(s) {
-      if (s.frame > +seek.max) seek.max = String(Math.ceil(s.frame * 1.25));
-      if (!dragging) { seek.value = String(s.frame); time(s.frame); }
+      if (s.frame > +seek.max && !loopOf(tune)) seek.max = String(Math.ceil(s.frame * 1.25));
+      if (!dragging) { seek.value = String(wrapped(tune, s.frame)); time(s.frame); }
       if (o.onFrame) try { o.onFrame(s.frame, tune); } catch (e) { console.error(e); }
       setText(volEl, String(s.vol));
       volBars.forEach((b, i) => b.classList.toggle('sid-lit', i < s.vol));
