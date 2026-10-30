@@ -9,7 +9,7 @@ Everything the kit installs lives under tools/ (gitignored):
   tools/src/         vice-mcp source and its build, when built here
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
   tools/r2000-home/  the disassembler's settings, where it follows the XDG paths (Linux)
-  tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000 --version 0.9.20`
+  tools/cargo/bin/   the disassembler, from `cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20`
   tools/logs/        terminal logs of both
 Deleting the repository removes all of it. See kit/c64/INSTALL.md, "Uninstall".
 
@@ -369,7 +369,7 @@ def deleted_again(gdir):
 def r2000(path):
     exe = r2000_exe()
     if not exe:
-        sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000 --version 0.9.20")
+        sys.exit("no regenerator2000; run: cargo install --locked --root tools/cargo regenerator2000 --version 0.9.20")
     port, part = R2000_PORT, part_dir(path)
     if part and not os.environ.get("KIT_R2000_PORT"):
         port = part_port(part)
