@@ -1,10 +1,12 @@
 # vice-mcp workarounds, by failed check
 
-**The v3.13.2 GUI releases need none of this.** On 2 October 2026 they
-passed all 57 checks, in five runs on Linux x86_64 and five on macOS
-arm64. On a build where `check-emulator` reports nothing failed, stop
-reading here, unless its summary says the host is slow: that is a NOTE,
-not a failed check, and "A slow host" below is for it.
+**The GUI releases from v3.13.2 on need none of this.** On 2 October
+2026 the v3.13.2 releases passed all 57 checks, in five runs on Linux
+x86_64 and five on macOS arm64, and on 29 October 2026 the v3.14.0
+release did on Linux x86_64, in five runs. On a build where
+`check-emulator` reports nothing failed, stop reading here, unless its
+summary says the host is slow: that is a NOTE, not a failed check, and
+"A slow host" below is for it.
 
 Read this only for the checks that `python3 kit/scripts/tools.py
 check-emulator` reported as failed on the build you are using. Each
